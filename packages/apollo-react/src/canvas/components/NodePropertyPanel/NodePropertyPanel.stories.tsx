@@ -13,7 +13,6 @@ import {
   Input,
   MetadataForm,
   ScrollableTabsList,
-  Search as SearchField,
   Switch,
   Tabs,
   TabsContent,
@@ -43,8 +42,9 @@ import {
   GripVertical,
   Play,
   Plus,
+  Search,
+  FileBracesCorner,
   Sparkles,
-  SquareDashed,
   Type,
   X,
 } from 'lucide-react';
@@ -622,6 +622,32 @@ const COMPACT_EDITOR_OPTIONS = {
   automaticLayout: true,
 } as const;
 
+const JSON_VIEWER_OPTIONS = {
+  readOnly: true,
+  fontSize: 12,
+  lineHeight: 18,
+  minimap: { enabled: false },
+  scrollBeyondLastLine: false,
+  wordWrap: 'off',
+  fontFamily:
+    'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+  padding: { top: 8, bottom: 8 },
+  lineNumbers: 'off' as const,
+  lineDecorationsWidth: 0,
+  glyphMargin: false,
+  folding: true,
+  renderLineHighlight: 'none' as const,
+  hideCursorInOverviewRuler: true,
+  overviewRulerBorder: false,
+  overviewRulerLanes: 0,
+  scrollbar: {
+    vertical: 'auto' as const,
+    horizontal: 'auto' as const,
+    alwaysConsumeMouseWheel: false,
+  },
+  automaticLayout: true,
+} as const;
+
 const INLINE_EDITOR_OPTIONS = {
   fontSize: 13,
   lineHeight: 20,
@@ -675,17 +701,19 @@ function CasePanel({
         <div className="grid size-5 shrink-0 cursor-grab place-items-center text-foreground-subtle">
           <GripVertical size={12} />
         </div>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="4xs"
+          icon
           onClick={() => setExpanded((v) => !v)}
           aria-label={expanded ? 'Collapse case' : 'Expand case'}
-          className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
+          className="shrink-0 rounded hover:bg-transparent text-foreground-subtle hover:text-foreground"
         >
           <ChevronDown
             size={12}
             className={cn('transition-transform duration-150', !expanded && '-rotate-90')}
           />
-        </button>
+        </Button>
         {editingTitle ? (
           <input
             ref={titleRef}
@@ -715,15 +743,17 @@ function CasePanel({
             <CircleAlert size={10} />1
           </Badge>
         )}
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="4xs"
+          icon
           onClick={onDelete}
           aria-label="Delete case"
           title="Delete case"
-          className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:text-foreground group-hover:opacity-100"
+          className="shrink-0 rounded hover:bg-transparent text-foreground-subtle opacity-0 hover:text-foreground group-hover:opacity-100"
         >
           <X size={12} />
-        </button>
+        </Button>
       </div>
 
       {expanded && (
@@ -1043,7 +1073,7 @@ function CompactEditorStory() {
               <button
                 type="button"
                 onClick={addCase}
-                className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
+                className="flex cursor-pointer items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
               >
                 <Plus size={12} />
                 Add case
@@ -1626,7 +1656,7 @@ function InputEditorStory() {
               <button
                 type="button"
                 onClick={addCase}
-                className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
+                className="flex cursor-pointer items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
               >
                 <Plus size={12} />
                 Add output variable
@@ -1662,19 +1692,17 @@ type OutputNode = {
   path: string;
 };
 
-function TypeBadge({ type }: { type: string }) {
-  const configs: Record<string, { label: string; cls: string }> = {
-    string: { label: 'T', cls: 'border-info bg-info-background text-info' },
-    number: { label: '#', cls: 'border-warning bg-warning-background text-warning' },
-    boolean: { label: '?', cls: 'border-success bg-success-background text-success' },
-    object: { label: '{}', cls: 'border-brand bg-brand-subtle text-brand' },
-    array: { label: '[]', cls: 'border-brand bg-brand-subtle text-brand' },
-    null: { label: '∅', cls: 'border-border bg-surface-overlay text-foreground-muted' },
+function TypeBadge({ type }: { type: OutputNode['type'] }) {
+  const labels: Record<OutputNode['type'], string> = {
+    string: 'T',
+    number: '#',
+    boolean: '?',
+    object: '{}',
+    array: '[]',
+    null: '∅',
   };
-  const { label, cls } = configs[type] ?? {
-    label: '?',
-    cls: 'border-border bg-surface-overlay text-foreground-muted',
-  };
+  const label = labels[type];
+  const cls = 'border-border bg-surface-overlay text-foreground-muted';
   return (
     <span
       className={cn(
@@ -1687,7 +1715,7 @@ function TypeBadge({ type }: { type: string }) {
   );
 }
 
-function outputValueColorClass(type: string, value: unknown): string {
+function outputValueColorClass(type: OutputNode['type'], value: unknown): string {
   if (type === 'string') return 'text-success';
   if (type === 'number') return 'text-info';
   if (type === 'boolean') return value ? 'text-success' : 'text-error';
@@ -1696,7 +1724,7 @@ function outputValueColorClass(type: string, value: unknown): string {
 }
 
 function formatOutputValue(
-  type: string,
+  type: OutputNode['type'],
   value: string | number | boolean | null | undefined
 ): string {
   if (type === 'null' || value === null || value === undefined) return 'null';
@@ -1931,6 +1959,7 @@ function Concept2PanelStory({
   mode: 'input' | 'output';
   context?: 'studio' | 'flow';
 }) {
+  const monacoTheme = useMonacoTheme();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'default' | 'referenced' | 'all'>('default');
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
@@ -1941,6 +1970,7 @@ function Concept2PanelStory({
     )
   );
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<
     Record<string, string | number | boolean | null>
@@ -1948,17 +1978,33 @@ function Concept2PanelStory({
   const [nodeMode, setNodeMode] = useState<'live' | 'static' | 'simulated' | 'disabled'>('live');
 
   const NODE_MODES = [
-    { value: 'live', label: 'Live', description: 'Use the real response from this node', icon: CircleDot },
-    { value: 'static', label: 'Static mock', description: 'Always return a value you define', icon: SquareDashed },
+    {
+      value: 'live',
+      label: 'Live',
+      description: 'Use the real response from this node',
+      icon: CircleDot,
+    },
+    {
+      value: 'static',
+      label: 'Static mock',
+      description: 'Always return a value you define',
+      icon: FileBracesCorner,
+    },
     {
       value: 'simulated',
       label: 'Simulated',
       description: 'Generate a response dynamically using an LLM',
       icon: Sparkles,
     },
-    { value: 'disabled', label: 'Skip node', description: "Don't execute this node", icon: CircleOff },
+    {
+      value: 'disabled',
+      label: 'Skip node',
+      description: "Don't execute this node",
+      icon: CircleOff,
+    },
   ] as const;
   const currentNodeMode = NODE_MODES.find((m) => m.value === nodeMode) ?? NODE_MODES[0];
+  const CurrentModeIcon = currentNodeMode.icon;
 
   const isOutput = mode === 'output';
   const currentTreeData = isOutput ? OUTPUT_TREE_DATA : INPUT_TREE_DATA;
@@ -1967,7 +2013,7 @@ function Concept2PanelStory({
   const referencedKeys = new Set(currentReferenced.map((r) => r.name));
 
   const activeTreeData =
-    filter === 'all'
+    filter !== 'referenced'
       ? currentTreeData
       : currentTreeData
           .map((root) => ({
@@ -2032,8 +2078,9 @@ function Concept2PanelStory({
                   <DropdownMenuTrigger asChild>
                     <button
                       type="button"
-                      className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
                     >
+                      <CurrentModeIcon size={10} className="text-foreground-subtle" />
                       <span>{currentNodeMode.label}</span>
                       <ChevronDown size={10} className="text-foreground-subtle" />
                     </button>
@@ -2045,7 +2092,10 @@ function Concept2PanelStory({
                         <DropdownMenuItem
                           key={m.value}
                           onClick={() => setNodeMode(m.value)}
-                          className={cn('flex items-start gap-2', nodeMode === m.value && 'text-foreground')}
+                          className={cn(
+                            'flex items-start gap-2',
+                            nodeMode === m.value && 'text-foreground'
+                          )}
                         >
                           <Icon size={13} className="mt-[2px] shrink-0 text-foreground-subtle" />
                           <div className="flex flex-col gap-0.5">
@@ -2065,7 +2115,12 @@ function Concept2PanelStory({
 
           <Tabs defaultValue="schema" className="flex min-h-0 flex-1 flex-col">
             {/* Tab strip — status badge moves here in Studio context */}
-            <div className={cn('shrink-0 flex items-center gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1.5', context === 'studio' && 'pt-3')}>
+            <div
+              className={cn(
+                'shrink-0 flex items-center gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1.5',
+                context === 'studio' && 'pt-3'
+              )}
+            >
               <TabsList className={TAB_LIST_CLASS}>
                 <TabsTrigger value="schema" className={TAB_TRIGGER_CLASS}>
                   Schema
@@ -2081,8 +2136,9 @@ function Concept2PanelStory({
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
-                        className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                        className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
                       >
+                        <CurrentModeIcon size={10} className="text-foreground-subtle" />
                         <span>{currentNodeMode.label}</span>
                         <ChevronDown size={10} className="text-foreground-subtle" />
                       </button>
@@ -2094,7 +2150,10 @@ function Concept2PanelStory({
                           <DropdownMenuItem
                             key={m.value}
                             onClick={() => setNodeMode(m.value)}
-                            className={cn('flex items-start gap-2', nodeMode === m.value && 'text-foreground')}
+                            className={cn(
+                              'flex items-start gap-2',
+                              nodeMode === m.value && 'text-foreground'
+                            )}
                           >
                             <Icon size={13} className="mt-[2px] shrink-0 text-foreground-subtle" />
                             <div className="flex flex-col gap-0.5">
@@ -2118,7 +2177,10 @@ function Concept2PanelStory({
               <div className="shrink-0 flex items-center gap-1.5 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1 pt-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="3xs" className="gap-1.5 text-foreground-muted">
+                    <button
+                      type="button"
+                      className="flex cursor-pointer shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                    >
                       <span>
                         {filter === 'referenced'
                           ? 'Filter: Referenced in this node'
@@ -2132,7 +2194,7 @@ function Concept2PanelStory({
                         </span>
                       )}
                       <ChevronDown size={10} className="text-foreground-subtle" />
-                    </Button>
+                    </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-52">
                     <DropdownMenuItem
@@ -2156,21 +2218,63 @@ function Concept2PanelStory({
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <div className="flex-1" />
-                <SearchField
-                  value={search}
-                  onChange={setSearch}
-                  aria-label={isOutput ? 'Search outputs' : 'Search inputs'}
-                  placeholder={isOutput ? 'Search outputs...' : 'Search inputs...'}
-                  className="h-7 w-36 text-xs"
-                />
+                {searchOpen ? (
+                  <div className="relative flex items-center">
+                    <Search
+                      size={12}
+                      className="pointer-events-none absolute left-2 text-foreground-subtle"
+                    />
+                    <Input
+                      autoFocus
+                      type="text"
+                      variant="ghost"
+                      size="xs"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setSearch('');
+                          setSearchOpen(false);
+                        }
+                      }}
+                      aria-label={isOutput ? 'Search outputs' : 'Search inputs'}
+                      placeholder={isOutput ? 'Search outputs...' : 'Search inputs...'}
+                      className="w-36 pl-6 pr-6 text-foreground placeholder:text-foreground-subtle focus-visible:ring-0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearch('');
+                        setSearchOpen(false);
+                      }}
+                      aria-label="Clear search"
+                      className="absolute right-1.5 grid size-4 place-items-center text-foreground-subtle transition hover:text-foreground"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="4xs"
+                    icon
+                    onClick={() => setSearchOpen(true)}
+                    title="Search fields"
+                    aria-label="Search fields"
+                    className="rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+                  >
+                    <Search size={12} />
+                  </Button>
+                )}
                 {allContainerPaths.length > 0 && (
                   <Button
                     variant="ghost"
-                    size="3xs"
+                    size="4xs"
                     icon
                     onClick={toggleAll}
                     title={allCollapsed ? 'Expand all' : 'Collapse all'}
                     aria-label={allCollapsed ? 'Expand all' : 'Collapse all'}
+                    className="rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
                   >
                     {allCollapsed ? <ChevronsUpDown size={12} /> : <ChevronsDownUp size={12} />}
                   </Button>
@@ -2193,7 +2297,7 @@ function Concept2PanelStory({
                           aria-label={
                             collapsed[node.path] ? `Expand ${node.key}` : `Collapse ${node.key}`
                           }
-                          className="grid size-3 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
+                          className="cursor-pointer grid size-3 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
                         >
                           <ChevronDown
                             size={10}
@@ -2275,12 +2379,12 @@ function Concept2PanelStory({
                             <div className="flex-1" />
                             <Button
                               variant="ghost"
-                              size="3xs"
+                              size="4xs"
                               icon
                               onClick={() => copyExpr(node.path)}
                               title={`Copy {{${node.path}}}`}
                               aria-label={`Copy expression for ${node.path}`}
-                              className="shrink-0 text-foreground-subtle opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                              className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
                             >
                               {copiedPath === node.path ? (
                                 <CircleCheck size={11} className="text-brand" />
@@ -2307,10 +2411,15 @@ function Concept2PanelStory({
               value="json"
               className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-1 [padding-inline:var(--mf-content-inset,0.875rem)]"
             >
-              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay bg-surface-overlay/40">
-                <pre className="h-full overflow-auto p-3 font-mono text-xs leading-5 text-foreground whitespace-pre">
-                  {currentJson}
-                </pre>
+              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay">
+                <MonacoEditor
+                  height="100%"
+                  language="json"
+                  value={currentJson}
+                  theme={monacoTheme}
+                  beforeMount={registerMonacoThemes}
+                  options={JSON_VIEWER_OPTIONS}
+                />
               </div>
             </TabsContent>
           </Tabs>
@@ -2336,7 +2445,7 @@ function InputOutputStory() {
               type="button"
               onClick={() => setContext(c)}
               className={cn(
-                'px-3 py-1 text-xs font-medium transition',
+                'cursor-pointer px-3 py-1 text-xs font-medium transition',
                 context === c
                   ? 'bg-surface-overlay text-foreground'
                   : 'text-foreground-muted hover:text-foreground'

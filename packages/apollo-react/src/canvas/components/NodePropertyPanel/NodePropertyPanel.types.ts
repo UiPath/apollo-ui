@@ -47,8 +47,8 @@ export interface NodePropertyPanelProps {
    */
   contentInset?: string;
   /**
-   * Optional content rendered in the title bar between the title text and the
-   * close button. Use for compact mode toggles, status indicators, etc.
+   * Optional content rendered in the title bar on the right side, immediately
+   * before the close button. Use for compact mode toggles, status indicators, etc.
    */
   headerExtra?: ReactNode;
   /**
