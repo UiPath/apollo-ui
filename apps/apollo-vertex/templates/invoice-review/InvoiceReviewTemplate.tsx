@@ -5479,11 +5479,13 @@ function CenterPanelNext({
   onCleared,
   onApprove,
   onHold,
+  exceptionListVariant,
 }: {
   activeInvoiceId: string;
   onCleared: () => void;
   onApprove: () => void;
   onHold: () => void;
+  exceptionListVariant?: "strip" | "index";
 }) {
   const review = getReview(activeInvoiceId);
   // The timeline owns the resolve/revalidate loop; it calls onCleared once the
@@ -5496,6 +5498,7 @@ function CenterPanelNext({
       onAllClear={onCleared}
       onApprove={onApprove}
       onHold={onHold}
+      exceptionListVariant={exceptionListVariant}
     />
   );
 }
@@ -5932,7 +5935,7 @@ function InvoiceDetailPane({
           className="shrink-0 inv-between-enter"
           style={{ animationDelay: "40ms" }}
         >
-          {version === "next" ? (
+          {version !== "v1" ? (
             <TopBarNext
               flagged={flagged}
               held={held}
@@ -5960,12 +5963,14 @@ function InvoiceDetailPane({
             className="flex flex-col flex-1 overflow-hidden inv-between-enter"
             style={{ animationDelay: "80ms" }}
           >
-            {version === "next" ? (
+            {version !== "v1" ? (
+              // v3 previews the "Up next" strip; v2 keeps the bordered index.
               <CenterPanelNext
                 activeInvoiceId={activeInvoiceId}
                 onCleared={() => setApproveReady(true)}
                 onApprove={() => onComplete("approved")}
                 onHold={() => onPark("hold", "Held from header")}
+                exceptionListVariant={version === "v3" ? "strip" : "index"}
               />
             ) : (
               <>
@@ -6120,7 +6125,7 @@ function InvoiceDetailPane({
             className="inv-between-enter h-full"
             style={{ animationDelay: "120ms" }}
           >
-            {version === "next" ? (
+            {version !== "v1" ? (
               <RightPanelNext
                 tab={rightTab}
                 onTabChange={onRightTabChange}
