@@ -9,43 +9,16 @@
 
 import type { SolutionTestsActions } from "./actions";
 import {
-  AGENT_SUCCESS_STATUSES,
   AUTOMATION_FUNCTION_PATH,
   AUTOMATION_FUNCTIONS_SLUG,
   RUN_TESTS_SLUG,
 } from "./constants";
+import { extractFailure, SolutionTestActionError } from "./errors";
 
 export interface SolutionTestActionDeps {
   /** Base URL each action slug is appended to (no trailing slash). */
   triggerBaseUrl: string;
   getToken: () => Promise<string | null> | string | null;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/** The agent reports its outcome in `output_data.status`; the RPC router doesn't. */
-function agentStatus(data: unknown): string | null {
-  if (!isRecord(data)) return null;
-  const output = isRecord(data.output_data) ? data.output_data : data;
-  return typeof output.status === "string" ? output.status : null;
-}
-
-/** App-level failure across both contracts (HTTP stays 200 even on RBAC denial). */
-function detectFailure(data: unknown): string | null {
-  if (!isRecord(data)) return null;
-  // The agent wraps its payload in `output_data`; the RPC router returns it
-  // top-level. Unwrap once so `status_code`/`status` read from the same object.
-  const output = isRecord(data.output_data) ? data.output_data : data;
-  if (typeof output.status_code === "number" && output.status_code >= 400) {
-    return typeof output.error === "string" ? output.error : "request_failed";
-  }
-  const status = agentStatus(data);
-  if (status != null && !AGENT_SUCCESS_STATUSES.has(status)) {
-    return typeof output.message === "string" ? output.message : status;
-  }
-  return null;
 }
 
 export function createSolutionTestActions(
@@ -89,8 +62,8 @@ export function createSolutionTestActions(
       ?.includes("application/json")
       ? await response.json().catch(() => null)
       : null;
-    const failure = detectFailure(data);
-    if (failure) throw new Error(failure);
+    const failure = extractFailure(data);
+    if (failure) throw new SolutionTestActionError(failure);
   }
 
   // automation-functions RPC router; the token goes in the body's `_auth` envelope.
