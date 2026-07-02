@@ -243,6 +243,14 @@ jobs:
           docs_app="apollo-docs-pr-${PR_NUMBER}"
           design_app="apollo-design-pr-${PR_NUMBER}"
           vertex_app="apollo-vertex-pr-${PR_NUMBER}"
+          uip_go_npmrc="${RUNNER_TEMP}/uip-go.npmrc"
+          uip_go_prefix="${RUNNER_TEMP}/uip-go"
+          {
+            printf '@uipath:registry=https://npm.pkg.github.com\n'
+            printf '//npm.pkg.github.com/:_authToken=%s\n' "$GH_NPM_REGISTRY_TOKEN"
+          } > "$uip_go_npmrc"
+          NPM_CONFIG_USERCONFIG="$uip_go_npmrc" npm install --prefix "$uip_go_prefix" @uipath/uip-go
+          UIP_GO="${uip_go_prefix}/node_modules/.bin/uip-go"
 
           write_output() {
             local name="$1"
@@ -289,8 +297,7 @@ jobs:
             output_file="$(mktemp)"
             echo "::group::uip-go ${label}"
             set +e
-            npm exec --yes --registry=https://npm.pkg.github.com --package @uipath/uip-go -- \
-              uip-go "$label" \
+            "$UIP_GO" "$label" \
                 --name "$app_name" \
                 --path-name "$app_name" \
                 --version "$version" \
