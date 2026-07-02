@@ -2886,6 +2886,11 @@
           "target": "components/ui/solution-tests/create-actions.ts"
         },
         {
+          "path": "registry/solution-tests/errors.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/errors.ts"
+        },
+        {
           "path": "registry/solution-tests/use-solution-tests.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/use-solution-tests.ts"
