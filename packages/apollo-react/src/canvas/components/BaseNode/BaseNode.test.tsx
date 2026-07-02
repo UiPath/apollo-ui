@@ -105,6 +105,7 @@ vi.mock('@uipath/apollo-react/canvas/utils', () => ({
 }));
 vi.mock('../../utils/icon-registry', () => ({
   getIcon: () => () => <div data-testid="node-icon">Icon</div>,
+  CanvasIcon: ({ icon }: { icon: string }) => <span data-testid={`canvas-icon-${icon}`} />,
 }));
 vi.mock('../../utils/manifest-resolver', () => ({
   resolveDisplay: (display: Record<string, unknown> | undefined) => ({
@@ -353,6 +354,27 @@ describe('BaseNode', () => {
 
       expect(onHandleMouseEnter).toHaveBeenCalledWith(payload);
       expect(onHandleMouseLeave).toHaveBeenCalledWith(payload);
+    });
+  });
+
+  describe('Action needed badge', () => {
+    it('renders as an accessible clickable control and invokes onActionNeeded', () => {
+      const onActionNeeded = vi.fn();
+      mockOverrideConfig.current = {
+        executionStatusOverride: 'ActionNeeded',
+        onActionNeeded,
+      };
+
+      render(<BaseNode {...defaultProps} />);
+
+      const actionBadge = screen.getByRole('button', { name: 'Action needed' });
+      expect(actionBadge).toHaveClass('cursor-pointer');
+      expect(actionBadge).toHaveClass('nodrag');
+      expect(actionBadge).toHaveClass('focus-visible:outline-2');
+
+      fireEvent.click(actionBadge);
+
+      expect(onActionNeeded).toHaveBeenCalledWith('test-node');
     });
   });
 
