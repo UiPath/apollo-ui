@@ -8,11 +8,11 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Input } from '@/components/ui/input';
+import { Input, type InputProps } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/index';
 
-export interface SearchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+export interface SearchProps extends Omit<InputProps, 'onChange'> {
   value?: string;
   onChange?: (value: string) => void;
   onClear?: () => void;

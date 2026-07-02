@@ -45,6 +45,12 @@ describe('Button', () => {
 
     rerender(<Button size="2xs">2XS</Button>);
     expect(screen.getByRole('button')).toHaveClass('h-7');
+
+    rerender(<Button size="3xs">3XS</Button>);
+    expect(screen.getByRole('button')).toHaveClass('h-6');
+
+    rerender(<Button size="4xs">4XS</Button>);
+    expect(screen.getByRole('button')).toHaveClass('h-5');
   });
 
   it('applies icon prop for square buttons', () => {
@@ -85,6 +91,13 @@ describe('Button', () => {
       </Button>
     );
     expect(screen.getByRole('button')).toHaveClass('h-6', 'aspect-square', 'p-0');
+
+    rerender(
+      <Button size="4xs" icon>
+        Icon 4XS
+      </Button>
+    );
+    expect(screen.getByRole('button')).toHaveClass('h-5', 'aspect-square', 'p-0');
   });
 
   it('handles disabled state', () => {

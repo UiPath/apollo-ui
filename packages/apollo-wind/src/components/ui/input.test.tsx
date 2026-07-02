@@ -54,4 +54,24 @@ describe('Input', () => {
     render(<Input ref={ref} />);
     expect(ref.current).toBeInstanceOf(HTMLInputElement);
   });
+
+  it('applies ghost variant classes', () => {
+    render(<Input variant="ghost" />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveClass('bg-surface-overlay');
+    expect(input).not.toHaveClass('border-input');
+  });
+
+  it('applies xs size classes', () => {
+    render(<Input size="xs" />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveClass('h-6', 'text-xs', 'rounded');
+  });
+
+  it('applies ghost variant and xs size together', () => {
+    render(<Input variant="ghost" size="xs" />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveClass('h-6', 'text-xs', 'rounded', 'bg-surface-overlay');
+    expect(input).not.toHaveClass('border-input');
+  });
 });
