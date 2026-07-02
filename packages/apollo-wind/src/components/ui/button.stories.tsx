@@ -16,7 +16,7 @@ const meta = {
     },
     size: {
       control: 'select',
-      options: ['lg', 'default', 'sm', 'xs', '2xs', '3xs'],
+      options: ['lg', 'default', 'sm', 'xs', '2xs', '3xs', '4xs'],
     },
     icon: {
       control: 'boolean',
@@ -116,7 +116,7 @@ export const WithIcon: Story = {
 };
 
 const variants = ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'] as const;
-const sizes = ['lg', 'default', 'sm', 'xs', '2xs', '3xs'] as const;
+const sizes = ['lg', 'default', 'sm', 'xs', '2xs', '3xs', '4xs'] as const;
 
 export const VariantSizeMatrix: Story = {
   parameters: {
