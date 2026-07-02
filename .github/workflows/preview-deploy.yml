@@ -64,8 +64,13 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
+              per_page: 100,
             });
-            const existing = comments.find(comment => comment.body?.includes(identifier));
+            const existing = comments.find(comment =>
+              comment.body?.includes(identifier) &&
+              comment.user?.type === 'Bot' &&
+              ['github-actions[bot]', 'github-actions'].includes(comment.user?.login)
+            );
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
@@ -97,6 +102,7 @@ jobs:
         run: npm install --global @uipath/cli@1.196.4
 
       - name: Authenticate UiPath External App
+        id: auth
         env:
           UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
           UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID }}
@@ -119,6 +125,7 @@ jobs:
           export UIPATH_CLIENT_SCOPE="${UIPATH_CLIENT_SCOPE:-Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution}"
 
           node <<'NODE'
+          const crypto = require('node:crypto');
           const fs = require('node:fs');
 
           const baseUrl = process.env.UIPATH_BASE_URL.replace(/\/+$/, '');
@@ -138,6 +145,11 @@ jobs:
 
           function appendEnv(name, value) {
             fs.appendFileSync(process.env.GITHUB_ENV, `${name}=${value}\n`);
+          }
+
+          function appendOutput(name, value) {
+            const delimiter = `ghadelim_${crypto.randomUUID()}`;
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}<<${delimiter}\n${value}\n${delimiter}\n`);
           }
 
           function safeOAuthError(data) {
@@ -181,7 +193,7 @@ jobs:
             }
 
             console.log(`::add-mask::${tokenData.access_token}`);
-            appendEnv('UIPATH_ACCESS_TOKEN', tokenData.access_token);
+            appendOutput('uipath_access_token', tokenData.access_token);
             appendEnv('UIPATH_BASE_URL', baseUrl);
             appendEnv('UIPATH_URL', baseUrl);
             appendEnv('UIPATH_ORG_ID', orgId);
@@ -201,6 +213,7 @@ jobs:
         id: deploy
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          UIPATH_ACCESS_TOKEN: ${{ steps.auth.outputs.uipath_access_token }}
           UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
         run: |
           missing=0
@@ -379,7 +392,7 @@ jobs:
                   *) app_url="${app_url}/" ;;
                 esac
                 output_name="${label#apollo-}_url"
-                echo "${output_name}=${app_url}" >> "$GITHUB_OUTPUT"
+                write_output "$output_name" "$app_url"
                 return 0
               fi
 
@@ -389,6 +402,18 @@ jobs:
 
             echo "::error::Failed to deploy $app_name after retries."
             exit 1
+          }
+
+          write_output() {
+            local name="$1"
+            local value="$2"
+            local delimiter
+            delimiter="ghadelim_$(openssl rand -hex 16)"
+            {
+              printf '%s<<%s\n' "$name" "$delimiter"
+              printf '%s\n' "$value"
+              printf '%s\n' "$delimiter"
+            } >> "$GITHUB_OUTPUT"
           }
 
           stage_next_export() {
@@ -720,8 +745,13 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
+              per_page: 100,
             });
-            const existing = comments.find(comment => comment.body?.includes(identifier));
+            const existing = comments.find(comment =>
+              comment.body?.includes(identifier) &&
+              comment.user?.type === 'Bot' &&
+              ['github-actions[bot]', 'github-actions'].includes(comment.user?.login)
+            );
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
