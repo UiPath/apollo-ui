@@ -149,6 +149,7 @@ export const FolderSwitcher: React.FC<FolderSwitcherProps> = ({
                       gap: 1,
                       py: 0.875,
                       borderRadius: '7px',
+                      color: `var(--color-foreground, ${Colors.ColorGray850})`,
                     }}
                   >
                     <AppsRoundedIcon
@@ -170,7 +171,13 @@ export const FolderSwitcher: React.FC<FolderSwitcherProps> = ({
                     onChange(f.id);
                     setAnchorEl(null);
                   }}
-                  sx={{ fontSize: 13, gap: 1, py: 0.875, borderRadius: '7px' }}
+                  sx={{
+                    fontSize: 13,
+                    gap: 1,
+                    py: 0.875,
+                    borderRadius: '7px',
+                    color: `var(--color-foreground, ${Colors.ColorGray850})`,
+                  }}
                 >
                   <FolderOutlinedIcon
                     sx={{
