@@ -13,7 +13,7 @@ permissions: {}
 env:
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
-  UIP_GO_VERSION: 0.1.9
+  UIP_GO_VERSION: 0.1.10
 
 concurrency:
   group: coded-app-preview-pr-${{ github.event.pull_request.number }}
@@ -126,11 +126,12 @@ jobs:
           UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
           UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
           UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
+          APOLLO_VERTEX_AICHAT_CLIENT_ID: ${{ vars.APOLLO_VERTEX_AICHAT_CLIENT_ID || secrets.APOLLO_VERTEX_AICHAT_CLIENT_ID }}
         run: |
           set -euo pipefail
 
           missing=0
-          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION; do
+          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION APOLLO_VERTEX_AICHAT_CLIENT_ID; do
             if [ -z "${!name:-}" ]; then
               echo "::error::$name is required for uip-go Coded App preview deployments."
               missing=1
@@ -196,9 +197,13 @@ jobs:
             local output_file
             local command_exit
             local app_url
+            local extra_args=()
 
             output_file="$(mktemp)"
             trap 'rm -f "$output_file"; trap - RETURN' RETURN
+            if [ "$label" = "apollo-vertex" ]; then
+              extra_args+=(--auth-client-id "$APOLLO_VERTEX_AICHAT_CLIENT_ID")
+            fi
             echo "::group::uip-go ${label}"
             set +e
             "$UIP_GO" "$label" \
@@ -210,7 +215,8 @@ jobs:
                 --org-name "$UIPATH_ORG_NAME" \
                 --tenant-name "$UIPATH_TENANT_NAME" \
                 --deploy-retries 3 \
-                --deploy-retry-delay-ms 10000 2>&1 | tee "$output_file"
+                --deploy-retry-delay-ms 10000 \
+                "${extra_args[@]}" 2>&1 | tee "$output_file"
             command_exit=${PIPESTATUS[0]}
             set -e
             echo "::endgroup::"
