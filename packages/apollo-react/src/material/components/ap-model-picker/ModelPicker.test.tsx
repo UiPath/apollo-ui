@@ -78,6 +78,20 @@ describe('<ModelPicker>', () => {
     expect(onChange.mock.calls[0][0].modelId).toBe('gpt-4o');
   });
 
+  it('keeps rendering a selection the host filter excluded', () => {
+    renderPicker(
+      <ModelPicker
+        models={MODELS}
+        value="gpt-4o"
+        onChange={() => {}}
+        filter={(m) => m.vendor !== 'OpenAi'}
+      />
+    );
+    // The stored selection resolves from the raw catalog, so the trigger
+    // shows the model instead of a blank placeholder (README §1).
+    expect(screen.getByText('gpt-4o')).toBeInTheDocument();
+  });
+
   it('falls back to "unknown model" treatment when value does not match catalog', () => {
     renderPicker(<ModelPicker models={MODELS} value="some-retired-model" onChange={() => {}} />);
     expect(screen.getByText('some-retired-model')).toBeInTheDocument();

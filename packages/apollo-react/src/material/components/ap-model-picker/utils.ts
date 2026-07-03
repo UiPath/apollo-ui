@@ -280,14 +280,15 @@ function vendorLabel(vendor: string): string {
 }
 
 function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString(undefined, {
-      month: 'short',
-      year: 'numeric',
-    });
-  } catch {
-    return iso;
-  }
+  // `new Date()` never throws — bad input yields an Invalid Date that
+  // would stringify into the UI ("Deprecating Invalid Date"). Fall back
+  // to the raw value instead.
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 export type GroupStrategy = 'subscription' | 'vendor' | 'flat';

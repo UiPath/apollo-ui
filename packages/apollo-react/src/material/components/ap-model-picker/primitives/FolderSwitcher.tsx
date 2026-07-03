@@ -76,7 +76,7 @@ export const FolderSwitcher: React.FC<FolderSwitcherProps> = ({
       <ButtonBase
         onClick={(e) => setAnchorEl(open ? null : e.currentTarget)}
         focusRipple
-        aria-haspopup="listbox"
+        aria-haspopup="menu"
         aria-expanded={open}
         sx={{
           display: 'inline-flex',
