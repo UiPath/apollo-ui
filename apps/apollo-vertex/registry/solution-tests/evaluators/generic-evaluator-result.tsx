@@ -2,7 +2,6 @@
 
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { EVALUATOR_LABELS } from "../constants";
 import { useSolutionTestsConfig } from "../context";
 import { JsonPanel } from "./output-panels";
 import type { EvaluatorResultProps } from "./registry";
@@ -26,14 +25,15 @@ function scoreColorClass(
 
 export const GenericEvaluatorResult = ({
   evaluatorId,
+  label,
   score,
   evaluatorDetails,
   expectedOutput,
   actualOutput,
-}: EvaluatorResultProps<GenericEvaluatorDetails>) => {
+}: EvaluatorResultProps<GenericEvaluatorDetails> & { label?: string }) => {
   const { t } = useTranslation();
   const { passThreshold } = useSolutionTestsConfig();
-  const label = EVALUATOR_LABELS[evaluatorId] ?? evaluatorId;
+  const displayLabel = label ?? evaluatorId;
   const justification = evaluatorDetails.justification;
   const scoreStr = score == null ? "—" : `${Math.round(score * 100)}%`;
 
@@ -41,7 +41,7 @@ export const GenericEvaluatorResult = ({
     <div className="flex flex-col gap-4">
       <div className="rounded-md border bg-muted/50 p-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">{label}</span>
+          <span className="text-sm font-medium">{displayLabel}</span>
           <span
             className={`text-sm font-semibold ${scoreColorClass(score, passThreshold)}`}
           >

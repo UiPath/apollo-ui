@@ -36,12 +36,6 @@ export const DEFAULT_PASS_THRESHOLD = 0.9;
 /** Most recent completed batches plotted on the KPI score-trend chart. */
 export const MAX_TREND_POINTS = 10;
 
-/** Evaluator id → display label. */
-export const EVALUATOR_LABELS: Record<string, string> = {
-  "uipath-json-similarity": "JSON Similarity",
-  "uipath-llm-judge-output-semantic-similarity": "LLM Judge",
-};
-
 /** Numeric status enum → English label. */
 export const defaultTestStatusLabels: Record<number, string> = {
   [SolutionTestStatus.Pending]: "Pending",
