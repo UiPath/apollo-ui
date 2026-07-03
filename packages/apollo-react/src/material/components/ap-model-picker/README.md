@@ -1,0 +1,408 @@
+# ModelPicker
+
+Apollo's shared LLM model picker, built on the UiPath LLM Gateway Discovery API. Ships in `@uipath/apollo-react` under the Material component set (`@uipath/apollo-react/material/components`).
+
+It renders a labeled trigger that opens a popup with a built-in folder switcher, a search field, a Category ⇆ Provider grouping pill, grouped sections — Custom Models (BYO) always first — and a "Use custom model" footer for users who can manage BYO.
+
+The picker is **fully controlled** — your code owns the `value` and the catalog (`models[]`). The picker only renders the UI.
+
+---
+
+## Quick start
+
+```tsx
+import { ModelPicker, useDiscoveryModels } from '@uipath/apollo-react/material/components';
+
+const { models, loading, error } = useDiscoveryModels({
+  token,
+  accountId,
+  tenantId,
+  requestingProduct: 'agents',
+  requestingFeature: 'design-eval-deploy',
+});
+
+const [value, setValue] = React.useState<string | null>(null);
+
+<ModelPicker
+  models={models}
+  loading={loading}
+  error={error}
+  value={value}
+  onChange={(model) => setValue(model.modelId)}
+/>
+```
+
+That's the minimum. The rest of this document covers the per-product customization surface.
+
+---
+
+## Per-product customization
+
+The picker is one shared visual + behavioral contract. Everything below is a prop on `<ModelPicker>` — no forks, no wrappers, no design-system PRs.
+
+### 1. Filter the visible catalog
+
+When your product should only show a subset of what Discovery returns (specific operation codes, current-user permissions, region constraints), pass a `filter`:
+
+```tsx
+<ModelPicker
+  models={models}
+  filter={(m) =>
+    m.byomDetails?.availableOperationCodes?.includes('agents-design-eval-deploy') ??
+    m.modelSubscriptionType === 'UiPathOwned'
+  }
+  value={value}
+  onChange={(m) => setValue(m.modelId)}
+/>
+```
+
+**Notes:**
+
+- `filter` runs **before** grouping and search. Empty groups disappear cleanly.
+- A `value` whose id is filtered out still resolves — the trigger renders normally, no spurious "unknown model" error.
+- Pass a **stable function reference** if `models` is large; the hook re-derives groups whenever `filter` changes identity.
+
+### 2. Friendly names
+
+Replace the technical model id with a human label on every row + the trigger. The technical id renders as a monospace secondary line so it's still copyable.
+
+```tsx
+const FRIENDLY_NAMES: Record<string, string> = {
+  'anthropic.claude-sonnet-4-6-20260301-v1:0': 'Claude Sonnet 4.6',
+  'gpt-5-2025-08-07': 'GPT-5',
+  'gpt-4o-2024-08-06': 'GPT-4o',
+  'gemini-3-flash-preview-20260215': 'Gemini 3 Flash',
+};
+
+<ModelPicker
+  models={models}
+  friendlyNameFor={(m) => FRIENDLY_NAMES[m.modelId] ?? null}
+  value={value}
+  onChange={(m) => setValue(m.modelId)}
+/>
+```
+
+Returning `null`/`undefined` for a model falls back to its raw `modelName`. You can also derive the label dynamically — fetching from a config service, mapping by `modelFamily`, etc.
+
+**Best practice:** keep the friendly-name map in your product config rather than hardcoding it next to the component.
+
+### 3. Custom badges
+
+The picker derives lifecycle chips automatically (Recommended, Preview, Deprecating, Substituted, Custom, Out-of-region). To stamp additional product-specific chips, pass `customTagsFor`:
+
+```tsx
+<ModelPicker
+  models={models}
+  customTagsFor={(m) => {
+    const tags = [];
+    if (m.modelDetails?.contextWindowTokens && m.modelDetails.contextWindowTokens >= 1_000_000) {
+      tags.push({ kind: 'long-context', label: 'Long context' });
+    }
+    if (m.byoConnectionLabel?.toLowerCase().includes('on-prem')) {
+      tags.push({ kind: 'onprem', label: 'On-prem', tooltip: 'Routes to an on-prem connection' });
+    }
+    return tags;
+  }}
+  customTagVariants={{
+    'long-context': 'info-mini',
+    onprem: 'warning-mini',
+  }}
+  value={value}
+  onChange={(m) => setValue(m.modelId)}
+/>
+```
+
+Custom tags render **after** the built-in chips so the picker's canonical signals (Recommended / Preview / lifecycle) always read first.
+
+`customTagVariants` maps your tag `kind` to an Apollo MUI chip variant. Valid variants: `mini`, `info-mini`, `success-mini`, `warning-mini`, `error-mini`. Unknown kinds fall back to the neutral gray `mini`.
+
+### 4. Recommended and Preview
+
+Recommended and Preview travel on the Discovery DTO. Product teams author their Recommended list in their product's Model Hub configuration; the gateway merges it into the Discovery response, so every model arrives with `isRecommended` and `isPreview` set. The picker builds the corresponding groups and chips from those fields:
+
+```tsx
+// The Recommended group + chip come from `model.isRecommended`,
+// Preview from `model.isPreview` — no wiring needed.
+<ModelPicker models={models} value={value} onChange={(m) => setValue(m.modelId)} />
+```
+
+To promote or retire a model, edit your product's Model Hub configuration — no frontend change needed.
+
+Resolution order: `recommendedModelIds` prop (test/storybook override) → DTO `isRecommended` → a local heuristic (`UiPathOwned && !preview && !deprecating`) for backends that don't send the field yet.
+
+### 5. Cost badges
+
+Cost presentation is a per-product decision, expressed through `customTagsFor` (section 3). The agents product stamps `Basic` / `Standard` / `Premium` chips using the exported `defaultCostTier` classifier:
+
+```tsx
+import { defaultCostTier } from '@uipath/apollo-react/material/components';
+
+const COST_LABELS = { basic: 'Basic', standard: 'Standard', premium: 'Premium' };
+
+<ModelPicker
+  models={models}
+  customTagsFor={(m) => {
+    const tier = defaultCostTier(m); // null when the DTO has no cost data
+    return tier ? [{ kind: `cost-${tier}`, label: COST_LABELS[tier] }] : [];
+  }}
+/>
+```
+
+`defaultCostTier` bins Discovery's `modelDetails.costDetails.inputTokenCost` (USD per million input tokens) at `$1` / `$5`. Copy it, change the thresholds, or key your badges on something else entirely — the picker just renders whatever tags you return.
+
+### 6. BYO management
+
+BYO management affordances — edit/delete row actions and the "Use custom model" footer — appear only for users who hold the **`AiTrustLayerByoLlm` license entitlement**, the same signal the Automation Cloud portal uses for the AI Trust Layer's BYO LLM pages. Pass a `requestContext` and the picker runs the check:
+
+```tsx
+const requestContext = React.useMemo(() => ({
+  token,
+  tenantName,                       // path segment for platform routes
+  organizationId,                   // org GUID (entitlement check)
+  userId,                           // optional: user-scoped evaluation
+  // baseUrl: 'https://cloud.uipath.com/acme',  // omit when same-origin
+}), [token, tenantName, organizationId, userId]);
+
+<ModelPicker
+  models={models}
+  requestContext={requestContext}
+  onUseCustomModel={() => router.push('/settings/byo-models')}
+/>
+```
+
+Under the hood: `POST {baseUrl}/lease_/api/entitlements/{organizationId}/entitled` with `{ EntitlementNames: ["AiTrustLayerByoLlm"] }`. The check **fails closed** — affordances stay hidden while loading or on error.
+
+Products with their own authorization model can pass `canManageByo` (`true`/`false`) instead; when set, no entitlement call is made. Custom row actions go through `slots.optionActions`.
+
+### 7. Folder scoping
+
+Set `enableFolders` and the picker fetches the current user's Orchestrator folders (via the same `requestContext`) and renders the toolbar switcher. Your product only decides whether folder scoping applies to its surface:
+
+```tsx
+const [folder, setFolder] = React.useState<string | null>(null);
+const { models } = useDiscoveryModels({
+  ...ctx,
+  folderKey: folder ?? undefined,  // omit → backend returns the union
+});
+
+<ModelPicker
+  models={models}
+  requestContext={requestContext}   // same object as section 6
+  enableFolders
+  folder={folder}
+  onFolderChange={setFolder}
+/>
+```
+
+Under the hood: `GET {baseUrl}/{tenantName}/orchestrator_/api/FoldersNavigation/GetFoldersForCurrentUser` (the same call the Automation Cloud portal makes). Folder ids are Orchestrator folder **Keys** (GUIDs) — pass the selected id straight through as `folderKey` on your Discovery re-fetch.
+
+The picker prepends an "All folders" sentinel automatically; picking it fires `onFolderChange(null)` — re-fetch without a `folderKey` to get the union of all folders the user can see.
+
+For tests and Storybook, the `folders` prop overrides the internal fetch with a static list.
+
+### 8. View toggle (Category ⇆ Provider)
+
+Both views are built-in. Users switch via a pill segmented control on the toolbar. To control the initial view or hide the toggle entirely:
+
+```tsx
+<ModelPicker
+  groupBy="vendor"               // initial view: by Provider
+  allowGroupingChange={false}    // hide the Category|Provider pill
+/>
+```
+
+In **Category** view, the section order is: Custom Models (BYO) → Recommended → Preview → More models → Deprecating soon → Other.
+
+In **Provider** view, Custom Models (BYO) comes first, followed by one section per vendor (Anthropic, OpenAI, Google Vertex, AWS Bedrock, …). Within each vendor section, models are ordered by lifecycle: Recommended → Preview → the rest → Deprecating last.
+
+In both views the BYO section is the only collapsible one — it starts expanded, and the header chevron folds it.
+
+### 9. Escape hatches (slots)
+
+Slots are the "I need to do something the picker doesn't natively support" surface. Most products won't need them; reach for a slot only when no prop fits:
+
+```tsx
+<ModelPicker
+  models={models}
+  slots={{
+    // Replace the default "Use custom model" footer.
+    popupFooter: ({ close }) => (
+      <MyCustomFooter onClick={() => { close(); openMyWizard(); }} />
+    ),
+    // Per-row right-aligned actions (overrides default edit/delete).
+    optionActions: (m) => (m.byoConnectionLabel ? <MyActions model={m} /> : null),
+    // Per-row meta column (between chips and actions).
+    optionMeta: (m) => <ContextWindowBar tokens={m.modelDetails?.contextWindowTokens} />,
+    // Custom content inside the trigger, next to the model name.
+    triggerExtra: (m) => m && <EffortChip />,
+    // Banner above the toolbar (e.g. a tenant-level notice).
+    popupHeader: () => <TenantUpgradeBanner />,
+    // Inline content to the left of the search field (overrides built-in folder switcher).
+    searchLeading: () => <MyCustomFolderPicker />,
+    // Content directly below the option list, above any popupFooter.
+    listFooter: ({ close }) => <ShowAllModelsToggle />,
+  }}
+/>
+```
+
+**Rule of thumb:** if you find yourself reaching for a slot for something everyone wants, propose a new prop instead.
+
+---
+
+## API reference
+
+### `<ModelPicker>` props
+
+| Prop                  | Type                                                  | Description                                                                                                          |
+| --------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `models`              | `DiscoveryModel[]`                                    | The catalog. Required.                                                                                               |
+| `value`               | `string \| null`                                      | Selected `modelId`.                                                                                                  |
+| `onChange`            | `(model: DiscoveryModel) => void`                     | Selection callback. Receives the full DTO.                                                                           |
+| `label`               | `string`                                              | Label above the trigger. Defaults to a localized "Model".                                                            |
+| `required`            | `boolean`                                             | Marks the field as required (`aria-required` + visual `*`).                                                          |
+| `placeholder`         | `string`                                              | Placeholder when nothing's selected. Defaults to a localized "Select a model".                                       |
+| `disabled`            | `boolean`                                             | Disables the trigger.                                                                                                |
+| `invalid`             | `boolean`                                             | Renders the trigger border in error red (`aria-invalid`).                                                            |
+| `errorText`           | `string`                                              | Error message rendered under the trigger (`role="alert"`, linked via `aria-describedby`).                            |
+| `loading`             | `boolean`                                             | Shows a spinner in the popup.                                                                                        |
+| `error`               | `Error \| null`                                       | Renders the error message in the popup body.                                                                         |
+| `variant`             | `'searchable' \| 'virtualized'`                       | Default `'searchable'`; auto-switches to the virtualized renderer above 120 visible options. Pass `'virtualized'` to force it. |
+| `groupBy`             | `'subscription' \| 'vendor' \| 'flat'`                 | Initial view. Default `'subscription'`.                                                                              |
+| `allowGroupingChange` | `boolean`                                             | Show the Category ⇆ Provider toggle. Default `true`.                                                                  |
+| `homeRegion`          | `string`                                              | User's home region (`'EU'`, `'US'`, …). Triggers the Out-of-region chip when a model's `routingDetails.geography` differs. |
+| `recommendedModelIds` | `readonly string[]`                                   | Test/storybook override for the Recommended set. Production reads `model.isRecommended` from the Discovery DTO.      |
+| `previewModelIds`     | `readonly string[]`                                   | Same, for Preview (production: DTO `isPreview`).                                                                     |
+| `filter`              | `(m) => boolean`                                      | Per-product filter applied before grouping and search.                                                               |
+| `friendlyNameFor`     | `(m) => string \| null \| undefined`                   | Map a DTO to a human label. Returns `null` to fall back to `modelName`.                                              |
+| `customTagsFor`       | `(m) => readonly ModelTag[]`                          | Product-specific extra chips (see §3; cost badges in §5).                                                            |
+| `customTagVariants`   | `Record<string, string>`                              | Apollo MUI chip variant lookup for new tag kinds.                                                                    |
+| `requestContext`      | `PlatformRequestContext`                              | Auth/routing for the picker's built-in platform calls (entitlement check + folder fetch). Pass a memoized object.    |
+| `canManageByo`        | `boolean`                                             | Explicit override for BYO management. When unset and `requestContext` is provided, the picker checks the `AiTrustLayerByoLlm` entitlement. |
+| `onUseCustomModel`    | `() => void`                                          | Called when the user activates the default footer CTA. Picker closes itself first.                                   |
+| `enableFolders`       | `boolean`                                             | Turn on folder scoping — the picker fetches the user's Orchestrator folders via `requestContext`. Default `false`.   |
+| `folders`             | `readonly { id; label }[]`                            | Test/storybook override for the folder list (skips the internal fetch).                                              |
+| `folder`              | `string \| null`                                      | Selected folder id (Orchestrator folder Key), or `null` for "All folders".                                           |
+| `onFolderChange`      | `(next: string \| null) => void`                      | Folder change callback. Re-fetch your catalog with the new `folderKey`.                                              |
+| `allFoldersLabel`     | `string`                                              | Override the "All folders" sentinel label.                                                                           |
+| `showGroupHeaders`    | `boolean`                                             | Default `true`. Set `false` for a flat list (grouping is still applied to ordering).                                 |
+| `slots`               | `ModelPickerSlots`                                    | Escape hatches. See above.                                                                                           |
+
+---
+
+## Data flow
+
+The picker is **data-agnostic**. Pass `models` and get `onChange(model)` back.
+
+Optional Discovery API integration via `useDiscoveryModels({ ctx })`:
+
+```ts
+const { models, loading, error, refetch } = useDiscoveryModels({
+  token,
+  baseUrl,
+  accountId,
+  tenantId,
+  requestingProduct: 'agents',
+  requestingFeature: 'design-eval-deploy',
+  folderKey,         // optional — scopes BYO results
+  operationCode,     // optional
+});
+```
+
+Or skip the hook and feed the picker from your existing data layer (SWR, React Query, Redux, etc.).
+
+---
+
+## Accessibility
+
+The picker implements the WAI-ARIA listbox pattern with keyboard input:
+
+- **Trigger** is `aria-haspopup="listbox"`, with `aria-controls` pointing at the popup, `aria-expanded`, `aria-invalid`, `aria-required`, and `aria-describedby` linking to the error message.
+- **Search input** is `aria-autocomplete="list"`, `aria-controls={listboxId}`, with `aria-activedescendant` updating to the highlighted option as the user navigates with `↑`/`↓` — DOM focus stays on the search.
+- **Listbox** has an `aria-label` ("Models" by default, localized).
+- **Each option** has a stable id (`{listboxId}-opt-{modelId}`), `role="option"`, and `aria-selected`.
+- **Loading / error / empty / result-count** announce via `role="status"` + `aria-live="polite"` and `role="alert"` for errors.
+- **Required asterisk** is `aria-hidden` (the input carries `aria-required`).
+
+Keyboard:
+
+- `↑` / `↓` — move the active row
+- `Enter` — select the active row, close
+- `Escape` — close, return focus to the trigger
+- `Tab` — moves between trigger, search, and toolbar controls
+
+---
+
+## Theming and dark mode
+
+The picker reads every color through Apollo's CSS custom properties (`--color-*`) with `Colors.*` constants from `@uipath/apollo-core` as fallbacks. It works **without** an Apollo MUI ThemeProvider — required for portal-shell web component hosts.
+
+To swap themes, toggle the `--color-*` variable set at the document root (or any ancestor of the picker). Apollo's standard light/dark themes already provide all the variables the picker reads.
+
+---
+
+## Internationalization
+
+Every user-visible string is keyed under the `modelPicker.*` namespace:
+
+- Runtime strings resolve through `useSafeLingui()` — the host's `I18nProvider` (or `ApI18nProvider`) supplies translations when mounted, and every descriptor falls back to its English `message` otherwise. The picker never throws in providerless hosts.
+- Data-driven labels (group names, tag labels) are defined once in `i18n.ts` as `msg()` descriptors and resolved via `i18n._(descriptor)` at render time.
+
+The component has its own catalog entry in `packages/apollo-react/lingui.config.ts` (`ap-model-picker/locales/{locale}`). Extract keys with `pnpm i18n:extract` from `packages/apollo-react`; catalogs compile automatically before `build` and `test`.
+
+---
+
+## Performance
+
+- The picker uses `useMemo` for the catalog → annotated → filtered chain so re-renders without a `models` change skip the work.
+- Option rows are memoized (`React.memo` + stable handlers): moving the keyboard highlight or hovering re-renders only the two rows whose `active` flag changed, not the whole list.
+- The `searchable` variant auto-switches to the virtualized renderer above 120 visible options, so large catalogs stay smooth without configuration. Pass `variant="virtualized"` to force it.
+- The forwarded `ref` points at the trigger button — call `ref.current?.focus()` after a failed form submit to move the user to the field.
+- Pass **stable references** for `filter`, `friendlyNameFor`, `customTagsFor` (wrap in `useCallback`) and for `requestContext` (wrap in `useMemo`). The picker re-derives chips / re-fetches when these change identity.
+
+---
+
+## Files
+
+```
+ap-model-picker/
+├── README.md                    ← you are here
+├── index.ts                     — public barrel
+├── types.ts                     — Discovery DTO types, tag kinds
+├── i18n.ts                      — central message descriptors
+├── utils.ts                     — deriveModelTags, groupModels, filterModels
+├── useModelPickerState.ts       — state controller hook
+├── useDiscoveryModels.ts        — optional Discovery API hook
+├── usePlatformAccess.ts         — folder list + BYO entitlement hooks
+├── ModelPicker.tsx              — the picker
+├── ModelPicker.test.tsx         — unit tests
+├── ModelPicker.stories.tsx      — Storybook stories
+├── ModelTagChip.tsx             — semantic Chip wrapper
+└── primitives/
+    ├── PickerTrigger.tsx        — the button
+    ├── PickerPopup.tsx          — Popper + Paper wrapper
+    ├── PickerSearchInput.tsx    — search field with leading/trailing slots
+    ├── FolderSwitcher.tsx       — toolbar folder pill
+    ├── OptionList.tsx           — grouped + virtualized renderers
+    ├── ModelOptionRow.tsx       — one row
+    └── GroupHeader.tsx          — section header
+```
+
+---
+
+## Storybook
+
+Stories live in `ModelPicker.stories.tsx` and appear under **Apollo React/Material (Maintenance Only)/Components/ModelPicker**. Run `pnpm storybook:dev` from the repo root (port 6007). Key stories:
+
+- **Default** — baseline picker
+- **Virtualized (500+ models)** — performance variant
+- **With per-product filter** — `filter` prop in action
+- **With friendly names** — `friendlyNameFor` mapping
+- **With custom badges** — `customTagsFor` + `customTagVariants`
+- **Admin — can manage BYO** — `canManageByo` + `onUseCustomModel`
+- **Viewer — read-only BYO** — default, no admin affordances
+- **Folder-scoped Custom Models** — built-in folder switcher
+- **Recommended from Discovery + cost badges (agents example)** — DTO `isRecommended` + cost chips via `customTagsFor`
+- **Routing substitution** — gateway routes traffic; trigger surfaces the redirection
+- **Unknown model — graceful fallback** — stored `value` not in catalog
+- **Kitchen sink** — every capability turned on at once
+- **Dark mode (CSS variables only)** — the picker re-skinned by flipping `--color-*` values on a wrapper, no ThemeProvider

@@ -18,6 +18,10 @@ const config: LinguiConfig = {
       include: ['src/material/components/ap-rich-text-editor'],
     },
     {
+      path: 'src/material/components/ap-model-picker/locales/{locale}',
+      include: ['src/material/components/ap-model-picker'],
+    },
+    {
       path: 'src/canvas/locales/{locale}',
       include: ['src/canvas'],
     },
