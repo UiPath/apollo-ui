@@ -32,6 +32,21 @@ export type {
   ResolvedSolutionTestsConfig,
 } from "./config";
 export {
+  makeRenderer,
+  genericRenderer,
+  resolveEvaluatorRenderer,
+  GENERIC_RENDERER,
+  JSON_SIMILARITY_EVALUATOR_ID,
+  LLM_JUDGE_EVALUATOR_ID,
+  IXP_EXTRACTION_EVALUATOR_ID,
+} from "./evaluators/registry";
+export type {
+  EvaluatorRenderer,
+  EvaluatorRenderers,
+  EvaluatorRenderArgs,
+  EvaluatorResultProps,
+} from "./evaluators/registry";
+export {
   useSolutionTests,
   useSolutionTestBatchRuns,
   useSolutionTestRuns,

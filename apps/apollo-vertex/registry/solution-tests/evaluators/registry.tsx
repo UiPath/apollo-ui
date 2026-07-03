@@ -10,68 +10,77 @@ import {
 import { IxpExtractionResult } from "./ixp-extraction/ixp-extraction-result";
 import { IxpDetailsSchema } from "./ixp-extraction/schema";
 
-const JSON_SIMILARITY_EVALUATOR_ID = "uipath-json-similarity";
-const LLM_JUDGE_EVALUATOR_ID = "uipath-llm-judge-output-semantic-similarity";
-const IXP_EXTRACTION_EVALUATOR_ID = "uipath-ixp-document-extraction";
+// Built-in evaluator ids — mirror the Python runner's wire contract
+// (shared/solution_tests/evaluator.py).
+export const JSON_SIMILARITY_EVALUATOR_ID = "uipath-json-similarity";
+export const LLM_JUDGE_EVALUATOR_ID =
+  "uipath-llm-judge-output-semantic-similarity";
+export const IXP_EXTRACTION_EVALUATOR_ID = "uipath-ixp-document-extraction";
 
-export interface EvaluatorResultProps<TDetails = unknown> {
+export interface EvaluatorRenderArgs {
   evaluatorId: string;
   score: number | undefined;
-  /** The evaluator's `details`, already validated + typed by the registry. */
-  evaluatorDetails: TDetails;
-  expectedOutput: unknown;
-  actualOutput: unknown;
-  result: SolutionTestRunResult;
-}
-
-interface EvaluatorRenderArgs {
-  evaluatorId: string;
-  score: number | undefined;
-  /** The raw, unvalidated `details` off the EvaluatorResults attachment. */
+  /** Raw, unvalidated `details` off the EvaluatorResults attachment. */
   rawDetails: unknown;
   expectedOutput: unknown;
   actualOutput: unknown;
   result: SolutionTestRunResult;
 }
 
-/** Bind an evaluator's schema to its component so `details` is validated once,
- * centrally, and each component receives a typed `evaluatorDetails`. Closing
- * over the concrete `<TDetails>` keeps the map value a uniform function type —
- * no `unknown`/`any` leaks to component authors. Returns null if validation
- * fails (a malformed payload just renders nothing). */
-function makeRenderer<TDetails>(
+export type EvaluatorResultProps<TDetails = unknown> = Omit<
+  EvaluatorRenderArgs,
+  "rawDetails"
+> & { evaluatorDetails: TDetails };
+
+export type EvaluatorRenderer = (args: EvaluatorRenderArgs) => ReactNode;
+
+export type EvaluatorRenderers = Record<string, EvaluatorRenderer>;
+
+/** Bind an evaluator's schema + component (and any registration-time `bound`
+ * props) into a renderer. */
+export function makeRenderer<TDetails, TExtra extends object>(
   schema: z.ZodType<TDetails>,
-  Component: ComponentType<EvaluatorResultProps<TDetails>>,
-) {
+  Component: ComponentType<EvaluatorResultProps<TDetails> & TExtra>,
+  bound: TExtra,
+): EvaluatorRenderer {
   return ({ rawDetails, ...rest }: EvaluatorRenderArgs): ReactNode => {
     const parsed = schema.safeParse(rawDetails);
     if (!parsed.success) return null;
-    return <Component evaluatorDetails={parsed.data} {...rest} />;
+    return <Component evaluatorDetails={parsed.data} {...bound} {...rest} />;
   };
 }
 
-const GENERIC_RENDERER = makeRenderer(
-  GenericEvaluatorDetailsSchema,
-  GenericEvaluatorResult,
-);
+/** The generic card; reuse for a custom evaluator that keeps the
+ * `{score, justification}` contract, binding an optional display `label`. */
+export function genericRenderer(
+  options: { label?: string } = {},
+): EvaluatorRenderer {
+  return makeRenderer(GenericEvaluatorDetailsSchema, GenericEvaluatorResult, {
+    label: options.label,
+  });
+}
 
-// Discriminator is the evaluator id — the key the result is stored under in the
-// EvaluatorResults attachment — so no schema-sniffing is needed. Unknown ids
-// fall back to the generic renderer.
-const EVALUATOR_RENDERERS: Record<
-  string,
-  (args: EvaluatorRenderArgs) => ReactNode
-> = {
-  [JSON_SIMILARITY_EVALUATOR_ID]: GENERIC_RENDERER,
-  [LLM_JUDGE_EVALUATOR_ID]: GENERIC_RENDERER,
+/** Fallback for unknown ids (the card then shows the raw evaluator id). */
+export const GENERIC_RENDERER: EvaluatorRenderer = genericRenderer();
+
+const EVALUATOR_RENDERERS: EvaluatorRenderers = {
+  [JSON_SIMILARITY_EVALUATOR_ID]: genericRenderer({ label: "JSON Similarity" }),
+  [LLM_JUDGE_EVALUATOR_ID]: genericRenderer({ label: "LLM Judge" }),
   [IXP_EXTRACTION_EVALUATOR_ID]: makeRenderer(
     IxpDetailsSchema,
     IxpExtractionResult,
+    {},
   ),
 };
 
+/** Precedence: vertical renderers > built-ins > generic fallback. */
 export function resolveEvaluatorRenderer(
   evaluatorId: string,
-): (args: EvaluatorRenderArgs) => ReactNode {
-  return EVALUATOR_RENDERERS[evaluatorId] ?? GENERIC_RENDERER;
+  verticalRenderers?: EvaluatorRenderers,
+): EvaluatorRenderer {
+  return (
+    verticalRenderers?.[evaluatorId] ??
+    EVALUATOR_RENDERERS[evaluatorId] ??
+    GENERIC_RENDERER
+  );
 }

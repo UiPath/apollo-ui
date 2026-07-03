@@ -2,6 +2,7 @@
 
 import { Fragment } from "react";
 import { z } from "zod";
+import { useSolutionTestsConfig } from "./context";
 import { resolveEvaluatorRenderer } from "./evaluators/registry";
 import type { SolutionTestRunResult } from "./types";
 
@@ -50,11 +51,12 @@ export const EvaluatorResultsView = ({
   actualOutput,
   result,
 }: EvaluatorResultsViewProps) => {
+  const { evaluatorRenderers } = useSolutionTestsConfig();
   return (
     <div className="flex flex-col gap-4">
       {Object.entries(data).map(([evaluatorId, evaluator]) => (
         <Fragment key={evaluatorId}>
-          {resolveEvaluatorRenderer(evaluatorId)({
+          {resolveEvaluatorRenderer(evaluatorId, evaluatorRenderers)({
             evaluatorId,
             score: evaluator.score,
             rawDetails: evaluator.details,
