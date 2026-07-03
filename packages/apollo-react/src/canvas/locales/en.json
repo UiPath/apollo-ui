@@ -44,6 +44,7 @@
   "sticky-note.toolbar.color": "Color",
   "sticky-note.toolbar.delete": "Delete",
   "sticky-note.toolbar.edit": "Edit",
+  "add-node-panel.search-nodes": "Search nodes",
   "toolbox.search": "Search",
   "loop-node.add-node": "Add node to loop",
   "loop-node.mode.parallel": "Parallel",

@@ -47,6 +47,13 @@ describe('Toolbox', () => {
       expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
     });
 
+    it('should render a custom search placeholder when provided', () => {
+      render(<Toolbox {...defaultProps} searchPlaceholder="Search nodes" />);
+
+      expect(screen.getByPlaceholderText('Search nodes')).toBeInTheDocument();
+      expect(screen.queryByPlaceholderText('Search')).not.toBeInTheDocument();
+    });
+
     it('should render all items in ListView', () => {
       render(<Toolbox {...defaultProps} />);
 
