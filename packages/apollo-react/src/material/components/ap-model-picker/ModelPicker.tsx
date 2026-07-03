@@ -414,15 +414,21 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     const effectiveFolders = folders ?? (enableFolders ? fetchedFolders : undefined);
 
     // Dev-time guard: duplicate folder ids silently break the switcher's
-    // selection highlight. Warn once per list change.
+    // selection highlight. Warn once per list change. `typeof process`
+    // keeps this safe in browsers that don't shim Node globals (Vite
+    // serves Storybook without one); the warning is a Node/dev-bundler
+    // nicety, not a runtime feature.
     React.useEffect(() => {
-      if (process.env['NODE_ENV'] === 'production' || !effectiveFolders) {
+      if (
+        typeof process === 'undefined' ||
+        process.env['NODE_ENV'] === 'production' ||
+        !effectiveFolders
+      ) {
         return;
       }
       const seen = new Set<string>();
       for (const f of effectiveFolders) {
         if (seen.has(f.id)) {
-          // eslint-disable-next-line no-console
           console.warn(
             `[ModelPicker] Duplicate folder id "${f.id}" — folder selection will misbehave.`
           );
