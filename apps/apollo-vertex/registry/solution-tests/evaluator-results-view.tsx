@@ -56,7 +56,10 @@ export const EvaluatorResultsView = ({
     <div className="flex flex-col gap-4">
       {Object.entries(data).map(([evaluatorId, evaluator]) => (
         <Fragment key={evaluatorId}>
-          {resolveEvaluatorRenderer(evaluatorId, evaluatorRenderers)({
+          {resolveEvaluatorRenderer(
+            evaluatorId,
+            evaluatorRenderers,
+          )({
             evaluatorId,
             score: evaluator.score,
             rawDetails: evaluator.details,
