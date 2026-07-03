@@ -1,12 +1,15 @@
+import { FormDemo } from './form-demo'
+
 # Form
 
-Building forms with React Hook Form and Zod validation.
+A composition-first form for building typed, validated forms from reusable pieces. The field components are pre-bound to Apollo's `Field` primitives, so a form is assembled declaratively instead of wiring inputs by hand.
 
-<div className="p-4 border rounded-lg mt-4">
-  <p className="text-sm text-muted-foreground">
-    The Form component is a wrapper around react-hook-form that provides validation and error handling. See the usage example below.
-  </p>
-</div>
+## What it is built on
+
+The Form component is a thin Apollo layer over two libraries, so you get their behavior without the boilerplate:
+
+- **TanStack Form** handles state, subscriptions, and submission. `useAppForm` is created once via `createFormHook` and wired to the Apollo field components, so each field is rendered with `form.AppField`.
+- **Zod** describes the shape and rules. Zod v4 implements the [Standard Schema](https://standardschema.dev) spec, so a schema passes directly into TanStack Form validators. No resolver or adapter is required.
 
 ## Installation
 
@@ -14,59 +17,108 @@ Building forms with React Hook Form and Zod validation.
 npx shadcn@latest add @uipath/form
 ```
 
+## How it works
+
+- `form.AppField` provides the field context. Its render prop exposes the bound components (`field.TextField`, `field.SelectField`, etc).
+- `form.AppForm` provides the form context to form-level components such as `SubmitButton` and `FormErrorSummary`.
+- `form.SubmitButton` subscribes to `canSubmit` and disables itself while the form is invalid or submitting.
+
+<div className="p-6 border rounded-lg mt-4 max-w-md">
+  <FormDemo />
+</div>
+
 ## Usage
 
-```tsx
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-```
+Validation is defined once as a whole-form Zod schema passed to `validators.onChange`.
 
 ```tsx
-const formSchema = z.object({
-  username: z.string().min(2).max(50),
+import * as z from 'zod'
+import { FieldGroup } from '@/components/ui/field'
+import { useAppForm } from '@/components/ui/form'
+
+const schema = z.object({
+  fullName: z.string().min(2, 'Name must be at least 2 characters.'),
+  email: z.email('Enter a valid email address.'),
+  acceptTerms: z.boolean().refine((value) => value, {
+    message: 'You must accept the terms.',
+  }),
 })
 
-function ProfileForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { username: "" },
+function SignUpForm() {
+  const form = useAppForm({
+    defaultValues: { fullName: '', email: '', acceptTerms: false },
+    validators: { onChange: schema },
+    onSubmit: ({ value }) => console.log(value),
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-  }
-
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="shadcn" {...field} />
-              </FormControl>
-              <FormDescription>Your public display name.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        void form.handleSubmit()
+      }}
+    >
+      <form.AppForm>
+        <FieldGroup>
+          <form.AppField name="fullName">
+            {(field) => <field.TextField label="Full name" />}
+          </form.AppField>
+          <form.AppField name="email">
+            {(field) => <field.TextField type="email" label="Email" />}
+          </form.AppField>
+          <form.AppField name="acceptTerms">
+            {(field) => <field.CheckboxField label="I accept the terms" />}
+          </form.AppField>
+          <form.SubmitButton>Create account</form.SubmitButton>
+        </FieldGroup>
+      </form.AppForm>
+    </form>
   )
 }
+```
+
+## Field components
+
+| Component | Value type | Notes |
+| --- | --- | --- |
+| `TextField` | `string` | Wraps `Input`, forwards native input props. |
+| `TextareaField` | `string` | Wraps `Textarea`. |
+| `SelectField` | `string` | Takes an `options` array of `{ label, value }`. |
+| `RadioGroupField` | `string` | Takes an `options` array of `{ label, value }`. |
+| `CheckboxField` | `boolean` | Horizontal layout with label and description. |
+| `SwitchField` | `boolean` | Horizontal layout with label and description. |
+
+## Translatable validation errors
+
+Error messages are resolved through `react-i18next`. Each message is passed to `t(message, { defaultValue: message })`, so a message that matches a translation key is localized, and a plain sentence still renders as-is. Use a translation key as the Zod message to make an error translatable.
+
+```tsx
+const schema = z.object({
+  email: z.email('form_error_email_invalid'),
+})
+```
+
+Two components consume these messages:
+
+- **Per field**: the bound field components render their own translated errors automatically. For a custom field, use `FieldError` with the field's raw errors.
+- **Form level**: `FormErrorSummary` lists every field's errors in one translated, accessible block. Render it inside `form.AppForm`.
+
+```tsx
+<form.AppForm>
+  <form.FormErrorSummary title="Please fix the following:" />
+  {/* fields */}
+</form.AppForm>
+```
+
+## Field-level validation
+
+The whole-form schema is the recommended default, but individual fields can add their own validators. Field-level validators run alongside the form schema.
+
+```tsx
+<form.AppField
+  name="email"
+  validators={{ onChange: z.email('Enter a valid email address.') }}
+>
+  {(field) => <field.TextField type="email" label="Email" />}
+</form.AppField>
 ```
