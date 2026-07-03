@@ -1967,21 +1967,6 @@
       ]
     },
     {
-      "name": "form",
-      "type": "registry:ui",
-      "title": "Form",
-      "description": "Building forms with React Hook Form and Zod validation.",
-      "dependencies": [
-        "@radix-ui/react-label",
-        "@radix-ui/react-slot",
-        "@hookform/resolvers",
-        "zod",
-        "react-hook-form"
-      ],
-      "registryDependencies": ["label"],
-      "files": [{ "path": "registry/form/form.tsx", "type": "registry:ui" }]
-    },
-    {
       "name": "hover-card",
       "type": "registry:ui",
       "title": "Hover Card",
@@ -2652,6 +2637,95 @@
       "description": "A set of layered sections of content shown one at a time.",
       "dependencies": ["@radix-ui/react-tabs"],
       "files": [{ "path": "registry/tabs/tabs.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "form",
+      "type": "registry:ui",
+      "title": "Form",
+      "description": "A composition-first form built on TanStack Form and Zod with Apollo-bound field components and translatable validation errors.",
+      "dependencies": ["@tanstack/react-form", "zod", "react-i18next"],
+      "registryDependencies": [
+        "button",
+        "checkbox",
+        "field",
+        "input",
+        "radio-group",
+        "select",
+        "switch",
+        "textarea"
+      ],
+      "files": [
+        {
+          "path": "registry/form/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form/index.ts"
+        },
+        {
+          "path": "registry/form/form.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/form.tsx"
+        },
+        {
+          "path": "registry/form/form-context.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form/form-context.ts"
+        },
+        {
+          "path": "registry/form/field-utils.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form/field-utils.ts"
+        },
+        {
+          "path": "registry/form/use-translated-errors.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form/use-translated-errors.ts"
+        },
+        {
+          "path": "registry/form/field-error.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/field-error.tsx"
+        },
+        {
+          "path": "registry/form/form-error-summary.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/form-error-summary.tsx"
+        },
+        {
+          "path": "registry/form/text-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/text-field.tsx"
+        },
+        {
+          "path": "registry/form/textarea-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/textarea-field.tsx"
+        },
+        {
+          "path": "registry/form/select-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/select-field.tsx"
+        },
+        {
+          "path": "registry/form/radio-group-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/radio-group-field.tsx"
+        },
+        {
+          "path": "registry/form/checkbox-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/checkbox-field.tsx"
+        },
+        {
+          "path": "registry/form/switch-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/switch-field.tsx"
+        },
+        {
+          "path": "registry/form/submit-button.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/submit-button.tsx"
+        }
+      ]
     },
     {
       "name": "textarea",

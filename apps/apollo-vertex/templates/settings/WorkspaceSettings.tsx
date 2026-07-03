@@ -1,49 +1,34 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import type { ReactNode } from "react";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { FieldGroup } from "@/components/ui/field";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { useAppForm } from "@/components/ui/form";
 import {
   PageHeader,
   PageHeaderNav,
   PageHeaderTitle,
 } from "@/components/ui/page-header";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 
 const EMAIL_FREQUENCIES = [
   { value: "realtime", label: "Realtime — every event" },
   { value: "daily", label: "Daily digest — once each morning" },
   { value: "weekly", label: "Weekly summary — Mondays" },
-] as const;
+];
 
 const VISIBILITIES = [
   { value: "public", label: "Public — anyone with the link" },
   { value: "internal", label: "Internal — your organization" },
   { value: "private", label: "Private — invitation only" },
-] as const;
+];
 
 const INDUSTRIES = [
   { value: "healthcare", label: "Healthcare" },
@@ -121,9 +106,10 @@ function Section({ title, description, children }: SectionProps) {
 }
 
 export function WorkspaceSettings() {
-  const form = useForm<SettingsValues>({
-    resolver: zodResolver(settingsSchema),
+  const form = useAppForm({
     defaultValues: DEFAULT_VALUES,
+    validators: { onChange: settingsSchema },
+    onSubmit: ({ value, formApi }) => formApi.reset(value),
   });
 
   return (
@@ -134,76 +120,42 @@ export function WorkspaceSettings() {
         </PageHeaderNav>
       </PageHeader>
 
-      <Form {...form}>
-        <form
-          onSubmit={(e) =>
-            void form.handleSubmit((data) => form.reset(data))(e)
-          }
-          className="px-4 sm:px-6 lg:px-8 pb-8 grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-12 gap-4"
-        >
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void form.handleSubmit();
+        }}
+        className="px-4 sm:px-6 lg:px-8 pb-8 grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-12 gap-4"
+      >
+        <form.AppForm>
           <div className="col-span-4 sm:col-span-8 lg:col-span-7">
             <Section
               title="Profile"
               description="Identifies the workspace across the platform and in invitations."
             >
               <FieldGroup>
-                <FormField
-                  control={form.control}
-                  name="workspaceName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Workspace name</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <form.AppField name="workspaceName">
+                  {(field) => <field.TextField label="Workspace name" />}
+                </form.AppField>
+                <form.AppField name="description">
+                  {(field) => (
+                    <field.TextareaField
+                      label="Description"
+                      description="Shown to invited members on the workspace landing page."
+                      rows={3}
+                    />
                   )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormDescription>
-                        Shown to invited members on the workspace landing page.
-                      </FormDescription>
-                      <FormControl>
-                        <Textarea rows={3} {...field} />
-                      </FormControl>
-                    </FormItem>
+                </form.AppField>
+                <form.AppField name="industry">
+                  {(field) => (
+                    <field.SelectField
+                      label="Industry"
+                      description="Used to recommend starter templates and connectors."
+                      placeholder="Select an industry"
+                      options={INDUSTRIES}
+                    />
                   )}
-                />
-                <FormField
-                  control={form.control}
-                  name="industry"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Industry</FormLabel>
-                      <FormDescription>
-                        Used to recommend starter templates and connectors.
-                      </FormDescription>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an industry" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {INDUSTRIES.map(({ value, label }) => (
-                            <SelectItem key={value} value={value}>
-                              {label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                />
+                </form.AppField>
               </FieldGroup>
             </Section>
 
@@ -212,84 +164,54 @@ export function WorkspaceSettings() {
               description="Control how members are alerted about workspace activity."
             >
               <FieldGroup>
-                <FormField
-                  control={form.control}
-                  name="emailFrequency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email frequency</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          className="gap-3"
-                        >
-                          {EMAIL_FREQUENCIES.map(({ value, label }) => (
-                            <div
-                              key={value}
-                              className="flex items-center gap-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`freq-${value}`}
-                              />
-                              <Label
-                                htmlFor={`freq-${value}`}
-                                className="font-normal"
-                              >
-                                {label}
-                              </Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
+                <form.AppField name="emailFrequency">
+                  {(field) => (
+                    <field.RadioGroupField
+                      label="Email frequency"
+                      options={EMAIL_FREQUENCIES}
+                    />
                   )}
-                />
-                <FormField
-                  control={form.control}
-                  name="emailDigest"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <FormLabel>
+                </form.AppField>
+                <form.Field name="emailDigest">
+                  {(field) => (
+                    <Field orientation="horizontal" className="justify-between">
+                      <FieldContent>
+                        <FieldLabel htmlFor={field.name}>
                           Include unread mentions in the digest
-                        </FormLabel>
-                        <FormDescription>
+                        </FieldLabel>
+                        <FieldDescription>
                           Adds a section listing direct mentions you have not
                           read.
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
+                        </FieldDescription>
+                      </FieldContent>
+                      <Switch
+                        id={field.name}
+                        checked={field.state.value}
+                        onCheckedChange={field.handleChange}
+                      />
+                    </Field>
                   )}
-                />
-                <FormField
-                  control={form.control}
-                  name="browserPush"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <FormLabel>Browser push notifications</FormLabel>
-                        <FormDescription>
+                </form.Field>
+                <form.Field name="browserPush">
+                  {(field) => (
+                    <Field orientation="horizontal" className="justify-between">
+                      <FieldContent>
+                        <FieldLabel htmlFor={field.name}>
+                          Browser push notifications
+                        </FieldLabel>
+                        <FieldDescription>
                           Show desktop notifications when this tab is in the
                           background.
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
+                        </FieldDescription>
+                      </FieldContent>
+                      <Switch
+                        id={field.name}
+                        checked={field.state.value}
+                        onCheckedChange={field.handleChange}
+                      />
+                    </Field>
                   )}
-                />
+                </form.Field>
               </FieldGroup>
             </Section>
 
@@ -299,85 +221,26 @@ export function WorkspaceSettings() {
             >
               <FieldGroup>
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="language"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Language</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {LANGUAGES.map(({ value, label }) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
+                  <form.AppField name="language">
+                    {(field) => (
+                      <field.SelectField label="Language" options={LANGUAGES} />
                     )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="timezone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Timezone</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {TIMEZONES.map(({ value, label }) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
+                  </form.AppField>
+                  <form.AppField name="timezone">
+                    {(field) => (
+                      <field.SelectField label="Timezone" options={TIMEZONES} />
                     )}
-                  />
+                  </form.AppField>
                 </div>
-                <FormField
-                  control={form.control}
-                  name="dateFormat"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date format</FormLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="max-w-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {DATE_FORMATS.map(({ value, label }) => (
-                            <SelectItem key={value} value={value}>
-                              {label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
+                <form.AppField name="dateFormat">
+                  {(field) => (
+                    <field.SelectField
+                      label="Date format"
+                      options={DATE_FORMATS}
+                      className="max-w-xs"
+                    />
                   )}
-                />
+                </form.AppField>
               </FieldGroup>
             </Section>
 
@@ -386,61 +249,34 @@ export function WorkspaceSettings() {
               description="Who can find this workspace and how they sign in."
             >
               <FieldGroup>
-                <FormField
-                  control={form.control}
-                  name="visibility"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Workspace visibility</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          className="gap-3"
-                        >
-                          {VISIBILITIES.map(({ value, label }) => (
-                            <div
-                              key={value}
-                              className="flex items-center gap-2"
-                            >
-                              <RadioGroupItem
-                                value={value}
-                                id={`vis-${value}`}
-                              />
-                              <Label
-                                htmlFor={`vis-${value}`}
-                                className="font-normal"
-                              >
-                                {label}
-                              </Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
+                <form.AppField name="visibility">
+                  {(field) => (
+                    <field.RadioGroupField
+                      label="Workspace visibility"
+                      options={VISIBILITIES}
+                    />
                   )}
-                />
-                <FormField
-                  control={form.control}
-                  name="require2fa"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <FormLabel>Require two-factor authentication</FormLabel>
-                        <FormDescription>
+                </form.AppField>
+                <form.Field name="require2fa">
+                  {(field) => (
+                    <Field orientation="horizontal" className="justify-between">
+                      <FieldContent>
+                        <FieldLabel htmlFor={field.name}>
+                          Require two-factor authentication
+                        </FieldLabel>
+                        <FieldDescription>
                           Members without 2FA will be prompted to enroll on next
                           sign-in.
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
+                        </FieldDescription>
+                      </FieldContent>
+                      <Switch
+                        id={field.name}
+                        checked={field.state.value}
+                        onCheckedChange={field.handleChange}
+                      />
+                    </Field>
                   )}
-                />
+                </form.Field>
               </FieldGroup>
             </Section>
 
@@ -452,13 +288,17 @@ export function WorkspaceSettings() {
               >
                 Reset to defaults
               </Button>
-              <Button type="submit" disabled={!form.formState.isDirty}>
-                Save changes
-              </Button>
+              <form.Subscribe selector={(state) => state.isDirty}>
+                {(isDirty) => (
+                  <Button type="submit" disabled={!isDirty}>
+                    Save changes
+                  </Button>
+                )}
+              </form.Subscribe>
             </div>
           </div>
-        </form>
-      </Form>
+        </form.AppForm>
+      </form>
     </div>
   );
 }
