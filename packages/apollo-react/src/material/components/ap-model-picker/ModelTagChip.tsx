@@ -10,11 +10,12 @@ import type React from 'react';
 import type { ModelTag } from './types';
 
 /**
- * Each tag kind maps to one of Apollo's semantic Chip variants
- * (`.success | .warning | .info | .error`) — defined in
- * `@uipath/apollo-mui5/src/overrides/MuiChip.ts`. We use the `-mini` suffix
- * to get the compact 16px-tall semibold pill that matches Apollo's tag
- * pattern. Kinds without a clean semantic mapping fall back to the
+ * Each tag kind maps to one of Apollo's semantic mini-chip variants
+ * (`success | warning | info | error | neutral`) — the compact
+ * 16px-tall semibold pill from Apollo's tag pattern. The styles are
+ * baked into the chip below (see `MINI_COLORS`), so no MUI theme is
+ * required; the variant name doubles as a className for hosts that
+ * target it. Kinds without a clean semantic mapping fall back to the
  * default mini chip (gray, neutral).
  *
  * Mapping rationale:
@@ -43,6 +44,36 @@ const VARIANT_MAP: Record<string, string> = {
   'cost-basic': 'mini',
   'cost-standard': 'mini',
   'cost-premium': 'mini',
+};
+
+/**
+ * Self-contained styling for the mini-chip variants, mirroring Apollo's
+ * `MuiChip` theme overrides. Baked in via `sx` so the chip renders
+ * correctly without a ThemeProvider (bare web-component hosts, Vite
+ * Storybook) — same CSS-variable contract as the rest of the picker,
+ * with Apollo light-theme values as fallbacks.
+ */
+const MINI_COLORS: Record<string, { color: string; backgroundColor: string }> = {
+  mini: {
+    color: 'var(--color-foreground, #273139)',
+    backgroundColor: 'var(--color-background-secondary, #f4f5f7)',
+  },
+  'info-mini': {
+    color: 'var(--color-info-foreground, #1665b3)',
+    backgroundColor: 'var(--color-info-background, #e9f1fa)',
+  },
+  'success-mini': {
+    color: 'var(--color-success-text, #038108)',
+    backgroundColor: 'var(--color-success-background, #eeffe5)',
+  },
+  'warning-mini': {
+    color: 'var(--color-warning-text, #9e6100)',
+    backgroundColor: 'var(--color-warning-background, #fff3db)',
+  },
+  'error-mini': {
+    color: 'var(--color-error-text, #a6040a)',
+    backgroundColor: 'var(--color-error-background, #fff0f1)',
+  },
 };
 
 // Icon glyphs for built-in tag kinds. Picked from `@mui/icons-material`
@@ -95,6 +126,10 @@ export const ModelTagChip: React.FC<ModelTagChipProps> = ({ tag, variants, icons
   // surface).
   const Icon = icons && tag.kind in icons ? icons[tag.kind] : ICON_MAP[tag.kind];
 
+  // Unknown variant strings (product-invented kinds without a matching
+  // entry) get the neutral gray mini treatment, same as the theme did.
+  const colors = MINI_COLORS[variantClass] ?? MINI_COLORS['mini'];
+
   const chip = (
     <Chip
       size="small"
@@ -110,8 +145,15 @@ export const ModelTagChip: React.FC<ModelTagChipProps> = ({ tag, variants, icons
         ) : undefined
       }
       sx={{
-        // Apollo's `.<variant>-mini` overrides set height/font/padding
-        // to 0; we just need a small horizontal pad on the label.
+        // Mini-chip metrics from Apollo's MuiChip overrides (16px pill,
+        // FontXs 10/16 semibold, horizontal padding carried by the label).
+        height: '16px',
+        paddingLeft: 0,
+        paddingRight: 0,
+        fontSize: '10px',
+        lineHeight: '16px',
+        fontWeight: 600,
+        ...colors,
         '& .MuiChip-label': { px: 0.75 },
         // The leading icon needs a touch of breathing room from the
         // label without inheriting the variant's text color directly
