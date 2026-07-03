@@ -127,9 +127,18 @@ export function useUserFolders(ctx: PlatformRequestContext | null): UseUserFolde
   }, [ctx]);
 
   useEffect(() => {
+    if (!ctx) {
+      // Disabled: abort anything in flight and clear previous results so
+      // a stale list / spinner doesn't linger after toggling off.
+      abortRef.current?.abort();
+      setFolders([]);
+      setLoading(false);
+      setError(null);
+      return undefined;
+    }
     fetchFolders();
     return () => abortRef.current?.abort();
-  }, [fetchFolders]);
+  }, [ctx, fetchFolders]);
 
   return { folders, loading, error, refetch: fetchFolders };
 }
@@ -178,7 +187,12 @@ export function useCanManageByo(ctx: PlatformRequestContext | null): UseCanManag
 
   useEffect(() => {
     if (!ctx) {
+      // Disabled (explicit `canManageByo` override or no request
+      // context): clear every piece of state, not just the verdict.
+      abortRef.current?.abort();
       setCanManage(undefined);
+      setLoading(false);
+      setError(null);
       return undefined;
     }
     abortRef.current?.abort();

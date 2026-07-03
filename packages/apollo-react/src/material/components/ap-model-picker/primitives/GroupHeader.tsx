@@ -156,6 +156,7 @@ export const GroupHeader: React.FC<GroupHeaderProps> = ({
     return (
       <ButtonBase
         component="div"
+        role="button"
         title={hint}
         data-testid={dataTestId}
         onClick={onToggle}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { PickerTranslator } from './i18n';
 
 import type { AnnotatedModel } from './primitives/OptionList';
@@ -77,7 +77,7 @@ export interface UseModelPickerStateResult {
   /** Toggle the collapsed state of a single group. */
   toggleGroup: (groupKey: string) => void;
   /** The currently selected model, or null. */
-  selected: AnnotatedModel | null;
+  selected: DiscoveryModel | null;
   /**
    * Raw `value` that couldn't be resolved against `models`. `null` when
    * the selection resolved cleanly, when no `value` was passed, or
@@ -101,8 +101,6 @@ export interface UseModelPickerStateResult {
   /** Ref to attach to the search input. */
   searchRef: React.RefObject<HTMLInputElement | null>;
 }
-
-let pickerIdCounter = 0;
 
 /**
  * Shared state controller for ModelPicker (and any custom picker a
@@ -130,10 +128,11 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     i18n,
   } = opts;
 
-  const id = useMemo(() => {
-    pickerIdCounter += 1;
-    return `apollo-model-picker-${pickerIdCounter}`;
-  }, []);
+  // React-owned id: stable across SSR/hydration and concurrent renders,
+  // unlike a module-level counter. The token is embedded in DOM ids and
+  // aria-* references only, where its ":" characters are valid.
+  const reactId = useId();
+  const id = `apollo-model-picker-${reactId}`;
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -183,23 +182,24 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     return out;
   }, [annotated]);
 
-  // Selection lookup uses `models` (not visibleModels) so a stored
-  // selection a host filtered out still resolves — otherwise narrowing
-  // the catalog would silently flip the trigger into "unknown" state
-  // for legitimate, recently-removed-from-view selections.
-  const selected = useMemo(
-    () => annotated.find((m) => m.modelId === value) ?? null,
-    [annotated, value]
+  // Selection lookup prefers the visible (annotated) list but falls
+  // back to the raw catalog: a stored selection the host `filter`
+  // excluded must still resolve on the trigger — otherwise narrowing
+  // the catalog would silently blank the field for legitimate,
+  // recently-removed-from-view selections. `unknownValue` stays
+  // reserved for ids missing from the catalog entirely.
+  const selected = useMemo<DiscoveryModel | null>(
+    () =>
+      annotated.find((m) => m.modelId === value) ?? models.find((m) => m.modelId === value) ?? null,
+    [annotated, models, value]
   );
 
   const unknownValue = useMemo<string | null>(() => {
     if (!value) return null;
+    // `selected` already falls back to the raw catalog, so any resolved
+    // value — visible or host-filtered — is "known".
     if (selected) return null;
     if (models.length === 0) return null;
-    // If `value` exists in the raw catalog but was filtered out by the
-    // host, we still treat that as "known" — render the placeholder
-    // rather than the red error state. The host opted into the filter.
-    if (models.some((m) => m.modelId === value)) return null;
     return value;
   }, [models, selected, value]);
 

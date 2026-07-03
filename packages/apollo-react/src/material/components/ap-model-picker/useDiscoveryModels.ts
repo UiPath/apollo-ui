@@ -80,9 +80,18 @@ export function useDiscoveryModels(ctx: DiscoveryRequestContext | null): UseDisc
   }, [ctx]);
 
   useEffect(() => {
+    if (!ctx) {
+      // Disabled: abort anything in flight and clear previous results so
+      // consumers don't keep rendering stale data / a stuck spinner.
+      abortRef.current?.abort();
+      setModels([]);
+      setLoading(false);
+      setError(null);
+      return undefined;
+    }
     fetchModels();
     return () => abortRef.current?.abort();
-  }, [fetchModels]);
+  }, [ctx, fetchModels]);
 
   return { models, loading, error, refetch: fetchModels };
 }
@@ -90,16 +99,21 @@ export function useDiscoveryModels(ctx: DiscoveryRequestContext | null): UseDisc
 /**
  * The gateway emits PascalCase property names by default but the
  * Newtonsoft serializer in some product instances is configured for
- * camelCase. Normalize so consumers can rely on camelCase regardless.
+ * camelCase. Normalize recursively so consumers can rely on camelCase
+ * regardless — nested DTOs (`ModelDetails.CostDetails`,
+ * `DeprecationDetails`, `RoutingDetails`, …) carry the fields the
+ * picker's chips and grouping read.
  */
+function camelizeDeep(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(camelizeDeep);
+  if (!value || typeof value !== 'object') return value;
+  const camel: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    camel[k.charAt(0).toLowerCase() + k.slice(1)] = camelizeDeep(v);
+  }
+  return camel;
+}
+
 function normalizeKeys(list: unknown[]): DiscoveryModel[] {
-  return list.map((raw) => {
-    if (!raw || typeof raw !== 'object') return raw as DiscoveryModel;
-    const obj = raw as Record<string, unknown>;
-    const camel: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(obj)) {
-      camel[k.charAt(0).toLowerCase() + k.slice(1)] = v;
-    }
-    return camel as unknown as DiscoveryModel;
-  });
+  return list.map((raw) => camelizeDeep(raw) as DiscoveryModel);
 }
