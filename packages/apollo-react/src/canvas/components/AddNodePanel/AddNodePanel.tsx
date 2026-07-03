@@ -1,4 +1,5 @@
 import { memo, useCallback, useMemo } from 'react';
+import { useSafeLingui } from '../../../i18n';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { usePreviewNode } from '../../hooks';
 import { type ListItem, Toolbox } from '../Toolbox';
@@ -21,7 +22,9 @@ export const AddNodePanel = memo(function AddNodePanel({
   title,
   loading,
   renderEmptyState,
+  searchPlaceholder,
 }: AddNodePanelProps) {
+  const { _ } = useSafeLingui();
   const registry = useOptionalNodeTypeRegistry();
   const { previewNodeConnectionInfo } = usePreviewNode();
 
@@ -87,6 +90,9 @@ export const AddNodePanel = memo(function AddNodePanel({
       onClose={onClose}
       onItemHover={onNodeHover}
       renderEmptyState={renderEmptyState}
+      searchPlaceholder={
+        searchPlaceholder ?? _({ id: 'add-node-panel.search-nodes', message: 'Search nodes' })
+      }
     />
   );
 });

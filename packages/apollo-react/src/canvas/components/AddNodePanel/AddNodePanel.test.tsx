@@ -22,9 +22,11 @@ vi.mock('../Toolbox', () => ({
     onClose,
     onItemSelect,
     renderEmptyState,
+    searchPlaceholder,
   }: ToolboxProps<NodeItemData>) => (
     <div data-testid="toolbox-mock">
       <div data-testid="toolbox-title">{title}</div>
+      <div data-testid="toolbox-search-placeholder">{searchPlaceholder}</div>
       <div data-testid="toolbox-items">{JSON.stringify(initialItems)}</div>
       <button type="button" data-testid="toolbox-close" onClick={onClose}>
         Close
@@ -119,6 +121,26 @@ describe('AddNodePanel', () => {
     );
 
     expect(screen.getByTestId('toolbox-title')).toHaveTextContent('Add node');
+  });
+
+  it('should default the search placeholder to "Search nodes"', () => {
+    render(
+      <NodeRegistryProvider manifest={mockManifest}>
+        <AddNodePanel {...defaultProps} />
+      </NodeRegistryProvider>
+    );
+
+    expect(screen.getByTestId('toolbox-search-placeholder')).toHaveTextContent('Search nodes');
+  });
+
+  it('should forward a custom searchPlaceholder to Toolbox', () => {
+    render(
+      <NodeRegistryProvider manifest={mockManifest}>
+        <AddNodePanel {...defaultProps} searchPlaceholder="Search agents" />
+      </NodeRegistryProvider>
+    );
+
+    expect(screen.getByTestId('toolbox-search-placeholder')).toHaveTextContent('Search agents');
   });
 
   it('should transform empty registry into empty list items', () => {

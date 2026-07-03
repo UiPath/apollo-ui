@@ -29,4 +29,9 @@ export interface AddNodePanelProps {
    * When provided, replaces the built-in icon + message empty state.
    */
   renderEmptyState?: ToolboxEmptyStateRenderer<NodeItemData>;
+  /**
+   * Placeholder for the search input. Should describe what will be searched,
+   * such as "Search agents". Defaults to "Search nodes".
+   */
+  searchPlaceholder?: string;
 }

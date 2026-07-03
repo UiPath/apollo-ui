@@ -81,6 +81,11 @@ export interface ToolboxProps<T> {
   onBack?: () => void;
   onSearch?: ToolboxSearchHandler<T>;
   /**
+   * Placeholder for the search input. Should describe what will be searched,
+   * such as "Search nodes". Defaults to a generic "Search".
+   */
+  searchPlaceholder?: string;
+  /**
    * Optional row of icon shortcuts rendered above the title. Apollo controls
    * the visuals so the strip stays consistent across consumers; pass the
    * leading actions plain and set `trailing: true` on actions that should
@@ -155,9 +160,10 @@ export function Toolbox<T>({
   fullHeight = false,
   quickActions,
   renderEmptyState,
+  searchPlaceholder: searchPlaceholderProp,
 }: ToolboxProps<T>) {
   const { _ } = useSafeLingui();
-  const searchPlaceholder = _({ id: 'toolbox.search', message: 'Search' });
+  const searchPlaceholder = searchPlaceholderProp ?? _({ id: 'toolbox.search', message: 'Search' });
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
@@ -203,7 +209,10 @@ export function Toolbox<T>({
   const wrappedRenderEmptyState = useMemo(
     () =>
       renderEmptyState && !isSearching
-        ? () => renderEmptyState({ currentCategory: currentParentItem ?? undefined })
+        ? () =>
+            renderEmptyState({
+              currentCategory: currentParentItem ?? undefined,
+            })
         : undefined,
     [renderEmptyState, isSearching, currentParentItem]
   );
