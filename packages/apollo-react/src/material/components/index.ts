@@ -9,6 +9,7 @@ export * from './ap-icon';
 export * from './ap-icon-button';
 export * from './ap-link';
 export * from './ap-menu';
+export * from './ap-model-picker';
 export * from './ap-modal';
 export * from './ap-popover';
 export * from './ap-progress-spinner';

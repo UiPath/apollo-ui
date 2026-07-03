@@ -192,6 +192,7 @@
     "@mui/system": "^5.18.0",
     "@mui/x-date-pickers": "^6.20.2",
     "@mui/x-tree-view": "^8.21.0",
+    "@tanstack/react-virtual": "^3.14.3",
     "@tiptap/core": "^3.19.0",
     "@tiptap/extension-document": "^3.19.0",
     "@tiptap/extension-hard-break": "^3.19.0",
