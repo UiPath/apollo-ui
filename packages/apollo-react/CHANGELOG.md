@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.57.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.56.0...@uipath/apollo-react@4.57.0) (2026-07-04)
+
+### Features
+
+* **apollo-react:** register case-management canvas icon ([da4ee18](https://github.com/UiPath/apollo-ui/commit/da4ee187aabe50caf11a9f90a2db6afb3fc9569c))
+
 ## [@uipath/apollo-react-v4.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.55.1...@uipath/apollo-react@4.56.0) (2026-07-02)
 
 ### Features
