@@ -127,6 +127,7 @@ jobs:
           UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
           UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
           UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
+          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE || 'Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution PM.OAuthApp' }}
           APOLLO_VERTEX_AICHAT_CLIENT_ID: ${{ vars.APOLLO_VERTEX_AICHAT_CLIENT_ID || secrets.APOLLO_VERTEX_AICHAT_CLIENT_ID }}
         run: |
           set -euo pipefail
