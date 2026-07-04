@@ -2,7 +2,7 @@ name: Coded App Preview Deployments
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, closed]
     branches:
       - main
       - 'support/**'
@@ -22,7 +22,7 @@ concurrency:
 jobs:
   initialize-comment:
     name: Initialize Apollo Coded App Preview Comment
-    if: github.event.pull_request.head.repo.fork == false
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -87,7 +87,7 @@ jobs:
   deploy:
     name: Deploy Apollo Coded App Previews
     needs: initialize-comment
-    if: ${{ !cancelled() && needs.initialize-comment.result == 'success' && github.event.pull_request.head.repo.fork == false }}
+    if: ${{ !cancelled() && github.event.action != 'closed' && needs.initialize-comment.result == 'success' && github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -272,7 +272,7 @@ jobs:
   update-comment:
     name: Update Apollo Coded App Preview Comment
     needs: [initialize-comment, deploy]
-    if: ${{ always() && github.event.pull_request.head.repo.fork == false && needs.initialize-comment.result != 'skipped' }}
+    if: ${{ always() && github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false && needs.initialize-comment.result != 'skipped' }}
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -350,3 +350,63 @@ jobs:
                 body,
               });
             }
+
+  cleanup-ai-chat-redirects:
+    name: Cleanup Apollo Vertex AI Chat Redirects
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - name: Remove Apollo Vertex AI Chat redirect URIs
+        env:
+          GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
+          UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID || secrets.UIPATH_CLIENT_ID }}
+          UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
+          UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
+          UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
+          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE || 'Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution PM.OAuthApp' }}
+          APOLLO_VERTEX_AICHAT_CLIENT_ID: ${{ vars.APOLLO_VERTEX_AICHAT_CLIENT_ID || secrets.APOLLO_VERTEX_AICHAT_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+
+          missing=0
+          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION APOLLO_VERTEX_AICHAT_CLIENT_ID; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is required for Apollo Vertex AI Chat redirect cleanup."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+          vertex_app="apollo-vertex-pr-${PR_NUMBER}"
+          uip_go_npmrc="${RUNNER_TEMP}/uip-go.npmrc"
+          uip_go_prefix="${RUNNER_TEMP}/uip-go"
+          {
+            printf '@uipath:registry=https://npm.pkg.github.com\n'
+            printf '//npm.pkg.github.com/:_authToken=%s\n' "$GH_NPM_REGISTRY_TOKEN"
+          } > "$uip_go_npmrc"
+          NPM_CONFIG_USERCONFIG="$uip_go_npmrc" npm install --prefix "$uip_go_prefix" "@uipath/uip-go@${UIP_GO_VERSION}"
+          UIP_GO="${uip_go_prefix}/node_modules/.bin/uip-go"
+
+          "$UIP_GO" apollo-vertex \
+            --aichat-redirects remove \
+            --name "$vertex_app" \
+            --path-name "$vertex_app" \
+            --base-url "$UIPATH_BASE_URL" \
+            --org-name "$UIPATH_ORG_NAME" \
+            --tenant-name "$UIPATH_TENANT_NAME" \
+            --auth-client-id "$APOLLO_VERTEX_AICHAT_CLIENT_ID"
