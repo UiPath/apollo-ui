@@ -35,6 +35,7 @@ const iconRegistry: Record<string, IconComponent> = {
   api: ({ w, h }) => <Icons.ApiProject w={w ?? 29} h={h ?? 28} />,
   'agentic-process': ({ w, h }) => <Icons.BusinessProcessProject w={w ?? 29} h={h ?? 28} />,
   'flow-project': ({ w, h }) => <Icons.FlowProject w={w ?? 29} h={h ?? 28} />,
+  'case-management': ({ w, h }) => <Icons.CaseManagementProject w={w ?? 29} h={h ?? 28} />,
   decision: ({ w, h }) => <Icons.DecisionIcon w={w ?? 24} h={h ?? 24} />,
   switch: ({ w, h }) => <Icons.SwitchIcon w={w ?? 24} h={h ?? 24} />,
   uipath: ({ w, h }) => <Icons.UiPathIcon w={w ?? 24} h={h ?? 24} />,

@@ -34,4 +34,11 @@ describe('getIcon', () => {
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute('src', 'https://example.com/icon.svg');
   });
+
+  it('returns the CaseManagementProject icon for the registered case-management id', () => {
+    const Icon = getIcon('case-management');
+    const { container } = render(<Icon w={24} h={24} />);
+    // The registered UIPath icon renders its own SVG (id), not a Lucide fallback.
+    expect(container.querySelector('#case-management-project')).toBeInTheDocument();
+  });
 });
