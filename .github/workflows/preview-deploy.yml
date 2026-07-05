@@ -13,7 +13,7 @@ permissions: {}
 env:
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
-  UIP_GO_VERSION: 0.1.13
+  UIP_GO_VERSION: 0.1.14
 
 concurrency:
   group: coded-app-preview-pr-${{ github.event.pull_request.number }}
@@ -352,7 +352,7 @@ jobs:
             }
 
   cleanup-ai-chat-redirects:
-    name: Cleanup Apollo Vertex AI Chat Redirects
+    name: Cleanup Apollo Coded App Previews
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
@@ -367,13 +367,14 @@ jobs:
           persist-credentials: false
           ref: ${{ github.event.pull_request.base.sha }}
 
-      - name: Remove Apollo Vertex AI Chat redirect URIs
+      - name: Remove Apollo Coded App previews
         env:
           GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
           UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID || secrets.UIPATH_CLIENT_ID }}
           UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
+          UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
           UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
           UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
           UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE || 'Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution PM.OAuthApp' }}
@@ -382,9 +383,9 @@ jobs:
           set -euo pipefail
 
           missing=0
-          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION APOLLO_VERTEX_AICHAT_CLIENT_ID; do
+          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION APOLLO_VERTEX_AICHAT_CLIENT_ID; do
             if [ -z "${!name:-}" ]; then
-              echo "::error::$name is required for Apollo Vertex AI Chat redirect cleanup."
+              echo "::error::$name is required for Apollo Coded App preview cleanup."
               missing=1
             fi
           done
@@ -410,3 +411,15 @@ jobs:
             --org-name "$UIPATH_ORG_NAME" \
             --tenant-name "$UIPATH_TENANT_NAME" \
             --auth-client-id "$APOLLO_VERTEX_AICHAT_CLIENT_ID"
+
+          for label in apollo-landing apollo-docs apollo-design apollo-vertex; do
+            app_name="${label}-pr-${PR_NUMBER}"
+            "$UIP_GO" "$label" \
+              --delete-app \
+              --name "$app_name" \
+              --path-name "$app_name" \
+              --folder-key "$UIPATH_FOLDER_KEY" \
+              --base-url "$UIPATH_BASE_URL" \
+              --org-name "$UIPATH_ORG_NAME" \
+              --tenant-name "$UIPATH_TENANT_NAME"
+          done
