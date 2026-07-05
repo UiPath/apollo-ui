@@ -13,7 +13,7 @@ permissions: {}
 env:
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
-  UIP_GO_VERSION: 0.1.14
+  UIP_GO_VERSION: 0.1.15
 
 concurrency:
   group: coded-app-preview-pr-${{ github.event.pull_request.number }}
@@ -414,12 +414,14 @@ jobs:
 
           for label in apollo-landing apollo-docs apollo-design apollo-vertex; do
             app_name="${label}-pr-${PR_NUMBER}"
-            "$UIP_GO" "$label" \
+            if ! "$UIP_GO" "$label" \
               --delete-app \
               --name "$app_name" \
               --path-name "$app_name" \
               --folder-key "$UIPATH_FOLDER_KEY" \
               --base-url "$UIPATH_BASE_URL" \
               --org-name "$UIPATH_ORG_NAME" \
-              --tenant-name "$UIPATH_TENANT_NAME"
+              --tenant-name "$UIPATH_TENANT_NAME"; then
+              echo "::warning::Could not delete Coded App ${app_name}. External App auth can publish/deploy/upgrade, but the Apps delete API may reject CI tokens."
+            fi
           done
