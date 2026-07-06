@@ -175,9 +175,6 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@19.2.3)
-      '@hookform/resolvers':
-        specifier: ^5.2.2
-        version: 5.2.2(react-hook-form@7.66.1(react@19.2.3))
       '@mantine/hooks':
         specifier: ^9.0.0
         version: 9.0.0(react@19.2.3)
@@ -358,9 +355,6 @@ importers:
       react-error-boundary:
         specifier: ^6.0.0
         version: 6.1.1(react@19.2.3)
-      react-hook-form:
-        specifier: ^7.66.1
-        version: 7.66.1(react@19.2.3)
       react-i18next:
         specifier: ^16.5.4
         version: 16.6.6(i18next@25.10.10(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
