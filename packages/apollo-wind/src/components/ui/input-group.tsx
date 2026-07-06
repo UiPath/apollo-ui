@@ -62,7 +62,7 @@ export interface InputGroupAddonProps
     VariantProps<typeof inputGroupAddonVariants> {}
 
 const InputGroupAddon = React.forwardRef<HTMLDivElement, InputGroupAddonProps>(
-  ({ className, align = 'inline-start', ...props }, ref) => {
+  ({ className, align = 'inline-start', onClick, ...props }, ref) => {
     return (
       // biome-ignore lint/a11y/useSemanticElements: addons need role="group" to convey relationship to the field they augment
       // biome-ignore lint/a11y/useKeyWithClickEvents: onClick only forwards focus to the field as a mouse convenience; the addon's actual interactive elements (buttons) remain independently keyboard-operable
@@ -73,12 +73,12 @@ const InputGroupAddon = React.forwardRef<HTMLDivElement, InputGroupAddonProps>(
         data-align={align}
         className={cn(inputGroupAddonVariants({ align }), className)}
         onClick={(e) => {
-          if ((e.target as HTMLElement).closest('button')) {
-            return;
+          if (!(e.target as HTMLElement).closest('button')) {
+            e.currentTarget.parentElement
+              ?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea')
+              ?.focus();
           }
-          e.currentTarget.parentElement
-            ?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea')
-            ?.focus();
+          onClick?.(e);
         }}
         {...props}
       />
