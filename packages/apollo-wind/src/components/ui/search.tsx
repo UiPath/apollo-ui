@@ -1,6 +1,5 @@
 import { Search as SearchIcon, X } from 'lucide-react';
 import * as React from 'react';
-import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -8,11 +7,17 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Input, type InputProps } from '@/components/ui/input';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  type InputGroupInputProps,
+} from '@/components/ui/input-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/index';
 
-export interface SearchProps extends Omit<InputProps, 'onChange'> {
+export interface SearchProps extends Omit<InputGroupInputProps, 'onChange'> {
   value?: string;
   onChange?: (value: string) => void;
   onClear?: () => void;
@@ -27,29 +32,26 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
     };
 
     return (
-      <div className="relative">
-        <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
+      <InputGroup>
+        <InputGroupAddon align="inline-start">
+          <SearchIcon className="text-muted-foreground" />
+        </InputGroupAddon>
+        <InputGroupInput
           ref={ref}
           type="search"
-          className={cn('pl-8 pr-8', className)}
+          className={className}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           {...props}
         />
         {showClearButton && value && (
-          <Button
-            type="button"
-            variant="ghost"
-            icon
-            className="absolute right-0 top-0 h-full w-8 hover:bg-transparent"
-            onClick={handleClear}
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Clear</span>
-          </Button>
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton icon size="3xs" aria-label="Clear" onClick={handleClear}>
+              <X />
+            </InputGroupButton>
+          </InputGroupAddon>
         )}
-      </div>
+      </InputGroup>
     );
   }
 );
