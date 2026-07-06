@@ -5,8 +5,10 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Clock,
   Eye,
   Search,
+  UserRound,
   UserRoundCheck,
 } from "lucide-react";
 import {
@@ -27,17 +29,34 @@ import {
   type AgentStep,
   exceptionMeta,
   type Finding,
+  followUpWeekday,
+  generateFollowUpBody,
+  generateSupplierEmailBody,
   highlightInSource,
   type InvoiceException,
   type InvoiceReview,
+  isRouteSuggestion,
+  isSupplierRoute,
+  receiveCorrectedInvoice,
   revalidateException,
+  routeMeta,
   type Suggestion,
+  type SupplierEmailDraft,
   scopeLabel,
+  sendSupplierEmail,
 } from "./invoice-review-data";
 import { useInvoiceRuntime } from "./invoice-runtime";
 import { SuggestedFixCard } from "./SuggestedFixCard";
+import { SupplierEmailModal } from "./SupplierEmailModal";
 
 const REVIEWER_INITIALS = "PV";
+
+// Relative times render capitalized in standalone slots ("Just now"). For
+// mid-sentence interpolation, lowercase a leading "Just now" only; other outputs
+// (e.g. "3m ago") are already lowercase. Standalone timestamps stay capitalized.
+function midSentenceTime(time: string): string {
+  return time.replace(/^Just now\b/, "just now");
+}
 
 // Honors prefers-reduced-motion: animations are skipped, phase delays kept so
 // the causal sequence still reads as discrete steps.
@@ -62,6 +81,8 @@ type MarkerKind =
   | "upcoming"
   | "reviewer"
   | "resolved"
+  | "waiting"
+  | "waiting-complete"
   | "complete";
 
 function TimelineMarker({ kind }: { kind: MarkerKind }) {
@@ -79,6 +100,24 @@ function TimelineMarker({ kind }: { kind: MarkerKind }) {
       <span className="flex size-7 items-center justify-center rounded-full bg-success/15 text-success">
         {/* Nudge right to optically center (the check badge weights it left). */}
         <UserRoundCheck className="size-3.5 translate-x-px" />
+      </span>
+    );
+  }
+  if (kind === "waiting") {
+    // Same actor-circle grammar as resolved, info tint. A plain person (no
+    // check): a check in blue would still read as completed. This is parked.
+    return (
+      <span className="flex size-7 items-center justify-center rounded-full bg-info/15 text-info">
+        <UserRound className="size-3.5" />
+      </span>
+    );
+  }
+  if (kind === "waiting-complete") {
+    // Waiting terminal: info-tone circle with a clock. Not a solid fill; the
+    // solid marker stays reserved for true completion.
+    return (
+      <span className="flex size-7 items-center justify-center rounded-full bg-info/15 text-info">
+        <Clock className="size-4" />
       </span>
     );
   }
@@ -375,13 +414,14 @@ function LiveExceptionContent({
       {/* The single anchor: largest element. Everything else steps down from it
           via size and color. */}
       {/* Wraps freely; never truncates/ellipsizes on the stage. */}
+      {/* Focus/current anchor is bold; historical + terminal titles stay 500. */}
       <h2
         className={cn(
-          "mt-3.5 text-[2rem] font-bold leading-[1.25] text-foreground",
+          "mt-3.5 text-[22px] font-bold leading-[1.25] text-foreground",
           stepClass,
         )}
         style={{
-          letterSpacing: "-0.02em",
+          letterSpacing: "-0.01em",
           textWrap: "balance",
           maxWidth: "22ch",
           ...stepStyle(1),
@@ -804,18 +844,65 @@ type RunEvent =
       exception?: InvoiceException;
     }
   | {
+      kind: "waiting";
+      key: string;
+      label: string;
+      sub: string;
+      time: string;
+      shortLabel?: string;
+      /** who we are waiting on, for the stamp line */
+      waitingOn: string;
+      /** the source exception (status waiting), for lossless row expansion */
+      exception: InvoiceException;
+      /** the sent supplier email, when the route went through the draft modal */
+      draft?: SupplierEmailDraft;
+    }
+  | {
       kind: "revalidated";
       key: string;
       label: string;
       sub: string;
       time: string;
       pending: boolean;
+    }
+  | {
+      // a follow-up reminder sent for a still-parked exception (waiting unchanged)
+      kind: "followed-up";
+      key: string;
+      label: string;
+      sub: string;
+      time: string;
+      /** the parked exception this reminder chases, for lossless row expansion */
+      exception: InvoiceException;
+      /** the sent reminder email */
+      draft: SupplierEmailDraft;
+    }
+  | {
+      // the return seam: a corrected invoice/data arrived for a parked exception
+      kind: "received";
+      key: string;
+      label: string;
+      sub: string;
+      time: string;
     };
 
 type ResolvedEvent = Extract<RunEvent, { kind: "resolved" }>;
+type WaitingEvent = Extract<RunEvent, { kind: "waiting" }>;
+type FollowedUpEvent = Extract<RunEvent, { kind: "followed-up" }>;
+// Rows that expand to their original exception (resolved / waiting / follow-up).
+type ExpandableEvent = ResolvedEvent | WaitingEvent | FollowedUpEvent;
 
-/** The "· by you · Just now" attribution line for a resolution stamp. */
-function stampByLine(event: ResolvedEvent): string {
+/** The attribution line for a stamp: "· by you · {time}" / "· waiting ... ·". */
+function stampByLine(event: ExpandableEvent): string {
+  if (event.kind === "waiting") {
+    const to = event.draft?.to;
+    return to
+      ? `· ${to} · waiting for a corrected invoice · ${event.time}`
+      : `· waiting for a corrected invoice · ${event.time}`;
+  }
+  if (event.kind === "followed-up") {
+    return `· ${event.draft.to} · reminder sent · ${event.time}`;
+  }
   return `${event.auto ? "· automatically" : "· by you"} · ${event.time}`;
 }
 
@@ -847,11 +934,35 @@ function ExpandRegion({
   );
 }
 
-/** Resolution stamp: shown in place of the fix actions in the history view. */
-function ResolutionStamp({ event }: { event: ResolvedEvent }) {
+/**
+ * The read-only sent email (subject + body). One renderer shared by the expanded
+ * waiting/follow-up history rows and the waiting terminal's request card, so
+ * "render the sent email" never drifts into two implementations.
+ */
+function SentEmailBlock({ draft }: { draft: SupplierEmailDraft }) {
+  return (
+    <div>
+      <p className="text-[13px] font-medium text-foreground">{draft.subject}</p>
+      <p className="mt-1 whitespace-pre-line text-[13px] leading-relaxed text-muted-foreground">
+        {draft.body}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * The stamp shown in place of the fix actions in the history view. Resolved rows
+ * get a success check; waiting and follow-up rows get an info clock, read-only.
+ */
+function HistoryStamp({ event }: { event: ExpandableEvent }) {
+  const waiting = event.kind === "waiting" || event.kind === "followed-up";
   return (
     <div className="flex items-center gap-1.5">
-      <Check className="size-3.5 shrink-0 text-success" />
+      {waiting ? (
+        <Clock className="size-3.5 shrink-0 text-info" />
+      ) : (
+        <Check className="size-3.5 shrink-0 text-success" />
+      )}
       <span className="text-[13px] font-medium text-foreground">
         {event.label}
       </span>
@@ -868,7 +979,7 @@ function ResolutionStamp({ event }: { event: ResolvedEvent }) {
  * secondary foreground, values muted, the fix reduced to a resolution stamp.
  * Values come from the exception record as captured, not from patched data.
  */
-function HistoricalExceptionView({ event }: { event: ResolvedEvent }) {
+function HistoricalExceptionView({ event }: { event: ExpandableEvent }) {
   const exception = event.exception;
   if (!exception) return null;
   const meta = exceptionMeta(exception);
@@ -912,7 +1023,15 @@ function HistoricalExceptionView({ event }: { event: ResolvedEvent }) {
               {reasoning}
             </p>
           )}
-          <ResolutionStamp event={event} />
+          <HistoryStamp event={event} />
+          {/* Audit artifact: the message we actually sent the supplier. Read-only,
+              inside the shell, at the historical view's muted treatment. */}
+          {(event.kind === "waiting" || event.kind === "followed-up") &&
+            event.draft && (
+              <div className="border-t border-border/60 pt-3">
+                <SentEmailBlock draft={event.draft} />
+              </div>
+            )}
         </CardContent>
       </Card>
     </div>
@@ -940,7 +1059,7 @@ function EventRowBody({
   sub: string;
   time: string;
   /** present with an attached exception => the row expands to the original */
-  expandableEvent?: ResolvedEvent;
+  expandableEvent?: ExpandableEvent;
   reducedMotion?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -1000,18 +1119,25 @@ function EventRowBody({
   );
 }
 
-/** A resolved timeline row on the rail: the shared body under a resolved marker. */
-function ResolvedEventRow({
+/**
+ * A history row on the rail: the shared body under an actor marker. Resolved
+ * events get the success marker; waiting (routed) and follow-up events get the
+ * info marker.
+ */
+function HistoryEventRow({
   event,
   reducedMotion,
   gap = ROW_GAP,
 }: {
-  event: ResolvedEvent;
+  event: ExpandableEvent;
   reducedMotion: boolean;
   gap?: string;
 }) {
   return (
-    <TimelineRow marker="resolved" className={gap}>
+    <TimelineRow
+      marker={event.kind === "resolved" ? "resolved" : "waiting"}
+      className={gap}
+    >
       <EventRowBody
         label={event.label}
         sub={event.sub}
@@ -1025,9 +1151,15 @@ function ResolvedEventRow({
 
 // The three-phase resolve choreography (see ResolvingNode). One region changes
 // at a time, in causal order: confirm -> check -> reveal, then commit.
+//
+// mode "fix" runs all three phases (collapse -> re-validate -> reveal). mode
+// "route" changes no data, so it collapses the block into a waiting row and
+// commits after confirm: no re-check, no "Re-validated" event.
 type ResolvePhase = "confirm" | "check" | "reveal";
+type ResolveMode = "fix" | "route";
 type ResolveState = {
   exc: InvoiceException;
+  mode: ResolveMode;
   label: string;
   sub: string;
   shortLabel: string;
@@ -1036,6 +1168,12 @@ type ResolveState = {
   fresh: InvoiceException[];
   clearedInList: string[];
   settledSub: string;
+  /** route mode: who we are waiting on (drives the waiting row + park) */
+  waitingOn?: string;
+  /** supplier route: the sent email, frozen onto the waiting record on commit */
+  draft?: SupplierEmailDraft;
+  /** corrected-invoice path: use this seam result instead of revalidateException */
+  correctedRevalidation?: { cleared: string[]; surfaced: InvoiceException[] };
 };
 
 /**
@@ -1063,12 +1201,15 @@ function ResolvingNode({
   variant: "strip" | "index";
   reducedMotion: boolean;
 }) {
-  const { exc, phase, label, sub, settledSub } = resolve;
+  const { exc, mode, phase, label, sub, settledSub } = resolve;
   const others = openList.filter((e) => e.id !== exc.id);
   const hasOthers = others.length > 0;
+  // Route mode parks the exception into a waiting row (info marker) and never
+  // re-checks, so no re-validating row appears.
+  const isRoute = mode === "route";
   return (
     <>
-      <TimelineRow marker="resolved">
+      <TimelineRow marker={isRoute ? "waiting" : "resolved"}>
         <ResolvingBlock
           exception={exc}
           label={label}
@@ -1077,7 +1218,7 @@ function ResolvingNode({
           reducedMotion={reducedMotion}
         />
       </TimelineRow>
-      {phase !== "confirm" && (
+      {!isRoute && phase !== "confirm" && (
         <EventRow
           marker={phase === "reveal" ? "agent" : "progress"}
           label={phase === "reveal" ? "Re-validated" : "Re-validating"}
@@ -1136,7 +1277,7 @@ function PeekRow({
   label: string;
   sub: string;
   time: string;
-  expandableEvent?: ResolvedEvent;
+  expandableEvent?: ExpandableEvent;
   reducedMotion?: boolean;
 }) {
   return (
@@ -1159,9 +1300,13 @@ function PeekRow({
  */
 function ResolveHistoryPeek({
   events,
+  waitingCount,
   reducedMotion,
 }: {
   events: RunEvent[];
+  /** CURRENT waiting count, not the historical waiting-event count: a returned
+   *  exception leaves its waiting row in history but is no longer waiting. */
+  waitingCount: number;
   reducedMotion: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -1169,11 +1314,21 @@ function ResolveHistoryPeek({
     (e) => e.kind === "resolved" && !e.auto,
   ).length;
   const rechecks = events.filter((e) => e.kind === "revalidated").length;
-  const label = `${resolvedByYou} ${
-    resolvedByYou === 1 ? "issue" : "issues"
-  } resolved by you, ${rechecks} ${
-    rechecks === 1 ? "re-check" : "re-checks"
-  } passed`;
+  // Build from parts, omitting any zero-count clause. Waiting reflects live
+  // state (passed in), so it never renders under "All checks passed".
+  const parts: string[] = [];
+  if (resolvedByYou > 0) {
+    parts.push(
+      `${resolvedByYou} ${resolvedByYou === 1 ? "issue" : "issues"} resolved by you`,
+    );
+  }
+  if (rechecks > 0) {
+    parts.push(
+      `${rechecks} ${rechecks === 1 ? "re-check" : "re-checks"} passed`,
+    );
+  }
+  if (waitingCount > 0) parts.push(`${waitingCount} waiting`);
+  const label = parts.length > 0 ? parts.join(", ") : "Earlier activity";
   return (
     <TimelineRow marker="resolved" className={SECTION_GAP}>
       <button
@@ -1196,7 +1351,13 @@ function ResolveHistoryPeek({
               label={e.label}
               sub={e.sub}
               time={e.time}
-              expandableEvent={e.kind === "resolved" ? e : undefined}
+              expandableEvent={
+                e.kind === "resolved" ||
+                e.kind === "waiting" ||
+                e.kind === "followed-up"
+                  ? e
+                  : undefined
+              }
               reducedMotion={reducedMotion}
             />
           ))}
@@ -1222,7 +1383,7 @@ function TerminalBlock({
     <TimelineRow marker="complete" isLast live>
       <div className="animate-in fade-in-0 duration-200 ease-out">
         <h2
-          className="text-[22px] font-medium leading-[1.25] text-foreground"
+          className="text-[22px] font-bold leading-[1.25] text-foreground"
           style={{ letterSpacing: "-0.01em" }}
         >
           All checks passed
@@ -1239,6 +1400,173 @@ function TerminalBlock({
           <Button size="sm" variant="ghost" onClick={onHold}>
             Hold
           </Button>
+        </div>
+      </div>
+    </TimelineRow>
+  );
+}
+
+/**
+ * One waiting exception's request card in the terminal: what was sent (row 1),
+ * the artifact (row 2, expandable to the shared sent-email renderer), and the
+ * timing/clock line (row 3). Draftless (internal route) cards drop the artifact
+ * row and show the notified variant of the timing line.
+ */
+function RequestCard({
+  event,
+  followUpTime,
+  reducedMotion,
+}: {
+  event: WaitingEvent;
+  /** relative time of the latest follow-up for this exception, if any */
+  followUpTime?: string;
+  reducedMotion: boolean;
+}) {
+  const [showMsg, setShowMsg] = useState(false);
+  const draft = event.draft;
+  return (
+    <div className="rounded-xl border-[0.5px] border-border bg-card p-3">
+      {/* Row 1: what happened */}
+      <div className="flex min-h-6 flex-wrap items-baseline gap-x-1.5">
+        {draft ? (
+          <>
+            <span className="text-sm font-medium text-foreground">
+              Correction request sent
+            </span>
+            <span className="text-sm text-muted-foreground">to {draft.to}</span>
+          </>
+        ) : (
+          <span className="text-sm font-medium text-foreground">
+            {event.label}
+          </span>
+        )}
+        <span className="text-xs text-muted-foreground">· {event.time}</span>
+      </div>
+
+      {/* Row 2: the artifact (draft routes only). */}
+      {draft && (
+        <>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">
+              {draft.subject}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowMsg((v) => !v)}
+              aria-expanded={showMsg}
+              className="shrink-0 text-[13px] text-primary hover:underline"
+            >
+              {showMsg ? "Hide message" : "View message"}
+            </button>
+          </div>
+          <ExpandRegion open={showMsg} reducedMotion={reducedMotion}>
+            <div className="pt-3">
+              <SentEmailBlock draft={draft} />
+            </div>
+          </ExpandRegion>
+        </>
+      )}
+
+      {/* Row 3: the clock. The SLA sentence is fixture copy: LANDING SLOT for
+          real vendor response-window data (see followUpWeekday). */}
+      <div className="mt-3 flex items-center gap-1.5 border-t border-border/60 pt-3">
+        <Clock className="size-3.5 shrink-0 text-muted-foreground" />
+        <span className="text-[13px] text-muted-foreground">
+          {followUpTime
+            ? `Follow-up sent ${midSentenceTime(followUpTime)}.`
+            : draft
+              ? `Suppliers typically respond in 2 to 3 business days. Follow-up available ${followUpWeekday()}.`
+              : "You'll be notified when this is resolved."}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The blocked end state: everything actionable is done, but routed exceptions
+ * are still waiting on corrected invoices/data. Info-tone clock marker (the solid
+ * marker stays reserved for true completion), no Approve. One request card per
+ * waiting exception; a single actions row (Follow up / Hold invoice) below. With
+ * ?dev=1 a muted button simulates the return seam so the full loop is demoable.
+ */
+function WaitingTerminalBlock({
+  waitingOn,
+  summary,
+  cards,
+  followUpByExc,
+  reducedMotion,
+  onFollowUp,
+  onHold,
+  showDevTrigger,
+  onSimulateCorrected,
+}: {
+  waitingOn: string;
+  summary: string;
+  cards: WaitingEvent[];
+  followUpByExc: Record<string, string>;
+  reducedMotion: boolean;
+  onFollowUp: (event: WaitingEvent) => void;
+  onHold: () => void;
+  showDevTrigger: boolean;
+  onSimulateCorrected: () => void;
+}) {
+  // Follow up (v1) acts on the first still-waiting exception with a sent email;
+  // draftless (internal) waiting offers no follow-up.
+  const followUpTarget = cards.find((c) => c.draft);
+  return (
+    <TimelineRow marker="waiting-complete" isLast live>
+      <div className="animate-in fade-in-0 duration-200 ease-out">
+        <h2
+          className="text-[22px] font-bold leading-[1.25] text-foreground"
+          style={{ letterSpacing: "-0.01em" }}
+        >
+          Waiting on {waitingOn}
+        </h2>
+        <p className="mt-1.5 max-w-prose text-sm leading-normal text-muted-foreground">
+          {summary}
+        </p>
+        {/* One card per waiting exception, stacked 12px. */}
+        <div className="mt-4 flex max-w-[520px] flex-col gap-3">
+          {cards.map((c) => (
+            <RequestCard
+              key={c.key}
+              event={c}
+              followUpTime={followUpByExc[c.exception.id]}
+              reducedMotion={reducedMotion}
+            />
+          ))}
+        </div>
+        {/* Actions row, once. Follow up is outlined (NOT filled: the main thing
+            is not done); Hold invoice is a quiet text button. */}
+        <div className="mt-4 flex items-center gap-2">
+          {followUpTarget && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onFollowUp(followUpTarget)}
+            >
+              Follow up
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-secondary-foreground"
+            onClick={onHold}
+          >
+            Hold invoice
+          </Button>
+          {showDevTrigger && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground"
+              onClick={onSimulateCorrected}
+            >
+              Simulate corrected invoice
+            </Button>
+          )}
         </div>
       </div>
     </TimelineRow>
@@ -1276,6 +1604,12 @@ export function ExceptionTimeline({
     [review.exceptions, rt.surfaced],
   );
   const resolvedIds = rt.resolvedIds;
+  // Waiting (routed) exceptions: parked, not resolved, excluded from the open
+  // set. waitingOn drives the terminal title, header tooltip, and queue chip.
+  const waitingRefs = rt.waiting;
+  const waitingIds = waitingRefs.map((w) => w.id);
+  const waitingCount = waitingRefs.length;
+  const waitingOn = waitingRefs[0]?.waitingOn ?? "supplier";
 
   const [activeId, setActiveId] = useState<string>(
     review.exceptions[0]?.id ?? "",
@@ -1287,8 +1621,27 @@ export function ExceptionTimeline({
   );
   const [events, setEvents] = useState<RunEvent[]>([]);
   const [resolve, setResolve] = useState<ResolveState | null>(null);
+  // Supplier email draft modal. "route": the confirmation step for a supplier
+  // route (Send commits the park). "followup": a reminder on an already-parked
+  // exception (Send only logs a Followed up event; waiting is unchanged). Null =
+  // closed; nothing is committed yet.
+  const [emailModal, setEmailModal] = useState<
+    | {
+        mode: "route";
+        exc: InvoiceException;
+        suggestion: Suggestion;
+        initial: { to: string; subject: string; body: string };
+      }
+    | {
+        mode: "followup";
+        exc: InvoiceException;
+        initial: { to: string; subject: string; body: string };
+      }
+    | null
+  >(null);
   const reducedMotion = usePrefersReducedMotion();
   const revalCounter = useRef(0);
+  const followUpCounter = useRef(0);
   const clearedFired = useRef(false);
 
   // Chat-style scroll follow: the column tracks the newest live content unless
@@ -1303,6 +1656,11 @@ export function ExceptionTimeline({
   // flags new events committed while the reviewer was scrolled away.
   const [pillVisible, setPillVisible] = useState(false);
   const [hasNewBelow, setHasNewBelow] = useState(false);
+  // Dev-only return-seam trigger, gated on ?dev=1 so the full loop is demoable.
+  const [devMode, setDevMode] = useState(false);
+  useEffect(() => {
+    setDevMode(new URLSearchParams(window.location.search).get("dev") === "1");
+  }, []);
 
   const nearBottom = (px = 120) => {
     const c = containerRef.current;
@@ -1355,7 +1713,9 @@ export function ExceptionTimeline({
     scrollToBottom();
   };
 
-  const openList = list.filter((e) => !resolvedIds.includes(e.id));
+  const openList = list.filter(
+    (e) => !resolvedIds.includes(e.id) && !waitingIds.includes(e.id),
+  );
   const active = openList.find((e) => e.id === activeId) ?? openList[0] ?? null;
 
   const openCount = openList.length;
@@ -1364,25 +1724,30 @@ export function ExceptionTimeline({
   const activeOrdinal = active
     ? openList.findIndex((e) => e.id === active.id) + 1
     : 0;
-  const showHeader = openCount >= 2 || resolvedCount > 0;
-  const allClear = !resolve && openCount === 0;
+  const showHeader = openCount >= 2 || resolvedCount > 0 || waitingCount > 0;
+  // All actionable work is done. fullyResolved = true completion (Approve);
+  // waitingDone = blocked on a routed exception (waiting terminal, no Approve).
+  const allDone = !resolve && openCount === 0;
+  const fullyResolved = allDone && waitingCount === 0;
+  const waitingDone = allDone && waitingCount > 0;
   const counter = active
     ? `Issue ${activeOrdinal} of ${openCount}${
         resolvedCount > 0 ? `, ${resolvedCount} resolved` : ""
-      }`
+      }${waitingCount > 0 ? `, ${waitingCount} waiting` : ""}`
     : "";
 
   const isNew = (e: InvoiceException) =>
     e.origin === "revalidation" && !acknowledged.has(e.id);
 
-  // Fire the all-clear callback once when the invoice fully clears.
+  // Fire the all-clear callback once when the invoice is fully resolved (not when
+  // it is merely blocked on a waiting exception; that must not unlock Approve).
   useEffect(() => {
-    if (allClear && !clearedFired.current) {
+    if (fullyResolved && !clearedFired.current) {
       clearedFired.current = true;
       onAllClear();
     }
-    if (!allClear) clearedFired.current = false;
-  }, [allClear, onAllClear]);
+    if (!fullyResolved) clearedFired.current = false;
+  }, [fullyResolved, onAllClear]);
 
   // Once an exception has been viewed (active), its "New" tag clears for good.
   useEffect(() => {
@@ -1454,13 +1819,57 @@ export function ExceptionTimeline({
     }
   }, [resolve]);
 
-  // Resolve choreography: confirm -> check -> reveal -> commit. One region
-  // changes per phase; the next exception and any surfaced items appear only on
-  // commit, so nothing about the next state is visible until re-validation
-  // settles.
+  // Resolve choreography. Fix mode: confirm -> check -> reveal -> commit, one
+  // region per phase, next state hidden until re-validation settles. Route mode:
+  // confirm (collapse into a waiting row) -> commit; no re-check, no
+  // "Re-validated" event, because routing changes no data.
   useEffect(() => {
     if (!resolve) return;
+    const nextOpenId = (excId: string, alsoSkip: string[] = []) => {
+      const waitingIdSet = new Set(waitingRefs.map((w) => w.id));
+      return list.find(
+        (e) =>
+          e.id !== excId &&
+          !alsoSkip.includes(e.id) &&
+          !resolvedIds.includes(e.id) &&
+          !waitingIdSet.has(e.id),
+      );
+    };
+
     if (resolve.phase === "confirm") {
+      if (resolve.mode === "route") {
+        // Route commit: park the exception into a waiting row, advance. No re-check.
+        const s = resolve;
+        const t = setTimeout(
+          () => {
+            const on = s.waitingOn ?? "supplier";
+            setEvents((prev) => [
+              ...prev,
+              {
+                kind: "waiting",
+                key: `wait-${s.exc.id}`,
+                label: s.label,
+                sub: s.sub,
+                time: "Just now",
+                shortLabel: s.shortLabel,
+                waitingOn: on,
+                exception: s.exc,
+                draft: s.draft,
+              },
+            ]);
+            runtime.parkException(review.id, {
+              id: s.exc.id,
+              waitingOn: on,
+              label: s.label,
+              draft: s.draft,
+            });
+            setActiveId(nextOpenId(s.exc.id)?.id ?? "");
+            setResolve(null);
+          },
+          reducedMotion ? 250 : 450,
+        );
+        return () => clearTimeout(t);
+      }
       const t = setTimeout(
         () => setResolve((s) => (s ? { ...s, phase: "check" } : s)),
         reducedMotion ? 250 : 450,
@@ -1472,21 +1881,40 @@ export function ExceptionTimeline({
       if (stickRef.current && !userScrolledRef.current) {
         requestAnimationFrame(() => scrollToBottom());
       }
-      let cancelled = false;
-      revalidateException(review.id).then(({ cleared, surfaced }) => {
-        if (cancelled) return;
+      const s = resolve;
+      const applyReval = ({
+        cleared,
+        surfaced,
+      }: {
+        cleared: string[];
+        surfaced: InvoiceException[];
+      }) => {
         const known = new Set(list.map((e) => e.id));
         const fresh = surfaced.filter((e) => !known.has(e.id));
-        const clearedInList = cleared.filter((cid) => known.has(cid));
+        // exclude the exception being resolved so it never doubles as an auto-clear
+        const clearedInList = cleared.filter(
+          (cid) => known.has(cid) && cid !== s.exc.id,
+        );
         const settledSub =
           fresh.length > 0
             ? `All checks re-run, ${fresh.length} new issue${
                 fresh.length > 1 ? "s" : ""
               } found`
             : "All checks re-run, nothing new";
-        setResolve((s) =>
-          s ? { ...s, phase: "reveal", fresh, clearedInList, settledSub } : s,
+        setResolve((cur) =>
+          cur
+            ? { ...cur, phase: "reveal", fresh, clearedInList, settledSub }
+            : cur,
         );
+      };
+      // Corrected-invoice path honors the seam result; the fix path re-checks.
+      if (s.correctedRevalidation) {
+        applyReval(s.correctedRevalidation);
+        return;
+      }
+      let cancelled = false;
+      revalidateException(review.id).then((r) => {
+        if (!cancelled) applyReval(r);
       });
       return () => {
         cancelled = true;
@@ -1532,20 +1960,23 @@ export function ExceptionTimeline({
         if (s.fresh.length > 0) runtime.surfaceExceptions(review.id, s.fresh);
         // Data-changing resolutions (e.g. a linked PO) update every surface.
         if (s.dataPatch) runtime.patchData(review.id, s.dataPatch);
-        const next =
-          list.find(
-            (e) =>
-              e.id !== s.exc.id &&
-              !s.clearedInList.includes(e.id) &&
-              !resolvedIds.includes(e.id),
-          ) ?? s.fresh[0];
-        setActiveId(next?.id ?? "");
+        setActiveId(
+          nextOpenId(s.exc.id, s.clearedInList)?.id ?? s.fresh[0]?.id ?? "",
+        );
         setResolve(null);
       },
       reducedMotion ? 250 : 350,
     );
     return () => clearTimeout(t);
-  }, [resolve, list, resolvedIds, review.id, runtime, reducedMotion]);
+  }, [
+    resolve,
+    list,
+    resolvedIds,
+    waitingRefs,
+    review.id,
+    runtime,
+    reducedMotion,
+  ]);
 
   function anchor(id: string) {
     if (resolve) return;
@@ -1559,19 +1990,63 @@ export function ExceptionTimeline({
     requestAnimationFrame(() => scrollToLive());
   }
 
-  function resolveActive() {
-    if (!active || resolve) return;
+  // Start the route choreography (collapse -> park). Carries the sent email when
+  // the route went through the draft modal; the sub then shows the recipient.
+  function startRoute(
+    exc: InvoiceException,
+    suggestion: Suggestion,
+    draft?: SupplierEmailDraft,
+  ) {
+    const rm = routeMeta(exc, suggestion);
+    setResolve({
+      exc,
+      mode: "route",
+      label: rm.title,
+      sub: draft ? `${rm.sub} · ${draft.to}` : rm.sub,
+      shortLabel: rm.shortLabel,
+      waitingOn: rm.waitingOn,
+      draft,
+      phase: "confirm",
+      fresh: [],
+      clearedInList: [],
+      settledSub: "",
+    });
+  }
+
+  function resolveActive(s: Suggestion) {
+    if (!active || resolve || emailModal) return;
+    // Supplier routes confirm through the draft modal: nothing about the
+    // exception changes until the message is sent (Send commits the park).
+    if (isSupplierRoute(s)) {
+      setEmailModal({
+        mode: "route",
+        exc: active,
+        suggestion: s,
+        initial: {
+          to: review.vendorEmail,
+          subject: `Invoice correction request: Invoice ${review.id}`,
+          body: generateSupplierEmailBody(review, active),
+        },
+      });
+      return;
+    }
     // Snapshot follow intent for this sequence: only auto-scroll if the reviewer
     // was already near the bottom, and cancel it if they scroll during it.
     stickRef.current = nearBottom(120);
     userScrolledRef.current = false;
-    const r = active.resolution;
+    // Internal routes (data owner, etc.) park directly, no modal.
+    if (isRouteSuggestion(s)) {
+      startRoute(active, s);
+      return;
+    }
     const meta = exceptionMeta(active);
+    const r = active.resolution;
     const label = r?.label ?? `${meta.label} resolved`;
     const sub = r?.sub ?? `${meta.label}, resolved by you`;
     const shortLabel = r?.shortLabel ?? `${meta.label.toLowerCase()} resolved`;
     setResolve({
       exc: active,
+      mode: "fix",
       label,
       sub,
       shortLabel,
@@ -1583,18 +2058,114 @@ export function ExceptionTimeline({
     });
   }
 
-  // Summary sentence built from the reviewer's resolutions, in order.
+  // Open the draft modal as a follow-up on an already-parked exception.
+  function onFollowUp(event: WaitingEvent) {
+    if (resolve || emailModal || !event.draft) return;
+    setEmailModal({
+      mode: "followup",
+      exc: event.exception,
+      initial: {
+        to: event.draft.to,
+        subject: `Re: ${event.draft.subject}`,
+        body: generateFollowUpBody(review, event.draft),
+      },
+    });
+  }
+
+  // Send from the draft modal, via the outbound seam. Route mode runs the route
+  // choreography (commits the park). Follow-up mode only logs a "Followed up"
+  // event: the exception stays parked, nothing re-validates.
+  function onEmailSend(draft: SupplierEmailDraft) {
+    const m = emailModal;
+    if (!m) return;
+    setEmailModal(null);
+    void sendSupplierEmail(review.id, m.exc.id, draft);
+    if (m.mode === "route") {
+      stickRef.current = nearBottom(120);
+      userScrolledRef.current = false;
+      startRoute(m.exc, m.suggestion, { ...draft, sentTime: "Just now" });
+      return;
+    }
+    setEvents((prev) => [
+      ...prev,
+      {
+        kind: "followed-up",
+        key: `followup-${m.exc.id}-${followUpCounter.current++}`,
+        label: "Followed up",
+        sub: `${exceptionMeta(m.exc).label}, reminder sent`,
+        time: "Just now",
+        exception: m.exc,
+        draft: { ...draft, sentTime: "Just now" },
+      },
+    ]);
+  }
+
+  // The return seam (dev-only trigger). A corrected invoice arrives for the
+  // parked exception: append the received event, reopen the exception, then run
+  // the standard re-validation choreography honestly (data changed this time).
+  async function simulateCorrected() {
+    if (resolve) return;
+    const wref = waitingRefs[0];
+    if (!wref) return;
+    const exc = list.find((e) => e.id === wref.id);
+    if (!exc) return;
+    const meta = exceptionMeta(exc);
+    const { document, revalidation } = await receiveCorrectedInvoice(
+      review.id,
+      exc.id,
+    );
+    stickRef.current = nearBottom(120);
+    userScrolledRef.current = false;
+    setEvents((prev) => [
+      ...prev,
+      {
+        kind: "received",
+        key: `recv-${exc.id}`,
+        label: "Corrected invoice received",
+        sub: `${document} attached by supplier`,
+        time: "Just now",
+      },
+    ]);
+    runtime.unparkException(review.id, exc.id);
+    setResolve({
+      exc,
+      mode: "fix",
+      label: `${meta.label} cleared`,
+      sub: `Cleared by ${document}`,
+      shortLabel: "corrected invoice cleared",
+      phase: "check",
+      fresh: [],
+      clearedInList: [],
+      settledSub: "",
+      correctedRevalidation: revalidation,
+    });
+  }
+
+  // Summary sentences built from the reviewer's resolutions, in order.
   const shortLabels = events
     .filter((e) => e.kind === "resolved" && !e.auto && e.shortLabel)
     .map((e) => (e.kind === "resolved" ? e.shortLabel : undefined))
     .filter((x): x is string => !!x);
-  const summarySentence =
+  const resolvedClause =
     shortLabels.length > 0
       ? `${(() => {
           const joined = shortLabels.join(", ");
           return joined.charAt(0).toUpperCase() + joined.slice(1);
-        })()}. This invoice is ready for your decision.`
-      : "This invoice is ready for your decision.";
+        })()}. `
+      : "";
+  const summarySentence = `${resolvedClause}This invoice is ready for your decision.`;
+  const waitingSummary = `${resolvedClause}One issue is with the ${waitingOn}; validation re-runs when the corrected invoice arrives.`;
+
+  // Request cards = the waiting events for exceptions still parked now. followUp
+  // times index the latest reminder per exception (drives row 3).
+  const waitingCards = events.filter(
+    (e): e is WaitingEvent =>
+      e.kind === "waiting" && waitingIds.includes(e.exception.id),
+  );
+  const followUpByExc: Record<string, string> = {};
+  for (const e of events) {
+    if (e.kind === "followed-up") followUpByExc[e.exception.id] = e.time;
+  }
 
   return (
     <div className="relative flex-1 overflow-hidden">
@@ -1605,21 +2176,37 @@ export function ExceptionTimeline({
         <ol ref={contentRef} className="w-full max-w-5xl">
           <AgentHistoryPeek
             steps={review.agentHistory}
-            bottomGap={!allClear && events.length === 0 ? SECTION_GAP : ROW_GAP}
+            bottomGap={!allDone && events.length === 0 ? SECTION_GAP : ROW_GAP}
           />
-          {allClear ? (
+          {allDone ? (
             <>
-              {/* The resolve log compresses into a peek; the terminal block lands
-                below it. The screen closes the way it opened. */}
+              {/* The log compresses into a peek; the terminal block lands below
+                it. True completion gets Approve; a parked exception gets the
+                waiting terminal (no Approve) instead. */}
               <ResolveHistoryPeek
                 events={events}
+                waitingCount={waitingCount}
                 reducedMotion={reducedMotion}
               />
-              <TerminalBlock
-                summary={summarySentence}
-                onApprove={onApprove}
-                onHold={onHold}
-              />
+              {waitingDone ? (
+                <WaitingTerminalBlock
+                  waitingOn={waitingOn}
+                  summary={waitingSummary}
+                  cards={waitingCards}
+                  followUpByExc={followUpByExc}
+                  reducedMotion={reducedMotion}
+                  onFollowUp={onFollowUp}
+                  onHold={onHold}
+                  showDevTrigger={devMode}
+                  onSimulateCorrected={simulateCorrected}
+                />
+              ) : (
+                <TerminalBlock
+                  summary={summarySentence}
+                  onApprove={onApprove}
+                  onHold={onHold}
+                />
+              )}
             </>
           ) : (
             <>
@@ -1627,17 +2214,29 @@ export function ExceptionTimeline({
                 // The last event sits before the present (group) node: a section
                 // transition, so it opens 28px instead of the 20px event gap.
                 const gap = i === events.length - 1 ? SECTION_GAP : ROW_GAP;
-                return ev.kind === "resolved" ? (
-                  <ResolvedEventRow
-                    key={ev.key}
-                    event={ev}
-                    reducedMotion={reducedMotion}
-                    gap={gap}
-                  />
-                ) : (
+                if (
+                  ev.kind === "resolved" ||
+                  ev.kind === "waiting" ||
+                  ev.kind === "followed-up"
+                ) {
+                  return (
+                    <HistoryEventRow
+                      key={ev.key}
+                      event={ev}
+                      reducedMotion={reducedMotion}
+                      gap={gap}
+                    />
+                  );
+                }
+                // received (agent) and revalidated (progress -> agent) rows are flat
+                return (
                   <EventRow
                     key={ev.key}
-                    marker={ev.pending ? "progress" : "agent"}
+                    marker={
+                      ev.kind === "revalidated" && ev.pending
+                        ? "progress"
+                        : "agent"
+                    }
                     label={ev.label}
                     sub={ev.sub}
                     time={ev.time}
@@ -1669,8 +2268,9 @@ export function ExceptionTimeline({
               ) : null}
               <TimelineRow marker="upcoming" isLast>
                 <p className="min-h-7 pt-1 text-[13px] leading-normal text-muted-foreground">
-                  Validation runs again after each fix. Anything new surfaces
-                  here.
+                  {waitingCount > 0
+                    ? "Validation re-runs when the corrected invoice arrives."
+                    : "Validation runs again after each fix. Anything new surfaces here."}
                 </p>
               </TimelineRow>
             </>
@@ -1704,6 +2304,19 @@ export function ExceptionTimeline({
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[var(--header-scrim-h,32px)] backdrop-blur-[8px] [background:linear-gradient(to_bottom,var(--background),transparent)] [mask-image:linear-gradient(to_bottom,black,transparent)]"
       />
+      {/* Supplier route confirmation. Mounted only while open (fresh draft per
+          open); Send commits the park, Discard/Esc/X leave the exception live. */}
+      {emailModal && (
+        <SupplierEmailModal
+          key={`${emailModal.mode}-${emailModal.exc.id}`}
+          open
+          vendor={review.supplier}
+          initial={emailModal.initial}
+          reducedMotion={reducedMotion}
+          onSend={onEmailSend}
+          onDiscard={() => setEmailModal(null)}
+        />
+      )}
     </div>
   );
 }

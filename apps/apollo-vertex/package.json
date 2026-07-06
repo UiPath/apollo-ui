@@ -15,7 +15,7 @@
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "format": "biome format --write",
     "format:check": "biome format",
-    "lint": "oxlint --type-aware",
+    "lint": "oxlint --type-aware && node scripts/check-type-drift.mjs",
     "lint:fix": "oxlint --fix --type-aware",
     "lint:deps": "depcruise registry --config .dependency-cruiser.js",
     "typecheck": "tsc --noEmit"

@@ -12,6 +12,7 @@ import type {
   InvoiceException,
   InvoiceReview,
   InvoiceRuntime,
+  WaitingRef,
 } from "./invoice-review-data";
 
 // Per-invoice loop state (resolved ids + surfaced exceptions), shared across the
@@ -19,13 +20,17 @@ import type {
 // and updates live as the reviewer works the loop. No refetch simulation: it's
 // one in-memory store keyed by invoice id.
 
-const EMPTY: InvoiceRuntime = { resolvedIds: [], surfaced: [] };
+const EMPTY: InvoiceRuntime = { resolvedIds: [], surfaced: [], waiting: [] };
 
 interface RuntimeStore {
   getRuntime: (invoiceId: string) => InvoiceRuntime;
   resolveExceptions: (invoiceId: string, ids: string[]) => void;
   surfaceExceptions: (invoiceId: string, items: InvoiceException[]) => void;
   patchData: (invoiceId: string, patch: Partial<InvoiceReview>) => void;
+  /** Park an exception in a waiting state (routing action; not a resolution). */
+  parkException: (invoiceId: string, ref: WaitingRef) => void;
+  /** Return a parked exception to the open set (corrected invoice/data arrived). */
+  unparkException: (invoiceId: string, exceptionId: string) => void;
 }
 
 const InvoiceRuntimeContext = createContext<RuntimeStore | null>(null);
@@ -60,6 +65,24 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
           return {
             ...prev,
             [id]: { ...cur, dataPatch: { ...cur.dataPatch, ...patch } },
+          };
+        }),
+      parkException: (id, ref) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          if (cur.waiting.some((w) => w.id === ref.id)) return prev;
+          return { ...prev, [id]: { ...cur, waiting: [...cur.waiting, ref] } };
+        }),
+      unparkException: (id, exceptionId) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          if (!cur.waiting.some((w) => w.id === exceptionId)) return prev;
+          return {
+            ...prev,
+            [id]: {
+              ...cur,
+              waiting: cur.waiting.filter((w) => w.id !== exceptionId),
+            },
           };
         }),
     }),
