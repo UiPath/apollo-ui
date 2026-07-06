@@ -7,12 +7,19 @@ export interface FieldOption {
 
 export function normalizeErrors(
   errors: ReadonlyArray<unknown>,
-): Array<{ message?: string }> {
-  return errors
-    .filter((error): error is NonNullable<unknown> => error != null)
-    .map((error) =>
-      typeof error === "string"
-        ? { message: error }
-        : (error as { message?: string }),
-    );
+): Array<{ message: string }> {
+  return errors.flatMap((error) => {
+    if (typeof error === "string") {
+      return [{ message: error }];
+    }
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error &&
+      typeof error.message === "string"
+    ) {
+      return [{ message: error.message }];
+    }
+    return [];
+  });
 }

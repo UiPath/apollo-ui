@@ -40,7 +40,10 @@ function SelectField({
   return (
     <Field data-invalid={invalid}>
       {label ? <FieldLabel htmlFor={field.name}>{label}</FieldLabel> : null}
-      <Select value={field.state.value} onValueChange={field.handleChange}>
+      <Select
+        value={field.state.value ?? ""}
+        onValueChange={field.handleChange}
+      >
         <SelectTrigger
           id={field.name}
           onBlur={field.handleBlur}

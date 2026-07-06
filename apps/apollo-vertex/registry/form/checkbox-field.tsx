@@ -27,7 +27,7 @@ function CheckboxField({ label, description }: CheckboxFieldProps) {
       <Checkbox
         id={field.name}
         name={field.name}
-        checked={field.state.value}
+        checked={field.state.value ?? false}
         onCheckedChange={(checked) => field.handleChange(checked === true)}
         onBlur={field.handleBlur}
         aria-invalid={invalid}

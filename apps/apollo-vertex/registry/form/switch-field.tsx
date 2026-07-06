@@ -27,7 +27,7 @@ function SwitchField({ label, description }: SwitchFieldProps) {
       <Switch
         id={field.name}
         name={field.name}
-        checked={field.state.value}
+        checked={field.state.value ?? false}
         onCheckedChange={field.handleChange}
         onBlur={field.handleBlur}
         aria-invalid={invalid}
