@@ -71,12 +71,12 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ApolloShell } from "@/components/ui/shell";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/registry/avatar/avatar";
@@ -2085,7 +2085,11 @@ function NavInvoiceItem({
         );
   const lead = summary?.lead ?? null;
   const extraCount = summary?.extraCount ?? 0;
-  const isReady = !!summary && summary.openCount === 0;
+  const waitingCount = summary?.waitingCount ?? 0;
+  const waitingOn = summary?.waitingOn ?? null;
+  // Nothing open but a routed exception is parked: waiting, not ready.
+  const isWaiting = !!summary && summary.openCount === 0 && waitingCount > 0;
+  const isReady = !!summary && summary.openCount === 0 && waitingCount === 0;
 
   const dotColor = isCompleted
     ? completion.type === "approved"
@@ -2093,11 +2097,13 @@ function NavInvoiceItem({
       : "bg-destructive"
     : isParked
       ? "bg-warning"
-      : isAuto || isReady
-        ? "bg-success"
-        : lead
-          ? (TONE_DOT[exceptionMeta(lead).tone] ?? "bg-muted-foreground")
-          : "bg-muted-foreground";
+      : isWaiting
+        ? "bg-info"
+        : isAuto || isReady
+          ? "bg-success"
+          : lead
+            ? (TONE_DOT[exceptionMeta(lead).tone] ?? "bg-muted-foreground")
+            : "bg-muted-foreground";
 
   const tagLabel = isCompleted
     ? completion.type === "approved"
@@ -2107,13 +2113,15 @@ function NavInvoiceItem({
       ? parked?.kind === "hold"
         ? "On hold"
         : "Flagged"
-      : isAuto
-        ? "Done"
-        : isReady
-          ? "Ready to approve"
-          : lead
-            ? exceptionMeta(lead).label
-            : "";
+      : isWaiting
+        ? `Waiting on ${waitingOn}`
+        : isAuto
+          ? "Done"
+          : isReady
+            ? "Ready to approve"
+            : lead
+              ? exceptionMeta(lead).label
+              : "";
 
   return (
     <button
@@ -2204,10 +2212,25 @@ function LeftNav({
   // Approved/rejected invoices move out of their due-date section into
   // "Completed". Flagged/held stay put (still in the active queue).
   const isDone = (id: string) => !!completionMap[id];
-  const dueToday = dueTodayInvoices.filter((inv) => !isDone(inv.id));
-  const dueTomorrow = invoicesReview.filter(
-    (inv) => inv.dueGroup === "tomorrow" && !isDone(inv.id),
+  // Waiting-only: nothing open, but a routed exception is parked waiting on an
+  // outside reply. These leave their due-date group for a dedicated "Waiting"
+  // group. A mix of open + waiting stays in the due group (still actionable).
+  // Single derivation via getExceptionSummary keeps queue structure cheap to
+  // restructure (ownership in flux).
+  const runtime = useInvoiceRuntime();
+  const isWaitingOnly = (id: string) => {
+    if (isDone(id)) return false;
+    const s = getExceptionSummary(getReview(id), runtime.getRuntime(id));
+    return s.openCount === 0 && s.waitingCount > 0;
+  };
+  const dueToday = dueTodayInvoices.filter(
+    (inv) => !isDone(inv.id) && !isWaitingOnly(inv.id),
   );
+  const dueTomorrow = invoicesReview.filter(
+    (inv) =>
+      inv.dueGroup === "tomorrow" && !isDone(inv.id) && !isWaitingOnly(inv.id),
+  );
+  const waiting = invoicesReview.filter((inv) => isWaitingOnly(inv.id));
   const completed = invoicesReview.filter((inv) => isDone(inv.id));
 
   return (
@@ -2266,6 +2289,29 @@ function LeftNav({
             />
             <div className="space-y-2 pb-4">
               {dueTomorrow.map((inv) => (
+                <NavInvoiceItem
+                  key={inv.id}
+                  invoice={inv}
+                  isActive={inv.id === activeId}
+                  onClick={() => onInvoiceClick(inv.id)}
+                  completion={completionMap[inv.id]}
+                  parked={parkedMap[inv.id]}
+                  contacted={contactedMap[inv.id]}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {waiting.length > 0 && (
+          <>
+            <NavSectionLabel
+              label="Waiting"
+              count={waiting.length}
+              first={dueToday.length === 0 && dueTomorrow.length === 0}
+            />
+            <div className="space-y-2 pb-4">
+              {waiting.map((inv) => (
                 <NavInvoiceItem
                   key={inv.id}
                   invoice={inv}
@@ -5388,6 +5434,8 @@ function TopBarNext({
   const runtime = useInvoiceRuntime();
   // A data-changing resolution (e.g. Link PO-5123) patches the shared record.
   const patchedPo = runtime.getRuntime(d.id).dataPatch?.purchaseOrder ?? d.po;
+  // A routed exception waiting on an outside reply blocks Approve.
+  const waitingOn = runtime.getRuntime(d.id).waiting[0]?.waitingOn ?? null;
   const tableRow = invoiceTableData.find((r) => r.id === d.id);
   const baseStatus: InvoiceStatus = tableRow?.status ?? "pending-review";
   const effectiveStatus: InvoiceStatus = completion
@@ -5464,6 +5512,7 @@ function TopBarNext({
           onReject={onReject}
           onHold={onHold}
           onFlag={onFlag}
+          waitingOn={waitingOn}
         />
       </PageHeaderActions>
     </PageHeader>

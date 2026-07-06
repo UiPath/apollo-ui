@@ -76,7 +76,7 @@ export type ExceptionScope =
 /** initial = present at escalation; revalidation = surfaced by a re-check. */
 export type ExceptionOrigin = "initial" | "revalidation";
 
-export type ExceptionStatus = "open" | "active" | "resolved";
+export type ExceptionStatus = "open" | "active" | "resolved" | "waiting";
 
 export interface ExceptionResolution {
   label: string;
@@ -121,6 +121,13 @@ export interface Suggestion {
   type: SuggestionType;
   data: Record<string, unknown>;
   reasoning?: string;
+  /**
+   * fix = corrects the invoice/data and resolves the exception. route = hands off
+   * to a supplier or data owner; it does not resolve, it parks the exception in a
+   * waiting state until the corrected invoice/data returns. Derived from `type`
+   * via isRouteSuggestion when absent, so fixtures need not set it.
+   */
+  kind?: "fix" | "route";
 }
 
 export interface InvoiceException {
@@ -156,6 +163,8 @@ export interface InvoiceAssignee {
 export interface InvoiceReview {
   id: string;
   supplier: string;
+  /** recipient for a supplier correction email (prefills the draft modal) */
+  vendorEmail: string;
   amount: string;
   due: string;
   poPill: { label: string; tone: "red" | "neutral" };
@@ -170,10 +179,34 @@ export interface InvoiceReview {
   revalidation?: { cleared: string[]; surfaced: InvoiceException[] };
 }
 
+/** A supplier email drafted and sent as the confirmation step of a supplier
+ *  route. The snapshot is frozen at send and never re-derived (audit artifact). */
+export interface SupplierEmailDraft {
+  to: string;
+  cc?: string;
+  subject: string;
+  body: string;
+  /** set at send; the recipient/subject/body above are frozen alongside it */
+  sentTime?: string;
+}
+
+/** An exception parked by a routing action, awaiting a corrected invoice/data. */
+export interface WaitingRef {
+  id: string;
+  /** who we are waiting on, e.g. "supplier", "procurement", "data owner" */
+  waitingOn: string;
+  /** the routing event title, e.g. "Asked supplier", "Routed to procurement" */
+  label: string;
+  /** the sent supplier email, when the route went through the draft modal */
+  draft?: SupplierEmailDraft;
+}
+
 /** Runtime loop state for one invoice, shared across surfaces (see the store). */
 export interface InvoiceRuntime {
   resolvedIds: string[];
   surfaced: InvoiceException[];
+  /** exceptions parked in a waiting state by a routing action (not resolved) */
+  waiting: WaitingRef[];
   /** invoice-data changes applied by resolutions (e.g. a linked PO) */
   dataPatch?: Partial<InvoiceReview>;
 }
@@ -185,29 +218,45 @@ export function exceptionMeta(e: InvoiceException): {
   return EXCEPTION_META[e.type];
 }
 
-/** Current open exceptions: fixtures + surfaced, minus resolved, in order. */
+/**
+ * Current open exceptions: fixtures + surfaced, minus resolved AND waiting, in
+ * order. Waiting (routed) exceptions are neither resolved nor actionable, so
+ * they drop out of the open set on every surface.
+ */
 export function openExceptions(
   review: InvoiceReview,
   runtime?: InvoiceRuntime,
 ): InvoiceException[] {
   const all = [...review.exceptions, ...(runtime?.surfaced ?? [])];
   const resolved = new Set(runtime?.resolvedIds ?? []);
-  return all.filter((e) => !resolved.has(e.id));
+  const waiting = new Set((runtime?.waiting ?? []).map((w) => w.id));
+  return all.filter((e) => !resolved.has(e.id) && !waiting.has(e.id));
 }
 
 /**
- * The one place that answers "which exception do I show, and how many more".
- * lead = first open exception by the ordering rule; null when all resolved.
+ * The one place that answers "which exception do I show, how many more, and how
+ * many are parked waiting". lead = first open exception by the ordering rule;
+ * null when nothing is open. Waiting is reported separately so surfaces can show
+ * a waiting state without ever counting it as resolved.
  */
 export function getExceptionSummary(
   review: InvoiceReview,
   runtime?: InvoiceRuntime,
-): { lead: InvoiceException | null; openCount: number; extraCount: number } {
+): {
+  lead: InvoiceException | null;
+  openCount: number;
+  extraCount: number;
+  waitingCount: number;
+  waitingOn: string | null;
+} {
   const open = openExceptions(review, runtime);
+  const waiting = runtime?.waiting ?? [];
   return {
     lead: open[0] ?? null,
     openCount: open.length,
     extraCount: Math.max(0, open.length - 1),
+    waitingCount: waiting.length,
+    waitingOn: waiting[0]?.waitingOn ?? null,
   };
 }
 
@@ -246,6 +295,125 @@ const HOLD_TYPES: ReadonlySet<SuggestionType> = new Set([
 
 export function isHoldSuggestion(s: Suggestion): boolean {
   return HOLD_TYPES.has(s.type);
+}
+
+// Routing actions hand off to a supplier or data owner. They change no data, so
+// they do not resolve the exception: they park it in a waiting state until the
+// corrected invoice/data returns. Kind is fully determined by type, so fixtures
+// need not tag each suggestion (mirrors HOLD_TYPES / isHoldSuggestion).
+const ROUTE_TYPES: ReadonlySet<SuggestionType> = new Set([
+  "suggest_supplier",
+  "suggest_email",
+  "route",
+]);
+
+export function isRouteSuggestion(s: Suggestion): boolean {
+  return (
+    s.kind === "route" || (s.kind === undefined && ROUTE_TYPES.has(s.type))
+  );
+}
+
+// Supplier-type routes go through the email draft modal (the message to the
+// supplier IS the confirmation). Internal routes (route -> data owner, etc.)
+// park directly with no modal.
+const SUPPLIER_ROUTE_TYPES: ReadonlySet<SuggestionType> = new Set([
+  "suggest_supplier",
+  "suggest_email",
+]);
+
+export function isSupplierRoute(s: Suggestion): boolean {
+  return SUPPLIER_ROUTE_TYPES.has(s.type);
+}
+
+/**
+ * Body-generation seam for the supplier email draft (ported from v1's
+ * generateDraftBody, sourced from the exception context instead of the legacy
+ * detail model). Stubbed template; replace with a real drafting call.
+ */
+export function generateSupplierEmailBody(
+  review: InvoiceReview,
+  exception: InvoiceException,
+): string {
+  return [
+    "Dear Accounts team,",
+    "",
+    `We are writing regarding Invoice ${review.id}. On review we flagged an issue: ${exception.headline.toLowerCase()}.`,
+    "",
+    "Could you review and send a corrected invoice so we can complete processing? Please reference the invoice number above in your reply.",
+    "",
+    "Thank you for your prompt attention to this matter.",
+    "",
+    "Kind regards,",
+    review.assignee.name,
+  ].join("\n");
+}
+
+/**
+ * Body seam for a follow-up nudge on an already-sent supplier request. Short,
+ * references the original request, asks for status, same tone as the draft.
+ */
+export function generateFollowUpBody(
+  review: InvoiceReview,
+  original: SupplierEmailDraft,
+): string {
+  return [
+    "Dear Accounts team,",
+    "",
+    `Following up on our request regarding Invoice ${review.id} ("${original.subject}"). We have not yet received the corrected invoice.`,
+    "",
+    "Could you share a status update, or send the corrected invoice at your earliest convenience?",
+    "",
+    "Thank you,",
+    review.assignee.name,
+  ].join("\n");
+}
+
+/**
+ * The weekday a follow-up becomes socially appropriate: the send date plus two
+ * business days, as a weekday name. Fixture copy. LANDING SLOT for real vendor
+ * SLA data (replace with the supplier's actual response window).
+ */
+export function followUpWeekday(): string {
+  const d = new Date();
+  let added = 0;
+  while (added < 2) {
+    d.setDate(d.getDate() + 1);
+    const day = d.getDay();
+    if (day !== 0 && day !== 6) added += 1;
+  }
+  return d.toLocaleDateString("en-US", { weekday: "long" });
+}
+
+/**
+ * Waiting-state copy for a routing action: the row title ("Asked supplier" /
+ * "Routed to procurement"), the sub, who we wait on, and a lowercase fragment
+ * for the completion summary. Derived from the exception + chosen suggestion.
+ */
+export function routeMeta(
+  exception: InvoiceException,
+  suggestion: Suggestion,
+): { title: string; sub: string; waitingOn: string; shortLabel: string } {
+  const meta = EXCEPTION_META[exception.type];
+  if (
+    suggestion.type === "suggest_supplier" ||
+    suggestion.type === "suggest_email"
+  ) {
+    return {
+      title: "Asked supplier",
+      sub: `${meta.label}, waiting on supplier`,
+      waitingOn: "supplier",
+      shortLabel: "asked supplier",
+    };
+  }
+  const owner = (
+    (suggestion.data.owner as string) ?? "data owner"
+  ).toLowerCase();
+  return {
+    title: `Routed to ${owner}`,
+    sub: `${meta.label}, waiting on ${owner}`,
+    waitingOn: owner,
+    shortLabel: `routed to ${owner}`,
+  };
 }
 
 export function suggestionLabel(s: Suggestion): string {
@@ -405,6 +573,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
   "INV-84471": {
     id: "INV-84471",
     supplier: "Acme Supply Co.",
+    vendorEmail: "accounts@acmesupply.co",
     amount: "$12,240.00 USD",
     due: "May 28, 2026",
     poPill: { label: "No PO", tone: "red" },
@@ -457,6 +626,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
   "INV-55832": {
     id: "INV-55832",
     supplier: "Meridian Group",
+    vendorEmail: "ap@meridiangroup.com",
     amount: "€22,500.00 EUR",
     due: "May 29, 2026",
     poPill: { label: "PO-558120044", tone: "neutral" },
@@ -506,6 +676,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
   "INV-66216": {
     id: "INV-66216",
     supplier: "Prime Office Solutions",
+    vendorEmail: "billing@primeoffice.com",
     amount: "$65,800.00 USD",
     due: "May 28, 2026",
     poPill: { label: "PO-820044712", tone: "neutral" },
@@ -555,6 +726,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
   "INV-60118": {
     id: "INV-60118",
     supplier: "Crestwood Co.",
+    vendorEmail: "hello@crestwood.co",
     amount: "$940.00 USD",
     due: "May 29, 2026",
     poPill: { label: "No PO", tone: "red" },
@@ -672,6 +844,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
   "INV-91003": {
     id: "INV-91003",
     supplier: "NorthStar LLC",
+    vendorEmail: "accounts@northstar.com",
     amount: "£8,750.00 GBP",
     due: "May 28, 2026",
     poPill: { label: "PO-NL-20250093", tone: "neutral" },
@@ -714,6 +887,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
   "INV-GRN-001": {
     id: "INV-GRN-001",
     supplier: "ACME Industrial",
+    vendorEmail: "accounts@acmeindustrial.com",
     amount: "$694.39 USD",
     due: "May 28, 2026",
     poPill: { label: "PO-460035919", tone: "neutral" },
@@ -761,6 +935,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
   "INV-77294": {
     id: "INV-77294",
     supplier: "Vertex Supplies Inc.",
+    vendorEmail: "ap@vertexsupplies.com",
     amount: "$3,180.00 USD",
     due: "May 29, 2026",
     poPill: { label: "PO-771140082", tone: "neutral" },
@@ -801,6 +976,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
   "INV-48209": {
     id: "INV-48209",
     supplier: "Folio Systems",
+    vendorEmail: "billing@foliosystems.com",
     amount: "$7,620.00 USD",
     due: "May 29, 2026",
     poPill: { label: "PO-820044891", tone: "neutral" },
@@ -880,4 +1056,69 @@ export function revalidateException(
 export function highlightInSource(ref: string): void {
   // eslint-disable-next-line no-console
   console.info(`[highlightInSource] ${ref}`);
+}
+
+/**
+ * SEAM CONTRACT (exception-resolution-loop workstream). The OUTBOUND leg: send
+ * the drafted correction request to the supplier. Pairs with the inbound
+ * receiveCorrectedInvoice below (the return leg).
+ *
+ * Input: invoice id, the parked exception id, and the drafted email (recipient,
+ *   subject, and the body snapshot as reviewed).
+ * Output: a send receipt (message id + send time). The caller freezes the draft
+ *   onto the waiting record so the sent message stays the audit artifact.
+ *
+ * Stubbed: resolves after ~600ms with a synthetic receipt.
+ */
+export function sendSupplierEmail(
+  invoiceId: string,
+  exceptionId: string,
+  draft: SupplierEmailDraft,
+): Promise<{ id: string; sentTime: string }> {
+  return new Promise((resolve) => {
+    setTimeout(
+      () =>
+        resolve({
+          id: `${invoiceId}-${exceptionId}-msg`,
+          sentTime: "just now",
+        }),
+      600,
+    );
+  });
+}
+
+/**
+ * SEAM CONTRACT (exception-resolution-loop workstream, owner: Thomas).
+ *
+ * The return path for a parked (waiting) exception: the point where a supplier
+ * or data owner sends back the corrected invoice/data.
+ *
+ * Input: the invoice id and the parked exception id (in a real build, also the
+ *   returned document/data itself).
+ * Output: the corrected `document` reference, plus a `revalidation` result from
+ *   re-running validation against the now-changed data. `revalidation.cleared`
+ *   lists exception ids the correction resolves (including the reopened one when
+ *   the correction fixes it); `revalidation.surfaced` lists any new exceptions
+ *   the honest re-check turns up. The caller reopens the exception (waiting ->
+ *   open), refreshes its finding from the document, then drives the standard
+ *   re-validation choreography with this result.
+ *
+ * Stubbed: resolves after ~1.2s, returning a corrected document id and a
+ * re-validation that clears the reopened exception (the correction fixes it).
+ */
+export function receiveCorrectedInvoice(
+  invoiceId: string,
+  exceptionId: string,
+): Promise<{
+  document: string;
+  revalidation: { cleared: string[]; surfaced: InvoiceException[] };
+}> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        document: `${invoiceId}-R1`,
+        revalidation: { cleared: [exceptionId], surfaced: [] },
+      });
+    }, 1200);
+  });
 }
