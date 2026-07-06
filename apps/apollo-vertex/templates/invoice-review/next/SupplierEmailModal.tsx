@@ -120,10 +120,8 @@ export function SupplierEmailModal({
               description combines the AI provenance disclaimer with the review
               prompt on one line. */}
           <div className="shrink-0 px-4 pt-4 pb-3">
-            <DialogTitle className="text-sm font-medium">
-              Email to {vendor}
-            </DialogTitle>
-            <DialogDescription className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <DialogTitle>Email to {vendor}</DialogTitle>
+            <DialogDescription className="mt-0.5 flex items-center gap-1.5">
               <AiMark size={12} gradientId={markGradientId} />
               <span>
                 {bodyEdited

@@ -5,7 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
-import { type Suggestion, suggestionLabel } from "./invoice-review-data";
+import {
+  isRouteSuggestion,
+  isSupplierRoute,
+  ROUTE_REASONS,
+  routeOwner,
+  type Suggestion,
+  suggestionLabel,
+} from "./invoice-review-data";
+import { ReasonDialog } from "./ReasonDialog";
 
 /**
  * AI suggested fix, rendered as the AI Toolkit "Card (Primary)" glass surface:
@@ -25,7 +33,7 @@ export function SuggestedFixCard({
   disabled,
 }: {
   suggestions: Suggestion[];
-  onResolve: (s: Suggestion) => void;
+  onResolve: (s: Suggestion, reason?: string, note?: string) => void;
   disabled?: boolean;
 }) {
   const gradientId = useId();
@@ -79,29 +87,72 @@ export function SuggestedFixCard({
             </p>
           )}
           <div className="mt-4 flex justify-start gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
+            <ActionButton
+              suggestion={primary}
               disabled={disabled}
-              onClick={() => onResolve(primary)}
-            >
-              {suggestionLabel(primary)}
-            </Button>
+              onResolve={onResolve}
+            />
             {alternatives.map((alt, i) => (
-              <Button
+              <ActionButton
                 // suggestions are a small static list; index key is stable here
                 key={`${alt.type}-${i}`}
-                variant="secondary"
-                size="sm"
+                suggestion={alt}
                 disabled={disabled}
-                onClick={() => onResolve(alt)}
-              >
-                {suggestionLabel(alt)}
-              </Button>
+                onResolve={onResolve}
+              />
             ))}
           </div>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+/**
+ * A single suggestion action. Internal routes (route to a data owner, approver,
+ * etc.) open a confirm dialog naming the owner before parking; every other
+ * action (a data fix, a supplier route) commits on click. Supplier routes still
+ * open their own draft modal downstream, so they are left to the plain click
+ * path here.
+ */
+function ActionButton({
+  suggestion,
+  disabled,
+  onResolve,
+}: {
+  suggestion: Suggestion;
+  disabled?: boolean;
+  onResolve: (s: Suggestion, reason?: string, note?: string) => void;
+}) {
+  const isInternalRoute =
+    isRouteSuggestion(suggestion) && !isSupplierRoute(suggestion);
+
+  if (isInternalRoute) {
+    const owner = routeOwner(suggestion);
+    return (
+      <ReasonDialog
+        trigger={
+          <Button variant="secondary" size="sm" disabled={disabled}>
+            {suggestionLabel(suggestion)}
+          </Button>
+        }
+        title={`Route to ${owner.name}`}
+        description={owner.role}
+        chips={ROUTE_REASONS}
+        commitLabel="Route"
+        onCommit={(reason, note) => onResolve(suggestion, reason, note)}
+      />
+    );
+  }
+
+  return (
+    <Button
+      variant="secondary"
+      size="sm"
+      disabled={disabled}
+      onClick={() => onResolve(suggestion)}
+    >
+      {suggestionLabel(suggestion)}
+    </Button>
   );
 }

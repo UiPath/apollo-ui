@@ -193,12 +193,20 @@ export interface SupplierEmailDraft {
 /** An exception parked by a routing action, awaiting a corrected invoice/data. */
 export interface WaitingRef {
   id: string;
-  /** who we are waiting on, e.g. "supplier", "procurement", "data owner" */
+  /** who we are waiting on: "supplier", or an internal owner's name */
   waitingOn: string;
-  /** the routing event title, e.g. "Asked supplier", "Routed to procurement" */
+  /** the internal owner's role (internal routes only), for the summary line */
+  waitingRole?: string;
+  /** the routing event title, e.g. "Asked supplier", "Routed to Sarah Chen" */
   label: string;
   /** the sent supplier email, when the route went through the draft modal */
   draft?: SupplierEmailDraft;
+}
+
+/** A named internal handoff recipient (colleague), not a bare role string. */
+export interface RouteOwner {
+  name: string;
+  role: string;
 }
 
 /**
@@ -247,6 +255,10 @@ export type RunEventInput =
       exception: InvoiceException;
       /** the sent supplier email, when the route went through the draft modal */
       draft?: SupplierEmailDraft;
+      /** the selected reason chip (internal routes), for the expanded detail */
+      reason?: string;
+      /** the reviewer's optional handoff note (internal routes) */
+      note?: string;
     }
   | {
       kind: "revalidated";
@@ -277,6 +289,11 @@ export type RunEventInput =
       label: string;
       sub: string;
       time: string;
+      /** who took the action, stated (not inferred) so the row picks the right
+       *  marker: reviewer dispositions get the person marker, not the AI sparkle */
+      actor: "reviewer" | "agent";
+      /** the reviewer's optional note (hold), for the expanded detail */
+      note?: string;
     };
 
 /** A logged event: an input plus the store-assigned key (intersection over the
@@ -470,15 +487,81 @@ export function followUpWeekday(): string {
   return d.toLocaleDateString("en-US", { weekday: "long" });
 }
 
+// Internal routes hand off to a named colleague, never a bare role string. The
+// fixture role string (data.owner) is the lookup key; the resolver always
+// returns a RouteOwner, so no route can surface a lowercased role like
+// "ap lead". Add a row here when a fixture introduces a new route target.
+const DEFAULT_ROUTE_OWNER: RouteOwner = { name: "Sarah Chen", role: "AP lead" };
+
+const ROUTE_OWNERS: Record<string, RouteOwner> = {
+  "AP lead": { name: "Sarah Chen", role: "AP lead" },
+  "Data owner": { name: "Sarah Chen", role: "AP lead" },
+  Approver: { name: "Marcus Webb", role: "Finance approver" },
+  "Tax data owner": { name: "Priya Nair", role: "Tax data owner" },
+  "Vendor data owner": { name: "Diego Alvarez", role: "Vendor data owner" },
+  Procurement: { name: "Tom Fletcher", role: "Procurement lead" },
+  Receiving: { name: "Ana Duarte", role: "Receiving lead" },
+  "Vendor onboarding": { name: "Nadia Rahman", role: "Vendor onboarding" },
+};
+
+/**
+ * Resolve an internal route suggestion to its named owner. Always returns a
+ * RouteOwner (falls back to a named default), so no route parks against a bare
+ * role string.
+ */
+export function routeOwner(suggestion: Suggestion): RouteOwner {
+  const key = suggestion.data.owner as string | undefined;
+  return (key ? ROUTE_OWNERS[key] : undefined) ?? DEFAULT_ROUTE_OWNER;
+}
+
+// Reason chips for the park-family dialogs (Hold, Route). Single-select, first
+// preselected so one-click commit always works. Fixture-adjustable: tune per
+// route type here when the reasons should differ by handoff target.
+export const HOLD_REASONS = [
+  "Awaiting supplier response",
+  "Escalating to manager",
+  "PO in progress",
+  "Needs more info",
+] as const;
+
+export const ROUTE_REASONS = [
+  "Data correction needed",
+  "Ownership unclear",
+  "Needs verification",
+  "Other",
+] as const;
+
+export const FLAG_REASONS = [
+  "Awaiting supplier response",
+  "Escalating to manager",
+  "PO in progress",
+  "Needs more info",
+] as const;
+
+export const REJECT_REASONS = [
+  "Incorrect price",
+  "Wrong vendor",
+  "Duplicate invoice",
+  "No PO found",
+  "Other",
+] as const;
+
 /**
  * Waiting-state copy for a routing action: the row title ("Asked supplier" /
- * "Routed to procurement"), the sub, who we wait on, and a lowercase fragment
- * for the completion summary. Derived from the exception + chosen suggestion.
+ * "Routed to Sarah Chen"), the sub, who we wait on (and their role, for
+ * internal routes), and a lowercase fragment for the completion summary.
+ * Derived from the exception + chosen suggestion.
  */
 export function routeMeta(
   exception: InvoiceException,
   suggestion: Suggestion,
-): { title: string; sub: string; waitingOn: string; shortLabel: string } {
+): {
+  title: string;
+  sub: string;
+  waitingOn: string;
+  waitingRole?: string;
+  shortLabel: string;
+} {
   const meta = EXCEPTION_META[exception.type];
   if (
     suggestion.type === "suggest_supplier" ||
@@ -491,14 +574,13 @@ export function routeMeta(
       shortLabel: "asked supplier",
     };
   }
-  const owner = (
-    (suggestion.data.owner as string) ?? "data owner"
-  ).toLowerCase();
+  const owner = routeOwner(suggestion);
   return {
-    title: `Routed to ${owner}`,
-    sub: `${meta.label}, waiting on ${owner}`,
-    waitingOn: owner,
-    shortLabel: `routed to ${owner}`,
+    title: `Routed to ${owner.name}`,
+    sub: `${meta.label}, routed to ${owner.name}`,
+    waitingOn: owner.name,
+    waitingRole: owner.role,
+    shortLabel: `routed to ${owner.name}`,
   };
 }
 
@@ -1162,9 +1244,15 @@ export function approveInvoice(invoiceId: string): void {
 }
 
 /** SEAM: park the invoice on a reviewer hold (reversible). */
-export function holdInvoice(invoiceId: string, reason?: string): void {
+export function holdInvoice(
+  invoiceId: string,
+  reason?: string,
+  note?: string,
+): void {
   // eslint-disable-next-line no-console
-  console.info(`[holdInvoice] ${invoiceId}${reason ? ` — ${reason}` : ""}`);
+  console.info(
+    `[holdInvoice] ${invoiceId}${reason ? ` — ${reason}` : ""}${note ? ` (${note})` : ""}`,
+  );
 }
 
 /** SEAM: lift a hold and return the invoice to its prior state. */
@@ -1185,6 +1273,7 @@ export function buildApproval(review: InvoiceReview): {
       label: "Invoice approved",
       sub: `${review.amount} to ${review.supplier}`,
       time,
+      actor: "reviewer",
     },
   };
 }
@@ -1192,9 +1281,11 @@ export function buildApproval(review: InvoiceReview): {
 export function buildHold(
   review: InvoiceReview,
   reason?: string,
+  note?: string,
 ): { disposition: InvoiceDisposition; event: RunEventInput } {
   const time = "Just now";
   const trimmed = reason?.trim() || undefined;
+  const trimmedNote = note?.trim() || undefined;
   return {
     disposition: { type: "held", reason: trimmed, time },
     event: {
@@ -1202,6 +1293,8 @@ export function buildHold(
       label: "Put on hold",
       sub: trimmed ?? `${review.supplier} invoice`,
       time,
+      actor: "reviewer",
+      note: trimmedNote,
     },
   };
 }
@@ -1217,6 +1310,7 @@ export function buildResume(): {
       label: "Resumed review",
       sub: "",
       time: "Just now",
+      actor: "reviewer",
     },
   };
 }
@@ -1244,6 +1338,38 @@ export function sendSupplierEmail(
         resolve({
           id: `${invoiceId}-${exceptionId}-msg`,
           sentTime: "just now",
+        }),
+      600,
+    );
+  });
+}
+
+/**
+ * SEAM CONTRACT (exception-resolution-loop workstream). The OUTBOUND leg for an
+ * INTERNAL handoff: route the exception to a named colleague (data owner,
+ * approver, etc.) with an optional note. The internal counterpart to
+ * sendSupplierEmail. Pairs with the same receiveCorrectedInvoice return leg.
+ *
+ * Input: invoice id, the parked exception id, the resolved owner (name + role),
+ *   the selected reason chip, and the reviewer's optional handoff note.
+ * Output: a routing receipt (handoff id + time). The caller parks the exception
+ *   in a waiting state against the owner's name.
+ *
+ * Stubbed: resolves after ~600ms with a synthetic receipt.
+ */
+export function routeToOwner(
+  invoiceId: string,
+  exceptionId: string,
+  owner: RouteOwner,
+  reason?: string,
+  note?: string,
+): Promise<{ id: string; routedTime: string }> {
+  return new Promise((resolve) => {
+    setTimeout(
+      () =>
+        resolve({
+          id: `${invoiceId}-${exceptionId}-route`,
+          routedTime: "just now",
         }),
       600,
     );
