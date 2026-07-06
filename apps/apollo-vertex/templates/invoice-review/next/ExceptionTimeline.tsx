@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Clock,
   Eye,
+  Pause,
   Search,
   UserRound,
   UserRoundCheck,
@@ -22,22 +23,36 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
 import {
   type AgentStep,
+  approveInvoice,
+  buildApproval,
+  buildHold,
+  buildResume,
   exceptionMeta,
   type Finding,
   followUpWeekday,
   generateFollowUpBody,
   generateSupplierEmailBody,
   highlightInSource,
+  holdInvoice,
   type InvoiceException,
   type InvoiceReview,
   isRouteSuggestion,
   isSupplierRoute,
+  type RunEvent,
+  type RunEventInput,
   receiveCorrectedInvoice,
+  resumeInvoice,
   revalidateException,
   routeMeta,
   type Suggestion,
@@ -83,6 +98,7 @@ type MarkerKind =
   | "resolved"
   | "waiting"
   | "waiting-complete"
+  | "held"
   | "complete";
 
 function TimelineMarker({ kind }: { kind: MarkerKind }) {
@@ -118,6 +134,15 @@ function TimelineMarker({ kind }: { kind: MarkerKind }) {
     return (
       <span className="flex size-7 items-center justify-center rounded-full bg-info/15 text-info">
         <Clock className="size-4" />
+      </span>
+    );
+  }
+  if (kind === "held") {
+    // Reviewer hold: neutral pause. Not green (not done), not the info clock
+    // (not an external dependency) — a deliberate deferral.
+    return (
+      <span className="flex size-7 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <Pause className="size-3.5" />
       </span>
     );
   }
@@ -829,63 +854,8 @@ function ExceptionGroup({
   );
 }
 
-// Runtime history rows accumulated as the reviewer works the loop.
-type RunEvent =
-  | {
-      kind: "resolved";
-      key: string;
-      label: string;
-      sub: string;
-      time: string;
-      shortLabel?: string;
-      /** auto = cleared by a re-check, not resolved by the reviewer */
-      auto?: boolean;
-      /** the source exception (status resolved), for lossless row expansion */
-      exception?: InvoiceException;
-    }
-  | {
-      kind: "waiting";
-      key: string;
-      label: string;
-      sub: string;
-      time: string;
-      shortLabel?: string;
-      /** who we are waiting on, for the stamp line */
-      waitingOn: string;
-      /** the source exception (status waiting), for lossless row expansion */
-      exception: InvoiceException;
-      /** the sent supplier email, when the route went through the draft modal */
-      draft?: SupplierEmailDraft;
-    }
-  | {
-      kind: "revalidated";
-      key: string;
-      label: string;
-      sub: string;
-      time: string;
-      pending: boolean;
-    }
-  | {
-      // a follow-up reminder sent for a still-parked exception (waiting unchanged)
-      kind: "followed-up";
-      key: string;
-      label: string;
-      sub: string;
-      time: string;
-      /** the parked exception this reminder chases, for lossless row expansion */
-      exception: InvoiceException;
-      /** the sent reminder email */
-      draft: SupplierEmailDraft;
-    }
-  | {
-      // the return seam: a corrected invoice/data arrived for a parked exception
-      kind: "received";
-      key: string;
-      label: string;
-      sub: string;
-      time: string;
-    };
-
+// The event log (RunEvent) now lives in the runtime store (invoice-review-data),
+// so history survives remounts. These are the derived row types used for render.
 type ResolvedEvent = Extract<RunEvent, { kind: "resolved" }>;
 type WaitingEvent = Extract<RunEvent, { kind: "waiting" }>;
 type FollowedUpEvent = Extract<RunEvent, { kind: "followed-up" }>;
@@ -1367,9 +1337,61 @@ function ResolveHistoryPeek({
   );
 }
 
+/**
+ * A quiet Hold button that opens a small popover for an optional reason. Lighter
+ * than the correspondence modal: no AI, no provenance, the reviewer's own note.
+ * Esc / click-away dismiss with zero trace (the reason resets on close).
+ */
+function HoldButton({
+  label,
+  onHold,
+}: {
+  label: string;
+  onHold: (reason?: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  function commit() {
+    onHold(reason);
+    setOpen(false);
+    setReason("");
+  }
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setReason("");
+      }}
+    >
+      <PopoverTrigger asChild>
+        <Button size="sm" variant="ghost" className="text-secondary-foreground">
+          {label}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-72 p-3">
+        <p className="text-xs font-medium text-muted-foreground">Reason</p>
+        <Input
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Optional"
+          className="mt-1.5"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+          }}
+        />
+        <div className="mt-3 flex justify-end">
+          <Button size="sm" onClick={commit}>
+            Hold invoice
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 /** The completion end state: the only solid-fill marker, a title at the anchor
- * scale, a summary built from the resolutions, and the disposition actions
- * (wired to the same handlers as the header Approve/Hold). */
+ * scale, a summary built from the resolutions, and the disposition actions. */
 function TerminalBlock({
   summary,
   onApprove,
@@ -1377,7 +1399,7 @@ function TerminalBlock({
 }: {
   summary: string;
   onApprove: () => void;
-  onHold: () => void;
+  onHold: (reason?: string) => void;
 }) {
   return (
     <TimelineRow marker="complete" isLast live>
@@ -1391,15 +1413,120 @@ function TerminalBlock({
         <p className="mt-1.5 max-w-prose text-sm leading-normal text-muted-foreground">
           {summary}
         </p>
-        {/* Duplicates the header disposition intentionally: no resolution actions
-            remain on screen here, so scopes don't mix. Header stays canonical. */}
         <div className="mt-4 flex items-center gap-2">
           <Button size="sm" onClick={onApprove}>
             Approve invoice
           </Button>
-          <Button size="sm" variant="ghost" onClick={onHold}>
-            Hold
+          <HoldButton label="Hold" onHold={onHold} />
+        </div>
+      </div>
+    </TimelineRow>
+  );
+}
+
+/**
+ * Approved end state: the terminal transforms in place. Headline + summary shift
+ * to the historical muting treatment; the actions become a read-only approval
+ * stamp (solid green check, this is true completion). No CTAs remain.
+ */
+function ApprovedTerminalBlock({
+  review,
+  summary,
+  time,
+  reducedMotion,
+}: {
+  review: InvoiceReview;
+  summary: string;
+  time: string;
+  reducedMotion: boolean;
+}) {
+  return (
+    <TimelineRow marker="complete" isLast live>
+      <div
+        className={cn(
+          "opacity-[0.85]",
+          !reducedMotion && "animate-in fade-in-0 duration-200 ease-out",
+        )}
+      >
+        <h2
+          className="text-[22px] font-medium leading-[1.25] text-secondary-foreground"
+          style={{ letterSpacing: "-0.01em" }}
+        >
+          All checks passed
+        </h2>
+        <p className="mt-1.5 max-w-prose text-sm leading-normal text-muted-foreground">
+          {summary}
+        </p>
+      </div>
+      {/* Approval stamp (full opacity): the durable fact this state records. */}
+      <div className="mt-4 flex min-h-7 flex-wrap items-center gap-x-1.5">
+        <Check className="size-4 shrink-0 text-success" />
+        <span className="text-sm font-medium text-foreground">Approved</span>
+        <span className="text-sm text-muted-foreground">
+          · {review.amount} · {review.supplier} · {midSentenceTime(time)}
+        </span>
+      </div>
+      <p className="mt-3 text-[13px] text-muted-foreground">
+        Approved and sent for payment.
+      </p>
+    </TimelineRow>
+  );
+}
+
+/**
+ * Held end state: a reversible reviewer park. Neutral pause marker (not green,
+ * not the info clock). Single Resume action restores the frozen state exactly
+ * (hold never mutated the state beneath it). The dev return trigger stays
+ * available when waiting is frozen underneath, so the loop is still demoable.
+ */
+function HeldTerminalBlock({
+  reason,
+  frozenWaiting,
+  reducedMotion,
+  onResume,
+  showDevTrigger,
+  onSimulateCorrected,
+}: {
+  reason?: string;
+  frozenWaiting: boolean;
+  reducedMotion: boolean;
+  onResume: () => void;
+  showDevTrigger: boolean;
+  onSimulateCorrected: () => void;
+}) {
+  const resumeSentence = frozenWaiting
+    ? "Resume to return to the waiting request."
+    : "Resume to return this invoice to your decision.";
+  return (
+    <TimelineRow marker="held" isLast live>
+      <div
+        className={cn(
+          !reducedMotion && "animate-in fade-in-0 duration-200 ease-out",
+        )}
+      >
+        <h2
+          className="text-[22px] font-bold leading-[1.25] text-foreground"
+          style={{ letterSpacing: "-0.01em" }}
+        >
+          On hold
+        </h2>
+        <p className="mt-1.5 max-w-prose text-sm leading-normal text-muted-foreground">
+          {reason ? `On hold: ${reason}` : "Held by you."} {resumeSentence}
+        </p>
+        <div className="mt-4 flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={onResume}>
+            Resume review
           </Button>
+          {showDevTrigger && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground"
+              onClick={onSimulateCorrected}
+            >
+              Simulate corrected invoice
+            </Button>
+          )}
         </div>
       </div>
     </TimelineRow>
@@ -1507,7 +1634,7 @@ function WaitingTerminalBlock({
   followUpByExc: Record<string, string>;
   reducedMotion: boolean;
   onFollowUp: (event: WaitingEvent) => void;
-  onHold: () => void;
+  onHold: (reason?: string) => void;
   showDevTrigger: boolean;
   onSimulateCorrected: () => void;
 }) {
@@ -1549,14 +1676,7 @@ function WaitingTerminalBlock({
               Follow up
             </Button>
           )}
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-secondary-foreground"
-            onClick={onHold}
-          >
-            Hold invoice
-          </Button>
+          <HoldButton label="Hold invoice" onHold={onHold} />
           {showDevTrigger && (
             <Button
               size="sm"
@@ -1584,19 +1704,17 @@ function WaitingTerminalBlock({
 export function ExceptionTimeline({
   review,
   onAllClear,
-  onApprove,
-  onHold,
   exceptionListVariant = "strip",
 }: {
   review: InvoiceReview;
   onAllClear: () => void;
-  onApprove: () => void;
-  onHold: () => void;
   /** "strip" = the Up next preview (default); "index" = the bordered index. */
   exceptionListVariant?: "strip" | "index";
 }) {
   const runtime = useInvoiceRuntime();
   const rt = runtime.getRuntime(review.id);
+  // Invoice disposition (approve/hold) is the single source in v2/v3.
+  const disposition = rt.disposition;
   // Full ordered list = fixtures + loop-surfaced; resolved ids live in the
   // shared store so the queue and table reflect resolution live.
   const list = useMemo(
@@ -1619,7 +1737,8 @@ export function ExceptionTimeline({
   const [acknowledged, setAcknowledged] = useState<Set<string>>(
     () => new Set(),
   );
-  const [events, setEvents] = useState<RunEvent[]>([]);
+  // The event log lives in the runtime store (survives remount); read it here.
+  const events = rt.events;
   const [resolve, setResolve] = useState<ResolveState | null>(null);
   // Supplier email draft modal. "route": the confirmation step for a supplier
   // route (Send commits the park). "followup": a reminder on an already-parked
@@ -1640,8 +1759,6 @@ export function ExceptionTimeline({
     | null
   >(null);
   const reducedMotion = usePrefersReducedMotion();
-  const revalCounter = useRef(0);
-  const followUpCounter = useRef(0);
   const clearedFired = useRef(false);
 
   // Chat-style scroll follow: the column tracks the newest live content unless
@@ -1843,11 +1960,12 @@ export function ExceptionTimeline({
         const t = setTimeout(
           () => {
             const on = s.waitingOn ?? "supplier";
-            setEvents((prev) => [
-              ...prev,
+            // Park + append the waiting row atomically.
+            runtime.parkException(
+              review.id,
+              { id: s.exc.id, waitingOn: on, label: s.label, draft: s.draft },
               {
                 kind: "waiting",
-                key: `wait-${s.exc.id}`,
                 label: s.label,
                 sub: s.sub,
                 time: "Just now",
@@ -1856,13 +1974,7 @@ export function ExceptionTimeline({
                 exception: s.exc,
                 draft: s.draft,
               },
-            ]);
-            runtime.parkException(review.id, {
-              id: s.exc.id,
-              waitingOn: on,
-              label: s.label,
-              draft: s.draft,
-            });
+            );
             setActiveId(nextOpenId(s.exc.id)?.id ?? "");
             setResolve(null);
           },
@@ -1921,25 +2033,23 @@ export function ExceptionTimeline({
       };
     }
     // reveal: hold on the settled row briefly, then commit everything at once.
+    // State changes + their events land in ONE runtime mutation (atomic).
     const s = resolve;
     const t = setTimeout(
       () => {
-        setEvents((prev) => [
-          ...prev,
+        const events: RunEventInput[] = [
           {
             kind: "resolved",
-            key: `res-${s.exc.id}`,
             label: s.label,
             sub: s.sub,
             time: "Just now",
             shortLabel: s.shortLabel,
             exception: s.exc,
           },
-          ...s.clearedInList.map((cid) => {
+          ...s.clearedInList.map((cid): RunEventInput => {
             const c = list.find((e) => e.id === cid);
             return {
-              kind: "resolved" as const,
-              key: `res-auto-${cid}`,
+              kind: "resolved",
               label: `${c ? exceptionMeta(c).label : "Issue"} cleared`,
               sub: "Cleared automatically after re-check",
               time: "Just now",
@@ -1949,17 +2059,18 @@ export function ExceptionTimeline({
           }),
           {
             kind: "revalidated",
-            key: `reval-${revalCounter.current++}`,
             label: "Re-validated",
             sub: s.settledSub,
             time: "Just now",
             pending: false,
           },
-        ]);
-        runtime.resolveExceptions(review.id, [s.exc.id, ...s.clearedInList]);
-        if (s.fresh.length > 0) runtime.surfaceExceptions(review.id, s.fresh);
-        // Data-changing resolutions (e.g. a linked PO) update every surface.
-        if (s.dataPatch) runtime.patchData(review.id, s.dataPatch);
+        ];
+        runtime.commitResolve(review.id, {
+          resolvedIds: [s.exc.id, ...s.clearedInList],
+          surfaced: s.fresh,
+          dataPatch: s.dataPatch,
+          events,
+        });
         setActiveId(
           nextOpenId(s.exc.id, s.clearedInList)?.id ?? s.fresh[0]?.id ?? "",
         );
@@ -2043,7 +2154,10 @@ export function ExceptionTimeline({
     const r = active.resolution;
     const label = r?.label ?? `${meta.label} resolved`;
     const sub = r?.sub ?? `${meta.label}, resolved by you`;
-    const shortLabel = r?.shortLabel ?? `${meta.label.toLowerCase()} resolved`;
+    // Do NOT lowercase the label: it would mangle acronyms ("PO" -> "po", "VAT"
+    // -> "vat"). Labels are written sentence-ready; use as-is. Fixtures can
+    // supply a lowercase shortLabel for a smoother completion summary.
+    const shortLabel = r?.shortLabel ?? `${meta.label} resolved`;
     setResolve({
       exc: active,
       mode: "fix",
@@ -2086,11 +2200,10 @@ export function ExceptionTimeline({
       startRoute(m.exc, m.suggestion, { ...draft, sentTime: "Just now" });
       return;
     }
-    setEvents((prev) => [
-      ...prev,
+    // Follow-up changes no state: pure append.
+    runtime.appendEvents(review.id, [
       {
         kind: "followed-up",
-        key: `followup-${m.exc.id}-${followUpCounter.current++}`,
         label: "Followed up",
         sub: `${exceptionMeta(m.exc).label}, reminder sent`,
         time: "Just now",
@@ -2114,25 +2227,53 @@ export function ExceptionTimeline({
       review.id,
       exc.id,
     );
+    const received: RunEventInput = {
+      kind: "received",
+      label: "Corrected invoice received",
+      sub: `${document} attached by supplier`,
+      time: "Just now",
+    };
+    // Seam-freeze while held: apply the arrival's state change AND its events in
+    // ONE atomic mutation (unpark + resolve + received/re-validated), so a
+    // remount can never catch a half-applied return. The held terminal does not
+    // move; Resume then lands on the honest post-arrival (approvable) state.
+    if (disposition?.type === "held") {
+      runtime.commitResolve(review.id, {
+        unparkIds: [exc.id],
+        resolvedIds: [
+          exc.id,
+          ...revalidation.cleared.filter((c) => c !== exc.id),
+        ],
+        surfaced: revalidation.surfaced,
+        events: [
+          received,
+          {
+            kind: "revalidated",
+            label: "Re-validated",
+            sub: "All checks re-run, nothing new",
+            time: "Just now",
+            pending: false,
+          },
+        ],
+      });
+      return;
+    }
     stickRef.current = nearBottom(120);
     userScrolledRef.current = false;
-    setEvents((prev) => [
-      ...prev,
-      {
-        kind: "received",
-        key: `recv-${exc.id}`,
-        label: "Corrected invoice received",
-        sub: `${document} attached by supplier`,
-        time: "Just now",
-      },
-    ]);
-    runtime.unparkException(review.id, exc.id);
+    // Active path: unpark + log the arrival atomically, then the choreography
+    // resolves it (each step is its own atomic, coherent mutation).
+    runtime.commitResolve(review.id, {
+      unparkIds: [exc.id],
+      events: [received],
+    });
     setResolve({
       exc,
       mode: "fix",
       label: `${meta.label} cleared`,
       sub: `Cleared by ${document}`,
-      shortLabel: "corrected invoice cleared",
+      // No shortLabel: the summary's "corrected invoice cleared" clause is
+      // derived once from the "received" event, so it isn't double-counted here.
+      shortLabel: "",
       phase: "check",
       fresh: [],
       clearedInList: [],
@@ -2141,11 +2282,35 @@ export function ExceptionTimeline({
     });
   }
 
-  // Summary sentences built from the reviewer's resolutions, in order.
+  // Invoice disposition (v2/v3 single source): both Approve entry points and the
+  // terminal Hold/Resume flow through the runtime seams, which append the event
+  // atomically. The terminal then re-renders from rt.disposition; no observer.
+  function approve() {
+    approveInvoice(review.id);
+    const { disposition: d, event } = buildApproval(review);
+    runtime.setDisposition(review.id, d, event);
+  }
+  function hold(reason?: string) {
+    holdInvoice(review.id, reason);
+    const { disposition: d, event } = buildHold(review, reason);
+    runtime.setDisposition(review.id, d, event);
+  }
+  function resume() {
+    resumeInvoice(review.id);
+    const { disposition: d, event } = buildResume();
+    runtime.setDisposition(review.id, d, event);
+  }
+
+  // Summary sentences built from the reviewer's resolutions, in order. A
+  // corrected-invoice return clears its waiting exception via the "received"
+  // event (not a resolved row), so map it to its own clause after the fixes.
   const shortLabels = events
     .filter((e) => e.kind === "resolved" && !e.auto && e.shortLabel)
     .map((e) => (e.kind === "resolved" ? e.shortLabel : undefined))
     .filter((x): x is string => !!x);
+  if (events.some((e) => e.kind === "received")) {
+    shortLabels.push("corrected invoice cleared");
+  }
   const resolvedClause =
     shortLabels.length > 0
       ? `${(() => {
@@ -2180,15 +2345,31 @@ export function ExceptionTimeline({
           />
           {allDone ? (
             <>
-              {/* The log compresses into a peek; the terminal block lands below
-                it. True completion gets Approve; a parked exception gets the
-                waiting terminal (no Approve) instead. */}
+              {/* The log compresses into a peek; the terminal lands below it.
+                Disposition wins when set: held (paused) or approved (stamp);
+                otherwise the waiting or passed terminal from the derived state. */}
               <ResolveHistoryPeek
                 events={events}
                 waitingCount={waitingCount}
                 reducedMotion={reducedMotion}
               />
-              {waitingDone ? (
+              {disposition?.type === "held" ? (
+                <HeldTerminalBlock
+                  reason={disposition.reason}
+                  frozenWaiting={waitingCount > 0}
+                  reducedMotion={reducedMotion}
+                  onResume={resume}
+                  showDevTrigger={devMode && waitingCount > 0}
+                  onSimulateCorrected={simulateCorrected}
+                />
+              ) : disposition?.type === "approved" ? (
+                <ApprovedTerminalBlock
+                  review={review}
+                  summary={summarySentence}
+                  time={disposition.time}
+                  reducedMotion={reducedMotion}
+                />
+              ) : waitingDone ? (
                 <WaitingTerminalBlock
                   waitingOn={waitingOn}
                   summary={waitingSummary}
@@ -2196,15 +2377,15 @@ export function ExceptionTimeline({
                   followUpByExc={followUpByExc}
                   reducedMotion={reducedMotion}
                   onFollowUp={onFollowUp}
-                  onHold={onHold}
+                  onHold={hold}
                   showDevTrigger={devMode}
                   onSimulateCorrected={simulateCorrected}
                 />
               ) : (
                 <TerminalBlock
                   summary={summarySentence}
-                  onApprove={onApprove}
-                  onHold={onHold}
+                  onApprove={approve}
+                  onHold={hold}
                 />
               )}
             </>

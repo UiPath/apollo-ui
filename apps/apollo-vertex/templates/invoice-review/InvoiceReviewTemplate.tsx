@@ -100,6 +100,8 @@ import {
 import { ExceptionTimeline } from "./next/ExceptionTimeline";
 import { HeaderDecision } from "./next/HeaderDecision";
 import {
+  approveInvoice,
+  buildApproval,
   exceptionMeta,
   findReview,
   getExceptionSummary,
@@ -2076,8 +2078,20 @@ function NavInvoiceItem({
   // Exception display derives from the shared model + live loop state, so the
   // queue never disagrees with the workspace or the table.
   const runtime = useInvoiceRuntime();
+  // Only invoices in the review dataset are selectable: cards whose id is absent
+  // (e.g. Auto-approved / Done) are informational, so selecting one can't desync
+  // the surfaces onto a fallback invoice. Driven by data presence, not group.
+  const interactive = !!findReview(invoice.id);
+  // Disposition (v2/v3) takes precedence over the legacy completion/parked maps.
+  const disposition = runtime.getRuntime(invoice.id).disposition;
+  const isApprovedDisp = disposition?.type === "approved";
+  const isHeldDisp = disposition?.type === "held";
+  const holdReason =
+    disposition?.type === "held" ? disposition.reason : undefined;
+  const dispTime =
+    disposition?.time === "Just now" ? "just now" : disposition?.time;
   const summary =
-    isAuto || isCompleted
+    isAuto || isCompleted || isApprovedDisp
       ? null
       : getExceptionSummary(
           getReview(invoice.id),
@@ -2091,45 +2105,57 @@ function NavInvoiceItem({
   const isWaiting = !!summary && summary.openCount === 0 && waitingCount > 0;
   const isReady = !!summary && summary.openCount === 0 && waitingCount === 0;
 
-  const dotColor = isCompleted
-    ? completion.type === "approved"
-      ? "bg-success"
-      : "bg-destructive"
-    : isParked
-      ? "bg-warning"
-      : isWaiting
-        ? "bg-info"
-        : isAuto || isReady
+  const dotColor = isApprovedDisp
+    ? "bg-success"
+    : isHeldDisp
+      ? "bg-muted-foreground"
+      : isCompleted
+        ? completion.type === "approved"
           ? "bg-success"
-          : lead
-            ? (TONE_DOT[exceptionMeta(lead).tone] ?? "bg-muted-foreground")
-            : "bg-muted-foreground";
+          : "bg-destructive"
+        : isParked
+          ? "bg-warning"
+          : isWaiting
+            ? "bg-info"
+            : isAuto || isReady
+              ? "bg-success"
+              : lead
+                ? (TONE_DOT[exceptionMeta(lead).tone] ?? "bg-muted-foreground")
+                : "bg-muted-foreground";
 
-  const tagLabel = isCompleted
-    ? completion.type === "approved"
-      ? "Approved"
-      : "Rejected"
-    : isParked
-      ? parked?.kind === "hold"
-        ? "On hold"
-        : "Flagged"
-      : isWaiting
-        ? `Waiting on ${waitingOn}`
-        : isAuto
-          ? "Done"
-          : isReady
-            ? "Ready to approve"
-            : lead
-              ? exceptionMeta(lead).label
-              : "";
+  const tagLabel = isApprovedDisp
+    ? `Approved · ${dispTime}`
+    : isHeldDisp
+      ? holdReason
+        ? `On hold · ${holdReason}`
+        : "On hold"
+      : isCompleted
+        ? completion.type === "approved"
+          ? "Approved"
+          : "Rejected"
+        : isParked
+          ? parked?.kind === "hold"
+            ? "On hold"
+            : "Flagged"
+          : isWaiting
+            ? `Waiting on ${waitingOn}`
+            : isAuto
+              ? "Done"
+              : isReady
+                ? "Ready to approve"
+                : lead
+                  ? exceptionMeta(lead).label
+                  : "";
 
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={interactive ? onClick : undefined}
+      disabled={!interactive}
       className={cn(
-        "w-full text-left group",
-        (isAuto || isCompleted) && "opacity-40",
+        "w-full text-left",
+        interactive ? "group" : "cursor-default",
+        (isAuto || isCompleted || isApprovedDisp) && "opacity-40",
       )}
     >
       <div
@@ -2218,19 +2244,28 @@ function LeftNav({
   // Single derivation via getExceptionSummary keeps queue structure cheap to
   // restructure (ownership in flux).
   const runtime = useInvoiceRuntime();
+  // Disposition (v2/v3): approved -> "Approved" group, held -> "On hold" group.
+  const isApproved = (id: string) =>
+    runtime.getRuntime(id).disposition?.type === "approved";
+  const isHeld = (id: string) =>
+    runtime.getRuntime(id).disposition?.type === "held";
   const isWaitingOnly = (id: string) => {
-    if (isDone(id)) return false;
+    if (isDone(id) || isApproved(id) || isHeld(id)) return false;
     const s = getExceptionSummary(getReview(id), runtime.getRuntime(id));
     return s.openCount === 0 && s.waitingCount > 0;
   };
-  const dueToday = dueTodayInvoices.filter(
-    (inv) => !isDone(inv.id) && !isWaitingOnly(inv.id),
-  );
+  const inDue = (inv: Invoice) =>
+    !isDone(inv.id) &&
+    !isApproved(inv.id) &&
+    !isHeld(inv.id) &&
+    !isWaitingOnly(inv.id);
+  const dueToday = dueTodayInvoices.filter(inDue);
   const dueTomorrow = invoicesReview.filter(
-    (inv) =>
-      inv.dueGroup === "tomorrow" && !isDone(inv.id) && !isWaitingOnly(inv.id),
+    (inv) => inv.dueGroup === "tomorrow" && inDue(inv),
   );
   const waiting = invoicesReview.filter((inv) => isWaitingOnly(inv.id));
+  const onHold = invoicesReview.filter((inv) => isHeld(inv.id));
+  const approved = invoicesReview.filter((inv) => isApproved(inv.id));
   const completed = invoicesReview.filter((inv) => isDone(inv.id));
 
   return (
@@ -2326,11 +2361,49 @@ function LeftNav({
           </>
         )}
 
+        {onHold.length > 0 && (
+          <>
+            <NavSectionLabel label="On hold" count={onHold.length} />
+            <div className="space-y-2 pb-4">
+              {onHold.map((inv) => (
+                <NavInvoiceItem
+                  key={inv.id}
+                  invoice={inv}
+                  isActive={inv.id === activeId}
+                  onClick={() => onInvoiceClick(inv.id)}
+                  completion={completionMap[inv.id]}
+                  parked={parkedMap[inv.id]}
+                  contacted={contactedMap[inv.id]}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
         {completed.length > 0 && (
           <>
             <NavSectionLabel label="Completed" count={completed.length} />
             <div className="space-y-2 pb-4">
               {completed.map((inv) => (
+                <NavInvoiceItem
+                  key={inv.id}
+                  invoice={inv}
+                  isActive={inv.id === activeId}
+                  onClick={() => onInvoiceClick(inv.id)}
+                  completion={completionMap[inv.id]}
+                  parked={parkedMap[inv.id]}
+                  contacted={contactedMap[inv.id]}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {approved.length > 0 && (
+          <>
+            <NavSectionLabel label="Approved" count={approved.length} />
+            <div className="space-y-2 pb-4">
+              {approved.map((inv) => (
                 <NavInvoiceItem
                   key={inv.id}
                   invoice={inv}
@@ -2370,7 +2443,9 @@ function LeftNav({
           <ChevronLeft className="size-4" />
         </button>
         <span className="text-xs text-muted-foreground tabular-nums">
-          {position} of {total}
+          {/* A missing selection (id not in the dataset) shows a dash, never
+              "0 of N". */}
+          {position >= 1 ? `${position} of ${total}` : "—"}
         </span>
         <button
           type="button"
@@ -5413,40 +5488,57 @@ function formatCommsTime(iso: string): string {
 // here because the Details panel already owns them.
 function TopBarNext({
   flagged,
-  held,
   completion,
-  canApprove,
-  onApprove,
   onReject,
-  onHold,
   onFlag,
 }: {
   flagged: boolean;
-  held?: boolean;
   completion?: CompletionRecord;
-  canApprove: boolean;
-  onApprove: () => void;
   onReject: () => void;
-  onHold: () => void;
   onFlag: () => void;
 }) {
   const d = useInvoiceDetail();
   const runtime = useInvoiceRuntime();
+  const rt = runtime.getRuntime(d.id);
+  const review = getReview(d.id);
   // A data-changing resolution (e.g. Link PO-5123) patches the shared record.
-  const patchedPo = runtime.getRuntime(d.id).dataPatch?.purchaseOrder ?? d.po;
-  // A routed exception waiting on an outside reply blocks Approve.
-  const waitingOn = runtime.getRuntime(d.id).waiting[0]?.waitingOn ?? null;
+  const patchedPo = rt.dataPatch?.purchaseOrder ?? d.po;
+  // Approve/hold come ONLY from the runtime disposition in v2/v3; the template
+  // maps are never consulted for those (reject/flag stay legacy).
+  const summary = getExceptionSummary(review, rt);
+  const disposition = rt.disposition;
+  const approved = disposition?.type === "approved";
+  const onHoldDisp = disposition?.type === "held";
+  // Approve is only actionable from a fully-resolved, undisposed invoice.
+  let blockedReason: string | null = null;
+  if (!approved) {
+    if (onHoldDisp) {
+      blockedReason =
+        summary.waitingCount > 0
+          ? `Waiting on ${summary.waitingOn}`
+          : "On hold. Resume review to approve.";
+    } else if (summary.waitingCount > 0) {
+      blockedReason = `Waiting on ${summary.waitingOn}`;
+    } else if (summary.openCount > 0) {
+      blockedReason = "Resolve all issues to approve.";
+    }
+  }
+  function doApprove() {
+    approveInvoice(review.id);
+    const { disposition: dd, event } = buildApproval(review);
+    runtime.setDisposition(review.id, dd, event);
+  }
   const tableRow = invoiceTableData.find((r) => r.id === d.id);
   const baseStatus: InvoiceStatus = tableRow?.status ?? "pending-review";
-  const effectiveStatus: InvoiceStatus = completion
-    ? completion.type === "approved"
-      ? "approved"
-      : "rejected"
-    : held
+  const effectiveStatus: InvoiceStatus = approved
+    ? "approved"
+    : onHoldDisp
       ? "on-hold"
-      : flagged
-        ? "flagged"
-        : baseStatus;
+      : completion?.type === "rejected"
+        ? "rejected"
+        : flagged
+          ? "flagged"
+          : baseStatus;
   const statusInfo = statusBadgeMap[effectiveStatus];
   return (
     <PageHeader bordered className="@3xl:!grid-cols-[auto_1fr_auto]">
@@ -5507,12 +5599,11 @@ function TopBarNext({
       </PageHeaderContent>
       <PageHeaderActions className="@3xl:ml-6">
         <HeaderDecision
-          canApprove={canApprove}
-          onApprove={onApprove}
+          approved={approved}
+          blockedReason={blockedReason}
+          onApprove={doApprove}
           onReject={onReject}
-          onHold={onHold}
           onFlag={onFlag}
-          waitingOn={waitingOn}
         />
       </PageHeaderActions>
     </PageHeader>
@@ -5526,27 +5617,32 @@ function RightPanelNext(props: Parameters<typeof RightPanel>[0]) {
 function CenterPanelNext({
   activeInvoiceId,
   onCleared,
-  onApprove,
-  onHold,
   exceptionListVariant,
 }: {
   activeInvoiceId: string;
   onCleared: () => void;
-  onApprove: () => void;
-  onHold: () => void;
   exceptionListVariant?: "strip" | "index";
 }) {
-  const review = getReview(activeInvoiceId);
-  // The timeline owns the resolve/revalidate loop; it calls onCleared once the
-  // invoice fully clears. Keyed by invoice id so loop state resets on switch.
-  // onApprove/onHold are the same handlers as the header disposition control.
+  // findReview (not getReview): a missing id must show honest absence, never a
+  // fallback to a different invoice's review content.
+  const review = findReview(activeInvoiceId);
+  if (!review) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <p className="text-sm text-muted-foreground">
+          No review data for this invoice.
+        </p>
+      </div>
+    );
+  }
+  // The timeline owns the resolve/revalidate loop and the invoice disposition
+  // (approve/hold via the runtime store). It calls onCleared once the invoice
+  // fully clears. Keyed by invoice id so loop state resets on switch.
   return (
     <ExceptionTimeline
       key={review.id}
       review={review}
       onAllClear={onCleared}
-      onApprove={onApprove}
-      onHold={onHold}
       exceptionListVariant={exceptionListVariant}
     />
   );
@@ -5977,6 +6073,19 @@ function InvoiceDetailPane({
     ]);
   }
 
+  // Defense in depth: a selected id absent from the review dataset renders honest
+  // absence for the whole detail region, never a fallback invoice's data. (All
+  // hooks above run unconditionally; this guard sits before the JSX only.)
+  if (!findReview(activeInvoiceId)) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <p className="text-sm text-muted-foreground">
+          No review data for this invoice.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <InvoiceDetailContext.Provider value={data}>
       <>
@@ -5987,12 +6096,8 @@ function InvoiceDetailPane({
           {version !== "v1" ? (
             <TopBarNext
               flagged={flagged}
-              held={held}
               completion={justCompleted ?? completion}
-              canApprove={approveReady}
-              onApprove={() => onComplete("approved")}
               onReject={() => onComplete("rejected")}
-              onHold={() => onPark("hold", "Held from header")}
               onFlag={() => onPark("flag", "Flagged from header")}
             />
           ) : (
@@ -6017,8 +6122,6 @@ function InvoiceDetailPane({
               <CenterPanelNext
                 activeInvoiceId={activeInvoiceId}
                 onCleared={() => setApproveReady(true)}
-                onApprove={() => onComplete("approved")}
-                onHold={() => onPark("hold", "Held from header")}
                 exceptionListVariant={version === "v3" ? "strip" : "index"}
               />
             ) : (
