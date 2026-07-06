@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowDown,
   Check,
   ChevronDown,
   ChevronRight,
@@ -18,6 +19,7 @@ import {
 } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
@@ -25,11 +27,11 @@ import {
   type AgentStep,
   exceptionMeta,
   type Finding,
+  highlightInSource,
   type InvoiceException,
   type InvoiceReview,
-  type Suggestion,
-  highlightInSource,
   revalidateException,
+  type Suggestion,
   scopeLabel,
 } from "./invoice-review-data";
 import { useInvoiceRuntime } from "./invoice-runtime";
@@ -153,11 +155,48 @@ function TimelineRow({
   );
 }
 
+// Column rhythm, tokenized so it reads as hierarchy rather than incidental
+// padding. Rows own the gap below them (this keeps the connector rail
+// continuous): consecutive events sit 20px apart, and the row before a section
+// transition (history -> present, present -> done) opens 28px of air.
+const ROW_GAP = "pb-5"; // 20px, event-to-event
+const SECTION_GAP = "pb-7"; // 28px, into a section node
+
+// The scroll-to-latest pill reveals past this distance from the bottom, set
+// beyond the 120px auto-follow stick zone so it can't flicker at the boundary.
+const PILL_REVEAL_PX = 160;
+
+// Expanded-peek list shell (agent history + resolve history). Shared so both
+// peeks indent to the same x (titles align across peeks). Rhythm is split from
+// the row anatomy: nested peek rows sit tighter (12px) than top-level events
+// (20px) and section transitions (28px), so density itself cues containment.
+const PEEK_LIST = "mt-2 space-y-3 border-l border-border pl-4";
+
+/**
+ * The single metadata separator for the whole column. One grammar: a middot
+ * joins metadata, nothing else does. Spacing (6px each side) comes from the
+ * parent flex gap, so every join reads identically.
+ */
+function Middot() {
+  return (
+    <span aria-hidden="true" className="shrink-0 text-sm text-muted-foreground">
+      ·
+    </span>
+  );
+}
+
 /** Collapsed agent trail: one node, expandable into the individual steps. */
-function AgentHistoryPeek({ steps }: { steps: AgentStep[] }) {
+function AgentHistoryPeek({
+  steps,
+  bottomGap = ROW_GAP,
+}: {
+  steps: AgentStep[];
+  /** gap below the peek: 28px when a section node follows, else 20px */
+  bottomGap?: string;
+}) {
   const [open, setOpen] = useState(false);
   return (
-    <TimelineRow marker="agent" className="pb-8">
+    <TimelineRow marker="agent" className={bottomGap}>
       <p className="text-xs font-medium text-muted-foreground">Activity</p>
       <button
         type="button"
@@ -174,19 +213,15 @@ function AgentHistoryPeek({ steps }: { steps: AgentStep[] }) {
         )}
       </button>
       {open && (
-        <ol className="mt-2 space-y-3 border-l border-border pl-4">
+        <ol className={PEEK_LIST}>
           {steps.map((step) => (
-            <li key={step.title}>
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-sm font-medium text-foreground">
-                  {step.title}
-                </span>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {step.time}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">{step.sub}</p>
-            </li>
+            // No exception attached => flat step, no chevron.
+            <PeekRow
+              key={step.title}
+              label={step.title}
+              sub={step.sub}
+              time={step.time}
+            />
           ))}
         </ol>
       )}
@@ -194,27 +229,23 @@ function AgentHistoryPeek({ steps }: { steps: AgentStep[] }) {
   );
 }
 
-// A slim history row: label + muted sub (truncates) + right-aligned timestamp.
+// A slim history row on the rail: the shared single-line body under a marker.
 function EventRow({
   marker,
   label,
   sub,
   time,
+  gap = ROW_GAP,
 }: {
   marker: MarkerKind;
   label: string;
   sub: string;
   time: string;
+  gap?: string;
 }) {
   return (
-    <TimelineRow marker={marker} className="pb-5">
-      <div className="flex min-h-7 items-center gap-2 pt-0.5">
-        <span className="shrink-0 text-sm text-foreground">{label}</span>
-        <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-          {sub}
-        </span>
-        <span className="shrink-0 text-xs text-muted-foreground">{time}</span>
-      </div>
+    <TimelineRow marker={marker} className={gap}>
+      <EventRowBody label={label} sub={sub} time={time} />
     </TimelineRow>
   );
 }
@@ -227,12 +258,15 @@ function FindingCell({
   provenance,
   tone,
   inspectable,
+  muted,
 }: {
   label: string;
   value: string;
   provenance: string;
   tone?: "warn" | "muted";
   inspectable?: boolean;
+  /** read-only history: drop all values to secondary foreground (warn stays highlighted, on muted text) */
+  muted?: boolean;
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5 px-5 py-1">
@@ -242,12 +276,19 @@ function FindingCell({
       <span
         className={cn(
           "whitespace-nowrap text-[18px] font-medium leading-none tabular-nums",
-          tone === "muted" ? "text-muted-foreground" : "text-foreground",
+          muted || tone === "muted"
+            ? "text-muted-foreground"
+            : "text-foreground",
         )}
       >
         {tone === "warn" ? (
           // Highlight the value under review: tinted wash, normal text (not an error color).
-          <mark className="-ml-1 rounded bg-warning/15 px-1 text-foreground">
+          <mark
+            className={cn(
+              "-ml-1 rounded bg-warning/15 px-1",
+              muted ? "text-muted-foreground" : "text-foreground",
+            )}
+          >
             {value}
           </mark>
         ) : (
@@ -271,13 +312,19 @@ function FindingCell({
   );
 }
 
-function FindingView({ finding }: { finding: Finding }) {
+function FindingView({
+  finding,
+  muted,
+}: {
+  finding: Finding;
+  muted?: boolean;
+}) {
   const cells = finding.type === "compare" ? finding.sides : finding.items;
   if (!cells || cells.length === 0) return null;
   return (
     <div className="grid w-fit grid-flow-col divide-x divide-border [&>div:first-child]:pl-0">
       {cells.map((c) => (
-        <FindingCell key={c.label} {...c} />
+        <FindingCell key={c.label} {...c} muted={muted} />
       ))}
     </div>
   );
@@ -517,20 +564,18 @@ function ResolvingBlock({
 
   return (
     <div>
-      {/* The compact resolved row emerges once the detail has faded out. */}
+      {/* The compact resolved row emerges once the detail has faded out. Same
+          shared anatomy as the committed row it becomes, so nothing pops on
+          commit. The wrapper only carries the fade. */}
       <div
         className={cn(
-          "flex min-h-7 items-center gap-2 pt-0.5 transition-opacity",
+          "transition-opacity",
           collapsed
             ? "opacity-100 duration-150 delay-[120ms]"
             : "opacity-0 duration-0",
         )}
       >
-        <span className="shrink-0 text-sm text-foreground">{label}</span>
-        <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-          {sub}
-        </span>
-        <span className="shrink-0 text-xs text-muted-foreground">Just now</span>
+        <EventRowBody label={label} sub={sub} time="Just now" />
       </div>
       {/* The exception detail (minus the fix card) collapses to zero height.
           Its content fades out fast (~120ms) so the height animates on
@@ -714,11 +759,11 @@ function ExceptionGroup({
   return (
     <TimelineRow marker="reviewer" className="pb-12" live>
       {showHeader && (
-        <div className="mb-4 flex min-h-7 items-center gap-2.5">
+        <div className="mb-4 flex min-h-7 items-center gap-1.5">
           <span className="text-sm font-medium text-foreground">
             Needs your decision
           </span>
-          <span className="h-3 w-px shrink-0 bg-border" aria-hidden="true" />
+          <Middot />
           <span className="text-xs text-muted-foreground">{counter}</span>
         </div>
       )}
@@ -755,6 +800,8 @@ type RunEvent =
       shortLabel?: string;
       /** auto = cleared by a re-check, not resolved by the reviewer */
       auto?: boolean;
+      /** the source exception (status resolved), for lossless row expansion */
+      exception?: InvoiceException;
     }
   | {
       kind: "revalidated";
@@ -764,6 +811,217 @@ type RunEvent =
       time: string;
       pending: boolean;
     };
+
+type ResolvedEvent = Extract<RunEvent, { kind: "resolved" }>;
+
+/** The "· by you · Just now" attribution line for a resolution stamp. */
+function stampByLine(event: ResolvedEvent): string {
+  return `${event.auto ? "· automatically" : "· by you"} · ${event.time}`;
+}
+
+/**
+ * Height + opacity collapse for an expanded row. User-initiated, so it may
+ * displace content below. Reduced motion snaps to the end state.
+ */
+function ExpandRegion({
+  open,
+  reducedMotion,
+  children,
+}: {
+  open: boolean;
+  reducedMotion: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "grid",
+        open ? "opacity-100" : "opacity-0",
+        !reducedMotion &&
+          "transition-[grid-template-rows,opacity] duration-200 ease-out",
+      )}
+      style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+    >
+      <div className="min-h-0 overflow-hidden">{children}</div>
+    </div>
+  );
+}
+
+/** Resolution stamp: shown in place of the fix actions in the history view. */
+function ResolutionStamp({ event }: { event: ResolvedEvent }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Check className="size-3.5 shrink-0 text-success" />
+      <span className="text-[13px] font-medium text-foreground">
+        {event.label}
+      </span>
+      <span className="text-xs text-muted-foreground">
+        {stampByLine(event)}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * The original exception in past-tense, read-only form. Past tense is carried by
+ * color and opacity, not size or labels: chip untouched, headline stepped to a
+ * secondary foreground, values muted, the fix reduced to a resolution stamp.
+ * Values come from the exception record as captured, not from patched data.
+ */
+function HistoricalExceptionView({ event }: { event: ResolvedEvent }) {
+  const exception = event.exception;
+  if (!exception) return null;
+  const meta = exceptionMeta(exception);
+  const reasoning = exception.suggestions[0]?.reasoning ?? exception.reasoning;
+  return (
+    <div className="opacity-[0.85]">
+      <div className="flex min-h-7 flex-wrap items-center gap-2">
+        {/* Badge treatment untouched; only the surrounding context reads as past. */}
+        <Badge status={meta.tone} variant="secondary">
+          {meta.label}
+        </Badge>
+        <span className="text-xs text-muted-foreground">
+          {scopeLabel(exception.scope)}
+        </span>
+      </div>
+      {/* Anchor headline shape, stepped to a secondary foreground. */}
+      <h3
+        className="mt-3 text-[22px] font-medium leading-[1.25] text-secondary-foreground"
+        style={{
+          letterSpacing: "-0.01em",
+          maxWidth: "22ch",
+          textWrap: "balance",
+        }}
+      >
+        {exception.headline}
+      </h3>
+      {/* Match the live stage: only comparisons add information worth showing. */}
+      {exception.finding.type === "compare" && (
+        <div className="mt-[18px]">
+          <FindingView finding={exception.finding} muted />
+        </div>
+      )}
+      {/* Quiet fix shell: reasoning as it was, actions replaced by the stamp. */}
+      <Card
+        variant="solid"
+        className="mt-5 max-w-[480px] border-border bg-muted/40"
+      >
+        <CardContent className="flex flex-col gap-4">
+          {reasoning && (
+            <p className="text-sm leading-normal text-muted-foreground">
+              {reasoning}
+            </p>
+          )}
+          <ResolutionStamp event={event} />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * The single row anatomy shared by every row in the column: one inline run of
+ * title (primary) + sub (muted, truncates only when it genuinely overflows) +
+ * "· {relative time}" (muted), with the expand chevron immediately after the
+ * time when the row carries a hidden original exception. Nothing is
+ * right-aligned; the run hugs the left so the chevron sits where the eye already
+ * is. When expandable, the whole run is the toggle and the original exception
+ * unfolds beneath it (lossless history). Expansion is per-session, local to the
+ * row, so it survives resolve commits below it and multiple rows can be open.
+ */
+function EventRowBody({
+  label,
+  sub,
+  time,
+  expandableEvent,
+  reducedMotion = false,
+}: {
+  label: string;
+  sub: string;
+  time: string;
+  /** present with an attached exception => the row expands to the original */
+  expandableEvent?: ResolvedEvent;
+  reducedMotion?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const exception = expandableEvent?.exception;
+
+  const run = (
+    <>
+      {/* Title + sub inline on the left; title anchors the scan (500 weight),
+          sub is secondary and truncates before reaching the time column. */}
+      <span className="mr-2 shrink-0 text-sm font-medium text-foreground">
+        {label}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-sm text-secondary-foreground">
+        {sub}
+      </span>
+      {/* Right-aligned time column: tabular-nums so times digit-align down the
+          column, never wraps or truncates, 16px min gap from the sub. */}
+      <span className="ml-4 shrink-0 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+        {time}
+      </span>
+      {/* Fixed 20px chevron slot, outside the time alignment. Empty on
+          non-expandable rows so every time right-aligns to the same edge. */}
+      <span className="flex w-5 shrink-0 items-center justify-center">
+        {exception && (
+          <ChevronRight
+            className={cn(
+              "size-3.5 text-muted-foreground",
+              !reducedMotion && "transition-transform duration-200",
+              open && "rotate-90",
+            )}
+          />
+        )}
+      </span>
+    </>
+  );
+
+  if (!exception || !expandableEvent) {
+    return <div className="flex min-h-7 items-center pt-0.5">{run}</div>;
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex min-h-7 w-full items-center rounded pt-0.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        {run}
+      </button>
+      <ExpandRegion open={open} reducedMotion={reducedMotion}>
+        <div className="pt-4">
+          <HistoricalExceptionView event={expandableEvent} />
+        </div>
+      </ExpandRegion>
+    </>
+  );
+}
+
+/** A resolved timeline row on the rail: the shared body under a resolved marker. */
+function ResolvedEventRow({
+  event,
+  reducedMotion,
+  gap = ROW_GAP,
+}: {
+  event: ResolvedEvent;
+  reducedMotion: boolean;
+  gap?: string;
+}) {
+  return (
+    <TimelineRow marker="resolved" className={gap}>
+      <EventRowBody
+        label={event.label}
+        sub={event.sub}
+        time={event.time}
+        expandableEvent={event}
+        reducedMotion={reducedMotion}
+      />
+    </TimelineRow>
+  );
+}
 
 // The three-phase resolve choreography (see ResolvingNode). One region changes
 // at a time, in causal order: confirm -> check -> reveal, then commit.
@@ -830,14 +1088,11 @@ function ResolvingNode({
       {(showHeader || hasOthers) && (
         <TimelineRow marker="reviewer">
           {showHeader && (
-            <div className="mb-4 flex min-h-7 items-center gap-2.5">
+            <div className="mb-4 flex min-h-7 items-center gap-1.5">
               <span className="text-sm font-medium text-foreground">
                 Needs your decision
               </span>
-              <span
-                className="h-3 w-px shrink-0 bg-border"
-                aria-hidden="true"
-              />
+              <Middot />
               <span className="text-xs text-muted-foreground">{counter}</span>
             </div>
           )}
@@ -866,10 +1121,49 @@ function ResolvingNode({
 }
 
 /**
- * At completion, the reviewer's resolve log compresses into a peek (mirroring
- * the agent peek), expandable to the full accumulated log.
+ * One row inside any expanded peek (agent history or resolve history): the shared
+ * single-line body in a list item. The chevron and expansion are the only
+ * optional parts, present only when an exception is attached; agent steps pass
+ * none and render flat. One row anatomy for the entire column.
  */
-function ResolveHistoryPeek({ events }: { events: RunEvent[] }) {
+function PeekRow({
+  label,
+  sub,
+  time,
+  expandableEvent,
+  reducedMotion,
+}: {
+  label: string;
+  sub: string;
+  time: string;
+  expandableEvent?: ResolvedEvent;
+  reducedMotion?: boolean;
+}) {
+  return (
+    <li>
+      <EventRowBody
+        label={label}
+        sub={sub}
+        time={time}
+        expandableEvent={expandableEvent}
+        reducedMotion={reducedMotion}
+      />
+    </li>
+  );
+}
+
+/**
+ * At completion, the reviewer's resolve log compresses into a peek (mirroring
+ * the agent peek), expandable to the full accumulated log. Collapsing the peek
+ * unmounts its rows, so it collapses any rows opened within it.
+ */
+function ResolveHistoryPeek({
+  events,
+  reducedMotion,
+}: {
+  events: RunEvent[];
+  reducedMotion: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const resolvedByYou = events.filter(
     (e) => e.kind === "resolved" && !e.auto,
@@ -881,7 +1175,7 @@ function ResolveHistoryPeek({ events }: { events: RunEvent[] }) {
     rechecks === 1 ? "re-check" : "re-checks"
   } passed`;
   return (
-    <TimelineRow marker="resolved" className="pb-8">
+    <TimelineRow marker="resolved" className={SECTION_GAP}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -895,17 +1189,16 @@ function ResolveHistoryPeek({ events }: { events: RunEvent[] }) {
         )}
       </button>
       {open && (
-        <ol className="mt-2 space-y-3 border-l border-border pl-4">
+        <ol className={PEEK_LIST}>
           {events.map((e) => (
-            <li key={e.key}>
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-sm text-foreground">{e.label}</span>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {e.time}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">{e.sub}</p>
-            </li>
+            <PeekRow
+              key={e.key}
+              label={e.label}
+              sub={e.sub}
+              time={e.time}
+              expandableEvent={e.kind === "resolved" ? e : undefined}
+              reducedMotion={reducedMotion}
+            />
           ))}
         </ol>
       )}
@@ -1001,10 +1294,15 @@ export function ExceptionTimeline({
   // Chat-style scroll follow: the column tracks the newest live content unless
   // the reviewer scrolls away.
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLOListElement>(null);
   const userScrolledRef = useRef(false);
   const stickRef = useRef(true);
   const programmaticUntil = useRef(0);
   const wasResolvingRef = useRef(false);
+  // Scroll-to-latest pill: visible when scrolled far from the live edge; the dot
+  // flags new events committed while the reviewer was scrolled away.
+  const [pillVisible, setPillVisible] = useState(false);
+  const [hasNewBelow, setHasNewBelow] = useState(false);
 
   const nearBottom = (px = 120) => {
     const c = containerRef.current;
@@ -1033,6 +1331,28 @@ export function ExceptionTimeline({
     if (!c) return;
     programmaticUntil.current = Date.now() + 700;
     c.scrollTo({ top: c.scrollHeight, behavior });
+  };
+
+  // Derive the pill from container geometry. Read-only w.r.t. the auto-follow
+  // machine: it never touches the follow refs, so it can't change those rules.
+  const syncPill = () => {
+    const c = containerRef.current;
+    if (!c) return;
+    const overflows = c.scrollHeight > c.clientHeight + 1;
+    const distance = c.scrollHeight - c.scrollTop - c.clientHeight;
+    setPillVisible(overflows && distance > PILL_REVEAL_PX);
+    // Manually reaching the live edge clears the new-content dot.
+    if (nearBottom()) setHasNewBelow(false);
+  };
+
+  // The pill re-anchors the reviewer to the live edge: it scrolls to the bottom
+  // AND resets the follow machine (clear the user-scrolled flag, restore the
+  // near-bottom stick) so auto-follow re-engages for subsequent resolves.
+  const scrollToLatest = () => {
+    userScrolledRef.current = false;
+    stickRef.current = true;
+    setHasNewBelow(false);
+    scrollToBottom();
   };
 
   const openList = list.filter((e) => !resolvedIds.includes(e.id));
@@ -1101,18 +1421,36 @@ export function ExceptionTimeline({
     };
   }, []);
 
+  // Scroll-to-latest pill: recompute on scroll and on content/viewport resize.
+  // A separate listener from the auto-follow effect below, which stays untouched.
+  useEffect(() => {
+    const c = containerRef.current;
+    if (!c) return;
+    const onScroll = () => syncPill();
+    c.addEventListener("scroll", onScroll, { passive: true });
+    const ro = new ResizeObserver(() => syncPill());
+    if (contentRef.current) ro.observe(contentRef.current);
+    ro.observe(c);
+    syncPill();
+    return () => {
+      c.removeEventListener("scroll", onScroll);
+      ro.disconnect();
+    };
+  }, []);
+
   // Follow the conversation: when a resolve sequence commits, bring the new live
   // content into view, unless the reviewer scrolled away or was reading history.
   useEffect(() => {
     const was = wasResolvingRef.current;
     wasResolvingRef.current = resolve !== null;
-    if (
-      was &&
-      resolve === null &&
-      stickRef.current &&
-      !userScrolledRef.current
-    ) {
-      requestAnimationFrame(() => scrollToLive());
+    if (was && resolve === null) {
+      if (stickRef.current && !userScrolledRef.current) {
+        requestAnimationFrame(() => scrollToLive());
+      } else {
+        // New events committed while auto-follow was canceled: flag the pill so
+        // the reviewer knows the live edge moved. (Auto-follow rule unchanged.)
+        setHasNewBelow(true);
+      }
     }
   }, [resolve]);
 
@@ -1167,6 +1505,7 @@ export function ExceptionTimeline({
             sub: s.sub,
             time: "Just now",
             shortLabel: s.shortLabel,
+            exception: s.exc,
           },
           ...s.clearedInList.map((cid) => {
             const c = list.find((e) => e.id === cid);
@@ -1177,6 +1516,7 @@ export function ExceptionTimeline({
               sub: "Cleared automatically after re-check",
               time: "Just now",
               auto: true,
+              exception: c,
             };
           }),
           {
@@ -1262,13 +1602,19 @@ export function ExceptionTimeline({
         ref={containerRef}
         className="h-full overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 custom-scrollbar [scrollbar-gutter:stable]"
       >
-        <ol className="w-full max-w-5xl">
-          <AgentHistoryPeek steps={review.agentHistory} />
+        <ol ref={contentRef} className="w-full max-w-5xl">
+          <AgentHistoryPeek
+            steps={review.agentHistory}
+            bottomGap={!allClear && events.length === 0 ? SECTION_GAP : ROW_GAP}
+          />
           {allClear ? (
             <>
               {/* The resolve log compresses into a peek; the terminal block lands
                 below it. The screen closes the way it opened. */}
-              <ResolveHistoryPeek events={events} />
+              <ResolveHistoryPeek
+                events={events}
+                reducedMotion={reducedMotion}
+              />
               <TerminalBlock
                 summary={summarySentence}
                 onApprove={onApprove}
@@ -1277,14 +1623,16 @@ export function ExceptionTimeline({
             </>
           ) : (
             <>
-              {events.map((ev) =>
-                ev.kind === "resolved" ? (
-                  <EventRow
+              {events.map((ev, i) => {
+                // The last event sits before the present (group) node: a section
+                // transition, so it opens 28px instead of the 20px event gap.
+                const gap = i === events.length - 1 ? SECTION_GAP : ROW_GAP;
+                return ev.kind === "resolved" ? (
+                  <ResolvedEventRow
                     key={ev.key}
-                    marker="resolved"
-                    label={ev.label}
-                    sub={ev.sub}
-                    time={ev.time}
+                    event={ev}
+                    reducedMotion={reducedMotion}
+                    gap={gap}
                   />
                 ) : (
                   <EventRow
@@ -1293,9 +1641,10 @@ export function ExceptionTimeline({
                     label={ev.label}
                     sub={ev.sub}
                     time={ev.time}
+                    gap={gap}
                   />
-                ),
-              )}
+                );
+              })}
               {resolve ? (
                 <ResolvingNode
                   resolve={resolve}
@@ -1327,6 +1676,27 @@ export function ExceptionTimeline({
             </>
           )}
         </ol>
+      </div>
+      {/* Scroll-to-latest pill: positioned in the scroll container's viewport,
+          not the content flow (it never scrolls or shifts layout). Above content,
+          below the header scrim. Only the button captures pointer events. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-5 z-[5] flex justify-center">
+        <button
+          type="button"
+          aria-label="Scroll to latest"
+          onClick={scrollToLatest}
+          className={cn(
+            "pointer-events-auto relative flex size-9 items-center justify-center rounded-full border-[0.5px] border-border bg-popover text-foreground shadow-md transition duration-150 ease-out",
+            pillVisible
+              ? "scale-100 opacity-100"
+              : "pointer-events-none scale-90 opacity-0",
+          )}
+        >
+          <ArrowDown className="size-4" />
+          {hasNewBelow && (
+            <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-info ring-2 ring-popover" />
+          )}
+        </button>
       </div>
       {/* Header scrim: content fades + blurs across a ~32px zone as it passes
           under the sticky header. Degrades to fade-only without backdrop-filter. */}
