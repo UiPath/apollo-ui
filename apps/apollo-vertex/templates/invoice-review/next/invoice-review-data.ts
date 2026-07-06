@@ -201,6 +201,88 @@ export interface WaitingRef {
   draft?: SupplierEmailDraft;
 }
 
+/**
+ * Reviewer disposition of the whole invoice. Approved is a hard commit; held is
+ * a reversible overlay (it never mutates the exception/waiting state beneath, so
+ * Resume just clears it and the derived terminal returns). In v2/v3 this is the
+ * SINGLE source for approve/hold; the template's completionMap/parkedMap are not
+ * consulted for those (reject/flag stay legacy).
+ */
+export type InvoiceDisposition =
+  | { type: "approved"; time: string }
+  | { type: "held"; reason?: string; time: string };
+
+/**
+ * The unified timeline event log lives in the runtime store, so the whole
+ * history survives remounts (freeze/restore leans on this). `RunEventInput` is a
+ * variant without its key; the store assigns the key on append. Kinds:
+ * - resolved: a fixed exception (reviewer or auto-cleared)
+ * - waiting: a routed exception parked on an outside reply
+ * - revalidated: a re-check result row
+ * - followed-up: a reminder sent on a still-parked exception
+ * - received: a corrected invoice/data arrival (return seam)
+ * - disposition: an approve / hold / resume of the whole invoice
+ */
+export type RunEventInput =
+  | {
+      kind: "resolved";
+      label: string;
+      sub: string;
+      time: string;
+      shortLabel?: string;
+      /** auto = cleared by a re-check, not resolved by the reviewer */
+      auto?: boolean;
+      /** the source exception (status resolved), for lossless row expansion */
+      exception?: InvoiceException;
+    }
+  | {
+      kind: "waiting";
+      label: string;
+      sub: string;
+      time: string;
+      shortLabel?: string;
+      /** who we are waiting on, for the stamp line */
+      waitingOn: string;
+      /** the source exception (status waiting), for lossless row expansion */
+      exception: InvoiceException;
+      /** the sent supplier email, when the route went through the draft modal */
+      draft?: SupplierEmailDraft;
+    }
+  | {
+      kind: "revalidated";
+      label: string;
+      sub: string;
+      time: string;
+      pending: boolean;
+    }
+  | {
+      /** a follow-up reminder sent for a still-parked exception (waiting unchanged) */
+      kind: "followed-up";
+      label: string;
+      sub: string;
+      time: string;
+      exception: InvoiceException;
+      draft: SupplierEmailDraft;
+    }
+  | {
+      /** the return seam: a corrected invoice/data arrived for a parked exception */
+      kind: "received";
+      label: string;
+      sub: string;
+      time: string;
+    }
+  | {
+      /** an approve / hold / resume of the whole invoice */
+      kind: "disposition";
+      label: string;
+      sub: string;
+      time: string;
+    };
+
+/** A logged event: an input plus the store-assigned key (intersection over the
+ *  union distributes the key onto every variant, preserving the discriminant). */
+export type RunEvent = RunEventInput & { key: string };
+
 /** Runtime loop state for one invoice, shared across surfaces (see the store). */
 export interface InvoiceRuntime {
   resolvedIds: string[];
@@ -209,6 +291,10 @@ export interface InvoiceRuntime {
   waiting: WaitingRef[];
   /** invoice-data changes applied by resolutions (e.g. a linked PO) */
   dataPatch?: Partial<InvoiceReview>;
+  /** reviewer disposition of the whole invoice (approve/hold); undefined = none */
+  disposition?: InvoiceDisposition;
+  /** the whole timeline event log, appended atomically inside the mutations */
+  events: RunEvent[];
 }
 
 export function exceptionMeta(e: InvoiceException): {
@@ -667,6 +753,11 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           },
           { type: "suggest_supplier", data: {} },
         ],
+        resolution: {
+          label: "Corrected to Apr 30, 2026",
+          sub: "Outside PO period, resolved by you",
+          shortLabel: "date corrected",
+        },
       },
       highValueException("55832", "€22,500.00"),
     ],
@@ -1056,6 +1147,78 @@ export function revalidateException(
 export function highlightInSource(ref: string): void {
   // eslint-disable-next-line no-console
   console.info(`[highlightInSource] ${ref}`);
+}
+
+// --- Disposition seams (backend contract points) + event builders -----------
+// The seams are where a real backend commit would happen; local state flows
+// through the runtime store's setDisposition. The builders produce the matching
+// disposition + timeline event so both Approve entry points (terminal + header)
+// stay identical.
+
+/** SEAM: hard-commit an approval (no undo in this prototype). */
+export function approveInvoice(invoiceId: string): void {
+  // eslint-disable-next-line no-console
+  console.info(`[approveInvoice] ${invoiceId}`);
+}
+
+/** SEAM: park the invoice on a reviewer hold (reversible). */
+export function holdInvoice(invoiceId: string, reason?: string): void {
+  // eslint-disable-next-line no-console
+  console.info(`[holdInvoice] ${invoiceId}${reason ? ` — ${reason}` : ""}`);
+}
+
+/** SEAM: lift a hold and return the invoice to its prior state. */
+export function resumeInvoice(invoiceId: string): void {
+  // eslint-disable-next-line no-console
+  console.info(`[resumeInvoice] ${invoiceId}`);
+}
+
+export function buildApproval(review: InvoiceReview): {
+  disposition: InvoiceDisposition;
+  event: RunEventInput;
+} {
+  const time = "Just now";
+  return {
+    disposition: { type: "approved", time },
+    event: {
+      kind: "disposition",
+      label: "Invoice approved",
+      sub: `${review.amount} to ${review.supplier}`,
+      time,
+    },
+  };
+}
+
+export function buildHold(
+  review: InvoiceReview,
+  reason?: string,
+): { disposition: InvoiceDisposition; event: RunEventInput } {
+  const time = "Just now";
+  const trimmed = reason?.trim() || undefined;
+  return {
+    disposition: { type: "held", reason: trimmed, time },
+    event: {
+      kind: "disposition",
+      label: "Put on hold",
+      sub: trimmed ?? `${review.supplier} invoice`,
+      time,
+    },
+  };
+}
+
+export function buildResume(): {
+  disposition: null;
+  event: RunEventInput;
+} {
+  return {
+    disposition: null,
+    event: {
+      kind: "disposition",
+      label: "Resumed review",
+      sub: "",
+      time: "Just now",
+    },
+  };
 }
 
 /**
