@@ -41,6 +41,23 @@ export { ToggleGroup, ToggleGroupItem } from './components/ui/toggle-group';
 export { Input } from './components/ui/input';
 export type { InputProps } from './components/ui/input';
 
+export {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupText,
+  InputGroupInput,
+  InputGroupTextarea,
+} from './components/ui/input-group';
+export type {
+  InputGroupProps,
+  InputGroupAddonProps,
+  InputGroupButtonProps,
+  InputGroupTextProps,
+  InputGroupInputProps,
+  InputGroupTextareaProps,
+} from './components/ui/input-group';
+
 export { Textarea } from './components/ui/textarea';
 export type { TextareaProps } from './components/ui/textarea';
 

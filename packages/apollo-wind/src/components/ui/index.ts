@@ -24,6 +24,7 @@ export * from './empty-state';
 export * from './file-upload';
 export * from './hover-card';
 export * from './input';
+export * from './input-group';
 export * from './label';
 export * from './layout';
 export * from './multi-select';
