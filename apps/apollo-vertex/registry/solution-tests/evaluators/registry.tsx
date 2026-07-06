@@ -10,8 +10,7 @@ import {
 import { IxpExtractionResult } from "./ixp-extraction/ixp-extraction-result";
 import { IxpDetailsSchema } from "./ixp-extraction/schema";
 
-// Built-in evaluator ids — mirror the Python runner's wire contract
-// (shared/solution_tests/evaluator.py).
+// Built-in evaluator ids — mirror the evaluator runner's wire contract.
 export const JSON_SIMILARITY_EVALUATOR_ID = "uipath-json-similarity";
 export const LLM_JUDGE_EVALUATOR_ID =
   "uipath-llm-judge-output-semantic-similarity";
