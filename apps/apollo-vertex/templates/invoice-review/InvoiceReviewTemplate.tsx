@@ -10,7 +10,6 @@ import {
 import type { ColumnDef, FilterFn } from "@tanstack/react-table";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
   ArrowRight,
   ArrowUp,
   Check,
@@ -91,6 +90,7 @@ import {
 } from "@/registry/dialog/dialog";
 import { ShellProfileExtrasProvider } from "@/registry/shell/shell-profile-extras";
 import { Toaster } from "@/registry/sonner/sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/tabs/tabs";
 import { useDataTable } from "@/registry/use-data-table/useDataTable";
 import {
   InvoiceVersionProvider,
@@ -102,12 +102,16 @@ import { HeaderDecision } from "./next/HeaderDecision";
 import {
   approveInvoice,
   buildApproval,
+  buildHold,
   exceptionMeta,
+  FLAG_REASONS,
   findReview,
   getExceptionSummary,
   getReview,
+  holdInvoice,
   invoiceReviews,
   openExceptions,
+  REJECT_REASONS,
 } from "./next/invoice-review-data";
 import {
   InvoiceRuntimeProvider,
@@ -207,7 +211,7 @@ interface SentEmail {
 // One action set per invoice. Every surface (Findings, Slack card) dispatches
 // these same IDs; surfaces only choose which subset to show and how to label it.
 type ActionId = "approve" | "hold" | "contact_supplier" | "reject" | "flag";
-type ActionSource = "findings" | "slack";
+type ActionSource = "findings" | "slack" | "header";
 
 const ACTION_LABELS: Record<ActionId, string> = {
   approve: "Approve",
@@ -914,10 +918,6 @@ const invoicesReview: Invoice[] = invoiceReviews
     score: 3,
     dueGroup: QUEUE_DUE_GROUP[r.id] ?? "today",
   }));
-
-const dueTodayInvoices = invoicesReview.filter(
-  (inv) => inv.dueGroup === "today",
-);
 
 const invoicesAuto: Invoice[] = [
   {
@@ -2208,10 +2208,91 @@ function NavInvoiceItem({
   );
 }
 
+// Queue axes: the tab is the STATUS filter (All / Waiting / On hold / Done /
+// Auto-approved), the list within it is SORTED by due date under date section
+// labels. Due order + labels are derived from the demo dueGroup (today/tomorrow;
+// auto items carry no deadline, so they render flat with no date header).
+const DUE_ORDER: Record<Invoice["dueGroup"], number> = {
+  today: 0,
+  tomorrow: 1,
+  auto: 2,
+};
+const DUE_LABEL: Partial<Record<Invoice["dueGroup"], string>> = {
+  today: "Due today",
+  tomorrow: "Due tomorrow",
+};
+
+/**
+ * One status tab's list: invoices sorted by due date, grouped under date section
+ * labels ("Due today", "Due tomorrow"). Dateless (auto-approved) items render as
+ * a flat list with no header. Empty tabs show a quiet placeholder.
+ */
+function QueueList({
+  items,
+  activeId,
+  onInvoiceClick,
+  completionMap,
+  parkedMap,
+  contactedMap,
+}: {
+  items: Invoice[];
+  activeId: string;
+  onInvoiceClick: (id: string) => void;
+  completionMap?: Record<string, CompletionRecord>;
+  parkedMap?: Record<string, ParkedState>;
+  contactedMap?: Record<string, boolean>;
+}) {
+  if (items.length === 0) {
+    return (
+      <p className="px-6 pt-6 text-xs text-muted-foreground">Nothing here.</p>
+    );
+  }
+  // Sort by due date, then split into consecutive same-day sections.
+  const sorted = [...items].sort(
+    (a, b) => DUE_ORDER[a.dueGroup] - DUE_ORDER[b.dueGroup],
+  );
+  const sections: { group: Invoice["dueGroup"]; items: Invoice[] }[] = [];
+  for (const inv of sorted) {
+    const last = sections[sections.length - 1];
+    if (last && last.group === inv.dueGroup) last.items.push(inv);
+    else sections.push({ group: inv.dueGroup, items: [inv] });
+  }
+  return (
+    <>
+      {sections.map((section, i) => {
+        const label = DUE_LABEL[section.group];
+        return (
+          <div key={section.group}>
+            {label ? (
+              <NavSectionLabel
+                label={label}
+                count={section.items.length}
+                first={i === 0}
+              />
+            ) : null}
+            <div className={cn("space-y-2 pb-4", !label && i === 0 && "pt-4")}>
+              {section.items.map((inv) => (
+                <NavInvoiceItem
+                  key={inv.id}
+                  invoice={inv}
+                  isActive={inv.id === activeId}
+                  onClick={() => onInvoiceClick(inv.id)}
+                  completion={completionMap?.[inv.id]}
+                  parked={parkedMap?.[inv.id]}
+                  contacted={contactedMap?.[inv.id]}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 function LeftNav({
   activeId,
   onInvoiceClick,
-  onBack,
   completionMap,
   parkedMap,
   contactedMap,
@@ -2224,7 +2305,6 @@ function LeftNav({
 }: {
   activeId: string;
   onInvoiceClick: (id: string) => void;
-  onBack: () => void;
   completionMap: Record<string, CompletionRecord>;
   parkedMap: Record<string, ParkedState>;
   contactedMap: Record<string, boolean>;
@@ -2254,19 +2334,34 @@ function LeftNav({
     const s = getExceptionSummary(getReview(id), runtime.getRuntime(id));
     return s.openCount === 0 && s.waitingCount > 0;
   };
-  const inDue = (inv: Invoice) =>
-    !isDone(inv.id) &&
-    !isApproved(inv.id) &&
-    !isHeld(inv.id) &&
-    !isWaitingOnly(inv.id);
-  const dueToday = dueTodayInvoices.filter(inDue);
-  const dueTomorrow = invoicesReview.filter(
-    (inv) => inv.dueGroup === "tomorrow" && inDue(inv),
-  );
-  const waiting = invoicesReview.filter((inv) => isWaitingOnly(inv.id));
-  const onHold = invoicesReview.filter((inv) => isHeld(inv.id));
-  const approved = invoicesReview.filter((inv) => isApproved(inv.id));
-  const completed = invoicesReview.filter((inv) => isDone(inv.id));
+  // Status-filtered tab lists over the review queue. "All" is the whole queue
+  // (every status), the rest are subsets; Done folds Approved + Completed/
+  // Rejected.
+  const isDoneOrApproved = (id: string) => isDone(id) || isApproved(id);
+  const allList = invoicesReview;
+  const waitingList = invoicesReview.filter((inv) => isWaitingOnly(inv.id));
+  const onHoldList = invoicesReview.filter((inv) => isHeld(inv.id));
+  const doneList = invoicesReview.filter((inv) => isDoneOrApproved(inv.id));
+
+  // Smart default: open on the tab that holds the selected invoice.
+  const defaultTab = isWaitingOnly(activeId)
+    ? "waiting"
+    : isHeld(activeId)
+      ? "hold"
+      : isDoneOrApproved(activeId)
+        ? "done"
+        : "all";
+
+  const TABS = [
+    { value: "all", label: "All", items: allList },
+    { value: "waiting", label: "Waiting", items: waitingList },
+    { value: "hold", label: "On hold", items: onHoldList },
+    { value: "done", label: "Done", items: doneList },
+  ] as const;
+
+  // Content-area scroll + top/bottom fade, shared by every tab panel.
+  const panelClass =
+    "flex-1 min-h-0 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_56px),transparent_100%)]";
 
   return (
     <div className="h-full w-[336px] flex flex-col shrink-0 overflow-hidden relative">
@@ -2277,159 +2372,55 @@ function LeftNav({
             "inset -1px 0 0 0 color-mix(in srgb, var(--color-border) 50%, transparent)",
         }}
       />
-      <div className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 border-b border-border/50">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="Back to all invoices"
-          title="Back to all invoices"
-          className="size-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
-        >
-          <ArrowLeft className="size-3.5" />
-        </button>
-        <span className="text-[13px] font-semibold flex-1 truncate">
-          My queue{" "}
+      <div className="shrink-0 flex items-center gap-1.5 px-6 pt-6 pb-2">
+        <span className="text-[13px] font-extrabold flex-1 truncate">
+          My Queue{" "}
           <span className="font-normal text-muted-foreground tabular-nums">
             ({invoicesReview.length})
           </span>
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_56px),transparent_100%)]">
-        {dueToday.length > 0 && (
-          <>
-            <NavSectionLabel label="Due today" count={dueToday.length} first />
-            <div className="space-y-2 pb-4">
-              {dueToday.map((inv) => (
-                <NavInvoiceItem
-                  key={inv.id}
-                  invoice={inv}
-                  isActive={inv.id === activeId}
-                  onClick={() => onInvoiceClick(inv.id)}
-                  completion={completionMap[inv.id]}
-                  parked={parkedMap[inv.id]}
-                  contacted={contactedMap[inv.id]}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {dueTomorrow.length > 0 && (
-          <>
-            <NavSectionLabel
-              label="Due tomorrow"
-              count={dueTomorrow.length}
-              first={dueToday.length === 0}
-            />
-            <div className="space-y-2 pb-4">
-              {dueTomorrow.map((inv) => (
-                <NavInvoiceItem
-                  key={inv.id}
-                  invoice={inv}
-                  isActive={inv.id === activeId}
-                  onClick={() => onInvoiceClick(inv.id)}
-                  completion={completionMap[inv.id]}
-                  parked={parkedMap[inv.id]}
-                  contacted={contactedMap[inv.id]}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {waiting.length > 0 && (
-          <>
-            <NavSectionLabel
-              label="Waiting"
-              count={waiting.length}
-              first={dueToday.length === 0 && dueTomorrow.length === 0}
-            />
-            <div className="space-y-2 pb-4">
-              {waiting.map((inv) => (
-                <NavInvoiceItem
-                  key={inv.id}
-                  invoice={inv}
-                  isActive={inv.id === activeId}
-                  onClick={() => onInvoiceClick(inv.id)}
-                  completion={completionMap[inv.id]}
-                  parked={parkedMap[inv.id]}
-                  contacted={contactedMap[inv.id]}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {onHold.length > 0 && (
-          <>
-            <NavSectionLabel label="On hold" count={onHold.length} />
-            <div className="space-y-2 pb-4">
-              {onHold.map((inv) => (
-                <NavInvoiceItem
-                  key={inv.id}
-                  invoice={inv}
-                  isActive={inv.id === activeId}
-                  onClick={() => onInvoiceClick(inv.id)}
-                  completion={completionMap[inv.id]}
-                  parked={parkedMap[inv.id]}
-                  contacted={contactedMap[inv.id]}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {completed.length > 0 && (
-          <>
-            <NavSectionLabel label="Completed" count={completed.length} />
-            <div className="space-y-2 pb-4">
-              {completed.map((inv) => (
-                <NavInvoiceItem
-                  key={inv.id}
-                  invoice={inv}
-                  isActive={inv.id === activeId}
-                  onClick={() => onInvoiceClick(inv.id)}
-                  completion={completionMap[inv.id]}
-                  parked={parkedMap[inv.id]}
-                  contacted={contactedMap[inv.id]}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {approved.length > 0 && (
-          <>
-            <NavSectionLabel label="Approved" count={approved.length} />
-            <div className="space-y-2 pb-4">
-              {approved.map((inv) => (
-                <NavInvoiceItem
-                  key={inv.id}
-                  invoice={inv}
-                  isActive={inv.id === activeId}
-                  onClick={() => onInvoiceClick(inv.id)}
-                  completion={completionMap[inv.id]}
-                  parked={parkedMap[inv.id]}
-                  contacted={contactedMap[inv.id]}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        <NavSectionLabel label="Auto-approved" count={invoicesAuto.length} />
-        <div className="space-y-2 pb-4">
-          {invoicesAuto.map((inv) => (
-            <NavInvoiceItem
-              key={inv.id}
-              invoice={inv}
-              isActive={inv.id === activeId}
-              onClick={() => onInvoiceClick(inv.id)}
-            />
-          ))}
+      {/* Status filter (tabs) over a due-date sort (date section labels inside
+          each tab). Opens on the tab holding the selected invoice. */}
+      <Tabs defaultValue={defaultTab} className="min-h-0 flex-1 gap-0">
+        {/* px-6 lines the tabs up with the card column below (cards mx-6, the
+            "Due today" label px-6). */}
+        <div className="shrink-0 px-6 pt-0.5 pb-1.5">
+          {/* Group background restored (muted track); tabs auto-fill the card
+              width (flex-1 triggers). Active tab = the neutral raised fill (the
+              default segmented highlight, minus the shadow). Counts ride as
+              small pill badges. */}
+          <TabsList className="w-full">
+            {TABS.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="text-xs shadow-none data-[state=active]:shadow-none"
+              >
+                {tab.label}
+                {tab.items.length > 0 && (
+                  <span className="rounded-full bg-muted-foreground/15 px-1.5 text-[11px] tabular-nums text-muted-foreground">
+                    {tab.items.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
         </div>
-      </div>
+        {TABS.map((tab) => (
+          <TabsContent key={tab.value} value={tab.value} className={panelClass}>
+            <QueueList
+              items={tab.items}
+              activeId={activeId}
+              onInvoiceClick={onInvoiceClick}
+              completionMap={completionMap}
+              parkedMap={parkedMap}
+              contactedMap={contactedMap}
+            />
+          </TabsContent>
+        ))}
+      </Tabs>
 
       {/* Prev / Next footer */}
       <div className="shrink-0 border-t border-border px-4 py-2.5 flex items-center justify-between">
@@ -4258,21 +4249,9 @@ type TimelineEntry = {
   kind?: "flag" | "hold" | "note";
 };
 
-const FLAG_REASONS = [
-  "Awaiting supplier response",
-  "Escalating to manager",
-  "PO in progress",
-  "Needs more info",
-] as const;
+// Reason chip sets live in invoice-review-data (single source, shared with the
+// header dialogs). Local aliases keep the legacy findings dialog's state typed.
 type FlagReason = (typeof FLAG_REASONS)[number];
-
-const REJECT_REASONS = [
-  "Incorrect price",
-  "Wrong vendor",
-  "Duplicate invoice",
-  "No PO found",
-  "Other",
-] as const;
 type RejectReason = (typeof REJECT_REASONS)[number];
 
 type CompletionRecord = {
@@ -5490,12 +5469,10 @@ function TopBarNext({
   flagged,
   completion,
   onReject,
-  onFlag,
 }: {
   flagged: boolean;
   completion?: CompletionRecord;
-  onReject: () => void;
-  onFlag: () => void;
+  onReject: (reason: string, note?: string) => void;
 }) {
   const d = useInvoiceDetail();
   const runtime = useInvoiceRuntime();
@@ -5526,6 +5503,14 @@ function TopBarNext({
   function doApprove() {
     approveInvoice(review.id);
     const { disposition: dd, event } = buildApproval(review);
+    runtime.setDisposition(review.id, dd, event);
+  }
+  // Hold from the header uses the SAME runtime disposition as the terminal Hold,
+  // so the status badge, timeline, and Resume all stay consistent (v2/v3 single
+  // source). Reject/Flag stay on the legacy path via onReject/onFlag.
+  function doHold(reason: string, note?: string) {
+    holdInvoice(review.id, reason, note);
+    const { disposition: dd, event } = buildHold(review, reason, note);
     runtime.setDisposition(review.id, dd, event);
   }
   const tableRow = invoiceTableData.find((r) => r.id === d.id);
@@ -5603,7 +5588,7 @@ function TopBarNext({
           blockedReason={blockedReason}
           onApprove={doApprove}
           onReject={onReject}
-          onFlag={onFlag}
+          onHold={doHold}
         />
       </PageHeaderActions>
     </PageHeader>
@@ -5839,6 +5824,7 @@ function InvoiceDetailPane({
     reason: string,
     source: ActionSource,
     by: string = data.assignee,
+    note?: string,
   ) {
     const time = nowTime();
     const record: CompletionRecord = {
@@ -5854,7 +5840,7 @@ function InvoiceDetailPane({
         id: `rejected-${Date.now()}`,
         label: actionLabel("Rejected", source),
         time,
-        desc: `By ${by}`,
+        desc: note ? `By ${by} · ${note}` : `By ${by}`,
         indicator: "user",
       },
       ...prev,
@@ -6097,8 +6083,9 @@ function InvoiceDetailPane({
             <TopBarNext
               flagged={flagged}
               completion={justCompleted ?? completion}
-              onReject={() => onComplete("rejected")}
-              onFlag={() => onPark("flag", "Flagged from header")}
+              onReject={(reason, note) =>
+                handleReject(reason, "header", data.assignee, note)
+              }
             />
           ) : (
             <TopBar
@@ -6608,7 +6595,6 @@ function InvoiceReviewContent() {
             <LeftNav
               activeId={activeInvoiceId}
               onInvoiceClick={handleNavInvoiceClick}
-              onBack={handleBack}
               completionMap={completionMap}
               parkedMap={parkedMap}
               contactedMap={contactedMap}
