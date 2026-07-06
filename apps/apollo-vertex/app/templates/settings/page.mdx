@@ -5,9 +5,10 @@ import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
 
 A traditional settings page composition: a single, vertically-stacked form
 constrained to a comfortable reading width, broken into titled sections.
-Built from `PageHeader`, `Field` (and friends), `Input`, `Textarea`,
-`Select`, `RadioGroup`, `Switch`, and `Button`. Intended to render inside
-an [`ApolloShell`](/patterns/shell).
+Built on the [`Form`](/components/form) component (TanStack Form + Zod) with
+`PageHeader`, `Field` (and friends), `Input`, `Textarea`, `Select`,
+`RadioGroup`, `Switch`, and `Button`. Intended to render inside an
+[`ApolloShell`](/patterns/shell).
 
 <PreviewFullScreen title="Settings page preview">
     <SettingsTemplate />
@@ -29,8 +30,8 @@ From top to bottom the template stacks:
   rows use `orientation="horizontal"` so the label sits left and the
   `Switch` sits right.
 - **Action footer** — right-aligned `Reset to defaults` (outline) and
-  `Save changes` (primary) `Button`s. `Save` is disabled until the draft
-  diverges from the saved state.
+  `Save changes` (primary) `Button`s. `Save` subscribes to the form's
+  `isDirty` state and stays disabled until there are unsaved changes.
 
 ## Grid
 
@@ -68,6 +69,7 @@ components install from the registry:
 ```bash
 npx shadcn@latest add @uipath/shell
 npx shadcn@latest add @uipath/page-header
+npx shadcn@latest add @uipath/form
 npx shadcn@latest add @uipath/field
 npx shadcn@latest add @uipath/input
 npx shadcn@latest add @uipath/textarea
@@ -83,15 +85,15 @@ npx shadcn@latest add @uipath/button
   used across the Vertex apps. Bump to `lg:col-span-8` for slightly wider
   controls or `lg:col-span-6` for tighter forms. Stay within the 12-column
   grid so margins line up with the `PageHeader`.
-- **Persistence** — the template uses two `useState` slots (`draft` and
-  `saved`) and compares them field-by-field to power the `Save` button.
-  Replace `handleSave` and `handleReset` with calls to your own store,
-  server action, or settings API. Toast feedback can be added with
-  `Sonner` from the registry.
-- **Categorical fields** — `emailFrequency` and `visibility` are typed as
-  unions derived from their option arrays via `as const` plus a small type
-  guard at the `RadioGroup`'s `onValueChange`. Follow the same pattern when
-  adding more categorical settings so values stay type-safe end-to-end.
+- **Persistence** — form state is owned by the `Form` component
+  (`useAppForm`). `onSubmit` receives the validated values; the template
+  resets the form to those values so it returns to a pristine state. Swap
+  `onSubmit` for a call to your own store, server action, or settings API,
+  and add toast feedback with `Sonner` from the registry.
+- **Categorical fields** — `emailFrequency` and `visibility` are `z.enum`
+  members in the Zod schema, rendered with `RadioGroupField`. The schema
+  keeps their values type-safe end-to-end. Follow the same pattern when
+  adding more categorical settings.
 - **Date format** — the `dateFormat` option values (`short`, `medium`,
   `long`) map directly to `Intl.DateTimeFormat({ dateStyle })` so they
   render without a date library. Swap in `date-fns` format strings or your
@@ -107,9 +109,9 @@ npx shadcn@latest add @uipath/button
 - **Pairing fields** — wrap a couple of `Field`s in a nested
   `grid grid-cols-1 sm:grid-cols-2 gap-4` to lay them side-by-side from
   tablet up (as Language + Timezone do here).
-- **Validation** — pair each `Field` with `FieldError` and pass an
-  `errors` array to surface validation messages, or wrap the page with
-  `react-hook-form` + `zod` for full form management.
+- **Validation** — the whole-form Zod schema is passed to the `Form`'s
+  `validators.onChange`. Each field renders its own translatable errors, and
+  `FormErrorSummary` can list them all in one accessible block.
 - **i18n** — wrap your app in `ApolloShell` (which initializes i18n via
   `LocaleProvider`) or provide your own `I18nextProvider` so any
   registry-component strings render correctly.
