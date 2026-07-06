@@ -13,6 +13,7 @@ import {
   InputGroupButton,
   InputGroupInput,
   type InputGroupInputProps,
+  type InputGroupProps,
 } from '@/components/ui/input-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/index';
@@ -22,17 +23,22 @@ export interface SearchProps extends Omit<InputGroupInputProps, 'onChange'> {
   onChange?: (value: string) => void;
   onClear?: () => void;
   showClearButton?: boolean;
+  variant?: InputGroupProps['variant'];
+  size?: InputGroupProps['size'];
 }
 
 const Search = React.forwardRef<HTMLInputElement, SearchProps>(
-  ({ className, value, onChange, onClear, showClearButton = true, ...props }, ref) => {
+  (
+    { className, value, onChange, onClear, showClearButton = true, variant, size, ...props },
+    ref
+  ) => {
     const handleClear = () => {
       onChange?.('');
       onClear?.();
     };
 
     return (
-      <InputGroup>
+      <InputGroup variant={variant} size={size}>
         <InputGroupAddon align="inline-start">
           <SearchIcon className="text-muted-foreground" />
         </InputGroupAddon>
