@@ -19,8 +19,6 @@ minimumReleaseAgeExclude:
   - '@uipath/*'                   # permanent — own scope, always installable immediately
   - '@turbo/*'                    # 2.9.14 — platform binaries co-published with turbo (scope rename from turbo-*), same OIDC provenance ✓
   - '@esbuild/*'                  # 0.28.1 — platform binaries co-published with esbuild in the same OIDC release, vetted 2026-06-16
-  - 'dompurify'                   # 3.4.11 — GHSA-cmwh-pvxp-8882 (+earlier vxr8/gvmj/x4vx/rp9w/r47g/hpcv/76mc), vetted 2026-06-22: cure53 publisher unchanged ✓, release (setConfig leak fix)+advisory ✓, integrity ✓, no deps
-  - 'undici'                      # 6.27.0 — the prune script reads this leading version to time removal; 6.27.0 is the later-published of the co-released patched pair (6.27.0 + 7.28.0, both 2026-06-15), so gating on it keeps the exemption until BOTH age out. Two undici majors in the tree (7.x via @semantic-release/github, 6.x via @actions/http-client), both transitive via semantic-release devDeps. GHSA-vxpw-j846-p89q +6 more, vetted 2026-06-22: GitHub Actions OIDC publisher (unchanged) ✓, SLSA provenance ✓, release notes match all 7 advisories ✓, integrity ✓, no deps. No override needed: parents admit the patched line via carets (@semantic-release/github ^7.0.0, @actions/http-client ^6.23.0); this exemption only lets the <14d patched releases resolve through. Prune once aged (lockfile + caret keep it patched after).
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 
