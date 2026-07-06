@@ -23,12 +23,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
@@ -43,6 +37,7 @@ import {
   followUpWeekday,
   generateFollowUpBody,
   generateSupplierEmailBody,
+  HOLD_REASONS,
   highlightInSource,
   holdInvoice,
   type InvoiceException,
@@ -55,12 +50,15 @@ import {
   resumeInvoice,
   revalidateException,
   routeMeta,
+  routeOwner,
+  routeToOwner,
   type Suggestion,
   type SupplierEmailDraft,
   scopeLabel,
   sendSupplierEmail,
 } from "./invoice-review-data";
 import { useInvoiceRuntime } from "./invoice-runtime";
+import { ReasonDialog } from "./ReasonDialog";
 import { SuggestedFixCard } from "./SuggestedFixCard";
 import { SupplierEmailModal } from "./SupplierEmailModal";
 
@@ -408,7 +406,7 @@ function LiveExceptionContent({
 }: {
   exception: InvoiceException;
   isNew: boolean;
-  onResolve: (s: Suggestion) => void;
+  onResolve: (s: Suggestion, reason?: string, note?: string) => void;
   entering?: boolean;
   /** Suppress the fix card (used while the block collapses into history). */
   hideFix?: boolean;
@@ -681,7 +679,7 @@ function Stage({
 }: {
   exception: InvoiceException;
   isNew: (e: InvoiceException) => boolean;
-  onResolve: (s: Suggestion) => void;
+  onResolve: (s: Suggestion, reason?: string, note?: string) => void;
 }) {
   const [displayed, setDisplayed] = useState(exception);
   const [phase, setPhase] = useState<"in" | "out">("in");
@@ -817,7 +815,7 @@ function ExceptionGroup({
   counter: string;
   isNew: (e: InvoiceException) => boolean;
   variant: "strip" | "index";
-  onResolve: (s: Suggestion) => void;
+  onResolve: (s: Suggestion, reason?: string, note?: string) => void;
   onSelect: (id: string) => void;
 }) {
   const waiting = openList.filter((e) => e.id !== active.id);
@@ -957,13 +955,11 @@ function HistoricalExceptionView({ event }: { event: ExpandableEvent }) {
   return (
     <div className="opacity-[0.85]">
       <div className="flex min-h-7 flex-wrap items-center gap-2">
-        {/* Badge treatment untouched; only the surrounding context reads as past. */}
+        {/* Badge treatment untouched; only the surrounding context reads as past.
+            No scope label here: the headline below already carries the scope. */}
         <Badge status={meta.tone} variant="secondary">
           {meta.label}
         </Badge>
-        <span className="text-xs text-muted-foreground">
-          {scopeLabel(exception.scope)}
-        </span>
       </div>
       {/* Anchor headline shape, stepped to a secondary foreground. */}
       <h3
@@ -994,6 +990,18 @@ function HistoricalExceptionView({ event }: { event: ExpandableEvent }) {
             </p>
           )}
           <HistoryStamp event={event} />
+          {/* The selected reason chip on an internal route, then the reviewer's
+              optional note. Plain text, no AI marker: the reviewer's own words. */}
+          {event.kind === "waiting" && event.reason && (
+            <p className="text-sm leading-normal text-secondary-foreground">
+              Reason: {event.reason}
+            </p>
+          )}
+          {event.kind === "waiting" && event.note && (
+            <p className="text-sm leading-normal text-secondary-foreground">
+              Note: {event.note}
+            </p>
+          )}
           {/* Audit artifact: the message we actually sent the supplier. Read-only,
               inside the shell, at the historical view's muted treatment. */}
           {(event.kind === "waiting" || event.kind === "followed-up") &&
@@ -1023,6 +1031,7 @@ function EventRowBody({
   sub,
   time,
   expandableEvent,
+  expandDetail,
   reducedMotion = false,
 }: {
   label: string;
@@ -1030,10 +1039,21 @@ function EventRowBody({
   time: string;
   /** present with an attached exception => the row expands to the original */
   expandableEvent?: ExpandableEvent;
+  /** generic expandable content for rows without an exception (e.g. a hold note) */
+  expandDetail?: ReactNode;
   reducedMotion?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const exception = expandableEvent?.exception;
+  // Exception rows expand to the full historical view; other rows may still
+  // expand to a plain detail (a hold note). Either makes the row a toggle.
+  const detail =
+    exception && expandableEvent ? (
+      <HistoricalExceptionView event={expandableEvent} />
+    ) : (
+      expandDetail
+    );
+  const expandable = !!detail;
 
   const run = (
     <>
@@ -1053,7 +1073,7 @@ function EventRowBody({
       {/* Fixed 20px chevron slot, outside the time alignment. Empty on
           non-expandable rows so every time right-aligns to the same edge. */}
       <span className="flex w-5 shrink-0 items-center justify-center">
-        {exception && (
+        {expandable && (
           <ChevronRight
             className={cn(
               "size-3.5 text-muted-foreground",
@@ -1066,7 +1086,7 @@ function EventRowBody({
     </>
   );
 
-  if (!exception || !expandableEvent) {
+  if (!expandable) {
     return <div className="flex min-h-7 items-center pt-0.5">{run}</div>;
   }
 
@@ -1081,9 +1101,7 @@ function EventRowBody({
         {run}
       </button>
       <ExpandRegion open={open} reducedMotion={reducedMotion}>
-        <div className="pt-4">
-          <HistoricalExceptionView event={expandableEvent} />
-        </div>
+        <div className="pt-4">{detail}</div>
       </ExpandRegion>
     </>
   );
@@ -1140,6 +1158,12 @@ type ResolveState = {
   settledSub: string;
   /** route mode: who we are waiting on (drives the waiting row + park) */
   waitingOn?: string;
+  /** internal route: the owner's role, for the terminal summary line */
+  waitingRole?: string;
+  /** internal route: the selected reason chip, for the expanded routed event */
+  reason?: string;
+  /** internal route: the reviewer's optional handoff note */
+  note?: string;
   /** supplier route: the sent email, frozen onto the waiting record on commit */
   draft?: SupplierEmailDraft;
   /** corrected-invoice path: use this seam result instead of revalidateException */
@@ -1242,12 +1266,14 @@ function PeekRow({
   sub,
   time,
   expandableEvent,
+  expandDetail,
   reducedMotion,
 }: {
   label: string;
   sub: string;
   time: string;
   expandableEvent?: ExpandableEvent;
+  expandDetail?: ReactNode;
   reducedMotion?: boolean;
 }) {
   return (
@@ -1257,9 +1283,20 @@ function PeekRow({
         sub={sub}
         time={time}
         expandableEvent={expandableEvent}
+        expandDetail={expandDetail}
         reducedMotion={reducedMotion}
       />
     </li>
+  );
+}
+
+/** A plain expanded detail for a non-exception event: the reviewer's note on a
+ *  hold. Matches the historical note treatment (no AI marker). */
+function EventNoteDetail({ note }: { note: string }) {
+  return (
+    <p className="text-sm leading-normal text-secondary-foreground">
+      Note: {note}
+    </p>
   );
 }
 
@@ -1328,6 +1365,11 @@ function ResolveHistoryPeek({
                   ? e
                   : undefined
               }
+              expandDetail={
+                e.kind === "disposition" && e.note ? (
+                  <EventNoteDetail note={e.note} />
+                ) : undefined
+              }
               reducedMotion={reducedMotion}
             />
           ))}
@@ -1338,55 +1380,30 @@ function ResolveHistoryPeek({
 }
 
 /**
- * A quiet Hold button that opens a small popover for an optional reason. Lighter
- * than the correspondence modal: no AI, no provenance, the reviewer's own note.
- * Esc / click-away dismiss with zero trace (the reason resets on close).
+ * A quiet Hold trigger + the shared park-family dialog (reason chips + optional
+ * note), so Hold and Route read as one family and match standard dialog chrome.
+ * Cancel / X / Esc / overlay dismiss with zero trace; commit is the only write.
  */
-function HoldButton({
+function HoldDialog({
   label,
   onHold,
 }: {
   label: string;
-  onHold: (reason?: string) => void;
+  onHold: (reason: string, note?: string) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState("");
-  function commit() {
-    onHold(reason);
-    setOpen(false);
-    setReason("");
-  }
   return (
-    <Popover
-      open={open}
-      onOpenChange={(o) => {
-        setOpen(o);
-        if (!o) setReason("");
-      }}
-    >
-      <PopoverTrigger asChild>
+    <ReasonDialog
+      trigger={
         <Button size="sm" variant="ghost" className="text-secondary-foreground">
           {label}
         </Button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 p-3">
-        <p className="text-xs font-medium text-muted-foreground">Reason</p>
-        <Input
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="Optional"
-          className="mt-1.5"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commit();
-          }}
-        />
-        <div className="mt-3 flex justify-end">
-          <Button size="sm" onClick={commit}>
-            Hold invoice
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
+      }
+      title="Hold invoice"
+      description="Park this invoice with a reason. It stays in your queue until resolved."
+      chips={HOLD_REASONS}
+      commitLabel="Hold invoice"
+      onCommit={onHold}
+    />
   );
 }
 
@@ -1399,7 +1416,7 @@ function TerminalBlock({
 }: {
   summary: string;
   onApprove: () => void;
-  onHold: (reason?: string) => void;
+  onHold: (reason: string, note?: string) => void;
 }) {
   return (
     <TimelineRow marker="complete" isLast live>
@@ -1417,7 +1434,7 @@ function TerminalBlock({
           <Button size="sm" onClick={onApprove}>
             Approve invoice
           </Button>
-          <HoldButton label="Hold" onHold={onHold} />
+          <HoldDialog label="Hold" onHold={onHold} />
         </div>
       </div>
     </TimelineRow>
@@ -1511,7 +1528,7 @@ function HeldTerminalBlock({
           On hold
         </h2>
         <p className="mt-1.5 max-w-prose text-sm leading-normal text-muted-foreground">
-          {reason ? `On hold: ${reason}` : "Held by you."} {resumeSentence}
+          {reason ? `On hold: ${reason}.` : "Held by you."} {resumeSentence}
         </p>
         <div className="mt-4 flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={onResume}>
@@ -1634,7 +1651,7 @@ function WaitingTerminalBlock({
   followUpByExc: Record<string, string>;
   reducedMotion: boolean;
   onFollowUp: (event: WaitingEvent) => void;
-  onHold: (reason?: string) => void;
+  onHold: (reason: string, note?: string) => void;
   showDevTrigger: boolean;
   onSimulateCorrected: () => void;
 }) {
@@ -1676,7 +1693,7 @@ function WaitingTerminalBlock({
               Follow up
             </Button>
           )}
-          <HoldButton label="Hold invoice" onHold={onHold} />
+          <HoldDialog label="Hold invoice" onHold={onHold} />
           {showDevTrigger && (
             <Button
               size="sm"
@@ -1728,6 +1745,9 @@ export function ExceptionTimeline({
   const waitingIds = waitingRefs.map((w) => w.id);
   const waitingCount = waitingRefs.length;
   const waitingOn = waitingRefs[0]?.waitingOn ?? "supplier";
+  // Internal routes carry the owner's role; its presence marks the wait as an
+  // internal handoff (vs the supplier), which shifts the terminal summary copy.
+  const waitingRole = waitingRefs[0]?.waitingRole;
 
   const [activeId, setActiveId] = useState<string>(
     review.exceptions[0]?.id ?? "",
@@ -1963,7 +1983,13 @@ export function ExceptionTimeline({
             // Park + append the waiting row atomically.
             runtime.parkException(
               review.id,
-              { id: s.exc.id, waitingOn: on, label: s.label, draft: s.draft },
+              {
+                id: s.exc.id,
+                waitingOn: on,
+                waitingRole: s.waitingRole,
+                label: s.label,
+                draft: s.draft,
+              },
               {
                 kind: "waiting",
                 label: s.label,
@@ -1973,6 +1999,8 @@ export function ExceptionTimeline({
                 waitingOn: on,
                 exception: s.exc,
                 draft: s.draft,
+                reason: s.reason,
+                note: s.note,
               },
             );
             setActiveId(nextOpenId(s.exc.id)?.id ?? "");
@@ -2107,6 +2135,8 @@ export function ExceptionTimeline({
     exc: InvoiceException,
     suggestion: Suggestion,
     draft?: SupplierEmailDraft,
+    note?: string,
+    reason?: string,
   ) {
     const rm = routeMeta(exc, suggestion);
     setResolve({
@@ -2116,6 +2146,9 @@ export function ExceptionTimeline({
       sub: draft ? `${rm.sub} · ${draft.to}` : rm.sub,
       shortLabel: rm.shortLabel,
       waitingOn: rm.waitingOn,
+      waitingRole: rm.waitingRole,
+      reason,
+      note,
       draft,
       phase: "confirm",
       fresh: [],
@@ -2124,7 +2157,7 @@ export function ExceptionTimeline({
     });
   }
 
-  function resolveActive(s: Suggestion) {
+  function resolveActive(s: Suggestion, reason?: string, note?: string) {
     if (!active || resolve || emailModal) return;
     // Supplier routes confirm through the draft modal: nothing about the
     // exception changes until the message is sent (Send commits the park).
@@ -2145,9 +2178,12 @@ export function ExceptionTimeline({
     // was already near the bottom, and cancel it if they scroll during it.
     stickRef.current = nearBottom(120);
     userScrolledRef.current = false;
-    // Internal routes (data owner, etc.) park directly, no modal.
+    // Internal routes (data owner, etc.) confirmed through the route popover: it
+    // resolves the named owner and carries the optional note. Hand off via the
+    // seam, then park directly (no modal, no re-check).
     if (isRouteSuggestion(s)) {
-      startRoute(active, s);
+      void routeToOwner(review.id, active.id, routeOwner(s), reason, note);
+      startRoute(active, s, undefined, note, reason);
       return;
     }
     const meta = exceptionMeta(active);
@@ -2290,9 +2326,9 @@ export function ExceptionTimeline({
     const { disposition: d, event } = buildApproval(review);
     runtime.setDisposition(review.id, d, event);
   }
-  function hold(reason?: string) {
-    holdInvoice(review.id, reason);
-    const { disposition: d, event } = buildHold(review, reason);
+  function hold(reason: string, note?: string) {
+    holdInvoice(review.id, reason, note);
+    const { disposition: d, event } = buildHold(review, reason, note);
     runtime.setDisposition(review.id, d, event);
   }
   function resume() {
@@ -2319,7 +2355,11 @@ export function ExceptionTimeline({
         })()}. `
       : "";
   const summarySentence = `${resolvedClause}This invoice is ready for your decision.`;
-  const waitingSummary = `${resolvedClause}One issue is with the ${waitingOn}; validation re-runs when the corrected invoice arrives.`;
+  // Supplier waits re-run when the corrected invoice arrives; internal handoffs
+  // name the owner + role and re-run when the corrected data arrives.
+  const waitingSummary = waitingRole
+    ? `${resolvedClause}One issue is with ${waitingOn}, ${waitingRole}; validation re-runs when the corrected data arrives.`
+    : `${resolvedClause}One issue is with the ${waitingOn}; validation re-runs when the corrected invoice arrives.`;
 
   // Request cards = the waiting events for exceptions still parked now. followUp
   // times index the latest reminder per exception (drives row 3).
@@ -2332,6 +2372,53 @@ export function ExceptionTimeline({
     if (e.kind === "followed-up") followUpByExc[e.exception.id] = e.time;
   }
 
+  // The full event log rendered as rows: shared by the live view and the held
+  // view (a header Hold can pause the invoice mid-review, before completion).
+  const eventRows = events.map((ev, i) => {
+    // The last event sits before the present (group) node: a section
+    // transition, so it opens 28px instead of the 20px event gap.
+    const gap = i === events.length - 1 ? SECTION_GAP : ROW_GAP;
+    if (
+      ev.kind === "resolved" ||
+      ev.kind === "waiting" ||
+      ev.kind === "followed-up"
+    ) {
+      return (
+        <HistoryEventRow
+          key={ev.key}
+          event={ev}
+          reducedMotion={reducedMotion}
+          gap={gap}
+        />
+      );
+    }
+    // Flat rows: disposition (a reviewer action -> person marker, per its stated
+    // actor), revalidated (agent, spinner while pending), received (agent).
+    const marker: MarkerKind =
+      ev.kind === "disposition"
+        ? ev.actor === "reviewer"
+          ? "reviewer"
+          : "agent"
+        : ev.kind === "revalidated" && ev.pending
+          ? "progress"
+          : "agent";
+    return (
+      <EventRow
+        key={ev.key}
+        marker={marker}
+        label={ev.label}
+        sub={ev.sub}
+        time={ev.time}
+        gap={gap}
+      />
+    );
+  });
+
+  // Held is a whole-invoice overlay: it can be set from the terminal OR the
+  // header (mid-review), so it renders regardless of allDone. Accumulated
+  // history shows as the completion peek when done, else inline.
+  const heldView = disposition?.type === "held";
+
   return (
     <div className="relative flex-1 overflow-hidden">
       <div
@@ -2343,26 +2430,42 @@ export function ExceptionTimeline({
             steps={review.agentHistory}
             bottomGap={!allDone && events.length === 0 ? SECTION_GAP : ROW_GAP}
           />
-          {allDone ? (
+          {heldView ? (
+            <>
+              {/* Held pauses the whole invoice. Show the accumulated history
+                  (peek when the loop had finished, else inline) then the held
+                  terminal + Resume, so Hold is coherent from the header too. */}
+              {allDone ? (
+                <ResolveHistoryPeek
+                  events={events}
+                  waitingCount={waitingCount}
+                  reducedMotion={reducedMotion}
+                />
+              ) : (
+                eventRows
+              )}
+              <HeldTerminalBlock
+                reason={
+                  disposition?.type === "held" ? disposition.reason : undefined
+                }
+                frozenWaiting={waitingCount > 0}
+                reducedMotion={reducedMotion}
+                onResume={resume}
+                showDevTrigger={devMode && waitingCount > 0}
+                onSimulateCorrected={simulateCorrected}
+              />
+            </>
+          ) : allDone ? (
             <>
               {/* The log compresses into a peek; the terminal lands below it.
-                Disposition wins when set: held (paused) or approved (stamp);
-                otherwise the waiting or passed terminal from the derived state. */}
+                Disposition wins when set: approved (stamp); otherwise the
+                waiting or passed terminal from the derived state. */}
               <ResolveHistoryPeek
                 events={events}
                 waitingCount={waitingCount}
                 reducedMotion={reducedMotion}
               />
-              {disposition?.type === "held" ? (
-                <HeldTerminalBlock
-                  reason={disposition.reason}
-                  frozenWaiting={waitingCount > 0}
-                  reducedMotion={reducedMotion}
-                  onResume={resume}
-                  showDevTrigger={devMode && waitingCount > 0}
-                  onSimulateCorrected={simulateCorrected}
-                />
-              ) : disposition?.type === "approved" ? (
+              {disposition?.type === "approved" ? (
                 <ApprovedTerminalBlock
                   review={review}
                   summary={summarySentence}
@@ -2391,40 +2494,7 @@ export function ExceptionTimeline({
             </>
           ) : (
             <>
-              {events.map((ev, i) => {
-                // The last event sits before the present (group) node: a section
-                // transition, so it opens 28px instead of the 20px event gap.
-                const gap = i === events.length - 1 ? SECTION_GAP : ROW_GAP;
-                if (
-                  ev.kind === "resolved" ||
-                  ev.kind === "waiting" ||
-                  ev.kind === "followed-up"
-                ) {
-                  return (
-                    <HistoryEventRow
-                      key={ev.key}
-                      event={ev}
-                      reducedMotion={reducedMotion}
-                      gap={gap}
-                    />
-                  );
-                }
-                // received (agent) and revalidated (progress -> agent) rows are flat
-                return (
-                  <EventRow
-                    key={ev.key}
-                    marker={
-                      ev.kind === "revalidated" && ev.pending
-                        ? "progress"
-                        : "agent"
-                    }
-                    label={ev.label}
-                    sub={ev.sub}
-                    time={ev.time}
-                    gap={gap}
-                  />
-                );
-              })}
+              {eventRows}
               {resolve ? (
                 <ResolvingNode
                   resolve={resolve}
