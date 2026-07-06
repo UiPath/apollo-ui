@@ -6476,10 +6476,10 @@ packages:
       typescript: '*'
 
   '@uipath/core-telemetry@1.0.0-beta.2':
-    resolution: {integrity: sha512-behZVGmVq7fn+6bvqdJvu4AbJzJV5ZHJqM4E6AaYle+nqSJoSYyLmAQO2+PSoI5h/Pd+1tU0n0MUpjw2OLXJSA==, tarball: https://npm.pkg.github.com/download/@uipath/core-telemetry/1.0.0-beta.2/6b4a6796dcb14dabc64feba0c684dde82d9a0e9c}
+    resolution: {integrity: sha512-behZVGmVq7fn+6bvqdJvu4AbJzJV5ZHJqM4E6AaYle+nqSJoSYyLmAQO2+PSoI5h/Pd+1tU0n0MUpjw2OLXJSA==}
 
   '@uipath/uipath-typescript@1.3.11':
-    resolution: {integrity: sha512-U0U6+KzuD8RSkKshrg/Q9YiVublWxbHgJGpSs16daqvT/augVc2fNG475fW2ggjYbOssEUtErQJYvAJUZ22MRw==, tarball: https://npm.pkg.github.com/download/@uipath/uipath-typescript/1.3.11/a6c3e1707c167a9115689a76264c313781c87703}
+    resolution: {integrity: sha512-U0U6+KzuD8RSkKshrg/Q9YiVublWxbHgJGpSs16daqvT/augVc2fNG475fW2ggjYbOssEUtErQJYvAJUZ22MRw==}
     peerDependencies:
       zod: ^4.2.1
 
