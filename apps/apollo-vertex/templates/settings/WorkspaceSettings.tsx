@@ -188,6 +188,7 @@ export function WorkspaceSettings() {
                         id={field.name}
                         checked={field.state.value}
                         onCheckedChange={field.handleChange}
+                        onBlur={field.handleBlur}
                       />
                     </Field>
                   )}
@@ -208,6 +209,7 @@ export function WorkspaceSettings() {
                         id={field.name}
                         checked={field.state.value}
                         onCheckedChange={field.handleChange}
+                        onBlur={field.handleBlur}
                       />
                     </Field>
                   )}
@@ -273,6 +275,7 @@ export function WorkspaceSettings() {
                         id={field.name}
                         checked={field.state.value}
                         onCheckedChange={field.handleChange}
+                        onBlur={field.handleBlur}
                       />
                     </Field>
                   )}
