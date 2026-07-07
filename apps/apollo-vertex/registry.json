@@ -2686,11 +2686,6 @@
           "target": "components/ui/form/field-error.tsx"
         },
         {
-          "path": "registry/form/form-error-summary.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/form/form-error-summary.tsx"
-        },
-        {
           "path": "registry/form/text-field.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/text-field.tsx"

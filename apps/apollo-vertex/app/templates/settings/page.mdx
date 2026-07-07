@@ -110,8 +110,7 @@ npx shadcn@latest add @uipath/button
   `grid grid-cols-1 sm:grid-cols-2 gap-4` to lay them side-by-side from
   tablet up (as Language + Timezone do here).
 - **Validation** — the whole-form Zod schema is passed to the `Form`'s
-  `validators.onChange`. Each field renders its own translatable errors, and
-  `FormErrorSummary` can list them all in one accessible block.
+  `validators.onChange`. Each field renders its own translatable errors inline.
 - **i18n** — wrap your app in `ApolloShell` (which initializes i18n via
   `LocaleProvider`) or provide your own `I18nextProvider` so any
   registry-component strings render correctly.

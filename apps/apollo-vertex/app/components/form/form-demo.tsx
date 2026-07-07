@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import * as z from "zod";
 import { FieldGroup } from "@/components/ui/field";
 import { useAppForm } from "@/components/ui/form";
@@ -33,7 +32,6 @@ const planOptions = [
 ];
 
 export function FormDemo() {
-  const { t } = useTranslation();
   const [submitted, setSubmitted] = useState<SignUpValues | null>(null);
 
   const form = useAppForm({
@@ -62,11 +60,6 @@ export function FormDemo() {
     >
       <form.AppForm>
         <FieldGroup>
-          <form.FormErrorSummary
-            title={t("form_demo_error_summary_title")}
-            className="mb-2"
-          />
-
           <form.AppField name="fullName">
             {(field) => (
               <field.TextField label="Full name" placeholder="Ada Lovelace" />
