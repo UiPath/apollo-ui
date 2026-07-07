@@ -45,7 +45,7 @@ function isVersion(value: string | null): value is InvoiceVersion {
 }
 
 export function InvoiceVersionProvider({ children }: { children: ReactNode }) {
-  const [version, setVersionState] = useState<InvoiceVersion>("v1");
+  const [version, setVersionState] = useState<InvoiceVersion>("v3");
 
   // Restore the last-used version on mount, migrating the legacy names.
   useEffect(() => {
