@@ -8,7 +8,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import type { FieldOption } from "./field-utils";
+import {
+  descriptionId,
+  errorId,
+  type FieldOption,
+  fieldDescribedBy,
+} from "./field-utils";
 import { useFieldContext } from "./form-context";
 import { useTranslatedErrors } from "./use-translated-errors";
 
@@ -27,6 +32,11 @@ function RadioGroupField({
   const errors = useTranslatedErrors(field.state.meta.errors);
   const invalid = errors.length > 0;
   const labelId = `${field.name}-label`;
+  const describedBy = fieldDescribedBy(
+    field.name,
+    Boolean(description),
+    invalid,
+  );
 
   return (
     <Field data-invalid={invalid}>
@@ -36,6 +46,7 @@ function RadioGroupField({
         onValueChange={field.handleChange}
         aria-invalid={invalid}
         {...(label ? { "aria-labelledby": labelId } : {})}
+        {...(describedBy ? { "aria-describedby": describedBy } : {})}
       >
         {options.map((option) => {
           const itemId = `${field.name}-${option.value}`;
@@ -53,8 +64,12 @@ function RadioGroupField({
           );
         })}
       </RadioGroup>
-      {description ? <FieldDescription>{description}</FieldDescription> : null}
-      <FieldError errors={errors} />
+      {description ? (
+        <FieldDescription id={descriptionId(field.name)}>
+          {description}
+        </FieldDescription>
+      ) : null}
+      <FieldError id={errorId(field.name)} errors={errors} />
     </Field>
   );
 }

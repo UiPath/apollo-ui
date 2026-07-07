@@ -9,6 +9,7 @@ import {
   FieldError,
   FieldLabel,
 } from "@/components/ui/field";
+import { descriptionId, errorId, fieldDescribedBy } from "./field-utils";
 import { useFieldContext } from "./form-context";
 import { useTranslatedErrors } from "./use-translated-errors";
 
@@ -21,6 +22,11 @@ function CheckboxField({ label, description }: CheckboxFieldProps) {
   const field = useFieldContext<boolean>();
   const errors = useTranslatedErrors(field.state.meta.errors);
   const invalid = errors.length > 0;
+  const describedBy = fieldDescribedBy(
+    field.name,
+    Boolean(description),
+    invalid,
+  );
 
   return (
     <Field orientation="horizontal" data-invalid={invalid}>
@@ -31,13 +37,16 @@ function CheckboxField({ label, description }: CheckboxFieldProps) {
         onCheckedChange={(checked) => field.handleChange(checked === true)}
         onBlur={field.handleBlur}
         aria-invalid={invalid}
+        {...(describedBy ? { "aria-describedby": describedBy } : {})}
       />
       <FieldContent>
         {label ? <FieldLabel htmlFor={field.name}>{label}</FieldLabel> : null}
         {description ? (
-          <FieldDescription>{description}</FieldDescription>
+          <FieldDescription id={descriptionId(field.name)}>
+            {description}
+          </FieldDescription>
         ) : null}
-        <FieldError errors={errors} />
+        <FieldError id={errorId(field.name)} errors={errors} />
       </FieldContent>
     </Field>
   );

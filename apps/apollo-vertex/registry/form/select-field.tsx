@@ -14,7 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { FieldOption } from "./field-utils";
+import {
+  descriptionId,
+  errorId,
+  type FieldOption,
+  fieldDescribedBy,
+} from "./field-utils";
 import { useFieldContext } from "./form-context";
 import { useTranslatedErrors } from "./use-translated-errors";
 
@@ -36,6 +41,11 @@ function SelectField({
   const field = useFieldContext<string>();
   const errors = useTranslatedErrors(field.state.meta.errors);
   const invalid = errors.length > 0;
+  const describedBy = fieldDescribedBy(
+    field.name,
+    Boolean(description),
+    invalid,
+  );
 
   return (
     <Field data-invalid={invalid}>
@@ -48,6 +58,7 @@ function SelectField({
           id={field.name}
           onBlur={field.handleBlur}
           aria-invalid={invalid}
+          {...(describedBy ? { "aria-describedby": describedBy } : {})}
           className={className}
         >
           <SelectValue placeholder={placeholder} />
@@ -60,8 +71,12 @@ function SelectField({
           ))}
         </SelectContent>
       </Select>
-      {description ? <FieldDescription>{description}</FieldDescription> : null}
-      <FieldError errors={errors} />
+      {description ? (
+        <FieldDescription id={descriptionId(field.name)}>
+          {description}
+        </FieldDescription>
+      ) : null}
+      <FieldError id={errorId(field.name)} errors={errors} />
     </Field>
   );
 }

@@ -5,6 +5,22 @@ export interface FieldOption {
   value: string;
 }
 
+export const descriptionId = (name: string) => `${name}-description`;
+export const errorId = (name: string) => `${name}-error`;
+
+export function fieldDescribedBy(
+  name: string,
+  hasDescription: boolean,
+  hasError: boolean,
+): string {
+  return [
+    hasDescription ? descriptionId(name) : null,
+    hasError ? errorId(name) : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
 export function normalizeErrors(
   errors: ReadonlyArray<unknown>,
 ): Array<{ message: string }> {

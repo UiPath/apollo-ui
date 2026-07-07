@@ -8,6 +8,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { descriptionId, errorId, fieldDescribedBy } from "./field-utils";
 import { useFieldContext } from "./form-context";
 import { useTranslatedErrors } from "./use-translated-errors";
 
@@ -24,6 +25,11 @@ function TextField({ label, description, ...props }: TextFieldProps) {
   const field = useFieldContext<string>();
   const errors = useTranslatedErrors(field.state.meta.errors);
   const invalid = errors.length > 0;
+  const describedBy = fieldDescribedBy(
+    field.name,
+    Boolean(description),
+    invalid,
+  );
 
   return (
     <Field data-invalid={invalid}>
@@ -35,10 +41,15 @@ function TextField({ label, description, ...props }: TextFieldProps) {
         onChange={(event) => field.handleChange(event.target.value)}
         onBlur={field.handleBlur}
         aria-invalid={invalid}
+        {...(describedBy ? { "aria-describedby": describedBy } : {})}
         {...props}
       />
-      {description ? <FieldDescription>{description}</FieldDescription> : null}
-      <FieldError errors={errors} />
+      {description ? (
+        <FieldDescription id={descriptionId(field.name)}>
+          {description}
+        </FieldDescription>
+      ) : null}
+      <FieldError id={errorId(field.name)} errors={errors} />
     </Field>
   );
 }
