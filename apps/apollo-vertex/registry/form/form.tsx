@@ -3,7 +3,6 @@
 import { createFormHook } from "@tanstack/react-form";
 import { CheckboxField } from "./checkbox-field";
 import { fieldContext, formContext } from "./form-context";
-import { FormErrorSummary } from "./form-error-summary";
 import { RadioGroupField } from "./radio-group-field";
 import { SelectField } from "./select-field";
 import { SubmitButton } from "./submit-button";
@@ -24,7 +23,6 @@ const { useAppForm, withForm } = createFormHook({
   },
   formComponents: {
     SubmitButton,
-    FormErrorSummary,
   },
 });
 
@@ -34,8 +32,6 @@ export { useTranslatedErrors } from "./use-translated-errors";
 export type { FieldOption } from "./field-utils";
 export { FieldError } from "./field-error";
 export type { FieldErrorProps } from "./field-error";
-export { FormErrorSummary } from "./form-error-summary";
-export type { FormErrorSummaryProps } from "./form-error-summary";
 export { CheckboxField } from "./checkbox-field";
 export type { CheckboxFieldProps } from "./checkbox-field";
 export { RadioGroupField } from "./radio-group-field";

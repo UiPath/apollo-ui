@@ -20,7 +20,7 @@ npx shadcn@latest add @uipath/form
 ## How it works
 
 - `form.AppField` provides the field context. Its render prop exposes the bound components (`field.TextField`, `field.SelectField`, etc).
-- `form.AppForm` provides the form context to form-level components such as `SubmitButton` and `FormErrorSummary`.
+- `form.AppForm` provides the form context to form-level components such as `SubmitButton`.
 - `form.SubmitButton` subscribes to `canSubmit` and disables itself while the form is invalid or submitting.
 
 <div className="p-6 border rounded-lg mt-4 max-w-md">
@@ -98,17 +98,7 @@ const schema = z.object({
 })
 ```
 
-Two components consume these messages:
-
-- **Per field**: the bound field components render their own translated errors automatically. For a custom field, use `FieldError` with the field's raw errors.
-- **Form level**: `FormErrorSummary` lists every field's errors in one translated, accessible block. Render it inside `form.AppForm`.
-
-```tsx
-<form.AppForm>
-  <form.FormErrorSummary title="Please fix the following:" />
-  {/* fields */}
-</form.AppForm>
-```
+Errors render inline per field: the bound field components translate and display their own errors automatically. For a custom field, use `FieldError` with the field's raw errors.
 
 ## Field-level validation
 
