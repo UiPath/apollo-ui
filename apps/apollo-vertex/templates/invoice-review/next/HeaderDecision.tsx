@@ -30,14 +30,16 @@ type HeaderDialog = "reject" | "hold" | null;
  * with an attached overflow (Reject / Hold). Each overflow action opens the
  * shared park-family dialog (reason chips + optional note), so the header
  * decisions read as one family with the terminal Hold and the route confirm.
- * Flag is intentionally absent until it can park a resumable state like Hold (a
- * flagged disposition); a half-wired legacy flag would leave a dead menu item.
- * Once approved, BOTH halves are simply disabled (the header chip carries the
- * state); a nicer committed treatment comes later. Otherwise Approve is enabled,
+ * Reject and Hold both set the runtime disposition (Reject is permanent, Hold
+ * reversible). Flag is intentionally absent until it can park a resumable state
+ * like Hold; a half-wired legacy flag would leave a dead menu item. Once
+ * committed to a permanent disposition (approved OR rejected), BOTH halves and
+ * the overflow are disabled: no further decisions. Otherwise Approve is enabled,
  * or blocked with a tooltip naming why.
  */
 export function HeaderDecision({
   approved,
+  rejected,
   blockedReason,
   onApprove,
   onReject,
@@ -45,6 +47,8 @@ export function HeaderDecision({
 }: {
   /** true once approved: both halves disable (no more disposition to make) */
   approved?: boolean;
+  /** true once rejected (permanent): both halves + overflow disable */
+  rejected?: boolean;
   /** when set (and not approved), Approve is disabled with this tooltip */
   blockedReason?: string | null;
   onApprove: () => void;
@@ -52,11 +56,13 @@ export function HeaderDecision({
   onHold: (reason: string, note?: string) => void;
 }) {
   const [dialog, setDialog] = useState<HeaderDialog>(null);
+  // A permanent disposition locks the header: no further decisions to make.
+  const locked = approved || rejected;
 
   return (
     <>
       <ButtonGroup>
-        {approved ? (
+        {locked ? (
           <Button disabled>Approve</Button>
         ) : blockedReason ? (
           // aria-disabled (not disabled) so the button keeps the pointer events the
@@ -82,16 +88,16 @@ export function HeaderDecision({
         <ButtonGroupSeparator className="bg-primary-600" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            {/* Disabled once approved: no further disposition from the header. */}
-            <Button aria-label="More decisions" disabled={approved}>
+            {/* Disabled once a permanent disposition is set: no further
+                decisions from the header. */}
+            <Button aria-label="More decisions" disabled={locked}>
               <EllipsisVertical className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {/* Each opens the shared dialog; the menu closes first, then the
                 controlled dialog opens (a trigger inside the item would unmount
-                with the menu). Reject stays legacy; Hold sets the runtime
-                disposition. */}
+                with the menu). Both set the runtime disposition. */}
             <DropdownMenuItem onSelect={() => setDialog("reject")}>
               Reject
             </DropdownMenuItem>

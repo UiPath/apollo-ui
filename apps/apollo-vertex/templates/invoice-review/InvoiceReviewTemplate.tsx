@@ -103,6 +103,7 @@ import {
   approveInvoice,
   buildApproval,
   buildHold,
+  buildReject,
   exceptionMeta,
   FLAG_REASONS,
   findReview,
@@ -112,6 +113,7 @@ import {
   invoiceReviews,
   openExceptions,
   REJECT_REASONS,
+  rejectInvoice,
 } from "./next/invoice-review-data";
 import {
   InvoiceRuntimeProvider,
@@ -589,7 +591,9 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     currency: "EUR",
     dueDate: "2026-05-29",
     dueFormatted: "May 29, 2026",
-    documentDateFormatted: "Apr 13, 2026",
+    // Matches the outside-PO-period exception's ON INVOICE date so the evidence
+    // chip and the highlighted document field connect.
+    documentDateFormatted: "May 3, 2026",
     po: "PO-558120044",
     paymentTerms: "Net 30 · EUR",
     billTo: "Global Enterprises GmbH",
@@ -1761,11 +1765,26 @@ function InvoiceListView({
 }) {
   const [timeRange, setTimeRange] = useState("30d");
   const [cardFilter, setCardFilter] = useState<CardFilterKey>(null);
+  const runtime = useInvoiceRuntime();
 
-  // Reflect live actions (approve/reject/flag/hold) in each row's status.
+  // Reflect live actions in each row's status. The runtime disposition
+  // (approve/reject/hold) is the v2/v3 single source and wins over the legacy
+  // completion/parked maps, so approving or rejecting in the workspace updates
+  // the list badge immediately (getRuntime is read live; the store re-renders
+  // consumers on change).
   const liveData = useMemo(
     () =>
       invoiceTableData.map((r) => {
+        const disposition = runtime.getRuntime(r.id).disposition;
+        if (disposition) {
+          const status: InvoiceStatus =
+            disposition.type === "approved"
+              ? "approved"
+              : disposition.type === "rejected"
+                ? "rejected"
+                : "on-hold";
+          return { ...r, status };
+        }
         const c = completionMap[r.id];
         if (c) {
           return {
@@ -1786,7 +1805,7 @@ function InvoiceListView({
         }
         return r;
       }),
-    [completionMap, parkedMap],
+    [completionMap, parkedMap, runtime],
   );
 
   const sortedData = useMemo(() => {
@@ -2085,13 +2104,16 @@ function NavInvoiceItem({
   // Disposition (v2/v3) takes precedence over the legacy completion/parked maps.
   const disposition = runtime.getRuntime(invoice.id).disposition;
   const isApprovedDisp = disposition?.type === "approved";
+  const isRejectedDisp = disposition?.type === "rejected";
   const isHeldDisp = disposition?.type === "held";
   const holdReason =
     disposition?.type === "held" ? disposition.reason : undefined;
+  const rejectReason =
+    disposition?.type === "rejected" ? disposition.reason : undefined;
   const dispTime =
     disposition?.time === "Just now" ? "just now" : disposition?.time;
   const summary =
-    isAuto || isCompleted || isApprovedDisp
+    isAuto || isCompleted || isApprovedDisp || isRejectedDisp
       ? null
       : getExceptionSummary(
           getReview(invoice.id),
@@ -2107,45 +2129,52 @@ function NavInvoiceItem({
 
   const dotColor = isApprovedDisp
     ? "bg-success"
-    : isHeldDisp
-      ? "bg-muted-foreground"
-      : isCompleted
-        ? completion.type === "approved"
-          ? "bg-success"
-          : "bg-destructive"
-        : isParked
-          ? "bg-warning"
-          : isWaiting
-            ? "bg-info"
-            : isAuto || isReady
-              ? "bg-success"
-              : lead
-                ? (TONE_DOT[exceptionMeta(lead).tone] ?? "bg-muted-foreground")
-                : "bg-muted-foreground";
+    : isRejectedDisp
+      ? "bg-destructive"
+      : isHeldDisp
+        ? "bg-muted-foreground"
+        : isCompleted
+          ? completion.type === "approved"
+            ? "bg-success"
+            : "bg-destructive"
+          : isParked
+            ? "bg-warning"
+            : isWaiting
+              ? "bg-info"
+              : isAuto || isReady
+                ? "bg-success"
+                : lead
+                  ? (TONE_DOT[exceptionMeta(lead).tone] ??
+                    "bg-muted-foreground")
+                  : "bg-muted-foreground";
 
   const tagLabel = isApprovedDisp
     ? `Approved · ${dispTime}`
-    : isHeldDisp
-      ? holdReason
-        ? `On hold · ${holdReason}`
-        : "On hold"
-      : isCompleted
-        ? completion.type === "approved"
-          ? "Approved"
-          : "Rejected"
-        : isParked
-          ? parked?.kind === "hold"
-            ? "On hold"
-            : "Flagged"
-          : isWaiting
-            ? `Waiting on ${waitingOn}`
-            : isAuto
-              ? "Done"
-              : isReady
-                ? "Ready to approve"
-                : lead
-                  ? exceptionMeta(lead).label
-                  : "";
+    : isRejectedDisp
+      ? rejectReason
+        ? `Rejected · ${rejectReason}`
+        : "Rejected"
+      : isHeldDisp
+        ? holdReason
+          ? `On hold · ${holdReason}`
+          : "On hold"
+        : isCompleted
+          ? completion.type === "approved"
+            ? "Approved"
+            : "Rejected"
+          : isParked
+            ? parked?.kind === "hold"
+              ? "On hold"
+              : "Flagged"
+            : isWaiting
+              ? `Waiting on ${waitingOn}`
+              : isAuto
+                ? "Done"
+                : isReady
+                  ? "Ready to approve"
+                  : lead
+                    ? exceptionMeta(lead).label
+                    : "";
 
   return (
     <button
@@ -2155,7 +2184,8 @@ function NavInvoiceItem({
       className={cn(
         "w-full text-left",
         interactive ? "group" : "cursor-default",
-        (isAuto || isCompleted || isApprovedDisp) && "opacity-40",
+        (isAuto || isCompleted || isApprovedDisp || isRejectedDisp) &&
+          "opacity-40",
       )}
     >
       <div
@@ -2327,17 +2357,22 @@ function LeftNav({
   // Disposition (v2/v3): approved -> "Approved" group, held -> "On hold" group.
   const isApproved = (id: string) =>
     runtime.getRuntime(id).disposition?.type === "approved";
+  const isRejected = (id: string) =>
+    runtime.getRuntime(id).disposition?.type === "rejected";
   const isHeld = (id: string) =>
     runtime.getRuntime(id).disposition?.type === "held";
   const isWaitingOnly = (id: string) => {
-    if (isDone(id) || isApproved(id) || isHeld(id)) return false;
+    if (isDone(id) || isApproved(id) || isRejected(id) || isHeld(id))
+      return false;
     const s = getExceptionSummary(getReview(id), runtime.getRuntime(id));
     return s.openCount === 0 && s.waitingCount > 0;
   };
   // Status-filtered tab lists over the review queue. "All" is the whole queue
-  // (every status), the rest are subsets; Done folds Approved + Completed/
-  // Rejected.
-  const isDoneOrApproved = (id: string) => isDone(id) || isApproved(id);
+  // (every status), the rest are subsets; Done folds Approved + Rejected +
+  // legacy Completed. (Rejected is disposition-driven, same cheap pattern as
+  // Waiting/On hold; a dedicated Rejected tab can split out later.)
+  const isDoneOrApproved = (id: string) =>
+    isDone(id) || isApproved(id) || isRejected(id);
   const allList = invoicesReview;
   const waitingList = invoicesReview.filter((inv) => isWaitingOnly(inv.id));
   const onHoldList = invoicesReview.filter((inv) => isHeld(inv.id));
@@ -3952,6 +3987,7 @@ function LinesTab() {
 
 function SourceTab() {
   const {
+    id,
     sourceFilename,
     vendor,
     vendorEmail,
@@ -3965,6 +4001,89 @@ function SourceTab() {
     linesTotal,
     vat,
   } = useInvoiceDetail();
+  const runtime = useInvoiceRuntime();
+  const rt = runtime.getRuntime(id);
+  const pageRef = useRef<HTMLDivElement>(null);
+  // Arrival settle: "peak" paints instantly at elevated strength, then the next
+  // frame flips to "rest" WITH a transition so it eases down to the persistent
+  // state over one ~600ms cycle. Reduced motion skips straight to "rest".
+  const [settle, setSettle] = useState<"peak" | "rest">("rest");
+
+  // A "show in source" highlight is valid only while its exception is still
+  // live: not resolved, not routed (waiting), and no whole-invoice disposition.
+  // A stale highlight would point at a value the document may have superseded,
+  // so it clears the moment the exception leaves the live set.
+  const highlight = rt.highlight;
+  const live =
+    !!highlight &&
+    !rt.disposition &&
+    !rt.resolvedIds.includes(highlight.exceptionId) &&
+    !rt.waiting.some((w) => w.id === highlight.exceptionId);
+  const activeAnchors = live && highlight ? highlight.anchors : [];
+  const nonce = highlight?.nonce;
+
+  // On each request (nonce bump): smooth-scroll the first anchored region to the
+  // upper third (instant under reduced motion) and run the settle once.
+  useEffect(() => {
+    if (!live || activeAnchors.length === 0) return;
+    // Read the preference synchronously so the very first arrival frame is
+    // correct (a hook that resolves in an effect can miss it on mount).
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const rafScroll = requestAnimationFrame(() => {
+      const container = pageRef.current;
+      const first = container?.querySelector<HTMLElement>(
+        `[data-anchor="${activeAnchors[0]}"]`,
+      );
+      if (container && first) {
+        const cRect = container.getBoundingClientRect();
+        const tRect = first.getBoundingClientRect();
+        const top =
+          container.scrollTop + (tRect.top - cRect.top) - cRect.height / 3;
+        container.scrollTo({
+          top,
+          behavior: prefersReduced ? "auto" : "smooth",
+        });
+      }
+    });
+    if (prefersReduced) {
+      // Never paint the elevated frame: go straight to the persistent state.
+      setSettle("rest");
+      return () => cancelAnimationFrame(rafScroll);
+    }
+    // Paint at peak, then (after it commits) ease down to rest.
+    setSettle("peak");
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setSettle("rest"));
+    });
+    return () => {
+      cancelAnimationFrame(rafScroll);
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+    // Re-run per request; activeAnchors identity tracks with nonce/live.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the request
+  }, [nonce, live]);
+
+  // Amber treatment on an anchored region: the same warning token family as the
+  // timeline evidence chip so they rhyme, but stronger (fill + ring) so the doc
+  // region reads as "selected". Peak is elevated + transitionless (instant);
+  // rest eases down via the transition. motion-reduce disables the ease as a CSS
+  // backstop (and the peak frame is never set under reduced motion, above).
+  const mark = (anchor: string) => {
+    if (!activeAnchors.includes(anchor)) return undefined;
+    return cn(
+      "rounded-sm px-0.5 ring-1",
+      settle === "peak"
+        ? "bg-warning/40 ring-warning/70"
+        : "bg-warning/15 ring-warning/50",
+      settle === "rest" &&
+        "transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none",
+    );
+  };
+
   return (
     <div className="flex flex-col h-full bg-[#525659]">
       {/* PDF viewer toolbar */}
@@ -3999,7 +4118,10 @@ function SourceTab() {
       </div>
 
       {/* Page area */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar py-5 px-4 flex justify-center">
+      <div
+        ref={pageRef}
+        className="flex-1 overflow-y-auto custom-scrollbar py-5 px-4 flex justify-center"
+      >
         {/* White page */}
         <div className="bg-white w-full shadow-xl text-gray-900 text-[10px] leading-relaxed p-8 space-y-4 self-start">
           {/* Header */}
@@ -4021,21 +4143,36 @@ function SourceTab() {
           {/* Meta grid */}
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
             {[
-              { label: "Invoice Date", value: documentDateFormatted },
-              { label: "Due Date", value: dueFormatted },
+              {
+                label: "Invoice Date",
+                value: documentDateFormatted,
+                anchor: "field:invoice-date",
+              },
+              {
+                label: "Due Date",
+                value: dueFormatted,
+                anchor: "field:due-date",
+              },
               {
                 label: "PO Number",
                 value: po,
                 danger: !po || po === "—" || /missing|not found/i.test(po),
+                anchor: "field:po-number",
               },
-              { label: "Payment Terms", value: paymentTerms },
-            ].map(({ label, value, danger }) => (
+              {
+                label: "Payment Terms",
+                value: paymentTerms,
+                anchor: "field:payment-terms",
+              },
+            ].map(({ label, value, danger, anchor }) => (
               <div key={label}>
                 <div className="text-[8px] text-gray-400 mb-0.5">{label}</div>
                 <div
+                  data-anchor={anchor}
                   className={cn(
                     "font-medium text-[10px]",
                     danger && "text-[#C0392B]",
+                    mark(anchor),
                   )}
                 >
                   {danger && !value ? "Not found" : value}
@@ -4072,10 +4209,22 @@ function SourceTab() {
               {lines.map((line, i) => (
                 <tr key={i} className="border-b border-gray-100">
                   <td className="py-1.5 text-gray-800">{line.description}</td>
-                  <td className="py-1.5 text-center text-gray-500">
+                  <td
+                    data-anchor={`line:${i + 1}:qty`}
+                    className={cn(
+                      "py-1.5 text-center text-gray-500",
+                      mark(`line:${i + 1}:qty`),
+                    )}
+                  >
                     {line.qty}
                   </td>
-                  <td className="py-1.5 text-right font-medium">
+                  <td
+                    data-anchor={`line:${i + 1}:unit-price`}
+                    className={cn(
+                      "py-1.5 text-right font-medium",
+                      mark(`line:${i + 1}:unit-price`),
+                    )}
+                  >
                     {line.amount}
                   </td>
                 </tr>
@@ -4088,12 +4237,16 @@ function SourceTab() {
             {vat !== "—" && (
               <div className="flex justify-between">
                 <span className="text-gray-500">VAT</span>
-                <span>{vat}</span>
+                <span data-anchor="field:vat" className={mark("field:vat")}>
+                  {vat}
+                </span>
               </div>
             )}
             <div className="flex justify-between font-bold text-[11px] border-t border-gray-300 pt-1.5">
               <span>Total</span>
-              <span>{linesTotal}</span>
+              <span data-anchor="field:total" className={mark("field:total")}>
+                {linesTotal}
+              </span>
             </div>
           </div>
 
@@ -5468,11 +5621,9 @@ function formatCommsTime(iso: string): string {
 function TopBarNext({
   flagged,
   completion,
-  onReject,
 }: {
   flagged: boolean;
   completion?: CompletionRecord;
-  onReject: (reason: string, note?: string) => void;
 }) {
   const d = useInvoiceDetail();
   const runtime = useInvoiceRuntime();
@@ -5480,15 +5631,16 @@ function TopBarNext({
   const review = getReview(d.id);
   // A data-changing resolution (e.g. Link PO-5123) patches the shared record.
   const patchedPo = rt.dataPatch?.purchaseOrder ?? d.po;
-  // Approve/hold come ONLY from the runtime disposition in v2/v3; the template
-  // maps are never consulted for those (reject/flag stay legacy).
+  // Approve/hold/reject come ONLY from the runtime disposition in v2/v3; the
+  // template maps are never consulted for those (flag stays legacy).
   const summary = getExceptionSummary(review, rt);
   const disposition = rt.disposition;
   const approved = disposition?.type === "approved";
+  const rejected = disposition?.type === "rejected";
   const onHoldDisp = disposition?.type === "held";
   // Approve is only actionable from a fully-resolved, undisposed invoice.
   let blockedReason: string | null = null;
-  if (!approved) {
+  if (!approved && !rejected) {
     if (onHoldDisp) {
       blockedReason =
         summary.waitingCount > 0
@@ -5507,20 +5659,28 @@ function TopBarNext({
   }
   // Hold from the header uses the SAME runtime disposition as the terminal Hold,
   // so the status badge, timeline, and Resume all stay consistent (v2/v3 single
-  // source). Reject/Flag stay on the legacy path via onReject/onFlag.
+  // source). Flag stays on the legacy path via onFlag.
   function doHold(reason: string, note?: string) {
     holdInvoice(review.id, reason, note);
     const { disposition: dd, event } = buildHold(review, reason, note);
+    runtime.setDisposition(review.id, dd, event);
+  }
+  // Reject is a permanent disposition (like approve, no undo). Same atomic
+  // setDisposition path: the "Invoice rejected" event + rejected terminal are
+  // the record. Supersedes whatever was underneath.
+  function doReject(reason: string, note?: string) {
+    rejectInvoice(review.id, reason, note);
+    const { disposition: dd, event } = buildReject(review, reason, note);
     runtime.setDisposition(review.id, dd, event);
   }
   const tableRow = invoiceTableData.find((r) => r.id === d.id);
   const baseStatus: InvoiceStatus = tableRow?.status ?? "pending-review";
   const effectiveStatus: InvoiceStatus = approved
     ? "approved"
-    : onHoldDisp
-      ? "on-hold"
-      : completion?.type === "rejected"
-        ? "rejected"
+    : rejected || completion?.type === "rejected"
+      ? "rejected"
+      : onHoldDisp
+        ? "on-hold"
         : flagged
           ? "flagged"
           : baseStatus;
@@ -5585,9 +5745,10 @@ function TopBarNext({
       <PageHeaderActions className="@3xl:ml-6">
         <HeaderDecision
           approved={approved}
+          rejected={rejected}
           blockedReason={blockedReason}
           onApprove={doApprove}
-          onReject={onReject}
+          onReject={doReject}
           onHold={doHold}
         />
       </PageHeaderActions>
@@ -6083,9 +6244,6 @@ function InvoiceDetailPane({
             <TopBarNext
               flagged={flagged}
               completion={justCompleted ?? completion}
-              onReject={(reason, note) =>
-                handleReject(reason, "header", data.assignee, note)
-              }
             />
           ) : (
             <TopBar
@@ -6351,6 +6509,25 @@ function InvoiceReviewContent() {
   const [slackCards, setSlackCards] = useState<Record<string, string>>({});
   // Resizable right-panel width (persists across invoice switches).
   const [rightPanelWidth, setRightPanelWidth] = useState(380);
+
+  // "Show in source" (from the timeline fix card) bumps a per-invoice nonce in
+  // the runtime; switch the right panel to the Source tab when that happens for
+  // the current invoice. Guarded by a ref so switching invoices (which may
+  // surface a prior nonce) doesn't spuriously jump to Source.
+  const runtime = useInvoiceRuntime();
+  const highlightNonce = runtime.getRuntime(activeInvoiceId).highlight?.nonce;
+  const lastHighlightRef = useRef<{ id: string; nonce: number | undefined }>({
+    id: activeInvoiceId,
+    nonce: highlightNonce,
+  });
+  useEffect(() => {
+    const prev = lastHighlightRef.current;
+    lastHighlightRef.current = { id: activeInvoiceId, nonce: highlightNonce };
+    // Only react to a fresh request on the SAME invoice.
+    if (prev.id !== activeInvoiceId) return;
+    if (highlightNonce === undefined || highlightNonce === prev.nonce) return;
+    setRightTab("source");
+  }, [highlightNonce, activeInvoiceId]);
 
   // Poll the shared store every 2s while a detail view is open so Slack-driven
   // actions show up in the product. Crude but reliable for a demo.

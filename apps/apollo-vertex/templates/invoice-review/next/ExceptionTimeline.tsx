@@ -7,10 +7,11 @@ import {
   ChevronRight,
   Clock,
   Eye,
+  Highlighter,
   Pause,
-  Search,
   UserRound,
   UserRoundCheck,
+  X,
 } from "lucide-react";
 import {
   type CSSProperties,
@@ -23,6 +24,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
@@ -38,7 +44,6 @@ import {
   generateFollowUpBody,
   generateSupplierEmailBody,
   HOLD_REASONS,
-  highlightInSource,
   holdInvoice,
   type InvoiceException,
   type InvoiceReview,
@@ -97,6 +102,7 @@ type MarkerKind =
   | "waiting"
   | "waiting-complete"
   | "held"
+  | "rejected"
   | "complete";
 
 function TimelineMarker({ kind }: { kind: MarkerKind }) {
@@ -144,8 +150,19 @@ function TimelineMarker({ kind }: { kind: MarkerKind }) {
       </span>
     );
   }
+  if (kind === "rejected") {
+    // Terminal counterpart to approval: a solid destructive fill. Rejection is
+    // the most consequential call, so it carries the same weight as the green
+    // completion moment, in the destructive tone.
+    return (
+      <span className="flex size-7 items-center justify-center rounded-full bg-destructive text-white">
+        <X className="size-4" />
+      </span>
+    );
+  }
   if (kind === "complete") {
-    // The only flat solid-fill marker on the screen; it carries the moment.
+    // A flat solid-fill marker; it carries the completion moment (its rejected
+    // counterpart above is the only other solid marker).
     return (
       <span className="flex size-7 items-center justify-center rounded-full bg-success text-white">
         <Check className="size-4" />
@@ -292,22 +309,34 @@ function AgentHistoryPeek({
 }
 
 // A slim history row on the rail: the shared single-line body under a marker.
+// Optionally expands to a plain detail (a disposition note), so a reviewer note
+// stays readable even before the log compresses into the completion peek.
 function EventRow({
   marker,
   label,
   sub,
   time,
   gap = ROW_GAP,
+  expandDetail,
+  reducedMotion = false,
 }: {
   marker: MarkerKind;
   label: string;
   sub: string;
   time: string;
   gap?: string;
+  expandDetail?: ReactNode;
+  reducedMotion?: boolean;
 }) {
   return (
     <TimelineRow marker={marker} className={gap}>
-      <EventRowBody label={label} sub={sub} time={time} />
+      <EventRowBody
+        label={label}
+        sub={sub}
+        time={time}
+        expandDetail={expandDetail}
+        reducedMotion={reducedMotion}
+      />
     </TimelineRow>
   );
 }
@@ -319,57 +348,68 @@ function FindingCell({
   value,
   provenance,
   tone,
-  inspectable,
   muted,
+  onInspect,
 }: {
   label: string;
   value: string;
   provenance: string;
   tone?: "warn" | "muted";
-  inspectable?: boolean;
   /** read-only history: drop all values to secondary foreground (warn stays highlighted, on muted text) */
   muted?: boolean;
+  /** live ON INVOICE value only: renders the inline "Show in source" trigger */
+  onInspect?: () => void;
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5 px-5 py-1">
       <span className="truncate text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
         {label}
       </span>
-      <span
-        className={cn(
-          "whitespace-nowrap text-[18px] font-medium leading-none tabular-nums",
-          muted || tone === "muted"
-            ? "text-muted-foreground"
-            : "text-foreground",
-        )}
-      >
-        {tone === "warn" ? (
-          // Highlight the value under review: tinted wash, normal text (not an error color).
-          <mark
-            className={cn(
-              "-ml-1 rounded bg-warning/15 px-1",
-              muted ? "text-muted-foreground" : "text-foreground",
-            )}
-          >
-            {value}
-          </mark>
-        ) : (
-          value
-        )}
-      </span>
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs text-muted-foreground">{provenance}</span>
-        {inspectable && (
-          <button
-            type="button"
-            onClick={() => highlightInSource(`${label}:${value}`)}
-            className="inline-flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <Search className="size-3" />
-            Show in source
-          </button>
+      {/* Value + inline inspect trigger on one row; the button carries negative
+          vertical margin so its hit area doesn't grow the line or shift the
+          sub-label below. */}
+      <div className="flex items-center gap-1">
+        <span
+          className={cn(
+            "whitespace-nowrap text-[18px] font-medium leading-none tabular-nums",
+            muted || tone === "muted"
+              ? "text-muted-foreground"
+              : "text-foreground",
+          )}
+        >
+          {tone === "warn" ? (
+            // Highlight the value under review: tinted wash, normal text (not an error color).
+            <mark
+              className={cn(
+                "-ml-1 rounded bg-warning/15 px-1",
+                muted ? "text-muted-foreground" : "text-foreground",
+              )}
+            >
+              {value}
+            </mark>
+          ) : (
+            value
+          )}
+        </span>
+        {onInspect && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={onInspect}
+                aria-label="Show in source"
+                className="-my-1.5 shrink-0 text-muted-foreground"
+              >
+                <Highlighter className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Show in source</TooltipContent>
+          </Tooltip>
         )}
       </div>
+      <span className="text-xs text-muted-foreground">{provenance}</span>
     </div>
   );
 }
@@ -377,16 +417,26 @@ function FindingCell({
 function FindingView({
   finding,
   muted,
+  onInspect,
 }: {
   finding: Finding;
   muted?: boolean;
+  /** when set, the ON INVOICE (warn) value gets the inspect trigger */
+  onInspect?: () => void;
 }) {
   const cells = finding.type === "compare" ? finding.sides : finding.items;
   if (!cells || cells.length === 0) return null;
   return (
     <div className="grid w-fit grid-flow-col divide-x divide-border [&>div:first-child]:pl-0">
       {cells.map((c) => (
-        <FindingCell key={c.label} {...c} muted={muted} />
+        <FindingCell
+          key={c.label}
+          {...c}
+          muted={muted}
+          // The trigger belongs on the disputed value: the warn-toned ON INVOICE
+          // evidence, the chip that rhymes with the document highlight.
+          onInspect={c.tone === "warn" ? onInspect : undefined}
+        />
       ))}
     </div>
   );
@@ -401,12 +451,14 @@ function LiveExceptionContent({
   exception,
   isNew,
   onResolve,
+  onShowInSource,
   entering = false,
   hideFix = false,
 }: {
   exception: InvoiceException;
   isNew: boolean;
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
+  onShowInSource: (exc: InvoiceException) => void;
   entering?: boolean;
   /** Suppress the fix card (used while the block collapses into history). */
   hideFix?: boolean;
@@ -456,7 +508,17 @@ function LiveExceptionContent({
           headline, so render nothing between the headline and the fix. */}
       {exception.finding.type === "compare" && (
         <div className={cn("mt-[18px]", stepClass)} style={stepStyle(2)}>
-          <FindingView finding={exception.finding} />
+          {/* The inspect trigger rides the ON INVOICE evidence value (the amber
+              chip that rhymes with the document highlight), not the action row.
+              Live + anchored only; suppressed while collapsing (hideFix). */}
+          <FindingView
+            finding={exception.finding}
+            onInspect={
+              !hideFix && exception.sourceAnchors?.length
+                ? () => onShowInSource(exception)
+                : undefined
+            }
+          />
         </div>
       )}
       {!hideFix &&
@@ -658,6 +720,7 @@ function ResolvingBlock({
               exception={exception}
               isNew={false}
               onResolve={() => {}}
+              onShowInSource={() => {}}
               hideFix
             />
           </div>
@@ -676,10 +739,12 @@ function Stage({
   exception,
   isNew,
   onResolve,
+  onShowInSource,
 }: {
   exception: InvoiceException;
   isNew: (e: InvoiceException) => boolean;
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
+  onShowInSource: (exc: InvoiceException) => void;
 }) {
   const [displayed, setDisplayed] = useState(exception);
   const [phase, setPhase] = useState<"in" | "out">("in");
@@ -709,6 +774,7 @@ function Stage({
         exception={displayed}
         isNew={isNew(displayed)}
         onResolve={onResolve}
+        onShowInSource={onShowInSource}
         entering={phase === "in"}
       />
     </div>
@@ -807,6 +873,7 @@ function ExceptionGroup({
   isNew,
   variant,
   onResolve,
+  onShowInSource,
   onSelect,
 }: {
   active: InvoiceException;
@@ -816,6 +883,7 @@ function ExceptionGroup({
   isNew: (e: InvoiceException) => boolean;
   variant: "strip" | "index";
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
+  onShowInSource: (exc: InvoiceException) => void;
   onSelect: (id: string) => void;
 }) {
   const waiting = openList.filter((e) => e.id !== active.id);
@@ -830,7 +898,12 @@ function ExceptionGroup({
           <span className="text-xs text-muted-foreground">{counter}</span>
         </div>
       )}
-      <Stage exception={active} isNew={isNew} onResolve={onResolve} />
+      <Stage
+        exception={active}
+        isNew={isNew}
+        onResolve={onResolve}
+        onShowInSource={onShowInSource}
+      />
       {variant === "index" ? (
         openList.length >= 2 && (
           <ExceptionIndex
@@ -1551,6 +1624,51 @@ function HeldTerminalBlock({
 }
 
 /**
+ * Rejected end state: a permanent reviewer decision (like approval, no undo). It
+ * supersedes whatever was underneath (live, waiting, passed); nothing is frozen
+ * for restoration, the record just ends. Destructive marker, no actions, no dev
+ * trigger. History above it stays readable (expandable), not editable.
+ */
+function RejectedTerminalBlock({
+  reason,
+  note,
+  reducedMotion,
+}: {
+  reason?: string;
+  note?: string;
+  reducedMotion: boolean;
+}) {
+  return (
+    <TimelineRow marker="rejected" isLast live>
+      <div
+        className={cn(
+          !reducedMotion && "animate-in fade-in-0 duration-200 ease-out",
+        )}
+      >
+        <h2
+          className="text-[22px] font-bold leading-[1.25] text-foreground"
+          style={{ letterSpacing: "-0.01em" }}
+        >
+          Rejected
+        </h2>
+        <p className="mt-1.5 max-w-prose text-sm leading-normal text-muted-foreground">
+          {reason ? `Rejected: ${reason}.` : "Rejected."} This ends the review;
+          the supplier can resubmit a corrected invoice.
+        </p>
+        {note && (
+          <p className="mt-3 max-w-prose text-sm leading-normal text-secondary-foreground">
+            Note: {note}
+          </p>
+        )}
+        <p className="mt-3 text-[13px] text-muted-foreground">
+          Rejected and returned to supplier.
+        </p>
+      </div>
+    </TimelineRow>
+  );
+}
+
+/**
  * One waiting exception's request card in the terminal: what was sent (row 1),
  * the artifact (row 2, expandable to the shared sent-email renderer), and the
  * timing/clock line (row 3). Draftless (internal route) cards drop the artifact
@@ -2157,6 +2275,15 @@ export function ExceptionTimeline({
     });
   }
 
+  // Jump to the source document and highlight the exception's disputed regions.
+  // Anchor-driven: only exceptions carrying sourceAnchors reach here (the button
+  // is hidden otherwise). Pure navigation via the runtime; the tab switch +
+  // scroll + highlight are handled by the root effect and the Source tab.
+  function showInSource(exc: InvoiceException) {
+    if (!exc.sourceAnchors?.length) return;
+    runtime.showInSource(review.id, exc.id, exc.sourceAnchors);
+  }
+
   function resolveActive(s: Suggestion, reason?: string, note?: string) {
     if (!active || resolve || emailModal) return;
     // Supplier routes confirm through the draft modal: nothing about the
@@ -2410,6 +2537,12 @@ export function ExceptionTimeline({
         sub={ev.sub}
         time={ev.time}
         gap={gap}
+        expandDetail={
+          ev.kind === "disposition" && ev.note ? (
+            <EventNoteDetail note={ev.note} />
+          ) : undefined
+        }
+        reducedMotion={reducedMotion}
       />
     );
   });
@@ -2418,6 +2551,10 @@ export function ExceptionTimeline({
   // header (mid-review), so it renders regardless of allDone. Accumulated
   // history shows as the completion peek when done, else inline.
   const heldView = disposition?.type === "held";
+  // Rejected is permanent and supersedes everything underneath (live, waiting,
+  // passed), so it takes precedence over every other view. Same history shell as
+  // held; the record is readable but the terminal has no actions.
+  const rejectedView = disposition?.type === "rejected";
 
   return (
     <div className="relative flex-1 overflow-hidden">
@@ -2430,7 +2567,35 @@ export function ExceptionTimeline({
             steps={review.agentHistory}
             bottomGap={!allDone && events.length === 0 ? SECTION_GAP : ROW_GAP}
           />
-          {heldView ? (
+          {rejectedView ? (
+            <>
+              {/* Rejected supersedes whatever was underneath. Show the readable
+                  history (peek when the loop had finished, else inline) then the
+                  rejected terminal. No actions, no dev trigger. */}
+              {allDone ? (
+                <ResolveHistoryPeek
+                  events={events}
+                  waitingCount={waitingCount}
+                  reducedMotion={reducedMotion}
+                />
+              ) : (
+                eventRows
+              )}
+              <RejectedTerminalBlock
+                reason={
+                  disposition?.type === "rejected"
+                    ? disposition.reason
+                    : undefined
+                }
+                note={
+                  disposition?.type === "rejected"
+                    ? disposition.note
+                    : undefined
+                }
+                reducedMotion={reducedMotion}
+              />
+            </>
+          ) : heldView ? (
             <>
               {/* Held pauses the whole invoice. Show the accumulated history
                   (peek when the loop had finished, else inline) then the held
@@ -2514,6 +2679,7 @@ export function ExceptionTimeline({
                   isNew={isNew}
                   variant={exceptionListVariant}
                   onResolve={resolveActive}
+                  onShowInSource={showInSource}
                   onSelect={anchor}
                 />
               ) : null}
