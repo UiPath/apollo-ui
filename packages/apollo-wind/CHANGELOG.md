@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v2.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.26.0...@uipath/apollo-wind@2.27.0) (2026-07-07)
+
+### Features
+
+* **apollo-wind:** add InputGroup component ([a105498](https://github.com/UiPath/apollo-ui/commit/a105498a18c9532b1b16927ca7d9d22f610642d1))
+
+### Bug Fixes
+
+* **apollo-wind:** address Copilot review feedback on InputGroup ([1275c0a](https://github.com/UiPath/apollo-ui/commit/1275c0a0c2a889084d4b84abe99be78bfe19f468))
+
 ## [@uipath/apollo-wind-v2.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.25.0...@uipath/apollo-wind@2.26.0) (2026-07-02)
 
 ### Features
