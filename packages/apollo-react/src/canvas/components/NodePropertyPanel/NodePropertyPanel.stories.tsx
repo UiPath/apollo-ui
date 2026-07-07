@@ -1,9 +1,28 @@
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { FormSchema } from '@uipath/apollo-wind';
 import {
   Badge,
   Button,
+  Card,
+  CardContent,
   cn,
   DropdownMenu,
   DropdownMenuContent,
@@ -12,12 +31,21 @@ import {
   DropdownMenuTrigger,
   Input,
   MetadataForm,
+  MultiSelect,
   ScrollableTabsList,
+  Search as SearchInput,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Switch,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@uipath/apollo-wind';
 import {
   apolloCoreDarkHCMonaco,
@@ -37,19 +65,22 @@ import {
   CircleOff,
   Code2,
   Copy,
+  FileBracesCorner,
   GitFork,
   Globe,
   GripVertical,
   Play,
   Plus,
   Search,
-  FileBracesCorner,
   Sparkles,
   Type,
+  UserRoundCheck,
   X,
 } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import type { LockableValueFieldMode } from './LockableValueField';
+import { LockableValueField } from './LockableValueField';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
 // @monaco-editor/react uses a CJS build without an `exports` field, which
@@ -2467,6 +2498,319 @@ function InputOutputStory() {
     </div>
   );
 }
+
+// ============================================================================
+// Prototype — LockableValueField
+// ============================================================================
+
+interface LockableCase {
+  id: number;
+  title: string;
+  required: boolean;
+  value: string;
+  locked: boolean;
+  mode: LockableValueFieldMode;
+}
+
+const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
+  { id: 1, title: 'Invoice Number', required: true, value: '', locked: true, mode: 'fixed' },
+  { id: 2, title: 'Submission Date', required: true, value: '', locked: true, mode: 'fixed' },
+  { id: 3, title: 'Approved Amount', required: true, value: '', locked: true, mode: 'fixed' },
+];
+
+function LockableCaseRow({
+  id,
+  caseTitle,
+  onTitleChange,
+  required,
+  onDelete,
+  value,
+  onValueChange,
+  locked,
+  onLockedChange,
+  mode,
+  onModeChange,
+}: {
+  id: number;
+  caseTitle: string;
+  onTitleChange: (title: string) => void;
+  required: boolean;
+  onDelete: () => void;
+  value: string;
+  onValueChange: (value: string) => void;
+  locked: boolean;
+  onLockedChange: (locked: boolean) => void;
+  mode: LockableValueFieldMode;
+  onModeChange: (mode: LockableValueFieldMode) => void;
+}) {
+  const [editingTitle, setEditingTitle] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn('group', isDragging && 'opacity-50')}
+    >
+      <LockableValueField
+        id={`return-value-${id}`}
+        label={
+          <div className="flex min-w-0 flex-1 items-center gap-1">
+            <button
+              type="button"
+              {...attributes}
+              {...listeners}
+              aria-label="Drag to reorder"
+              title="Drag to reorder"
+              className="grid size-5 shrink-0 touch-none place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground [cursor:grab]"
+            >
+              <GripVertical size={12} />
+            </button>
+            {editingTitle ? (
+              <input
+                ref={titleRef}
+                value={caseTitle}
+                onChange={(e) => onTitleChange(e.target.value)}
+                onBlur={() => setEditingTitle(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false);
+                }}
+                className="min-w-0 flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
+                autoFocus
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingTitle(true);
+                  setTimeout(() => titleRef.current?.select(), 0);
+                }}
+                className="truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+              >
+                {caseTitle}
+                {required && <span className="ml-0.5 text-destructive">*</span>}
+              </button>
+            )}
+          </div>
+        }
+        headerActions={
+          <button
+            type="button"
+            onClick={onDelete}
+            aria-label="Delete field"
+            title="Delete field"
+            className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-overlay hover:text-foreground group-hover:opacity-100"
+          >
+            <X size={12} />
+          </button>
+        }
+        value={value}
+        onValueChange={onValueChange}
+        locked={locked}
+        onLockedChange={onLockedChange}
+        mode={mode}
+        onModeChange={onModeChange}
+      />
+    </div>
+  );
+}
+
+const DELIVERY_CHANNEL_OPTIONS = [
+  { label: 'Slack', value: 'slack' },
+  { label: 'Email', value: 'email' },
+  { label: 'Action Center', value: 'action-center' },
+  { label: 'Microsoft Teams', value: 'teams' },
+];
+
+const ASSIGNMENT_GROUP_OPTIONS = [
+  { label: 'All users of group', value: 'all' },
+  { label: 'Specific user', value: 'specific' },
+  { label: 'Group manager', value: 'manager' },
+];
+
+function LockableValueFieldStory() {
+  const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
+  const nextIdRef = useRef(4);
+  const [deliveryChannels, setDeliveryChannels] = useState<string[]>([]);
+  const [assignmentSearch, setAssignmentSearch] = useState('');
+  const [assignmentGroup, setAssignmentGroup] = useState('all');
+  const [formView, setFormView] = useState<'ui' | 'json'>('ui');
+
+  const addCase = () => {
+    const id = nextIdRef.current++;
+    setCases((prev) => [
+      ...prev,
+      { id, title: `Field ${id}`, required: true, value: '', locked: true, mode: 'fixed' },
+    ]);
+  };
+  const deleteCase = (id: number) => setCases((prev) => prev.filter((c) => c.id !== id));
+  const updateCase = (id: number, patch: Partial<LockableCase>) =>
+    setCases((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setCases((prev) => {
+      const oldIndex = prev.findIndex((c) => c.id === active.id);
+      const newIndex = prev.findIndex((c) => c.id === over.id);
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  };
+
+  return (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle="Properties"
+        nodeIcon={<UserRoundCheck />}
+        nodeLabel="Quick Approve"
+        nodeCategory="Quick approve/reject decision for the extracted invoice."
+        action={<DebugButton />}
+        onClose={() => {}}
+        contentInset="0.875rem"
+        className="h-[760px]"
+      >
+        <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+          <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+            <TabsList className={TAB_LIST_CLASS}>
+              <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                Parameters
+              </TabsTrigger>
+              <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                Error handling
+              </TabsTrigger>
+              <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                Advanced
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent
+            value="parameters"
+            className="mt-0 flex min-h-0 flex-1 flex-col gap-4 overflow-auto py-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
+          >
+            {/* Delivery channel */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-foreground-muted">Delivery channel</span>
+              <MultiSelect
+                options={DELIVERY_CHANNEL_OPTIONS}
+                selected={deliveryChannels}
+                onChange={setDeliveryChannels}
+                placeholder="Select channels..."
+              />
+              <span className="text-[11px] leading-4 text-foreground-subtle">
+                Quick approve/reject decision for the extracted invoice.
+              </span>
+            </div>
+
+            {/* Assignment criteria */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-foreground-muted">Assignment criteria</span>
+              <div className="flex gap-2">
+                <SearchInput
+                  className="flex-1"
+                  placeholder="Search group"
+                  value={assignmentSearch}
+                  onChange={setAssignmentSearch}
+                />
+                <Select value={assignmentGroup} onValueChange={setAssignmentGroup}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="All users of group" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ASSIGNMENT_GROUP_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Quick form */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-foreground-muted">Quick form</span>
+                <ToggleGroup
+                  type="single"
+                  size="xs"
+                  value={formView}
+                  onValueChange={(v) => v && setFormView(v as 'ui' | 'json')}
+                >
+                  <ToggleGroupItem value="ui">UI</ToggleGroupItem>
+                  <ToggleGroupItem value="json">JSON</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              <Card>
+                <CardContent className="flex flex-col gap-4 p-4">
+                  {formView === 'ui' ? (
+                    <>
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext
+                          items={cases.map((c) => c.id)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <div className="flex flex-col gap-4">
+                            {cases.map((c) => (
+                              <LockableCaseRow
+                                key={c.id}
+                                id={c.id}
+                                caseTitle={c.title}
+                                onTitleChange={(title) => updateCase(c.id, { title })}
+                                required={c.required}
+                                onDelete={() => deleteCase(c.id)}
+                                value={c.value}
+                                onValueChange={(value) => updateCase(c.id, { value })}
+                                locked={c.locked}
+                                onLockedChange={(locked) => updateCase(c.id, { locked })}
+                                mode={c.mode}
+                                onModeChange={(mode) => updateCase(c.id, { mode })}
+                              />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+                      <button
+                        type="button"
+                        onClick={addCase}
+                        className="flex cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                      >
+                        <Plus size={12} />
+                        Add case
+                      </button>
+                    </>
+                  ) : (
+                    <pre className="overflow-auto whitespace-pre-wrap text-xs text-foreground-muted">
+                      {JSON.stringify(cases, null, 2)}
+                    </pre>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          <TabsContent value="error-handling" className="mt-0" />
+          <TabsContent value="advanced" className="mt-0" />
+        </Tabs>
+      </NodePropertyPanel>
+    </PanelFrame>
+  );
+}
+
+export const LockableField: Story = {
+  name: 'Lockable Field',
+  render: () => <LockableValueFieldStory />,
+};
 
 export const Output: Story = {
   name: 'Input / Output',
