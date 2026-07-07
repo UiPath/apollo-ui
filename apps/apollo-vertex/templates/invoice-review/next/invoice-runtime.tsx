@@ -78,6 +78,16 @@ interface RuntimeStore {
     disposition: InvoiceDisposition | null,
     event: RunEventInput,
   ) => void;
+  /**
+   * Request a source-document highlight for an exception's anchors. Bumps a
+   * nonce each call so a repeat request re-scrolls/re-pulses. Pure navigation:
+   * changes no loop state and logs no event.
+   */
+  showInSource: (
+    invoiceId: string,
+    exceptionId: string,
+    anchors: string[],
+  ) => void;
 }
 
 const InvoiceRuntimeContext = createContext<RuntimeStore | null>(null);
@@ -148,6 +158,21 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
               ...cur,
               disposition: disposition ?? undefined,
               events: [...cur.events, ...withKeys(id, cur.events, [event])],
+            },
+          };
+        }),
+      showInSource: (id, exceptionId, anchors) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          return {
+            ...prev,
+            [id]: {
+              ...cur,
+              highlight: {
+                anchors,
+                exceptionId,
+                nonce: (cur.highlight?.nonce ?? 0) + 1,
+              },
             },
           };
         }),

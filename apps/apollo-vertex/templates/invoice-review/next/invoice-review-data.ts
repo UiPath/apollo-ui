@@ -145,6 +145,14 @@ export interface InvoiceException {
   status: ExceptionStatus;
   /** confirmation copy once resolved; a sensible default is derived if absent */
   resolution?: ExceptionResolution;
+  /**
+   * SEAM: stable anchor ids for the source-document regions this exception
+   * implicates ("field:vat", "line:1:unit-price", "field:total"). The anchor id
+   * is the contract: the demo renders these onto the mock document, but a real
+   * backend resolves the same ids to regions on the actual PDF. Absent = the
+   * disputed value isn't on the invoice document (no "Show in source" action).
+   */
+  sourceAnchors?: string[];
 }
 
 export interface AgentStep {
@@ -210,15 +218,18 @@ export interface RouteOwner {
 }
 
 /**
- * Reviewer disposition of the whole invoice. Approved is a hard commit; held is
- * a reversible overlay (it never mutates the exception/waiting state beneath, so
- * Resume just clears it and the derived terminal returns). In v2/v3 this is the
- * SINGLE source for approve/hold; the template's completionMap/parkedMap are not
- * consulted for those (reject/flag stay legacy).
+ * Reviewer disposition of the whole invoice. Approved and rejected are hard,
+ * permanent commits (no undo); held is a reversible overlay (it never mutates
+ * the exception/waiting state beneath, so Resume just clears it and the derived
+ * terminal returns). Rejected supersedes whatever was underneath (live, waiting,
+ * passed) and ends the review. In v2/v3 this is the SINGLE source for
+ * approve/hold/reject; the template's completionMap/parkedMap are not consulted
+ * for those (flag stays legacy).
  */
 export type InvoiceDisposition =
   | { type: "approved"; time: string }
-  | { type: "held"; reason?: string; time: string };
+  | { type: "held"; reason?: string; time: string }
+  | { type: "rejected"; reason?: string; note?: string; time: string };
 
 /**
  * The unified timeline event log lives in the runtime store, so the whole
@@ -300,6 +311,18 @@ export type RunEventInput =
  *  union distributes the key onto every variant, preserving the discriminant). */
 export type RunEvent = RunEventInput & { key: string };
 
+/**
+ * A "show in source" request: the anchors to highlight in the source document,
+ * the exception they belong to (so a stale highlight clears when it stops being
+ * live), and a nonce bumped on every request so a repeat click re-scrolls and
+ * re-pulses even when the anchors are unchanged.
+ */
+export interface SourceHighlight {
+  anchors: string[];
+  exceptionId: string;
+  nonce: number;
+}
+
 /** Runtime loop state for one invoice, shared across surfaces (see the store). */
 export interface InvoiceRuntime {
   resolvedIds: string[];
@@ -312,6 +335,8 @@ export interface InvoiceRuntime {
   disposition?: InvoiceDisposition;
   /** the whole timeline event log, appended atomically inside the mutations */
   events: RunEvent[];
+  /** pending "show in source" request; validity is derived (live exception) */
+  highlight?: SourceHighlight;
 }
 
 export function exceptionMeta(e: InvoiceException): {
@@ -809,6 +834,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
+        sourceAnchors: ["field:invoice-date"],
         finding: {
           type: "compare",
           sides: [
@@ -864,6 +890,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
+        sourceAnchors: ["field:vat"],
         finding: {
           type: "compare",
           sides: [
@@ -1075,6 +1102,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
+        sourceAnchors: ["line:1:unit-price", "field:total"],
         finding: {
           type: "compare",
           sides: [
@@ -1225,12 +1253,6 @@ export function revalidateException(
   });
 }
 
-/** Value-level "show me in the source" affordance. No-op stub for now. */
-export function highlightInSource(ref: string): void {
-  // eslint-disable-next-line no-console
-  console.info(`[highlightInSource] ${ref}`);
-}
-
 // --- Disposition seams (backend contract points) + event builders -----------
 // The seams are where a real backend commit would happen; local state flows
 // through the runtime store's setDisposition. The builders produce the matching
@@ -1241,6 +1263,22 @@ export function highlightInSource(ref: string): void {
 export function approveInvoice(invoiceId: string): void {
   // eslint-disable-next-line no-console
   console.info(`[approveInvoice] ${invoiceId}`);
+}
+
+/**
+ * SEAM: hard-commit a rejection (permanent, like approve, no undo). Backend
+ * contract point: a real build records the rejection + reason and returns the
+ * invoice to the supplier for resubmission (a new cycle, out of scope here).
+ */
+export function rejectInvoice(
+  invoiceId: string,
+  reason: string,
+  note?: string,
+): void {
+  // eslint-disable-next-line no-console
+  console.info(
+    `[rejectInvoice] ${invoiceId} — ${reason}${note ? ` (${note})` : ""}`,
+  );
 }
 
 /** SEAM: park the invoice on a reviewer hold (reversible). */
@@ -1292,6 +1330,29 @@ export function buildHold(
       kind: "disposition",
       label: "Put on hold",
       sub: trimmed ?? `${review.supplier} invoice`,
+      time,
+      actor: "reviewer",
+      note: trimmedNote,
+    },
+  };
+}
+
+export function buildReject(
+  review: InvoiceReview,
+  reason: string,
+  note?: string,
+): { disposition: InvoiceDisposition; event: RunEventInput } {
+  const time = "Just now";
+  const trimmed = reason.trim() || review.supplier;
+  const trimmedNote = note?.trim() || undefined;
+  return {
+    // Note lives on the disposition too (the terminal renders it beneath the
+    // summary), unlike hold where the note is only on the event.
+    disposition: { type: "rejected", reason: trimmed, note: trimmedNote, time },
+    event: {
+      kind: "disposition",
+      label: "Invoice rejected",
+      sub: trimmed,
       time,
       actor: "reviewer",
       note: trimmedNote,
@@ -1394,6 +1455,10 @@ export function routeToOwner(
  *
  * Stubbed: resolves after ~1.2s, returning a corrected document id and a
  * re-validation that clears the reopened exception (the correction fixes it).
+ *
+ * REJECTED invoices are out of the loop: this seam never runs for them (the
+ * caller never surfaces the return trigger on a rejected terminal), so there is
+ * nothing to do here. It stays a silent no-op by omission, not a logged event.
  */
 export function receiveCorrectedInvoice(
   invoiceId: string,
