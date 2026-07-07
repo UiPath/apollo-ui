@@ -163,6 +163,7 @@
   "more_pages": "More pages",
   "multi_line_too_few_metrics": "Multi-line needs two distinct metrics, but the request resolved to fewer than two.",
   "my_template": "My Template",
+  "my_work": "My Work",
   "need_help": "Need help? Contact your administrator",
   "new_conversation": "New conversation",
   "new_conversation_confirm_description": "This will clear all messages and cannot be undone.",

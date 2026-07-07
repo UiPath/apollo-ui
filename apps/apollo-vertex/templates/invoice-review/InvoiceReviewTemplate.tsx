@@ -6,6 +6,8 @@ import {
   createRoute,
   createRouter,
   RouterContextProvider,
+  useLocation,
+  useNavigate,
 } from "@tanstack/react-router";
 import type { ColumnDef, FilterFn } from "@tanstack/react-table";
 import { motion } from "framer-motion";
@@ -20,6 +22,7 @@ import {
   ExternalLink,
   FileText,
   Flag,
+  Inbox,
   Loader2,
   Mail,
   MessageSquare,
@@ -2409,7 +2412,7 @@ function LeftNav({
       />
       <div className="shrink-0 flex items-center gap-1.5 px-6 pt-6 pb-2">
         <span className="text-[13px] font-extrabold flex-1 truncate">
-          My Queue{" "}
+          My Work{" "}
           <span className="font-normal text-muted-foreground tabular-nums">
             ({invoicesReview.length})
           </span>
@@ -6515,6 +6518,8 @@ function InvoiceReviewContent() {
   // the current invoice. Guarded by a ref so switching invoices (which may
   // surface a prior nonce) doesn't spuriously jump to Source.
   const runtime = useInvoiceRuntime();
+  const location = useLocation();
+  const navigate = useNavigate();
   const highlightNonce = runtime.getRuntime(activeInvoiceId).highlight?.nonce;
   const lastHighlightRef = useRef<{ id: string; nonce: number | undefined }>({
     id: activeInvoiceId,
@@ -6576,8 +6581,57 @@ function InvoiceReviewContent() {
       setListFading(true);
       setPhase("detail");
       setContentLoaded(true);
+      // Mark the memory router as "in a detail" so the Invoices nav returns to
+      // the list (the shell Link is a no-op if the path doesn't change).
+      navigate({ to: DETAIL_PATH });
     }
+    // Mount-only deep link; navigate identity is stable.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount
   }, []);
+
+  // Keep the browser URL in sync so every invoice has a shareable, bookmarkable
+  // URL (?invoice=INV-XXXX) and the list clears it. replaceState: no history spam.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (phase !== "list" && activeInvoiceId) {
+      url.searchParams.set("invoice", activeInvoiceId);
+    } else {
+      url.searchParams.delete("invoice");
+    }
+    window.history.replaceState(null, "", url);
+  }, [phase, activeInvoiceId]);
+
+  // First invoice of the reviewer's work: the first Due-today, else the queue
+  // top. Drives the "My Work" nav.
+  function firstMyWorkId(): string {
+    const dueToday = invoicesReview.find((inv) => inv.dueGroup === "today");
+    return (dueToday ?? invoicesReview[0])?.id ?? activeInvoiceId;
+  }
+
+  // Open an invoice's detail: collapse from the list, or switch if already in a
+  // detail. Marks the memory router "in a detail" (see handleBack).
+  function goToInvoice(id: string) {
+    if (phase === "list") handleRowClick(id);
+    else handleNavInvoiceClick(id);
+    navigate({ to: DETAIL_PATH });
+  }
+
+  // Translate shell-nav intent (memory router) into view changes. Skips the
+  // initial mount so a deep link isn't clobbered by the default list path.
+  const navFirstRef = useRef(true);
+  useEffect(() => {
+    if (navFirstRef.current) {
+      navFirstRef.current = false;
+      return;
+    }
+    if (location.pathname === MY_WORK_PATH) {
+      goToInvoice(firstMyWorkId());
+    } else if (location.pathname === LIST_PATH) {
+      if (phase !== "list") handleBack();
+    }
+    // Respond to nav-path changes only; handlers are stable closures.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: nav path is the trigger
+  }, [location.pathname]);
 
   function handleRowClick(id: string) {
     setActiveInvoiceId(id);
@@ -6586,6 +6640,8 @@ function InvoiceReviewContent() {
     setTimeout(() => setPhase("collapsing"), 60);
     setTimeout(() => setPhase("detail"), 300);
     setTimeout(() => setContentLoaded(true), 650);
+    // Mark the memory router "in a detail" so the Invoices nav returns to list.
+    navigate({ to: DETAIL_PATH });
   }
 
   function handleBack() {
@@ -6719,7 +6775,8 @@ function InvoiceReviewContent() {
         alt: "UiPath",
       }}
       navItems={[
-        { path: "/invoice-review", label: "invoices", icon: FileText },
+        { path: LIST_PATH, label: "invoices", icon: FileText },
+        { path: MY_WORK_PATH, label: "my_work", icon: Inbox },
         { path: "/settings", label: "settings", icon: Settings2 },
       ]}
     >
@@ -6857,12 +6914,29 @@ function InvoiceReviewContent() {
   );
 }
 
+// Nav paths for the shell sidebar. The view (list vs detail) is state-driven
+// and animated; these memory-router paths are the nav *intent* the content
+// reacts to (Invoices -> list, My Work -> first due-today). LIST_PATH also marks
+// "in a detail" (see DETAIL_PATH) so clicking Invoices always returns to list.
+const LIST_PATH = "/invoice-review";
+const MY_WORK_PATH = "/invoice-review/my-work";
+const DETAIL_PATH = "/invoice-review/open";
+
 function createInvoiceRouter() {
   const root = createRootRoute();
   const index = createRoute({ getParentRoute: () => root, path: "/" });
+  const list = createRoute({ getParentRoute: () => root, path: LIST_PATH });
+  const myWork = createRoute({
+    getParentRoute: () => root,
+    path: MY_WORK_PATH,
+  });
+  const detail = createRoute({
+    getParentRoute: () => root,
+    path: DETAIL_PATH,
+  });
   return createRouter({
-    routeTree: root.addChildren([index]),
-    history: createMemoryHistory({ initialEntries: ["/"] }),
+    routeTree: root.addChildren([index, list, myWork, detail]),
+    history: createMemoryHistory({ initialEntries: [LIST_PATH] }),
   });
 }
 

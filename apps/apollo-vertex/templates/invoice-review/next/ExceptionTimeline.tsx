@@ -96,7 +96,6 @@ function usePrefersReducedMotion(): boolean {
 type MarkerKind =
   | "agent"
   | "progress"
-  | "upcoming"
   | "reviewer"
   | "resolved"
   | "waiting"
@@ -169,13 +168,6 @@ function TimelineMarker({ kind }: { kind: MarkerKind }) {
       </span>
     );
   }
-  if (kind === "upcoming") {
-    return (
-      <span className="flex size-7 items-center justify-center rounded-full border-2 border-dotted border-insight-300 text-insight-400">
-        <AiMark size={14} />
-      </span>
-    );
-  }
   if (kind === "progress") {
     return (
       <span className="relative flex size-7 items-center justify-center rounded-full bg-insight-50 text-insight-600 dark:bg-insight-900">
@@ -208,12 +200,20 @@ function TimelineMarker({ kind }: { kind: MarkerKind }) {
 function TimelineRow({
   marker,
   isLast,
+  tail,
+  tailGrow,
   className,
   live,
   children,
 }: {
   marker: MarkerKind;
   isLast?: boolean;
+  /** open-story terminals only: a rail tail fading out below the last marker
+   *  ("more to come"). Closed terminals (approved/rejected) omit it. */
+  tail?: boolean;
+  /** grow the tail to the row's full height (fades down alongside tall content,
+   *  e.g. toward the suggested fix card) instead of the short fixed gesture. */
+  tailGrow?: boolean;
   className?: string;
   /** marks the newest live block, so the column can scroll to follow it */
   live?: boolean;
@@ -224,6 +224,14 @@ function TimelineRow({
       <div className="flex flex-col items-center">
         <TimelineMarker kind={marker} />
         {!isLast && <span className="my-1 w-px flex-1 bg-border" />}
+        {isLast && tail && (
+          <span
+            className={cn(
+              "mt-1 w-px [background-image:linear-gradient(to_bottom,var(--color-border),transparent)]",
+              tailGrow ? "flex-1" : "h-12",
+            )}
+          />
+        )}
       </div>
       <div
         className={cn("flex-1 min-w-0", isLast ? "pb-0" : "pb-6", className)}
@@ -246,10 +254,10 @@ const SECTION_GAP = "pb-7"; // 28px, into a section node
 const PILL_REVEAL_PX = 160;
 
 // Expanded-peek list shell (agent history + resolve history). Shared so both
-// peeks indent to the same x (titles align across peeks). Rhythm is split from
-// the row anatomy: nested peek rows sit tighter (12px) than top-level events
-// (20px) and section transitions (28px), so density itself cues containment.
-const PEEK_LIST = "mt-2 space-y-3 border-l border-border pl-4";
+// peeks indent to the same x (titles align across peeks). Spacing: 12px from the
+// parent node to the first step (mt-3), 8px between steps (space-y-2), so the
+// steps sit tighter than their offset from the parent.
+const PEEK_LIST = "mt-3 space-y-2 border-l border-border pl-4";
 
 /**
  * The single metadata separator for the whole column. One grammar: a middot
@@ -319,6 +327,8 @@ function EventRow({
   gap = ROW_GAP,
   expandDetail,
   reducedMotion = false,
+  isLast = false,
+  tail = false,
 }: {
   marker: MarkerKind;
   label: string;
@@ -327,9 +337,11 @@ function EventRow({
   gap?: string;
   expandDetail?: ReactNode;
   reducedMotion?: boolean;
+  isLast?: boolean;
+  tail?: boolean;
 }) {
   return (
-    <TimelineRow marker={marker} className={gap}>
+    <TimelineRow marker={marker} className={gap} isLast={isLast} tail={tail}>
       <EventRowBody
         label={label}
         sub={sub}
@@ -888,7 +900,10 @@ function ExceptionGroup({
 }) {
   const waiting = openList.filter((e) => e.id !== active.id);
   return (
-    <TimelineRow marker="reviewer" className="pb-12" live>
+    // Terminal node of the live rail: isLast so no connector dangles below the
+    // decision area. tail + tailGrow: an open story, so the rail runs down the
+    // decision content and fades out as it approaches the suggested fix card.
+    <TimelineRow marker="reviewer" className="pb-12" isLast tail tailGrow live>
       {showHeader && (
         <div className="mb-4 flex min-h-7 items-center gap-1.5">
           <span className="text-sm font-medium text-foreground">
@@ -1274,9 +1289,17 @@ function ResolvingNode({
   // Route mode parks the exception into a waiting row (info marker) and never
   // re-checks, so no re-validating row appears.
   const isRoute = mode === "route";
+  // Which row ends the rail, so its connector terminates cleanly (nothing
+  // follows the resolving node now that the explainer is gone).
+  const showReValidate = !isRoute && phase !== "confirm";
+  const showReviewer = showHeader || hasOthers;
   return (
     <>
-      <TimelineRow marker={isRoute ? "waiting" : "resolved"}>
+      <TimelineRow
+        marker={isRoute ? "waiting" : "resolved"}
+        isLast={!showReValidate && !showReviewer}
+        tail={!showReValidate && !showReviewer}
+      >
         <ResolvingBlock
           exception={exc}
           label={label}
@@ -1285,16 +1308,18 @@ function ResolvingNode({
           reducedMotion={reducedMotion}
         />
       </TimelineRow>
-      {!isRoute && phase !== "confirm" && (
+      {showReValidate && (
         <EventRow
           marker={phase === "reveal" ? "agent" : "progress"}
           label={phase === "reveal" ? "Re-validated" : "Re-validating"}
           sub={phase === "reveal" ? settledSub : "Re-checking against Coupa"}
           time="Just now"
+          isLast={!showReviewer}
+          tail={!showReviewer}
         />
       )}
-      {(showHeader || hasOthers) && (
-        <TimelineRow marker="reviewer">
+      {showReviewer && (
+        <TimelineRow marker="reviewer" isLast tail>
           {showHeader && (
             <div className="mb-4 flex min-h-7 items-center gap-1.5">
               <span className="text-sm font-medium text-foreground">
@@ -1467,7 +1492,7 @@ function HoldDialog({
   return (
     <ReasonDialog
       trigger={
-        <Button size="sm" variant="ghost" className="text-secondary-foreground">
+        <Button size="sm" variant="secondary">
           {label}
         </Button>
       }
@@ -1492,7 +1517,8 @@ function TerminalBlock({
   onHold: (reason: string, note?: string) => void;
 }) {
   return (
-    <TimelineRow marker="complete" isLast live>
+    // Decision still pending (approve/hold), so the story is open: tail.
+    <TimelineRow marker="complete" isLast tail live>
       <div className="animate-in fade-in-0 duration-200 ease-out">
         <h2
           className="text-[22px] font-bold leading-[1.25] text-foreground"
@@ -1515,18 +1541,16 @@ function TerminalBlock({
 }
 
 /**
- * Approved end state: the terminal transforms in place. Headline + summary shift
- * to the historical muting treatment; the actions become a read-only approval
- * stamp (solid green check, this is true completion). No CTAs remain.
+ * Approved end state: true completion, the structural mirror of the rejected
+ * terminal. The outcome is the terminal (solid green check + "Approved"); "All
+ * checks passed" demotes to a history row above it. No tail (hard stop).
  */
 function ApprovedTerminalBlock({
   review,
-  summary,
   time,
   reducedMotion,
 }: {
   review: InvoiceReview;
-  summary: string;
   time: string;
   reducedMotion: boolean;
 }) {
@@ -1534,31 +1558,25 @@ function ApprovedTerminalBlock({
     <TimelineRow marker="complete" isLast live>
       <div
         className={cn(
-          "opacity-[0.85]",
           !reducedMotion && "animate-in fade-in-0 duration-200 ease-out",
         )}
       >
         <h2
-          className="text-[22px] font-medium leading-[1.25] text-secondary-foreground"
+          className="text-[22px] font-bold leading-[1.25] text-foreground"
           style={{ letterSpacing: "-0.01em" }}
         >
-          All checks passed
+          Approved
         </h2>
-        <p className="mt-1.5 max-w-prose text-sm leading-normal text-muted-foreground">
-          {summary}
+        {/* Stamp line in the established grammar: amount · vendor · time. */}
+        <div className="mt-1.5 flex min-h-7 flex-wrap items-center gap-x-1.5">
+          <span className="text-sm text-muted-foreground tabular-nums">
+            {review.amount} · {review.supplier} · {midSentenceTime(time)}
+          </span>
+        </div>
+        <p className="mt-3 text-[13px] text-muted-foreground">
+          Sent for payment.
         </p>
       </div>
-      {/* Approval stamp (full opacity): the durable fact this state records. */}
-      <div className="mt-4 flex min-h-7 flex-wrap items-center gap-x-1.5">
-        <Check className="size-4 shrink-0 text-success" />
-        <span className="text-sm font-medium text-foreground">Approved</span>
-        <span className="text-sm text-muted-foreground">
-          · {review.amount} · {review.supplier} · {midSentenceTime(time)}
-        </span>
-      </div>
-      <p className="mt-3 text-[13px] text-muted-foreground">
-        Approved and sent for payment.
-      </p>
     </TimelineRow>
   );
 }
@@ -1588,7 +1606,7 @@ function HeldTerminalBlock({
     ? "Resume to return to the waiting request."
     : "Resume to return this invoice to your decision.";
   return (
-    <TimelineRow marker="held" isLast live>
+    <TimelineRow marker="held" isLast tail live>
       <div
         className={cn(
           !reducedMotion && "animate-in fade-in-0 duration-200 ease-out",
@@ -1777,7 +1795,7 @@ function WaitingTerminalBlock({
   // draftless (internal) waiting offers no follow-up.
   const followUpTarget = cards.find((c) => c.draft);
   return (
-    <TimelineRow marker="waiting-complete" isLast live>
+    <TimelineRow marker="waiting-complete" isLast tail live>
       <div className="animate-in fade-in-0 duration-200 ease-out">
         <h2
           className="text-[22px] font-bold leading-[1.25] text-foreground"
@@ -1878,6 +1896,11 @@ export function ExceptionTimeline({
   // The event log lives in the runtime store (survives remount); read it here.
   const events = rt.events;
   const [resolve, setResolve] = useState<ResolveState | null>(null);
+  // Approve is the one true completion, so it earns the full resolve
+  // choreography (confirm -> check -> reveal) before the terminal, unlike the
+  // snappy hold/reject dispositions. Transient local phase (reduced motion skips
+  // it); the committed disposition is what survives remount.
+  const [approving, setApproving] = useState(false);
   // Supplier email draft modal. "route": the confirmation step for a supplier
   // route (Send commits the park). "followup": a reminder on an already-parked
   // exception (Send only logs a Followed up event; waiting is unchanged). Null =
@@ -2448,10 +2471,18 @@ export function ExceptionTimeline({
   // Invoice disposition (v2/v3 single source): both Approve entry points and the
   // terminal Hold/Resume flow through the runtime seams, which append the event
   // atomically. The terminal then re-renders from rt.disposition; no observer.
-  function approve() {
+  function commitApproval() {
     approveInvoice(review.id);
     const { disposition: d, event } = buildApproval(review);
     runtime.setDisposition(review.id, d, event);
+  }
+  function approve() {
+    // Reduced motion: commit straight to the revealed terminal.
+    if (reducedMotion) {
+      commitApproval();
+      return;
+    }
+    setApproving(true);
   }
   function hold(reason: string, note?: string) {
     holdInvoice(review.id, reason, note);
@@ -2464,6 +2495,20 @@ export function ExceptionTimeline({
     runtime.setDisposition(review.id, d, event);
   }
 
+  // Approve choreography: confirm (~450ms) then a final re-check (~1200ms), then
+  // commit the disposition — the terminal reveals from rt.disposition. The same
+  // durations the resolve choreography uses.
+  useEffect(() => {
+    if (!approving) return;
+    const t = setTimeout(() => {
+      commitApproval();
+      setApproving(false);
+    }, 450 + 1200);
+    return () => clearTimeout(t);
+    // commitApproval closes over stable review/runtime; approving is the trigger.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: approving drives it
+  }, [approving]);
+
   // Summary sentences built from the reviewer's resolutions, in order. A
   // corrected-invoice return clears its waiting exception via the "received"
   // event (not a resolved row), so map it to its own clause after the fixes.
@@ -2474,13 +2519,17 @@ export function ExceptionTimeline({
   if (events.some((e) => e.kind === "received")) {
     shortLabels.push("corrected invoice cleared");
   }
-  const resolvedClause =
+  // Capitalized, period-free list of what the reviewer resolved (e.g. "High
+  // value reviewed, No exchange rate resolved"). Sub of the demoted "All checks
+  // passed" history row; also the lead clause of the pre-decision summary.
+  const resolutionSummary =
     shortLabels.length > 0
-      ? `${(() => {
+      ? (() => {
           const joined = shortLabels.join(", ");
           return joined.charAt(0).toUpperCase() + joined.slice(1);
-        })()}. `
+        })()
       : "";
+  const resolvedClause = resolutionSummary ? `${resolutionSummary}. ` : "";
   const summarySentence = `${resolvedClause}This invoice is ready for your decision.`;
   // Supplier waits re-run when the corrected invoice arrives; internal handoffs
   // name the owner + role and re-run when the corrected data arrives.
@@ -2623,20 +2672,30 @@ export function ExceptionTimeline({
           ) : allDone ? (
             <>
               {/* The log compresses into a peek; the terminal lands below it.
-                Disposition wins when set: approved (stamp); otherwise the
-                waiting or passed terminal from the derived state. */}
+                Disposition wins when set: approved is true completion (the
+                terminal), with "All checks passed" demoted to a history row
+                above it; otherwise the waiting or passed terminal. */}
               <ResolveHistoryPeek
                 events={events}
                 waitingCount={waitingCount}
                 reducedMotion={reducedMotion}
               />
               {disposition?.type === "approved" ? (
-                <ApprovedTerminalBlock
-                  review={review}
-                  summary={summarySentence}
-                  time={disposition.time}
-                  reducedMotion={reducedMotion}
-                />
+                <>
+                  {/* Demoted milestone: checks are system-asserted (sparkle),
+                      the resolution summary as sub, before the Approved outcome. */}
+                  <EventRow
+                    marker="agent"
+                    label="All checks passed"
+                    sub={resolutionSummary}
+                    time={disposition.time}
+                  />
+                  <ApprovedTerminalBlock
+                    review={review}
+                    time={disposition.time}
+                    reducedMotion={reducedMotion}
+                  />
+                </>
               ) : waitingDone ? (
                 <WaitingTerminalBlock
                   waitingOn={waitingOn}
@@ -2648,6 +2707,18 @@ export function ExceptionTimeline({
                   onHold={hold}
                   showDevTrigger={devMode}
                   onSimulateCorrected={simulateCorrected}
+                />
+              ) : approving ? (
+                // Approve choreography in flight: the final re-check, reusing the
+                // resolve choreography's progress row, before the terminal reveals.
+                // Open/in-progress, so it ends with the fading tail.
+                <EventRow
+                  marker="progress"
+                  label="Re-validating"
+                  sub="Running a final check"
+                  time="Just now"
+                  isLast
+                  tail
                 />
               ) : (
                 <TerminalBlock
@@ -2683,13 +2754,6 @@ export function ExceptionTimeline({
                   onSelect={anchor}
                 />
               ) : null}
-              <TimelineRow marker="upcoming" isLast>
-                <p className="min-h-7 pt-1 text-[13px] leading-normal text-muted-foreground">
-                  {waitingCount > 0
-                    ? "Validation re-runs when the corrected invoice arrives."
-                    : "Validation runs again after each fix. Anything new surfaces here."}
-                </p>
-              </TimelineRow>
             </>
           )}
         </ol>
