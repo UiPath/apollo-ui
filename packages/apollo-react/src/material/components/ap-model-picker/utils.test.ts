@@ -290,6 +290,34 @@ describe('getSubstitutionTarget', () => {
   });
 });
 
+describe('badge pool', () => {
+  it('resolves badgesFor kinds through MODEL_BADGES (label + variant)', () => {
+    const tags = deriveModelTags(model({ modelId: 'a' }), {
+      badgesFor: () => ['cost-premium'],
+    });
+    const badge = tags.find((t) => t.kind === 'cost-premium');
+    expect(badge?.label).toBe('Premium');
+    expect(badge?.variant).toBe('mini');
+    expect(badge?.tooltip).toBeTruthy();
+  });
+
+  it('ignores kinds that are not in the pool', () => {
+    const tags = deriveModelTags(model({ modelId: 'a' }), {
+      badgesFor: () => ['not-a-real-badge' as never],
+    });
+    expect(tags.find((t) => t.kind === 'not-a-real-badge')).toBeUndefined();
+  });
+
+  it('renders pool badges before customTagsFor extras', () => {
+    const tags = deriveModelTags(model({ modelId: 'a' }), {
+      badgesFor: () => ['cost-basic'],
+      customTagsFor: () => [{ kind: 'onprem', label: 'On-prem' }],
+    });
+    const kinds = tags.map((t) => t.kind);
+    expect(kinds.indexOf('cost-basic')).toBeLessThan(kinds.indexOf('onprem'));
+  });
+});
+
 describe('filterModels', () => {
   it('matches the Discovery displayName', () => {
     const models = [

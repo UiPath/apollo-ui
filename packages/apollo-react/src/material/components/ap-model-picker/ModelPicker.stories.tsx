@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type React from 'react';
 import { useMemo, useState } from 'react';
-
+import type { ModelBadgeKind } from './badges';
 import { ModelPicker } from './ModelPicker';
 import type { DiscoveryModel } from './types';
 import { defaultCostTier } from './utils';
@@ -772,10 +772,10 @@ export const RoutingSubstitution: Story = {
 // example (the agents product pattern).
 //
 // In production the Recommended signal is authored in
-// `Model_hub/<product>.yaml` (gitops-centralized-cluster) and merged
-// into the Discovery response server-side: the picker reads it off
-// `model.isRecommended`. Cost tiers are NOT a built-in signal: products
-// that want them (agents does) stamp them via `customTagsFor`.
+// the product's Model Hub configuration and merged into the Discovery
+// response server-side: the picker reads it off `model.isRecommended`.
+// Cost tiers are NOT a built-in signal: products that want them stamp
+// the pool's cost badges via `badgesFor`.
 // ---------------------------------------------------------------------------
 
 // What the Discovery response looks like once the backend merges
@@ -800,17 +800,13 @@ const DISCOVERY_WITH_RECOMMENDED: DiscoveryModel[] = MOCK_MODELS.map((m) => ({
   ].includes(m.modelId),
 }));
 
-// The agents product's cost badges, built on the exported example
-// classifier. Cost is a per-product decision: this is the whole
-// integration, no picker feature required.
-const COST_TIER_LABELS: Record<string, string> = {
-  basic: 'Basic',
-  standard: 'Standard',
-  premium: 'Premium',
-};
-const agentsCostBadges = (m: DiscoveryModel) => {
+// The agents product's cost badges: classify the model (the exported
+// example classifier) and stamp the matching Apollo pool badge. Labels,
+// tooltips, and colors come from the pool, so this is the whole
+// integration.
+const agentsCostBadges = (m: DiscoveryModel): ModelBadgeKind[] => {
   const tier = defaultCostTier(m);
-  return tier ? [{ kind: `cost-${tier}`, label: COST_TIER_LABELS[tier] ?? tier }] : [];
+  return tier ? [`cost-${tier}` as ModelBadgeKind] : [];
 };
 
 export const RecommendedFromDiscovery: Story = {
@@ -823,7 +819,7 @@ export const RecommendedFromDiscovery: Story = {
     required: true,
     groupBy: 'subscription',
     homeRegion: 'EU',
-    customTagsFor: agentsCostBadges,
+    badgesFor: agentsCostBadges,
     value: 'anthropic.claude-sonnet-4-6-20260301-v1:0',
   },
   parameters: {
@@ -832,15 +828,16 @@ export const RecommendedFromDiscovery: Story = {
         story:
           'Demonstrates two production patterns. **(1)** Recommended is ' +
           'read from the Discovery DTO (`model.isRecommended`): the ' +
-          'backend merges `Model_hub/<product>.yaml` from ' +
-          'gitops-centralized-cluster into the response, so neither the ' +
-          'picker nor the product fetches Model_hub. Note Sonnet 4.6 is ' +
+          'backend merges the product Model Hub configuration into ' +
+          'the response, so neither the picker nor the product fetches ' +
+          'it. Note Sonnet 4.6 is ' +
           'Recommended here even though its DTO says `isPreview: true`: ' +
           'the merged field wins over the local heuristic. **(2)** The ' +
-          '`Basic` / `Standard` / `Premium` chips are NOT a picker ' +
-          'feature: they are product badges stamped via `customTagsFor` ' +
-          'using the exported `defaultCostTier` example classifier, the ' +
-          'way the agents product does it.',
+          '`Basic` / `Standard` / `Premium` chips come from the Apollo ' +
+          'badge pool: the product classifies each model (exported ' +
+          '`defaultCostTier` example) and stamps the matching pool kind ' +
+          'via `badgesFor`. The pool owns the labels, tooltips, and ' +
+          'colors, so cost badges read identically in every product.',
       },
     },
   },
@@ -893,7 +890,7 @@ const ControlledKitchenSink = (args: React.ComponentProps<typeof ModelPicker>) =
           }}
           recommendedModelIds={KITCHEN_RECOMMENDED_IDS}
           previewModelIds={KITCHEN_PREVIEW_IDS}
-          customTagsFor={agentsCostBadges}
+          badgesFor={agentsCostBadges}
           folders={FOLDERS}
           folder={folder}
           onFolderChange={setFolder}
@@ -1049,13 +1046,14 @@ export const WithFriendlyNames: Story = {
 };
 
 // ---------------------------------------------------------------------------
-// Custom badges. `customTagsFor` lets products stamp product-specific
-// chips on rows (e.g. "Multimodal", "On-Prem") without forking the
-// component. New tag kinds get colored via `customTagVariants`.
+// Escape-hatch badges. The sanctioned path is `badgesFor` + the Apollo
+// badge pool; `customTagsFor` stays for experiments and one-offs pending
+// a pool addition ("Multimodal" and "On-prem" are not pooled yet). New
+// tag kinds get colored via `customTagVariants`.
 // ---------------------------------------------------------------------------
 
 export const WithCustomBadges: Story = {
-  name: 'With custom badges (per-product chips)',
+  name: 'With custom badges (escape hatch)',
   render: Controlled,
   args: {
     variant: 'searchable',
@@ -1103,13 +1101,13 @@ export const WithCustomBadges: Story = {
     docs: {
       description: {
         story:
-          'Products can stamp their own chips via `customTagsFor`: the ' +
-          'picker concatenates them after the built-in chips. ' +
-          'Unknown tag kinds render with a neutral gray pill by ' +
-          'default; pass `customTagVariants` to color them. Here we ' +
-          'add `Multimodal` (info blue) and `On-prem` (warning amber) ' +
-          'chips. Combine with `friendlyNameFor` for the full ' +
-          '"product-owned catalog" experience.',
+          'The escape hatch. The sanctioned path for product badges is ' +
+          '`badgesFor` + the Apollo badge pool (see the Recommended ' +
+          'from Discovery story); `customTagsFor` remains for ' +
+          'experiments and one-offs pending a pool addition, like the ' +
+          '`Multimodal` and `On-prem` chips here. Unknown kinds render ' +
+          'as a neutral gray pill; `customTagVariants` colors them. ' +
+          'Anything worth shipping should graduate into the pool.',
       },
     },
   },
@@ -1221,7 +1219,7 @@ export const DarkMode: Story = {
     required: true,
     groupBy: 'subscription',
     homeRegion: 'EU',
-    customTagsFor: agentsCostBadges,
+    badgesFor: agentsCostBadges,
   },
   parameters: {
     docs: {

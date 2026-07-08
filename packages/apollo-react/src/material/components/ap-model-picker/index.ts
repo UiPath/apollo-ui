@@ -1,6 +1,10 @@
 // Main component. `ApModelPicker` is the conventional Ap-prefixed name
 // in this package; `ModelPicker` is kept as the canonical export.
 
+export type { ModelBadgeDefinition, ModelBadgeKind } from './badges';
+// Badge pool
+export { MODEL_BADGES } from './badges';
+
 // i18n contract
 export type { PickerTranslator } from './i18n';
 export type {
