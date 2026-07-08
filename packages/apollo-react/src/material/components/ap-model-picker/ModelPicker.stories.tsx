@@ -999,11 +999,11 @@ export const UnknownModelFallback: Story = {
 };
 
 // ---------------------------------------------------------------------------
-// Friendly names: the picker's "friendly" mode where each row shows a
-// human label up top with the canonical model id in a monospace
-// secondary line. Demonstrates `friendlyNameFor`: a product-controlled
-// map that lets each FPS team localize or rebrand the catalog without
-// touching the design system.
+// Friendly names: each row shows a human label up top with the canonical
+// model id in a monospace secondary line. In production the labels come
+// from the Discovery DTO (`model.displayName`, authored centrally); this
+// story demonstrates `friendlyNameFor`, the per-product OVERRIDE that
+// wins over the DTO and bridges models the backend has not named yet.
 // ---------------------------------------------------------------------------
 
 const FRIENDLY_NAMES: Record<string, string> = {
@@ -1018,7 +1018,7 @@ const FRIENDLY_NAMES: Record<string, string> = {
 };
 
 export const WithFriendlyNames: Story = {
-  name: 'With friendly names (per-product label map)',
+  name: 'With friendly names (friendlyNameFor override)',
   render: Controlled,
   args: {
     variant: 'searchable',
@@ -1034,12 +1034,14 @@ export const WithFriendlyNames: Story = {
     docs: {
       description: {
         story:
-          'Products hand the picker a `friendlyNameFor` function and ' +
-          'the row primary line becomes the human label (e.g. "Claude ' +
-          'Sonnet 4.6") with the canonical model id in a monospace ' +
-          'secondary line. Models without an entry fall back to the ' +
-          'raw `modelName`. The trigger uses the same function so the ' +
-          'selected label stays consistent across the trigger + popup.',
+          'The override path. In production, display names arrive on ' +
+          'the Discovery DTO (`model.displayName`, authored centrally ' +
+          'like Recommended: see the Recommended from Discovery story) ' +
+          'and need no wiring. `friendlyNameFor` is the per-product ' +
+          'override and rollout bridge: it wins over the DTO, and ' +
+          'returning `null` falls through to `displayName`, then the ' +
+          'raw `modelName`. Rows show the label over a monospace ' +
+          'technical id; the trigger uses the same resolution.',
       },
     },
   },
