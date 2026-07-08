@@ -38,7 +38,7 @@ export const TAG_LABELS = {
   }),
   recommendedTooltip: msg({
     id: 'modelPicker.tag.recommended.tooltip',
-    message: 'Based on evaluation runs for this agent',
+    message: 'Based on evaluation runs for this product',
   }),
   preview: msg({ id: 'modelPicker.tag.preview.label', message: 'Preview' }),
   custom: msg({ id: 'modelPicker.tag.custom.label', message: 'Custom' }),
@@ -75,7 +75,7 @@ export const GROUP_LABELS = {
   }),
   recommendedHint: msg({
     id: 'modelPicker.group.recommended.hint',
-    message: 'Based on evaluation runs for this agent',
+    message: 'Based on evaluation runs for this product',
   }),
   preview: msg({
     id: 'modelPicker.group.preview.label',
