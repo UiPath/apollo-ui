@@ -1,3 +1,4 @@
+import { cn } from '@uipath/apollo-wind';
 import {
   Tooltip,
   TooltipContent,
@@ -44,6 +45,31 @@ interface CanvasTooltipProps extends PropsWithChildren {
   isOpen?: boolean;
   /** When true, hide the tooltip entirely. */
   hide?: boolean;
+  /**
+   * Distance in px between the tooltip and the trigger along `placement`.
+   * Defaults to the underlying tooltip's 4px. Use a negative value to overlap
+   * the trigger.
+   */
+  sideOffset?: number;
+  /**
+   * Extra classes merged onto the tooltip content panel (via tailwind-merge),
+   * e.g. `max-w-64` to cap the width under the trigger. Conflicting utilities
+   * override the defaults (`max-w-xs`).
+   */
+  contentClassName?: string;
+  /**
+   * When true, the tooltip closes as soon as the pointer leaves the trigger,
+   * even if it moves onto the tooltip content (drops Radix's hover bridge).
+   * Useful when the content overlaps neighbouring rows and would otherwise
+   * block hovering them.
+   */
+  disableHoverableContent?: boolean;
+  /**
+   * When true, the tooltip gets its own provider scope so Radix's global
+   * skip-delay window (instant open shortly after another tooltip was shown)
+   * never applies — every open waits its full delay.
+   */
+  disableSkipDelay?: boolean;
 }
 
 /**
@@ -60,6 +86,10 @@ export function CanvasTooltip({
   delay = false,
   isOpen,
   hide,
+  sideOffset,
+  contentClassName,
+  disableHoverableContent,
+  disableSkipDelay,
   children,
 }: Readonly<CanvasTooltipProps>) {
   const childElement = useMemo(
@@ -136,22 +166,33 @@ export function CanvasTooltip({
   const hasProvider = useContext(HasTooltipProviderContext);
 
   const tooltip = (
-    <Tooltip open={effectiveOpen} onOpenChange={handleOpenChange} delayDuration={delay ? 700 : 200}>
+    <Tooltip
+      open={effectiveOpen}
+      onOpenChange={handleOpenChange}
+      delayDuration={delay ? 700 : 200}
+      disableHoverableContent={disableHoverableContent}
+    >
       <TooltipTrigger asChild>{triggerWithHandlers}</TooltipTrigger>
       <TooltipPortal>
-        <TooltipContent side={placement} className="z-1200 max-w-xs break-words">
+        <TooltipContent
+          side={placement}
+          sideOffset={sideOffset}
+          className={cn('z-1200 max-w-xs wrap-break-word', contentClassName)}
+        >
           {content}
         </TooltipContent>
       </TooltipPortal>
     </Tooltip>
   );
 
-  if (hasProvider) {
+  if (hasProvider && !disableSkipDelay) {
     return tooltip;
   }
 
+  // When disableSkipDelay is true, wrap the tooltip in its own provider scope so that
+  // Radix's global skip-delay window never applies — every open waits its full delay.
   return (
-    <TooltipProvider delayDuration={200} skipDelayDuration={100}>
+    <TooltipProvider delayDuration={200} skipDelayDuration={disableSkipDelay ? 0 : 100}>
       {tooltip}
     </TooltipProvider>
   );

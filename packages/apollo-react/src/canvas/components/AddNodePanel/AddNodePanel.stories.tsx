@@ -15,7 +15,7 @@ import {
   withCanvasProviders,
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
-import { CanvasIcon, type CanvasHandleActionEvent } from '../../utils';
+import { type CanvasHandleActionEvent, CanvasIcon } from '../../utils';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
@@ -679,6 +679,402 @@ export const AllShapes: Story = {
     },
   },
   render: () => <AllShapesStory />,
+};
+
+// Mirrors the target add-node menu structure: dense single-line rows whose
+// blurb lives in `detail` (hover only), group dividers, type badges, and
+// listing rows whose owning project shows inline via `description`.
+const MENU_STRUCTURE_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'agent',
+    name: 'Agent',
+    detail: 'AI agents that plan and act',
+    icon: { name: 'bot' },
+    data: { type: 'category', category: 'Agent' },
+    children: [
+      {
+        id: 'agent-autonomous',
+        name: 'Autonomous agent',
+        detail: 'Goal-driven agent that plans its own steps',
+        icon: { name: 'bot' },
+        data: { type: 'agent-autonomous', category: 'Agent' },
+      },
+      {
+        id: 'agent-conversational',
+        name: 'Conversational agent',
+        detail: 'Chat-based agent with turn-by-turn dialog',
+        icon: { name: 'messages-square' },
+        data: { type: 'agent-conversational', category: 'Agent' },
+      },
+      {
+        id: 'agent-create-new',
+        name: 'Create new agent',
+        contentColor: 'var(--canvas-primary)',
+        trailingIcon: { name: 'arrow-up-right', color: 'var(--canvas-primary)' },
+        icon: { name: 'plus' },
+        data: { type: 'agent-create-new', category: 'Agent' },
+        section: 'In this solution',
+      },
+      {
+        id: 'agent-in-solution-1',
+        name: 'Triage agent',
+        description: 'this solution · v1',
+        detail: 'Routes each incoming request to the right specialist agent.',
+        icon: { name: 'bot' },
+        data: { type: 'agent-listing', category: 'Agent' },
+        section: 'In this solution',
+      },
+      {
+        id: 'agent-published-1',
+        name: 'Research agent',
+        description: 'R&D · v3',
+        icon: { name: 'bot' },
+        data: { type: 'agent-listing', category: 'Agent' },
+        section: 'Published',
+      },
+      {
+        id: 'agent-published-2',
+        name: 'Support copilot',
+        description: 'CX · v6',
+        icon: { name: 'bot' },
+        data: { type: 'agent-listing', category: 'Agent' },
+        section: 'Published',
+      },
+    ],
+  },
+  {
+    id: 'connector',
+    name: 'Connector',
+    detail: 'Connect to apps and APIs',
+    icon: { name: 'unplug' },
+    data: { type: 'category', category: 'Connector' },
+    children: [
+      {
+        id: 'connector-suggested-item',
+        name: 'Salesforce action',
+        detail: 'Does something in Salesforce',
+        icon: { name: 'database' },
+        data: { type: 'connector-action', category: 'Connector' },
+        section: 'Suggested',
+      },
+      {
+        id: 'connector-create-record',
+        name: 'Create record',
+        detail: 'Creates a new record in a Salesforce object',
+        icon: { name: 'database' },
+        data: { type: 'connector-action', category: 'Connector' },
+      },
+      {
+        id: 'connector-new-record',
+        name: 'New record',
+        detail: 'Triggers when a new record is created in an object',
+        icon: { name: 'database' },
+        data: { type: 'connector-event', category: 'Connector' },
+      },
+    ],
+  },
+  {
+    id: 'data',
+    name: 'Data',
+    detail: 'Shape, filter, and transform data',
+    icon: { name: 'database' },
+    data: { type: 'category', category: 'Data' },
+    children: [
+      {
+        id: 'data-filter',
+        name: 'Filter',
+        detail: 'Keep rows matching conditions',
+        icon: { name: 'filter' },
+        data: { type: 'data-filter', category: 'Data' },
+      },
+      {
+        id: 'data-transform',
+        name: 'Transform',
+        detail: 'Reshape and convert data',
+        icon: { name: 'shuffle' },
+        data: { type: 'data-transform', category: 'Data' },
+      },
+    ],
+  },
+  {
+    id: 'control',
+    name: 'Control',
+    detail: 'Branch, loop, and control flow',
+    icon: { name: 'trending-up-down' },
+    dividerBefore: true,
+    data: { type: 'category', category: 'Control' },
+    children: [
+      {
+        id: 'control-mock',
+        name: 'Mock',
+        detail: 'Stub a node during testing',
+        icon: { name: 'flask-conical' },
+        data: { type: 'control-mock', category: 'Control' },
+      },
+      {
+        id: 'control-decision',
+        name: 'Decision',
+        detail: 'Branch on a condition',
+        icon: { name: 'split' },
+        dividerBefore: true,
+        data: { type: 'control-decision', category: 'Control' },
+      },
+      {
+        id: 'control-loop',
+        name: 'Loop',
+        detail: 'Repeat over a collection',
+        icon: { name: 'repeat' },
+        data: { type: 'control-loop', category: 'Control' },
+      },
+      {
+        id: 'control-end',
+        name: 'End',
+        detail: 'End this branch',
+        icon: { name: 'circle-stop' },
+        dividerBefore: true,
+        data: { type: 'control-end', category: 'Control' },
+      },
+    ],
+  },
+  {
+    id: 'tool',
+    name: 'Tool',
+    detail: 'Scripts and built-in tool activities',
+    icon: { name: 'wrench' },
+    data: { type: 'category', category: 'Tool' },
+    children: [
+      {
+        id: 'tool-script',
+        name: 'Script',
+        detail: 'Run custom JavaScript',
+        icon: { name: 'code' },
+        data: { type: 'tool-script', category: 'Tool' },
+      },
+    ],
+  },
+  {
+    id: 'trigger',
+    name: 'Trigger',
+    detail: 'Start the flow from an event',
+    icon: { name: 'zap' },
+    dividerBefore: true,
+    data: { type: 'category', category: 'Trigger' },
+    children: [
+      {
+        id: 'trigger-manual',
+        name: 'Manual trigger',
+        detail: 'Start the flow on demand',
+        badge: 'TRIGGER',
+        icon: { name: 'play' },
+        data: { type: 'trigger-manual', category: 'Trigger' },
+      },
+      {
+        id: 'trigger-scheduled',
+        name: 'Scheduled trigger',
+        detail: 'Start on a recurring schedule',
+        badge: 'TRIGGER',
+        icon: { name: 'calendar-clock' },
+        data: { type: 'trigger-scheduled', category: 'Trigger' },
+      },
+    ],
+  },
+  {
+    id: 'wait-for-event',
+    name: 'Wait for event',
+    detail: 'Pause the flow until an event',
+    icon: { name: 'clock' },
+    data: { type: 'category', category: 'Wait for event' },
+    children: [
+      {
+        id: 'wait-delay',
+        name: 'Delay',
+        detail: 'Pause for a fixed duration',
+        badge: 'WAIT',
+        icon: { name: 'timer' },
+        data: { type: 'wait-delay', category: 'Wait for event' },
+      },
+      {
+        id: 'wait-new-record',
+        name: 'Pause for new record',
+        detail: 'Pause until new record',
+        badge: 'WAIT',
+        icon: { name: 'database' },
+        data: { type: 'wait-connector-event', category: 'Wait for event' },
+      },
+    ],
+  },
+  {
+    id: 'maestro-flow',
+    name: 'Maestro flow',
+    detail: 'Reference a Maestro flow',
+    icon: { name: 'workflow' },
+    dividerBefore: true,
+    data: { type: 'category', category: 'Maestro flow' },
+    children: [
+      {
+        id: 'flow-subflow',
+        name: 'Subflow',
+        detail: 'Group steps into a reusable block',
+        icon: { name: 'group' },
+        data: { type: 'flow-subflow', category: 'Maestro flow' },
+      },
+      {
+        id: 'flow-in-solution',
+        name: 'In this solution',
+        icon: { name: 'folder' },
+        data: { type: 'category', category: 'Maestro flow' },
+        children: [
+          {
+            id: 'flow-create-new',
+            name: 'Create new Maestro flow',
+            contentColor: 'var(--canvas-primary)',
+            trailingIcon: { name: 'arrow-up-right', color: 'var(--canvas-primary)' },
+            icon: { name: 'plus' },
+            data: { type: 'flow-create-new', category: 'Maestro flow' },
+          },
+          {
+            id: 'flow-in-solution-1',
+            name: 'Invoice routing',
+            description: 'this solution · v3',
+            icon: { name: 'workflow' },
+            data: { type: 'flow-listing', category: 'Maestro flow' },
+          },
+        ],
+      },
+      {
+        id: 'flow-published',
+        name: 'Published',
+        icon: { name: 'package' },
+        data: { type: 'category', category: 'Maestro flow' },
+        children: [
+          {
+            id: 'flow-published-1',
+            name: 'Claims intake',
+            description: 'Finance Ops · v7',
+            icon: { name: 'workflow' },
+            data: { type: 'flow-listing', category: 'Maestro flow' },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'rpa-workflow',
+    name: 'RPA workflow',
+    detail: 'Reference an RPA workflow',
+    icon: { name: 'bot' },
+    data: { type: 'category', category: 'RPA workflow' },
+    children: [
+      {
+        id: 'rpa-published',
+        name: 'Published',
+        icon: { name: 'package' },
+        data: { type: 'category', category: 'RPA workflow' },
+        children: [
+          {
+            id: 'rpa-published-1',
+            name: 'Mainframe extract',
+            description: 'IT Ops · v9',
+            icon: { name: 'bot' },
+            data: { type: 'rpa-listing', category: 'RPA workflow' },
+          },
+        ],
+      },
+    ],
+  },
+  // Drill in and hover each row to exercise every popover path: detail-only,
+  // name/description truncation (isolated and combined), the no-popover case,
+  // and detail alongside a description that fits.
+  {
+    id: 'tooltip-scenarios',
+    name: 'Tooltip scenarios',
+    detail: 'Hover each row to see when and what the popover shows',
+    icon: { name: 'info' },
+    dividerBefore: true,
+    data: { type: 'category', category: 'Tooltip scenarios' },
+    children: [
+      {
+        id: 'tt-detail-only',
+        name: 'Detail only',
+        detail:
+          'No inline description and the name fits, so the row is single-line. Hover shows the detail-only popover.',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-name-trunc',
+        name: 'Name truncation with a deliberately very long label that will not fit the row',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-desc-trunc',
+        name: 'Description truncation',
+        description: 'Very/long/folder/path/that/will/not/fit/in/the/row · v12.4.7-rc.3',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-both-trunc',
+        name: 'Both name and description truncate on this particular long row',
+        description: 'Another/very/long/folder/path/that/overflows/the/available/width · v3.0.0',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-detail-plus-trunc',
+        name: 'Detail with a long name and a long description that both overflow their row',
+        description: 'Solutions/Finance/Shared/Long/Path · v9.9.9',
+        detail: 'Full card: name heading, the clipped description, and this detail all appear.',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-detail-short-desc',
+        name: 'Detail, short description',
+        description: 'Ops · v2',
+        detail: 'The description fits, so the popover omits it and shows only this detail.',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-plain',
+        name: 'Plain row',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+    ],
+  },
+];
+
+export const NodePanelMenuStructure: Story = {
+  name: 'Add node panel with menu structure',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Demonstrates the restructured add-node menu.',
+          '',
+          '- Dense single-line rows with 20x20 icons. Categories carry their blurb as `detail` (hover only).',
+          '- Thin dividers group related top-level categories.',
+          '- TRIGGER and WAIT badges differentiate same-named variants.',
+          '- "In this solution" and "Published" are drill-in submenus per resource. Listings show the owning project as an inline `description`.',
+          '- "Create new ..." rows use the primary color with a trailing up-right arrow and sit first inside "In this solution".',
+          '- The default panel height cuts the last visible row in half to hint at scrolling.',
+        ].join('\n'),
+      },
+    },
+  },
+  args: {
+    items: MENU_STRUCTURE_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
 };
 
 export const NodePanelMessaging: Story = {

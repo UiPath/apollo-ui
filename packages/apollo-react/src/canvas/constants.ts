@@ -10,8 +10,13 @@ export const CANVAS_COMPACT_BREAKPOINT = 600;
 
 /** Fixed width of the Toolbox container (in px) when it isn't in `fullWidth` mode. */
 export const TOOLBOX_WIDTH = 320;
-/** Fixed height of the Toolbox container (in px) when it isn't in `fullHeight` mode. */
-export const TOOLBOX_HEIGHT = 440;
+/**
+ * Fixed height of the Toolbox container (in px) when it isn't in `fullHeight`
+ * mode. Sized so the standard add-node root menu (9 rows + 2 group dividers
+ * at the current row metrics) cuts the 10th row roughly in half at the bottom
+ * edge, hinting that the list scrolls.
+ */
+export const TOOLBOX_HEIGHT = 410;
 /** Horizontal padding inside the Toolbox (in px; `px` prop on its outer `Column`). */
 export const TOOLBOX_PADDING_X = 20;
 /** Vertical padding inside the Toolbox (in px; `py` prop on its outer `Column`). */

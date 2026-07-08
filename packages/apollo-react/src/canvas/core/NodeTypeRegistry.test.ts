@@ -22,6 +22,7 @@ describe('NodeTypeRegistry', () => {
       {
         id: 'automation',
         name: 'Automation',
+        description: 'Automate apps and services',
         icon: 'automation',
         parentId: undefined,
         sortOrder: 2,
@@ -586,6 +587,17 @@ describe('NodeTypeRegistry', () => {
       const automation = items.find((item) => item.id === 'automation');
       expect(automation).toBeDefined();
       expect(automation?.children).toHaveLength(2); // files and email
+    });
+
+    it('should carry the category manifest description onto category list items', () => {
+      const items = registry.getNodeOptions({});
+
+      const automation = items.find((item) => item.id === 'automation');
+      expect(automation?.description).toBe('Automate apps and services');
+
+      // Categories without a description stay undefined
+      const ai = items.find((item) => item.id === 'ai');
+      expect(ai?.description).toBeUndefined();
     });
 
     it('should filter by connection constraints', () => {

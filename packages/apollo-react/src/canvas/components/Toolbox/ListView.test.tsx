@@ -1,8 +1,55 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '../../utils/testing';
 import { CanvasThemeProvider } from '../BaseCanvas/CanvasThemeContext';
-import type { ListItem } from './ListView';
-import { ListView } from './ListView';
+import type { ListItem, RenderItem } from './ListView';
+import {
+  getRenderItemHeight,
+  ListView,
+  ROW_HEIGHT_DIVIDER,
+  ROW_HEIGHT_ITEM,
+  ROW_HEIGHT_ITEM_TWO_LINE,
+  ROW_HEIGHT_SECTION,
+  ROW_HEIGHT_SECTION_FIRST,
+} from './ListView';
+
+describe('getRenderItemHeight', () => {
+  const itemOf = (item: Partial<ListItem>): RenderItem<ListItem> => ({
+    type: 'item',
+    item: { id: 'x', name: 'X', data: {}, ...item },
+  });
+
+  it('sizes a plain item as a single-line row', () => {
+    expect(getRenderItemHeight(itemOf({}))).toBe(ROW_HEIGHT_ITEM);
+  });
+
+  it('sizes an item with an inline description as a two-line row', () => {
+    expect(getRenderItemHeight(itemOf({ description: 'Finance Ops · v1' }))).toBe(
+      ROW_HEIGHT_ITEM_TWO_LINE
+    );
+  });
+
+  it('keeps a detail-only item single-line (detail is tooltip-only)', () => {
+    expect(getRenderItemHeight(itemOf({ detail: 'Hover-only explanation' }))).toBe(ROW_HEIGHT_ITEM);
+  });
+
+  it('sizes section headers, using the tighter height for the first', () => {
+    expect(getRenderItemHeight({ type: 'section', sectionName: 'A', first: true })).toBe(
+      ROW_HEIGHT_SECTION_FIRST
+    );
+    expect(getRenderItemHeight({ type: 'section', sectionName: 'A', first: false })).toBe(
+      ROW_HEIGHT_SECTION
+    );
+  });
+
+  it('sizes dividers and skeletons', () => {
+    expect(getRenderItemHeight({ type: 'divider' })).toBe(ROW_HEIGHT_DIVIDER);
+    expect(getRenderItemHeight({ type: 'skeleton' })).toBe(ROW_HEIGHT_ITEM);
+  });
+
+  it('falls back to the single-line height for an undefined render item', () => {
+    expect(getRenderItemHeight(undefined)).toBe(ROW_HEIGHT_ITEM);
+  });
+});
 
 describe('ListView', () => {
   const mockOnItemClick = vi.fn();
@@ -221,20 +268,85 @@ describe('ListView', () => {
       expect(screen.getByTestId('list-item-icon').querySelector('svg')).toHaveClass('lucide-star');
     });
 
-    it('should render item with description', () => {
+    it('should render description as an inline second line', () => {
+      const items: ListItem[] = [
+        {
+          id: 'item-1',
+          name: 'Invoice routing',
+          data: {},
+          description: 'this solution · v3',
+        },
+      ];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      expect(screen.getByText('Invoice routing')).toBeInTheDocument();
+      expect(screen.getByText('this solution · v3')).toBeInTheDocument();
+    });
+
+    it('should not render detail inline (it is tooltip-only)', () => {
       const items: ListItem[] = [
         {
           id: 'item-1',
           name: 'Test Item',
           data: {},
-          description: 'This is a description',
+          detail: 'Hover-only explanation',
         },
       ];
 
       render(<ListView {...defaultProps} items={items} />);
 
       expect(screen.getByText('Test Item')).toBeInTheDocument();
-      expect(screen.getByText('This is a description')).toBeInTheDocument();
+      expect(screen.queryByText('Hover-only explanation')).not.toBeInTheDocument();
+    });
+
+    it('should render a badge tag when the item has one', () => {
+      const items: ListItem[] = [
+        {
+          id: 'item-1',
+          name: 'New record',
+          data: {},
+          badge: 'TRIGGER',
+        },
+      ];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      const badge = screen.getByTestId('list-item-badge');
+      expect(badge).toHaveTextContent('TRIGGER');
+    });
+
+    it('should render a divider before items flagged with dividerBefore', () => {
+      const items: ListItem[] = [
+        { id: 'a', name: 'Alpha', data: {} },
+        { id: 'b', name: 'Beta', data: {}, dividerBefore: true },
+      ];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      expect(screen.getByTestId('list-item-divider')).toBeInTheDocument();
+    });
+
+    it('should suppress a leading divider when the first item sets dividerBefore', () => {
+      const items: ListItem[] = [{ id: 'a', name: 'Alpha', data: {}, dividerBefore: true }];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      expect(screen.queryByTestId('list-item-divider')).not.toBeInTheDocument();
+    });
+
+    it('should not render dividers in flat mode (search results)', () => {
+      // Search results are leaves collected from the browse tree, so they can
+      // carry dividerBefore; flat mode must ignore it like it does sections.
+      const items: ListItem[] = [
+        { id: 'a', name: 'Alpha', data: {} },
+        { id: 'b', name: 'Beta', data: {}, dividerBefore: true },
+      ];
+
+      render(<ListView {...defaultProps} items={items} enableSections={false} />);
+
+      expect(screen.getByText('Beta')).toBeInTheDocument();
+      expect(screen.queryByTestId('list-item-divider')).not.toBeInTheDocument();
     });
 
     it('should render chevron for items with children', () => {
@@ -349,6 +461,55 @@ describe('ListView', () => {
     });
   });
 
+  describe('Row styling (contentColor / trailingIcon)', () => {
+    it('should apply contentColor to the name and leading icon and render the trailing icon', () => {
+      const items: ListItem[] = [
+        {
+          id: 'create-1',
+          name: 'Create new agent',
+          data: {},
+          icon: { name: 'plus' },
+          contentColor: 'var(--canvas-primary)',
+          trailingIcon: { name: 'arrow-up-right', color: 'var(--canvas-primary)' },
+        },
+      ];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      const label = screen.getByText('Create new agent');
+      // jsdom leaves CSS custom properties unresolved, so assert the raw
+      // inline declaration rather than computed style.
+      expect((label as HTMLElement).style.color).toBe('var(--canvas-primary)');
+      const iconContainer = screen.getByTestId('list-item-icon');
+      expect(iconContainer.style.color).toBe('var(--canvas-primary)');
+      expect(screen.getByTestId('list-item-trailing-icon')).toBeInTheDocument();
+    });
+
+    it('should not render a trailing icon on rows that do not declare one', () => {
+      const items: ListItem[] = [{ id: 'item-1', name: 'Regular', data: {} }];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      expect(screen.queryByTestId('list-item-trailing-icon')).not.toBeInTheDocument();
+    });
+
+    it('should prefer the drill-in chevron over the trailing icon when the row has children', () => {
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Options',
+          data: {},
+          trailingIcon: { name: 'arrow-up-right' },
+          children: [{ id: 'child', name: 'Child', data: {} }],
+        },
+      ];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      expect(screen.queryByTestId('list-item-trailing-icon')).not.toBeInTheDocument();
+    });
+  });
+
   describe('Sections', () => {
     it('should render items without sections first', () => {
       const items: ListItem[] = [
@@ -400,6 +561,23 @@ describe('ListView', () => {
       expect(itemA1Index).toBeLessThan(itemA2Index);
       expect(itemA2Index).toBeLessThan(sectionBIndex);
       expect(sectionBIndex).toBeLessThan(itemB1Index);
+    });
+
+    it('should render spaced uppercase section headers without a rule', () => {
+      const items: ListItem[] = [
+        { id: 'item-1', name: 'Item A1', data: {}, section: 'Section A' },
+        { id: 'item-2', name: 'Item B1', data: {}, section: 'Section B' },
+        { id: 'item-3', name: 'Item C1', data: {}, section: 'Section C' },
+      ];
+
+      render(<ListView {...defaultProps} items={items} enableSections={true} />);
+
+      // Headers are the separator themselves — no rule element is rendered.
+      expect(screen.getAllByTestId('list-section-header')).toHaveLength(3);
+      expect(screen.queryByTestId('list-section-rule')).not.toBeInTheDocument();
+      const label = screen.getByText('Section A');
+      expect(label).toHaveClass('uppercase');
+      expect(label).toHaveClass('font-bold');
     });
 
     it('should not render sections when enableSections is false', () => {
@@ -501,6 +679,17 @@ describe('ListView', () => {
 
       const iconContainer = screen.getByTestId('list-item-icon');
       expect(iconContainer).toHaveStyle({ background: 'rgb(3,2,1)' });
+    });
+
+    it('should default to a transparent icon background when the item has no color', () => {
+      const items: ListItem[] = [
+        { id: 'item-1', name: 'Item 1', data: {}, icon: { name: 'star' } },
+      ];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      const iconContainer = screen.getByTestId('list-item-icon');
+      expect(getComputedStyle(iconContainer).backgroundColor).toBe('transparent');
     });
   });
 
