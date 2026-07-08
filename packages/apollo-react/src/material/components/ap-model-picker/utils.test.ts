@@ -291,6 +291,18 @@ describe('getSubstitutionTarget', () => {
 });
 
 describe('filterModels', () => {
+  it('matches the Discovery displayName', () => {
+    const models = [
+      model({
+        modelId: 'a',
+        modelName: 'anthropic.claude-sonnet-4-6',
+        displayName: 'Claude Sonnet 4.6',
+      }),
+      model({ modelId: 'b', modelName: 'gpt-4o' }),
+    ];
+    expect(filterModels(models, 'sonnet 4.6').map((m) => m.modelId)).toEqual(['a']);
+  });
+
   it('matches case-insensitively across name, id, vendor', () => {
     const models = [
       model({
