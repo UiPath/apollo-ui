@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.58.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.57.0...@uipath/apollo-react@4.58.0) (2026-07-08)
+
+### Features
+
+* **apollo-react:** add asterisk for required tasks ([111f830](https://github.com/UiPath/apollo-ui/commit/111f830d64c99a069a88e81620f5add39e663d44))
+
 ## [@uipath/apollo-react-v4.57.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.56.0...@uipath/apollo-react@4.57.0) (2026-07-04)
 
 ### Features
