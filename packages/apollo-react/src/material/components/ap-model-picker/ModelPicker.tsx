@@ -168,17 +168,6 @@ export interface ModelPickerProps {
    */
   filter?: (model: DiscoveryModel) => boolean;
   /**
-   * Per-product override for the human label. In production, display
-   * names arrive on the Discovery DTO (`model.displayName`, merged
-   * server-side like `isRecommended`) and need no wiring. When this
-   * prop is set it wins over the DTO; return `null`/`undefined` from
-   * it to fall through to `displayName` and then the raw `modelName`.
-   * Rows show the friendly label as the primary line with the
-   * technical id as a secondary monospace line; the trigger uses the
-   * same resolution so the selected label stays consistent everywhere.
-   */
-  friendlyNameFor?: (model: DiscoveryModel) => string | null | undefined;
-  /**
    * Stamp badges from the Apollo badge pool per model (e.g.
    * `['cost-premium']`). The pool (`MODEL_BADGES` in badges.ts) owns
    * labels, tooltips, variants, and localization so the same badge
@@ -310,7 +299,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       recommendedModelIds,
       previewModelIds,
       filter,
-      friendlyNameFor,
       badgesFor,
       customTagsFor,
       customTagVariants,
@@ -463,17 +451,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       [i18n, homeRegion, recommendedModelIds, previewModelIds, badgesFor, customTagsFor]
     );
 
-    // Friendly-name resolution mirrors `isRecommended`: explicit prop
-    // (per-product override) → DTO `displayName` (authored centrally,
-    // merged into Discovery server-side) → raw `modelName` (the
-    // row/trigger fallback when this returns null).
-    const resolveFriendlyName = React.useCallback(
-      (m: DiscoveryModel) => friendlyNameFor?.(m) ?? m.displayName ?? null,
-      [friendlyNameFor]
-    );
-
-    const selectedPrimaryLabel = selected ? resolveFriendlyName(selected) : null;
-
     // In Category view the section header *is* the Recommended/Preview
     // label — repeating it on every row inside the section is noise.
     // Hide both chips on rows when grouped by subscription; keep them in
@@ -563,7 +540,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           describedById={(errorText ?? error) ? `${id}-error` : undefined}
           tagContext={tagContext}
           tagVariants={customTagVariants}
-          primaryLabel={selectedPrimaryLabel}
           extra={slots?.triggerExtra?.(selected)}
           onClick={() => setOpen(!open)}
         />
@@ -728,7 +704,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                 onSelect={choose}
                 tagContext={tagContext}
                 tagVariants={customTagVariants}
-                friendlyNameFor={resolveFriendlyName}
                 groupCounts={groupCounts}
                 collapsedGroups={collapsedGroups}
                 onGroupToggle={toggleGroup}

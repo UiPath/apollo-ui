@@ -34,13 +34,6 @@ export interface OptionListProps {
    */
   tagVariants?: Record<string, string>;
   /**
-   * Maps a model to its friendly label. When set, the row's primary
-   * line shows the returned string and the technical id renders as a
-   * monospace secondary line. Returning `null`/`undefined` keeps the
-   * raw `modelName`.
-   */
-  friendlyNameFor?: (model: DiscoveryModel) => string | null | undefined;
-  /**
    * Group counts used by GroupHeader to render the right-aligned count
    * (e.g. "3 models"). Keyed by `groupKey`. When omitted, the
    * counter is derived from the visible options.
@@ -154,7 +147,6 @@ export const GroupedOptionList: React.FC<OptionListProps> = ({
   onSelect,
   tagContext,
   tagVariants,
-  friendlyNameFor,
   groupCounts,
   renderRowActions,
   renderRowMeta,
@@ -223,7 +215,6 @@ export const GroupedOptionList: React.FC<OptionListProps> = ({
                 onActivate={setActiveIndex}
                 tagContext={tagContext}
                 tagVariants={tagVariants}
-                friendlyNameFor={friendlyNameFor}
                 hideTagKinds={hideTagKinds}
                 renderMeta={renderRowMeta}
                 renderActions={renderRowActions}
@@ -246,7 +237,6 @@ export const VirtualOptionList: React.FC<OptionListProps> = ({
   onSelect,
   tagContext,
   tagVariants,
-  friendlyNameFor,
   groupCounts,
   renderRowActions,
   renderRowMeta,
@@ -385,7 +375,6 @@ export const VirtualOptionList: React.FC<OptionListProps> = ({
                 onActivate={setActiveIndex}
                 tagContext={tagContext}
                 tagVariants={tagVariants}
-                friendlyNameFor={friendlyNameFor}
                 hideTagKinds={hideTagKinds}
                 renderMeta={renderRowMeta}
                 renderActions={renderRowActions}

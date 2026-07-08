@@ -1000,13 +1000,13 @@ export const UnknownModelFallback: Story = {
 
 // ---------------------------------------------------------------------------
 // Friendly names: each row shows a human label up top with the canonical
-// model id in a monospace secondary line. In production the labels come
-// from the Discovery DTO (`model.displayName`, authored centrally); this
-// story demonstrates `friendlyNameFor`, the per-product OVERRIDE that
-// wins over the DTO and bridges models the backend has not named yet.
+// model id in a monospace secondary line. Display names are authored
+// centrally and arrive on the Discovery DTO (`model.displayName`):
+// products cannot rename models. This fixture merges names into the
+// mocks the way the gateway does server-side.
 // ---------------------------------------------------------------------------
 
-const FRIENDLY_NAMES: Record<string, string> = {
+const AUTHORED_DISPLAY_NAMES: Record<string, string> = {
   'anthropic.claude-sonnet-4-6-20260301-v1:0': 'Claude Sonnet 4.6',
   'anthropic.claude-sonnet-4-5-20250929-v1:0': 'Claude Sonnet 4.5',
   'gemini-3-flash-preview-20260215': 'Gemini 3 Flash',
@@ -1017,31 +1017,34 @@ const FRIENDLY_NAMES: Record<string, string> = {
   'shared-sonnet-4-5': 'Claude Sonnet 4.5 (Bedrock)',
 };
 
+const NAMED_MODELS: DiscoveryModel[] = MOCK_MODELS.map((m) => ({
+  ...m,
+  displayName: AUTHORED_DISPLAY_NAMES[m.modelId],
+}));
+
 export const WithFriendlyNames: Story = {
-  name: 'With friendly names (friendlyNameFor override)',
+  name: 'With friendly names (Discovery displayName)',
   render: Controlled,
   args: {
     variant: 'searchable',
-    models: MOCK_MODELS,
+    models: NAMED_MODELS,
     label: 'Model',
     required: true,
     groupBy: 'subscription',
     homeRegion: 'EU',
-    friendlyNameFor: (m) => FRIENDLY_NAMES[m.modelId] ?? null,
     value: 'anthropic.claude-sonnet-4-6-20260301-v1:0',
   },
   parameters: {
     docs: {
       description: {
         story:
-          'The override path. In production, display names arrive on ' +
-          'the Discovery DTO (`model.displayName`, authored centrally ' +
-          'like Recommended: see the Recommended from Discovery story) ' +
-          'and need no wiring. `friendlyNameFor` is the per-product ' +
-          'override and rollout bridge: it wins over the DTO, and ' +
-          'returning `null` falls through to `displayName`, then the ' +
-          'raw `modelName`. Rows show the label over a monospace ' +
-          'technical id; the trigger uses the same resolution.',
+          'Display names come from the Discovery DTO only ' +
+          '(`model.displayName`), authored centrally and merged ' +
+          'server-side like Recommended. Products cannot rename ' +
+          'models: there is no name prop, so the same model reads ' +
+          'identically in every product. Models without an authored ' +
+          'name fall back to the raw `modelName`, and search matches ' +
+          'both forms.',
       },
     },
   },
@@ -1059,12 +1062,11 @@ export const WithCustomBadges: Story = {
   render: Controlled,
   args: {
     variant: 'searchable',
-    models: MOCK_MODELS,
+    models: NAMED_MODELS,
     label: 'Model',
     required: true,
     groupBy: 'subscription',
     homeRegion: 'EU',
-    friendlyNameFor: (m) => FRIENDLY_NAMES[m.modelId] ?? null,
     // Two product-specific chips. The picker doesn't know what
     // "multimodal" or "onprem" mean: it just renders them.
     customTagsFor: (m) => {
