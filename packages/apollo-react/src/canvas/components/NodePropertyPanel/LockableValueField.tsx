@@ -1,28 +1,149 @@
 import {
   Button,
+  Calendar,
   cn,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  FileUpload,
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
   Label,
+  MultiSelect,
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
   Textarea,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@uipath/apollo-wind';
-import { ChevronDown, Code2, Lock, LockOpen, Sparkles, Type } from 'lucide-react';
+import {
+  Calendar as CalendarIcon,
+  ChevronDown,
+  Code2,
+  Hash,
+  List,
+  ListChecks,
+  Lock,
+  LockOpen,
+  type LucideIcon,
+  Paperclip,
+  Sparkles,
+  ToggleLeft,
+  Type,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useId } from 'react';
 
 export type LockableValueFieldMode = 'fixed' | 'expression';
 
+export type LockableFieldType =
+  | 'string'
+  | 'integer'
+  | 'date'
+  | 'boolean'
+  | 'single-select'
+  | 'multi-select'
+  | 'file';
+
+interface FieldTypeMeta {
+  label: string;
+  icon: LucideIcon;
+  supportsExpression: boolean;
+  fixedLabel: string;
+  fixedDescription: string;
+}
+
+export const FIELD_TYPE_META: Record<LockableFieldType, FieldTypeMeta> = {
+  string: {
+    label: 'String',
+    icon: Type,
+    supportsExpression: true,
+    fixedLabel: 'Fixed value',
+    fixedDescription: 'Use a literal string value',
+  },
+  integer: {
+    label: 'Integer',
+    icon: Hash,
+    supportsExpression: true,
+    fixedLabel: 'Fixed value',
+    fixedDescription: 'Use a literal number value',
+  },
+  date: {
+    label: 'Date',
+    icon: CalendarIcon,
+    supportsExpression: true,
+    fixedLabel: 'Fixed date',
+    fixedDescription: 'Use a literal date value',
+  },
+  boolean: {
+    label: 'Boolean',
+    icon: ToggleLeft,
+    supportsExpression: true,
+    fixedLabel: 'Fixed value',
+    fixedDescription: 'Use a literal true or false value',
+  },
+  'single-select': {
+    label: 'Single select',
+    icon: List,
+    supportsExpression: false,
+    fixedLabel: 'Fixed value',
+    fixedDescription: 'Choose one option',
+  },
+  'multi-select': {
+    label: 'Multiselect',
+    icon: ListChecks,
+    supportsExpression: false,
+    fixedLabel: 'Fixed value',
+    fixedDescription: 'Choose one or more options',
+  },
+  file: {
+    label: 'File',
+    icon: Paperclip,
+    supportsExpression: false,
+    fixedLabel: 'Fixed value',
+    fixedDescription: 'Upload a file',
+  },
+};
+
+const FIELD_TYPE_ORDER: LockableFieldType[] = [
+  'string',
+  'integer',
+  'date',
+  'boolean',
+  'single-select',
+  'multi-select',
+  'file',
+];
+
+export const DEMO_SELECT_OPTIONS = [
+  { label: 'Option 1', value: 'option-1' },
+  { label: 'Option 2', value: 'option-2' },
+  { label: 'Option 3', value: 'option-3' },
+];
+
+export function parseListValue(value: string): string[] {
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export interface LockableValueFieldProps {
-  /** Current field value. */
+  /** Current field value. Encoding depends on fieldType (e.g. multi-select is a JSON array string). */
   value?: string;
   /** Called when the user edits the value (only fires while unlocked). */
   onValueChange?: (value: string) => void;
@@ -30,16 +151,22 @@ export interface LockableValueFieldProps {
   locked?: boolean;
   /** Called when the user toggles the lock. */
   onLockedChange?: (locked: boolean) => void;
-  /** Fixed value vs. JS expression. Defaults to 'fixed'. */
+  /** Fixed value vs. JS expression. Defaults to 'fixed'. Ignored for types that don't support expressions. */
   mode?: LockableValueFieldMode;
   /** Called when the user switches modes. */
   onModeChange?: (mode: LockableValueFieldMode) => void;
+  /** The field's data type. Defaults to 'string'. Determines which control renders the value. */
+  fieldType?: LockableFieldType;
+  /** Called when the user switches the field type. */
+  onFieldTypeChange?: (fieldType: LockableFieldType) => void;
   /** Shows a required-field asterisk next to the default label. Ignored when `label` is provided. */
   required?: boolean;
   /** Overrides the default mode-based label (e.g. a field name instead of "String value"). */
   label?: ReactNode;
   /** Extra content rendered after the built-in AI assist / Insert variable buttons (e.g. a delete button). */
   headerActions?: ReactNode;
+  /** Forces the header row into its narrow-container icon-only layout, regardless of actual width. For demos/comparisons. */
+  compact?: boolean;
   id?: string;
   className?: string;
 }
@@ -55,12 +182,14 @@ const FIELD_PLACEHOLDER: Record<LockableValueFieldMode, string> = {
 };
 
 /**
- * LockableValueField — a string field that can be locked to read-only and
- * switched between a literal value and a JS expression.
+ * LockableValueField — a field that can be locked to read-only, typed as one
+ * of several data types, and (for scalar types) switched between a literal
+ * value and a JS expression.
  *
  * Prototype: the expression mode is styled as code (monospace) but does not
  * yet carry real syntax highlighting or evaluation. See ExpressionField for
- * the direction a full code-editing surface would take.
+ * the direction a full code-editing surface would take. Select/multiselect
+ * options are demo placeholders; file uploads aren't persisted anywhere.
  */
 export function LockableValueField({
   value = '',
@@ -69,16 +198,23 @@ export function LockableValueField({
   onLockedChange,
   mode = 'fixed',
   onModeChange,
+  fieldType = 'string',
+  onFieldTypeChange,
   required,
   label,
   headerActions,
+  compact,
   id,
   className,
 }: LockableValueFieldProps) {
   const promptId = useId();
+  const typeMeta = FIELD_TYPE_META[fieldType];
+  const effectiveMode = typeMeta.supportsExpression ? mode : 'fixed';
+  const collapsedTextClass = cn('@max-[259px]:hidden', compact && '!hidden');
+  const collapsedPaddingClass = cn('@max-[259px]:px-1.5', compact && '!px-1.5');
 
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
+    <div className={cn('@container flex flex-col gap-1.5', className)}>
       <div className="flex items-center gap-1">
         {label ?? (
           <Label htmlFor={id} className="text-xs font-medium text-foreground-muted">
@@ -86,54 +222,280 @@ export function LockableValueField({
             {required && <span className="ml-0.5 text-destructive">*</span>}
           </Label>
         )}
-        <div className="ml-auto flex items-center gap-0.5">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                aria-label="AI assist"
-                title="AI assist"
-                className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-              >
-                <Sparkles size={12} />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor={promptId} className="text-xs font-medium text-foreground-muted">
-                  Describe what you want
-                </Label>
-                <Textarea
-                  id={promptId}
-                  rows={3}
-                  placeholder="Display a value from the previous step"
-                  className="resize-none text-sm"
-                />
-              </div>
-              <span className="block text-[11px] text-foreground-subtle">
-                Output: String expression
-              </span>
-              <Button size="sm" className="w-full">
-                Generate
-              </Button>
-            </PopoverContent>
-          </Popover>
-          <button
-            type="button"
-            aria-label="Insert variable"
-            title="Insert variable"
-            className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-          >
-            <span className="font-mono text-[10px]">{'{x}'}</span>
-            <span>Insert</span>
-            <ChevronDown size={9} />
-          </button>
-          {headerActions}
-        </div>
+        <TooltipProvider delayDuration={300}>
+          <div className="ml-auto flex items-center gap-0.5">
+            {onFieldTypeChange && (
+              <DropdownMenu>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Field type"
+                        className={cn(
+                          'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                          collapsedPaddingClass
+                        )}
+                      >
+                        <typeMeta.icon size={12} />
+                        <span className={collapsedTextClass}>{typeMeta.label}</span>
+                        <ChevronDown size={9} className={collapsedTextClass} />
+                      </button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Change field type</TooltipContent>
+                </Tooltip>
+                <DropdownMenuContent align="end" className="w-44">
+                  {FIELD_TYPE_ORDER.map((type) => {
+                    const meta = FIELD_TYPE_META[type];
+                    const isActive = type === fieldType;
+                    return (
+                      <DropdownMenuItem key={type} onClick={() => onFieldTypeChange(type)}>
+                        <meta.icon className={isActive ? 'text-brand' : 'text-foreground-muted'} />
+                        <span className={cn(isActive && 'font-medium text-brand')}>
+                          {meta.label}
+                        </span>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <Popover>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="AI assist"
+                      className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                    >
+                      <Sparkles size={12} />
+                    </button>
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Generate a value with AI</TooltipContent>
+              </Tooltip>
+              <PopoverContent align="end" className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor={promptId} className="text-xs font-medium text-foreground-muted">
+                    Describe what you want
+                  </Label>
+                  <Textarea
+                    id={promptId}
+                    rows={3}
+                    placeholder="Display a value from the previous step"
+                    className="resize-none text-sm"
+                  />
+                </div>
+                <span className="block text-[11px] text-foreground-subtle">
+                  Output: String expression
+                </span>
+                <Button size="sm" className="w-full">
+                  Generate
+                </Button>
+              </PopoverContent>
+            </Popover>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Insert variable"
+                  className={cn(
+                    'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                    collapsedPaddingClass
+                  )}
+                >
+                  <span className="font-mono text-[10px]">{'{x}'}</span>
+                  <span className={collapsedTextClass}>Insert</span>
+                  <ChevronDown size={9} className={collapsedTextClass} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Insert a variable from a previous step</TooltipContent>
+            </Tooltip>
+            {headerActions}
+          </div>
+        </TooltipProvider>
       </div>
 
-      <InputGroup>
-        <InputGroupAddon align="inline-start">
+      {typeMeta.supportsExpression ? (
+        <InputGroup>
+          <InputGroupAddon align="inline-start">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <InputGroupButton
+                  icon
+                  size="3xs"
+                  aria-label={locked ? 'Locked. Click to unlock.' : 'Unlocked. Click to lock.'}
+                >
+                  {locked ? <Lock /> : <LockOpen />}
+                </InputGroupButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem
+                  className="flex-col items-start gap-0.5 py-2"
+                  onClick={() => onLockedChange?.(false)}
+                >
+                  <div className="flex items-center gap-2">
+                    <LockOpen
+                      size={13}
+                      className={!locked ? 'text-brand' : 'text-foreground-muted'}
+                    />
+                    <span
+                      className={cn(
+                        'text-xs font-medium',
+                        !locked ? 'text-brand' : 'text-foreground'
+                      )}
+                    >
+                      Unlocked
+                    </span>
+                  </div>
+                  <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
+                    User can edit this field
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex-col items-start gap-0.5 py-2"
+                  onClick={() => onLockedChange?.(true)}
+                >
+                  <div className="flex items-center gap-2">
+                    <Lock size={13} className={locked ? 'text-brand' : 'text-foreground-muted'} />
+                    <span
+                      className={cn(
+                        'text-xs font-medium',
+                        locked ? 'text-brand' : 'text-foreground'
+                      )}
+                    >
+                      Locked
+                    </span>
+                  </div>
+                  <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
+                    User sees this field as read-only
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </InputGroupAddon>
+
+          {effectiveMode === 'expression' ? (
+            <InputGroupInput
+              id={id}
+              readOnly={locked}
+              value={value}
+              onChange={(e) => onValueChange?.(e.target.value)}
+              placeholder={FIELD_PLACEHOLDER.expression}
+              className="font-mono"
+            />
+          ) : fieldType === 'boolean' ? (
+            <div className="flex h-full flex-1 items-center px-3">
+              <Switch
+                id={id}
+                checked={value === 'true'}
+                onCheckedChange={(checked) => onValueChange?.(String(checked))}
+                disabled={locked}
+              />
+            </div>
+          ) : fieldType === 'date' ? (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  id={id}
+                  data-slot="input-group-control"
+                  disabled={locked}
+                  className="flex h-full flex-1 items-center text-left text-sm text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {value ? (
+                    new Date(value).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
+                  ) : (
+                    <span className="text-muted-foreground">Pick a date</span>
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={value ? new Date(value) : undefined}
+                  onSelect={(date) => onValueChange?.(date ? date.toISOString() : '')}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <InputGroupInput
+              id={id}
+              type={fieldType === 'integer' ? 'number' : 'text'}
+              readOnly={locked}
+              value={value}
+              onChange={(e) => onValueChange?.(e.target.value)}
+              placeholder={FIELD_PLACEHOLDER.fixed}
+            />
+          )}
+
+          <InputGroupAddon align="inline-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <InputGroupButton icon size="3xs" aria-label="Choose value type">
+                  <typeMeta.icon />
+                </InputGroupButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem
+                  className="flex-col items-start gap-0.5 py-2"
+                  onClick={() => onModeChange?.('fixed')}
+                >
+                  <div className="flex items-center gap-2">
+                    <typeMeta.icon
+                      size={13}
+                      className={effectiveMode === 'fixed' ? 'text-brand' : 'text-foreground-muted'}
+                    />
+                    <span
+                      className={cn(
+                        'text-xs font-medium',
+                        effectiveMode === 'fixed' ? 'text-brand' : 'text-foreground'
+                      )}
+                    >
+                      {typeMeta.fixedLabel}
+                    </span>
+                  </div>
+                  <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
+                    {typeMeta.fixedDescription}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex-col items-start gap-0.5 py-2"
+                  onClick={() => onModeChange?.('expression')}
+                >
+                  <div className="flex items-center gap-2">
+                    <Code2
+                      size={13}
+                      className={
+                        effectiveMode === 'expression' ? 'text-brand' : 'text-foreground-muted'
+                      }
+                    />
+                    <span
+                      className={cn(
+                        'text-xs font-medium',
+                        effectiveMode === 'expression' ? 'text-brand' : 'text-foreground'
+                      )}
+                    >
+                      Expression
+                    </span>
+                  </div>
+                  <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
+                    Use a JS expression
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </InputGroupAddon>
+        </InputGroup>
+      ) : (
+        <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <InputGroupButton
@@ -185,73 +547,42 @@ export function LockableValueField({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </InputGroupAddon>
 
-        <InputGroupInput
-          id={id}
-          readOnly={locked}
-          value={value}
-          onChange={(e) => onValueChange?.(e.target.value)}
-          placeholder={FIELD_PLACEHOLDER[mode]}
-          className={mode === 'expression' ? 'font-mono' : undefined}
-        />
+          {fieldType === 'single-select' && (
+            <Select value={value || undefined} onValueChange={onValueChange} disabled={locked}>
+              <SelectTrigger id={id} className="flex-1">
+                <SelectValue placeholder="Select an option" />
+              </SelectTrigger>
+              <SelectContent>
+                {DEMO_SELECT_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
-        <InputGroupAddon align="inline-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <InputGroupButton icon size="3xs" aria-label="Choose value type">
-                <Type />
-              </InputGroupButton>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem
-                className="flex-col items-start gap-0.5 py-2"
-                onClick={() => onModeChange?.('fixed')}
-              >
-                <div className="flex items-center gap-2">
-                  <Type
-                    size={13}
-                    className={mode === 'fixed' ? 'text-brand' : 'text-foreground-muted'}
-                  />
-                  <span
-                    className={cn(
-                      'text-xs font-medium',
-                      mode === 'fixed' ? 'text-brand' : 'text-foreground'
-                    )}
-                  >
-                    Fixed value
-                  </span>
-                </div>
-                <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
-                  Use a literal string value
-                </span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex-col items-start gap-0.5 py-2"
-                onClick={() => onModeChange?.('expression')}
-              >
-                <div className="flex items-center gap-2">
-                  <Code2
-                    size={13}
-                    className={mode === 'expression' ? 'text-brand' : 'text-foreground-muted'}
-                  />
-                  <span
-                    className={cn(
-                      'text-xs font-medium',
-                      mode === 'expression' ? 'text-brand' : 'text-foreground'
-                    )}
-                  >
-                    Expression
-                  </span>
-                </div>
-                <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
-                  Use a JS expression
-                </span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </InputGroupAddon>
-      </InputGroup>
+          {fieldType === 'multi-select' && (
+            <MultiSelect
+              className="flex-1"
+              options={DEMO_SELECT_OPTIONS}
+              selected={parseListValue(value)}
+              onChange={(selected) => onValueChange?.(JSON.stringify(selected))}
+              placeholder="Select options..."
+              disabled={locked}
+            />
+          )}
+
+          {fieldType === 'file' && (
+            <FileUpload
+              className="flex-1"
+              disabled={locked}
+              onFilesChange={(files) => onValueChange?.(files.map((f) => f.name).join(', '))}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

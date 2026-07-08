@@ -24,16 +24,18 @@ import {
   Card,
   CardContent,
   cn,
+  DatePicker,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  FileUpload,
   Input,
+  Label,
   MetadataForm,
   MultiSelect,
   ScrollableTabsList,
-  Search as SearchInput,
   Select,
   SelectContent,
   SelectItem,
@@ -44,8 +46,13 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Textarea,
   ToggleGroup,
   ToggleGroupItem,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@uipath/apollo-wind';
 import {
   apolloCoreDarkHCMonaco,
@@ -65,22 +72,30 @@ import {
   CircleOff,
   Code2,
   Copy,
+  Eye,
   FileBracesCorner,
   GitFork,
   Globe,
   GripVertical,
+  Pencil,
   Play,
   Plus,
   Search,
   Sparkles,
   Type,
+  Upload,
   UserRoundCheck,
   X,
 } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import type { LockableValueFieldMode } from './LockableValueField';
-import { LockableValueField } from './LockableValueField';
+import type { LockableFieldType, LockableValueFieldMode } from './LockableValueField';
+import {
+  DEMO_SELECT_OPTIONS,
+  FIELD_TYPE_META,
+  LockableValueField,
+  parseListValue,
+} from './LockableValueField';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
 // @monaco-editor/react uses a CJS build without an `exports` field, which
@@ -2510,12 +2525,37 @@ interface LockableCase {
   value: string;
   locked: boolean;
   mode: LockableValueFieldMode;
+  fieldType: LockableFieldType;
 }
 
 const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
-  { id: 1, title: 'Invoice Number', required: true, value: '', locked: true, mode: 'fixed' },
-  { id: 2, title: 'Submission Date', required: true, value: '', locked: true, mode: 'fixed' },
-  { id: 3, title: 'Approved Amount', required: true, value: '', locked: true, mode: 'fixed' },
+  {
+    id: 1,
+    title: 'Invoice Number',
+    required: true,
+    value: '',
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'string',
+  },
+  {
+    id: 2,
+    title: 'Submission Date',
+    required: true,
+    value: '',
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'date',
+  },
+  {
+    id: 3,
+    title: 'Approved Amount',
+    required: true,
+    value: '',
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'integer',
+  },
 ];
 
 function LockableCaseRow({
@@ -2530,6 +2570,9 @@ function LockableCaseRow({
   onLockedChange,
   mode,
   onModeChange,
+  fieldType,
+  onFieldTypeChange,
+  compact,
 }: {
   id: number;
   caseTitle: string;
@@ -2542,6 +2585,9 @@ function LockableCaseRow({
   onLockedChange: (locked: boolean) => void;
   mode: LockableValueFieldMode;
   onModeChange: (mode: LockableValueFieldMode) => void;
+  fieldType: LockableFieldType;
+  onFieldTypeChange: (fieldType: LockableFieldType) => void;
+  compact?: boolean;
 }) {
   const [editingTitle, setEditingTitle] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -2613,42 +2659,92 @@ function LockableCaseRow({
         onLockedChange={onLockedChange}
         mode={mode}
         onModeChange={onModeChange}
+        fieldType={fieldType}
+        onFieldTypeChange={onFieldTypeChange}
+        compact={compact}
       />
     </div>
   );
 }
 
-const DELIVERY_CHANNEL_OPTIONS = [
-  { label: 'Slack', value: 'slack' },
-  { label: 'Email', value: 'email' },
-  { label: 'Action Center', value: 'action-center' },
-  { label: 'Microsoft Teams', value: 'teams' },
-];
-
-const ASSIGNMENT_GROUP_OPTIONS = [
-  { label: 'All users of group', value: 'all' },
-  { label: 'Specific user', value: 'specific' },
-  { label: 'Group manager', value: 'manager' },
-];
-
-function LockableValueFieldStory() {
+function QuickFormStory() {
   const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
   const nextIdRef = useRef(4);
-  const [deliveryChannels, setDeliveryChannels] = useState<string[]>([]);
-  const [assignmentSearch, setAssignmentSearch] = useState('');
-  const [assignmentGroup, setAssignmentGroup] = useState('all');
-  const [formView, setFormView] = useState<'ui' | 'json'>('ui');
+  const [formView, setFormView] = useState<'edit' | 'preview' | 'json'>('edit');
+  const [formTitle, setFormTitle] = useState('Quick Approve');
+  const [formDescription, setFormDescription] = useState('Add a description');
+  const [editingFormTitle, setEditingFormTitle] = useState(false);
+  const [editingFormDescription, setEditingFormDescription] = useState(false);
+  const formTitleRef = useRef<HTMLInputElement>(null);
+  const formDescriptionRef = useRef<HTMLInputElement>(null);
+  const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(DEFAULT_LOCKABLE_CASES, null, 2));
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [showcaseValue, setShowcaseValue] = useState('');
+  const [showcaseLocked, setShowcaseLocked] = useState(true);
+  const [showcaseMode, setShowcaseMode] = useState<LockableValueFieldMode>('fixed');
+  const [showcaseFieldType, setShowcaseFieldType] = useState<LockableFieldType>('string');
+
+  const handleShowcaseFieldTypeChange = (type: LockableFieldType) => {
+    setShowcaseFieldType(type);
+    setShowcaseValue('');
+    if (!FIELD_TYPE_META[type].supportsExpression) {
+      setShowcaseMode('fixed');
+    }
+  };
+
+  useEffect(() => {
+    if (formView !== 'json') {
+      setJsonDraft(JSON.stringify(cases, null, 2));
+      setJsonError(null);
+    }
+  }, [cases, formView]);
+
+  const handleJsonChange = (value: string) => {
+    setJsonDraft(value);
+    try {
+      const parsed = JSON.parse(value);
+      if (!Array.isArray(parsed)) {
+        setJsonError('Expected a JSON array of fields.');
+        return;
+      }
+      setCases(parsed);
+      setJsonError(null);
+    } catch {
+      setJsonError('Invalid JSON.');
+    }
+  };
 
   const addCase = () => {
     const id = nextIdRef.current++;
     setCases((prev) => [
       ...prev,
-      { id, title: `Field ${id}`, required: true, value: '', locked: true, mode: 'fixed' },
+      {
+        id,
+        title: `Field ${id}`,
+        required: true,
+        value: '',
+        locked: true,
+        mode: 'fixed',
+        fieldType: 'string',
+      },
     ]);
   };
   const deleteCase = (id: number) => setCases((prev) => prev.filter((c) => c.id !== id));
   const updateCase = (id: number, patch: Partial<LockableCase>) =>
     setCases((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  const updateCaseFieldType = (id: number, fieldType: LockableFieldType) =>
+    setCases((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              fieldType,
+              value: '',
+              mode: FIELD_TYPE_META[fieldType].supportsExpression ? c.mode : 'fixed',
+            }
+          : c
+      )
+    );
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
@@ -2666,150 +2762,375 @@ function LockableValueFieldStory() {
   };
 
   return (
-    <PanelFrame>
-      <NodePropertyPanel
-        panelTitle="Properties"
-        nodeIcon={<UserRoundCheck />}
-        nodeLabel="Quick Approve"
-        nodeCategory="Quick approve/reject decision for the extracted invoice."
-        action={<DebugButton />}
-        onClose={() => {}}
-        contentInset="0.875rem"
-        className="h-[760px]"
-      >
-        <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-          <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-            <TabsList className={TAB_LIST_CLASS}>
-              <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                Parameters
-              </TabsTrigger>
-              <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                Error handling
-              </TabsTrigger>
-              <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                Advanced
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          <TabsContent
-            value="parameters"
-            className="mt-0 flex min-h-0 flex-1 flex-col gap-4 overflow-auto py-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
-          >
-            {/* Delivery channel */}
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-foreground-muted">Delivery channel</span>
-              <MultiSelect
-                options={DELIVERY_CHANNEL_OPTIONS}
-                selected={deliveryChannels}
-                onChange={setDeliveryChannels}
-                placeholder="Select channels..."
-              />
-              <span className="text-[11px] leading-4 text-foreground-subtle">
-                Quick approve/reject decision for the extracted invoice.
-              </span>
+    <div className="flex items-start gap-8">
+      <PanelFrame>
+        <NodePropertyPanel
+          panelTitle="Properties"
+          nodeIcon={<UserRoundCheck />}
+          nodeLabel="Quick Approve"
+          nodeCategory="Quick approve/reject decision for the extracted invoice."
+          action={<DebugButton />}
+          onClose={() => {}}
+          contentInset="0.875rem"
+          className="h-[760px]"
+        >
+          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <TabsList className={TAB_LIST_CLASS}>
+                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                  Parameters
+                </TabsTrigger>
+                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                  Error handling
+                </TabsTrigger>
+                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                  Advanced
+                </TabsTrigger>
+              </TabsList>
             </div>
-
-            {/* Assignment criteria */}
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-foreground-muted">Assignment criteria</span>
-              <div className="flex gap-2">
-                <SearchInput
-                  className="flex-1"
-                  placeholder="Search group"
-                  value={assignmentSearch}
-                  onChange={setAssignmentSearch}
-                />
-                <Select value={assignmentGroup} onValueChange={setAssignmentGroup}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="All users of group" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ASSIGNMENT_GROUP_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Quick form */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-foreground-muted">Quick form</span>
-                <ToggleGroup
-                  type="single"
-                  size="xs"
-                  value={formView}
-                  onValueChange={(v) => v && setFormView(v as 'ui' | 'json')}
-                >
-                  <ToggleGroupItem value="ui">UI</ToggleGroupItem>
-                  <ToggleGroupItem value="json">JSON</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-              <Card>
-                <CardContent className="flex flex-col gap-4 p-4">
-                  {formView === 'ui' ? (
-                    <>
-                      <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleDragEnd}
-                      >
-                        <SortableContext
-                          items={cases.map((c) => c.id)}
-                          strategy={verticalListSortingStrategy}
+            <TabsContent
+              value="parameters"
+              className="mt-0 flex min-h-0 flex-1 flex-col gap-4 overflow-auto py-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
+            >
+              {/* Quick form */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-foreground-muted">Quick form</span>
+                  <TooltipProvider delayDuration={300}>
+                    <ToggleGroup
+                      type="single"
+                      size="xs"
+                      spacing={2}
+                      value={formView}
+                      onValueChange={(v) => v && setFormView(v as 'edit' | 'preview' | 'json')}
+                    >
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <ToggleGroupItem
+                            value="edit"
+                            aria-label="Edit"
+                            className="!size-7 !rounded-lg !border-none !px-0 text-foreground-subtle transition hover:!bg-surface-overlay hover:!text-foreground data-[state=on]:!bg-surface-overlay data-[state=on]:!text-brand"
+                          >
+                            <Pencil size={12} />
+                          </ToggleGroupItem>
+                        </TooltipTrigger>
+                        <TooltipContent>Edit</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <ToggleGroupItem
+                            value="preview"
+                            aria-label="Preview"
+                            className="!size-7 !rounded-lg !border-none !px-0 text-foreground-subtle transition hover:!bg-surface-overlay hover:!text-foreground data-[state=on]:!bg-surface-overlay data-[state=on]:!text-brand"
+                          >
+                            <Eye size={12} />
+                          </ToggleGroupItem>
+                        </TooltipTrigger>
+                        <TooltipContent>Preview</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <ToggleGroupItem
+                            value="json"
+                            aria-label="JSON"
+                            className="!size-7 !rounded-lg !border-none !px-0 text-foreground-subtle transition hover:!bg-surface-overlay hover:!text-foreground data-[state=on]:!bg-surface-overlay data-[state=on]:!text-brand"
+                          >
+                            <Code2 size={12} />
+                          </ToggleGroupItem>
+                        </TooltipTrigger>
+                        <TooltipContent>JSON</TooltipContent>
+                      </Tooltip>
+                    </ToggleGroup>
+                  </TooltipProvider>
+                </div>
+                <Card>
+                  <CardContent className="flex flex-col gap-4 p-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
+                        <Upload />
+                      </div>
+                      <div className="flex min-w-0 flex-1 flex-col justify-center">
+                        {editingFormTitle ? (
+                          <input
+                            ref={formTitleRef}
+                            value={formTitle}
+                            onChange={(e) => setFormTitle(e.target.value)}
+                            onBlur={() => setEditingFormTitle(false)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === 'Escape')
+                                setEditingFormTitle(false);
+                            }}
+                            className="rounded bg-surface-overlay px-1 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                            autoFocus
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingFormTitle(true);
+                              setTimeout(() => formTitleRef.current?.select(), 0);
+                            }}
+                            className="truncate rounded px-1 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                          >
+                            {formTitle}
+                          </button>
+                        )}
+                        {editingFormDescription ? (
+                          <input
+                            ref={formDescriptionRef}
+                            value={formDescription}
+                            onChange={(e) => setFormDescription(e.target.value)}
+                            onBlur={() => setEditingFormDescription(false)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === 'Escape')
+                                setEditingFormDescription(false);
+                            }}
+                            className="rounded bg-surface-overlay px-1 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                            autoFocus
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingFormDescription(true);
+                              setTimeout(() => formDescriptionRef.current?.select(), 0);
+                            }}
+                            className="truncate rounded px-1 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                          >
+                            {formDescription}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {formView === 'edit' && (
+                      <>
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragEnd={handleDragEnd}
                         >
-                          <div className="flex flex-col gap-4">
-                            {cases.map((c) => (
-                              <LockableCaseRow
-                                key={c.id}
-                                id={c.id}
-                                caseTitle={c.title}
-                                onTitleChange={(title) => updateCase(c.id, { title })}
-                                required={c.required}
-                                onDelete={() => deleteCase(c.id)}
-                                value={c.value}
-                                onValueChange={(value) => updateCase(c.id, { value })}
-                                locked={c.locked}
-                                onLockedChange={(locked) => updateCase(c.id, { locked })}
-                                mode={c.mode}
-                                onModeChange={(mode) => updateCase(c.id, { mode })}
-                              />
-                            ))}
-                          </div>
-                        </SortableContext>
-                      </DndContext>
-                      <button
-                        type="button"
-                        onClick={addCase}
-                        className="flex cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
-                      >
-                        <Plus size={12} />
-                        Add case
-                      </button>
-                    </>
-                  ) : (
-                    <pre className="overflow-auto whitespace-pre-wrap text-xs text-foreground-muted">
-                      {JSON.stringify(cases, null, 2)}
-                    </pre>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          <TabsContent value="error-handling" className="mt-0" />
-          <TabsContent value="advanced" className="mt-0" />
-        </Tabs>
-      </NodePropertyPanel>
-    </PanelFrame>
+                          <SortableContext
+                            items={cases.map((c) => c.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="flex flex-col gap-4">
+                              {cases.map((c) => (
+                                <LockableCaseRow
+                                  key={c.id}
+                                  id={c.id}
+                                  caseTitle={c.title}
+                                  onTitleChange={(title) => updateCase(c.id, { title })}
+                                  required={c.required}
+                                  onDelete={() => deleteCase(c.id)}
+                                  value={c.value}
+                                  onValueChange={(value) => updateCase(c.id, { value })}
+                                  locked={c.locked}
+                                  onLockedChange={(locked) => updateCase(c.id, { locked })}
+                                  mode={c.mode}
+                                  onModeChange={(mode) => updateCase(c.id, { mode })}
+                                  fieldType={c.fieldType}
+                                  compact
+                                  onFieldTypeChange={(fieldType) =>
+                                    updateCaseFieldType(c.id, fieldType)
+                                  }
+                                />
+                              ))}
+                            </div>
+                          </SortableContext>
+                        </DndContext>
+                        <button
+                          type="button"
+                          onClick={addCase}
+                          className="flex cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                        >
+                          <Plus size={12} />
+                          Add field
+                        </button>
+                      </>
+                    )}
+                    {formView === 'preview' && (
+                      <div className="flex flex-col gap-4">
+                        {cases.map((c) => {
+                          const isExpression =
+                            FIELD_TYPE_META[c.fieldType].supportsExpression &&
+                            c.mode === 'expression';
+                          return (
+                            <div key={c.id} className="flex flex-col gap-1.5">
+                              <Label
+                                htmlFor={`preview-${c.id}`}
+                                className="text-xs font-medium text-foreground-muted"
+                              >
+                                {c.title}
+                                {c.required && <span className="ml-0.5 text-destructive">*</span>}
+                              </Label>
+                              {isExpression ? (
+                                <Input
+                                  id={`preview-${c.id}`}
+                                  readOnly={c.locked}
+                                  value={c.value}
+                                  onChange={(e) => updateCase(c.id, { value: e.target.value })}
+                                  placeholder="Enter an expression"
+                                  className="font-mono"
+                                />
+                              ) : c.fieldType === 'boolean' ? (
+                                <Switch
+                                  id={`preview-${c.id}`}
+                                  checked={c.value === 'true'}
+                                  onCheckedChange={(checked) =>
+                                    updateCase(c.id, { value: String(checked) })
+                                  }
+                                  disabled={c.locked}
+                                />
+                              ) : c.fieldType === 'date' ? (
+                                <DatePicker
+                                  disabled={c.locked}
+                                  value={c.value ? new Date(c.value) : undefined}
+                                  onValueChange={(date) =>
+                                    updateCase(c.id, { value: date ? date.toISOString() : '' })
+                                  }
+                                />
+                              ) : c.fieldType === 'single-select' ? (
+                                <Select
+                                  value={c.value || undefined}
+                                  onValueChange={(value) => updateCase(c.id, { value })}
+                                  disabled={c.locked}
+                                >
+                                  <SelectTrigger id={`preview-${c.id}`}>
+                                    <SelectValue placeholder="Select an option" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {DEMO_SELECT_OPTIONS.map((option) => (
+                                      <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : c.fieldType === 'multi-select' ? (
+                                <MultiSelect
+                                  options={DEMO_SELECT_OPTIONS}
+                                  selected={parseListValue(c.value)}
+                                  onChange={(selected) =>
+                                    updateCase(c.id, { value: JSON.stringify(selected) })
+                                  }
+                                  placeholder="Select options..."
+                                  disabled={c.locked}
+                                />
+                              ) : c.fieldType === 'file' ? (
+                                <FileUpload
+                                  disabled={c.locked}
+                                  onFilesChange={(files) =>
+                                    updateCase(c.id, { value: files.map((f) => f.name).join(', ') })
+                                  }
+                                />
+                              ) : (
+                                <Input
+                                  id={`preview-${c.id}`}
+                                  type={c.fieldType === 'integer' ? 'number' : 'text'}
+                                  readOnly={c.locked}
+                                  value={c.value}
+                                  onChange={(e) => updateCase(c.id, { value: e.target.value })}
+                                  placeholder="Enter a value"
+                                />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {formView === 'json' && (
+                      <div className="flex flex-col gap-1.5">
+                        <Textarea
+                          value={jsonDraft}
+                          onChange={(e) => handleJsonChange(e.target.value)}
+                          rows={14}
+                          spellCheck={false}
+                          className="resize-none font-mono text-xs"
+                        />
+                        {jsonError && <span className="text-xs text-destructive">{jsonError}</span>}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            <TabsContent value="error-handling" className="mt-0" />
+            <TabsContent value="advanced" className="mt-0" />
+          </Tabs>
+        </NodePropertyPanel>
+      </PanelFrame>
+
+      {/* Component showcase */}
+      <div className="flex w-[320px] shrink-0 flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-raised p-5">
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-semibold text-foreground">LockableValueField</span>
+          <span className="text-xs leading-4 text-foreground-muted">
+            A reusable string field that can be locked to read-only and switched between a literal
+            value and a JS expression.
+          </span>
+        </div>
+        <ul className="flex list-disc flex-col gap-1.5 pl-4 text-xs leading-4 text-foreground-muted">
+          <li>
+            Left lock icon toggles Unlocked / Locked. Locked fields are read-only, not disabled.
+          </li>
+          <li>
+            Right value-mode icon switches between Fixed value and Expression, updating the value
+            styling. Only shown for types an expression can produce.
+          </li>
+          <li>
+            Field type dropdown swaps the control itself: String, Integer, Date, Boolean, Single
+            select, Multiselect, and File each render their own matching input.
+          </li>
+          <li>Built-in AI-assist popover to describe and generate a value.</li>
+          <li>Insert-variable affordance for binding to upstream data.</li>
+          <li>Built entirely on apollo-wind&apos;s InputGroup primitive.</li>
+          <li>
+            Header row is responsive (container query): the type, AI-assist, and insert-variable
+            controls collapse to icon-only once the field gets too narrow for their labels.
+          </li>
+        </ul>
+        <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
+            Full view
+          </span>
+          <LockableValueField
+            label={<Label className="text-xs font-medium text-foreground-muted">Label</Label>}
+            value={showcaseValue}
+            onValueChange={setShowcaseValue}
+            locked={showcaseLocked}
+            onLockedChange={setShowcaseLocked}
+            mode={showcaseMode}
+            onModeChange={setShowcaseMode}
+            fieldType={showcaseFieldType}
+            onFieldTypeChange={handleShowcaseFieldTypeChange}
+          />
+        </div>
+        <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
+            Compact view (narrow container)
+          </span>
+          <div className="w-[200px]">
+            <LockableValueField
+              label={<Label className="text-xs font-medium text-foreground-muted">Label</Label>}
+              value={showcaseValue}
+              onValueChange={setShowcaseValue}
+              locked={showcaseLocked}
+              onLockedChange={setShowcaseLocked}
+              mode={showcaseMode}
+              onModeChange={setShowcaseMode}
+              fieldType={showcaseFieldType}
+              onFieldTypeChange={handleShowcaseFieldTypeChange}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
-export const LockableField: Story = {
-  name: 'Lockable Field',
-  render: () => <LockableValueFieldStory />,
+export const QuickForm: Story = {
+  name: 'Quick Form',
+  render: () => <QuickFormStory />,
 };
 
 export const Output: Story = {
