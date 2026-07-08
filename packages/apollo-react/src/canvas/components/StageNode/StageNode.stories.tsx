@@ -158,10 +158,18 @@ const sampleTasks: StageTaskItem[][] = [
       id: 'address_verification',
       label: 'Address Verification and a really long label that might wrap',
       icon: <VerificationIcon />,
+      isRequired: true,
     },
     { id: 'property_verification', label: 'Property Verification', icon: <VerificationIcon /> },
   ],
-  [{ id: 'processing_review', label: 'Processing Review', icon: <ProcessIcon /> }],
+  [
+    {
+      id: 'processing_review',
+      label: 'Processing Review',
+      icon: <ProcessIcon />,
+      isRequired: true,
+    },
+  ],
 ];
 
 export const Default: Story = {

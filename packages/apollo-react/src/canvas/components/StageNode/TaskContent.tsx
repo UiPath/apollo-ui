@@ -158,7 +158,18 @@ export const TaskContent = memo(
               smartTooltip
               {...(isDragging && { isOpen: false })}
             >
-              <span className="text-sm truncate">{task.label}</span>
+              <Row
+                gap={Spacing.SpacingXs}
+                align="center"
+                style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              >
+                <span className="text-sm truncate">{task.label}</span>
+                {task.isRequired && (
+                  <span className="text-sm" style={{ flexShrink: 0 }}>
+                    {'*'}
+                  </span>
+                )}
+              </Row>
             </CanvasTooltip>
           </Row>
           <Row align="center" gap={Spacing.SpacingXs} style={{ flexShrink: 0 }}>
