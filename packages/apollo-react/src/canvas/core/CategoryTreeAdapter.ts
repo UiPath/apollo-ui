@@ -69,6 +69,7 @@ export class CategoryTreeAdapter {
         const categoryItem: ListItem = {
           id: category.id,
           name: category.name,
+          description: category.description,
           data: null,
           ...(category.icon ? { icon: { name: category.icon } } : {}),
           color: category.color,

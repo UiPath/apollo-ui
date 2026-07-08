@@ -33,6 +33,9 @@ export const categoryManifestSchema = z.object({
   /** Human-readable category name */
   name: z.string().min(1),
 
+  /** Description of what the category contains. Surfaces on category rows in the toolbox. */
+  description: z.string().optional(),
+
   /**
    * Parent category ID for nesting
    *

@@ -2,21 +2,6 @@ import styled from '@emotion/styled';
 import { motion } from 'motion/react';
 import { List } from 'react-window';
 
-export const SectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  border-top: 1px solid var(--canvas-border-de-emp);
-
-  &:first-of-type {
-    border-top: none;
-  }
-
-  &.loading {
-    opacity: 0.5;
-    pointer-events: none;
-  }
-`;
-
 export const ListItemButton = styled(motion.button)`
   display: flex;
   align-items: center;
@@ -27,6 +12,10 @@ export const ListItemButton = styled(motion.button)`
   cursor: pointer;
   text-align: left;
   width: 100%;
+  // Don't rely on a consumer's global reset: the row combines width:100% + an
+  // explicit react-window height with its own padding, so content-box would
+  // overflow the slot and desync the virtualizer's row positions.
+  box-sizing: border-box;
   // Reserve the focus ring geometry in the resting state (invisible via a
   // transparent color) so activating a row only flips outline-color. Without
   // this the outline falls back to UA defaults (3px / currentColor) and every
@@ -46,13 +35,15 @@ export const ListItemButton = styled(motion.button)`
 `;
 
 export const IconContainer = styled.div<{ bgColor?: string }>`
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${(props) => props.bgColor || 'var(--canvas-background)'};
-  border-radius: 8px;
+  // Transparent unless the item declares a background (color / colorDark),
+  // so plain rows read as icon + text without a tile.
+  background: ${(props) => props.bgColor || 'transparent'};
+  border-radius: 6px;
   color: var(--canvas-foreground-emp);
   opacity: 0.9;
   flex-shrink: 0;
