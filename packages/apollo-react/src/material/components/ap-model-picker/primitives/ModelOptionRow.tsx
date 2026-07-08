@@ -47,13 +47,6 @@ export interface ModelOptionRowProps {
    */
   tagVariants?: Record<string, string>;
   /**
-   * Maps the model to its human label. When it returns a string, the
-   * row's primary line shows it and the technical id (`modelId`)
-   * renders as a monospace secondary line — the design's "friendly"
-   * mode. Return `null`/`undefined` to keep the raw `modelName`.
-   */
-  friendlyNameFor?: (model: DiscoveryModel) => string | null | undefined;
-  /**
    * Right-aligned actions renderer, called with the row's model. When
    * omitted, `defaultRowActions` renders edit/delete for BYO models.
    * Return `null` to suppress actions for a given row.
@@ -121,7 +114,6 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
   onActivate,
   tagContext,
   tagVariants,
-  friendlyNameFor,
   renderActions,
   renderMeta,
   dense,
@@ -134,11 +126,13 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
   );
 
   // Friendly-mode rows show the human label up top and the technical id
-  // as a monospace secondary line. When no friendly label is supplied,
-  // the technical name *is* the primary label and the secondary line
-  // only renders for BYO models (where the connection name is the only
+  // as a monospace secondary line. Display names come from the
+  // Discovery DTO only (authored centrally, merged server-side) —
+  // products cannot rename models. When the DTO carries no name, the
+  // technical name *is* the primary label and the secondary line only
+  // renders for BYO models (where the connection name is the only
   // disambiguator between two models with the same technical id).
-  const primaryLabel = friendlyNameFor?.(model) ?? null;
+  const primaryLabel = model.displayName ?? null;
   const primary = primaryLabel ?? model.modelName;
   const usesFriendlyName = !!primaryLabel && primaryLabel !== model.modelId;
   const techId = usesFriendlyName ? model.modelId : null;

@@ -35,12 +35,6 @@ export interface PickerTriggerProps {
    * doesn't know about. Forwarded straight to `<ModelTagChip>`.
    */
   tagVariants?: Record<string, string>;
-  /**
-   * When set, replaces `selected.modelName` as the trigger's primary
-   * label. Mirrors the row's friendly-mode behavior so trigger + rows
-   * stay in sync.
-   */
-  primaryLabel?: string | null;
   /** Extra content rendered to the right of the model name, before the caret. */
   extra?: React.ReactNode;
   onClick: () => void;
@@ -80,7 +74,6 @@ export const PickerTrigger: React.FC<PickerTriggerProps> = ({
   invalid,
   tagContext,
   tagVariants,
-  primaryLabel,
   extra,
   onClick,
   triggerRef,
@@ -96,7 +89,9 @@ export const PickerTrigger: React.FC<PickerTriggerProps> = ({
   const inlineTags = selected
     ? deriveModelTags(selected, effectiveCtx).filter((t) => !hideTagKinds?.includes(t.kind))
     : [];
-  const primary = selected ? (primaryLabel ?? selected.modelName) : null;
+  // Display names come from the Discovery DTO only — same resolution
+  // as the rows, so trigger + popup always agree.
+  const primary = selected ? (selected.displayName ?? selected.modelName) : null;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>

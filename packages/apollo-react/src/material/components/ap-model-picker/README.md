@@ -71,23 +71,7 @@ Display names travel on the Discovery DTO, like Recommended. Product teams autho
 <ModelPicker models={models} value={value} onChange={(m) => setValue(m.modelId)} />
 ```
 
-To override the labels per product (or bridge the gap while your backend rolls the field out), pass `friendlyNameFor`. It wins over the DTO; returning `null`/`undefined` falls through to `displayName`, then to the raw `modelName`:
-
-```tsx
-const FRIENDLY_NAMES: Record<string, string> = {
-  'anthropic.claude-sonnet-4-6-20260301-v1:0': 'Claude Sonnet 4.6',
-  'gpt-5-2025-08-07': 'GPT-5',
-};
-
-<ModelPicker
-  models={models}
-  friendlyNameFor={(m) => FRIENDLY_NAMES[m.modelId] ?? null}
-  value={value}
-  onChange={(m) => setValue(m.modelId)}
-/>
-```
-
-Resolution order: `friendlyNameFor` prop → DTO `displayName` → `modelName`. Search matches display names as well as technical ids.
+**Products cannot rename models.** There is deliberately no name prop: the same model reads identically in every product surface, and a wrong or missing name is fixed once, centrally, not patched per product. Models without an authored name fall back to the raw `modelName`. Search matches display names as well as technical ids.
 
 ### 3. Badges from the Apollo pool
 
@@ -263,7 +247,6 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `recommendedModelIds` | `readonly string[]`                                   | Test/storybook override for the Recommended set. Production reads `model.isRecommended` from the Discovery DTO.      |
 | `previewModelIds`     | `readonly string[]`                                   | Same, for Preview (production: DTO `isPreview`).                                                                     |
 | `filter`              | `(m) => boolean`                                      | Per-product filter applied before grouping and search.                                                               |
-| `friendlyNameFor`     | `(m) => string \| null \| undefined`                   | Per-product override for the human label. Production reads `model.displayName` from the Discovery DTO.               |
 | `badgesFor`           | `(m) => readonly ModelBadgeKind[]`                    | Stamp badges from the Apollo badge pool (see §3; cost badges in §5).                                                 |
 | `customTagsFor`       | `(m) => readonly ModelTag[]`                          | Escape hatch: free-form chips for one-offs pending a pool addition. Prefer `badgesFor`.                              |
 | `customTagVariants`   | `Record<string, string>`                              | Apollo MUI chip variant lookup for new tag kinds.                                                                    |
@@ -348,7 +331,7 @@ The component has its own catalog entry in `packages/apollo-react/lingui.config.
 - Option rows are memoized (`React.memo` + stable handlers): moving the keyboard highlight or hovering re-renders only the two rows whose `active` flag changed, not the whole list.
 - The `searchable` variant auto-switches to the virtualized renderer above 120 visible options, so large catalogs stay smooth without configuration. Pass `variant="virtualized"` to force it.
 - The forwarded `ref` points at the trigger button — call `ref.current?.focus()` after a failed form submit to move the user to the field.
-- Pass **stable references** for `filter`, `friendlyNameFor`, `customTagsFor` (wrap in `useCallback`) and for `requestContext` (wrap in `useMemo`). The picker re-derives chips / re-fetches when these change identity.
+- Pass **stable references** for `filter`, `badgesFor`, `customTagsFor` (wrap in `useCallback`) and for `requestContext` (wrap in `useMemo`). The picker re-derives chips / re-fetches when these change identity.
 
 ---
 
@@ -388,7 +371,7 @@ Stories live in `ModelPicker.stories.tsx` and appear under **Apollo React/Materi
 - **Default** — baseline picker
 - **Virtualized (500+ models)** — performance variant
 - **With per-product filter** — `filter` prop in action
-- **With friendly names** — `friendlyNameFor` mapping
+- **With friendly names (Discovery displayName)** — DTO-authored labels, no product wiring
 - **With custom badges (escape hatch)** — free-form `customTagsFor` + `customTagVariants`
 - **Admin — can manage BYO** — `canManageByo` + `onUseCustomModel`
 - **Viewer — read-only BYO** — default, no admin affordances
