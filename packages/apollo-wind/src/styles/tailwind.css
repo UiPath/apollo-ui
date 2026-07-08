@@ -11,3 +11,10 @@
 @import "./tailwind.consumer.css";
 
 @source "../**/*.{js,jsx,ts,tsx}";
+
+/* Storybook (apps/storybook/.storybook/preview.tsx) imports this file
+ * directly, making it the Tailwind entry point for the whole app — including
+ * apollo-react's canvas stories. Without this, utility classes unique to
+ * apollo-react (not already used somewhere in apollo-wind) silently produce
+ * no CSS, since they'd never be scanned otherwise. */
+@source "../../../apollo-react/src/**/*.{js,jsx,ts,tsx}";
