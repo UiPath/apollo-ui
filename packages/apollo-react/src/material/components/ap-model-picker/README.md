@@ -88,6 +88,49 @@ The picker derives lifecycle chips automatically (Recommended, Preview, Deprecat
 
 The pool currently ships the cost tiers: `cost-basic`, `cost-standard`, `cost-premium`. **Adding a badge to the pool is a design-system PR**: one entry in `badges.ts` plus its `msg()` label in `i18n.ts` — not a per-product invention. That keeps naming, colors, and translations consistent everywhere.
 
+**Defining a new pool badge** (using a hypothetical "Early access" badge as the example):
+
+1. **Declare the label in `i18n.ts`** — add `msg()` descriptors to `BADGE_LABELS`, keyed under the `modelPicker.badge.*` id namespace:
+
+   ```ts
+   export const BADGE_LABELS = {
+     // …existing cost-tier labels…
+     earlyAccess: msg({
+       id: 'modelPicker.badge.earlyAccess.label',
+       message: 'Early access',
+     }),
+     earlyAccessTooltip: msg({
+       id: 'modelPicker.badge.earlyAccess.tooltip',
+       message: 'Available before general rollout',
+     }),
+   } as const;
+   ```
+
+2. **Register the kind in `badges.ts`** — extend the `ModelBadgeKind` union and add the matching `MODEL_BADGES` entry:
+
+   ```ts
+   export type ModelBadgeKind =
+     | 'cost-basic'
+     | 'cost-standard'
+     | 'cost-premium'
+     | 'early-access';
+
+   export const MODEL_BADGES: Record<ModelBadgeKind, ModelBadgeDefinition> = {
+     // …existing cost tiers…
+     'early-access': {
+       label: BADGE_LABELS.earlyAccess,
+       tooltip: BADGE_LABELS.earlyAccessTooltip, // tooltip is optional
+       variant: 'info-mini',
+     },
+   };
+   ```
+
+3. **Extract translations** — run `pnpm i18n:extract` from `packages/apollo-react` so the new keys land in every `locales/*` catalog (catalogs compile automatically before `build` and `test`).
+
+That's the whole surface: because `ModelBadgeKind` is a union, every product's `badgesFor` callback can return `'early-access'` immediately, and TypeScript flags typos at compile time.
+
+**Picking a `variant`:** default to neutral gray `mini` unless the semantic color genuinely applies (`info-mini`, `success-mini`, `warning-mini`, `error-mini`). The cost tiers deliberately stay neutral — warning/error coloring would read as "this model is risky", which a price tier is not.
+
 Pool badges render after the built-in chips so the picker's canonical signals (Recommended / Preview / lifecycle) always read first.
 
 **Escape hatch:** `customTagsFor` still accepts free-form `ModelTag`s (appended after pool badges) for experiments and one-offs pending a pool addition; color new kinds via `customTagVariants` (`mini`, `info-mini`, `success-mini`, `warning-mini`, `error-mini`; unknown kinds fall back to neutral gray `mini`). Anything worth shipping should graduate into the pool.
