@@ -168,13 +168,14 @@ export interface ModelPickerProps {
    */
   filter?: (model: DiscoveryModel) => boolean;
   /**
-   * Map a Discovery DTO to a human label. When set, the row's primary
-   * line shows this (e.g. "Claude Sonnet 4.6") and the technical id
-   * (`anthropic.claude-sonnet-4-6-...`) renders as a secondary monospace
-   * line — matching the design's "friendly" mode. The trigger uses the
-   * same function so the selected label stays consistent everywhere.
-   * Return `null`/`undefined` to keep the raw `modelName` for a
-   * specific row.
+   * Per-product override for the human label. In production, display
+   * names arrive on the Discovery DTO (`model.displayName`, merged
+   * server-side like `isRecommended`) and need no wiring. When this
+   * prop is set it wins over the DTO; return `null`/`undefined` from
+   * it to fall through to `displayName` and then the raw `modelName`.
+   * Rows show the friendly label as the primary line with the
+   * technical id as a secondary monospace line; the trigger uses the
+   * same resolution so the selected label stays consistent everywhere.
    */
   friendlyNameFor?: (model: DiscoveryModel) => string | null | undefined;
   /**
@@ -452,7 +453,16 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       [i18n, homeRegion, recommendedModelIds, previewModelIds, customTagsFor]
     );
 
-    const selectedPrimaryLabel = selected ? (friendlyNameFor?.(selected) ?? null) : null;
+    // Friendly-name resolution mirrors `isRecommended`: explicit prop
+    // (per-product override) → DTO `displayName` (authored centrally,
+    // merged into Discovery server-side) → raw `modelName` (the
+    // row/trigger fallback when this returns null).
+    const resolveFriendlyName = React.useCallback(
+      (m: DiscoveryModel) => friendlyNameFor?.(m) ?? m.displayName ?? null,
+      [friendlyNameFor]
+    );
+
+    const selectedPrimaryLabel = selected ? resolveFriendlyName(selected) : null;
 
     // In Category view the section header *is* the Recommended/Preview
     // label — repeating it on every row inside the section is noise.
@@ -708,7 +718,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                 onSelect={choose}
                 tagContext={tagContext}
                 tagVariants={customTagVariants}
-                friendlyNameFor={friendlyNameFor}
+                friendlyNameFor={resolveFriendlyName}
                 groupCounts={groupCounts}
                 collapsedGroups={collapsedGroups}
                 onGroupToggle={toggleGroup}

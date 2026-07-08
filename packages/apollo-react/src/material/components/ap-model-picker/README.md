@@ -64,14 +64,19 @@ When your product should only show a subset of what Discovery returns (specific 
 
 ### 2. Friendly names
 
-Replace the technical model id with a human label on every row + the trigger. The technical id renders as a monospace secondary line so it's still copyable.
+Display names travel on the Discovery DTO, like Recommended. Product teams author them centrally in their Model Hub configuration; the gateway merges them into the response as `displayName`, so every row shows the human label ("Claude Sonnet 4.6") over a monospace technical id, and the trigger matches — with no wiring:
+
+```tsx
+// The picker renders `model.displayName` when the DTO carries it.
+<ModelPicker models={models} value={value} onChange={(m) => setValue(m.modelId)} />
+```
+
+To override the labels per product (or bridge the gap while your backend rolls the field out), pass `friendlyNameFor`. It wins over the DTO; returning `null`/`undefined` falls through to `displayName`, then to the raw `modelName`:
 
 ```tsx
 const FRIENDLY_NAMES: Record<string, string> = {
   'anthropic.claude-sonnet-4-6-20260301-v1:0': 'Claude Sonnet 4.6',
   'gpt-5-2025-08-07': 'GPT-5',
-  'gpt-4o-2024-08-06': 'GPT-4o',
-  'gemini-3-flash-preview-20260215': 'Gemini 3 Flash',
 };
 
 <ModelPicker
@@ -82,9 +87,7 @@ const FRIENDLY_NAMES: Record<string, string> = {
 />
 ```
 
-Returning `null`/`undefined` for a model falls back to its raw `modelName`. You can also derive the label dynamically — fetching from a config service, mapping by `modelFamily`, etc.
-
-**Best practice:** keep the friendly-name map in your product config rather than hardcoding it next to the component.
+Resolution order: `friendlyNameFor` prop → DTO `displayName` → `modelName`. Search matches display names as well as technical ids.
 
 ### 3. Custom badges
 
@@ -273,7 +276,7 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `recommendedModelIds` | `readonly string[]`                                   | Test/storybook override for the Recommended set. Production reads `model.isRecommended` from the Discovery DTO.      |
 | `previewModelIds`     | `readonly string[]`                                   | Same, for Preview (production: DTO `isPreview`).                                                                     |
 | `filter`              | `(m) => boolean`                                      | Per-product filter applied before grouping and search.                                                               |
-| `friendlyNameFor`     | `(m) => string \| null \| undefined`                   | Map a DTO to a human label. Returns `null` to fall back to `modelName`.                                              |
+| `friendlyNameFor`     | `(m) => string \| null \| undefined`                   | Per-product override for the human label. Production reads `model.displayName` from the Discovery DTO.               |
 | `customTagsFor`       | `(m) => readonly ModelTag[]`                          | Product-specific extra chips (see §3; cost badges in §5).                                                            |
 | `customTagVariants`   | `Record<string, string>`                              | Apollo MUI chip variant lookup for new tag kinds.                                                                    |
 | `requestContext`      | `PlatformRequestContext`                              | Auth/routing for the picker's built-in platform calls (entitlement check + folder fetch). Pass a memoized object.    |

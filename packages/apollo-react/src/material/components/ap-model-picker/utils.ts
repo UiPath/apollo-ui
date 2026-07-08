@@ -471,6 +471,7 @@ export function filterModels(models: DiscoveryModel[], query: string): Discovery
   return models.filter((m) => {
     const haystack = [
       m.modelName,
+      m.displayName,
       m.modelId,
       m.vendor,
       m.modelFamily,

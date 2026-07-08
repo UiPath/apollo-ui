@@ -780,8 +780,20 @@ export const RoutingSubstitution: Story = {
 
 // What the Discovery response looks like once the backend merges
 // Model_hub: two Sonnets flagged isRecommended, everything else not.
+const DISCOVERY_DISPLAY_NAMES: Record<string, string> = {
+  'anthropic.claude-sonnet-4-6-20260301-v1:0': 'Claude Sonnet 4.6',
+  'anthropic.claude-sonnet-4-5-20250929-v1:0': 'Claude Sonnet 4.5',
+  'gpt-5-2025-08-07': 'GPT-5',
+  'gpt-4o-2024-08-06': 'GPT-4o',
+  'gemini-3-flash-preview-20260215': 'Gemini 3 Flash',
+  'uipath-gpt-41-mini': 'GPT-4.1 mini',
+};
+
 const DISCOVERY_WITH_RECOMMENDED: DiscoveryModel[] = MOCK_MODELS.map((m) => ({
   ...m,
+  // In production both signals arrive on the DTO, merged server-side
+  // from the product's Model Hub configuration.
+  displayName: DISCOVERY_DISPLAY_NAMES[m.modelId],
   isRecommended: [
     'anthropic.claude-sonnet-4-6-20260301-v1:0',
     'anthropic.claude-sonnet-4-5-20250929-v1:0',

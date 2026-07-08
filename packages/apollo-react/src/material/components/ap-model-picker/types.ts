@@ -74,18 +74,27 @@ export interface RoutingDetails {
 export interface DiscoveryModel {
   modelId: string;
   modelName: string;
+  /**
+   * Human-friendly display name (e.g. "Claude Sonnet 4.6"). Authored
+   * centrally in the product's Model Hub configuration and merged into
+   * the Discovery response server-side, exactly like `isRecommended`.
+   * `undefined` means the backend has not rolled the field out yet; the
+   * picker then falls back to the `friendlyNameFor` prop (if any) and
+   * finally the raw `modelName`.
+   */
+  displayName?: string;
   effectiveModel?: string | null;
   vendor: ModelVendor;
   modelFamily?: string;
   apiFlavor?: string;
   modelSubscriptionType?: ModelSubscriptionType;
   /**
-   * Whether the product team has promoted this model. Authored in
-   * `Model_hub/<product>.yaml` in gitops-centralized-cluster and merged
-   * into the Discovery response server-side — products should NOT
-   * fetch Model_hub themselves. `undefined` means the backend hasn't
-   * rolled the field out yet; the picker then falls back to a local
-   * heuristic (`UiPathOwned && !preview && !deprecating`).
+   * Whether the product team has promoted this model. Authored
+   * centrally in the product's Model Hub configuration and merged into
+   * the Discovery response server-side — products should NOT fetch the
+   * config themselves. `undefined` means the backend hasn't rolled the
+   * field out yet; the picker then falls back to a local heuristic
+   * (`UiPathOwned && !preview && !deprecating`).
    */
   isRecommended?: boolean;
   isPreview?: boolean;

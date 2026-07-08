@@ -61,6 +61,32 @@ describe('<ModelPicker>', () => {
     expect(screen.getByText('Claude Sonnet 4.6')).toBeInTheDocument();
   });
 
+  it('renders the Discovery displayName when no friendlyNameFor is set', () => {
+    const models = MODELS.map((m) =>
+      m.modelId === 'anthropic.claude-sonnet-4-6' ? { ...m, displayName: 'Sonnet From DTO' } : m
+    );
+    renderPicker(
+      <ModelPicker models={models} value="anthropic.claude-sonnet-4-6" onChange={() => {}} />
+    );
+    expect(screen.getByText('Sonnet From DTO')).toBeInTheDocument();
+  });
+
+  it('friendlyNameFor overrides the DTO displayName', () => {
+    const models = MODELS.map((m) =>
+      m.modelId === 'anthropic.claude-sonnet-4-6' ? { ...m, displayName: 'DTO Name' } : m
+    );
+    renderPicker(
+      <ModelPicker
+        models={models}
+        value="anthropic.claude-sonnet-4-6"
+        onChange={() => {}}
+        friendlyNameFor={() => 'Prop Name'}
+      />
+    );
+    expect(screen.getByText('Prop Name')).toBeInTheDocument();
+    expect(screen.queryByText('DTO Name')).not.toBeInTheDocument();
+  });
+
   it('opens on click and fires onChange when a row is picked', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
