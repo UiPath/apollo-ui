@@ -45,6 +45,26 @@ export const TAG_LABELS = {
 } as const;
 
 /* ──────────────────────────────────────────────────────────────────────
+ * Badge pool (see badges.ts)
+ * ─────────────────────────────────────────────────────────────────── */
+
+export const BADGE_LABELS = {
+  costBasic: msg({ id: 'modelPicker.badge.costBasic.label', message: 'Basic' }),
+  costStandard: msg({
+    id: 'modelPicker.badge.costStandard.label',
+    message: 'Standard',
+  }),
+  costPremium: msg({
+    id: 'modelPicker.badge.costPremium.label',
+    message: 'Premium',
+  }),
+  costTooltip: msg({
+    id: 'modelPicker.badge.cost.tooltip',
+    message: 'Relative cost tier for this product',
+  }),
+} as const;
+
+/* ──────────────────────────────────────────────────────────────────────
  * Groups
  * ─────────────────────────────────────────────────────────────────── */
 

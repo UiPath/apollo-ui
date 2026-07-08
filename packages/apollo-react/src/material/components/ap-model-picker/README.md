@@ -89,35 +89,24 @@ const FRIENDLY_NAMES: Record<string, string> = {
 
 Resolution order: `friendlyNameFor` prop → DTO `displayName` → `modelName`. Search matches display names as well as technical ids.
 
-### 3. Custom badges
+### 3. Badges from the Apollo pool
 
-The picker derives lifecycle chips automatically (Recommended, Preview, Deprecating, Substituted, Custom, Out-of-region). To stamp additional product-specific chips, pass `customTagsFor`:
+The picker derives lifecycle chips automatically (Recommended, Preview, Deprecating, Substituted, Custom, Out-of-region). For product badges beyond those, Apollo owns a shared **badge pool** (`MODEL_BADGES` in `badges.ts`): each pool entry defines the badge's label, tooltip, color variant, and localization once, so the same badge reads identically in every product. Products stamp pool badges per model with `badgesFor`:
 
 ```tsx
 <ModelPicker
   models={models}
-  customTagsFor={(m) => {
-    const tags = [];
-    if (m.modelDetails?.contextWindowTokens && m.modelDetails.contextWindowTokens >= 1_000_000) {
-      tags.push({ kind: 'long-context', label: 'Long context' });
-    }
-    if (m.byoConnectionLabel?.toLowerCase().includes('on-prem')) {
-      tags.push({ kind: 'onprem', label: 'On-prem', tooltip: 'Routes to an on-prem connection' });
-    }
-    return tags;
-  }}
-  customTagVariants={{
-    'long-context': 'info-mini',
-    onprem: 'warning-mini',
-  }}
+  badgesFor={(m) => (isExpensive(m) ? ['cost-premium'] : ['cost-basic'])}
   value={value}
   onChange={(m) => setValue(m.modelId)}
 />
 ```
 
-Custom tags render **after** the built-in chips so the picker's canonical signals (Recommended / Preview / lifecycle) always read first.
+The pool currently ships the cost tiers: `cost-basic`, `cost-standard`, `cost-premium`. **Adding a badge to the pool is a design-system PR**: one entry in `badges.ts` plus its `msg()` label in `i18n.ts` — not a per-product invention. That keeps naming, colors, and translations consistent everywhere.
 
-`customTagVariants` maps your tag `kind` to an Apollo MUI chip variant. Valid variants: `mini`, `info-mini`, `success-mini`, `warning-mini`, `error-mini`. Unknown kinds fall back to the neutral gray `mini`.
+Pool badges render after the built-in chips so the picker's canonical signals (Recommended / Preview / lifecycle) always read first.
+
+**Escape hatch:** `customTagsFor` still accepts free-form `ModelTag`s (appended after pool badges) for experiments and one-offs pending a pool addition; color new kinds via `customTagVariants` (`mini`, `info-mini`, `success-mini`, `warning-mini`, `error-mini`; unknown kinds fall back to neutral gray `mini`). Anything worth shipping should graduate into the pool.
 
 ### 4. Recommended and Preview
 
@@ -135,23 +124,21 @@ Resolution order: `recommendedModelIds` prop (test/storybook override) → DTO `
 
 ### 5. Cost badges
 
-Cost presentation is a per-product decision, expressed through `customTagsFor` (section 3). The agents product stamps `Basic` / `Standard` / `Premium` chips using the exported `defaultCostTier` classifier:
+Cost badges live in the Apollo pool (`cost-basic` / `cost-standard` / `cost-premium`), so the classification is the only per-product decision. The agents product classifies with the exported `defaultCostTier` helper and stamps the matching pool kind:
 
 ```tsx
 import { defaultCostTier } from '@uipath/apollo-react/material/components';
 
-const COST_LABELS = { basic: 'Basic', standard: 'Standard', premium: 'Premium' };
-
 <ModelPicker
   models={models}
-  customTagsFor={(m) => {
+  badgesFor={(m) => {
     const tier = defaultCostTier(m); // null when the DTO has no cost data
-    return tier ? [{ kind: `cost-${tier}`, label: COST_LABELS[tier] }] : [];
+    return tier ? [`cost-${tier}` as const] : [];
   }}
 />
 ```
 
-`defaultCostTier` bins Discovery's `modelDetails.costDetails.inputTokenCost` (USD per million input tokens) at `$1` / `$5`. Copy it, change the thresholds, or key your badges on something else entirely — the picker just renders whatever tags you return.
+`defaultCostTier` bins Discovery's `modelDetails.costDetails.inputTokenCost` (USD per million input tokens) at `$1` / `$5`. Copy it, change the thresholds, or classify on something else entirely — the pool badge kinds are the shared contract, the classifier is yours.
 
 ### 6. BYO management
 
@@ -277,7 +264,8 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `previewModelIds`     | `readonly string[]`                                   | Same, for Preview (production: DTO `isPreview`).                                                                     |
 | `filter`              | `(m) => boolean`                                      | Per-product filter applied before grouping and search.                                                               |
 | `friendlyNameFor`     | `(m) => string \| null \| undefined`                   | Per-product override for the human label. Production reads `model.displayName` from the Discovery DTO.               |
-| `customTagsFor`       | `(m) => readonly ModelTag[]`                          | Product-specific extra chips (see §3; cost badges in §5).                                                            |
+| `badgesFor`           | `(m) => readonly ModelBadgeKind[]`                    | Stamp badges from the Apollo badge pool (see §3; cost badges in §5).                                                 |
+| `customTagsFor`       | `(m) => readonly ModelTag[]`                          | Escape hatch: free-form chips for one-offs pending a pool addition. Prefer `badgesFor`.                              |
 | `customTagVariants`   | `Record<string, string>`                              | Apollo MUI chip variant lookup for new tag kinds.                                                                    |
 | `requestContext`      | `PlatformRequestContext`                              | Auth/routing for the picker's built-in platform calls (entitlement check + folder fetch). Pass a memoized object.    |
 | `canManageByo`        | `boolean`                                             | Explicit override for BYO management. When unset and `requestContext` is provided, the picker checks the `AiTrustLayerByoLlm` entitlement. |
@@ -372,6 +360,7 @@ ap-model-picker/
 ├── index.ts                     — public barrel
 ├── types.ts                     — Discovery DTO types, tag kinds
 ├── i18n.ts                      — central message descriptors
+├── badges.ts                    — the Apollo badge pool (MODEL_BADGES)
 ├── utils.ts                     — deriveModelTags, groupModels, filterModels
 ├── useModelPickerState.ts       — state controller hook
 ├── useDiscoveryModels.ts        — optional Discovery API hook
@@ -400,7 +389,7 @@ Stories live in `ModelPicker.stories.tsx` and appear under **Apollo React/Materi
 - **Virtualized (500+ models)** — performance variant
 - **With per-product filter** — `filter` prop in action
 - **With friendly names** — `friendlyNameFor` mapping
-- **With custom badges** — `customTagsFor` + `customTagVariants`
+- **With custom badges (escape hatch)** — free-form `customTagsFor` + `customTagVariants`
 - **Admin — can manage BYO** — `canManageByo` + `onUseCustomModel`
 - **Viewer — read-only BYO** — default, no admin affordances
 - **Folder-scoped Custom Models** — built-in folder switcher

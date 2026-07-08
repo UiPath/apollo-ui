@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import { Colors, FontFamily } from '@uipath/apollo-core';
 import React from 'react';
 import { useSafeLingui } from '../../../i18n';
-
+import type { ModelBadgeKind } from './badges';
 import { FolderSwitcher } from './primitives/FolderSwitcher';
 import { GroupedOptionList, optionDomId, VirtualOptionList } from './primitives/OptionList';
 import { PickerPopup } from './primitives/PickerPopup';
@@ -179,11 +179,19 @@ export interface ModelPickerProps {
    */
   friendlyNameFor?: (model: DiscoveryModel) => string | null | undefined;
   /**
-   * Augment the chips on each row + trigger. Returned tags are
-   * concatenated after the built-in derived tags (Recommended, Preview,
-   * Custom, Deprecating, Out-of-region, Substituted). Products stamp
-   * arbitrary badges here — cost tiers (see `defaultCostTier` for the
-   * agents example), "Multimodal", "Routes via On-Prem", etc.
+   * Stamp badges from the Apollo badge pool per model (e.g.
+   * `['cost-premium']`). The pool (`MODEL_BADGES` in badges.ts) owns
+   * labels, tooltips, variants, and localization so the same badge
+   * reads identically in every product; new badges are added to the
+   * pool by design-system PR, not invented per product. Pool badges
+   * render after the built-in derived tags (Recommended, Preview,
+   * Custom, Deprecating, Out-of-region, Substituted).
+   */
+  badgesFor?: (model: DiscoveryModel) => readonly ModelBadgeKind[];
+  /**
+   * Escape hatch: free-form chips appended after pool badges. Prefer
+   * `badgesFor` — use this only for experiments or one-offs pending a
+   * badge-pool addition.
    */
   customTagsFor?: (model: DiscoveryModel) => readonly ModelTag[];
   /**
@@ -303,6 +311,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       previewModelIds,
       filter,
       friendlyNameFor,
+      badgesFor,
       customTagsFor,
       customTagVariants,
       canManageByo,
@@ -448,9 +457,10 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         homeRegion,
         recommendedModelIds,
         previewModelIds,
+        badgesFor,
         customTagsFor,
       }),
-      [i18n, homeRegion, recommendedModelIds, previewModelIds, customTagsFor]
+      [i18n, homeRegion, recommendedModelIds, previewModelIds, badgesFor, customTagsFor]
     );
 
     // Friendly-name resolution mirrors `isRecommended`: explicit prop

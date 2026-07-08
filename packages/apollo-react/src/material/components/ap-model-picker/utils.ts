@@ -1,3 +1,4 @@
+import { MODEL_BADGES, type ModelBadgeKind } from './badges';
 import type { PickerTranslator } from './i18n';
 
 import { GROUP_LABELS, TAG_LABELS, tr } from './i18n';
@@ -35,18 +36,21 @@ export interface DeriveModelTagsContext {
    */
   previewModelIds?: readonly string[];
   /**
-   * Product-controlled extra chips. Returned tags are appended *after*
-   * the built-in derived chips (Recommended → Preview → Substituted →
-   * Deprecating → Custom → Out-of-region) so the picker's canonical
-   * signals always sort first. Use this for product-specific badges —
-   * cost tiers (see `defaultCostTier` for the agents example),
-   * "Multimodal", "Routes via On-Prem", a tenant SKU label — anything
-   * the design system shouldn't bake into the catalog.
-   *
-   * To color a kind the picker doesn't know about, register a variant
-   * via `<ModelPicker customTagVariants={{ multimodal: 'info-mini' }} />`.
-   * Unknown kinds fall back to the neutral gray `mini` chip — visible
-   * but not loud.
+   * Stamp badges from the Apollo badge pool (see `MODEL_BADGES` in
+   * badges.ts). Products return pool kinds per model; the pool owns the
+   * label, tooltip, variant, and localization, so the same badge reads
+   * identically in every product. Pool badges render after the built-in
+   * derived chips (Recommended → Preview → Substituted → Deprecating →
+   * Custom → Out-of-region) and before any `customTagsFor` extras.
+   * Unknown kinds are ignored.
+   */
+  badgesFor?: (model: DiscoveryModel) => readonly ModelBadgeKind[];
+  /**
+   * Escape hatch: free-form product chips, appended last. Prefer
+   * `badgesFor` — anything worth shipping belongs in the shared badge
+   * pool so labels and colors stay consistent across products. Use this
+   * only for experiments or one-offs pending a pool addition, and
+   * register colors for new kinds via `customTagVariants`.
    */
   customTagsFor?: (model: DiscoveryModel) => readonly ModelTag[];
 }
@@ -191,9 +195,23 @@ export function deriveModelTags(
     }
   }
 
-  // Product-specific chips come last — the picker's canonical signals
+  // Product chips come last — the picker's canonical signals
   // (Recommended / Preview / lifecycle) should always read first so
   // users see the design-system semantics before any tenant noise.
+  // Pool badges first (sanctioned, centrally defined), then any
+  // free-form `customTagsFor` extras (escape hatch).
+  if (context.badgesFor) {
+    for (const kind of context.badgesFor(model) ?? []) {
+      const def = MODEL_BADGES[kind];
+      if (!def) continue;
+      tags.push({
+        kind,
+        label: localize(def.label),
+        tooltip: def.tooltip ? localize(def.tooltip) : undefined,
+        variant: def.variant,
+      });
+    }
+  }
   if (context.customTagsFor) {
     const extra = context.customTagsFor(model);
     if (extra?.length) tags.push(...extra);
@@ -204,21 +222,18 @@ export function deriveModelTags(
 
 /**
  * EXAMPLE cost-tier classifier — the picker does NOT stamp cost chips
- * itself. Products that want them (agents does) wire this through
- * `customTagsFor`:
+ * itself. Products that want cost badges (agents does) map a model to
+ * one of the pool's cost kinds via `badgesFor`:
  *
- *   customTagsFor={(m) => {
+ *   badgesFor={(m) => {
  *     const tier = defaultCostTier(m);
- *     return tier ? [{ kind: `cost-${tier}`, label: tierLabel(tier) }] : [];
+ *     return tier ? [`cost-${tier}` as const] : [];
  *   }}
  *
- * Bins the Discovery DTO's `modelDetails.costDetails.inputTokenCost`
- * (USD per million input tokens). Returns `null` when the model has no
- * cost data, so callers can suppress the chip rather than show a
- * misleading tier. Thresholds snapshot 2026-Q2 gateway pricing:
- *   - basic   : < $1.00/M input  (e.g. gpt-4o-mini, gemini-flash)
- *   - standard: $1.00 – $5.00/M  (e.g. gpt-4o, claude-sonnet)
- *   - premium : > $5.00/M        (e.g. claude-opus, gpt-5 large)
+ * Bins Discovery's `inputTokenCost` (USD per million input tokens) at
+ * $1 / $5. Copy it and change the thresholds, or classify on something
+ * else entirely — the pool badge kinds are the shared contract, the
+ * classifier is yours.
  */
 const DEFAULT_BASIC_THRESHOLD = 1.0;
 const DEFAULT_PREMIUM_THRESHOLD = 5.0;
