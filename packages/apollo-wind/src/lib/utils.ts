@@ -1,4 +1,12 @@
-export { cn } from 'cnfast';
+import { type ClassValue, cn as cnfast } from 'cnfast';
+
+/**
+ * Utility function to merge Tailwind CSS classes with proper precedence
+ * Uses cnfast for conditional classes and deduplication
+ */
+export function cn(...inputs: ClassValue[]): string {
+  return cnfast(...inputs);
+}
 
 /**
  * Safely get a nested value from an object using dot notation
