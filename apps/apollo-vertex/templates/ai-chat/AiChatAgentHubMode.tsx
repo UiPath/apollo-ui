@@ -42,7 +42,10 @@ import {
 import type { MessageFeedbackType } from "@/registry/ai-chat/types";
 import { DataFabricGate } from "./AiChatDataFabricGate";
 import type { OrgTenantInfo } from "./AiChatLoginGate";
-import { createUiPathSdk } from "./ai-chat-example-utils";
+import {
+  AICHAT_DIRECT_BASE_URL,
+  createUiPathSdk,
+} from "./ai-chat-example-utils";
 
 interface AgentHubChatProps {
   accessToken: string;
@@ -61,7 +64,11 @@ function AgentHubChatInner({
   entities,
 }: AgentHubChatInnerProps) {
   const { t } = useTranslation();
-  const dataFabricBaseUrl = `/api/datafabric/${orgTenant.orgName}/${orgTenant.tenantName}/datafabric_/api`;
+  // Coded App builds have no server for the /api proxy routes, so the browser
+  // calls the platform host directly.
+  const dataFabricBaseUrl = AICHAT_DIRECT_BASE_URL
+    ? `${AICHAT_DIRECT_BASE_URL}/${orgTenant.orgName}/${orgTenant.tenantName}/datafabric_/api`
+    : `/api/datafabric/${orgTenant.orgName}/${orgTenant.tenantName}/datafabric_/api`;
 
   const tableTool = createDataFabricTableTool({
     entities,
@@ -138,7 +145,9 @@ function AgentHubChatInner({
   ].join("\n\n");
 
   const connection = createAgentHubConnection({
-    baseUrl: `/api/agenthub/${orgTenant.orgName}/${orgTenant.tenantName}/agenthub_/llm/api`,
+    baseUrl: AICHAT_DIRECT_BASE_URL
+      ? `${AICHAT_DIRECT_BASE_URL}/${orgTenant.orgName}/${orgTenant.tenantName}/agenthub_/llm/api`
+      : `/api/agenthub/${orgTenant.orgName}/${orgTenant.tenantName}/agenthub_/llm/api`,
     model: { vendor: "openai", name: "gpt-4.1-mini-2025-04-14" },
     accessToken: () => accessToken,
     systemPrompt,

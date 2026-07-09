@@ -1,9 +1,9 @@
 "use client";
 
+import { useLocalStorage } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { jwtDecode } from "jwt-decode";
 import { ChevronRight, LogIn, LogOut } from "lucide-react";
-import { useLocalStorage } from "@mantine/hooks";
 import type { ReactNode } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,11 @@ import {
   SelectValue,
 } from "@/registry/select/select";
 import { useAuth } from "@/registry/shell/shell-auth-provider";
-import { AICHAT_STORAGE_KEYS } from "./ai-chat-example-utils";
+import {
+  AICHAT_DIRECT_BASE_URL,
+  AICHAT_STATIC_ORG,
+  AICHAT_STORAGE_KEYS,
+} from "./ai-chat-example-utils";
 
 export interface OrgTenantInfo {
   orgId: string;
@@ -86,6 +90,15 @@ function useOrgInfo(accessToken: string | null) {
     queryFn: () => {
       if (!orgId || !accessToken)
         throw new Error("Missing orgId or accessToken");
+      // Coded App builds cannot reach the portal proxy that lists tenants, so
+      // the deployment's org/tenant is baked in at build time instead.
+      if (AICHAT_STATIC_ORG) {
+        return Promise.resolve({
+          orgId,
+          orgName: AICHAT_STATIC_ORG.orgName,
+          tenants: AICHAT_STATIC_ORG.tenants,
+        });
+      }
       return fetchOrgInfo(orgId, accessToken);
     },
     enabled: !!accessToken && !!orgId,
@@ -179,16 +192,19 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
     );
     logout();
 
+    // In Coded App builds the identity endpoints live on the platform host,
+    // not on the origin serving the static export.
+    const identityOrigin = AICHAT_DIRECT_BASE_URL || window.location.origin;
     const endSessionUrl = new URL(
       "/identity_/connect/endsession",
-      window.location.origin,
+      identityOrigin,
     );
     if (idToken) {
       endSessionUrl.searchParams.set("id_token_hint", idToken);
     }
     endSessionUrl.searchParams.set(
       "post_logout_redirect_uri",
-      `${window.location.origin}/portal_/cloudrpa`,
+      `${identityOrigin}/portal_/cloudrpa`,
     );
     window.location.href = endSessionUrl.toString();
   }

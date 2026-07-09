@@ -5,6 +5,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": ["APOLLO_CODED_APP", "APOLLO_CODED_APP_PATH"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "!src/**/*.stories.*",

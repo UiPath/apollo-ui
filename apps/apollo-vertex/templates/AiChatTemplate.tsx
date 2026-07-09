@@ -11,6 +11,9 @@ import { ConversationalAgentChat } from "./ai-chat/AiChatConversationalAgentMode
 import { AiChatLoginGate, type OrgTenantInfo } from "./ai-chat/AiChatLoginGate";
 import {
   AICHAT_CLIENT_ID,
+  AICHAT_DIRECT_BASE_URL,
+  AICHAT_IS_CODED_APP,
+  AICHAT_REDIRECT_PATH,
   AICHAT_SCOPE,
   AICHAT_STORAGE_KEYS,
   type ChatMode,
@@ -79,14 +82,31 @@ function AiChatWithConnection({
 }
 
 export function AiChatTemplate() {
+  // Coded App previews without an AI Chat External App configured cannot sign
+  // in, so the demo is disabled instead of failing at the login step.
+  if (AICHAT_IS_CODED_APP && !AICHAT_DIRECT_BASE_URL) {
+    return (
+      <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-lg border bg-card px-6 text-center">
+        <p className="text-base font-medium text-foreground">
+          AI Chat is not available in Coded App preview
+        </p>
+        <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+          The demo needs browser calls to UiPath backend services that are
+          blocked by cross-origin preflight checks in the Coded App host. The
+          rest of Apollo Vertex is still available in this preview.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="h-[70vh] min-h-[500px] max-h-[900px] flex w-full flex-col">
       <QueryClientProvider client={queryClient}>
         <ShellAuthProvider
           clientId={AICHAT_CLIENT_ID}
           scope={AICHAT_SCOPE}
-          baseUrl=""
-          redirectPath="/auth_callback"
+          baseUrl={AICHAT_DIRECT_BASE_URL}
+          redirectPath={AICHAT_REDIRECT_PATH}
         >
           <LocaleProvider>
             <AiChatLoginGate>
