@@ -1,3 +1,4 @@
+import { Link2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -254,10 +255,27 @@ export function MarkUsage() {
               <p className="text-xs text-muted-foreground">
                 Compared price, warranty, and lead time
               </p>
+              <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground/70">
+                <Link2 className="size-3 shrink-0" />
+                From{" "}
+                <a href="#" className="text-primary hover:underline">
+                  Coupa catalog
+                </a>
+                {" "}and{" "}
+                <a href="#" className="text-primary hover:underline">
+                  2 supplier quotes
+                </a>
+              </p>
             </div>
           </div>
         </Tile>
       </Group>
+
+      <p className="max-w-prose text-sm text-muted-foreground">
+        Source line. When an AI step drew on retrieved data, name where it came
+        from so the result is explainable and the user can trace it back. The
+        names link to the source.
+      </p>
 
       <Group title="Thinking">
         <Tile label="Idle" className="w-20">

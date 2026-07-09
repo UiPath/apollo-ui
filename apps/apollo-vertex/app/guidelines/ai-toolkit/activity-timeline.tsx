@@ -1,3 +1,4 @@
+import { Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
 import { AiIcon } from "./ai-icon";
@@ -12,6 +13,7 @@ type TimelineEvent = {
   // ai-upcoming: queued. ai-progress: running. ai-complete: done. user: a person acted.
   marker: "ai-upcoming" | "ai-progress" | "ai-complete" | "user";
   initials?: string;
+  sources?: { label: string; href: string }[];
 };
 
 // A realistic invoice review trail, newest first, mixing agent and human steps.
@@ -39,6 +41,10 @@ const ACTIVITY: TimelineEvent[] = [
     detail: "PO matched, terms verified",
     time: "9:10 AM",
     marker: "ai-complete",
+    sources: [
+      { label: "PO #8801", href: "#" },
+      { label: "vendor terms", href: "#" },
+    ],
   },
   {
     title: "Data extracted",
@@ -145,6 +151,20 @@ export function ActivityTimeline() {
                 {event.detail && (
                   <p className="-mt-0.5 text-xs text-muted-foreground">
                     {event.detail}
+                  </p>
+                )}
+                {event.sources && event.sources.length > 0 && (
+                  <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground/70">
+                    <Link2 className="size-3 shrink-0" />
+                    From{" "}
+                    {event.sources.map((s, i) => (
+                      <span key={s.label}>
+                        {i > 0 && " and "}
+                        <a href={s.href} className="text-primary hover:underline">
+                          {s.label}
+                        </a>
+                      </span>
+                    ))}
                   </p>
                 )}
               </div>

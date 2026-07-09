@@ -4,6 +4,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
 import { Card } from "@/registry/card/card";
 import { AiIcon } from "./ai-icon";
 
@@ -143,6 +144,8 @@ export function PlanSelector() {
           );
         })}
       </div>
+
+      <AiCaveat />
 
       <div className="mt-5 flex justify-end">
         <Button>
