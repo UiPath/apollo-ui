@@ -2,6 +2,7 @@ import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
 import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiIcon } from "./ai-icon";
 
@@ -114,20 +115,23 @@ function ProductCard({ product }: { product: Product }) {
 /** A product grid where the AI pick is set apart by the glow + badge combination. */
 export function ProductGrid() {
   return (
-    <div className="grid max-w-4xl gap-6 sm:grid-cols-3">
-      {PRODUCTS.map((product) =>
-        product.ai ? (
-          <div key={product.name} className="relative">
-            {/* The AI pick's glow: a soft oblong blob behind the glass card. */}
-            <AiGlow />
-            <div className="relative h-full">
-              <ProductCard product={product} />
+    <>
+      <div className="grid max-w-4xl gap-6 sm:grid-cols-3">
+        {PRODUCTS.map((product) =>
+          product.ai ? (
+            <div key={product.name} className="relative">
+              {/* The AI pick's glow: a soft oblong blob behind the glass card. */}
+              <AiGlow />
+              <div className="relative h-full">
+                <ProductCard product={product} />
+              </div>
             </div>
-          </div>
-        ) : (
-          <ProductCard key={product.name} product={product} />
-        ),
-      )}
-    </div>
+          ) : (
+            <ProductCard key={product.name} product={product} />
+          ),
+        )}
+      </div>
+      <AiCaveat />
+    </>
   );
 }

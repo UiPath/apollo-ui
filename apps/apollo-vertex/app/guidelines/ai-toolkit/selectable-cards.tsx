@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
 import { Badge } from "@/registry/badge/badge";
 import {
   CardDescription,
@@ -35,7 +36,7 @@ export function SelectableCards() {
   const [selected, setSelected] = useState<number | null>(0);
 
   return (
-    <div className="grid max-w-2xl gap-6 sm:grid-cols-2">
+    <div className="grid gap-6 sm:grid-cols-2">
       {CARDS.map((card, i) => {
         const isSelected = selected === i;
         return (
@@ -72,7 +73,7 @@ export function SelectableCards() {
               aria-pressed={isSelected}
               onClick={() => setSelected(isSelected ? null : i)}
               className={cn(
-                "relative flex h-full w-full flex-col gap-2 p-5 text-left text-card-foreground",
+                "relative flex h-full w-full flex-col gap-0 p-5 text-left text-card-foreground",
                 GLASS_CLASSES,
                 "cursor-pointer transition-all duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 isSelected
@@ -92,7 +93,8 @@ export function SelectableCards() {
                   </Badge>
                 )}
               </div>
-              <CardDescription>{card.desc}</CardDescription>
+              <CardDescription className="mt-2">{card.desc}</CardDescription>
+              {card.ai && <AiCaveat />}
             </button>
           </div>
         );

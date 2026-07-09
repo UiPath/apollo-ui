@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
 import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiIcon } from "./ai-icon";
 import { AiInput } from "./ai-input";
@@ -78,7 +79,7 @@ export function Surfaces() {
               <AiGlow />
               <Card
                 variant="glass"
-                className="relative bg-[var(--ai-glass)] dark:bg-[var(--ai-glass)]"
+                className="relative gap-0 bg-[var(--ai-glass)] dark:bg-[var(--ai-glass)]"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-1 text-base leading-tight tracking-tight">
@@ -102,13 +103,14 @@ export function Surfaces() {
                     denial.
                   </CardDescription>
                 </CardHeader>
+                <AiCaveat className="px-6" />
               </Card>
             </div>
           </Block>
           <Block label="Gradient subtle · no border">
             <Card
               variant="solid"
-              className="border-0"
+              className="gap-0 border-0"
               style={{ background: "var(--ai-gradient)" }}
             >
               <CardHeader>
@@ -121,11 +123,12 @@ export function Surfaces() {
                   recommended actions
                 </CardDescription>
               </CardHeader>
+              <AiCaveat className="px-6" />
             </Card>
           </Block>
           <div className="sm:col-span-2">
             <Block label="Regular · icon lockup. Use with or without a border. Padding is built into the card surface.">
-              <Card variant="solid">
+              <Card variant="solid" className="gap-0">
                 <CardContent className="flex items-start gap-2">
                   <AiIcon
                     className="mt-0.5 size-5 shrink-0"
@@ -135,6 +138,7 @@ export function Surfaces() {
                     Matches your request. $350/unit cheaper with EPP applied.
                   </p>
                 </CardContent>
+                <AiCaveat className="px-6" />
               </Card>
             </Block>
           </div>
@@ -146,6 +150,15 @@ export function Surfaces() {
           Card (selectable)
         </h3>
         <SelectableCards />
+        <p className="mt-6 max-w-prose text-sm text-muted-foreground">
+          Caveat footer. The glow and badge carry the confidence, loud and up
+          top. The caveat sits quiet below a hairline, so the card can say this
+          is the pick and check it at the same time without the two signals
+          fighting. Use it only on cards that make a recommendation or offer an
+          action, once per card. Insight and observation cards do not need it,
+          they are already covered by the mark. For a group of cards, disclose
+          once at the group boundary, not on every card.
+        </p>
       </div>
 
       <div>
@@ -185,6 +198,7 @@ export function Surfaces() {
                   AI Identity
                 </span>
               </div>
+              <AiCaveat variant="withMark" className="-mt-2 mb-3" />
               <div className="grid gap-4 sm:grid-cols-3">
                 <Card
                   variant="glass"

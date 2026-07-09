@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
 import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiIcon } from "./ai-icon";
 
@@ -115,6 +116,7 @@ export function RecommendedActions() {
             Recommended actions
           </span>
         </div>
+        <AiCaveat variant="withMark" className="-mt-2 mb-3" />
         <div className="grid gap-4 sm:grid-cols-2">
           {RECOMMENDATIONS.map((action) => (
             <RecommendationCard key={action.id} action={action} />
