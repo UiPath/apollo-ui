@@ -87,7 +87,7 @@ export function MarkUsage() {
       <Group title="Badges">
         <Tile
           label="Solid"
-          description="A featured, high-confidence AI moment"
+          description="Highest emphasis. Low-density spots with room, like a page header or a single featured card."
           className="w-44"
         >
           <Badge className="border-0 text-white" style={{ background: FILL }}>
@@ -97,7 +97,7 @@ export function MarkUsage() {
         </Tile>
         <Tile
           label="Soft"
-          description="Standard in-context marker"
+          description="Medium emphasis. The default inside cards and content."
           className="w-44"
         >
           <Badge
@@ -110,7 +110,7 @@ export function MarkUsage() {
         </Tile>
         <Tile
           label="Outline"
-          description="Quiet provenance tag"
+          description="Lowest emphasis. Dense contexts like tables, lists, and toolbars."
           className="w-44"
         >
           <Badge
@@ -138,8 +138,16 @@ export function MarkUsage() {
         </Tile>
       </Group>
 
+      <p className="max-w-prose text-sm text-muted-foreground">
+        The label is sample text. Any AI label can take any variant, so choose
+        the variant by screen density and where the badge sits, not by the label.
+        The caveat that AI can make mistakes is separate: it is not a badge
+        passenger in any variant. It belongs to the surface around the content,
+        shown once at the recommendation or action level.
+      </p>
+
       <Group title="Buttons">
-        <Tile label="Solid" description="The marquee action" className="w-44">
+        <Tile label="Solid" description="Highest emphasis. The primary action in a view. Use one at a time." className="w-44">
           <Button
             size="sm"
             className="border-0 text-white hover:opacity-90"
@@ -149,7 +157,7 @@ export function MarkUsage() {
             Ask AI
           </Button>
         </Tile>
-        <Tile label="Soft" description="Secondary, in-context" className="w-44">
+        <Tile label="Soft" description="Medium emphasis. Supporting actions inside cards and content." className="w-44">
           <Button
             size="sm"
             variant="outline"
@@ -160,7 +168,7 @@ export function MarkUsage() {
             Summarize
           </Button>
         </Tile>
-        <Tile label="Outline" description="Subtle, inline" className="w-44">
+        <Tile label="Outline" description="Lowest emphasis. Inline or dense placements, and tertiary actions." className="w-44">
           <Button
             size="sm"
             variant="outline"
@@ -186,6 +194,13 @@ export function MarkUsage() {
           </Button>
         </Tile>
       </Group>
+
+      <p className="max-w-prose text-sm text-muted-foreground">
+        The label is sample text. Any AI action can take any variant, so choose
+        the variant by how prominent the action should be and how dense the
+        surface is, not by the label. Keep one solid action per view so the
+        primary choice stays clear.
+      </p>
 
       <Group title="Timeline marker">
         <Tile label="Upcoming" className="w-20">
