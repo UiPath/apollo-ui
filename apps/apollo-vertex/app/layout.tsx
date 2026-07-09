@@ -49,12 +49,16 @@ export const metadata = {
   },
 };
 
+// Coded App preview builds serve the app from a sub-path; Next.js basePath
+// does not rewrite plain image sources, so the logo path is prefixed here.
+const codedAppPath = process.env.NEXT_PUBLIC_APOLLO_CODED_APP_PATH;
+
 const navbar = (
   <Navbar
     logo={
       <>
         <Image
-          src="/vertex-logo.svg"
+          src={`${codedAppPath ? `/${codedAppPath}` : ""}/vertex-logo.svg`}
           alt="Apollo Vertex"
           width={32}
           height={32}

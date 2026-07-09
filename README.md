@@ -138,10 +138,12 @@ Framework-agnostic AI chat interface web component for vanilla JS, Vue, Angular,
 
 ## 🎨 Live Demos
 
-Explore our components in interactive Storybook environments:
+Explore our components in interactive Storybook environments. The sites are hosted as UiPath Coded Apps on the staging environment (internal access):
 
-- **[Apollo Vertex](https://apollo-vertex.vercel.app/)** - Complete design system showcase
-- **[Canvas Components](https://apollo-design.vercel.app/)** - Tailwind CSS components & Workflow and canvas demos
+- **[Apollo Vertex](https://engdogfood.staging.uipath.host/apollo-vertex/)** - Complete design system showcase
+- **[Apollo Docs](https://engdogfood.staging.uipath.host/apollo-docs/)** - Central documentation site
+- **[Canvas Components](https://engdogfood.staging.uipath.host/apollo-design/)** - Tailwind CSS components & Workflow and canvas demos
+- **[Landing](https://engdogfood.staging.uipath.host/apollo-landing/)** - Apollo landing page
 - **[React Playground](https://apollo-ui-react.vercel.app/)** - Material UI components, design tokens, CSS vars, icons, and chat component
 
 ## 📚 Documentation
