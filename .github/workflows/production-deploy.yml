@@ -1,0 +1,152 @@
+name: Coded App Production Deployments
+
+# PR previews deploy per-PR Coded Apps via preview-deploy.yml; this workflow
+# keeps stable production Coded Apps of the merged pages up to date on main.
+on:
+  push:
+    branches: [main]
+
+# Deny-all at the workflow level; each job grants only what it needs.
+permissions: {}
+
+concurrency:
+  group: coded-app-production
+  cancel-in-progress: true
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  DO_NOT_TRACK: 1
+  UIP_GO_VERSION: 0.3.0
+
+jobs:
+  deploy:
+    name: Deploy Apollo Coded Apps
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: Restore Turborepo cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-${{ github.ref_name }}-
+
+      - name: Deploy Coded Apps with uip-go
+        env:
+          GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
+          UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
+          UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID || secrets.UIPATH_CLIENT_ID }}
+          UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
+          UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
+          UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
+          UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
+          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE || 'Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution PM.OAuthApp' }}
+          UIPATH_RUNTIME_CLIENT_ID: ${{ vars.UIPATH_RUNTIME_CLIENT_ID || secrets.UIPATH_RUNTIME_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+
+          missing=0
+          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION UIPATH_RUNTIME_CLIENT_ID; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is required for Coded App production deployments."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+          short_sha="${GITHUB_SHA:0:7}"
+          version="0.1.0-main.${short_sha}.${GITHUB_RUN_ATTEMPT}"
+          uip_go_npmrc="${RUNNER_TEMP}/uip-go.npmrc"
+          uip_go_prefix="${RUNNER_TEMP}/uip-go"
+          {
+            printf '@uipath:registry=https://npm.pkg.github.com\n'
+            printf '//npm.pkg.github.com/:_authToken=%s\n' "$GH_NPM_REGISTRY_TOKEN"
+          } > "$uip_go_npmrc"
+          NPM_CONFIG_USERCONFIG="$uip_go_npmrc" npm install --prefix "$uip_go_prefix" "@uipath/uip-go@${UIP_GO_VERSION}"
+          UIP_GO="${uip_go_prefix}/node_modules/.bin/uip-go"
+
+          run_uip_go() {
+            local label="$1"
+            local output_file
+            local command_exit
+            local app_url
+            local extra_args=()
+
+            output_file="$(mktemp)"
+            trap 'rm -f "$output_file"; trap - RETURN' RETURN
+            if [ "$label" = "apollo-vertex" ]; then
+              extra_args+=(--auth-client-id "$UIPATH_RUNTIME_CLIENT_ID")
+            fi
+            echo "::group::uip-go ${label}"
+            set +e
+            "$UIP_GO" "$label" \
+                --name "$label" \
+                --path-name "$label" \
+                --version "$version" \
+                --folder-key "$UIPATH_FOLDER_KEY" \
+                --base-url "$UIPATH_BASE_URL" \
+                --org-name "$UIPATH_ORG_NAME" \
+                --tenant-name "$UIPATH_TENANT_NAME" \
+                --deploy-retries 3 \
+                --deploy-retry-delay-ms 10000 \
+                "${extra_args[@]}" 2>&1 | tee "$output_file"
+            command_exit=${PIPESTATUS[0]}
+            set -e
+            echo "::endgroup::"
+
+            if [ "$command_exit" -ne 0 ]; then
+              echo "::error::uip-go ${label} failed."
+              return "$command_exit"
+            fi
+
+            app_url="$(sed -nE 's/^[[:space:]]*App URL:[[:space:]]*//p' "$output_file" | tail -n 1)"
+            if [ -n "$app_url" ]; then
+              echo "✅ Deployed ${label}: ${app_url}" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "✅ Deployed ${label} (${version})" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          }
+
+          failed_apps=()
+          deploy_or_record_failure() {
+            local label="$1"
+
+            if run_uip_go "$label"; then
+              return 0
+            fi
+
+            failed_apps+=("$label")
+            return 0
+          }
+
+          deploy_or_record_failure "apollo-landing"
+          deploy_or_record_failure "apollo-docs"
+          deploy_or_record_failure "apollo-design"
+          deploy_or_record_failure "apollo-vertex"
+
+          if [ "${#failed_apps[@]}" -ne 0 ]; then
+            echo "::error::Coded App production deployment failed for: ${failed_apps[*]}"
+            exit 1
+          fi
+
+      - name: Save Turborepo cache
+        if: always()
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}

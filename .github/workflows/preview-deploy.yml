@@ -1,0 +1,429 @@
+name: Coded App Preview Deployments
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+      - 'support/**'
+
+# Deny-all default; jobs grant the minimum they need.
+permissions: {}
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  DO_NOT_TRACK: 1
+  UIP_GO_VERSION: 0.3.0
+
+concurrency:
+  group: coded-app-preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  initialize-comment:
+    name: Initialize Apollo Coded App Preview Comment
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Initialize PR comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const identifier = '<!-- apollo-coded-app-preview-comment -->';
+            const timestamp = new Date().toLocaleString('en-US', {
+              timeZone: 'America/Los_Angeles',
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            });
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const deployingLink = `[Deploying...](${runUrl})`;
+            const logsLink = `[Logs](${runUrl})`;
+            const projects = ['apollo-design', 'apollo-docs', 'apollo-landing', 'apollo-vertex'];
+            const body = [
+              identifier,
+              'Apollo Coded App preview deployments are running.',
+              '',
+              '| Project | Status | Preview | Updated (PT) |',
+              '|---------|--------|---------|--------------|',
+              ...projects.map(project => `| ${project} | ${deployingLink} | ${logsLink} | ${timestamp} |`)
+            ].join('\n');
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const existing = comments.find(comment =>
+              comment.body?.includes(identifier) &&
+              comment.user?.type === 'Bot' &&
+              ['github-actions[bot]', 'github-actions'].includes(comment.user?.login)
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+  deploy:
+    name: Deploy Apollo Coded App Previews
+    needs: initialize-comment
+    if: ${{ !cancelled() && github.event.action != 'closed' && needs.initialize-comment.result == 'success' && github.event.pull_request.head.repo.fork == false }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      design_url: ${{ steps.deploy.outputs.design_url }}
+      docs_url: ${{ steps.deploy.outputs.docs_url }}
+      landing_url: ${{ steps.deploy.outputs.landing_url }}
+      vertex_url: ${{ steps.deploy.outputs.vertex_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: Restore Turborepo cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-${{ github.ref_name }}-
+
+      - name: Deploy Coded App previews with uip-go
+        id: deploy
+        env:
+          GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
+          UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID || secrets.UIPATH_CLIENT_ID }}
+          UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
+          UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
+          UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
+          UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
+          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE || 'Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution PM.OAuthApp' }}
+          UIPATH_RUNTIME_CLIENT_ID: ${{ vars.UIPATH_RUNTIME_CLIENT_ID || secrets.UIPATH_RUNTIME_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+
+          missing=0
+          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION UIPATH_RUNTIME_CLIENT_ID; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is required for uip-go Coded App preview deployments."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+          short_sha="${GITHUB_SHA:0:7}"
+          version="0.1.0-pr${PR_NUMBER}.${short_sha}.${GITHUB_RUN_ATTEMPT}"
+          landing_app="apollo-landing-pr-${PR_NUMBER}"
+          docs_app="apollo-docs-pr-${PR_NUMBER}"
+          design_app="apollo-design-pr-${PR_NUMBER}"
+          vertex_app="apollo-vertex-pr-${PR_NUMBER}"
+          uip_go_npmrc="${RUNNER_TEMP}/uip-go.npmrc"
+          uip_go_prefix="${RUNNER_TEMP}/uip-go"
+          {
+            printf '@uipath:registry=https://npm.pkg.github.com\n'
+            printf '//npm.pkg.github.com/:_authToken=%s\n' "$GH_NPM_REGISTRY_TOKEN"
+          } > "$uip_go_npmrc"
+          NPM_CONFIG_USERCONFIG="$uip_go_npmrc" npm install --prefix "$uip_go_prefix" "@uipath/uip-go@${UIP_GO_VERSION}"
+          UIP_GO="${uip_go_prefix}/node_modules/.bin/uip-go"
+
+          write_output() {
+            local name="$1"
+            local value="$2"
+            local delimiter
+            delimiter="ghadelim_$(openssl rand -hex 16)"
+            {
+              printf '%s<<%s\n' "$name" "$delimiter"
+              printf '%s\n' "$value"
+              printf '%s\n' "$delimiter"
+            } >> "$GITHUB_OUTPUT"
+          }
+
+          derive_app_url() {
+            local app_name="$1"
+            APP_NAME="$app_name" node <<'NODE'
+          const baseUrl = process.env.UIPATH_BASE_URL || '';
+          const orgName = process.env.UIPATH_ORG_NAME || '';
+          const appName = process.env.APP_NAME || '';
+
+          let environment = '';
+          try {
+            const hostname = new URL(baseUrl).hostname;
+            let inferred = hostname.replace(/\.uipath\.com$/, '');
+            inferred = inferred.replace(/^api\./, '').replace(/\.api$/, '');
+            environment = inferred && inferred !== 'api' && inferred !== 'cloud' ? inferred : '';
+          } catch {
+            environment = '';
+          }
+
+          const suffix = environment ? `.${environment}` : '';
+          console.log(`https://${orgName}${suffix}.uipath.host/${appName}`);
+          NODE
+          }
+
+          run_uip_go() {
+            local label="$1"
+            local app_name="$2"
+            local output_name="${label#apollo-}_url"
+            local output_file
+            local command_exit
+            local app_url
+            local extra_args=()
+
+            output_file="$(mktemp)"
+            trap 'rm -f "$output_file"; trap - RETURN' RETURN
+            if [ "$label" = "apollo-vertex" ]; then
+              extra_args+=(--auth-client-id "$UIPATH_RUNTIME_CLIENT_ID")
+            fi
+            echo "::group::uip-go ${label}"
+            set +e
+            "$UIP_GO" "$label" \
+                --name "$app_name" \
+                --path-name "$app_name" \
+                --tags "apollo,${label},preview" \
+                --version "$version" \
+                --folder-key "$UIPATH_FOLDER_KEY" \
+                --base-url "$UIPATH_BASE_URL" \
+                --org-name "$UIPATH_ORG_NAME" \
+                --tenant-name "$UIPATH_TENANT_NAME" \
+                --deploy-retries 3 \
+                --deploy-retry-delay-ms 10000 \
+                "${extra_args[@]}" 2>&1 | tee "$output_file"
+            command_exit=${PIPESTATUS[0]}
+            set -e
+            echo "::endgroup::"
+
+            if [ "$command_exit" -ne 0 ]; then
+              echo "::error::uip-go ${label} failed."
+              return "$command_exit"
+            fi
+
+            app_url="$(sed -nE 's/^[[:space:]]*App URL:[[:space:]]*//p' "$output_file" | tail -n 1)"
+            if [ -z "$app_url" ]; then
+              app_url="$(derive_app_url "$app_name")"
+            fi
+            case "$app_url" in
+              */) ;;
+              *) app_url="${app_url}/" ;;
+            esac
+            write_output "$output_name" "$app_url"
+          }
+
+          failed_apps=()
+          deploy_or_record_failure() {
+            local label="$1"
+            local app_name="$2"
+
+            if run_uip_go "$label" "$app_name"; then
+              return 0
+            fi
+
+            failed_apps+=("$label")
+            return 0
+          }
+
+          deploy_or_record_failure "apollo-landing" "$landing_app"
+          deploy_or_record_failure "apollo-docs" "$docs_app"
+          deploy_or_record_failure "apollo-design" "$design_app"
+          deploy_or_record_failure "apollo-vertex" "$vertex_app"
+
+          if [ "${#failed_apps[@]}" -ne 0 ]; then
+            echo "::error::uip-go deployment failed for: ${failed_apps[*]}"
+            exit 1
+          fi
+
+      - name: Save Turborepo cache
+        if: always()
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+
+  update-comment:
+    name: Update Apollo Coded App Preview Comment
+    needs: [initialize-comment, deploy]
+    if: ${{ always() && github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false && needs.initialize-comment.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Update PR comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          DEPLOY_OUTCOME: ${{ needs.deploy.result }}
+          APOLLO_DESIGN_URL: ${{ needs.deploy.outputs.design_url }}
+          APOLLO_DOCS_URL: ${{ needs.deploy.outputs.docs_url }}
+          APOLLO_LANDING_URL: ${{ needs.deploy.outputs.landing_url }}
+          APOLLO_VERTEX_URL: ${{ needs.deploy.outputs.vertex_url }}
+        with:
+          script: |
+            const identifier = '<!-- apollo-coded-app-preview-comment -->';
+            const timestamp = new Date().toLocaleString('en-US', {
+              timeZone: 'America/Los_Angeles',
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            });
+            const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            const deploySucceeded = process.env.DEPLOY_OUTCOME === 'success';
+            const rows = [
+              ['apollo-design', process.env.APOLLO_DESIGN_URL],
+              ['apollo-docs', process.env.APOLLO_DOCS_URL],
+              ['apollo-landing', process.env.APOLLO_LANDING_URL],
+              ['apollo-vertex', process.env.APOLLO_VERTEX_URL],
+            ].map(([project, url]) => {
+              const ready = Boolean(url);
+              const status = ready ? 'Ready' : deploySucceeded ? 'Skipped' : 'Failed';
+              const preview = ready ? `[Preview](${url}) · ${logsLink}` : logsLink;
+              return `| ${project} | ${status} | ${preview} | ${timestamp} |`;
+            });
+            const body = [
+              identifier,
+              deploySucceeded
+                ? 'Apollo Coded App preview deployments are ready.'
+                : 'Apollo Coded App preview deployments did not complete.',
+              '',
+              '| Project | Status | Preview | Updated (PT) |',
+              '|---------|--------|---------|--------------|',
+              ...rows
+            ].join('\n');
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const existing = comments.find(comment =>
+              comment.body?.includes(identifier) &&
+              comment.user?.type === 'Bot' &&
+              ['github-actions[bot]', 'github-actions'].includes(comment.user?.login)
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+  cleanup-ai-chat-redirects:
+    name: Cleanup Apollo Coded App Previews
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          # The PR head, not the base: cleanup needs the recipes in the
+          # branch's .uip-go.json. Same-repo PRs only (job is fork-gated),
+          # and the deploy job already runs head code with these secrets.
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Remove Apollo Coded App previews
+        env:
+          GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
+          UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID || secrets.UIPATH_CLIENT_ID }}
+          UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
+          UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
+          UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
+          UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
+          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE || 'Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution PM.OAuthApp' }}
+          UIPATH_RUNTIME_CLIENT_ID: ${{ vars.UIPATH_RUNTIME_CLIENT_ID || secrets.UIPATH_RUNTIME_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+
+          missing=0
+          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION UIPATH_RUNTIME_CLIENT_ID; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is required for Apollo Coded App preview cleanup."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+          vertex_app="apollo-vertex-pr-${PR_NUMBER}"
+          uip_go_npmrc="${RUNNER_TEMP}/uip-go.npmrc"
+          uip_go_prefix="${RUNNER_TEMP}/uip-go"
+          {
+            printf '@uipath:registry=https://npm.pkg.github.com\n'
+            printf '//npm.pkg.github.com/:_authToken=%s\n' "$GH_NPM_REGISTRY_TOKEN"
+          } > "$uip_go_npmrc"
+          NPM_CONFIG_USERCONFIG="$uip_go_npmrc" npm install --prefix "$uip_go_prefix" "@uipath/uip-go@${UIP_GO_VERSION}"
+          UIP_GO="${uip_go_prefix}/node_modules/.bin/uip-go"
+
+          "$UIP_GO" apollo-vertex \
+            --aichat-redirects remove \
+            --name "$vertex_app" \
+            --path-name "$vertex_app" \
+            --base-url "$UIPATH_BASE_URL" \
+            --org-name "$UIPATH_ORG_NAME" \
+            --tenant-name "$UIPATH_TENANT_NAME" \
+            --auth-client-id "$UIPATH_RUNTIME_CLIENT_ID"
+
+          for label in apollo-landing apollo-docs apollo-design apollo-vertex; do
+            app_name="${label}-pr-${PR_NUMBER}"
+            if ! "$UIP_GO" "$label" \
+              --delete-app \
+              --name "$app_name" \
+              --path-name "$app_name" \
+              --folder-key "$UIPATH_FOLDER_KEY" \
+              --base-url "$UIPATH_BASE_URL" \
+              --org-name "$UIPATH_ORG_NAME" \
+              --tenant-name "$UIPATH_TENANT_NAME"; then
+              echo "::warning::Could not delete Coded App ${app_name}. External App auth can publish/deploy/upgrade, but the Apps delete API may reject CI tokens."
+            fi
+          done

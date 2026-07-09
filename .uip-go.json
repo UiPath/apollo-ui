@@ -1,0 +1,80 @@
+{
+  "deployments": {
+    "apollo-docs": {
+      "type": "codedapp",
+      "build": {
+        "type": "staged-next-export",
+        "sourceDir": "apps/apollo-docs",
+        "stageDir": ".uipath-build/apollo-docs",
+        "preCommands": ["pnpm turbo build --filter=apollo-docs^..."],
+        "commands": ["pnpm exec next build"],
+        "copyOutput": "out",
+        "pagefind": true
+      },
+      "outputDir": "apps/apollo-docs/out",
+      "pathNameEnv": "APOLLO_CODED_APP_PATH",
+      "folderKeyEnv": "UIPATH_FOLDER_KEY",
+      "postprocess": ["static-next-export"],
+      "tags": "apollo,apollo-docs",
+      "env": {
+        "CI": "true",
+        "APOLLO_CODED_APP": "1"
+      }
+    },
+    "apollo-landing": {
+      "type": "codedapp",
+      "build": "pnpm turbo build --filter=apollo-landing",
+      "outputDir": "apps/landing/dist",
+      "pathNameEnv": "APOLLO_CODED_APP_PATH",
+      "folderKeyEnv": "UIPATH_FOLDER_KEY",
+      "postprocess": ["relative-root-assets"],
+      "tags": "apollo,apollo-landing",
+      "env": {
+        "CI": "true",
+        "APOLLO_CODED_APP": "1"
+      }
+    },
+    "apollo-design": {
+      "type": "codedapp",
+      "build": "pnpm turbo run storybook:build --filter=storybook-app",
+      "outputDir": "apps/storybook/storybook-static",
+      "pathNameEnv": "APOLLO_CODED_APP_PATH",
+      "folderKeyEnv": "UIPATH_FOLDER_KEY",
+      "postprocess": ["relative-root-assets"],
+      "tags": "apollo,apollo-design",
+      "env": {
+        "CI": "true",
+        "APOLLO_CODED_APP": "1"
+      }
+    },
+    "apollo-vertex": {
+      "type": "codedapp",
+      "build": {
+        "type": "staged-next-export",
+        "sourceDir": "apps/apollo-vertex",
+        "stageDir": ".uipath-build/apollo-vertex",
+        "exclude": ["app/api"],
+        "commands": [
+          "pnpm generate:theme",
+          "pnpm registry:build",
+          "pnpm exec next build"
+        ],
+        "copyOutput": "out",
+        "pagefind": true
+      },
+      "outputDir": "apps/apollo-vertex/out",
+      "pathNameEnv": "APOLLO_CODED_APP_PATH",
+      "folderKeyEnv": "UIPATH_FOLDER_KEY",
+      "postprocess": ["static-next-export"],
+      "platformAuth": {
+        "redirectPath": "patterns/ai-chat/index.html",
+        "scope": "openid profile offline_access DataFabric.Data.Read DataFabric.Schema.Read OR.Execution OR.Folders OR.Jobs ConversationalAgents Traces.Api"
+      },
+      "tags": "apollo,apollo-vertex",
+      "env": {
+        "CI": "true",
+        "APOLLO_CODED_APP": "1"
+      }
+    }
+  }
+}
