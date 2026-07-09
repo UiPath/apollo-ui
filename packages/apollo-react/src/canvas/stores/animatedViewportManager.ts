@@ -237,10 +237,11 @@ class AnimatedViewportManager {
     const nodeBounds: NodeBounds = {
       x: node.position.x,
       y: node.position.y,
-      // Prefer measured dimensions: node width/height are content-driven and may be
-      // unset in the store until React Flow's ResizeObserver reports them.
-      width: node.measured?.width ?? node.width ?? 200,
-      height: node.measured?.height ?? node.height ?? 100,
+      // Prefer measured dimensions, falling back to explicit size then a default.
+      // `||` (not `??`) so a transient 0 from React Flow before measurement falls
+      // through instead of feeding a zero-sized bound into the viewport math.
+      width: node.measured?.width || node.width || 200,
+      height: node.measured?.height || node.height || 100,
     };
 
     // Calculate the viewport that focuses on the node with padding
@@ -337,10 +338,11 @@ class AnimatedViewportManager {
     return {
       x: node.position.x,
       y: node.position.y,
-      // Prefer measured dimensions: node width/height are content-driven and may be
-      // unset in the store until React Flow's ResizeObserver reports them.
-      width: node.measured?.width ?? node.width ?? 200,
-      height: node.measured?.height ?? node.height ?? 100,
+      // Prefer measured dimensions, falling back to explicit size then a default.
+      // `||` (not `??`) so a transient 0 from React Flow before measurement falls
+      // through instead of feeding a zero-sized bound into the viewport math.
+      width: node.measured?.width || node.width || 200,
+      height: node.measured?.height || node.height || 100,
     };
   }
 
