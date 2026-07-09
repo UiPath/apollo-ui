@@ -13,7 +13,7 @@ permissions: {}
 env:
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
-  UIP_GO_VERSION: 0.2.0
+  UIP_GO_VERSION: 0.2.1
 
 concurrency:
   group: coded-app-preview-pr-${{ github.event.pull_request.number }}
@@ -365,7 +365,10 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          ref: ${{ github.event.pull_request.base.sha }}
+          # The PR head, not the base: cleanup needs the recipes in the
+          # branch's .uip-go.json. Same-repo PRs only (job is fork-gated),
+          # and the deploy job already runs head code with these secrets.
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Remove Apollo Coded App previews
         env:
