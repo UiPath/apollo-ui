@@ -191,9 +191,7 @@ export const TaskContent = memo(
                 </Button>
               </CanvasTooltip>
             )}
-            {!hasSecondRowContent && (
-              <StageTaskEntryConditionIcon task={task} small={!!hasExecutionStatus} />
-            )}
+            {!hasSecondRowContent && <StageTaskEntryConditionIcon task={task} />}
             {showPlayButtonSmall && !hasSecondRowContent && (
               <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
             )}
