@@ -169,27 +169,29 @@ import { defaultCostTier } from '@uipath/apollo-react/material/components';
 
 ### 6. BYO management
 
-BYO management affordances — edit/delete row actions and the "Use custom model" footer — appear only for users who hold the **`AiTrustLayerByoLlm` license entitlement**, the same signal the Automation Cloud portal uses for the AI Trust Layer's BYO LLM pages. Pass a `requestContext` and the picker runs the check:
+BYO management affordances — the edit row action and the "Use custom model" footer — appear only for **organization administrators**, the same gate the Automation Cloud portal puts on the AI Trust Layer admin pages these affordances navigate to. Pass a `requestContext` and the picker runs the check:
 
 ```tsx
 const requestContext = React.useMemo(() => ({
   token,
   tenantName,                       // path segment for platform routes
-  organizationId,                   // org GUID (entitlement check)
-  userId,                           // optional: user-scoped evaluation
+  tenantId,                         // tenant GUID (admin-page deep links)
+  requestingProduct: 'agents',      // pre-populates the add-configuration form
+  requestingFeature: 'design-eval-deploy',
   // baseUrl: 'https://cloud.uipath.com/acme',  // omit when same-origin
-}), [token, tenantName, organizationId, userId]);
+}), [token, tenantName, tenantId]);
 
-<ModelPicker
-  models={models}
-  requestContext={requestContext}
-  onUseCustomModel={() => router.push('/settings/byo-models')}
-/>
+<ModelPicker models={models} requestContext={requestContext} />
 ```
 
-Under the hood: `POST {baseUrl}/lease_/api/entitlements/{organizationId}/entitled` with `{ EntitlementNames: ["AiTrustLayerByoLlm"] }`. The check **fails closed** — affordances stay hidden while loading or on error.
+Under the hood: `GET {baseUrl}/portal_/api/organization/UserOrganizationInfo` — org admin means `accountRoleType` is `ACCOUNT_ADMIN` or `ACCOUNT_OWNER` (the portal's own `isOrgAdminSelector` rule). The check **fails closed**: affordances stay hidden while loading, on error, and while re-checking after the context changes. It is a client-side affordance gate only; the configurations pages and APIs enforce authorization server-side.
 
-Products with their own authorization model can pass `canManageByo` (`true`/`false`) instead; when set, no entitlement call is made. Custom row actions go through `slots.optionActions`.
+**Default navigation.** With a `requestContext` in place the affordances work with zero extra wiring — both lead to the AI Trust Layer LLM-configurations surface (`{baseUrl}/portal_/admin/ai-trust-layer/llm-configurations`):
+
+- The **"Use custom model" footer** opens the *add configuration* form, deep-linked to `/{tenantId}/{folderId}/add` when the tenant GUID and a concrete folder are known (the folder switcher's selection supplies the numeric folder id) and pre-populated via `?product=&feature=` from `requestingProduct`/`requestingFeature`. Without a concrete folder it lands on the configurations list instead.
+- The **edit row action** (BYO rows only) opens the configuration's *edit* form when the model carries `byomDetails.productLlmConfigurationId`; until Discovery serves that id, it lands on the configurations list scoped to the tenant + folder. There is deliberately no delete row action: removal lives on the configurations page.
+
+`onUseCustomModel` overrides the footer's default navigation (e.g. an in-app wizard), and `slots.optionActions` overrides the row actions. Products with their own authorization model can pass `canManageByo` (`true`/`false`); when set, no admin check request is made.
 
 ### 7. Folder scoping
 
@@ -246,7 +248,7 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
     popupFooter: ({ close }) => (
       <MyCustomFooter onClick={() => { close(); openMyWizard(); }} />
     ),
-    // Per-row right-aligned actions (overrides default edit/delete).
+    // Per-row right-aligned actions (overrides the default edit action).
     optionActions: (m) => (m.byoConnectionLabel ? <MyActions model={m} /> : null),
     // Per-row meta column (between chips and actions).
     optionMeta: (m) => <ContextWindowBar tokens={m.modelDetails?.contextWindowTokens} />,
@@ -293,9 +295,9 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `badgesFor`           | `(m) => readonly ModelBadgeKind[]`                    | Stamp badges from the Apollo badge pool (see §3; cost badges in §5).                                                 |
 | `customTagsFor`       | `(m) => readonly ModelTag[]`                          | Escape hatch: free-form chips for one-offs pending a pool addition. Prefer `badgesFor`.                              |
 | `customTagVariants`   | `Record<string, string>`                              | Apollo MUI chip variant lookup for new tag kinds.                                                                    |
-| `requestContext`      | `PlatformRequestContext`                              | Auth/routing for the picker's built-in platform calls (entitlement check + folder fetch). Pass a memoized object.    |
-| `canManageByo`        | `boolean`                                             | Explicit override for BYO management. When unset and `requestContext` is provided, the picker checks the `AiTrustLayerByoLlm` entitlement. |
-| `onUseCustomModel`    | `() => void`                                          | Called when the user activates the default footer CTA. Picker closes itself first.                                   |
+| `requestContext`      | `PlatformRequestContext`                              | Auth/routing for the picker's built-in platform calls (org-admin check + folder fetch) and the default add/edit navigation. Pass a memoized object. |
+| `canManageByo`        | `boolean`                                             | Explicit override for BYO management. When unset and `requestContext` is provided, the picker checks whether the user is an organization admin. |
+| `onUseCustomModel`    | `() => void`                                          | Overrides the footer CTA's default navigation to the LLM-configurations add page. Picker closes itself first.        |
 | `enableFolders`       | `boolean`                                             | Turn on folder scoping — the picker fetches the user's Orchestrator folders via `requestContext`. Default `false`.   |
 | `folders`             | `readonly { id; label }[]`                            | Test/storybook override for the folder list (skips the internal fetch).                                              |
 | `folder`              | `string \| null`                                      | Selected folder id (Orchestrator folder Key), or `null` for "All folders".                                           |

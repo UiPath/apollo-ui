@@ -7,14 +7,22 @@ import { Colors, FontFamily } from '@uipath/apollo-core';
 import React from 'react';
 import { useSafeLingui } from '../../../i18n';
 import type { ModelBadgeKind } from './badges';
-import { FolderSwitcher } from './primitives/FolderSwitcher';
+import { FolderSwitcher, type FolderSwitcherFolder } from './primitives/FolderSwitcher';
+import { defaultRowActions } from './primitives/ModelOptionRow';
 import { GroupedOptionList, optionDomId, VirtualOptionList } from './primitives/OptionList';
 import { PickerPopup } from './primitives/PickerPopup';
 import { PickerSearchInput } from './primitives/PickerSearchInput';
 import { PickerTrigger } from './primitives/PickerTrigger';
 import type { DiscoveryModel, ModelTag } from './types';
 import { useModelPickerState } from './useModelPickerState';
-import { type PlatformRequestContext, useCanManageByo, useUserFolders } from './usePlatformAccess';
+import {
+  buildLlmConfigurationsUrl,
+  type LlmConfigurationsLinkOptions,
+  type PlatformRequestContext,
+  platformNavigation,
+  useCanManageByo,
+  useUserFolders,
+} from './usePlatformAccess';
 import type { DeriveModelTagsContext, GroupStrategy } from './utils';
 
 export type ModelPickerVariant = 'searchable' | 'virtualized';
@@ -89,8 +97,10 @@ export interface ModelPickerSlots {
    */
   optionMeta?: (model: DiscoveryModel) => React.ReactNode;
   /**
-   * Per-row right-aligned actions. Default renders edit/delete for BYO
-   * models (only when `canManageByo` is true). Pass null to suppress.
+   * Per-row right-aligned actions. The default renders an edit action
+   * for BYO models (only when `canManageByo` resolves true and a
+   * `requestContext` provides the navigation target). Pass null to
+   * suppress.
    */
   optionActions?: (model: DiscoveryModel) => React.ReactNode;
 }
@@ -191,13 +201,14 @@ export interface ModelPickerProps {
    */
   customTagVariants?: Record<string, string>;
   /**
-   * Explicit override for BYO management affordances (edit/delete row
-   * actions + "Use custom model" footer CTA).
+   * Explicit override for BYO management affordances (edit row action
+   * + "Use custom model" footer CTA).
    *
    * **Leave it unset** and pass `requestContext` instead: the picker
-   * then checks the `AiTrustLayerByoLlm` license entitlement itself —
-   * the same signal the Experiences portal uses to show BYO LLM
-   * management. Set `true`/`false` only when your product has its own
+   * then checks whether the current user is an **organization
+   * administrator** — the same signal the Experiences portal uses to
+   * gate the AI Trust Layer admin pages these affordances navigate to.
+   * Set `true`/`false` only when your product has its own
    * authorization model. With neither an override nor a
    * `requestContext`, affordances stay hidden.
    *
@@ -207,17 +218,20 @@ export interface ModelPickerProps {
    */
   canManageByo?: boolean;
   /**
-   * Called when the user activates the default "Use custom model"
-   * footer CTA (visible when BYO management is allowed and no custom
-   * `popupFooter` slot is provided). The picker closes itself before
-   * calling this — typically the host navigates to the BYO
-   * connections page.
+   * Override for the default "Use custom model" footer CTA action.
+   * When unset and a `requestContext` is provided, activating the CTA
+   * navigates to the AI Trust Layer LLM-configurations page — straight
+   * to the add form (pre-populated with `requestingProduct` /
+   * `requestingFeature`) when the tenant GUID and a concrete folder
+   * are known, otherwise to the configurations list. The picker closes
+   * itself before navigating/calling.
    */
   onUseCustomModel?: () => void;
   /**
-   * Auth + routing context for the picker's built-in platform calls:
-   * the folder list (`enableFolders`) and the BYO-management
-   * entitlement check (`canManageByo` unset). Pass a **stable
+   * Auth + routing context for the picker's built-in platform calls —
+   * the folder list (`enableFolders`) and the org-admin check
+   * (`canManageByo` unset) — and for the default add/edit navigation
+   * into the AI Trust Layer LLM-configurations pages. Pass a **stable
    * (memoized) object** — the internal hooks refetch when its identity
    * changes.
    */
@@ -235,8 +249,10 @@ export interface ModelPickerProps {
    * Test/storybook override for the folder list. When set, the picker
    * skips its internal folder fetch and renders these instead.
    * Production hosts should prefer `enableFolders` + `requestContext`.
+   * Include `numericId` when the default add/edit navigation should
+   * deep-link into a folder's LLM-configurations pages.
    */
-  folders?: ReadonlyArray<{ id: string; label: string }>;
+  folders?: readonly FolderSwitcherFolder[];
   /**
    * Selected folder id. `null` means the "All folders" sentinel (omit
    * `X-UiPath-FolderKey` on the Discovery request).
@@ -396,12 +412,14 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     );
 
     // BYO management: an explicit `canManageByo` prop wins; otherwise
-    // the picker checks the AiTrustLayerByoLlm entitlement itself via
-    // `requestContext` (failing closed while loading / on error).
-    const { canManage: entitledToManageByo } = useCanManageByo(
+    // the picker checks whether the user is an organization admin via
+    // `requestContext` (failing closed while loading / on error) — the
+    // same gate the portal puts on the AI Trust Layer admin pages the
+    // affordances navigate to.
+    const { canManage: isOrgAdmin } = useCanManageByo(
       canManageByo === undefined && requestContext ? requestContext : null
     );
-    const effectiveCanManageByo = canManageByo ?? entitledToManageByo ?? false;
+    const effectiveCanManageByo = canManageByo ?? isOrgAdmin ?? false;
 
     // Folder list: fetched internally when the product opts in via
     // `enableFolders`, unless a test/storybook override supplies the
@@ -410,6 +428,28 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       enableFolders && !folders && requestContext ? requestContext : null
     );
     const effectiveFolders = folders ?? (enableFolders ? fetchedFolders : undefined);
+
+    // Default BYO-management navigation target: the AI Trust Layer
+    // LLM-configurations pages. Same-tab full navigation — the target
+    // is the portal admin app, not a picker-internal view. Deep-links
+    // into add/edit need the numeric folder id of the selected folder;
+    // without one (e.g. "All folders") the URL falls back to the
+    // configurations list.
+    const selectedFolderNumericId = React.useMemo(
+      () => effectiveFolders?.find((f) => f.id === folder)?.numericId,
+      [effectiveFolders, folder]
+    );
+    const navigateToLlmConfigurations = React.useMemo(() => {
+      if (!requestContext) return undefined;
+      return (link: Omit<LlmConfigurationsLinkOptions, 'folderNumericId'>) => {
+        platformNavigation.assign(
+          buildLlmConfigurationsUrl(requestContext, {
+            ...link,
+            folderNumericId: selectedFolderNumericId,
+          })
+        );
+      };
+    }, [requestContext, selectedFolderNumericId]);
 
     // Dev-time guard: duplicate folder ids silently break the switcher's
     // selection highlight. Warn once per list change. `typeof process`
@@ -462,35 +502,57 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       [activeGroupBy]
     );
 
-    // Row actions: respect the slot override, otherwise gate the default
-    // edit/delete by the resolved BYO-management permission. Returning
-    // `undefined` lets OptionList fall back to its own default; passing
-    // `null` from a slot suppresses actions entirely.
+    // Row actions: respect the slot override, otherwise gate the
+    // default edit action by the resolved BYO-management permission and
+    // wire it to the LLM-configurations page — the edit form directly
+    // when the row carries its configuration id, the configurations
+    // list otherwise.
     const renderRowActions = React.useMemo(() => {
       if (slots?.optionActions) return slots.optionActions;
-      if (!effectiveCanManageByo) return () => null;
-      return undefined;
-    }, [slots?.optionActions, effectiveCanManageByo]);
+      if (!effectiveCanManageByo || !navigateToLlmConfigurations) return () => null;
+      return (m: DiscoveryModel) =>
+        defaultRowActions(m, {
+          i18n,
+          onEdit: (model) =>
+            navigateToLlmConfigurations({
+              intent: 'edit',
+              configurationId: model.byomDetails?.productLlmConfigurationId,
+            }),
+        });
+    }, [slots?.optionActions, effectiveCanManageByo, navigateToLlmConfigurations, i18n]);
 
     // Footer: explicit slot override (including `null`) wins; otherwise
     // the default "Use custom model" CTA appears when the user may
-    // manage BYO. Computed as a node (not a render function) so the
-    // popup receives stable children.
+    // manage BYO. `onUseCustomModel` overrides the default navigation
+    // to the LLM-configurations add page. Computed as a node (not a
+    // render function) so the popup receives stable children.
     const footerNode = React.useMemo<React.ReactNode>(() => {
       if (slots && Object.hasOwn(slots, 'popupFooter')) {
         return slots.popupFooter ? slots.popupFooter(slotCtx) : null;
       }
       if (!effectiveCanManageByo) return null;
+      const activate =
+        onUseCustomModel ??
+        (navigateToLlmConfigurations
+          ? () => navigateToLlmConfigurations({ intent: 'add' })
+          : undefined);
       return (
         <UseCustomModelFooter
           onActivate={() => {
             closePopup();
-            onUseCustomModel?.();
+            activate?.();
           }}
-          disabled={!onUseCustomModel}
+          disabled={!activate}
         />
       );
-    }, [slots, effectiveCanManageByo, onUseCustomModel, slotCtx, closePopup]);
+    }, [
+      slots,
+      effectiveCanManageByo,
+      onUseCustomModel,
+      navigateToLlmConfigurations,
+      slotCtx,
+      closePopup,
+    ]);
 
     return (
       // Typography comes from Apollo's Noto Sans stack directly (not the
@@ -813,9 +875,10 @@ const GroupBySegmented: React.FC<GroupBySegmentedProps> = ({ value, onChange }) 
 interface UseCustomModelFooterProps {
   onActivate: () => void;
   /**
-   * Render the CTA as a static (non-tappable) hint when the host
-   * forgot to wire `onUseCustomModel`. The CTA still shows so the
-   * BYO affordance is visible — it just doesn't crash on click and
+   * Render the CTA as a static (non-tappable) hint when neither
+   * `onUseCustomModel` nor a `requestContext` (for the default
+   * LLM-configurations navigation) is wired. The CTA still shows so
+   * the BYO affordance is visible — it just doesn't crash on click and
    * surfaces a tooltip explaining why.
    */
   disabled?: boolean;
@@ -831,7 +894,8 @@ const UseCustomModelFooter: React.FC<UseCustomModelFooterProps> = ({ onActivate,
         disabled
           ? _({
               id: 'modelPicker.useCustomModel.disabledHint',
-              message: 'Pass onUseCustomModel to the picker to wire this action.',
+              message:
+                'Pass onUseCustomModel or a requestContext to the picker to wire this action.',
             })
           : undefined
       }

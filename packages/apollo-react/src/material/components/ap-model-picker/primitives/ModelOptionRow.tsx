@@ -1,4 +1,3 @@
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -47,9 +46,10 @@ export interface ModelOptionRowProps {
    */
   tagVariants?: Record<string, string>;
   /**
-   * Right-aligned actions renderer, called with the row's model. When
-   * omitted, `defaultRowActions` renders edit/delete for BYO models.
-   * Return `null` to suppress actions for a given row.
+   * Right-aligned actions renderer, called with the row's model.
+   * Return `null` to suppress actions for a given row. When omitted,
+   * no actions render (the standalone `defaultRowActions` needs an
+   * `onEdit` handler the row cannot invent).
    */
   renderActions?: (model: DiscoveryModel) => React.ReactNode;
   /**
@@ -138,9 +138,7 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
   const techId = usesFriendlyName ? model.modelId : null;
   const minHeight = dense ? DENSE_OPTION_HEIGHT : FULL_OPTION_HEIGHT;
   const contextLabel = formatContextWindow(model.modelDetails?.contextWindowTokens);
-  const rowActions = renderActions
-    ? renderActions(model)
-    : defaultRowActions(model, { i18n: tagContext?.i18n });
+  const rowActions = renderActions ? renderActions(model) : null;
   const meta = renderMeta?.(model);
 
   return (
@@ -319,13 +317,18 @@ export const ModelOptionRow = React.memo(ModelOptionRowInner);
 ModelOptionRow.displayName = 'ModelOptionRow';
 
 /**
- * Default row-actions renderer: edit + delete icon buttons for BYO models.
- * Exported so consumers can fall back to it when overriding row actions
- * selectively (e.g. add a "Set default" action without losing edit/delete).
+ * Default row-actions renderer: an edit icon button for BYO models,
+ * wired by the picker to the AI Trust Layer LLM-configurations page
+ * (removal lives on that page, so there is no separate delete action).
+ * Exported so consumers can fall back to it when overriding row
+ * actions selectively (e.g. add a "Set default" action without losing
+ * edit).
  *
- * Admin-gated by default: the picker only calls this when
- * `canManageByo` is true. Standalone consumers should gate the call
- * themselves before passing the result into `renderActions`.
+ * Renders nothing without an `onEdit` handler — an action button that
+ * does nothing is worse than no button. Admin-gated by default: the
+ * picker only calls this when `canManageByo` is true. Standalone
+ * consumers should gate the call themselves before passing the result
+ * into `renderActions`.
  */
 export function defaultRowActions(
   model: DiscoveryModel,
@@ -335,38 +338,34 @@ export function defaultRowActions(
      * omitted, English source strings are used.
      */
     i18n?: PickerTranslator;
+    /** Edit activation — the picker navigates to the configuration page. */
+    onEdit?: (model: DiscoveryModel) => void;
   } = {}
 ): React.ReactNode {
+  const { i18n, onEdit } = options;
+  if (!onEdit) return null;
   const isByo =
     model.modelSubscriptionType === 'BYOMAdded' ||
     model.modelSubscriptionType === 'BYOMReplacedAlternative' ||
     model.modelSubscriptionType === 'BYOMReplacedLikeForLike';
   if (!isByo) return null;
-  const editTitle = options.i18n
-    ? options.i18n._({
-        id: 'modelPicker.row.editConnection',
-        message: 'Edit connection',
+  const editTitle = i18n
+    ? i18n._({
+        id: 'modelPicker.row.editConfiguration',
+        message: 'Edit configuration',
       })
-    : 'Edit connection';
-  const removeTitle = options.i18n
-    ? options.i18n._({
-        id: 'modelPicker.row.removeConnection',
-        message: 'Remove connection',
-      })
-    : 'Remove connection';
+    : 'Edit configuration';
   return (
-    <>
-      <Tooltip title={editTitle} arrow>
-        <IconButton size="small" sx={{ color: 'inherit' }} aria-label={editTitle}>
-          <EditOutlinedIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title={removeTitle} arrow>
-        <IconButton size="small" sx={{ color: 'inherit' }} aria-label={removeTitle}>
-          <DeleteOutlineIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-    </>
+    <Tooltip title={editTitle} arrow>
+      <IconButton
+        size="small"
+        sx={{ color: 'inherit' }}
+        aria-label={editTitle}
+        onClick={() => onEdit(model)}
+      >
+        <EditOutlinedIcon fontSize="small" />
+      </IconButton>
+    </Tooltip>
   );
 }
 

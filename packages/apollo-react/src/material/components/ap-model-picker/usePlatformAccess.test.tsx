@@ -4,15 +4,16 @@ import type React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PlatformRequestContext } from './usePlatformAccess';
-import { useCanManageByo, useUserFolders } from './usePlatformAccess';
+import { buildLlmConfigurationsUrl, useCanManageByo, useUserFolders } from './usePlatformAccess';
 
 const CTX: PlatformRequestContext = {
   token: 'test-token',
   // Trailing slash on purpose — the hooks must strip it before joining.
   baseUrl: 'https://cloud.local/acme/',
   tenantName: 'DefaultTenant',
-  organizationId: 'org-guid',
-  userId: 'user-guid',
+  tenantId: 'tenant-guid',
+  requestingProduct: 'agents',
+  requestingFeature: 'design-eval-deploy',
 };
 
 const FOLDERS_URL =
@@ -44,7 +45,7 @@ const FoldersProbe: React.FC<{ ctx: PlatformRequestContext | null }> = ({ ctx })
       <button type="button" aria-label="refetch" onClick={refetch} />
       <ul>
         {folders.map((f) => (
-          <li key={f.id}>{`${f.id}|${f.label}`}</li>
+          <li key={f.id}>{`${f.id}|${f.label}|${f.numericId}`}</li>
         ))}
       </ul>
     </div>
@@ -75,8 +76,8 @@ describe('useUserFolders', () => {
     );
     render(<FoldersProbe ctx={CTX} />);
 
-    expect(await screen.findByText('guid-a|Shared')).toBeInTheDocument();
-    expect(screen.getByText('guid-b|Finance')).toBeInTheDocument();
+    expect(await screen.findByText('guid-a|Shared|1')).toBeInTheDocument();
+    expect(screen.getByText('guid-b|Finance|2')).toBeInTheDocument();
     expect(screen.getByTestId('loading')).toHaveTextContent('false');
     expect(fetchMock).toHaveBeenCalledWith(
       FOLDERS_URL,
@@ -115,46 +116,43 @@ describe('useUserFolders', () => {
 });
 
 describe('useCanManageByo', () => {
-  it('grants management when the entitlement is held', async () => {
-    fetchMock.mockResolvedValue(jsonResponse({ isEntitled: { AiTrustLayerByoLlm: true } }));
+  it('grants management for organization admins', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ accountRoleType: 'ACCOUNT_ADMIN' }));
     render(<ByoProbe ctx={CTX} />);
 
     await waitFor(() => expect(screen.getByTestId('can-manage')).toHaveTextContent('true'));
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://cloud.local/acme/lease_/api/entitlements/org-guid/entitled?userId=user-guid',
+      'https://cloud.local/acme/portal_/api/organization/UserOrganizationInfo',
       expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({ EntitlementNames: ['AiTrustLayerByoLlm'] }),
         headers: expect.objectContaining({
           Authorization: 'Bearer test-token',
-          'Content-Type': 'application/json',
         }),
       })
     );
   });
 
-  it('denies management when the entitlement is absent from the response', async () => {
-    fetchMock.mockResolvedValue(jsonResponse({ isEntitled: {} }));
+  it('grants management for organization owners', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ accountRoleType: 'ACCOUNT_OWNER' }));
+    render(<ByoProbe ctx={CTX} />);
+
+    await waitFor(() => expect(screen.getByTestId('can-manage')).toHaveTextContent('true'));
+  });
+
+  it.each([
+    'DEFAULT_USER',
+    'TENANT_ADMIN',
+  ])('denies management for role %s (org admin only)', async (accountRoleType) => {
+    fetchMock.mockResolvedValue(jsonResponse({ accountRoleType }));
     render(<ByoProbe ctx={CTX} />);
 
     await waitFor(() => expect(screen.getByTestId('can-manage')).toHaveTextContent('false'));
   });
 
-  it('omits the userId query when the context has no user', async () => {
-    fetchMock.mockResolvedValue(jsonResponse({ isEntitled: { AiTrustLayerByoLlm: true } }));
-    const noUserCtx: PlatformRequestContext = {
-      token: CTX.token,
-      baseUrl: CTX.baseUrl,
-      tenantName: CTX.tenantName,
-      organizationId: CTX.organizationId,
-    };
-    render(<ByoProbe ctx={noUserCtx} />);
+  it('denies management when the response carries no role', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({}));
+    render(<ByoProbe ctx={CTX} />);
 
-    await waitFor(() => expect(screen.getByTestId('can-manage')).toHaveTextContent('true'));
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://cloud.local/acme/lease_/api/entitlements/org-guid/entitled',
-      expect.anything()
-    );
+    await waitFor(() => expect(screen.getByTestId('can-manage')).toHaveTextContent('false'));
   });
 
   it('fails closed on HTTP errors', async () => {
@@ -177,5 +175,62 @@ describe('useCanManageByo', () => {
     render(<ByoProbe ctx={null} />);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(screen.getByTestId('can-manage')).toHaveTextContent('undefined');
+  });
+
+  it('resets the verdict while re-checking a new context (fail closed on refetch)', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ accountRoleType: 'ACCOUNT_ADMIN' }));
+    const { rerender } = render(<ByoProbe ctx={CTX} />);
+    await waitFor(() => expect(screen.getByTestId('can-manage')).toHaveTextContent('true'));
+
+    // Second context: keep the request pending and assert the previous
+    // `true` verdict does not survive into the new check.
+    fetchMock.mockReturnValue(new Promise(() => {}));
+    rerender(<ByoProbe ctx={{ ...CTX, token: 'other-token' }} />);
+    await waitFor(() => expect(screen.getByTestId('can-manage')).toHaveTextContent('undefined'));
+    expect(screen.getByTestId('loading')).toHaveTextContent('true');
+  });
+});
+
+describe('buildLlmConfigurationsUrl', () => {
+  const ROOT = 'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations';
+
+  it('deep-links to the add page with product/feature pre-population params', () => {
+    expect(buildLlmConfigurationsUrl(CTX, { intent: 'add', folderNumericId: 2241521 })).toBe(
+      `${ROOT}/tenant-guid/2241521/add?product=agents&feature=design-eval-deploy`
+    );
+  });
+
+  it('omits the pre-population query when product/feature are unknown', () => {
+    const ctx = { ...CTX, requestingProduct: undefined, requestingFeature: undefined };
+    expect(buildLlmConfigurationsUrl(ctx, { intent: 'add', folderNumericId: 7 })).toBe(
+      `${ROOT}/tenant-guid/7/add`
+    );
+  });
+
+  it('deep-links to the edit page when a configuration id is known', () => {
+    expect(
+      buildLlmConfigurationsUrl(CTX, {
+        intent: 'edit',
+        folderNumericId: 7,
+        configurationId: 'config-guid',
+      })
+    ).toBe(`${ROOT}/tenant-guid/7/edit/config-guid`);
+  });
+
+  it('falls back to the list for edit intent without a configuration id', () => {
+    expect(buildLlmConfigurationsUrl(CTX, { intent: 'edit', folderNumericId: 7 })).toBe(
+      `${ROOT}?tenantId=tenant-guid&folderId=7`
+    );
+  });
+
+  it('falls back to the configurations list without a folder, carrying the tenant', () => {
+    expect(buildLlmConfigurationsUrl(CTX, { intent: 'add' })).toBe(`${ROOT}?tenantId=tenant-guid`);
+  });
+
+  it('falls back to the bare list without tenant or folder', () => {
+    const ctx: PlatformRequestContext = { token: 't', tenantName: 'DefaultTenant' };
+    expect(buildLlmConfigurationsUrl(ctx, { intent: 'add' })).toBe(
+      '/portal_/admin/ai-trust-layer/llm-configurations'
+    );
   });
 });

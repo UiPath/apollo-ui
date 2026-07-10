@@ -148,13 +148,11 @@ export const FOLDER_SWITCHER = {
  * ─────────────────────────────────────────────────────────────────── */
 
 export const ROW_ACTIONS = {
-  editConnection: msg({
-    id: 'modelPicker.row.editConnection',
-    message: 'Edit connection',
-  }),
-  removeConnection: msg({
-    id: 'modelPicker.row.removeConnection',
-    message: 'Remove connection',
+  // Opens the AI Trust Layer LLM-configurations edit page; removal
+  // lives there too, so there is no separate delete action.
+  editConfiguration: msg({
+    id: 'modelPicker.row.editConfiguration',
+    message: 'Edit configuration',
   }),
 } as const;
 
@@ -173,7 +171,7 @@ export const USE_CUSTOM_MODEL = {
   }),
   disabledHint: msg({
     id: 'modelPicker.useCustomModel.disabledHint',
-    message: 'Pass onUseCustomModel to the picker to wire this action.',
+    message: 'Pass onUseCustomModel or a requestContext to the picker to wire this action.',
   }),
 } as const;
 
