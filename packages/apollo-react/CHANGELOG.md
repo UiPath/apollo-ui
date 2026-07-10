@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.59.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.58.0...@uipath/apollo-react@4.59.0) (2026-07-10)
+
+### Features
+
+* **apollo-react:** densify the add-node panel and enrich toolbox rows ([ce6f776](https://github.com/UiPath/apollo-ui/commit/ce6f776ba7b2e024b87a08f22df056c95491bdd8))
+
 ## [@uipath/apollo-react-v4.58.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.57.0...@uipath/apollo-react@4.58.0) (2026-07-08)
 
 ### Features
