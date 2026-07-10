@@ -1,0 +1,108 @@
+import { ConfidenceSignal } from '@/registry/confidence-signal/confidence-signal'
+
+# Confidence Signal
+
+A single chip for communicating AI confidence — used everywhere the system needs to say "can you act on this, or should you pause?"
+
+Signal bars borrow the phone-coverage metaphor instead of a raw score. Three bars means you're covered, one bar means proceed with care, and no bars — the `unknown` level — means the system is honestly saying "I don't know" rather than guessing. Unfilled bars keep a faded tint of the level hue, so the icon shape always reads at a glance.
+
+See [AI Toolkit](/guidelines/ai-toolkit) for the color and interaction principles this component follows.
+
+### Why signal, not score
+
+A percentage (`0.84 confidence`) looks precise but isn't, and invites debate over the threshold. Bars map directly to strength and read instantly, the way wifi or battery icons do — no math required.
+
+### Variants
+
+`variant="min"` — icon only. Use in tight spaces where the label adds no value: dense cards, inline table cells, anywhere the icon repeats at high frequency.
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-4 items-center">
+  <ConfidenceSignal level="high" variant="min" />
+  <ConfidenceSignal level="medium" variant="min" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
+  <ConfidenceSignal level="low" variant="min" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
+  <ConfidenceSignal level="unknown" variant="min" />
+</div>
+
+`variant="med"` — icon + short label. The workhorse variant for data tables, list views, and recommendation rows where the level needs to be readable alongside other data.
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-4 items-center">
+  <ConfidenceSignal level="high" variant="med" />
+  <ConfidenceSignal level="medium" variant="med" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
+  <ConfidenceSignal level="low" variant="med" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
+  <ConfidenceSignal level="unknown" variant="med" />
+</div>
+
+`variant="max"` — icon + full label. Use when confidence is the primary decision signal on screen: report headers, single-item detail views.
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-4 items-center">
+  <ConfidenceSignal level="high" variant="max" />
+  <ConfidenceSignal level="medium" variant="max" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
+  <ConfidenceSignal level="low" variant="max" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
+  <ConfidenceSignal level="unknown" variant="max" />
+</div>
+
+### Hover and details
+
+Every chip carries a [Tooltip](/components/tooltip) with the level explanation, so hovering or focusing it always says something — this matters most for `variant="min"`, where the icon stands alone.
+
+Chips that carry `factors`, an `explainCta`, or a `nextStep` also open a [Popover](/components/popover) on click or `Enter`, with the level, the explanation, the factor breakdown, and the CTAs. The details live in a popover rather than the tooltip because they are interactive: tooltip content can't be reached with a keyboard or on touch, and a `nextStep` has to stay reachable for everyone. The tooltip is suppressed while the popover is open so the two never stack.
+
+Two CTA types are supported:
+
+- `explainCta` — links to a source, audit trail, or deeper analysis. Can appear at any confidence level.
+- `nextStep` — the required action for `medium` and `low` levels. Legal requires the system to always give the user somewhere to go when it can't be relied on alone.
+
+Both take a `href` (rendered as a link, so it is navigable, middle-clickable, and copyable), an `onClick`, or both. At least one is required, enforced by TypeScript, so a CTA can never render as a control that looks interactive and does nothing. The examples below point at the AI Toolkit page as a stand-in target.
+
+Every level has a default explanation, and `explanation` overrides it.
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-4 items-center">
+  <ConfidenceSignal
+    level="high"
+    variant="max"
+    explanation="Matches historical pattern with high precision."
+    factors={[
+      { label: 'Policy match', value: '4 of 4', status: 'success' },
+      { label: 'Source quality', value: 'High', status: 'success' },
+      { label: 'Data recency', value: '< 30 days', status: 'success' },
+    ]}
+    explainCta={{ label: 'View audit trail', href: '/guidelines/ai-toolkit' }}
+  />
+  <ConfidenceSignal
+    level="low"
+    variant="max"
+    explanation="Three of five source documents could not be matched to a policy line."
+    factors={[
+      { label: 'Document match', value: '2 / 5', status: 'error' },
+      { label: 'Historical accuracy', value: '61%' },
+    ]}
+    nextStep={{ label: 'Review manually', href: '/guidelines/ai-toolkit' }}
+  />
+</div>
+
+### Acquire animation
+
+Pass `animateIn` to play the one-time "acquire" animation when the confidence value first resolves: bars grow left to right in a staggered cascade over faded track bars, signalling that the system has just computed a result. Play it once — looping animations read as errors. The animation is skipped entirely for users with `prefers-reduced-motion: reduce`.
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-4 items-center">
+  <ConfidenceSignal level="high" variant="max" animateIn />
+  <ConfidenceSignal level="medium" variant="max" animateIn nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
+</div>
+
+### Props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `level` | `"high" \| "medium" \| "low" \| "unknown"` | — | Required. Drives bar count and color. `medium`/`low` require `nextStep` (enforced by TypeScript). |
+| `variant` | `"min" \| "med" \| "max"` | `"med"` | Icon only, icon + short label, or icon + full label. |
+| `explanation` | `string` | per-level default | Explanation shown in the tooltip and popover. |
+| `factors` | `{ label: string; value: string; status?: "success" \| "warning" \| "error" }[]` | — | Factor breakdown rows shown in the popover body. |
+| `explainCta` | `{ label: string; href?: string; onClick?: () => void }` | — | Optional link to a source or audit trail. Requires at least one of `href`/`onClick`. |
+| `nextStep` | `{ label: string; href?: string; onClick?: () => void }` | — | Required action for `medium`/`low` levels. Requires at least one of `href`/`onClick`. |
+| `animateIn` | `boolean` | `false` | Play the one-time acquire animation on mount. |
+
+If none of `factors`, `explainCta`, or `nextStep` are provided, the chip renders with its tooltip but no popover.
+
+### Translations
+
+Level labels and default explanations are translation keys resolved with `react-i18next`, under the `confidence_signal_*` prefix in `locales/en.json`. Pass `explanation` to override the copy for a single instance.

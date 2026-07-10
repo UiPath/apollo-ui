@@ -24,6 +24,7 @@ export default {
   collapsible: "Collapsible",
   combobox: "Combobox",
   command: "Command",
+  "confidence-signal": "Confidence Signal",
   "context-menu": "Context Menu",
   "data-table": "Data Table",
   "date-picker": "Date Picker",
