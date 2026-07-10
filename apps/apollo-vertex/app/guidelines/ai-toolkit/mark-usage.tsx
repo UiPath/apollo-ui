@@ -149,7 +149,11 @@ export function MarkUsage() {
       </p>
 
       <Group title="Buttons">
-        <Tile label="Solid" description="Highest emphasis. The primary action in a view. Use one at a time." className="w-44">
+        <Tile
+          label="Solid"
+          description="Highest emphasis. The primary action in a view. Use one at a time."
+          className="w-44"
+        >
           <Button
             size="sm"
             className="border-0 text-white hover:opacity-90"
@@ -159,7 +163,11 @@ export function MarkUsage() {
             Ask AI
           </Button>
         </Tile>
-        <Tile label="Soft" description="Medium emphasis. Supporting actions inside cards and content." className="w-44">
+        <Tile
+          label="Soft"
+          description="Medium emphasis. Supporting actions inside cards and content."
+          className="w-44"
+        >
           <Button
             size="sm"
             variant="outline"
@@ -170,7 +178,11 @@ export function MarkUsage() {
             Summarize
           </Button>
         </Tile>
-        <Tile label="Outline" description="Lowest emphasis. Inline or dense placements, and tertiary actions." className="w-44">
+        <Tile
+          label="Outline"
+          description="Lowest emphasis. Inline or dense placements, and tertiary actions."
+          className="w-44"
+        >
           <Button
             size="sm"
             variant="outline"
@@ -261,8 +273,8 @@ export function MarkUsage() {
                 From{" "}
                 <a href="#" className="text-primary hover:underline">
                   Coupa catalog
-                </a>
-                {" "}and{" "}
+                </a>{" "}
+                and{" "}
                 <a href="#" className="text-primary hover:underline">
                   2 supplier quotes
                 </a>

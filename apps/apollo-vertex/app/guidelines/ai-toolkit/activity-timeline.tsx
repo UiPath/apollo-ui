@@ -122,8 +122,8 @@ export function ActivityTimeline() {
         </defs>
       </svg>
       <ol className="max-w-md">
-        {ACTIVITY.map((event, i) => {
-          const last = i === ACTIVITY.length - 1;
+        {ACTIVITY.map((event, idx) => {
+          const last = idx === ACTIVITY.length - 1;
           return (
             <li key={event.title} className="flex gap-3">
               <div className="flex flex-col items-center">
@@ -160,7 +160,10 @@ export function ActivityTimeline() {
                     {event.sources.map((s, i) => (
                       <span key={s.label}>
                         {i > 0 && " and "}
-                        <a href={s.href} className="text-primary hover:underline">
+                        <a
+                          href={s.href}
+                          className="text-primary hover:underline"
+                        >
                           {s.label}
                         </a>
                       </span>
