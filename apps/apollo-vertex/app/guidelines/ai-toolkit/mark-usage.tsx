@@ -93,7 +93,7 @@ export function MarkUsage() {
         >
           <Badge className="border-0 text-white" style={{ background: FILL }}>
             <Mark />
-            Picked for you
+            Best match
           </Badge>
         </Tile>
         <Tile
@@ -140,11 +140,12 @@ export function MarkUsage() {
       </Group>
 
       <p className="max-w-prose text-sm text-muted-foreground">
-        The label is sample text. Any AI label can take any variant, so choose
-        the variant by screen density and where the badge sits, not by the label.
-        The caveat that AI can make mistakes is separate: it is not a badge
-        passenger in any variant. It belongs to the surface around the content,
-        shown once at the recommendation or action level.
+        These are sensible defaults; use them as-is when they fit. The variant
+        carries the meaning, not the label, so any label can take any variant;
+        choose by emphasis and how dense the surface is. The caveat that AI can
+        make mistakes is separate: it is not a badge passenger in any variant.
+        It belongs to the surface around the content, shown once at the
+        recommendation or action level.
       </p>
 
       <Group title="Buttons">
@@ -197,10 +198,10 @@ export function MarkUsage() {
       </Group>
 
       <p className="max-w-prose text-sm text-muted-foreground">
-        The label is sample text. Any AI action can take any variant, so choose
-        the variant by how prominent the action should be and how dense the
-        surface is, not by the label. Keep one solid action per view so the
-        primary choice stays clear.
+        These are sensible defaults; use them as-is when they fit. The variant
+        carries the meaning, not the label, so any label can take any variant;
+        choose by how prominent the action should be and how dense the surface
+        is. Keep one solid action per view so the primary choice stays clear.
       </p>
 
       <Group title="Timeline marker">

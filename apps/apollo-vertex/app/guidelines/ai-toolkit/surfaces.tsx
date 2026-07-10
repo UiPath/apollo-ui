@@ -116,11 +116,11 @@ export function Surfaces() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-1 text-base leading-tight tracking-tight text-insight-900 dark:text-insight-50">
                   <AiIcon className="size-3.5" />
-                  Recommended action
+                  Resubmit denied claims
                 </CardTitle>
                 <CardDescription className="text-insight-800 dark:text-insight-100">
-                  A soft primary surface used for calling attention to
-                  recommended actions
+                  12 have corrected modifiers ready and close their 90-day
+                  window this week.
                 </CardDescription>
               </CardHeader>
               <AiCaveat className="px-6" />
@@ -128,17 +128,19 @@ export function Surfaces() {
           </Block>
           <div className="sm:col-span-2">
             <Block label="Regular · icon lockup. Use with or without a border. Padding is built into the card surface.">
-              <Card variant="solid" className="gap-0">
+              <Card variant="solid">
                 <CardContent className="flex items-start gap-2">
                   <AiIcon
                     className="mt-0.5 size-5 shrink-0"
                     gradientId="ai-card-gradient"
                   />
-                  <p className="text-sm leading-relaxed text-foreground">
-                    Matches your request. $350/unit cheaper with EPP applied.
-                  </p>
+                  <div>
+                    <p className="text-sm leading-relaxed text-foreground">
+                      Matches your request. $350/unit cheaper with EPP applied.
+                    </p>
+                    <AiCaveat variant="withMark" className="mt-4 pl-0" />
+                  </div>
                 </CardContent>
-                <AiCaveat className="px-6" />
               </Card>
             </Block>
           </div>
@@ -151,13 +153,14 @@ export function Surfaces() {
         </h3>
         <SelectableCards />
         <p className="mt-6 max-w-prose text-sm text-muted-foreground">
-          Caveat footer. The glow and badge carry the confidence, loud and up
-          top. The caveat sits quiet below a hairline, so the card can say this
-          is the pick and check it at the same time without the two signals
-          fighting. Use it only on cards that make a recommendation or offer an
-          action, once per card. Insight and observation cards do not need it,
-          they are already covered by the mark. For a group of cards, disclose
-          once at the group boundary, not on every card.
+          Caveat footer. The glow and badge carry the confidence up top; the
+          caveat sits quiet below, marked by a small info icon. Show it wherever
+          AI generates content the user reads or acts on: recommendations,
+          actions, and AI-generated insights. The mark, badges, and buttons are
+          identity, not content, so they don&apos;t need it. Disclose once per
+          surface: a footer on a single card, once under the mark for a group
+          headed by the mark, and once below the group for a grid of
+          equal-height cards.
         </p>
       </div>
 

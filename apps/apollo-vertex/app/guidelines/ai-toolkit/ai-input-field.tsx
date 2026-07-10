@@ -16,7 +16,7 @@ import { AiIcon } from "./ai-icon";
 export function AiInputField() {
   return (
     <Field>
-      <FieldLabel htmlFor="ai-input-glow">Job responsibility</FieldLabel>
+      <FieldLabel htmlFor="ai-input-glow">Cost center</FieldLabel>
       <div className="relative overflow-hidden rounded-lg border border-input bg-background transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 dark:bg-input/30">
         {/* Gradient definition for the mark. */}
         <svg width={0} height={0} aria-hidden="true" className="absolute">
@@ -46,7 +46,7 @@ export function AiInputField() {
         />
         <Input
           id="ai-input-glow"
-          placeholder="Add job responsibility"
+          placeholder="Add cost center"
           className="relative border-0 bg-transparent pr-9 shadow-none focus-visible:ring-0 dark:bg-transparent"
         />
         {/* Astroid mark: equal inset from top, bottom, and right; tooltip on hover. */}

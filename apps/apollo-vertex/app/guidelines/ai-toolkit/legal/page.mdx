@@ -1,0 +1,120 @@
+export const metadata = { title: 'AI Toolkit: Legal' };
+
+import { Badge } from '@/registry/badge/badge'
+
+<style>{`article h2 { border-bottom: none !important; font-weight: 700; }`}</style>
+
+# Legal
+
+How the AI Toolkit meets in-product AI transparency and disclosure requirements.
+
+<div className="mt-4 flex flex-col gap-1 text-sm text-muted-foreground">
+  <span><Badge status="success" variant="secondary" className="mr-1.5">In place</Badge>Live in the toolkit today.</span>
+  <span><Badge status="info" variant="secondary" className="mr-1.5">Planned</Badge>Coming in a near-term follow-up.</span>
+  <span><Badge variant="secondary" className="mr-1.5">Handled elsewhere</Badge>Owned by platform or product teams, outside the design system.</span>
+</div>
+
+## Requirement coverage
+
+<table className="w-full text-sm">
+  <thead>
+    <tr className="border-b border-border">
+      <th className="py-3 pr-6 text-left text-xs font-medium text-muted-foreground">Requirement</th>
+      <th className="py-3 pr-6 text-left text-xs font-medium text-muted-foreground">Covered by</th>
+      <th className="py-3 text-left text-xs font-medium text-muted-foreground">Status</th>
+    </tr>
+  </thead>
+  <tbody className="divide-y divide-border/50">
+    <tr>
+      <td className="py-3 pr-6 align-top">Show the user they are working with AI</td>
+      <td className="py-3 pr-6 align-top"><a href="/guidelines/ai-toolkit#mark-and-wordmark">Mark and wordmark</a></td>
+      <td className="py-3 align-top"><Badge status="success" variant="secondary">In place</Badge></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">Mark AI-generated content visibly</td>
+      <td className="py-3 pr-6 align-top"><a href="/components/badge#ai">AI generated badge</a></td>
+      <td className="py-3 align-top"><Badge status="success" variant="secondary">In place</Badge></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">Prompt the user to review AI output</td>
+      <td className="py-3 pr-6 align-top"><a href="/guidelines/ai-toolkit#surfaces">AiCaveat, on recommendation, action, and AI-content surfaces</a></td>
+      <td className="py-3 align-top"><Badge status="success" variant="secondary">In place</Badge></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">Show where the AI's information came from</td>
+      <td className="py-3 pr-6 align-top"><a href="/guidelines/ai-toolkit#examples">Source line in the activity timeline</a></td>
+      <td className="py-3 align-top"><Badge status="success" variant="secondary">In place</Badge></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">State what the AI can and cannot do</td>
+      <td className="py-3 pr-6 align-top">Scope line (AI Chat pattern)</td>
+      <td className="py-3 align-top"><Badge status="info" variant="secondary">Planned</Badge></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">Let the AI signal when it is unsure</td>
+      <td className="py-3 pr-6 align-top">Uncertainty statement (AI Chat pattern)</td>
+      <td className="py-3 align-top"><Badge status="info" variant="secondary">Planned</Badge></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">Warn before sensitive data goes to a tool</td>
+      <td className="py-3 pr-6 align-top">Data-clearance and egress warnings (AI Chat pattern)</td>
+      <td className="py-3 align-top"><Badge status="info" variant="secondary">Planned</Badge></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">Confirm before the AI takes an action</td>
+      <td className="py-3 pr-6 align-top">Action confirmation (AI Chat / actions pattern)</td>
+      <td className="py-3 align-top"><Badge status="info" variant="secondary">Planned</Badge></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">Collect feedback with a disclosure</td>
+      <td className="py-3 pr-6 align-top">Feedback vote widget disclosure</td>
+      <td className="py-3 align-top"><Badge status="info" variant="secondary">Planned</Badge></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">Data masking, access control, audit logs and retention, retrieval grounding, bias testing, human-in-the-loop configuration, approval workflows</td>
+      <td className="py-3 pr-6 align-top">Owned by platform, ML, and product teams</td>
+      <td className="py-3 align-top"><Badge variant="secondary">Handled elsewhere</Badge></td>
+    </tr>
+  </tbody>
+</table>
+
+## Disclosure strings
+
+<table className="w-full text-sm">
+  <thead>
+    <tr className="border-b border-border">
+      <th className="py-3 pr-6 text-left text-xs font-medium text-muted-foreground">String</th>
+      <th className="py-3 pr-6 text-left text-xs font-medium text-muted-foreground">Source in the doc</th>
+      <th className="py-3 pr-6 text-left text-xs font-medium text-muted-foreground">Verbatim</th>
+      <th className="py-3 text-left text-xs font-medium text-muted-foreground">Where</th>
+    </tr>
+  </thead>
+  <tbody className="divide-y divide-border/50">
+    <tr>
+      <td className="py-3 pr-6 align-top">"The output is AI generated. Please review."</td>
+      <td className="py-3 pr-6 align-top">Human-review flag</td>
+      <td className="py-3 pr-6 align-top">Yes, verbatim</td>
+      <td className="py-3 align-top"><a href="/guidelines/ai-toolkit#surfaces">AiCaveat default copy</a></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">"AI generated" (badge label)</td>
+      <td className="py-3 pr-6 align-top">Transparency marking</td>
+      <td className="py-3 pr-6 align-top">Yes, as the label</td>
+      <td className="py-3 align-top"><a href="/components/badge#ai">Badge</a></td>
+    </tr>
+    <tr>
+      <td className="py-3 pr-6 align-top">Source line, e.g. "From [sources]"</td>
+      <td className="py-3 pr-6 align-top">Explainability (described as a capability, no fixed phrase in the doc)</td>
+      <td className="py-3 pr-6 align-top">N/A, our own UI label</td>
+      <td className="py-3 align-top"><a href="/guidelines/ai-toolkit#examples">Timeline marker</a></td>
+    </tr>
+  </tbody>
+</table>
+
+## Source and legal basis
+
+Based on UiPath's internal in-product compliance guidance and the standards below.
+
+Legal basis: EU AI Act (Regulation (EU) 2024/1689), EU GDPR (Regulation 2016/679), the EU Charter of Fundamental Rights, the OECD Principles on AI, the EU HLEG Trustworthy AI Guidelines, and ISO/IEC 42001:2023.
+
+The requirement mapping and status reflect this team's interpretation of that guidance.
