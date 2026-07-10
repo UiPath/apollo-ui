@@ -13,8 +13,8 @@ import { AiIcon } from "./ai-icon";
 
 const CARDS = [
   {
-    title: "Standard",
-    desc: "Uses primary color glow.",
+    title: "Open invoices",
+    desc: "1,248 this cycle, 37 flagged.",
     recommended: false,
     ai: false,
   },

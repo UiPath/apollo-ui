@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 export function InputField() {
   return (
     <Field>
-      <FieldLabel htmlFor="input-default">Job responsibility</FieldLabel>
-      <Input id="input-default" placeholder="Add job responsibility" />
+      <FieldLabel htmlFor="input-default">Cost center</FieldLabel>
+      <Input id="input-default" placeholder="Add cost center" />
     </Field>
   );
 }
