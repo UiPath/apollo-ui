@@ -47,6 +47,14 @@ export interface ByomDetails {
   integrationServiceConnectionId?: string;
   defaultModel?: string;
   customFieldMappings?: Record<string, string> | null;
+  /**
+   * Id of the `ByoProductLlmConfiguration` this model belongs to — the
+   * `:id` route segment of the AI Trust Layer LLM-configurations edit
+   * page. Not served by Discovery yet (backend follow-up); when
+   * absent, the picker's edit affordance falls back to the
+   * configurations list page.
+   */
+  productLlmConfigurationId?: string;
 }
 
 export interface ModelCostDetails {

@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ModelPicker } from './ModelPicker';
 import type { DiscoveryModel } from './types';
+import { platformNavigation } from './usePlatformAccess';
 
 /**
  * Render helper. No I18nProvider on purpose: the picker resolves its
@@ -95,17 +96,28 @@ describe('<ModelPicker>', () => {
     expect(screen.getByRole('button', { expanded: false })).toHaveAttribute('aria-invalid', 'true');
   });
 
-  it('renders BYO edit/delete actions only when canManageByo is true', async () => {
+  it('renders the BYO edit action only when canManageByo is true', async () => {
     const user = userEvent.setup();
+    const requestContext = {
+      token: 't',
+      tenantName: 'DefaultTenant',
+      tenantId: 'tenant-guid',
+    };
     const { rerender } = renderPicker(
-      <ModelPicker models={MODELS} value={null} onChange={() => {}} canManageByo={false} />
+      <ModelPicker
+        models={MODELS}
+        value={null}
+        onChange={() => {}}
+        canManageByo={false}
+        requestContext={requestContext}
+      />
     );
     await user.click(screen.getByRole('button', { expanded: false }));
     // BYO is the first group (top of Category view) and expanded by
     // default, so rows are visible without an extra click.
     await screen.findByRole('listbox');
-    // Viewer: no edit/delete buttons on the BYO row.
-    expect(screen.queryByRole('button', { name: /edit connection/i })).toBeNull();
+    // Viewer: no edit button on the BYO row.
+    expect(screen.queryByRole('button', { name: /edit configuration/i })).toBeNull();
 
     rerender(
       <ModelPicker
@@ -113,14 +125,60 @@ describe('<ModelPicker>', () => {
         value={null}
         onChange={() => {}}
         canManageByo
-        onUseCustomModel={() => {}}
+        requestContext={requestContext}
       />
     );
-    // After flipping canManageByo on, edit + delete render.
-    expect(await screen.findByRole('button', { name: /edit connection/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /remove connection/i })).toBeInTheDocument();
+    // After flipping canManageByo on, the edit action renders. There is
+    // deliberately no delete: removal lives on the configurations page.
+    expect(await screen.findByRole('button', { name: /edit configuration/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /remove/i })).toBeNull();
     // Footer CTA also appears.
     expect(screen.getByText(/use custom model/i)).toBeInTheDocument();
+  });
+
+  it('navigates to the LLM-configurations pages by default (add CTA + row edit)', async () => {
+    const user = userEvent.setup();
+    const assign = vi.spyOn(platformNavigation, 'assign').mockImplementation(() => {});
+    try {
+      renderPicker(
+        <ModelPicker
+          models={MODELS}
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            tenantId: 'tenant-guid',
+            requestingProduct: 'agents',
+            requestingFeature: 'design-eval-deploy',
+          }}
+          enableFolders
+          folders={[{ id: 'folder-key', label: 'Shared', numericId: 2241521 }]}
+          folder="folder-key"
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+
+      // Row edit: no configuration id on the DTO yet, so it falls back
+      // to the configurations list scoped to tenant + folder.
+      await user.click(await screen.findByRole('button', { name: /edit configuration/i }));
+      expect(assign).toHaveBeenLastCalledWith(
+        'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations' +
+          '?tenantId=tenant-guid&folderId=2241521'
+      );
+
+      // Footer CTA: deep-links to the add form, pre-populated with the
+      // picker's product/feature.
+      await user.click(screen.getByText(/use custom model/i));
+      expect(assign).toHaveBeenLastCalledWith(
+        'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations' +
+          '/tenant-guid/2241521/add?product=agents&feature=design-eval-deploy'
+      );
+    } finally {
+      assign.mockRestore();
+    }
   });
 
   it('Use custom model CTA closes the popup and calls onUseCustomModel', async () => {

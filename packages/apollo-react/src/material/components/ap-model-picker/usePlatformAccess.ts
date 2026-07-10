@@ -4,8 +4,9 @@ import type { FolderSwitcherFolder } from './primitives/FolderSwitcher';
 
 /**
  * Auth + routing context for the picker's built-in platform calls
- * (folder list, BYO-management entitlement). Mirrors how the
- * Automation Cloud portal reaches the same endpoints.
+ * (folder list, BYO-management admin check) and for the default
+ * navigation into the AI Trust Layer LLM-configurations pages. Mirrors
+ * how the Automation Cloud portal reaches the same endpoints.
  */
 export interface PlatformRequestContext {
   /** Bearer token (no `Bearer ` prefix). */
@@ -19,13 +20,20 @@ export interface PlatformRequestContext {
   baseUrl?: string;
   /** Tenant name (path segment for Orchestrator routes). */
   tenantName: string;
-  /** Organization GUID — used by the entitlements (license) check. */
-  organizationId: string;
   /**
-   * Current user's global id. When provided, the entitlement check is
-   * evaluated user-scoped (matches the Automation Cloud portal behavior).
+   * Tenant GUID — route segment of the AI Trust Layer
+   * LLM-configurations pages. Without it the default add/edit
+   * affordances land on the configurations list instead of
+   * deep-linking.
    */
-  userId?: string;
+  tenantId?: string;
+  /**
+   * Product/feature the picker is embedded in (the same pair the
+   * Discovery request carries). Forwarded to the add-configuration
+   * page as `?product=&feature=` so it can pre-populate the form.
+   */
+  requestingProduct?: string;
+  requestingFeature?: string;
 }
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -113,6 +121,7 @@ export function useUserFolders(ctx: PlatformRequestContext | null): UseUserFolde
           (data.PageItems ?? []).map((f) => ({
             id: f.Key,
             label: f.DisplayName,
+            numericId: f.Id,
           }))
         );
       }
@@ -144,12 +153,17 @@ export function useUserFolders(ctx: PlatformRequestContext | null): UseUserFolde
 }
 
 /* ──────────────────────────────────────────────────────────────────────
- * BYO management entitlement
+ * BYO management (organization admin)
  * ─────────────────────────────────────────────────────────────────── */
 
-// License entitlement that gates BYO LLM model management in the
-// Automation Cloud portal (AI Trust Layer → LLM configurations tab).
-const BYO_LLM_ENTITLEMENT = 'AiTrustLayerByoLlm';
+// Roles the Automation Cloud portal treats as organization admin (its
+// `isOrgAdminSelector`): the same gate that protects the AI Trust
+// Layer admin pages the picker's BYO affordances navigate to.
+const ORG_ADMIN_ROLES = ['ACCOUNT_ADMIN', 'ACCOUNT_OWNER'];
+
+interface UserOrganizationInfoResponse {
+  accountRoleType?: string;
+}
 
 export interface UseCanManageByoResult {
   /**
@@ -163,18 +177,16 @@ export interface UseCanManageByoResult {
 }
 
 /**
- * Checks whether the current user's org (user-scoped when `userId` is
- * provided) holds the `AiTrustLayerByoLlm` entitlement — the same
- * signal the Automation Cloud portal uses to show BYO LLM management:
+ * Checks whether the current user is an **organization administrator**
+ * — the same signal the Automation Cloud portal uses to gate the AI
+ * Trust Layer admin pages the picker's BYO affordances navigate to:
  *
- *   POST {baseUrl}/lease_/api/entitlements/{organizationId}/entitled?userId={userId}
- *   body: { "EntitlementNames": ["AiTrustLayerByoLlm"] }
- *   → { "isEntitled": { "AiTrustLayerByoLlm": true } }
+ *   GET {baseUrl}/portal_/api/organization/UserOrganizationInfo
+ *   → { "accountRoleType": "ACCOUNT_ADMIN" | "ACCOUNT_OWNER" | "TENANT_ADMIN" | "DEFAULT_USER", ... }
  *
- * Note the portal additionally gates the page
- * behind org/tenant-admin routes — hosts embedding the picker outside
- * an admin surface should pass `canManageByo` explicitly if they need
- * stricter gating than the entitlement alone.
+ * Org admin ⇔ `accountRoleType` is `ACCOUNT_ADMIN` or `ACCOUNT_OWNER`.
+ * This is a client-side affordance gate only — the LLM-configurations
+ * pages and APIs enforce authorization server-side.
  *
  * Pass `null` to disable (the `canManageByo` prop override is set, or
  * no request context is available).
@@ -199,32 +211,30 @@ export function useCanManageByo(ctx: PlatformRequestContext | null): UseCanManag
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
+    // Reset the verdict for the new context: a previous context's
+    // `true` must not keep admin affordances visible while this check
+    // is in flight (fail closed during refetch, not only on error).
+    setCanManage(undefined);
     setLoading(true);
     setError(null);
 
     const base = (ctx.baseUrl ?? '').replace(/\/$/, '');
-    const qs = ctx.userId ? `?userId=${encodeURIComponent(ctx.userId)}` : '';
-    const url = `${base}/lease_/api/entitlements/${ctx.organizationId}/entitled${qs}`;
+    const url = `${base}/portal_/api/organization/UserOrganizationInfo`;
 
     fetch(url, {
-      method: 'POST',
       headers: {
         Authorization: `Bearer ${ctx.token}`,
         Accept: 'application/json',
-        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ EntitlementNames: [BYO_LLM_ENTITLEMENT] }),
       signal: ctrl.signal,
     })
       .then(async (res) => {
         if (!res.ok) {
-          throw new Error(`Entitlements API ${res.status} ${res.statusText}`);
+          throw new Error(`UserOrganizationInfo API ${res.status} ${res.statusText}`);
         }
-        const data = (await res.json()) as {
-          isEntitled?: Record<string, boolean>;
-        };
+        const data = (await res.json()) as UserOrganizationInfoResponse;
         if (!ctrl.signal.aborted) {
-          setCanManage(data.isEntitled?.[BYO_LLM_ENTITLEMENT] === true);
+          setCanManage(ORG_ADMIN_ROLES.includes(data.accountRoleType ?? ''));
         }
       })
       .catch((err: unknown) => {
@@ -245,3 +255,68 @@ export function useCanManageByo(ctx: PlatformRequestContext | null): UseCanManag
 
   return { canManage, loading, error };
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+ * AI Trust Layer LLM-configurations links
+ * ─────────────────────────────────────────────────────────────────── */
+
+export interface LlmConfigurationsLinkOptions {
+  /** `add` opens the create form, `edit` a configuration's edit form. */
+  intent: 'add' | 'edit';
+  /** Numeric Orchestrator folder id — route segment of the add/edit pages. */
+  folderNumericId?: number;
+  /** `ByoProductLlmConfiguration` id — required to deep-link `edit`. */
+  configurationId?: string;
+}
+
+/**
+ * Builds the portal URL for the AI Trust Layer LLM-configurations
+ * surface. Route shapes from the portal app:
+ *
+ *   …/portal_/admin/ai-trust-layer/llm-configurations/:tenantId/:folderId/add?product=&feature=
+ *   …/portal_/admin/ai-trust-layer/llm-configurations/:tenantId/:folderId/edit/:id
+ *
+ * Deep-linking needs the tenant GUID plus the numeric folder id (and,
+ * for `edit`, the configuration id); when any piece is missing the URL
+ * falls back to the configurations list, which reads the same values
+ * from optional `?tenantId=&folderId=` query params.
+ */
+export function buildLlmConfigurationsUrl(
+  ctx: PlatformRequestContext,
+  options: LlmConfigurationsLinkOptions
+): string {
+  const base = (ctx.baseUrl ?? '').replace(/\/$/, '');
+  const root = `${base}/portal_/admin/ai-trust-layer/llm-configurations`;
+  const { intent, folderNumericId, configurationId } = options;
+
+  if (ctx.tenantId && folderNumericId != null) {
+    if (intent === 'edit' && configurationId) {
+      return `${root}/${ctx.tenantId}/${folderNumericId}/edit/${encodeURIComponent(configurationId)}`;
+    }
+    if (intent === 'add') {
+      const params = new URLSearchParams();
+      if (ctx.requestingProduct) params.set('product', ctx.requestingProduct);
+      if (ctx.requestingFeature) params.set('feature', ctx.requestingFeature);
+      const qs = params.toString();
+      return `${root}/${ctx.tenantId}/${folderNumericId}/add${qs ? `?${qs}` : ''}`;
+    }
+  }
+
+  const params = new URLSearchParams();
+  if (ctx.tenantId) params.set('tenantId', ctx.tenantId);
+  if (folderNumericId != null) params.set('folderId', String(folderNumericId));
+  const qs = params.toString();
+  return `${root}${qs ? `?${qs}` : ''}`;
+}
+
+/**
+ * Navigation seam for the picker's default add/edit affordances.
+ * Same-tab full navigation (the target is the portal admin app);
+ * indirected through this object so tests can spy without fighting
+ * jsdom's unforgeable `window.location`.
+ */
+export const platformNavigation = {
+  assign(url: string): void {
+    globalThis.location?.assign(url);
+  },
+};

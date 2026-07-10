@@ -150,13 +150,25 @@ describe('<GroupedOptionList>', () => {
 
 describe('defaultRowActions', () => {
   it('returns null for hosted (non-BYO) models', () => {
-    expect(defaultRowActions(opt({}))).toBeNull();
+    expect(defaultRowActions(opt({}), { onEdit: () => {} })).toBeNull();
   });
 
-  it('renders edit + remove actions for BYO models', () => {
-    render(<>{defaultRowActions(opt({ modelSubscriptionType: 'BYOMAdded', groupKey: 'byo' }))}</>);
-    expect(screen.getByRole('button', { name: 'Edit connection' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Remove connection' })).toBeInTheDocument();
+  it('returns null without an onEdit handler (no dead buttons)', () => {
+    expect(
+      defaultRowActions(opt({ modelSubscriptionType: 'BYOMAdded', groupKey: 'byo' }))
+    ).toBeNull();
+  });
+
+  it('renders the edit action for BYO models and fires onEdit with the model', async () => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn();
+    const model = opt({ modelSubscriptionType: 'BYOMAdded', groupKey: 'byo' });
+    render(<>{defaultRowActions(model, { onEdit })}</>);
+
+    const edit = screen.getByRole('button', { name: 'Edit configuration' });
+    await user.click(edit);
+    expect(onEdit).toHaveBeenCalledWith(model);
+    expect(screen.queryByRole('button', { name: /remove/i })).not.toBeInTheDocument();
   });
 });
 

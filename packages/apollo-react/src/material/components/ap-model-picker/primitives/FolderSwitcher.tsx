@@ -20,6 +20,13 @@ import { useSafeLingui } from '../../../../i18n';
 export interface FolderSwitcherFolder {
   id: string;
   label: string;
+  /**
+   * Numeric Orchestrator folder id. Optional; when present the picker
+   * can deep-link its BYO affordances into the AI Trust Layer
+   * LLM-configurations pages (whose routes use the numeric id, not the
+   * GUID `Key`).
+   */
+  numericId?: number;
 }
 
 export interface FolderSwitcherProps {
