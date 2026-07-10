@@ -367,7 +367,7 @@ function AutopilotChatPanel({ className, variant = 'standard' }: AutopilotChatPa
  * Mirrors the legacy `ApChat` Embedded mode: the panel is portaled into a
  * consumer-owned container docked to a corner of the host page. In the
  * legacy Storybook harness that container is `fixed`, offset 24px from the
- * bottom-right, sized 400x600, with an elevated shadow and rounded corners —
+ * bottom-right, sized 400x600, with an elevated shadow and rounded corners,
  * all host-page choices, not something the panel itself controls.
  */
 export const Embedded: Story = {
