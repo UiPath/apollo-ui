@@ -166,11 +166,11 @@ export const TooltipWithRichContent = {
           <TooltipContent className="w-64 p-3">
             <div className="space-y-2">
               <p className="text-sm font-medium">Rate Limiting</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-foreground-inverse/70">
                 Your current plan allows 1,000 requests per minute. Exceeding this limit will result
                 in 429 errors.
               </p>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1 text-xs text-foreground-inverse/70">
                 <Keyboard className="h-3 w-3" />
                 Press ⌘K to view full docs
               </div>
@@ -188,10 +188,10 @@ export const TooltipWithRichContent = {
           <TooltipContent className="w-56 p-3">
             <div className="space-y-2">
               <p className="text-sm font-medium">Storage Usage</p>
-              <div className="h-1.5 w-full rounded-full bg-secondary">
+              <div className="h-1.5 w-full rounded-full bg-foreground-inverse/15">
                 <div className="h-full w-3/4 rounded-full bg-primary" />
               </div>
-              <p className="text-xs text-muted-foreground">7.5 GB of 10 GB used</p>
+              <p className="text-xs text-foreground-inverse/70">7.5 GB of 10 GB used</p>
             </div>
           </TooltipContent>
         </Tooltip>
@@ -231,7 +231,9 @@ export const TooltipWithDifferentContent = {
           <TooltipContent>
             <div className="flex items-center gap-2">
               <span>Save</span>
-              <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-mono">⌘S</kbd>
+              <kbd className="rounded border border-foreground-inverse/20 bg-foreground-inverse/10 px-1.5 py-0.5 text-[10px] font-mono">
+                ⌘S
+              </kbd>
             </div>
           </TooltipContent>
         </Tooltip>
@@ -376,7 +378,7 @@ export const Examples = {
                     <div className="flex items-center gap-2">
                       <span>{item.label}</span>
                       {item.shortcut && (
-                        <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-mono">
+                        <kbd className="rounded border border-foreground-inverse/20 bg-foreground-inverse/10 px-1.5 py-0.5 text-[10px] font-mono">
                           {item.shortcut}
                         </kbd>
                       )}
