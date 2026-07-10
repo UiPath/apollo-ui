@@ -19,6 +19,7 @@ minimumReleaseAgeExclude:
   - '@uipath/*'                   # permanent — own scope, always installable immediately
   - '@turbo/*'                    # 2.9.14 — platform binaries co-published with turbo (scope rename from turbo-*), same OIDC provenance ✓
   - '@esbuild/*'                  # 0.28.1 — platform binaries co-published with esbuild in the same OIDC release, vetted 2026-06-16
+  - '@shadcn/react'               # 0.2.1 — zero runtime deps (peer-only: react/@types/react >=19), GitHub Actions OIDC provenance (SLSA v1, consistent with 0.2.0), verified tag @shadcn/react@0.2.1, changelog + diff scoped to MessageScroller fixes, sha512 integrity ✓, vetted 2026-07-10
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 

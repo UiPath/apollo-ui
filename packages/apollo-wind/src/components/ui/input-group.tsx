@@ -19,6 +19,12 @@ const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
         role="group"
         className={cn(
           'group/input-group relative flex w-full items-center gap-2 transition-colors has-[>textarea]:h-auto has-[>textarea]:items-start',
+          // Block-aligned addons (toolbar rows) stack the group into a column instead of
+          // sitting inline. `!` is required: these must win over the unconditional height/
+          // items-center utilities below regardless of Tailwind's generated rule order,
+          // since has-[]: variants and plain utilities aren't reconciled by class merging.
+          'has-[>[data-align=block-start]]:!h-auto has-[>[data-align=block-start]]:!flex-col has-[>[data-align=block-start]]:!items-stretch',
+          'has-[>[data-align=block-end]]:!h-auto has-[>[data-align=block-end]]:!flex-col has-[>[data-align=block-end]]:!items-stretch',
           // Size (mirrors Input's own size scale, since Input's box chrome moves up to this wrapper)
           size === 'default' &&
             'h-9 rounded-md px-3 py-1 future:h-10 future:rounded-xl future:py-2',
@@ -49,6 +55,8 @@ const inputGroupAddonVariants = cva(
       align: {
         'inline-start': 'order-first',
         'inline-end': 'order-last',
+        'block-start': 'order-first w-full basis-full justify-start',
+        'block-end': 'order-last w-full basis-full justify-start border-t border-input',
       },
     },
     defaultVariants: {
