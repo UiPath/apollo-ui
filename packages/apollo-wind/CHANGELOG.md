@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.27.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.27.0...@uipath/apollo-wind@2.27.1) (2026-07-10)
+
+### Bug Fixes
+
+* **apollo-wind:** invert Tooltip surface colors for WCAG contrast (MST-11921) ([15c0a8c](https://github.com/UiPath/apollo-ui/commit/15c0a8c704168fa2bb2bd4b665f192a63951d833))
+
 ## [@uipath/apollo-wind-v2.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.26.0...@uipath/apollo-wind@2.27.0) (2026-07-07)
 
 ### Features
