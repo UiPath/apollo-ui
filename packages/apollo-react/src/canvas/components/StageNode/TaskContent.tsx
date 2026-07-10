@@ -144,7 +144,7 @@ export const TaskContent = memo(
         style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
         gap={Padding.PadXs}
       >
-        <Row align="center" justify="space-between">
+        <Row align="center" justify="space-between" gap={Spacing.SpacingXs}>
           {/* disable tooltip when dragging to avoid tooltip flickering */}
           <Row
             gap={Spacing.SpacingXs}
@@ -185,9 +185,7 @@ export const TaskContent = memo(
                 </Button>
               </CanvasTooltip>
             )}
-            {!hasSecondRowContent && (
-              <StageTaskEntryConditionIcon task={task} small={!!hasExecutionStatus} />
-            )}
+            {!hasSecondRowContent && <StageTaskEntryConditionIcon task={task} />}
             {showPlayButtonSmall && !hasSecondRowContent && (
               <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
             )}
