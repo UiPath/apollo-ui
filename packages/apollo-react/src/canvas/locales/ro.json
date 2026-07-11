@@ -31,6 +31,8 @@
   "stage-node.status.paused": "În pauză",
   "stage-node.status.terminated": "Încheiat",
   "stage-node.status.warning": "Atenție",
+  "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} other {Ran # times}}",
+  "stage-node.task-badge.running-again": "Rulează din nou",
   "stage-node.ungroup-parallel-tasks": "Anulați gruparea sarcinilor paralele",
   "stage-node.untitled-stage": "Scenă fără titlu",
   "sticky-note.formatting.bold": "Bold ({boldShortcut})",
