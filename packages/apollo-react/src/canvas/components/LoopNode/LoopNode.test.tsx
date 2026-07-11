@@ -103,6 +103,7 @@ vi.mock('../BaseCanvas/SelectionStateContext', () => ({
   useSelectionState: () => ({ multipleNodesSelected: false }),
 }));
 
+import { StageHeaderChipType } from '../StageNode/StageNode.types';
 import { LoopNode } from './LoopNode';
 
 const defaultProps: NodeProps<Node<LoopNodeData>> = {
@@ -394,5 +395,93 @@ describe('LoopNode localized labels', () => {
     renderLoopNode({ onAddFirstChild: vi.fn() });
 
     expect(screen.getByRole('button', { name: 'Add node to loop' })).toBeTruthy();
+  });
+});
+
+describe('LoopNode header chips and description', () => {
+  it('renders no secondary header row by default', () => {
+    renderLoopNode();
+
+    expect(screen.queryByTestId('loop-header-chips')).toBeNull();
+    expect(screen.queryByTestId('loop-node-header-description')).toBeNull();
+  });
+
+  it('renders rule chips supplied via the headerChips prop', () => {
+    renderLoopNode({
+      headerChips: [
+        { type: StageHeaderChipType.Entry, count: 2 },
+        { type: StageHeaderChipType.Completion, count: 1 },
+        { type: StageHeaderChipType.Exit, count: 3 },
+      ],
+    });
+
+    expect(screen.getByTestId('loop-header-chips')).toBeTruthy();
+    expect(screen.getByTestId('loop-header-chip-entry').textContent).toContain('2');
+    expect(screen.getByTestId('loop-header-chip-completion').textContent).toContain('1');
+    expect(screen.getByTestId('loop-header-chip-exit').textContent).toContain('3');
+  });
+
+  it('renders rule chips supplied via node data when no prop is set', () => {
+    renderLoopNode({
+      data: { headerChips: [{ type: StageHeaderChipType.ReturnToOrigin, count: 1 }] },
+    });
+
+    expect(screen.getByTestId('loop-header-chip-returnToOrigin')).toBeTruthy();
+  });
+
+  it('prefers the headerChips prop over node data chips', () => {
+    renderLoopNode({
+      data: { headerChips: [{ type: StageHeaderChipType.Exit, count: 9 }] },
+      headerChips: [{ type: StageHeaderChipType.Entry, count: 1 }],
+    });
+
+    expect(screen.getByTestId('loop-header-chip-entry')).toBeTruthy();
+    expect(screen.queryByTestId('loop-header-chip-exit')).toBeNull();
+  });
+
+  it('renders localized status pills for Optional and EndsCase chips', () => {
+    renderLoopNode({
+      headerChips: [{ type: StageHeaderChipType.Optional }, { type: StageHeaderChipType.EndsCase }],
+    });
+
+    expect(screen.getByTestId('loop-header-chip-optional').textContent).toContain('Optional');
+    expect(screen.getByTestId('loop-header-chip-endsCase').textContent).toContain('Ends case');
+  });
+
+  it('invokes chip onClick without selecting the node', () => {
+    const onChipClick = vi.fn();
+    renderLoopNode({
+      headerChips: [{ type: StageHeaderChipType.Entry, count: 2, onClick: onChipClick }],
+    });
+
+    fireEvent.click(screen.getByTestId('loop-header-chip-entry'));
+
+    expect(onChipClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders an instance-supplied description under the title', () => {
+    renderLoopNode({
+      data: { display: { description: 'Collect and verify claim documents' } },
+    });
+
+    expect(screen.getByTestId('loop-node-header-description').textContent).toBe(
+      'Collect and verify claim documents'
+    );
+  });
+
+  it('does not render the manifest description on the canvas', () => {
+    mockManifest.current = {
+      display: {
+        label: 'Loop',
+        icon: 'repeat',
+        shape: 'container',
+        description: 'Manifest copy',
+      },
+      handleConfiguration: [],
+    };
+
+    renderLoopNode();
+
+    expect(screen.queryByTestId('loop-node-header-description')).toBeNull();
   });
 });
