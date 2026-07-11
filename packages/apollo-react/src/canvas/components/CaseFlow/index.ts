@@ -1,5 +1,16 @@
 export {
+  CASE_LIFECYCLE_NODE_SIZE,
+  CASE_MARKER_NODE_SIZE,
+  caseAdhocMarkerManifest,
+  caseCompleteManifest,
+  caseCompleteRuleManifest,
+  caseEntryRuleManifest,
+  caseEventMarkerManifest,
+  caseExitManifest,
+  caseExitRuleManifest,
   caseFlowCategories,
   caseFlowManifest,
   caseManagementTriggerManifest,
+  caseStageManifest,
+  caseTaskManifest,
 } from './case-flow.manifest';

@@ -14,6 +14,12 @@ export interface BaseNodeData extends Record<string, unknown> {
      */
     canvasLabel?: string;
     subLabel?: string;
+    /**
+     * Longer descriptive text for the node. Container/loop nodes render it as a
+     * muted secondary line under the header title; other nodes may surface it in
+     * tooltips or panels.
+     */
+    description?: string;
     shape?: NodeShape;
     color?: string;
     background?: string;
