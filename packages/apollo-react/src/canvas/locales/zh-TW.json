@@ -31,6 +31,8 @@
   "stage-node.status.paused": "已暫停",
   "stage-node.status.terminated": "已終止",
   "stage-node.status.warning": "Warning警告",
+  "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} 其他 {Ran # times}}",
+  "stage-node.task-badge.running-again": "再次執行",
   "stage-node.ungroup-parallel-tasks": "將平行任務取消分組",
   "stage-node.untitled-stage": "未命名階段",
   "sticky-note.formatting.bold": "粗體 ({boldShortcut})",

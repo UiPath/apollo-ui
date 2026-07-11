@@ -31,6 +31,8 @@
   "stage-node.status.paused": "Suspendu",
   "stage-node.status.terminated": "Résilié",
   "stage-node.status.warning": "Warning",
+  "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} autre {Ran # times}}",
+  "stage-node.task-badge.running-again": "Nouvelle exécution",
   "stage-node.ungroup-parallel-tasks": "Dissocier les tâches parallèles",
   "stage-node.untitled-stage": "Étape sans titre",
   "sticky-note.formatting.bold": "Gras ({boldShortcut})",

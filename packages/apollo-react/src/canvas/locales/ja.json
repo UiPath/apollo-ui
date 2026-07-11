@@ -31,6 +31,8 @@
   "stage-node.status.paused": "一時停止",
   "stage-node.status.terminated": "終了",
   "stage-node.status.warning": "警告",
+  "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} other {Ran # times}}",
+  "stage-node.task-badge.running-again": "再度実行中",
   "stage-node.ungroup-parallel-tasks": "並列タスクのグループ化を解除",
   "stage-node.untitled-stage": "無題のステージ",
   "sticky-note.formatting.bold": "太字 ({boldShortcut})",
