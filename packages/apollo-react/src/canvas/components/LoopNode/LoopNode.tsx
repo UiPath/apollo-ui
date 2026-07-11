@@ -38,10 +38,12 @@ import { MissingManifestNode } from '../BaseNode/BaseNodeMissingManifest';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 import { CanvasTooltip } from '../CanvasTooltip';
+import type { StageHeaderChip } from '../StageNode/StageNode.types';
 import { NodeToolbar } from '../Toolbar';
 import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
 import type { LoopNodeExecutionCountState, LoopNodeProps } from './LoopNode.types';
 import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
+import { LoopNodeHeaderChips } from './LoopNodeHeaderChips';
 
 const DEFAULT_LOOP_ICON = 'repeat';
 const EMPTY_DATA: Record<string, unknown> = {};
@@ -192,6 +194,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
     executionStatusOverride,
     suggestionType: suggestionTypeProp,
     iterationPillState: iterationPillStateProp,
+    headerChips: headerChipsProp,
   } = props;
   const nodeTypeRegistry = useOptionalNodeTypeRegistry();
   const { _ } = useSafeLingui();
@@ -246,6 +249,16 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   const displayTitle = display.label ?? _({ id: 'loop-node.title', message: 'Loop' });
   const displayIcon = display.icon ?? DEFAULT_LOOP_ICON;
+  const headerChips =
+    headerChipsProp ??
+    (Array.isArray(resolvedData.headerChips)
+      ? (resolvedData.headerChips as StageHeaderChip[])
+      : undefined);
+  // Only instance-supplied descriptions render on the canvas. Manifest-level
+  // `display.description` stays add-panel/tooltip copy so existing loop nodes
+  // keep their compact single-row header.
+  const headerDescription = (resolvedData.display as { description?: string } | undefined)
+    ?.description;
   const isParallel = resolvedData.parallel === true;
   const label = isParallel
     ? _({ id: 'loop-node.mode.parallel', message: 'Parallel' })
@@ -398,6 +411,8 @@ function LoopNodeComponent(props: LoopNodeProps) {
         <Header
           title={displayTitle}
           icon={displayIcon}
+          description={headerDescription}
+          chips={headerChips}
           loading={isLoading}
           isParallel={isParallel}
           label={label}
@@ -465,6 +480,8 @@ export const LoopNode = memo(LoopNodeComponent, areNodePropsEqualIgnoringPositio
 function Header({
   title,
   icon,
+  description,
+  chips,
   loading,
   isParallel,
   label,
@@ -475,6 +492,8 @@ function Header({
 }: {
   title: string;
   icon?: string;
+  description?: string;
+  chips?: StageHeaderChip[];
   loading: boolean;
   isParallel: boolean;
   label: string;
@@ -486,8 +505,11 @@ function Header({
   const titleContent = loading ? (
     <div className="h-5 w-28 animate-pulse rounded bg-(--canvas-background-overlay)" />
   ) : (
-    <span className="truncate text-[15px] font-semibold leading-5 tracking-normal">{title}</span>
+    <span className="line-clamp-2 break-words text-[15px] font-semibold leading-5 tracking-normal">
+      {title}
+    </span>
   );
+  const hasSecondaryRow = !loading && (!!description || (chips?.length ?? 0) > 0);
 
   const iconContent = loading ? (
     <div className="h-4 w-4 shrink-0 animate-pulse rounded bg-(--canvas-background-overlay)" />
@@ -508,31 +530,46 @@ function Header({
   return (
     <div
       className={cn(
-        'relative z-10 flex shrink-0 cursor-grab items-center justify-between gap-2.5 rounded-t-[18px]',
+        'relative z-10 flex shrink-0 cursor-grab flex-col gap-1.5 rounded-t-[18px]',
         '-mb-2.5 bg-surface-overlay px-3.5 pb-2.5 pt-2.5 text-foreground',
         'active:cursor-grabbing'
       )}
       style={headerStyle}
       data-testid="loop-node-header"
     >
-      <div className="flex min-w-0 items-center gap-2.5">
-        {iconContent}
-        {titleContent}
-      </div>
-      <div className="flex shrink-0 items-center gap-2">
-        {iterationPillState ? (
-          <LoopNodeExecutionCount
-            state={iterationPillState}
-            size={nodeWidth >= 400 ? 'full' : nodeWidth >= 260 ? 'compact' : 'minimal'}
-          />
-        ) : null}
-        <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
-          <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
-            <CanvasIcon icon="text-align-justify" size={12} />
+      <div className="flex items-center justify-between gap-2.5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {iconContent}
+          {titleContent}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {iterationPillState ? (
+            <LoopNodeExecutionCount
+              state={iterationPillState}
+              size={nodeWidth >= 400 ? 'full' : nodeWidth >= 260 ? 'compact' : 'minimal'}
+            />
+          ) : null}
+          <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
+            <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
+              <CanvasIcon icon="text-align-justify" size={12} />
+            </span>
+            {label}
           </span>
-          {label}
-        </span>
+        </div>
       </div>
+      {hasSecondaryRow ? (
+        <div className="flex min-w-0 flex-col gap-1.5">
+          {description ? (
+            <span
+              className="line-clamp-2 break-words text-xs font-normal leading-4 text-foreground-muted"
+              data-testid="loop-node-header-description"
+            >
+              {description}
+            </span>
+          ) : null}
+          {chips && chips.length > 0 ? <LoopNodeHeaderChips chips={chips} /> : null}
+        </div>
+      ) : null}
     </div>
   );
 }
