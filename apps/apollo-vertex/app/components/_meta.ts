@@ -35,6 +35,7 @@ export default {
   "feature-flags": "Feature Flags",
   "filter-dropdown": "Filter Dropdown",
   form: "Form",
+  "form-wizard": "Form Wizard",
   "hover-card": "Hover Card",
   input: "Input",
   "input-group": "Input Group",

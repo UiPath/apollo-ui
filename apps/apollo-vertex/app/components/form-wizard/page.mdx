@@ -1,0 +1,139 @@
+import { FormWizardDemo } from './form-wizard-demo';
+
+# Form Wizard
+
+A multi-step form built on TanStack Form's composition model. Values are nested per step, each step is a `withForm` component that validates its own slice through a `FormGroup`, and one form instance holds everything.
+
+## What it is built on
+
+- **One form instance.** `useFormWizard` creates a single `useAppForm` from your `formOptions`, wires `revalidateLogic()` and a full-form `onDynamic` schema for the final submit, and owns step navigation, conditional visibility, and optional persistence.
+- **Nested values per step.** `defaultValues` is grouped by step (`{ account: {...}, plan: {...} }`), so each step owns a slice of the form.
+- **Per-step schemas via `FormGroup`.** Each step is a `withForm` component whose `form.FormGroup` validates only that step's slice with its own schema on advance. The full `schema` passed to `useFormWizard` is not sliced per step; it is only the final-submit backstop.
+- **A composable Stepper** renders the progress indicator from the visible steps.
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/form-wizard
+```
+
+## How it works
+
+- `useFormWizard` returns the `form`, the visible `steps`, the `currentStepId`, and navigation helpers (`next`, `back`, `goToStep`, `reset`).
+- Each step is authored with `withForm` and wraps a `form.FormGroup`. Its `onGroupSubmit` (fired only when the group's schema passes) calls `next()`; on the last step `next()` runs the full `form.handleSubmit()`.
+- `FormWizard` provides the wizard through context. `FormWizardStep` renders its child only when it is the active step. `FormWizardSteps` renders the Stepper, and `FormWizardNav` renders Back plus a submit button that advances the current group.
+
+<div className="p-6 border rounded-lg mt-4 max-w-md">
+  <FormWizardDemo />
+</div>
+
+The demo persists to `localStorage`, so refreshing the page restores the answers and the current step. Choosing the Enterprise plan reveals a conditional Billing step.
+
+## Usage
+
+Define nested `formOptions` and a schema per step, then author each step with `withForm`:
+
+```tsx
+import { formOptions } from '@tanstack/react-form'
+import { z } from 'zod'
+import { FieldGroup } from '@/components/ui/field'
+import { withForm } from '@/components/ui/form'
+import {
+  FormWizard,
+  FormWizardNav,
+  FormWizardStep,
+  FormWizardSteps,
+  useFormWizard,
+  useFormWizardContext,
+  type WizardStepDef,
+} from '@/components/ui/form-wizard'
+
+const accountSchema = z.object({ email: z.email('Enter a valid email.') })
+const planSchema = z.object({ tier: z.string().min(1) })
+
+const wizardSchema = z.object({ account: accountSchema, plan: planSchema })
+type Values = z.infer<typeof wizardSchema>
+
+const wizardOpts = formOptions({
+  defaultValues: { account: { email: '' }, plan: { tier: 'free' } },
+})
+
+const steps: WizardStepDef<Values>[] = [
+  { id: 'account', title: 'Account' },
+  { id: 'plan', title: 'Plan', condition: (v) => v.account.email !== '' },
+]
+
+const AccountStep = withForm({
+  ...wizardOpts,
+  render: function Render({ form }) {
+    const { next } = useFormWizardContext()
+    return (
+      <form.FormGroup
+        name="account"
+        validators={{ onDynamic: accountSchema }}
+        onGroupSubmit={() => next()}
+      >
+        {(group) => (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              void group.handleSubmit()
+            }}
+          >
+            <FieldGroup>
+              <form.AppField name="account.email">
+                {(field) => <field.TextField type="email" label="Email" />}
+              </form.AppField>
+              <FormWizardNav />
+            </FieldGroup>
+          </form>
+        )}
+      </form.FormGroup>
+    )
+  },
+})
+
+function SignUpWizard() {
+  const wizard = useFormWizard<Values>({
+    formOptions: wizardOpts,
+    schema: wizardSchema,
+    steps,
+    persist: { key: 'sign-up' },
+    onSubmit: (values) => console.log(values),
+  })
+
+  return (
+    <FormWizard wizard={wizard}>
+      <FormWizardSteps />
+      <FormWizardStep stepId="account">
+        <AccountStep form={wizard.form} />
+      </FormWizardStep>
+      {/* ...remaining steps... */}
+    </FormWizard>
+  )
+}
+```
+
+## Step definition
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `id` | `string` | Stable identifier used for navigation and persistence. |
+| `title` | `ReactNode` | Shown in the Stepper. |
+| `description` | `ReactNode` | Optional secondary line in the Stepper. |
+| `condition` | `(values) => boolean` | Optional. When it returns `false` the step is hidden from navigation and the Stepper. |
+| `optional` | `boolean` | Reserved for steps that should not block advancing. |
+
+Each step's fields and validation live in its `withForm` component, not in the step definition.
+
+## Conditional steps
+
+A step with a `condition` is only shown when the predicate passes against the current (nested) values. Hidden steps are skipped by `next`/`back` and dropped from the Stepper.
+
+## Persistence
+
+Pass `persist: { key }` to save the values and current step to `localStorage`, backed by `useLocalStorage` from `@mantine/hooks`. Every change is written immediately so a reload resumes where you left off, the saved state seeds `defaultValues` on load, and a successful submit or `wizard.reset()` clears the entry.
+
+## Validation
+
+Advancing runs the current step's `FormGroup` schema against its slice; errors render inline on that step's fields. The final `next()` calls `form.handleSubmit()`, which validates the full `onDynamic` schema as a backstop.
