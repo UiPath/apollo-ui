@@ -27,11 +27,13 @@ const baseTask: StageTaskItem = { id: 'task-1', label: 'Run extraction' };
 const renderTaskContent = (overrides?: {
   task?: Partial<StageTaskItem>;
   taskExecution?: StageTaskExecution;
+  onTaskPlay?: (taskId: string) => Promise<void>;
 }) =>
   render(
     <TaskContent
       task={{ ...baseTask, ...overrides?.task }}
       taskExecution={overrides?.taskExecution}
+      onTaskPlay={overrides?.onTaskPlay}
     />
   );
 
@@ -183,5 +185,70 @@ describe('TaskContent - duration tooltip', () => {
     const durationText = screen.getByText('6s');
     const tooltipWrapper = durationText.closest('[data-testid="canvas-tooltip"]');
     expect(tooltipWrapper).toBeNull();
+  });
+});
+
+describe('TaskContent - entry-condition icon', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const getEntryIcon = (container: HTMLElement) =>
+    container.querySelector('[data-tooltip-content="Entry condition"] svg');
+
+  it('renders no entry-condition icon when the task has none', () => {
+    const { container } = renderTaskContent();
+    expect(getEntryIcon(container)).toBeNull();
+  });
+
+  it('renders a 20px entry-condition diamond on a single-row task', () => {
+    const { container } = renderTaskContent({ task: { hasEntryCondition: true } });
+    const icon = getEntryIcon(container);
+    expect(icon).toHaveAttribute('width', '20');
+    expect(icon).toHaveAttribute('height', '20');
+  });
+
+  it('renders a 16px entry-condition diamond on a task with second-row content', () => {
+    const { container } = renderTaskContent({
+      task: { hasEntryCondition: true },
+      taskExecution: { status: 'Completed', duration: '1m' },
+    });
+    const icon = getEntryIcon(container);
+    expect(icon).toHaveAttribute('width', '16');
+    expect(icon).toHaveAttribute('height', '16');
+  });
+});
+
+describe('TaskContent - play button placement', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const playButtonId = `stage-task-play-${baseTask.id}`;
+
+  it('renders a play button with an accessible name when a play handler is supplied', () => {
+    renderTaskContent({ onTaskPlay: vi.fn(async () => {}) });
+    expect(screen.getByRole('button', { name: 'Trigger task' })).toBeInTheDocument();
+    expect(screen.getByTestId(playButtonId)).toBeInTheDocument();
+  });
+
+  it('renders no play button when no play handler is supplied', () => {
+    renderTaskContent();
+    expect(screen.queryByTestId(playButtonId)).not.toBeInTheDocument();
+  });
+
+  it('renders the small play button on the second row for executed tasks with row content', () => {
+    renderTaskContent({
+      onTaskPlay: vi.fn(async () => {}),
+      taskExecution: { status: 'Completed', duration: '1m' },
+    });
+    const playButton = screen.getByTestId(playButtonId);
+    // small variant shrinks the icon via the button's descendant selector
+    expect(playButton.className).toContain('[&_svg]:size-3.5');
+  });
+
+  it('renders no play button for executed tasks without a play handler', () => {
+    renderTaskContent({ taskExecution: { status: 'Completed', duration: '1m' } });
+    expect(screen.queryByTestId(playButtonId)).not.toBeInTheDocument();
   });
 });
