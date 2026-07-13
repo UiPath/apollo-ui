@@ -14,7 +14,7 @@ const meta: Meta<typeof Spinner> = {
     },
     variant: {
       control: 'select',
-      options: ['default', 'primary', 'foreground', 'destructive'],
+      options: ['default', 'primary', 'foreground'],
     },
   },
 };
@@ -99,13 +99,7 @@ export const Centered = {
 
 export const FullPage = {
   render: () => (
-    <Column
-      w="full"
-      align="center"
-      justify="center"
-      gap={4}
-      className="h-[300px] rounded-md border"
-    >
+    <Column w="full" align="center" justify="center" gap={4} className="h-75 rounded-md border">
       <Spinner size="xl" />
       <p className="text-sm text-muted-foreground">Loading content...</p>
     </Column>
