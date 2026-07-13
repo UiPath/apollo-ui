@@ -17,8 +17,8 @@
     "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-react": "workspace:*",
     "@uipath/apollo-wind": "workspace:*",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.6",
