@@ -159,7 +159,7 @@ export const TaskContent = memo(
               {...(isDragging && { isOpen: false })}
             >
               <Row
-                gap={Spacing.SpacingXs}
+                gap={'2px'}
                 align="center"
                 style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
               >
