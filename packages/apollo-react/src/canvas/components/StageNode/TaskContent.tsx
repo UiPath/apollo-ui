@@ -70,6 +70,7 @@ const TaskPlayButton = memo(
           onClick={handlePlayClick}
           onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
           onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
+          aria-label="Trigger task"
           className={
             small
               ? 'task-menu-icon-button h-4 w-4 [&_svg]:size-3.5'
@@ -82,7 +83,7 @@ const TaskPlayButton = memo(
           }}
         >
           {playLoading ? (
-            <Spinner size="sm" style={{ width: small ? 12 : 14, height: small ? 12 : 14 }} />
+            <Spinner size="sm" />
           ) : (
             <TimelinePlayIcon />
           )}
