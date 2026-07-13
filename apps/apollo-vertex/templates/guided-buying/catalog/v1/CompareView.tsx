@@ -169,7 +169,8 @@ export function CompareView({
         <div className="flex items-center gap-2 border-b bg-muted/40 px-6 py-2.5 text-sm">
           <AiMark
             size={16}
-            className="shrink-0" gradientId="gb-ai-mark"
+            className="shrink-0"
+            gradientId="gb-ai-mark"
             aria-hidden
           />
           <p className="flex-1 text-foreground">{recommendation}</p>

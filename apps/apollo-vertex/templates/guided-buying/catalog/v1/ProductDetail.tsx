@@ -134,7 +134,8 @@ export function ProductDetail({
               <div className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3">
                 <AiMark
                   size={16}
-                  className="mt-0.5 shrink-0" gradientId="gb-ai-mark"
+                  className="mt-0.5 shrink-0"
+                  gradientId="gb-ai-mark"
                   aria-hidden
                 />
                 <p className="text-sm text-foreground">{recommendationNote}</p>

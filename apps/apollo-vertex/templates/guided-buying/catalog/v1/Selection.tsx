@@ -746,7 +746,8 @@ export function Selection({
                     <p className="flex items-center gap-2 text-sm text-muted-foreground">
                       <AiMark
                         size={16}
-                        className="shrink-0" gradientId="gb-ai-mark"
+                        className="shrink-0"
+                        gradientId="gb-ai-mark"
                         aria-hidden
                       />
                       {relaxSuggestion && relaxSuggestion.count > 0

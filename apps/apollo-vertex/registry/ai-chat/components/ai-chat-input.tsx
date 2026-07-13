@@ -238,8 +238,7 @@ export function AiChatInput({
           variant="ghost"
           size="icon"
           disabled={(!value.trim() && pendingFiles.length === 0) || disabled}
-          className="flex-shrink-0 text-white hover:text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ background: "var(--ai-gradient-strong)" }}
+          className="flex-shrink-0 bg-[var(--ai-gradient-start)]/15 text-[var(--ai-gradient-start)] hover:bg-[var(--ai-gradient-start)]/25 hover:text-[var(--ai-gradient-start)] disabled:opacity-40 disabled:cursor-not-allowed"
           aria-label={t("send")}
         >
           <ArrowUp className="size-5" aria-hidden="true" />

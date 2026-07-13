@@ -17,7 +17,12 @@ export function IntentHeader({ request }: IntentHeaderProps) {
         “{request.summary}”
       </h1>
       <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <AiMark size={14} className="shrink-0" gradientId="gb-ai-mark" aria-hidden />
+        <AiMark
+          size={14}
+          className="shrink-0"
+          gradientId="gb-ai-mark"
+          aria-hidden
+        />
         {request.agentNote}
       </p>
     </div>

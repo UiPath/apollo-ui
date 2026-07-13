@@ -6,6 +6,7 @@ import {
   type RequestsContextValue,
   type RequestNote,
 } from "./requests-context";
+import type { RequestRow } from "./data";
 
 /**
  * Shared state across the two seats: the requester's My Requests and the buyer's
@@ -17,6 +18,7 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
   const [openRequestId, setOpenRequestId] = useState<string | null>(null);
   const [threads, setThreads] = useState<Record<string, RequestNote[]>>({});
   const [urgent, setUrgent] = useState<Record<string, boolean>>({});
+  const [submittedRows, setSubmittedRows] = useState<RequestRow[]>([]);
 
   const openRequest = (id: string) => setOpenRequestId(id);
   const clearOpenRequest = () => setOpenRequestId(null);
@@ -38,6 +40,13 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     setUrgent((prev) => ({ ...prev, [requestId]: true }));
   };
 
+  const submitRequest = (row: RequestRow) => {
+    setSubmittedRows((prev) => {
+      if (prev.some((r) => r.id === row.id)) return prev;
+      return [row, ...prev];
+    });
+  };
+
   const value: RequestsContextValue = {
     openRequestId,
     openRequest,
@@ -46,6 +55,8 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     addNote,
     urgent,
     markUrgent,
+    submittedRows,
+    submitRequest,
   };
 
   return (

@@ -26,6 +26,7 @@ import {
   STATUS_BADGE,
   STATUS_LABEL,
 } from "./data";
+import { useRequests } from "./requests-context";
 
 interface StatCardProps {
   label: string;
@@ -57,10 +58,13 @@ export function MyRequestsList({ onOpen }: MyRequestsListProps) {
     "all",
   );
 
-  const stats = requestStats();
+  const { submittedRows } = useRequests();
+  const allRows = [...submittedRows, ...REQUEST_ROWS];
+
+  const stats = requestStats(allRows);
   const query = search.trim().toLowerCase();
 
-  const rows = REQUEST_ROWS.filter((r) => {
+  const rows = allRows.filter((r) => {
     if (statusFilter !== "all" && r.status !== statusFilter) return false;
     if (query) {
       const hay = `${r.id} ${r.request} ${r.supplier}`.toLowerCase();
@@ -95,7 +99,7 @@ export function MyRequestsList({ onOpen }: MyRequestsListProps) {
           <StatCard
             label="Awaiting a decision"
             value={String(stats.awaitingDecision)}
-            hint="still with procurement"
+            hint="pending approval or sourcing"
             valueClass="text-warning"
           />
           <StatCard

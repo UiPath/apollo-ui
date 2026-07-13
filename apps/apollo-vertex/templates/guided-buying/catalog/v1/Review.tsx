@@ -17,6 +17,7 @@ import { CartLine } from "./CartLine";
 import { CartSummary } from "./CartSummary";
 import { useConversation } from "./conversation-context";
 import { APPROVAL_LIMIT, formatPrice, leadTime, SAMPLE_REQUEST } from "./data";
+import { CATALOG_PHASES, FlowPhaseBar } from "./FlowPhaseBar";
 
 // Review commits the EPP-priced catalog scenario.
 const BASIS = "epp" as const;
@@ -67,11 +68,26 @@ export function Review() {
       transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="mx-auto w-full max-w-2xl space-y-6 px-6 py-8">
+        <FlowPhaseBar
+          phases={CATALOG_PHASES}
+          currentIndex={2}
+          onClickPhase={() =>
+            void navigate({ to: "/buy", state: { fromReview: true } })
+          }
+        />
+
         {/* Slim Autopilot presence — the agent stays with you through commit. */}
         <div className="flex items-center gap-2">
           <svg width={0} height={0} aria-hidden className="absolute">
             <defs>
-              <linearGradient id="review-ai-mark" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+              <linearGradient
+                id="review-ai-mark"
+                x1="2"
+                y1="4"
+                x2="22"
+                y2="20"
+                gradientUnits="userSpaceOnUse"
+              >
                 <stop offset="0" stopColor="var(--ai-gradient-start)" />
                 <stop offset="1" stopColor="var(--ai-gradient-end)" />
               </linearGradient>
@@ -161,7 +177,8 @@ export function Review() {
             >
               <AiMark
                 size={16}
-                className="shrink-0" gradientId="gb-ai-mark"
+                className="shrink-0"
+                gradientId="gb-ai-mark"
                 aria-hidden
               />
               <span className="flex-1 text-foreground">
