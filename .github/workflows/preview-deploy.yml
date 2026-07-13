@@ -84,18 +84,27 @@ jobs:
             }
 
   deploy:
-    name: Deploy Apollo Coded App Previews
+    name: Deploy ${{ matrix.label }}
     needs: initialize-comment
     if: ${{ !cancelled() && github.event.action != 'closed' && needs.initialize-comment.result == 'success' && github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: read
-    outputs:
-      design_url: ${{ steps.deploy.outputs.design_url }}
-      docs_url: ${{ steps.deploy.outputs.docs_url }}
-      landing_url: ${{ steps.deploy.outputs.landing_url }}
-      vertex_url: ${{ steps.deploy.outputs.vertex_url }}
+    strategy:
+      # One app per runner, in parallel. Keep going if one app fails so the
+      # others still publish; each leg reports status via an artifact and the
+      # job fails at the end if any leg failed.
+      fail-fast: false
+      matrix:
+        include:
+          - label: apollo-landing
+          - label: apollo-docs
+          - label: apollo-design
+          - label: apollo-vertex
+            # Live AI Chat: pass the runtime OAuth client so uip-go bakes the
+            # platform-auth context in and registers this preview's redirect URI.
+            platform_auth: true
 
     steps:
       - name: Checkout code
@@ -111,15 +120,19 @@ jobs:
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+          # Per-app key so parallel legs don't race to save one shared cache
+          # (which would persist only the first/fastest app's task outputs).
+          key: ${{ runner.os }}-turbo-${{ matrix.label }}-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-turbo-${{ github.ref_name }}-
+            ${{ runner.os }}-turbo-${{ matrix.label }}-${{ github.ref_name }}-
 
-      - name: Deploy Coded App previews with uip-go
+      - name: Deploy Coded App preview with uip-go
         id: deploy
         env:
           GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          APP_LABEL: ${{ matrix.label }}
+          PLATFORM_AUTH: ${{ matrix.platform_auth == true }}
           UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
           UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID || secrets.UIPATH_CLIENT_ID }}
           UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
@@ -131,10 +144,15 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Runtime OAuth client id is only needed for the platform-auth app.
+          required=(GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION)
+          if [ "$PLATFORM_AUTH" = "true" ]; then
+            required+=(UIPATH_RUNTIME_CLIENT_ID)
+          fi
           missing=0
-          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION UIPATH_RUNTIME_CLIENT_ID; do
+          for name in "${required[@]}"; do
             if [ -z "${!name:-}" ]; then
-              echo "::error::$name is required for uip-go Coded App preview deployments."
+              echo "::error::$name is required for the ${APP_LABEL} Coded App preview deployment."
               missing=1
             fi
           done
@@ -144,10 +162,7 @@ jobs:
 
           short_sha="${GITHUB_SHA:0:7}"
           version="0.1.0-pr${PR_NUMBER}.${short_sha}.${GITHUB_RUN_ATTEMPT}"
-          landing_app="apollo-landing-pr-${PR_NUMBER}"
-          docs_app="apollo-docs-pr-${PR_NUMBER}"
-          design_app="apollo-design-pr-${PR_NUMBER}"
-          vertex_app="apollo-vertex-pr-${PR_NUMBER}"
+          app_name="${APP_LABEL}-pr-${PR_NUMBER}"
           uip_go_npmrc="${RUNNER_TEMP}/uip-go.npmrc"
           uip_go_prefix="${RUNNER_TEMP}/uip-go"
           {
@@ -157,21 +172,8 @@ jobs:
           NPM_CONFIG_USERCONFIG="$uip_go_npmrc" npm install --prefix "$uip_go_prefix" "@uipath/uip-go@${UIP_GO_VERSION}"
           UIP_GO="${uip_go_prefix}/node_modules/.bin/uip-go"
 
-          write_output() {
-            local name="$1"
-            local value="$2"
-            local delimiter
-            delimiter="ghadelim_$(openssl rand -hex 16)"
-            {
-              printf '%s<<%s\n' "$name" "$delimiter"
-              printf '%s\n' "$value"
-              printf '%s\n' "$delimiter"
-            } >> "$GITHUB_OUTPUT"
-          }
-
           derive_app_url() {
-            local app_name="$1"
-            APP_NAME="$app_name" node <<'NODE'
+            APP_NAME="$1" node <<'NODE'
           const baseUrl = process.env.UIPATH_BASE_URL || '';
           const orgName = process.env.UIPATH_ORG_NAME || '';
           const appName = process.env.APP_NAME || '';
@@ -191,75 +193,45 @@ jobs:
           NODE
           }
 
-          run_uip_go() {
-            local label="$1"
-            local app_name="$2"
-            local output_name="${label#apollo-}_url"
-            local output_file
-            local command_exit
-            local app_url
-            local extra_args=()
+          extra_args=()
+          if [ "$PLATFORM_AUTH" = "true" ]; then
+            extra_args+=(--auth-client-id "$UIPATH_RUNTIME_CLIENT_ID")
+          fi
 
-            output_file="$(mktemp)"
-            trap 'rm -f "$output_file"; trap - RETURN' RETURN
-            if [ "$label" = "apollo-vertex" ]; then
-              extra_args+=(--auth-client-id "$UIPATH_RUNTIME_CLIENT_ID")
-            fi
-            echo "::group::uip-go ${label}"
-            set +e
-            "$UIP_GO" "$label" \
-                --name "$app_name" \
-                --path-name "$app_name" \
-                --tags "apollo,${label},preview" \
-                --version "$version" \
-                --folder-key "$UIPATH_FOLDER_KEY" \
-                --base-url "$UIPATH_BASE_URL" \
-                --org-name "$UIPATH_ORG_NAME" \
-                --tenant-name "$UIPATH_TENANT_NAME" \
-                --deploy-retries 3 \
-                --deploy-retry-delay-ms 10000 \
-                "${extra_args[@]}" 2>&1 | tee "$output_file"
-            command_exit=${PIPESTATUS[0]}
-            set -e
-            echo "::endgroup::"
+          output_file="$(mktemp)"
+          echo "::group::uip-go ${APP_LABEL}"
+          set +e
+          "$UIP_GO" "$APP_LABEL" \
+              --name "$app_name" \
+              --path-name "$app_name" \
+              --tags "apollo,${APP_LABEL},preview" \
+              --version "$version" \
+              --folder-key "$UIPATH_FOLDER_KEY" \
+              --base-url "$UIPATH_BASE_URL" \
+              --org-name "$UIPATH_ORG_NAME" \
+              --tenant-name "$UIPATH_TENANT_NAME" \
+              --deploy-retries 3 \
+              --deploy-retry-delay-ms 10000 \
+              "${extra_args[@]}" 2>&1 | tee "$output_file"
+          command_exit=${PIPESTATUS[0]}
+          set -e
+          echo "::endgroup::"
 
-            if [ "$command_exit" -ne 0 ]; then
-              echo "::error::uip-go ${label} failed."
-              return "$command_exit"
-            fi
-
-            app_url="$(sed -nE 's/^[[:space:]]*App URL:[[:space:]]*//p' "$output_file" | tail -n 1)"
-            if [ -z "$app_url" ]; then
-              app_url="$(derive_app_url "$app_name")"
-            fi
+          app_url="$(sed -nE 's/^[[:space:]]*App URL:[[:space:]]*//p' "$output_file" | tail -n 1)"
+          if [ -z "$app_url" ] && [ "$command_exit" -eq 0 ]; then
+            app_url="$(derive_app_url "$app_name")"
+          fi
+          if [ -n "$app_url" ]; then
             case "$app_url" in
               */) ;;
               *) app_url="${app_url}/" ;;
             esac
-            write_output "$output_name" "$app_url"
-          }
+            echo "url=$app_url" >> "$GITHUB_OUTPUT"
+          fi
 
-          failed_apps=()
-          deploy_or_record_failure() {
-            local label="$1"
-            local app_name="$2"
-
-            if run_uip_go "$label" "$app_name"; then
-              return 0
-            fi
-
-            failed_apps+=("$label")
-            return 0
-          }
-
-          deploy_or_record_failure "apollo-landing" "$landing_app"
-          deploy_or_record_failure "apollo-docs" "$docs_app"
-          deploy_or_record_failure "apollo-design" "$design_app"
-          deploy_or_record_failure "apollo-vertex" "$vertex_app"
-
-          if [ "${#failed_apps[@]}" -ne 0 ]; then
-            echo "::error::uip-go deployment failed for: ${failed_apps[*]}"
-            exit 1
+          if [ "$command_exit" -ne 0 ]; then
+            echo "::error::uip-go ${APP_LABEL} failed."
+            exit "$command_exit"
           fi
 
       - name: Save Turborepo cache
@@ -267,7 +239,39 @@ jobs:
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+          key: ${{ runner.os }}-turbo-${{ matrix.label }}-${{ github.ref_name }}-${{ github.sha }}
+
+      - name: Save deploy result
+        if: always()
+        env:
+          APP_LABEL: ${{ matrix.label }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/deploy-result"
+
+          if [ "$DEPLOY_OUTCOME" = "success" ]; then
+            outcome="success"
+            error=""
+          elif [ "$DEPLOY_OUTCOME" = "failure" ]; then
+            outcome="failure"
+            error="uip-go deploy failed for $APP_LABEL"
+          else
+            outcome="skipped"
+            error=""
+          fi
+
+          printf '%s' "${DEPLOY_URL:-}" > "$RUNNER_TEMP/deploy-result/url"
+          printf '%s' "$outcome"        > "$RUNNER_TEMP/deploy-result/outcome"
+          printf '%s' "$error"          > "$RUNNER_TEMP/deploy-result/error"
+
+      - name: Upload deploy result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: deploy-result-${{ matrix.label }}
+          path: ${{ runner.temp }}/deploy-result/
+          retention-days: 1
 
   update-comment:
     name: Update Apollo Coded App Preview Comment
@@ -278,17 +282,25 @@ jobs:
       issues: write
 
     steps:
+      - name: Download deploy results
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: deploy-result-*
+          path: ${{ runner.temp }}/results
+
       - name: Update PR comment
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          DEPLOY_OUTCOME: ${{ needs.deploy.result }}
-          APOLLO_DESIGN_URL: ${{ needs.deploy.outputs.design_url }}
-          APOLLO_DOCS_URL: ${{ needs.deploy.outputs.docs_url }}
-          APOLLO_LANDING_URL: ${{ needs.deploy.outputs.landing_url }}
-          APOLLO_VERTEX_URL: ${{ needs.deploy.outputs.vertex_url }}
+          RESULTS_DIR: ${{ runner.temp }}/results
         with:
           script: |
+            const fs = require('fs');
+            const path = require('path');
+
             const identifier = '<!-- apollo-coded-app-preview-comment -->';
+            const projects = ['apollo-design', 'apollo-docs', 'apollo-landing', 'apollo-vertex'];
+            const resultsDir = process.env.RESULTS_DIR;
+            const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
             const timestamp = new Date().toLocaleString('en-US', {
               timeZone: 'America/Los_Angeles',
               year: 'numeric',
@@ -299,24 +311,34 @@ jobs:
               second: '2-digit',
               hour12: true
             });
-            const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
-            const deploySucceeded = process.env.DEPLOY_OUTCOME === 'success';
-            const rows = [
-              ['apollo-design', process.env.APOLLO_DESIGN_URL],
-              ['apollo-docs', process.env.APOLLO_DOCS_URL],
-              ['apollo-landing', process.env.APOLLO_LANDING_URL],
-              ['apollo-vertex', process.env.APOLLO_VERTEX_URL],
-            ].map(([project, url]) => {
-              const ready = Boolean(url);
-              const status = ready ? 'Ready' : deploySucceeded ? 'Skipped' : 'Failed';
+
+            const readResult = (project) => {
+              const dir = path.join(resultsDir, `deploy-result-${project}`);
+              const read = (name) => {
+                try {
+                  return fs.readFileSync(path.join(dir, name), 'utf8').trim();
+                } catch {
+                  return '';
+                }
+              };
+              return { url: read('url'), outcome: read('outcome') || 'skipped' };
+            };
+
+            let anyFailed = false;
+            const rows = projects.map(project => {
+              const { url, outcome } = readResult(project);
+              const ready = outcome === 'success' && Boolean(url);
+              if (outcome === 'failure') anyFailed = true;
+              const status = ready ? 'Ready' : outcome === 'failure' ? 'Failed' : 'Skipped';
               const preview = ready ? `[Preview](${url}) · ${logsLink}` : logsLink;
               return `| ${project} | ${status} | ${preview} | ${timestamp} |`;
             });
+
             const body = [
               identifier,
-              deploySucceeded
-                ? 'Apollo Coded App preview deployments are ready.'
-                : 'Apollo Coded App preview deployments did not complete.',
+              anyFailed
+                ? 'Apollo Coded App preview deployments finished with failures.'
+                : 'Apollo Coded App preview deployments are ready.',
               '',
               '| Project | Status | Preview | Updated (PT) |',
               '|---------|--------|---------|--------------|',
