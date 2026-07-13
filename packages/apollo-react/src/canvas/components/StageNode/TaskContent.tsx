@@ -144,7 +144,7 @@ export const TaskContent = memo(
         style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
         gap={Padding.PadXs}
       >
-        <Row align="center" justify="space-between">
+        <Row align="center" justify="space-between" gap={Spacing.SpacingXs}>
           {/* disable tooltip when dragging to avoid tooltip flickering */}
           <Row
             gap={Spacing.SpacingXs}
@@ -159,11 +159,17 @@ export const TaskContent = memo(
               {...(isDragging && { isOpen: false })}
             >
               <Row
-                gap={Spacing.SpacingXs}
+                gap={'2px'}
                 align="center"
-                style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
               >
-                <span className="text-sm truncate">{task.label}</span>
+                <span className="text-sm truncate" style={{ minWidth: 0 }}>
+                  {task.label}
+                </span>
                 {task.isRequired && (
                   <span className="text-sm" style={{ flexShrink: 0 }}>
                     {'*'}
