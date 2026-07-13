@@ -133,7 +133,14 @@ export function AutopilotFab() {
           <div className="flex items-center gap-2 border-b px-4 py-3">
             <svg width={0} height={0} aria-hidden className="absolute">
               <defs>
-                <linearGradient id="fab-ai-mark" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="fab-ai-mark"
+                  x1="2"
+                  y1="4"
+                  x2="22"
+                  y2="20"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0" stopColor="var(--ai-gradient-start)" />
                   <stop offset="1" stopColor="var(--ai-gradient-end)" />
                 </linearGradient>

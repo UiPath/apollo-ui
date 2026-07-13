@@ -2,11 +2,16 @@
 
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { AiChatEmptySuggestions } from "@/registry/ai-chat/components/ai-chat-empty-suggestions";
 import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
 import { BuyScaffold } from "./BuyScaffold";
 import { type BuyPhase, useConversation } from "./conversation-context";
+import {
+  CATALOG_PHASES,
+  FlowPhaseBar,
+  NON_CATALOG_PHASES,
+} from "./FlowPhaseBar";
 import { GuidedBuy } from "./GuidedBuy";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -89,16 +94,20 @@ export function BuyFlow() {
   const resetChat = useRouterState({
     select: (s) => s.location.state.resetChat === true,
   });
-
-  // Reset to the Intake empty state on a fresh entry to Buy — and when returning
-  // from a submitted Configure — but not when stepping back into an in-flight
-  // Bridge, where the conversation should still be there.
-  const didReset = useRef(false);
+  // Returning from Review (phase back-click): keep the conversation intact so
+  // the user lands back on the Selection step, not a fresh Intake.
+  const fromReview = useRouterState({
+    select: (s) => s.location.state.fromReview === true,
+  });
+  // Unique key for this navigation to /buy (changes on every new visit, even when
+  // the component doesn't unmount). Fires startFresh on every fresh entry, but not
+  // when returning from Configure mid-flow or stepping back from Review.
+  const locationKey = useRouterState({ select: (s) => s.location.state.__TSR_index });
   useEffect(() => {
-    if (didReset.current) return;
-    didReset.current = true;
-    if (!fromConfigure || resetChat) startFresh();
-  }, [startFresh, fromConfigure, resetChat]);
+    if ((fromConfigure && !resetChat) || fromReview) return;
+    startFresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locationKey]); // intentional: deps read fresh on each navigation
 
   const handleSuggestion = (suggestion: string) => {
     if (suggestion === CONTRACT_STARTER) {
@@ -149,6 +158,26 @@ export function BuyFlow() {
   const isIntake = phase === "intake";
   const header = HEADERS[phase];
 
+  // Phase bar — shown once a request exists (not on Intake).
+  const isCatalogPath = phase === "bridge" || phase === "selection";
+  const isNonCatalogPath =
+    phase === "sourcing" || phase === "service" || phase === "offcatalog";
+  const catalogPhaseIndex = phase === "selection" ? 1 : 0;
+  const nonCatalogPhaseIndex = phase === "offcatalog" ? 1 : 0;
+
+  const phaseBar = isIntake ? undefined : isCatalogPath ? (
+    <FlowPhaseBar
+      phases={CATALOG_PHASES}
+      currentIndex={catalogPhaseIndex}
+      onClickPhase={catalogPhaseIndex > 0 ? () => stepBack() : undefined}
+    />
+  ) : isNonCatalogPath ? (
+    <FlowPhaseBar
+      phases={NON_CATALOG_PHASES}
+      currentIndex={nonCatalogPhaseIndex}
+    />
+  ) : undefined;
+
   return (
     <motion.div
       className="h-full"
@@ -168,6 +197,7 @@ export function BuyFlow() {
         showCart={phase === "selection"}
         // No back/reset on Intake — there's no previous step and it's already fresh.
         {...(isIntake ? {} : { onBack: stepBack, onReset: startFresh })}
+        phaseBar={phaseBar}
       >
         {isIntake ? (
           // Intake — the one conversational surface (free text + chips).

@@ -121,7 +121,8 @@ function PanelBody({ id }: { id: string }) {
         <div className="flex gap-2.5 rounded-lg border bg-muted/40 px-3.5 py-3">
           <AiMark
             size={16}
-            className="mt-0.5 shrink-0" gradientId="gb-ai-mark"
+            className="mt-0.5 shrink-0"
+            gradientId="gb-ai-mark"
             aria-hidden
           />
           <p className="text-sm leading-[1.6] text-foreground">

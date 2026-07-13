@@ -31,6 +31,7 @@ declare module "@tanstack/react-router" {
   interface HistoryState {
     fromConfigure?: boolean;
     resetChat?: boolean;
+    fromReview?: boolean;
   }
 }
 
@@ -430,7 +431,8 @@ export function ConfigureFlow() {
                     >
                       <AiMark
                         size={16}
-                        className="mt-0.5 shrink-0" gradientId="gb-ai-mark"
+                        className="mt-0.5 shrink-0"
+                        gradientId="gb-ai-mark"
                         aria-hidden
                       />
                       <p className="text-sm text-foreground">
@@ -465,7 +467,8 @@ export function ConfigureFlow() {
                     >
                       <AiMark
                         size={16}
-                        className="mt-0.5 shrink-0" gradientId="gb-ai-mark"
+                        className="mt-0.5 shrink-0"
+                        gradientId="gb-ai-mark"
                         aria-hidden
                       />
                       <p className="text-sm text-foreground">

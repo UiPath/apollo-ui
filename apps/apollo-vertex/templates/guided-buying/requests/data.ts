@@ -22,7 +22,7 @@ export interface RequestRow {
   /** Annual-equivalent value (drives the Total Value metric). */
   amountValue: number;
   status: RequestStatus;
-  /** MM/DD/YYYY. */
+  /** DD MMM YYYY, e.g. "28 May 2026". */
   submitted: string;
   updated: string;
 }
@@ -54,8 +54,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$3,698.00",
     amountValue: 3698,
     status: "ordered",
-    submitted: "05/28/2026",
-    updated: "06/01/2026",
+    submitted: "28 May 2026",
+    updated: "01 Jun 2026",
   },
   {
     id: "REQ-2051",
@@ -66,8 +66,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$660.00/mo",
     amountValue: 7920,
     status: "pending-approval",
-    submitted: "06/03/2026",
-    updated: "06/08/2026",
+    submitted: "03 Jun 2026",
+    updated: "08 Jun 2026",
   },
   {
     id: "REQ-2053",
@@ -78,8 +78,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "~$58,000.00",
     amountValue: 58000,
     status: "sourcing",
-    submitted: "06/05/2026",
-    updated: "06/09/2026",
+    submitted: "05 Jun 2026",
+    updated: "09 Jun 2026",
   },
   {
     id: "REQ-2039",
@@ -90,8 +90,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$4,800.00",
     amountValue: 4800,
     status: "approved",
-    submitted: "05/20/2026",
-    updated: "05/22/2026",
+    submitted: "20 May 2026",
+    updated: "22 May 2026",
   },
   {
     id: "REQ-2031",
@@ -102,8 +102,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$980.00",
     amountValue: 980,
     status: "approved",
-    submitted: "05/24/2026",
-    updated: "05/27/2026",
+    submitted: "24 May 2026",
+    updated: "27 May 2026",
   },
   {
     id: "REQ-2025",
@@ -114,8 +114,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$2,400.00",
     amountValue: 2400,
     status: "pending-approval",
-    submitted: "06/07/2026",
-    updated: "06/07/2026",
+    submitted: "07 Jun 2026",
+    updated: "07 Jun 2026",
   },
 ];
 
@@ -202,16 +202,38 @@ export function getRequestRow(id: string): RequestRow | undefined {
   return REQUEST_ROWS.find((r) => r.id === id);
 }
 
+const MONTHS_SHORT = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/** Format a Date as "DD MMM YYYY", e.g. "13 Jul 2026". */
+export function formatDateDisplay(date: Date): string {
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mmm = MONTHS_SHORT[date.getMonth()];
+  return `${dd} ${mmm} ${date.getFullYear()}`;
+}
+
 // Stat-card counts derived from the rows. Awaiting + approved reconcile to total:
-// everything still with procurement (pending approval or sourcing) vs cleared.
-export function requestStats() {
-  const total = REQUEST_ROWS.length;
-  const awaitingDecision = REQUEST_ROWS.filter(
+// everything pending approval or in sourcing vs cleared.
+export function requestStats(rows: RequestRow[] = REQUEST_ROWS) {
+  const total = rows.length;
+  const awaitingDecision = rows.filter(
     (r) => r.status === "pending-approval" || r.status === "sourcing",
   ).length;
-  const approved = REQUEST_ROWS.filter(
+  const approved = rows.filter(
     (r) => r.status === "approved" || r.status === "ordered",
   ).length;
-  const totalValue = REQUEST_ROWS.reduce((sum, r) => sum + r.amountValue, 0);
+  const totalValue = rows.reduce((sum, r) => sum + r.amountValue, 0);
   return { total, awaitingDecision, approved, totalValue };
 }

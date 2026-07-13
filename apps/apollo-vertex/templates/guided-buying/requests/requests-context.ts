@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
+import type { RequestRow } from "./data";
 
 /** A follow-up note from the requester — surfaces in the buyer's Comms tab. */
 export interface RequestNote {
@@ -21,6 +22,9 @@ export interface RequestsContextValue {
   /** Requester → buyer: requests the requester flagged urgent, by request id. */
   urgent: Record<string, boolean>;
   markUrgent: (requestId: string) => void;
+  /** Requests submitted during this session (e.g. via the catalog flow). */
+  submittedRows: RequestRow[];
+  submitRequest: (row: RequestRow) => void;
 }
 
 export const RequestsContext = createContext<RequestsContextValue | null>(null);

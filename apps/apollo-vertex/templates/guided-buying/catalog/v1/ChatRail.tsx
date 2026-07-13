@@ -73,7 +73,14 @@ export function ChatRail({ onCollapse, cold = false }: ChatRailProps) {
         <div className="flex items-center gap-2">
           <svg width={0} height={0} aria-hidden className="absolute">
             <defs>
-              <linearGradient id="rail-ai-mark" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+              <linearGradient
+                id="rail-ai-mark"
+                x1="2"
+                y1="4"
+                x2="22"
+                y2="20"
+                gradientUnits="userSpaceOnUse"
+              >
                 <stop offset="0" stopColor="var(--ai-gradient-start)" />
                 <stop offset="1" stopColor="var(--ai-gradient-end)" />
               </linearGradient>

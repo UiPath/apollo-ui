@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, ShoppingCart } from "lucide-react";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { useCart } from "./cart-context";
 import { CartDrawer } from "./CartDrawer";
@@ -23,6 +24,8 @@ interface BuyScaffoldProps {
   onReset?: () => void;
   /** Show the cart button — only once products are on screen (it transitions in). */
   showCart?: boolean;
+  /** Flow phase indicator rendered between the utility bar and the AI anchor. */
+  phaseBar?: ReactNode;
   children: ReactNode;
 }
 
@@ -41,6 +44,7 @@ export function BuyScaffold({
   onBack,
   onReset,
   showCart = false,
+  phaseBar,
   children,
 }: BuyScaffoldProps) {
   const reduceMotion = useReducedMotion();
@@ -174,12 +178,22 @@ export function BuyScaffold({
         </div>
 
         {/* The anchor — Autopilot mark + title + subtext, identical position. */}
-        <div className="pt-[7vh] text-center">
+        <div className={cn("text-center", phaseBar ? "pt-[4vh]" : "pt-[7vh]")}>
+          {phaseBar && (
+            <div className="mb-4 flex justify-center">{phaseBar}</div>
+          )}
           {/* Constant mark — stays put across steps. */}
           <div className="flex items-center justify-center gap-1.5">
             <svg width={0} height={0} aria-hidden className="absolute">
               <defs>
-                <linearGradient id="buy-ai-mark" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="buy-ai-mark"
+                  x1="2"
+                  y1="4"
+                  x2="22"
+                  y2="20"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0" stopColor="var(--ai-gradient-start)" />
                   <stop offset="1" stopColor="var(--ai-gradient-end)" />
                 </linearGradient>

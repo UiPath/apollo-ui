@@ -116,10 +116,7 @@ export function ScanRow({
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-medium text-foreground">{item.name}</h3>
             {recommended && (
-              <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-white"
-                style={AI_GRADIENT}
-              >
+              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--ai-gradient-start)]/10 px-2 py-0.5 text-xs font-medium text-[var(--ai-gradient-start)]">
                 <AiMark size={12} aria-hidden />
                 Best match
               </span>
@@ -169,7 +166,7 @@ export function ScanRow({
               ) : (
                 <>
                   <Plus className="size-4" />
-                  {quantity > 1 ? `Add ${quantity}` : "Add"}
+                  {`Add ${quantity}`}
                 </>
               )}
             </Button>

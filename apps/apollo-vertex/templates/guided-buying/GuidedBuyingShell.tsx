@@ -10,13 +10,7 @@ import {
   RouterProvider,
   useNavigate,
 } from "@tanstack/react-router";
-import {
-  ClipboardList,
-  LayoutDashboard,
-  ShoppingCart,
-  Store,
-  Wrench,
-} from "lucide-react";
+import { ClipboardList, ShoppingCart, Store, Wrench } from "lucide-react";
 import { useState } from "react";
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
 import { AutopilotChatProvider } from "./AutopilotChatProvider";
@@ -36,7 +30,6 @@ import { Workbench } from "./workbench/Workbench";
 // the requester (Marcus Webb) gets My Requests (their own queue); the buyer
 // (procurement) gets the Workbench, where requests that needed judgment land.
 const baseNavItems: ShellNavItem[] = [
-  { path: "/dashboard", label: "dashboard", icon: LayoutDashboard },
   { path: "/buy", label: "buy", icon: ShoppingCart },
   { path: "/catalog", label: "catalog", icon: Store },
 ];
@@ -210,7 +203,14 @@ export function GuidedBuyingShell() {
               {/* Global gradient def — all AiMark icons reference "gb-ai-mark" */}
               <svg width={0} height={0} aria-hidden className="absolute">
                 <defs>
-                  <linearGradient id="gb-ai-mark" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+                  <linearGradient
+                    id="gb-ai-mark"
+                    x1="2"
+                    y1="4"
+                    x2="22"
+                    y2="20"
+                    gradientUnits="userSpaceOnUse"
+                  >
                     <stop offset="0" stopColor="var(--ai-gradient-start)" />
                     <stop offset="1" stopColor="var(--ai-gradient-end)" />
                   </linearGradient>

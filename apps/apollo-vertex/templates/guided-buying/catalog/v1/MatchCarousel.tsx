@@ -76,10 +76,7 @@ function MatchCard({ item, lead = false, index }: MatchCardProps) {
           className="h-28 rounded-xl"
         />
         {lead && (
-          <span
-            className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-white shadow-sm"
-            style={AI_GRADIENT}
-          >
+          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-[var(--ai-gradient-start)]/10 px-2 py-0.5 text-xs font-medium text-[var(--ai-gradient-start)] shadow-sm">
             <AiMark size={12} aria-hidden />
             Best match
           </span>
@@ -87,7 +84,7 @@ function MatchCard({ item, lead = false, index }: MatchCardProps) {
       </div>
 
       <div className="space-y-0.5">
-        <h3 className="truncate font-semibold leading-snug text-foreground">
+        <h3 className="line-clamp-2 min-h-[2.5rem] font-semibold leading-snug text-foreground">
           {item.name}
         </h3>
         <p className="truncate text-xs text-muted-foreground">
@@ -134,7 +131,7 @@ function MatchCard({ item, lead = false, index }: MatchCardProps) {
               className="flex items-center gap-1.5"
             >
               <Plus className="size-4" />
-              {lead ? `Add ${qty} to cart` : `Add ${qty}`}
+              {`Add ${qty}`}
             </motion.span>
           </Button>
         )}
