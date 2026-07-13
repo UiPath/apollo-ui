@@ -2350,6 +2350,7 @@ export const TasksBySection: Story = {
                   taskGroupType: 'event-driven',
                   hasEntryCondition: true,
                   isPlaceholder: true,
+                  isRequired: true,
                 },
               ],
               [
