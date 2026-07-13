@@ -12,6 +12,10 @@ const meta: Meta<typeof Spinner> = {
       control: 'select',
       options: ['sm', 'default', 'lg', 'xl'],
     },
+    variant: {
+      control: 'select',
+      options: ['default', 'primary', 'foreground', 'destructive'],
+    },
   },
 };
 
@@ -47,6 +51,35 @@ export const AllSizes = {
       <Spinner size="default" />
       <Spinner size="lg" />
       <Spinner size="xl" />
+    </Row>
+  ),
+} satisfies Story;
+
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+  },
+};
+
+export const Foreground: Story = {
+  args: {
+    variant: 'foreground',
+  },
+};
+
+export const Destructive: Story = {
+  args: {
+    variant: 'destructive',
+  },
+};
+
+export const AllVariants = {
+  render: () => (
+    <Row align="center" gap={4}>
+      <Spinner variant="default" />
+      <Spinner variant="primary" />
+      <Spinner variant="foreground" />
+      <Spinner variant="destructive" />
     </Row>
   ),
 } satisfies Story;

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
-import { describe, expect, it } from 'vitest';
 import { createRef } from 'react';
+import { describe, expect, it } from 'vitest';
 import { Spinner } from './spinner';
 
 describe('Spinner', () => {
@@ -39,6 +39,30 @@ describe('Spinner', () => {
       const { container } = render(<Spinner />);
       const svg = container.querySelector('svg');
       expect(svg).toHaveClass('animate-spin');
+    });
+
+    it('renders default variant with muted color', () => {
+      const { container } = render(<Spinner />);
+      const svg = container.querySelector('svg');
+      expect(svg).toHaveClass('text-muted-foreground');
+    });
+
+    it('renders primary variant', () => {
+      const { container } = render(<Spinner variant="primary" />);
+      const svg = container.querySelector('svg');
+      expect(svg).toHaveClass('text-primary');
+    });
+
+    it('renders foreground variant', () => {
+      const { container } = render(<Spinner variant="foreground" />);
+      const svg = container.querySelector('svg');
+      expect(svg).toHaveClass('text-foreground');
+    });
+
+    it('renders destructive variant', () => {
+      const { container } = render(<Spinner variant="destructive" />);
+      const svg = container.querySelector('svg');
+      expect(svg).toHaveClass('text-destructive');
     });
   });
 
