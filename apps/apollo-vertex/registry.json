@@ -2723,6 +2723,55 @@
       ]
     },
     {
+      "name": "stepper",
+      "type": "registry:ui",
+      "title": "Stepper",
+      "description": "A composable step indicator for multi-step flows with horizontal and vertical orientations and active, completed, and inactive states.",
+      "dependencies": ["class-variance-authority", "lucide-react"],
+      "files": [
+        {
+          "path": "registry/stepper/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/index.ts"
+        },
+        {
+          "path": "registry/stepper/stepper.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper.tsx"
+        },
+        {
+          "path": "registry/stepper/stepper-context.ts",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-context.ts"
+        },
+        {
+          "path": "registry/stepper/stepper-item.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-item.tsx"
+        },
+        {
+          "path": "registry/stepper/stepper-trigger.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-trigger.tsx"
+        },
+        {
+          "path": "registry/stepper/stepper-indicator.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-indicator.tsx"
+        },
+        {
+          "path": "registry/stepper/stepper-content.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-content.tsx"
+        },
+        {
+          "path": "registry/stepper/stepper-separator.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-separator.tsx"
+        }
+      ]
+    },
+    {
       "name": "textarea",
       "type": "registry:ui",
       "title": "Textarea",

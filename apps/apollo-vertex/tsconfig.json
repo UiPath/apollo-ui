@@ -102,6 +102,7 @@
       "@/components/ui/solution-tests": ["./registry/solution-tests/index"],
       "@/components/ui/sonner": ["./registry/sonner/sonner"],
       "@/components/ui/spinner": ["./registry/spinner/spinner"],
+      "@/components/ui/stepper": ["./registry/stepper/index"],
       "@/components/ui/switch": ["./registry/switch/switch"],
       "@/components/ui/table": ["./registry/table/table"],
       "@/components/ui/tabs": ["./registry/tabs/tabs"],
