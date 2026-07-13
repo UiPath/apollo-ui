@@ -82,11 +82,7 @@ const TaskPlayButton = memo(
             padding: 0,
           }}
         >
-          {playLoading ? (
-            <Spinner size="sm" />
-          ) : (
-            <TimelinePlayIcon />
-          )}
+          {playLoading ? <Spinner size="sm" /> : <TimelinePlayIcon />}
         </Button>
       </CanvasTooltip>
     );
