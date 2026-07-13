@@ -441,8 +441,8 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
       vite:
-        specifier: ^8.0.0
-        version: 8.0.16(@types/node@24.10.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.43.1)(tsx@4.22.4)(yaml@2.8.3)
+        specifier: ^7.0.4
+        version: 7.3.6(@types/node@24.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.43.1)(tsx@4.22.4)(yaml@2.8.3)
 
   apps/storybook:
     dependencies:
