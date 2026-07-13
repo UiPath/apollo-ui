@@ -2,9 +2,9 @@ import { Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Badge, Button, Spinner } from '@uipath/apollo-wind';
 import debounce from 'debounce';
+import { CirclePlay } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
-import { TimelinePlayIcon } from '../../icons';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { StageTaskIcon, StageTaskRetryDuration } from './StageNode.styles';
@@ -82,7 +82,7 @@ const TaskPlayButton = memo(
             padding: 0,
           }}
         >
-          {playLoading ? <Spinner size="sm" /> : <TimelinePlayIcon />}
+          {playLoading ? <Spinner size="sm" /> : <CirclePlay />}
         </Button>
       </CanvasTooltip>
     );
