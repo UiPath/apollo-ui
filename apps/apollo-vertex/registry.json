@@ -2772,6 +2772,52 @@
       ]
     },
     {
+      "name": "form-wizard",
+      "type": "registry:ui",
+      "title": "Form Wizard",
+      "description": "A multi-step wizard built on TanStack Form and Zod. Each step is composed with withForm and validates its own slice through a FormGroup, with conditional steps and optional persistence.",
+      "dependencies": [
+        "@tanstack/react-form",
+        "@tanstack/react-store",
+        "@mantine/hooks",
+        "zod",
+        "react-i18next"
+      ],
+      "registryDependencies": [
+        "@uipath/form",
+        "@uipath/button",
+        "@uipath/field",
+        "@uipath/stepper"
+      ],
+      "files": [
+        {
+          "path": "registry/form-wizard/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form-wizard/index.ts"
+        },
+        {
+          "path": "registry/form-wizard/form-wizard.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form-wizard/form-wizard.tsx"
+        },
+        {
+          "path": "registry/form-wizard/form-wizard-nav.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form-wizard/form-wizard-nav.tsx"
+        },
+        {
+          "path": "registry/form-wizard/use-form-wizard.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form-wizard/use-form-wizard.ts"
+        },
+        {
+          "path": "registry/form-wizard/wizard-schema.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form-wizard/wizard-schema.ts"
+        }
+      ]
+    },
+    {
       "name": "textarea",
       "type": "registry:ui",
       "title": "Textarea",

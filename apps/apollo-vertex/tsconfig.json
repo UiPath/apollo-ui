@@ -67,6 +67,7 @@
       "@/components/ui/field": ["./registry/field/field"],
       "@/components/ui/filter-dropdown": ["./registry/filter-dropdown/index"],
       "@/components/ui/form": ["./registry/form/index"],
+      "@/components/ui/form-wizard": ["./registry/form-wizard/index"],
       "@/components/ui/hover-card": ["./registry/hover-card/hover-card"],
       "@/components/ui/input": ["./registry/input/input"],
       "@/components/ui/input-group": ["./registry/input-group/input-group"],
