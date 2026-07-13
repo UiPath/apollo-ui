@@ -1,10 +1,10 @@
 import { Check, Plus } from "lucide-react";
 import { useState } from "react";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import {
   activePrice,
   formatPrice,
@@ -120,7 +120,7 @@ export function ScanRow({
                 className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-white"
                 style={AI_GRADIENT}
               >
-                <AutopilotIcon size={12} aria-hidden />
+                <AiMark size={12} aria-hidden />
                 Best match
               </span>
             )}

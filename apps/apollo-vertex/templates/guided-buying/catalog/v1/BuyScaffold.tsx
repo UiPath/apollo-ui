@@ -4,9 +4,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, Plus, ShoppingCart } from "lucide-react";
 import type { ReactNode } from "react";
-import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { useCart } from "./cart-context";
 import { CartDrawer } from "./CartDrawer";
 
@@ -177,8 +177,24 @@ export function BuyScaffold({
         <div className="pt-[7vh] text-center">
           {/* Constant mark — stays put across steps. */}
           <div className="flex items-center justify-center gap-1.5">
-            <AutopilotGradientIcon size={20} aria-hidden="true" />
-            <span className="bg-clip-text pt-0.5 text-sm font-bold tracking-tight text-transparent [background-image:var(--ai-chat-brand-gradient)]">
+            <svg width={0} height={0} aria-hidden className="absolute">
+              <defs>
+                <linearGradient id="buy-ai-mark" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stopColor="var(--ai-gradient-start)" />
+                  <stop offset="1" stopColor="var(--ai-gradient-end)" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <AiMark size={20} gradientId="buy-ai-mark" />
+            <span
+              className="pt-0.5 text-sm font-bold leading-none tracking-tight"
+              style={{
+                backgroundImage: "var(--ai-gradient-text)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
               AI Assistant
             </span>
           </div>

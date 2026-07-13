@@ -5,7 +5,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, Columns3, ShoppingCart, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +16,7 @@ import {
   PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import {
   activePrice,
   CATALOG_ITEMS,
@@ -744,9 +744,9 @@ export function Selection({
                 ) : (
                   <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
                     <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <AutopilotIcon
+                      <AiMark
                         size={16}
-                        className="shrink-0 text-[#0f7b8a]"
+                        className="shrink-0" gradientId="gb-ai-mark"
                         aria-hidden
                       />
                       {relaxSuggestion && relaxSuggestion.count > 0

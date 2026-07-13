@@ -3,10 +3,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Plus } from "lucide-react";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { useCart } from "./cart-context";
 import {
   activePrice,
@@ -80,7 +80,7 @@ function MatchCard({ item, lead = false, index }: MatchCardProps) {
             className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-white shadow-sm"
             style={AI_GRADIENT}
           >
-            <AutopilotIcon size={12} aria-hidden />
+            <AiMark size={12} aria-hidden />
             Best match
           </span>
         )}

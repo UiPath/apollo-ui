@@ -1,7 +1,6 @@
 import { useFocusTrap, useHotkeys } from "@mantine/hooks";
 import { ArrowLeft, Check, Plus, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { activePrice, formatPrice, leadTime, showsListStrike } from "./data";
 import { usePriceBasis } from "./price-basis-context";
 import { BrandMark } from "./ScanRow";
@@ -167,9 +167,9 @@ export function CompareView({
 
       {recommendation && recoOpen && (
         <div className="flex items-center gap-2 border-b bg-muted/40 px-6 py-2.5 text-sm">
-          <AutopilotIcon
+          <AiMark
             size={16}
-            className="shrink-0 text-[#0f7b8a]"
+            className="shrink-0" gradientId="gb-ai-mark"
             aria-hidden
           />
           <p className="flex-1 text-foreground">{recommendation}</p>

@@ -1,8 +1,8 @@
 import { ArrowLeft, Check, Columns3, Plus } from "lucide-react";
 import { Fragment, type ReactNode, useState } from "react";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import {
   activePrice,
   activeSavings,
@@ -132,9 +132,9 @@ export function ProductDetail({
 
             {isPicked && (
               <div className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3">
-                <AutopilotIcon
+                <AiMark
                   size={16}
-                  className="mt-0.5 shrink-0 text-[#0f7b8a]"
+                  className="mt-0.5 shrink-0" gradientId="gb-ai-mark"
                   aria-hidden
                 />
                 <p className="text-sm text-foreground">{recommendationNote}</p>
@@ -174,7 +174,7 @@ export function ProductDetail({
                 {comparing ? "In compare" : "Add to compare"}
               </Button>
               <Button variant="ghost" size="sm" onClick={onAskAgent}>
-                <AutopilotIcon size={14} aria-hidden />
+                <AiMark size={14} gradientId="gb-ai-mark" aria-hidden />
                 Ask the agent about this
               </Button>
             </div>
