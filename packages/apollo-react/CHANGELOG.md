@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.59.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.59.0...@uipath/apollo-react@4.59.1) (2026-07-13)
+
+### Bug Fixes
+
+* **apollo-react:** added stories ([d9e344f](https://github.com/UiPath/apollo-ui/commit/d9e344f5d4425e0a61b5a9d98e2ea861b35361c1))
+* **apollo-react:** move required asterisk closer to task name ([281ba6d](https://github.com/UiPath/apollo-ui/commit/281ba6d9de7ad3b10d067b6570b8bc3b24440fef))
+
 ## [@uipath/apollo-react-v4.59.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.58.0...@uipath/apollo-react@4.59.0) (2026-07-10)
 
 ### Features
