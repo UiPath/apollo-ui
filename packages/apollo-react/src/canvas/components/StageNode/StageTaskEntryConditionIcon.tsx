@@ -22,6 +22,7 @@ export const StageTaskEntryConditionIcon = ({
           color: 'var(--color-icon-default)',
           flexShrink: 0,
           // Optically centre the diamond; the adjacent play button sits inset (more so when small).
+          // Value is in canvas-local px, so it renders ×canvas zoom — roughly 1–3px on screen in practice.
           transform: small ? 'translateX(1px)' : 'translateX(0.5px)',
         }}
       >
