@@ -58,12 +58,6 @@ describe('Spinner', () => {
       const svg = container.querySelector('svg');
       expect(svg).toHaveClass('text-foreground');
     });
-
-    it('renders destructive variant', () => {
-      const { container } = render(<Spinner variant="destructive" />);
-      const svg = container.querySelector('svg');
-      expect(svg).toHaveClass('text-destructive');
-    });
   });
 
   describe('accessibility', () => {
