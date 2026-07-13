@@ -274,7 +274,16 @@ export const Default: Story = {
             isReadOnly: true,
             tasks: [
               [{ id: '1', label: 'Risk Assessment', icon: <VerificationIcon /> }],
-              [{ id: '2', label: 'Policy Review', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'Policy Review', icon: <DocumentIcon />, isRequired: true }],
+              [
+                {
+                  id: '3',
+                  label:
+                    'Final task with a long task string, really it is so long that it should cut off',
+                  icon: <DocumentIcon />,
+                  isRequired: true,
+                },
+              ],
             ],
           },
           execution: {
@@ -286,6 +295,10 @@ export const Default: Story = {
               '2': {
                 status: 'Warning',
                 message: 'Policy review requires manual intervention',
+              },
+              '3': {
+                status: 'Warning',
+                message: 'Warning message',
               },
             },
           },
@@ -390,6 +403,7 @@ export const ExecutionStatus: Story = {
                   id: '2',
                   label: 'Document Verification is going to be very very really long',
                   icon: <DocumentIcon />,
+                  isRequired: true,
                 },
               ],
             ],
