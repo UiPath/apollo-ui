@@ -4,8 +4,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown, Pencil, ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
-import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -13,6 +11,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { useCart } from "./cart-context";
 import { CartLine } from "./CartLine";
 import { CartSummary } from "./CartSummary";
@@ -70,7 +69,15 @@ export function Review() {
       <div className="mx-auto w-full max-w-2xl space-y-6 px-6 py-8">
         {/* Slim Autopilot presence — the agent stays with you through commit. */}
         <div className="flex items-center gap-2">
-          <AutopilotGradientIcon size={18} aria-hidden="true" />
+          <svg width={0} height={0} aria-hidden className="absolute">
+            <defs>
+              <linearGradient id="review-ai-mark" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stopColor="var(--ai-gradient-start)" />
+                <stop offset="1" stopColor="var(--ai-gradient-end)" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <AiMark size={18} gradientId="review-ai-mark" aria-hidden />
           <span className="text-sm text-muted-foreground">
             <span className="font-semibold text-foreground">AI Assistant</span>{" "}
             · I’ve prepared this for you — ready when you are.
@@ -152,9 +159,9 @@ export function Review() {
               type="button"
               className="flex w-full items-center gap-2 rounded-xl border bg-muted/40 p-3 text-left text-sm text-muted-foreground"
             >
-              <AutopilotIcon
+              <AiMark
                 size={16}
-                className="shrink-0 text-[#0f7b8a]"
+                className="shrink-0" gradientId="gb-ai-mark"
                 aria-hidden
               />
               <span className="flex-1 text-foreground">

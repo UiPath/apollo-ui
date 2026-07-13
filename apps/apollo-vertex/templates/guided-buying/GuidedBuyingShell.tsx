@@ -207,6 +207,15 @@ export function GuidedBuyingShell() {
         <ConversationProvider>
           <RequestsProvider>
             <AutopilotChatProvider>
+              {/* Global gradient def — all AiMark icons reference "gb-ai-mark" */}
+              <svg width={0} height={0} aria-hidden className="absolute">
+                <defs>
+                  <linearGradient id="gb-ai-mark" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="var(--ai-gradient-start)" />
+                    <stop offset="1" stopColor="var(--ai-gradient-end)" />
+                  </linearGradient>
+                </defs>
+              </svg>
               <RouterProvider router={router} />
             </AutopilotChatProvider>
           </RequestsProvider>

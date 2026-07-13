@@ -1,5 +1,5 @@
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { ChatRail } from "./ChatRail";
 
 interface RailDockProps {
@@ -42,7 +42,7 @@ export function RailDock({
             className="relative flex size-9 items-center justify-center rounded-full text-white"
             style={{ background: "var(--ai-gradient-strong)" }}
           >
-            <AutopilotIcon size={18} aria-hidden />
+            <AiMark size={18} aria-hidden />
             {hasUpdates && (
               <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-primary ring-2 ring-card" />
             )}

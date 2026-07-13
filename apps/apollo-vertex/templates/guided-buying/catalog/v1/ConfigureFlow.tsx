@@ -5,7 +5,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check, ChevronDown } from "lucide-react";
 import { Fragment, type ReactNode, useState } from "react";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -17,6 +16,7 @@ import {
   PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { useRequests } from "../../requests/requests-context";
 import { formatPrice } from "./data";
 
@@ -191,7 +191,7 @@ function OptionCard({
                 className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium text-white"
                 style={AI_GRADIENT}
               >
-                <AutopilotIcon size={11} aria-hidden />
+                <AiMark size={11} aria-hidden />
                 Agent pick
               </span>
             )}
@@ -428,9 +428,9 @@ export function ConfigureFlow() {
                       {...stepItem(1)}
                       className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3"
                     >
-                      <AutopilotIcon
+                      <AiMark
                         size={16}
-                        className="mt-0.5 shrink-0 text-[#0f7b8a]"
+                        className="mt-0.5 shrink-0" gradientId="gb-ai-mark"
                         aria-hidden
                       />
                       <p className="text-sm text-foreground">
@@ -463,9 +463,9 @@ export function ConfigureFlow() {
                       {...stepItem(1)}
                       className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3"
                     >
-                      <AutopilotIcon
+                      <AiMark
                         size={16}
-                        className="mt-0.5 shrink-0 text-[#0f7b8a]"
+                        className="mt-0.5 shrink-0" gradientId="gb-ai-mark"
                         aria-hidden
                       />
                       <p className="text-sm text-foreground">
@@ -567,7 +567,7 @@ export function ConfigureFlow() {
         }}
       >
         <div className="flex items-center gap-1.5">
-          <AutopilotIcon size={16} className="text-[#0f7b8a]" aria-hidden />
+          <AiMark size={16} gradientId="gb-ai-mark" aria-hidden />
           <span className="text-xs font-semibold text-muted-foreground">
             {confirmed ? "Configured" : "Building so far"}
           </span>

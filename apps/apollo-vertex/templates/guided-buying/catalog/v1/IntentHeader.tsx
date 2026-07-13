@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import type { BuyRequest } from "./types";
 
 interface IntentHeaderProps {
@@ -17,7 +17,7 @@ export function IntentHeader({ request }: IntentHeaderProps) {
         “{request.summary}”
       </h1>
       <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Sparkles className="size-3.5 shrink-0 text-primary" aria-hidden />
+        <AiMark size={14} className="shrink-0" gradientId="gb-ai-mark" aria-hidden />
         {request.agentNote}
       </p>
     </div>

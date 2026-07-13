@@ -3,7 +3,6 @@
 import { useRouterState } from "@tanstack/react-router";
 import { ArrowUp } from "lucide-react";
 import { useState } from "react";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -11,6 +10,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { useAutopilotChat } from "./autopilot-chat-context";
 import { useConversation } from "./catalog/v1/conversation-context";
 
@@ -130,8 +131,26 @@ export function AutopilotFab() {
         >
           {/* Header */}
           <div className="flex items-center gap-2 border-b px-4 py-3">
-            <Mark size={16} />
-            <span className="font-semibold text-foreground">AI Assistant</span>
+            <svg width={0} height={0} aria-hidden className="absolute">
+              <defs>
+                <linearGradient id="fab-ai-mark" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stopColor="var(--ai-gradient-start)" />
+                  <stop offset="1" stopColor="var(--ai-gradient-end)" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <AiMark size={20} gradientId="fab-ai-mark" />
+            <span
+              className="text-sm font-bold leading-none tracking-tight"
+              style={{
+                backgroundImage: "var(--ai-gradient-text)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              AI Assistant
+            </span>
           </div>
 
           {/* Thread */}

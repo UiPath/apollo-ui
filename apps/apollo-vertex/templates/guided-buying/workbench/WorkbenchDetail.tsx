@@ -7,10 +7,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  Sparkle,
   TriangleAlert,
 } from "lucide-react";
 import { type PointerEvent, useState } from "react";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -307,12 +307,7 @@ function Finding({
                       className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white"
                       style={{ background: "var(--ai-gradient-strong)" }}
                     >
-                      <Sparkle
-                        className="size-2.5"
-                        fill="currentColor"
-                        strokeWidth={0}
-                        aria-hidden
-                      />
+                      <AiMark size={10} aria-hidden />
                       Agent pick
                     </span>
                   )}
@@ -393,21 +388,13 @@ function renderDot(indicator: TimelineEntry["indicator"]) {
   if (indicator === "ai-warn")
     return (
       <div className="flex size-4 shrink-0 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500/20">
-        <Sparkle
-          className="size-2 text-amber-500"
-          fill="currentColor"
-          strokeWidth={0}
-        />
+        <AiMark size={8} className="text-amber-500" />
       </div>
     );
   if (indicator === "ai-pass")
     return (
       <div className="flex size-4 shrink-0 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/20">
-        <Sparkle
-          className="size-2 text-emerald-500"
-          fill="currentColor"
-          strokeWidth={0}
-        />
+        <AiMark size={8} className="text-emerald-500" />
       </div>
     );
   return (

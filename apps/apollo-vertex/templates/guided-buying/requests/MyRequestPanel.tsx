@@ -3,7 +3,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Check, TriangleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import {
   getRequestDetail,
   getRequestRow,
@@ -119,9 +119,9 @@ function PanelBody({ id }: { id: string }) {
         {/* Lead — the agent's voice, as a banner (not a timeline node), for
             parity across states. The chronological timeline starts at Submitted. */}
         <div className="flex gap-2.5 rounded-lg border bg-muted/40 px-3.5 py-3">
-          <AutopilotIcon
+          <AiMark
             size={16}
-            className="mt-0.5 shrink-0 text-[#0f7b8a]"
+            className="mt-0.5 shrink-0" gradientId="gb-ai-mark"
             aria-hidden
           />
           <p className="text-sm leading-[1.6] text-foreground">

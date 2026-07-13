@@ -2,8 +2,8 @@
 
 import { ArrowUp, PanelRightClose } from "lucide-react";
 import { useRef, useState } from "react";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 
 const AI_GRADIENT = { background: "var(--ai-gradient-strong)" };
 
@@ -26,7 +26,7 @@ function Mark() {
       className="flex size-6 shrink-0 items-center justify-center rounded-full text-white"
       style={AI_GRADIENT}
     >
-      <AutopilotIcon size={13} aria-hidden />
+      <AiMark size={13} aria-hidden />
     </span>
   );
 }
@@ -71,13 +71,26 @@ export function ChatRail({ onCollapse, cold = false }: ChatRailProps) {
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
+          <svg width={0} height={0} aria-hidden className="absolute">
+            <defs>
+              <linearGradient id="rail-ai-mark" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stopColor="var(--ai-gradient-start)" />
+                <stop offset="1" stopColor="var(--ai-gradient-end)" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <AiMark size={20} gradientId="rail-ai-mark" />
           <span
-            className="flex size-7 items-center justify-center rounded-full text-white"
-            style={AI_GRADIENT}
+            className="text-sm font-bold leading-none tracking-tight"
+            style={{
+              backgroundImage: "var(--ai-gradient-text)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
           >
-            <AutopilotIcon size={16} aria-hidden />
+            AI Assistant
           </span>
-          <span className="font-semibold text-foreground">AI Assistant</span>
         </div>
         <Button
           variant="ghost"
