@@ -15,7 +15,6 @@ const spinnerVariants = cva('animate-spin', {
       default: 'text-muted-foreground',
       primary: 'text-primary',
       foreground: 'text-foreground',
-      destructive: 'text-destructive',
     },
   },
   defaultVariants: {

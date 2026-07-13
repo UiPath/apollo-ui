@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './button';
+import { Column, Row } from './layout';
 import { Spinner } from './spinner';
-import { Row, Column } from './layout';
 
 const meta: Meta<typeof Spinner> = {
   title: 'Components/Feedback/Spinner',
@@ -54,32 +54,21 @@ export const AllSizes = {
     </Row>
   ),
 } satisfies Story;
-
-export const Primary: Story = {
-  args: {
-    variant: 'primary',
-  },
-};
-
-export const Foreground: Story = {
-  args: {
-    variant: 'foreground',
-  },
-};
-
-export const Destructive: Story = {
-  args: {
-    variant: 'destructive',
-  },
-};
-
 export const AllVariants = {
   render: () => (
-    <Row align="center" gap={4}>
-      <Spinner variant="default" />
-      <Spinner variant="primary" />
-      <Spinner variant="foreground" />
-      <Spinner variant="destructive" />
+    <Row align="center" gap={8}>
+      <Column align="center" gap={2}>
+        <Spinner variant="default" />
+        <span className="text-xs text-muted-foreground">Default</span>
+      </Column>
+      <Column align="center" gap={2}>
+        <Spinner variant="foreground" />
+        <span className="text-xs text-muted-foreground">Foreground</span>
+      </Column>
+      <Column align="center" gap={2}>
+        <Spinner variant="primary" />
+        <span className="text-xs text-muted-foreground">Primary</span>
+      </Column>
     </Row>
   ),
 } satisfies Story;
