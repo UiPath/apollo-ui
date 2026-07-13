@@ -61,9 +61,6 @@ const TaskPlayButton = memo(
       [debouncedTaskPlay, taskId]
     );
 
-    const iconSize = small ? 18 : 22;
-    const buttonSize = small ? '20px' : Spacing.SpacingL;
-
     return (
       <CanvasTooltip content="Trigger task" placement="top">
         <Button
@@ -73,20 +70,21 @@ const TaskPlayButton = memo(
           onClick={handlePlayClick}
           onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
           onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
-          className="task-menu-icon-button"
+          className={
+            small
+              ? 'task-menu-icon-button h-4 w-4 [&_svg]:size-3.5'
+              : 'task-menu-icon-button h-4 w-4'
+          }
           style={{
             color: 'var(--canvas-icon-default)',
             minWidth: 'unset',
-            width: buttonSize,
-            height: buttonSize,
             padding: 0,
-            ...(small && { marginRight: '-2px' }),
           }}
         >
           {playLoading ? (
-            <Spinner size="sm" style={{ width: iconSize - 2, height: iconSize - 2 }} />
+            <Spinner size="sm" style={{ width: small ? 12 : 14, height: small ? 12 : 14 }} />
           ) : (
-            <TimelinePlayIcon w={iconSize} h={iconSize} />
+            <TimelinePlayIcon />
           )}
         </Button>
       </CanvasTooltip>
@@ -127,7 +125,7 @@ export const TaskContent = memo(
     }, [taskExecution?.badge, taskExecution?.retryCount, taskExecution?.status, _]);
     const hasSecondRowContent =
       taskExecution && (taskExecution.duration || taskExecution.retryDuration || badgeText);
-    const showPlayButtonSmall = onTaskPlay && hasExecutionStatus;
+    const showReplayButton = onTaskPlay && hasExecutionStatus;
     const taskStatusFallbackName = hasExecutionStatus ? getStatusName(taskExecution?.status) : '';
     const taskStatusTooltip = taskExecution?.message || taskStatusFallbackName;
     const durationLabel = useMemo(
@@ -186,8 +184,8 @@ export const TaskContent = memo(
               </CanvasTooltip>
             )}
             {!hasSecondRowContent && <StageTaskEntryConditionIcon task={task} />}
-            {showPlayButtonSmall && !hasSecondRowContent && (
-              <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
+            {showReplayButton && !hasSecondRowContent && (
+              <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />
             )}
             {onTaskPlay && !hasExecutionStatus && (
               <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />
@@ -218,7 +216,7 @@ export const TaskContent = memo(
             <Row align="center" gap={Spacing.SpacingXs}>
               {badgeText && <Badge variant={taskExecution.badgeStatus}>{badgeText}</Badge>}
               <StageTaskEntryConditionIcon task={task} small />
-              {showPlayButtonSmall && (
+              {showReplayButton && (
                 <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
               )}
             </Row>
