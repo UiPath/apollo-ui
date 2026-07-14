@@ -29,6 +29,7 @@ import {
   TooltipTrigger,
 } from '@uipath/apollo-wind';
 import {
+  Asterisk,
   Calendar as CalendarIcon,
   ChevronDown,
   Code2,
@@ -117,7 +118,7 @@ export const FIELD_TYPE_META: Record<LockableFieldType, FieldTypeMeta> = {
   },
 };
 
-const FIELD_TYPE_ORDER: LockableFieldType[] = [
+export const FIELD_TYPE_ORDER: LockableFieldType[] = [
   'string',
   'integer',
   'date',
@@ -161,12 +162,16 @@ export interface LockableValueFieldProps {
   onFieldTypeChange?: (fieldType: LockableFieldType) => void;
   /** Shows a required-field asterisk next to the default label. Ignored when `label` is provided. */
   required?: boolean;
+  /** Called when the user toggles required/optional. Renders the Required switch when provided. */
+  onRequiredChange?: (required: boolean) => void;
   /** Overrides the default mode-based label (e.g. a field name instead of "String value"). */
   label?: ReactNode;
   /** Extra content rendered after the built-in AI assist / Insert variable buttons (e.g. a delete button). */
   headerActions?: ReactNode;
   /** Forces the header row into its narrow-container icon-only layout, regardless of actual width. For demos/comparisons. */
   compact?: boolean;
+  /** Whether the field-type, AI-assist, and insert-variable controls are always shown or only on hover. Defaults to 'visible'. */
+  controlsVisibility?: 'visible' | 'hover';
   id?: string;
   className?: string;
 }
@@ -201,9 +206,11 @@ export function LockableValueField({
   fieldType = 'string',
   onFieldTypeChange,
   required,
+  onRequiredChange,
   label,
   headerActions,
   compact,
+  controlsVisibility = 'visible',
   id,
   className,
 }: LockableValueFieldProps) {
@@ -214,7 +221,7 @@ export function LockableValueField({
   const collapsedPaddingClass = cn('@max-[259px]:px-1.5', compact && '!px-1.5');
 
   return (
-    <div className={cn('@container flex flex-col gap-1.5', className)}>
+    <div className={cn('@container group flex flex-col gap-1.5', className)}>
       <div className="flex items-center gap-1">
         {label ?? (
           <Label htmlFor={id} className="text-xs font-medium text-foreground-muted">
@@ -224,95 +231,158 @@ export function LockableValueField({
         )}
         <TooltipProvider delayDuration={300}>
           <div className="ml-auto flex items-center gap-0.5">
-            {onFieldTypeChange && (
-              <DropdownMenu>
+            <div
+              className={cn(
+                'flex items-center gap-0.5',
+                controlsVisibility === 'hover' &&
+                  'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+              )}
+            >
+              {onFieldTypeChange && (
+                <DropdownMenu>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label="Field type"
+                          className={cn(
+                            'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                            collapsedPaddingClass
+                          )}
+                        >
+                          <typeMeta.icon size={12} />
+                          <span className={collapsedTextClass}>{typeMeta.label}</span>
+                          <ChevronDown size={9} className={collapsedTextClass} />
+                        </button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Type</TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent align="end" className="w-44">
+                    {FIELD_TYPE_ORDER.map((type) => {
+                      const meta = FIELD_TYPE_META[type];
+                      const isActive = type === fieldType;
+                      return (
+                        <DropdownMenuItem key={type} onClick={() => onFieldTypeChange(type)}>
+                          <meta.icon
+                            className={isActive ? 'text-brand' : 'text-foreground-muted'}
+                          />
+                          <span className={cn(isActive && 'font-medium text-brand')}>
+                            {meta.label}
+                          </span>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              {onRequiredChange && (
+                <>
+                  <div className={cn('@max-[259px]:hidden', compact && '!hidden')}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {/* Wrapped in a span: TooltipTrigger's asChild merge otherwise
+                            overwrites the Switch's own data-state (checked/unchecked)
+                            with the tooltip's open/closed state, breaking its color classes. */}
+                        <span className="inline-flex">
+                          <Switch
+                            size="sm"
+                            checked={!!required}
+                            onCheckedChange={onRequiredChange}
+                            className="data-[state=checked]:bg-brand data-[state=unchecked]:bg-foreground-subtle"
+                            aria-label={required ? 'Required field' : 'Optional field'}
+                          />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>Required</TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className={cn('hidden @max-[259px]:block', compact && '!block')}>
+                    <Popover>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label={required ? 'Required field' : 'Optional field'}
+                              className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                            >
+                              <Asterisk size={12} />
+                            </button>
+                          </PopoverTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>Required</TooltipContent>
+                      </Tooltip>
+                      <PopoverContent align="end" className="w-48">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-xs font-medium text-foreground">Required</span>
+                          <Switch
+                            size="sm"
+                            checked={!!required}
+                            onCheckedChange={onRequiredChange}
+                            className="data-[state=checked]:bg-brand data-[state=unchecked]:bg-foreground-subtle"
+                            aria-label={required ? 'Required field' : 'Optional field'}
+                          />
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </>
+              )}
+              <Popover>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
+                    <PopoverTrigger asChild>
                       <button
                         type="button"
-                        aria-label="Field type"
-                        className={cn(
-                          'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                          collapsedPaddingClass
-                        )}
+                        aria-label="AI assist"
+                        className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
                       >
-                        <typeMeta.icon size={12} />
-                        <span className={collapsedTextClass}>{typeMeta.label}</span>
-                        <ChevronDown size={9} className={collapsedTextClass} />
+                        <Sparkles size={12} />
                       </button>
-                    </DropdownMenuTrigger>
+                    </PopoverTrigger>
                   </TooltipTrigger>
-                  <TooltipContent>Change field type</TooltipContent>
+                  <TooltipContent>Generate with AI</TooltipContent>
                 </Tooltip>
-                <DropdownMenuContent align="end" className="w-44">
-                  {FIELD_TYPE_ORDER.map((type) => {
-                    const meta = FIELD_TYPE_META[type];
-                    const isActive = type === fieldType;
-                    return (
-                      <DropdownMenuItem key={type} onClick={() => onFieldTypeChange(type)}>
-                        <meta.icon className={isActive ? 'text-brand' : 'text-foreground-muted'} />
-                        <span className={cn(isActive && 'font-medium text-brand')}>
-                          {meta.label}
-                        </span>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-            <Popover>
+                <PopoverContent align="end" className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor={promptId} className="text-xs font-medium text-foreground-muted">
+                      Describe what you want
+                    </Label>
+                    <Textarea
+                      id={promptId}
+                      rows={3}
+                      placeholder="Display a value from the previous step"
+                      className="resize-none text-sm"
+                    />
+                  </div>
+                  <span className="block text-[11px] text-foreground-subtle">
+                    Output: String expression
+                  </span>
+                  <Button size="sm" className="w-full">
+                    Generate
+                  </Button>
+                </PopoverContent>
+              </Popover>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label="AI assist"
-                      className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                    >
-                      <Sparkles size={12} />
-                    </button>
-                  </PopoverTrigger>
+                  <button
+                    type="button"
+                    aria-label="Insert variable"
+                    className={cn(
+                      'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                      collapsedPaddingClass
+                    )}
+                  >
+                    <span className="font-mono text-[10px]">{'{x}'}</span>
+                    <span className={collapsedTextClass}>Insert</span>
+                    <ChevronDown size={9} className={collapsedTextClass} />
+                  </button>
                 </TooltipTrigger>
-                <TooltipContent>Generate a value with AI</TooltipContent>
+                <TooltipContent>Insert</TooltipContent>
               </Tooltip>
-              <PopoverContent align="end" className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor={promptId} className="text-xs font-medium text-foreground-muted">
-                    Describe what you want
-                  </Label>
-                  <Textarea
-                    id={promptId}
-                    rows={3}
-                    placeholder="Display a value from the previous step"
-                    className="resize-none text-sm"
-                  />
-                </div>
-                <span className="block text-[11px] text-foreground-subtle">
-                  Output: String expression
-                </span>
-                <Button size="sm" className="w-full">
-                  Generate
-                </Button>
-              </PopoverContent>
-            </Popover>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  aria-label="Insert variable"
-                  className={cn(
-                    'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                    collapsedPaddingClass
-                  )}
-                >
-                  <span className="font-mono text-[10px]">{'{x}'}</span>
-                  <span className={collapsedTextClass}>Insert</span>
-                  <ChevronDown size={9} className={collapsedTextClass} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>Insert a variable from a previous step</TooltipContent>
-            </Tooltip>
+            </div>
             {headerActions}
           </div>
         </TooltipProvider>
