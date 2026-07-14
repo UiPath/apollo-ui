@@ -45,6 +45,7 @@ export interface BaseNodeOverrideConfig {
   // Display Customization
   labelTooltip?: string;
   labelBackgroundColor?: string;
+  /** When providing a `footerComponent`, also set `footerVariant` to a sized variant (`button` | `single` | `double`). */
   footerVariant?: FooterVariant;
   footerComponent?: React.ReactNode;
   subLabelComponent?: React.ReactNode;

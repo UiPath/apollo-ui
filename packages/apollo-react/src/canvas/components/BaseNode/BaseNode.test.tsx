@@ -219,7 +219,7 @@ describe('BaseNode', () => {
       expect(floorVar()).toBe('160px');
     });
 
-    it('ignores the measured height prop when computing the floor', () => {
+    it('derives height from handles/footer, not the incoming height prop', () => {
       mockHandleConfigs.current = makeHandles(Position.Left, 2);
       const { rerender } = render(<BaseNode {...defaultProps} height={500} />);
       expect(floorVar()).toBe('96px');
