@@ -138,7 +138,7 @@ Framework-agnostic AI chat interface web component for vanilla JS, Vue, Angular,
 
 ## 🎨 Live Demos
 
-Explore our components in interactive Storybook environments. The sites are hosted as UiPath Coded Apps on the staging environment (internal access):
+Explore our components in interactive Storybook environments. The sites are hosted as UiPath Coded Apps on the staging environment:
 
 - **[Apollo Vertex](https://engdogfood.staging.uipath.host/apollo-vertex/)** - Complete design system showcase
 - **[Apollo Docs](https://engdogfood.staging.uipath.host/apollo-docs/)** - Central documentation site
