@@ -1,3 +1,12 @@
+## [@uipath/apollo-react-v4.59.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.59.2...@uipath/apollo-react@4.59.3) (2026-07-14)
+
+### Bug Fixes
+
+* **apollo-react:** align stage task play button size and spacing with status icons ([48854ff](https://github.com/UiPath/apollo-ui/commit/48854ff225a2e954fde8bcf4b1d361f62171f4a0))
+* **apollo-react:** label task play button and drop dead spinner sizing ([930770e](https://github.com/UiPath/apollo-ui/commit/930770ef655440aa58a32e12655dc1f392399c1e))
+* **apollo-react:** optically centre stage task entry-condition icon ([fcd34ff](https://github.com/UiPath/apollo-ui/commit/fcd34ffb8f4516e433f374193d83bf83ee04a3f2))
+* **apollo-react:** size stage task entry-condition icon by row count ([dd4f21a](https://github.com/UiPath/apollo-ui/commit/dd4f21a73a134d08127b9d67dc5b1ddfb0623278))
+
 ## [@uipath/apollo-react-v4.59.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.59.1...@uipath/apollo-react@4.59.2) (2026-07-14)
 
 ### Bug Fixes
