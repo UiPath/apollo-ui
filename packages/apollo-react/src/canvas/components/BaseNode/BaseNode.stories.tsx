@@ -164,29 +164,70 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
 // Size Grid Definitions
 // ============================================================================
 
-const SQUARE_SIZES = [48, 64, 80, 96, 112, 128] as const;
-const RECTANGLE_CONFIGS = [
-  { width: 128, height: 48 },
-  { width: 160, height: 64 },
-  { width: 192, height: 80 },
-  { width: 256, height: 96 },
-  { width: 320, height: 112 },
+const RECTANGLE_WIDTHS = [128, 160, 192, 256, 320] as const;
+
+const SQUARE_WIDTHS = [96, 128, 160] as const;
+
+// Circle height floor is (maxSideHandles * 2 + 2) * 16, so these counts yield
+// 96/128/160px. Width is set to match, keeping circles round.
+const SIZE_STEPS = [
+  { size: 96, handles: 2 },
+  { size: 128, handles: 3 },
+  { size: 160, handles: 4 },
 ] as const;
 
+const sizeInputs = (count: number) =>
+  Array.from({ length: count }, (_, i) => ({
+    id: `in-${i}`,
+    type: 'target' as const,
+    handleType: 'input' as const,
+  }));
+
+// Registers proportional circle types whose height grows with handle count.
+// Merged with the default manifests so squares/rectangles keep their built-in types.
+const sizeGridManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } = {
+  categories: [
+    ...allCategoryManifests,
+    {
+      id: 'sizing',
+      name: 'Sizing',
+      sortOrder: 99,
+      color: '#6c757d',
+      colorDark: '#495057',
+      icon: 'git-branch',
+      tags: [],
+    },
+  ],
+  nodes: [
+    ...allNodeManifests,
+    ...SIZE_STEPS.map(({ size, handles }) => ({
+      nodeType: `uipath.size-circle-${size}`,
+      version: '1.0.0',
+      category: 'sizing',
+      tags: ['sizing'],
+      sortOrder: size,
+      display: { label: String(size), shape: 'circle' as const, icon: 'construction' },
+      handleConfiguration: [{ position: 'left' as const, handles: sizeInputs(handles) }],
+    })),
+  ],
+};
+
 /**
- * Creates nodes demonstrating various sizes.
+ * Creates nodes demonstrating sizing. Squares vary by width with a computed
+ * height; circles grow proportionally with handle count (height is derived).
+ * Rectangles vary by width at a fixed 96px height.
  */
 function createSizeGrid(): Node<BaseNodeData>[] {
   const nodes: Node<BaseNodeData>[] = [];
-  let xOffset = 96;
 
-  // Row 1: Square shapes
-  SQUARE_SIZES.forEach((size) => {
+  // Squares: width varies, height is left to the node (settles at the 96px floor).
+  let sqX = 80;
+  SQUARE_WIDTHS.forEach((size) => {
     nodes.push({
       ...createNode({
-        id: `sq-${size}`,
+        id: `square-${size}`,
         type: 'uipath.blank-node',
-        position: { x: xOffset, y: 96 },
+        position: { x: sqX, y: 80 },
         data: {
           nodeType: 'uipath.blank-node',
           version: '1.0.0',
@@ -194,21 +235,20 @@ function createSizeGrid(): Node<BaseNodeData>[] {
         },
       }),
       width: size,
-      height: size,
     });
-    xOffset += size + 32;
+    sqX += size + 64;
   });
 
-  // Row 2: Circle shapes
-  xOffset = 96;
-  SQUARE_SIZES.forEach((size) => {
+  // Circles: handle-driven, proportional (width = height = size).
+  let cX = 80;
+  SIZE_STEPS.forEach(({ size }) => {
     nodes.push({
       ...createNode({
-        id: `c-${size}`,
-        type: 'uipath.blank-node',
-        position: { x: xOffset, y: 272 },
+        id: `circle-${size}`,
+        type: `uipath.size-circle-${size}`,
+        position: { x: cX, y: 240 },
         data: {
-          nodeType: 'uipath.blank-node',
+          nodeType: `uipath.size-circle-${size}`,
           version: '1.0.0',
           display: { label: String(size), shape: 'circle' },
         },
@@ -216,13 +256,13 @@ function createSizeGrid(): Node<BaseNodeData>[] {
       width: size,
       height: size,
     });
-    xOffset += size + 32;
+    cX += size + 64;
   });
 
-  // Row 3-4: Rectangle shapes
-  let rectX = 96;
-  let rectY = 448;
-  RECTANGLE_CONFIGS.forEach(({ width, height }, index) => {
+  // Rectangles: width varies, height stays at the 96px floor.
+  let rectX = 80;
+  const rectY = 464;
+  RECTANGLE_WIDTHS.forEach((width, index) => {
     nodes.push({
       ...createNode({
         id: `r-${index}`,
@@ -231,18 +271,13 @@ function createSizeGrid(): Node<BaseNodeData>[] {
         data: {
           nodeType: 'uipath.agent',
           version: '1.0.0',
-          display: { label: `${width}×${height}`, shape: 'rectangle' },
+          display: { label: `${width}×96`, shape: 'rectangle' },
         },
       }),
       width,
-      height,
+      height: 96,
     });
-
-    rectX += width + 32;
-    if (index === 2) {
-      rectX = 96;
-      rectY = 560;
-    }
+    rectX += width + 64;
   });
 
   return nodes;
@@ -1144,7 +1179,7 @@ function SizesStory() {
       </Panel>
       <StoryInfoPanel
         title="Sizes"
-        description="Nodes at various dimensions aligned to the 16px grid — squares and circles from 48–128px, rectangles from 128×48 to 320×112."
+        description="Node height is decided by the handle count, not the width prop: height is (maxSideHandles * 2 + 2) * 16, with a 96px minimum. Squares and rectangles vary by width at a computed height (96px with default handles). Circles grow 96 to 160px as handles increase (2 to 4 per side), staying round."
       />
     </BaseCanvas>
   );
@@ -1669,6 +1704,14 @@ export const ExecutionStates: Story = {
 
 export const Sizes: Story = {
   name: 'Sizes',
+  // Register the story-only proportional square/circle types (see sizeGridManifest).
+  decorators: [
+    (Story) => (
+      <NodeRegistryProvider manifest={sizeGridManifest}>
+        <Story />
+      </NodeRegistryProvider>
+    ),
+  ],
   render: () => <SizesStory />,
 };
 
