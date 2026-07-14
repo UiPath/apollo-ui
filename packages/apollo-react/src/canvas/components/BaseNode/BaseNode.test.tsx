@@ -275,6 +275,19 @@ describe('BaseNode', () => {
       render(<BaseNode {...defaultProps} />);
       expect(floorVar()).toBe('160px');
     });
+
+    it('passes the computed height to handles, ignoring the measured height prop', () => {
+      // 4 handles → computedHeight 160. A stale/small measured prop must be ignored so
+      // handles are grid-aligned from the first render (no percentage→grid jump).
+      mockHandleConfigs.current = makeHandles(Position.Left, 4);
+      render(<BaseNode {...defaultProps} height={12} />);
+      const opts = mockUseButtonHandles.mock.calls.at(-1)?.[0] as {
+        nodeHeight?: number;
+        nodeWidth?: number;
+      };
+      expect(opts.nodeHeight).toBe(160);
+      expect(opts.nodeWidth).toBe(96); // getContainerWidth default for a square node
+    });
   });
 
   describe('Loading state', () => {

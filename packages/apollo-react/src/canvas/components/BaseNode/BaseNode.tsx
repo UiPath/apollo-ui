@@ -82,7 +82,7 @@ const getIntrinsicHeight = (
 };
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
-  const { type, data, selected, id, dragging, width, height, parentId } = props;
+  const { type, data, selected, id, dragging, width, parentId } = props;
 
   // Read runtime configuration from context (provided by parent node components)
   const {
@@ -519,8 +519,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     hovered: isHovered,
     showAddButton: mode === 'design' && !multipleNodesSelected && !isConnecting && !dragging,
     showNotches,
-    nodeWidth: width,
-    nodeHeight: height,
+    // Deterministic geometry (not the measured props) so handles are grid-aligned from first render.
+    nodeWidth: containerWidth,
+    nodeHeight: computedHeight,
     shouldShowAddButtonFn,
     portalActions: !!parentId,
   });
@@ -561,8 +562,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
             id={handle.id}
             defaultPosition={defaultPosition as Position}
             handleType={handleVisualType}
-            nodeWidth={width}
-            nodeHeight={height}
+            nodeWidth={containerWidth}
+            nodeHeight={computedHeight}
             label={handle.label}
             showButton={shouldShowButton}
             selected={selected}
@@ -580,8 +581,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     useSmartHandles,
     handleConfigurations,
     shouldShowHandles,
-    width,
-    height,
+    containerWidth,
+    computedHeight,
     mode,
     selected,
     showNotches,
@@ -727,7 +728,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Wrap with SmartHandleProvider only when smart handles are enabled
   if (useSmartHandles) {
     return (
-      <SmartHandleProvider nodeWidth={width} nodeHeight={height}>
+      <SmartHandleProvider nodeWidth={containerWidth} nodeHeight={computedHeight}>
         {nodeContent}
       </SmartHandleProvider>
     );
