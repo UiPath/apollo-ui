@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.27.1...@uipath/apollo-wind@2.28.0) (2026-07-14)
+
+### Features
+
+* **apollo-wind:** add variant prop to Spinner component ([bde0510](https://github.com/UiPath/apollo-ui/commit/bde051007762d0166af9a9724a3d9b867d08399e))
+
 ## [@uipath/apollo-wind-v2.27.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.27.0...@uipath/apollo-wind@2.27.1) (2026-07-10)
 
 ### Bug Fixes
