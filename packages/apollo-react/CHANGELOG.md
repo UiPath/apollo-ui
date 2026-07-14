@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.59.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.59.1...@uipath/apollo-react@4.59.2) (2026-07-14)
+
+### Bug Fixes
+
+* **apollo-react:** default add-node search placeholder to "Search nodes" [MST-11831] ([f26195f](https://github.com/UiPath/apollo-ui/commit/f26195f58a05a54f15491f4285412dae5d3f34f9))
+
 ## [@uipath/apollo-react-v4.59.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.59.0...@uipath/apollo-react@4.59.1) (2026-07-13)
 
 ### Bug Fixes
