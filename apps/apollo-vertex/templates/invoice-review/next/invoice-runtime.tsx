@@ -88,16 +88,26 @@ interface RuntimeStore {
     exceptionId: string,
     anchors: string[],
   ) => void;
+  /** Read the cursor exception id for an invoice (the active row in ExceptionTimeline). */
+  getCursor: (invoiceId: string) => string | undefined;
+  /** Set the cursor exception id (called by ExceptionTimeline on active change). */
+  setCursor: (invoiceId: string, exceptionId: string | undefined) => void;
 }
 
 const InvoiceRuntimeContext = createContext<RuntimeStore | null>(null);
 
 export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
   const [map, setMap] = useState<Record<string, InvoiceRuntime>>({});
+  const [cursorMap, setCursorMap] = useState<Record<string, string>>({});
 
   const value = useMemo<RuntimeStore>(
     () => ({
       getRuntime: (id) => map[id] ?? EMPTY,
+      getCursor: (id) => cursorMap[id],
+      setCursor: (id, exceptionId) =>
+        setCursorMap((prev) =>
+          exceptionId ? { ...prev, [id]: exceptionId } : { ...prev, [id]: "" },
+        ),
       commitResolve: (id, patch) =>
         setMap((prev) => {
           const cur = prev[id] ?? EMPTY;
@@ -177,7 +187,7 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
           };
         }),
     }),
-    [map],
+    [map, cursorMap],
   );
 
   return (

@@ -197,6 +197,9 @@ interface InvoiceDetailData {
     unitPrice?: string;
     flag?: string;
     flagStatus?: "error" | "warning";
+    /** PO authorized quantity; present → show billed / PO in the QTY column */
+    poQty?: number;
+    /** Agreed PO line total (price-mismatch lines); present → show below AMOUNT in muted */
     agreed?: string;
   }[];
   linesTotal: string;
@@ -305,8 +308,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
         qty: 1,
         amount: "$694.39",
         unitPrice: "$694.39",
-        flag: "↑ price",
-        flagStatus: "error",
+        poQty: 1,
         agreed: "$689.55",
       },
     ],
@@ -706,16 +708,12 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
         qty: 100,
         amount: "$600.00",
         unitPrice: "$6.00",
-        flag: "Missing PO",
-        flagStatus: "error",
       },
       {
         description: "Branded pens (box of 50)",
         qty: 4,
         amount: "$340.00",
         unitPrice: "$85.00",
-        flag: "Missing PO",
-        flagStatus: "error",
       },
     ],
     linesTotal: "$940.00",
@@ -927,24 +925,21 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
         qty: 12,
         amount: "$7,080.00",
         unitPrice: "$590.00",
-        flag: "↑ qty",
-        flagStatus: "error",
+        poQty: 8,
       },
       {
         description: "USB-C hub, 7-port",
         qty: 30,
         amount: "$6,300.00",
         unitPrice: "$210.00",
-        flag: "↑ qty",
-        flagStatus: "error",
+        poQty: 20,
       },
       {
         description: "Wireless keyboard",
         qty: 25,
         amount: "$5,020.00",
         unitPrice: "$200.80",
-        flag: "↑ qty",
-        flagStatus: "error",
+        poQty: 15,
       },
     ],
     linesTotal: "$18,400.00",
@@ -1014,30 +1009,29 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
         qty: 40,
         amount: "€1,850.00",
         unitPrice: "€46.25",
-        flag: "↑ qty",
-        flagStatus: "warning",
+        poQty: 25,
       },
       {
         description: "Hi-vis vests",
         qty: 30,
         amount: "€920.00",
         unitPrice: "€30.67",
+        poQty: 30,
       },
       {
         description: "Steel toe boots",
         qty: 24,
         amount: "€4,680.00",
         unitPrice: "€195.00",
-        flag: "↑ qty",
-        flagStatus: "warning",
+        poQty: 16,
       },
       {
         description: "Hard hats, vented",
         qty: 50,
         amount: "€2,400.00",
         unitPrice: "€48.00",
-        flag: "↑ price",
-        flagStatus: "error",
+        poQty: 50,
+        agreed: "€2,200.00",
       },
     ],
     linesTotal: "€9,850.00",
@@ -4476,8 +4470,53 @@ function SourceTab() {
 function DetailsCombinedTab() {
   const d = useInvoiceDetail();
   const runtime = useInvoiceRuntime();
+  const rt = runtime.getRuntime(d.id);
   // Reflect a data-changing resolution (e.g. Link PO-5123) on the shared record.
-  const patchedPo = runtime.getRuntime(d.id).dataPatch?.purchaseOrder ?? d.po;
+  const patchedPo = rt.dataPatch?.purchaseOrder ?? d.po;
+  const hasPo = patchedPo !== "—";
+
+  // Map the timeline cursor to a 1-based line number; null = invoice-level cursor.
+  const review = getReview(d.id);
+  const cursorId = runtime.getCursor(d.id);
+  const cursorExc = cursorId
+    ? (review?.exceptions.find((e) => e.id === cursorId) ?? null)
+    : null;
+  const activeLine: number | null =
+    cursorExc !== null && cursorExc.scope.level === "line"
+      ? cursorExc.scope.line
+      : null;
+
+  // Settle animation: peak amber → resting tint, 600ms CSS transition.
+  const [phase, setPhase] = useState<"peak" | "rest">("rest");
+  const prevLineRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (activeLine === prevLineRef.current) return;
+    prevLineRef.current = activeLine;
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    if (activeLine === null) {
+      setPhase("rest");
+      return;
+    }
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (prefersReduced) {
+      setPhase("rest");
+      return;
+    }
+    setPhase("peak");
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = requestAnimationFrame(() => {
+        setPhase("rest");
+        rafRef.current = null;
+      });
+    });
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [activeLine]);
 
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
@@ -4565,33 +4604,110 @@ function DetailsCombinedTab() {
 
         {/* Section B — line items */}
         <div>
-          <p className="text-[10px] tracking-wide text-muted-foreground font-semibold mb-3">
-            Line items
-          </p>
-          <div className="divide-y divide-border">
-            {d.lines.map((line) => (
-              <div key={line.description} className="py-2.5">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <span className="text-[13px] text-foreground leading-snug flex-1">
-                    {line.description}
-                  </span>
-                  {line.flag && (
-                    <Badge variant="secondary" className="shrink-0">
-                      {line.flag}
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
-                  <span>Qty {line.qty}</span>
-                  <span className="text-foreground">{line.amount}</span>
-                  {line.agreed && <span>PO {line.agreed}</span>}
-                </div>
-              </div>
-            ))}
+          {/* Column headers: # | ITEM | QTY(/PO) | AMOUNT */}
+          <div className="grid grid-cols-[16px_1fr_auto_auto] items-end gap-x-3 mb-2">
+            <span className="text-[11px] tracking-wide font-medium text-muted-foreground">
+              #
+            </span>
+            <span className="text-[11px] tracking-wide font-medium text-muted-foreground">
+              ITEM
+            </span>
+            <span className="text-[11px] tracking-wide font-medium text-muted-foreground text-right">
+              {hasPo ? "QTY / PO" : "QTY"}
+            </span>
+            <span className="text-[11px] tracking-wide font-medium text-muted-foreground text-right">
+              AMOUNT
+            </span>
           </div>
-          <div className="flex justify-between pt-3 text-[13px] font-semibold text-foreground">
-            <span>Total</span>
-            <span>{d.linesTotal}</span>
+          <div className="divide-y divide-border">
+            {d.lines.map((line, i) => {
+              const lineNum = i + 1;
+              const isActive = activeLine === lineNum;
+              const qtyMismatch =
+                line.poQty !== undefined && line.qty !== line.poQty;
+              return (
+                <div
+                  key={line.description}
+                  className={cn(
+                    "grid grid-cols-[16px_1fr_auto_auto] items-start gap-x-3 py-2 -mx-1 px-1 rounded-sm",
+                    isActive && phase === "peak"
+                      ? "bg-warning/20"
+                      : isActive
+                        ? "bg-warning/10 transition-[background-color] duration-[600ms]"
+                        : "",
+                  )}
+                >
+                  {/* # */}
+                  <span className="text-[11px] text-muted-foreground pt-px">
+                    {lineNum}
+                  </span>
+                  {/* ITEM */}
+                  <div className="flex items-start gap-1.5">
+                    <span className="text-[13px] text-foreground leading-snug flex-1">
+                      {line.description}
+                    </span>
+                    {line.flag === "high value" && (
+                      <Badge variant="secondary" className="mt-px shrink-0">
+                        {line.flag}
+                      </Badge>
+                    )}
+                  </div>
+                  {/* QTY / PO */}
+                  <div className="text-right">
+                    {hasPo && line.poQty !== undefined ? (
+                      <div>
+                        <div
+                          className={cn(
+                            "text-[12px] leading-tight",
+                            qtyMismatch
+                              ? "font-medium text-warning"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          {line.qty}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground leading-tight">
+                          / {line.poQty}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-[12px] text-muted-foreground">
+                        {line.qty}
+                      </span>
+                    )}
+                  </div>
+                  {/* AMOUNT */}
+                  <div className="text-right">
+                    <div
+                      className={cn(
+                        "text-[12px] leading-tight",
+                        line.agreed
+                          ? "font-medium text-warning"
+                          : "text-foreground",
+                      )}
+                    >
+                      {line.amount}
+                    </div>
+                    {line.agreed && (
+                      <div className="text-[11px] text-muted-foreground leading-tight">
+                        {line.agreed}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Total row */}
+          <div className="grid grid-cols-[16px_1fr_auto_auto] gap-x-3 mt-3 pt-3 border-t-2 border-border/60">
+            <span />
+            <span className="text-[13px] font-medium text-muted-foreground">
+              Total
+            </span>
+            <span />
+            <span className="text-[13px] font-medium text-foreground text-right">
+              {d.linesTotal}
+            </span>
           </div>
           {d.linesAlert && (
             <p className="mt-2 text-[12px] text-destructive/80 leading-snug">
