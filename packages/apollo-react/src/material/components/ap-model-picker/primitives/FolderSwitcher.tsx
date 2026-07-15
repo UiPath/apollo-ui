@@ -9,7 +9,18 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
-import { Colors } from '@uipath/apollo-core';
+import {
+  BorderRadiusL,
+  BorderRadiusM,
+  Colors,
+  IconXs,
+  PadM,
+  PadS,
+  PadXl,
+  PadXs,
+  ShadowMenuElevation,
+  SpacingXs,
+} from '@uipath/apollo-core';
 import React from 'react';
 import { useSafeLingui } from '../../../../i18n';
 
@@ -88,33 +99,33 @@ export const FolderSwitcher: React.FC<FolderSwitcherProps> = ({
         sx={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: 0.75,
-          fontSize: 13,
-          fontWeight: 600,
-          lineHeight: 1.2,
+          gap: PadM,
+          fontSize: 'var(--font-s-bold-size, 12px)',
+          fontWeight: 'var(--font-s-bold-weight, 600)',
+          lineHeight: 'var(--font-s-bold-line-height, 16px)',
           color: `var(--color-primary, ${Colors.ColorBlue500})`,
           backgroundColor: `var(--color-background-raised, ${Colors.ColorWhite})`,
           border: '1px solid',
           borderColor: `var(--color-border-de-emp, ${Colors.ColorGray300})`,
-          borderRadius: '8px',
-          px: 1.25,
-          py: 0.875,
+          borderRadius: `var(--border-radius-l, ${BorderRadiusL})`,
+          px: PadXl,
+          py: PadM,
           '&:hover': {
-            backgroundColor: `var(--color-background-hover, rgba(82, 96, 105, 0.078))`,
+            backgroundColor: `var(--color-background-hover, ${Colors.ColorBackgroundHoverLight})`,
           },
         }}
       >
         {isAll ? (
-          <AppsRoundedIcon sx={{ fontSize: 16, color: 'inherit' }} />
+          <AppsRoundedIcon sx={{ fontSize: IconXs, color: 'inherit' }} />
         ) : (
-          <FolderOutlinedIcon sx={{ fontSize: 16, color: 'inherit' }} />
+          <FolderOutlinedIcon sx={{ fontSize: IconXs, color: 'inherit' }} />
         )}
         <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
           {isAll ? resolvedAllFoldersLabel : (current?.label ?? resolvedAllFoldersLabel)}
         </Box>
         <KeyboardArrowDownIcon
           sx={{
-            fontSize: 16,
+            fontSize: IconXs,
             color: `var(--color-foreground-de-emp, ${Colors.ColorGray550})`,
             transition: 'transform 150ms',
             transform: open ? 'rotate(180deg)' : 'rotate(0)',
@@ -134,14 +145,14 @@ export const FolderSwitcher: React.FC<FolderSwitcherProps> = ({
             elevation={8}
             sx={{
               minWidth: 200,
-              borderRadius: '9px',
+              borderRadius: `var(--border-radius-l, ${BorderRadiusL})`,
               border: '1px solid',
               borderColor: `var(--color-border-de-emp, ${Colors.ColorGray300})`,
               backgroundColor: `var(--color-background-raised, ${Colors.ColorWhite})`,
-              boxShadow: '0 12px 32px rgba(16, 24, 40, 0.18), 0 2px 6px rgba(16, 24, 40, 0.06)',
+              boxShadow: `var(--shadow-menu-elevation, ${ShadowMenuElevation})`,
             }}
           >
-            <MenuList dense disablePadding sx={{ p: 0.5 }}>
+            <MenuList dense disablePadding sx={{ p: PadS }}>
               {showAllFolders && (
                 <>
                   <MenuItem
@@ -152,22 +163,22 @@ export const FolderSwitcher: React.FC<FolderSwitcherProps> = ({
                       setAnchorEl(null);
                     }}
                     sx={{
-                      fontSize: 13,
-                      gap: 1,
-                      py: 0.875,
-                      borderRadius: '7px',
+                      fontSize: 'var(--font-s-size, 12px)',
+                      gap: SpacingXs,
+                      py: PadM,
+                      borderRadius: `var(--border-radius-m, ${BorderRadiusM})`,
                       color: `var(--color-foreground, ${Colors.ColorGray850})`,
                     }}
                   >
                     <AppsRoundedIcon
                       sx={{
-                        fontSize: 16,
+                        fontSize: IconXs,
                         color: `var(--color-foreground-de-emp, ${Colors.ColorGray550})`,
                       }}
                     />
                     {resolvedAllFoldersLabel}
                   </MenuItem>
-                  <Divider sx={{ my: 0.25 }} />
+                  <Divider sx={{ my: PadXs }} />
                 </>
               )}
               {folders.map((f) => (
@@ -179,16 +190,16 @@ export const FolderSwitcher: React.FC<FolderSwitcherProps> = ({
                     setAnchorEl(null);
                   }}
                   sx={{
-                    fontSize: 13,
-                    gap: 1,
-                    py: 0.875,
-                    borderRadius: '7px',
+                    fontSize: 'var(--font-s-size, 12px)',
+                    gap: SpacingXs,
+                    py: PadM,
+                    borderRadius: `var(--border-radius-m, ${BorderRadiusM})`,
                     color: `var(--color-foreground, ${Colors.ColorGray850})`,
                   }}
                 >
                   <FolderOutlinedIcon
                     sx={{
-                      fontSize: 16,
+                      fontSize: IconXs,
                       color: `var(--color-foreground-de-emp, ${Colors.ColorGray550})`,
                     }}
                   />
