@@ -1139,7 +1139,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           ],
         },
         suggestions: [
-          { type: "wait", data: { label: "Hold until receipt" } },
+          {
+            type: "wait",
+            data: { label: "Hold until receipt" },
+            reasoning:
+              "Same shipment as line 1; the July 9 receipt was partial.",
+          },
           {
             type: "route",
             data: { owner: "Receiving", label: "Route to data owner" },
@@ -1171,7 +1176,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           ],
         },
         suggestions: [
-          { type: "wait", data: { label: "Hold until receipt" } },
+          {
+            type: "wait",
+            data: { label: "Hold until receipt" },
+            reasoning:
+              "No receipt posted for this line; expected with the same delivery.",
+          },
           {
             type: "route",
             data: { owner: "Receiving", label: "Route to data owner" },
@@ -1205,7 +1215,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           ],
         },
         suggestions: [
-          { type: "suggest_correction", data: { label: "Adjust to 10 units" } },
+          {
+            type: "suggest_correction",
+            data: { label: "Adjust to 10 units" },
+            reasoning:
+              "Billed 12 against PO qty 10; adjust or hold for the remaining receipt.",
+          },
           { type: "suggest_supplier", data: {} },
         ],
         resolution: {
@@ -1236,7 +1251,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           ],
         },
         suggestions: [
-          { type: "suggest_correction", data: { label: "Adjust to 25 units" } },
+          {
+            type: "suggest_correction",
+            data: { label: "Adjust to 25 units" },
+            reasoning:
+              "Billed 30 against PO qty 25; adjust or hold for the remaining receipt.",
+          },
           { type: "suggest_supplier", data: {} },
         ],
         resolution: {
@@ -1264,7 +1284,14 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             },
           ],
         },
-        suggestions: [{ type: "verify", data: {} }],
+        suggestions: [
+          {
+            type: "verify",
+            data: {},
+            reasoning:
+              "The billing tolerance is 5%; line 2 is 20% over the PO quantity.",
+          },
+        ],
         resolution: {
           label: "Tolerance reviewed",
           sub: "Quantity over-invoiced, resolved by you",
@@ -1293,7 +1320,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           ],
         },
         suggestions: [
-          { type: "suggest_correction", data: { label: "Adjust to 20 units" } },
+          {
+            type: "suggest_correction",
+            data: { label: "Adjust to 20 units" },
+            reasoning:
+              "Billed 25 against PO qty 20; adjust or hold for the remaining receipt.",
+          },
           { type: "suggest_supplier", data: {} },
         ],
         resolution: {
@@ -1321,7 +1353,14 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             },
           ],
         },
-        suggestions: [{ type: "verify", data: {} }],
+        suggestions: [
+          {
+            type: "verify",
+            data: {},
+            reasoning:
+              "The billing tolerance is 5%; line 3 is 25% over the PO quantity.",
+          },
+        ],
         resolution: {
           label: "Tolerance reviewed",
           sub: "Quantity over-invoiced, resolved by you",
@@ -1366,7 +1405,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           ],
         },
         suggestions: [
-          { type: "suggest_correction", data: { label: "Adjust to 10 units" } },
+          {
+            type: "suggest_correction",
+            data: { label: "Adjust to 10 units" },
+            reasoning:
+              "Billed 18 against PO qty 10; adjust or hold for a corrected invoice.",
+          },
           { type: "suggest_supplier", data: {} },
         ],
         resolution: {
@@ -1397,7 +1441,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           ],
         },
         suggestions: [
-          { type: "suggest_correction", data: { label: "Adjust to 10 units" } },
+          {
+            type: "suggest_correction",
+            data: { label: "Adjust to 10 units" },
+            reasoning:
+              "Billed 15 against PO qty 10; adjust or hold for a corrected invoice.",
+          },
           { type: "suggest_supplier", data: {} },
         ],
         resolution: {
@@ -1425,7 +1474,14 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             },
           ],
         },
-        suggestions: [{ type: "verify", data: {} }],
+        suggestions: [
+          {
+            type: "verify",
+            data: {},
+            reasoning:
+              "The billing tolerance is 5%; line 3 is 50% over the PO quantity.",
+          },
+        ],
         resolution: {
           label: "Tolerance reviewed",
           sub: "Quantity over-invoiced, resolved by you",
@@ -1454,7 +1510,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           ],
         },
         suggestions: [
-          { type: "suggest_correction", data: { label: "Adjust to €130.00" } },
+          {
+            type: "suggest_correction",
+            data: { label: "Adjust to €130.00" },
+            reasoning:
+              "Unit price €142 against PO rate €130; a €12 overage per unit.",
+          },
           { type: "suggest_supplier", data: {} },
         ],
         resolution: {

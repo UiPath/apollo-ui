@@ -1004,8 +1004,8 @@ function FindingsGroupRow({
 
   const locator = lineRangeLabel(lines);
   const unresolved = members.filter((m) => !effectiveResolved.has(m.id));
-  // Progress: resolved count + 1 for the member currently being worked on.
-  const progressText = `${resolvedCount + 1} of ${members.length}`;
+  // Progress: how many members are done so far (changes on resolve, not cursor move).
+  const progressText = `${resolvedCount} of ${members.length} done`;
   const firstPendingId = unresolved[0]?.id ?? members[0].id;
 
   const rowContent = (
@@ -1042,7 +1042,7 @@ function FindingsGroupRow({
         {isResolved && (
           <span className="font-normal text-muted-foreground">
             {" · "}
-            {resolvedCount} resolved
+            {resolvedCount} done
           </span>
         )}
       </span>
