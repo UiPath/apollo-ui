@@ -954,7 +954,7 @@ function FindingsIndividualRow({
         )}
       </span>
       {isCurrent && (
-        <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+        <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
           Current
         </span>
       )}
@@ -969,7 +969,7 @@ function FindingsIndividualRow({
       <button
         type="button"
         onClick={() => onSelect(e.id)}
-        className="flex min-h-7 w-full items-center gap-2 rounded px-0.5 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+        className="flex min-h-7 w-full items-center gap-2 rounded px-2 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
       >
         {rowContent}
       </button>
@@ -978,7 +978,7 @@ function FindingsIndividualRow({
   return (
     <div
       className={cn(
-        "flex min-h-7 items-center gap-2 rounded px-0.5",
+        "flex min-h-7 items-center gap-2 rounded px-2",
         isCurrent && "rounded-md bg-muted/30 ring-1 ring-inset ring-border/60",
       )}
     >
@@ -1054,7 +1054,7 @@ function FindingsGroupRow({
           >
             {progressText}
           </Badge>
-          <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+          <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
             Current
           </span>
         </>
@@ -1078,7 +1078,7 @@ function FindingsGroupRow({
       <button
         type="button"
         onClick={() => onSelect(firstPendingId)}
-        className="flex h-7 w-full items-center gap-2 rounded px-0.5 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+        className="flex h-7 w-full items-center gap-2 rounded px-2 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
       >
         {rowContent}
       </button>
@@ -1087,7 +1087,7 @@ function FindingsGroupRow({
   return (
     <div
       className={cn(
-        "flex min-h-7 items-center gap-2 rounded px-0.5",
+        "flex min-h-7 items-center gap-2 rounded px-2",
         isCurrent && "rounded-md bg-muted/30 ring-1 ring-inset ring-border/60",
       )}
     >
@@ -1133,7 +1133,7 @@ function FindingsMap({
 
   return (
     <div className="mt-5">
-      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
+      <p className="mb-1.5 text-[11px] font-medium text-muted-foreground">
         {headerLabel}
       </p>
       <ul className="space-y-px">
