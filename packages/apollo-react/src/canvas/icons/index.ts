@@ -30,6 +30,7 @@ export { FunctionProject } from './FunctionProject';
 export { GoogleIcon } from './GoogleIcon';
 export { HealthScoreIcon } from './HealthScoreIcon';
 export { HumanIcon } from './HumanIcon';
+export { LayersArrowUpRightIcon } from './LayersArrowUpRightIcon';
 export { LoopIcon } from './LoopIcon';
 export { McpIcon } from './McpIcon';
 export { MemoryIcon } from './MemoryIcon';
