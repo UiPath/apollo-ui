@@ -3395,9 +3395,7 @@ function UpNextCard({
       <Card className="mt-0">
         <CardContent className="p-3 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              Up next
-            </p>
+            <p className="text-xs text-muted-foreground mb-1">Up next</p>
             <p className="text-sm font-medium">
               {nextInvoice.id} · {nextInvoice.vendor}
             </p>
@@ -3855,7 +3853,7 @@ function ExceptionBlock({
         <div className="grid grid-cols-3 divide-x divide-border rounded-[6px] max-w-[480px] mb-4 [&>div:first-child]:pl-0">
           {exceptionMetrics.map((m) => (
             <div key={m.label} className="px-6 py-[18px] flex flex-col gap-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground truncate">
+              <span className="text-[10px] font-semibold text-muted-foreground truncate">
                 {m.label}
               </span>
               <span
@@ -4529,7 +4527,7 @@ function DetailsCombinedTab() {
         {/* Cluster 1 — invoice facts (top-bar fields omitted: PO, due date, currency, assignee) */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-4">
           <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Doc date
             </span>
             <span className="text-[13px] text-foreground">
@@ -4537,7 +4535,7 @@ function DetailsCombinedTab() {
             </span>
           </div>
           <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Payment terms
             </span>
             <span className="text-[13px] text-foreground">
@@ -4546,7 +4544,7 @@ function DetailsCombinedTab() {
           </div>
           {d.vat !== "—" && (
             <div className="flex min-w-0 flex-col gap-1">
-              <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+              <span className="text-[11px] font-medium text-muted-foreground">
                 VAT number
               </span>
               <span className="text-[13px] text-foreground">{d.vat}</span>
@@ -4554,7 +4552,7 @@ function DetailsCombinedTab() {
           )}
           {d.servicePeriod && (
             <div className="flex min-w-0 flex-col gap-1">
-              <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+              <span className="text-[11px] font-medium text-muted-foreground">
                 Service period
               </span>
               <span className="text-[13px] text-foreground">
@@ -4569,7 +4567,7 @@ function DetailsCombinedTab() {
         {/* Cluster 2 — parties */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-4">
           <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Vendor
             </span>
             <div className="min-w-0">
@@ -4582,7 +4580,7 @@ function DetailsCombinedTab() {
             </div>
           </div>
           <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Bill to
             </span>
             <div className="min-w-0">
@@ -4602,17 +4600,17 @@ function DetailsCombinedTab() {
         <div>
           {/* Column headers: # | ITEM | QTY(/PO) | AMOUNT */}
           <div className="grid grid-cols-[16px_1fr_auto_auto] items-end gap-x-3 mb-2">
-            <span className="text-[11px] tracking-wide font-medium text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               #
             </span>
-            <span className="text-[11px] tracking-wide font-medium text-muted-foreground">
-              ITEM
+            <span className="text-[11px] font-medium text-muted-foreground">
+              Item
             </span>
-            <span className="text-[11px] tracking-wide font-medium text-muted-foreground text-right">
-              {hasPo ? "QTY / PO" : "QTY"}
+            <span className="text-[11px] font-medium text-muted-foreground text-right">
+              {hasPo ? "Qty / PO" : "Qty"}
             </span>
-            <span className="text-[11px] tracking-wide font-medium text-muted-foreground text-right">
-              AMOUNT
+            <span className="text-[11px] font-medium text-muted-foreground text-right">
+              Amount
             </span>
           </div>
           <div className="divide-y divide-border">
@@ -5438,8 +5436,8 @@ function CommsMessageRow({
             </span>
           )}
           {msg.source === "email" && msg.direction === "outbound" && (
-            <span className="text-[9px] font-medium uppercase tracking-wide rounded-full bg-muted text-muted-foreground px-1.5 py-px">
-              sent
+            <span className="text-[9px] font-medium rounded-full bg-muted text-muted-foreground px-1.5 py-px">
+              Sent
             </span>
           )}
           <span className="text-[10px] text-muted-foreground ml-auto shrink-0">
@@ -5624,8 +5622,8 @@ function CommsView({
             <div className="relative rounded-lg bg-background px-4 py-3">
               <div className="flex items-start gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-                    AI Summary
+                  <p className="text-[10px] font-semibold text-muted-foreground mb-1">
+                    AI summary
                   </p>
                   <p className="text-sm text-foreground leading-relaxed">
                     ACME submitted INV-GRN-001 with a $4.84 price overage vs.
