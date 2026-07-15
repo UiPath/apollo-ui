@@ -55,6 +55,21 @@ export interface DeriveModelTagsContext {
   customTagsFor?: (model: DiscoveryModel) => readonly ModelTag[];
 }
 
+/**
+ * A model is BYO when it is served through a customer-configured
+ * connection: flagged by the Discovery subscription type, or by
+ * connection metadata (`byomDetails`, host-hydrated
+ * `byoConnectionLabel`) for catalogs whose subscription field says
+ * otherwise. Drives the BYO section and the chips that only make sense
+ * for UiPath-hosted models (Preview, Out-of-region).
+ */
+const isByoModel = (m: DiscoveryModel) =>
+  m.modelSubscriptionType === 'BYOMAdded' ||
+  m.modelSubscriptionType === 'BYOMReplacedAlternative' ||
+  m.modelSubscriptionType === 'BYOMReplacedLikeForLike' ||
+  !!m.byomDetails ||
+  !!m.byoConnectionLabel;
+
 export function deriveModelTags(
   model: DiscoveryModel,
   context: DeriveModelTagsContext = {}
@@ -76,10 +91,7 @@ export function deriveModelTags(
   //   - Out-of-region: gateway controls routing for hosted models. BYO models
   //     route to the customer's own endpoint, which they configured; the
   //     gateway doesn't know or control its region.
-  const isByo =
-    model.modelSubscriptionType === 'BYOMAdded' ||
-    model.modelSubscriptionType === 'BYOMReplacedAlternative' ||
-    model.modelSubscriptionType === 'BYOMReplacedLikeForLike';
+  const isByo = isByoModel(model);
 
   // `recommended` is governance authored in Model_hub configs
   // (gitops-centralized-cluster) and merged into the Discovery
@@ -324,11 +336,6 @@ export interface GroupModelsContext {
    */
   i18n?: PickerTranslator;
 }
-
-const isByoModel = (m: DiscoveryModel) =>
-  m.modelSubscriptionType === 'BYOMAdded' ||
-  m.modelSubscriptionType === 'BYOMReplacedAlternative' ||
-  m.modelSubscriptionType === 'BYOMReplacedLikeForLike';
 
 function buildSubscriptionMatchers(ctx: GroupModelsContext): Array<{
   key: string;
