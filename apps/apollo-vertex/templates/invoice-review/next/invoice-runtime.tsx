@@ -105,9 +105,11 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
       getRuntime: (id) => map[id] ?? EMPTY,
       getCursor: (id) => cursorMap[id],
       setCursor: (id, exceptionId) =>
-        setCursorMap((prev) =>
-          exceptionId ? { ...prev, [id]: exceptionId } : { ...prev, [id]: "" },
-        ),
+        setCursorMap((prev) => {
+          const next = exceptionId ?? "";
+          if (prev[id] === next) return prev;
+          return { ...prev, [id]: next };
+        }),
       commitResolve: (id, patch) =>
         setMap((prev) => {
           const cur = prev[id] ?? EMPTY;
