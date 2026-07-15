@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   FileUpload,
+  Input,
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
@@ -182,8 +183,8 @@ const FIELD_LABEL: Record<LockableValueFieldMode, string> = {
 };
 
 const FIELD_PLACEHOLDER: Record<LockableValueFieldMode, string> = {
-  fixed: 'Enter a value',
-  expression: 'Enter an expression',
+  fixed: 'String value',
+  expression: 'Write a string expression',
 };
 
 /**
@@ -219,6 +220,30 @@ export function LockableValueField({
   const effectiveMode = typeMeta.supportsExpression ? mode : 'fixed';
   const collapsedTextClass = cn('@max-[259px]:hidden', compact && '!hidden');
   const collapsedPaddingClass = cn('@max-[259px]:px-1.5', compact && '!px-1.5');
+
+  // Locked fields are read-only, not disabled — the raw control (switch, date
+  // picker, select) has nothing left to do once editing is blocked, so it's
+  // replaced with plain, selectable text showing the same value.
+  const lockedDisplayValue =
+    fieldType === 'boolean'
+      ? value === 'true'
+        ? 'True'
+        : 'False'
+      : fieldType === 'date'
+        ? value
+          ? new Date(value).toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })
+          : ''
+        : fieldType === 'single-select'
+          ? (DEMO_SELECT_OPTIONS.find((option) => option.value === value)?.label ?? '')
+          : fieldType === 'multi-select'
+            ? parseListValue(value)
+                .map((v) => DEMO_SELECT_OPTIONS.find((option) => option.value === v)?.label ?? v)
+                .join(', ')
+            : value;
 
   return (
     <div className={cn('@container group flex flex-col gap-1.5', className)}>
@@ -456,13 +481,19 @@ export function LockableValueField({
               placeholder={FIELD_PLACEHOLDER.expression}
               className="font-mono"
             />
+          ) : locked ? (
+            <InputGroupInput
+              id={id}
+              readOnly
+              value={lockedDisplayValue}
+              placeholder={FIELD_PLACEHOLDER.fixed}
+            />
           ) : fieldType === 'boolean' ? (
             <div className="flex h-full flex-1 items-center px-3">
               <Switch
                 id={id}
                 checked={value === 'true'}
                 onCheckedChange={(checked) => onValueChange?.(String(checked))}
-                disabled={locked}
               />
             </div>
           ) : fieldType === 'date' ? (
@@ -472,8 +503,7 @@ export function LockableValueField({
                   type="button"
                   id={id}
                   data-slot="input-group-control"
-                  disabled={locked}
-                  className="flex h-full flex-1 items-center text-left text-sm text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-full flex-1 items-center text-left text-sm text-foreground outline-none"
                 >
                   {value ? (
                     new Date(value).toLocaleDateString(undefined, {
@@ -499,7 +529,6 @@ export function LockableValueField({
             <InputGroupInput
               id={id}
               type={fieldType === 'integer' ? 'number' : 'text'}
-              readOnly={locked}
               value={value}
               onChange={(e) => onValueChange?.(e.target.value)}
               placeholder={FIELD_PLACEHOLDER.fixed}
@@ -618,8 +647,16 @@ export function LockableValueField({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {fieldType === 'single-select' && (
-            <Select value={value || undefined} onValueChange={onValueChange} disabled={locked}>
+          {locked ? (
+            <Input
+              id={id}
+              readOnly
+              value={lockedDisplayValue}
+              placeholder={FIELD_PLACEHOLDER.fixed}
+              className="flex-1"
+            />
+          ) : fieldType === 'single-select' ? (
+            <Select value={value || undefined} onValueChange={onValueChange}>
               <SelectTrigger id={id} className="flex-1">
                 <SelectValue placeholder="Select an option" />
               </SelectTrigger>
@@ -631,25 +668,21 @@ export function LockableValueField({
                 ))}
               </SelectContent>
             </Select>
-          )}
-
-          {fieldType === 'multi-select' && (
+          ) : fieldType === 'multi-select' ? (
             <MultiSelect
               className="flex-1"
               options={DEMO_SELECT_OPTIONS}
               selected={parseListValue(value)}
               onChange={(selected) => onValueChange?.(JSON.stringify(selected))}
               placeholder="Select options..."
-              disabled={locked}
             />
-          )}
-
-          {fieldType === 'file' && (
-            <FileUpload
-              className="flex-1"
-              disabled={locked}
-              onFilesChange={(files) => onValueChange?.(files.map((f) => f.name).join(', '))}
-            />
+          ) : (
+            fieldType === 'file' && (
+              <FileUpload
+                className="flex-1"
+                onFilesChange={(files) => onValueChange?.(files.map((f) => f.name).join(', '))}
+              />
+            )
           )}
         </div>
       )}

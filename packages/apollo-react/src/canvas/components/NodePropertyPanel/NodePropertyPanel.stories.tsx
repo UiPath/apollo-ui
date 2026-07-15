@@ -86,6 +86,7 @@ import {
   GitFork,
   Globe,
   GripVertical,
+  Link2,
   MoreVertical,
   MousePointerClick,
   Pencil,
@@ -105,7 +106,6 @@ import type { LockableFieldType, LockableValueFieldMode } from './LockableValueF
 import {
   DEMO_SELECT_OPTIONS,
   FIELD_TYPE_META,
-  FIELD_TYPE_ORDER,
   LockableValueField,
   parseListValue,
 } from './LockableValueField';
@@ -2789,10 +2789,10 @@ function FormButtonChip({
   return (
     <div
       className={cn(
-        'group/button flex h-8 items-stretch overflow-hidden rounded-lg text-sm font-semibold transition',
+        'group/button flex h-10 items-stretch overflow-hidden rounded-lg text-sm font-semibold transition',
         variant === 'default'
           ? 'bg-brand text-foreground-on-accent'
-          : 'border border-border-subtle text-foreground'
+          : 'border border-input bg-background text-foreground future:border-border-subtle future:text-muted-foreground'
       )}
     >
       {editing ? (
@@ -2817,7 +2817,9 @@ function FormButtonChip({
           }}
           className={cn(
             'px-4 transition',
-            variant === 'default' ? 'hover:bg-brand-hover' : 'hover:bg-surface-overlay'
+            variant === 'default'
+              ? 'hover:bg-brand-hover'
+              : 'hover:bg-accent hover:text-accent-foreground future:hover:text-foreground'
           )}
         >
           {label}
@@ -2833,7 +2835,9 @@ function FormButtonChip({
                   aria-label="Edit button"
                   className={cn(
                     'grid w-0 shrink-0 place-items-center overflow-hidden px-0 opacity-0 transition-all duration-200 group-hover/button:w-8 group-hover/button:px-2 group-hover/button:opacity-100 aria-expanded:w-8 aria-expanded:px-2 aria-expanded:opacity-100',
-                    variant === 'default' ? 'hover:bg-brand-hover' : 'hover:bg-surface-overlay'
+                    variant === 'default'
+                      ? 'hover:bg-brand-hover'
+                      : 'hover:bg-accent hover:text-accent-foreground future:hover:text-foreground'
                   )}
                 >
                   <Pencil size={12} className="shrink-0" />
@@ -3176,10 +3180,10 @@ function QuickFormStory() {
                   Parameters
                 </TabsTrigger>
                 <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                  Error handling
+                  Branching
                 </TabsTrigger>
                 <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                  Advanced
+                  Error handling
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -3220,6 +3224,19 @@ function QuickFormStory() {
                         >
                           <Eye size={14} className="text-foreground-subtle" />
                           Preview
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              `${window.location.origin}/forms/quick-approve`
+                            );
+                            setMoreMenuOpen(false);
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-foreground transition hover:bg-surface-overlay"
+                        >
+                          <Link2 size={14} className="text-foreground-subtle" />
+                          Get URL
                         </button>
                         <div className="h-px bg-border-subtle" />
                         <div className="space-y-1.5">
@@ -3393,6 +3410,27 @@ function QuickFormStory() {
                             document.body
                           )}
                         </DndContext>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                            >
+                              <Plus size={12} />
+                              Add field
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-44">
+                            <DropdownMenuItem onClick={() => addCaseWithType('string')}>
+                              <Type className="text-foreground-muted" />
+                              <span>Add field</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={addButton}>
+                              <MousePointerClick className="text-foreground-muted" />
+                              <span>Add button</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                         {buttons.length > 0 && (
                           <div className="flex flex-wrap items-center gap-2">
                             {buttons.map((b) => (
@@ -3407,33 +3445,6 @@ function QuickFormStory() {
                             ))}
                           </div>
                         )}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
-                            >
-                              <Plus size={12} />
-                              Add field
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="w-44">
-                            {FIELD_TYPE_ORDER.map((type) => {
-                              const meta = FIELD_TYPE_META[type];
-                              return (
-                                <DropdownMenuItem key={type} onClick={() => addCaseWithType(type)}>
-                                  <meta.icon className="text-foreground-muted" />
-                                  <span>{meta.label}</span>
-                                </DropdownMenuItem>
-                              );
-                            })}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={addButton}>
-                              <MousePointerClick className="text-foreground-muted" />
-                              <span>Button</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </>
                     )}
                     {formView === 'preview' && (
@@ -3442,6 +3453,33 @@ function QuickFormStory() {
                           const isExpression =
                             FIELD_TYPE_META[c.fieldType].supportsExpression &&
                             c.mode === 'expression';
+                          // Locked fields are read-only, not disabled — shown as plain,
+                          // selectable text instead of a greyed-out interactive control.
+                          const lockedDisplayValue =
+                            c.fieldType === 'boolean'
+                              ? c.value === 'true'
+                                ? 'True'
+                                : 'False'
+                              : c.fieldType === 'date'
+                                ? c.value
+                                  ? new Date(c.value).toLocaleDateString(undefined, {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                    })
+                                  : ''
+                                : c.fieldType === 'single-select'
+                                  ? (DEMO_SELECT_OPTIONS.find((option) => option.value === c.value)
+                                      ?.label ?? '')
+                                  : c.fieldType === 'multi-select'
+                                    ? parseListValue(c.value)
+                                        .map(
+                                          (v) =>
+                                            DEMO_SELECT_OPTIONS.find((option) => option.value === v)
+                                              ?.label ?? v
+                                        )
+                                        .join(', ')
+                                    : c.value;
                           return (
                             <div key={c.id} className="flex flex-col gap-1.5">
                               <Label
@@ -3460,6 +3498,8 @@ function QuickFormStory() {
                                   placeholder="Enter an expression"
                                   className="font-mono"
                                 />
+                              ) : c.locked ? (
+                                <Input id={`preview-${c.id}`} readOnly value={lockedDisplayValue} />
                               ) : c.fieldType === 'boolean' ? (
                                 <Switch
                                   id={`preview-${c.id}`}
@@ -3467,11 +3507,9 @@ function QuickFormStory() {
                                   onCheckedChange={(checked) =>
                                     updateCase(c.id, { value: String(checked) })
                                   }
-                                  disabled={c.locked}
                                 />
                               ) : c.fieldType === 'date' ? (
                                 <DatePicker
-                                  disabled={c.locked}
                                   value={c.value ? new Date(c.value) : undefined}
                                   onValueChange={(date) =>
                                     updateCase(c.id, { value: date ? date.toISOString() : '' })
@@ -3481,7 +3519,6 @@ function QuickFormStory() {
                                 <Select
                                   value={c.value || undefined}
                                   onValueChange={(value) => updateCase(c.id, { value })}
-                                  disabled={c.locked}
                                 >
                                   <SelectTrigger id={`preview-${c.id}`}>
                                     <SelectValue placeholder="Select an option" />
@@ -3502,11 +3539,9 @@ function QuickFormStory() {
                                     updateCase(c.id, { value: JSON.stringify(selected) })
                                   }
                                   placeholder="Select options..."
-                                  disabled={c.locked}
                                 />
                               ) : c.fieldType === 'file' ? (
                                 <FileUpload
-                                  disabled={c.locked}
                                   onFilesChange={(files) =>
                                     updateCase(c.id, { value: files.map((f) => f.name).join(', ') })
                                   }
@@ -3515,7 +3550,6 @@ function QuickFormStory() {
                                 <Input
                                   id={`preview-${c.id}`}
                                   type={c.fieldType === 'integer' ? 'number' : 'text'}
-                                  readOnly={c.locked}
                                   value={c.value}
                                   onChange={(e) => updateCase(c.id, { value: e.target.value })}
                                   placeholder="Enter a value"
@@ -3607,10 +3641,10 @@ function FormHitlReviewStory() {
                   Parameters
                 </TabsTrigger>
                 <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                  Error handling
+                  Branching
                 </TabsTrigger>
                 <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                  Advanced
+                  Error handling
                 </TabsTrigger>
               </TabsList>
             </div>
