@@ -355,7 +355,7 @@ function EventRow({
   );
 }
 
-// Matches the original ExceptionBlock metric treatment: uppercase label,
+// Matches the original ExceptionBlock metric treatment: sentence-case label,
 // large value, open (no card), vertical divider between sides.
 function FindingCell({
   label,
@@ -376,7 +376,7 @@ function FindingCell({
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5 px-5 py-1">
-      <span className="truncate text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+      <span className="truncate text-[11px] font-medium text-muted-foreground">
         {label}
       </span>
       {/* Value + inline inspect trigger on one row; the button carries negative
