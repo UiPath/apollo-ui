@@ -71,7 +71,9 @@ import {
   PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
 import { Separator } from "@/components/ui/separator";
+import type { ShellNavItem } from "@/components/ui/shell";
 import { ApolloShell } from "@/components/ui/shell";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -182,6 +184,8 @@ interface InvoiceDetailData {
   assignee: string;
   assigneeInitials: string;
   vat: string;
+  /** Optional service period string, e.g. "Apr 1 – Jun 30, 2026". Shown in Details grid when present. */
+  servicePeriod?: string;
   description: string;
   exceptionTag: string;
   exceptionTagStatus: "error" | "warning" | "info";
@@ -607,6 +611,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     assignee: "Maria Chen",
     assigneeInitials: "MC",
     vat: "DE-114299471",
+    servicePeriod: "Apr 1 – Jun 30, 2026",
     description:
       "Q2 legal retainer and litigation support for the EMEA entity, covering advisory hours, contract review, and filing fees.",
     exceptionTag: "High value",
@@ -4521,86 +4526,77 @@ function DetailsCombinedTab() {
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
       <div className="px-5 pt-5 pb-16 space-y-0">
-        {/* Section A — metadata */}
-        <p className="text-xs font-medium text-muted-foreground mb-1">
-          Invoice
-        </p>
-        <div className="flex justify-between items-baseline py-1">
-          <span className="text-xs text-muted-foreground">Document date</span>
-          <span className="text-xs font-medium text-right">
-            {d.documentDateFormatted}
-          </span>
-        </div>
-        <div className="flex justify-between items-baseline py-1">
-          <span className="text-xs text-muted-foreground">Due date</span>
-          <span className="text-xs font-medium text-right">
-            {d.dueFormatted}
-          </span>
-        </div>
-        <div className="flex justify-between items-baseline py-1">
-          <span className="text-xs text-muted-foreground">Payment terms</span>
-          <span className="text-xs font-medium text-right">
-            {d.paymentTerms}
-          </span>
+        {/* Cluster 1 — invoice facts (top-bar fields omitted: PO, due date, currency, assignee) */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+              Doc date
+            </span>
+            <span className="text-[13px] text-foreground">
+              {d.documentDateFormatted}
+            </span>
+          </div>
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+              Payment terms
+            </span>
+            <span className="text-[13px] text-foreground">
+              {d.paymentTerms}
+            </span>
+          </div>
+          {d.vat !== "—" && (
+            <div className="flex min-w-0 flex-col gap-1">
+              <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+                VAT number
+              </span>
+              <span className="text-[13px] text-foreground">{d.vat}</span>
+            </div>
+          )}
+          {d.servicePeriod && (
+            <div className="flex min-w-0 flex-col gap-1">
+              <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+                Service period
+              </span>
+              <span className="text-[13px] text-foreground">
+                {d.servicePeriod}
+              </span>
+            </div>
+          )}
         </div>
 
-        <Separator className="my-3" />
+        <Separator className="my-4" />
 
-        <p className="text-xs font-medium text-muted-foreground mb-1">
-          Parties
-        </p>
-        <div className="flex justify-between items-start py-1">
-          <span className="text-xs text-muted-foreground flex-shrink-0">
-            Vendor
-          </span>
-          <div className="text-right ml-2">
-            <div className="text-xs font-medium">{d.vendor}</div>
-            {d.vendorEmail && (
-              <div className="text-xs text-muted-foreground">
-                {d.vendorEmail}
-              </div>
-            )}
+        {/* Cluster 2 — parties */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+              Vendor
+            </span>
+            <div className="min-w-0">
+              <div className="text-[13px] text-foreground">{d.vendor}</div>
+              {d.vendorEmail && (
+                <div className="break-words text-[12px] leading-snug text-muted-foreground">
+                  {d.vendorEmail}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+              Bill to
+            </span>
+            <div className="min-w-0">
+              <div className="text-[13px] text-foreground">{d.billTo}</div>
+              {d.billAddress && (
+                <div className="break-words text-[12px] leading-snug text-muted-foreground">
+                  {d.billAddress}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex justify-between items-baseline py-1">
-          <span className="text-xs text-muted-foreground">Purchase order</span>
-          <span className="text-xs font-medium text-right">{patchedPo}</span>
-        </div>
-        <div className="flex justify-between items-start py-1">
-          <span className="text-xs text-muted-foreground flex-shrink-0">
-            Bill to
-          </span>
-          <div className="text-right ml-2">
-            <div className="text-xs font-medium">{d.billTo}</div>
-            {d.billAddress && (
-              <div className="text-xs text-muted-foreground">
-                {d.billAddress}
-              </div>
-            )}
-          </div>
-        </div>
 
-        <Separator className="my-3" />
-
-        <p className="text-xs font-medium text-muted-foreground mb-1">
-          Reference
-        </p>
-        <div className="flex justify-between items-baseline py-1">
-          <span className="text-xs text-muted-foreground">Currency</span>
-          <span className="text-xs font-medium text-right">{d.currency}</span>
-        </div>
-        <div className="flex justify-between items-baseline py-1">
-          <span className="text-xs text-muted-foreground">Assignee</span>
-          <span className="text-xs font-medium text-right">{d.assignee}</span>
-        </div>
-        {d.vat !== "—" && (
-          <div className="flex justify-between items-baseline py-1">
-            <span className="text-xs text-muted-foreground">VAT number</span>
-            <span className="text-xs font-medium text-right">{d.vat}</span>
-          </div>
-        )}
-
-        <Separator className="my-3" />
+        <Separator className="my-4" />
 
         {/* Section B — line items */}
         <div>
@@ -6838,7 +6834,11 @@ function InvoiceReviewContent() {
   // Posted card threads, keyed by ts → invoice id (from the store).
   const [slackCards, setSlackCards] = useState<Record<string, string>>({});
   // Resizable right-panel width (persists across invoice switches).
-  const [rightPanelWidth, setRightPanelWidth] = useState(380);
+  // Default: clamp(380, 28vw, 520) — wider default on large screens.
+  const [rightPanelWidth, setRightPanelWidth] = useState(() => {
+    if (typeof window === "undefined") return 420;
+    return Math.min(Math.max(380, Math.round(window.innerWidth * 0.28)), 520);
+  });
 
   // "Show in source" (from the timeline fix card) bumps a per-invoice nonce in
   // the runtime; switch the right panel to the Source tab when that happens for
@@ -6849,7 +6849,7 @@ function InvoiceReviewContent() {
   const navigate = useNavigate();
 
   // Stable reference — prevents the SidebarNav useEffect from looping.
-  const shellNavItems = useMemo(
+  const shellNavItems = useMemo<ShellNavItem[]>(
     () => [
       { path: LIST_PATH, label: "invoices", icon: FileText },
       { path: MY_WORK_PATH, label: "my_work", icon: Inbox },
