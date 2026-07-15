@@ -6847,6 +6847,17 @@ function InvoiceReviewContent() {
   const runtime = useInvoiceRuntime();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Stable reference — prevents the SidebarNav useEffect from looping.
+  const shellNavItems = useMemo(
+    () => [
+      { path: LIST_PATH, label: "invoices", icon: FileText },
+      { path: MY_WORK_PATH, label: "my_work", icon: Inbox },
+      { path: "/settings", label: "settings", icon: Settings2 },
+    ],
+    [],
+  );
+
   const highlightNonce = runtime.getRuntime(activeInvoiceId).highlight?.nonce;
   const lastHighlightRef = useRef<{ id: string; nonce: number | undefined }>({
     id: activeInvoiceId,
@@ -7101,11 +7112,7 @@ function InvoiceReviewContent() {
         darkUrl: "/UiPath_dark.svg",
         alt: "UiPath",
       }}
-      navItems={[
-        { path: LIST_PATH, label: "invoices", icon: FileText },
-        { path: MY_WORK_PATH, label: "my_work", icon: Inbox },
-        { path: "/settings", label: "settings", icon: Settings2 },
-      ]}
+      navItems={shellNavItems}
     >
       <div className="absolute inset-0 flex overflow-hidden">
         {/* Ambient glow — bleeds across left nav and center panel */}
