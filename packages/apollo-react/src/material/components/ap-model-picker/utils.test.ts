@@ -175,6 +175,28 @@ describe('deriveModelTags', () => {
     expect(byoPreview.find((t) => t.kind === 'preview')).toBeFalsy();
   });
 
+  it('suppresses the Preview chip for any model served through a BYO connection', () => {
+    // BYO-ness can arrive as connection metadata rather than the
+    // subscription type: a host-hydrated connection label, or the
+    // DTO's byomDetails. Both mean the customer wired the model up
+    // themselves, so Preview is noise.
+    const labeled = deriveModelTags(
+      model({ modelId: 'a', isPreview: true, byoConnectionLabel: 'AcmeAzure' })
+    );
+    expect(labeled.find((t) => t.kind === 'preview')).toBeFalsy();
+    expect(labeled.find((t) => t.kind === 'custom')).toBeTruthy();
+
+    const withByomDetails = deriveModelTags(
+      model({
+        modelId: 'b',
+        isPreview: true,
+        modelSubscriptionType: 'BYOMReplacedLikeForLike',
+        byomDetails: { integrationServiceConnectionId: 'conn-guid' },
+      })
+    );
+    expect(withByomDetails.find((t) => t.kind === 'preview')).toBeFalsy();
+  });
+
   it('emits Out-of-region chip only when geography differs from homeRegion', () => {
     const usHostedForEuUser = deriveModelTags(model({ routingDetails: { geography: 'US' } }), {
       homeRegion: 'EU',
