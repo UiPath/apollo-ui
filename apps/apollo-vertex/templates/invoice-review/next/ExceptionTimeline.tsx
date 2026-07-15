@@ -796,62 +796,35 @@ function Stage({
 }
 
 /** The reviewer's node: optional group header, the stage, the exception index. */
-// Tone dots for the "Up next" strip (no badge chips there).
+// Tone dots for the Findings map.
 const DOT_TONE: Record<string, string> = {
   error: "bg-destructive",
   warning: "bg-warning",
   info: "bg-info",
 };
 
-// --- Up Next queue helpers ---------------------------------------------------
+// --- Findings map (cursor model) --------------------------------------------
 
-type QueueGrouped = {
-  kind: "grouped";
-  type: ExceptionType;
-  firstId: string;
-  lines: number[];
-  count: number;
-};
+type FindingsRowState = "pending" | "current" | "resolved";
 
-type QueueSingle = {
-  kind: "single";
+type FindingsIndividual = {
+  kind: "individual";
   exception: InvoiceException;
+  state: FindingsRowState;
 };
 
-type QueueRow = QueueGrouped | QueueSingle;
+type FindingsGroup = {
+  kind: "group";
+  type: ExceptionType;
+  members: InvoiceException[];
+  lines: number[];
+  state: FindingsRowState;
+  /** 0-based index of the active member in members[]; null when no member is active */
+  currentMemberIdx: number | null;
+  resolvedCount: number;
+};
 
-/** Build the Up Next queue rows from the waiting exceptions (active excluded).
- *  Grouped rows sort above singles. A type needs 2+ remaining members to group;
- *  a type with only 1 remaining member renders as a single enriched row. */
-function buildQueueRows(items: InvoiceException[]): QueueRow[] {
-  const byType = new Map<ExceptionType, InvoiceException[]>();
-  for (const e of items) {
-    const arr = byType.get(e.type) ?? [];
-    arr.push(e);
-    byType.set(e.type, arr);
-  }
-  const grouped: QueueGrouped[] = [];
-  const singles: QueueSingle[] = [];
-  for (const [type, exceptions] of byType) {
-    if (exceptions.length > 1) {
-      const lineSet = new Set<number>();
-      for (const e of exceptions) {
-        if (e.scope.level === "line") lineSet.add(e.scope.line);
-      }
-      const lines = [...lineSet].sort((a, b) => a - b);
-      grouped.push({
-        kind: "grouped",
-        type,
-        firstId: exceptions[0].id,
-        lines,
-        count: exceptions.length,
-      });
-    } else {
-      singles.push({ kind: "single", exception: exceptions[0] });
-    }
-  }
-  return [...grouped, ...singles];
-}
+type FindingsRow = FindingsIndividual | FindingsGroup;
 
 /** Returns "Line N", "Lines N–M" (consecutive), or "Lines N, M" (non-consecutive). */
 function lineRangeLabel(lines: number[]): string | null {
@@ -866,104 +839,316 @@ function lineRangeLabel(lines: number[]): string | null {
     : `Lines ${sorted.join(", ")}`;
 }
 
-/** Synthesis text for a single exception row. Falls back to type label. */
+/** Synthesis text for an individual exception row; falls back to the type label. */
 function rowSynthesis(e: InvoiceException): string {
   if (e.synthesis && e.synthesis.length <= 45) return e.synthesis;
   return EXCEPTION_META[e.type].label;
 }
 
 /**
- * "Up next": shows the remaining open exceptions at decision granularity.
- * `items` is the waiting list (active excluded). Exceptions sharing a type
- * collapse into one grouped row only when 2+ of that type remain; a lone
- * survivor renders as a single enriched row. Grouped rows sort first.
- *
- * Header shows a finding count only when grouping compresses the display
- * (i.e. at least one group row exists), proving nothing is hidden.
+ * Builds the fixed-order findings rows from the full non-waiting exception list.
+ * Types with 2+ members collapse into a group row; singletons remain individual.
+ * Row positions are stable: order follows first occurrence of each type in `items`.
  */
-function ExceptionStrip({
+function buildFindingsRows(
+  items: InvoiceException[],
+  resolvedIds: ReadonlySet<string>,
+  activeId: string,
+): FindingsRow[] {
+  const byType = new Map<ExceptionType, InvoiceException[]>();
+  const typeOrder: ExceptionType[] = [];
+  for (const e of items) {
+    if (!byType.has(e.type)) {
+      typeOrder.push(e.type);
+      byType.set(e.type, []);
+    }
+    byType.get(e.type)?.push(e);
+  }
+
+  const rows: FindingsRow[] = [];
+  for (const type of typeOrder) {
+    const members = byType.get(type);
+    if (!members) continue;
+    if (members.length > 1) {
+      const resolvedCount = members.filter((m) => resolvedIds.has(m.id)).length;
+      const currentMemberIdx = members.findIndex((m) => m.id === activeId);
+      const lineSet = new Set<number>();
+      for (const m of members) {
+        if (m.scope.level === "line") lineSet.add(m.scope.line);
+      }
+      const lines = [...lineSet].sort((a, b) => a - b);
+      let state: FindingsRowState;
+      if (currentMemberIdx >= 0) {
+        state = "current";
+      } else if (resolvedCount === members.length) {
+        state = "resolved";
+      } else {
+        state = "pending";
+      }
+      rows.push({
+        kind: "group",
+        type,
+        members,
+        lines,
+        state,
+        currentMemberIdx: currentMemberIdx >= 0 ? currentMemberIdx : null,
+        resolvedCount,
+      });
+    } else {
+      const e = members[0];
+      let state: FindingsRowState;
+      if (e.id === activeId) {
+        state = "current";
+      } else if (resolvedIds.has(e.id)) {
+        state = "resolved";
+      } else {
+        state = "pending";
+      }
+      rows.push({ kind: "individual", exception: e, state });
+    }
+  }
+  return rows;
+}
+
+function FindingsIndividualRow({
+  row,
+  onSelect,
+}: {
+  row: FindingsIndividual;
+  onSelect: (id: string) => void;
+}) {
+  const { exception: e, state } = row;
+  const isPending = state === "pending";
+  const isCurrent = state === "current";
+  const isResolved = state === "resolved";
+
+  const rowContent = (
+    <>
+      {isResolved ? (
+        <Check className="size-3.5 shrink-0 text-muted-foreground" />
+      ) : isCurrent ? (
+        <span className="size-2 shrink-0 rounded-full bg-warning" />
+      ) : (
+        <span
+          className={cn(
+            "size-1.5 shrink-0 rounded-full",
+            DOT_TONE[exceptionMeta(e).tone] ?? "bg-muted-foreground",
+          )}
+        />
+      )}
+      <span
+        className={cn(
+          "min-w-0 flex-1 truncate text-[13px]",
+          isResolved
+            ? "text-muted-foreground"
+            : isCurrent
+              ? "font-medium text-foreground"
+              : "text-foreground",
+        )}
+      >
+        {rowSynthesis(e)}
+        {e.scope.level === "line" && (
+          <span className="font-normal text-muted-foreground">
+            {" · "}Line {e.scope.line}
+          </span>
+        )}
+      </span>
+      {isCurrent && (
+        <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+          Current
+        </span>
+      )}
+      {isPending && (
+        <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
+      )}
+    </>
+  );
+
+  if (isPending) {
+    return (
+      <button
+        type="button"
+        onClick={() => onSelect(e.id)}
+        className="flex min-h-7 w-full items-center gap-2 rounded px-0.5 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+      >
+        {rowContent}
+      </button>
+    );
+  }
+  return (
+    <div
+      className={cn(
+        "flex min-h-7 items-center gap-2 rounded px-0.5",
+        isCurrent && "rounded-md bg-muted/30 ring-1 ring-inset ring-border/60",
+      )}
+    >
+      {rowContent}
+    </div>
+  );
+}
+
+function FindingsGroupRow({
+  row,
+  effectiveResolved,
+  onSelect,
+}: {
+  row: FindingsGroup;
+  effectiveResolved: ReadonlySet<string>;
+  onSelect: (id: string) => void;
+}) {
+  const { type, members, lines, state, resolvedCount } = row;
+  const meta = EXCEPTION_META[type];
+  const isPending = state === "pending";
+  const isCurrent = state === "current";
+  const isResolved = state === "resolved";
+
+  const locator = lineRangeLabel(lines);
+  const unresolved = members.filter((m) => !effectiveResolved.has(m.id));
+  // Progress: resolved count + 1 for the member currently being worked on.
+  const progressText = `${resolvedCount + 1} of ${members.length}`;
+  const firstPendingId = unresolved[0]?.id ?? members[0].id;
+
+  const rowContent = (
+    <>
+      {isResolved ? (
+        <Check className="size-3.5 shrink-0 text-muted-foreground" />
+      ) : isCurrent ? (
+        <span className="size-2 shrink-0 rounded-full bg-warning" />
+      ) : (
+        <span
+          className={cn(
+            "size-1.5 shrink-0 rounded-full",
+            DOT_TONE[meta.tone] ?? "bg-muted-foreground",
+          )}
+        />
+      )}
+      <span
+        className={cn(
+          "min-w-0 flex-1 truncate text-[13px]",
+          isResolved
+            ? "text-muted-foreground"
+            : isCurrent
+              ? "font-medium text-foreground"
+              : "text-foreground",
+        )}
+      >
+        {meta.label}
+        {!isResolved && locator && (
+          <span className="font-normal text-muted-foreground">
+            {" · "}
+            {locator}
+          </span>
+        )}
+        {isResolved && (
+          <span className="font-normal text-muted-foreground">
+            {" · "}
+            {resolvedCount} resolved
+          </span>
+        )}
+      </span>
+      {isCurrent && (
+        <>
+          <Badge
+            variant="outline"
+            className="h-4 shrink-0 px-1.5 text-[11px] text-muted-foreground"
+          >
+            {progressText}
+          </Badge>
+          <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+            Current
+          </span>
+        </>
+      )}
+      {isPending && (
+        <>
+          <Badge
+            variant="outline"
+            className="h-4 shrink-0 px-1.5 text-[11px] text-muted-foreground"
+          >
+            {unresolved.length}
+          </Badge>
+          <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
+        </>
+      )}
+    </>
+  );
+
+  if (isPending) {
+    return (
+      <button
+        type="button"
+        onClick={() => onSelect(firstPendingId)}
+        className="flex h-7 w-full items-center gap-2 rounded px-0.5 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+      >
+        {rowContent}
+      </button>
+    );
+  }
+  return (
+    <div
+      className={cn(
+        "flex min-h-7 items-center gap-2 rounded px-0.5",
+        isCurrent && "rounded-md bg-muted/30 ring-1 ring-inset ring-border/60",
+      )}
+    >
+      {rowContent}
+    </div>
+  );
+}
+
+/**
+ * Findings map: lists ALL non-waiting findings (open + resolved) in fixed
+ * escalation order. The cursor (activeId) marks one row current at all times;
+ * resolved rows stay in place with a muted check. Hides when only one finding
+ * total. `resolvingId` transiently treats an exception as resolved during the
+ * resolve choreography so the in-flight row shows a resolved-in-place state.
+ */
+function FindingsMap({
   items,
   activeId,
-  isNew,
+  resolvedIds,
+  resolvingId,
   onSelect,
 }: {
   items: InvoiceException[];
   activeId: string;
-  isNew: (e: InvoiceException) => boolean;
+  resolvedIds: ReadonlySet<string>;
+  resolvingId?: string;
   onSelect: (id: string) => void;
 }) {
-  const rows = buildQueueRows(items);
-  if (rows.length === 0) return null;
-  const hasGroups = rows.some((r) => r.kind === "grouped");
+  if (items.length <= 1) return null;
+
+  const effectiveResolved: ReadonlySet<string> = resolvingId
+    ? new Set([...resolvedIds, resolvingId])
+    : resolvedIds;
+
+  const rows = buildFindingsRows(items, effectiveResolved, activeId);
+  const totalCount = items.length;
+  const resolvedCount = items.filter((e) => effectiveResolved.has(e.id)).length;
+
+  const headerLabel =
+    resolvedCount > 0
+      ? `Findings · ${resolvedCount} of ${totalCount} resolved`
+      : `Findings · ${totalCount}`;
+
   return (
     <div className="mt-5">
       <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
-        {hasGroups ? `Up next · ${items.length} findings` : "Up next"}
+        {headerLabel}
       </p>
-      <ul>
+      <ul className="space-y-px">
         {rows.map((row) =>
-          row.kind === "grouped" ? (
-            <li key={row.type}>
-              <button
-                type="button"
-                onClick={() => onSelect(row.firstId)}
-                className="flex h-7 w-full items-center gap-2 rounded px-0.5 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-              >
-                <span
-                  className={cn(
-                    "size-1.5 shrink-0 rounded-full",
-                    DOT_TONE[EXCEPTION_META[row.type].tone] ??
-                      "bg-muted-foreground",
-                  )}
-                />
-                <span className="min-w-0 flex-1 truncate text-[13px] text-foreground">
-                  {EXCEPTION_META[row.type].label}
-                  {lineRangeLabel(row.lines) && (
-                    <span className="font-normal text-muted-foreground">
-                      {" · "}
-                      {lineRangeLabel(row.lines)}
-                    </span>
-                  )}
-                </span>
-                <Badge
-                  variant="outline"
-                  className="h-4 shrink-0 px-1.5 text-[11px] text-muted-foreground"
-                >
-                  {row.count}
-                </Badge>
-                <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
-              </button>
+          row.kind === "individual" ? (
+            <li key={row.exception.id}>
+              <FindingsIndividualRow row={row} onSelect={onSelect} />
             </li>
           ) : (
-            <li key={row.exception.id}>
-              <button
-                type="button"
-                onClick={() => onSelect(row.exception.id)}
-                className="flex h-7 w-full items-center gap-2 rounded px-0.5 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-              >
-                <span
-                  className={cn(
-                    "size-1.5 shrink-0 rounded-full",
-                    DOT_TONE[exceptionMeta(row.exception).tone] ??
-                      "bg-muted-foreground",
-                  )}
-                />
-                <span className="min-w-0 flex-1 truncate text-[13px] text-foreground">
-                  {rowSynthesis(row.exception)}
-                  {row.exception.scope.level === "line" && (
-                    <span className="font-normal text-muted-foreground">
-                      {" · "}
-                      {`Line ${row.exception.scope.line}`}
-                    </span>
-                  )}
-                </span>
-                {isNew(row.exception) && (
-                  <Badge status="info" variant="secondary" className="shrink-0">
-                    New
-                  </Badge>
-                )}
-                <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
-              </button>
+            <li key={row.type}>
+              <FindingsGroupRow
+                row={row}
+                effectiveResolved={effectiveResolved}
+                onSelect={onSelect}
+              />
             </li>
           ),
         )}
@@ -975,6 +1160,8 @@ function ExceptionStrip({
 function ExceptionGroup({
   active,
   openList,
+  nonWaitingList,
+  resolvedIdSet,
   showHeader,
   counter,
   isNew,
@@ -985,6 +1172,8 @@ function ExceptionGroup({
 }: {
   active: InvoiceException;
   openList: InvoiceException[];
+  nonWaitingList: InvoiceException[];
+  resolvedIdSet: ReadonlySet<string>;
   showHeader: boolean;
   counter: string;
   isNew: (e: InvoiceException) => boolean;
@@ -993,7 +1182,6 @@ function ExceptionGroup({
   onShowInSource: (exc: InvoiceException) => void;
   onSelect: (id: string) => void;
 }) {
-  const waiting = openList.filter((e) => e.id !== active.id);
   return (
     // Terminal node of the live rail: isLast so no connector dangles below the
     // decision area. tail + tailGrow: an open story, so the rail runs down the
@@ -1024,10 +1212,10 @@ function ExceptionGroup({
           />
         )
       ) : (
-        <ExceptionStrip
-          items={waiting}
+        <FindingsMap
+          items={nonWaitingList}
           activeId={active.id}
-          isNew={isNew}
+          resolvedIds={resolvedIdSet}
           onSelect={onSelect}
         />
       )}
@@ -1364,6 +1552,8 @@ type ResolveState = {
 function ResolvingNode({
   resolve,
   openList,
+  nonWaitingList,
+  resolvedIdSet,
   showHeader,
   counter,
   isNew,
@@ -1372,6 +1562,8 @@ function ResolvingNode({
 }: {
   resolve: ResolveState;
   openList: InvoiceException[];
+  nonWaitingList: InvoiceException[];
+  resolvedIdSet: ReadonlySet<string>;
   showHeader: boolean;
   counter: string;
   isNew: (e: InvoiceException) => boolean;
@@ -1435,10 +1627,11 @@ function ResolvingNode({
               />
             )
           ) : (
-            <ExceptionStrip
-              items={others}
-              activeId={exc.id}
-              isNew={isNew}
+            <FindingsMap
+              items={nonWaitingList}
+              activeId=""
+              resolvedIds={resolvedIdSet}
+              resolvingId={exc.id}
               onSelect={() => {}}
             />
           )}
@@ -2089,24 +2282,28 @@ export function ExceptionTimeline({
   const openList = list.filter(
     (e) => !resolvedIds.includes(e.id) && !waitingIds.includes(e.id),
   );
+  // All non-waiting findings in escalation order (open + resolved). Used by the
+  // Findings map so rows stay stable through resolves.
+  const nonWaitingList = list.filter((e) => !waitingIds.includes(e.id));
+  const resolvedIdSet: ReadonlySet<string> = new Set(resolvedIds);
   const active = openList.find((e) => e.id === activeId) ?? openList[0] ?? null;
 
   const openCount = openList.length;
   const resolvedCount = resolvedIds.length;
-  // Ordinal + total run over OPEN exceptions, matching the index numbering.
+  // Ordinal + total are over ALL non-waiting findings (fixed at escalation),
+  // matching the Findings map's stable row positions.
   const activeOrdinal = active
-    ? openList.findIndex((e) => e.id === active.id) + 1
+    ? nonWaitingList.findIndex((e) => e.id === active.id) + 1
     : 0;
-  const showHeader = openCount >= 2 || resolvedCount > 0 || waitingCount > 0;
+  const showHeader =
+    nonWaitingList.length >= 2 || resolvedCount > 0 || waitingCount > 0;
   // All actionable work is done. fullyResolved = true completion (Approve);
   // waitingDone = blocked on a routed exception (waiting terminal, no Approve).
   const allDone = !resolve && openCount === 0;
   const fullyResolved = allDone && waitingCount === 0;
   const waitingDone = allDone && waitingCount > 0;
   const counter = active
-    ? `Issue ${activeOrdinal} of ${openCount}${
-        resolvedCount > 0 ? `, ${resolvedCount} resolved` : ""
-      }${waitingCount > 0 ? `, ${waitingCount} waiting` : ""}`
+    ? `Issue ${activeOrdinal} of ${nonWaitingList.length}`
     : "";
 
   const isNew = (e: InvoiceException) =>
@@ -2830,6 +3027,8 @@ export function ExceptionTimeline({
                 <ResolvingNode
                   resolve={resolve}
                   openList={openList}
+                  nonWaitingList={nonWaitingList}
+                  resolvedIdSet={resolvedIdSet}
                   showHeader={showHeader}
                   counter={counter}
                   isNew={isNew}
@@ -2840,6 +3039,8 @@ export function ExceptionTimeline({
                 <ExceptionGroup
                   active={active}
                   openList={openList}
+                  nonWaitingList={nonWaitingList}
+                  resolvedIdSet={resolvedIdSet}
                   showHeader={showHeader}
                   counter={counter}
                   isNew={isNew}
