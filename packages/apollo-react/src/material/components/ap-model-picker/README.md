@@ -174,12 +174,12 @@ BYO management affordances — the edit row action and the "Use custom model" fo
 ```tsx
 const requestContext = React.useMemo(() => ({
   token,
+  baseUrl,                          // origin + org prefix, e.g. 'https://cloud.uipath.com/acme'
   tenantName,                       // path segment for platform routes
   tenantId,                         // tenant GUID (admin-page deep links)
   requestingProduct: 'agents',      // pre-populates the add-configuration form
   requestingFeature: 'design-eval-deploy',
-  // baseUrl: 'https://cloud.uipath.com/acme',  // omit when same-origin
-}), [token, tenantName, tenantId]);
+}), [token, baseUrl, tenantName, tenantId]);
 
 <ModelPicker models={models} requestContext={requestContext} />
 ```

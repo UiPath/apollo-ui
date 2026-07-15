@@ -731,9 +731,11 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
             aria-atomic="true"
             sx={{
               position: 'absolute',
-              width: 1,
-              height: 1,
-              margin: -1,
+              // String px values on purpose: numeric 1 means 100% in
+              // MUI's system props, not 1px.
+              width: '1px',
+              height: '1px',
+              margin: '-1px',
               padding: 0,
               overflow: 'hidden',
               clip: 'rect(0 0 0 0)',

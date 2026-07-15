@@ -367,7 +367,10 @@ function buildSubscriptionMatchers(ctx: GroupModelsContext): Array<{
       key: 'recommended',
       label: localize(GROUP_LABELS.recommended),
       hint: localize(GROUP_LABELS.recommendedHint),
-      match: (m) => isRecommended(m),
+      // Deprecating wins over Recommended/Preview: a model with a usage
+      // end date must surface in the Deprecating section (README:
+      // "Deprecating last"), whatever else the DTO says about it.
+      match: (m) => isRecommended(m) && !m.deprecationDetails?.usageEndDate,
     },
     {
       key: 'preview',
@@ -375,7 +378,7 @@ function buildSubscriptionMatchers(ctx: GroupModelsContext): Array<{
       hint: localize(GROUP_LABELS.previewHint),
       // Preview only applies to UiPath-hosted models. BYO already
       // matched above, so this branch will not see BYO models.
-      match: (m) => isPreview(m) && !isByoModel(m),
+      match: (m) => isPreview(m) && !isByoModel(m) && !m.deprecationDetails?.usageEndDate,
     },
     {
       key: 'more',

@@ -64,6 +64,26 @@ describe('groupModels (Category view ordering)', () => {
     expect(groups[0]?.key).toBe('recommended');
   });
 
+  it('Deprecating wins over Recommended and Preview for the section bucket', () => {
+    const models = [
+      model({
+        modelId: 'rec-depr',
+        modelSubscriptionType: 'UiPathOwned',
+        isRecommended: true,
+        deprecationDetails: { usageEndDate: '2026-09-01' },
+      }),
+      model({
+        modelId: 'prev-depr',
+        modelSubscriptionType: 'UiPathOwned',
+        isPreview: true,
+        deprecationDetails: { usageEndDate: '2026-09-01' },
+      }),
+    ];
+    const groups = groupModels(models, 'subscription');
+    expect(groups.map((g) => g.key)).toEqual(['deprecating']);
+    expect(groups[0]?.models.map((m) => m.modelId)).toEqual(['rec-depr', 'prev-depr']);
+  });
+
   it('Provider view places BYO first (before all vendor groups)', () => {
     const models = [
       model({ modelId: 'openai', vendor: 'OpenAi' }),

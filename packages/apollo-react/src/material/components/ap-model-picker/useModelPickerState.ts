@@ -247,7 +247,9 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setActiveIndex((i) => Math.min(i + 1, filtered.length - 1));
+        // Clamp to 0 when the list is empty so activedescendant never
+        // points at index -1.
+        setActiveIndex((i) => Math.min(i + 1, Math.max(filtered.length - 1, 0)));
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setActiveIndex((i) => Math.max(i - 1, 0));

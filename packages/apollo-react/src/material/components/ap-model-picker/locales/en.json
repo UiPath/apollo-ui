@@ -39,5 +39,7 @@
   "modelPicker.badge.costStandard.label": "Standard",
   "modelPicker.tag.substituted.tooltip": "This model is retired. Your traffic is currently being routed to {target}. Update your configuration to make this explicit.",
   "modelPicker.useCustomModel.title": "Use custom model",
-  "modelPicker.tag.deprecating.tooltip": "Will be replaced by {replacement}"
+  "modelPicker.tag.deprecating.tooltip": "Will be replaced by {replacement}",
+  "modelPicker.empty.noMatch": "No models match \"{query}\".",
+  "modelPicker.empty.noModels": "No models available."
 }

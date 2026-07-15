@@ -13,9 +13,13 @@ export interface PlatformRequestContext {
   token: string;
   /**
    * Origin + organization path segment, e.g.
-   * `https://cloud.uipath.com/acme`. Defaults to `''` (same-origin,
-   * org-implicit) — correct for portal-hosted SPAs where the app is
-   * already served under the org prefix.
+   * `https://cloud.uipath.com/acme`. The picker joins its platform
+   * routes (`{tenantName}/orchestrator_/…`, `portal_/…`) directly onto
+   * this value, so on Automation Cloud it **must include the org
+   * path** — an empty value resolves absolute from the current origin
+   * and drops the org prefix. Omit only for hosts whose platform
+   * routes live at the origin root (e.g. dedicated instances on
+   * vanity domains).
    */
   baseUrl?: string;
   /** Tenant name (path segment for Orchestrator routes). */

@@ -107,7 +107,10 @@ export function useDiscoveryModels(ctx: DiscoveryRequestContext | null): UseDisc
 function camelizeDeep(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(camelizeDeep);
   if (!value || typeof value !== 'object') return value;
-  const camel: Record<string, unknown> = {};
+  // Null prototype: hostile keys in the payload (`__proto__`,
+  // `constructor`) become plain data instead of touching the object's
+  // prototype chain. `customFieldMappings` carries user-authored keys.
+  const camel: Record<string, unknown> = Object.create(null);
   for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
     camel[k.charAt(0).toLowerCase() + k.slice(1)] = camelizeDeep(v);
   }
