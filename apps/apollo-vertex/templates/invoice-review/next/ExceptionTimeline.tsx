@@ -38,6 +38,8 @@ import {
   buildApproval,
   buildHold,
   buildResume,
+  EXCEPTION_META,
+  type ExceptionType,
   exceptionMeta,
   type Finding,
   followUpWeekday,
@@ -801,10 +803,83 @@ const DOT_TONE: Record<string, string> = {
   info: "bg-info",
 };
 
+// --- Up Next queue helpers ---------------------------------------------------
+
+type QueueGrouped = {
+  kind: "grouped";
+  type: ExceptionType;
+  firstId: string;
+  lines: number[];
+  count: number;
+};
+
+type QueueSingle = {
+  kind: "single";
+  exception: InvoiceException;
+};
+
+type QueueRow = QueueGrouped | QueueSingle;
+
+/** Build the Up Next queue rows from the waiting exceptions (active excluded).
+ *  Grouped rows sort above singles. A type needs 2+ remaining members to group;
+ *  a type with only 1 remaining member renders as a single enriched row. */
+function buildQueueRows(items: InvoiceException[]): QueueRow[] {
+  const byType = new Map<ExceptionType, InvoiceException[]>();
+  for (const e of items) {
+    const arr = byType.get(e.type) ?? [];
+    arr.push(e);
+    byType.set(e.type, arr);
+  }
+  const grouped: QueueGrouped[] = [];
+  const singles: QueueSingle[] = [];
+  for (const [type, exceptions] of byType) {
+    if (exceptions.length > 1) {
+      const lineSet = new Set<number>();
+      for (const e of exceptions) {
+        if (e.scope.level === "line") lineSet.add(e.scope.line);
+      }
+      const lines = [...lineSet].sort((a, b) => a - b);
+      grouped.push({
+        kind: "grouped",
+        type,
+        firstId: exceptions[0].id,
+        lines,
+        count: exceptions.length,
+      });
+    } else {
+      singles.push({ kind: "single", exception: exceptions[0] });
+    }
+  }
+  return [...grouped, ...singles];
+}
+
+/** Returns "Line N", "Lines N–M" (consecutive), or "Lines N, M" (non-consecutive). */
+function lineRangeLabel(lines: number[]): string | null {
+  if (lines.length === 0) return null;
+  if (lines.length === 1) return `Line ${lines[0]}`;
+  const sorted = [...lines].sort((a, b) => a - b);
+  const consecutive = sorted.every(
+    (n, i) => i === 0 || n === sorted[i - 1] + 1,
+  );
+  return consecutive
+    ? `Lines ${sorted[0]}–${sorted[sorted.length - 1]}`
+    : `Lines ${sorted.join(", ")}`;
+}
+
+/** Synthesis text for a single exception row. Falls back to type label. */
+function rowSynthesis(e: InvoiceException): string {
+  if (e.synthesis && e.synthesis.length <= 45) return e.synthesis;
+  return EXCEPTION_META[e.type].label;
+}
+
 /**
- * "Up next": a quiet, borderless preview of the open exceptions behind the live
- * one. One line each (tone dot + headline + scope + optional New tag), no
- * ordinals, no chips, no "Viewing". Lines pull an exception forward on click.
+ * "Up next": shows the remaining open exceptions at decision granularity.
+ * `items` is the waiting list (active excluded). Exceptions sharing a type
+ * collapse into one grouped row only when 2+ of that type remain; a lone
+ * survivor renders as a single enriched row. Grouped rows sort first.
+ *
+ * Header shows a finding count only when grouping compresses the display
+ * (i.e. at least one group row exists), proving nothing is hidden.
  */
 function ExceptionStrip({
   items,
@@ -812,65 +887,85 @@ function ExceptionStrip({
   isNew,
   onSelect,
 }: {
-  /** open, non-active exceptions in the standing order */
   items: InvoiceException[];
   activeId: string;
   isNew: (e: InvoiceException) => boolean;
   onSelect: (id: string) => void;
 }) {
-  if (
-    process.env.NODE_ENV !== "production" &&
-    items.some((e) => e.id === activeId)
-  ) {
-    console.error(
-      "[ExceptionStrip] the active exception must never appear in the strip:",
-      activeId,
-    );
-  }
-  if (items.length === 0) return null;
-  const capped = items.length > 4;
-  const shown = capped ? items.slice(0, 3) : items;
-  const moreCount = items.length - shown.length;
+  const rows = buildQueueRows(items);
+  if (rows.length === 0) return null;
+  const hasGroups = rows.some((r) => r.kind === "grouped");
   return (
     <div className="mt-5">
       <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
-        Up next
+        {hasGroups ? `Up next · ${items.length} findings` : "Up next"}
       </p>
       <ul>
-        {shown.map((e) => (
-          <li key={e.id}>
-            <button
-              type="button"
-              onClick={() => onSelect(e.id)}
-              className="flex h-6 w-full items-center gap-2 rounded text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-            >
-              <span
-                className={cn(
-                  "size-1.5 shrink-0 rounded-full",
-                  DOT_TONE[exceptionMeta(e).tone] ?? "bg-muted-foreground",
-                )}
-              />
-              <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">
-                {e.headline}
-              </span>
-              <span className="shrink-0 text-xs text-muted-foreground">
-                · {scopeLabel(e.scope)}
-              </span>
-              {isNew(e) && (
-                <Badge status="info" variant="secondary" className="shrink-0">
-                  New
+        {rows.map((row) =>
+          row.kind === "grouped" ? (
+            <li key={row.type}>
+              <button
+                type="button"
+                onClick={() => onSelect(row.firstId)}
+                className="flex h-7 w-full items-center gap-2 rounded px-0.5 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+              >
+                <span
+                  className={cn(
+                    "size-1.5 shrink-0 rounded-full",
+                    DOT_TONE[EXCEPTION_META[row.type].tone] ??
+                      "bg-muted-foreground",
+                  )}
+                />
+                <span className="min-w-0 flex-1 truncate text-[13px] text-foreground">
+                  {EXCEPTION_META[row.type].label}
+                  {lineRangeLabel(row.lines) && (
+                    <span className="font-normal text-muted-foreground">
+                      {" · "}
+                      {lineRangeLabel(row.lines)}
+                    </span>
+                  )}
+                </span>
+                <Badge
+                  variant="outline"
+                  className="h-4 shrink-0 px-1.5 text-[11px] text-muted-foreground"
+                >
+                  {row.count}
                 </Badge>
-              )}
-            </button>
-          </li>
-        ))}
-        {capped && moreCount > 0 && (
-          <li className="flex h-6 items-center gap-2">
-            <span className="size-1.5 shrink-0" />
-            <span className="text-[13px] text-muted-foreground">
-              …and {moreCount} more
-            </span>
-          </li>
+                <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
+              </button>
+            </li>
+          ) : (
+            <li key={row.exception.id}>
+              <button
+                type="button"
+                onClick={() => onSelect(row.exception.id)}
+                className="flex h-7 w-full items-center gap-2 rounded px-0.5 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+              >
+                <span
+                  className={cn(
+                    "size-1.5 shrink-0 rounded-full",
+                    DOT_TONE[exceptionMeta(row.exception).tone] ??
+                      "bg-muted-foreground",
+                  )}
+                />
+                <span className="min-w-0 flex-1 truncate text-[13px] text-foreground">
+                  {rowSynthesis(row.exception)}
+                  {row.exception.scope.level === "line" && (
+                    <span className="font-normal text-muted-foreground">
+                      {" · "}
+                      {`Line ${row.exception.scope.line}`}
+                    </span>
+                  )}
+                </span>
+                {isNew(row.exception) && (
+                  <Badge status="info" variant="secondary" className="shrink-0">
+                    New
+                  </Badge>
+                )}
+                <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
+              </button>
+            </li>
+          ),
         )}
       </ul>
     </div>

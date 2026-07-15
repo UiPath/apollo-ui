@@ -143,6 +143,7 @@ type ExceptionType =
   | "duplicate"
   | "missing-po"
   | "new-vendor"
+  | "qty-over-invoiced"
   | "none";
 type InvoiceStatus =
   | "pending-review"
@@ -891,6 +892,187 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       "Total: $7,620.00",
     ],
   },
+  "INV-30291": {
+    id: "INV-30291",
+    vendor: "CDW Netherlands",
+    vendorEmail: "invoicing@cdw.nl",
+    amount: "$18,400.00 USD",
+    currency: "USD",
+    dueDate: "2026-05-30",
+    dueFormatted: "May 30, 2026",
+    documentDateFormatted: "Apr 28, 2026",
+    po: "PO-820051133",
+    paymentTerms: "Net 30 · USD",
+    billTo: "Global Enterprises Inc",
+    billAddress: "800 Corporate Center, Chicago IL 60601",
+    assignee: "Peter Vachon",
+    assigneeInitials: "PV",
+    vat: "NL-851234567-B01",
+    description:
+      "IT peripherals for Q2 office refresh — docking stations, USB-C hubs, and wireless keyboards under blanket PO-820051133. Quantities on this invoice exceed the PO receipts for all three lines.",
+    exceptionTag: "Qty over-invoiced +5",
+    exceptionTagStatus: "warning",
+    exceptionHeadline: "Invoice quantities exceed goods received on all lines",
+    exceptionMetrics: [
+      { label: "Lines flagged", value: "3 of 3", cls: "text-foreground" },
+      { label: "Total billed", value: "$18,400", cls: "text-foreground" },
+    ],
+    exceptionBody:
+      "A partial goods receipt posted July 9. Quantities on all three lines exceed what was received. Hold until the remaining shipment posts, or route to receiving to confirm.",
+    exceptionPrimaryAction: "Hold until receipt",
+    exceptionSecondaryAction: "Route to receiving",
+    lines: [
+      {
+        description: "Laptop docking station",
+        qty: 12,
+        amount: "$7,080.00",
+        unitPrice: "$590.00",
+        flag: "↑ qty",
+        flagStatus: "error",
+      },
+      {
+        description: "USB-C hub, 7-port",
+        qty: 30,
+        amount: "$6,300.00",
+        unitPrice: "$210.00",
+        flag: "↑ qty",
+        flagStatus: "error",
+      },
+      {
+        description: "Wireless keyboard",
+        qty: 25,
+        amount: "$5,020.00",
+        unitPrice: "$200.80",
+        flag: "↑ qty",
+        flagStatus: "error",
+      },
+    ],
+    linesTotal: "$18,400.00",
+    linesAlert: {
+      text: "All 3 lines billed above PO receipt quantities.",
+      status: "warning",
+    },
+    sourceFilename: "INV-30291.pdf",
+    sourceLines: [
+      "INVOICE",
+      "Invoice #: INV-30291",
+      "Date: April 28, 2026",
+      "Due: May 30, 2026",
+      "---",
+      "From:",
+      "CDW Netherlands B.V.",
+      "Rendementsweg 22",
+      "Utrecht, 3641 SL",
+      "---",
+      "Bill To:",
+      "Global Enterprises Inc",
+      "800 Corporate Center",
+      "Chicago, IL 60601",
+      "---",
+      "PO: PO-820051133",
+      "---",
+      "Items:",
+      "Laptop docking station × 12 · $7,080.00",
+      "USB-C hub, 7-port × 30 · $6,300.00",
+      "Wireless keyboard × 25 · $5,020.00",
+      "---",
+      "Total: $18,400.00",
+    ],
+  },
+  "INV-30292": {
+    id: "INV-30292",
+    vendor: "Falcon Procurement",
+    vendorEmail: "ap@falconprocurement.eu",
+    amount: "€9,850.00 EUR",
+    currency: "EUR",
+    dueDate: "2026-05-31",
+    dueFormatted: "May 31, 2026",
+    documentDateFormatted: "Apr 30, 2026",
+    po: "PO-820051201",
+    paymentTerms: "Net 30 · EUR",
+    billTo: "Global Enterprises Inc",
+    billAddress: "800 Corporate Center, Chicago IL 60601",
+    assignee: "Peter Vachon",
+    assigneeInitials: "PV",
+    vat: "EU-FR-456789012",
+    description:
+      "Safety equipment restocking under PO-820051201. Lines 1 and 3 bill above PO quantities; line 4 carries a unit price above the agreed rate.",
+    exceptionTag: "Qty over-invoiced",
+    exceptionTagStatus: "warning",
+    exceptionHeadline: "Quantity and price exceptions on multiple lines",
+    exceptionMetrics: [
+      { label: "Lines flagged", value: "3 of 4", cls: "text-foreground" },
+      { label: "Total billed", value: "€9,850", cls: "text-foreground" },
+    ],
+    exceptionBody:
+      "Lines 1 and 3 bill more units than the PO authorises. Line 4 has a unit price above the agreed rate. Request corrected quantities or confirm the PO was amended.",
+    exceptionPrimaryAction: "Contact supplier",
+    exceptionSecondaryAction: "Reject invoice",
+    lines: [
+      {
+        description: "Safety gloves, nitrile",
+        qty: 40,
+        amount: "€1,850.00",
+        unitPrice: "€46.25",
+        flag: "↑ qty",
+        flagStatus: "warning",
+      },
+      {
+        description: "Hi-vis vests",
+        qty: 30,
+        amount: "€920.00",
+        unitPrice: "€30.67",
+      },
+      {
+        description: "Steel toe boots",
+        qty: 24,
+        amount: "€4,680.00",
+        unitPrice: "€195.00",
+        flag: "↑ qty",
+        flagStatus: "warning",
+      },
+      {
+        description: "Hard hats, vented",
+        qty: 50,
+        amount: "€2,400.00",
+        unitPrice: "€48.00",
+        flag: "↑ price",
+        flagStatus: "error",
+      },
+    ],
+    linesTotal: "€9,850.00",
+    linesAlert: {
+      text: "Lines 1 and 3 exceed PO qty; line 4 exceeds agreed unit price.",
+      status: "warning",
+    },
+    sourceFilename: "INV-30292.pdf",
+    sourceLines: [
+      "INVOICE",
+      "Invoice #: INV-30292",
+      "Date: April 30, 2026",
+      "Due: May 31, 2026",
+      "---",
+      "From:",
+      "Falcon Procurement S.A.S.",
+      "12 Rue de l'Industrie",
+      "Lyon, 69003",
+      "---",
+      "Bill To:",
+      "Global Enterprises Inc",
+      "800 Corporate Center",
+      "Chicago, IL 60601",
+      "---",
+      "PO: PO-820051201",
+      "---",
+      "Items:",
+      "Safety gloves, nitrile × 40 · €1,850.00",
+      "Hi-vis vests × 30 · €920.00",
+      "Steel toe boots × 24 · €4,680.00",
+      "Hard hats, vented × 50 · €2,400.00",
+      "---",
+      "Total: €9,850.00",
+    ],
+  },
 };
 
 const commsDataMap: Record<string, CommsMessage[]> = {};
@@ -913,6 +1095,8 @@ const QUEUE_DUE_GROUP: Record<string, "today" | "tomorrow"> = {
   "INV-60118": "tomorrow",
   "INV-77294": "tomorrow",
   "INV-48209": "tomorrow",
+  "INV-30291": "tomorrow",
+  "INV-30292": "tomorrow",
 };
 
 const invoicesReview: Invoice[] = invoiceReviews
@@ -1063,6 +1247,28 @@ const invoiceTableData: InvoiceTableRow[] = [
     dueDate: "2026-05-29",
     exception: "new-vendor",
     score: 4,
+    status: "pending-review",
+    assignee: "Peter Vachon",
+  },
+  {
+    id: "INV-30291",
+    vendor: "CDW Netherlands",
+    amount: 18400,
+    currency: "USD",
+    dueDate: "2026-05-30",
+    exception: "qty-over-invoiced",
+    score: 3,
+    status: "pending-review",
+    assignee: "Peter Vachon",
+  },
+  {
+    id: "INV-30292",
+    vendor: "Falcon Procurement",
+    amount: 9850,
+    currency: "EUR",
+    dueDate: "2026-05-31",
+    exception: "qty-over-invoiced",
+    score: 3,
     status: "pending-review",
     assignee: "Peter Vachon",
   },
@@ -1406,6 +1612,7 @@ const exceptionBadgeMap: Record<
   duplicate: { label: "Duplicate", status: "warning" },
   "missing-po": { label: "Missing PO", status: "error" },
   "new-vendor": { label: "New vendor", status: "info" },
+  "qty-over-invoiced": { label: "Qty over-invoiced", status: "warning" },
   none: { label: "—", status: null },
 };
 
@@ -1436,6 +1643,7 @@ const exceptionFilterOptions = [
   { label: "Duplicate", value: "duplicate" },
   { label: "Missing PO", value: "missing-po" },
   { label: "New vendor", value: "new-vendor" },
+  { label: "Qty over-invoiced", value: "qty-over-invoiced" },
   { label: "None", value: "none" },
 ];
 
@@ -1453,6 +1661,7 @@ const exceptionPriority: Partial<Record<ExceptionType, number>> = {
   "price-mismatch": 1,
   "high-value": 1,
   "new-vendor": 1,
+  "qty-over-invoiced": 2,
 };
 
 // Exception cell for known review records: the lead exception (canonical label
@@ -3229,6 +3438,7 @@ const EXCEPTION_TYPE_BY_TAG: Record<string, ExceptionType> = {
   "Missing PO": "missing-po",
   Duplicate: "duplicate",
   "New vendor": "new-vendor",
+  "Qty over-invoiced": "qty-over-invoiced",
 };
 
 // Which canonical actions Findings shows per exception type, in priority order.
@@ -3240,6 +3450,7 @@ const FINDINGS_ACTIONS: Record<ExceptionType, ActionId[]> = {
   duplicate: ["reject", "approve", "flag"],
   "missing-po": ["contact_supplier", "reject", "flag"],
   "new-vendor": ["approve", "reject", "flag"],
+  "qty-over-invoiced": ["contact_supplier", "reject", "flag"],
   none: ["approve", "flag"],
 };
 

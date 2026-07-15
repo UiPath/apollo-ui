@@ -23,6 +23,8 @@ export type ExceptionType =
   | "high-value"
   | "outside-po-period"
   | "qty-mismatch"
+  | "goods-not-received"
+  | "qty-over-invoiced"
   | "tax-mismatch"
   | "new-vendor"
   | "no-exchange-rate";
@@ -42,6 +44,8 @@ export const EXCEPTION_META: Record<
   "high-value": { label: "High value", tone: "warning" },
   "outside-po-period": { label: "Outside PO period", tone: "warning" },
   "qty-mismatch": { label: "Qty mismatch", tone: "warning" },
+  "goods-not-received": { label: "Goods not received", tone: "error" },
+  "qty-over-invoiced": { label: "Quantity over-invoiced", tone: "warning" },
   "tax-mismatch": { label: "Tax mismatch", tone: "warning" },
   "new-vendor": { label: "New vendor", tone: "info" },
   "no-exchange-rate": { label: "No exchange rate", tone: "info" },
@@ -135,6 +139,8 @@ export interface InvoiceException {
   /** canonical type; label + tone come from EXCEPTION_META */
   type: ExceptionType;
   headline: string;
+  /** Up Next synthesis: what's wrong + magnitude, ≤45 chars. Falls back to type label when absent or too long. */
+  synthesis?: string;
   finding: Finding;
   /** [0] = primary resolution; empty = judgment call (no fix, resolve via header) */
   suggestions: Suggestion[];
@@ -185,6 +191,8 @@ export interface InvoiceReview {
   exceptions: InvoiceException[];
   /** what a re-check reports for this invoice; consumed once, then deduped */
   revalidation?: { cleared: string[]; surfaced: InvoiceException[] };
+  /** seam for the rollup card (section C): present only when a single root cause explains all findings */
+  rootCause?: { summary: string; secondaryLine: string; poReceiptDate: string };
 }
 
 /** A supplier email drafted and sent as the confirmation step of a supplier
@@ -630,7 +638,7 @@ export function suggestionLabel(s: Suggestion): string {
     case "retry":
       return "Retry extraction";
     case "wait":
-      return "Hold for rate";
+      return (s.data.label as string) ?? "Hold for rate";
     default:
       return "Resolve";
   }
@@ -694,6 +702,7 @@ const ACME_PRICE_LINE2: InvoiceException = {
   id: "exc-acme-price-l2",
   type: "price-mismatch",
   headline: "Unit price is 12% above PO-5123 on line 2",
+  synthesis: "Unit price $144 above PO rate",
   scope: { level: "line", line: 2 },
   origin: "revalidation",
   status: "open",
@@ -730,6 +739,7 @@ const ACME_TAX: InvoiceException = {
   id: "exc-acme-tax",
   type: "tax-mismatch",
   headline: "Tax on the invoice doesn't match the PO tax code",
+  synthesis: "Tax $122 above PO code (6% vs 5%)",
   scope: { level: "invoice" },
   origin: "revalidation",
   status: "open",
@@ -778,6 +788,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-missing-po",
         type: "missing-po",
         headline: "Facility supplies submitted without a purchase order",
+        synthesis: "Facility supplies submitted without a PO",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
@@ -831,6 +842,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-po-period",
         type: "outside-po-period",
         headline: "Invoice date falls outside the PO's valid window",
+        synthesis: "Invoice date fell outside PO window Apr 30",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
@@ -867,7 +879,10 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           shortLabel: "date corrected",
         },
       },
-      highValueException("55832", "€22,500.00"),
+      {
+        ...highValueException("55832", "€22,500.00"),
+        synthesis: "Total €22,500 exceeds auto-approve limit",
+      },
     ],
   },
 
@@ -887,6 +902,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-vat",
         type: "vat-mismatch",
         headline: "VAT number does not match the supplier record",
+        synthesis: "VAT on invoice doesn't match vendor record",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
@@ -918,7 +934,10 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           { type: "route", data: { owner: "Vendor data owner" } },
         ],
       },
-      highValueException("66216", "$65,800.00"),
+      {
+        ...highValueException("66216", "$65,800.00"),
+        synthesis: "Total $65,800 exceeds auto-approve limit",
+      },
     ],
   },
 
@@ -938,6 +957,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-billing-account",
         type: "billing-account",
         headline: "Billing account on this invoice doesn't exist in NetSuite",
+        synthesis: "Billing account not found in NetSuite",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
@@ -971,6 +991,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-60118-missing-po",
         type: "missing-po",
         headline: "No purchase order linked to this invoice",
+        synthesis: "No PO linked to this invoice",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
@@ -1003,7 +1024,8 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
       {
         id: "exc-60118-qty",
         type: "qty-mismatch",
-        headline: "Quantity billed exceeds goods received on line 5",
+        headline: "Quantity billed exceeds goods received",
+        synthesis: "Quantity billed exceeds goods received",
         scope: { level: "line", line: 5 },
         origin: "initial",
         status: "open",
@@ -1040,7 +1062,411 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
     revalidation: { cleared: [], surfaced: [] },
   },
 
-  // 5. No exchange rate (lead) + High value (waiting).
+  // 5. Grouped state: 8 line-scoped findings across two types — goods-not-received (3) + qty-over-invoiced (5).
+  "INV-30291": {
+    id: "INV-30291",
+    supplier: "CDW Netherlands",
+    vendorEmail: "ap@cdw.nl",
+    amount: "$18,400.00 USD",
+    due: "May 30, 2026",
+    poPill: { label: "PO-820051133", tone: "neutral" },
+    purchaseOrder: "PO-820051133",
+    assignee: REVIEWER,
+    status: "pending-review",
+    agentHistory: DEFAULT_AGENT_HISTORY,
+    rootCause: {
+      summary:
+        "All 3 lines bill more than was received. The PO shows a partial delivery on July 9; remaining goods appear to be in transit.",
+      secondaryLine:
+        "Holding until the next receipt posts resolves all 8 findings if quantities match.",
+      poReceiptDate: "July 9, 2026",
+    },
+    exceptions: [
+      {
+        id: "exc-30291-gnr-1",
+        type: "goods-not-received",
+        headline: "Line 1 billed but no goods receipt found",
+        synthesis: "No goods receipt found",
+        scope: { level: "line", line: 1 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "single",
+          items: [
+            {
+              label: "Receipt status",
+              value: "Not received",
+              tone: "warn",
+              provenance: "GRN",
+            },
+          ],
+        },
+        suggestions: [
+          {
+            type: "wait",
+            data: { label: "Hold until receipt" },
+            reasoning:
+              "Goods are in transit; a receipt is expected by end of week.",
+          },
+          {
+            type: "route",
+            data: { owner: "Receiving", label: "Route to data owner" },
+          },
+        ],
+        resolution: {
+          label: "Held for receipt",
+          sub: "Goods not received, resolved by you",
+          shortLabel: "held for receipt",
+        },
+      },
+      {
+        id: "exc-30291-gnr-2",
+        type: "goods-not-received",
+        headline: "Line 2 billed but no goods receipt found",
+        synthesis: "No goods receipt found",
+        scope: { level: "line", line: 2 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "single",
+          items: [
+            {
+              label: "Receipt status",
+              value: "Not received",
+              tone: "warn",
+              provenance: "GRN",
+            },
+          ],
+        },
+        suggestions: [
+          { type: "wait", data: { label: "Hold until receipt" } },
+          {
+            type: "route",
+            data: { owner: "Receiving", label: "Route to data owner" },
+          },
+        ],
+        resolution: {
+          label: "Held for receipt",
+          sub: "Goods not received, resolved by you",
+          shortLabel: "held for receipt",
+        },
+      },
+      {
+        id: "exc-30291-gnr-3",
+        type: "goods-not-received",
+        headline: "Line 3 billed but no goods receipt found",
+        synthesis: "No goods receipt found",
+        scope: { level: "line", line: 3 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "single",
+          items: [
+            {
+              label: "Receipt status",
+              value: "Not received",
+              tone: "warn",
+              provenance: "GRN",
+            },
+          ],
+        },
+        suggestions: [
+          { type: "wait", data: { label: "Hold until receipt" } },
+          {
+            type: "route",
+            data: { owner: "Receiving", label: "Route to data owner" },
+          },
+        ],
+        resolution: {
+          label: "Held for receipt",
+          sub: "Goods not received, resolved by you",
+          shortLabel: "held for receipt",
+        },
+      },
+      {
+        id: "exc-30291-qoi-1",
+        type: "qty-over-invoiced",
+        headline: "Quantity on line 1 exceeds the PO amount",
+        synthesis: "Billed 2 units above PO",
+        scope: { level: "line", line: 1 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "compare",
+          sides: [
+            {
+              label: "Billed",
+              value: "12 units",
+              provenance: "INV-30291 line 1",
+              tone: "warn",
+              inspectable: true,
+            },
+            { label: "PO qty", value: "10 units", provenance: "PO-820051133" },
+          ],
+        },
+        suggestions: [
+          { type: "suggest_correction", data: { label: "Adjust to 10 units" } },
+          { type: "suggest_supplier", data: {} },
+        ],
+        resolution: {
+          label: "Quantity adjusted",
+          sub: "Quantity over-invoiced, resolved by you",
+          shortLabel: "quantity adjusted",
+        },
+      },
+      {
+        id: "exc-30291-qoi-2",
+        type: "qty-over-invoiced",
+        headline: "Quantity on line 2 exceeds the PO amount",
+        synthesis: "Billed 5 units above PO",
+        scope: { level: "line", line: 2 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "compare",
+          sides: [
+            {
+              label: "Billed",
+              value: "30 units",
+              provenance: "INV-30291 line 2",
+              tone: "warn",
+              inspectable: true,
+            },
+            { label: "PO qty", value: "25 units", provenance: "PO-820051133" },
+          ],
+        },
+        suggestions: [
+          { type: "suggest_correction", data: { label: "Adjust to 25 units" } },
+          { type: "suggest_supplier", data: {} },
+        ],
+        resolution: {
+          label: "Quantity adjusted",
+          sub: "Quantity over-invoiced, resolved by you",
+          shortLabel: "quantity adjusted",
+        },
+      },
+      {
+        id: "exc-30291-qoi-2t",
+        type: "qty-over-invoiced",
+        headline: "Line 2 quantity also exceeds the 5% tolerance band",
+        synthesis: "Billed 20% above PO tolerance",
+        scope: { level: "line", line: 2 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "single",
+          items: [
+            {
+              label: "Tolerance",
+              value: "+20% (5% allowed)",
+              tone: "warn",
+              provenance: "PO-820051133 terms",
+            },
+          ],
+        },
+        suggestions: [{ type: "verify", data: {} }],
+        resolution: {
+          label: "Tolerance reviewed",
+          sub: "Quantity over-invoiced, resolved by you",
+          shortLabel: "tolerance reviewed",
+        },
+      },
+      {
+        id: "exc-30291-qoi-3",
+        type: "qty-over-invoiced",
+        headline: "Quantity on line 3 exceeds the PO amount",
+        synthesis: "Billed 5 units above PO",
+        scope: { level: "line", line: 3 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "compare",
+          sides: [
+            {
+              label: "Billed",
+              value: "25 units",
+              provenance: "INV-30291 line 3",
+              tone: "warn",
+              inspectable: true,
+            },
+            { label: "PO qty", value: "20 units", provenance: "PO-820051133" },
+          ],
+        },
+        suggestions: [
+          { type: "suggest_correction", data: { label: "Adjust to 20 units" } },
+          { type: "suggest_supplier", data: {} },
+        ],
+        resolution: {
+          label: "Quantity adjusted",
+          sub: "Quantity over-invoiced, resolved by you",
+          shortLabel: "quantity adjusted",
+        },
+      },
+      {
+        id: "exc-30291-qoi-3t",
+        type: "qty-over-invoiced",
+        headline: "Line 3 quantity also exceeds the 5% tolerance band",
+        synthesis: "Billed 25% above PO tolerance",
+        scope: { level: "line", line: 3 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "single",
+          items: [
+            {
+              label: "Tolerance",
+              value: "+25% (5% allowed)",
+              tone: "warn",
+              provenance: "PO-820051133 terms",
+            },
+          ],
+        },
+        suggestions: [{ type: "verify", data: {} }],
+        resolution: {
+          label: "Tolerance reviewed",
+          sub: "Quantity over-invoiced, resolved by you",
+          shortLabel: "tolerance reviewed",
+        },
+      },
+    ],
+  },
+
+  // 7. Hybrid state: qty-over-invoiced (3, grouped) + price-mismatch (1, fallback — no synthesis).
+  "INV-30292": {
+    id: "INV-30292",
+    supplier: "Falcon Procurement",
+    vendorEmail: "ap@falconprocurement.com",
+    amount: "€9,850.00 EUR",
+    due: "May 31, 2026",
+    poPill: { label: "PO-820051201", tone: "neutral" },
+    purchaseOrder: "PO-820051201",
+    assignee: REVIEWER,
+    status: "pending-review",
+    agentHistory: DEFAULT_AGENT_HISTORY,
+    exceptions: [
+      {
+        id: "exc-30292-qoi-1",
+        type: "qty-over-invoiced",
+        headline: "Quantity on line 1 exceeds the PO amount",
+        synthesis: "Line 1 billed 8 units above PO",
+        scope: { level: "line", line: 1 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "compare",
+          sides: [
+            {
+              label: "Billed",
+              value: "18 units",
+              provenance: "INV-30292 line 1",
+              tone: "warn",
+              inspectable: true,
+            },
+            { label: "PO qty", value: "10 units", provenance: "PO-820051201" },
+          ],
+        },
+        suggestions: [
+          { type: "suggest_correction", data: { label: "Adjust to 10 units" } },
+          { type: "suggest_supplier", data: {} },
+        ],
+        resolution: {
+          label: "Quantity adjusted",
+          sub: "Quantity over-invoiced, resolved by you",
+          shortLabel: "quantity adjusted",
+        },
+      },
+      {
+        id: "exc-30292-qoi-3",
+        type: "qty-over-invoiced",
+        headline: "Quantity on line 3 exceeds the PO amount",
+        synthesis: "Line 3 billed 5 units above PO",
+        scope: { level: "line", line: 3 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "compare",
+          sides: [
+            {
+              label: "Billed",
+              value: "15 units",
+              provenance: "INV-30292 line 3",
+              tone: "warn",
+              inspectable: true,
+            },
+            { label: "PO qty", value: "10 units", provenance: "PO-820051201" },
+          ],
+        },
+        suggestions: [
+          { type: "suggest_correction", data: { label: "Adjust to 10 units" } },
+          { type: "suggest_supplier", data: {} },
+        ],
+        resolution: {
+          label: "Quantity adjusted",
+          sub: "Quantity over-invoiced, resolved by you",
+          shortLabel: "quantity adjusted",
+        },
+      },
+      {
+        id: "exc-30292-qoi-3t",
+        type: "qty-over-invoiced",
+        headline: "Line 3 quantity also exceeds the 5% tolerance band",
+        synthesis: "Line 3 tolerance breach: +50%",
+        scope: { level: "line", line: 3 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "single",
+          items: [
+            {
+              label: "Tolerance",
+              value: "+50% (5% allowed)",
+              tone: "warn",
+              provenance: "PO-820051201 terms",
+            },
+          ],
+        },
+        suggestions: [{ type: "verify", data: {} }],
+        resolution: {
+          label: "Tolerance reviewed",
+          sub: "Quantity over-invoiced, resolved by you",
+          shortLabel: "tolerance reviewed",
+        },
+      },
+      {
+        id: "exc-30292-price-4",
+        type: "price-mismatch",
+        // No synthesis — exercises the Up Next fallback (renders type label instead).
+        headline: "Unit price on line 4 does not match the PO rate",
+        scope: { level: "line", line: 4 },
+        origin: "initial",
+        status: "open",
+        finding: {
+          type: "compare",
+          sides: [
+            {
+              label: "Invoiced",
+              value: "€142.00",
+              provenance: "INV-30292 line 4",
+              tone: "warn",
+              inspectable: true,
+            },
+            { label: "PO rate", value: "€130.00", provenance: "PO-820051201" },
+          ],
+        },
+        suggestions: [
+          { type: "suggest_correction", data: { label: "Adjust to €130.00" } },
+          { type: "suggest_supplier", data: {} },
+        ],
+        resolution: {
+          label: "Price adjusted",
+          sub: "Price mismatch on line 4, resolved by you",
+          shortLabel: "price adjusted",
+        },
+      },
+    ],
+  },
+
+  // 8. No exchange rate (lead) + High value (waiting).
   "INV-91003": {
     id: "INV-91003",
     supplier: "NorthStar LLC",
@@ -1056,6 +1482,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-fx",
         type: "no-exchange-rate",
         headline: "No GBP to USD rate available for the invoice date",
+        synthesis: "No GBP/USD rate available for May 28",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
@@ -1079,7 +1506,10 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           { type: "retry", data: {} },
         ],
       },
-      highValueException("91003", "£8,750.00"),
+      {
+        ...highValueException("91003", "£8,750.00"),
+        synthesis: "Total £8,750 exceeds auto-approve limit",
+      },
     ],
   },
 
@@ -1099,6 +1529,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-price",
         type: "price-mismatch",
         headline: "USB hub invoiced above the agreed price",
+        synthesis: "USB hub invoiced $4.84 above PO",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
@@ -1148,6 +1579,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-dup",
         type: "duplicate",
         headline: "Invoice number was already paid",
+        synthesis: "Invoice number was already paid Apr 2",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
@@ -1189,6 +1621,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-newvendor",
         type: "new-vendor",
         headline: "First invoice from an unverified vendor",
+        synthesis: "Vendor not yet in the approved master list",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
