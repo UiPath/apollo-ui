@@ -34,10 +34,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   FileUpload,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
   Input,
   Label,
   MetadataForm,
   MultiSelect,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   ScrollableTabsList,
   Select,
   SelectContent,
@@ -80,6 +86,7 @@ import {
   GitFork,
   Globe,
   GripVertical,
+  MoreVertical,
   MousePointerClick,
   Pencil,
   Play,
@@ -2767,18 +2774,27 @@ function FormButtonChip({
   label,
   onLabelChange,
   variant,
+  onVariantChange,
   onDelete,
 }: {
   label: string;
   onLabelChange: (label: string) => void;
   variant: 'default' | 'outline';
+  onVariantChange: (variant: 'default' | 'outline') => void;
   onDelete: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="group/button relative">
+    <div
+      className={cn(
+        'group/button flex h-8 items-stretch overflow-hidden rounded-lg text-sm font-semibold transition',
+        variant === 'default'
+          ? 'bg-brand text-foreground-on-accent'
+          : 'border border-border-subtle text-foreground'
+      )}
+    >
       {editing ? (
         <input
           ref={inputRef}
@@ -2790,12 +2806,7 @@ function FormButtonChip({
           }}
           autoFocus
           size={Math.max(label.length, 4)}
-          className={cn(
-            'h-8 rounded-lg px-3 text-sm font-semibold outline-none ring-1 ring-brand',
-            variant === 'default'
-              ? 'bg-brand text-foreground-on-accent'
-              : 'border border-border-subtle bg-transparent text-foreground'
-          )}
+          className="bg-transparent px-3 outline-none"
         />
       ) : (
         <button
@@ -2805,24 +2816,63 @@ function FormButtonChip({
             setTimeout(() => inputRef.current?.select(), 0);
           }}
           className={cn(
-            'flex h-8 items-center rounded-lg px-4 text-sm font-semibold transition',
-            variant === 'default'
-              ? 'bg-brand text-foreground-on-accent hover:bg-brand-hover'
-              : 'border border-border-subtle text-foreground hover:bg-surface-overlay'
+            'px-4 transition',
+            variant === 'default' ? 'hover:bg-brand-hover' : 'hover:bg-surface-overlay'
           )}
         >
           {label}
         </button>
       )}
-      <button
-        type="button"
-        onClick={onDelete}
-        aria-label="Delete button"
-        title="Delete button"
-        className="absolute -right-1.5 -top-1.5 grid size-4 place-items-center rounded-full bg-surface-overlay text-foreground-subtle opacity-0 shadow transition hover:text-foreground group-hover/button:opacity-100"
-      >
-        <X size={10} />
-      </button>
+      <Popover>
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Edit button"
+                  className={cn(
+                    'grid w-0 shrink-0 place-items-center overflow-hidden px-0 opacity-0 transition-all duration-200 group-hover/button:w-8 group-hover/button:px-2 group-hover/button:opacity-100 aria-expanded:w-8 aria-expanded:px-2 aria-expanded:opacity-100',
+                    variant === 'default' ? 'hover:bg-brand-hover' : 'hover:bg-surface-overlay'
+                  )}
+                >
+                  <Pencil size={12} className="shrink-0" />
+                </button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Edit button</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <PopoverContent align="start" className="w-48 space-y-3">
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-foreground-muted">Type</span>
+            <ToggleGroup
+              type="single"
+              value={variant}
+              onValueChange={(value) => {
+                if (value) onVariantChange(value as 'default' | 'outline');
+              }}
+              className="w-full"
+            >
+              <ToggleGroupItem value="default" className="flex-1 text-xs">
+                Primary
+              </ToggleGroupItem>
+              <ToggleGroupItem value="outline" className="flex-1 text-xs">
+                Secondary
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          <div className="h-px bg-border-subtle" />
+          <button
+            type="button"
+            onClick={onDelete}
+            className="flex w-full items-center gap-1.5 rounded-lg px-1.5 py-1 text-xs text-destructive transition hover:bg-destructive/10"
+          >
+            <X size={12} />
+            Delete button
+          </button>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
@@ -2993,6 +3043,7 @@ function QuickFormStory() {
   const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
   const nextIdRef = useRef(4);
   const [formView, setFormView] = useState<'edit' | 'preview' | 'json'>('edit');
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('Quick Approve');
   const [formDescription, setFormDescription] = useState('Add a description');
   const [editingFormTitle, setEditingFormTitle] = useState(false);
@@ -3140,52 +3191,67 @@ function QuickFormStory() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-foreground-muted">Quick form</span>
-                  <TooltipProvider delayDuration={300}>
+                  <div className="flex items-center gap-2">
+                    <Popover open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <PopoverTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label="More options"
+                                className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground aria-expanded:bg-surface-overlay aria-expanded:text-foreground"
+                              >
+                                <MoreVertical size={14} />
+                              </button>
+                            </PopoverTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>More options</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <PopoverContent align="end" className="w-64 space-y-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormView('preview');
+                            setMoreMenuOpen(false);
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-foreground transition hover:bg-surface-overlay"
+                        >
+                          <Eye size={14} className="text-foreground-subtle" />
+                          Preview
+                        </button>
+                        <div className="h-px bg-border-subtle" />
+                        <div className="space-y-1.5">
+                          <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                            <Sparkles size={12} className="text-brand" />
+                            Describe the form you want
+                          </span>
+                          <Textarea
+                            rows={3}
+                            placeholder="e.g. An invoice approval form with amount and due date"
+                            className="resize-none text-sm"
+                          />
+                          <Button size="sm" className="w-full">
+                            Generate
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                     <ToggleGroup
                       type="single"
                       size="xs"
-                      spacing={2}
-                      value={formView}
-                      onValueChange={(v) => v && setFormView(v as 'edit' | 'preview' | 'json')}
+                      value={formView === 'json' ? 'json' : formView === 'edit' ? 'edit' : ''}
+                      onValueChange={(v) => v && setFormView(v as 'edit' | 'json')}
                     >
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <ToggleGroupItem
-                            value="edit"
-                            aria-label="Edit"
-                            className="!size-7 !rounded-lg !border-none !px-0 text-foreground-subtle transition hover:!bg-surface-overlay hover:!text-foreground data-[state=on]:!bg-surface-overlay data-[state=on]:!text-brand"
-                          >
-                            <Pencil size={12} />
-                          </ToggleGroupItem>
-                        </TooltipTrigger>
-                        <TooltipContent>Edit</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <ToggleGroupItem
-                            value="preview"
-                            aria-label="Preview"
-                            className="!size-7 !rounded-lg !border-none !px-0 text-foreground-subtle transition hover:!bg-surface-overlay hover:!text-foreground data-[state=on]:!bg-surface-overlay data-[state=on]:!text-brand"
-                          >
-                            <Eye size={12} />
-                          </ToggleGroupItem>
-                        </TooltipTrigger>
-                        <TooltipContent>Preview</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <ToggleGroupItem
-                            value="json"
-                            aria-label="JSON"
-                            className="!size-7 !rounded-lg !border-none !px-0 text-foreground-subtle transition hover:!bg-surface-overlay hover:!text-foreground data-[state=on]:!bg-surface-overlay data-[state=on]:!text-brand"
-                          >
-                            <Code2 size={12} />
-                          </ToggleGroupItem>
-                        </TooltipTrigger>
-                        <TooltipContent>JSON</TooltipContent>
-                      </Tooltip>
+                      <ToggleGroupItem value="edit" className="!px-2.5 !text-xs">
+                        UI
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="json" className="!px-2.5 !text-xs">
+                        JSON
+                      </ToggleGroupItem>
                     </ToggleGroup>
-                  </TooltipProvider>
+                  </div>
                 </div>
                 <Card>
                   <CardContent className="flex flex-col gap-4 p-4">
@@ -3196,21 +3262,28 @@ function QuickFormStory() {
                         className="hidden"
                         onChange={() => {}}
                       />
-                      <TooltipProvider delayDuration={300}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              onClick={() => fileInputRef.current?.click()}
-                              aria-label="Upload a file"
-                              className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle transition hover:bg-surface-overlay/70 hover:text-foreground [&>svg]:size-5"
-                            >
-                              <Upload />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent>Upload a reference file for this form</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <HoverCard openDelay={300}>
+                        <HoverCardTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            aria-label="Upload a file"
+                            className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle transition hover:bg-surface-overlay/70 hover:text-foreground [&>svg]:size-5"
+                          >
+                            <Upload />
+                          </button>
+                        </HoverCardTrigger>
+                        <HoverCardContent align="start" className="w-56 space-y-1.5">
+                          <p className="text-xs font-semibold text-foreground">Upload form logo</p>
+                          <p className="text-xs text-foreground-muted">
+                            Images are automatically resized to fit the logo area.
+                          </p>
+                          <div className="space-y-0.5 text-[11px] text-foreground-subtle">
+                            <div>Type: PNG, JPG, SVG</div>
+                            <div>Size: 512 × 512 px</div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
                       <div className="flex min-w-0 flex-1 flex-col justify-center">
                         {editingFormTitle ? (
                           <input
@@ -3328,6 +3401,7 @@ function QuickFormStory() {
                                 label={b.label}
                                 onLabelChange={(label) => updateButton(b.id, { label })}
                                 variant={b.variant}
+                                onVariantChange={(variant) => updateButton(b.id, { variant })}
                                 onDelete={() => deleteButton(b.id)}
                               />
                             ))}
@@ -3450,6 +3524,15 @@ function QuickFormStory() {
                             </div>
                           );
                         })}
+                        {buttons.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-2">
+                            {buttons.map((b) => (
+                              <Button key={b.id} variant={b.variant}>
+                                {b.label}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                     {formView === 'json' && (
@@ -3510,7 +3593,6 @@ function FormHitlReviewStory() {
       <PanelFrame>
         <NodePropertyPanel
           panelTitle="Properties"
-          nodeIcon={<UserRoundCheck />}
           nodeLabel="Quick Approve"
           nodeCategory="Review the extracted invoice details, then approve or reject."
           action={<ApproveRejectActions />}
