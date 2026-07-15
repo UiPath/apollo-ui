@@ -10,9 +10,15 @@ vi.mock('../../utils/icon-registry', () => ({
 }));
 
 vi.mock('@uipath/apollo-wind', () => ({
-  Spinner: ({ className, style }: { className?: string; style?: CSSProperties }) => (
-    <span className={className} data-testid="spinner" style={style} />
-  ),
+  Spinner: ({
+    className,
+    style,
+    label,
+  }: {
+    className?: string;
+    style?: CSSProperties;
+    label?: string;
+  }) => <span className={className} data-label={label} data-testid="spinner" style={style} />,
 }));
 
 describe('ExecutionStatusIcon', () => {
@@ -21,6 +27,7 @@ describe('ExecutionStatusIcon', () => {
 
     const spinner = screen.getByTestId('spinner');
     expect(spinner.className).toContain('[&>svg]:text-[color:var(--color-info-icon)]');
+    expect(spinner).toHaveAttribute('data-label', 'In progress');
   });
 
   it('renders UserCancelled with the cancelled glyph and info color', () => {

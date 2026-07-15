@@ -1,5 +1,6 @@
 import { Spinner } from '@uipath/apollo-wind';
 import { useMemo } from 'react';
+import { useSafeLingui } from '../../../i18n';
 import { CanvasIcon } from '../../utils/icon-registry';
 
 export function getExecutionStatusColor(status: string | undefined): string {
@@ -61,15 +62,17 @@ export function ExecutionStatusIcon({
     | string;
   size?: number;
 }) {
+  const { _ } = useSafeLingui();
+
   return useMemo(() => {
     const color = getExecutionStatusColor(status);
 
     switch (status) {
       case 'InProgress':
-        // Spinner colors its inner icon muted-grey by default, so force the info color onto it.
         return (
           <Spinner
             size="sm"
+            label={_({ id: 'stage-node.status.in-progress', message: 'In progress' })}
             className="[&>svg]:text-[color:var(--color-info-icon)]"
             style={{ backgroundColor: 'transparent', width: size, height: size }}
           />
@@ -94,5 +97,5 @@ export function ExecutionStatusIcon({
       default:
         return null;
     }
-  }, [status, size]);
+  }, [status, size, _]);
 }
