@@ -186,6 +186,7 @@
     "@lexical/table": "0.42.0",
     "@lexical/utils": "0.42.0",
     "@lingui/core": "^5.6.1",
+    "@lingui/message-utils": "^5.6.1",
     "@lingui/react": "^5.6.1",
     "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.18.0",
