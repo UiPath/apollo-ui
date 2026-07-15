@@ -66,9 +66,11 @@ export function ExecutionStatusIcon({
 
     switch (status) {
       case 'InProgress':
+        // Spinner colors its inner icon muted-grey by default, so force the info color onto it.
         return (
           <Spinner
             size="sm"
+            className="[&>svg]:text-[color:var(--color-info-icon)]"
             style={{ backgroundColor: 'transparent', width: size, height: size }}
           />
         );

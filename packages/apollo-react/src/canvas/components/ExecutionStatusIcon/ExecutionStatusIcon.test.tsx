@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import type { CSSProperties } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { ExecutionStatusIcon, getExecutionStatusColor } from './ExecutionStatusIcon';
 
@@ -9,10 +10,19 @@ vi.mock('../../utils/icon-registry', () => ({
 }));
 
 vi.mock('@uipath/apollo-wind', () => ({
-  Spinner: () => <span data-testid="spinner" />,
+  Spinner: ({ className, style }: { className?: string; style?: CSSProperties }) => (
+    <span className={className} data-testid="spinner" style={style} />
+  ),
 }));
 
 describe('ExecutionStatusIcon', () => {
+  it('renders InProgress as an info-colored spinner', () => {
+    render(<ExecutionStatusIcon status="InProgress" size={20} />);
+
+    const spinner = screen.getByTestId('spinner');
+    expect(spinner.className).toContain('[&>svg]:text-[color:var(--color-info-icon)]');
+  });
+
   it('renders UserCancelled with the cancelled glyph and info color', () => {
     render(<ExecutionStatusIcon status="UserCancelled" size={20} />);
 
