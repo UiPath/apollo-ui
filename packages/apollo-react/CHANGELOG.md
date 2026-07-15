@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v4.60.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.59.3...@uipath/apollo-react@4.60.0) (2026-07-15)
+
+### Features
+
+* **apollo-react:** add LayersArrowUpRightIcon for Read Entity node ([083add1](https://github.com/UiPath/apollo-ui/commit/083add1f3d1ae2e0ca11539f622da931d59ed006))
+
+### Bug Fixes
+
+* **apollo-react:** harden layers-arrow-up-right icon per review ([f0d0123](https://github.com/UiPath/apollo-ui/commit/f0d01230e019a8743b3639f2d16f37dc7af14148))
+
 ## [@uipath/apollo-react-v4.59.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.59.2...@uipath/apollo-react@4.59.3) (2026-07-14)
 
 ### Bug Fixes
