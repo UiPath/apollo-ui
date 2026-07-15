@@ -31,6 +31,7 @@ import {
 } from '@uipath/apollo-wind';
 import {
   Asterisk,
+  Braces,
   Calendar as CalendarIcon,
   ChevronDown,
   Code2,
@@ -173,6 +174,8 @@ export interface LockableValueFieldProps {
   compact?: boolean;
   /** Whether the field-type, AI-assist, and insert-variable controls are always shown or only on hover. Defaults to 'visible'. */
   controlsVisibility?: 'visible' | 'hover';
+  /** Whether the AI-assist and Insert-variable actions render at all. Set to false for read-only reviewer contexts where field configuration isn't editable. Defaults to true. */
+  showFieldActions?: boolean;
   id?: string;
   className?: string;
 }
@@ -212,6 +215,7 @@ export function LockableValueField({
   headerActions,
   compact,
   controlsVisibility = 'visible',
+  showFieldActions = true,
   id,
   className,
 }: LockableValueFieldProps) {
@@ -355,58 +359,65 @@ export function LockableValueField({
                   </div>
                 </>
               )}
-              <Popover>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <PopoverTrigger asChild>
+              {showFieldActions && (
+                <>
+                  <Popover>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label="AI assist"
+                            className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                          >
+                            <Sparkles size={12} />
+                          </button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Generate with AI</TooltipContent>
+                    </Tooltip>
+                    <PopoverContent align="end" className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label
+                          htmlFor={promptId}
+                          className="text-xs font-medium text-foreground-muted"
+                        >
+                          Describe what you want
+                        </Label>
+                        <Textarea
+                          id={promptId}
+                          rows={3}
+                          placeholder="Display a value from the previous step"
+                          className="resize-none text-sm"
+                        />
+                      </div>
+                      <span className="block text-[11px] text-foreground-subtle">
+                        Output: String expression
+                      </span>
+                      <Button size="sm" className="w-full">
+                        Generate
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
                       <button
                         type="button"
-                        aria-label="AI assist"
-                        className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                        aria-label="Insert variable"
+                        className={cn(
+                          'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                          collapsedPaddingClass
+                        )}
                       >
-                        <Sparkles size={12} />
+                        <Braces size={12} />
+                        <span className={collapsedTextClass}>Insert</span>
+                        <ChevronDown size={9} className={collapsedTextClass} />
                       </button>
-                    </PopoverTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>Generate with AI</TooltipContent>
-                </Tooltip>
-                <PopoverContent align="end" className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor={promptId} className="text-xs font-medium text-foreground-muted">
-                      Describe what you want
-                    </Label>
-                    <Textarea
-                      id={promptId}
-                      rows={3}
-                      placeholder="Display a value from the previous step"
-                      className="resize-none text-sm"
-                    />
-                  </div>
-                  <span className="block text-[11px] text-foreground-subtle">
-                    Output: String expression
-                  </span>
-                  <Button size="sm" className="w-full">
-                    Generate
-                  </Button>
-                </PopoverContent>
-              </Popover>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="Insert variable"
-                    className={cn(
-                      'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                      collapsedPaddingClass
-                    )}
-                  >
-                    <span className="font-mono text-[10px]">{'{x}'}</span>
-                    <span className={collapsedTextClass}>Insert</span>
-                    <ChevronDown size={9} className={collapsedTextClass} />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>Insert</TooltipContent>
-              </Tooltip>
+                    </TooltipTrigger>
+                    <TooltipContent>Insert</TooltipContent>
+                  </Tooltip>
+                </>
+              )}
             </div>
             {headerActions}
           </div>
@@ -421,7 +432,9 @@ export function LockableValueField({
                 <InputGroupButton
                   icon
                   size="3xs"
-                  aria-label={locked ? 'Locked. Click to unlock.' : 'Unlocked. Click to lock.'}
+                  aria-label={
+                    locked ? 'Read-only. Click to make editable.' : 'Editable. Click to make read-only.'
+                  }
                 >
                   {locked ? <Lock /> : <LockOpen />}
                 </InputGroupButton>
@@ -442,7 +455,7 @@ export function LockableValueField({
                         !locked ? 'text-brand' : 'text-foreground'
                       )}
                     >
-                      Unlocked
+                      Editable
                     </span>
                   </div>
                   <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
@@ -461,7 +474,7 @@ export function LockableValueField({
                         locked ? 'text-brand' : 'text-foreground'
                       )}
                     >
-                      Locked
+                      Read-only
                     </span>
                   </div>
                   <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
@@ -539,7 +552,7 @@ export function LockableValueField({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <InputGroupButton icon size="3xs" aria-label="Choose value type">
-                  <typeMeta.icon />
+                  {effectiveMode === 'expression' ? <Code2 /> : <Type />}
                 </InputGroupButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -548,7 +561,7 @@ export function LockableValueField({
                   onClick={() => onModeChange?.('fixed')}
                 >
                   <div className="flex items-center gap-2">
-                    <typeMeta.icon
+                    <Type
                       size={13}
                       className={effectiveMode === 'fixed' ? 'text-brand' : 'text-foreground-muted'}
                     />
@@ -600,7 +613,9 @@ export function LockableValueField({
               <InputGroupButton
                 icon
                 size="3xs"
-                aria-label={locked ? 'Locked. Click to unlock.' : 'Unlocked. Click to lock.'}
+                aria-label={
+                  locked ? 'Read-only. Click to make editable.' : 'Editable. Click to make read-only.'
+                }
               >
                 {locked ? <Lock /> : <LockOpen />}
               </InputGroupButton>
@@ -621,7 +636,7 @@ export function LockableValueField({
                       !locked ? 'text-brand' : 'text-foreground'
                     )}
                   >
-                    Unlocked
+                    Editable
                   </span>
                 </div>
                 <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
@@ -637,7 +652,7 @@ export function LockableValueField({
                   <span
                     className={cn('text-xs font-medium', locked ? 'text-brand' : 'text-foreground')}
                   >
-                    Locked
+                    Read-only
                   </span>
                 </div>
                 <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">

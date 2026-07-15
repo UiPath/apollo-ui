@@ -27,29 +27,21 @@ import {
   Card,
   CardContent,
   cn,
-  DatePicker,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  FileUpload,
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
   Input,
   Label,
   MetadataForm,
-  MultiSelect,
   Popover,
   PopoverContent,
   PopoverTrigger,
   ScrollableTabsList,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Switch,
   Tabs,
   TabsContent,
@@ -81,13 +73,10 @@ import {
   CircleOff,
   Code2,
   Copy,
-  Eye,
   FileBracesCorner,
   GitFork,
   Globe,
   GripVertical,
-  Link2,
-  MoreVertical,
   MousePointerClick,
   Pencil,
   Play,
@@ -103,12 +92,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { LockableFieldType, LockableValueFieldMode } from './LockableValueField';
-import {
-  DEMO_SELECT_OPTIONS,
-  FIELD_TYPE_META,
-  LockableValueField,
-  parseListValue,
-} from './LockableValueField';
+import { FIELD_TYPE_META, LockableValueField } from './LockableValueField';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
 // @monaco-editor/react uses a CJS build without an `exports` field, which
@@ -2730,7 +2714,11 @@ function LockableCaseRow({
               onClick={onDelete}
               aria-label="Delete field"
               title="Delete field"
-              className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-overlay hover:text-foreground group-hover:opacity-100"
+              className={cn(
+                'grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                controlsVisibility === 'hover' &&
+                  'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+              )}
             >
               <X size={12} />
             </button>
@@ -2945,7 +2933,8 @@ function LockableValueFieldShowcase({
         {showcaseDetailsExpanded && (
           <ul className="flex list-disc flex-col gap-1.5 pl-4 pt-1 text-xs leading-4 text-foreground-muted">
             <li>
-              Left lock icon toggles Unlocked / Locked. Locked fields are read-only, not disabled.
+              Left lock icon toggles Editable / Read-only. Read-only fields show plain text, not a
+              disabled control.
             </li>
             <li>
               Right value-mode icon switches between Fixed value and Expression, updating the value
@@ -3000,6 +2989,19 @@ function LockableValueFieldShowcase({
               {showcaseRequired && <span className="ml-0.5 text-destructive">*</span>}
             </Label>
           }
+          headerActions={
+            <button
+              type="button"
+              aria-label="Close field"
+              className={cn(
+                'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                controlsVisibility === 'hover' &&
+                  'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+              )}
+            >
+              <X size={14} />
+            </button>
+          }
           value={showcaseValue}
           onValueChange={setShowcaseValue}
           locked={showcaseLocked}
@@ -3025,6 +3027,19 @@ function LockableValueFieldShowcase({
                 {showcaseRequired && <span className="ml-0.5 text-destructive">*</span>}
               </Label>
             }
+            headerActions={
+              <button
+                type="button"
+                aria-label="Close field"
+                className={cn(
+                  'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                  controlsVisibility === 'hover' &&
+                    'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+                )}
+              >
+                <X size={14} />
+              </button>
+            }
             value={showcaseValue}
             onValueChange={setShowcaseValue}
             locked={showcaseLocked}
@@ -3046,44 +3061,18 @@ function LockableValueFieldShowcase({
 function QuickFormStory() {
   const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
   const nextIdRef = useRef(4);
-  const [formView, setFormView] = useState<'edit' | 'preview' | 'json'>('edit');
-  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('Quick Approve');
   const [formDescription, setFormDescription] = useState('Add a description');
   const [editingFormTitle, setEditingFormTitle] = useState(false);
   const [editingFormDescription, setEditingFormDescription] = useState(false);
   const formTitleRef = useRef<HTMLInputElement>(null);
   const formDescriptionRef = useRef<HTMLInputElement>(null);
-  const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(DEFAULT_LOCKABLE_CASES, null, 2));
-  const [jsonError, setJsonError] = useState<string | null>(null);
   const [showcaseControlsVisibility, setShowcaseControlsVisibility] = useState<'visible' | 'hover'>(
-    'hover'
+    'visible'
   );
   const [buttons, setButtons] = useState<FormButtonItem[]>(DEFAULT_FORM_BUTTONS);
   const nextButtonIdRef = useRef(3);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (formView !== 'json') {
-      setJsonDraft(JSON.stringify(cases, null, 2));
-      setJsonError(null);
-    }
-  }, [cases, formView]);
-
-  const handleJsonChange = (value: string) => {
-    setJsonDraft(value);
-    try {
-      const parsed = JSON.parse(value);
-      if (!Array.isArray(parsed)) {
-        setJsonError('Expected a JSON array of fields.');
-        return;
-      }
-      setCases(parsed);
-      setJsonError(null);
-    } catch {
-      setJsonError('Invalid JSON.');
-    }
-  };
 
   const addCaseWithType = (fieldType: LockableFieldType) => {
     const id = nextIdRef.current++;
@@ -3195,80 +3184,38 @@ function QuickFormStory() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-foreground-muted">Quick form</span>
-                  <div className="flex items-center gap-2">
-                    <Popover open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
-                      <TooltipProvider delayDuration={300}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <PopoverTrigger asChild>
-                              <button
-                                type="button"
-                                aria-label="More options"
-                                className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground aria-expanded:bg-surface-overlay aria-expanded:text-foreground"
-                              >
-                                <MoreVertical size={14} />
-                              </button>
-                            </PopoverTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent>More options</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <PopoverContent align="end" className="w-64 space-y-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFormView('preview');
-                            setMoreMenuOpen(false);
-                          }}
-                          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-foreground transition hover:bg-surface-overlay"
-                        >
-                          <Eye size={14} className="text-foreground-subtle" />
-                          Preview
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard.writeText(
-                              `${window.location.origin}/forms/quick-approve`
-                            );
-                            setMoreMenuOpen(false);
-                          }}
-                          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-foreground transition hover:bg-surface-overlay"
-                        >
-                          <Link2 size={14} className="text-foreground-subtle" />
-                          Get URL
-                        </button>
-                        <div className="h-px bg-border-subtle" />
-                        <div className="space-y-1.5">
-                          <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-                            <Sparkles size={12} className="text-brand" />
-                            Describe the form you want
-                          </span>
-                          <Textarea
-                            rows={3}
-                            placeholder="e.g. An invoice approval form with amount and due date"
-                            className="resize-none text-sm"
-                          />
-                          <Button size="sm" className="w-full">
-                            Generate
-                          </Button>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                    <ToggleGroup
-                      type="single"
-                      size="xs"
-                      value={formView === 'json' ? 'json' : formView === 'edit' ? 'edit' : ''}
-                      onValueChange={(v) => v && setFormView(v as 'edit' | 'json')}
-                    >
-                      <ToggleGroupItem value="edit" className="!px-2.5 !text-xs">
-                        UI
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="json" className="!px-2.5 !text-xs">
-                        JSON
-                      </ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
+                  <Popover>
+                    <TooltipProvider delayDuration={300}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label="Generate with AI"
+                              className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground aria-expanded:bg-surface-overlay aria-expanded:text-foreground"
+                            >
+                              <Sparkles size={14} />
+                            </button>
+                          </PopoverTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>Generate with AI</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <PopoverContent align="end" className="w-64 space-y-1.5">
+                      <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                        <Sparkles size={12} className="text-brand" />
+                        Describe the form you want
+                      </span>
+                      <Textarea
+                        rows={3}
+                        placeholder="e.g. An invoice approval form with amount and due date"
+                        className="resize-none text-sm"
+                      />
+                      <Button size="sm" className="w-full">
+                        Generate
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <Card>
                   <CardContent className="flex flex-col gap-4 p-4">
@@ -3354,231 +3301,91 @@ function QuickFormStory() {
                         )}
                       </div>
                     </div>
-                    {formView === 'edit' && (
-                      <>
-                        <DndContext
-                          sensors={sensors}
-                          collisionDetection={closestCenter}
-                          onDragStart={handleDragStart}
-                          onDragOver={handleDragOver}
-                          onDragEnd={handleDragEnd}
-                          onDragCancel={handleDragCancel}
-                        >
-                          <SortableContext
-                            items={cases.map((c) => c.id)}
-                            strategy={verticalListSortingStrategy}
-                          >
-                            <div className="flex flex-col gap-4">
-                              {cases.map((c, index) => {
-                                const activeIndex = cases.findIndex((x) => x.id === activeDragId);
-                                const isOver =
-                                  activeDragId != null &&
-                                  overDragId === c.id &&
-                                  c.id !== activeDragId;
-                                return (
-                                  <LockableCaseRow
-                                    key={c.id}
-                                    id={c.id}
-                                    caseTitle={c.title}
-                                    onTitleChange={(title) => updateCase(c.id, { title })}
-                                    required={c.required}
-                                    onRequiredChange={(required) => updateCase(c.id, { required })}
-                                    onDelete={() => deleteCase(c.id)}
-                                    value={c.value}
-                                    onValueChange={(value) => updateCase(c.id, { value })}
-                                    locked={c.locked}
-                                    onLockedChange={(locked) => updateCase(c.id, { locked })}
-                                    mode={c.mode}
-                                    onModeChange={(mode) => updateCase(c.id, { mode })}
-                                    fieldType={c.fieldType}
-                                    compact
-                                    onFieldTypeChange={(fieldType) =>
-                                      updateCaseFieldType(c.id, fieldType)
-                                    }
-                                    controlsVisibility={showcaseControlsVisibility}
-                                    insertBefore={isOver && activeIndex > index}
-                                    insertAfter={isOver && activeIndex < index}
-                                  />
-                                );
-                              })}
-                            </div>
-                          </SortableContext>
-                          {createPortal(
-                            <DragOverlay>
-                              {activeCase ? <FieldDragOverlay caseItem={activeCase} /> : null}
-                            </DragOverlay>,
-                            document.body
-                          )}
-                        </DndContext>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
-                            >
-                              <Plus size={12} />
-                              Add field
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="w-44">
-                            <DropdownMenuItem onClick={() => addCaseWithType('string')}>
-                              <Type className="text-foreground-muted" />
-                              <span>Add field</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={addButton}>
-                              <MousePointerClick className="text-foreground-muted" />
-                              <span>Add button</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        {buttons.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-2">
-                            {buttons.map((b) => (
-                              <FormButtonChip
-                                key={b.id}
-                                label={b.label}
-                                onLabelChange={(label) => updateButton(b.id, { label })}
-                                variant={b.variant}
-                                onVariantChange={(variant) => updateButton(b.id, { variant })}
-                                onDelete={() => deleteButton(b.id)}
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragStart={handleDragStart}
+                      onDragOver={handleDragOver}
+                      onDragEnd={handleDragEnd}
+                      onDragCancel={handleDragCancel}
+                    >
+                      <SortableContext
+                        items={cases.map((c) => c.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="flex flex-col gap-4">
+                          {cases.map((c, index) => {
+                            const activeIndex = cases.findIndex((x) => x.id === activeDragId);
+                            const isOver =
+                              activeDragId != null && overDragId === c.id && c.id !== activeDragId;
+                            return (
+                              <LockableCaseRow
+                                key={c.id}
+                                id={c.id}
+                                caseTitle={c.title}
+                                onTitleChange={(title) => updateCase(c.id, { title })}
+                                required={c.required}
+                                onRequiredChange={(required) => updateCase(c.id, { required })}
+                                onDelete={() => deleteCase(c.id)}
+                                value={c.value}
+                                onValueChange={(value) => updateCase(c.id, { value })}
+                                locked={c.locked}
+                                onLockedChange={(locked) => updateCase(c.id, { locked })}
+                                mode={c.mode}
+                                onModeChange={(mode) => updateCase(c.id, { mode })}
+                                fieldType={c.fieldType}
+                                compact
+                                onFieldTypeChange={(fieldType) =>
+                                  updateCaseFieldType(c.id, fieldType)
+                                }
+                                controlsVisibility={showcaseControlsVisibility}
+                                insertBefore={isOver && activeIndex > index}
+                                insertAfter={isOver && activeIndex < index}
                               />
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    )}
-                    {formView === 'preview' && (
-                      <div className="flex flex-col gap-4">
-                        {cases.map((c) => {
-                          const isExpression =
-                            FIELD_TYPE_META[c.fieldType].supportsExpression &&
-                            c.mode === 'expression';
-                          // Locked fields are read-only, not disabled — shown as plain,
-                          // selectable text instead of a greyed-out interactive control.
-                          const lockedDisplayValue =
-                            c.fieldType === 'boolean'
-                              ? c.value === 'true'
-                                ? 'True'
-                                : 'False'
-                              : c.fieldType === 'date'
-                                ? c.value
-                                  ? new Date(c.value).toLocaleDateString(undefined, {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric',
-                                    })
-                                  : ''
-                                : c.fieldType === 'single-select'
-                                  ? (DEMO_SELECT_OPTIONS.find((option) => option.value === c.value)
-                                      ?.label ?? '')
-                                  : c.fieldType === 'multi-select'
-                                    ? parseListValue(c.value)
-                                        .map(
-                                          (v) =>
-                                            DEMO_SELECT_OPTIONS.find((option) => option.value === v)
-                                              ?.label ?? v
-                                        )
-                                        .join(', ')
-                                    : c.value;
-                          return (
-                            <div key={c.id} className="flex flex-col gap-1.5">
-                              <Label
-                                htmlFor={`preview-${c.id}`}
-                                className="text-xs font-medium text-foreground-muted"
-                              >
-                                {c.title}
-                                {c.required && <span className="ml-0.5 text-destructive">*</span>}
-                              </Label>
-                              {isExpression ? (
-                                <Input
-                                  id={`preview-${c.id}`}
-                                  readOnly={c.locked}
-                                  value={c.value}
-                                  onChange={(e) => updateCase(c.id, { value: e.target.value })}
-                                  placeholder="Enter an expression"
-                                  className="font-mono"
-                                />
-                              ) : c.locked ? (
-                                <Input id={`preview-${c.id}`} readOnly value={lockedDisplayValue} />
-                              ) : c.fieldType === 'boolean' ? (
-                                <Switch
-                                  id={`preview-${c.id}`}
-                                  checked={c.value === 'true'}
-                                  onCheckedChange={(checked) =>
-                                    updateCase(c.id, { value: String(checked) })
-                                  }
-                                />
-                              ) : c.fieldType === 'date' ? (
-                                <DatePicker
-                                  value={c.value ? new Date(c.value) : undefined}
-                                  onValueChange={(date) =>
-                                    updateCase(c.id, { value: date ? date.toISOString() : '' })
-                                  }
-                                />
-                              ) : c.fieldType === 'single-select' ? (
-                                <Select
-                                  value={c.value || undefined}
-                                  onValueChange={(value) => updateCase(c.id, { value })}
-                                >
-                                  <SelectTrigger id={`preview-${c.id}`}>
-                                    <SelectValue placeholder="Select an option" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {DEMO_SELECT_OPTIONS.map((option) => (
-                                      <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              ) : c.fieldType === 'multi-select' ? (
-                                <MultiSelect
-                                  options={DEMO_SELECT_OPTIONS}
-                                  selected={parseListValue(c.value)}
-                                  onChange={(selected) =>
-                                    updateCase(c.id, { value: JSON.stringify(selected) })
-                                  }
-                                  placeholder="Select options..."
-                                />
-                              ) : c.fieldType === 'file' ? (
-                                <FileUpload
-                                  onFilesChange={(files) =>
-                                    updateCase(c.id, { value: files.map((f) => f.name).join(', ') })
-                                  }
-                                />
-                              ) : (
-                                <Input
-                                  id={`preview-${c.id}`}
-                                  type={c.fieldType === 'integer' ? 'number' : 'text'}
-                                  value={c.value}
-                                  onChange={(e) => updateCase(c.id, { value: e.target.value })}
-                                  placeholder="Enter a value"
-                                />
-                              )}
-                            </div>
-                          );
-                        })}
-                        {buttons.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-2">
-                            {buttons.map((b) => (
-                              <Button key={b.id} variant={b.variant}>
-                                {b.label}
-                              </Button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {formView === 'json' && (
-                      <div className="flex flex-col gap-1.5">
-                        <Textarea
-                          value={jsonDraft}
-                          onChange={(e) => handleJsonChange(e.target.value)}
-                          rows={14}
-                          spellCheck={false}
-                          className="resize-none font-mono text-xs"
-                        />
-                        {jsonError && <span className="text-xs text-destructive">{jsonError}</span>}
+                            );
+                          })}
+                        </div>
+                      </SortableContext>
+                      {createPortal(
+                        <DragOverlay>
+                          {activeCase ? <FieldDragOverlay caseItem={activeCase} /> : null}
+                        </DragOverlay>,
+                        document.body
+                      )}
+                    </DndContext>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                        >
+                          <Plus size={12} />
+                          Add field
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-44">
+                        <DropdownMenuItem onClick={() => addCaseWithType('string')}>
+                          <Type className="text-foreground-muted" />
+                          <span>Add field</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={addButton}>
+                          <MousePointerClick className="text-foreground-muted" />
+                          <span>Add button</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    {buttons.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {buttons.map((b) => (
+                          <FormButtonChip
+                            key={b.id}
+                            label={b.label}
+                            onLabelChange={(label) => updateButton(b.id, { label })}
+                            variant={b.variant}
+                            onVariantChange={(variant) => updateButton(b.id, { variant })}
+                            onDelete={() => deleteButton(b.id)}
+                          />
+                        ))}
                       </div>
                     )}
                   </CardContent>
@@ -3617,7 +3424,7 @@ export const QuickForm: Story = {
 
 function FormHitlReviewStory() {
   const [cases, setCases] = useState<LockableCase[]>(REVIEW_LOCKABLE_CASES);
-  const [controlsVisibility, setControlsVisibility] = useState<'visible' | 'hover'>('hover');
+  const [controlsVisibility, setControlsVisibility] = useState<'visible' | 'hover'>('visible');
 
   const updateCase = (id: number, patch: Partial<LockableCase>) =>
     setCases((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
@@ -3691,8 +3498,7 @@ function FormHitlReviewStory() {
                           onModeChange={(mode) => updateCase(c.id, { mode })}
                           fieldType={c.fieldType}
                           required={c.required}
-                          onRequiredChange={(required) => updateCase(c.id, { required })}
-                          controlsVisibility={controlsVisibility}
+                          showFieldActions={false}
                         />
                       ))}
                     </div>
