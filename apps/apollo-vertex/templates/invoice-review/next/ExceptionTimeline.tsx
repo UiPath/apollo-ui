@@ -2332,9 +2332,12 @@ export function ExceptionTimeline({
   }, [active?.id]);
 
   // Sync cursor to the runtime so Details panel can highlight the active line row.
+  // runtime intentionally omitted: it changes every time cursorMap updates, which
+  // would re-trigger this effect → setCursor → new cursorMap → infinite loop.
   useEffect(() => {
     runtime.setCursor(review.id, active?.id);
-  }, [active?.id, review.id, runtime]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active?.id, review.id]);
 
   // Cancel auto-follow the moment the reviewer scrolls the column themselves
   // (wheel, touch, keys, or a scrollbar drag detected outside a programmatic
