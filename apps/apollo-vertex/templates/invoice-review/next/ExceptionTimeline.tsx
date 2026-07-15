@@ -2331,6 +2331,11 @@ export function ExceptionTimeline({
     });
   }, [active?.id]);
 
+  // Sync cursor to the runtime so Details panel can highlight the active line row.
+  useEffect(() => {
+    runtime.setCursor(review.id, active?.id);
+  }, [active?.id, review.id, runtime]);
+
   // Cancel auto-follow the moment the reviewer scrolls the column themselves
   // (wheel, touch, keys, or a scrollbar drag detected outside a programmatic
   // scroll window).
