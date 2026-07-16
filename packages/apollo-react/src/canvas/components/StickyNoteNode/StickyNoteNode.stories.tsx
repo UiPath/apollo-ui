@@ -175,7 +175,12 @@ function parseMediaTitle(title?: string): MediaMetadata | null {
     title
       .split(';')
       .slice(1)
-      .map((part) => part.split('='))
+      .flatMap((part): [string, string][] => {
+        const separatorIndex = part.indexOf('=');
+        if (separatorIndex <= 0 || separatorIndex === part.length - 1) return [];
+
+        return [[part.slice(0, separatorIndex), part.slice(separatorIndex + 1)]];
+      })
   );
   const kind = values.kind;
   const layout = values.layout;
