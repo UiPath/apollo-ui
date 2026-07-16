@@ -48,13 +48,12 @@ export interface ByomDetails {
   defaultModel?: string;
   customFieldMappings?: Record<string, string> | null;
   /**
-   * Id of the `ByoProductLlmConfiguration` this model belongs to — the
-   * `:id` route segment of the AI Trust Layer LLM-configurations edit
-   * page. Not served by Discovery yet (backend follow-up); when
-   * absent, the picker's edit affordance falls back to the
-   * configurations list page.
+   * Id of the BYO configuration this model belongs to — the `:id`
+   * route segment of the AI Trust Layer LLM-configurations edit page.
+   * When absent (older gateways), the picker's edit affordance falls
+   * back to the configurations list page.
    */
-  productLlmConfigurationId?: string;
+  byoConfigurationId?: string;
 }
 
 export interface ModelCostDetails {
