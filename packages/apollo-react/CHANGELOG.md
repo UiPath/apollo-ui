@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.63.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.62.1...@uipath/apollo-react@4.63.0) (2026-07-16)
+
+### Features
+
+* **apollo-react:** add mcp canvas icon ([97b6ca5](https://github.com/UiPath/apollo-ui/commit/97b6ca5bf81381e7a41b295ab44589ae1653f2d2))
+
 ## [@uipath/apollo-react-v4.62.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.62.0...@uipath/apollo-react@4.62.1) (2026-07-16)
 
 ### Bug Fixes
