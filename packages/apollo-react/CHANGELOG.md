@@ -1,3 +1,22 @@
+## [@uipath/apollo-react-v4.61.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.60.0...@uipath/apollo-react@4.61.0) (2026-07-16)
+
+### Features
+
+* **apollo-react:** add ModelPicker Material component ([389ac24](https://github.com/UiPath/apollo-ui/commit/389ac24491831c37deb24a9887a4acdd8c7b9d65))
+* **apollo-react:** Apollo badge pool for ModelPicker product badges ([9963f89](https://github.com/UiPath/apollo-ui/commit/9963f89e95430c9749acff1bf07ebee7fb61c5db))
+* **apollo-react:** display names are Discovery-only in ModelPicker ([0c14a15](https://github.com/UiPath/apollo-ui/commit/0c14a157351a17e918a68f8e99030dab4d6969d6))
+* **apollo-react:** ModelPicker display names from the Discovery DTO ([6457737](https://github.com/UiPath/apollo-ui/commit/64577378962081ee4b206a26aaae5645ae2d1ff3))
+* **apollo-react:** org-admin gating + LLM-configurations navigation in ModelPicker ([3eb7953](https://github.com/UiPath/apollo-ui/commit/3eb7953a83454543b554225f11620296c6186f29))
+
+### Bug Fixes
+
+* **apollo-react:** address Copilot review findings on ModelPicker ([3389509](https://github.com/UiPath/apollo-ui/commit/33895098e3f7e99f789f99d01e2704f232fa44d0))
+* **apollo-react:** make ModelPicker render without Node globals or a MUI theme ([675b40e](https://github.com/UiPath/apollo-ui/commit/675b40e4c98b509bc17040da71a0579d6facf86b))
+* **apollo-react:** no Preview chip for models served through BYO connections ([5cf3c16](https://github.com/UiPath/apollo-ui/commit/5cf3c1622a211ad292ae576d9cdeddae9dd2d00f))
+* **apollo-react:** product-neutral Recommended copy in ModelPicker ([cbb9528](https://github.com/UiPath/apollo-ui/commit/cbb9528e05f14213df7a35c357b1518ec88af269))
+* **apollo-react:** resolve outstanding review findings in ModelPicker ([ebed392](https://github.com/UiPath/apollo-ui/commit/ebed3923129028ac5f1e14a388b17c0e98f9a91f))
+* **apollo-react:** theme-independent text color for folder menu items ([5a71e24](https://github.com/UiPath/apollo-ui/commit/5a71e24f0ba5b7c864ee9c569bd1d5b080ac0464))
+
 ## [@uipath/apollo-react-v4.60.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.59.3...@uipath/apollo-react@4.60.0) (2026-07-15)
 
 ### Features
