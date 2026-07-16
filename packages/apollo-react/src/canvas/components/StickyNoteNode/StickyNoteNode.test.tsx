@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockDeleteElements, mockUpdateNodeData } = vi.hoisted(() => ({
@@ -37,6 +37,10 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
 }));
 
 import { StickyNoteNode, type StickyNoteNodeProps } from './StickyNoteNode';
+import type {
+  StickyNoteEditorActionContext,
+  StickyNoteFormattingAction,
+} from './StickyNoteNode.types';
 
 const defaultProps: StickyNoteNodeProps = {
   id: 'sticky-note-1',
@@ -57,7 +61,7 @@ const defaultProps: StickyNoteNodeProps = {
 };
 
 function renderStickyNoteNode(props: Partial<StickyNoteNodeProps> = {}) {
-  render(<StickyNoteNode {...defaultProps} {...props} />);
+  return render(<StickyNoteNode {...defaultProps} {...props} />);
 }
 
 function startEditing() {
@@ -140,6 +144,111 @@ describe('StickyNoteNode resize lifecycle', () => {
     fireEvent.change(textarea, { target: { value: 'Discard this edit' } });
     fireEvent.keyDown(textarea, { key: 'Escape' });
 
+    expect(onContentChange).not.toHaveBeenCalled();
+    expect(mockUpdateNodeData).not.toHaveBeenCalled();
+  });
+});
+
+describe('StickyNoteNode editor extensions', () => {
+  it('renders custom content and lets an editor action commit the captured selection once', () => {
+    let editorContext: StickyNoteEditorActionContext | undefined;
+    const onContentChange = vi.fn();
+    const formattingActions: readonly StickyNoteFormattingAction[] = [
+      {
+        id: 'embed-media',
+        label: 'Embed media',
+        icon: <span aria-hidden="true">M</span>,
+        onAction: (context) => {
+          editorContext = context;
+        },
+      },
+    ];
+
+    renderStickyNoteNode({
+      data: { color: 'yellow', content: 'BeforeAfter' },
+      onContentChange,
+      formattingActions,
+      renderMarkdown: (content) => <span>Custom: {content}</span>,
+    });
+
+    expect(screen.getByText('Custom: BeforeAfter')).toBeInTheDocument();
+
+    fireEvent.doubleClick(screen.getByText('Custom: BeforeAfter'));
+    const editor = screen.getByRole<HTMLTextAreaElement>('textbox');
+    fireEvent.change(editor, { target: { value: 'Before draft After' } });
+    editor.setSelectionRange(12, 12);
+    fireEvent.click(screen.getByRole('button', { name: 'Embed media' }));
+
+    expect(editorContext?.selection).toEqual({
+      value: 'Before draft After',
+      selectionStart: 12,
+      selectionEnd: 12,
+    });
+    expect(editorContext?.currentValue()).toBe('Before draft After');
+    expect(onContentChange).not.toHaveBeenCalled();
+
+    act(() => {
+      editorContext?.commit({
+        value: 'Before draft media After',
+        selectionStart: 18,
+        selectionEnd: 18,
+      });
+      editorContext?.commit({
+        value: 'A second commit must be ignored',
+        selectionStart: 0,
+        selectionEnd: 0,
+      });
+    });
+
+    expect(onContentChange).toHaveBeenCalledOnce();
+    expect(onContentChange).toHaveBeenCalledWith('Before draft media After');
+    expect(mockUpdateNodeData).toHaveBeenCalledOnce();
+    expect(mockUpdateNodeData).toHaveBeenCalledWith('sticky-note-1', {
+      content: 'Before draft media After',
+    });
+    expect(editor).toHaveValue('Before draft media After');
+  });
+
+  it('reads and resumes with externally updated content after the editor loses focus', () => {
+    let editorContext: StickyNoteEditorActionContext | undefined;
+    const onContentChange = vi.fn();
+    const formattingActions: readonly StickyNoteFormattingAction[] = [
+      {
+        id: 'embed-media',
+        label: 'Embed media',
+        icon: <span aria-hidden="true">M</span>,
+        onAction: (context) => {
+          editorContext = context;
+        },
+      },
+    ];
+
+    const view = renderStickyNoteNode({
+      data: { color: 'yellow', content: 'Original' },
+      onContentChange,
+      formattingActions,
+    });
+
+    fireEvent.doubleClick(screen.getByText('Original'));
+    const editor = screen.getByRole<HTMLTextAreaElement>('textbox');
+    fireEvent.change(editor, { target: { value: 'Draft' } });
+    editor.setSelectionRange(5, 5);
+    fireEvent.click(screen.getByRole('button', { name: 'Embed media' }));
+
+    fireEvent.blur(editor);
+    view.rerender(
+      <StickyNoteNode
+        {...defaultProps}
+        data={{ color: 'yellow', content: 'Externally updated' }}
+        onContentChange={onContentChange}
+        formattingActions={formattingActions}
+      />
+    );
+
+    expect(editorContext?.currentValue()).toBe('Externally updated');
+    act(() => editorContext?.resume());
+
+    expect(screen.getByRole('textbox')).toHaveValue('Externally updated');
     expect(onContentChange).not.toHaveBeenCalled();
     expect(mockUpdateNodeData).not.toHaveBeenCalled();
   });

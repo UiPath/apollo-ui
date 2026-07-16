@@ -4,7 +4,7 @@ import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { ResizeDragEvent, ResizeParams } from '@uipath/apollo-react/canvas/xyflow/system';
 import { AnimatePresence } from 'motion/react';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
@@ -36,9 +36,14 @@ import {
   stickyNoteGlobalStyles,
   TopCornerIndicators,
 } from './StickyNoteNode.styles';
-import type { StickyNoteColor, StickyNoteData, TextSelection } from './StickyNoteNode.types';
+import type {
+  StickyNoteColor,
+  StickyNoteData,
+  StickyNoteFormattingAction,
+  TextSelection,
+} from './StickyNoteNode.types';
 import { STICKY_NOTE_COLORS, withAlpha } from './StickyNoteNode.types';
-import { preserveNewlines } from './StickyNoteNode.utils';
+import { preserveNewlines, readTextSelection } from './StickyNoteNode.utils';
 import { useMarkdownShortcuts } from './useMarkdownShortcuts';
 import { useScrollCapture } from './useScrollCapture';
 
@@ -52,6 +57,8 @@ export interface StickyNoteNodeProps extends NodeProps {
   onResize?: (width: number, height: number) => void;
   onResizeStart?: () => void;
   onResizeEnd?: () => void;
+  formattingActions?: readonly StickyNoteFormattingAction[];
+  renderMarkdown?: (content: string) => ReactNode;
 }
 
 const minWidth = GRID_SPACING * 8;
@@ -70,6 +77,8 @@ const StickyNoteNodeComponent = ({
   onResize,
   onResizeStart,
   onResizeEnd,
+  formattingActions = [],
+  renderMarkdown,
 }: StickyNoteNodeProps) => {
   const { _ } = useSafeLingui();
   const { updateNodeData, deleteElements } = useReactFlow();
@@ -78,6 +87,7 @@ const StickyNoteNodeComponent = ({
   const [isResizing, setIsResizing] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [localContent, setLocalContent] = useState(data.content || '');
+  const latestContentRef = useRef(localContent);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const skipBlurRef = useRef<string | null>(null);
   const { ref: markdownRef, scrollCaptureProps } = useScrollCapture();
@@ -94,9 +104,14 @@ const StickyNoteNodeComponent = ({
   const color = STICKY_NOTE_COLORS[colorKey] ?? STICKY_NOTE_COLORS.yellow;
   const colorWithAlpha = withAlpha(color);
 
+  const updateLocalContent = useCallback((content: string) => {
+    latestContentRef.current = content;
+    setLocalContent(content);
+  }, []);
+
   useEffect(() => {
-    setLocalContent(data.content || '');
-  }, [data.content]);
+    updateLocalContent(data.content || '');
+  }, [data.content, updateLocalContent]);
 
   // Handle autoFocus - focus textarea when entering edit mode
   useEffect(() => {
@@ -119,9 +134,9 @@ const StickyNoteNodeComponent = ({
   useEffect(() => {
     if (readOnly) {
       setIsEditing(false);
-      setLocalContent(data.content || '');
+      updateLocalContent(data.content || '');
     }
-  }, [readOnly, data.content]);
+  }, [readOnly, data.content, updateLocalContent]);
 
   const handleDoubleClick = useCallback(() => {
     if (readOnly || isEditing) return;
@@ -150,21 +165,75 @@ const StickyNoteNodeComponent = ({
     }
   }, [id, localContent, data.content, updateNodeData, onContentChange, readOnly]);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    skipBlurRef.current = null;
-    setLocalContent(e.target.value);
-  }, []);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      skipBlurRef.current = null;
+      updateLocalContent(e.target.value);
+    },
+    [updateLocalContent]
+  );
 
-  const handleFormat = useCallback((result: TextSelection) => {
-    setLocalContent(result.value);
-    setActiveFormats(detectActiveFormats(result));
-    requestAnimationFrame(() => {
-      if (textAreaRef.current) {
-        textAreaRef.current.selectionStart = result.selectionStart;
-        textAreaRef.current.selectionEnd = result.selectionEnd;
-      }
-    });
-  }, []);
+  const handleFormat = useCallback(
+    (result: TextSelection) => {
+      updateLocalContent(result.value);
+      setActiveFormats(detectActiveFormats(result));
+      requestAnimationFrame(() => {
+        if (textAreaRef.current) {
+          textAreaRef.current.selectionStart = result.selectionStart;
+          textAreaRef.current.selectionEnd = result.selectionEnd;
+        }
+      });
+    },
+    [updateLocalContent]
+  );
+
+  const handleFormattingAction = useCallback(
+    (action: StickyNoteFormattingAction) => {
+      const textarea = textAreaRef.current;
+      if (!textarea) return;
+
+      const selection = readTextSelection(textarea);
+      skipBlurRef.current = selection.value;
+      let completed = false;
+
+      const restoreSelection = (next: TextSelection) => {
+        setIsEditing(true);
+        requestAnimationFrame(() => {
+          const currentTextarea = textAreaRef.current;
+          if (!currentTextarea) return;
+
+          const length = next.value.length;
+          currentTextarea.focus();
+          currentTextarea.selectionStart = Math.max(0, Math.min(length, next.selectionStart));
+          currentTextarea.selectionEnd = Math.max(0, Math.min(length, next.selectionEnd));
+        });
+      };
+
+      const complete = (next: TextSelection, shouldPersist: boolean) => {
+        if (completed) return;
+        completed = true;
+        skipBlurRef.current = next.value;
+        if (shouldPersist) {
+          updateLocalContent(next.value);
+          setActiveFormats(detectActiveFormats(next));
+          onContentChange?.(next.value);
+          updateNodeData(id, { content: next.value });
+        }
+        restoreSelection(next);
+      };
+
+      action.onAction({
+        selection,
+        currentValue: () => textAreaRef.current?.value ?? latestContentRef.current,
+        commit: (next) => complete(next, true),
+        resume: () => {
+          const currentValue = textAreaRef.current?.value ?? latestContentRef.current;
+          complete({ ...selection, value: currentValue }, false);
+        },
+      });
+    },
+    [id, onContentChange, updateLocalContent, updateNodeData]
+  );
 
   const updateActiveFormats = useCallback(() => {
     if (!textAreaRef.current) return;
@@ -184,7 +253,7 @@ const StickyNoteNodeComponent = ({
       if (e.key === 'Escape') {
         skipBlurRef.current = textAreaRef.current?.value ?? localContent;
         setIsEditing(false);
-        setLocalContent(data.content || '');
+        updateLocalContent(data.content || '');
         textAreaRef.current?.blur();
         return;
       }
@@ -205,7 +274,7 @@ const StickyNoteNodeComponent = ({
       }
       shortcutKeyDown(e);
     },
-    [data.content, localContent, shortcutKeyDown, handleFormat]
+    [data.content, localContent, shortcutKeyDown, handleFormat, updateLocalContent]
   );
 
   // Resize handlers
@@ -420,6 +489,8 @@ const StickyNoteNodeComponent = ({
                 borderColor={color}
                 activeFormats={activeFormats}
                 onFormat={handleFormat}
+                actions={formattingActions}
+                onAction={handleFormattingAction}
               />
               <StickyNoteTextArea
                 ref={textAreaRef}
@@ -437,12 +508,16 @@ const StickyNoteNodeComponent = ({
           ) : (
             <StickyNoteMarkdown ref={markdownRef} {...scrollCaptureProps}>
               {localContent ? (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm, remarkBreaks]}
-                  components={markdownComponents}
-                >
-                  {preserveNewlines(localContent)}
-                </ReactMarkdown>
+                renderMarkdown ? (
+                  renderMarkdown(localContent)
+                ) : (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                    components={markdownComponents}
+                  >
+                    {preserveNewlines(localContent)}
+                  </ReactMarkdown>
+                )
               ) : (
                 // Render placeholder if renderPlaceholderOnSelect is enabled, node is selected, and the content is empty
                 renderPlaceholderOnSelect &&

@@ -1,3 +1,12 @@
+import type { TextSelection } from './StickyNoteNode.types';
+
+/** Reads the value and selection range from a sticky-note textarea. */
+export const readTextSelection = (textarea: HTMLTextAreaElement): TextSelection => ({
+  value: textarea.value,
+  selectionStart: textarea.selectionStart,
+  selectionEnd: textarea.selectionEnd,
+});
+
 // Markdown collapses 3+ consecutive newlines into a single paragraph break.
 // Insert &nbsp; paragraphs to prevent markdown parser from collapsing consecutive newlines.
 export const preserveNewlines = (markdown: string): string => {
