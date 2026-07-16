@@ -31,6 +31,25 @@ StyleDictionary.registerFormat({
   formatter: _.template(fs.readFileSync(path.join(templateDir, 'css-theme-variables.template'))),
 });
 
+// The built-in `css/variables` format emits `variables.css`'s base tokens
+// (palette, fonts, radius) under bare `:root {}`, which never matches inside a
+// shadow root (`:root` = <html>; a shadow root is a DocumentFragment).
+//
+// So shadow-DOM canvas consumers lose the fonts and fall back to Tailwind's
+// `ui-monospace`. Emitting `:root, .apollo-design` too makes them apply via the
+// `apollo-design` theme wrapper — the hook `theme-variables.css` uses for colors.
+//
+// Delegating to the built-in formatter keeps the generated token body
+// byte-identical; only the selector changes.
+StyleDictionary.registerFormat({
+  name: 'css/variables-apollo-design',
+  formatter: function (dictionary, platform) {
+    return StyleDictionary.format['css/variables']
+      .call(this, dictionary, platform)
+      .replace(':root {', ':root, .apollo-design {');
+  },
+});
+
 StyleDictionary.registerFormat({
   name: 'scss/scoped-theme-variables',
   formatter: _.template(fs.readFileSync(path.join(templateDir, 'scoped-theme-variables.template'))),
