@@ -31,19 +31,11 @@ StyleDictionary.registerFormat({
   formatter: _.template(fs.readFileSync(path.join(templateDir, 'css-theme-variables.template'))),
 });
 
-// The built-in `css/variables` format emits `variables.css`'s base tokens
-// (palette, fonts, radius) under bare `:root {}`, which never matches inside a
-// shadow root (`:root` = <html>; a shadow root is a DocumentFragment).
-//
-// So shadow-DOM canvas consumers (traceview's web component, ap-chat) lose the
-// fonts and fall back to Tailwind's `ui-monospace`. Emitting `:root, :host` too
-// makes the base tokens apply to any shadow host that adopts/injects this sheet;
-// they then inherit through the whole shadow tree (including portaled content),
-// with no `.apollo-design` wrapper required. In the light DOM `:root` still
-// applies; `:host` simply matches nothing there.
-//
-// Delegating to the built-in formatter keeps the generated token body
-// byte-identical; only the selector changes.
+// `css/variables` emits base tokens (palette, fonts, radius) under bare `:root {}`,
+// which never matches inside a shadow root — so shadow-DOM consumers (traceview WC,
+// ap-chat) fall back to Tailwind defaults. Adding `:host` scopes the tokens to the
+// shadow host too (inherited through the tree); `:root` still covers the light DOM.
+// Delegating to the built-in formatter keeps the token body byte-identical.
 StyleDictionary.registerFormat({
   name: 'css/variables-shadow-host',
   formatter: function (dictionary, platform) {
