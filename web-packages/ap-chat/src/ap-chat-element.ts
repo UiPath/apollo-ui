@@ -2,14 +2,12 @@
 // These load into document and are available to Shadow DOM
 import '@uipath/apollo-react/core/fonts/font.css';
 
-import { createElement } from 'react';
-
-import { createRoot, type Root } from 'react-dom/client';
-
 // Import Apollo CSS variables as raw strings for Shadow DOM injection
 // Using ?raw query parameter to import CSS as text instead of injecting globally
 import apolloThemeVariablesCSS from '@uipath/apollo-react/core/tokens/css/theme-variables.css?raw';
 import apolloVariablesCSS from '@uipath/apollo-react/core/tokens/css/variables.css?raw';
+import { createElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 
 import { cleanupReactRenderer, createReactRenderer } from './react-renderer';
 import { AutopilotChatEvent, type AutopilotChatService } from './service';
@@ -245,24 +243,18 @@ export class ApChat extends HTMLElement {
       }
     `;
 
-    // Create a constructable stylesheet for Shadow DOM
-    // Include Apollo design tokens, font faces, and icon styles
-    // Transform CSS selectors to work in Shadow DOM context
-    const transformedVariablesCSS = apolloVariablesCSS.replace(/:root\s*\{/g, ':host {'); // Transform :root to :host for Shadow DOM
-
-    // For theme variables, apply to both :host and all children to ensure proper cascading
-    // This ensures theme variables are available everywhere in the shadow tree
-    const transformedThemeVariablesCSS = apolloThemeVariablesCSS
-      .replace(/:root\s*\{/g, ':host {')
-      .replace(
-        /body\.(light|dark|light-hc|dark-hc)(?:,\s*\.apollo-design\.\1)?\s*\{/g,
-        ':host(.$1), :host(.$1) * {'
-      ); // Apply to host and all descendants
-
+    // Adopt Apollo design tokens, font faces, and icon styles into the Shadow DOM.
+    // No selector rewriting is needed:
+    //  - `variables.css` base tokens (palette, fonts, radius) are scoped to
+    //    `:root, :host` by apollo-core, so `:host` sets them on this element and
+    //    they inherit through the entire shadow tree (including the portal).
+    //  - `theme-variables.css` semantic tokens match any themed element via
+    //    `:where(.light:not(.react-flow))`, which covers the container and portal
+    //    container below (both carry the theme class).
     const shadowStyleSheet = new CSSStyleSheet();
     const allStyles = [
-      transformedVariablesCSS,
-      transformedThemeVariablesCSS,
+      apolloVariablesCSS,
+      apolloThemeVariablesCSS,
       ...fontFaceRules,
       iconStylesText,
     ].join('\n');
@@ -288,7 +280,9 @@ export class ApChat extends HTMLElement {
     `;
     this.shadowRoot.appendChild(hostStyles);
 
-    // Apply theme class to host element for :host(.theme) selectors
+    // Theme class on the host is a convenience hook for external styling; apollo
+    // tokens no longer depend on it (base via :host, semantic via the themed
+    // container/portal below).
     this.className = this._theme || 'light';
 
     // Create container for React
@@ -300,9 +294,9 @@ export class ApChat extends HTMLElement {
     this.shadowRoot.appendChild(this.container);
 
     // Create dedicated portal container for tooltips/popovers at Shadow DOM root
-    // This prevents clipping in embedded mode while being a real HTMLElement for MUI
+    // This prevents clipping in embedded mode while being a real HTMLElement for MUI.
     this.portalContainer = document.createElement('div');
-    this.portalContainer.className = 'portal-container';
+    this.portalContainer.className = `portal-container ${this._theme || 'light'}`;
     this.portalContainer.style.position = 'fixed';
     this.portalContainer.style.top = '0';
     this.portalContainer.style.left = '0';
@@ -373,9 +367,12 @@ export class ApChat extends HTMLElement {
 
     // Update theme class on both host element and container
     const theme = this._theme || 'light';
-    this.className = theme; // For :host(.theme) selectors in Shadow DOM
+    this.className = theme;
     if (this.container) {
       this.container.className = theme;
+    }
+    if (this.portalContainer) {
+      this.portalContainer.className = `portal-container ${theme}`;
     }
 
     const props: ApChatProperties = {
