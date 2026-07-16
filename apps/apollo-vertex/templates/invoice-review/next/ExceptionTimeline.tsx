@@ -360,12 +360,20 @@ function EventRow({
 
 // Matches the original ExceptionBlock metric treatment: sentence-case label,
 // large value, open (no card), vertical divider between sides.
+const AIM_OUTLINE_STYLE: CSSProperties = {
+  outlineStyle: "dashed",
+  outlineWidth: "1.5px",
+  outlineColor: "color-mix(in oklch, var(--warning) 65%, transparent)",
+  outlineOffset: "2px",
+};
+
 function FindingCell({
   label,
   value,
   provenance,
   tone,
   muted,
+  aimed,
   onInspect,
 }: {
   label: string;
@@ -374,6 +382,8 @@ function FindingCell({
   tone?: "warn" | "muted";
   /** read-only history: drop all values to secondary foreground (warn stays highlighted, on muted text) */
   muted?: boolean;
+  /** a mutating fix action is being hovered/focused — ring the evidence value */
+  aimed?: boolean;
   /** live ON INVOICE value only: renders the inline "Show in source" trigger */
   onInspect?: () => void;
 }) {
@@ -401,6 +411,7 @@ function FindingCell({
                 "-ml-1 rounded bg-warning/15 px-1",
                 muted ? "text-muted-foreground" : "text-foreground",
               )}
+              style={aimed ? AIM_OUTLINE_STYLE : undefined}
             >
               {value}
             </mark>
@@ -434,10 +445,13 @@ function FindingCell({
 function FindingView({
   finding,
   muted,
+  aimed,
   onInspect,
 }: {
   finding: Finding;
   muted?: boolean;
+  /** a mutating fix action is hovered/focused — ring the warn-toned evidence cell */
+  aimed?: boolean;
   /** when set, the ON INVOICE (warn) value gets the inspect trigger */
   onInspect?: () => void;
 }) {
@@ -450,6 +464,7 @@ function FindingView({
           key={c.label}
           {...c}
           muted={muted}
+          aimed={aimed && c.tone === "warn"}
           // The trigger belongs on the disputed value: the warn-toned ON INVOICE
           // evidence, the chip that rhymes with the document highlight.
           onInspect={c.tone === "warn" ? onInspect : undefined}
@@ -471,6 +486,8 @@ function LiveExceptionContent({
   onShowInSource,
   entering = false,
   hideFix = false,
+  aimed = false,
+  onAim,
 }: {
   exception: InvoiceException;
   isNew: boolean;
@@ -479,6 +496,9 @@ function LiveExceptionContent({
   entering?: boolean;
   /** Suppress the fix card (used while the block collapses into history). */
   hideFix?: boolean;
+  /** A mutating fix action is being hovered/focused — ring the evidence value. */
+  aimed?: boolean;
+  onAim?: (correction: DetailCorrections | null) => void;
 }) {
   const isJudgment = exception.suggestions.length === 0;
   // Each section fades and slides in a beat after the previous one.
@@ -530,6 +550,7 @@ function LiveExceptionContent({
               Live + anchored only; suppressed while collapsing (hideFix). */}
           <FindingView
             finding={exception.finding}
+            aimed={aimed}
             onInspect={
               !hideFix && exception.sourceAnchors?.length
                 ? () => onShowInSource(exception)
@@ -557,6 +578,7 @@ function LiveExceptionContent({
               key={exception.id}
               suggestions={exception.suggestions}
               onResolve={onResolve}
+              onAim={onAim}
             />
           </div>
         ))}
@@ -757,11 +779,15 @@ function Stage({
   isNew,
   onResolve,
   onShowInSource,
+  aimed,
+  onAim,
 }: {
   exception: InvoiceException;
   isNew: (e: InvoiceException) => boolean;
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
   onShowInSource: (exc: InvoiceException) => void;
+  aimed?: boolean;
+  onAim?: (correction: DetailCorrections | null) => void;
 }) {
   const [displayed, setDisplayed] = useState(exception);
   const [phase, setPhase] = useState<"in" | "out">("in");
@@ -793,6 +819,8 @@ function Stage({
         onResolve={onResolve}
         onShowInSource={onShowInSource}
         entering={phase === "in"}
+        aimed={aimed}
+        onAim={onAim}
       />
     </div>
   );
@@ -1232,6 +1260,8 @@ function ExceptionGroup({
   correctionPulse,
   onShowInSource,
   onSelect,
+  aimed,
+  onAim,
 }: {
   active: InvoiceException;
   openList: InvoiceException[];
@@ -1245,6 +1275,8 @@ function ExceptionGroup({
   onShowInSource: (exc: InvoiceException) => void;
   onSelect: (id: string) => void;
   correctionPulse?: { nonce: number; autoResolvedIds: readonly string[] };
+  aimed?: boolean;
+  onAim?: (correction: DetailCorrections | null) => void;
 }) {
   return (
     // Terminal node of the live rail: isLast so no connector dangles below the
@@ -1265,6 +1297,8 @@ function ExceptionGroup({
         isNew={isNew}
         onResolve={onResolve}
         onShowInSource={onShowInSource}
+        aimed={aimed}
+        onAim={onAim}
       />
       {variant === "index" ? (
         openList.length >= 2 && (
@@ -3187,6 +3221,10 @@ export function ExceptionTimeline({
                   onShowInSource={showInSource}
                   onSelect={anchor}
                   correctionPulse={rt.correctionPulse}
+                  aimed={!!rt.aimCorrection}
+                  onAim={(correction) =>
+                    runtime.setAimCorrection(review.id, correction)
+                  }
                 />
               ) : null}
             </>
