@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.62.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.62.0...@uipath/apollo-react@4.62.1) (2026-07-16)
+
+### Bug Fixes
+
+* **apollo-react:** make removePreviewFromReactFlow a no-op when no preview is present ([e780e41](https://github.com/UiPath/apollo-ui/commit/e780e410275955466c64b6b68f799bdf89b7925c))
+
 ## [@uipath/apollo-react-v4.62.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.61.1...@uipath/apollo-react@4.62.0) (2026-07-16)
 
 ### Features
