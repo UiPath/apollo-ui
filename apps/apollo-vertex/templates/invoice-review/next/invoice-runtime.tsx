@@ -301,6 +301,18 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
           const dataPatch = extras?.dataPatch
             ? { ...cur.dataPatch, ...extras.dataPatch }
             : cur.dataPatch;
+          const patchedScalars = Object.keys(corrections).filter(
+            (k) => k !== "lines",
+          );
+          const patchedLineNums = Object.keys(corrections.lines ?? {}).map(
+            Number,
+          );
+          const newPulse = {
+            nonce: (cur.correctionPulse?.nonce ?? 0) + 1,
+            detailFields: patchedScalars,
+            lineNums: patchedLineNums,
+            autoResolvedIds: cleared,
+          };
           return {
             ...prev,
             [id]: {
@@ -310,6 +322,7 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
               surfaced,
               dataPatch,
               events: [...cur.events, ...withKeys(id, cur.events, allEvents)],
+              correctionPulse: newPulse,
             },
           };
         }),

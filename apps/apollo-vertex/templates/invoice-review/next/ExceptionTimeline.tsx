@@ -916,14 +916,34 @@ function buildFindingsRows(
 function FindingsIndividualRow({
   row,
   onSelect,
+  pulsed,
+  pulseNonce,
 }: {
   row: FindingsIndividual;
   onSelect: (id: string) => void;
+  pulsed?: boolean;
+  pulseNonce?: number;
 }) {
   const { exception: e, state } = row;
   const isPending = state === "pending";
   const isCurrent = state === "current";
   const isResolved = state === "resolved";
+
+  const [pulseSettle, setPulseSettle] = useState<"peak" | "rest">("rest");
+  useEffect(() => {
+    if (!pulsed || pulseNonce === undefined) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setPulseSettle("peak");
+    let r2 = 0;
+    const r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => setPulseSettle("rest"));
+    });
+    return () => {
+      cancelAnimationFrame(r1);
+      cancelAnimationFrame(r2);
+    };
+    // biome-ignore lint/correctness/useExhaustiveDependencies: pulseNonce keys the animation
+  }, [pulseNonce, pulsed]);
 
   const rowContent = (
     <>
@@ -983,6 +1003,10 @@ function FindingsIndividualRow({
       className={cn(
         "flex min-h-7 items-center gap-2 rounded px-2",
         isCurrent && "rounded-md bg-muted/30 ring-1 ring-inset ring-border/60",
+        pulsed &&
+          (pulseSettle === "peak"
+            ? "bg-warning/40 ring-1 ring-inset ring-warning/70"
+            : "bg-warning/15 ring-1 ring-inset ring-warning/50 transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none"),
       )}
     >
       {rowContent}
@@ -994,16 +1018,36 @@ function FindingsGroupRow({
   row,
   effectiveResolved,
   onSelect,
+  pulsed,
+  pulseNonce,
 }: {
   row: FindingsGroup;
   effectiveResolved: ReadonlySet<string>;
   onSelect: (id: string) => void;
+  pulsed?: boolean;
+  pulseNonce?: number;
 }) {
   const { type, members, lines, state, resolvedCount } = row;
   const meta = EXCEPTION_META[type];
   const isPending = state === "pending";
   const isCurrent = state === "current";
   const isResolved = state === "resolved";
+
+  const [pulseSettle, setPulseSettle] = useState<"peak" | "rest">("rest");
+  useEffect(() => {
+    if (!pulsed || pulseNonce === undefined) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setPulseSettle("peak");
+    let r2 = 0;
+    const r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => setPulseSettle("rest"));
+    });
+    return () => {
+      cancelAnimationFrame(r1);
+      cancelAnimationFrame(r2);
+    };
+    // biome-ignore lint/correctness/useExhaustiveDependencies: pulseNonce keys the animation
+  }, [pulseNonce, pulsed]);
 
   const locator = lineRangeLabel(lines);
   const unresolved = members.filter((m) => !effectiveResolved.has(m.id));
@@ -1092,6 +1136,10 @@ function FindingsGroupRow({
       className={cn(
         "flex min-h-7 items-center gap-2 rounded px-2",
         isCurrent && "rounded-md bg-muted/30 ring-1 ring-inset ring-border/60",
+        pulsed &&
+          (pulseSettle === "peak"
+            ? "bg-warning/40 ring-1 ring-inset ring-warning/70"
+            : "bg-warning/15 ring-1 ring-inset ring-warning/50 transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none"),
       )}
     >
       {rowContent}
@@ -1112,12 +1160,14 @@ function FindingsMap({
   resolvedIds,
   resolvingId,
   onSelect,
+  correctionPulse,
 }: {
   items: InvoiceException[];
   activeId: string;
   resolvedIds: ReadonlySet<string>;
   resolvingId?: string;
   onSelect: (id: string) => void;
+  correctionPulse?: { nonce: number; autoResolvedIds: readonly string[] };
 }) {
   if (items.length <= 1) return null;
 
@@ -1128,6 +1178,8 @@ function FindingsMap({
   const rows = buildFindingsRows(items, effectiveResolved, activeId);
   const totalCount = items.length;
   const resolvedCount = items.filter((e) => effectiveResolved.has(e.id)).length;
+  const pulsedIds = new Set(correctionPulse?.autoResolvedIds ?? []);
+  const pulseNonce = correctionPulse?.nonce;
 
   const headerLabel =
     resolvedCount > 0
@@ -1143,7 +1195,12 @@ function FindingsMap({
         {rows.map((row) =>
           row.kind === "individual" ? (
             <li key={row.exception.id}>
-              <FindingsIndividualRow row={row} onSelect={onSelect} />
+              <FindingsIndividualRow
+                row={row}
+                onSelect={onSelect}
+                pulsed={pulsedIds.has(row.exception.id)}
+                pulseNonce={pulseNonce}
+              />
             </li>
           ) : (
             <li key={row.type}>
@@ -1151,6 +1208,8 @@ function FindingsMap({
                 row={row}
                 effectiveResolved={effectiveResolved}
                 onSelect={onSelect}
+                pulsed={row.members.some((m) => pulsedIds.has(m.id))}
+                pulseNonce={pulseNonce}
               />
             </li>
           ),
@@ -1170,6 +1229,7 @@ function ExceptionGroup({
   isNew,
   variant,
   onResolve,
+  correctionPulse,
   onShowInSource,
   onSelect,
 }: {
@@ -1184,6 +1244,7 @@ function ExceptionGroup({
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
   onShowInSource: (exc: InvoiceException) => void;
   onSelect: (id: string) => void;
+  correctionPulse?: { nonce: number; autoResolvedIds: readonly string[] };
 }) {
   return (
     // Terminal node of the live rail: isLast so no connector dangles below the
@@ -1220,6 +1281,7 @@ function ExceptionGroup({
           activeId={active.id}
           resolvedIds={resolvedIdSet}
           onSelect={onSelect}
+          correctionPulse={correctionPulse}
         />
       )}
     </TimelineRow>
@@ -1497,7 +1559,13 @@ function HistoryEventRow({
 }) {
   return (
     <TimelineRow
-      marker={event.kind === "resolved" ? "resolved" : "waiting"}
+      marker={
+        event.kind === "resolved" && event.auto
+          ? "agent"
+          : event.kind === "resolved"
+            ? "resolved"
+            : "waiting"
+      }
       className={gap}
     >
       <EventRowBody
@@ -1564,6 +1632,7 @@ function ResolvingNode({
   isNew,
   variant,
   reducedMotion,
+  correctionPulse,
 }: {
   resolve: ResolveState;
   openList: InvoiceException[];
@@ -1574,6 +1643,7 @@ function ResolvingNode({
   isNew: (e: InvoiceException) => boolean;
   variant: "strip" | "index";
   reducedMotion: boolean;
+  correctionPulse?: { nonce: number; autoResolvedIds: readonly string[] };
 }) {
   const { exc, mode, phase, label, sub, settledSub } = resolve;
   const others = openList.filter((e) => e.id !== exc.id);
@@ -1638,6 +1708,7 @@ function ResolvingNode({
               resolvedIds={resolvedIdSet}
               resolvingId={exc.id}
               onSelect={() => {}}
+              correctionPulse={correctionPulse}
             />
           )}
         </TimelineRow>
@@ -2413,13 +2484,17 @@ export function ExceptionTimeline({
     if (!resolve) return;
     const nextOpenId = (excId: string, alsoSkip: string[] = []) => {
       const waitingIdSet = new Set(waitingRefs.map((w) => w.id));
-      return list.find(
-        (e) =>
-          e.id !== excId &&
-          !alsoSkip.includes(e.id) &&
-          !resolvedIds.includes(e.id) &&
-          !waitingIdSet.has(e.id),
-      );
+      const isCandidate = (e: InvoiceException) =>
+        e.id !== excId &&
+        !alsoSkip.includes(e.id) &&
+        !resolvedIds.includes(e.id) &&
+        !waitingIdSet.has(e.id);
+      const currentIdx = list.findIndex((e) => e.id === excId);
+      const afterCurrent =
+        currentIdx !== -1
+          ? list.slice(currentIdx + 1).find(isCandidate)
+          : undefined;
+      return afterCurrent ?? list.find(isCandidate);
     };
 
     if (resolve.phase === "confirm") {
@@ -2927,9 +3002,11 @@ export function ExceptionTimeline({
         ? ev.actor === "reviewer"
           ? "reviewer"
           : "agent"
-        : ev.kind === "revalidated" && ev.pending
-          ? "progress"
-          : "agent";
+        : ev.kind === "corrected"
+          ? "reviewer"
+          : ev.kind === "revalidated" && ev.pending
+            ? "progress"
+            : "agent";
     return (
       <EventRow
         key={ev.key}
@@ -3094,6 +3171,7 @@ export function ExceptionTimeline({
                   isNew={isNew}
                   variant={exceptionListVariant}
                   reducedMotion={reducedMotion}
+                  correctionPulse={rt.correctionPulse}
                 />
               ) : active ? (
                 <ExceptionGroup
@@ -3108,6 +3186,7 @@ export function ExceptionTimeline({
                   onResolve={resolveActive}
                   onShowInSource={showInSource}
                   onSelect={anchor}
+                  correctionPulse={rt.correctionPulse}
                 />
               ) : null}
             </>
