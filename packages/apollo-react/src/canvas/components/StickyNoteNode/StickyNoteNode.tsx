@@ -226,9 +226,9 @@ const StickyNoteNodeComponent = ({
         if (completed) return;
         completed = true;
         skipBlurRef.current = shouldPersist ? next.value : null;
+        setActiveFormats(detectActiveFormats(next));
         if (shouldPersist) {
           updateLocalContent(next.value);
-          setActiveFormats(detectActiveFormats(next));
           onContentChange?.(next.value);
           updateNodeData(id, { content: next.value });
         }

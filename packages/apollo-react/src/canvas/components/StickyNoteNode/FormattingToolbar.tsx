@@ -100,7 +100,12 @@ const FormattingToolbarComponent = ({
       className="nodrag nowheel"
     >
       <CanvasTooltip content={boldLabel} placement="top" delay>
-        <FormattingButton isActive={activeFormats.bold} onClick={handleBold} aria-label={boldLabel}>
+        <FormattingButton
+          isActive={activeFormats.bold}
+          onClick={handleBold}
+          aria-label={boldLabel}
+          aria-pressed={activeFormats.bold}
+        >
           <CanvasIcon icon="bold" size={14} />
         </FormattingButton>
       </CanvasTooltip>
@@ -109,6 +114,7 @@ const FormattingToolbarComponent = ({
           isActive={activeFormats.italic}
           onClick={handleItalic}
           aria-label={italicLabel}
+          aria-pressed={activeFormats.italic}
         >
           <CanvasIcon icon="italic" size={14} />
         </FormattingButton>
@@ -118,6 +124,7 @@ const FormattingToolbarComponent = ({
           isActive={activeFormats.strikethrough}
           onClick={handleStrikethrough}
           aria-label={strikethroughLabel}
+          aria-pressed={activeFormats.strikethrough}
         >
           <CanvasIcon icon="strikethrough" size={14} />
         </FormattingButton>
@@ -130,6 +137,7 @@ const FormattingToolbarComponent = ({
           isActive={activeFormats.bulletList}
           onClick={handleBulletList}
           aria-label={bulletListLabel}
+          aria-pressed={activeFormats.bulletList}
         >
           <CanvasIcon icon="list" size={14} />
         </FormattingButton>
@@ -139,6 +147,7 @@ const FormattingToolbarComponent = ({
           isActive={activeFormats.numberedList}
           onClick={handleNumberedList}
           aria-label={numberedListLabel}
+          aria-pressed={activeFormats.numberedList}
         >
           <CanvasIcon icon="list-ordered" size={14} />
         </FormattingButton>
