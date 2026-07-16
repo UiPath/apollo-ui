@@ -31,6 +31,7 @@ import {
   Play,
   Plus,
   RefreshCw,
+  RotateCcw,
   Send,
   Settings2,
   Sparkle,
@@ -2648,6 +2649,18 @@ function LeftNav({
             ({invoicesReview.length})
           </span>
         </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={() => runtime.resetAllRuntimes()}
+              className="size-7 flex items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:bg-muted hover:text-muted-foreground"
+            >
+              <RotateCcw className="size-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Reset demo state</TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Status filter (tabs) over a due-date sort (date section labels inside
