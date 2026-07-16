@@ -4243,18 +4243,23 @@ function SourceTab() {
   // state over one ~600ms cycle. Reduced motion skips straight to "rest".
   const [settle, setSettle] = useState<"peak" | "rest">("rest");
 
-  // A "show in source" highlight is valid only while its exception is still
-  // live: not resolved, not routed (waiting), and no whole-invoice disposition.
-  // A stale highlight would point at a value the document may have superseded,
-  // so it clears the moment the exception leaves the live set.
-  const highlight = rt.highlight;
-  const live =
-    !!highlight &&
+  // fieldHighlight (from edit form focus) takes priority over exception highlight.
+  // Exception highlight is valid only while its exception is still live.
+  const fieldHighlight = rt.fieldHighlight;
+  const exceptionHighlight = rt.highlight;
+  const exceptionLive =
+    !!exceptionHighlight &&
     !rt.disposition &&
-    !rt.resolvedIds.includes(highlight.exceptionId) &&
-    !rt.waiting.some((w) => w.id === highlight.exceptionId);
-  const activeAnchors = live && highlight ? highlight.anchors : [];
-  const nonce = highlight?.nonce;
+    !rt.resolvedIds.includes(exceptionHighlight.exceptionId) &&
+    !rt.waiting.some((w) => w.id === exceptionHighlight.exceptionId);
+  const activeAnchors = fieldHighlight
+    ? [fieldHighlight.anchor]
+    : exceptionLive && exceptionHighlight
+      ? exceptionHighlight.anchors
+      : [];
+  const live = activeAnchors.length > 0;
+  // Either source bumping its nonce re-triggers the scroll + settle.
+  const nonce = fieldHighlight?.nonce ?? exceptionHighlight?.nonce;
 
   // On each request (nonce bump): smooth-scroll the first anchored region to the
   // upper third (instant under reduced motion) and run the settle once.
@@ -4297,7 +4302,7 @@ function SourceTab() {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
     };
-    // Re-run per request; activeAnchors identity tracks with nonce/live.
+    // Re-run per request; nonce from either fieldHighlight or exceptionHighlight keys the request.
     // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the request
   }, [nonce, live]);
 
@@ -4367,8 +4372,24 @@ function SourceTab() {
               </div>
             </div>
             <div className="text-right">
-              <div className="font-semibold text-[11px]">{vendor}</div>
-              <div className="text-gray-500 text-[9px]">{vendorEmail}</div>
+              <div
+                data-anchor="field:vendor"
+                className={cn(
+                  "font-semibold text-[11px]",
+                  mark("field:vendor"),
+                )}
+              >
+                {vendor}
+              </div>
+              <div
+                data-anchor="field:vendor-email"
+                className={cn(
+                  "text-gray-500 text-[9px]",
+                  mark("field:vendor-email"),
+                )}
+              >
+                {vendorEmail}
+              </div>
             </div>
           </div>
 
@@ -4418,8 +4439,21 @@ function SourceTab() {
           {/* Bill to */}
           <div>
             <div className="text-[8px] text-gray-400 mb-0.5">Bill to</div>
-            <div className="font-medium">{billTo}</div>
-            <div className="text-gray-500 text-[9px]">{billAddress}</div>
+            <div
+              data-anchor="field:bill-to"
+              className={cn("font-medium", mark("field:bill-to"))}
+            >
+              {billTo}
+            </div>
+            <div
+              data-anchor="field:bill-address"
+              className={cn(
+                "text-gray-500 text-[9px]",
+                mark("field:bill-address"),
+              )}
+            >
+              {billAddress}
+            </div>
           </div>
 
           <div className="border-t border-gray-200" />
@@ -6206,6 +6240,19 @@ interface DirtyField {
   to: string;
 }
 
+/** Maps form field keys to source-document anchor ids for field ↔ source sync. */
+const EDIT_FIELD_ANCHORS: Record<string, string> = {
+  documentDateFormatted: "field:invoice-date",
+  dueFormatted: "field:due-date",
+  paymentTerms: "field:payment-terms",
+  vat: "field:vat",
+  vendor: "field:vendor",
+  vendorEmail: "field:vendor-email",
+  billTo: "field:bill-to",
+  billAddress: "field:bill-address",
+  vendorAddress: "field:vendor-address",
+};
+
 function DetailsEditForm({
   focusField,
   onDirtyChange,
@@ -6279,15 +6326,26 @@ function DetailsEditForm({
     focusRef.current?.focus();
   }, []);
 
-  function fp(
-    key: string,
-  ): React.InputHTMLAttributes<HTMLInputElement> & {
+  function fieldAnchor(key: string): string | undefined {
+    if (EDIT_FIELD_ANCHORS[key]) return EDIT_FIELD_ANCHORS[key];
+    // Line field pattern: line{N}:qty → line:N:qty, line{N}:amount → line:N:amount
+    const lineMatch = key.match(/^line(\d+):(qty|amount|description)$/);
+    if (lineMatch) return `line:${lineMatch[1]}:${lineMatch[2]}`;
+    return undefined;
+  }
+
+  function fp(key: string): React.InputHTMLAttributes<HTMLInputElement> & {
     ref?: React.Ref<HTMLInputElement>;
   } {
+    const anchor = fieldAnchor(key);
     return {
       value: values[key] ?? "",
       onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
         set(key, e.target.value),
+      onFocus: anchor
+        ? () => runtime.setFieldHighlight(d.id, anchor)
+        : undefined,
+      onBlur: anchor ? () => runtime.setFieldHighlight(d.id, null) : undefined,
       ref: focusField === key ? focusRef : undefined,
     };
   }
@@ -6298,7 +6356,7 @@ function DetailsEditForm({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="px-6 py-5 space-y-6">
           {/* Invoice facts */}
           <div>
@@ -6587,18 +6645,52 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const pendingDirtyRef = useRef<Record<string, DirtyField>>({});
 
+  // Enter animation: overlay fades in 120ms, form slides in 260ms, PDF rises 200ms/100ms delay.
+  const [ready, setReady] = useState(false);
+  // Exit: run reverse, then unmount.
+  const [exiting, setExiting] = useState(false);
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  useEffect(() => {
+    if (prefersReduced) {
+      setReady(true);
+      return;
+    }
+    const raf = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(raf);
+  }, [prefersReduced]);
+
+  // PDF pane shows a brief loading skeleton before the doc is ready.
+  const [pdfReady, setPdfReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setPdfReady(true), 300);
+    return () => clearTimeout(t);
+  }, []);
+
+  function doExit(callback: () => void) {
+    if (prefersReduced) {
+      callback();
+      return;
+    }
+    setExiting(true);
+    // Wait for the longest transition (slide: 260ms) + a tick buffer.
+    setTimeout(callback, 280);
+  }
+
   function handleCancel() {
     if (Object.keys(pendingDirtyRef.current).length > 0) {
       setCancelOpen(true);
     } else {
-      exitEditMode();
+      doExit(exitEditMode);
     }
   }
 
   function handleSave() {
     const dirty = pendingDirtyRef.current;
     if (Object.keys(dirty).length === 0) {
-      exitEditMode();
+      doExit(exitEditMode);
       return;
     }
     const corrections: DetailCorrections = {};
@@ -6643,7 +6735,7 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
       { openExceptions: open, base },
       correctionEvents,
     );
-    exitEditMode();
+    doExit(exitEditMode);
   }
 
   // Esc cancels (with dirty guard)
@@ -6655,8 +6747,20 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  const shown = ready && !exiting;
+
   return (
-    <div className="absolute inset-0 z-10 bg-background flex flex-col">
+    <div
+      className="absolute inset-0 z-10 bg-background flex flex-col"
+      style={
+        prefersReduced
+          ? undefined
+          : {
+              opacity: shown ? 1 : 0,
+              transition: "opacity 120ms ease-out",
+            }
+      }
+    >
       {/* Mode header */}
       <div className="shrink-0 flex items-center gap-2 px-5 h-11 border-b border-border bg-muted/40">
         <Pencil className="size-3.5 shrink-0 text-muted-foreground" />
@@ -6676,11 +6780,20 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
         </div>
       </div>
 
-      {/* Form (420px) + Source viewer (flex-1) */}
+      {/* Form (420px slides in from right) + Source viewer (fades + rises) */}
       <div className="flex flex-1 overflow-hidden">
+        {/* Form column — slides from right to dock position */}
         <div
           className="shrink-0 overflow-hidden flex flex-col border-r border-border"
-          style={{ width: "420px" }}
+          style={
+            prefersReduced
+              ? { width: "420px" }
+              : {
+                  width: "420px",
+                  transform: shown ? "translateX(0)" : "translateX(100%)",
+                  transition: "transform 260ms ease-out",
+                }
+          }
         >
           <DetailsEditForm
             focusField={editFocusField}
@@ -6689,7 +6802,25 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
             }}
           />
         </div>
-        <div className="flex-1 overflow-hidden">
+        {/* PDF column — fades in with 8px rise, 100ms delay */}
+        <div
+          className="flex-1 overflow-hidden relative"
+          style={
+            prefersReduced
+              ? undefined
+              : {
+                  opacity: shown ? 1 : 0,
+                  transform: shown ? "translateY(0)" : "translateY(8px)",
+                  transition:
+                    "opacity 200ms ease-out 100ms, transform 200ms ease-out 100ms",
+                }
+          }
+        >
+          {!pdfReady && (
+            <div className="absolute inset-0 bg-muted/60 flex items-center justify-center z-10">
+              <Loader2 className="size-5 text-muted-foreground animate-spin" />
+            </div>
+          )}
           <SourceTab />
         </div>
       </div>
@@ -6705,7 +6836,7 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep editing</AlertDialogCancel>
-            <AlertDialogAction onClick={exitEditMode}>
+            <AlertDialogAction onClick={() => doExit(exitEditMode)}>
               Discard
             </AlertDialogAction>
           </AlertDialogFooter>
