@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockDeleteElements, mockUpdateNodeData } = vi.hoisted(() => ({
@@ -150,7 +151,29 @@ describe('StickyNoteNode resize lifecycle', () => {
 });
 
 describe('StickyNoteNode editor extensions', () => {
-  it('renders custom content and lets an editor action commit the captured selection once', () => {
+  it('merges custom Markdown components into the built-in rendering pipeline', () => {
+    const { container } = renderStickyNoteNode({
+      data: {
+        color: 'yellow',
+        content:
+          '~~Completed~~\nNext line\n\n![Media](https://example.com/image.png)\n\n[Docs](https://example.com)',
+      },
+      markdownComponents: {
+        img: ({ alt }) => <span>Custom media: {alt}</span>,
+      },
+    });
+
+    expect(container.querySelector('del')).toHaveTextContent('Completed');
+    expect(container.querySelector('br')).toBeInTheDocument();
+    expect(screen.getByText('Custom media: Media')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Docs' })).toHaveAttribute('target', '_blank');
+    expect(screen.getByRole('link', { name: 'Docs' })).toHaveAttribute(
+      'rel',
+      'noopener noreferrer'
+    );
+  });
+
+  it('lets an editor action commit the captured selection once', () => {
     let editorContext: StickyNoteEditorActionContext | undefined;
     const onContentChange = vi.fn();
     const formattingActions: readonly StickyNoteFormattingAction[] = [
@@ -168,12 +191,11 @@ describe('StickyNoteNode editor extensions', () => {
       data: { color: 'yellow', content: 'BeforeAfter' },
       onContentChange,
       formattingActions,
-      renderMarkdown: (content) => <span>Custom: {content}</span>,
     });
 
-    expect(screen.getByText('Custom: BeforeAfter')).toBeInTheDocument();
+    expect(screen.getByText('BeforeAfter')).toBeInTheDocument();
 
-    fireEvent.doubleClick(screen.getByText('Custom: BeforeAfter'));
+    fireEvent.doubleClick(screen.getByText('BeforeAfter'));
     const editor = screen.getByRole<HTMLTextAreaElement>('textbox');
     fireEvent.change(editor, { target: { value: 'Before draft After' } });
     editor.setSelectionRange(12, 12);
@@ -255,6 +277,64 @@ describe('StickyNoteNode editor extensions', () => {
     expect(screen.getByRole('textbox')).toHaveValue('Externally updated');
     expect(onContentChange).not.toHaveBeenCalled();
     expect(mockUpdateNodeData).not.toHaveBeenCalled();
+  });
+
+  it('persists pending edits on the first ordinary blur after an action resumes', () => {
+    let editorContext: StickyNoteEditorActionContext | undefined;
+    const onContentChange = vi.fn();
+    const formattingActions: readonly StickyNoteFormattingAction[] = [
+      {
+        id: 'embed-media',
+        label: 'Embed media',
+        icon: <span aria-hidden="true">M</span>,
+        onAction: (context) => {
+          editorContext = context;
+        },
+      },
+    ];
+
+    renderStickyNoteNode({ onContentChange, formattingActions });
+
+    const editor = startEditing();
+    fireEvent.change(editor, { target: { value: 'Pending draft' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Embed media' }));
+    fireEvent.blur(editor);
+
+    act(() => editorContext?.resume());
+    fireEvent.blur(screen.getByRole('textbox'));
+
+    expect(onContentChange).toHaveBeenCalledOnce();
+    expect(onContentChange).toHaveBeenCalledWith('Pending draft');
+    expect(mockUpdateNodeData).toHaveBeenCalledOnce();
+    expect(mockUpdateNodeData).toHaveBeenCalledWith('sticky-note-1', {
+      content: 'Pending draft',
+    });
+  });
+
+  it('keeps the toolbar mounted while keyboard focus moves to a custom action', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const formattingActions: readonly StickyNoteFormattingAction[] = [
+      {
+        id: 'embed-media',
+        label: 'Embed media',
+        icon: <span aria-hidden="true">M</span>,
+        onAction,
+      },
+    ];
+
+    renderStickyNoteNode({ formattingActions });
+
+    startEditing();
+    for (let index = 0; index < 6; index += 1) await user.tab();
+
+    const embedMediaButton = screen.getByRole('button', { name: 'Embed media' });
+    expect(embedMediaButton).toHaveFocus();
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+
+    await user.keyboard('{Enter}');
+
+    expect(onAction).toHaveBeenCalledOnce();
   });
 
   it('restores normal blur persistence when a consumer action throws', () => {

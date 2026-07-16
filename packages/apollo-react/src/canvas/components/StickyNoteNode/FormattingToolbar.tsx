@@ -1,5 +1,5 @@
 import { CanvasIcon } from '@uipath/apollo-react/canvas';
-import { memo, type RefObject, useCallback } from 'react';
+import { type FocusEvent, memo, type RefObject, useCallback } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { CanvasTooltip } from '../CanvasTooltip';
 import type { ActiveFormats } from './markdown-formatting';
@@ -19,19 +19,23 @@ import type { StickyNoteFormattingAction, TextSelection } from './StickyNoteNode
 import { getModifierKey, isMac, readTextSelection } from './StickyNoteNode.utils';
 
 interface FormattingToolbarProps {
+  containerRef?: RefObject<HTMLDivElement | null>;
   textAreaRef: RefObject<HTMLTextAreaElement | null>;
   borderColor: string;
   activeFormats: ActiveFormats;
   onFormat: (result: TextSelection) => void;
+  onBlur?: (event: FocusEvent<HTMLDivElement>) => void;
   actions?: readonly StickyNoteFormattingAction[];
   onAction?: (action: StickyNoteFormattingAction, anchorRect: DOMRectReadOnly) => void;
 }
 
 const FormattingToolbarComponent = ({
+  containerRef,
   textAreaRef,
   borderColor,
   activeFormats,
   onFormat,
+  onBlur,
   actions = [],
   onAction,
 }: FormattingToolbarProps) => {
@@ -87,10 +91,12 @@ const FormattingToolbarComponent = ({
 
   return (
     <FormattingToolbarContainer
+      ref={containerRef}
       role="toolbar"
       aria-label={toolbarLabel}
       borderColor={borderColor}
       onMouseDown={(e) => e.preventDefault()}
+      onBlur={onBlur}
       className="nodrag nowheel"
     >
       <CanvasTooltip content={boldLabel} placement="top" delay>

@@ -4,7 +4,7 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import ReactMarkdown from 'react-markdown';
+import type { Components } from 'react-markdown';
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
@@ -294,73 +294,67 @@ function StickyNoteWithEditorExtensions(props: StickyNoteNodeProps) {
     [openMediaDialog]
   );
 
-  const renderMarkdown = useCallback(
-    (content: string) => (
-      <ReactMarkdown
-        components={{
-          img: ({ src, alt, title }) => {
-            const metadata = parseMediaTitle(title);
-            if (!metadata) return <img src={src} alt={alt ?? ''} draggable={false} />;
-            const fullWidth = metadata.layout === 'full-width';
+  const markdownComponents = useMemo<Components>(
+    () => ({
+      img: ({ src, alt, title }) => {
+        const metadata = parseMediaTitle(title);
+        if (!metadata) return <img src={src} alt={alt ?? ''} draggable={false} />;
+        const fullWidth = metadata.layout === 'full-width';
 
-            if (metadata.kind === 'youtube') {
-              const embedUrl = parseYouTubeUrl(src ?? '').embedUrl;
-              return embedUrl ? (
-                <iframe
-                  src={embedUrl}
-                  title={alt ?? DEMO_MEDIA.youtube.alt}
-                  allow="autoplay; encrypted-media; picture-in-picture"
-                  allowFullScreen
-                  style={{
-                    width: fullWidth ? '100%' : DEMO_NATURAL_MEDIA_WIDTH,
-                    maxWidth: '100%',
-                    aspectRatio: '16 / 9',
-                    border: 0,
-                    borderRadius: 6,
-                  }}
-                />
-              ) : null;
-            }
+        if (metadata.kind === 'youtube') {
+          const embedUrl = parseYouTubeUrl(src ?? '').embedUrl;
+          return embedUrl ? (
+            <iframe
+              src={embedUrl}
+              title={alt ?? DEMO_MEDIA.youtube.alt}
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+              style={{
+                width: fullWidth ? '100%' : DEMO_NATURAL_MEDIA_WIDTH,
+                maxWidth: '100%',
+                aspectRatio: '16 / 9',
+                border: 0,
+                borderRadius: 6,
+              }}
+            />
+          ) : null;
+        }
 
-            if (metadata.kind === 'publicVideo') {
-              return (
-                <video
-                  src={src}
-                  aria-label={alt ?? DEMO_MEDIA.publicVideo.alt}
-                  controls
-                  muted
-                  preload="metadata"
-                  style={{
-                    display: 'block',
-                    width: fullWidth ? '100%' : DEMO_NATURAL_MEDIA_WIDTH,
-                    maxWidth: '100%',
-                    height: 'auto',
-                    borderRadius: 6,
-                  }}
-                />
-              );
-            }
+        if (metadata.kind === 'publicVideo') {
+          return (
+            <video
+              src={src}
+              aria-label={alt ?? DEMO_MEDIA.publicVideo.alt}
+              controls
+              muted
+              preload="metadata"
+              style={{
+                display: 'block',
+                width: fullWidth ? '100%' : DEMO_NATURAL_MEDIA_WIDTH,
+                maxWidth: '100%',
+                height: 'auto',
+                borderRadius: 6,
+              }}
+            />
+          );
+        }
 
-            return (
-              <img
-                src={src}
-                alt={alt ?? ''}
-                draggable={false}
-                style={{
-                  display: 'block',
-                  width: fullWidth ? '100%' : 'auto',
-                  maxWidth: '100%',
-                  height: 'auto',
-                  borderRadius: 6,
-                }}
-              />
-            );
-          },
-        }}
-      >
-        {content}
-      </ReactMarkdown>
-    ),
+        return (
+          <img
+            src={src}
+            alt={alt ?? ''}
+            draggable={false}
+            style={{
+              display: 'block',
+              width: fullWidth ? '100%' : 'auto',
+              maxWidth: '100%',
+              height: 'auto',
+              borderRadius: 6,
+            }}
+          />
+        );
+      },
+    }),
     []
   );
 
@@ -369,7 +363,7 @@ function StickyNoteWithEditorExtensions(props: StickyNoteNodeProps) {
       <StickyNoteNode
         {...props}
         formattingActions={formattingActions}
-        renderMarkdown={renderMarkdown}
+        markdownComponents={markdownComponents}
       />
       {dialog &&
         typeof document !== 'undefined' &&
