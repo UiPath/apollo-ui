@@ -172,6 +172,7 @@ interface InvoiceDetailData {
   id: string;
   vendor: string;
   vendorEmail: string;
+  vendorAddress?: string;
   amount: string;
   currency: string;
   dueDate: string;
@@ -205,6 +206,8 @@ interface InvoiceDetailData {
     poQty?: number;
     /** Agreed PO line total (price-mismatch lines); present → show below AMOUNT in muted */
     agreed?: string;
+    /** Second line under the item name: unit detail or exception note (exception wins if both). */
+    subline?: string;
   }[];
   linesTotal: string;
   linesAlert?: { text: string; status: "error" | "warning" };
@@ -280,6 +283,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     id: "INV-GRN-001",
     vendor: "ACME Industrial",
     vendorEmail: "accounts@acmeindustrial.com",
+    vendorAddress: "123 Industrial Way, Detroit, MI 48201",
     amount: "$694.39 USD",
     currency: "USD",
     dueDate: "2026-05-28",
@@ -348,6 +352,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     id: "INV-66216",
     vendor: "Prime Office Solutions",
     vendorEmail: "billing@primeoffice.com",
+    vendorAddress: "4400 Commerce Blvd, Atlanta, GA 30339",
     amount: "$65,800.00 USD",
     currency: "USD",
     dueDate: "2026-05-28",
@@ -380,27 +385,26 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
         qty: 20,
         amount: "$38,000.00",
         unitPrice: "$1,900.00",
+        poQty: 20,
       },
       {
         description: "Height-adjustable standing desk",
         qty: 10,
         amount: "$24,000.00",
         unitPrice: "$2,400.00",
+        poQty: 10,
       },
       {
         description: "Monitor arm (dual)",
         qty: 30,
         amount: "$3,800.00",
         unitPrice: "$126.67",
-        flag: "high value",
+        poQty: 30,
         flagStatus: "warning",
+        subline: "High value",
       },
     ],
     linesTotal: "$65,800.00",
-    linesAlert: {
-      text: "Total exceeds $50,000 threshold. CFO approval required before payment.",
-      status: "warning",
-    },
     sourceFilename: "INV-66216.pdf",
     sourceLines: [
       "INVOICE",
@@ -430,6 +434,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     id: "INV-84471",
     vendor: "Acme Supply Co.",
     vendorEmail: "ar@acmesupply.co",
+    vendorAddress: "78 Warehouse Drive, Columbus, OH 43215",
     amount: "$12,240.00 USD",
     currency: "USD",
     dueDate: "2026-05-28",
@@ -452,7 +457,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       { label: "POs matched", value: "0", cls: "text-[#C0392B]" },
     ],
     exceptionBody:
-      "No purchase order found matching this invoice. Contact the supplier to confirm whether supplies were ordered against a PO, or reject and request a PO-backed resubmission.",
+      "No purchase order found matching this invoice. Payment is blocked until a PO is linked. Contact the supplier to confirm whether supplies were ordered against a PO, or reject and request a PO-backed resubmission.",
     exceptionPrimaryAction: "Contact supplier",
     exceptionSecondaryAction: "Reject invoice",
     lines: [
@@ -482,10 +487,6 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       },
     ],
     linesTotal: "$12,240.00",
-    linesAlert: {
-      text: "No matching PO found. Payment blocked until a valid PO is provided.",
-      status: "error",
-    },
     sourceFilename: "INV-84471.pdf",
     sourceLines: [
       "INVOICE",
@@ -515,6 +516,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     id: "INV-77294",
     vendor: "Vertex Supplies Inc.",
     vendorEmail: "ar@vertexsupplies.com",
+    vendorAddress: "210 Commerce Way, Newark, NJ 07102",
     amount: "$3,180.00 USD",
     currency: "USD",
     dueDate: "2026-05-29",
@@ -547,20 +549,21 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
         qty: 6,
         amount: "$1,440.00",
         unitPrice: "$240.00",
-        flag: "duplicate",
-        flagStatus: "warning",
+        poQty: 6,
       },
       {
         description: "CAT6 patch cable (3m, pack of 10)",
         qty: 12,
         amount: "$540.00",
         unitPrice: "$45.00",
+        poQty: 12,
       },
       {
         description: "Wireless keyboard + mouse set",
         qty: 20,
         amount: "$1,200.00",
         unitPrice: "$60.00",
+        poQty: 20,
       },
     ],
     linesTotal: "$3,180.00",
@@ -597,6 +600,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     id: "INV-55832",
     vendor: "Meridian Group",
     vendorEmail: "billing@meridiangroup.eu",
+    vendorAddress: "Unter den Linden 21, 10117 Berlin, Germany",
     amount: "€22,500.00 EUR",
     currency: "EUR",
     dueDate: "2026-05-29",
@@ -632,27 +636,26 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
         qty: 1,
         amount: "€12,000.00",
         unitPrice: "€12,000.00",
+        poQty: 1,
       },
       {
-        description: "Contract review, 32 hrs @ €250",
+        description: "Contract review",
         qty: 32,
         amount: "€8,000.00",
         unitPrice: "€250.00",
-        flag: "high value",
+        poQty: 32,
         flagStatus: "warning",
+        subline: "High value",
       },
       {
         description: "Court filing fees",
         qty: 1,
         amount: "€2,500.00",
         unitPrice: "€2,500.00",
+        poQty: 1,
       },
     ],
     linesTotal: "€22,500.00",
-    linesAlert: {
-      text: "Total exceeds €20,000 threshold. Department head approval required.",
-      status: "warning",
-    },
     sourceFilename: "INV-55832.pdf",
     sourceLines: [
       "INVOICE",
@@ -682,6 +685,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     id: "INV-60118",
     vendor: "Crestwood Co.",
     vendorEmail: "hello@crestwood.co",
+    vendorAddress: "55 Market Street, Madison, WI 53703",
     amount: "$940.00 USD",
     currency: "USD",
     dueDate: "2026-05-29",
@@ -722,10 +726,6 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       },
     ],
     linesTotal: "$940.00",
-    linesAlert: {
-      text: "No PO found, under $1,000, may qualify for one-off approval.",
-      status: "warning",
-    },
     sourceFilename: "INV-60118.pdf",
     sourceLines: [
       "INVOICE",
@@ -754,6 +754,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     id: "INV-91003",
     vendor: "NorthStar LLC",
     vendorEmail: "invoices@northstarllc.co.uk",
+    vendorAddress: "22 Canary Wharf, London E14 5AB",
     amount: "£8,750.00 GBP",
     currency: "GBP",
     dueDate: "2026-05-28",
@@ -782,25 +783,24 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     exceptionSecondaryAction: "Approve",
     lines: [
       {
-        description: "Strategic roadmap review (20h × £275)",
+        description: "Strategic roadmap review",
         qty: 1,
         amount: "£5,500.00",
         unitPrice: "£5,500.00",
+        poQty: 1,
+        subline: "20 h × £275",
       },
       {
         description: "Stakeholder workshop facilitation",
         qty: 1,
         amount: "£3,250.00",
         unitPrice: "£3,250.00",
-        flag: "high value",
+        poQty: 1,
         flagStatus: "warning",
+        subline: "High value",
       },
     ],
     linesTotal: "£8,750.00",
-    linesAlert: {
-      text: "Total exceeds £5,000 consulting threshold. Department head sign-off required.",
-      status: "warning",
-    },
     sourceFilename: "INV-91003.pdf",
     sourceLines: [
       "INVOICE",
@@ -829,6 +829,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     id: "INV-48209",
     vendor: "Folio Systems",
     vendorEmail: "ar@foliosystems.com",
+    vendorAddress: "800 Technology Drive, Austin, TX 78701",
     amount: "$7,620.00 USD",
     currency: "USD",
     dueDate: "2026-05-29",
@@ -860,12 +861,14 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
         qty: 1,
         amount: "$5,400.00",
         unitPrice: "$5,400.00",
+        poQty: 1,
       },
       {
         description: "Implementation & onboarding services",
         qty: 12,
         amount: "$2,220.00",
         unitPrice: "$185.00",
+        poQty: 12,
       },
     ],
     linesTotal: "$7,620.00",
@@ -899,6 +902,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     id: "INV-30291",
     vendor: "CDW Netherlands",
     vendorEmail: "invoicing@cdw.nl",
+    vendorAddress: "Rendementsweg 22, Utrecht, 3641 SL",
     amount: "$18,400.00 USD",
     currency: "USD",
     dueDate: "2026-05-30",
@@ -983,6 +987,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     id: "INV-30292",
     vendor: "Falcon Procurement",
     vendorEmail: "ap@falconprocurement.eu",
+    vendorAddress: "12 Rue de l'Industrie, Lyon, 69003",
     amount: "€9,850.00 EUR",
     currency: "EUR",
     dueDate: "2026-05-31",
@@ -4523,97 +4528,121 @@ function DetailsCombinedTab() {
 
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
-      <div className="px-5 pt-5 pb-16 space-y-0">
-        {/* Cluster 1 — invoice facts (top-bar fields omitted: PO, due date, currency, assignee) */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-          <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-[11px] font-medium text-muted-foreground">
-              Doc date
+      <div className="px-6 pt-[22px] pb-16">
+        {/* Section heading — invoice facts */}
+        <p className="text-[16px] font-bold tracking-tight text-foreground">Invoice details</p>
+
+        {/* Cluster 1 — invoice facts */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-[22px] mt-[18px]">
+          <div className="flex min-w-0 flex-col gap-[3px]">
+            <span className="text-[12px] text-muted-foreground">
+              Document date
             </span>
-            <span className="text-[13px] text-foreground">
+            <span className="text-[14px] font-medium text-foreground">
               {d.documentDateFormatted}
             </span>
           </div>
-          <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-[11px] font-medium text-muted-foreground">
+          <div className="flex min-w-0 flex-col gap-[3px]">
+            <span className="text-[12px] text-muted-foreground">
+              Due date
+            </span>
+            <span className="text-[14px] font-medium text-foreground">
+              {d.dueFormatted}
+            </span>
+          </div>
+          <div className="flex min-w-0 flex-col gap-[3px]">
+            <span className="text-[12px] text-muted-foreground">
               Payment terms
             </span>
-            <span className="text-[13px] text-foreground">
+            <span className="text-[14px] font-medium text-foreground">
               {d.paymentTerms}
             </span>
           </div>
           {d.vat !== "—" && (
-            <div className="flex min-w-0 flex-col gap-1">
-              <span className="text-[11px] font-medium text-muted-foreground">
+            <div className="flex min-w-0 flex-col gap-[3px]">
+              <span className="text-[12px] text-muted-foreground">
                 VAT number
               </span>
-              <span className="text-[13px] text-foreground">{d.vat}</span>
+              <span className="text-[14px] font-medium text-foreground">{d.vat}</span>
             </div>
           )}
           {d.servicePeriod && (
-            <div className="flex min-w-0 flex-col gap-1">
-              <span className="text-[11px] font-medium text-muted-foreground">
+            <div className="flex min-w-0 flex-col gap-[3px]">
+              <span className="text-[12px] text-muted-foreground">
                 Service period
               </span>
-              <span className="text-[13px] text-foreground">
+              <span className="text-[14px] font-medium text-foreground">
                 {d.servicePeriod}
               </span>
             </div>
           )}
         </div>
 
-        <Separator className="my-4" />
-
         {/* Cluster 2 — parties */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-          <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-[11px] font-medium text-muted-foreground">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-[22px] mt-[18px]">
+          <div className="flex min-w-0 flex-col gap-[3px]">
+            <span className="text-[12px] text-muted-foreground">
               Vendor
             </span>
             <div className="min-w-0">
-              <div className="text-[13px] text-foreground">{d.vendor}</div>
+              <div className="text-[14px] font-medium text-foreground">{d.vendor}</div>
               {d.vendorEmail && (
-                <div className="break-words text-[12px] leading-snug text-muted-foreground">
+                <a
+                  href={`mailto:${d.vendorEmail}`}
+                  className="break-words text-[12px] leading-[1.45] text-muted-foreground hover:text-foreground transition-colors"
+                >
                   {d.vendorEmail}
-                </div>
+                </a>
               )}
+              {d.vendorAddress && (() => {
+                const comma = d.vendorAddress.indexOf(',');
+                const street = comma >= 0 ? d.vendorAddress.slice(0, comma) : d.vendorAddress;
+                const city = comma >= 0 ? d.vendorAddress.slice(comma + 1).trim() : null;
+                return (
+                  <div className="text-[12px] leading-[1.45] text-muted-foreground">
+                    <div>{street}</div>
+                    {city && <div>{city}</div>}
+                  </div>
+                );
+              })()}
             </div>
           </div>
-          <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-[11px] font-medium text-muted-foreground">
+          <div className="flex min-w-0 flex-col gap-[3px]">
+            <span className="text-[12px] text-muted-foreground">
               Bill to
             </span>
             <div className="min-w-0">
-              <div className="text-[13px] text-foreground">{d.billTo}</div>
-              {d.billAddress && (
-                <div className="break-words text-[12px] leading-snug text-muted-foreground">
-                  {d.billAddress}
-                </div>
-              )}
+              <div className="text-[14px] font-medium text-foreground">{d.billTo}</div>
+              {d.billAddress && (() => {
+                const comma = d.billAddress.indexOf(',');
+                const street = comma >= 0 ? d.billAddress.slice(0, comma) : d.billAddress;
+                const city = comma >= 0 ? d.billAddress.slice(comma + 1).trim() : null;
+                return (
+                  <div className="text-[12px] leading-[1.45] text-muted-foreground">
+                    <div>{street}</div>
+                    {city && <div>{city}</div>}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
 
-        <Separator className="my-4" />
+        {/* Section heading — line items */}
+        <p className="text-[14px] font-bold tracking-tight text-foreground mt-[32px]">Line items</p>
 
-        {/* Section B — line items */}
-        <div>
-          {/* Column headers: # | ITEM | QTY(/PO) | AMOUNT */}
-          <div className="grid grid-cols-[16px_1fr_auto_auto] items-end gap-x-3 mb-2">
-            <span className="text-[11px] font-medium text-muted-foreground">
-              #
-            </span>
-            <span className="text-[11px] font-medium text-muted-foreground">
-              Item
-            </span>
-            <span className="text-[11px] font-medium text-muted-foreground text-right">
+        {/* Table */}
+        <div className="[font-variant-numeric:tabular-nums] mt-[18px]">
+          {/* Column headers */}
+          <div className="grid grid-cols-[16px_1fr_56px_80px] items-end gap-x-3 pb-2 border-b border-border">
+            <span className="text-[12px] text-muted-foreground">#</span>
+            <span className="text-[12px] text-muted-foreground">Item</span>
+            <span className="text-[12px] text-muted-foreground text-right">
               {hasPo ? "Qty / PO" : "Qty"}
             </span>
-            <span className="text-[11px] font-medium text-muted-foreground text-right">
-              Amount
-            </span>
+            <span className="text-[12px] text-muted-foreground text-right">Amount</span>
           </div>
-          <div className="divide-y divide-border">
+          <div>
             {d.lines.map((line, i) => {
               const lineNum = i + 1;
               const isActive = activeLine === lineNum;
@@ -4623,7 +4652,7 @@ function DetailsCombinedTab() {
                 <div
                   key={line.description}
                   className={cn(
-                    "grid grid-cols-[16px_1fr_auto_auto] items-start gap-x-3 py-2 -mx-1 px-1 rounded-sm",
+                    "grid grid-cols-[16px_1fr_56px_80px] items-baseline gap-x-3 py-[6px] -mx-6 px-6",
                     isActive && phase === "peak"
                       ? "bg-warning/20"
                       : isActive
@@ -4636,45 +4665,47 @@ function DetailsCombinedTab() {
                     {lineNum}
                   </span>
                   {/* ITEM */}
-                  <div className="flex items-start gap-1.5">
-                    <span className="text-[13px] text-foreground leading-snug flex-1">
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-[13px] font-medium text-foreground leading-snug">
                       {line.description}
                     </span>
-                    {line.flag === "high value" && (
-                      <Badge variant="secondary" className="mt-px shrink-0">
-                        {line.flag}
-                      </Badge>
+                    {line.subline && (
+                      <span
+                        className={cn(
+                          "text-[12px] leading-[1.45]",
+                          line.flagStatus === "warning"
+                            ? "text-warning"
+                            : "text-muted-foreground",
+                        )}
+                      >
+                        {line.subline}
+                      </span>
                     )}
                   </div>
                   {/* QTY / PO */}
-                  <div className="text-right">
+                  <div className="text-right whitespace-nowrap">
                     {hasPo && line.poQty !== undefined ? (
-                      <div>
-                        <div
-                          className={cn(
-                            "text-[12px] leading-tight",
-                            qtyMismatch
-                              ? "font-medium text-warning"
-                              : "text-muted-foreground",
-                          )}
-                        >
-                          {line.qty}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground leading-tight">
-                          / {line.poQty}
-                        </div>
-                      </div>
+                      <span
+                        className={cn(
+                          "text-[12px]",
+                          qtyMismatch
+                            ? "font-medium text-warning"
+                            : "text-muted-foreground",
+                        )}
+                      >
+                        {line.qty} / {line.poQty}
+                      </span>
                     ) : (
-                      <span className="text-[12px] text-muted-foreground">
+                      <span className="text-[13px] text-muted-foreground">
                         {line.qty}
                       </span>
                     )}
                   </div>
                   {/* AMOUNT */}
-                  <div className="text-right">
+                  <div className="text-right whitespace-nowrap">
                     <div
                       className={cn(
-                        "text-[12px] leading-tight",
+                        "text-[13px] leading-tight",
                         line.agreed
                           ? "font-medium text-warning"
                           : "text-foreground",
@@ -4693,21 +4724,10 @@ function DetailsCombinedTab() {
             })}
           </div>
           {/* Total row */}
-          <div className="grid grid-cols-[16px_1fr_auto_auto] gap-x-3 mt-3 pt-3 border-t-2 border-border/60">
-            <span />
-            <span className="text-[13px] font-medium text-muted-foreground">
-              Total
-            </span>
-            <span />
-            <span className="text-[13px] font-medium text-foreground text-right">
-              {d.linesTotal}
-            </span>
+          <div className="flex items-baseline mt-3 pt-3 border-t border-border">
+            <span className="text-[14px] font-medium text-foreground">Total</span>
+            <span className="text-[15px] font-medium text-foreground ml-auto">{d.linesTotal}</span>
           </div>
-          {d.linesAlert && (
-            <p className="mt-2 text-[12px] text-destructive/80 leading-snug">
-              {d.linesAlert.text}
-            </p>
-          )}
         </div>
       </div>
     </div>
