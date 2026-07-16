@@ -130,7 +130,7 @@ export function serializeStickyNoteMedia(media: StickyNoteMedia): string {
     return `![YouTube video](<https://www.youtube.com/watch?v=${media.videoId}> "${title}")`;
   }
 
-  const label = media.kind === 'image' ? escapeMarkdownLabel(media.alt) : 'Video';
+  const label = media.kind === 'image' ? escapeMarkdownLabel(media.alt) : '';
   return `![${label}](<${new URL(media.url).toString()}> "${title}")`;
 }
 

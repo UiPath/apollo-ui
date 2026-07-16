@@ -62,6 +62,15 @@ describe('StickyNoteMedia', () => {
       '![A \\[diagram\\]](<https://example.com/image.png> "sticky-note-media;kind=image;layout=full-width")'
     );
     expect(
+      serializeStickyNoteMedia({
+        kind: 'publicVideo',
+        url: 'https://example.com/video.mp4',
+        fullWidth: false,
+      })
+    ).toBe(
+      '![](<https://example.com/video.mp4> "sticky-note-media;kind=publicVideo;layout=natural-width")'
+    );
+    expect(
       parseStickyNoteMediaSource(
         'https://example.com/video.mp4',
         'Video',
