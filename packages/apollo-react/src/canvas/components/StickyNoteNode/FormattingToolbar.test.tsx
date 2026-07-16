@@ -102,6 +102,9 @@ describe('FormattingToolbar', () => {
     expect(screen.getByRole('button', { name: /^Strikethrough \(.+X\)$/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Bullet list$/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Numbered list$/ })).toBeTruthy();
+    for (const button of screen.getAllByRole('button')) {
+      expect(button).toHaveAttribute('type', 'button');
+    }
   });
 
   it('renders translated labels when a non-English locale is active', () => {

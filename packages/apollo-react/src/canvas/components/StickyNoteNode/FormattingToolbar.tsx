@@ -101,6 +101,7 @@ const FormattingToolbarComponent = ({
     >
       <CanvasTooltip content={boldLabel} placement="top" delay>
         <FormattingButton
+          type="button"
           isActive={activeFormats.bold}
           onClick={handleBold}
           aria-label={boldLabel}
@@ -111,6 +112,7 @@ const FormattingToolbarComponent = ({
       </CanvasTooltip>
       <CanvasTooltip content={italicLabel} placement="top" delay>
         <FormattingButton
+          type="button"
           isActive={activeFormats.italic}
           onClick={handleItalic}
           aria-label={italicLabel}
@@ -121,6 +123,7 @@ const FormattingToolbarComponent = ({
       </CanvasTooltip>
       <CanvasTooltip content={strikethroughLabel} placement="top" delay>
         <FormattingButton
+          type="button"
           isActive={activeFormats.strikethrough}
           onClick={handleStrikethrough}
           aria-label={strikethroughLabel}
@@ -134,6 +137,7 @@ const FormattingToolbarComponent = ({
 
       <CanvasTooltip content={bulletListLabel} placement="top" delay>
         <FormattingButton
+          type="button"
           isActive={activeFormats.bulletList}
           onClick={handleBulletList}
           aria-label={bulletListLabel}
@@ -144,6 +148,7 @@ const FormattingToolbarComponent = ({
       </CanvasTooltip>
       <CanvasTooltip content={numberedListLabel} placement="top" delay>
         <FormattingButton
+          type="button"
           isActive={activeFormats.numberedList}
           onClick={handleNumberedList}
           aria-label={numberedListLabel}
