@@ -1,3 +1,19 @@
+## [@uipath/apollo-react-v4.62.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.61.1...@uipath/apollo-react@4.62.0) (2026-07-16)
+
+### Features
+
+* **apollo-react:** add sticky note editor extensions ([5c29dcd](https://github.com/UiPath/apollo-ui/commit/5c29dcdc9a17078939c4aa50551df74a7bfc723b))
+* **apollo-react:** expose sticky note action trigger ([cc8a185](https://github.com/UiPath/apollo-ui/commit/cc8a185a827e5afe0d4ab764e6c716cdfd7c74e3))
+
+### Bug Fixes
+
+* **apollo-react:** address sticky note review feedback ([ea67608](https://github.com/UiPath/apollo-ui/commit/ea67608867cb29365114f768d3d71b585a03bfbb))
+* **apollo-react:** harden sticky note editor extensions ([782020f](https://github.com/UiPath/apollo-ui/commit/782020f399ebf9acf8943ae75961de808bf658d3))
+* **apollo-react:** preserve safe sticky note links ([34635ac](https://github.com/UiPath/apollo-ui/commit/34635acfc9f5421334e75af985d79d80c1f331c4))
+* **apollo-react:** prevent formatting controls from submitting forms ([8907a07](https://github.com/UiPath/apollo-ui/commit/8907a07ae4ad4393aeaa8cd337b0c0443c12fd52))
+* **apollo-react:** refresh formats when sticky editor resumes ([fc52bb1](https://github.com/UiPath/apollo-ui/commit/fc52bb11d675cf6e6317f8ccfa8ad99c167df3d3))
+* **apollo-react:** validate sticky media metadata tuples ([83c4ebf](https://github.com/UiPath/apollo-ui/commit/83c4ebf440fa98cdca83ef0e2913c3f797f9d493))
+
 ## [@uipath/apollo-react-v4.61.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.61.0...@uipath/apollo-react@4.61.1) (2026-07-16)
 
 ### Bug Fixes
