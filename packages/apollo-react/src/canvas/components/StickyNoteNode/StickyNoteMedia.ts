@@ -23,6 +23,11 @@ export interface StickyNoteMediaToken {
   end: number;
 }
 
+export interface StickyNoteMediaMarker {
+  kind: StickyNoteMedia['kind'];
+  fullWidth: boolean;
+}
+
 const YOUTUBE_VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 const YOUTUBE_HOSTS = new Set([
   'youtube.com',
@@ -127,11 +132,35 @@ export function serializeStickyNoteMedia(media: StickyNoteMedia): string {
   const title = `${MEDIA_TITLE_PREFIX};kind=${media.kind};layout=${layout}`;
 
   if (media.kind === 'youtube') {
-    return `![YouTube video](<https://www.youtube.com/watch?v=${media.videoId}> "${title}")`;
+    return `![](<https://www.youtube.com/watch?v=${media.videoId}> "${title}")`;
   }
 
   const label = media.kind === 'image' ? escapeMarkdownLabel(media.alt) : '';
   return `![${label}](<${new URL(media.url).toString()}> "${title}")`;
+}
+
+export function parseStickyNoteMediaMarker(title?: string): StickyNoteMediaMarker | null {
+  if (title === LEGACY_FULL_WIDTH_IMAGE_TITLE) {
+    return { kind: 'image', fullWidth: true };
+  }
+
+  const marker = title?.match(MEDIA_TITLE_PATTERN);
+  const flowMarker = title?.match(FLOW_MEDIA_TITLE_PATTERN);
+  const kind = marker?.[1] ?? flowMarker?.[1];
+  const layout = marker?.[2] ?? flowMarker?.[2];
+  if (!kind || !layout) return null;
+  const normalizedKind =
+    kind === 'video'
+      ? 'publicVideo'
+      : kind === 'image' || kind === 'youtube' || kind === 'publicVideo'
+        ? kind
+        : null;
+  if (!normalizedKind) return null;
+
+  return {
+    kind: normalizedKind,
+    fullWidth: layout === 'full-width',
+  };
 }
 
 function mediaTypeForKind(kind: StickyNoteMedia['kind']): StickyNoteMediaType {
@@ -143,26 +172,14 @@ export function parseStickyNoteMediaSource(
   alt = '',
   title?: string
 ): StickyNoteMedia | null {
-  if (title === LEGACY_FULL_WIDTH_IMAGE_TITLE) {
-    const result = parseStickyNoteMediaUrl(source, 'image', { alt, fullWidth: true });
-    return result.ok ? result.value : null;
-  }
+  const marker = parseStickyNoteMediaMarker(title);
+  if (!marker) return null;
 
-  const marker = title?.match(MEDIA_TITLE_PATTERN);
-  const flowMarker = title?.match(FLOW_MEDIA_TITLE_PATTERN);
-  const kind = marker?.[1] ?? flowMarker?.[1];
-  const layout = marker?.[2] ?? flowMarker?.[2];
-  if (!kind || !layout) return null;
-
-  if (!(kind === 'image' || kind === 'youtube' || kind === 'publicVideo' || kind === 'video')) {
-    return null;
-  }
-  const normalizedKind: StickyNoteMedia['kind'] = kind === 'video' ? 'publicVideo' : kind;
-  const result = parseStickyNoteMediaUrl(source, mediaTypeForKind(normalizedKind), {
+  const result = parseStickyNoteMediaUrl(source, mediaTypeForKind(marker.kind), {
     alt,
-    fullWidth: layout === 'full-width',
+    fullWidth: marker.fullWidth,
   });
-  return result.ok && result.value.kind === normalizedKind ? result.value : null;
+  return result.ok && result.value.kind === marker.kind ? result.value : null;
 }
 
 function normalizedRange(

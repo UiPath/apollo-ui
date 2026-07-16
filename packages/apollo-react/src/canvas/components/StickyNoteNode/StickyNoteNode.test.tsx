@@ -194,6 +194,22 @@ describe('StickyNoteNode editor extensions', () => {
     );
   });
 
+  it('does not load invalid URLs carrying a sticky note media marker', () => {
+    const { container } = renderStickyNoteNode({
+      enableMediaEmbedding: true,
+      data: {
+        color: 'yellow',
+        content:
+          '![Unavailable media](http://example.com/image.png "sticky-note-media;kind=image;layout=full-width")',
+      },
+    });
+
+    expect(container.querySelector('img')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Unavailable media' })).toHaveTextContent(
+      'Media unavailable'
+    );
+  });
+
   it('lets an editor action commit the captured selection once', () => {
     let editorContext: StickyNoteEditorActionContext | undefined;
     const onContentChange = vi.fn();
@@ -528,7 +544,7 @@ describe('StickyNoteNode built-in media embedding', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Embed media' }));
 
     expect(onContentChange).toHaveBeenCalledWith(
-      'Video:\n\n![YouTube video](<https://www.youtube.com/watch?v=M7lc1UVf-VE> "sticky-note-media;kind=youtube;layout=natural-width")'
+      'Video:\n\n![](<https://www.youtube.com/watch?v=M7lc1UVf-VE> "sticky-note-media;kind=youtube;layout=natural-width")'
     );
   });
 
