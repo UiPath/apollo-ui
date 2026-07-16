@@ -72,6 +72,7 @@
   "sticky-note.media.image-unavailable-label": "Image unavailable",
   "sticky-note.media.play-video": "Play video",
   "sticky-note.media.video-unavailable": "Video playback is unavailable.",
+  "sticky-note.media.video-label": "Embedded video",
   "sticky-note.media.youtube-title": "YouTube video",
   "sticky-note.toolbar.color": "Color",
   "sticky-note.toolbar.delete": "Delete",
