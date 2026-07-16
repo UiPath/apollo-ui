@@ -58,7 +58,7 @@ export interface StickyNoteNodeProps extends NodeProps {
   onResizeStart?: () => void;
   onResizeEnd?: () => void;
   formattingActions?: readonly StickyNoteFormattingAction[];
-  markdownComponents?: Components;
+  markdownComponents?: Omit<Components, 'a'>;
 }
 
 const minWidth = GRID_SPACING * 8;
@@ -394,7 +394,7 @@ const StickyNoteNodeComponent = ({
   );
 
   const markdownComponents = useMemo<Components>(
-    () => ({ ...builtInMarkdownComponents, ...customMarkdownComponents }),
+    () => ({ ...customMarkdownComponents, ...builtInMarkdownComponents }),
     [builtInMarkdownComponents, customMarkdownComponents]
   );
 

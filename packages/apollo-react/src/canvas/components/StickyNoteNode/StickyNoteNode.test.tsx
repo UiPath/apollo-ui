@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { Components } from 'react-markdown';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockDeleteElements, mockUpdateNodeData } = vi.hoisted(() => ({
@@ -160,7 +161,8 @@ describe('StickyNoteNode editor extensions', () => {
       },
       markdownComponents: {
         img: ({ alt }) => <span>Custom media: {alt}</span>,
-      },
+        a: ({ children }) => <span>Unsafe custom link: {children}</span>,
+      } as Components,
     });
 
     expect(container.querySelector('del')).toHaveTextContent('Completed');
