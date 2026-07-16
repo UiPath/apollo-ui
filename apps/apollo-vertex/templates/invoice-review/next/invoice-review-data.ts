@@ -409,6 +409,8 @@ export interface InvoiceRuntime {
     /** Exception IDs auto-cleared by predicate re-run in this batch. */
     autoResolvedIds: readonly string[];
   };
+  /** Transient aim state: set while a mutating fix action is hovered/focused. */
+  aimCorrection?: DetailCorrections;
 }
 
 export function exceptionMeta(e: InvoiceException): {
@@ -575,6 +577,19 @@ export function isRouteSuggestion(s: Suggestion): boolean {
   return (
     s.kind === "route" || (s.kind === undefined && ROUTE_TYPES.has(s.type))
   );
+}
+
+/**
+ * Returns the DetailCorrections this suggestion would write — used to drive the
+ * aim ring while the action is hovered/focused. Returns null for non-mutating
+ * actions (route / wait), which should never aim at anything.
+ * verify returns an empty object: evidence-only aim, no panel field targets.
+ */
+export function suggestionAimCorrection(
+  s: Suggestion,
+): DetailCorrections | null {
+  if (isRouteSuggestion(s) || s.type === "wait") return null;
+  return s.correction ?? {};
 }
 
 // Supplier-type routes go through the email draft modal (the message to the

@@ -10,6 +10,8 @@ import {
   isSupplierRoute,
   ROUTE_REASONS,
   routeOwner,
+  suggestionAimCorrection,
+  type DetailCorrections,
   type Suggestion,
   suggestionLabel,
 } from "./invoice-review-data";
@@ -31,10 +33,12 @@ export function SuggestedFixCard({
   suggestions,
   onResolve,
   disabled,
+  onAim,
 }: {
   suggestions: Suggestion[];
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
   disabled?: boolean;
+  onAim?: (correction: DetailCorrections | null) => void;
 }) {
   const gradientId = useId();
 
@@ -91,6 +95,7 @@ export function SuggestedFixCard({
               suggestion={primary}
               disabled={disabled}
               onResolve={onResolve}
+              onAim={onAim}
             />
             {alternatives.map((alt, i) => (
               <ActionButton
@@ -99,6 +104,7 @@ export function SuggestedFixCard({
                 suggestion={alt}
                 disabled={disabled}
                 onResolve={onResolve}
+                onAim={onAim}
               />
             ))}
           </div>
@@ -119,20 +125,33 @@ function ActionButton({
   suggestion,
   disabled,
   onResolve,
+  onAim,
 }: {
   suggestion: Suggestion;
   disabled?: boolean;
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
+  onAim?: (correction: DetailCorrections | null) => void;
 }) {
   const isInternalRoute =
     isRouteSuggestion(suggestion) && !isSupplierRoute(suggestion);
+
+  const handleAim = () => onAim?.(suggestionAimCorrection(suggestion));
+  const handleClearAim = () => onAim?.(null);
 
   if (isInternalRoute) {
     const owner = routeOwner(suggestion);
     return (
       <ReasonDialog
         trigger={
-          <Button variant="secondary" size="sm" disabled={disabled}>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={disabled}
+            onMouseEnter={handleAim}
+            onFocus={handleAim}
+            onMouseLeave={handleClearAim}
+            onBlur={handleClearAim}
+          >
             {suggestionLabel(suggestion)}
           </Button>
         }
@@ -151,6 +170,10 @@ function ActionButton({
       size="sm"
       disabled={disabled}
       onClick={() => onResolve(suggestion)}
+      onMouseEnter={handleAim}
+      onFocus={handleAim}
+      onMouseLeave={handleClearAim}
+      onBlur={handleClearAim}
     >
       {suggestionLabel(suggestion)}
     </Button>

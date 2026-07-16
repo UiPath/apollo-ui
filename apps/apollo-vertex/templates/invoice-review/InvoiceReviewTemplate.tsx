@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import {
   createContext,
+  type CSSProperties,
   useContext,
   useEffect,
   useMemo,
@@ -4670,6 +4671,19 @@ function DetailsCombinedTab() {
     );
   };
 
+  const aimCorrection = rt.aimCorrection;
+  const AIM_STYLE: CSSProperties = {
+    outlineStyle: "dashed",
+    outlineWidth: "1.5px",
+    outlineColor: "color-mix(in oklch, var(--warning) 65%, transparent)",
+    outlineOffset: "2px",
+  };
+  const isAimed = (field: string): boolean =>
+    !!aimCorrection &&
+    (aimCorrection as Record<string, unknown>)[field] !== undefined;
+  const isLineAimed = (lineNum: number): boolean =>
+    !!aimCorrection?.lines?.[lineNum];
+
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
       <div className="px-6 pt-[22px] pb-16">
@@ -4699,6 +4713,7 @@ function DetailsCombinedTab() {
                 "text-[14px] font-medium text-foreground",
                 pulseClass("documentDateFormatted"),
               )}
+              style={isAimed("documentDateFormatted") ? AIM_STYLE : undefined}
             >
               {cd.documentDateFormatted}
             </span>
@@ -4712,6 +4727,7 @@ function DetailsCombinedTab() {
                 "text-[14px] font-medium text-foreground",
                 pulseClass("dueFormatted"),
               )}
+              style={isAimed("dueFormatted") ? AIM_STYLE : undefined}
             >
               {cd.dueFormatted}
             </span>
@@ -4725,6 +4741,7 @@ function DetailsCombinedTab() {
                 "text-[14px] font-medium text-foreground",
                 pulseClass("paymentTerms"),
               )}
+              style={isAimed("paymentTerms") ? AIM_STYLE : undefined}
             >
               {cd.paymentTerms}
             </span>
@@ -4739,6 +4756,7 @@ function DetailsCombinedTab() {
                   "text-[14px] font-medium text-foreground",
                   pulseClass("vat"),
                 )}
+                style={isAimed("vat") ? AIM_STYLE : undefined}
               >
                 {cd.vat}
               </span>
@@ -4754,6 +4772,7 @@ function DetailsCombinedTab() {
                   "text-[14px] font-medium text-foreground",
                   pulseClass("servicePeriod"),
                 )}
+                style={isAimed("servicePeriod") ? AIM_STYLE : undefined}
               >
                 {cd.servicePeriod}
               </span>
@@ -4767,7 +4786,10 @@ function DetailsCombinedTab() {
             <span className="text-[12px] text-muted-foreground">
               Vendor{dc?.vendor && <CorrectedMark />}
             </span>
-            <div className={cn("min-w-0", pulseClass("vendor"))}>
+            <div
+              className={cn("min-w-0", pulseClass("vendor"))}
+              style={isAimed("vendor") ? AIM_STYLE : undefined}
+            >
               <div className="text-[14px] font-medium text-foreground">
                 {cd.vendor}
               </div>
@@ -4803,7 +4825,10 @@ function DetailsCombinedTab() {
             <span className="text-[12px] text-muted-foreground">
               Bill to{dc?.billTo && <CorrectedMark />}
             </span>
-            <div className={cn("min-w-0", pulseClass("billTo"))}>
+            <div
+              className={cn("min-w-0", pulseClass("billTo"))}
+              style={isAimed("billTo") ? AIM_STYLE : undefined}
+            >
               <div className="text-[14px] font-medium text-foreground">
                 {cd.billTo}
               </div>
@@ -4898,6 +4923,7 @@ function DetailsCombinedTab() {
                             : "text-muted-foreground",
                           pulseLineClass(lineNum),
                         )}
+                        style={isLineAimed(lineNum) ? AIM_STYLE : undefined}
                       >
                         {line.qty} / {line.poQty}
                       </span>
@@ -4907,6 +4933,7 @@ function DetailsCombinedTab() {
                           "text-[13px] text-muted-foreground",
                           pulseLineClass(lineNum),
                         )}
+                        style={isLineAimed(lineNum) ? AIM_STYLE : undefined}
                       >
                         {line.qty}
                       </span>

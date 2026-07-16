@@ -134,6 +134,11 @@ interface RuntimeStore {
   getCursor: (invoiceId: string) => string | undefined;
   /** Set the cursor exception id (called by ExceptionTimeline on active change). */
   setCursor: (invoiceId: string, exceptionId: string | undefined) => void;
+  /** Set (or clear with null) the transient aim state while hovering a mutating fix action. */
+  setAimCorrection: (
+    invoiceId: string,
+    correction: DetailCorrections | null,
+  ) => void;
   /** Wipe all runtime state for every invoice and clear sessionStorage. Demo reset. */
   resetAllRuntimes: () => void;
 }
@@ -351,6 +356,15 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
             : undefined;
           if (!anchor && !cur.fieldHighlight) return prev;
           return { ...prev, [id]: { ...cur, fieldHighlight: next } };
+        }),
+      setAimCorrection: (id, correction) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          if (!correction && !cur.aimCorrection) return prev;
+          return {
+            ...prev,
+            [id]: { ...cur, aimCorrection: correction ?? undefined },
+          };
         }),
       resetAllRuntimes: () => {
         try {
