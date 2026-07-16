@@ -439,6 +439,27 @@ describe('ApChat Web Component', () => {
       expect(portalContainerAfter).toBe(portalContainer);
     });
 
+    it('should carry the theme class on the portal container and keep it in sync', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      expect(portalContainer).not.toBeNull();
+
+      // theme-variables.css activates semantic tokens for the portal subtree via
+      // selectors like `:where(.light)`, so the portal container must carry the
+      // theme class initially and update when the theme changes.
+      expect(portalContainer.classList.contains('light')).toBe(true); // default theme
+
+      element.theme = 'dark';
+
+      expect(portalContainer.classList.contains('dark')).toBe(true);
+      expect(portalContainer.classList.contains('light')).toBe(false);
+      // The base `portal-container` class is preserved across theme changes.
+      expect(portalContainer.classList.contains('portal-container')).toBe(true);
+    });
+
     it('should maintain portal container across locale changes', () => {
       element.chatServiceInstance = mockService;
       element.connectedCallback();

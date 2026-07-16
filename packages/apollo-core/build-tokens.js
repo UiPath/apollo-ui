@@ -39,9 +39,19 @@ StyleDictionary.registerFormat({
 StyleDictionary.registerFormat({
   name: 'css/variables-shadow-host',
   formatter: function (dictionary, platform) {
-    return StyleDictionary.format['css/variables']
-      .call(this, dictionary, platform)
-      .replace(':root {', ':root, :host {');
+    const css = StyleDictionary.format['css/variables'].call(this, dictionary, platform);
+    const scoped = css.replace(':root {', ':root, :host {');
+    // Fail loud if the selector didn't change: a silent no-op (e.g. if a future
+    // Style Dictionary version emits `:root{` or reformats the block) would
+    // regenerate `variables.css` back to bare `:root {}` and reintroduce the
+    // shadow-DOM token-scoping bug this format exists to fix, with no signal.
+    if (scoped === css) {
+      throw new Error(
+        "css/variables-shadow-host: expected ':root {' in the built-in css/variables output but found none — " +
+          'the selector was not rewritten to :root, :host. Shadow-DOM base tokens would be lost.'
+      );
+    }
+    return scoped;
   },
 });
 
