@@ -399,6 +399,16 @@ export interface InvoiceRuntime {
   highlight?: SourceHighlight;
   /** field-focus highlight from the edit form — takes priority over exception highlights */
   fieldHighlight?: { anchor: string; nonce: number };
+  /** Transient correction pulse set atomically by correctDetail; drives settle animations. */
+  correctionPulse?: {
+    nonce: number;
+    /** Scalar detail field keys that changed (e.g. "vat", "documentDateFormatted"). */
+    detailFields: readonly string[];
+    /** 1-based line numbers with qty corrections. */
+    lineNums: readonly number[];
+    /** Exception IDs auto-cleared by predicate re-run in this batch. */
+    autoResolvedIds: readonly string[];
+  };
 }
 
 export function exceptionMeta(e: InvoiceException): {
@@ -475,7 +485,7 @@ export const RESOLUTION_PREDICATES: Partial<
     // PO qty is the non-warn side of the finding — no separate base needed.
     const poQtyStr = exc.finding.sides?.find((s) => s.tone !== "warn")?.value;
     if (correctedQty === undefined || poQtyStr === undefined) return true;
-    const poQty = Number(poQtyStr);
+    const poQty = parseInt(poQtyStr, 10);
     if (Number.isNaN(poQty)) return true;
     return correctedQty > poQty;
   },

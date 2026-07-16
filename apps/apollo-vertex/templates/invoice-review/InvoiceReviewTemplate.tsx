@@ -4615,6 +4615,48 @@ function DetailsCombinedTab() {
     };
   }, [activeLine]);
 
+  // Correction pulse: fires when a fix action or edit-mode save commits corrections.
+  const correctionPulse = rt.correctionPulse;
+  const pulseNonce = correctionPulse?.nonce;
+  const pulseFields = new Set(correctionPulse?.detailFields ?? []);
+  const pulseLineNums = new Set(correctionPulse?.lineNums ?? []);
+  const [pulseSettle, setPulseSettle] = useState<"peak" | "rest">("rest");
+
+  useEffect(() => {
+    if (pulseNonce === undefined) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setPulseSettle("peak");
+    let r2 = 0;
+    const r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => setPulseSettle("rest"));
+    });
+    return () => {
+      cancelAnimationFrame(r1);
+      cancelAnimationFrame(r2);
+    };
+    // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the animation
+  }, [pulseNonce]);
+
+  const pulseClass = (field: string): string | undefined => {
+    if (!pulseFields.has(field)) return undefined;
+    return cn(
+      "rounded-sm px-0.5 ring-1 ring-inset",
+      pulseSettle === "peak"
+        ? "bg-warning/40 ring-warning/70"
+        : "bg-warning/15 ring-warning/50 transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none",
+    );
+  };
+
+  const pulseLineClass = (lineNum: number): string | undefined => {
+    if (!pulseLineNums.has(lineNum)) return undefined;
+    return cn(
+      "rounded-sm px-0.5 ring-1 ring-inset",
+      pulseSettle === "peak"
+        ? "bg-warning/40 ring-warning/70"
+        : "bg-warning/15 ring-warning/50 transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none",
+    );
+  };
+
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
       <div className="px-6 pt-[22px] pb-16">
@@ -4639,7 +4681,12 @@ function DetailsCombinedTab() {
             <span className="text-[12px] text-muted-foreground">
               Document date{dc?.documentDateFormatted && <CorrectedMark />}
             </span>
-            <span className="text-[14px] font-medium text-foreground">
+            <span
+              className={cn(
+                "text-[14px] font-medium text-foreground",
+                pulseClass("documentDateFormatted"),
+              )}
+            >
               {cd.documentDateFormatted}
             </span>
           </div>
@@ -4647,7 +4694,12 @@ function DetailsCombinedTab() {
             <span className="text-[12px] text-muted-foreground">
               Due date{dc?.dueFormatted && <CorrectedMark />}
             </span>
-            <span className="text-[14px] font-medium text-foreground">
+            <span
+              className={cn(
+                "text-[14px] font-medium text-foreground",
+                pulseClass("dueFormatted"),
+              )}
+            >
               {cd.dueFormatted}
             </span>
           </div>
@@ -4655,7 +4707,12 @@ function DetailsCombinedTab() {
             <span className="text-[12px] text-muted-foreground">
               Payment terms{dc?.paymentTerms && <CorrectedMark />}
             </span>
-            <span className="text-[14px] font-medium text-foreground">
+            <span
+              className={cn(
+                "text-[14px] font-medium text-foreground",
+                pulseClass("paymentTerms"),
+              )}
+            >
               {cd.paymentTerms}
             </span>
           </div>
@@ -4664,7 +4721,12 @@ function DetailsCombinedTab() {
               <span className="text-[12px] text-muted-foreground">
                 VAT number{dc?.vat && <CorrectedMark />}
               </span>
-              <span className="text-[14px] font-medium text-foreground">
+              <span
+                className={cn(
+                  "text-[14px] font-medium text-foreground",
+                  pulseClass("vat"),
+                )}
+              >
                 {cd.vat}
               </span>
             </div>
@@ -4674,7 +4736,12 @@ function DetailsCombinedTab() {
               <span className="text-[12px] text-muted-foreground">
                 Service period{dc?.servicePeriod && <CorrectedMark />}
               </span>
-              <span className="text-[14px] font-medium text-foreground">
+              <span
+                className={cn(
+                  "text-[14px] font-medium text-foreground",
+                  pulseClass("servicePeriod"),
+                )}
+              >
                 {cd.servicePeriod}
               </span>
             </div>
@@ -4687,7 +4754,7 @@ function DetailsCombinedTab() {
             <span className="text-[12px] text-muted-foreground">
               Vendor{dc?.vendor && <CorrectedMark />}
             </span>
-            <div className="min-w-0">
+            <div className={cn("min-w-0", pulseClass("vendor"))}>
               <div className="text-[14px] font-medium text-foreground">
                 {cd.vendor}
               </div>
@@ -4723,7 +4790,7 @@ function DetailsCombinedTab() {
             <span className="text-[12px] text-muted-foreground">
               Bill to{dc?.billTo && <CorrectedMark />}
             </span>
-            <div className="min-w-0">
+            <div className={cn("min-w-0", pulseClass("billTo"))}>
               <div className="text-[14px] font-medium text-foreground">
                 {cd.billTo}
               </div>
@@ -4816,12 +4883,18 @@ function DetailsCombinedTab() {
                           qtyMismatch
                             ? "font-medium text-warning"
                             : "text-muted-foreground",
+                          pulseLineClass(lineNum),
                         )}
                       >
                         {line.qty} / {line.poQty}
                       </span>
                     ) : (
-                      <span className="text-[13px] text-muted-foreground">
+                      <span
+                        className={cn(
+                          "text-[13px] text-muted-foreground",
+                          pulseLineClass(lineNum),
+                        )}
+                      >
                         {line.qty}
                       </span>
                     )}
@@ -6360,7 +6433,7 @@ function DetailsEditForm({
         <div className="px-6 py-5 space-y-6">
           {/* Invoice facts */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+            <p className="text-[11px] font-semibold text-muted-foreground mb-3">
               Invoice details
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -6454,7 +6527,7 @@ function DetailsEditForm({
 
           {/* Parties */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+            <p className="text-[11px] font-semibold text-muted-foreground mb-3">
               Parties
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -6543,7 +6616,7 @@ function DetailsEditForm({
 
           {/* Line items */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+            <p className="text-[11px] font-semibold text-muted-foreground mb-3">
               Line items
             </p>
             <div className="space-y-3">
@@ -6729,13 +6802,19 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
       },
     ];
 
-    runtime.correctDetail(
-      invoiceId,
-      corrections,
-      { openExceptions: open, base },
-      correctionEvents,
-    );
-    doExit(exitEditMode);
+    // Apply corrections after the exit animation so the pulse fires on the
+    // now-visible panel, not while it's hidden behind the overlay.
+    doExit(() => {
+      exitEditMode();
+      setTimeout(() => {
+        runtime.correctDetail(
+          invoiceId,
+          corrections,
+          { openExceptions: open, base },
+          correctionEvents,
+        );
+      }, 200);
+    });
   }
 
   // Esc cancels (with dirty guard)
