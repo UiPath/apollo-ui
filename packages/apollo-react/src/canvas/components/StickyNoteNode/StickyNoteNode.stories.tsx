@@ -1,13 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import ReactMarkdown from 'react-markdown';
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { StickyNoteNode } from './StickyNoteNode';
-import type { StickyNoteColor, StickyNoteData } from './StickyNoteNode.types';
+import { StickyNoteNode, type StickyNoteNodeProps } from './StickyNoteNode';
+import type {
+  StickyNoteColor,
+  StickyNoteData,
+  StickyNoteEditorActionContext,
+  StickyNoteFormattingAction,
+  TextSelection,
+} from './StickyNoteNode.types';
 
 // ============================================================================
 // Meta Configuration
@@ -32,7 +41,7 @@ const STORY_LOOP_SUCCESS_HANDLE_ID = 'success';
 // ============================================================================
 
 // StickyNote wrapper with console logging for callbacks
-const StickyNoteWithCallbacks = (props: any) => {
+const StickyNoteWithCallbacks = (props: StickyNoteNodeProps) => {
   const handleContentChange = (content: string) => {
     console.log('📝 Content changed:', {
       nodeId: props.id,
@@ -76,7 +85,207 @@ const nodeTypesWithCallbacks = {
   stickyNote: StickyNoteWithCallbacks,
 };
 
-const ReadOnlyStickyNote = (props: any) => <StickyNoteNode {...props} readOnly />;
+const DEMO_IMAGE_URL = 'https://placehold.co/640x360/png?text=Sticky+note+image';
+
+function isHttpsUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function insertImageAtSelection(
+  currentValue: string,
+  selection: TextSelection,
+  imageUrl: string
+): TextSelection {
+  const markdown = `![Embedded image](${imageUrl})`;
+  const selectionIsCurrent = currentValue === selection.value;
+  const start = selectionIsCurrent ? selection.selectionStart : currentValue.length;
+  const end = selectionIsCurrent ? selection.selectionEnd : currentValue.length;
+  const prefix = start > 0 && currentValue[start - 1] !== '\n' ? '\n\n' : '';
+  const suffix = end < currentValue.length && currentValue[end] !== '\n' ? '\n\n' : '';
+  const value = `${currentValue.slice(0, start)}${prefix}${markdown}${suffix}${currentValue.slice(end)}`;
+  const cursor = start + prefix.length + markdown.length;
+
+  return { value, selectionStart: cursor, selectionEnd: cursor };
+}
+
+function StickyNoteWithEditorExtensions(props: StickyNoteNodeProps) {
+  const [actionContext, setActionContext] = useState<StickyNoteEditorActionContext | null>(null);
+  const [imageUrl, setImageUrl] = useState(DEMO_IMAGE_URL);
+  const [validationMessage, setValidationMessage] = useState('');
+  const imageUrlInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!actionContext) return;
+    requestAnimationFrame(() => imageUrlInputRef.current?.focus());
+  }, [actionContext]);
+
+  const openImageDialog = useCallback((context: StickyNoteEditorActionContext) => {
+    setValidationMessage('');
+    setActionContext(context);
+  }, []);
+
+  const cancelImageDialog = useCallback(() => {
+    actionContext?.resume();
+    setActionContext(null);
+    setValidationMessage('');
+  }, [actionContext]);
+
+  const insertImage = useCallback(() => {
+    if (!actionContext) return;
+    if (!isHttpsUrl(imageUrl)) {
+      setValidationMessage('Enter a valid HTTPS image URL.');
+      return;
+    }
+
+    actionContext.commit(
+      insertImageAtSelection(actionContext.currentValue(), actionContext.selection, imageUrl)
+    );
+    setActionContext(null);
+    setValidationMessage('');
+  }, [actionContext, imageUrl]);
+
+  const formattingActions = useMemo<readonly StickyNoteFormattingAction[]>(
+    () => [
+      {
+        id: 'embed-demo-image',
+        icon: <CanvasIcon icon="image-plus" size={14} />,
+        label: 'Embed demo image',
+        onAction: openImageDialog,
+      },
+    ],
+    [openImageDialog]
+  );
+
+  const renderMarkdown = useCallback(
+    (content: string) => (
+      <ReactMarkdown
+        components={{
+          img: ({ src, alt }) => (
+            <img
+              src={src}
+              alt={alt ?? ''}
+              draggable={false}
+              style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 6 }}
+            />
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    ),
+    []
+  );
+
+  return (
+    <>
+      <StickyNoteNode
+        {...props}
+        formattingActions={formattingActions}
+        renderMarkdown={renderMarkdown}
+      />
+      {actionContext &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            role="presentation"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 10000,
+              display: 'grid',
+              placeItems: 'center',
+              background: 'rgb(0 0 0 / 45%)',
+            }}
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) cancelImageDialog();
+            }}
+          >
+            <form
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="sticky-note-image-dialog-title"
+              onSubmit={(event) => {
+                event.preventDefault();
+                insertImage();
+              }}
+              style={{
+                width: 'min(440px, calc(100vw - 32px))',
+                padding: 20,
+                border: '1px solid var(--canvas-border-de-emp)',
+                borderRadius: 12,
+                color: 'var(--canvas-foreground)',
+                background: 'var(--canvas-background-raised)',
+                boxShadow: '0 20px 50px rgb(0 0 0 / 35%)',
+              }}
+            >
+              <h2 id="sticky-note-image-dialog-title" style={{ margin: '0 0 8px', fontSize: 18 }}>
+                Embed demo image
+              </h2>
+              <p
+                style={{
+                  margin: '0 0 16px',
+                  color: 'var(--canvas-foreground-de-emp)',
+                  fontSize: 13,
+                }}
+              >
+                The image Markdown is inserted at the saved cursor. If the note changes while this
+                dialog is open, it is appended instead.
+              </p>
+              <label
+                htmlFor="sticky-note-demo-image-url"
+                style={{ display: 'block', fontSize: 13 }}
+              >
+                HTTPS image URL
+              </label>
+              <input
+                ref={imageUrlInputRef}
+                id="sticky-note-demo-image-url"
+                value={imageUrl}
+                onChange={(event) => {
+                  setImageUrl(event.target.value);
+                  setValidationMessage('');
+                }}
+                style={{
+                  boxSizing: 'border-box',
+                  width: '100%',
+                  marginTop: 6,
+                  padding: '9px 10px',
+                  border: '1px solid var(--canvas-border)',
+                  borderRadius: 6,
+                  color: 'var(--canvas-foreground)',
+                  background: 'var(--canvas-background)',
+                }}
+              />
+              {validationMessage && (
+                <p role="alert" style={{ margin: '8px 0 0', color: 'var(--canvas-error-icon)' }}>
+                  {validationMessage}
+                </p>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
+                <button type="button" onClick={cancelImageDialog} style={{ padding: '8px 14px' }}>
+                  Cancel
+                </button>
+                <button type="submit" style={{ padding: '8px 14px' }}>
+                  Insert image
+                </button>
+              </div>
+            </form>
+          </div>,
+          document.body
+        )}
+    </>
+  );
+}
+
+const nodeTypesWithEditorExtensions = {
+  stickyNote: StickyNoteWithEditorExtensions,
+};
+
+const ReadOnlyStickyNote = (props: StickyNoteNodeProps) => <StickyNoteNode {...props} readOnly />;
 
 const nodeTypesReadOnly = {
   stickyNote: ReadOnlyStickyNote,
@@ -632,6 +841,37 @@ function WithCallbacksStory() {
   );
 }
 
+function EditorExtensionsStory() {
+  const initialNodes = useMemo<Node<StickyNoteData>[]>(() => {
+    const note = createStickyNote(
+      'sticky-editor-extensions',
+      'yellow',
+      '**Try the editor extension**\n\nPlace the cursor here → and choose the image button.',
+      { x: 430, y: 190 },
+      { width: 420, height: 360 }
+    );
+
+    return [{ ...note, selected: true, data: { ...note.data, autoFocus: true } }];
+  }, []);
+
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    additionalNodeTypes: nodeTypesWithEditorExtensions,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <StoryInfoPanel
+        title="Sticky Note Editor Extensions"
+        description="Move the cursor, click the image-plus action after the list buttons, then insert or cancel. Press Escape after inserting to preview the rendered image. This exercises selection capture, external-dialog focus, commit/resume, and custom rendering."
+      />
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
 function ReadOnlyStory() {
   const initialNodes = useMemo<Node<StickyNoteData>[]>(
     () => [
@@ -678,6 +918,10 @@ export const StickyNotesInLoopContainers: Story = {
 
 export const WithCallbacks: Story = {
   render: () => <WithCallbacksStory />,
+};
+
+export const EditorExtensions: Story = {
+  render: () => <EditorExtensionsStory />,
 };
 
 export const ReadOnly: Story = {
