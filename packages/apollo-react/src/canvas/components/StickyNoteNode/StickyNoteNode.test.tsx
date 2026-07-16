@@ -265,16 +265,17 @@ describe('StickyNoteNode editor extensions', () => {
     view.rerender(
       <StickyNoteNode
         {...defaultProps}
-        data={{ color: 'yellow', content: 'Externally updated' }}
+        data={{ color: 'yellow', content: '**Externally updated**' }}
         onContentChange={onContentChange}
         formattingActions={formattingActions}
       />
     );
 
-    expect(editorContext?.currentValue()).toBe('Externally updated');
+    expect(editorContext?.currentValue()).toBe('**Externally updated**');
     act(() => editorContext?.resume());
 
-    expect(screen.getByRole('textbox')).toHaveValue('Externally updated');
+    expect(screen.getByRole('textbox')).toHaveValue('**Externally updated**');
+    expect(screen.getByRole('button', { name: /^Bold/ })).toHaveAttribute('aria-pressed', 'true');
     expect(onContentChange).not.toHaveBeenCalled();
     expect(mockUpdateNodeData).not.toHaveBeenCalled();
   });
