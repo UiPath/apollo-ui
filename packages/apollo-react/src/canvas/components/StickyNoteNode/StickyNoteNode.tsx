@@ -77,7 +77,7 @@ const StickyNoteNodeComponent = ({
   onResize,
   onResizeStart,
   onResizeEnd,
-  formattingActions = [],
+  formattingActions,
   renderMarkdown,
 }: StickyNoteNodeProps) => {
   const { _ } = useSafeLingui();
@@ -222,16 +222,25 @@ const StickyNoteNodeComponent = ({
         restoreSelection(next);
       };
 
-      action.onAction({
-        selection,
-        anchorRect,
-        currentValue: () => textAreaRef.current?.value ?? latestContentRef.current,
-        commit: (next) => complete(next, true),
-        resume: () => {
-          const currentValue = textAreaRef.current?.value ?? latestContentRef.current;
-          complete({ ...selection, value: currentValue }, false);
-        },
-      });
+      try {
+        action.onAction({
+          selection,
+          anchorRect,
+          currentValue: () => textAreaRef.current?.value ?? latestContentRef.current,
+          commit: (next) => complete(next, true),
+          resume: () => {
+            const currentValue = textAreaRef.current?.value ?? latestContentRef.current;
+            complete({ ...selection, value: currentValue }, false);
+          },
+        });
+      } catch (error) {
+        if (!completed) {
+          completed = true;
+          skipBlurRef.current = null;
+          restoreSelection(selection);
+        }
+        throw error;
+      }
     },
     [id, onContentChange, updateLocalContent, updateNodeData]
   );

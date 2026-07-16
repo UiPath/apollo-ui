@@ -256,4 +256,39 @@ describe('StickyNoteNode editor extensions', () => {
     expect(onContentChange).not.toHaveBeenCalled();
     expect(mockUpdateNodeData).not.toHaveBeenCalled();
   });
+
+  it('restores normal blur persistence when a consumer action throws', () => {
+    const onContentChange = vi.fn();
+    const actionError = new Error('Consumer action failed');
+    const formattingActions: readonly StickyNoteFormattingAction[] = [
+      {
+        id: 'embed-media',
+        label: 'Embed media',
+        icon: <span aria-hidden="true">M</span>,
+        onAction: () => {
+          throw actionError;
+        },
+      },
+    ];
+
+    renderStickyNoteNode({ onContentChange, formattingActions });
+
+    const editor = startEditing();
+    fireEvent.change(editor, { target: { value: 'Persist after action failure' } });
+
+    const handleError = vi.fn((event: ErrorEvent) => event.preventDefault());
+    window.addEventListener('error', handleError);
+    fireEvent.click(screen.getByRole('button', { name: 'Embed media' }));
+    window.removeEventListener('error', handleError);
+
+    fireEvent.blur(editor);
+
+    expect(handleError).toHaveBeenCalledOnce();
+    expect(handleError.mock.calls[0]?.[0].error).toBe(actionError);
+    expect(onContentChange).toHaveBeenCalledOnce();
+    expect(onContentChange).toHaveBeenCalledWith('Persist after action failure');
+    expect(mockUpdateNodeData).toHaveBeenCalledWith('sticky-note-1', {
+      content: 'Persist after action failure',
+    });
+  });
 });
