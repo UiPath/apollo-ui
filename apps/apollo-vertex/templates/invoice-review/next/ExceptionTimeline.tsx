@@ -47,6 +47,7 @@ import {
   generateSupplierEmailBody,
   HOLD_REASONS,
   holdInvoice,
+  type DetailCorrections,
   type InvoiceException,
   type InvoiceReview,
   isRouteSuggestion,
@@ -1523,6 +1524,8 @@ type ResolveState = {
   sub: string;
   shortLabel: string;
   dataPatch?: Partial<InvoiceReview>;
+  /** corrections to thread through to detailCorrections on commit */
+  detailCorrections?: DetailCorrections;
   phase: ResolvePhase;
   fresh: InvoiceException[];
   clearedInList: string[];
@@ -2146,11 +2149,14 @@ export function ExceptionTimeline({
   review,
   onAllClear,
   exceptionListVariant = "strip",
+  onRequestEdit,
 }: {
   review: InvoiceReview;
   onAllClear: () => void;
   /** "strip" = the Up next preview (default); "index" = the bordered index. */
   exceptionListVariant?: "strip" | "index";
+  /** Called when an inspectable evidence field should open the detail edit mode. */
+  onRequestEdit?: (fieldKey: string) => void;
 }) {
   const runtime = useInvoiceRuntime();
   const rt = runtime.getRuntime(review.id);
@@ -2538,6 +2544,7 @@ export function ExceptionTimeline({
           resolvedIds: [s.exc.id, ...s.clearedInList],
           surfaced: s.fresh,
           dataPatch: s.dataPatch,
+          detailCorrections: s.detailCorrections,
           events,
         });
         setActiveId(
@@ -2602,9 +2609,15 @@ export function ExceptionTimeline({
   // Anchor-driven: only exceptions carrying sourceAnchors reach here (the button
   // is hidden otherwise). Pure navigation via the runtime; the tab switch +
   // scroll + highlight are handled by the root effect and the Source tab.
+  const EXCEPTION_EDIT_FIELD: Partial<Record<string, string>> = {
+    "vat-mismatch": "vat",
+  };
+
   function showInSource(exc: InvoiceException) {
     if (!exc.sourceAnchors?.length) return;
     runtime.showInSource(review.id, exc.id, exc.sourceAnchors);
+    const field = EXCEPTION_EDIT_FIELD[exc.type];
+    if (field) onRequestEdit?.(field);
   }
 
   function resolveActive(s: Suggestion, reason?: string, note?: string) {
@@ -2651,6 +2664,7 @@ export function ExceptionTimeline({
       sub,
       shortLabel,
       dataPatch: r?.dataPatch,
+      detailCorrections: s.correction,
       phase: "confirm",
       fresh: [],
       clearedInList: [],

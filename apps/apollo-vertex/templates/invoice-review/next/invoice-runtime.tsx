@@ -7,14 +7,18 @@ import {
   useMemo,
   useState,
 } from "react";
-import type {
-  InvoiceDisposition,
-  InvoiceException,
-  InvoiceReview,
-  InvoiceRuntime,
-  RunEvent,
-  RunEventInput,
-  WaitingRef,
+import {
+  exceptionMeta,
+  runPredicates,
+  type DetailCorrections,
+  type InvoiceDisposition,
+  type InvoiceException,
+  type InvoiceReview,
+  type InvoiceRuntime,
+  type PredicateBaseData,
+  type RunEvent,
+  type RunEventInput,
+  type WaitingRef,
 } from "./invoice-review-data";
 
 // Per-invoice loop state, shared across the workspace, queue rail, and table so
@@ -54,10 +58,23 @@ interface ResolvePatch {
   surfaced?: InvoiceException[];
   /** invoice-data changes (e.g. a linked PO) */
   dataPatch?: Partial<InvoiceReview>;
+  /** corrections to the extracted detail record (panel fields + line items) */
+  detailCorrections?: DetailCorrections;
   /** parked exception ids to return to the open set (corrected invoice arrived) */
   unparkIds?: string[];
   /** events to append atomically with the above */
   events?: RunEventInput[];
+}
+
+function mergeDetailCorrections(
+  cur: DetailCorrections | undefined,
+  patch: DetailCorrections,
+): DetailCorrections {
+  return {
+    ...cur,
+    ...patch,
+    lines: { ...(cur?.lines ?? {}), ...(patch.lines ?? {}) },
+  };
 }
 
 interface RuntimeStore {
@@ -77,6 +94,18 @@ interface RuntimeStore {
     invoiceId: string,
     disposition: InvoiceDisposition | null,
     event: RunEventInput,
+  ) => void;
+  /**
+   * Apply human-authored corrections to the extracted detail record, run the
+   * predicate registry against open exceptions, and auto-resolve any whose
+   * condition is now satisfied — all in one atomic store update. The caller
+   * supplies the current open exceptions and base data; the store owns all logic.
+   */
+  correctDetail: (
+    invoiceId: string,
+    corrections: DetailCorrections,
+    context: { openExceptions: InvoiceException[]; base: PredicateBaseData },
+    correctionEvents: RunEventInput[],
   ) => void;
   /**
    * Request a source-document highlight for an exception's anchors. Bumps a
@@ -128,12 +157,26 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
           const dataPatch = patch.dataPatch
             ? { ...cur.dataPatch, ...patch.dataPatch }
             : cur.dataPatch;
+          const detailCorrections = patch.detailCorrections
+            ? mergeDetailCorrections(
+                cur.detailCorrections,
+                patch.detailCorrections,
+              )
+            : cur.detailCorrections;
           const events = patch.events?.length
             ? [...cur.events, ...withKeys(id, cur.events, patch.events)]
             : cur.events;
           return {
             ...prev,
-            [id]: { ...cur, resolvedIds, surfaced, waiting, dataPatch, events },
+            [id]: {
+              ...cur,
+              resolvedIds,
+              surfaced,
+              waiting,
+              dataPatch,
+              detailCorrections,
+              events,
+            },
           };
         }),
       parkException: (id, ref, event) =>
@@ -170,6 +213,63 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
               ...cur,
               disposition: disposition ?? undefined,
               events: [...cur.events, ...withKeys(id, cur.events, [event])],
+            },
+          };
+        }),
+      correctDetail: (id, corrections, context, correctionEvents) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          const merged = mergeDetailCorrections(
+            cur.detailCorrections,
+            corrections,
+          );
+          const { cleared } = runPredicates(
+            context.openExceptions,
+            merged,
+            context.base,
+          );
+          const autoResolveEvents: RunEventInput[] = cleared.map((cid) => {
+            const exc = context.openExceptions.find((e) => e.id === cid);
+            return {
+              kind: "resolved",
+              label: `${exc ? exceptionMeta(exc).label : "Issue"} cleared`,
+              sub: "Cleared automatically after correction",
+              time: "Just now",
+              auto: true,
+              exception: exc,
+            };
+          });
+          const revalidatedEvent: RunEventInput =
+            cleared.length > 0
+              ? {
+                  kind: "revalidated",
+                  label: "Re-validated",
+                  sub: `All checks re-run, ${cleared.length} issue${cleared.length > 1 ? "s" : ""} cleared`,
+                  time: "Just now",
+                  pending: false,
+                }
+              : {
+                  kind: "revalidated",
+                  label: "Re-validated",
+                  sub: "All checks re-run, nothing new",
+                  time: "Just now",
+                  pending: false,
+                };
+          const allEvents: RunEventInput[] = [
+            ...correctionEvents,
+            ...autoResolveEvents,
+            revalidatedEvent,
+          ];
+          const newResolvedIds = cleared.length
+            ? Array.from(new Set([...cur.resolvedIds, ...cleared]))
+            : cur.resolvedIds;
+          return {
+            ...prev,
+            [id]: {
+              ...cur,
+              detailCorrections: merged,
+              resolvedIds: newResolvedIds,
+              events: [...cur.events, ...withKeys(id, cur.events, allEvents)],
             },
           };
         }),
