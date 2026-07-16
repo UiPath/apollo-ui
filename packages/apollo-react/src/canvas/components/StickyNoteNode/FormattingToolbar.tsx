@@ -144,7 +144,7 @@ const FormattingToolbarComponent = ({
           <FormattingButton
             type="button"
             isActive={false}
-            disabled={action.disabled}
+            disabled={action.disabled || !onAction}
             onClick={(event) => onAction?.(action, event.currentTarget.getBoundingClientRect())}
             aria-label={action.label}
           >

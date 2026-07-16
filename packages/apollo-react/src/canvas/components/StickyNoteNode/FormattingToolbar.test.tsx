@@ -151,4 +151,27 @@ describe('FormattingToolbar', () => {
     const prevented = !toolbarContainer.dispatchEvent(mouseDownEvent);
     expect(prevented).toBe(true);
   });
+
+  it('disables custom actions when no action handler is available', () => {
+    const ref = { current: null } as React.RefObject<HTMLTextAreaElement | null>;
+
+    renderWithI18n(
+      <FormattingToolbar
+        textAreaRef={ref}
+        borderColor="#42A1FF"
+        activeFormats={defaultFormats}
+        onFormat={vi.fn()}
+        actions={[
+          {
+            id: 'embed-media',
+            label: 'Embed media',
+            icon: <span aria-hidden="true">M</span>,
+            onAction: vi.fn(),
+          },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Embed media' })).toBeDisabled();
+  });
 });

@@ -88,7 +88,7 @@ const nodeTypesWithCallbacks = {
 const DEMO_MEDIA = {
   image: {
     alt: 'Embedded image',
-    defaultUrl: 'https://placehold.co/320x180/png?text=Sticky+note+image',
+    defaultUrl: 'https://placehold.co/200x113/png?text=Sticky+note+image',
   },
   youtube: {
     alt: 'Embedded YouTube video',
@@ -119,6 +119,7 @@ type YouTubeUrlInfo = {
 };
 
 const MEDIA_TITLE_PREFIX = 'sticky-note-media';
+const DEMO_NATURAL_MEDIA_WIDTH = 200;
 
 function isHttpsUrl(value: string): boolean {
   try {
@@ -311,7 +312,7 @@ function StickyNoteWithEditorExtensions(props: StickyNoteNodeProps) {
                   allow="autoplay; encrypted-media; picture-in-picture"
                   allowFullScreen
                   style={{
-                    width: fullWidth ? '100%' : 320,
+                    width: fullWidth ? '100%' : DEMO_NATURAL_MEDIA_WIDTH,
                     maxWidth: '100%',
                     aspectRatio: '16 / 9',
                     border: 0,
@@ -331,7 +332,7 @@ function StickyNoteWithEditorExtensions(props: StickyNoteNodeProps) {
                   preload="metadata"
                   style={{
                     display: 'block',
-                    width: fullWidth ? '100%' : 320,
+                    width: fullWidth ? '100%' : DEMO_NATURAL_MEDIA_WIDTH,
                     maxWidth: '100%',
                     height: 'auto',
                     borderRadius: 6,
@@ -1111,10 +1112,16 @@ function EditorExtensionsStory() {
         '## Rendered media gallery',
         '### Full-width image',
         createDemoMediaMarkdown('image', true),
+        '### Natural-width image',
+        createDemoMediaMarkdown('image', false),
         '### Full-width YouTube video',
         createDemoMediaMarkdown('youtube', true),
+        '### Natural-width YouTube video',
+        createDemoMediaMarkdown('youtube', false),
         '### Full-width public video',
         createDemoMediaMarkdown('publicVideo', true),
+        '### Natural-width public video',
+        createDemoMediaMarkdown('publicVideo', false),
       ].join('\n\n'),
       { x: 560, y: 80 },
       { width: 360, height: 520 }
@@ -1135,7 +1142,7 @@ function EditorExtensionsStory() {
     <BaseCanvas {...canvasProps} mode="design">
       <StoryInfoPanel
         title="Complete Sticky Note Media Extension"
-        description="One Embed media action opens one popover. Choose Image or Video; Video automatically handles YouTube and direct public links. Test cursor insertion or selected-text replacement, HTTPS validation, optional full width, cancel/resume, stale-content append fallback, tooltip, and custom rendering. Press Escape after inserting to preview. The blue note shows all three rendered outcomes."
+        description="One Embed media action opens one popover. Choose Image or Video; Video automatically handles YouTube and direct public links. Test cursor insertion or selected-text replacement, HTTPS validation, optional full width, cancel/resume, stale-content append fallback, tooltip, and custom rendering. Press Escape after inserting to preview. The blue note compares natural and full width for every media type."
         collapsible
         defaultCollapsed
       />
