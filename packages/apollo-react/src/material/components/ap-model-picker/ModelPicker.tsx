@@ -516,7 +516,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           onEdit: (model) =>
             navigateToLlmConfigurations({
               intent: 'edit',
-              configurationId: model.byomDetails?.productLlmConfigurationId,
+              configurationId: model.byomDetails?.byoConfigurationId,
             }),
         });
     }, [slots?.optionActions, effectiveCanManageByo, navigateToLlmConfigurations, i18n]);
