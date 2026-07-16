@@ -1311,3 +1311,58 @@ describe('StageNode - getTaskContextMenuItems', () => {
     expect(onCustom).toHaveBeenCalledTimes(1);
   });
 });
+
+// Sequential tasks render through DraggableTask, which is mocked in this suite
+// (see vi.mock('./DraggableTask') above), so the real breakpoint dot cannot be
+// asserted here for that path. The sequential path is covered against the real
+// component in DraggableTask.test.tsx; the ad hoc and event-driven paths use the
+// real task components and are verified below.
+describe('StageNode - Breakpoints on adhoc and event-driven tasks', () => {
+  it('renders a breakpoint marker on an armed adhoc task', () => {
+    renderStageNode({
+      stageDetails: {
+        label: 'Test Stage',
+        isReadOnly: true,
+        tasks: [[{ id: 'adhoc-1', label: 'Adhoc Task', isAdhoc: true }]],
+      },
+      execution: {
+        stageStatus: {},
+        taskStatus: { 'adhoc-1': { breakpoint: true } },
+      },
+    });
+
+    expect(screen.getByTestId('stage-task-breakpoint-adhoc-1')).toBeInTheDocument();
+  });
+
+  it('renders a breakpoint marker on an armed event-driven task', () => {
+    renderStageNode({
+      stageDetails: {
+        label: 'Test Stage',
+        isReadOnly: true,
+        tasks: [[{ id: 'evt-1', label: 'Event Task', taskGroupType: 'event-driven' }]],
+      },
+      execution: {
+        stageStatus: {},
+        taskStatus: { 'evt-1': { breakpoint: true } },
+      },
+    });
+
+    expect(screen.getByTestId('stage-task-breakpoint-evt-1')).toBeInTheDocument();
+  });
+
+  it('does not render a breakpoint marker on an unarmed adhoc task', () => {
+    renderStageNode({
+      stageDetails: {
+        label: 'Test Stage',
+        isReadOnly: true,
+        tasks: [[{ id: 'adhoc-1', label: 'Adhoc Task', isAdhoc: true }]],
+      },
+      execution: {
+        stageStatus: {},
+        taskStatus: {},
+      },
+    });
+
+    expect(screen.queryByTestId('stage-task-breakpoint-adhoc-1')).not.toBeInTheDocument();
+  });
+});

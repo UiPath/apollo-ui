@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
+import type { NodeMenuItem } from '../NodeContextMenu';
 import { INDENTATION_WIDTH } from './StageNode.styles';
 import type { StageTaskItem } from './StageNode.types';
 import {

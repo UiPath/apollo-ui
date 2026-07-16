@@ -2,6 +2,7 @@ import { memo, useCallback, useRef } from 'react';
 import type { NodeMenuItem } from '../NodeContextMenu';
 import { StageTask } from './StageNode.styles';
 import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
+import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 
@@ -50,6 +51,7 @@ const AdhocTaskItemComponent = ({
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
+      <TaskBreakpointDot taskId={task.id} active={!!taskExecution?.breakpoint} />
       <TaskContent task={task} taskExecution={taskExecution} onTaskPlay={onTaskPlay} />
       {getContextMenuItems && (
         <TaskMenu
