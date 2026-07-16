@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v4.61.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.61.0...@uipath/apollo-react@4.61.1) (2026-07-16)
+
+### Bug Fixes
+
+* **apollo-react:** compute node height from handle count to stop flicker [MST-11677] ([dfcc705](https://github.com/UiPath/apollo-ui/commit/dfcc7053003a9b6915cef1251b9529e88a0d861f))
+* **apollo-react:** feed handles computed geometry for stable first-render placement [MST-11677] ([8899095](https://github.com/UiPath/apollo-ui/commit/8899095975848c94871a994044fbd2f8af35c011))
+* **apollo-react:** guard zero measured dimensions in node focus viewport [MST-11677] ([059f965](https://github.com/UiPath/apollo-ui/commit/059f965b70ec1f14c6a1356f9a26882217e164c4))
+
 ## [@uipath/apollo-react-v4.61.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.60.0...@uipath/apollo-react@4.61.0) (2026-07-16)
 
 ### Features
