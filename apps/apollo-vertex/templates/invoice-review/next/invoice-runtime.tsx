@@ -134,6 +134,8 @@ interface RuntimeStore {
   getCursor: (invoiceId: string) => string | undefined;
   /** Set the cursor exception id (called by ExceptionTimeline on active change). */
   setCursor: (invoiceId: string, exceptionId: string | undefined) => void;
+  /** Wipe all runtime state for every invoice and clear sessionStorage. Demo reset. */
+  resetAllRuntimes: () => void;
 }
 
 const InvoiceRuntimeContext = createContext<RuntimeStore | null>(null);
@@ -350,6 +352,13 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
           if (!anchor && !cur.fieldHighlight) return prev;
           return { ...prev, [id]: { ...cur, fieldHighlight: next } };
         }),
+      resetAllRuntimes: () => {
+        try {
+          sessionStorage.removeItem(STORAGE_KEY);
+        } catch {}
+        setMap({});
+        setCursorMap({});
+      },
     }),
     [map, cursorMap],
   );
