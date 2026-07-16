@@ -1,6 +1,13 @@
 import { CanvasIcon } from '@uipath/apollo-react/canvas';
-import { type ComponentProps, createContext, type ReactNode, useContext, useState } from 'react';
-import type { Components } from 'react-markdown';
+import {
+  type ComponentProps,
+  createContext,
+  createElement,
+  type ReactNode,
+  useContext,
+  useState,
+} from 'react';
+import type { Components, ExtraProps } from 'react-markdown';
 import { useSafeLingui } from '../../../i18n';
 import { parseStickyNoteMediaSource, type StickyNoteMedia } from './StickyNoteMedia';
 
@@ -32,13 +39,10 @@ export function StickyNoteMediaMarkdownProvider({
   );
 }
 
-type MarkdownImageProps = ComponentProps<'img'> & {
-  node?: {
-    position?: {
-      start?: { offset?: number };
-      end?: { offset?: number };
-    };
-  };
+type MarkdownImageProps = ComponentProps<'img'> & ExtraProps;
+
+type StickyNoteMediaImageProps = MarkdownImageProps & {
+  fallbackImage?: Components['img'];
 };
 
 function sourceRange(node: MarkdownImageProps['node']): StickyNoteMediaSourceRange | null {
@@ -83,15 +87,28 @@ function MediaEditButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-function StickyNoteMediaImage({ src, alt = '', title, node, ...imageProps }: MarkdownImageProps) {
+function StickyNoteMediaImage({
+  src,
+  alt = '',
+  title,
+  node,
+  fallbackImage,
+  ...imageProps
+}: StickyNoteMediaImageProps) {
   const { _ } = useSafeLingui();
   const { editable, onEditMedia } = useContext(StickyNoteMediaMarkdownContext);
-  const [imageFailed, setImageFailed] = useState(false);
-  const [youtubeLoaded, setYoutubeLoaded] = useState(false);
+  const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
+  const [loadedYouTubeId, setLoadedYouTubeId] = useState<string | null>(null);
   const media = typeof src === 'string' ? parseStickyNoteMediaSource(src, alt, title) : null;
   const range = sourceRange(node);
 
   if (!media) {
+    if (fallbackImage) {
+      const fallbackProps = { ...imageProps, src, alt, title };
+      return typeof fallbackImage === 'string'
+        ? createElement(fallbackImage, fallbackProps)
+        : createElement(fallbackImage, { ...fallbackProps, node });
+    }
     return (
       <img
         {...imageProps}
@@ -112,6 +129,7 @@ function StickyNoteMediaImage({ src, alt = '', title, node, ...imageProps }: Mar
 
   if (media.kind === 'youtube') {
     const playLabel = _({ id: 'sticky-note.media.play-video', message: 'Play video' });
+    const youtubeLoaded = loadedYouTubeId === media.videoId;
     return (
       <MediaContainer fullWidth={media.fullWidth}>
         {youtubeLoaded ? (
@@ -121,7 +139,7 @@ function StickyNoteMediaImage({ src, alt = '', title, node, ...imageProps }: Mar
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
             sandbox="allow-scripts allow-same-origin allow-presentation"
-            allow="accelerometer; autoplay; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
             allowFullScreen
             className="block aspect-video w-full border-0"
             onPointerDown={(event) => event.stopPropagation()}
@@ -135,7 +153,7 @@ function StickyNoteMediaImage({ src, alt = '', title, node, ...imageProps }: Mar
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
-              setYoutubeLoaded(true);
+              setLoadedYouTubeId(media.videoId);
             }}
             onDoubleClick={(event) => event.stopPropagation()}
             onPointerDown={(event) => event.stopPropagation()}
@@ -184,6 +202,7 @@ function StickyNoteMediaImage({ src, alt = '', title, node, ...imageProps }: Mar
     );
   }
 
+  const imageFailed = failedImageUrl === media.url;
   return (
     <MediaContainer fullWidth={media.fullWidth}>
       {imageFailed ? (
@@ -212,7 +231,7 @@ function StickyNoteMediaImage({ src, alt = '', title, node, ...imageProps }: Mar
             width: media.fullWidth ? '100%' : 'auto',
             height: 'auto',
           }}
-          onError={() => setImageFailed(true)}
+          onError={() => setFailedImageUrl(media.url)}
         />
       )}
       {editButton}
@@ -220,6 +239,10 @@ function StickyNoteMediaImage({ src, alt = '', title, node, ...imageProps }: Mar
   );
 }
 
-export const stickyNoteMediaMarkdownComponents: Components = {
-  img: StickyNoteMediaImage,
-};
+export function createStickyNoteMediaMarkdownComponents(
+  fallbackImage?: Components['img']
+): Components {
+  return {
+    img: (props) => <StickyNoteMediaImage {...props} fallbackImage={fallbackImage} />,
+  };
+}

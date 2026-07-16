@@ -98,6 +98,25 @@ describe('StickyNoteMedia', () => {
     expect(findStickyNoteMediaAtSelection(content, 2, 2)).toBeNull();
   });
 
+  it('scans malformed user content without losing a later valid media token', () => {
+    const token =
+      '![Image](<https://example.com/image.png> "sticky-note-media;kind=image;layout=natural-width")';
+    const content = `${'!['.repeat(5_000)}\n\n${token}`;
+
+    expect(parseStickyNoteMediaTokens(content)).toEqual([
+      {
+        media: {
+          kind: 'image',
+          url: 'https://example.com/image.png',
+          alt: 'Image',
+          fullWidth: false,
+        },
+        start: content.length - token.length,
+        end: content.length,
+      },
+    ]);
+  });
+
   it('relocates an edited token after surrounding content changes', () => {
     const original = serializeStickyNoteMedia({
       kind: 'youtube',
