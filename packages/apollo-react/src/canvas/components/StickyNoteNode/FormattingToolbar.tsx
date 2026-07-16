@@ -24,7 +24,7 @@ interface FormattingToolbarProps {
   activeFormats: ActiveFormats;
   onFormat: (result: TextSelection) => void;
   actions?: readonly StickyNoteFormattingAction[];
-  onAction?: (action: StickyNoteFormattingAction) => void;
+  onAction?: (action: StickyNoteFormattingAction, anchorRect: DOMRectReadOnly) => void;
 }
 
 const FormattingToolbarComponent = ({
@@ -145,7 +145,7 @@ const FormattingToolbarComponent = ({
             type="button"
             isActive={false}
             disabled={action.disabled}
-            onClick={() => onAction?.(action)}
+            onClick={(event) => onAction?.(action, event.currentTarget.getBoundingClientRect())}
             aria-label={action.label}
           >
             {action.icon}

@@ -177,7 +177,10 @@ describe('StickyNoteNode editor extensions', () => {
     const editor = screen.getByRole<HTMLTextAreaElement>('textbox');
     fireEvent.change(editor, { target: { value: 'Before draft After' } });
     editor.setSelectionRange(12, 12);
-    fireEvent.click(screen.getByRole('button', { name: 'Embed media' }));
+    const embedMediaButton = screen.getByRole('button', { name: 'Embed media' });
+    const anchorRect = embedMediaButton.getBoundingClientRect();
+    vi.spyOn(embedMediaButton, 'getBoundingClientRect').mockReturnValue(anchorRect);
+    fireEvent.click(embedMediaButton);
 
     expect(editorContext?.selection).toEqual({
       value: 'Before draft After',
@@ -185,6 +188,7 @@ describe('StickyNoteNode editor extensions', () => {
       selectionEnd: 12,
     });
     expect(editorContext?.currentValue()).toBe('Before draft After');
+    expect(editorContext?.anchorRect).toBe(anchorRect);
     expect(onContentChange).not.toHaveBeenCalled();
 
     act(() => {

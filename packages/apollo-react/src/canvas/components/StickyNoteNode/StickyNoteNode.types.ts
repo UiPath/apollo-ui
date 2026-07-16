@@ -68,6 +68,8 @@ export type TextSelection = {
 export interface StickyNoteEditorActionContext {
   /** Immutable content and selection captured before the action opens external UI. */
   selection: TextSelection;
+  /** Stable toolbar-trigger bounds for positioning external UI after the toolbar unmounts. */
+  anchorRect: DOMRectReadOnly;
   /** Reads the latest editor value when the external action completes. */
   currentValue(): string;
   /** Persists one content update, resumes editing, and restores the supplied selection. */

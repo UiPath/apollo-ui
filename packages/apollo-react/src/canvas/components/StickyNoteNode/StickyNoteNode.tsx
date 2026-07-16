@@ -188,7 +188,7 @@ const StickyNoteNodeComponent = ({
   );
 
   const handleFormattingAction = useCallback(
-    (action: StickyNoteFormattingAction) => {
+    (action: StickyNoteFormattingAction, anchorRect: DOMRectReadOnly) => {
       const textarea = textAreaRef.current;
       if (!textarea) return;
 
@@ -224,6 +224,7 @@ const StickyNoteNodeComponent = ({
 
       action.onAction({
         selection,
+        anchorRect,
         currentValue: () => textAreaRef.current?.value ?? latestContentRef.current,
         commit: (next) => complete(next, true),
         resume: () => {
