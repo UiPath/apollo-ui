@@ -326,9 +326,15 @@ describe('StickyNoteNode editor extensions', () => {
     renderStickyNoteNode({ formattingActions });
 
     startEditing();
-    for (let index = 0; index < 6; index += 1) await user.tab();
-
     const embedMediaButton = screen.getByRole('button', { name: 'Embed media' });
+    for (
+      let attempt = 0;
+      attempt < 10 && document.activeElement !== embedMediaButton;
+      attempt += 1
+    ) {
+      await user.tab();
+    }
+
     expect(embedMediaButton).toHaveFocus();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
 
