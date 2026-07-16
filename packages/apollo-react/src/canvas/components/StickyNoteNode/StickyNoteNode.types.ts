@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 /**
  * Base color values for sticky notes.
  * Use `withAlpha()` to derive background colors with transparency.
@@ -61,6 +63,27 @@ export type TextSelection = {
   selectionStart: number;
   selectionEnd: number;
 };
+
+/** Editor state and completion controls passed to an external sticky-note action. */
+export interface StickyNoteEditorActionContext {
+  /** Immutable content and selection captured before the action opens external UI. */
+  selection: TextSelection;
+  /** Reads the latest editor value when the external action completes. */
+  currentValue(): string;
+  /** Persists one content update, resumes editing, and restores the supplied selection. */
+  commit(next: TextSelection): void;
+  /** Resumes editing without changing content. */
+  resume(): void;
+}
+
+/** A consumer-provided action rendered after the built-in text-formatting controls. */
+export interface StickyNoteFormattingAction {
+  id: string;
+  icon: ReactNode;
+  label: string;
+  disabled?: boolean;
+  onAction(context: StickyNoteEditorActionContext): void;
+}
 
 /** Available formatting actions for the toolbar and keyboard shortcuts */
 export type FormattingAction = 'bold' | 'italic' | 'strikethrough' | 'bulletList' | 'numberedList';

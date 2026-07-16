@@ -15,14 +15,16 @@ import {
   FormattingToolbarContainer,
   ToolbarSeparator,
 } from './StickyNoteNode.styles';
-import type { TextSelection } from './StickyNoteNode.types';
-import { getModifierKey, isMac } from './StickyNoteNode.utils';
+import type { StickyNoteFormattingAction, TextSelection } from './StickyNoteNode.types';
+import { getModifierKey, isMac, readTextSelection } from './StickyNoteNode.utils';
 
 interface FormattingToolbarProps {
   textAreaRef: RefObject<HTMLTextAreaElement | null>;
   borderColor: string;
   activeFormats: ActiveFormats;
   onFormat: (result: TextSelection) => void;
+  actions?: readonly StickyNoteFormattingAction[];
+  onAction?: (action: StickyNoteFormattingAction) => void;
 }
 
 const FormattingToolbarComponent = ({
@@ -30,6 +32,8 @@ const FormattingToolbarComponent = ({
   borderColor,
   activeFormats,
   onFormat,
+  actions = [],
+  onAction,
 }: FormattingToolbarProps) => {
   const { _ } = useSafeLingui();
   const mod = getModifierKey();
@@ -40,13 +44,7 @@ const FormattingToolbarComponent = ({
       const textarea = textAreaRef.current;
       if (!textarea) return;
 
-      const input: TextSelection = {
-        value: textarea.value,
-        selectionStart: textarea.selectionStart,
-        selectionEnd: textarea.selectionEnd,
-      };
-
-      onFormat(formatFn(input));
+      onFormat(formatFn(readTextSelection(textarea)));
       textarea.focus();
     },
     [textAreaRef, onFormat]
@@ -139,6 +137,21 @@ const FormattingToolbarComponent = ({
           <CanvasIcon icon="list-ordered" size={14} />
         </FormattingButton>
       </CanvasTooltip>
+
+      {actions.length > 0 && <ToolbarSeparator />}
+      {actions.map((action) => (
+        <CanvasTooltip key={action.id} content={action.label} placement="top" delay>
+          <FormattingButton
+            type="button"
+            isActive={false}
+            disabled={action.disabled}
+            onClick={() => onAction?.(action)}
+            aria-label={action.label}
+          >
+            {action.icon}
+          </FormattingButton>
+        </CanvasTooltip>
+      ))}
     </FormattingToolbarContainer>
   );
 };
