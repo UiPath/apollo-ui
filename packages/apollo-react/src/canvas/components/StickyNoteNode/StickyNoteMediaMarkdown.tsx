@@ -9,7 +9,11 @@ import {
 } from 'react';
 import type { Components, ExtraProps } from 'react-markdown';
 import { useSafeLingui } from '../../../i18n';
-import { parseStickyNoteMediaSource, type StickyNoteMedia } from './StickyNoteMedia';
+import {
+  parseStickyNoteMediaMarker,
+  parseStickyNoteMediaSource,
+  type StickyNoteMedia,
+} from './StickyNoteMedia';
 
 export interface StickyNoteMediaSourceRange {
   start: number;
@@ -99,10 +103,28 @@ function StickyNoteMediaImage({
   const { editable, onEditMedia } = useContext(StickyNoteMediaMarkdownContext);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
   const [loadedYouTubeId, setLoadedYouTubeId] = useState<string | null>(null);
+  const mediaMarker = parseStickyNoteMediaMarker(title);
   const media = typeof src === 'string' ? parseStickyNoteMediaSource(src, alt, title) : null;
   const range = sourceRange(node);
 
   if (!media) {
+    if (mediaMarker) {
+      const unavailableLabel = _({
+        id: 'sticky-note.media.unavailable',
+        message: 'Media unavailable',
+      });
+      return (
+        <MediaContainer fullWidth={mediaMarker.fullWidth}>
+          <span
+            role="img"
+            aria-label={alt || unavailableLabel}
+            className="flex min-h-20 items-center justify-center bg-black/10 px-3 text-center text-xs text-foreground-muted"
+          >
+            {unavailableLabel}
+          </span>
+        </MediaContainer>
+      );
+    }
     if (fallbackImage) {
       const fallbackProps = { ...imageProps, src, alt, title };
       return typeof fallbackImage === 'string'
