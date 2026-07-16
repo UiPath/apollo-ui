@@ -77,15 +77,14 @@ const StageNodeEventDrivenTaskGroupsInner = ({
       <StageTaskList>
         {eventDrivenTasks.map(({ task }) => {
           const taskExecution = execution?.taskStatus?.[task.id];
-          const customItems =
-            !isReadOnly && !hasBuiltInTaskActions
-              ? (getTaskContextMenuItems?.({
-                  task,
-                  taskGroupType: 'event-driven',
-                  isParallel: false,
-                }) ?? [])
-              : [];
-          const hasMenu = !isReadOnly && (hasBuiltInTaskActions || customItems.length > 0);
+          // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;
+          // only the built-in edit actions are gated on !isReadOnly. When built-in actions
+          // already guarantee a menu we skip the eager consumer call; otherwise we ask the
+          // consumer whether it contributes any items.
+          const hasMenu =
+            (!isReadOnly && hasBuiltInTaskActions) ||
+            (getTaskContextMenuItems?.({ task, taskGroupType: 'event-driven', isParallel: false })
+              ?.length ?? 0) > 0;
           return (
             <EventDrivenTaskItem
               key={task.id}

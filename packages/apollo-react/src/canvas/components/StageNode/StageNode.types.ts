@@ -123,6 +123,12 @@ export interface StageTaskExecution {
    * pre-localized by the consumer.
    */
   retryCount?: number;
+  /**
+   * When `true`, the task shows a breakpoint marker (a red gutter dot) indicating the
+   * debugger will pause on this task. Breakpoints attach to individual tasks, not to the
+   * stage container.
+   */
+  breakpoint?: boolean;
 }
 
 export interface StageTaskDragOverlayProps {

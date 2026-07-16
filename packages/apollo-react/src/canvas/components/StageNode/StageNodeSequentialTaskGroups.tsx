@@ -229,16 +229,17 @@ export const StageNodeSequentialTaskGroups = ({
                     )}
                     {taskGroup.map((task) => {
                       const taskExecution = execution?.taskStatus?.[task.id];
-                      const customItems =
-                        !isReadOnly && !hasBuiltInTaskActions
-                          ? (getTaskContextMenuItems?.({
-                              task,
-                              taskGroupType: 'sequential',
-                              isParallel,
-                            }) ?? [])
-                          : [];
+                      // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug
+                      // view; only the built-in edit actions are gated on !isReadOnly. When
+                      // built-in actions already guarantee a menu we skip the eager consumer
+                      // call; otherwise we ask the consumer whether it contributes any items.
                       const hasMenu =
-                        !isReadOnly && (hasBuiltInTaskActions || customItems.length > 0);
+                        (!isReadOnly && hasBuiltInTaskActions) ||
+                        (getTaskContextMenuItems?.({
+                          task,
+                          taskGroupType: 'sequential',
+                          isParallel,
+                        })?.length ?? 0) > 0;
                       return (
                         <DraggableTask
                           key={task.id}

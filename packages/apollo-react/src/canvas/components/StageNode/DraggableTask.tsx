@@ -10,6 +10,7 @@ import {
   StageTaskDragPlaceholderWrapper,
   StageTaskWrapper,
 } from './StageNode.styles';
+import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 
@@ -91,6 +92,7 @@ const DraggableTaskComponent = ({
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
+      <TaskBreakpointDot taskId={task.id} active={!!taskExecution?.breakpoint} />
       <TaskContent task={task} taskExecution={taskExecution} />
 
       {getContextMenuItems && (

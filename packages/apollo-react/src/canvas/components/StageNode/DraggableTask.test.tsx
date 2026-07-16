@@ -356,4 +356,24 @@ describe('DraggableTask', () => {
       expect(container.querySelector('[data-testid="stage-task-task-1"]')).toBeInTheDocument();
     });
   });
+
+  describe('Breakpoint marker', () => {
+    it('renders the breakpoint dot for a sequential task with a breakpoint set', () => {
+      render(<DraggableTask {...defaultProps} taskExecution={{ breakpoint: true }} />);
+
+      expect(screen.getByTestId('stage-task-breakpoint-task-1')).toBeInTheDocument();
+    });
+
+    it('does not render the breakpoint dot when no breakpoint is set', () => {
+      render(<DraggableTask {...defaultProps} taskExecution={{ status: 'InProgress' }} />);
+
+      expect(screen.queryByTestId('stage-task-breakpoint-task-1')).not.toBeInTheDocument();
+    });
+
+    it('marker is display-only and does not intercept pointer events', () => {
+      render(<DraggableTask {...defaultProps} taskExecution={{ breakpoint: true }} />);
+
+      expect(screen.getByTestId('stage-task-breakpoint-task-1')).toHaveClass('pointer-events-none');
+    });
+  });
 });
