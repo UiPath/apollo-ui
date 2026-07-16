@@ -414,6 +414,10 @@ export function applyPreviewToReactFlow(
  * Removes preview node and edge from React Flow instance
  */
 export function removePreviewFromReactFlow(reactFlowInstance: ReactFlowInstance): void {
-  reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
-  reactFlowInstance.setEdges((edges) => edges.filter((edge) => !isPreviewEdge(edge)));
+  if (reactFlowInstance.getNodes().some((n) => n.id === PREVIEW_NODE_ID)) {
+    reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
+  }
+  if (reactFlowInstance.getEdges().some((edge) => isPreviewEdge(edge))) {
+    reactFlowInstance.setEdges((edges) => edges.filter((edge) => !isPreviewEdge(edge)));
+  }
 }
