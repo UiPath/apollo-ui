@@ -26,6 +26,7 @@ import {
 import {
   findStickyNoteMediaAtSelection,
   insertStickyNoteMedia,
+  parseStickyNoteMediaTokens,
   replaceStickyNoteMedia,
   type StickyNoteMedia,
   type StickyNoteMediaToken,
@@ -33,9 +34,9 @@ import {
 } from './StickyNoteMedia';
 import { StickyNoteMediaDialog } from './StickyNoteMediaDialog';
 import {
+  createStickyNoteMediaMarkdownComponents,
   StickyNoteMediaMarkdownProvider,
   type StickyNoteMediaSourceRange,
-  stickyNoteMediaMarkdownComponents,
 } from './StickyNoteMediaMarkdown';
 import {
   BottomCornerIndicators,
@@ -321,7 +322,14 @@ const StickyNoteNodeComponent = ({
 
   const handleEditRenderedMedia = useCallback(
     (media: StickyNoteMedia, range: StickyNoteMediaSourceRange) => {
-      setMediaDialog({ source: 'rendered', token: { media, ...range } });
+      const sourceContent = latestContentRef.current;
+      const renderedTokens = parseStickyNoteMediaTokens(preserveNewlines(sourceContent));
+      const renderedIndex = renderedTokens.findIndex(
+        (token) => token.start === range.start && token.end === range.end
+      );
+      const sourceToken =
+        renderedIndex >= 0 ? parseStickyNoteMediaTokens(sourceContent)[renderedIndex] : undefined;
+      setMediaDialog({ source: 'rendered', token: sourceToken ?? { media, ...range } });
     },
     []
   );
@@ -331,6 +339,14 @@ const StickyNoteNodeComponent = ({
     setMediaDialog(null);
     if (current?.source === 'editor') current.context.resume();
   }, [mediaDialog]);
+
+  useEffect(() => {
+    if (!mediaDialog || (enableMediaEmbedding && !readOnly)) return;
+
+    setMediaDialog(null);
+    skipBlurRef.current = null;
+    if (!readOnly && mediaDialog.source === 'editor') mediaDialog.context.resume();
+  }, [enableMediaEmbedding, mediaDialog, readOnly]);
 
   const submitMediaDialog = useCallback(
     (media: StickyNoteMedia) => {
@@ -495,13 +511,23 @@ const StickyNoteNodeComponent = ({
     []
   );
 
+  const mediaMarkdownComponents = useMemo(
+    () => createStickyNoteMediaMarkdownComponents(customMarkdownComponents?.img),
+    [customMarkdownComponents?.img]
+  );
+
   const markdownComponents = useMemo<Components>(
     () => ({
       ...customMarkdownComponents,
-      ...(enableMediaEmbedding ? stickyNoteMediaMarkdownComponents : {}),
+      ...(enableMediaEmbedding ? mediaMarkdownComponents : {}),
       ...builtInMarkdownComponents,
     }),
-    [builtInMarkdownComponents, customMarkdownComponents, enableMediaEmbedding]
+    [
+      builtInMarkdownComponents,
+      customMarkdownComponents,
+      enableMediaEmbedding,
+      mediaMarkdownComponents,
+    ]
   );
 
   const mediaMarkdownOptions = useMemo(

@@ -158,6 +158,7 @@ describe('StickyNoteNode resize lifecycle', () => {
 describe('StickyNoteNode editor extensions', () => {
   it('merges custom Markdown components into the built-in rendering pipeline', () => {
     const { container } = renderStickyNoteNode({
+      enableMediaEmbedding: true,
       data: {
         color: 'yellow',
         content:
@@ -395,6 +396,19 @@ describe('StickyNoteNode built-in media embedding', () => {
     expect(screen.getByRole('button', { name: 'Embed image or video' })).toBeInTheDocument();
   });
 
+  it('closes the dialog and resumes editing when the consumer disables the feature', () => {
+    const view = renderStickyNoteNode({ enableMediaEmbedding: true });
+
+    startEditing();
+    fireEvent.click(screen.getByRole('button', { name: 'Embed image or video' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    view.rerender(<StickyNoteNode {...defaultProps} enableMediaEmbedding={false} />);
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveValue('Remember the resize lifecycle');
+  });
+
   it('inserts a full-width image at the current cursor without consumer wiring', async () => {
     const onContentChange = vi.fn();
     renderStickyNoteNode({
@@ -444,9 +458,14 @@ describe('StickyNoteNode built-in media embedding', () => {
     expect(screen.queryByRole('button', { name: 'Edit media' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Play video' }));
-    expect(screen.getByTitle('YouTube video')).toHaveAttribute(
+    const youtubeFrame = screen.getByTitle('YouTube video');
+    expect(youtubeFrame).toHaveAttribute(
       'src',
       'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE?autoplay=1'
+    );
+    expect(youtubeFrame).toHaveAttribute(
+      'allow',
+      'autoplay; encrypted-media; fullscreen; picture-in-picture'
     );
 
     view.rerender(
@@ -510,5 +529,87 @@ describe('StickyNoteNode built-in media embedding', () => {
       '![Overview](<https://example.com/image.png> "sticky-note-media;kind=image;layout=full-width")'
     );
     expect(view.container.querySelector('[data-sticky-full-width="true"]')).toBeInTheDocument();
+  });
+
+  it('edits the correct duplicate media after preserved blank lines change rendered offsets', () => {
+    const onContentChange = vi.fn();
+    const natural =
+      '![Overview](<https://example.com/image.png> "sticky-note-media;kind=image;layout=natural-width")';
+    const fullWidth =
+      '![Overview](<https://example.com/image.png> "sticky-note-media;kind=image;layout=full-width")';
+    const content = `${natural}\n\n\n\n${natural}`;
+    renderStickyNoteNode({
+      data: { color: 'yellow', content },
+      enableMediaEmbedding: true,
+      onContentChange,
+      selected: true,
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Edit media' })[1]!);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Make full width' }));
+    const preview = screen.getAllByAltText('Overview').at(-1);
+    expect(preview).toBeDefined();
+    fireEvent.load(preview!);
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(onContentChange).toHaveBeenCalledWith(`${natural}\n\n\n\n${fullWidth}`);
+  });
+
+  it('retries rendering when an image URL changes after a load failure', () => {
+    const firstContent =
+      '![Overview](<https://example.com/first.png> "sticky-note-media;kind=image;layout=natural-width")';
+    const view = renderStickyNoteNode({
+      data: { color: 'yellow', content: firstContent },
+      enableMediaEmbedding: true,
+    });
+
+    fireEvent.error(screen.getByRole('img', { name: 'Overview' }));
+    expect(screen.getByText('Image unavailable')).toBeInTheDocument();
+
+    view.rerender(
+      <StickyNoteNode
+        {...defaultProps}
+        data={{
+          color: 'yellow',
+          content:
+            '![Overview](<https://example.com/second.png> "sticky-note-media;kind=image;layout=natural-width")',
+        }}
+        enableMediaEmbedding
+      />
+    );
+
+    expect(screen.getByRole('img', { name: 'Overview' })).toHaveAttribute(
+      'src',
+      'https://example.com/second.png'
+    );
+  });
+
+  it('returns to a thumbnail when the YouTube video changes', () => {
+    const view = renderStickyNoteNode({
+      data: {
+        color: 'yellow',
+        content:
+          '![YouTube video](<https://www.youtube.com/watch?v=M7lc1UVf-VE> "sticky-note-media;kind=youtube;layout=natural-width")',
+      },
+      enableMediaEmbedding: true,
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Play video' }));
+    expect(screen.getByTitle('YouTube video')).toBeInTheDocument();
+
+    view.rerender(
+      <StickyNoteNode
+        {...defaultProps}
+        data={{
+          color: 'yellow',
+          content:
+            '![YouTube video](<https://www.youtube.com/watch?v=ZCuL2e4zC_4> "sticky-note-media;kind=youtube;layout=natural-width")',
+        }}
+        enableMediaEmbedding
+      />
+    );
+
+    expect(screen.queryByTitle('YouTube video')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Play video' })).toBeInTheDocument();
   });
 });

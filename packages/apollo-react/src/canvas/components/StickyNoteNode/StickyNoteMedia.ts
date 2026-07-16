@@ -328,17 +328,105 @@ function markdownCodeRanges(content: string): SourceRange[] {
   return ranges.sort((left, right) => left.start - right.start);
 }
 
+interface ParsedMarkdownImageToken {
+  alt: string;
+  source: string;
+  title?: string;
+  end: number;
+}
+
+interface MarkdownImageScanResult {
+  token?: ParsedMarkdownImageToken;
+  nextIndex: number;
+}
+
+function isLineBreak(character: string | undefined): boolean {
+  return character === '\n' || character === '\r';
+}
+
+/**
+ * Scans the Markdown image shape emitted by this feature in linear time.
+ * Returning the next candidate position prevents malformed user content from
+ * making the scanner revisit an ever-growing prefix.
+ */
+function readMarkdownImageToken(content: string, start: number): MarkdownImageScanResult {
+  const failedAt = (index: number): MarkdownImageScanResult => ({
+    nextIndex: Math.max(start + 2, index),
+  });
+  const nestedCandidateAt = (index: number): boolean =>
+    content[index] === '!' && content[index + 1] === '[';
+  let index = start + 2;
+  const altStart = index;
+
+  while (index < content.length && content[index] !== ']') {
+    if (nestedCandidateAt(index)) return failedAt(index);
+    if (isLineBreak(content[index])) return failedAt(index + 1);
+    if (content[index] === '\\') index += 1;
+    index += 1;
+  }
+  if (content[index] !== ']' || content[index + 1] !== '(') return failedAt(index + 1);
+
+  const alt = content.slice(altStart, index);
+  index += 2;
+  let source = '';
+
+  if (content[index] === '<') {
+    const sourceStart = ++index;
+    while (index < content.length && content[index] !== '>') {
+      if (nestedCandidateAt(index)) return failedAt(index);
+      if (isLineBreak(content[index])) return failedAt(index + 1);
+      index += 1;
+    }
+    if (content[index] !== '>') return failedAt(index);
+    source = content.slice(sourceStart, index);
+    index += 1;
+  } else {
+    const sourceStart = index;
+    while (
+      index < content.length &&
+      content[index] !== ')' &&
+      content[index] !== ' ' &&
+      content[index] !== '\t' &&
+      !isLineBreak(content[index])
+    ) {
+      if (nestedCandidateAt(index)) return failedAt(index);
+      index += 1;
+    }
+    source = content.slice(sourceStart, index);
+  }
+
+  if (!source) return failedAt(index + 1);
+  while (content[index] === ' ' || content[index] === '\t') index += 1;
+
+  let title: string | undefined;
+  if (content[index] === '"') {
+    const titleStart = ++index;
+    while (index < content.length && content[index] !== '"') {
+      if (nestedCandidateAt(index)) return failedAt(index);
+      if (isLineBreak(content[index])) return failedAt(index + 1);
+      if (content[index] === '\\') index += 1;
+      index += 1;
+    }
+    if (content[index] !== '"') return failedAt(index);
+    title = content.slice(titleStart, index);
+    index += 1;
+    while (content[index] === ' ' || content[index] === '\t') index += 1;
+  }
+
+  if (content[index] !== ')') return failedAt(index + 1);
+  const end = index + 1;
+  return { token: { alt, source, title, end }, nextIndex: end };
+}
+
 export function parseStickyNoteMediaTokens(content: string): StickyNoteMediaToken[] {
   const tokens: StickyNoteMediaToken[] = [];
   const codeRanges = markdownCodeRanges(content);
-  const mediaPattern =
-    /!\[((?:\\.|[^\]\\])*)\]\((?:<([^>\r\n]+)>|([^\s)\r\n]+))(?:\s+"([^"]*)")?\)/g;
   let codeRangeIndex = 0;
+  let cursor = 0;
 
-  for (const match of content.matchAll(mediaPattern)) {
-    const start = match.index;
-    if (start === undefined) continue;
-    const end = start + match[0].length;
+  while (cursor < content.length) {
+    const start = content.indexOf('![', cursor);
+    if (start < 0) break;
     while (
       codeRanges[codeRangeIndex] &&
       (codeRanges[codeRangeIndex]?.end ?? Number.POSITIVE_INFINITY) <= start
@@ -346,14 +434,21 @@ export function parseStickyNoteMediaTokens(content: string): StickyNoteMediaToke
       codeRangeIndex += 1;
     }
     const codeRange = codeRanges[codeRangeIndex];
-    if (codeRange && start >= codeRange.start && start < codeRange.end) continue;
+    if (codeRange && start >= codeRange.start && start < codeRange.end) {
+      cursor = Math.max(start + 2, codeRange.end);
+      continue;
+    }
+
+    const parsed = readMarkdownImageToken(content, start);
+    cursor = parsed.nextIndex;
+    if (!parsed.token) continue;
 
     const media = parseStickyNoteMediaSource(
-      match[2] ?? match[3] ?? '',
-      unescapeMarkdownLabel(match[1] ?? ''),
-      match[4]
+      parsed.token.source,
+      unescapeMarkdownLabel(parsed.token.alt),
+      parsed.token.title
     );
-    if (media) tokens.push({ media, start, end });
+    if (media) tokens.push({ media, start, end: parsed.token.end });
   }
 
   return tokens;
