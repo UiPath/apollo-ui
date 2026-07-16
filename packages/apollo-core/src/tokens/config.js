@@ -57,7 +57,7 @@ module.exports = {
       buildPath: 'src/tokens/css/',
       files: [
         {
-          format: 'css/variables',
+          format: 'css/variables-host',
           destination: 'variables.css',
           options: {
             showFileHeader: false,
