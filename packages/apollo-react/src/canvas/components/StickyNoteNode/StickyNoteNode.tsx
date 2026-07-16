@@ -4,9 +4,9 @@ import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { ResizeDragEvent, ResizeParams } from '@uipath/apollo-react/canvas/xyflow/system';
 import { AnimatePresence } from 'motion/react';
-import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import { useSafeLingui } from '../../../i18n';
@@ -58,7 +58,7 @@ export interface StickyNoteNodeProps extends NodeProps {
   onResizeStart?: () => void;
   onResizeEnd?: () => void;
   formattingActions?: readonly StickyNoteFormattingAction[];
-  renderMarkdown?: (content: string) => ReactNode;
+  markdownComponents?: Components;
 }
 
 const minWidth = GRID_SPACING * 8;
@@ -78,7 +78,7 @@ const StickyNoteNodeComponent = ({
   onResizeStart,
   onResizeEnd,
   formattingActions,
-  renderMarkdown,
+  markdownComponents: customMarkdownComponents,
 }: StickyNoteNodeProps) => {
   const { _ } = useSafeLingui();
   const { updateNodeData, deleteElements } = useReactFlow();
@@ -89,6 +89,7 @@ const StickyNoteNodeComponent = ({
   const [localContent, setLocalContent] = useState(data.content || '');
   const latestContentRef = useRef(localContent);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const formattingToolbarRef = useRef<HTMLDivElement>(null);
   const skipBlurRef = useRef<string | null>(null);
   const { ref: markdownRef, scrollCaptureProps } = useScrollCapture();
   const colorButtonRef = useRef<HTMLDivElement>(null);
@@ -149,21 +150,33 @@ const StickyNoteNodeComponent = ({
     }, 0);
   }, [isEditing, readOnly]);
 
-  const handleBlur = useCallback(() => {
-    setIsEditing(false);
-    if (readOnly) return;
+  const handleBlur = useCallback(
+    (event: React.FocusEvent<HTMLElement>) => {
+      const nextTarget = event.relatedTarget;
+      if (
+        nextTarget instanceof Node &&
+        (textAreaRef.current?.contains(nextTarget) ||
+          formattingToolbarRef.current?.contains(nextTarget))
+      ) {
+        return;
+      }
 
-    const content = textAreaRef.current?.value ?? localContent;
-    if (skipBlurRef.current === content) {
-      skipBlurRef.current = null;
-      return;
-    }
+      setIsEditing(false);
+      if (readOnly) return;
 
-    if (content !== data.content) {
-      onContentChange?.(content);
-      updateNodeData(id, { content });
-    }
-  }, [id, localContent, data.content, updateNodeData, onContentChange, readOnly]);
+      const content = textAreaRef.current?.value ?? localContent;
+      if (skipBlurRef.current === content) {
+        skipBlurRef.current = null;
+        return;
+      }
+
+      if (content !== data.content) {
+        onContentChange?.(content);
+        updateNodeData(id, { content });
+      }
+    },
+    [id, localContent, data.content, updateNodeData, onContentChange, readOnly]
+  );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -212,7 +225,7 @@ const StickyNoteNodeComponent = ({
       const complete = (next: TextSelection, shouldPersist: boolean) => {
         if (completed) return;
         completed = true;
-        skipBlurRef.current = next.value;
+        skipBlurRef.current = shouldPersist ? next.value : null;
         if (shouldPersist) {
           updateLocalContent(next.value);
           setActiveFormats(detectActiveFormats(next));
@@ -358,9 +371,9 @@ const StickyNoteNodeComponent = ({
   }, [id, deleteElements]);
 
   // Custom markdown components to handle link clicks properly in React Flow nodes
-  const markdownComponents = useMemo(
+  const builtInMarkdownComponents = useMemo<Components>(
     () => ({
-      a: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+      a: ({ node: _node, href, children, ...props }) => (
         <a
           {...props}
           href={href}
@@ -378,6 +391,11 @@ const StickyNoteNodeComponent = ({
       ),
     }),
     []
+  );
+
+  const markdownComponents = useMemo<Components>(
+    () => ({ ...builtInMarkdownComponents, ...customMarkdownComponents }),
+    [builtInMarkdownComponents, customMarkdownComponents]
   );
 
   // Build toolbar config with only Edit and Color buttons
@@ -494,14 +512,6 @@ const StickyNoteNodeComponent = ({
           <BottomCornerIndicators visible={selected && !readOnly} />
           {isEditing ? (
             <>
-              <FormattingToolbar
-                textAreaRef={textAreaRef}
-                borderColor={color}
-                activeFormats={activeFormats}
-                onFormat={handleFormat}
-                actions={formattingActions}
-                onAction={handleFormattingAction}
-              />
               <StickyNoteTextArea
                 ref={textAreaRef}
                 value={localContent}
@@ -514,20 +524,26 @@ const StickyNoteNodeComponent = ({
                 isEditing={isEditing}
                 className="nodrag nowheel"
               />
+              <FormattingToolbar
+                containerRef={formattingToolbarRef}
+                textAreaRef={textAreaRef}
+                borderColor={color}
+                activeFormats={activeFormats}
+                onFormat={handleFormat}
+                onBlur={handleBlur}
+                actions={formattingActions}
+                onAction={handleFormattingAction}
+              />
             </>
           ) : (
             <StickyNoteMarkdown ref={markdownRef} {...scrollCaptureProps}>
               {localContent ? (
-                renderMarkdown ? (
-                  renderMarkdown(localContent)
-                ) : (
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkBreaks]}
-                    components={markdownComponents}
-                  >
-                    {preserveNewlines(localContent)}
-                  </ReactMarkdown>
-                )
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkBreaks]}
+                  components={markdownComponents}
+                >
+                  {preserveNewlines(localContent)}
+                </ReactMarkdown>
               ) : (
                 // Render placeholder if renderPlaceholderOnSelect is enabled, node is selected, and the content is empty
                 renderPlaceholderOnSelect &&

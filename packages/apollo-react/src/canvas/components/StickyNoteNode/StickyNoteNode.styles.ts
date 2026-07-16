@@ -345,6 +345,7 @@ export const ColorOption = styled.button<{ color: string; isSelected: boolean }>
 `;
 
 export const FormattingToolbarContainer = styled.div<{ borderColor: string }>`
+  order: -1;
   display: flex;
   align-items: center;
   gap: 1px;
