@@ -132,6 +132,13 @@ export interface Suggestion {
    * via isRouteSuggestion when absent, so fixtures need not set it.
    */
   kind?: "fix" | "route";
+  /**
+   * For suggest_correction: the typed write-through payload. The store applies
+   * this to detailCorrections when the suggestion is resolved. When data.label
+   * is absent, suggestionLabel derives the button copy from this field — single
+   * source of truth for the corrected value.
+   */
+  correction?: DetailCorrections;
 }
 
 export interface InvoiceException {
@@ -206,6 +213,40 @@ export interface SupplierEmailDraft {
   sentTime?: string;
 }
 
+/** Corrections to a single extracted line item. */
+export interface LineCorrection {
+  qty?: number;
+  amount?: string;
+  unitPrice?: string;
+  description?: string;
+}
+
+/**
+ * Human-authored corrections to extracted invoice fields. Applied over the
+ * base detailDataMap entry; unset keys fall through to the original value.
+ * `lines` is 1-indexed to match the panel's line numbering.
+ */
+export interface DetailCorrections {
+  vendor?: string;
+  vendorEmail?: string;
+  vendorAddress?: string;
+  billTo?: string;
+  billAddress?: string;
+  po?: string;
+  paymentTerms?: string;
+  vat?: string;
+  documentDateFormatted?: string;
+  dueFormatted?: string;
+  servicePeriod?: string;
+  lines?: Record<number, LineCorrection>;
+}
+
+/** Minimal base-data shape required for running resolution predicates. */
+export interface PredicateBaseData {
+  vat?: string;
+  lines?: Array<{ qty?: number; poQty?: number }>;
+}
+
 /** An exception parked by a routing action, awaiting a corrected invoice/data. */
 export interface WaitingRef {
   id: string;
@@ -249,6 +290,7 @@ export type InvoiceDisposition =
  * - followed-up: a reminder sent on a still-parked exception
  * - received: a corrected invoice/data arrival (return seam)
  * - disposition: an approve / hold / resume of the whole invoice
+ * - corrected: a human-authored field correction (edit mode or fix-action write-through)
  */
 export type RunEventInput =
   | {
@@ -313,6 +355,13 @@ export type RunEventInput =
       actor: "reviewer" | "agent";
       /** the reviewer's optional note (hold), for the expanded detail */
       note?: string;
+    }
+  | {
+      /** a human-authored correction to an extracted field */
+      kind: "corrected";
+      label: string;
+      sub: string;
+      time: string;
     };
 
 /** A logged event: an input plus the store-assigned key (intersection over the
@@ -339,6 +388,8 @@ export interface InvoiceRuntime {
   waiting: WaitingRef[];
   /** invoice-data changes applied by resolutions (e.g. a linked PO) */
   dataPatch?: Partial<InvoiceReview>;
+  /** human-authored corrections to the extracted detail record (panel fields + line items) */
+  detailCorrections?: DetailCorrections;
   /** reviewer disposition of the whole invoice (approve/hold); undefined = none */
   disposition?: InvoiceDisposition;
   /** the whole timeline event log, appended atomically inside the mutations */
@@ -394,6 +445,61 @@ export function getExceptionSummary(
     waitingCount: waiting.length,
     waitingOn: waiting[0]?.waitingOn ?? null,
   };
+}
+
+/**
+ * Resolution predicate: returns true if the finding still holds given the
+ * corrections applied, false if the finding is now satisfied (auto-resolve).
+ */
+export type ResolutionPredicate = (
+  exception: InvoiceException,
+  corrections: DetailCorrections,
+  base: PredicateBaseData,
+) => boolean;
+
+/**
+ * Registry of resolution predicates keyed by exception type. Only registered
+ * types are evaluated; unregistered types are left open by default. Extend by
+ * adding an entry — no other code changes needed.
+ */
+export const RESOLUTION_PREDICATES: Partial<
+  Record<ExceptionType, ResolutionPredicate>
+> = {
+  "qty-over-invoiced": (exc, corrections, base) => {
+    if (exc.scope.level !== "line") return true;
+    const lineNum = exc.scope.line; // 1-indexed
+    const correctedQty =
+      corrections.lines?.[lineNum]?.qty ?? base.lines?.[lineNum - 1]?.qty;
+    const poQty = base.lines?.[lineNum - 1]?.poQty;
+    if (correctedQty === undefined || poQty === undefined) return true;
+    return correctedQty > poQty;
+  },
+  "vat-mismatch": (exc, corrections, base) => {
+    const correctedVat = corrections.vat ?? base.vat;
+    const expectedVat = exc.finding.sides?.find(
+      (s) => s.tone !== "warn",
+    )?.value;
+    if (correctedVat === undefined || expectedVat === undefined) return true;
+    return correctedVat !== expectedVat;
+  },
+};
+
+/**
+ * Run all registered predicates against a set of open exceptions. Returns the
+ * ids of exceptions whose finding is now satisfied (should auto-resolve).
+ */
+export function runPredicates(
+  openExceptions: InvoiceException[],
+  corrections: DetailCorrections,
+  base: PredicateBaseData,
+): { cleared: string[] } {
+  const cleared = openExceptions
+    .filter((exc) => {
+      const predicate = RESOLUTION_PREDICATES[exc.type];
+      return predicate !== undefined && !predicate(exc, corrections, base);
+    })
+    .map((exc) => exc.id);
+  return { cleared };
 }
 
 // The automated checks that ran before escalation. Named by action, not actor
@@ -621,8 +727,16 @@ export function suggestionLabel(s: Suggestion): string {
   switch (s.type) {
     case "suggest_po":
       return `Link ${(s.data.po as string) ?? "PO"}`;
-    case "suggest_correction":
+    case "suggest_correction": {
+      if (!s.data.label && s.correction?.lines) {
+        const entries = Object.entries(s.correction.lines);
+        if (entries.length > 0) {
+          const lc = entries[0][1] as LineCorrection;
+          if (lc.qty !== undefined) return `Adjust to ${lc.qty} units`;
+        }
+      }
       return (s.data.label as string) ?? "Apply correction";
+    }
     case "suggest_account":
       return (s.data.label as string) ?? "Set GL account";
     case "suggest_tax_code":
@@ -1217,9 +1331,10 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "suggest_correction",
-            data: { label: "Adjust to 10 units" },
+            data: {},
             reasoning:
               "Billed 12 against PO qty 10; adjust or hold for the remaining receipt.",
+            correction: { lines: { 1: { qty: 10 } } },
           },
           { type: "suggest_supplier", data: {} },
         ],
@@ -1253,9 +1368,10 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "suggest_correction",
-            data: { label: "Adjust to 25 units" },
+            data: {},
             reasoning:
               "Billed 30 against PO qty 25; adjust or hold for the remaining receipt.",
+            correction: { lines: { 2: { qty: 25 } } },
           },
           { type: "suggest_supplier", data: {} },
         ],
@@ -1322,9 +1438,10 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "suggest_correction",
-            data: { label: "Adjust to 20 units" },
+            data: {},
             reasoning:
               "Billed 25 against PO qty 20; adjust or hold for the remaining receipt.",
+            correction: { lines: { 3: { qty: 20 } } },
           },
           { type: "suggest_supplier", data: {} },
         ],

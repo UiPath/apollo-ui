@@ -27,6 +27,7 @@ import {
   Mail,
   MessageSquare,
   MessageSquareOff,
+  Pencil,
   Play,
   Plus,
   RefreshCw,
@@ -35,6 +36,7 @@ import {
   Sparkle,
   Sparkles,
   TriangleAlert,
+  UserPen,
   X,
 } from "lucide-react";
 import {
@@ -93,6 +95,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/registry/dialog/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/registry/alert-dialog/alert-dialog";
+import { Input } from "@/registry/input/input";
+import { Label } from "@/registry/label/label";
+import { ScrollArea } from "@/registry/scroll-area/scroll-area";
 import { ShellProfileExtrasProvider } from "@/registry/shell/shell-profile-extras";
 import { Toaster } from "@/registry/sonner/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/tabs/tabs";
@@ -109,6 +124,7 @@ import {
   buildApproval,
   buildHold,
   buildReject,
+  type DetailCorrections,
   exceptionMeta,
   FLAG_REASONS,
   findReview,
@@ -116,9 +132,11 @@ import {
   getReview,
   holdInvoice,
   invoiceReviews,
+  type LineCorrection,
   openExceptions,
   REJECT_REASONS,
   rejectInvoice,
+  type RunEventInput,
 } from "./next/invoice-review-data";
 import {
   InvoiceRuntimeProvider,
@@ -934,26 +952,26 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
         qty: 12,
         amount: "$7,080.00",
         unitPrice: "$590.00",
-        poQty: 8,
+        poQty: 10,
       },
       {
         description: "USB-C hub, 7-port",
         qty: 30,
         amount: "$6,300.00",
         unitPrice: "$210.00",
-        poQty: 20,
+        poQty: 25,
       },
       {
         description: "Wireless keyboard",
         qty: 25,
         amount: "$5,020.00",
         unitPrice: "$200.80",
-        poQty: 15,
+        poQty: 20,
       },
     ],
     linesTotal: "$18,400.00",
     linesAlert: {
-      text: "All 3 lines billed above PO receipt quantities.",
+      text: "All 3 lines billed above PO quantities.",
       status: "warning",
     },
     sourceFilename: "INV-30291.pdf",
@@ -4475,13 +4493,50 @@ function SourceTab() {
   );
 }
 
+// ── Edit mode context ─────────────────────────────────────────────────────────
+
+interface EditModeContextValue {
+  editMode: boolean;
+  editFocusField: string | undefined;
+  enterEditMode: (focusField?: string) => void;
+  exitEditMode: () => void;
+}
+
+const EditModeContext = createContext<EditModeContextValue>({
+  editMode: false,
+  editFocusField: undefined,
+  enterEditMode: () => {},
+  exitEditMode: () => {},
+});
+
+function useEditMode() {
+  return useContext(EditModeContext);
+}
+
+/** Tiny inline person marker shown next to a corrected field label. */
+function CorrectedMark() {
+  return (
+    <UserPen className="inline-block size-3 ml-1 text-muted-foreground/60 align-middle" />
+  );
+}
+
 function DetailsCombinedTab() {
   const d = useInvoiceDetail();
+  const { enterEditMode } = useEditMode();
   const runtime = useInvoiceRuntime();
   const rt = runtime.getRuntime(d.id);
   // Reflect a data-changing resolution (e.g. Link PO-5123) on the shared record.
   const patchedPo = rt.dataPatch?.purchaseOrder ?? d.po;
   const hasPo = patchedPo !== "—";
+
+  // Merge human corrections over the base extraction. dc tracks which fields
+  // were touched so we can show the person marker next to corrected values.
+  const dc = rt.detailCorrections;
+  const cd = dc ? { ...d, ...dc } : d;
+  const correctedLines = d.lines.map((line, i) => {
+    const lc = dc?.lines?.[i + 1];
+    return lc ? { ...line, ...lc } : line;
+  });
 
   // Map the timeline cursor to a 1-based line number; null = invoice-level cursor.
   const review = getReview(d.id);
@@ -4530,49 +4585,63 @@ function DetailsCombinedTab() {
     <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
       <div className="px-6 pt-[22px] pb-16">
         {/* Section heading — invoice facts */}
-        <p className="text-[16px] font-bold tracking-tight text-foreground">Invoice details</p>
+        <div className="flex items-center justify-between">
+          <p className="text-[16px] font-bold tracking-tight text-foreground">
+            Invoice details
+          </p>
+          <button
+            type="button"
+            onClick={() => enterEditMode()}
+            className="flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Pencil className="size-3" />
+            Edit
+          </button>
+        </div>
 
         {/* Cluster 1 — invoice facts */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-[22px] mt-[18px]">
           <div className="flex min-w-0 flex-col gap-[3px]">
             <span className="text-[12px] text-muted-foreground">
-              Document date
+              Document date{dc?.documentDateFormatted && <CorrectedMark />}
             </span>
             <span className="text-[14px] font-medium text-foreground">
-              {d.documentDateFormatted}
+              {cd.documentDateFormatted}
             </span>
           </div>
           <div className="flex min-w-0 flex-col gap-[3px]">
             <span className="text-[12px] text-muted-foreground">
-              Due date
+              Due date{dc?.dueFormatted && <CorrectedMark />}
             </span>
             <span className="text-[14px] font-medium text-foreground">
-              {d.dueFormatted}
+              {cd.dueFormatted}
             </span>
           </div>
           <div className="flex min-w-0 flex-col gap-[3px]">
             <span className="text-[12px] text-muted-foreground">
-              Payment terms
+              Payment terms{dc?.paymentTerms && <CorrectedMark />}
             </span>
             <span className="text-[14px] font-medium text-foreground">
-              {d.paymentTerms}
+              {cd.paymentTerms}
             </span>
           </div>
-          {d.vat !== "—" && (
+          {cd.vat !== "—" && (
             <div className="flex min-w-0 flex-col gap-[3px]">
               <span className="text-[12px] text-muted-foreground">
-                VAT number
-              </span>
-              <span className="text-[14px] font-medium text-foreground">{d.vat}</span>
-            </div>
-          )}
-          {d.servicePeriod && (
-            <div className="flex min-w-0 flex-col gap-[3px]">
-              <span className="text-[12px] text-muted-foreground">
-                Service period
+                VAT number{dc?.vat && <CorrectedMark />}
               </span>
               <span className="text-[14px] font-medium text-foreground">
-                {d.servicePeriod}
+                {cd.vat}
+              </span>
+            </div>
+          )}
+          {cd.servicePeriod && (
+            <div className="flex min-w-0 flex-col gap-[3px]">
+              <span className="text-[12px] text-muted-foreground">
+                Service period{dc?.servicePeriod && <CorrectedMark />}
+              </span>
+              <span className="text-[14px] font-medium text-foreground">
+                {cd.servicePeriod}
               </span>
             </div>
           )}
@@ -4582,54 +4651,72 @@ function DetailsCombinedTab() {
         <div className="grid grid-cols-2 gap-x-4 gap-y-[22px] mt-[18px]">
           <div className="flex min-w-0 flex-col gap-[3px]">
             <span className="text-[12px] text-muted-foreground">
-              Vendor
+              Vendor{dc?.vendor && <CorrectedMark />}
             </span>
             <div className="min-w-0">
-              <div className="text-[14px] font-medium text-foreground">{d.vendor}</div>
-              {d.vendorEmail && (
+              <div className="text-[14px] font-medium text-foreground">
+                {cd.vendor}
+              </div>
+              {cd.vendorEmail && (
                 <a
-                  href={`mailto:${d.vendorEmail}`}
+                  href={`mailto:${cd.vendorEmail}`}
                   className="break-words text-[12px] leading-[1.45] text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {d.vendorEmail}
+                  {cd.vendorEmail}
                 </a>
               )}
-              {d.vendorAddress && (() => {
-                const comma = d.vendorAddress.indexOf(',');
-                const street = comma >= 0 ? d.vendorAddress.slice(0, comma) : d.vendorAddress;
-                const city = comma >= 0 ? d.vendorAddress.slice(comma + 1).trim() : null;
-                return (
-                  <div className="text-[12px] leading-[1.45] text-muted-foreground">
-                    <div>{street}</div>
-                    {city && <div>{city}</div>}
-                  </div>
-                );
-              })()}
+              {cd.vendorAddress &&
+                (() => {
+                  const comma = cd.vendorAddress.indexOf(",");
+                  const street =
+                    comma >= 0
+                      ? cd.vendorAddress.slice(0, comma)
+                      : cd.vendorAddress;
+                  const city =
+                    comma >= 0
+                      ? cd.vendorAddress.slice(comma + 1).trim()
+                      : null;
+                  return (
+                    <div className="text-[12px] leading-[1.45] text-muted-foreground">
+                      <div>{street}</div>
+                      {city && <div>{city}</div>}
+                    </div>
+                  );
+                })()}
             </div>
           </div>
           <div className="flex min-w-0 flex-col gap-[3px]">
             <span className="text-[12px] text-muted-foreground">
-              Bill to
+              Bill to{dc?.billTo && <CorrectedMark />}
             </span>
             <div className="min-w-0">
-              <div className="text-[14px] font-medium text-foreground">{d.billTo}</div>
-              {d.billAddress && (() => {
-                const comma = d.billAddress.indexOf(',');
-                const street = comma >= 0 ? d.billAddress.slice(0, comma) : d.billAddress;
-                const city = comma >= 0 ? d.billAddress.slice(comma + 1).trim() : null;
-                return (
-                  <div className="text-[12px] leading-[1.45] text-muted-foreground">
-                    <div>{street}</div>
-                    {city && <div>{city}</div>}
-                  </div>
-                );
-              })()}
+              <div className="text-[14px] font-medium text-foreground">
+                {cd.billTo}
+              </div>
+              {cd.billAddress &&
+                (() => {
+                  const comma = cd.billAddress.indexOf(",");
+                  const street =
+                    comma >= 0
+                      ? cd.billAddress.slice(0, comma)
+                      : cd.billAddress;
+                  const city =
+                    comma >= 0 ? cd.billAddress.slice(comma + 1).trim() : null;
+                  return (
+                    <div className="text-[12px] leading-[1.45] text-muted-foreground">
+                      <div>{street}</div>
+                      {city && <div>{city}</div>}
+                    </div>
+                  );
+                })()}
             </div>
           </div>
         </div>
 
         {/* Section heading — line items */}
-        <p className="text-[14px] font-bold tracking-tight text-foreground mt-[32px]">Line items</p>
+        <p className="text-[14px] font-bold tracking-tight text-foreground mt-[32px]">
+          Line items
+        </p>
 
         {/* Table */}
         <div className="[font-variant-numeric:tabular-nums] mt-[18px]">
@@ -4640,17 +4727,20 @@ function DetailsCombinedTab() {
             <span className="text-[12px] text-muted-foreground text-right">
               {hasPo ? "Qty / PO" : "Qty"}
             </span>
-            <span className="text-[12px] text-muted-foreground text-right">Amount</span>
+            <span className="text-[12px] text-muted-foreground text-right">
+              Amount
+            </span>
           </div>
           <div>
-            {d.lines.map((line, i) => {
+            {correctedLines.map((line, i) => {
               const lineNum = i + 1;
               const isActive = activeLine === lineNum;
+              const lineCorrected = dc?.lines?.[lineNum] !== undefined;
               const qtyMismatch =
                 line.poQty !== undefined && line.qty !== line.poQty;
               return (
                 <div
-                  key={line.description}
+                  key={d.lines[i].description}
                   className={cn(
                     "grid grid-cols-[16px_1fr_56px_80px] items-baseline gap-x-3 py-[6px] -mx-6 px-6",
                     isActive && phase === "peak"
@@ -4668,6 +4758,7 @@ function DetailsCombinedTab() {
                   <div className="flex flex-col gap-0.5 min-w-0">
                     <span className="text-[13px] font-medium text-foreground leading-snug">
                       {line.description}
+                      {lineCorrected && <CorrectedMark />}
                     </span>
                     {line.subline && (
                       <span
@@ -4725,8 +4816,12 @@ function DetailsCombinedTab() {
           </div>
           {/* Total row */}
           <div className="flex items-baseline mt-3 pt-3 border-t border-border">
-            <span className="text-[14px] font-medium text-foreground">Total</span>
-            <span className="text-[15px] font-medium text-foreground ml-auto">{d.linesTotal}</span>
+            <span className="text-[14px] font-medium text-foreground">
+              Total
+            </span>
+            <span className="text-[15px] font-medium text-foreground ml-auto">
+              {d.linesTotal}
+            </span>
           </div>
         </div>
       </div>
@@ -6104,14 +6199,532 @@ function RightPanelNext(props: Parameters<typeof RightPanel>[0]) {
   return <RightPanel {...props} mergedLayout />;
 }
 
+// ── Edit mode ─────────────────────────────────────────────────────────────────
+
+interface DirtyField {
+  from: string;
+  to: string;
+}
+
+function DetailsEditForm({
+  focusField,
+  onDirtyChange,
+}: {
+  focusField?: string;
+  onDirtyChange: (dirty: Record<string, DirtyField>) => void;
+}) {
+  const d = useInvoiceDetail();
+  const runtime = useInvoiceRuntime();
+  const rt = runtime.getRuntime(d.id);
+  const dc = rt.detailCorrections;
+  // Merge only scalar correction fields (lines are handled separately below).
+  const cd = {
+    documentDateFormatted: dc?.documentDateFormatted ?? d.documentDateFormatted,
+    dueFormatted: dc?.dueFormatted ?? d.dueFormatted,
+    paymentTerms: dc?.paymentTerms ?? d.paymentTerms,
+    vat: dc?.vat ?? d.vat,
+    servicePeriod: dc?.servicePeriod ?? d.servicePeriod,
+    vendor: dc?.vendor ?? d.vendor,
+    vendorEmail: dc?.vendorEmail ?? d.vendorEmail,
+    vendorAddress: dc?.vendorAddress ?? d.vendorAddress,
+    billTo: dc?.billTo ?? d.billTo,
+    billAddress: dc?.billAddress ?? d.billAddress,
+  };
+
+  const initial: Record<string, string> = {
+    documentDateFormatted: cd.documentDateFormatted ?? "",
+    dueFormatted: cd.dueFormatted ?? "",
+    paymentTerms: cd.paymentTerms ?? "",
+    vat: cd.vat ?? "",
+    servicePeriod: cd.servicePeriod ?? "",
+    vendor: cd.vendor ?? "",
+    vendorEmail: cd.vendorEmail ?? "",
+    vendorAddress: cd.vendorAddress ?? "",
+    billTo: cd.billTo ?? "",
+    billAddress: cd.billAddress ?? "",
+  };
+  d.lines.forEach((line, i) => {
+    const n = i + 1;
+    const cl = dc?.lines?.[n];
+    const ml = cl ? { ...line, ...cl } : line;
+    initial[`line${n}:description`] = ml.description ?? "";
+    initial[`line${n}:qty`] = String(ml.qty ?? "");
+    initial[`line${n}:amount`] = ml.amount ?? "";
+  });
+
+  const [values, setValues] = useState<Record<string, string>>(initial);
+  const set = (key: string, val: string) =>
+    setValues((prev) => ({ ...prev, [key]: val }));
+
+  const dirtyFields = Object.entries(values).reduce<Record<string, DirtyField>>(
+    (acc, [k, v]) => {
+      if (v !== initial[k]) acc[k] = { from: initial[k], to: v };
+      return acc;
+    },
+    {},
+  );
+  const dirtyCount = Object.keys(dirtyFields).length;
+
+  // Notify parent of dirty state changes so the header Save button can use it.
+  const onDirtyChangeRef = useRef(onDirtyChange);
+  onDirtyChangeRef.current = onDirtyChange;
+  useEffect(() => {
+    onDirtyChangeRef.current(dirtyFields);
+    // dirtyCount is a stable proxy for the shape changing
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dirtyCount]);
+
+  const focusRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    focusRef.current?.focus();
+  }, []);
+
+  function fp(
+    key: string,
+  ): React.InputHTMLAttributes<HTMLInputElement> & {
+    ref?: React.Ref<HTMLInputElement>;
+  } {
+    return {
+      value: values[key] ?? "",
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+        set(key, e.target.value),
+      ref: focusField === key ? focusRef : undefined,
+    };
+  }
+
+  function lbl(base: string, key: string) {
+    return dirtyFields[key] ? `${base} · edited` : base;
+  }
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <ScrollArea className="flex-1">
+        <div className="px-6 py-5 space-y-6">
+          {/* Invoice facts */}
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+              Invoice details
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label
+                  htmlFor="edit-doc-date"
+                  className={cn(
+                    "text-[12px]",
+                    dirtyFields.documentDateFormatted && "text-primary",
+                  )}
+                >
+                  {lbl("Document date", "documentDateFormatted")}
+                </Label>
+                <Input
+                  id="edit-doc-date"
+                  className="h-8 text-[13px]"
+                  {...fp("documentDateFormatted")}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="edit-due-date"
+                  className={cn(
+                    "text-[12px]",
+                    dirtyFields.dueFormatted && "text-primary",
+                  )}
+                >
+                  {lbl("Due date", "dueFormatted")}
+                </Label>
+                <Input
+                  id="edit-due-date"
+                  className="h-8 text-[13px]"
+                  {...fp("dueFormatted")}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="edit-payment-terms"
+                  className={cn(
+                    "text-[12px]",
+                    dirtyFields.paymentTerms && "text-primary",
+                  )}
+                >
+                  {lbl("Payment terms", "paymentTerms")}
+                </Label>
+                <Input
+                  id="edit-payment-terms"
+                  className="h-8 text-[13px]"
+                  {...fp("paymentTerms")}
+                />
+              </div>
+              {cd.vat !== "—" && (
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="edit-vat"
+                    className={cn(
+                      "text-[12px]",
+                      dirtyFields.vat && "text-primary",
+                    )}
+                  >
+                    {lbl("VAT number", "vat")}
+                  </Label>
+                  <Input
+                    id="edit-vat"
+                    className="h-8 text-[13px]"
+                    {...fp("vat")}
+                    ref={focusField === "vat" ? focusRef : undefined}
+                  />
+                </div>
+              )}
+              {cd.servicePeriod && (
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="edit-service-period"
+                    className={cn(
+                      "text-[12px]",
+                      dirtyFields.servicePeriod && "text-primary",
+                    )}
+                  >
+                    {lbl("Service period", "servicePeriod")}
+                  </Label>
+                  <Input
+                    id="edit-service-period"
+                    className="h-8 text-[13px]"
+                    {...fp("servicePeriod")}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Parties */}
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+              Parties
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label
+                  htmlFor="edit-vendor"
+                  className={cn(
+                    "text-[12px]",
+                    dirtyFields.vendor && "text-primary",
+                  )}
+                >
+                  {lbl("Vendor", "vendor")}
+                </Label>
+                <Input
+                  id="edit-vendor"
+                  className="h-8 text-[13px]"
+                  {...fp("vendor")}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="edit-bill-to"
+                  className={cn(
+                    "text-[12px]",
+                    dirtyFields.billTo && "text-primary",
+                  )}
+                >
+                  {lbl("Bill to", "billTo")}
+                </Label>
+                <Input
+                  id="edit-bill-to"
+                  className="h-8 text-[13px]"
+                  {...fp("billTo")}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="edit-vendor-email"
+                  className={cn(
+                    "text-[12px]",
+                    dirtyFields.vendorEmail && "text-primary",
+                  )}
+                >
+                  {lbl("Vendor email", "vendorEmail")}
+                </Label>
+                <Input
+                  id="edit-vendor-email"
+                  className="h-8 text-[13px]"
+                  {...fp("vendorEmail")}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="edit-bill-address"
+                  className={cn(
+                    "text-[12px]",
+                    dirtyFields.billAddress && "text-primary",
+                  )}
+                >
+                  {lbl("Bill address", "billAddress")}
+                </Label>
+                <Input
+                  id="edit-bill-address"
+                  className="h-8 text-[13px]"
+                  {...fp("billAddress")}
+                />
+              </div>
+              <div className="col-span-2 space-y-1">
+                <Label
+                  htmlFor="edit-vendor-address"
+                  className={cn(
+                    "text-[12px]",
+                    dirtyFields.vendorAddress && "text-primary",
+                  )}
+                >
+                  {lbl("Vendor address", "vendorAddress")}
+                </Label>
+                <Input
+                  id="edit-vendor-address"
+                  className="h-8 text-[13px]"
+                  {...fp("vendorAddress")}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Line items */}
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+              Line items
+            </p>
+            <div className="space-y-3">
+              {d.lines.map((_, i) => {
+                const n = i + 1;
+                const dk = `line${n}:description`;
+                const qk = `line${n}:qty`;
+                const ak = `line${n}:amount`;
+                const lineDirty = !!(
+                  dirtyFields[dk] ||
+                  dirtyFields[qk] ||
+                  dirtyFields[ak]
+                );
+                return (
+                  <div
+                    key={n}
+                    className={cn(
+                      "rounded-md border border-border p-3 space-y-2",
+                      lineDirty && "border-primary/50",
+                    )}
+                  >
+                    <p
+                      className={cn(
+                        "text-[11px] font-medium",
+                        lineDirty ? "text-primary" : "text-muted-foreground",
+                      )}
+                    >
+                      Line {n}
+                      {lineDirty ? " · edited" : ""}
+                    </p>
+                    <div className="space-y-1">
+                      <Label
+                        htmlFor={`edit-${dk}`}
+                        className="text-[12px] text-muted-foreground"
+                      >
+                        Description
+                      </Label>
+                      <Input
+                        id={`edit-${dk}`}
+                        className="h-8 text-[13px]"
+                        {...fp(dk)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label
+                          htmlFor={`edit-${qk}`}
+                          className="text-[12px] text-muted-foreground"
+                        >
+                          Qty
+                        </Label>
+                        <Input
+                          id={`edit-${qk}`}
+                          type="number"
+                          min="0"
+                          className="h-8 text-[13px]"
+                          {...fp(qk)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label
+                          htmlFor={`edit-${ak}`}
+                          className="text-[12px] text-muted-foreground"
+                        >
+                          Amount
+                        </Label>
+                        <Input
+                          id={`edit-${ak}`}
+                          className="h-8 text-[13px]"
+                          {...fp(ak)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </ScrollArea>
+
+      {/* Field count */}
+      <div className="shrink-0 border-t border-border px-6 py-2.5">
+        <span className="text-[12px] text-muted-foreground">
+          {dirtyCount > 0
+            ? `${dirtyCount} field${dirtyCount > 1 ? "s" : ""} edited`
+            : "No changes yet"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function EditModeView({ invoiceId }: { invoiceId: string }) {
+  const runtime = useInvoiceRuntime();
+  const d = useInvoiceDetail();
+  const { exitEditMode, editFocusField } = useEditMode();
+  const rt = runtime.getRuntime(invoiceId);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const pendingDirtyRef = useRef<Record<string, DirtyField>>({});
+
+  function handleCancel() {
+    if (Object.keys(pendingDirtyRef.current).length > 0) {
+      setCancelOpen(true);
+    } else {
+      exitEditMode();
+    }
+  }
+
+  function handleSave() {
+    const dirty = pendingDirtyRef.current;
+    if (Object.keys(dirty).length === 0) {
+      exitEditMode();
+      return;
+    }
+    const corrections: DetailCorrections = {};
+    const lineCorrections: Record<number, LineCorrection> = {};
+
+    for (const [key, { to }] of Object.entries(dirty)) {
+      if (key.startsWith("line")) {
+        const colonIdx = key.indexOf(":");
+        const lineField = key.slice(colonIdx + 1);
+        const lineNum = parseInt(key.slice(4, colonIdx), 10);
+        if (!lineCorrections[lineNum]) lineCorrections[lineNum] = {};
+        if (lineField === "qty") lineCorrections[lineNum].qty = Number(to);
+        else if (lineField === "description")
+          lineCorrections[lineNum].description = to;
+        else if (lineField === "amount") lineCorrections[lineNum].amount = to;
+      } else {
+        (corrections as Record<string, unknown>)[key] = to;
+      }
+    }
+    if (Object.keys(lineCorrections).length > 0)
+      corrections.lines = lineCorrections;
+
+    const review = findReview(invoiceId);
+    const open = review ? openExceptions(review, rt) : [];
+    const base = {
+      vat: d.vat,
+      lines: d.lines.map((l) => ({ qty: l.qty, poQty: l.poQty })),
+    };
+    const dirtyCount = Object.keys(dirty).length;
+    const correctionEvents: RunEventInput[] = [
+      {
+        kind: "corrected",
+        label: "Extracted data corrected",
+        sub: `${dirtyCount} field${dirtyCount > 1 ? "s" : ""} updated manually`,
+        time: "Just now",
+      },
+    ];
+
+    runtime.correctDetail(
+      invoiceId,
+      corrections,
+      { openExceptions: open, base },
+      correctionEvents,
+    );
+    exitEditMode();
+  }
+
+  // Esc cancels (with dirty guard)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") handleCancel();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
+  return (
+    <div className="absolute inset-0 z-10 bg-background flex flex-col">
+      {/* Mode header */}
+      <div className="shrink-0 flex items-center gap-2 px-5 h-11 border-b border-border bg-muted/40">
+        <Pencil className="size-3.5 shrink-0 text-muted-foreground" />
+        <span className="text-[13px] font-medium text-foreground">
+          Editing extracted data
+        </span>
+        <span className="text-[13px] text-muted-foreground shrink-0">
+          · {invoiceId}
+        </span>
+        <div className="ml-auto flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={handleSave}>
+            Save &amp; re-check
+          </Button>
+        </div>
+      </div>
+
+      {/* Form (420px) + Source viewer (flex-1) */}
+      <div className="flex flex-1 overflow-hidden">
+        <div
+          className="shrink-0 overflow-hidden flex flex-col border-r border-border"
+          style={{ width: "420px" }}
+        >
+          <DetailsEditForm
+            focusField={editFocusField}
+            onDirtyChange={(dirty) => {
+              pendingDirtyRef.current = dirty;
+            }}
+          />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <SourceTab />
+        </div>
+      </div>
+
+      {/* Discard-changes guard */}
+      <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved edits. Leaving edit mode will discard them.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogAction onClick={exitEditMode}>
+              Discard
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
 function CenterPanelNext({
   activeInvoiceId,
   onCleared,
   exceptionListVariant,
+  onRequestEdit,
 }: {
   activeInvoiceId: string;
   onCleared: () => void;
   exceptionListVariant?: "strip" | "index";
+  onRequestEdit?: (fieldKey: string) => void;
 }) {
   // findReview (not getReview): a missing id must show honest absence, never a
   // fallback to a different invoice's review content.
@@ -6134,6 +6747,7 @@ function CenterPanelNext({
       review={review}
       onAllClear={onCleared}
       exceptionListVariant={exceptionListVariant}
+      onRequestEdit={onRequestEdit}
     />
   );
 }
@@ -6267,6 +6881,25 @@ function InvoiceDetailPane({
   const approveEntryIdRef = useRef<string | null>(null);
   // Guards against re-applying the same Slack resolution on every poll tick.
   const appliedResolutionRef = useRef<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editFocusField, setEditFocusField] = useState<string | undefined>(
+    undefined,
+  );
+  const editModeValue: EditModeContextValue = useMemo(
+    () => ({
+      editMode,
+      editFocusField,
+      enterEditMode: (field?: string) => {
+        setEditFocusField(field);
+        setEditMode(true);
+      },
+      exitEditMode: () => {
+        setEditMode(false);
+        setEditFocusField(undefined);
+      },
+    }),
+    [editMode, editFocusField],
+  );
 
   const nowTime = () =>
     new Date().toLocaleTimeString("en-US", {
@@ -6578,236 +7211,242 @@ function InvoiceDetailPane({
   }
 
   return (
-    <InvoiceDetailContext.Provider value={data}>
-      <>
-        <div
-          className="shrink-0 inv-between-enter"
-          style={{ animationDelay: "40ms" }}
-        >
-          {version !== "v1" ? (
-            <TopBarNext
-              flagged={flagged}
-              completion={justCompleted ?? completion}
-            />
-          ) : (
-            <TopBar
-              flagged={flagged}
-              held={held}
-              completion={justCompleted ?? completion}
-            />
-          )}
-        </div>
-        <div
-          className="relative flex flex-1 overflow-hidden"
-          style={{ minWidth: "480px" }}
-        >
-          {/* Center workspace content */}
+    <EditModeContext.Provider value={editModeValue}>
+      <InvoiceDetailContext.Provider value={data}>
+        <>
           <div
-            className="flex flex-col flex-1 overflow-hidden inv-between-enter"
-            style={{ animationDelay: "80ms" }}
+            className="shrink-0 inv-between-enter"
+            style={{ animationDelay: "40ms" }}
           >
             {version !== "v1" ? (
-              // v3 previews the "Up next" strip; v2 keeps the bordered index.
-              <CenterPanelNext
-                activeInvoiceId={activeInvoiceId}
-                onCleared={() => setApproveReady(true)}
-                exceptionListVariant={version === "v3" ? "strip" : "index"}
+              <TopBarNext
+                flagged={flagged}
+                completion={justCompleted ?? completion}
               />
             ) : (
-              <>
-                {/* Segmented toggle — Findings / Comms */}
-                <CenterToggle
-                  view={centerView}
-                  onViewChange={(v) => {
-                    onCenterViewChange(v);
-                    if (v === "comms") onCommsViewed();
-                  }}
-                  commsUnread={commsUnread}
-                  commsCount={commsCount}
+              <TopBar
+                flagged={flagged}
+                held={held}
+                completion={justCompleted ?? completion}
+              />
+            )}
+          </div>
+          <div
+            className="relative flex flex-1 overflow-hidden"
+            style={{ minWidth: "480px" }}
+          >
+            {/* Edit mode overlay — covers center + right panels */}
+            {editMode && <EditModeView invoiceId={activeInvoiceId} />}
+            {/* Center workspace content */}
+            <div
+              className="flex flex-col flex-1 overflow-hidden inv-between-enter"
+              style={{ animationDelay: "80ms" }}
+            >
+              {version !== "v1" ? (
+                // v3 previews the "Up next" strip; v2 keeps the bordered index.
+                <CenterPanelNext
+                  activeInvoiceId={activeInvoiceId}
+                  onCleared={() => setApproveReady(true)}
+                  exceptionListVariant={version === "v3" ? "strip" : "index"}
+                  onRequestEdit={editModeValue.enterEditMode}
                 />
-                <div className="flex flex-col flex-1 overflow-hidden">
-                  {/* Comms always shows the communication trail, even after the
+              ) : (
+                <>
+                  {/* Segmented toggle — Findings / Comms */}
+                  <CenterToggle
+                    view={centerView}
+                    onViewChange={(v) => {
+                      onCenterViewChange(v);
+                      if (v === "comms") onCommsViewed();
+                    }}
+                    commsUnread={commsUnread}
+                    commsCount={commsCount}
+                  />
+                  <div className="flex flex-col flex-1 overflow-hidden">
+                    {/* Comms always shows the communication trail, even after the
                   invoice is approved/rejected/held. */}
-                  {centerView === "comms" ? (
-                    <CommsView
-                      messages={commsMessages}
-                      onNewEmail={openEmailModal}
-                      onAction={(id) => dispatchAction(id, "slack")}
-                      onSendReply={handleSendReply}
-                      hasActiveThread={hasActiveThread}
-                    />
-                  ) : justCompleted && !nextInvoice ? (
-                    /* Queue cleared — replaces center content entirely */
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
-                      <div className="flex flex-col items-center text-center py-12 px-8">
-                        <AnimatedCheck size={56} />
-                        <div
-                          className="mt-6 flex flex-col items-center gap-4"
-                          style={{
-                            opacity: 0,
-                            animation: "fadeIn 300ms ease 600ms forwards",
-                          }}
-                        >
-                          <div>
-                            <h2 className="text-xl font-medium">
-                              All caught up
-                            </h2>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              No invoices pending your review.
+                    {centerView === "comms" ? (
+                      <CommsView
+                        messages={commsMessages}
+                        onNewEmail={openEmailModal}
+                        onAction={(id) => dispatchAction(id, "slack")}
+                        onSendReply={handleSendReply}
+                        hasActiveThread={hasActiveThread}
+                      />
+                    ) : justCompleted && !nextInvoice ? (
+                      /* Queue cleared — replaces center content entirely */
+                      <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        <div className="flex flex-col items-center text-center py-12 px-8">
+                          <AnimatedCheck size={56} />
+                          <div
+                            className="mt-6 flex flex-col items-center gap-4"
+                            style={{
+                              opacity: 0,
+                              animation: "fadeIn 300ms ease 600ms forwards",
+                            }}
+                          >
+                            <div>
+                              <h2 className="text-xl font-medium">
+                                All caught up
+                              </h2>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                No invoices pending your review.
+                              </p>
+                            </div>
+                            {(approvedCount > 0 || rejectedCount > 0) && (
+                              <div className="flex gap-2 flex-wrap justify-center">
+                                {approvedCount > 0 && (
+                                  <Badge status="success" variant="secondary">
+                                    {approvedCount} approved this session
+                                  </Badge>
+                                )}
+                                {rejectedCount > 0 && (
+                                  <Badge status="error" variant="secondary">
+                                    {rejectedCount} rejected this session
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              {justCompleted.type === "approved"
+                                ? `Approved · ${data.id} · ${data.vendor}`
+                                : `Rejected · ${data.id} · Reason: ${justCompleted.reason}`}
                             </p>
                           </div>
-                          {(approvedCount > 0 || rejectedCount > 0) && (
-                            <div className="flex gap-2 flex-wrap justify-center">
-                              {approvedCount > 0 && (
-                                <Badge status="success" variant="secondary">
-                                  {approvedCount} approved this session
-                                </Badge>
-                              )}
-                              {rejectedCount > 0 && (
-                                <Badge status="error" variant="secondary">
-                                  {rejectedCount} rejected this session
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            {justCompleted.type === "approved"
-                              ? `Approved · ${data.id} · ${data.vendor}`
-                              : `Rejected · ${data.id} · Reason: ${justCompleted.reason}`}
-                          </p>
                         </div>
                       </div>
-                    </div>
-                  ) : justCompleted ? (
-                    /* Just completed — alert + up next card */
-                    <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 custom-scrollbar">
-                      <div
-                        style={{
-                          opacity: 0,
-                          animation: "fadeIn 300ms ease 250ms forwards",
-                        }}
-                      >
-                        {justCompleted.type === "approved" ? (
-                          <Alert
-                            status="default"
-                            visual="outline"
-                            className="border-success [&>svg]:text-success"
-                          >
-                            <Check className="h-4 w-4" />
-                            <AlertTitle className="text-sm font-medium">
-                              Invoice approved
-                            </AlertTitle>
-                            <AlertDescription className="text-xs text-muted-foreground">
-                              {data.id} · {data.vendor} · {data.amount}, sent
-                              for payment processing.
-                              <br />
-                              {completedCount} of {totalInQueue} invoices
-                              reviewed
-                            </AlertDescription>
-                          </Alert>
-                        ) : (
-                          <Alert status="error" visual="outline">
-                            <X className="h-4 w-4" />
-                            <AlertTitle className="text-sm font-medium">
-                              Invoice rejected
-                            </AlertTitle>
-                            <AlertDescription className="text-xs text-muted-foreground">
-                              {data.id} · {data.vendor} · Reason:{" "}
-                              {justCompleted.reason}
-                              <br />
-                              Vendor will be notified. Removed from your queue.
-                            </AlertDescription>
-                          </Alert>
-                        )}
-                        <Separator className="my-4" />
-                        <UpNextCard
-                          nextInvoice={nextInvoice}
-                          onNext={onNextInvoice}
-                          onBack={onBack}
+                    ) : justCompleted ? (
+                      /* Just completed — alert + up next card */
+                      <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 custom-scrollbar">
+                        <div
+                          style={{
+                            opacity: 0,
+                            animation: "fadeIn 300ms ease 250ms forwards",
+                          }}
+                        >
+                          {justCompleted.type === "approved" ? (
+                            <Alert
+                              status="default"
+                              visual="outline"
+                              className="border-success [&>svg]:text-success"
+                            >
+                              <Check className="h-4 w-4" />
+                              <AlertTitle className="text-sm font-medium">
+                                Invoice approved
+                              </AlertTitle>
+                              <AlertDescription className="text-xs text-muted-foreground">
+                                {data.id} · {data.vendor} · {data.amount}, sent
+                                for payment processing.
+                                <br />
+                                {completedCount} of {totalInQueue} invoices
+                                reviewed
+                              </AlertDescription>
+                            </Alert>
+                          ) : (
+                            <Alert status="error" visual="outline">
+                              <X className="h-4 w-4" />
+                              <AlertTitle className="text-sm font-medium">
+                                Invoice rejected
+                              </AlertTitle>
+                              <AlertDescription className="text-xs text-muted-foreground">
+                                {data.id} · {data.vendor} · Reason:{" "}
+                                {justCompleted.reason}
+                                <br />
+                                Vendor will be notified. Removed from your
+                                queue.
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                          <Separator className="my-4" />
+                          <UpNextCard
+                            nextInvoice={nextInvoice}
+                            onNext={onNextInvoice}
+                            onBack={onBack}
+                          />
+                        </div>
+                      </div>
+                    ) : sentEmails.length > 0 && centerView === "findings" ? (
+                      <div className="h-full overflow-y-auto px-4 sm:px-6 lg:px-8 pt-7 pb-6 custom-scrollbar">
+                        <AwaitingResponseBlock
+                          sentEmails={sentEmails}
+                          onFollowUp={openEmailModal}
                         />
                       </div>
-                    </div>
-                  ) : sentEmails.length > 0 && centerView === "findings" ? (
-                    <div className="h-full overflow-y-auto px-4 sm:px-6 lg:px-8 pt-7 pb-6 custom-scrollbar">
-                      <AwaitingResponseBlock
-                        sentEmails={sentEmails}
-                        onFollowUp={openEmailModal}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-[136px] custom-scrollbar">
-                      <ExceptionBlock
-                        emailButtonState={
-                          sentEmails.length > 0
-                            ? "sent"
-                            : emailModalOpen
-                              ? "draft-open"
-                              : "default"
-                        }
-                        onAction={(id, opts) =>
-                          dispatchAction(id, "findings", opts)
-                        }
-                        onUndo={handleUndoState}
-                        confirmed={confirmed}
-                        dimContent={flagged || held}
-                      />
-                    </div>
-                  )}
-                  {!justCompleted &&
-                    !completion &&
-                    !flagged &&
-                    !held &&
-                    centerView === "findings" && <AskFooter />}
-                </div>
-              </>
-            )}
+                    ) : (
+                      <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-[136px] custom-scrollbar">
+                        <ExceptionBlock
+                          emailButtonState={
+                            sentEmails.length > 0
+                              ? "sent"
+                              : emailModalOpen
+                                ? "draft-open"
+                                : "default"
+                          }
+                          onAction={(id, opts) =>
+                            dispatchAction(id, "findings", opts)
+                          }
+                          onUndo={handleUndoState}
+                          confirmed={confirmed}
+                          dimContent={flagged || held}
+                        />
+                      </div>
+                    )}
+                    {!justCompleted &&
+                      !completion &&
+                      !flagged &&
+                      !held &&
+                      centerView === "findings" && <AskFooter />}
+                  </div>
+                </>
+              )}
+            </div>
+            <div
+              className="inv-between-enter h-full"
+              style={{ animationDelay: "120ms" }}
+            >
+              {version !== "v1" ? (
+                <RightPanelNext
+                  tab={rightTab}
+                  onTabChange={onRightTabChange}
+                  commsIsNew={commsIsNew}
+                  onCommsViewed={() => setCommsIsNew(false)}
+                  extraTimelineEntries={extraTimelineEntries}
+                  onAddNote={handleAddNote}
+                  width={rightPanelWidth}
+                  onWidthChange={onRightPanelWidthChange}
+                />
+              ) : (
+                <RightPanel
+                  tab={rightTab}
+                  onTabChange={onRightTabChange}
+                  commsIsNew={commsIsNew}
+                  onCommsViewed={() => setCommsIsNew(false)}
+                  extraTimelineEntries={extraTimelineEntries}
+                  onAddNote={handleAddNote}
+                  width={rightPanelWidth}
+                  onWidthChange={onRightPanelWidthChange}
+                />
+              )}
+            </div>
           </div>
-          <div
-            className="inv-between-enter h-full"
-            style={{ animationDelay: "120ms" }}
-          >
-            {version !== "v1" ? (
-              <RightPanelNext
-                tab={rightTab}
-                onTabChange={onRightTabChange}
-                commsIsNew={commsIsNew}
-                onCommsViewed={() => setCommsIsNew(false)}
-                extraTimelineEntries={extraTimelineEntries}
-                onAddNote={handleAddNote}
-                width={rightPanelWidth}
-                onWidthChange={onRightPanelWidthChange}
-              />
-            ) : (
-              <RightPanel
-                tab={rightTab}
-                onTabChange={onRightTabChange}
-                commsIsNew={commsIsNew}
-                onCommsViewed={() => setCommsIsNew(false)}
-                extraTimelineEntries={extraTimelineEntries}
-                onAddNote={handleAddNote}
-                width={rightPanelWidth}
-                onWidthChange={onRightPanelWidthChange}
-              />
-            )}
-          </div>
-        </div>
 
-        {/* Email modal */}
-        <Dialog
-          open={emailModalOpen}
-          onOpenChange={(open) => !open && closeEmailModal()}
-        >
-          <DialogContent className="!p-0 max-w-2xl h-[600px] overflow-hidden flex flex-col">
-            <DialogTitle className="sr-only">Draft email</DialogTitle>
-            <EmailPanelTab
-              key={emailDraftKey}
-              onSend={handleSend}
-              onDiscard={discardEmailDraft}
-            />
-          </DialogContent>
-        </Dialog>
-      </>
-    </InvoiceDetailContext.Provider>
+          {/* Email modal */}
+          <Dialog
+            open={emailModalOpen}
+            onOpenChange={(open) => !open && closeEmailModal()}
+          >
+            <DialogContent className="!p-0 max-w-2xl h-[600px] overflow-hidden flex flex-col">
+              <DialogTitle className="sr-only">Draft email</DialogTitle>
+              <EmailPanelTab
+                key={emailDraftKey}
+                onSend={handleSend}
+                onDiscard={discardEmailDraft}
+              />
+            </DialogContent>
+          </Dialog>
+        </>
+      </InvoiceDetailContext.Provider>
+    </EditModeContext.Provider>
   );
 }
 
