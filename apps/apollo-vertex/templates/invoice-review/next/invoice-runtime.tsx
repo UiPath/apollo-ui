@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useEffect,
   type ReactNode,
   useContext,
   useMemo,
@@ -100,12 +101,19 @@ interface RuntimeStore {
    * predicate registry against open exceptions, and auto-resolve any whose
    * condition is now satisfied — all in one atomic store update. The caller
    * supplies the current open exceptions and base data; the store owns all logic.
+   * `extras` extends the mutation with surfaced exceptions and data patches so
+   * fix-action paths can route entirely through this mutation.
    */
   correctDetail: (
     invoiceId: string,
     corrections: DetailCorrections,
     context: { openExceptions: InvoiceException[]; base: PredicateBaseData },
     correctionEvents: RunEventInput[],
+    extras?: {
+      surfaced?: InvoiceException[];
+      dataPatch?: Partial<InvoiceReview>;
+      settledSub?: string;
+    },
   ) => void;
   /**
    * Request a source-document highlight for an exception's anchors. Bumps a
@@ -117,6 +125,11 @@ interface RuntimeStore {
     exceptionId: string,
     anchors: string[],
   ) => void;
+  /**
+   * Set (or clear with null) the field-focus highlight from the edit form.
+   * Pure navigation: bumps a nonce for re-scroll/re-pulse, no loop state change.
+   */
+  setFieldHighlight: (invoiceId: string, anchor: string | null) => void;
   /** Read the cursor exception id for an invoice (the active row in ExceptionTimeline). */
   getCursor: (invoiceId: string) => string | undefined;
   /** Set the cursor exception id (called by ExceptionTimeline on active change). */
@@ -125,8 +138,27 @@ interface RuntimeStore {
 
 const InvoiceRuntimeContext = createContext<RuntimeStore | null>(null);
 
+const STORAGE_KEY = "apollo-vertex-invoice-runtime";
+
+function loadFromStorage(): Record<string, InvoiceRuntime> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as Record<string, InvoiceRuntime>;
+  } catch {}
+  return {};
+}
+
 export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
-  const [map, setMap] = useState<Record<string, InvoiceRuntime>>({});
+  const [map, setMap] =
+    useState<Record<string, InvoiceRuntime>>(loadFromStorage);
+
+  // Persist every map update so corrections survive a page reload.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    } catch {}
+  }, [map]);
   const [cursorMap, setCursorMap] = useState<Record<string, string>>({});
 
   const value = useMemo<RuntimeStore>(
@@ -216,7 +248,7 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
             },
           };
         }),
-      correctDetail: (id, corrections, context, correctionEvents) =>
+      correctDetail: (id, corrections, context, correctionEvents, extras) =>
         setMap((prev) => {
           const cur = prev[id] ?? EMPTY;
           const merged = mergeDetailCorrections(
@@ -239,22 +271,18 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
               exception: exc,
             };
           });
-          const revalidatedEvent: RunEventInput =
-            cleared.length > 0
-              ? {
-                  kind: "revalidated",
-                  label: "Re-validated",
-                  sub: `All checks re-run, ${cleared.length} issue${cleared.length > 1 ? "s" : ""} cleared`,
-                  time: "Just now",
-                  pending: false,
-                }
-              : {
-                  kind: "revalidated",
-                  label: "Re-validated",
-                  sub: "All checks re-run, nothing new",
-                  time: "Just now",
-                  pending: false,
-                };
+          const settledSub =
+            extras?.settledSub ??
+            (cleared.length > 0
+              ? `All checks re-run, ${cleared.length} issue${cleared.length > 1 ? "s" : ""} cleared`
+              : "All checks re-run, nothing new");
+          const revalidatedEvent: RunEventInput = {
+            kind: "revalidated",
+            label: "Re-validated",
+            sub: settledSub,
+            time: "Just now",
+            pending: false,
+          };
           const allEvents: RunEventInput[] = [
             ...correctionEvents,
             ...autoResolveEvents,
@@ -263,12 +291,24 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
           const newResolvedIds = cleared.length
             ? Array.from(new Set([...cur.resolvedIds, ...cleared]))
             : cur.resolvedIds;
+          // Merge surfaced exceptions from the re-check (fix-action path).
+          let surfaced = cur.surfaced;
+          if (extras?.surfaced?.length) {
+            const existing = new Set(cur.surfaced.map((e) => e.id));
+            const fresh = extras.surfaced.filter((e) => !existing.has(e.id));
+            if (fresh.length) surfaced = [...cur.surfaced, ...fresh];
+          }
+          const dataPatch = extras?.dataPatch
+            ? { ...cur.dataPatch, ...extras.dataPatch }
+            : cur.dataPatch;
           return {
             ...prev,
             [id]: {
               ...cur,
               detailCorrections: merged,
               resolvedIds: newResolvedIds,
+              surfaced,
+              dataPatch,
               events: [...cur.events, ...withKeys(id, cur.events, allEvents)],
             },
           };
@@ -287,6 +327,15 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
               },
             },
           };
+        }),
+      setFieldHighlight: (id, anchor) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          const next = anchor
+            ? { anchor, nonce: (cur.fieldHighlight?.nonce ?? 0) + 1 }
+            : undefined;
+          if (!anchor && !cur.fieldHighlight) return prev;
+          return { ...prev, [id]: { ...cur, fieldHighlight: next } };
         }),
     }),
     [map, cursorMap],

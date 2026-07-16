@@ -52,6 +52,8 @@ import {
   type InvoiceReview,
   isRouteSuggestion,
   isSupplierRoute,
+  openExceptions,
+  type PredicateBaseData,
   type RunEvent,
   type RunEventInput,
   receiveCorrectedInvoice,
@@ -2512,41 +2514,77 @@ export function ExceptionTimeline({
     const s = resolve;
     const t = setTimeout(
       () => {
-        const events: RunEventInput[] = [
-          {
-            kind: "resolved",
-            label: s.label,
-            sub: s.sub,
-            time: "Just now",
-            shortLabel: s.shortLabel,
-            exception: s.exc,
-          },
-          ...s.clearedInList.map((cid): RunEventInput => {
-            const c = list.find((e) => e.id === cid);
-            return {
-              kind: "resolved",
-              label: `${c ? exceptionMeta(c).label : "Issue"} cleared`,
-              sub: "Cleared automatically after re-check",
+        if (s.detailCorrections) {
+          // Correction-based fix: route through the pipeline so predicates own
+          // resolution. The resolved event uses the action's label verbatim.
+          const correctionEvents: RunEventInput[] = [
+            {
+              kind: "corrected",
+              label: s.label,
+              sub: s.sub,
               time: "Just now",
-              auto: true,
-              exception: c,
-            };
-          }),
-          {
-            kind: "revalidated",
-            label: "Re-validated",
-            sub: s.settledSub,
-            time: "Just now",
-            pending: false,
-          },
-        ];
-        runtime.commitResolve(review.id, {
-          resolvedIds: [s.exc.id, ...s.clearedInList],
-          surfaced: s.fresh,
-          dataPatch: s.dataPatch,
-          detailCorrections: s.detailCorrections,
-          events,
-        });
+            },
+            ...s.clearedInList.map((cid): RunEventInput => {
+              const c = list.find((e) => e.id === cid);
+              return {
+                kind: "resolved",
+                label: `${c ? exceptionMeta(c).label : "Issue"} cleared`,
+                sub: "Cleared automatically after re-check",
+                time: "Just now",
+                auto: true,
+                exception: c,
+              };
+            }),
+          ];
+          // openExceptions includes the primary one so its predicate is evaluated.
+          const openExcs = openExceptions(review, rt);
+          runtime.correctDetail(
+            review.id,
+            s.detailCorrections,
+            { openExceptions: openExcs, base: {} },
+            correctionEvents,
+            {
+              surfaced: s.fresh,
+              dataPatch: s.dataPatch,
+              settledSub: s.settledSub,
+            },
+          );
+        } else {
+          const events: RunEventInput[] = [
+            {
+              kind: "resolved",
+              label: s.label,
+              sub: s.sub,
+              time: "Just now",
+              shortLabel: s.shortLabel,
+              exception: s.exc,
+            },
+            ...s.clearedInList.map((cid): RunEventInput => {
+              const c = list.find((e) => e.id === cid);
+              return {
+                kind: "resolved",
+                label: `${c ? exceptionMeta(c).label : "Issue"} cleared`,
+                sub: "Cleared automatically after re-check",
+                time: "Just now",
+                auto: true,
+                exception: c,
+              };
+            }),
+            {
+              kind: "revalidated",
+              label: "Re-validated",
+              sub: s.settledSub,
+              time: "Just now",
+              pending: false,
+            },
+          ];
+          runtime.commitResolve(review.id, {
+            resolvedIds: [s.exc.id, ...s.clearedInList],
+            surfaced: s.fresh,
+            dataPatch: s.dataPatch,
+            events,
+          });
+        }
         setActiveId(
           nextOpenId(s.exc.id, s.clearedInList)?.id ?? s.fresh[0]?.id ?? "",
         );

@@ -238,6 +238,7 @@ export interface DetailCorrections {
   documentDateFormatted?: string;
   dueFormatted?: string;
   servicePeriod?: string;
+  billingAccount?: string;
   lines?: Record<number, LineCorrection>;
 }
 
@@ -396,6 +397,8 @@ export interface InvoiceRuntime {
   events: RunEvent[];
   /** pending "show in source" request; validity is derived (live exception) */
   highlight?: SourceHighlight;
+  /** field-focus highlight from the edit form — takes priority over exception highlights */
+  fieldHighlight?: { anchor: string; nonce: number };
 }
 
 export function exceptionMeta(e: InvoiceException): {
@@ -465,13 +468,15 @@ export type ResolutionPredicate = (
 export const RESOLUTION_PREDICATES: Partial<
   Record<ExceptionType, ResolutionPredicate>
 > = {
-  "qty-over-invoiced": (exc, corrections, base) => {
+  "qty-over-invoiced": (exc, corrections) => {
     if (exc.scope.level !== "line") return true;
     const lineNum = exc.scope.line; // 1-indexed
-    const correctedQty =
-      corrections.lines?.[lineNum]?.qty ?? base.lines?.[lineNum - 1]?.qty;
-    const poQty = base.lines?.[lineNum - 1]?.poQty;
-    if (correctedQty === undefined || poQty === undefined) return true;
+    const correctedQty = corrections.lines?.[lineNum]?.qty;
+    // PO qty is the non-warn side of the finding — no separate base needed.
+    const poQtyStr = exc.finding.sides?.find((s) => s.tone !== "warn")?.value;
+    if (correctedQty === undefined || poQtyStr === undefined) return true;
+    const poQty = Number(poQtyStr);
+    if (Number.isNaN(poQty)) return true;
     return correctedQty > poQty;
   },
   "vat-mismatch": (exc, corrections, base) => {
@@ -482,6 +487,13 @@ export const RESOLUTION_PREDICATES: Partial<
     if (correctedVat === undefined || expectedVat === undefined) return true;
     return correctedVat !== expectedVat;
   },
+  // Any explicit date correction clears the outside-period flag: the reviewer
+  // has acknowledged and corrected the date, which is all we can verify here.
+  "outside-po-period": (_exc, corrections) =>
+    corrections.documentDateFormatted === undefined,
+  // Any explicit account correction clears the missing-account flag.
+  "billing-account": (_exc, corrections) =>
+    corrections.billingAccount === undefined,
 };
 
 /**
@@ -735,6 +747,9 @@ export function suggestionLabel(s: Suggestion): string {
           if (lc.qty !== undefined) return `Adjust to ${lc.qty} units`;
         }
       }
+      if (!s.data.label && s.correction?.documentDateFormatted) {
+        return `Correct to ${s.correction.documentDateFormatted}`;
+      }
       return (s.data.label as string) ?? "Apply correction";
     }
     case "suggest_account":
@@ -981,9 +996,10 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "suggest_correction",
-            data: { label: "Correct to Apr 30, 2026" },
+            data: {},
             reasoning:
               "The service period ends Apr 30; the invoice date looks like a billing lag.",
+            correction: { documentDateFormatted: "Apr 30, 2026" },
           },
           { type: "suggest_supplier", data: {} },
         ],
@@ -1044,6 +1060,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             data: {},
             reasoning:
               "The invoice VAT is one digit off the record; likely a typo on the invoice.",
+            correction: { vat: "US-82-4470911" },
           },
           { type: "route", data: { owner: "Vendor data owner" } },
         ],
@@ -1092,6 +1109,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             data: { label: "Use account 4020", account: "4020" },
             reasoning:
               "Account 4020, Facilities, received the last 6 invoices from this vendor.",
+            correction: { billingAccount: "4020" },
           },
           { type: "route", data: { owner: "Data owner" } },
         ],
