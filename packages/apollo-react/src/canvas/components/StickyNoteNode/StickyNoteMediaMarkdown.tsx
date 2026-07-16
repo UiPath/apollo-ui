@@ -179,11 +179,13 @@ function StickyNoteMediaImage({
   }
 
   if (media.kind === 'publicVideo') {
+    const videoLabel = alt || _({ id: 'sticky-note.media.video-label', message: 'Embedded video' });
     return (
       <MediaContainer fullWidth={media.fullWidth}>
         {/* biome-ignore lint/a11y/useMediaCaption: Consumers provide one public video URL, not a separate caption track. */}
         <video
           src={media.url}
+          aria-label={videoLabel}
           controls
           preload="metadata"
           playsInline

@@ -444,7 +444,7 @@ describe('StickyNoteNode built-in media embedding', () => {
     const content = [
       '![Overview](<https://example.com/image.png> "sticky-note-media;kind=image;layout=full-width")',
       '![YouTube video](<https://www.youtube.com/watch?v=M7lc1UVf-VE> "sticky-note-media;kind=youtube;layout=natural-width")',
-      '![Video](<https://example.com/video.mp4> "sticky-note-media;kind=publicVideo;layout=full-width")',
+      '![Product demo](<https://example.com/video.mp4> "sticky-note-media;kind=publicVideo;layout=full-width")',
     ].join('\n\n');
     const view = renderStickyNoteNode({
       data: { color: 'yellow', content },
@@ -454,7 +454,7 @@ describe('StickyNoteNode built-in media embedding', () => {
 
     expect(screen.getByRole('img', { name: 'Overview' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Play video' })).toBeInTheDocument();
-    expect(view.container.querySelector('video')).toHaveAttribute('controls');
+    expect(screen.getByLabelText('Product demo')).toHaveAttribute('controls');
     expect(screen.queryByRole('button', { name: 'Edit media' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Play video' }));
@@ -480,6 +480,19 @@ describe('StickyNoteNode built-in media embedding', () => {
     expect(screen.getByTitle('YouTube video')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Edit media' })).toHaveLength(3);
     expect(view.container.querySelectorAll('[data-sticky-full-width="true"]')).toHaveLength(2);
+  });
+
+  it('gives public videos a localized accessible name when alt text is empty', () => {
+    renderStickyNoteNode({
+      data: {
+        color: 'yellow',
+        content:
+          '![](<https://example.com/video.mp4> "sticky-note-media;kind=publicVideo;layout=natural-width")',
+      },
+      enableMediaEmbedding: true,
+    });
+
+    expect(screen.getByLabelText('Embedded video')).toHaveAttribute('controls');
   });
 
   it('uses the same Video option for YouTube links', () => {
