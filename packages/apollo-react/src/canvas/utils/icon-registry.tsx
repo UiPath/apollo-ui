@@ -42,6 +42,7 @@ const iconRegistry: Record<string, IconComponent> = {
   uipath: ({ w, h }) => <Icons.UiPathIcon w={w ?? 24} h={h ?? 24} />,
   'agent-diagram': ({ w, h }) => <Icons.AgentDiagramIcon w={w ?? 24} h={h ?? 24} />,
   function: ({ w, h }) => <Icons.FunctionProject w={w ?? 29} h={h ?? 28} />,
+  mcp: ({ w, h }) => <Icons.McpIcon w={w ?? 29} h={h ?? 28} />,
 };
 
 /**

@@ -623,6 +623,35 @@ export const allNodeManifests: NodeManifest[] = [
     ],
   },
 
+  {
+    nodeType: 'uipath.agent.resource.tool.mcp',
+    version: '1',
+    category: 'agent-tools',
+    tags: ['agentic', 'ai', 'tools', 'functions', 'mcp', 'server'],
+    sortOrder: 0,
+    display: {
+      label: 'MCP Server',
+      icon: 'mcp',
+      shape: 'circle',
+    },
+    handleConfiguration: [
+      {
+        position: 'top',
+        handles: [
+          {
+            id: 'input',
+            type: 'target',
+            handleType: 'artifact',
+            constraints: {
+              allowedSources: [{ nodeType: 'uipath.agent', handleId: 'tools' }],
+              validationMessage: "MCP Servers can only connect to Agent node's tools input",
+            },
+          },
+        ],
+      },
+    ],
+  },
+
   // Agent
   {
     nodeType: 'uipath.agent',
