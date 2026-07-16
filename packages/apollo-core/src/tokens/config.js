@@ -76,7 +76,7 @@ module.exports = {
       buildPath: 'src/tokens/css/',
       files: [
         {
-          format: 'css/variables-apollo-design',
+          format: 'css/variables-shadow-host',
           destination: 'variables.css',
           options: {
             showFileHeader: false,
