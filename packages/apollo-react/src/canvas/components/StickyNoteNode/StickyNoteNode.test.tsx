@@ -38,6 +38,10 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   }),
 }));
 
+vi.mock('../NodeViewportOverlay', () => ({
+  NodeViewportOverlay: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 import { StickyNoteNode, type StickyNoteNodeProps } from './StickyNoteNode';
 import type {
   StickyNoteEditorActionContext,
@@ -379,5 +383,132 @@ describe('StickyNoteNode editor extensions', () => {
     expect(mockUpdateNodeData).toHaveBeenCalledWith('sticky-note-1', {
       content: 'Persist after action failure',
     });
+  });
+});
+
+describe('StickyNoteNode built-in media embedding', () => {
+  it('adds one media action when the consumer opts in', () => {
+    renderStickyNoteNode({ enableMediaEmbedding: true });
+
+    startEditing();
+
+    expect(screen.getByRole('button', { name: 'Embed image or video' })).toBeInTheDocument();
+  });
+
+  it('inserts a full-width image at the current cursor without consumer wiring', async () => {
+    const onContentChange = vi.fn();
+    renderStickyNoteNode({
+      data: { color: 'yellow', content: 'BeforeAfter' },
+      enableMediaEmbedding: true,
+      onContentChange,
+    });
+
+    fireEvent.doubleClick(screen.getByText('BeforeAfter'));
+    const editor = screen.getByRole<HTMLTextAreaElement>('textbox');
+    editor.setSelectionRange(6, 6);
+    fireEvent.click(screen.getByRole('button', { name: 'Embed image or video' }));
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Image URL' }), {
+      target: { value: 'https://example.com/image.png' },
+    });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Alternative text' }), {
+      target: { value: 'Overview' },
+    });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Make full width' }));
+    fireEvent.load(screen.getByAltText('Overview'));
+    fireEvent.click(screen.getByRole('button', { name: 'Embed media' }));
+
+    const expected =
+      'Before\n\n![Overview](<https://example.com/image.png> "sticky-note-media;kind=image;layout=full-width")\n\nAfter';
+    expect(onContentChange).toHaveBeenCalledOnce();
+    expect(onContentChange).toHaveBeenCalledWith(expected);
+    expect(mockUpdateNodeData).toHaveBeenCalledWith('sticky-note-1', { content: expected });
+    expect(await screen.findByRole('textbox')).toHaveValue(expected);
+  });
+
+  it('renders every supported media type and only shows edit controls while selected', () => {
+    const content = [
+      '![Overview](<https://example.com/image.png> "sticky-note-media;kind=image;layout=full-width")',
+      '![YouTube video](<https://www.youtube.com/watch?v=M7lc1UVf-VE> "sticky-note-media;kind=youtube;layout=natural-width")',
+      '![Video](<https://example.com/video.mp4> "sticky-note-media;kind=publicVideo;layout=full-width")',
+    ].join('\n\n');
+    const view = renderStickyNoteNode({
+      data: { color: 'yellow', content },
+      enableMediaEmbedding: true,
+      selected: false,
+    });
+
+    expect(screen.getByRole('img', { name: 'Overview' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Play video' })).toBeInTheDocument();
+    expect(view.container.querySelector('video')).toHaveAttribute('controls');
+    expect(screen.queryByRole('button', { name: 'Edit media' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Play video' }));
+    expect(screen.getByTitle('YouTube video')).toHaveAttribute(
+      'src',
+      'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE?autoplay=1'
+    );
+
+    view.rerender(
+      <StickyNoteNode
+        {...defaultProps}
+        data={{ color: 'yellow', content }}
+        enableMediaEmbedding
+        selected
+      />
+    );
+
+    expect(screen.getByTitle('YouTube video')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Edit media' })).toHaveLength(3);
+    expect(view.container.querySelectorAll('[data-sticky-full-width="true"]')).toHaveLength(2);
+  });
+
+  it('uses the same Video option for YouTube links', () => {
+    const onContentChange = vi.fn();
+    renderStickyNoteNode({
+      data: { color: 'yellow', content: 'Video:' },
+      enableMediaEmbedding: true,
+      onContentChange,
+    });
+
+    fireEvent.doubleClick(screen.getByText('Video:'));
+    const editor = screen.getByRole<HTMLTextAreaElement>('textbox');
+    editor.setSelectionRange(editor.value.length, editor.value.length);
+    fireEvent.click(screen.getByRole('button', { name: 'Embed image or video' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Video' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Video URL' }), {
+      target: { value: 'https://youtu.be/M7lc1UVf-VE' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Embed media' }));
+
+    expect(onContentChange).toHaveBeenCalledWith(
+      'Video:\n\n![YouTube video](<https://www.youtube.com/watch?v=M7lc1UVf-VE> "sticky-note-media;kind=youtube;layout=natural-width")'
+    );
+  });
+
+  it('edits rendered media and applies the full-width layout', () => {
+    const onContentChange = vi.fn();
+    const content =
+      '![Overview](<https://example.com/image.png> "sticky-note-media;kind=image;layout=natural-width")';
+    const view = renderStickyNoteNode({
+      data: { color: 'yellow', content },
+      enableMediaEmbedding: true,
+      onContentChange,
+      selected: true,
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit media' }));
+    const fullWidth = screen.getByRole('checkbox', { name: 'Make full width' });
+    expect(fullWidth).not.toBeChecked();
+    fireEvent.click(fullWidth);
+    const preview = screen.getAllByAltText('Overview').at(-1);
+    expect(preview).toBeDefined();
+    fireEvent.load(preview!);
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(onContentChange).toHaveBeenCalledWith(
+      '![Overview](<https://example.com/image.png> "sticky-note-media;kind=image;layout=full-width")'
+    );
+    expect(view.container.querySelector('[data-sticky-full-width="true"]')).toBeInTheDocument();
   });
 });

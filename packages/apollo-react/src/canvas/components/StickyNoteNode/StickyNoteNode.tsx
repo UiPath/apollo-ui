@@ -24,6 +24,20 @@ import {
   detectActiveFormats,
 } from './markdown-formatting';
 import {
+  findStickyNoteMediaAtSelection,
+  insertStickyNoteMedia,
+  replaceStickyNoteMedia,
+  type StickyNoteMedia,
+  type StickyNoteMediaToken,
+  serializeStickyNoteMedia,
+} from './StickyNoteMedia';
+import { StickyNoteMediaDialog } from './StickyNoteMediaDialog';
+import {
+  StickyNoteMediaMarkdownProvider,
+  type StickyNoteMediaSourceRange,
+  stickyNoteMediaMarkdownComponents,
+} from './StickyNoteMediaMarkdown';
+import {
   BottomCornerIndicators,
   ColorOption,
   ColorPickerPanel,
@@ -39,6 +53,7 @@ import {
 import type {
   StickyNoteColor,
   StickyNoteData,
+  StickyNoteEditorActionContext,
   StickyNoteFormattingAction,
   TextSelection,
 } from './StickyNoteNode.types';
@@ -57,9 +72,19 @@ export interface StickyNoteNodeProps extends NodeProps {
   onResize?: (width: number, height: number) => void;
   onResizeStart?: () => void;
   onResizeEnd?: () => void;
+  /** Enables Apollo's built-in image, YouTube, and public-video embedding experience. */
+  enableMediaEmbedding?: boolean;
   formattingActions?: readonly StickyNoteFormattingAction[];
   markdownComponents?: Omit<Components, 'a'>;
 }
+
+type MediaDialogState =
+  | {
+      source: 'editor';
+      context: StickyNoteEditorActionContext;
+      token: StickyNoteMediaToken | null;
+    }
+  | { source: 'rendered'; token: StickyNoteMediaToken };
 
 const minWidth = GRID_SPACING * 8;
 const minHeight = GRID_SPACING * 8;
@@ -77,6 +102,7 @@ const StickyNoteNodeComponent = ({
   onResize,
   onResizeStart,
   onResizeEnd,
+  enableMediaEmbedding = false,
   formattingActions,
   markdownComponents: customMarkdownComponents,
 }: StickyNoteNodeProps) => {
@@ -86,6 +112,7 @@ const StickyNoteNodeComponent = ({
   const [isEditing, setIsEditing] = useState(!readOnly && (data.autoFocus ?? false));
   const [isResizing, setIsResizing] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const [mediaDialog, setMediaDialog] = useState<MediaDialogState | null>(null);
   const [localContent, setLocalContent] = useState(data.content || '');
   const latestContentRef = useRef(localContent);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -258,6 +285,81 @@ const StickyNoteNodeComponent = ({
     [id, onContentChange, updateLocalContent, updateNodeData]
   );
 
+  const openMediaDialog = useCallback((context: StickyNoteEditorActionContext) => {
+    const { selection } = context;
+    setMediaDialog({
+      source: 'editor',
+      context,
+      token: findStickyNoteMediaAtSelection(
+        selection.value,
+        selection.selectionStart,
+        selection.selectionEnd
+      ),
+    });
+  }, []);
+
+  const mediaFormattingAction = useMemo<StickyNoteFormattingAction>(
+    () => ({
+      id: 'sticky-note-embed-media',
+      icon: <CanvasIcon icon="image-plus" size={14} />,
+      label: _({
+        id: 'sticky-note.media.embed-action',
+        message: 'Embed image or video',
+      }),
+      onAction: openMediaDialog,
+    }),
+    [_, openMediaDialog]
+  );
+
+  const effectiveFormattingActions = useMemo<readonly StickyNoteFormattingAction[]>(
+    () =>
+      enableMediaEmbedding
+        ? [mediaFormattingAction, ...(formattingActions ?? [])]
+        : (formattingActions ?? []),
+    [enableMediaEmbedding, formattingActions, mediaFormattingAction]
+  );
+
+  const handleEditRenderedMedia = useCallback(
+    (media: StickyNoteMedia, range: StickyNoteMediaSourceRange) => {
+      setMediaDialog({ source: 'rendered', token: { media, ...range } });
+    },
+    []
+  );
+
+  const cancelMediaDialog = useCallback(() => {
+    const current = mediaDialog;
+    setMediaDialog(null);
+    if (current?.source === 'editor') current.context.resume();
+  }, [mediaDialog]);
+
+  const submitMediaDialog = useCallback(
+    (media: StickyNoteMedia) => {
+      if (!mediaDialog) return;
+
+      const block = serializeStickyNoteMedia(media);
+      if (mediaDialog.source === 'editor') {
+        const currentValue = mediaDialog.context.currentValue();
+        const next = mediaDialog.token
+          ? (replaceStickyNoteMedia(currentValue, mediaDialog.token, block) ??
+            insertStickyNoteMedia(currentValue, block, null))
+          : insertStickyNoteMedia(currentValue, block, mediaDialog.context.selection);
+        setMediaDialog(null);
+        mediaDialog.context.commit(next);
+        return;
+      }
+
+      const currentValue = latestContentRef.current;
+      const next =
+        replaceStickyNoteMedia(currentValue, mediaDialog.token, block) ??
+        insertStickyNoteMedia(currentValue, block, null);
+      setMediaDialog(null);
+      updateLocalContent(next.value);
+      onContentChange?.(next.value);
+      updateNodeData(id, { content: next.value });
+    },
+    [id, mediaDialog, onContentChange, updateLocalContent, updateNodeData]
+  );
+
   const updateActiveFormats = useCallback(() => {
     if (!textAreaRef.current) return;
     const next = detectActiveFormats({
@@ -394,8 +496,20 @@ const StickyNoteNodeComponent = ({
   );
 
   const markdownComponents = useMemo<Components>(
-    () => ({ ...customMarkdownComponents, ...builtInMarkdownComponents }),
-    [builtInMarkdownComponents, customMarkdownComponents]
+    () => ({
+      ...customMarkdownComponents,
+      ...(enableMediaEmbedding ? stickyNoteMediaMarkdownComponents : {}),
+      ...builtInMarkdownComponents,
+    }),
+    [builtInMarkdownComponents, customMarkdownComponents, enableMediaEmbedding]
+  );
+
+  const mediaMarkdownOptions = useMemo(
+    () => ({
+      editable: enableMediaEmbedding && selected && !readOnly,
+      onEditMedia: handleEditRenderedMedia,
+    }),
+    [enableMediaEmbedding, handleEditRenderedMedia, readOnly, selected]
   );
 
   // Build toolbar config with only Edit and Color buttons
@@ -531,31 +645,33 @@ const StickyNoteNodeComponent = ({
                 activeFormats={activeFormats}
                 onFormat={handleFormat}
                 onBlur={handleBlur}
-                actions={formattingActions}
+                actions={effectiveFormattingActions}
                 onAction={handleFormattingAction}
               />
             </>
           ) : (
             <StickyNoteMarkdown ref={markdownRef} {...scrollCaptureProps}>
-              {localContent ? (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm, remarkBreaks]}
-                  components={markdownComponents}
-                >
-                  {preserveNewlines(localContent)}
-                </ReactMarkdown>
-              ) : (
-                // Render placeholder if renderPlaceholderOnSelect is enabled, node is selected, and the content is empty
-                renderPlaceholderOnSelect &&
-                selected && (
+              <StickyNoteMediaMarkdownProvider value={mediaMarkdownOptions}>
+                {localContent ? (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkBreaks]}
                     components={markdownComponents}
                   >
-                    {placeholder}
+                    {preserveNewlines(localContent)}
                   </ReactMarkdown>
-                )
-              )}
+                ) : (
+                  // Render placeholder if renderPlaceholderOnSelect is enabled, node is selected, and the content is empty
+                  renderPlaceholderOnSelect &&
+                  selected && (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm, remarkBreaks]}
+                      components={markdownComponents}
+                    >
+                      {placeholder}
+                    </ReactMarkdown>
+                  )
+                )}
+              </StickyNoteMediaMarkdownProvider>
             </StickyNoteMarkdown>
           )}
         </StickyNoteContainer>
@@ -609,6 +725,13 @@ const StickyNoteNodeComponent = ({
           </NodeViewportOverlay>
         )}
       </StickyNoteWrapper>
+      {enableMediaEmbedding && mediaDialog && (
+        <StickyNoteMediaDialog
+          initialMedia={mediaDialog.token?.media}
+          onCancel={cancelMediaDialog}
+          onSubmit={submitMediaDialog}
+        />
+      )}
     </>
   );
 };

@@ -1,22 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import type { Components } from 'react-markdown';
+import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useMemo } from 'react';
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { type StickyNoteMedia, serializeStickyNoteMedia } from './StickyNoteMedia';
 import { StickyNoteNode, type StickyNoteNodeProps } from './StickyNoteNode';
-import type {
-  StickyNoteColor,
-  StickyNoteData,
-  StickyNoteEditorActionContext,
-  StickyNoteFormattingAction,
-  TextSelection,
-} from './StickyNoteNode.types';
+import type { StickyNoteColor, StickyNoteData } from './StickyNoteNode.types';
 
 // ============================================================================
 // Meta Configuration
@@ -85,458 +77,33 @@ const nodeTypesWithCallbacks = {
   stickyNote: StickyNoteWithCallbacks,
 };
 
-const DEMO_MEDIA = {
+type DemoMediaKind = 'image' | 'youtube' | 'publicVideo';
+
+const DEMO_MEDIA: Record<DemoMediaKind, StickyNoteMedia> = {
   image: {
+    kind: 'image',
+    url: 'https://placehold.co/200x113/png?text=Sticky+note+image',
     alt: 'Embedded image',
-    defaultUrl: 'https://placehold.co/200x113/png?text=Sticky+note+image',
+    fullWidth: false,
   },
-  youtube: {
-    alt: 'Embedded YouTube video',
-    defaultUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-  },
+  youtube: { kind: 'youtube', videoId: 'M7lc1UVf-VE', fullWidth: false },
   publicVideo: {
-    alt: 'Embedded public video',
-    defaultUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+    kind: 'publicVideo',
+    url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+    fullWidth: false,
   },
-} as const;
-
-type DemoMediaKind = keyof typeof DEMO_MEDIA;
-type DemoEmbedType = 'image' | 'video';
-type MediaLayout = 'full-width' | 'natural-width';
-
-type DemoMediaDialog = {
-  context: StickyNoteEditorActionContext;
 };
-
-type MediaMetadata = {
-  kind: DemoMediaKind;
-  layout: MediaLayout;
-};
-
-type YouTubeUrlInfo = {
-  recognized: boolean;
-  embedUrl: string | null;
-};
-
-const MEDIA_TITLE_PREFIX = 'sticky-note-media';
-const DEMO_NATURAL_MEDIA_WIDTH = 200;
-
-function isHttpsUrl(value: string): boolean {
-  try {
-    return new URL(value).protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
-
-function parseYouTubeUrl(value: string): YouTubeUrlInfo {
-  try {
-    const url = new URL(value);
-    const host = url.hostname.replace(/^www\./, '');
-    const recognized =
-      host === 'youtube.com' ||
-      host === 'm.youtube.com' ||
-      host === 'youtube-nocookie.com' ||
-      host === 'youtu.be';
-
-    if (!recognized) return { recognized: false, embedUrl: null };
-    if (url.protocol !== 'https:') return { recognized: true, embedUrl: null };
-
-    let videoId: string | null = null;
-    if (host === 'youtu.be') {
-      videoId = url.pathname.split('/').filter(Boolean)[0] ?? null;
-    } else if (url.pathname === '/watch') {
-      videoId = url.searchParams.get('v');
-    } else if (url.pathname.startsWith('/embed/') || url.pathname.startsWith('/shorts/')) {
-      videoId = url.pathname.split('/').filter(Boolean)[1] ?? null;
-    }
-
-    return {
-      recognized: true,
-      embedUrl:
-        videoId && /^[\w-]{11}$/.test(videoId)
-          ? `https://www.youtube-nocookie.com/embed/${videoId}`
-          : null,
-    };
-  } catch {
-    return { recognized: false, embedUrl: null };
-  }
-}
-
-function serializeMediaTitle(kind: DemoMediaKind, fullWidth: boolean): string {
-  const layout: MediaLayout = fullWidth ? 'full-width' : 'natural-width';
-  return `${MEDIA_TITLE_PREFIX};kind=${kind};layout=${layout}`;
-}
-
-function parseMediaTitle(title?: string): MediaMetadata | null {
-  if (!title?.startsWith(`${MEDIA_TITLE_PREFIX};`)) return null;
-
-  const values = Object.fromEntries(
-    title
-      .split(';')
-      .slice(1)
-      .flatMap((part): [string, string][] => {
-        const separatorIndex = part.indexOf('=');
-        if (separatorIndex <= 0 || separatorIndex === part.length - 1) return [];
-
-        return [[part.slice(0, separatorIndex), part.slice(separatorIndex + 1)]];
-      })
-  );
-  const kind = values.kind;
-  const layout = values.layout;
-  if (!(kind === 'image' || kind === 'youtube' || kind === 'publicVideo')) return null;
-  if (!(layout === 'full-width' || layout === 'natural-width')) return null;
-  return { kind, layout };
-}
-
-function serializeMediaMarkdown(kind: DemoMediaKind, mediaUrl: string, fullWidth: boolean): string {
-  return `![${DEMO_MEDIA[kind].alt}](${mediaUrl} "${serializeMediaTitle(kind, fullWidth)}")`;
-}
 
 function createDemoMediaMarkdown(kind: DemoMediaKind, fullWidth: boolean): string {
-  return serializeMediaMarkdown(kind, DEMO_MEDIA[kind].defaultUrl, fullWidth);
+  return serializeStickyNoteMedia({ ...DEMO_MEDIA[kind], fullWidth } as StickyNoteMedia);
 }
 
-function insertMediaAtSelection(
-  currentValue: string,
-  selection: TextSelection,
-  kind: DemoMediaKind,
-  mediaUrl: string,
-  fullWidth: boolean
-): TextSelection {
-  const markdown = serializeMediaMarkdown(kind, mediaUrl, fullWidth);
-  const selectionIsCurrent = currentValue === selection.value;
-  const start = selectionIsCurrent ? selection.selectionStart : currentValue.length;
-  const end = selectionIsCurrent ? selection.selectionEnd : currentValue.length;
-  const prefix = start > 0 && currentValue[start - 1] !== '\n' ? '\n\n' : '';
-  const suffix = end < currentValue.length && currentValue[end] !== '\n' ? '\n\n' : '';
-  const value = `${currentValue.slice(0, start)}${prefix}${markdown}${suffix}${currentValue.slice(end)}`;
-  const cursor = start + prefix.length + markdown.length;
+const StickyNoteWithMediaEmbedding = (props: StickyNoteNodeProps) => (
+  <StickyNoteNode {...props} enableMediaEmbedding />
+);
 
-  return { value, selectionStart: cursor, selectionEnd: cursor };
-}
-
-function StickyNoteWithEditorExtensions(props: StickyNoteNodeProps) {
-  const { updateNodeData } = useReactFlow();
-  const [dialog, setDialog] = useState<DemoMediaDialog | null>(null);
-  const [embedType, setEmbedType] = useState<DemoEmbedType>('image');
-  const [mediaUrl, setMediaUrl] = useState('');
-  const [makeFullWidth, setMakeFullWidth] = useState(true);
-  const [validationMessage, setValidationMessage] = useState('');
-  const [externalUpdateSimulated, setExternalUpdateSimulated] = useState(false);
-  const mediaUrlInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!dialog) return;
-    requestAnimationFrame(() => mediaUrlInputRef.current?.focus());
-  }, [dialog]);
-
-  const openMediaDialog = useCallback((context: StickyNoteEditorActionContext) => {
-    setEmbedType('image');
-    setMediaUrl(DEMO_MEDIA.image.defaultUrl);
-    setMakeFullWidth(true);
-    setValidationMessage('');
-    setExternalUpdateSimulated(false);
-    setDialog({ context });
-  }, []);
-
-  const selectEmbedType = useCallback((type: DemoEmbedType) => {
-    setEmbedType(type);
-    setMediaUrl(type === 'image' ? DEMO_MEDIA.image.defaultUrl : DEMO_MEDIA.youtube.defaultUrl);
-    setValidationMessage('');
-  }, []);
-
-  const cancelMediaDialog = useCallback(() => {
-    dialog?.context.resume();
-    setDialog(null);
-    setValidationMessage('');
-  }, [dialog]);
-
-  const insertMedia = useCallback(() => {
-    if (!dialog) return;
-    if (!isHttpsUrl(mediaUrl)) {
-      setValidationMessage('Enter a valid HTTPS URL.');
-      return;
-    }
-    const youtube = embedType === 'video' ? parseYouTubeUrl(mediaUrl) : null;
-    if (youtube?.recognized && !youtube.embedUrl) {
-      setValidationMessage('Enter a valid public YouTube URL.');
-      return;
-    }
-
-    const kind: DemoMediaKind =
-      embedType === 'image' ? 'image' : youtube?.embedUrl ? 'youtube' : 'publicVideo';
-    dialog.context.commit(
-      insertMediaAtSelection(
-        dialog.context.currentValue(),
-        dialog.context.selection,
-        kind,
-        mediaUrl,
-        makeFullWidth
-      )
-    );
-    setDialog(null);
-    setValidationMessage('');
-  }, [dialog, embedType, makeFullWidth, mediaUrl]);
-
-  const simulateExternalUpdate = useCallback(() => {
-    if (!dialog) return;
-    updateNodeData(props.id, {
-      content: `${dialog.context.currentValue()}\n\n_External note update applied while the media popover was open._`,
-    });
-    setExternalUpdateSimulated(true);
-  }, [dialog, props.id, updateNodeData]);
-
-  const formattingActions = useMemo<readonly StickyNoteFormattingAction[]>(
-    () => [
-      {
-        id: 'embed-demo-media',
-        icon: <CanvasIcon icon="image-plus" size={14} />,
-        label: 'Embed media',
-        onAction: openMediaDialog,
-      },
-    ],
-    [openMediaDialog]
-  );
-
-  const markdownComponents = useMemo<Components>(
-    () => ({
-      img: ({ src, alt, title }) => {
-        const metadata = parseMediaTitle(title);
-        if (!metadata) return <img src={src} alt={alt ?? ''} draggable={false} />;
-        const fullWidth = metadata.layout === 'full-width';
-
-        if (metadata.kind === 'youtube') {
-          const embedUrl = parseYouTubeUrl(src ?? '').embedUrl;
-          return embedUrl ? (
-            <iframe
-              src={embedUrl}
-              title={alt ?? DEMO_MEDIA.youtube.alt}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-              style={{
-                width: fullWidth ? '100%' : DEMO_NATURAL_MEDIA_WIDTH,
-                maxWidth: '100%',
-                aspectRatio: '16 / 9',
-                border: 0,
-                borderRadius: 6,
-              }}
-            />
-          ) : null;
-        }
-
-        if (metadata.kind === 'publicVideo') {
-          return (
-            <video
-              src={src}
-              aria-label={alt ?? DEMO_MEDIA.publicVideo.alt}
-              controls
-              muted
-              preload="metadata"
-              style={{
-                display: 'block',
-                width: fullWidth ? '100%' : DEMO_NATURAL_MEDIA_WIDTH,
-                maxWidth: '100%',
-                height: 'auto',
-                borderRadius: 6,
-              }}
-            />
-          );
-        }
-
-        return (
-          <img
-            src={src}
-            alt={alt ?? ''}
-            draggable={false}
-            style={{
-              display: 'block',
-              width: fullWidth ? '100%' : 'auto',
-              maxWidth: '100%',
-              height: 'auto',
-              borderRadius: 6,
-            }}
-          />
-        );
-      },
-    }),
-    []
-  );
-
-  return (
-    <>
-      <StickyNoteNode
-        {...props}
-        formattingActions={formattingActions}
-        markdownComponents={markdownComponents}
-      />
-      {dialog &&
-        typeof document !== 'undefined' &&
-        createPortal(
-          <div
-            role="presentation"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 10000,
-            }}
-            onMouseDown={(event) => {
-              if (event.target === event.currentTarget) cancelMediaDialog();
-            }}
-          >
-            <form
-              role="dialog"
-              aria-labelledby="sticky-note-media-dialog-title"
-              onSubmit={(event) => {
-                event.preventDefault();
-                insertMedia();
-              }}
-              style={{
-                position: 'absolute',
-                top: Math.max(
-                  16,
-                  Math.min(dialog.context.anchorRect.bottom + 8, window.innerHeight - 430)
-                ),
-                left: Math.max(
-                  16,
-                  Math.min(dialog.context.anchorRect.left, window.innerWidth - 396)
-                ),
-                width: 'min(380px, calc(100vw - 32px))',
-                padding: 16,
-                border: '1px solid var(--canvas-border-de-emp)',
-                borderRadius: 8,
-                color: 'var(--canvas-foreground)',
-                background: 'var(--canvas-background-raised)',
-                boxShadow: '0 12px 32px rgb(0 0 0 / 28%)',
-              }}
-            >
-              <h2 id="sticky-note-media-dialog-title" style={{ margin: '0 0 8px', fontSize: 18 }}>
-                Embed media
-              </h2>
-              <p
-                style={{
-                  margin: '0 0 16px',
-                  color: 'var(--canvas-foreground-de-emp)',
-                  fontSize: 13,
-                }}
-              >
-                Choose an image or video link. YouTube and direct public video URLs use the same
-                Video option.
-              </p>
-              <fieldset style={{ margin: '0 0 14px', padding: 0, border: 0 }}>
-                <legend style={{ marginBottom: 6, fontSize: 13 }}>Media type</legend>
-                <div style={{ display: 'flex', gap: 16 }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-                    <input
-                      type="radio"
-                      name="sticky-note-demo-media-type"
-                      checked={embedType === 'image'}
-                      onChange={() => selectEmbedType('image')}
-                    />
-                    Image
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-                    <input
-                      type="radio"
-                      name="sticky-note-demo-media-type"
-                      checked={embedType === 'video'}
-                      onChange={() => selectEmbedType('video')}
-                    />
-                    Video
-                  </label>
-                </div>
-              </fieldset>
-              <label
-                htmlFor="sticky-note-demo-media-url"
-                style={{ display: 'block', fontSize: 13 }}
-              >
-                {embedType === 'image' ? 'HTTPS image URL' : 'YouTube or public video URL'}
-              </label>
-              <input
-                ref={mediaUrlInputRef}
-                id="sticky-note-demo-media-url"
-                value={mediaUrl}
-                onChange={(event) => {
-                  setMediaUrl(event.target.value);
-                  setValidationMessage('');
-                }}
-                style={{
-                  boxSizing: 'border-box',
-                  width: '100%',
-                  marginTop: 6,
-                  padding: '9px 10px',
-                  border: '1px solid var(--canvas-border)',
-                  borderRadius: 6,
-                  color: 'var(--canvas-foreground)',
-                  background: 'var(--canvas-background)',
-                }}
-              />
-              {embedType === 'video' && (
-                <p
-                  style={{
-                    margin: '6px 0 0',
-                    color: 'var(--canvas-foreground-de-emp)',
-                    fontSize: 12,
-                  }}
-                >
-                  Accepts YouTube watch, share, Shorts, and embed URLs, or a direct public video URL
-                  such as MP4.
-                </p>
-              )}
-              <label
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  marginTop: 14,
-                  fontSize: 13,
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={makeFullWidth}
-                  onChange={(event) => setMakeFullWidth(event.target.checked)}
-                />
-                Make full width
-              </label>
-              <div style={{ marginTop: 12 }}>
-                <button
-                  type="button"
-                  disabled={externalUpdateSimulated}
-                  onClick={simulateExternalUpdate}
-                  style={{ padding: '6px 10px' }}
-                >
-                  Simulate external note update
-                </button>
-                {externalUpdateSimulated && (
-                  <output style={{ display: 'block', margin: '6px 0 0', fontSize: 12 }}>
-                    External content applied. Insert now to verify end-of-note fallback.
-                  </output>
-                )}
-              </div>
-              {validationMessage && (
-                <p role="alert" style={{ margin: '8px 0 0', color: 'var(--canvas-error-icon)' }}>
-                  {validationMessage}
-                </p>
-              )}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
-                <button type="button" onClick={cancelMediaDialog} style={{ padding: '8px 14px' }}>
-                  Cancel
-                </button>
-                <button type="submit" style={{ padding: '8px 14px' }}>
-                  Insert media
-                </button>
-              </div>
-            </form>
-          </div>,
-          document.body
-        )}
-    </>
-  );
-}
-
-const nodeTypesWithEditorExtensions = {
-  stickyNote: StickyNoteWithEditorExtensions,
+const nodeTypesWithMediaEmbedding = {
+  stickyNote: StickyNoteWithMediaEmbedding,
 };
 
 const ReadOnlyStickyNote = (props: StickyNoteNodeProps) => <StickyNoteNode {...props} readOnly />;
@@ -1100,7 +667,7 @@ function EditorExtensionsStory() {
     const editorNote = createStickyNote(
       'sticky-editor-extensions',
       'yellow',
-      '**Complete media playground**\n\nPlace the cursor or select text, then choose **Embed media**. Pick Image or Video, toggle **Make full width**, insert or cancel, then press Escape to preview. Use **Simulate external note update** to test end-of-note fallback.',
+      '**Complete media playground**\n\nPlace the cursor or select text, then choose **Embed image or video**. Pick Image or Video, toggle **Make full width**, insert or cancel, then press Escape to preview. Select the blue note to reveal edit controls on its media.',
       { x: 50, y: 190 },
       { width: 420, height: 400 }
     );
@@ -1134,14 +701,14 @@ function EditorExtensionsStory() {
 
   const { canvasProps } = useCanvasStory({
     initialNodes,
-    additionalNodeTypes: nodeTypesWithEditorExtensions,
+    additionalNodeTypes: nodeTypesWithMediaEmbedding,
   });
 
   return (
     <BaseCanvas {...canvasProps} mode="design">
       <StoryInfoPanel
-        title="Complete Sticky Note Media Extension"
-        description="One Embed media action opens one popover. Choose Image or Video; Video automatically handles YouTube and direct public links. Test cursor insertion or selected-text replacement, HTTPS validation, optional full width, cancel/resume, stale-content append fallback, tooltip, and custom rendering. Press Escape after inserting to preview. The blue note compares natural and full width for every media type."
+        title="Built-in Sticky Note Media Embedding"
+        description="This story enables the feature with one prop. One toolbar action opens one dialog: choose Image or Video; Video handles YouTube and direct public links. Test cursor insertion, selected-text replacement, HTTPS validation, alternative text, optional full width, preview, cancel/resume, and editing rendered media. Press Escape after inserting to preview. The blue note compares natural and full width for image, YouTube, and public video."
         collapsible
         defaultCollapsed
       />
