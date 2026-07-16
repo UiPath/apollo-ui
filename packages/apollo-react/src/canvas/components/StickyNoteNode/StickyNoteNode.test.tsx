@@ -180,6 +180,20 @@ describe('StickyNoteNode editor extensions', () => {
     );
   });
 
+  it('preserves default referrer behavior for ordinary Markdown images', () => {
+    renderStickyNoteNode({
+      enableMediaEmbedding: true,
+      data: {
+        color: 'yellow',
+        content: '![Ordinary image](https://example.com/image.png)',
+      },
+    });
+
+    expect(screen.getByRole('img', { name: 'Ordinary image' })).not.toHaveAttribute(
+      'referrerpolicy'
+    );
+  });
+
   it('lets an editor action commit the captured selection once', () => {
     let editorContext: StickyNoteEditorActionContext | undefined;
     const onContentChange = vi.fn();

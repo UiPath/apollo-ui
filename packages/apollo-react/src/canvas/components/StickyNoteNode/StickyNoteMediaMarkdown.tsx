@@ -109,18 +109,7 @@ function StickyNoteMediaImage({
         ? createElement(fallbackImage, fallbackProps)
         : createElement(fallbackImage, { ...fallbackProps, node });
     }
-    return (
-      <img
-        {...imageProps}
-        src={src}
-        alt={alt}
-        title={title}
-        draggable={false}
-        loading="lazy"
-        decoding="async"
-        referrerPolicy="no-referrer"
-      />
-    );
+    return <img {...imageProps} src={src} alt={alt} title={title} />;
   }
 
   const editButton = editable && range && onEditMedia && (
@@ -133,6 +122,8 @@ function StickyNoteMediaImage({
     return (
       <MediaContainer fullWidth={media.fullWidth}>
         {youtubeLoaded ? (
+          // YouTube is cross-origin, so this preserves its origin-bound browser APIs without
+          // granting the player same-origin access to the Apollo host.
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${media.videoId}?autoplay=1`}
             title={_({ id: 'sticky-note.media.youtube-title', message: 'YouTube video' })}
