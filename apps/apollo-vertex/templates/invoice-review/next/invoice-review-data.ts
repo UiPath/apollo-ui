@@ -827,7 +827,7 @@ export function suggestionLabel(s: Suggestion): string {
     case "verify":
       return (s.data.label as string) ?? "Keep";
     case "route":
-      return (s.data.label as string) ?? "Route to data owner";
+      return (s.data.label as string) ?? "Send to owner";
     case "retry":
       return "Retry extraction";
     case "wait":
@@ -1087,6 +1087,18 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             correction: { documentDateFormatted: "Apr 30, 2026" },
           },
           { type: "suggest_supplier", data: {} },
+          {
+            type: "verify",
+            data: { label: "Keep current date" },
+            correction: { documentDateFormatted: "May 3, 2026" },
+            reasoning:
+              "The invoice date may reflect a billing lag; the service period ended Apr 30.",
+            resolution: {
+              label: "Kept invoice date",
+              sub: "May 3, 2026 confirmed by you",
+              shortLabel: "date kept",
+            },
+          },
         ],
         resolution: {
           label: "Corrected to Apr 30, 2026",
@@ -1360,7 +1372,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           },
           {
             type: "route",
-            data: { owner: "Receiving", label: "Route to data owner" },
+            data: { owner: "Receiving", label: "Send to owner" },
           },
         ],
         resolution: {
@@ -1397,7 +1409,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           },
           {
             type: "route",
-            data: { owner: "Receiving", label: "Route to data owner" },
+            data: { owner: "Receiving", label: "Send to owner" },
           },
         ],
         resolution: {
@@ -1434,7 +1446,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           },
           {
             type: "route",
-            data: { owner: "Receiving", label: "Route to data owner" },
+            data: { owner: "Receiving", label: "Send to owner" },
           },
         ],
         resolution: {

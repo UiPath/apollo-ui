@@ -146,6 +146,12 @@ interface RuntimeStore {
    * exception. No-op if no undoTarget exists.
    */
   revertDetail: (invoiceId: string, revertEvents: RunEventInput[]) => void;
+  /**
+   * Un-resolve a single exception committed via commitResolve. Removes it from
+   * resolvedIds so it reappears in the open set. Used by the undo toast after an
+   * attestation (verify) commits; the original resolved event stays in the log.
+   */
+  undoResolve: (invoiceId: string, excId: string) => void;
   /** Wipe all runtime state for every invoice and clear sessionStorage. Demo reset. */
   resetAllRuntimes: () => void;
 }
@@ -410,6 +416,18 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
           setCursorMap((prev) => ({ ...prev, [id]: firstReopened }));
         }
       },
+      undoResolve: (id, excId) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          if (!cur.resolvedIds.includes(excId)) return prev;
+          return {
+            ...prev,
+            [id]: {
+              ...cur,
+              resolvedIds: cur.resolvedIds.filter((rid) => rid !== excId),
+            },
+          };
+        }),
       resetAllRuntimes: () => {
         try {
           sessionStorage.removeItem(STORAGE_KEY);
