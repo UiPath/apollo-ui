@@ -109,9 +109,10 @@ export function resolveDisplay(
     } as ResolvedDisplay;
   }
 
-  // Collapsing a node hides its artifacts and shows the stacked affordance, but
-  // never changes its shape — the node keeps its footprint whether expanded or
-  // collapsed.
+  // Shape comes from the instance override (if any) or the manifest. Collapsing
+  // never changes it: a collapsed node hides its artifacts and shows the stacked
+  // affordance but keeps its footprint.
+  const shape = context?.display?.shape ?? manifestDisplay.shape;
 
   // Resolve the canvas chip label.
   //
@@ -137,7 +138,7 @@ export function resolveDisplay(
     label: resolvedLabel,
     canvasLabel: context?.display?.canvasLabel ?? manifestDisplay.canvasLabel,
     icon: context?.display?.icon ?? manifestDisplay.icon ?? '',
-    shape: manifestDisplay.shape,
+    shape,
   };
 }
 

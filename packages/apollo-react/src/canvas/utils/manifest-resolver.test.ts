@@ -59,6 +59,14 @@ describe('resolveDisplay', () => {
     expect(result.shape).toBe('circle');
   });
 
+  it('honors an instance display.shape override', () => {
+    const result = resolveDisplay(
+      { label: 'Node', icon: 'box', shape: 'square' },
+      { display: { shape: 'circle' } }
+    );
+    expect(result.shape).toBe('circle');
+  });
+
   it('uses manifest canvasLabel for canvas label when no instance override', () => {
     const result = resolveDisplay({
       label: 'Send Outlook Email',
