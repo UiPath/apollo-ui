@@ -14,7 +14,6 @@ import type { HandleActionEvent, HandleMouseEvent } from '../components/ButtonHa
 import type { HandleGroupManifest, HandleManifest } from '../schema/node-definition/handle';
 import type { NodeDisplayManifest } from '../schema/node-definition/node-manifest';
 import type { InstanceDisplayConfig } from '../schema/node-instance';
-import { getCollapsedShape } from './collapse';
 
 /**
  * Context object passed to resolution functions
@@ -110,11 +109,9 @@ export function resolveDisplay(
     } as ResolvedDisplay;
   }
 
-  const isCollapsed = context?.isCollapsed ?? false;
-  const shape = context?.display?.shape ?? manifestDisplay.shape;
-
-  const collapsedShape = getCollapsedShape(shape);
-  const expandedShape = manifestDisplay.shape;
+  // Collapsing a node hides its artifacts and shows the stacked affordance, but
+  // never changes its shape — the node keeps its footprint whether expanded or
+  // collapsed.
 
   // Resolve the canvas chip label.
   //
@@ -140,7 +137,7 @@ export function resolveDisplay(
     label: resolvedLabel,
     canvasLabel: context?.display?.canvasLabel ?? manifestDisplay.canvasLabel,
     icon: context?.display?.icon ?? manifestDisplay.icon ?? '',
-    shape: isCollapsed ? collapsedShape : expandedShape,
+    shape: manifestDisplay.shape,
   };
 }
 

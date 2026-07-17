@@ -43,15 +43,15 @@ describe('resolveDisplay', () => {
     expect(result.shape).toBe('square');
   });
 
-  it('collapses rectangle to square when isCollapsed is true', () => {
+  it('keeps a rectangle shape when collapsed (collapse never squares the node)', () => {
     const result = resolveDisplay(
       { label: 'Agent', icon: 'bot', shape: 'rectangle' },
       { isCollapsed: true }
     );
-    expect(result.shape).toBe('square');
+    expect(result.shape).toBe('rectangle');
   });
 
-  it('preserves non-rectangle shapes when collapsed', () => {
+  it('keeps non-rectangle shapes when collapsed', () => {
     const result = resolveDisplay(
       { label: 'Node', icon: 'box', shape: 'circle' },
       { isCollapsed: true }
