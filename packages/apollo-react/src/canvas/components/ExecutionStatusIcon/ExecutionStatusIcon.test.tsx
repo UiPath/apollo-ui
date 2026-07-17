@@ -22,11 +22,14 @@ vi.mock('@uipath/apollo-wind', () => ({
 }));
 
 describe('ExecutionStatusIcon', () => {
-  it('renders InProgress as a primary-colored spinner', () => {
+  it('renders InProgress as a primary-colored spinner via getExecutionStatusColor', () => {
     render(<ExecutionStatusIcon status="InProgress" size={20} />);
 
     const spinner = screen.getByTestId('spinner');
-    expect(spinner.className).toContain('[&>svg]:text-[color:var(--color-primary)]');
+    expect(spinner.className).toContain('[&>svg]:text-[color:var(--spinner-color)]');
+    expect(spinner.style.getPropertyValue('--spinner-color')).toBe(
+      getExecutionStatusColor('InProgress')
+    );
     expect(spinner).toHaveAttribute('data-label', 'In progress');
   });
 
@@ -43,5 +46,9 @@ describe('ExecutionStatusIcon', () => {
 describe('getExecutionStatusColor', () => {
   it('keeps UserCancelled aligned with info-colored execution states', () => {
     expect(getExecutionStatusColor('UserCancelled')).toBe('var(--color-info-icon)');
+  });
+
+  it('maps InProgress to the primary color', () => {
+    expect(getExecutionStatusColor('InProgress')).toBe('var(--color-primary)');
   });
 });
