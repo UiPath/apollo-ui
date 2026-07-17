@@ -58,6 +58,7 @@ describe('ApI18nProvider', () => {
         'zh-TW',
         'pt-BR',
         'es-MX',
+        'ro',
       ]);
     });
 

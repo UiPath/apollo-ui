@@ -48,6 +48,7 @@ const CHAT_LOCALES: SupportedLocale[] = [
   'ko',
   'pt',
   'pt-BR',
+  'ro',
   'ru',
   'tr',
   'zh-CN',

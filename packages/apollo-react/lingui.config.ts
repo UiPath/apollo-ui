@@ -2,7 +2,22 @@ import { LinguiConfig } from '@lingui/conf';
 import { formatter } from '@lingui/format-json';
 
 const config: LinguiConfig = {
-  locales: ['en', 'es', 'pt', 'de', 'fr', 'ja', 'ko', 'ru', 'tr', 'zh-CN', 'zh-TW', 'pt-BR', 'es-MX'],
+  locales: [
+    'en',
+    'es',
+    'pt',
+    'de',
+    'fr',
+    'ja',
+    'ko',
+    'ru',
+    'tr',
+    'zh-CN',
+    'zh-TW',
+    'pt-BR',
+    'es-MX',
+    'ro',
+  ],
   // sourceLocale: 'en', // Use keys, we can add this back if we want to fallback to english
   catalogs: [
     {

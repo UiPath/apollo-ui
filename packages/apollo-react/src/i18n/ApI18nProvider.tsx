@@ -18,6 +18,7 @@ export const SUPPORTED_LOCALES = [
   'zh-TW',
   'pt-BR',
   'es-MX',
+  'ro',
 ] as const;
 
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];

@@ -53,6 +53,7 @@ const LOCALE_LABELS: Record<(typeof SUPPORTED_LOCALES)[number], string> = {
   'zh-TW': '中文 (繁體)',
   'pt-BR': 'Português (Brasil)',
   'es-MX': 'Español (México)',
+  ro: 'Română',
 };
 
 // Map every theme to its MUI equivalent (used by stories with `parameters.material`).
