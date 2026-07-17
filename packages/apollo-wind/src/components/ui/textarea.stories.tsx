@@ -49,6 +49,25 @@ export const WithRows: Story = {
   },
 };
 
+export const AutoGrow = {
+  render: () => (
+    <div className="grid w-full max-w-sm gap-1.5">
+      <Label htmlFor="autogrow">Auto-growing field</Label>
+      <Textarea
+        id="autogrow"
+        minRows={3}
+        maxRows={7}
+        placeholder="Starts at 3 rows and never shrinks below that. Grows with content up to 7 rows, then scrolls. Drag the bottom-right handle to make it taller than 7 rows."
+      />
+      <p className="text-sm text-muted-foreground">
+        <code>{'minRows={3}'}</code> is a floor: the field never renders or resizes shorter than 3
+        rows. <code>{'maxRows={7}'}</code> auto-grows with content up to 7 rows, then scrolls. The
+        resize handle is not capped, so you can drag past 7 rows to take manual control.
+      </p>
+    </div>
+  ),
+} satisfies Story;
+
 export const WithDescription = {
   render: () => (
     <div className="grid w-full max-w-sm gap-1.5">
