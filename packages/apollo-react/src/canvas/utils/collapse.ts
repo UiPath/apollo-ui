@@ -19,14 +19,6 @@ export const COLLAPSED_NODE_SIZE = 96;
 export const EXPANDED_RECTANGLE_WIDTH = 288;
 
 /**
- * Transform a shape to its collapsed form.
- * Rectangle nodes collapse to square, other shapes remain unchanged.
- */
-export const getCollapsedShape = (originalShape?: NodeShape): NodeShape | undefined => {
-  return originalShape === 'rectangle' ? 'square' : originalShape;
-};
-
-/**
  * Transform a collapsed shape back to its expanded form.
  * Square nodes expand to rectangle (since rectangle → square when collapsing).
  * Other shapes remain unchanged.
