@@ -1,6 +1,11 @@
 "use client";
 
-import { createContext, type ComponentProps, useContext } from "react";
+import {
+  createContext,
+  type ComponentProps,
+  type ReactNode,
+  useContext,
+} from "react";
 import {
   Stepper,
   StepperContent,
@@ -13,6 +18,7 @@ import {
 } from "@/components/ui/stepper";
 import { cn } from "@/lib/utils";
 import { useFormWizard } from "./use-form-wizard";
+import type { WizardStepDef } from "./wizard-schema";
 
 type FormWizardApi = ReturnType<typeof useFormWizard>;
 
@@ -51,14 +57,24 @@ function FormWizard<TValues extends Record<string, unknown>>({
   );
 }
 
+interface WizardStepRenderProps {
+  step: WizardStepDef<Record<string, unknown>>;
+  index: number;
+  state: "active" | "completed" | "inactive";
+  isCurrent: boolean;
+  goTo: () => void;
+}
+
 interface FormWizardStepsProps
-  extends Omit<ComponentProps<typeof Stepper>, "activeStep"> {
+  extends Omit<ComponentProps<typeof Stepper>, "activeStep" | "children"> {
   clickable?: boolean;
+  children?: (props: WizardStepRenderProps) => ReactNode;
 }
 
 function FormWizardSteps({
   clickable,
   className,
+  children,
   ...props
 }: FormWizardStepsProps) {
   const { steps, stepIndex, goToStep } = useFormWizardContext();
@@ -66,22 +82,41 @@ function FormWizardSteps({
   return (
     <Stepper activeStep={stepIndex} className={className} {...props}>
       {steps.map((step, index) => {
+        const state =
+          index < stepIndex
+            ? "completed"
+            : index === stepIndex
+              ? "active"
+              : "inactive";
+        const goTo = () => goToStep(step.id);
         const canNavigate = clickable && index < stepIndex;
-        const navProps = canNavigate
-          ? { onClick: () => goToStep(step.id) }
-          : {};
+        const navProps = canNavigate ? { onClick: goTo } : {};
         return (
           <StepperItem key={step.id} step={index}>
-            <StepperTrigger {...navProps}>
-              <StepperIndicator />
-              <StepperContent>
-                <StepperTitle>{step.title}</StepperTitle>
-                {step.description ? (
-                  <StepperDescription>{step.description}</StepperDescription>
-                ) : null}
-              </StepperContent>
-            </StepperTrigger>
-            {index < steps.length - 1 ? <StepperSeparator /> : null}
+            {children ? (
+              children({
+                step,
+                index,
+                state,
+                isCurrent: state === "active",
+                goTo,
+              })
+            ) : (
+              <>
+                <StepperTrigger {...navProps}>
+                  <StepperIndicator />
+                  <StepperContent>
+                    <StepperTitle>{step.title}</StepperTitle>
+                    {step.description ? (
+                      <StepperDescription>
+                        {step.description}
+                      </StepperDescription>
+                    ) : null}
+                  </StepperContent>
+                </StepperTrigger>
+                {index < steps.length - 1 ? <StepperSeparator /> : null}
+              </>
+            )}
           </StepperItem>
         );
       })}
@@ -114,4 +149,9 @@ function FormWizardStep({
 }
 
 export { FormWizard, FormWizardStep, FormWizardSteps, useFormWizardContext };
-export type { FormWizardProps, FormWizardStepProps, FormWizardStepsProps };
+export type {
+  FormWizardProps,
+  FormWizardStepProps,
+  FormWizardStepsProps,
+  WizardStepRenderProps,
+};
