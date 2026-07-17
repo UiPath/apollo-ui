@@ -2630,7 +2630,9 @@ export function ExceptionTimeline({
       return;
     }
     const meta = exceptionMeta(active);
-    const r = active.resolution;
+    // Per-suggestion resolution overrides the exception-level resolution so two
+    // suggestions on the same exception can log distinct event copy.
+    const r = s.resolution ?? active.resolution;
     const label = r?.label ?? `${meta.label} resolved`;
     const sub = r?.sub ?? `${meta.label}, resolved by you`;
     // Do NOT lowercase the label: it would mangle acronyms ("PO" -> "po", "VAT"
@@ -2643,7 +2645,7 @@ export function ExceptionTimeline({
       label,
       sub,
       shortLabel,
-      dataPatch: r?.dataPatch,
+      dataPatch: active.resolution?.dataPatch,
       detailCorrections: s.type === "verify" ? undefined : s.correction,
       phase: "confirm",
       fresh: [],

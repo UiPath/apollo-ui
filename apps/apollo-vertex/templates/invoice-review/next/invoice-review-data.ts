@@ -137,8 +137,18 @@ export interface Suggestion {
    * this to detailCorrections when the suggestion is resolved. When data.label
    * is absent, suggestionLabel derives the button copy from this field — single
    * source of truth for the corrected value.
+   * For verify: names the field(s) being attested so the aim ring can target
+   * them. The value in the correction is the invoice value being confirmed, not
+   * an incoming change — it is never written on commit.
    */
   correction?: DetailCorrections;
+  /**
+   * Per-suggestion event copy. When present, overrides the parent exception's
+   * resolution.label / .sub / .shortLabel for the event that fires when THIS
+   * suggestion commits. Lets two suggestions on the same exception produce
+   * different timeline events (e.g. "Corrected VAT" vs "Kept invoice VAT").
+   */
+  resolution?: Pick<ExceptionResolution, "label" | "sub" | "shortLabel">;
 }
 
 export interface InvoiceException {
@@ -815,7 +825,7 @@ export function suggestionLabel(s: Suggestion): string {
     case "suggest_supplier":
       return "Ask supplier";
     case "verify":
-      return (s.data.label as string) ?? "Mark verified";
+      return (s.data.label as string) ?? "Keep";
     case "route":
       return (s.data.label as string) ?? "Route to data owner";
     case "retry":
@@ -858,9 +868,14 @@ function highValueException(
     suggestions: [
       {
         type: "verify",
-        data: { label: "Mark reviewed" },
+        data: { label: `Keep ${amount}` },
         reasoning:
           "The amount is above the auto-approve threshold, so it needs a human sign-off.",
+        resolution: {
+          label: `Kept at ${amount}`,
+          sub: "High value, approved by you",
+          shortLabel: "high value approved",
+        },
       },
       {
         type: "route",
@@ -868,9 +883,9 @@ function highValueException(
       },
     ],
     resolution: {
-      label: "Marked reviewed",
-      sub: "High value, resolved by you",
-      shortLabel: "high value reviewed",
+      label: `Kept at ${amount}`,
+      sub: "High value, approved by you",
+      shortLabel: "high value approved",
     },
   };
 }
@@ -904,17 +919,22 @@ const ACME_PRICE_LINE2: InvoiceException = {
   },
   suggestions: [
     {
-      type: "suggest_correction",
-      data: { label: "Accept amended price" },
+      type: "verify",
+      data: { label: "Keep amended price" },
       reasoning:
         "The PO was amended on May 2. The new unit price matches this invoice.",
+      resolution: {
+        label: "Kept amended price",
+        sub: "PO was updated to match this invoice",
+        shortLabel: "amended price kept",
+      },
     },
     { type: "suggest_supplier", data: {} },
   ],
   resolution: {
-    label: "Accepted amended price",
-    sub: "Price mismatch on line 2, resolved by you",
-    shortLabel: "amended price accepted",
+    label: "Kept amended price",
+    sub: "PO was updated to match this invoice",
+    shortLabel: "amended price kept",
   },
 };
 
@@ -942,15 +962,20 @@ const ACME_TAX: InvoiceException = {
   suggestions: [
     {
       type: "verify",
-      data: {},
+      data: { label: "Keep tax rate" },
       reasoning: "The invoice applies 6% tax; PO-5123 uses tax code E1 at 5%.",
+      resolution: {
+        label: "Kept invoice tax rate",
+        sub: "6% rate confirmed by you",
+        shortLabel: "tax rate kept",
+      },
     },
     { type: "route", data: { owner: "Tax data owner" } },
   ],
   resolution: {
-    label: "Marked verified",
-    sub: "Tax mismatch, resolved by you",
-    shortLabel: "tax verified",
+    label: "Kept invoice tax rate",
+    sub: "6% rate confirmed by you",
+    shortLabel: "tax rate kept",
   },
 };
 
@@ -1122,14 +1147,36 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         },
         suggestions: [
           {
+            type: "suggest_correction",
+            correction: { vat: "US-82-4470911" },
+            data: { label: "Use vendor master" },
+            reasoning:
+              "Apply the vendor-master VAT number; the invoice value is one digit off.",
+            resolution: {
+              label: "Corrected VAT number",
+              sub: "Applied vendor master value",
+              shortLabel: "VAT corrected",
+            },
+          },
+          {
             type: "verify",
-            data: {},
+            data: { label: "Keep invoice value" },
+            correction: { vat: "US-82-4471200" },
             reasoning:
               "The invoice VAT is one digit off the record; likely a typo on the invoice.",
-            correction: { vat: "US-82-4470911" },
+            resolution: {
+              label: "Kept invoice VAT",
+              sub: "Verified against vendor master",
+              shortLabel: "invoice VAT kept",
+            },
           },
           { type: "route", data: { owner: "Vendor data owner" } },
         ],
+        resolution: {
+          label: "Kept invoice VAT",
+          sub: "Verified against vendor master",
+          shortLabel: "invoice VAT kept",
+        },
       },
       {
         ...highValueException("66216", "$65,800.00"),
@@ -1243,16 +1290,21 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "verify",
-            data: {},
+            data: { label: "Keep 48 units" },
             reasoning:
               "A partial receipt is expected; the balance ships next week.",
+            resolution: {
+              label: "Kept 48 units",
+              sub: "Partial receipt accepted by you",
+              shortLabel: "48 units kept",
+            },
           },
           { type: "route", data: { owner: "Receiving" } },
         ],
         resolution: {
-          label: "Marked verified",
-          sub: "Quantity mismatch on line 5, resolved by you",
-          shortLabel: "quantity verified",
+          label: "Kept 48 units",
+          sub: "Partial receipt accepted by you",
+          shortLabel: "48 units kept",
         },
       },
     ],
@@ -1499,15 +1551,20 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "verify",
-            data: {},
+            data: { label: "Keep +20% overage" },
             reasoning:
               "The billing tolerance is 5%; line 2 is 20% over the PO quantity.",
+            resolution: {
+              label: "Kept +20% overage",
+              sub: "Tolerance breach accepted by you",
+              shortLabel: "+20% overage kept",
+            },
           },
         ],
         resolution: {
-          label: "Tolerance reviewed",
-          sub: "Quantity over-invoiced, resolved by you",
-          shortLabel: "tolerance reviewed",
+          label: "Kept +20% overage",
+          sub: "Tolerance breach accepted by you",
+          shortLabel: "+20% overage kept",
         },
       },
       {
@@ -1575,15 +1632,20 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "verify",
-            data: {},
+            data: { label: "Keep +25% overage" },
             reasoning:
               "The billing tolerance is 5%; line 3 is 25% over the PO quantity.",
+            resolution: {
+              label: "Kept +25% overage",
+              sub: "Tolerance breach accepted by you",
+              shortLabel: "+25% overage kept",
+            },
           },
         ],
         resolution: {
-          label: "Tolerance reviewed",
-          sub: "Quantity over-invoiced, resolved by you",
-          shortLabel: "tolerance reviewed",
+          label: "Kept +25% overage",
+          sub: "Tolerance breach accepted by you",
+          shortLabel: "+25% overage kept",
         },
       },
     ],
@@ -1708,15 +1770,20 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "verify",
-            data: {},
+            data: { label: "Keep +50% overage" },
             reasoning:
               "The billing tolerance is 5%; line 3 is 50% over the PO quantity.",
+            resolution: {
+              label: "Kept +50% overage",
+              sub: "Tolerance breach accepted by you",
+              shortLabel: "+50% overage kept",
+            },
           },
         ],
         resolution: {
-          label: "Tolerance reviewed",
-          sub: "Quantity over-invoiced, resolved by you",
-          shortLabel: "tolerance reviewed",
+          label: "Kept +50% overage",
+          sub: "Tolerance breach accepted by you",
+          shortLabel: "+50% overage kept",
         },
       },
       {
@@ -1895,11 +1962,21 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "verify",
-            data: {},
+            data: { label: "Confirm not duplicate" },
             reasoning: "Amounts and dates differ from the prior run.",
+            resolution: {
+              label: "Confirmed not a duplicate",
+              sub: "Distinct invoice confirmed by you",
+              shortLabel: "not duplicate confirmed",
+            },
           },
           { type: "route", data: { owner: "AP lead" } },
         ],
+        resolution: {
+          label: "Confirmed not a duplicate",
+          sub: "Distinct invoice confirmed by you",
+          shortLabel: "not duplicate confirmed",
+        },
       },
     ],
   },
@@ -1937,11 +2014,21 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "verify",
-            data: {},
+            data: { label: "Approve vendor" },
             reasoning: "Banking details match the W-9 on file.",
+            resolution: {
+              label: "Approved new vendor",
+              sub: "Vendor confirmed by you",
+              shortLabel: "vendor approved",
+            },
           },
           { type: "route", data: { owner: "Vendor onboarding" } },
         ],
+        resolution: {
+          label: "Approved new vendor",
+          sub: "Vendor confirmed by you",
+          shortLabel: "vendor approved",
+        },
       },
     ],
   },
