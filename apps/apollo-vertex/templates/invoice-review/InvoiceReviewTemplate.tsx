@@ -133,6 +133,7 @@ import {
   getExceptionSummary,
   getReview,
   holdInvoice,
+  type InvoiceException,
   invoiceReviews,
   type LineCorrection,
   openExceptions,
@@ -6450,6 +6451,13 @@ interface DirtyField {
   to: string;
 }
 
+interface FieldAnnotation {
+  label: string;
+  displayValue: string;
+  fillValue: string;
+  provenance: string;
+}
+
 /** Maps form field keys to source-document anchor ids for field ↔ source sync. */
 const EDIT_FIELD_ANCHORS: Record<string, string> = {
   documentDateFormatted: "field:invoice-date",
@@ -6463,12 +6471,86 @@ const EDIT_FIELD_ANCHORS: Record<string, string> = {
   vendorAddress: "field:vendor-address",
 };
 
+const FIELD_LABELS: Record<string, string> = {
+  documentDateFormatted: "Document date",
+  dueFormatted: "Due date",
+  paymentTerms: "Payment terms",
+  vat: "VAT number",
+  servicePeriod: "Service period",
+  vendor: "Vendor",
+  vendorEmail: "Vendor email",
+  vendorAddress: "Vendor address",
+  billTo: "Bill to",
+  billAddress: "Bill address",
+};
+
+function anchorToFormKey(anchor: string): string | null {
+  for (const [k, v] of Object.entries(EDIT_FIELD_ANCHORS)) {
+    if (v === anchor) return k;
+  }
+  const lineMatch = anchor.match(/^line:(\d+):(qty|amount|description)$/);
+  if (lineMatch) return `line${lineMatch[1]}:${lineMatch[2]}`;
+  return null;
+}
+
+function extractFillValue(formKey: string, displayValue: string): string {
+  if (formKey.endsWith(":qty")) {
+    const n = parseInt(displayValue, 10);
+    return isNaN(n) ? displayValue : String(n);
+  }
+  return displayValue;
+}
+
+function buildAnnotationMap(
+  openExcs: InvoiceException[],
+): Map<string, FieldAnnotation> {
+  const map = new Map<string, FieldAnnotation>();
+  for (const exc of openExcs) {
+    if (exc.finding?.type !== "compare" || !exc.sourceAnchors?.length) continue;
+    const refSide = exc.finding.sides?.find((s) => s.tone !== "warn");
+    if (!refSide) continue;
+    for (const anchor of exc.sourceAnchors) {
+      const formKey = anchorToFormKey(anchor);
+      if (!formKey) continue;
+      map.set(formKey, {
+        label: refSide.label,
+        displayValue: refSide.value,
+        fillValue: extractFillValue(formKey, refSide.value),
+        provenance: refSide.provenance,
+      });
+    }
+  }
+  return map;
+}
+
+function fieldEventLabel(formKey: string): string {
+  if (FIELD_LABELS[formKey])
+    return `Corrected ${FIELD_LABELS[formKey].toLowerCase()}`;
+  const lineMatch = formKey.match(/^line(\d+):(qty|amount|description)$/);
+  if (lineMatch) return `Corrected line ${lineMatch[1]} ${lineMatch[2]}`;
+  return "Corrected field";
+}
+
+function sourcedEventSub(provenance: string, formKey: string): string {
+  if (provenance === "Vendor master") return "applied vendor master value";
+  if (provenance.startsWith("PO-")) {
+    if (formKey.endsWith(":qty")) return "applied PO quantity";
+    if (formKey.endsWith(":amount")) return "applied PO amount";
+    return "applied PO value";
+  }
+  return `applied ${provenance.toLowerCase()} value`;
+}
+
 function DetailsEditForm({
   focusField,
+  annotations,
   onDirtyChange,
+  onUseValue,
 }: {
   focusField?: string;
+  annotations?: Map<string, FieldAnnotation>;
   onDirtyChange: (dirty: Record<string, DirtyField>) => void;
+  onUseValue?: (key: string) => void;
 }) {
   const d = useInvoiceDetail();
   const runtime = useInvoiceRuntime();
@@ -6512,6 +6594,37 @@ function DetailsEditForm({
   const [values, setValues] = useState<Record<string, string>>(initial);
   const set = (key: string, val: string) =>
     setValues((prev) => ({ ...prev, [key]: val }));
+
+  function annotationLine(key: string) {
+    const ann = annotations?.get(key);
+    if (!ann) return null;
+    const alreadyApplied = values[key] === ann.fillValue;
+    return (
+      <div className="flex items-baseline gap-1 pt-0.5">
+        <span className="text-[12px] text-muted-foreground">
+          {ann.label}: {ann.displayValue} · {ann.provenance} —
+        </span>
+        <button
+          type="button"
+          disabled={alreadyApplied}
+          onClick={() => {
+            if (!alreadyApplied) {
+              set(key, ann.fillValue);
+              onUseValue?.(key);
+            }
+          }}
+          className={cn(
+            "shrink-0 text-[13px] transition-colors duration-[120ms]",
+            alreadyApplied
+              ? "cursor-default text-muted-foreground/40"
+              : "text-muted-foreground hover:text-primary",
+          )}
+        >
+          Use this value
+        </button>
+      </div>
+    );
+  }
 
   const dirtyFields = Object.entries(values).reduce<Record<string, DirtyField>>(
     (acc, [k, v]) => {
@@ -6589,6 +6702,7 @@ function DetailsEditForm({
                   className="h-8 text-[13px]"
                   {...fp("documentDateFormatted")}
                 />
+                {annotationLine("documentDateFormatted")}
               </div>
               <div className="space-y-1">
                 <Label
@@ -6605,6 +6719,7 @@ function DetailsEditForm({
                   className="h-8 text-[13px]"
                   {...fp("dueFormatted")}
                 />
+                {annotationLine("dueFormatted")}
               </div>
               <div className="space-y-1">
                 <Label
@@ -6639,6 +6754,7 @@ function DetailsEditForm({
                     {...fp("vat")}
                     ref={focusField === "vat" ? focusRef : undefined}
                   />
+                  {annotationLine("vat")}
                 </div>
               )}
               {cd.servicePeriod && (
@@ -6812,6 +6928,7 @@ function DetailsEditForm({
                           className="h-8 text-[13px]"
                           {...fp(qk)}
                         />
+                        {annotationLine(qk)}
                       </div>
                       <div className="space-y-1">
                         <Label
@@ -6854,6 +6971,11 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
   const rt = runtime.getRuntime(invoiceId);
   const [cancelOpen, setCancelOpen] = useState(false);
   const pendingDirtyRef = useRef<Record<string, DirtyField>>({});
+  const pendingSourcedRef = useRef<Set<string>>(new Set());
+
+  const review = findReview(invoiceId);
+  const openList = review ? openExceptions(review, rt) : [];
+  const annotations = buildAnnotationMap(openList);
 
   // Enter animation: overlay fades in 120ms, form slides in 260ms, PDF rises 200ms/100ms delay.
   const [ready, setReady] = useState(false);
@@ -6923,21 +7045,26 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
     if (Object.keys(lineCorrections).length > 0)
       corrections.lines = lineCorrections;
 
-    const review = findReview(invoiceId);
     const open = review ? openExceptions(review, rt) : [];
     const base = {
       vat: d.vat,
       lines: d.lines.map((l) => ({ qty: l.qty, poQty: l.poQty })),
     };
-    const dirtyCount = Object.keys(dirty).length;
-    const correctionEvents: RunEventInput[] = [
-      {
-        kind: "corrected",
-        label: "Extracted data corrected",
-        sub: `${dirtyCount} field${dirtyCount > 1 ? "s" : ""} updated manually`,
-        time: "Just now",
+    const sourced = pendingSourcedRef.current;
+    const correctionEvents: RunEventInput[] = Object.entries(dirty).map(
+      ([key, { from, to }]) => {
+        const ann = annotations.get(key);
+        const isSourced = sourced.has(key) && !!ann;
+        return {
+          kind: "corrected" as const,
+          label: fieldEventLabel(key),
+          sub: isSourced
+            ? sourcedEventSub(ann!.provenance, key)
+            : `${from} → ${to}`,
+          time: "Just now",
+        };
       },
-    ];
+    );
 
     // Apply corrections after the exit animation so the pulse fires on the
     // now-visible panel, not while it's hidden behind the overlay.
@@ -7013,8 +7140,12 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
         >
           <DetailsEditForm
             focusField={editFocusField}
+            annotations={annotations}
             onDirtyChange={(dirty) => {
               pendingDirtyRef.current = dirty;
+            }}
+            onUseValue={(key) => {
+              pendingSourcedRef.current.add(key);
             }}
           />
         </div>
