@@ -1057,16 +1057,14 @@ function IssueDots({
           >
             <span
               className={cn(
-                "block rounded-full",
-                isResolved
-                  ? "h-[7px] w-[7px] bg-foreground opacity-[0.45]"
-                  : isCurrent
-                    ? "h-[7px] w-5 bg-warning opacity-100"
-                    : isPulsed
-                      ? pulseSettle === "peak"
-                        ? "h-[7px] w-[7px] border border-foreground opacity-50"
-                        : "h-[7px] w-[7px] border border-foreground opacity-[0.3] transition-opacity duration-[600ms] ease-out motion-reduce:transition-none"
-                      : "h-[7px] w-[7px] border border-foreground opacity-[0.3]",
+                "block h-[7px] w-[7px] rounded-full bg-foreground",
+                isCurrent
+                  ? "opacity-100"
+                  : isPulsed
+                    ? pulseSettle === "peak"
+                      ? "opacity-50"
+                      : "opacity-25 transition-opacity duration-[600ms] ease-out motion-reduce:transition-none"
+                    : "opacity-25",
               )}
             />
           </button>
