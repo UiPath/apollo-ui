@@ -601,15 +601,23 @@ export function isRouteSuggestion(s: Suggestion): boolean {
 }
 
 /**
- * Returns the DetailCorrections this suggestion would write — used to drive the
- * aim ring while the action is hovered/focused. Returns null for non-mutating
- * actions (route / wait), which should never aim at anything.
- * verify returns an empty object: evidence-only aim, no panel field targets.
+ * Returns the DetailCorrections payload used to drive the aim ring while an
+ * action is hovered/focused. Three tiers:
+ *   - route / wait: null — no ring, no ghost.
+ *   - verify (attestation): ring fires on each attested field, but the values
+ *     are empty-string sentinels so aimGhost returns "" (falsy) and the "→ X"
+ *     arrow is suppressed. The ring means "this value is what's being attested."
+ *   - suggest_correction / others: full correction payload — ring + ghost.
  */
 export function suggestionAimCorrection(
   s: Suggestion,
 ): DetailCorrections | null {
   if (isRouteSuggestion(s) || s.type === "wait") return null;
+  if (s.type === "verify" && s.correction) {
+    const aimKeys = Object.keys(s.correction).filter((k) => k !== "lines");
+    if (aimKeys.length === 0) return {};
+    return Object.fromEntries(aimKeys.map((k) => [k, ""])) as DetailCorrections;
+  }
   return s.correction ?? {};
 }
 
