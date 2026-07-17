@@ -83,6 +83,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -218,6 +219,8 @@ interface InvoiceDetailData {
   exceptionSecondaryAction: string;
   lines: {
     description: string;
+    /** Optional item sub-description shown below the title, truncated to 1 line. */
+    shortDescription?: string;
     qty: number;
     amount: string;
     unitPrice?: string;
@@ -334,6 +337,8 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     lines: [
       {
         description: "USB Hub, 7 Port Powered",
+        shortDescription:
+          "SKU-UH7P · Powered USB 3.0 hub, 7 downstream ports, 36W adapter",
         qty: 1,
         amount: "$694.39",
         unitPrice: "$694.39",
@@ -403,6 +408,8 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     lines: [
       {
         description: "Ergonomic desk chair",
+        shortDescription:
+          "SKU-EDC-PRO · Lumbar support, adjustable armrests, mesh back",
         qty: 20,
         amount: "$38,000.00",
         unitPrice: "$1,900.00",
@@ -410,6 +417,8 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       },
       {
         description: "Height-adjustable standing desk",
+        shortDescription:
+          'SKU-HASD-60 · 60" surface, dual motor, memory presets',
         qty: 10,
         amount: "$24,000.00",
         unitPrice: "$2,400.00",
@@ -4997,6 +5006,24 @@ function DetailsCombinedTab() {
                       {line.description}
                       {lineCorrected && <CorrectedMark />}
                     </span>
+                    {line.shortDescription && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="truncate text-xs text-muted-foreground cursor-default">
+                              {line.shortDescription}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            align="start"
+                            className="max-w-64"
+                          >
+                            {line.shortDescription}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                     {line.subline && (
                       <span
                         className={cn(
