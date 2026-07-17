@@ -139,6 +139,13 @@ interface RuntimeStore {
     invoiceId: string,
     correction: DetailCorrections | null,
   ) => void;
+  /**
+   * Revert the most recent correctDetail call: restores detailCorrections to the
+   * pre-correction snapshot stored in undoTarget, un-resolves the auto-resolved
+   * exceptions, and appends the revert events. Cursor moves to the first re-opened
+   * exception. No-op if no undoTarget exists.
+   */
+  revertDetail: (invoiceId: string, revertEvents: RunEventInput[]) => void;
   /** Wipe all runtime state for every invoice and clear sessionStorage. Demo reset. */
   resetAllRuntimes: () => void;
 }
@@ -330,6 +337,10 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
               dataPatch,
               events: [...cur.events, ...withKeys(id, cur.events, allEvents)],
               correctionPulse: newPulse,
+              undoTarget: {
+                prevDetailCorrections: cur.detailCorrections,
+                autoResolvedIds: cleared,
+              },
             },
           };
         }),
@@ -366,6 +377,39 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
             [id]: { ...cur, aimCorrection: correction ?? undefined },
           };
         }),
+      revertDetail: (id, revertEvents) => {
+        // Peek at current state synchronously so we can update the cursor map too.
+        const cur = map[id] ?? EMPTY;
+        const target = cur.undoTarget;
+        if (!target) return;
+        setMap((prev) => {
+          const c = prev[id] ?? EMPTY;
+          if (!c.undoTarget) return prev;
+          const { prevDetailCorrections, autoResolvedIds } = c.undoTarget;
+          const autoIds = autoResolvedIds as string[];
+          const newResolvedIds = c.resolvedIds.filter(
+            (rid) => !autoIds.includes(rid),
+          );
+          const events = revertEvents.length
+            ? [...c.events, ...withKeys(id, c.events, revertEvents)]
+            : c.events;
+          return {
+            ...prev,
+            [id]: {
+              ...c,
+              detailCorrections: prevDetailCorrections,
+              resolvedIds: newResolvedIds,
+              events,
+              undoTarget: undefined,
+              aimCorrection: undefined,
+            },
+          };
+        });
+        const firstReopened = target.autoResolvedIds[0];
+        if (firstReopened) {
+          setCursorMap((prev) => ({ ...prev, [id]: firstReopened }));
+        }
+      },
       resetAllRuntimes: () => {
         try {
           sessionStorage.removeItem(STORAGE_KEY);

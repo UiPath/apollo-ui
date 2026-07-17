@@ -4684,6 +4684,60 @@ function DetailsCombinedTab() {
   const isLineAimed = (lineNum: number): boolean =>
     !!aimCorrection?.lines?.[lineNum];
 
+  const aimGhost = (field: string): string | undefined =>
+    aimCorrection
+      ? (aimCorrection as Record<string, string | undefined>)[field]
+      : undefined;
+
+  const FIELD_DISPLAY: Record<string, string> = {
+    documentDateFormatted: "Document date",
+    dueFormatted: "Due date",
+    paymentTerms: "Payment terms",
+    vat: "VAT number",
+    servicePeriod: "Service period",
+    vendor: "Vendor",
+    billTo: "Bill to",
+  };
+
+  const undoToastIdRef = useRef<string | number | undefined>(undefined);
+
+  useEffect(() => {
+    if (pulseNonce === undefined) return;
+    const fields = correctionPulse?.detailFields ?? [];
+    const label =
+      fields.length === 1
+        ? `Corrected ${FIELD_DISPLAY[fields[0]] ?? fields[0]}`
+        : fields.length > 1
+          ? `${fields.length} fields corrected`
+          : "Correction applied";
+    toast.dismiss(undoToastIdRef.current);
+    const id = toast(label, {
+      duration: 8000,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          runtime.revertDetail(d.id, [
+            {
+              kind: "corrected",
+              label: "Correction reverted · Previous values restored",
+              sub: "Previous values restored",
+              time: "Just now",
+            },
+            {
+              kind: "revalidated",
+              label: "Re-validated",
+              sub: "All checks re-run",
+              time: "Just now",
+              pending: false,
+            },
+          ]);
+        },
+      },
+    });
+    undoToastIdRef.current = id;
+    // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the toast
+  }, [pulseNonce]);
+
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
       <div className="px-6 pt-[22px] pb-16">
@@ -4716,6 +4770,13 @@ function DetailsCombinedTab() {
               style={isAimed("documentDateFormatted") ? AIM_STYLE : undefined}
             >
               {cd.documentDateFormatted}
+              {isAimed("documentDateFormatted") &&
+                aimGhost("documentDateFormatted") && (
+                  <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
+                    {" → "}
+                    {aimGhost("documentDateFormatted")}
+                  </span>
+                )}
             </span>
           </div>
           <div className="flex min-w-0 flex-col gap-[3px]">
@@ -4730,6 +4791,12 @@ function DetailsCombinedTab() {
               style={isAimed("dueFormatted") ? AIM_STYLE : undefined}
             >
               {cd.dueFormatted}
+              {isAimed("dueFormatted") && aimGhost("dueFormatted") && (
+                <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
+                  {" → "}
+                  {aimGhost("dueFormatted")}
+                </span>
+              )}
             </span>
           </div>
           <div className="flex min-w-0 flex-col gap-[3px]">
@@ -4744,6 +4811,12 @@ function DetailsCombinedTab() {
               style={isAimed("paymentTerms") ? AIM_STYLE : undefined}
             >
               {cd.paymentTerms}
+              {isAimed("paymentTerms") && aimGhost("paymentTerms") && (
+                <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
+                  {" → "}
+                  {aimGhost("paymentTerms")}
+                </span>
+              )}
             </span>
           </div>
           {cd.vat !== "—" && (
@@ -4759,6 +4832,12 @@ function DetailsCombinedTab() {
                 style={isAimed("vat") ? AIM_STYLE : undefined}
               >
                 {cd.vat}
+                {isAimed("vat") && aimGhost("vat") && (
+                  <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
+                    {" → "}
+                    {aimGhost("vat")}
+                  </span>
+                )}
               </span>
             </div>
           )}
@@ -4775,6 +4854,12 @@ function DetailsCombinedTab() {
                 style={isAimed("servicePeriod") ? AIM_STYLE : undefined}
               >
                 {cd.servicePeriod}
+                {isAimed("servicePeriod") && aimGhost("servicePeriod") && (
+                  <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
+                    {" → "}
+                    {aimGhost("servicePeriod")}
+                  </span>
+                )}
               </span>
             </div>
           )}
@@ -4792,6 +4877,12 @@ function DetailsCombinedTab() {
             >
               <div className="text-[14px] font-medium text-foreground">
                 {cd.vendor}
+                {isAimed("vendor") && aimGhost("vendor") && (
+                  <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
+                    {" → "}
+                    {aimGhost("vendor")}
+                  </span>
+                )}
               </div>
               {cd.vendorEmail && (
                 <a
@@ -4831,6 +4922,12 @@ function DetailsCombinedTab() {
             >
               <div className="text-[14px] font-medium text-foreground">
                 {cd.billTo}
+                {isAimed("billTo") && aimGhost("billTo") && (
+                  <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
+                    {" → "}
+                    {aimGhost("billTo")}
+                  </span>
+                )}
               </div>
               {cd.billAddress &&
                 (() => {
@@ -6974,7 +7071,7 @@ function CenterPanelNext({
   activeInvoiceId: string;
   onCleared: () => void;
   exceptionListVariant?: "strip" | "index";
-  onRequestEdit?: (fieldKey: string) => void;
+  onRequestEdit?: (fieldKey?: string) => void;
 }) {
   // findReview (not getReview): a missing id must show honest absence, never a
   // fallback to a different invoice's review content.
