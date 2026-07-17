@@ -7,7 +7,7 @@ import {
   ChevronRight,
   Clock,
   Eye,
-  Highlighter,
+  Pencil,
   Pause,
   UserRound,
   UserRoundCheck,
@@ -374,7 +374,8 @@ function FindingCell({
   tone,
   muted,
   aimed,
-  onInspect,
+  ghostValue,
+  onOpenEdit,
 }: {
   label: string;
   value: string;
@@ -384,15 +385,17 @@ function FindingCell({
   muted?: boolean;
   /** a mutating fix action is being hovered/focused — ring the evidence value */
   aimed?: boolean;
-  /** live ON INVOICE value only: renders the inline "Show in source" trigger */
-  onInspect?: () => void;
+  /** incoming value preview shown inside the aim ring: "current → new" */
+  ghostValue?: string;
+  /** live ON INVOICE value only: renders the inline edit trigger */
+  onOpenEdit?: () => void;
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5 px-5 py-1">
       <span className="truncate text-[11px] font-medium text-muted-foreground">
         {label}
       </span>
-      {/* Value + inline inspect trigger on one row; the button carries negative
+      {/* Value + inline edit trigger on one row; the button carries negative
           vertical margin so its hit area doesn't grow the line or shift the
           sub-label below. */}
       <div className="flex items-center gap-1">
@@ -414,26 +417,32 @@ function FindingCell({
               style={aimed ? AIM_OUTLINE_STYLE : undefined}
             >
               {value}
+              {aimed && ghostValue && (
+                <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
+                  {" → "}
+                  {ghostValue}
+                </span>
+              )}
             </mark>
           ) : (
             value
           )}
         </span>
-        {onInspect && (
+        {onOpenEdit && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                onClick={onInspect}
-                aria-label="Show in source"
+                onClick={onOpenEdit}
+                aria-label="Edit"
                 className="-my-1.5 shrink-0 text-muted-foreground"
               >
-                <Highlighter className="size-4" />
+                <Pencil className="size-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Show in source</TooltipContent>
+            <TooltipContent>Edit</TooltipContent>
           </Tooltip>
         )}
       </div>
@@ -446,14 +455,17 @@ function FindingView({
   finding,
   muted,
   aimed,
-  onInspect,
+  aimGhostValue,
+  onOpenEdit,
 }: {
   finding: Finding;
   muted?: boolean;
   /** a mutating fix action is hovered/focused — ring the warn-toned evidence cell */
   aimed?: boolean;
-  /** when set, the ON INVOICE (warn) value gets the inspect trigger */
-  onInspect?: () => void;
+  /** incoming correction value to preview in the aim ring of the warn cell */
+  aimGhostValue?: string;
+  /** when set, the ON INVOICE (warn) value gets the edit trigger */
+  onOpenEdit?: () => void;
 }) {
   const cells = finding.type === "compare" ? finding.sides : finding.items;
   if (!cells || cells.length === 0) return null;
@@ -465,9 +477,10 @@ function FindingView({
           {...c}
           muted={muted}
           aimed={aimed && c.tone === "warn"}
-          // The trigger belongs on the disputed value: the warn-toned ON INVOICE
+          ghostValue={c.tone === "warn" ? aimGhostValue : undefined}
+          // The edit trigger belongs on the disputed value: the warn-toned ON INVOICE
           // evidence, the chip that rhymes with the document highlight.
-          onInspect={c.tone === "warn" ? onInspect : undefined}
+          onOpenEdit={c.tone === "warn" ? onOpenEdit : undefined}
         />
       ))}
     </div>
@@ -487,6 +500,7 @@ function LiveExceptionContent({
   entering = false,
   hideFix = false,
   aimed = false,
+  aimGhostValue,
   onAim,
 }: {
   exception: InvoiceException;
@@ -498,6 +512,8 @@ function LiveExceptionContent({
   hideFix?: boolean;
   /** A mutating fix action is being hovered/focused — ring the evidence value. */
   aimed?: boolean;
+  /** Incoming correction value to preview inside the aim ring. */
+  aimGhostValue?: string;
   onAim?: (correction: DetailCorrections | null) => void;
 }) {
   const isJudgment = exception.suggestions.length === 0;
@@ -551,11 +567,8 @@ function LiveExceptionContent({
           <FindingView
             finding={exception.finding}
             aimed={aimed}
-            onInspect={
-              !hideFix && exception.sourceAnchors?.length
-                ? () => onShowInSource(exception)
-                : undefined
-            }
+            aimGhostValue={aimGhostValue}
+            onOpenEdit={!hideFix ? () => onShowInSource(exception) : undefined}
           />
         </div>
       )}
@@ -780,6 +793,7 @@ function Stage({
   onResolve,
   onShowInSource,
   aimed,
+  aimGhostValue,
   onAim,
 }: {
   exception: InvoiceException;
@@ -787,6 +801,7 @@ function Stage({
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
   onShowInSource: (exc: InvoiceException) => void;
   aimed?: boolean;
+  aimGhostValue?: string;
   onAim?: (correction: DetailCorrections | null) => void;
 }) {
   const [displayed, setDisplayed] = useState(exception);
@@ -820,6 +835,7 @@ function Stage({
         onShowInSource={onShowInSource}
         entering={phase === "in"}
         aimed={aimed}
+        aimGhostValue={aimGhostValue}
         onAim={onAim}
       />
     </div>
@@ -1261,6 +1277,7 @@ function ExceptionGroup({
   onShowInSource,
   onSelect,
   aimed,
+  aimGhostValue,
   onAim,
 }: {
   active: InvoiceException;
@@ -1276,6 +1293,7 @@ function ExceptionGroup({
   onSelect: (id: string) => void;
   correctionPulse?: { nonce: number; autoResolvedIds: readonly string[] };
   aimed?: boolean;
+  aimGhostValue?: string;
   onAim?: (correction: DetailCorrections | null) => void;
 }) {
   return (
@@ -1298,6 +1316,7 @@ function ExceptionGroup({
         onResolve={onResolve}
         onShowInSource={onShowInSource}
         aimed={aimed}
+        aimGhostValue={aimGhostValue}
         onAim={onAim}
       />
       {variant === "index" ? (
@@ -2262,8 +2281,8 @@ export function ExceptionTimeline({
   onAllClear: () => void;
   /** "strip" = the Up next preview (default); "index" = the bordered index. */
   exceptionListVariant?: "strip" | "index";
-  /** Called when an inspectable evidence field should open the detail edit mode. */
-  onRequestEdit?: (fieldKey: string) => void;
+  /** Called when an evidence value is clicked to open the detail edit mode. Field key may be omitted when there is no direct mapping. */
+  onRequestEdit?: (fieldKey?: string) => void;
 }) {
   const runtime = useInvoiceRuntime();
   const rt = runtime.getRuntime(review.id);
@@ -2758,13 +2777,17 @@ export function ExceptionTimeline({
   // scroll + highlight are handled by the root effect and the Source tab.
   const EXCEPTION_EDIT_FIELD: Partial<Record<string, string>> = {
     "vat-mismatch": "vat",
+    "outside-po-period": "documentDateFormatted",
+    "new-vendor": "vendor",
+    "billing-account": "billTo",
   };
 
   function showInSource(exc: InvoiceException) {
-    if (!exc.sourceAnchors?.length) return;
-    runtime.showInSource(review.id, exc.id, exc.sourceAnchors);
+    if (exc.sourceAnchors?.length) {
+      runtime.showInSource(review.id, exc.id, exc.sourceAnchors);
+    }
     const field = EXCEPTION_EDIT_FIELD[exc.type];
-    if (field) onRequestEdit?.(field);
+    onRequestEdit?.(field);
   }
 
   function resolveActive(s: Suggestion, reason?: string, note?: string) {
@@ -3222,6 +3245,13 @@ export function ExceptionTimeline({
                   onSelect={anchor}
                   correctionPulse={rt.correctionPulse}
                   aimed={!!rt.aimCorrection}
+                  aimGhostValue={
+                    rt.aimCorrection
+                      ? Object.entries(rt.aimCorrection)
+                          .filter(([k]) => k !== "lines")
+                          .map(([, v]) => v as string)[0]
+                      : undefined
+                  }
                   onAim={(correction) =>
                     runtime.setAimCorrection(review.id, correction)
                   }

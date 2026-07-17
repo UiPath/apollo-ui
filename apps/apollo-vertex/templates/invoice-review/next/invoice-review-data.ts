@@ -411,6 +411,14 @@ export interface InvoiceRuntime {
   };
   /** Transient aim state: set while a mutating fix action is hovered/focused. */
   aimCorrection?: DetailCorrections;
+  /**
+   * Snapshot captured by correctDetail before the merge: enables one-step undo.
+   * Cleared by revertDetail or by the next correctDetail call.
+   */
+  undoTarget?: {
+    prevDetailCorrections: DetailCorrections | undefined;
+    autoResolvedIds: readonly string[];
+  };
 }
 
 export function exceptionMeta(e: InvoiceException): {
