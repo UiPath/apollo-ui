@@ -1,5 +1,5 @@
 import { Spinner } from '@uipath/apollo-wind';
-import { useMemo } from 'react';
+import { type CSSProperties, useMemo } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { CanvasIcon } from '../../utils/icon-registry';
 
@@ -8,7 +8,7 @@ export function getExecutionStatusColor(status: string | undefined): string {
     case 'NotExecuted':
       return 'var(--color-foreground-de-emp)';
     case 'InProgress':
-      return 'var(--color-info-icon)';
+      return 'var(--color-primary)';
     case 'Completed':
       return 'var(--color-success-icon)';
     case 'ActionNeeded':
@@ -73,8 +73,15 @@ export function ExecutionStatusIcon({
           <Spinner
             size="sm"
             label={_({ id: 'stage-node.status.in-progress', message: 'In progress' })}
-            className="[&>svg]:text-[color:var(--color-primary)] [&>svg]:[stroke-width:3]"
-            style={{ backgroundColor: 'transparent', width: size, height: size }}
+            className="[&>svg]:text-[color:var(--spinner-color)] [&>svg]:[stroke-width:3]"
+            style={
+              {
+                '--spinner-color': color,
+                backgroundColor: 'transparent',
+                width: size,
+                height: size,
+              } as CSSProperties
+            }
           />
         );
       case 'Completed':
