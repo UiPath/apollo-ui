@@ -2051,7 +2051,7 @@ function StackedTreatmentStory() {
       </Panel>
       <StoryInfoPanel
         title="Stacked Treatment"
-        description="Drillable (manifest) and collapsed (instance data) nodes render a decorative stacked layer behind the card. Collapsing never changes a node's shape — the 'Collapsed Rectangle' node stays a wide pill while still showing the stacked layer. The effect is purely visual — node dimensions and hit area are unchanged."
+        description="Drillable (manifest) and collapsed (instance data) nodes render a decorative stacked layer behind the card. Collapsing never changes a node's shape, so the 'Collapsed Rectangle' node stays a wide pill while still showing the stacked layer. The effect is purely visual; node dimensions and hit area are unchanged."
       />
     </BaseCanvas>
   );
