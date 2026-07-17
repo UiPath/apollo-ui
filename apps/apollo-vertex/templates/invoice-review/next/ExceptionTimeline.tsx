@@ -1057,14 +1057,16 @@ function IssueDots({
           >
             <span
               className={cn(
-                "block h-[7px] w-[7px] rounded-full bg-foreground",
-                isCurrent
-                  ? "opacity-100"
-                  : isPulsed
-                    ? pulseSettle === "peak"
-                      ? "opacity-50"
-                      : "opacity-25 transition-opacity duration-[600ms] ease-out motion-reduce:transition-none"
-                    : "opacity-25",
+                "block rounded-full",
+                isResolved
+                  ? "h-[7px] w-[7px] bg-foreground opacity-[0.45]"
+                  : isCurrent
+                    ? "h-[7px] w-5 bg-warning opacity-100"
+                    : isPulsed
+                      ? pulseSettle === "peak"
+                        ? "h-[7px] w-[7px] border border-foreground opacity-50"
+                        : "h-[7px] w-[7px] border border-foreground opacity-[0.3] transition-opacity duration-[600ms] ease-out motion-reduce:transition-none"
+                      : "h-[7px] w-[7px] border border-foreground opacity-[0.3]",
               )}
             />
           </button>
@@ -2122,11 +2124,14 @@ export function ExceptionTimeline({
   review,
   onAllClear,
   onRequestEdit,
+  scrollTrigger,
 }: {
   review: InvoiceReview;
   onAllClear: () => void;
   /** Called when an evidence value is clicked to open the detail edit mode. Field key may be omitted when there is no direct mapping. */
   onRequestEdit?: (fieldKey?: string) => void;
+  /** Bumping this nonce scrolls the center column to the active issue — used after edit-mode exit. */
+  scrollTrigger?: number;
 }) {
   const runtime = useInvoiceRuntime();
   const rt = runtime.getRuntime(review.id);
@@ -2370,20 +2375,22 @@ export function ExceptionTimeline({
   }, []);
 
   // Follow the conversation: when a resolve sequence commits, bring the new live
-  // content into view, unless the reviewer scrolled away or was reading history.
+  // content into view.
   useEffect(() => {
     const was = wasResolvingRef.current;
     wasResolvingRef.current = resolve !== null;
     if (was && resolve === null) {
-      if (stickRef.current && !userScrolledRef.current) {
-        requestAnimationFrame(() => scrollToLive());
-      } else {
-        // New events committed while auto-follow was canceled: flag the pill so
-        // the reviewer knows the live edge moved. (Auto-follow rule unchanged.)
-        setHasNewBelow(true);
-      }
+      requestAnimationFrame(() => scrollToLive());
     }
   }, [resolve]);
+
+  // After edit-mode exit, scroll so the active issue is at the top of the viewport.
+  useEffect(() => {
+    if (!scrollTrigger) return;
+    requestAnimationFrame(() => scrollToLive());
+    // scrollTrigger nonce keys the scroll; scrollToLive is stable
+    // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the scroll
+  }, [scrollTrigger]);
 
   // Resolve choreography. Fix mode: confirm -> check -> reveal -> commit, one
   // region per phase, next state hidden until re-validation settles. Route mode:

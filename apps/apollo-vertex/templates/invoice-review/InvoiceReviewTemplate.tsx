@@ -138,8 +138,10 @@ import {
   invoiceReviews,
   type LineCorrection,
   openExceptions,
+  type PredicateBaseData,
   REJECT_REASONS,
   rejectInvoice,
+  runPredicates,
   type RunEventInput,
 } from "./next/invoice-review-data";
 import {
@@ -337,8 +339,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     lines: [
       {
         description: "USB Hub, 7 Port Powered",
-        shortDescription:
-          "SKU-UH7P · Powered USB 3.0 hub, 7 downstream ports, 36W adapter",
+        shortDescription: "SKU-UH7P",
         qty: 1,
         amount: "$694.39",
         unitPrice: "$694.39",
@@ -408,8 +409,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     lines: [
       {
         description: "Ergonomic desk chair",
-        shortDescription:
-          "SKU-EDC-PRO · Lumbar support, adjustable armrests, mesh back",
+        shortDescription: "SKU-EDC-PRO",
         qty: 20,
         amount: "$38,000.00",
         unitPrice: "$1,900.00",
@@ -417,8 +417,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       },
       {
         description: "Height-adjustable standing desk",
-        shortDescription:
-          'SKU-HASD-60 · 60" surface, dual motor, memory presets',
+        shortDescription: "SKU-HASD-60",
         qty: 10,
         amount: "$24,000.00",
         unitPrice: "$2,400.00",
@@ -5002,7 +5001,7 @@ function DetailsCombinedTab() {
                   </span>
                   {/* ITEM */}
                   <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-[13px] font-medium text-foreground leading-snug">
+                    <span className="text-[13px] font-medium text-foreground leading-snug truncate">
                       {line.description}
                       {lineCorrected && <CorrectedMark />}
                     </span>
@@ -6499,16 +6498,16 @@ const EDIT_FIELD_ANCHORS: Record<string, string> = {
 };
 
 const FIELD_LABELS: Record<string, string> = {
-  documentDateFormatted: "Document date",
-  dueFormatted: "Due date",
-  paymentTerms: "Payment terms",
+  documentDateFormatted: "document date",
+  dueFormatted: "due date",
+  paymentTerms: "payment terms",
   vat: "VAT number",
-  servicePeriod: "Service period",
-  vendor: "Vendor",
-  vendorEmail: "Vendor email",
-  vendorAddress: "Vendor address",
-  billTo: "Bill to",
-  billAddress: "Bill address",
+  servicePeriod: "service period",
+  vendor: "vendor",
+  vendorEmail: "vendor email",
+  vendorAddress: "vendor address",
+  billTo: "bill to",
+  billAddress: "bill address",
 };
 
 /** Maps the explicit reference.fieldKey dot-path to the form's internal key. */
@@ -6548,9 +6547,45 @@ function buildAnnotationMap(
   return map;
 }
 
+function buildExceptionByFieldMap(
+  openExcs: InvoiceException[],
+): Map<string, InvoiceException> {
+  const map = new Map<string, InvoiceException>();
+  for (const exc of openExcs) {
+    if (!exc.reference) continue;
+    const formKey = referenceFieldKeyToFormKey(exc.reference.fieldKey);
+    if (!formKey) continue;
+    map.set(formKey, exc);
+  }
+  return map;
+}
+
+function stillUnresolvedMessage(
+  exc: InvoiceException,
+  formKey: string,
+): string {
+  const lineMatch = formKey.match(/^line(\d+):(qty|amount|description)$/);
+  const fieldLabel = lineMatch
+    ? `Line ${lineMatch[1]} ${lineMatch[2]}`
+    : (FIELD_LABELS[formKey] ?? "Field");
+  const source = exc.reference?.source ?? "system";
+
+  switch (exc.type) {
+    case "vat-mismatch":
+      return `${fieldLabel} still differs from ${source.toLowerCase()}`;
+    case "qty-over-invoiced":
+      return `${fieldLabel} still exceeds ${source}`;
+    case "price-mismatch":
+      return `${fieldLabel} still above agreed price`;
+    case "outside-po-period":
+      return `${fieldLabel} still outside ${source} window`;
+    default:
+      return `${fieldLabel} still unresolved`;
+  }
+}
+
 function fieldEventLabel(formKey: string): string {
-  if (FIELD_LABELS[formKey])
-    return `Corrected ${FIELD_LABELS[formKey].toLowerCase()}`;
+  if (FIELD_LABELS[formKey]) return `Corrected ${FIELD_LABELS[formKey]}`;
   const lineMatch = formKey.match(/^line(\d+):(qty|amount|description)$/);
   if (lineMatch) return `Corrected line ${lineMatch[1]} ${lineMatch[2]}`;
   return "Corrected field";
@@ -6618,30 +6653,33 @@ function DetailsEditForm({
   const set = (key: string, val: string) =>
     setValues((prev) => ({ ...prev, [key]: val }));
 
-  function annotationLine(key: string) {
+  function annotationChip(key: string) {
     const ann = annotations?.get(key);
     if (!ann) return null;
-    const alreadyApplied = values[key] === ann.fillValue;
+    const isApplied = values[key] === ann.fillValue;
     return (
-      <div className="flex items-baseline gap-1 pt-0.5">
-        <span className="text-[12px] text-muted-foreground">
-          {ann.label}: {ann.displayValue} · {ann.provenance} —
-        </span>
-        <button
-          type="button"
-          disabled={alreadyApplied}
-          onClick={() => {
-            if (!alreadyApplied) set(key, ann.fillValue);
-          }}
-          className={cn(
-            "shrink-0 text-[13px] transition-colors duration-[120ms]",
-            alreadyApplied
-              ? "cursor-default text-muted-foreground/40"
-              : "text-muted-foreground hover:text-primary",
-          )}
-        >
-          Use this value
-        </button>
+      <div className="mt-1">
+        {isApplied ? (
+          <span className="inline-flex items-center gap-1 text-[12px] text-muted-foreground/50">
+            <Check className="size-3 shrink-0" />
+            <span className="whitespace-nowrap">
+              {ann.displayValue} · {ann.provenance}
+            </span>
+          </span>
+        ) : (
+          <button
+            type="button"
+            title={`Apply ${ann.label}: ${ann.displayValue}`}
+            aria-label={`Apply ${ann.label}: ${ann.displayValue}`}
+            onClick={() => set(key, ann.fillValue)}
+            className="flex w-fit max-w-full cursor-pointer items-center overflow-hidden rounded-[6px] border border-border px-2 py-1 text-[12px] text-muted-foreground transition-colors duration-[120ms] hover:bg-muted/50 hover:text-primary"
+          >
+            <span className="shrink-0 whitespace-nowrap">
+              {ann.displayValue} ·{" "}
+            </span>
+            <span className="min-w-0 truncate">{ann.provenance}</span>
+          </button>
+        )}
       </div>
     );
   }
@@ -6722,7 +6760,7 @@ function DetailsEditForm({
                   className="h-8 text-[13px]"
                   {...fp("documentDateFormatted")}
                 />
-                {annotationLine("documentDateFormatted")}
+                {annotationChip("documentDateFormatted")}
               </div>
               <div className="space-y-1">
                 <Label
@@ -6739,7 +6777,7 @@ function DetailsEditForm({
                   className="h-8 text-[13px]"
                   {...fp("dueFormatted")}
                 />
-                {annotationLine("dueFormatted")}
+                {annotationChip("dueFormatted")}
               </div>
               <div className="space-y-1">
                 <Label
@@ -6774,7 +6812,7 @@ function DetailsEditForm({
                     {...fp("vat")}
                     ref={focusField === "vat" ? focusRef : undefined}
                   />
-                  {annotationLine("vat")}
+                  {annotationChip("vat")}
                 </div>
               )}
               {cd.servicePeriod && (
@@ -6948,7 +6986,7 @@ function DetailsEditForm({
                           className="h-8 text-[13px]"
                           {...fp(qk)}
                         />
-                        {annotationLine(qk)}
+                        {annotationChip(qk)}
                       </div>
                       <div className="space-y-1">
                         <Label
@@ -6962,7 +7000,7 @@ function DetailsEditForm({
                           className="h-8 text-[13px]"
                           {...fp(ak)}
                         />
-                        {annotationLine(ak)}
+                        {annotationChip(ak)}
                       </div>
                     </div>
                   </div>
@@ -6992,6 +7030,7 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
   const rt = runtime.getRuntime(invoiceId);
   const [cancelOpen, setCancelOpen] = useState(false);
   const pendingDirtyRef = useRef<Record<string, DirtyField>>({});
+  const [pendingDirtyCount, setPendingDirtyCount] = useState(0);
 
   const review = findReview(invoiceId);
   const openList = review ? openExceptions(review, rt) : [];
@@ -7066,10 +7105,38 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
       corrections.lines = lineCorrections;
 
     const open = review ? openExceptions(review, rt) : [];
-    const base = {
+    const base: PredicateBaseData = {
       vat: d.vat,
       lines: d.lines.map((l) => ({ qty: l.qty, poQty: l.poQty })),
     };
+
+    // Dry-run predicates now so we can produce honest re-check copy before
+    // committing: if a corrected field's exception still fails after the fix,
+    // the event says so instead of the generic "nothing new".
+    const exceptionByField = buildExceptionByFieldMap(open);
+    const mergedForCheck: DetailCorrections = {
+      ...(rt.detailCorrections ?? {}),
+      ...corrections,
+      lines: {
+        ...(rt.detailCorrections?.lines ?? {}),
+        ...(corrections.lines ?? {}),
+      },
+    };
+    const { cleared: willClear } = runPredicates(open, mergedForCheck, base);
+    const clearedSet = new Set(willClear);
+    const stillFailingMessages: string[] = [];
+    for (const key of Object.keys(dirty)) {
+      const exc = exceptionByField.get(key);
+      if (exc && !clearedSet.has(exc.id)) {
+        const msg = stillUnresolvedMessage(exc, key);
+        if (!stillFailingMessages.includes(msg)) stillFailingMessages.push(msg);
+      }
+    }
+    const settledSub =
+      stillFailingMessages.length > 0
+        ? stillFailingMessages.join(", ")
+        : undefined;
+
     const correctionEvents: RunEventInput[] = Object.entries(dirty).map(
       ([key, { from, to }]) => {
         const ann = annotations.get(key);
@@ -7095,6 +7162,7 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
           corrections,
           { openExceptions: open, base },
           correctionEvents,
+          settledSub ? { settledSub } : undefined,
         );
       }, 200);
     });
@@ -7112,17 +7180,7 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
   const shown = ready && !exiting;
 
   return (
-    <div
-      className="absolute inset-0 z-10 bg-background flex flex-col"
-      style={
-        prefersReduced
-          ? undefined
-          : {
-              opacity: shown ? 1 : 0,
-              transition: "opacity 120ms ease-out",
-            }
-      }
-    >
+    <div className="absolute inset-0 z-10 bg-background flex flex-col">
       {/* Mode header */}
       <div className="shrink-0 flex items-center gap-2 px-5 h-11 border-b border-border bg-muted/40">
         <Pencil className="size-3.5 shrink-0 text-muted-foreground" />
@@ -7136,7 +7194,11 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
           <Button variant="ghost" size="sm" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button size="sm" onClick={handleSave}>
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={pendingDirtyCount === 0}
+          >
             Save &amp; re-check
           </Button>
         </div>
@@ -7162,6 +7224,7 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
             annotations={annotations}
             onDirtyChange={(dirty) => {
               pendingDirtyRef.current = dirty;
+              setPendingDirtyCount(Object.keys(dirty).length);
             }}
           />
         </div>
@@ -7213,10 +7276,12 @@ function CenterPanelNext({
   activeInvoiceId,
   onCleared,
   onRequestEdit,
+  scrollTrigger,
 }: {
   activeInvoiceId: string;
   onCleared: () => void;
   onRequestEdit?: (fieldKey?: string) => void;
+  scrollTrigger?: number;
 }) {
   // findReview (not getReview): a missing id must show honest absence, never a
   // fallback to a different invoice's review content.
@@ -7239,6 +7304,7 @@ function CenterPanelNext({
       review={review}
       onAllClear={onCleared}
       onRequestEdit={onRequestEdit}
+      scrollTrigger={scrollTrigger}
     />
   );
 }
@@ -7376,6 +7442,7 @@ function InvoiceDetailPane({
   const [editFocusField, setEditFocusField] = useState<string | undefined>(
     undefined,
   );
+  const [scrollToActiveTrigger, setScrollToActiveTrigger] = useState(0);
   const editModeValue: EditModeContextValue = useMemo(
     () => ({
       editMode,
@@ -7387,9 +7454,11 @@ function InvoiceDetailPane({
       exitEditMode: () => {
         setEditMode(false);
         setEditFocusField(undefined);
+        onRightTabChange("details");
+        setScrollToActiveTrigger((n) => n + 1);
       },
     }),
-    [editMode, editFocusField],
+    [editMode, editFocusField, onRightTabChange],
   );
 
   const nowTime = () =>
@@ -7738,6 +7807,7 @@ function InvoiceDetailPane({
                   activeInvoiceId={activeInvoiceId}
                   onCleared={() => setApproveReady(true)}
                   onRequestEdit={editModeValue.enterEditMode}
+                  scrollTrigger={scrollToActiveTrigger}
                 />
               ) : (
                 <>
