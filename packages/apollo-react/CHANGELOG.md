@@ -1,3 +1,12 @@
+## [@uipath/apollo-react-v4.65.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.65.1...@uipath/apollo-react@4.65.2) (2026-07-17)
+
+### Bug Fixes
+
+* **apollo-react:** localize in-progress spinner aria-label [MST-12191] ([479aeb2](https://github.com/UiPath/apollo-ui/commit/479aeb2bc5e0a06ac4cdde8208abe7fdf728ace5))
+* **apollo-react:** make in-progress execution spinner info-colored [MST-12191] ([d0feac1](https://github.com/UiPath/apollo-ui/commit/d0feac1b8474cff505de87a385c17ad3692a56fa))
+* **apollo-react:** map InProgress to primary via getExecutionStatusColor [MST-12191] ([5afe047](https://github.com/UiPath/apollo-ui/commit/5afe047aacbb2442a7e44df3917fce2b9b293a90))
+* **apollo-react:** use primary color and thicker in-progress spinner [MST-12191] ([0a9e5af](https://github.com/UiPath/apollo-ui/commit/0a9e5af3345a7c1fdbbc382b00db208933a75f7c))
+
 ## [@uipath/apollo-react-v4.65.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.65.0...@uipath/apollo-react@4.65.1) (2026-07-17)
 
 ### Bug Fixes
