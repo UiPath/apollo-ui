@@ -4,9 +4,9 @@ import {
   ArrowDown,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   Clock,
-  Eye,
   Pencil,
   Pause,
   UserRound,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import {
   type CSSProperties,
+  type KeyboardEvent,
   type ReactNode,
   useEffect,
   useMemo,
@@ -30,6 +31,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/registry/popover/popover";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
 import {
@@ -600,116 +606,6 @@ function LiveExceptionContent({
 }
 
 /**
- * Stable index of all open exceptions (master-detail with the stage above).
- * Rows keep a fixed order and never disappear on selection; clicking a row
- * projects it onto the stage. The active row is highlighted and shows a
- * "Viewing" indicator in place of its scope label.
- */
-function ExceptionIndex({
-  items,
-  activeId,
-  isNew,
-  onSelect,
-  resolvingId,
-}: {
-  items: InvoiceException[];
-  activeId: string;
-  isNew: (e: InvoiceException) => boolean;
-  onSelect: (id: string) => void;
-  /** During a resolve, this row shows a resolved-in-place state (no Viewing). */
-  resolvingId?: string;
-}) {
-  // Dev guard: "Viewing" must only ever point at the exception on stage.
-  if (
-    process.env.NODE_ENV !== "production" &&
-    activeId &&
-    !items.some((e) => e.id === activeId)
-  ) {
-    console.error(
-      "[ExceptionIndex] Viewing points at an id not in the index:",
-      activeId,
-    );
-  }
-  return (
-    <ul className="mt-5 divide-y divide-border overflow-hidden rounded-lg border border-border">
-      {items.map((e, i) => {
-        const isResolving = e.id === resolvingId;
-        const isActive = !isResolving && e.id === activeId;
-        return (
-          <li key={e.id}>
-            <button
-              type="button"
-              onClick={() => onSelect(e.id)}
-              disabled={isResolving}
-              aria-current={isActive || undefined}
-              className={cn(
-                "flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
-                isActive ? "bg-muted/60" : "hover:bg-muted/40",
-                isResolving && "hover:bg-transparent",
-              )}
-            >
-              {isResolving ? (
-                <Check className="size-3.5 shrink-0 text-success" />
-              ) : (
-                <span
-                  className={cn(
-                    "w-3.5 shrink-0 text-center text-xs tabular-nums",
-                    isActive
-                      ? "font-medium text-foreground"
-                      : "text-muted-foreground",
-                  )}
-                >
-                  {i + 1}
-                </span>
-              )}
-              <Badge
-                status={exceptionMeta(e).tone}
-                variant="secondary"
-                className="shrink-0"
-              >
-                {exceptionMeta(e).label}
-              </Badge>
-              <span
-                className={cn(
-                  "min-w-0 flex-1 truncate text-sm",
-                  isActive
-                    ? "font-medium text-foreground"
-                    : "text-muted-foreground",
-                )}
-              >
-                {e.headline}
-              </span>
-              {isActive ? (
-                <span className="flex shrink-0 items-center gap-1 text-xs text-primary">
-                  <Eye className="size-3.5" />
-                  Viewing
-                </span>
-              ) : (
-                <>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {scopeLabel(e.scope)}
-                  </span>
-                  {isNew(e) && (
-                    <Badge
-                      status="info"
-                      variant="secondary"
-                      className="shrink-0"
-                    >
-                      New
-                    </Badge>
-                  )}
-                </>
-              )}
-            </button>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-/**
  * A resolving exception collapsing in place into its resolved timeline row. The
  * exception detail collapses (grid-rows) while the compact resolved row fades
  * in; nothing above it moves. Reduced motion jumps straight to the end state.
@@ -842,15 +738,7 @@ function Stage({
   );
 }
 
-/** The reviewer's node: optional group header, the stage, the exception index. */
-// Tone dots for the Findings map.
-const DOT_TONE: Record<string, string> = {
-  error: "bg-destructive",
-  warning: "bg-warning",
-  info: "bg-info",
-};
-
-// --- Findings map (cursor model) --------------------------------------------
+// --- Findings map helpers (kept for pass 2) ---------------------------------
 
 type FindingsRowState = "pending" | "current" | "resolved";
 
@@ -957,308 +845,231 @@ function buildFindingsRows(
   return rows;
 }
 
-function FindingsIndividualRow({
-  row,
+/**
+ * Dropdown jump menu on the "Issue n of m" counter. Rows show state glyph +
+ * exception type + line locator. Resolved rows are non-interactive (no resolved
+ * card view in this pass). Arrow keys traverse, Enter selects, Esc closes.
+ */
+function JumpMenu({
+  items,
+  activeId,
+  resolvedIds,
+  counter,
   onSelect,
-  pulsed,
-  pulseNonce,
 }: {
-  row: FindingsIndividual;
+  items: InvoiceException[];
+  activeId: string;
+  resolvedIds: ReadonlySet<string>;
+  counter: string;
   onSelect: (id: string) => void;
-  pulsed?: boolean;
-  pulseNonce?: number;
 }) {
-  const { exception: e, state } = row;
-  const isPending = state === "pending";
-  const isCurrent = state === "current";
-  const isResolved = state === "resolved";
+  const [open, setOpen] = useState(false);
+  const [focusIdx, setFocusIdx] = useState(0);
+  const rowRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const [pulseSettle, setPulseSettle] = useState<"peak" | "rest">("rest");
+  // Init focus to the current item (or first open) when the menu opens.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-init only on open
   useEffect(() => {
-    if (!pulsed || pulseNonce === undefined) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    setPulseSettle("peak");
-    let r2 = 0;
-    const r1 = requestAnimationFrame(() => {
-      r2 = requestAnimationFrame(() => setPulseSettle("rest"));
-    });
-    return () => {
-      cancelAnimationFrame(r1);
-      cancelAnimationFrame(r2);
-    };
-    // biome-ignore lint/correctness/useExhaustiveDependencies: pulseNonce keys the animation
-  }, [pulseNonce, pulsed]);
-
-  const rowContent = (
-    <>
-      {isResolved ? (
-        <Check className="size-3.5 shrink-0 text-muted-foreground" />
-      ) : isCurrent ? (
-        <span className="size-2 shrink-0 rounded-full bg-warning" />
-      ) : (
-        <span
-          className={cn(
-            "size-1.5 shrink-0 rounded-full",
-            DOT_TONE[exceptionMeta(e).tone] ?? "bg-muted-foreground",
-          )}
-        />
-      )}
-      <span
-        className={cn(
-          "min-w-0 flex-1 truncate text-[13px]",
-          isResolved
-            ? "text-muted-foreground"
-            : isCurrent
-              ? "font-medium text-foreground"
-              : "text-foreground",
-        )}
-      >
-        {rowSynthesis(e)}
-        {e.scope.level === "line" && (
-          <span className="font-normal text-muted-foreground">
-            {" · "}Line {e.scope.line}
-          </span>
-        )}
-      </span>
-      {isCurrent && (
-        <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
-          Current
-        </span>
-      )}
-      {isPending && (
-        <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
-      )}
-    </>
-  );
-
-  if (isPending) {
-    return (
-      <button
-        type="button"
-        onClick={() => onSelect(e.id)}
-        className="flex min-h-7 w-full items-center gap-2 rounded px-2 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-      >
-        {rowContent}
-      </button>
+    if (!open) return;
+    const current = items.findIndex(
+      (e) => !resolvedIds.has(e.id) && e.id === activeId,
     );
-  }
-  return (
-    <div
-      className={cn(
-        "flex min-h-7 items-center gap-2 rounded px-2",
-        isCurrent && "rounded-md bg-muted/30 ring-1 ring-inset ring-border/60",
-        pulsed &&
-          (pulseSettle === "peak"
-            ? "bg-warning/40 ring-1 ring-inset ring-warning/70"
-            : "bg-warning/15 ring-1 ring-inset ring-warning/50 transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none"),
-      )}
-    >
-      {rowContent}
-    </div>
-  );
-}
+    const first = items.findIndex((e) => !resolvedIds.has(e.id));
+    setFocusIdx(current >= 0 ? current : first >= 0 ? first : 0);
+  }, [open]);
 
-function FindingsGroupRow({
-  row,
-  effectiveResolved,
-  onSelect,
-  pulsed,
-  pulseNonce,
-}: {
-  row: FindingsGroup;
-  effectiveResolved: ReadonlySet<string>;
-  onSelect: (id: string) => void;
-  pulsed?: boolean;
-  pulseNonce?: number;
-}) {
-  const { type, members, lines, state, resolvedCount } = row;
-  const meta = EXCEPTION_META[type];
-  const isPending = state === "pending";
-  const isCurrent = state === "current";
-  const isResolved = state === "resolved";
-
-  const [pulseSettle, setPulseSettle] = useState<"peak" | "rest">("rest");
+  // Move DOM focus to the focused row whenever focusIdx changes.
   useEffect(() => {
-    if (!pulsed || pulseNonce === undefined) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    setPulseSettle("peak");
-    let r2 = 0;
-    const r1 = requestAnimationFrame(() => {
-      r2 = requestAnimationFrame(() => setPulseSettle("rest"));
-    });
-    return () => {
-      cancelAnimationFrame(r1);
-      cancelAnimationFrame(r2);
-    };
-    // biome-ignore lint/correctness/useExhaustiveDependencies: pulseNonce keys the animation
-  }, [pulseNonce, pulsed]);
+    if (open && focusIdx >= 0) rowRefs.current[focusIdx]?.focus();
+  }, [focusIdx, open]);
 
-  const locator = lineRangeLabel(lines);
-  const unresolved = members.filter((m) => !effectiveResolved.has(m.id));
-  // Progress: how many members are done so far (changes on resolve, not cursor move).
-  const progressText = `${resolvedCount} of ${members.length} done`;
-  const firstPendingId = unresolved[0]?.id ?? members[0].id;
+  const handleListKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      e.stopPropagation();
+      setFocusIdx((prev) => {
+        let next = prev + 1;
+        while (next < items.length && resolvedIds.has(items[next].id)) next++;
+        return next < items.length ? next : prev;
+      });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      e.stopPropagation();
+      setFocusIdx((prev) => {
+        let next = prev - 1;
+        while (next >= 0 && resolvedIds.has(items[next].id)) next--;
+        return next >= 0 ? next : prev;
+      });
+    }
+  };
 
-  const rowContent = (
-    <>
-      {isResolved ? (
-        <Check className="size-3.5 shrink-0 text-muted-foreground" />
-      ) : isCurrent ? (
-        <span className="size-2 shrink-0 rounded-full bg-warning" />
-      ) : (
-        <span
-          className={cn(
-            "size-1.5 shrink-0 rounded-full",
-            DOT_TONE[meta.tone] ?? "bg-muted-foreground",
-          )}
-        />
-      )}
-      <span
-        className={cn(
-          "min-w-0 flex-1 truncate text-[13px]",
-          isResolved
-            ? "text-muted-foreground"
-            : isCurrent
-              ? "font-medium text-foreground"
-              : "text-foreground",
-        )}
-      >
-        {meta.label}
-        {!isResolved && locator && (
-          <span className="font-normal text-muted-foreground">
-            {" · "}
-            {locator}
-          </span>
-        )}
-        {isResolved && (
-          <span className="font-normal text-muted-foreground">
-            {" · "}
-            {resolvedCount} done
-          </span>
-        )}
-      </span>
-      {isCurrent && (
-        <>
-          <Badge
-            variant="outline"
-            className="h-4 shrink-0 px-1.5 text-[11px] text-muted-foreground"
-          >
-            {progressText}
-          </Badge>
-          <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
-            Current
-          </span>
-        </>
-      )}
-      {isPending && (
-        <>
-          <Badge
-            variant="outline"
-            className="h-4 shrink-0 px-1.5 text-[11px] text-muted-foreground"
-          >
-            {unresolved.length}
-          </Badge>
-          <ChevronRight className="size-3 shrink-0 text-muted-foreground" />
-        </>
-      )}
-    </>
-  );
-
-  if (isPending) {
-    return (
-      <button
-        type="button"
-        onClick={() => onSelect(firstPendingId)}
-        className="flex h-7 w-full items-center gap-2 rounded px-2 text-left transition-colors duration-[120ms] hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-      >
-        {rowContent}
-      </button>
-    );
-  }
   return (
-    <div
-      className={cn(
-        "flex min-h-7 items-center gap-2 rounded px-2",
-        isCurrent && "rounded-md bg-muted/30 ring-1 ring-inset ring-border/60",
-        pulsed &&
-          (pulseSettle === "peak"
-            ? "bg-warning/40 ring-1 ring-inset ring-warning/70"
-            : "bg-warning/15 ring-1 ring-inset ring-warning/50 transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none"),
-      )}
-    >
-      {rowContent}
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          className="-mx-1 flex items-center gap-0.5 rounded px-1 text-xs text-muted-foreground transition-colors duration-[120ms] hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          {counter}
+          <ChevronDown className="size-3 shrink-0 opacity-60" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-60 p-1"
+        align="start"
+        onKeyDown={handleListKeyDown}
+      >
+        {items.map((e, i) => {
+          const isResolved = resolvedIds.has(e.id);
+          const isCurrent = !isResolved && e.id === activeId;
+          const meta = exceptionMeta(e);
+          const locator =
+            e.scope.level === "line" ? `Line ${e.scope.line}` : null;
+          const caption = isCurrent ? "Current" : isResolved ? "Done" : null;
+          const stateLabel = isResolved
+            ? "resolved"
+            : isCurrent
+              ? "current"
+              : "pending";
+          const toneDot =
+            meta.tone === "error"
+              ? "bg-destructive"
+              : meta.tone === "warning"
+                ? "bg-warning"
+                : "bg-info";
+
+          if (isResolved) {
+            return (
+              <div
+                key={e.id}
+                aria-label={`Issue ${i + 1} · ${meta.label} · ${stateLabel}`}
+                className="flex min-h-8 cursor-default items-center gap-2 rounded px-2 py-1 opacity-50"
+              >
+                <span className={cn("size-2 shrink-0 rounded-full", toneDot)} />
+                <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">
+                  {meta.label}
+                  {locator && <span className="opacity-70"> · {locator}</span>}
+                </span>
+                {caption && (
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    {caption}
+                  </span>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <button
+              key={e.id}
+              ref={(el) => {
+                rowRefs.current[i] = el;
+              }}
+              type="button"
+              tabIndex={-1}
+              aria-label={`Issue ${i + 1} · ${meta.label}${locator ? ` · ${locator}` : ""} · ${stateLabel}`}
+              onClick={() => {
+                onSelect(e.id);
+                setOpen(false);
+              }}
+              className={cn(
+                "flex min-h-8 w-full items-center gap-2 rounded px-2 py-1 text-left transition-colors duration-[120ms] focus-visible:bg-muted/40 focus-visible:outline-none",
+                isCurrent ? "bg-muted/50" : "hover:bg-muted/40",
+              )}
+            >
+              <span className={cn("size-2 shrink-0 rounded-full", toneDot)} />
+              <span className="min-w-0 flex-1 truncate text-[13px] text-foreground">
+                {meta.label}
+                {locator && (
+                  <span className="text-muted-foreground"> · {locator}</span>
+                )}
+              </span>
+              {caption && (
+                <span className="shrink-0 text-[11px] font-medium text-muted-foreground">
+                  {caption}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </PopoverContent>
+    </Popover>
   );
 }
 
 /**
- * Findings map: lists ALL non-waiting findings (open + resolved) in fixed
- * escalation order. The cursor (activeId) marks one row current at all times;
- * resolved rows stay in place with a muted check. Hides when only one finding
- * total. `resolvingId` transiently treats an exception as resolved during the
- * resolve choreography so the in-flight row shows a resolved-in-place state.
+ * Pagination dots: one per non-waiting issue (open + resolved), stable order.
+ * Pending = hollow circle, current = amber pill, resolved = muted filled circle.
+ * A settle pulse fires briefly on auto-resolve. Hidden when items.length <= 1.
  */
-function FindingsMap({
+function IssueDots({
   items,
   activeId,
   resolvedIds,
-  resolvingId,
   onSelect,
   correctionPulse,
 }: {
   items: InvoiceException[];
   activeId: string;
   resolvedIds: ReadonlySet<string>;
-  resolvingId?: string;
   onSelect: (id: string) => void;
   correctionPulse?: { nonce: number; autoResolvedIds: readonly string[] };
 }) {
   if (items.length <= 1) return null;
-
-  const effectiveResolved: ReadonlySet<string> = resolvingId
-    ? new Set([...resolvedIds, resolvingId])
-    : resolvedIds;
-
-  const rows = buildFindingsRows(items, effectiveResolved, activeId);
-  const totalCount = items.length;
-  const resolvedCount = items.filter((e) => effectiveResolved.has(e.id)).length;
   const pulsedIds = new Set(correctionPulse?.autoResolvedIds ?? []);
   const pulseNonce = correctionPulse?.nonce;
-
-  const headerLabel =
-    resolvedCount > 0
-      ? `Findings · ${resolvedCount} of ${totalCount} resolved`
-      : `Findings · ${totalCount}`;
+  const [pulseSettle, setPulseSettle] = useState<"peak" | "rest">("rest");
+  useEffect(() => {
+    if (pulseNonce === undefined || pulsedIds.size === 0) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setPulseSettle("peak");
+    let r2 = 0;
+    const r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => setPulseSettle("rest"));
+    });
+    return () => {
+      cancelAnimationFrame(r1);
+      cancelAnimationFrame(r2);
+    };
+    // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the animation
+  }, [pulseNonce]);
 
   return (
-    <div className="mt-5">
-      <p className="mb-1.5 text-[11px] font-medium text-muted-foreground">
-        {headerLabel}
-      </p>
-      <ul className="space-y-px">
-        {rows.map((row) =>
-          row.kind === "individual" ? (
-            <li key={row.exception.id}>
-              <FindingsIndividualRow
-                row={row}
-                onSelect={onSelect}
-                pulsed={pulsedIds.has(row.exception.id)}
-                pulseNonce={pulseNonce}
-              />
-            </li>
-          ) : (
-            <li key={row.type}>
-              <FindingsGroupRow
-                row={row}
-                effectiveResolved={effectiveResolved}
-                onSelect={onSelect}
-                pulsed={row.members.some((m) => pulsedIds.has(m.id))}
-                pulseNonce={pulseNonce}
-              />
-            </li>
-          ),
-        )}
-      </ul>
+    <div className="mt-[22px] flex items-center justify-center gap-0">
+      {items.map((e, i) => {
+        const isResolved = resolvedIds.has(e.id);
+        const isCurrent = !isResolved && e.id === activeId;
+        const isPulsed = pulsedIds.has(e.id);
+        const stateLabel = isResolved
+          ? "resolved"
+          : isCurrent
+            ? "current"
+            : "pending";
+        return (
+          <button
+            key={e.id}
+            type="button"
+            onClick={() => onSelect(e.id)}
+            aria-label={`Issue ${i + 1} · ${exceptionMeta(e).label} · ${stateLabel}`}
+            className="flex items-center justify-center px-[3px] py-[9px] hover:opacity-75 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span
+              className={cn(
+                "block h-[7px] w-[7px] rounded-full bg-foreground",
+                isCurrent
+                  ? "opacity-100"
+                  : isPulsed
+                    ? pulseSettle === "peak"
+                      ? "opacity-50"
+                      : "opacity-25 transition-opacity duration-[600ms] ease-out motion-reduce:transition-none"
+                    : "opacity-25",
+              )}
+            />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -1271,7 +1082,10 @@ function ExceptionGroup({
   showHeader,
   counter,
   isNew,
-  variant,
+  canPrev,
+  canNext,
+  onPrev,
+  onNext,
   onResolve,
   correctionPulse,
   onShowInSource,
@@ -1287,7 +1101,10 @@ function ExceptionGroup({
   showHeader: boolean;
   counter: string;
   isNew: (e: InvoiceException) => boolean;
-  variant: "strip" | "index";
+  canPrev: boolean;
+  canNext: boolean;
+  onPrev: () => void;
+  onNext: () => void;
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
   onShowInSource: (exc: InvoiceException) => void;
   onSelect: (id: string) => void;
@@ -1296,18 +1113,74 @@ function ExceptionGroup({
   aimGhostValue?: string;
   onAim?: (correction: DetailCorrections | null) => void;
 }) {
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowLeft" && canPrev) {
+      e.preventDefault();
+      onPrev();
+    } else if (e.key === "ArrowRight" && canNext) {
+      e.preventDefault();
+      onNext();
+    }
+  };
+
   return (
     // Terminal node of the live rail: isLast so no connector dangles below the
     // decision area. tail + tailGrow: an open story, so the rail runs down the
     // decision content and fades out as it approaches the suggested fix card.
+    // biome-ignore lint/a11y/useKeyWithClickEvents: arrow key handler covers keyboard
     <TimelineRow marker="reviewer" className="pb-12" isLast tail tailGrow live>
       {showHeader && (
-        <div className="mb-4 flex min-h-7 items-center gap-1.5">
+        <div
+          className="mb-4 flex min-h-7 items-center gap-1.5"
+          onKeyDown={handleKeyDown}
+        >
           <span className="text-sm font-medium text-foreground">
             Needs your decision
           </span>
           <Middot />
-          <span className="text-xs text-muted-foreground">{counter}</span>
+          {nonWaitingList.length >= 2 ? (
+            <JumpMenu
+              items={nonWaitingList}
+              activeId={active.id}
+              resolvedIds={resolvedIdSet}
+              counter={counter}
+              onSelect={onSelect}
+            />
+          ) : (
+            <span className="text-xs text-muted-foreground">{counter}</span>
+          )}
+          {nonWaitingList.length >= 2 && (
+            <div className="ml-auto flex items-center gap-1.5">
+              <button
+                type="button"
+                aria-label="Previous issue"
+                disabled={!canPrev}
+                onClick={onPrev}
+                className={cn(
+                  "flex size-8 items-center justify-center rounded-lg border border-border transition-colors duration-[120ms]",
+                  canPrev
+                    ? "hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    : "cursor-default opacity-[0.45]",
+                )}
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Next issue"
+                disabled={!canNext}
+                onClick={onNext}
+                className={cn(
+                  "flex size-8 items-center justify-center rounded-lg border border-border transition-colors duration-[120ms]",
+                  canNext
+                    ? "hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    : "cursor-default opacity-[0.45]",
+                )}
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
       <Stage
@@ -1319,24 +1192,13 @@ function ExceptionGroup({
         aimGhostValue={aimGhostValue}
         onAim={onAim}
       />
-      {variant === "index" ? (
-        openList.length >= 2 && (
-          <ExceptionIndex
-            items={openList}
-            activeId={active.id}
-            isNew={isNew}
-            onSelect={onSelect}
-          />
-        )
-      ) : (
-        <FindingsMap
-          items={nonWaitingList}
-          activeId={active.id}
-          resolvedIds={resolvedIdSet}
-          onSelect={onSelect}
-          correctionPulse={correctionPulse}
-        />
-      )}
+      <IssueDots
+        items={nonWaitingList}
+        activeId={active.id}
+        resolvedIds={resolvedIdSet}
+        onSelect={onSelect}
+        correctionPulse={correctionPulse}
+      />
     </TimelineRow>
   );
 }
@@ -1683,7 +1545,6 @@ function ResolvingNode({
   showHeader,
   counter,
   isNew,
-  variant,
   reducedMotion,
   correctionPulse,
 }: {
@@ -1694,7 +1555,6 @@ function ResolvingNode({
   showHeader: boolean;
   counter: string;
   isNew: (e: InvoiceException) => boolean;
-  variant: "strip" | "index";
   reducedMotion: boolean;
   correctionPulse?: { nonce: number; autoResolvedIds: readonly string[] };
 }) {
@@ -1744,26 +1604,13 @@ function ResolvingNode({
               <span className="text-xs text-muted-foreground">{counter}</span>
             </div>
           )}
-          {variant === "index" ? (
-            openList.length >= 2 && (
-              <ExceptionIndex
-                items={openList}
-                activeId=""
-                resolvingId={exc.id}
-                isNew={isNew}
-                onSelect={() => {}}
-              />
-            )
-          ) : (
-            <FindingsMap
-              items={nonWaitingList}
-              activeId=""
-              resolvedIds={resolvedIdSet}
-              resolvingId={exc.id}
-              onSelect={() => {}}
-              correctionPulse={correctionPulse}
-            />
-          )}
+          <IssueDots
+            items={nonWaitingList}
+            activeId={exc.id}
+            resolvedIds={resolvedIdSet}
+            onSelect={() => {}}
+            correctionPulse={correctionPulse}
+          />
         </TimelineRow>
       )}
     </>
@@ -2274,13 +2121,10 @@ function WaitingTerminalBlock({
 export function ExceptionTimeline({
   review,
   onAllClear,
-  exceptionListVariant = "strip",
   onRequestEdit,
 }: {
   review: InvoiceReview;
   onAllClear: () => void;
-  /** "strip" = the Up next preview (default); "index" = the bordered index. */
-  exceptionListVariant?: "strip" | "index";
   /** Called when an evidence value is clicked to open the detail edit mode. Field key may be omitted when there is no direct mapping. */
   onRequestEdit?: (fieldKey?: string) => void;
 }) {
@@ -2437,6 +2281,18 @@ export function ExceptionTimeline({
   const counter = active
     ? `Issue ${activeOrdinal} of ${nonWaitingList.length}`
     : "";
+
+  const activeIndex = active
+    ? openList.findIndex((e) => e.id === active.id)
+    : -1;
+  const canPrev = activeIndex > 0;
+  const canNext = activeIndex >= 0 && activeIndex < openList.length - 1;
+  function goToPrev() {
+    if (canPrev) anchor(openList[activeIndex - 1].id);
+  }
+  function goToNext() {
+    if (canNext) anchor(openList[activeIndex + 1].id);
+  }
 
   const isNew = (e: InvoiceException) =>
     e.origin === "revalidation" && !acknowledged.has(e.id);
@@ -3226,7 +3082,6 @@ export function ExceptionTimeline({
                   showHeader={showHeader}
                   counter={counter}
                   isNew={isNew}
-                  variant={exceptionListVariant}
                   reducedMotion={reducedMotion}
                   correctionPulse={rt.correctionPulse}
                 />
@@ -3239,7 +3094,10 @@ export function ExceptionTimeline({
                   showHeader={showHeader}
                   counter={counter}
                   isNew={isNew}
-                  variant={exceptionListVariant}
+                  canPrev={canPrev}
+                  canNext={canNext}
+                  onPrev={goToPrev}
+                  onNext={goToNext}
                   onResolve={resolveActive}
                   onShowInSource={showInSource}
                   onSelect={anchor}
