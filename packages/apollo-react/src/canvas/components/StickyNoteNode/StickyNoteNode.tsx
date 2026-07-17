@@ -11,19 +11,20 @@ import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import { useSafeLingui } from '../../../i18n';
 import { GRID_SPACING } from '../../constants';
+import { useLatestRef } from '../../hooks/useLatestRef';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import { NodeViewportOverlay } from '../NodeViewportOverlay';
 import type { ToolbarAction } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
 import { FormattingToolbar } from './FormattingToolbar';
-import { useStickyNoteCanvasOptions } from './StickyNoteCanvasOptionsContext';
 import {
   type ActiveFormats,
   activeFormatsEqual,
   continueListOnEnter,
   detectActiveFormats,
 } from './markdown-formatting';
+import { useStickyNoteCanvasOptions } from './StickyNoteCanvasOptionsContext';
 import {
   findStickyNoteMediaAtSelection,
   insertStickyNoteMedia,
@@ -124,6 +125,19 @@ const StickyNoteNodeComponent = ({
   const formattingToolbarRef = useRef<HTMLDivElement>(null);
   const skipBlurRef = useRef<string | null>(null);
   const resizeActiveRef = useRef(false);
+  const resizeLifecycle = {
+    content: data.content,
+    id,
+    isEditing,
+    localContent,
+    onContentChange,
+    onResize,
+    onResizeEnd,
+    onResizeStart,
+    readOnly,
+    updateNodeData,
+  };
+  const resizeLifecycleRef = useLatestRef(resizeLifecycle);
   const { ref: markdownRef, scrollCaptureProps } = useScrollCapture();
   const colorButtonRef = useRef<HTMLDivElement>(null);
   const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
@@ -142,10 +156,11 @@ const StickyNoteNodeComponent = ({
     if (!resizeActiveRef.current) return;
     resizeActiveRef.current = false;
     setIsResizing(false);
-    if (onResizeEnd) {
-      queueMicrotask(onResizeEnd);
+    const latestOnResizeEnd = resizeLifecycleRef.current.onResizeEnd;
+    if (latestOnResizeEnd) {
+      queueMicrotask(latestOnResizeEnd);
     }
-  }, [onResizeEnd]);
+  }, [resizeLifecycleRef]);
 
   const updateLocalContent = useCallback((content: string) => {
     latestContentRef.current = content;
@@ -178,9 +193,8 @@ const StickyNoteNodeComponent = ({
     if (readOnly) {
       setIsEditing(false);
       updateLocalContent(data.content || '');
-      endResizeLifecycle();
     }
-  }, [readOnly, data.content, endResizeLifecycle, updateLocalContent]);
+  }, [readOnly, data.content, updateLocalContent]);
 
   const handleDoubleClick = useCallback(() => {
     if (readOnly || isEditing) return;
@@ -437,42 +451,34 @@ const StickyNoteNodeComponent = ({
   const handleResizeStart = useCallback(() => {
     if (resizeActiveRef.current) return;
     resizeActiveRef.current = true;
-    if (isEditing) {
-      const content = textAreaRef.current?.value ?? localContent;
+    const lifecycle = resizeLifecycleRef.current;
+    if (lifecycle.isEditing) {
+      const content = textAreaRef.current?.value ?? lifecycle.localContent;
 
-      if (!readOnly && content !== data.content) {
+      if (!lifecycle.readOnly && content !== lifecycle.content) {
         skipBlurRef.current = content;
         flushSync(() => {
-          onContentChange?.(content);
-          updateNodeData(id, { content });
+          lifecycle.onContentChange?.(content);
+          lifecycle.updateNodeData(lifecycle.id, { content });
         });
       }
 
       textAreaRef.current?.blur();
     }
     setIsResizing(true);
-    onResizeStart?.();
-  }, [
-    data.content,
-    id,
-    isEditing,
-    localContent,
-    onContentChange,
-    onResizeStart,
-    readOnly,
-    updateNodeData,
-  ]);
+    lifecycle.onResizeStart?.();
+  }, [resizeLifecycleRef]);
 
   const handleResizeEnd = useCallback(
     (_event: ResizeDragEvent, params: ResizeParams) => {
       if (!resizeActiveRef.current) return;
       try {
-        onResize?.(params.width, params.height);
+        resizeLifecycleRef.current.onResize?.(params.width, params.height);
       } finally {
         endResizeLifecycle();
       }
     },
-    [endResizeLifecycle, onResize]
+    [endResizeLifecycle, resizeLifecycleRef]
   );
 
   // Color change handler
@@ -604,59 +610,81 @@ const StickyNoteNodeComponent = ({
 
   const shouldRenderToolbarOverlay =
     !readOnly && selected && !dragging && !isResizing && !multipleNodesSelected;
+  // XYFlow's active D3 gesture owns external listeners, so keep its controls mounted until resize end.
+  const shouldRenderResizeControls = !readOnly || isResizing;
 
   return (
     <>
       <Global styles={stickyNoteGlobalStyles} />
       <StickyNoteWrapper data-sticky-note>
-        {!readOnly && (
+        {shouldRenderResizeControls && (
           <>
             {/* Top-left resize control */}
             <NodeResizeControl
-              style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                pointerEvents: readOnly ? 'none' : undefined,
+                zIndex: RESIZE_CONTROL_Z_INDEX,
+              }}
               position="top-left"
               minWidth={minWidth}
               minHeight={minHeight}
               onResizeStart={handleResizeStart}
               onResizeEnd={handleResizeEnd}
             >
-              <ResizeHandle selected={selected} cursor="nwse-resize" />
+              <ResizeHandle selected={selected && !readOnly} cursor="nwse-resize" />
             </NodeResizeControl>
 
             {/* Top-right resize control */}
             <NodeResizeControl
-              style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                pointerEvents: readOnly ? 'none' : undefined,
+                zIndex: RESIZE_CONTROL_Z_INDEX,
+              }}
               position="top-right"
               minWidth={minWidth}
               minHeight={minHeight}
               onResizeStart={handleResizeStart}
               onResizeEnd={handleResizeEnd}
             >
-              <ResizeHandle selected={selected} cursor="nesw-resize" />
+              <ResizeHandle selected={selected && !readOnly} cursor="nesw-resize" />
             </NodeResizeControl>
 
             {/* Bottom-left resize control */}
             <NodeResizeControl
-              style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                pointerEvents: readOnly ? 'none' : undefined,
+                zIndex: RESIZE_CONTROL_Z_INDEX,
+              }}
               position="bottom-left"
               minWidth={minWidth}
               minHeight={minHeight}
               onResizeStart={handleResizeStart}
               onResizeEnd={handleResizeEnd}
             >
-              <ResizeHandle selected={selected} cursor="nesw-resize" />
+              <ResizeHandle selected={selected && !readOnly} cursor="nesw-resize" />
             </NodeResizeControl>
 
             {/* Bottom-right resize control */}
             <NodeResizeControl
-              style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                pointerEvents: readOnly ? 'none' : undefined,
+                zIndex: RESIZE_CONTROL_Z_INDEX,
+              }}
               position="bottom-right"
               minWidth={minWidth}
               minHeight={minHeight}
               onResizeStart={handleResizeStart}
               onResizeEnd={handleResizeEnd}
             >
-              <ResizeHandle selected={selected} cursor="nwse-resize" />
+              <ResizeHandle selected={selected && !readOnly} cursor="nwse-resize" />
             </NodeResizeControl>
           </>
         )}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useLatestRef } from './useLatestRef';
+import { useLatestRef } from '../../hooks/useLatestRef';
 
 interface DragSessionHandlers {
   onStart?: () => void;

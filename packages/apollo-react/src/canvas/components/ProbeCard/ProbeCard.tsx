@@ -1,10 +1,9 @@
-import { memo, useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Button } from '@uipath/apollo-wind';
 import { ChevronDown, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
-
+import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLatestRef } from '../../hooks/useLatestRef';
 import { ProbeResizeHandles, type ResizeEdges } from './ProbeResizeHandles';
 import { useDragSession } from './useDragSession';
-import { useLatestRef } from './useLatestRef';
 
 // ============================================================================
 // Public types
