@@ -4722,6 +4722,14 @@ function DetailsCombinedTab() {
     toast.dismiss(undoToastIdRef.current);
     const id = toast(label, {
       duration: 8000,
+      classNames: {
+        toast: "!bg-card-foreground !border-card-foreground/20",
+        title: "!text-primary-foreground",
+        actionButton:
+          "!bg-primary-foreground/15 !text-primary-foreground hover:!bg-primary-foreground/25",
+        closeButton:
+          "!text-primary-foreground/50 hover:!text-primary-foreground",
+      },
       action: {
         label: "Undo",
         onClick: () => {
@@ -4929,7 +4937,7 @@ function DetailsCombinedTab() {
               className={cn("min-w-0", pulseClass("billTo"))}
               style={isAimed("billTo") ? AIM_STYLE : undefined}
             >
-              <div className="text-[14px] font-medium text-foreground">
+              <div className="text-[14px] font-medium text-foreground mb-0.5">
                 {cd.billTo}
                 {isAimed("billTo") && aimGhost("billTo") && (
                   <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
@@ -5001,10 +5009,23 @@ function DetailsCombinedTab() {
                   </span>
                   {/* ITEM */}
                   <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-[13px] font-medium text-foreground leading-snug truncate">
-                      {line.description}
-                      {lineCorrected && <CorrectedMark />}
-                    </span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-[13px] font-medium text-foreground leading-snug truncate cursor-default">
+                            {line.description}
+                            {lineCorrected && <CorrectedMark />}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="bottom"
+                          align="start"
+                          className="max-w-64"
+                        >
+                          {line.description}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     {line.shortDescription && (
                       <TooltipProvider>
                         <Tooltip>
@@ -5023,18 +5044,16 @@ function DetailsCombinedTab() {
                         </Tooltip>
                       </TooltipProvider>
                     )}
-                    {line.subline && (
-                      <span
-                        className={cn(
-                          "text-[12px] leading-[1.45]",
-                          line.flagStatus === "warning"
-                            ? "text-warning"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        {line.subline}
-                      </span>
-                    )}
+                    {line.subline &&
+                      (line.flagStatus === "warning" ? (
+                        <Badge variant="secondary" status="warning">
+                          {line.subline}
+                        </Badge>
+                      ) : (
+                        <span className="text-[12px] leading-[1.45] text-muted-foreground">
+                          {line.subline}
+                        </span>
+                      ))}
                   </div>
                   {/* QTY / PO */}
                   <div className="text-right whitespace-nowrap">
