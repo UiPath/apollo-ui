@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.65.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.65.0...@uipath/apollo-react@4.65.1) (2026-07-17)
+
+### Bug Fixes
+
+* **apollo-react:** add romania lang [MST-10307] ([dabc0d7](https://github.com/UiPath/apollo-ui/commit/dabc0d74e3c75387239b6539841fe5b1cd680a61))
+
 ## [@uipath/apollo-react-v4.64.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.63.0...@uipath/apollo-react@4.64.0) (2026-07-17)
 
 ### Features
