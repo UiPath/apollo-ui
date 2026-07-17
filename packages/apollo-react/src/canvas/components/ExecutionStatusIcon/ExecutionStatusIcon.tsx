@@ -73,7 +73,7 @@ export function ExecutionStatusIcon({
           <Spinner
             size="sm"
             label={_({ id: 'stage-node.status.in-progress', message: 'In progress' })}
-            className="[&>svg]:text-[color:var(--color-info-icon)]"
+            className="[&>svg]:text-[color:var(--color-primary)] [&>svg]:[stroke-width:3]"
             style={{ backgroundColor: 'transparent', width: size, height: size }}
           />
         );

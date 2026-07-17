@@ -22,11 +22,11 @@ vi.mock('@uipath/apollo-wind', () => ({
 }));
 
 describe('ExecutionStatusIcon', () => {
-  it('renders InProgress as an info-colored spinner', () => {
+  it('renders InProgress as a primary-colored spinner', () => {
     render(<ExecutionStatusIcon status="InProgress" size={20} />);
 
     const spinner = screen.getByTestId('spinner');
-    expect(spinner.className).toContain('[&>svg]:text-[color:var(--color-info-icon)]');
+    expect(spinner.className).toContain('[&>svg]:text-[color:var(--color-primary)]');
     expect(spinner).toHaveAttribute('data-label', 'In progress');
   });
 
