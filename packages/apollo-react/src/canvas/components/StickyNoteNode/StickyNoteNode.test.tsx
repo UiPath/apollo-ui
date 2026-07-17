@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import userEvent from '@testing-library/user-event';
+import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { Components } from 'react-markdown';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseCanvas } from '../BaseCanvas';
@@ -110,10 +110,11 @@ beforeEach(() => {
 });
 
 describe('StickyNoteNode resize lifecycle', () => {
-  it('ends an active resize once when canvas options become read-only', async () => {
+  it('settles an active resize before removing controls when canvas options become read-only', async () => {
     const onResizeStart = vi.fn();
+    const onResize = vi.fn();
     const onResizeEnd = vi.fn();
-    const nodeProps = { onResizeStart, onResizeEnd };
+    const nodeProps = { onResizeStart, onResize, onResizeEnd };
     const view = renderStickyNoteNodeInCanvas({ readOnly: false }, nodeProps);
 
     fireEvent.mouseDown(screen.getByTestId('node-resize-control-bottom-right'));
@@ -124,6 +125,14 @@ describe('StickyNoteNode resize lifecycle', () => {
     );
     await Promise.resolve();
 
+    expect(onResize).not.toHaveBeenCalled();
+    expect(onResizeEnd).not.toHaveBeenCalled();
+    expect(screen.getByTestId('node-resize-control-bottom-right')).toBeInTheDocument();
+
+    fireEvent.mouseUp(screen.getByTestId('node-resize-control-bottom-right'));
+    await Promise.resolve();
+
+    expect(onResize).toHaveBeenCalledWith(256, 192);
     expect(onResizeEnd).toHaveBeenCalledOnce();
     expect(screen.queryByTestId('node-resize-control-bottom-right')).not.toBeInTheDocument();
 
