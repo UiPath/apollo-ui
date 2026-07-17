@@ -166,6 +166,19 @@ export interface InvoiceException {
    * disputed value isn't on the invoice document (no "Show in source" action).
    */
   sourceAnchors?: string[];
+  /**
+   * SEAM: edit-form reference annotation. When this exception implicates a
+   * specific editable field, this object carries the system-of-record value the
+   * reviewer should correct toward, so the edit form can surface it inline.
+   * fieldKey uses dot-path notation: "vatNumber", "documentDate",
+   * "lineItems.<0-indexed-line>.<field>".
+   */
+  reference?: {
+    fieldKey: string;
+    label: string;
+    value: string;
+    source: string;
+  };
 }
 
 export interface AgentStep {
@@ -1009,6 +1022,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         origin: "initial",
         status: "open",
         sourceAnchors: ["field:invoice-date"],
+        reference: {
+          fieldKey: "documentDate",
+          label: "PO window ends",
+          value: "Apr 30, 2026",
+          source: "PO-558120044",
+        },
         finding: {
           type: "compare",
           sides: [
@@ -1070,6 +1089,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         origin: "initial",
         status: "open",
         sourceAnchors: ["field:vat"],
+        reference: {
+          fieldKey: "vatNumber",
+          label: "On file",
+          value: "US-82-4470911",
+          source: "Vendor master",
+        },
         finding: {
           type: "compare",
           sides: [
@@ -1366,6 +1391,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         scope: { level: "line", line: 1 },
         origin: "initial",
         status: "open",
+        reference: {
+          fieldKey: "lineItems.0.qty",
+          label: "PO qty",
+          value: "10",
+          source: "PO-820051133",
+        },
         finding: {
           type: "compare",
           sides: [
@@ -1403,6 +1434,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         scope: { level: "line", line: 2 },
         origin: "initial",
         status: "open",
+        reference: {
+          fieldKey: "lineItems.1.qty",
+          label: "PO qty",
+          value: "25",
+          source: "PO-820051133",
+        },
         finding: {
           type: "compare",
           sides: [
@@ -1473,6 +1510,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         scope: { level: "line", line: 3 },
         origin: "initial",
         status: "open",
+        reference: {
+          fieldKey: "lineItems.2.qty",
+          label: "PO qty",
+          value: "20",
+          source: "PO-820051133",
+        },
         finding: {
           type: "compare",
           sides: [
@@ -1559,6 +1602,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         scope: { level: "line", line: 1 },
         origin: "initial",
         status: "open",
+        reference: {
+          fieldKey: "lineItems.0.qty",
+          label: "PO qty",
+          value: "10",
+          source: "PO-820051201",
+        },
         finding: {
           type: "compare",
           sides: [
@@ -1595,6 +1644,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         scope: { level: "line", line: 3 },
         origin: "initial",
         status: "open",
+        reference: {
+          fieldKey: "lineItems.2.qty",
+          label: "PO qty",
+          value: "10",
+          source: "PO-820051201",
+        },
         finding: {
           type: "compare",
           sides: [
@@ -1763,6 +1818,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         origin: "initial",
         status: "open",
         sourceAnchors: ["line:1:unit-price", "field:total"],
+        reference: {
+          fieldKey: "lineItems.0.amount",
+          label: "PO agreed",
+          value: "$689.55",
+          source: "PO-460035919",
+        },
         finding: {
           type: "compare",
           sides: [
