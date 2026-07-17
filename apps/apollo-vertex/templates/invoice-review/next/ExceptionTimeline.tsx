@@ -2644,7 +2644,7 @@ export function ExceptionTimeline({
       sub,
       shortLabel,
       dataPatch: r?.dataPatch,
-      detailCorrections: s.correction,
+      detailCorrections: s.type === "verify" ? undefined : s.correction,
       phase: "confirm",
       fresh: [],
       clearedInList: [],
