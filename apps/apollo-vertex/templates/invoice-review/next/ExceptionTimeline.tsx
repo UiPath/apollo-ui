@@ -73,6 +73,7 @@ import {
   scopeLabel,
   sendSupplierEmail,
 } from "./invoice-review-data";
+import { toast } from "sonner";
 import { useInvoiceRuntime } from "./invoice-runtime";
 import { ReasonDialog } from "./ReasonDialog";
 import { SuggestedFixCard } from "./SuggestedFixCard";
@@ -1482,6 +1483,8 @@ type ResolveState = {
   draft?: SupplierEmailDraft;
   /** corrected-invoice path: use this seam result instead of revalidateException */
   correctedRevalidation?: { cleared: string[]; surfaced: InvoiceException[] };
+  /** when true, show an undo toast after commit (verify / attestation path) */
+  needsUndoToast?: boolean;
 };
 
 /**
@@ -2523,10 +2526,30 @@ export function ExceptionTimeline({
             events,
           });
         }
-        setActiveId(
-          nextOpenId(s.exc.id, s.clearedInList)?.id ?? s.fresh[0]?.id ?? "",
-        );
+        const nextId =
+          nextOpenId(s.exc.id, s.clearedInList)?.id ?? s.fresh[0]?.id ?? "";
+        setActiveId(nextId);
         setResolve(null);
+        if (s.needsUndoToast) {
+          const undoExcId = s.exc.id;
+          toast(s.label, {
+            duration: 8000,
+            classNames: {
+              toast: "!bg-card-foreground !border-card-foreground/20",
+              title: "!text-primary-foreground",
+              actionButton:
+                "!bg-primary-foreground/15 !text-primary-foreground hover:!bg-primary-foreground/25",
+              closeButton: "!hidden",
+            },
+            action: {
+              label: "Undo",
+              onClick: () => {
+                runtime.undoResolve(review.id, undoExcId);
+                setActiveId(undoExcId);
+              },
+            },
+          });
+        }
       },
       reducedMotion ? 250 : 350,
     );
@@ -2651,6 +2674,7 @@ export function ExceptionTimeline({
       fresh: [],
       clearedInList: [],
       settledSub: "",
+      needsUndoToast: s.type === "verify",
     });
   }
 
