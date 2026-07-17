@@ -1967,6 +1967,30 @@ const stackedManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] }
         },
       ],
     },
+    {
+      // A collapsed rectangle keeps its shape: it stays a wide pill AND shows the
+      // stacked layer, rather than shrinking to a square (collapse never squares).
+      nodeType: 'uipath.agent.rectangle',
+      version: '1.0.0',
+      category: 'agents',
+      tags: ['agent'],
+      sortOrder: 1,
+      display: {
+        label: 'Rectangle Agent',
+        icon: 'agent',
+        shape: 'rectangle',
+      },
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [{ id: 'input', type: 'target', handleType: 'input' }],
+        },
+        {
+          position: 'right',
+          handles: [{ id: 'output', type: 'source', handleType: 'output' }],
+        },
+      ],
+    },
   ],
 };
 
@@ -2004,6 +2028,17 @@ function StackedTreatmentStory() {
           isCollapsed: true,
         },
       }),
+      createNode({
+        id: 'collapsed-rectangle',
+        type: 'uipath.agent.rectangle',
+        position: { x: 768, y: 200 },
+        data: {
+          nodeType: 'uipath.agent.rectangle',
+          version: '1.0.0',
+          display: { label: 'Collapsed Rectangle', subLabel: 'stays a pill', shape: 'rectangle' },
+          isCollapsed: true,
+        },
+      }),
     ],
     []
   );
@@ -2016,7 +2051,7 @@ function StackedTreatmentStory() {
       </Panel>
       <StoryInfoPanel
         title="Stacked Treatment"
-        description="Drillable (manifest) and collapsed (instance data) nodes render a decorative stacked layer behind the card. The effect is purely visual — node dimensions and hit area are unchanged."
+        description="Drillable (manifest) and collapsed (instance data) nodes render a decorative stacked layer behind the card. Collapsing never changes a node's shape — the 'Collapsed Rectangle' node stays a wide pill while still showing the stacked layer. The effect is purely visual — node dimensions and hit area are unchanged."
       />
     </BaseCanvas>
   );
