@@ -5,7 +5,7 @@ import type { NodeLayout } from '../../hooks/useCanvasNodeLayout';
 import type { PreviewNodeConnectionInfo } from '../../hooks/usePreviewNode';
 import type { NodeManifest } from '../../schema';
 import { resolveCollisions } from '../../utils';
-import { getExpandedSize } from '../../utils/collapse';
+import { getExpandedSize } from '../../utils/node-size';
 import {
   CONTAINER_SEQUENCE_GAP_PX,
   collectLinearDownstreamSiblings,
