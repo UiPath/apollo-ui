@@ -1,3 +1,17 @@
+## [@uipath/apollo-react-v4.64.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.63.0...@uipath/apollo-react@4.64.0) (2026-07-17)
+
+### Features
+
+* **apollo-react:** add opt-in sticky note media embedding ([e4ba39c](https://github.com/UiPath/apollo-ui/commit/e4ba39c63671f52dacb58fa59e96d52fb180eab5))
+
+### Bug Fixes
+
+* **apollo-react:** harden sticky note media embedding ([7efa010](https://github.com/UiPath/apollo-ui/commit/7efa010a2e9ab9661cdcf570ae9d8fac8d78a0d6))
+* **apollo-react:** label embedded videos ([8d31ff4](https://github.com/UiPath/apollo-ui/commit/8d31ff4a701c0678d39170f9000ab529d12af749))
+* **apollo-react:** localize embedded video labels ([1e86e47](https://github.com/UiPath/apollo-ui/commit/1e86e477555c35e25583e88367d93a9bfe587113))
+* **apollo-react:** preserve markdown image behavior ([9c9b4ee](https://github.com/UiPath/apollo-ui/commit/9c9b4ee281b47ba1d16f0d56bcdc344536b35f7f))
+* **apollo-react:** reject invalid marked media ([cd1d67f](https://github.com/UiPath/apollo-ui/commit/cd1d67f8ef4396101dbbba4112c46728f6fe9ac5))
+
 ## [@uipath/apollo-react-v4.63.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.62.1...@uipath/apollo-react@4.63.0) (2026-07-16)
 
 ### Features
