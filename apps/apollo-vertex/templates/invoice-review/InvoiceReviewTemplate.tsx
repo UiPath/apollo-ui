@@ -4939,7 +4939,7 @@ function DetailsCombinedTab() {
                   const city =
                     comma >= 0 ? cd.billAddress.slice(comma + 1).trim() : null;
                   return (
-                    <div className="text-[12px] leading-[1.45] text-muted-foreground">
+                    <div className="mt-0.5 text-[12px] leading-[1.45] text-muted-foreground">
                       <div>{street}</div>
                       {city && <div>{city}</div>}
                     </div>
@@ -7065,12 +7065,10 @@ function EditModeView({ invoiceId }: { invoiceId: string }) {
 function CenterPanelNext({
   activeInvoiceId,
   onCleared,
-  exceptionListVariant,
   onRequestEdit,
 }: {
   activeInvoiceId: string;
   onCleared: () => void;
-  exceptionListVariant?: "strip" | "index";
   onRequestEdit?: (fieldKey?: string) => void;
 }) {
   // findReview (not getReview): a missing id must show honest absence, never a
@@ -7093,7 +7091,6 @@ function CenterPanelNext({
       key={review.id}
       review={review}
       onAllClear={onCleared}
-      exceptionListVariant={exceptionListVariant}
       onRequestEdit={onRequestEdit}
     />
   );
@@ -7590,11 +7587,9 @@ function InvoiceDetailPane({
               style={{ animationDelay: "80ms" }}
             >
               {version !== "v1" ? (
-                // v3 previews the "Up next" strip; v2 keeps the bordered index.
                 <CenterPanelNext
                   activeInvoiceId={activeInvoiceId}
                   onCleared={() => setApproveReady(true)}
-                  exceptionListVariant={version === "v3" ? "strip" : "index"}
                   onRequestEdit={editModeValue.enterEditMode}
                 />
               ) : (
