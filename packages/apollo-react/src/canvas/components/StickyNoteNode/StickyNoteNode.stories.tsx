@@ -98,20 +98,6 @@ function createDemoMediaMarkdown(kind: DemoMediaKind, fullWidth: boolean): strin
   return serializeStickyNoteMedia({ ...DEMO_MEDIA[kind], fullWidth } as StickyNoteMedia);
 }
 
-const StickyNoteWithMediaEmbedding = (props: StickyNoteNodeProps) => (
-  <StickyNoteNode {...props} enableMediaEmbedding />
-);
-
-const nodeTypesWithMediaEmbedding = {
-  stickyNote: StickyNoteWithMediaEmbedding,
-};
-
-const ReadOnlyStickyNote = (props: StickyNoteNodeProps) => <StickyNoteNode {...props} readOnly />;
-
-const nodeTypesReadOnly = {
-  stickyNote: ReadOnlyStickyNote,
-};
-
 function createStickyNote(
   id: string,
   color: StickyNoteColor,
@@ -701,14 +687,14 @@ function EditorExtensionsStory() {
 
   const { canvasProps } = useCanvasStory({
     initialNodes,
-    additionalNodeTypes: nodeTypesWithMediaEmbedding,
+    additionalNodeTypes: nodeTypes,
   });
 
   return (
-    <BaseCanvas {...canvasProps} mode="design">
+    <BaseCanvas {...canvasProps} mode="design" stickyNoteOptions={{ enableMediaEmbedding: true }}>
       <StoryInfoPanel
         title="Built-in Sticky Note Media Embedding"
-        description="This story enables the feature with one prop. One toolbar action opens one dialog: choose Image or Video; Video handles YouTube and direct public links. Test cursor insertion, selected-text replacement, HTTPS validation, alternative text, optional full width, preview, cancel/resume, and editing rendered media. Press Escape after inserting to preview. The blue note compares natural and full width for image, YouTube, and public video."
+        description="This story enables the feature with one BaseCanvas option. One toolbar action opens one dialog: choose Image or Video; Video handles YouTube and direct public links. Test cursor insertion, selected-text replacement, HTTPS validation, alternative text, optional full width, preview, cancel/resume, and editing rendered media. Press Escape after inserting to preview. The blue note compares natural and full width for image, YouTube, and public video."
         collapsible
         defaultCollapsed
       />
@@ -735,11 +721,11 @@ function ReadOnlyStory() {
 
   const { canvasProps } = useCanvasStory({
     initialNodes,
-    additionalNodeTypes: nodeTypesReadOnly,
+    additionalNodeTypes: nodeTypes,
   });
 
   return (
-    <BaseCanvas {...canvasProps} mode="design">
+    <BaseCanvas {...canvasProps} mode="design" stickyNoteOptions={{ readOnly: true }}>
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>

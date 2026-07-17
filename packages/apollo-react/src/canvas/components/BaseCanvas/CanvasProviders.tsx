@@ -3,6 +3,8 @@ import { TooltipProvider } from '@uipath/apollo-wind/components/ui/tooltip';
 import type { ReactNode } from 'react';
 import { ApI18nProvider } from '../../../i18n';
 import { CanvasTooltipProviderMarker } from '../CanvasTooltip';
+import { StickyNoteCanvasOptionsProvider } from '../StickyNoteNode/StickyNoteCanvasOptionsContext';
+import type { StickyNoteCanvasOptions } from '../StickyNoteNode/StickyNoteNode.types';
 import type { BaseCanvasProps } from './BaseCanvas.types';
 import { BaseCanvasModeProvider } from './BaseCanvasModeProvider';
 import { CanvasThemeProvider } from './CanvasThemeContext';
@@ -16,6 +18,7 @@ interface CanvasProvidersProps {
   mode: BaseCanvasProps['mode'];
   isDarkMode?: boolean;
   locale?: BaseCanvasProps['locale'];
+  stickyNoteOptions?: StickyNoteCanvasOptions;
 }
 
 /**
@@ -30,6 +33,7 @@ export function CanvasProviders({
   mode,
   isDarkMode,
   locale,
+  stickyNoteOptions,
   children,
 }: CanvasProvidersProps) {
   return (
@@ -39,7 +43,9 @@ export function CanvasProviders({
           <CanvasTooltipProviderMarker>
             <ConnectedHandlesProvider edges={edges}>
               <BaseCanvasModeProvider mode={mode}>
-                <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
+                <StickyNoteCanvasOptionsProvider options={stickyNoteOptions}>
+                  <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
+                </StickyNoteCanvasOptionsProvider>
               </BaseCanvasModeProvider>
             </ConnectedHandlesProvider>
           </CanvasTooltipProviderMarker>
