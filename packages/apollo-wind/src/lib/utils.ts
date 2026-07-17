@@ -1,12 +1,11 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { type ClassValue, cn as cnfast } from 'cnfast';
 
 /**
  * Utility function to merge Tailwind CSS classes with proper precedence
- * Uses clsx for conditional classes and tailwind-merge for deduplication
+ * Uses cnfast for conditional classes and deduplication
  */
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+export function cn(...inputs: ClassValue[]): string {
+  return cnfast(...inputs);
 }
 
 /**
