@@ -846,20 +846,17 @@ function buildFindingsRows(
 }
 
 /**
- * Dropdown jump menu on the "Issue n of m" counter. Rows show state glyph +
- * exception type + line locator. Resolved rows are non-interactive (no resolved
- * card view in this pass). Arrow keys traverse, Enter selects, Esc closes.
+ * Dropdown jump menu on the "Issue n of m" counter. Lists open issues only.
+ * Arrow keys traverse, Enter selects, Esc closes.
  */
 function JumpMenu({
   items,
   activeId,
-  resolvedIds,
   counter,
   onSelect,
 }: {
   items: InvoiceException[];
   activeId: string;
-  resolvedIds: ReadonlySet<string>;
   counter: string;
   onSelect: (id: string) => void;
 }) {
@@ -867,18 +864,13 @@ function JumpMenu({
   const [focusIdx, setFocusIdx] = useState(0);
   const rowRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Init focus to the current item (or first open) when the menu opens.
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-init only on open
   useEffect(() => {
     if (!open) return;
-    const current = items.findIndex(
-      (e) => !resolvedIds.has(e.id) && e.id === activeId,
-    );
-    const first = items.findIndex((e) => !resolvedIds.has(e.id));
-    setFocusIdx(current >= 0 ? current : first >= 0 ? first : 0);
+    const current = items.findIndex((e) => e.id === activeId);
+    setFocusIdx(current >= 0 ? current : 0);
   }, [open]);
 
-  // Move DOM focus to the focused row whenever focusIdx changes.
   useEffect(() => {
     if (open && focusIdx >= 0) rowRefs.current[focusIdx]?.focus();
   }, [focusIdx, open]);
@@ -887,19 +879,11 @@ function JumpMenu({
     if (e.key === "ArrowDown") {
       e.preventDefault();
       e.stopPropagation();
-      setFocusIdx((prev) => {
-        let next = prev + 1;
-        while (next < items.length && resolvedIds.has(items[next].id)) next++;
-        return next < items.length ? next : prev;
-      });
+      setFocusIdx((prev) => Math.min(prev + 1, items.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       e.stopPropagation();
-      setFocusIdx((prev) => {
-        let next = prev - 1;
-        while (next >= 0 && resolvedIds.has(items[next].id)) next--;
-        return next >= 0 ? next : prev;
-      });
+      setFocusIdx((prev) => Math.max(prev - 1, 0));
     }
   };
 
@@ -922,45 +906,16 @@ function JumpMenu({
         onKeyDown={handleListKeyDown}
       >
         {items.map((e, i) => {
-          const isResolved = resolvedIds.has(e.id);
-          const isCurrent = !isResolved && e.id === activeId;
+          const isCurrent = e.id === activeId;
           const meta = exceptionMeta(e);
           const locator =
             e.scope.level === "line" ? `Line ${e.scope.line}` : null;
-          const caption = isCurrent ? "Current" : isResolved ? "Done" : null;
-          const stateLabel = isResolved
-            ? "resolved"
-            : isCurrent
-              ? "current"
-              : "pending";
           const toneDot =
             meta.tone === "error"
               ? "bg-destructive"
               : meta.tone === "warning"
                 ? "bg-warning"
                 : "bg-info";
-
-          if (isResolved) {
-            return (
-              <div
-                key={e.id}
-                aria-label={`Issue ${i + 1} · ${meta.label} · ${stateLabel}`}
-                className="flex min-h-8 cursor-default items-center gap-2 rounded px-2 py-1 opacity-50"
-              >
-                <span className={cn("size-2 shrink-0 rounded-full", toneDot)} />
-                <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">
-                  {meta.label}
-                  {locator && <span className="opacity-70"> · {locator}</span>}
-                </span>
-                {caption && (
-                  <span className="shrink-0 text-[11px] text-muted-foreground">
-                    {caption}
-                  </span>
-                )}
-              </div>
-            );
-          }
-
           return (
             <button
               key={e.id}
@@ -969,7 +924,7 @@ function JumpMenu({
               }}
               type="button"
               tabIndex={-1}
-              aria-label={`Issue ${i + 1} · ${meta.label}${locator ? ` · ${locator}` : ""} · ${stateLabel}`}
+              aria-label={`Issue ${i + 1} · ${meta.label}${locator ? ` · ${locator}` : ""} · ${isCurrent ? "current" : "pending"}`}
               onClick={() => {
                 onSelect(e.id);
                 setOpen(false);
@@ -986,9 +941,9 @@ function JumpMenu({
                   <span className="text-muted-foreground"> · {locator}</span>
                 )}
               </span>
-              {caption && (
+              {isCurrent && (
                 <span className="shrink-0 text-[11px] font-medium text-muted-foreground">
-                  {caption}
+                  Current
                 </span>
               )}
             </button>
@@ -1000,70 +955,79 @@ function JumpMenu({
 }
 
 /**
- * Pagination dots: one per non-waiting issue (open + resolved), stable order.
- * Pending = hollow circle, current = amber pill, resolved = muted filled circle.
- * A settle pulse fires briefly on auto-resolve. Hidden when items.length <= 1.
+ * Pagination dots: one per OPEN issue. All dots are uniform 7px bg-foreground.
+ * When a correction resolves an issue its dot fires a settle-then-fade animation
+ * then disappears (reduced motion = immediate removal). Hidden when open <= 1.
  */
 function IssueDots({
   items,
   activeId,
-  resolvedIds,
   onSelect,
   correctionPulse,
+  nonWaitingList,
 }: {
   items: InvoiceException[];
   activeId: string;
-  resolvedIds: ReadonlySet<string>;
   onSelect: (id: string) => void;
   correctionPulse?: { nonce: number; autoResolvedIds: readonly string[] };
+  nonWaitingList: InvoiceException[];
 }) {
-  if (items.length <= 1) return null;
-  const pulsedIds = new Set(correctionPulse?.autoResolvedIds ?? []);
   const pulseNonce = correctionPulse?.nonce;
+  const [dyingIds, setDyingIds] = useState<ReadonlySet<string>>(new Set());
   const [pulseSettle, setPulseSettle] = useState<"peak" | "rest">("rest");
+
   useEffect(() => {
-    if (pulseNonce === undefined || pulsedIds.size === 0) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const pulsedIds = correctionPulse?.autoResolvedIds;
+    if (!pulseNonce || !pulsedIds?.length) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDyingIds(new Set());
+      return;
+    }
+    setDyingIds(new Set(pulsedIds));
     setPulseSettle("peak");
     let r2 = 0;
     const r1 = requestAnimationFrame(() => {
       r2 = requestAnimationFrame(() => setPulseSettle("rest"));
     });
+    const timer = setTimeout(() => setDyingIds(new Set()), 650);
     return () => {
       cancelAnimationFrame(r1);
       cancelAnimationFrame(r2);
+      clearTimeout(timer);
     };
     // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the animation
   }, [pulseNonce]);
 
+  const dyingExceptions = nonWaitingList.filter((e) => dyingIds.has(e.id));
+  const allVisible = [...items, ...dyingExceptions];
+  if (allVisible.length <= 1) return null;
+
   return (
     <div className="mt-[22px] flex items-center justify-center gap-0">
-      {items.map((e, i) => {
-        const isResolved = resolvedIds.has(e.id);
-        const isCurrent = !isResolved && e.id === activeId;
-        const isPulsed = pulsedIds.has(e.id);
-        const stateLabel = isResolved
+      {allVisible.map((e, i) => {
+        const isDying = dyingIds.has(e.id);
+        const stateLabel = isDying
           ? "resolved"
-          : isCurrent
+          : e.id === activeId
             ? "current"
             : "pending";
         return (
           <button
             key={e.id}
             type="button"
-            onClick={() => onSelect(e.id)}
+            onClick={() => !isDying && onSelect(e.id)}
             aria-label={`Issue ${i + 1} · ${exceptionMeta(e).label} · ${stateLabel}`}
             className="flex items-center justify-center px-[3px] py-[9px] hover:opacity-75 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <span
               className={cn(
                 "block h-[7px] w-[7px] rounded-full bg-foreground",
-                isCurrent
-                  ? "opacity-100"
-                  : isPulsed
-                    ? pulseSettle === "peak"
-                      ? "opacity-50"
-                      : "opacity-25 transition-opacity duration-[600ms] ease-out motion-reduce:transition-none"
+                isDying
+                  ? pulseSettle === "peak"
+                    ? "opacity-50"
+                    : "opacity-0 transition-opacity duration-[600ms] ease-out"
+                  : e.id === activeId
+                    ? "opacity-100"
                     : "opacity-25",
               )}
             />
@@ -1078,8 +1042,6 @@ function ExceptionGroup({
   active,
   openList,
   nonWaitingList,
-  resolvedIdSet,
-  showHeader,
   counter,
   isNew,
   canPrev,
@@ -1097,8 +1059,6 @@ function ExceptionGroup({
   active: InvoiceException;
   openList: InvoiceException[];
   nonWaitingList: InvoiceException[];
-  resolvedIdSet: ReadonlySet<string>;
-  showHeader: boolean;
   counter: string;
   isNew: (e: InvoiceException) => boolean;
   canPrev: boolean;
@@ -1129,27 +1089,22 @@ function ExceptionGroup({
     // decision content and fades out as it approaches the suggested fix card.
     // biome-ignore lint/a11y/useKeyWithClickEvents: arrow key handler covers keyboard
     <TimelineRow marker="reviewer" className="pb-12" isLast tail tailGrow live>
-      {showHeader && (
-        <div
-          className="mb-4 flex min-h-7 items-center gap-1.5"
-          onKeyDown={handleKeyDown}
-        >
-          <span className="text-sm font-medium text-foreground">
-            Needs your decision
-          </span>
-          <Middot />
-          {nonWaitingList.length >= 2 ? (
+      <div
+        className="mb-4 flex min-h-7 items-center gap-1.5"
+        onKeyDown={handleKeyDown}
+      >
+        <span className="text-sm font-medium text-foreground">
+          Needs your decision
+        </span>
+        {openList.length >= 2 && (
+          <>
+            <Middot />
             <JumpMenu
-              items={nonWaitingList}
+              items={openList}
               activeId={active.id}
-              resolvedIds={resolvedIdSet}
               counter={counter}
               onSelect={onSelect}
             />
-          ) : (
-            <span className="text-xs text-muted-foreground">{counter}</span>
-          )}
-          {nonWaitingList.length >= 2 && (
             <div className="ml-auto flex items-center gap-1.5">
               <button
                 type="button"
@@ -1180,9 +1135,9 @@ function ExceptionGroup({
                 <ChevronRight className="size-4" />
               </button>
             </div>
-          )}
-        </div>
-      )}
+          </>
+        )}
+      </div>
       <Stage
         exception={active}
         isNew={isNew}
@@ -1193,11 +1148,11 @@ function ExceptionGroup({
         onAim={onAim}
       />
       <IssueDots
-        items={nonWaitingList}
+        items={openList}
         activeId={active.id}
-        resolvedIds={resolvedIdSet}
         onSelect={onSelect}
         correctionPulse={correctionPulse}
+        nonWaitingList={nonWaitingList}
       />
     </TimelineRow>
   );
@@ -1541,8 +1496,6 @@ function ResolvingNode({
   resolve,
   openList,
   nonWaitingList,
-  resolvedIdSet,
-  showHeader,
   counter,
   isNew,
   reducedMotion,
@@ -1551,8 +1504,6 @@ function ResolvingNode({
   resolve: ResolveState;
   openList: InvoiceException[];
   nonWaitingList: InvoiceException[];
-  resolvedIdSet: ReadonlySet<string>;
-  showHeader: boolean;
   counter: string;
   isNew: (e: InvoiceException) => boolean;
   reducedMotion: boolean;
@@ -1567,7 +1518,7 @@ function ResolvingNode({
   // Which row ends the rail, so its connector terminates cleanly (nothing
   // follows the resolving node now that the explainer is gone).
   const showReValidate = !isRoute && phase !== "confirm";
-  const showReviewer = showHeader || hasOthers;
+  const showReviewer = hasOthers;
   return (
     <>
       <TimelineRow
@@ -1595,21 +1546,23 @@ function ResolvingNode({
       )}
       {showReviewer && (
         <TimelineRow marker="reviewer" isLast tail>
-          {showHeader && (
-            <div className="mb-4 flex min-h-7 items-center gap-1.5">
-              <span className="text-sm font-medium text-foreground">
-                Needs your decision
-              </span>
-              <Middot />
-              <span className="text-xs text-muted-foreground">{counter}</span>
-            </div>
-          )}
+          <div className="mb-4 flex min-h-7 items-center gap-1.5">
+            <span className="text-sm font-medium text-foreground">
+              Needs your decision
+            </span>
+            {openList.length >= 2 && (
+              <>
+                <Middot />
+                <span className="text-xs text-muted-foreground">{counter}</span>
+              </>
+            )}
+          </div>
           <IssueDots
-            items={nonWaitingList}
+            items={openList}
             activeId={exc.id}
-            resolvedIds={resolvedIdSet}
             onSelect={() => {}}
             correctionPulse={correctionPulse}
+            nonWaitingList={nonWaitingList}
           />
         </TimelineRow>
       )}
@@ -2264,26 +2217,22 @@ export function ExceptionTimeline({
   // All non-waiting findings in escalation order (open + resolved). Used by the
   // Findings map so rows stay stable through resolves.
   const nonWaitingList = list.filter((e) => !waitingIds.includes(e.id));
-  const resolvedIdSet: ReadonlySet<string> = new Set(resolvedIds);
   const active = openList.find((e) => e.id === activeId) ?? openList[0] ?? null;
 
   const openCount = openList.length;
   const resolvedCount = resolvedIds.length;
-  // Ordinal + total are over ALL non-waiting findings (fixed at escalation),
-  // matching the Findings map's stable row positions.
   const activeOrdinal = active
-    ? nonWaitingList.findIndex((e) => e.id === active.id) + 1
+    ? openList.findIndex((e) => e.id === active.id) + 1
     : 0;
-  const showHeader =
-    nonWaitingList.length >= 2 || resolvedCount > 0 || waitingCount > 0;
   // All actionable work is done. fullyResolved = true completion (Approve);
   // waitingDone = blocked on a routed exception (waiting terminal, no Approve).
   const allDone = !resolve && openCount === 0;
   const fullyResolved = allDone && waitingCount === 0;
   const waitingDone = allDone && waitingCount > 0;
-  const counter = active
-    ? `Issue ${activeOrdinal} of ${nonWaitingList.length}`
-    : "";
+  const counter =
+    active && openList.length >= 2
+      ? `Issue ${activeOrdinal} of ${openList.length}`
+      : "";
 
   const activeIndex = active
     ? openList.findIndex((e) => e.id === active.id)
@@ -3083,8 +3032,6 @@ export function ExceptionTimeline({
                   resolve={resolve}
                   openList={openList}
                   nonWaitingList={nonWaitingList}
-                  resolvedIdSet={resolvedIdSet}
-                  showHeader={showHeader}
                   counter={counter}
                   isNew={isNew}
                   reducedMotion={reducedMotion}
@@ -3095,8 +3042,6 @@ export function ExceptionTimeline({
                   active={active}
                   openList={openList}
                   nonWaitingList={nonWaitingList}
-                  resolvedIdSet={resolvedIdSet}
-                  showHeader={showHeader}
                   counter={counter}
                   isNew={isNew}
                   canPrev={canPrev}

@@ -4727,8 +4727,7 @@ function DetailsCombinedTab() {
         title: "!text-primary-foreground",
         actionButton:
           "!bg-primary-foreground/15 !text-primary-foreground hover:!bg-primary-foreground/25",
-        closeButton:
-          "!text-primary-foreground/50 hover:!text-primary-foreground",
+        closeButton: "!hidden",
       },
       action: {
         label: "Undo",
@@ -4902,12 +4901,9 @@ function DetailsCombinedTab() {
                 )}
               </div>
               {cd.vendorEmail && (
-                <a
-                  href={`mailto:${cd.vendorEmail}`}
-                  className="break-words text-[12px] leading-[1.45] text-muted-foreground hover:text-foreground transition-colors"
-                >
+                <div className="text-[12px] leading-[1.45] text-muted-foreground">
                   {cd.vendorEmail}
-                </a>
+                </div>
               )}
               {cd.vendorAddress &&
                 (() => {
@@ -4937,7 +4933,7 @@ function DetailsCombinedTab() {
               className={cn("min-w-0", pulseClass("billTo"))}
               style={isAimed("billTo") ? AIM_STYLE : undefined}
             >
-              <div className="text-[14px] font-medium text-foreground mb-0.5">
+              <div className="text-[14px] font-medium text-foreground">
                 {cd.billTo}
                 {isAimed("billTo") && aimGhost("billTo") && (
                   <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
@@ -4956,7 +4952,7 @@ function DetailsCombinedTab() {
                   const city =
                     comma >= 0 ? cd.billAddress.slice(comma + 1).trim() : null;
                   return (
-                    <div className="mt-0.5 text-[12px] leading-[1.45] text-muted-foreground">
+                    <div className="text-[12px] leading-[1.45] text-muted-foreground">
                       <div>{street}</div>
                       {city && <div>{city}</div>}
                     </div>
