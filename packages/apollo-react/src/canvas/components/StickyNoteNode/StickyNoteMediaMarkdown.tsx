@@ -4,6 +4,7 @@ import {
   createContext,
   createElement,
   type ReactNode,
+  type SyntheticEvent,
   useContext,
   useState,
 } from 'react';
@@ -55,6 +56,10 @@ function sourceRange(node: MarkdownImageProps['node']): StickyNoteMediaSourceRan
   return typeof start === 'number' && typeof end === 'number' ? { start, end } : null;
 }
 
+function stopNodeDrag(event: SyntheticEvent) {
+  event.stopPropagation();
+}
+
 function MediaContainer({ fullWidth, children }: { fullWidth: boolean; children: ReactNode }) {
   return (
     <span
@@ -77,14 +82,15 @@ function MediaEditButton({ onClick }: { onClick: () => void }) {
       data-sticky-media-control
       aria-label={label}
       title={label}
-      className="absolute right-1 top-1 z-10 inline-flex h-7 w-7 items-center justify-center rounded bg-surface-raised/95 text-foreground opacity-80 shadow-sm transition-opacity hover:bg-surface-hover hover:opacity-100 focus-visible:opacity-100"
+      className="nodrag nopan absolute right-1 top-1 z-10 inline-flex h-7 w-7 items-center justify-center rounded bg-surface-raised/95 text-foreground opacity-80 shadow-sm transition-opacity hover:bg-surface-hover hover:opacity-100 focus-visible:opacity-100"
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
         onClick();
       }}
       onDoubleClick={(event) => event.stopPropagation()}
-      onPointerDown={(event) => event.stopPropagation()}
+      onPointerDown={stopNodeDrag}
+      onMouseDown={stopNodeDrag}
     >
       <CanvasIcon icon="pencil" size={14} />
     </button>
@@ -154,22 +160,24 @@ function StickyNoteMediaImage({
             sandbox="allow-scripts allow-same-origin allow-presentation"
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
             allowFullScreen
-            className="block aspect-video w-full border-0"
-            onPointerDown={(event) => event.stopPropagation()}
+            className="nodrag nopan block aspect-video w-full border-0"
+            onPointerDown={stopNodeDrag}
+            onMouseDown={stopNodeDrag}
           />
         ) : (
           <button
             type="button"
             data-sticky-media-control
             aria-label={playLabel}
-            className="group relative flex aspect-video w-full items-center justify-center overflow-hidden bg-black text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
+            className="nodrag nopan group relative flex aspect-video w-full items-center justify-center overflow-hidden bg-black text-sm font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
               setLoadedYouTubeId(media.videoId);
             }}
             onDoubleClick={(event) => event.stopPropagation()}
-            onPointerDown={(event) => event.stopPropagation()}
+            onPointerDown={stopNodeDrag}
+            onMouseDown={stopNodeDrag}
           >
             <img
               src={`https://i.ytimg.com/vi/${media.videoId}/hqdefault.jpg`}
@@ -202,10 +210,11 @@ function StickyNoteMediaImage({
           controls
           preload="metadata"
           playsInline
-          className="block h-auto w-full bg-black"
+          className="nodrag nopan block h-auto w-full bg-black"
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
-          onPointerDown={(event) => event.stopPropagation()}
+          onPointerDown={stopNodeDrag}
+          onMouseDown={stopNodeDrag}
         >
           {_({
             id: 'sticky-note.media.video-unavailable',

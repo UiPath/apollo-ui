@@ -60,6 +60,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     maxZoom = BASE_CANVAS_DEFAULTS.zoom.max,
     defaultViewport = BASE_CANVAS_DEFAULTS.defaultViewport,
     defaultEdgeOptions = BASE_CANVAS_DEFAULTS.edge,
+    stickyNoteOptions,
 
     // Event handlers
     onNodesChange,
@@ -158,6 +159,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
       mode={mode}
       isDarkMode={isDarkMode}
       locale={locale}
+      stickyNoteOptions={stickyNoteOptions}
     >
       <ReactFlow
         {...reactFlowProps}

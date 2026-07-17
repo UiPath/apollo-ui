@@ -17,6 +17,7 @@ import { NodeViewportOverlay } from '../NodeViewportOverlay';
 import type { ToolbarAction } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
 import { FormattingToolbar } from './FormattingToolbar';
+import { useStickyNoteCanvasOptions } from './StickyNoteCanvasOptionsContext';
 import {
   type ActiveFormats,
   activeFormatsEqual,
@@ -97,17 +98,20 @@ const StickyNoteNodeComponent = ({
   dragging,
   placeholder = 'Add text',
   renderPlaceholderOnSelect = false,
-  readOnly = false,
+  readOnly: readOnlyProp,
   onContentChange,
   onColorChange,
   onResize,
   onResizeStart,
   onResizeEnd,
-  enableMediaEmbedding = false,
+  enableMediaEmbedding: enableMediaEmbeddingProp,
   formattingActions,
   markdownComponents: customMarkdownComponents,
 }: StickyNoteNodeProps) => {
   const { _ } = useSafeLingui();
+  const canvasOptions = useStickyNoteCanvasOptions();
+  const readOnly = readOnlyProp ?? canvasOptions.readOnly;
+  const enableMediaEmbedding = enableMediaEmbeddingProp ?? canvasOptions.enableMediaEmbedding;
   const { updateNodeData, deleteElements } = useReactFlow();
   const { multipleNodesSelected } = useSelectionState();
   const [isEditing, setIsEditing] = useState(!readOnly && (data.autoFocus ?? false));
@@ -119,6 +123,7 @@ const StickyNoteNodeComponent = ({
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const formattingToolbarRef = useRef<HTMLDivElement>(null);
   const skipBlurRef = useRef<string | null>(null);
+  const resizeActiveRef = useRef(false);
   const { ref: markdownRef, scrollCaptureProps } = useScrollCapture();
   const colorButtonRef = useRef<HTMLDivElement>(null);
   const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
@@ -132,6 +137,15 @@ const StickyNoteNodeComponent = ({
   const colorKey = (data.color || 'yellow') as StickyNoteColor;
   const color = STICKY_NOTE_COLORS[colorKey] ?? STICKY_NOTE_COLORS.yellow;
   const colorWithAlpha = withAlpha(color);
+
+  const endResizeLifecycle = useCallback(() => {
+    if (!resizeActiveRef.current) return;
+    resizeActiveRef.current = false;
+    setIsResizing(false);
+    if (onResizeEnd) {
+      queueMicrotask(onResizeEnd);
+    }
+  }, [onResizeEnd]);
 
   const updateLocalContent = useCallback((content: string) => {
     latestContentRef.current = content;
@@ -164,8 +178,9 @@ const StickyNoteNodeComponent = ({
     if (readOnly) {
       setIsEditing(false);
       updateLocalContent(data.content || '');
+      endResizeLifecycle();
     }
-  }, [readOnly, data.content, updateLocalContent]);
+  }, [readOnly, data.content, endResizeLifecycle, updateLocalContent]);
 
   const handleDoubleClick = useCallback(() => {
     if (readOnly || isEditing) return;
@@ -420,6 +435,8 @@ const StickyNoteNodeComponent = ({
 
   // Resize handlers
   const handleResizeStart = useCallback(() => {
+    if (resizeActiveRef.current) return;
+    resizeActiveRef.current = true;
     if (isEditing) {
       const content = textAreaRef.current?.value ?? localContent;
 
@@ -448,13 +465,14 @@ const StickyNoteNodeComponent = ({
 
   const handleResizeEnd = useCallback(
     (_event: ResizeDragEvent, params: ResizeParams) => {
-      setIsResizing(false);
-      onResize?.(params.width, params.height);
-      if (onResizeEnd) {
-        queueMicrotask(onResizeEnd);
+      if (!resizeActiveRef.current) return;
+      try {
+        onResize?.(params.width, params.height);
+      } finally {
+        endResizeLifecycle();
       }
     },
-    [onResize, onResizeEnd]
+    [endResizeLifecycle, onResize]
   );
 
   // Color change handler
@@ -494,9 +512,12 @@ const StickyNoteNodeComponent = ({
       a: ({ node: _node, href, children, ...props }) => (
         <a
           {...props}
+          className={['nodrag', 'nopan', props.className].filter(Boolean).join(' ')}
           href={href}
           target="_blank"
           rel="noopener noreferrer"
+          onPointerDown={(event) => event.stopPropagation()}
+          onMouseDown={(event) => event.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
           }}

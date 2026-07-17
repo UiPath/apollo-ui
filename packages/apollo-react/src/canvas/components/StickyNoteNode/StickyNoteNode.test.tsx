@@ -1,7 +1,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import userEvent from '@testing-library/user-event';
 import type { Components } from 'react-markdown';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { BaseCanvas } from '../BaseCanvas';
 
 const { mockDeleteElements, mockUpdateNodeData } = vi.hoisted(() => ({
   mockDeleteElements: vi.fn(),
@@ -44,6 +46,7 @@ vi.mock('../NodeViewportOverlay', () => ({
 
 import { StickyNoteNode, type StickyNoteNodeProps } from './StickyNoteNode';
 import type {
+  StickyNoteCanvasOptions,
   StickyNoteEditorActionContext,
   StickyNoteFormattingAction,
 } from './StickyNoteNode.types';
@@ -70,6 +73,30 @@ function renderStickyNoteNode(props: Partial<StickyNoteNodeProps> = {}) {
   return render(<StickyNoteNode {...defaultProps} {...props} />);
 }
 
+type StickyNoteNodeCanvasProps = Readonly<{
+  stickyNoteOptions: StickyNoteCanvasOptions;
+  nodeProps?: Partial<StickyNoteNodeProps>;
+}>;
+
+function StickyNoteNodeCanvas({ stickyNoteOptions, nodeProps = {} }: StickyNoteNodeCanvasProps) {
+  return (
+    <ReactFlowProvider>
+      <BaseCanvas nodes={[]} edges={[]} nodeTypes={{}} stickyNoteOptions={stickyNoteOptions}>
+        <StickyNoteNode {...defaultProps} {...nodeProps} />
+      </BaseCanvas>
+    </ReactFlowProvider>
+  );
+}
+
+function renderStickyNoteNodeInCanvas(
+  stickyNoteOptions: StickyNoteCanvasOptions,
+  nodeProps: Partial<StickyNoteNodeProps> = {}
+) {
+  return render(
+    <StickyNoteNodeCanvas stickyNoteOptions={stickyNoteOptions} nodeProps={nodeProps} />
+  );
+}
+
 function startEditing() {
   fireEvent.doubleClick(screen.getByText('Remember the resize lifecycle'));
   const textarea = screen.getByRole('textbox');
@@ -83,6 +110,32 @@ beforeEach(() => {
 });
 
 describe('StickyNoteNode resize lifecycle', () => {
+  it('ends an active resize once when canvas options become read-only', async () => {
+    const onResizeStart = vi.fn();
+    const onResizeEnd = vi.fn();
+    const nodeProps = { onResizeStart, onResizeEnd };
+    const view = renderStickyNoteNodeInCanvas({ readOnly: false }, nodeProps);
+
+    fireEvent.mouseDown(screen.getByTestId('node-resize-control-bottom-right'));
+    expect(onResizeStart).toHaveBeenCalledOnce();
+
+    view.rerender(
+      <StickyNoteNodeCanvas stickyNoteOptions={{ readOnly: true }} nodeProps={nodeProps} />
+    );
+    await Promise.resolve();
+
+    expect(onResizeEnd).toHaveBeenCalledOnce();
+    expect(screen.queryByTestId('node-resize-control-bottom-right')).not.toBeInTheDocument();
+
+    view.rerender(
+      <StickyNoteNodeCanvas stickyNoteOptions={{ readOnly: false }} nodeProps={nodeProps} />
+    );
+    fireEvent.mouseUp(screen.getByTestId('node-resize-control-bottom-right'));
+    await Promise.resolve();
+
+    expect(onResizeEnd).toHaveBeenCalledOnce();
+  });
+
   it('calls onResizeStart once when resize starts', () => {
     const onResizeStart = vi.fn();
     renderStickyNoteNode({ onResizeStart });
@@ -97,6 +150,7 @@ describe('StickyNoteNode resize lifecycle', () => {
     const onResizeEnd = vi.fn();
     renderStickyNoteNode({ onResize, onResizeEnd });
 
+    fireEvent.mouseDown(screen.getByTestId('node-resize-control-bottom-right'));
     fireEvent.mouseUp(screen.getByTestId('node-resize-control-bottom-right'));
 
     expect(onResize).toHaveBeenCalledWith(256, 192);
@@ -105,6 +159,28 @@ describe('StickyNoteNode resize lifecycle', () => {
     await Promise.resolve();
 
     expect(onResizeEnd).toHaveBeenCalledTimes(1);
+  });
+
+  it('ends the resize lifecycle when a consumer onResize callback throws', async () => {
+    const resizeError = new Error('Consumer resize failed');
+    const onResize = vi.fn(() => {
+      throw resizeError;
+    });
+    const onResizeEnd = vi.fn();
+    renderStickyNoteNode({ onResize, onResizeEnd });
+
+    const resizeControl = screen.getByTestId('node-resize-control-bottom-right');
+    const handleError = vi.fn((event: ErrorEvent) => event.preventDefault());
+    window.addEventListener('error', handleError);
+    fireEvent.mouseDown(resizeControl);
+    fireEvent.mouseUp(resizeControl);
+    window.removeEventListener('error', handleError);
+
+    await Promise.resolve();
+
+    expect(handleError).toHaveBeenCalledOnce();
+    expect(handleError.mock.calls[0]?.[0].error).toBe(resizeError);
+    expect(onResizeEnd).toHaveBeenCalledOnce();
   });
 
   it('commits pending text edits before resize start', () => {
@@ -156,6 +232,117 @@ describe('StickyNoteNode resize lifecycle', () => {
 });
 
 describe('StickyNoteNode editor extensions', () => {
+  it('keeps pointer and mouse events on Markdown links from reaching a node drag surface', () => {
+    const onPointerDown = vi.fn();
+    const onMouseDown = vi.fn();
+    render(
+      <div onPointerDown={onPointerDown} onMouseDown={onMouseDown}>
+        <StickyNoteNode
+          {...defaultProps}
+          data={{ color: 'yellow', content: '[Documentation](https://example.com)' }}
+        />
+      </div>
+    );
+
+    const link = screen.getByRole('link', { name: 'Documentation' });
+    expect(link).toHaveClass('nodrag', 'nopan');
+    fireEvent.pointerDown(link);
+    fireEvent.mouseDown(link);
+
+    expect(onPointerDown).not.toHaveBeenCalled();
+    expect(onMouseDown).not.toHaveBeenCalled();
+  });
+
+  it('keeps pointer and mouse events on embedded media from reaching a node drag surface', () => {
+    const onPointerDown = vi.fn();
+    const onMouseDown = vi.fn();
+    render(
+      <div onPointerDown={onPointerDown} onMouseDown={onMouseDown}>
+        <StickyNoteNode
+          {...defaultProps}
+          enableMediaEmbedding
+          data={{
+            color: 'yellow',
+            content:
+              '![Demo](<https://example.com/demo.mp4> "sticky-note-media;kind=publicVideo;layout=natural-width")',
+          }}
+        />
+      </div>
+    );
+
+    const video = screen.getByLabelText('Demo');
+    expect(video).toHaveClass('nodrag', 'nopan');
+    fireEvent.pointerDown(video);
+    fireEvent.mouseDown(video);
+
+    expect(onPointerDown).not.toHaveBeenCalled();
+    expect(onMouseDown).not.toHaveBeenCalled();
+  });
+
+  it('keeps static embedded images available as a node drag surface', () => {
+    const onPointerDown = vi.fn();
+    const onMouseDown = vi.fn();
+    render(
+      <div onPointerDown={onPointerDown} onMouseDown={onMouseDown}>
+        <StickyNoteNode
+          {...defaultProps}
+          enableMediaEmbedding
+          data={{
+            color: 'yellow',
+            content:
+              '![Diagram](<https://example.com/diagram.png> "sticky-note-media;kind=image;layout=full-width")',
+          }}
+        />
+      </div>
+    );
+
+    const image = screen.getByRole('img', { name: 'Diagram' });
+    fireEvent.pointerDown(image);
+    fireEvent.mouseDown(image);
+
+    expect(onPointerDown).toHaveBeenCalledOnce();
+    expect(onMouseDown).toHaveBeenCalledOnce();
+  });
+
+  it('isolates YouTube and media-edit controls from node dragging and canvas panning', () => {
+    const onPointerDown = vi.fn();
+    const onMouseDown = vi.fn();
+    render(
+      <div onPointerDown={onPointerDown} onMouseDown={onMouseDown}>
+        <StickyNoteNode
+          {...defaultProps}
+          enableMediaEmbedding
+          selected
+          data={{
+            color: 'yellow',
+            content:
+              '![Demo](<https://www.youtube.com/watch?v=M7lc1UVf-VE> "sticky-note-media;kind=youtube;layout=natural-width")',
+          }}
+        />
+      </div>
+    );
+
+    const editButton = screen.getByRole('button', { name: 'Edit media' });
+    const playButton = screen.getByRole('button', { name: 'Play video' });
+    for (const control of [editButton, playButton]) {
+      expect(control).toHaveClass('nodrag', 'nopan');
+      fireEvent.pointerDown(control);
+      fireEvent.mouseDown(control);
+    }
+
+    expect(onPointerDown).not.toHaveBeenCalled();
+    expect(onMouseDown).not.toHaveBeenCalled();
+
+    fireEvent.click(playButton);
+    const frame = screen.getByTitle('YouTube video');
+    expect(frame).toHaveClass('nodrag', 'nopan');
+    fireEvent.pointerDown(frame);
+    fireEvent.mouseDown(frame);
+
+    expect(onPointerDown).not.toHaveBeenCalled();
+    expect(onMouseDown).not.toHaveBeenCalled();
+  });
+
   it('merges custom Markdown components into the built-in rendering pipeline', () => {
     const { container } = renderStickyNoteNode({
       enableMediaEmbedding: true,
@@ -418,6 +605,65 @@ describe('StickyNoteNode editor extensions', () => {
 });
 
 describe('StickyNoteNode built-in media embedding', () => {
+  it('enables media embedding for every sticky note through BaseCanvas options', () => {
+    renderStickyNoteNodeInCanvas({ enableMediaEmbedding: true });
+
+    startEditing();
+
+    expect(screen.getByRole('button', { name: 'Embed image or video' })).toBeInTheDocument();
+  });
+
+  it('lets explicit true StickyNoteNode props override false BaseCanvas defaults', () => {
+    renderStickyNoteNodeInCanvas(
+      { enableMediaEmbedding: false, readOnly: true },
+      { enableMediaEmbedding: true, readOnly: false }
+    );
+
+    startEditing();
+
+    expect(screen.getByRole('button', { name: 'Embed image or video' })).toBeInTheDocument();
+    expect(screen.getByTestId('node-resize-control-bottom-right')).toBeInTheDocument();
+  });
+
+  it('lets explicit false StickyNoteNode props override true BaseCanvas defaults', () => {
+    renderStickyNoteNodeInCanvas(
+      { enableMediaEmbedding: true, readOnly: true },
+      { enableMediaEmbedding: false, readOnly: false }
+    );
+
+    startEditing();
+
+    expect(screen.getByTestId('node-resize-control-bottom-right')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Embed image or video' })).not.toBeInTheDocument();
+  });
+
+  it('preserves playing media when BaseCanvas options change', () => {
+    const content =
+      '![YouTube video](<https://www.youtube.com/watch?v=M7lc1UVf-VE> "sticky-note-media;kind=youtube;layout=natural-width")';
+    const nodeProps = {
+      data: { color: 'yellow' as const, content },
+      selected: true,
+    };
+    const view = renderStickyNoteNodeInCanvas(
+      { enableMediaEmbedding: true, readOnly: false },
+      nodeProps
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Play video' }));
+    const playingFrame = screen.getByTitle('YouTube video');
+
+    view.rerender(
+      <StickyNoteNodeCanvas
+        stickyNoteOptions={{ enableMediaEmbedding: true, readOnly: true }}
+        nodeProps={nodeProps}
+      />
+    );
+
+    expect(screen.getByTitle('YouTube video')).toBe(playingFrame);
+    expect(screen.queryByRole('button', { name: 'Edit media' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('node-resize-control-bottom-right')).not.toBeInTheDocument();
+  });
+
   it('adds one media action when the consumer opts in', () => {
     renderStickyNoteNode({ enableMediaEmbedding: true });
 

@@ -21,6 +21,14 @@ export interface StickyNoteData extends Record<string, unknown> {
   autoFocus?: boolean;
 }
 
+/** Canvas-wide defaults applied to every StickyNoteNode unless a node prop overrides them. */
+export interface StickyNoteCanvasOptions {
+  /** Prevent text, color, size, and embedded-media edits while keeping content interactive. */
+  readonly readOnly?: boolean;
+  /** Enable Apollo's built-in image, YouTube, and public-video embedding experience. */
+  readonly enableMediaEmbedding?: boolean;
+}
+
 /** Default alpha value for sticky note backgrounds (8%) */
 const STICKY_NOTE_BG_ALPHA = 0.08;
 

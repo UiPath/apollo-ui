@@ -8,6 +8,7 @@ import type {
 import type { ReactNode } from 'react';
 import type { SupportedLocale } from '../../../i18n';
 import type { ToolbarActionHandler } from '../../schema/toolbar';
+import type { StickyNoteCanvasOptions } from '../StickyNoteNode/StickyNoteNode.types';
 
 /**
  * Configuration options for viewport fit operations in BaseCanvas.
@@ -73,6 +74,12 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * - "readonly": Complete static view with no user interactions
    */
   mode?: 'design' | 'readonly' | 'view';
+
+  /**
+   * Canvas-wide sticky-note behavior. Individual StickyNoteNode props take precedence.
+   * @example `{ enableMediaEmbedding: true, readOnly: false }`
+   */
+  stickyNoteOptions?: StickyNoteCanvasOptions;
 
   /**
    * React children to render inside the canvas.
