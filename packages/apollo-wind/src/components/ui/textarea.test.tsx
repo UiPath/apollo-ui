@@ -149,4 +149,28 @@ describe('Textarea', () => {
     const textarea = screen.getByRole('textbox');
     expect(textarea).toHaveValue('Default text');
   });
+
+  describe('auto-grow structure (minRows / maxRows)', () => {
+    it('stays a plain textarea when neither minRows nor maxRows is set', () => {
+      render(<Textarea aria-label="Message" />);
+      const textarea = screen.getByRole('textbox') as HTMLTextAreaElement;
+      expect(textarea).not.toHaveClass('resize-y');
+      expect(textarea.style.minHeight).toBe('');
+      expect(textarea.style.height).toBe('');
+    });
+
+    it('auto-grows and enables the resize handle once maxRows is set', () => {
+      render(<Textarea maxRows={5} aria-label="Message" />);
+      const textarea = screen.getByRole('textbox') as HTMLTextAreaElement;
+      expect(textarea).toHaveClass('resize-y');
+    });
+
+    it('still forwards onChange while auto-growing', async () => {
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+      render(<Textarea minRows={3} maxRows={5} onChange={handleChange} aria-label="Message" />);
+      await user.type(screen.getByRole('textbox'), 'hi');
+      expect(handleChange).toHaveBeenCalled();
+    });
+  });
 });
