@@ -80,6 +80,7 @@
   "sticky-note.toolbar.edit": "Edit",
   "add-node-panel.search-nodes": "Search nodes",
   "toolbox.search": "Search",
+  "toolbox.search.clear": "Clear search",
   "loop-node.add-node": "Add node to loop",
   "loop-node.mode.parallel": "Parallel",
   "loop-node.mode.sequential": "Sequential",

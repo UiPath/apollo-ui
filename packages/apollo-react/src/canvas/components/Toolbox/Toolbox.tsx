@@ -164,6 +164,7 @@ export function Toolbox<T>({
 }: ToolboxProps<T>) {
   const { _ } = useSafeLingui();
   const searchPlaceholder = searchPlaceholderProp ?? _({ id: 'toolbox.search', message: 'Search' });
+  const clearSearchLabel = _({ id: 'toolbox.search.clear', message: 'Clear search' });
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
@@ -680,6 +681,7 @@ export function Toolbox<T>({
           onChange={handleSearch}
           clear={clearSearch}
           placeholder={searchPlaceholder}
+          clearButtonLabel={clearSearchLabel}
           inputRef={searchInputRef}
           clearButtonRef={clearButtonRef}
           onNavigationKeyDown={handleNavigationKeyDown}
