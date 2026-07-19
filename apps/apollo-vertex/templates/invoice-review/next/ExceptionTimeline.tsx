@@ -2,6 +2,7 @@
 
 import {
   ArrowDown,
+  ArrowLeft,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -373,6 +374,12 @@ const AIM_OUTLINE_STYLE: CSSProperties = {
   outlineColor: "color-mix(in oklch, var(--warning) 65%, transparent)",
   outlineOffset: "2px",
 };
+const AIM_SOURCE_STYLE: CSSProperties = {
+  outlineStyle: "solid",
+  outlineWidth: "1px",
+  outlineColor: "color-mix(in oklch, var(--warning) 50%, transparent)",
+  outlineOffset: "2px",
+};
 
 function FindingCell({
   label,
@@ -382,6 +389,7 @@ function FindingCell({
   muted,
   aimed,
   ghostValue,
+  sourcePinned,
   onOpenEdit,
 }: {
   label: string;
@@ -394,6 +402,8 @@ function FindingCell({
   aimed?: boolean;
   /** incoming value preview shown inside the aim ring: "current → new" */
   ghostValue?: string;
+  /** the reference (non-warn) cell whose value matches the incoming correction: solid ring + arrow */
+  sourcePinned?: boolean;
   /** live ON INVOICE value only: renders the inline edit trigger */
   onOpenEdit?: () => void;
 }) {
@@ -405,7 +415,18 @@ function FindingCell({
       {/* Value + inline edit trigger on one row; the button carries negative
           vertical margin so its hit area doesn't grow the line or shift the
           sub-label below. */}
-      <div className="flex items-center gap-1">
+      <div
+        className={cn("flex items-center gap-1", sourcePinned && "relative")}
+      >
+        {sourcePinned && (
+          <div
+            aria-hidden="true"
+            className="animate-in fade-in-0 absolute flex size-[22px] items-center justify-center rounded-full bg-background duration-150 ease-out motion-safe:[animation-delay:80ms]"
+            style={{ left: "-31px" }}
+          >
+            <ArrowLeft className="size-3.5 text-muted-foreground" />
+          </div>
+        )}
         <span
           className={cn(
             "whitespace-nowrap text-[18px] font-medium leading-none tabular-nums",
@@ -431,6 +452,10 @@ function FindingCell({
                 </span>
               )}
             </mark>
+          ) : sourcePinned ? (
+            <span className="rounded" style={AIM_SOURCE_STYLE}>
+              {value}
+            </span>
           ) : (
             value
           )}
@@ -444,7 +469,10 @@ function FindingCell({
                 size="icon-xs"
                 onClick={onOpenEdit}
                 aria-label="Edit"
-                className="-my-1.5 shrink-0 text-muted-foreground"
+                className={cn(
+                  "-my-1.5 shrink-0 text-muted-foreground",
+                  aimed && "opacity-30",
+                )}
               >
                 <Pencil className="size-4" />
               </Button>
@@ -476,6 +504,15 @@ function FindingView({
 }) {
   const cells = finding.type === "compare" ? finding.sides : finding.items;
   if (!cells || cells.length === 0) return null;
+  // When the incoming correction value is already visible as the counterpart
+  // (e.g. "On file" shows the vendor-master VAT), suppress the inline → ghost
+  // and switch to pair-mode: solid ring on the source, dashed ring on the target,
+  // and a directional arrow at the divider so the aim reads without repeating.
+  const sourceCell =
+    aimed && aimGhostValue
+      ? cells.find((c) => c.tone !== "warn" && c.value === aimGhostValue)
+      : undefined;
+  const pairMode = !!sourceCell;
   return (
     <div className="grid w-fit grid-flow-col divide-x divide-border [&>div:first-child]:pl-0">
       {cells.map((c) => (
@@ -484,9 +521,10 @@ function FindingView({
           {...c}
           muted={muted}
           aimed={aimed && c.tone === "warn"}
-          ghostValue={c.tone === "warn" ? aimGhostValue : undefined}
-          // The edit trigger belongs on the disputed value: the warn-toned ON INVOICE
-          // evidence, the chip that rhymes with the document highlight.
+          ghostValue={
+            c.tone === "warn" && !pairMode ? aimGhostValue : undefined
+          }
+          sourcePinned={aimed && pairMode && c === sourceCell}
           onOpenEdit={c.tone === "warn" ? onOpenEdit : undefined}
         />
       ))}
