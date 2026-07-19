@@ -4680,23 +4680,16 @@ function DetailsCombinedTab() {
     );
   };
 
-  const aimCorrection = rt.aimCorrection;
+  // Panel aim suppressed: rings/ghosts only render in the center evidence pair.
   const AIM_STYLE: CSSProperties = {
     outlineStyle: "dashed",
     outlineWidth: "1.5px",
     outlineColor: "color-mix(in oklch, var(--warning) 65%, transparent)",
     outlineOffset: "2px",
   };
-  const isAimed = (field: string): boolean =>
-    !!aimCorrection &&
-    (aimCorrection as Record<string, unknown>)[field] !== undefined;
-  const isLineAimed = (lineNum: number): boolean =>
-    !!aimCorrection?.lines?.[lineNum];
-
-  const aimGhost = (field: string): string | undefined =>
-    aimCorrection
-      ? (aimCorrection as Record<string, string | undefined>)[field]
-      : undefined;
+  const isAimed = (_field: string): boolean => false;
+  const isLineAimed = (_lineNum: number): boolean => false;
+  const aimGhost = (_field: string): string | undefined => undefined;
 
   const FIELD_DISPLAY: Record<string, string> = {
     documentDateFormatted: "Document date",
