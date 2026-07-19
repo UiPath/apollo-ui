@@ -32,6 +32,11 @@ import { StageNode } from './StageNode';
 import { StageNodeWrapper } from './StageNode.stories.utils';
 import { StageHeaderChipType, type StageNodeProps, type StageTaskItem } from './StageNode.types';
 
+// Default stage width used by the Maestro (PO.Frontend) case-management canvas.
+// Kept in sync with the product's stage width so these stories render stages at
+// their real production size.
+const DEFAULT_STAGE_WIDTH = 336;
+
 const DefaultCanvasDecorator = ({
   initialNodes,
   initialEdges = [],
@@ -180,7 +185,7 @@ export const Default: Story = {
         id: '0',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Application',
@@ -200,7 +205,7 @@ export const Default: Story = {
         id: '1',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Processing with a really really really long label that might wrap',
@@ -232,7 +237,7 @@ export const Default: Story = {
         id: '2',
         type: 'stage',
         position: { x: 752, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           onReplaceTaskFromToolbox: () => {},
           onStatusClick: () => {
@@ -264,7 +269,7 @@ export const Default: Story = {
         id: '3',
         type: 'stage',
         position: { x: 1104, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           onStatusClick: () => {
             window.alert('Status icon clicked - this would navigate to the validation issue');
@@ -316,7 +321,7 @@ export const WithTaskIcons: Story = {
         id: '1',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Task Icons Demo',
@@ -387,7 +392,7 @@ export const ExecutionStatus: Story = {
         id: '0',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             sla: '1h',
@@ -424,7 +429,7 @@ export const ExecutionStatus: Story = {
         id: '1',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             sla: '1h',
@@ -485,7 +490,7 @@ export const ExecutionStatus: Story = {
         id: '2',
         type: 'stage',
         position: { x: 752, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Underwriting',
@@ -513,7 +518,7 @@ export const ExecutionStatus: Story = {
         id: '3',
         type: 'stage',
         position: { x: 1104, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Closing',
@@ -537,7 +542,7 @@ export const ExecutionStatus: Story = {
         id: '4',
         type: 'stage',
         position: { x: 1104, y: 400 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Rejected',
@@ -594,7 +599,7 @@ export const SLAStates: Story = {
         id: '0',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Stage 1',
@@ -613,7 +618,7 @@ export const SLAStates: Story = {
         id: '1',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Closing',
@@ -638,7 +643,7 @@ export const SLAStates: Story = {
         id: '2',
         type: 'stage',
         position: { x: 752, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Closing',
@@ -664,7 +669,7 @@ export const SLAStates: Story = {
         id: '3',
         type: 'stage',
         position: { x: 1104, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Closing',
@@ -698,7 +703,7 @@ export const InteractiveTaskManagement: Story = {
         id: 'design-stage',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 352,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Design Mode - Editable',
@@ -747,7 +752,7 @@ export const InteractiveTaskManagement: Story = {
         id: 'execution-stage',
         type: 'stage',
         position: { x: 448, y: 96 },
-        width: 352,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Execution Mode - Read Only',
@@ -827,7 +832,7 @@ export const ExecutionModeWithSla: Story = {
         id: 'exec-runtime-only',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Runtime only',
@@ -852,7 +857,7 @@ export const ExecutionModeWithSla: Story = {
         id: 'exec-sla-only',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'SLA only',
@@ -878,7 +883,7 @@ export const ExecutionModeWithSla: Story = {
         id: 'exec-runtime-and-sla',
         type: 'stage',
         position: { x: 752, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Runtime + SLA (both)',
@@ -914,7 +919,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'application',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Application',
@@ -931,7 +936,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'processing',
         type: 'stage',
         position: { x: 448, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Processing',
@@ -953,7 +958,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'underwriting',
         type: 'stage',
         position: { x: 848, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Underwriting',
@@ -969,7 +974,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'closing',
         type: 'stage',
         position: { x: 1248, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Closing',
@@ -986,7 +991,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'funding',
         type: 'stage',
         position: { x: 1648, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Funding',
@@ -1002,7 +1007,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'rejected',
         type: 'stage',
         position: { x: 1248, y: 400 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Rejected',
@@ -1019,7 +1024,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'withdrawn',
         type: 'stage',
         position: { x: 448, y: 608 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Withdrawn',
@@ -1645,7 +1650,7 @@ const InlineTitleEditStory = () => {
         id: 'editable-stage',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Click to Edit Title',
@@ -1664,7 +1669,7 @@ const InlineTitleEditStory = () => {
         id: 'long-title-stage',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'A Very Long Stage Title That Should Truncate With Ellipsis',
@@ -1835,7 +1840,7 @@ const AddTaskLoadingStory = () => {
         id: 'loading-stage-empty',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Loading (+ disabled for 3s)',
@@ -1856,7 +1861,7 @@ const AddTaskLoadingStory = () => {
         id: 'loading-stage-children',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Async children (click +)',
@@ -1877,7 +1882,7 @@ const AddTaskLoadingStory = () => {
         id: 'loading-stage-tasks',
         type: 'stage',
         position: { x: 752, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Task loading (3-dot disabled)',
@@ -2014,7 +2019,7 @@ export const AdhocTasks: Story = {
         id: '0',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'With onTaskPlay',
@@ -2055,7 +2060,7 @@ export const AdhocTasks: Story = {
         id: '1',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Without onTaskPlay and Menu',
@@ -2103,7 +2108,7 @@ export const AdhocTasks: Story = {
         id: '2',
         type: 'stage',
         position: { x: 752, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Mixed with Parallel',
@@ -2217,7 +2222,7 @@ export const TasksBySection: Story = {
         id: '0',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'With sequential tasks',
@@ -2280,7 +2285,7 @@ export const TasksBySection: Story = {
         id: '1',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'With adhoc tasks',
@@ -2337,7 +2342,7 @@ export const TasksBySection: Story = {
         id: '2',
         type: 'stage',
         position: { x: 752, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'With event-driven tasks',
@@ -2397,7 +2402,7 @@ export const TasksBySection: Story = {
         id: '3',
         type: 'stage',
         position: { x: 1104, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'All task sections',
@@ -2498,7 +2503,7 @@ export const WithRulesTags: Story = {
         id: '1',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Application',
@@ -2529,7 +2534,7 @@ export const WithRulesTags: Story = {
         id: '2',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Pending with customer',
@@ -2565,7 +2570,7 @@ export const WithRulesTags: Story = {
         id: '3',
         type: 'stage',
         position: { x: 752, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Withdrawn',
@@ -2593,7 +2598,7 @@ export const WithRulesTags: Story = {
         id: '4',
         type: 'stage',
         position: { x: 1104, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Closing',
@@ -2629,7 +2634,7 @@ export const WithRulesTags: Story = {
         id: '5',
         type: 'stage',
         position: { x: 48, y: 400 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'No chips (comparison)',
@@ -2646,7 +2651,7 @@ export const WithRulesTags: Story = {
         id: '6',
         type: 'stage',
         position: { x: 400, y: 400 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'ReadOnly + completed + chips',
@@ -2684,7 +2689,7 @@ export const WithRulesTags: Story = {
         id: '7',
         type: 'stage',
         position: { x: 752, y: 400 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'ReadOnly + in progress + chips',
@@ -2726,7 +2731,7 @@ export const WithStatusBadges: Story = {
         id: '1',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Intake',
@@ -2764,7 +2769,7 @@ export const WithStatusBadges: Story = {
         id: '2',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Rejected',
@@ -2795,7 +2800,7 @@ export const WithStatusBadges: Story = {
         id: '3',
         type: 'stage',
         position: { x: 752, y: 96 },
-        width: 304,
+        width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
             label: 'Optional + terminal',

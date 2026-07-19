@@ -27,7 +27,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const PERFORMANCE_STAGE_NODE_WIDTH = 304;
+const PERFORMANCE_STAGE_NODE_WIDTH = 336;
 const PERFORMANCE_STAGE_SPACING_X = 400;
 const PERFORMANCE_STAGE_SPACING_Y = 384;
 const DEFAULT_STAGE_COUNT = 48;
