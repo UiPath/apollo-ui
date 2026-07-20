@@ -11,6 +11,7 @@ import {
 import {
   exceptionMeta,
   runPredicates,
+  type ArcState,
   type DetailCorrections,
   type InvoiceDisposition,
   type InvoiceException,
@@ -155,6 +156,10 @@ interface RuntimeStore {
   undoResolve: (invoiceId: string, excId: string) => void;
   /** Wipe all runtime state for every invoice and clear sessionStorage. Demo reset. */
   resetAllRuntimes: () => void;
+  /** Read the transient arc animation state for an invoice (not persisted). */
+  getArcState: (invoiceId: string) => ArcState | undefined;
+  /** Set (or clear with null) the transient arc animation state for an invoice. */
+  setArcState: (invoiceId: string, state: ArcState | null) => void;
 }
 
 const InvoiceRuntimeContext = createContext<RuntimeStore | null>(null);
@@ -181,10 +186,18 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, [map]);
   const [cursorMap, setCursorMap] = useState<Record<string, string>>({});
+  // Arc state is transient (drives the apply-arc animation) and is never persisted.
+  const [arcStateMap, setArcStateMap] = useState<
+    Record<string, ArcState | undefined>
+  >({});
 
   const value = useMemo<RuntimeStore>(
     () => ({
-      getRuntime: (id) => map[id] ?? EMPTY,
+      getRuntime: (id) => {
+        const rt = map[id] ?? EMPTY;
+        const arc = arcStateMap[id];
+        return arc ? { ...rt, arcState: arc } : rt;
+      },
       getCursor: (id) => cursorMap[id],
       setCursor: (id, exceptionId) =>
         setCursorMap((prev) => {
@@ -436,9 +449,17 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
         } catch {}
         setMap({});
         setCursorMap({});
+        setArcStateMap({});
       },
+      getArcState: (id) => arcStateMap[id],
+      setArcState: (id, state) =>
+        setArcStateMap((prev) => {
+          const next = state ?? undefined;
+          if (prev[id] === next) return prev;
+          return { ...prev, [id]: next };
+        }),
     }),
-    [map, cursorMap],
+    [map, cursorMap, arcStateMap],
   );
 
   return (

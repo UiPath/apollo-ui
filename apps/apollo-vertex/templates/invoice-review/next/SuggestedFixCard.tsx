@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,11 +39,13 @@ export function SuggestedFixCard({
   onResolve,
   disabled,
   onAim,
+  applying,
 }: {
   suggestions: Suggestion[];
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
   disabled?: boolean;
   onAim?: (correction: DetailCorrections | null) => void;
+  applying?: boolean;
 }) {
   const gradientId = useId();
 
@@ -128,7 +130,8 @@ export function SuggestedFixCard({
                   // suggestions are a small static list; index key is stable here
                   key={`${s.type}-${i}`}
                   suggestion={s}
-                  disabled={disabled}
+                  disabled={disabled || applying}
+                  applying={applying}
                   onResolve={onResolve}
                   onAim={onAim}
                 />
@@ -194,11 +197,13 @@ function RejectButton({
 function ActionButton({
   suggestion,
   disabled,
+  applying,
   onResolve,
   onAim,
 }: {
   suggestion: Suggestion;
   disabled?: boolean;
+  applying?: boolean;
   onResolve: (s: Suggestion, reason?: string, note?: string) => void;
   onAim?: (correction: DetailCorrections | null) => void;
 }) {
@@ -257,7 +262,14 @@ function ActionButton({
       onMouseLeave={handleClearAim}
       onBlur={handleClearAim}
     >
-      {suggestionLabel(suggestion)}
+      {applying ? (
+        <>
+          <Loader2 className="size-3.5 animate-spin" />
+          Applying…
+        </>
+      ) : (
+        suggestionLabel(suggestion)
+      )}
     </Button>
   );
 }
