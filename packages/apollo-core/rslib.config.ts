@@ -42,6 +42,10 @@ export default defineConfig({
     copy: [
       { from: './src/icons/svg', to: './icons/svg' },
       { from: './src/tokens/scss', to: './tokens/scss' },
+      // scss-static also lands in src/tokens/scss via build-tokens.js, but dev/watch
+      // (rslib without build:tokens) copies a stale generated tree — this entry
+      // guarantees the hand-written files always reach dist regardless.
+      { from: './src/tokens/scss-static', to: './tokens/scss' },
       { from: './src/tokens/less', to: './tokens/less' },
       { from: './src/tokens/css', to: './tokens/css' },
       {
