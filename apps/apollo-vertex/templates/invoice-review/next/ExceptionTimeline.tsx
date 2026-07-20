@@ -42,6 +42,7 @@ import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
 import {
   type AgentStep,
   approveInvoice,
+  type ArcState,
   buildApproval,
   buildHold,
   buildResume,
@@ -547,6 +548,7 @@ function LiveExceptionContent({
   aimed = false,
   aimGhostValue,
   onAim,
+  applying,
 }: {
   exception: InvoiceException;
   isNew: boolean;
@@ -560,6 +562,8 @@ function LiveExceptionContent({
   /** Incoming correction value to preview inside the aim ring. */
   aimGhostValue?: string;
   onAim?: (correction: DetailCorrections | null) => void;
+  /** Fix action is mid-arc (button shows spinner, disabled). */
+  applying?: boolean;
 }) {
   const isJudgment = exception.suggestions.length === 0;
   // Each section fades and slides in a beat after the previous one.
@@ -637,6 +641,7 @@ function LiveExceptionContent({
               suggestions={exception.suggestions}
               onResolve={onResolve}
               onAim={onAim}
+              applying={applying}
             />
           </div>
         ))}
@@ -730,6 +735,7 @@ function Stage({
   aimed,
   aimGhostValue,
   onAim,
+  applying,
 }: {
   exception: InvoiceException;
   isNew: (e: InvoiceException) => boolean;
@@ -738,6 +744,7 @@ function Stage({
   aimed?: boolean;
   aimGhostValue?: string;
   onAim?: (correction: DetailCorrections | null) => void;
+  applying?: boolean;
 }) {
   const [displayed, setDisplayed] = useState(exception);
   const [phase, setPhase] = useState<"in" | "out">("in");
@@ -772,6 +779,7 @@ function Stage({
         aimed={aimed}
         aimGhostValue={aimGhostValue}
         onAim={onAim}
+        applying={applying}
       />
     </div>
   );
@@ -1094,6 +1102,7 @@ function ExceptionGroup({
   aimed,
   aimGhostValue,
   onAim,
+  applying,
 }: {
   active: InvoiceException;
   openList: InvoiceException[];
@@ -1111,6 +1120,7 @@ function ExceptionGroup({
   aimed?: boolean;
   aimGhostValue?: string;
   onAim?: (correction: DetailCorrections | null) => void;
+  applying?: boolean;
 }) {
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "ArrowLeft" && canPrev) {
@@ -1185,6 +1195,7 @@ function ExceptionGroup({
         aimed={aimed}
         aimGhostValue={aimGhostValue}
         onAim={onAim}
+        applying={applying}
       />
       <IssueDots
         items={openList}
@@ -2157,6 +2168,12 @@ export function ExceptionTimeline({
   // The event log lives in the runtime store (survives remount); read it here.
   const events = rt.events;
   const [resolve, setResolve] = useState<ResolveState | null>(null);
+  // Arc path: tracks the exception whose fix button is in the "Applying…" state.
+  const [applyingExcId, setApplyingExcId] = useState<string | null>(null);
+  const arcNonceRef = useRef<number>(0);
+  const arcTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cleanup only
+  useEffect(() => () => arcTimersRef.current.forEach(clearTimeout), []);
   // Approve is the one true completion, so it earns the full resolve
   // choreography (confirm -> check -> reveal) before the terminal, unlike the
   // snappy hold/reject dispositions. Transient local phase (reduced motion skips
@@ -2662,8 +2679,98 @@ export function ExceptionTimeline({
     onRequestEdit?.(field);
   }
 
+  function startArcResolve(exc: InvoiceException, s: Suggestion) {
+    if (!s.correction) return;
+    const corrections = s.correction;
+    const patchedFields = Object.keys(corrections).filter((k) => k !== "lines");
+    const patchedLineNums = Object.keys(corrections.lines ?? {}).map(Number);
+    const count = patchedFields.length + patchedLineNums.length;
+    arcNonceRef.current += 1;
+    const nonce = arcNonceRef.current;
+    const arcBase = {
+      nonce,
+      detailFields: patchedFields,
+      lineNums: patchedLineNums,
+      count,
+    };
+
+    setApplyingExcId(exc.id);
+    // PRE (t=0): set state immediately so the panel scroll effect fires; ring+pill invisible.
+    runtime.setArcState(review.id, {
+      ...arcBase,
+      phase: "pre",
+    } satisfies ArcState);
+
+    // CLAIM (t=50ms): ring + pill fade in over 150ms.
+    const t1 = setTimeout(() => {
+      if (arcNonceRef.current !== nonce) return;
+      runtime.setArcState(review.id, {
+        ...arcBase,
+        phase: "claim",
+      } satisfies ArcState);
+    }, 50);
+
+    // ACT (t=450ms): commit corrections; value crossfades in; ring+pill frozen.
+    const t2 = setTimeout(() => {
+      if (arcNonceRef.current !== nonce) return;
+      const meta = exceptionMeta(exc);
+      const r = s.resolution ?? exc.resolution;
+      const label = r?.label ?? `${meta.label} resolved`;
+      const sub = r?.sub ?? `${meta.label}, resolved by you`;
+      const correctionEvents: RunEventInput[] = [
+        { kind: "corrected", label, sub, time: "Just now" },
+      ];
+      const openExcs = openExceptions(review, rt);
+      runtime.correctDetail(
+        review.id,
+        corrections,
+        { openExceptions: openExcs, base: {} },
+        correctionEvents,
+        {
+          dataPatch: exc.resolution?.dataPatch,
+          settledSub: sub,
+          aiSourced: true,
+        },
+      );
+      runtime.setArcState(review.id, {
+        ...arcBase,
+        phase: "act",
+      } satisfies ArcState);
+      setApplyingExcId(null);
+      const idx = list.findIndex((e) => e.id === exc.id);
+      const next = list[idx + 1] ?? (list.length > 1 ? list[0] : undefined);
+      setActiveId(next?.id === exc.id ? "" : (next?.id ?? ""));
+    }, 450);
+
+    // CONFIRM (t=700ms): ring → success token; pill → "✓ Updated" — both in one state update.
+    const t3 = setTimeout(() => {
+      if (arcNonceRef.current !== nonce) return;
+      runtime.setArcState(review.id, {
+        ...arcBase,
+        phase: "confirm",
+      } satisfies ArcState);
+    }, 700);
+
+    // RELEASE (t=1400ms): ring + pill fade out together; marker is seated by now.
+    const t4 = setTimeout(() => {
+      if (arcNonceRef.current !== nonce) return;
+      runtime.setArcState(review.id, {
+        ...arcBase,
+        phase: "release",
+      } satisfies ArcState);
+    }, 1400);
+
+    // REST (t=1800ms): clear arc state; toast fires via correctionPulse delay.
+    const t5 = setTimeout(() => {
+      if (arcNonceRef.current !== nonce) return;
+      runtime.setArcState(review.id, null);
+    }, 1800);
+
+    arcTimersRef.current.push(t1, t2, t3, t4, t5);
+  }
+
   function resolveActive(s: Suggestion, reason?: string, note?: string) {
-    if (!active || resolve || emailModal) return;
+    if (!active || resolve || emailModal || !!applyingExcId) return;
     // Supplier routes confirm through the draft modal: nothing about the
     // exception changes until the message is sent (Send commits the park).
     if (isSupplierRoute(s)) {
@@ -2691,6 +2798,13 @@ export function ExceptionTimeline({
       startRoute(active, s, undefined, note, reason);
       return;
     }
+    // Arc path: AI detail corrections run their own fast-commit sequence with a
+    // ring+pill in the Details panel. No resolve state machine needed.
+    if (s.correction && !reducedMotion) {
+      startArcResolve(active, s);
+      return;
+    }
+
     const meta = exceptionMeta(active);
     // Per-suggestion resolution overrides the exception-level resolution so two
     // suggestions on the same exception can log distinct event copy.
@@ -3128,6 +3242,7 @@ export function ExceptionTimeline({
                   onAim={(correction) =>
                     runtime.setAimCorrection(review.id, correction)
                   }
+                  applying={applyingExcId === active.id}
                 />
               ) : null}
             </>

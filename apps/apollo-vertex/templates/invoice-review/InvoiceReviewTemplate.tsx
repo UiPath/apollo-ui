@@ -120,11 +120,12 @@ import {
   LayoutVersionMenuItem,
   useInvoiceVersion,
 } from "./invoice-version";
-import styles from "./invoice-review.module.css";
 import { ExceptionTimeline } from "./next/ExceptionTimeline";
 import { HeaderDecision } from "./next/HeaderDecision";
 import {
   approveInvoice,
+  type ArcPhase,
+  type ArcState,
   buildApproval,
   buildHold,
   buildReject,
@@ -4646,6 +4647,74 @@ function DetailsCombinedTab() {
   const pulseLineNums = new Set(correctionPulse?.lineNums ?? []);
   const [pulseSettle, setPulseSettle] = useState<"peak" | "rest">("rest");
 
+  // Arc animation state: set by startArcResolve during AI fix apply sequences.
+  const arcState = rt.arcState;
+  const arcFields = new Set(arcState?.detailFields ?? []);
+  const arcLineNums = new Set(arcState?.lineNums ?? []);
+  const arcPrimaryField = arcState?.detailFields[0];
+  const arcPrimaryLine = !arcPrimaryField ? arcState?.lineNums[0] : undefined;
+
+  function arcFieldStyle(phase: ArcPhase): CSSProperties {
+    const gradientRing =
+      "inset 0 0 0 1.5px var(--ai-gradient-start), inset 0 0 10px 0px color-mix(in srgb, var(--ai-gradient-end) 22%, transparent)";
+    if (phase === "pre") return {};
+    if (phase === "claim") {
+      return {
+        borderRadius: "4px",
+        boxShadow: gradientRing,
+        transition: "box-shadow 150ms ease-out",
+      };
+    }
+    if (phase === "act") {
+      // Ring frozen; inner content will crossfade via arcValueStyle.
+      return {
+        borderRadius: "4px",
+        boxShadow: gradientRing,
+        transition: "none",
+      };
+    }
+    if (phase === "confirm") {
+      // Ring + pill switch simultaneously in one render — both count as one mover.
+      return {
+        borderRadius: "4px",
+        boxShadow: "inset 0 0 0 1.5px rgb(34 197 94)",
+        transition: "box-shadow 150ms ease-out",
+      };
+    }
+    if (phase === "release") {
+      return {
+        borderRadius: "4px",
+        boxShadow: "inset 0 0 0 0px transparent",
+        transition: "box-shadow 400ms ease-out",
+      };
+    }
+    return {};
+  }
+
+  function arcValueStyle(phase: ArcPhase): CSSProperties | undefined {
+    return phase === "act"
+      ? { animation: "arcValueIn 200ms ease-out both" }
+      : undefined;
+  }
+
+  // Scroll the first arc field into view when a new arc starts.
+  const arcNonce = arcState?.nonce;
+  useEffect(() => {
+    if (!arcState) return;
+    const field = arcState.detailFields[0];
+    const lineNum = arcState.lineNums[0];
+    const sel = field
+      ? `[data-detail-field="${field}"]`
+      : lineNum !== undefined
+        ? `[data-detail-line="${lineNum}"]`
+        : null;
+    if (!sel) return;
+    document
+      .querySelector<HTMLElement>(sel)
+      ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the scroll
+  }, [arcNonce]);
+
   useEffect(() => {
     if (pulseNonce === undefined) return;
     // Scroll the first corrected field into view so the glow is visible.
@@ -4680,7 +4749,8 @@ function DetailsCombinedTab() {
 
   const pulseClass = (field: string): string | undefined => {
     if (!pulseFields.has(field)) return undefined;
-    if (isAiPulse) return cn("rounded-sm px-0.5", styles.aiCorrectionGlow);
+    // Arc handles AI corrections; skip the CSS-glow path entirely.
+    if (isAiPulse) return undefined;
     return cn(
       "rounded-sm px-0.5 ring-1 ring-inset",
       pulseSettle === "peak"
@@ -4691,7 +4761,7 @@ function DetailsCombinedTab() {
 
   const pulseLineClass = (lineNum: number): string | undefined => {
     if (!pulseLineNums.has(lineNum)) return undefined;
-    if (isAiPulse) return cn("rounded-sm px-0.5", styles.aiCorrectionGlow);
+    if (isAiPulse) return undefined;
     return cn(
       "rounded-sm px-0.5 ring-1 ring-inset",
       pulseSettle === "peak"
@@ -4700,11 +4770,9 @@ function DetailsCombinedTab() {
     );
   };
 
-  // Key helpers — changing key forces element remount, which restarts the CSS animation.
-  const pulsedKey = (field: string): string =>
-    `${field}-${isAiPulse && pulseFields.has(field) ? (pulseNonce ?? 0) : 0}`;
-  const pulsedLineKey = (lineNum: number): string =>
-    `line-${lineNum}-${isAiPulse && pulseLineNums.has(lineNum) ? (pulseNonce ?? 0) : 0}`;
+  // Key helpers for manual corrections (no remount needed for arc; arc uses style prop).
+  const pulsedKey = (field: string): string => `${field}-0`;
+  const pulsedLineKey = (lineNum: number): string => `line-${lineNum}-0`;
 
   // Panel aim suppressed: rings/ghosts only render in the center evidence pair.
   const AIM_STYLE: CSSProperties = {
@@ -4716,6 +4784,36 @@ function DetailsCombinedTab() {
   const isAimed = (_field: string): boolean => false;
   const isLineAimed = (_lineNum: number): boolean => false;
   const aimGhost = (_field: string): string | undefined => undefined;
+
+  function ArcPill({ count, phase }: { count: number; phase: ArcPhase }) {
+    const isConfirmed = phase === "confirm" || phase === "release";
+    return (
+      <div
+        className={cn(
+          "inline-flex w-fit items-center gap-1 rounded border border-border bg-popover px-1.5 py-0.5 text-[11px] shadow-sm",
+          "transition-opacity",
+          phase === "pre" && "opacity-0 duration-0",
+          phase === "claim" && "opacity-100 duration-150",
+          (phase === "act" || phase === "confirm") && "opacity-100 duration-0",
+          phase === "release" && "opacity-0 duration-[400ms]",
+        )}
+      >
+        {!isConfirmed ? (
+          <>
+            <Loader2 className="size-2.5 shrink-0 animate-spin text-muted-foreground" />
+            <span className="text-muted-foreground">
+              {count > 1 ? `Applying ${count} fixes…` : "Applying fix…"}
+            </span>
+          </>
+        ) : (
+          <>
+            <Check className="size-2.5 shrink-0 text-emerald-500" />
+            <span>Updated</span>
+          </>
+        )}
+      </div>
+    );
+  }
 
   const FIELD_DISPLAY: Record<string, string> = {
     documentDateFormatted: "Document date",
@@ -4739,321 +4837,380 @@ function DetailsCombinedTab() {
           ? `${fields.length} fields corrected`
           : "Correction applied";
     toast.dismiss(undoToastIdRef.current);
-    const id = toast(label, {
-      duration: 8000,
-      classNames: {
-        toast: "!bg-card-foreground !border-card-foreground/20",
-        title: "!text-primary-foreground",
-        actionButton:
-          "!bg-primary-foreground/15 !text-primary-foreground hover:!bg-primary-foreground/25",
-        closeButton: "!hidden",
-      },
-      action: {
-        label: "Undo",
-        onClick: () => {
-          runtime.revertDetail(d.id, [
-            {
-              kind: "corrected",
-              label: "Correction reverted · Previous values restored",
-              sub: "Previous values restored",
-              time: "Just now",
-            },
-            {
-              kind: "revalidated",
-              label: "Re-validated",
-              sub: "All checks re-run",
-              time: "Just now",
-              pending: false,
-            },
-          ]);
+    // For AI arc corrections delay the toast until REST (correctDetail fires at
+    // ACT = t+450ms; REST = t+1800ms → delay = 1350ms after the pulse nonce bumps).
+    const delay = correctionPulse?.aiSourced ? 1350 : 0;
+    const tid = setTimeout(() => {
+      const id = toast(label, {
+        duration: 8000,
+        classNames: {
+          toast: "!bg-card-foreground !border-card-foreground/20",
+          title: "!text-primary-foreground",
+          actionButton:
+            "!bg-primary-foreground/15 !text-primary-foreground hover:!bg-primary-foreground/25",
+          closeButton: "!hidden",
         },
-      },
-    });
-    undoToastIdRef.current = id;
+        action: {
+          label: "Undo",
+          onClick: () => {
+            runtime.revertDetail(d.id, [
+              {
+                kind: "corrected",
+                label: "Correction reverted · Previous values restored",
+                sub: "Previous values restored",
+                time: "Just now",
+              },
+              {
+                kind: "revalidated",
+                label: "Re-validated",
+                sub: "All checks re-run",
+                time: "Just now",
+                pending: false,
+              },
+            ]);
+          },
+        },
+      });
+      undoToastIdRef.current = id;
+    }, delay);
+    return () => clearTimeout(tid);
     // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the toast
   }, [pulseNonce]);
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
-      <div className="px-6 pt-[22px] pb-16">
-        {/* Section heading — invoice facts */}
-        <div className="flex items-center justify-between">
-          <p className="text-[16px] font-bold tracking-tight text-foreground">
-            Invoice details
-          </p>
-          <button
-            type="button"
-            onClick={() => enterEditMode()}
-            className="flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Pencil className="size-3" />
-            Edit
-          </button>
-        </div>
+    <>
+      {/* Keyframe for value crossfade during ACT phase — opacity only so the ring (box-shadow on outer element) stays frozen. */}
+      <style>{`@keyframes arcValueIn { from { opacity: 0 } to { opacity: 1 } }`}</style>
+      <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
+        <div className="px-6 pt-[22px] pb-16">
+          {/* Section heading — invoice facts */}
+          <div className="flex items-center justify-between">
+            <p className="text-[16px] font-bold tracking-tight text-foreground">
+              Invoice details
+            </p>
+            <button
+              type="button"
+              onClick={() => enterEditMode()}
+              className="flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Pencil className="size-3" />
+              Edit
+            </button>
+          </div>
 
-        {/* Cluster 1 — invoice facts */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-[22px] mt-[18px]">
-          <div className="flex min-w-0 flex-col gap-[3px]">
-            <span className="text-[12px] text-muted-foreground">
-              Document date{dc?.documentDateFormatted && <CorrectedMark />}
-            </span>
-            <span
-              key={pulsedKey("documentDateFormatted")}
-              data-detail-field="documentDateFormatted"
-              className={cn(
-                "text-[14px] font-medium text-foreground",
-                pulseClass("documentDateFormatted"),
-              )}
-            >
-              {cd.documentDateFormatted}
-              {isAimed("documentDateFormatted") &&
-                aimGhost("documentDateFormatted") && (
-                  <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
-                    {" → "}
-                    {aimGhost("documentDateFormatted")}
-                  </span>
-                )}
-            </span>
-          </div>
-          <div className="flex min-w-0 flex-col gap-[3px]">
-            <span className="text-[12px] text-muted-foreground">
-              Due date{dc?.dueFormatted && <CorrectedMark />}
-            </span>
-            <span
-              key={pulsedKey("dueFormatted")}
-              data-detail-field="dueFormatted"
-              className={cn(
-                "text-[14px] font-medium text-foreground",
-                pulseClass("dueFormatted"),
-              )}
-            >
-              {cd.dueFormatted}
-              {isAimed("dueFormatted") && aimGhost("dueFormatted") && (
-                <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
-                  {" → "}
-                  {aimGhost("dueFormatted")}
-                </span>
-              )}
-            </span>
-          </div>
-          <div className="flex min-w-0 flex-col gap-[3px]">
-            <span className="text-[12px] text-muted-foreground">
-              Payment terms{dc?.paymentTerms && <CorrectedMark />}
-            </span>
-            <span
-              key={pulsedKey("paymentTerms")}
-              data-detail-field="paymentTerms"
-              className={cn(
-                "text-[14px] font-medium text-foreground",
-                pulseClass("paymentTerms"),
-              )}
-            >
-              {cd.paymentTerms}
-              {isAimed("paymentTerms") && aimGhost("paymentTerms") && (
-                <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
-                  {" → "}
-                  {aimGhost("paymentTerms")}
-                </span>
-              )}
-            </span>
-          </div>
-          {cd.vat !== "—" && (
+          {/* Cluster 1 — invoice facts */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-[22px] mt-[18px]">
             <div className="flex min-w-0 flex-col gap-[3px]">
               <span className="text-[12px] text-muted-foreground">
-                VAT number{dc?.vat && <CorrectedMark />}
+                Document date{dc?.documentDateFormatted && <CorrectedMark />}
               </span>
-              <span
-                key={pulsedKey("vat")}
-                data-detail-field="vat"
-                className={cn(
-                  "text-[14px] font-medium text-foreground",
-                  pulseClass("vat"),
-                )}
-              >
-                {cd.vat}
-                {isAimed("vat") && aimGhost("vat") && (
-                  <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
-                    {" → "}
-                    {aimGhost("vat")}
-                  </span>
-                )}
-              </span>
-            </div>
-          )}
-          {cd.servicePeriod && (
-            <div className="flex min-w-0 flex-col gap-[3px]">
-              <span className="text-[12px] text-muted-foreground">
-                Service period{dc?.servicePeriod && <CorrectedMark />}
-              </span>
-              <span
-                key={pulsedKey("servicePeriod")}
-                data-detail-field="servicePeriod"
-                className={cn(
-                  "text-[14px] font-medium text-foreground",
-                  pulseClass("servicePeriod"),
-                )}
-              >
-                {cd.servicePeriod}
-                {isAimed("servicePeriod") && aimGhost("servicePeriod") && (
-                  <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
-                    {" → "}
-                    {aimGhost("servicePeriod")}
-                  </span>
-                )}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Cluster 2 — parties */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-[22px] mt-[18px]">
-          <div className="flex min-w-0 flex-col gap-[3px]">
-            <span className="text-[12px] text-muted-foreground">
-              Vendor{dc?.vendor && <CorrectedMark />}
-            </span>
-            <div
-              key={pulsedKey("vendor")}
-              data-detail-field="vendor"
-              className={cn("min-w-0", pulseClass("vendor"))}
-            >
-              <div className="text-[14px] font-medium text-foreground">
-                {cd.vendor}
-                {isAimed("vendor") && aimGhost("vendor") && (
-                  <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
-                    {" → "}
-                    {aimGhost("vendor")}
-                  </span>
-                )}
-              </div>
-              {cd.vendorEmail && (
-                <div className="text-[12px] leading-[1.45] text-muted-foreground">
-                  {cd.vendorEmail}
-                </div>
+              {arcPrimaryField === "documentDateFormatted" && arcState && (
+                <ArcPill count={arcState.count} phase={arcState.phase} />
               )}
-              {cd.vendorAddress &&
-                (() => {
-                  const comma = cd.vendorAddress.indexOf(",");
-                  const street =
-                    comma >= 0
-                      ? cd.vendorAddress.slice(0, comma)
-                      : cd.vendorAddress;
-                  const city =
-                    comma >= 0
-                      ? cd.vendorAddress.slice(comma + 1).trim()
-                      : null;
-                  return (
-                    <div className="text-[12px] leading-[1.45] text-muted-foreground">
-                      <div>{street}</div>
-                      {city && <div>{city}</div>}
-                    </div>
-                  );
-                })()}
-            </div>
-          </div>
-          <div className="flex min-w-0 flex-col gap-[3px]">
-            <span className="text-[12px] text-muted-foreground">
-              Bill to{dc?.billTo && <CorrectedMark />}
-            </span>
-            <div
-              key={pulsedKey("billTo")}
-              data-detail-field="billTo"
-              className={cn("min-w-0", pulseClass("billTo"))}
-            >
-              <div className="text-[14px] font-medium text-foreground">
-                {cd.billTo}
-                {isAimed("billTo") && aimGhost("billTo") && (
-                  <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
-                    {" → "}
-                    {aimGhost("billTo")}
-                  </span>
+              <span
+                key={pulsedKey("documentDateFormatted")}
+                data-detail-field="documentDateFormatted"
+                className={cn(
+                  "text-[14px] font-medium text-foreground",
+                  pulseClass("documentDateFormatted"),
                 )}
-              </div>
-              {cd.billAddress &&
-                (() => {
-                  const comma = cd.billAddress.indexOf(",");
-                  const street =
-                    comma >= 0
-                      ? cd.billAddress.slice(0, comma)
-                      : cd.billAddress;
-                  const city =
-                    comma >= 0 ? cd.billAddress.slice(comma + 1).trim() : null;
-                  return (
-                    <div className="text-[12px] leading-[1.45] text-muted-foreground">
-                      <div>{street}</div>
-                      {city && <div>{city}</div>}
-                    </div>
-                  );
-                })()}
-            </div>
-          </div>
-        </div>
-
-        {/* Section heading — line items */}
-        <p className="text-[14px] font-bold tracking-tight text-foreground mt-[32px]">
-          Line items
-        </p>
-
-        {/* Table */}
-        <div className="[font-variant-numeric:tabular-nums] mt-[18px]">
-          {/* Column headers */}
-          <div className="grid grid-cols-[16px_1fr_56px_80px] items-end gap-x-3 pb-2 border-b border-border">
-            <span className="text-[12px] text-muted-foreground">#</span>
-            <span className="text-[12px] text-muted-foreground">Item</span>
-            <span className="text-[12px] text-muted-foreground text-right">
-              {hasPo ? "Qty / PO" : "Qty"}
-            </span>
-            <span className="text-[12px] text-muted-foreground text-right">
-              Amount
-            </span>
-          </div>
-          <div>
-            {correctedLines.map((line, i) => {
-              const lineNum = i + 1;
-              const isActive = activeLine === lineNum;
-              const lineCorrected = dc?.lines?.[lineNum] !== undefined;
-              const qtyMismatch =
-                line.poQty !== undefined && line.qty !== line.poQty;
-              return (
-                <div
-                  key={d.lines[i].description}
-                  className={cn(
-                    "grid grid-cols-[16px_1fr_56px_80px] items-baseline gap-x-3 py-[6px] -mx-6 px-6",
-                    isActive && phase === "peak"
-                      ? "bg-warning/20"
-                      : isActive
-                        ? "bg-warning/10 transition-[background-color] duration-[600ms]"
-                        : "",
-                  )}
+                style={
+                  arcFields.has("documentDateFormatted") && arcState
+                    ? arcFieldStyle(arcState.phase)
+                    : undefined
+                }
+              >
+                <span
+                  style={
+                    arcFields.has("documentDateFormatted") && arcState
+                      ? arcValueStyle(arcState.phase)
+                      : undefined
+                  }
                 >
-                  {/* # */}
-                  <span className="text-[11px] text-muted-foreground pt-px">
-                    {lineNum}
+                  {cd.documentDateFormatted}
+                </span>
+              </span>
+            </div>
+            <div className="flex min-w-0 flex-col gap-[3px]">
+              <span className="text-[12px] text-muted-foreground">
+                Due date{dc?.dueFormatted && <CorrectedMark />}
+              </span>
+              {arcPrimaryField === "dueFormatted" && arcState && (
+                <ArcPill count={arcState.count} phase={arcState.phase} />
+              )}
+              <span
+                key={pulsedKey("dueFormatted")}
+                data-detail-field="dueFormatted"
+                className={cn(
+                  "text-[14px] font-medium text-foreground",
+                  pulseClass("dueFormatted"),
+                )}
+                style={
+                  arcFields.has("dueFormatted") && arcState
+                    ? arcFieldStyle(arcState.phase)
+                    : undefined
+                }
+              >
+                <span
+                  style={
+                    arcFields.has("dueFormatted") && arcState
+                      ? arcValueStyle(arcState.phase)
+                      : undefined
+                  }
+                >
+                  {cd.dueFormatted}
+                </span>
+              </span>
+            </div>
+            <div className="flex min-w-0 flex-col gap-[3px]">
+              <span className="text-[12px] text-muted-foreground">
+                Payment terms{dc?.paymentTerms && <CorrectedMark />}
+              </span>
+              {arcPrimaryField === "paymentTerms" && arcState && (
+                <ArcPill count={arcState.count} phase={arcState.phase} />
+              )}
+              <span
+                key={pulsedKey("paymentTerms")}
+                data-detail-field="paymentTerms"
+                className={cn(
+                  "text-[14px] font-medium text-foreground",
+                  pulseClass("paymentTerms"),
+                )}
+                style={
+                  arcFields.has("paymentTerms") && arcState
+                    ? arcFieldStyle(arcState.phase)
+                    : undefined
+                }
+              >
+                <span
+                  style={
+                    arcFields.has("paymentTerms") && arcState
+                      ? arcValueStyle(arcState.phase)
+                      : undefined
+                  }
+                >
+                  {cd.paymentTerms}
+                </span>
+              </span>
+            </div>
+            {cd.vat !== "—" && (
+              <div className="flex min-w-0 flex-col gap-[3px]">
+                <span className="text-[12px] text-muted-foreground">
+                  VAT number{dc?.vat && <CorrectedMark />}
+                </span>
+                {arcPrimaryField === "vat" && arcState && (
+                  <ArcPill count={arcState.count} phase={arcState.phase} />
+                )}
+                <span
+                  key={pulsedKey("vat")}
+                  data-detail-field="vat"
+                  className={cn(
+                    "text-[14px] font-medium text-foreground",
+                    pulseClass("vat"),
+                  )}
+                  style={
+                    arcFields.has("vat") && arcState
+                      ? arcFieldStyle(arcState.phase)
+                      : undefined
+                  }
+                >
+                  <span
+                    style={
+                      arcFields.has("vat") && arcState
+                        ? arcValueStyle(arcState.phase)
+                        : undefined
+                    }
+                  >
+                    {cd.vat}
                   </span>
-                  {/* ITEM */}
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-[13px] font-medium text-foreground leading-snug truncate cursor-default">
-                            {line.description}
-                            {lineCorrected && <CorrectedMark />}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="bottom"
-                          align="start"
-                          className="max-w-64"
-                        >
-                          {line.description}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    {line.shortDescription && (
+                </span>
+              </div>
+            )}
+            {cd.servicePeriod && (
+              <div className="flex min-w-0 flex-col gap-[3px]">
+                <span className="text-[12px] text-muted-foreground">
+                  Service period{dc?.servicePeriod && <CorrectedMark />}
+                </span>
+                {arcPrimaryField === "servicePeriod" && arcState && (
+                  <ArcPill count={arcState.count} phase={arcState.phase} />
+                )}
+                <span
+                  key={pulsedKey("servicePeriod")}
+                  data-detail-field="servicePeriod"
+                  className={cn(
+                    "text-[14px] font-medium text-foreground",
+                    pulseClass("servicePeriod"),
+                  )}
+                  style={
+                    arcFields.has("servicePeriod") && arcState
+                      ? arcFieldStyle(arcState.phase)
+                      : undefined
+                  }
+                >
+                  <span
+                    style={
+                      arcFields.has("servicePeriod") && arcState
+                        ? arcValueStyle(arcState.phase)
+                        : undefined
+                    }
+                  >
+                    {cd.servicePeriod}
+                  </span>
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Cluster 2 — parties */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-[22px] mt-[18px]">
+            <div className="flex min-w-0 flex-col gap-[3px]">
+              <span className="text-[12px] text-muted-foreground">
+                Vendor{dc?.vendor && <CorrectedMark />}
+              </span>
+              {arcPrimaryField === "vendor" && arcState && (
+                <ArcPill count={arcState.count} phase={arcState.phase} />
+              )}
+              <div
+                key={pulsedKey("vendor")}
+                data-detail-field="vendor"
+                className={cn("min-w-0", pulseClass("vendor"))}
+                style={
+                  arcFields.has("vendor") && arcState
+                    ? arcFieldStyle(arcState.phase)
+                    : undefined
+                }
+              >
+                <div className="text-[14px] font-medium text-foreground">
+                  {cd.vendor}
+                  {isAimed("vendor") && aimGhost("vendor") && (
+                    <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
+                      {" → "}
+                      {aimGhost("vendor")}
+                    </span>
+                  )}
+                </div>
+                {cd.vendorEmail && (
+                  <div className="text-[12px] leading-[1.45] text-muted-foreground">
+                    {cd.vendorEmail}
+                  </div>
+                )}
+                {cd.vendorAddress &&
+                  (() => {
+                    const comma = cd.vendorAddress.indexOf(",");
+                    const street =
+                      comma >= 0
+                        ? cd.vendorAddress.slice(0, comma)
+                        : cd.vendorAddress;
+                    const city =
+                      comma >= 0
+                        ? cd.vendorAddress.slice(comma + 1).trim()
+                        : null;
+                    return (
+                      <div className="text-[12px] leading-[1.45] text-muted-foreground">
+                        <div>{street}</div>
+                        {city && <div>{city}</div>}
+                      </div>
+                    );
+                  })()}
+              </div>
+            </div>
+            <div className="flex min-w-0 flex-col gap-[3px]">
+              <span className="text-[12px] text-muted-foreground">
+                Bill to{dc?.billTo && <CorrectedMark />}
+              </span>
+              {arcPrimaryField === "billTo" && arcState && (
+                <ArcPill count={arcState.count} phase={arcState.phase} />
+              )}
+              <div
+                key={pulsedKey("billTo")}
+                data-detail-field="billTo"
+                className={cn("min-w-0", pulseClass("billTo"))}
+                style={
+                  arcFields.has("billTo") && arcState
+                    ? arcFieldStyle(arcState.phase)
+                    : undefined
+                }
+              >
+                <div className="text-[14px] font-medium text-foreground">
+                  {cd.billTo}
+                  {isAimed("billTo") && aimGhost("billTo") && (
+                    <span className="ml-1.5 text-[12px] font-normal text-muted-foreground/70">
+                      {" → "}
+                      {aimGhost("billTo")}
+                    </span>
+                  )}
+                </div>
+                {cd.billAddress &&
+                  (() => {
+                    const comma = cd.billAddress.indexOf(",");
+                    const street =
+                      comma >= 0
+                        ? cd.billAddress.slice(0, comma)
+                        : cd.billAddress;
+                    const city =
+                      comma >= 0
+                        ? cd.billAddress.slice(comma + 1).trim()
+                        : null;
+                    return (
+                      <div className="text-[12px] leading-[1.45] text-muted-foreground">
+                        <div>{street}</div>
+                        {city && <div>{city}</div>}
+                      </div>
+                    );
+                  })()}
+              </div>
+            </div>
+          </div>
+
+          {/* Section heading — line items */}
+          <p className="text-[14px] font-bold tracking-tight text-foreground mt-[32px]">
+            Line items
+          </p>
+
+          {/* Table */}
+          <div className="[font-variant-numeric:tabular-nums] mt-[18px]">
+            {/* Column headers */}
+            <div className="grid grid-cols-[16px_1fr_56px_80px] items-end gap-x-3 pb-2 border-b border-border">
+              <span className="text-[12px] text-muted-foreground">#</span>
+              <span className="text-[12px] text-muted-foreground">Item</span>
+              <span className="text-[12px] text-muted-foreground text-right">
+                {hasPo ? "Qty / PO" : "Qty"}
+              </span>
+              <span className="text-[12px] text-muted-foreground text-right">
+                Amount
+              </span>
+            </div>
+            <div>
+              {correctedLines.map((line, i) => {
+                const lineNum = i + 1;
+                const isActive = activeLine === lineNum;
+                const lineCorrected = dc?.lines?.[lineNum] !== undefined;
+                const qtyMismatch =
+                  line.poQty !== undefined && line.qty !== line.poQty;
+                return (
+                  <div
+                    key={d.lines[i].description}
+                    className={cn(
+                      "grid grid-cols-[16px_1fr_56px_80px] items-baseline gap-x-3 py-[6px] -mx-6 px-6",
+                      isActive && phase === "peak"
+                        ? "bg-warning/20"
+                        : isActive
+                          ? "bg-warning/10 transition-[background-color] duration-[600ms]"
+                          : "",
+                    )}
+                  >
+                    {/* # */}
+                    <span className="text-[11px] text-muted-foreground pt-px">
+                      {lineNum}
+                    </span>
+                    {/* ITEM */}
+                    <div className="flex flex-col gap-0.5 min-w-0">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="truncate text-xs text-muted-foreground cursor-default">
-                              {line.shortDescription}
+                            <span className="text-[13px] font-medium text-foreground leading-snug truncate cursor-default">
+                              {line.description}
+                              {lineCorrected && <CorrectedMark />}
                             </span>
                           </TooltipTrigger>
                           <TooltipContent
@@ -5061,85 +5218,137 @@ function DetailsCombinedTab() {
                             align="start"
                             className="max-w-64"
                           >
-                            {line.shortDescription}
+                            {line.description}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                    )}
-                    {line.subline &&
-                      (line.flagStatus === "warning" ? (
-                        <Badge variant="secondary" status="warning">
-                          {line.subline}
-                        </Badge>
-                      ) : (
-                        <span className="text-[12px] leading-[1.45] text-muted-foreground">
-                          {line.subline}
-                        </span>
-                      ))}
-                  </div>
-                  {/* QTY / PO */}
-                  <div className="text-right whitespace-nowrap">
-                    {hasPo && line.poQty !== undefined ? (
-                      <span
-                        key={pulsedLineKey(lineNum)}
-                        data-detail-line={lineNum}
-                        className={cn(
-                          "text-[12px]",
-                          qtyMismatch
-                            ? "font-medium text-warning"
-                            : "text-muted-foreground",
-                          pulseLineClass(lineNum),
-                        )}
-                      >
-                        {line.qty} / {line.poQty}
-                      </span>
-                    ) : (
-                      <span
-                        key={pulsedLineKey(lineNum)}
-                        data-detail-line={lineNum}
-                        className={cn(
-                          "text-[13px] text-muted-foreground",
-                          pulseLineClass(lineNum),
-                        )}
-                      >
-                        {line.qty}
-                      </span>
-                    )}
-                  </div>
-                  {/* AMOUNT */}
-                  <div className="text-right whitespace-nowrap">
-                    <div
-                      className={cn(
-                        "text-[13px] leading-tight",
-                        line.agreed
-                          ? "font-medium text-warning"
-                          : "text-foreground",
+                      {line.shortDescription && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="truncate text-xs text-muted-foreground cursor-default">
+                                {line.shortDescription}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="bottom"
+                              align="start"
+                              className="max-w-64"
+                            >
+                              {line.shortDescription}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       )}
-                    >
-                      {line.amount}
+                      {line.subline &&
+                        (line.flagStatus === "warning" ? (
+                          <Badge variant="secondary" status="warning">
+                            {line.subline}
+                          </Badge>
+                        ) : (
+                          <span className="text-[12px] leading-[1.45] text-muted-foreground">
+                            {line.subline}
+                          </span>
+                        ))}
                     </div>
-                    {line.agreed && (
-                      <div className="text-[11px] text-muted-foreground leading-tight">
-                        {line.agreed}
+                    {/* QTY / PO */}
+                    <div className="text-right whitespace-nowrap">
+                      {arcPrimaryLine === lineNum && arcState && (
+                        <div className="flex justify-end mb-0.5">
+                          <ArcPill
+                            count={arcState.count}
+                            phase={arcState.phase}
+                          />
+                        </div>
+                      )}
+                      {hasPo && line.poQty !== undefined ? (
+                        <span
+                          key={pulsedLineKey(lineNum)}
+                          data-detail-line={lineNum}
+                          className={cn(
+                            "text-[12px]",
+                            qtyMismatch
+                              ? "font-medium text-warning"
+                              : "text-muted-foreground",
+                            pulseLineClass(lineNum),
+                          )}
+                          style={
+                            arcLineNums.has(lineNum) && arcState
+                              ? arcFieldStyle(arcState.phase)
+                              : undefined
+                          }
+                        >
+                          <span
+                            style={
+                              arcLineNums.has(lineNum) && arcState
+                                ? arcValueStyle(arcState.phase)
+                                : undefined
+                            }
+                          >
+                            {line.qty} / {line.poQty}
+                          </span>
+                        </span>
+                      ) : (
+                        <span
+                          key={pulsedLineKey(lineNum)}
+                          data-detail-line={lineNum}
+                          className={cn(
+                            "text-[13px] text-muted-foreground",
+                            pulseLineClass(lineNum),
+                          )}
+                          style={
+                            arcLineNums.has(lineNum) && arcState
+                              ? arcFieldStyle(arcState.phase)
+                              : undefined
+                          }
+                        >
+                          <span
+                            style={
+                              arcLineNums.has(lineNum) && arcState
+                                ? arcValueStyle(arcState.phase)
+                                : undefined
+                            }
+                          >
+                            {line.qty}
+                          </span>
+                        </span>
+                      )}
+                    </div>
+                    {/* AMOUNT */}
+                    <div className="text-right whitespace-nowrap">
+                      <div
+                        className={cn(
+                          "text-[13px] leading-tight",
+                          line.agreed
+                            ? "font-medium text-warning"
+                            : "text-foreground",
+                        )}
+                      >
+                        {line.amount}
                       </div>
-                    )}
+                      {line.agreed && (
+                        <div className="text-[11px] text-muted-foreground leading-tight">
+                          {line.agreed}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-          {/* Total row */}
-          <div className="flex items-baseline mt-3 pt-3 border-t border-border">
-            <span className="text-[14px] font-medium text-foreground">
-              Total
-            </span>
-            <span className="text-[15px] font-medium text-foreground ml-auto">
-              {d.linesTotal}
-            </span>
+                );
+              })}
+            </div>
+            {/* Total row */}
+            <div className="flex items-baseline mt-3 pt-3 border-t border-border">
+              <span className="text-[14px] font-medium text-foreground">
+                Total
+              </span>
+              <span className="text-[15px] font-medium text-foreground ml-auto">
+                {d.linesTotal}
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

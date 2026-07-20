@@ -444,6 +444,18 @@ export interface InvoiceRuntime {
     prevDetailCorrections: DetailCorrections | undefined;
     autoResolvedIds: readonly string[];
   };
+  /** Transient arc animation state set by startArcResolve; not persisted. */
+  arcState?: ArcState;
+}
+
+export type ArcPhase = "pre" | "claim" | "act" | "confirm" | "release";
+
+export interface ArcState {
+  nonce: number;
+  detailFields: readonly string[];
+  lineNums: readonly number[];
+  phase: ArcPhase;
+  count: number;
 }
 
 export function exceptionMeta(e: InvoiceException): {
