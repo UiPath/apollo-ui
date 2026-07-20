@@ -1,4 +1,5 @@
 import { SolutionTestsTemplate } from '@/templates/SolutionTestsTemplate';
+import { RunDetailsTemplate } from '@/templates/RunDetailsTemplate';
 import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
 
 # Solution tests
@@ -28,10 +29,29 @@ touches the hooks or vs-core. From top to bottom the view stacks:
 - **KPI bar** — cards plus a `recharts` score-trend chart across recent runs.
 - **Tabs** — `Test cases` (list, enable/disable, run, delete) and
   `Test runs` (batch runs backed by live queries, per-run results, force-stop).
-- **Dialogs** — run details, JSON viewer, and delete confirmation, plus the
-  expected-vs-actual baseline adopt / update / remove flows.
+- **Run details** — a dedicated page for a batch run: an agent sidebar plus a
+  per-agent detail pane with the baseline adopt / update / remove actions (see
+  [Run details](#run-details) below).
+- **Dialogs** — the JSON viewer, run confirmation, and delete confirmation.
 
 Source: [`templates/SolutionTestsTemplate.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/SolutionTestsTemplate.tsx)
+
+## Run details
+
+Opening a batch run's **Details** drills into a dedicated run-details page: a
+sidebar lists every agent in the run, and selecting one shows its result in the
+detail pane — status, baseline vs tested version, score, the baseline adopt /
+update / remove actions, and the expected-vs-actual output rendered by the same
+evaluator renderers used across the view. In the smart container it's a routed
+page synced to a `?run=` search param (so it survives reloads and is shareable);
+the example below renders the presentational `RunDetailsView` against mock data
+with agent selection wired up.
+
+<PreviewFullScreen title="Run details preview">
+    <RunDetailsTemplate />
+</PreviewFullScreen>
+
+Source: [`templates/RunDetailsTemplate.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/RunDetailsTemplate.tsx)
 
 ## Consumer interface
 
@@ -202,7 +222,7 @@ you prefer to supply your own data plumbing or render the view against a mock
   provider's `triggerBaseUrl` (see Installation).
 - **Subject noun** — `config.subjectNoun` (a `singular` / `plural` pair) drives
   the subject-flavored KPI card (e.g. "Loans passing"), the runs "passed"
-  column, and the run-results dialog title; omit it for generic "Tests"
+  column, and the run-details page title; omit it for generic "Tests"
   wording.
 - **Fixed setup** — evaluator labels, status labels, and the poll interval are
   hard-coded in `constants.ts`; edit there to retarget a deployment. The pass
