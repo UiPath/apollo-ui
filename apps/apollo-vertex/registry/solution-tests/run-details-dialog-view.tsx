@@ -276,7 +276,7 @@ const ResultRow = ({
               <ActionButton
                 loading={updatePending}
                 icon={<ArrowLeftRight className="size-3" />}
-                tooltip={t('update_expected_result')}
+                tooltip={t('update_baseline')}
                 onClick={() => onUpdateBaseline(result.Id)}
               />
             )}
