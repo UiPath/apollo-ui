@@ -111,7 +111,7 @@ export const RunDetailsDialogView = ({
                   <TableRow>
                     <TableHead className="w-8 px-3 py-2" />
                     <TableHead className="px-3 py-2">{t('agent_name')}</TableHead>
-                    <TableHead className="px-3 py-2">{t('baseline_version')}</TableHead>
+                    <TableHead className="px-3 py-2">{t('baseline_agent_version')}</TableHead>
                     <TableHead className="px-3 py-2">{t('tested_agent_version')}</TableHead>
                     <TableHead className="px-3 py-2">{t('score')}</TableHead>
                     <TableHead className="px-3 py-2">{t('status')}</TableHead>
