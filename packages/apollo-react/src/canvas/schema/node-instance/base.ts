@@ -50,6 +50,7 @@ export const displayConfigSchema = z
     footerComponent: z.any().optional(), // React.ReactNode
     footerVariant: z.string().optional(), // FooterVariant enum
     shadow: z.boolean().optional(),
+    showModePill: z.boolean().optional(), // Container/loop header mode pill (see manifest display)
   })
   .catchall(z.unknown()); // Allow additional properties
 

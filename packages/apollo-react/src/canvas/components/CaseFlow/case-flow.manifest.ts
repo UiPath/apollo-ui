@@ -192,6 +192,8 @@ export const caseStageManifest: NodeManifest = {
     description: 'A phase of the case with tasks and entry, complete and exit rules',
     icon: 'layout-panel-top',
     shape: 'container',
+    // Stages have no iteration mode: hide the loop Sequential / Parallel pill.
+    showModePill: false,
   },
   handleConfiguration: [
     {
