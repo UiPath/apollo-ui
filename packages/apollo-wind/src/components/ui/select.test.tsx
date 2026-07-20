@@ -294,27 +294,29 @@ describe('Select', () => {
     container.setAttribute('data-testid', 'portal-container');
     document.body.appendChild(container);
 
-    render(
-      <Select>
-        <SelectTrigger aria-label="Select a fruit">
-          <SelectValue placeholder="Select a fruit" />
-        </SelectTrigger>
-        <SelectContent container={container}>
-          <SelectItem value="apple">Apple</SelectItem>
-          <SelectItem value="banana">Banana</SelectItem>
-        </SelectContent>
-      </Select>
-    );
+    try {
+      render(
+        <Select>
+          <SelectTrigger aria-label="Select a fruit">
+            <SelectValue placeholder="Select a fruit" />
+          </SelectTrigger>
+          <SelectContent container={container}>
+            <SelectItem value="apple">Apple</SelectItem>
+            <SelectItem value="banana">Banana</SelectItem>
+          </SelectContent>
+        </Select>
+      );
 
-    const trigger = screen.getByRole('combobox');
-    await user.click(trigger);
+      const trigger = screen.getByRole('combobox');
+      await user.click(trigger);
 
-    await waitFor(() => {
-      expect(screen.getByRole('option', { name: 'Apple' })).toBeInTheDocument();
-    });
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'Apple' })).toBeInTheDocument();
+      });
 
-    expect(container).toContainElement(screen.getByRole('option', { name: 'Apple' }));
-
-    document.body.removeChild(container);
+      expect(container).toContainElement(screen.getByRole('option', { name: 'Apple' }));
+    } finally {
+      container.remove();
+    }
   });
 });

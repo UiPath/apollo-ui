@@ -244,23 +244,25 @@ describe('Popover', () => {
     container.setAttribute('data-testid', 'portal-container');
     document.body.appendChild(container);
 
-    render(
-      <Popover>
-        <PopoverTrigger>Open</PopoverTrigger>
-        <PopoverContent container={container}>Contained content</PopoverContent>
-      </Popover>
-    );
+    try {
+      render(
+        <Popover>
+          <PopoverTrigger>Open</PopoverTrigger>
+          <PopoverContent container={container}>Contained content</PopoverContent>
+        </Popover>
+      );
 
-    const trigger = screen.getByRole('button', { name: 'Open' });
-    await user.click(trigger);
+      const trigger = screen.getByRole('button', { name: 'Open' });
+      await user.click(trigger);
 
-    await waitFor(() => {
-      expect(screen.getByText('Contained content')).toBeInTheDocument();
-    });
+      await waitFor(() => {
+        expect(screen.getByText('Contained content')).toBeInTheDocument();
+      });
 
-    expect(container).toContainElement(screen.getByText('Contained content'));
-
-    document.body.removeChild(container);
+      expect(container).toContainElement(screen.getByText('Contained content'));
+    } finally {
+      container.remove();
+    }
   });
 
   it('supports asChild on trigger', async () => {
