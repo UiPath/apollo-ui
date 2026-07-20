@@ -158,7 +158,7 @@ export const SolutionTestsView = ({
   const runsTable = useControlledTable([{ id: 'StartedAt', desc: true }]);
   // `getRowId` is the test `Id`, so selection keys are test ids directly.
   const selectedTestIds = Object.keys(casesTable.rowSelection).filter(
-    (id) => casesTable.rowSelection[id],
+    (id) => casesTable.rowSelection[id]
   );
 
   const testCasesColumns: ColumnDef<SolutionTest>[] = [
@@ -236,8 +236,10 @@ export const SolutionTestsView = ({
     ...config.subjectColumns,
     {
       accessorKey: 'VerticalSolutionVersion',
-      meta: { displayName: t('version') },
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('version')} />,
+      meta: { displayName: t('solution_version') },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('solution_version')} />
+      ),
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
           {row.original.VerticalSolutionVersion ?? '-'}
@@ -363,8 +365,10 @@ export const SolutionTestsView = ({
     },
     {
       accessorKey: 'VerticalSolutionVersion',
-      meta: { displayName: t('version') },
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('version')} />,
+      meta: { displayName: t('solution_version') },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('solution_version')} />
+      ),
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
           {row.original.VerticalSolutionVersion ?? '-'}
