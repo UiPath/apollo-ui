@@ -31,13 +31,12 @@ import type { CategoryManifest, NodeManifest } from '../../schema/node-definitio
 /** Default diameter for the big lifecycle circles (trigger, case complete/exit). */
 export const CASE_LIFECYCLE_NODE_SIZE = 96;
 /**
- * Default diameter for the small event / adhoc task marker circles.
- * 64px is the smallest square BaseNode supports for a node with one handle per
- * side: its minimum-height rule reserves a 2-grid lane per left/right handle
- * plus 2 grid spaces of padding ((1 * 2 + 2) * 16px). Anything smaller gets its
- * height forced back up, which renders as an oval instead of a circle.
+ * Diameter for the event / adhoc task marker circles. The regular BaseNode
+ * size (96px, DEFAULT_NODE_SIZE): letting the node use its standard geometry
+ * is the only way it reliably renders as a true circle, because BaseNode owns
+ * its own minimum-height math and fights any smaller explicit size.
  */
-export const CASE_MARKER_NODE_SIZE = 64;
+export const CASE_MARKER_NODE_SIZE = 96;
 
 // ============================================================================
 // Categories
@@ -168,7 +167,12 @@ export const caseManagementTriggerManifest: NodeManifest = {
  * node's start / continue / break:
  * - `onEnter` (label "Enter", loop start): starts the sequential task chain
  * - `onComplete` (label "Complete", loop continue): tasks that finish the stage
- * - `onExit` (label "Exit", loop break): tasks that abandon the stage
+ * - `onExit` (label "Exit", loop break): tasks that abandon the stage, rendered
+ *   below Complete on the right inner wall
+ *
+ * Inner and outer handles line up: Enter faces the outer `enter`, and the inner
+ * Complete / Exit pair faces the outer `complete` / `exit` pair (vertical handle
+ * distribution is count-based, so matching counts per side align).
  *
  * OUTER handles are unlabeled plain connection points (like a regular loop
  * container): `enter` receives the trigger / previous stage; `complete` and
@@ -247,6 +251,9 @@ export const caseStageManifest: NodeManifest = {
       ],
     },
     {
+      // One group with both handles so their vertical positions mirror the
+      // outer right group's complete / exit pair exactly (handle distribution
+      // is count-based, so equal counts on the same side line up).
       position: 'right',
       boundary: 'inner',
       alwaysVisible: true,
@@ -261,13 +268,6 @@ export const caseStageManifest: NodeManifest = {
             validationMessage: 'Tasks or event rules that finish the stage connect to Complete',
           },
         },
-      ],
-    },
-    {
-      position: 'bottom',
-      boundary: 'inner',
-      alwaysVisible: true,
-      handles: [
         {
           id: 'onExit',
           label: 'Exit',

@@ -72,11 +72,19 @@ describe('case-flow manifest', () => {
       expect(handle.label, handle.id).toBeUndefined();
     }
 
-    // Enter sits on the left inner wall, Complete on the right, Exit on the bottom,
-    // and all three are permanently visible.
-    expect(inner.map((g) => g.position)).toEqual(['left', 'right', 'bottom']);
+    // Enter sits on the left inner wall; Complete and Exit share one right inner
+    // group so they line up with the outer complete / exit pair (distribution is
+    // count-based). All are permanently visible.
+    expect(inner.map((g) => g.position)).toEqual(['left', 'right']);
     for (const group of inner) {
       expect(group.alwaysVisible, group.position).toBe(true);
     }
+
+    // Inner handle counts per side mirror the outer ones so positions align:
+    // 1 on the left (enter / Enter), 2 on the right (complete+exit / Complete+Exit).
+    const outerBySide = new Map(outer.map((g) => [g.position, g.handles.length]));
+    const innerBySide = new Map(inner.map((g) => [g.position, g.handles.length]));
+    expect(innerBySide.get('left')).toBe(outerBySide.get('left'));
+    expect(innerBySide.get('right')).toBe(outerBySide.get('right'));
   });
 });
