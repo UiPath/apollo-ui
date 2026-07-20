@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { getIterationStatusColor, LoopNodeExecutionCount } from './LoopNodeExecutionCount';
-import type { LoopNodeExecutionCountState } from './LoopNode.types';
 import { ElementStatusValues } from '../../types/execution';
+import type { LoopNodeExecutionCountState } from './LoopNode.types';
+import { getIterationStatusColor, LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 
 vi.mock('../../utils/icon-registry', () => ({
   CanvasIcon: ({ icon }: { icon: string }) => <span data-testid={`canvas-icon-${icon}`} />,

@@ -136,6 +136,15 @@ export const handleGroupManifestSchema = z.object({
    */
   boundary: handleBoundarySchema.optional(),
 
+  /**
+   * When true, the group's handles (and their labels) render at all times
+   * instead of only on hover / selection / while connecting. Used by
+   * container-style nodes for permanently visible lifecycle handles (e.g. the
+   * case stage's inner Enter / Complete / Exit). Connected handles are always
+   * visible regardless of this flag.
+   */
+  alwaysVisible: z.boolean().optional(),
+
   customPositionAndOffsets: handleConfigurationSpecificPositionSchema.optional(),
 
   /** Array of handles at this position */
