@@ -18,13 +18,15 @@ import { CASE_MARKER_NODE_SIZE, caseFlowManifest } from './case-flow.manifest';
  * - Stages: loop container nodes. The outer left handle is stage enter (loop
  *   start), the outer right handles are stage complete (loop end) and stage exit
  *   (loop break). Rule chips and description text render in the stage header.
- * - Small circles: entry / complete / exit rule conditions plus event and manual
- *   (adhoc) task markers. They connect into the stage's inner handles, so every
- *   rule is a node, a handle, or an edge.
- * - Squares: tasks. Edges from the stage's inner "On enter" handle and between
- *   tasks are sequential run rules.
- * - Cross-stage edges (stage complete into another stage's entry rule) express
- *   rules that depend on other stages.
+ * - Small circles OUTSIDE the stages: entry / complete / exit rule conditions.
+ *   They sit on the transitions: entry rules feed the stage's enter handle;
+ *   complete / exit rules are fed by the stage's complete / exit handles and
+ *   gate the next stage or the case lifecycle. A rule circle on the edge
+ *   between two stages is the cross-stage dependency rule.
+ * - Small circles INSIDE the stages: task-level event (zap icon) and manual
+ *   (play icon) markers that start event-based and adhoc tasks.
+ * - Squares: tasks. The sequential chain runs from the stage's inner "On enter"
+ *   handle through the tasks to the inner "On complete" handle.
  */
 
 const STAGE_TYPE = 'uipath.case.stage';
@@ -55,18 +57,22 @@ function childNode(
   type: string,
   parentId: string,
   position: { x: number; y: number },
-  data: BaseNodeData,
-  size?: number
+  data: BaseNodeData
 ): Node<BaseNodeData> {
   const node = createNode({ id, type, position, data: { nodeType: type, ...data } });
   return {
     ...node,
     parentId,
     extent: 'parent' as const,
-    ...(size ? { width: size, height: size } : {}),
   };
 }
 
+/**
+ * Small circle marker (rule condition, event, or manual). 64px square so
+ * BaseNode's minimum-height rule keeps it a true circle (see
+ * CASE_MARKER_NODE_SIZE). Rule circles are free-floating on the transitions;
+ * event / adhoc markers are parented inside their stage.
+ */
 function markerNode(
   id: string,
   type: string,
@@ -97,7 +103,7 @@ function createCaseFlowNodes(): Node[] {
     createNode({
       id: 'trigger',
       type: 'uipath.case.trigger',
-      position: { x: 32, y: 336 },
+      position: { x: 0, y: 320 },
       data: {
         nodeType: 'uipath.case.trigger',
         version: '1.0.0',
@@ -106,11 +112,19 @@ function createCaseFlowNodes(): Node[] {
       },
     }),
 
+    // Entry rule: small circle on the transition into the stage.
+    markerNode(
+      'intake-entry-rule',
+      'uipath.case.rule.entry',
+      { x: 192, y: 336 },
+      { display: { label: 'Case entered' }, inputs: { rule: 'case-entered' } }
+    ),
+
     // Stage 1: Intake. Header shows description text and rule chips via node data.
     stageNode(
       'stage-intake',
-      { x: 240, y: 128 },
-      { width: 608, height: 448 },
+      { x: 352, y: 160 },
+      { width: 560, height: 320 },
       {
         display: {
           label: 'Intake',
@@ -122,43 +136,38 @@ function createCaseFlowNodes(): Node[] {
         ],
       }
     ),
-    markerNode(
-      'intake-entry-rule',
-      'uipath.case.rule.entry',
-      { x: 64, y: 320 },
-      { display: { label: 'Case entered' }, inputs: { rule: 'case-entered' } },
-      'stage-intake'
-    ),
     childNode(
       'task-collect',
       TASK_TYPE,
       'stage-intake',
-      { x: 144, y: 112 },
+      { x: 144, y: 128 },
       { display: { label: 'Collect documents', icon: 'clipboard-list' } }
     ),
     childNode(
       'task-verify',
       TASK_TYPE,
       'stage-intake',
-      { x: 336, y: 112 },
+      { x: 336, y: 128 },
       { display: { label: 'Verify coverage', icon: 'shield-check' } }
     ),
+
+    // Complete rule: gates the transition from Intake into Assessment.
+    // This circle on the stage-to-stage edge is the cross-stage dependency rule.
     markerNode(
       'intake-complete-rule',
       'uipath.case.rule.complete',
-      { x: 480, y: 320 },
+      { x: 1008, y: 288 },
       {
         display: { label: 'Required tasks completed' },
-        inputs: { rule: 'required-tasks-completed' },
-      },
-      'stage-intake'
+        inputs: { rule: 'required-tasks-completed', selectedStageId: 'stage-intake' },
+      }
     ),
 
-    // Stage 2: Assessment. Event and manual task markers, exit rule, cross-stage entry rule.
+    // Stage 2: Assessment. Event and manual task markers stay inside the stage.
     stageNode(
       'stage-assessment',
-      { x: 960, y: 128 },
-      { width: 640, height: 448 },
+      { x: 1168, y: 96 },
+      { width: 640, height: 480 },
       {
         display: {
           label: 'Assessment',
@@ -171,16 +180,6 @@ function createCaseFlowNodes(): Node[] {
         ],
       }
     ),
-    markerNode(
-      'assessment-entry-rule',
-      'uipath.case.rule.entry',
-      { x: 64, y: 320 },
-      {
-        display: { label: 'Intake completed' },
-        inputs: { rule: 'selected-stage-completed', selectedStageId: 'stage-intake' },
-      },
-      'stage-assessment'
-    ),
     childNode(
       'task-review',
       TASK_TYPE,
@@ -192,7 +191,7 @@ function createCaseFlowNodes(): Node[] {
     markerNode(
       'assessment-event',
       'uipath.case.task.event',
-      { x: 336, y: 320 },
+      { x: 128, y: 288 },
       { display: { label: 'Fraud signal' }, inputs: { eventType: 'connector' } },
       'stage-assessment'
     ),
@@ -200,14 +199,14 @@ function createCaseFlowNodes(): Node[] {
       'task-adjuster',
       TASK_TYPE,
       'stage-assessment',
-      { x: 432, y: 272 },
+      { x: 304, y: 272 },
       { display: { label: 'Adjuster review', icon: 'user-search' } }
     ),
     // Adhoc task: small circle with the play icon feeding the task.
     markerNode(
       'assessment-adhoc',
       'uipath.case.task.adhoc',
-      { x: 336, y: 128 },
+      { x: 464, y: 288 },
       { display: { label: 'Manual' } },
       'stage-assessment'
     ),
@@ -215,25 +214,26 @@ function createCaseFlowNodes(): Node[] {
       'task-escalate',
       TASK_TYPE,
       'stage-assessment',
-      { x: 432, y: 80 },
+      { x: 528, y: 112 },
       { display: { label: 'Escalate to expert', icon: 'user-plus' } }
     ),
+
+    // Exit rule: fed by the stage's exit handle, gates the path to case exit.
     markerNode(
       'assessment-exit-rule',
       'uipath.case.rule.exit',
-      { x: 528, y: 384 },
+      { x: 1904, y: 496 },
       {
         display: { label: 'Claim withdrawn' },
         inputs: { rule: 'wait-for-connector' },
-      },
-      'stage-assessment'
+      }
     ),
 
     // Case lifecycle rules: big circles like the trigger.
     createNode({
       id: 'case-complete',
       type: 'uipath.case.complete',
-      position: { x: 1728, y: 240 },
+      position: { x: 2064, y: 208 },
       data: {
         nodeType: 'uipath.case.complete',
         version: '1.0.0',
@@ -243,7 +243,7 @@ function createCaseFlowNodes(): Node[] {
     createNode({
       id: 'case-exit',
       type: 'uipath.case.exit',
-      position: { x: 1728, y: 448 },
+      position: { x: 2064, y: 480 },
       data: {
         nodeType: 'uipath.case.exit',
         version: '1.0.0',
@@ -255,39 +255,38 @@ function createCaseFlowNodes(): Node[] {
 
 function createCaseFlowEdges(): Edge[] {
   return [
-    // Trigger starts the first stage (stage enter = loop start handle).
-    edge('e-trigger-intake', 'trigger', 'output', 'stage-intake', 'enter'),
+    // Trigger feeds the entry rule, the entry rule feeds stage enter (loop start).
+    edge('e-trigger-entry-rule', 'trigger', 'output', 'intake-entry-rule', 'input'),
+    edge('e-entry-rule-intake', 'intake-entry-rule', 'output', 'stage-intake', 'enter'),
 
-    // Entry rule circle feeds the stage's inner entry-rules handle.
-    edge('e-intake-entry', 'intake-entry-rule', 'output', 'stage-intake', 'entryRules'),
-
-    // Sequential task chain: inner On enter handle -> task -> task.
+    // Sequential task chain: inner On enter -> task -> task -> inner On complete.
     edge('e-intake-onenter', 'stage-intake', 'onEnter', 'task-collect', 'input'),
     edge('e-collect-verify', 'task-collect', 'output', 'task-verify', 'input'),
+    edge('e-verify-oncomplete', 'task-verify', 'output', 'stage-intake', 'onComplete'),
 
-    // Stage complete rule: tasks feed the rule circle, the circle feeds completeRules.
-    edge('e-verify-complete-rule', 'task-verify', 'output', 'intake-complete-rule', 'input'),
-    edge('e-intake-complete', 'intake-complete-rule', 'output', 'stage-intake', 'completeRules'),
-
-    // Stage-to-stage transition: intake complete (loop end) enters assessment.
-    edge('e-intake-assessment', 'stage-intake', 'complete', 'stage-assessment', 'enter'),
-
-    // Cross-stage dependency rule: assessment's entry rule depends on intake completing.
-    edge('e-intake-dep', 'stage-intake', 'complete', 'assessment-entry-rule', 'input'),
-    edge('e-assessment-entry', 'assessment-entry-rule', 'output', 'stage-assessment', 'entryRules'),
+    // Stage complete (loop end) feeds the complete rule, which gates the next stage.
+    edge('e-intake-complete-rule', 'stage-intake', 'complete', 'intake-complete-rule', 'input'),
+    edge(
+      'e-complete-rule-assessment',
+      'intake-complete-rule',
+      'output',
+      'stage-assessment',
+      'enter'
+    ),
 
     // Assessment tasks: sequential, event-based, and adhoc.
     edge('e-assessment-onenter', 'stage-assessment', 'onEnter', 'task-review', 'input'),
+    edge('e-review-oncomplete', 'task-review', 'output', 'stage-assessment', 'onComplete'),
     edge('e-event-adjuster', 'assessment-event', 'output', 'task-adjuster', 'input'),
     edge('e-adhoc-escalate', 'assessment-adhoc', 'output', 'task-escalate', 'input'),
 
-    // Stage exit rule (loop break handle).
-    edge('e-assessment-exit', 'assessment-exit-rule', 'output', 'stage-assessment', 'exitRules'),
+    // Stage exit (loop break) feeds the exit rule, which gates the case exit.
+    edge('e-assessment-exit-rule', 'stage-assessment', 'exit', 'assessment-exit-rule', 'input'),
+    edge('e-exit-rule-case-exit', 'assessment-exit-rule', 'output', 'case-exit', 'input'),
 
     // Case lifecycle: complete/exit circles fed by stage complete/exit handles.
     edge('e-case-complete', 'stage-assessment', 'complete', 'case-complete', 'input'),
-    edge('e-case-exit-1', 'stage-intake', 'exit', 'case-exit', 'input'),
-    edge('e-case-exit-2', 'stage-assessment', 'exit', 'case-exit', 'input'),
+    edge('e-case-exit-intake', 'stage-intake', 'exit', 'case-exit', 'input'),
   ];
 }
 
