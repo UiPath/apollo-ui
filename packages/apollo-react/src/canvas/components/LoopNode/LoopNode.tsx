@@ -260,6 +260,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const headerDescription = (resolvedData.display as { description?: string } | undefined)
     ?.description;
   const isParallel = resolvedData.parallel === true;
+  const showModePill = display.showModePill !== false;
   const label = isParallel
     ? _({ id: 'loop-node.mode.parallel', message: 'Parallel' })
     : _({ id: 'loop-node.mode.sequential', message: 'Sequential' });
@@ -416,6 +417,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
           loading={isLoading}
           isParallel={isParallel}
           label={label}
+          showModePill={showModePill}
           iterationPillState={iterationPillStateProp}
           nodeWidth={containerWidth}
           hasTopLeftAdornment={hasTopLeftAdornment}
@@ -485,6 +487,7 @@ function Header({
   loading,
   isParallel,
   label,
+  showModePill,
   iterationPillState,
   nodeWidth,
   hasTopLeftAdornment,
@@ -497,6 +500,7 @@ function Header({
   loading: boolean;
   isParallel: boolean;
   label: string;
+  showModePill: boolean;
   iterationPillState?: LoopNodeExecutionCountState;
   nodeWidth: number;
   hasTopLeftAdornment: boolean;
@@ -549,12 +553,14 @@ function Header({
               size={nodeWidth >= 400 ? 'full' : nodeWidth >= 260 ? 'compact' : 'minimal'}
             />
           ) : null}
-          <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
-            <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
-              <CanvasIcon icon="text-align-justify" size={12} />
+          {showModePill ? (
+            <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
+              <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
+                <CanvasIcon icon="text-align-justify" size={12} />
+              </span>
+              {label}
             </span>
-            {label}
-          </span>
+          ) : null}
         </div>
       </div>
       {hasSecondaryRow ? (

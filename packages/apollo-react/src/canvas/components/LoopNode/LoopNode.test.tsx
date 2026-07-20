@@ -524,3 +524,23 @@ describe('LoopNode always-visible handle groups', () => {
     expect(labelElement().className).toContain('opacity-0');
   });
 });
+
+describe('LoopNode header mode pill', () => {
+  it('shows the Sequential mode pill by default', () => {
+    renderLoopNode();
+
+    expect(screen.getByText('Sequential')).toBeTruthy();
+  });
+
+  it('hides the mode pill when display.showModePill is false', () => {
+    mockManifest.current = {
+      display: { label: 'Stage', icon: 'repeat', shape: 'container', showModePill: false },
+      handleConfiguration: [],
+    };
+
+    renderLoopNode();
+
+    expect(screen.queryByText('Sequential')).toBeNull();
+    expect(screen.queryByText('Parallel')).toBeNull();
+  });
+});
