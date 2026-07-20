@@ -16,7 +16,7 @@
 %>    --<%= property.name.slice(0, -'-light-hc'.length) %>: #{$<%= property.name %>};
 <% }}); %>
     --border: #{$border-light-hc};
-    color-scheme: light-hc;
+    color-scheme: light;
   }
 
   body.dark#{$child-selector} {
@@ -32,7 +32,7 @@
 %>    --<%= property.name.slice(0, -'-dark-hc'.length) %>: #{$<%= property.name %>};
 <% }}); %>
     --border: #{$border-dark-hc};
-    color-scheme: dark-hc;
+    color-scheme: dark;
   }
 
   /* Future themes also emit bare class selectors (not gated on body)
