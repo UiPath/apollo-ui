@@ -160,6 +160,39 @@ interface RuntimeStore {
   getArcState: (invoiceId: string) => ArcState | undefined;
   /** Set (or clear with null) the transient arc animation state for an invoice. */
   setArcState: (invoiceId: string, state: ArcState | null) => void;
+  /**
+   * Arc phase 1 (fires at ACT, t+450ms): commit the correction and one corrected
+   * event; predicates run synchronously. Returns the computed cleared IDs and the
+   * deferred auto-resolve + re-validated events — caller holds these and passes
+   * them to correctDetailStep2 at REST so the center/queue stay frozen while the
+   * panel pill is visible.
+   */
+  correctDetailStep1: (
+    invoiceId: string,
+    corrections: DetailCorrections,
+    context: { openExceptions: InvoiceException[]; base: PredicateBaseData },
+    correctionEvents: RunEventInput[],
+    extras?: {
+      dataPatch?: Partial<InvoiceReview>;
+      surfaced?: InvoiceException[];
+      settledSub?: string;
+    },
+  ) => {
+    cleared: string[];
+    autoResolveEvents: RunEventInput[];
+    revalidatedEvent: RunEventInput;
+  };
+  /**
+   * Arc phase 2 (fires at REST, t+1800ms): apply the auto-resolved exception IDs
+   * and append the deferred auto-resolve and re-validated events from phase 1.
+   * Queue chip, carousel, and timeline consequences become visible here.
+   */
+  correctDetailStep2: (
+    invoiceId: string,
+    cleared: string[],
+    autoResolveEvents: RunEventInput[],
+    revalidatedEvent: RunEventInput,
+  ) => void;
 }
 
 const InvoiceRuntimeContext = createContext<RuntimeStore | null>(null);
@@ -440,6 +473,113 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
             [id]: {
               ...cur,
               resolvedIds: cur.resolvedIds.filter((rid) => rid !== excId),
+            },
+          };
+        }),
+      correctDetailStep1: (
+        id,
+        corrections,
+        context,
+        correctionEvents,
+        extras,
+      ) => {
+        // Read current state synchronously to run predicates before the setMap call.
+        const cur = map[id] ?? EMPTY;
+        const merged = mergeDetailCorrections(
+          cur.detailCorrections,
+          corrections,
+        );
+        const { cleared } = runPredicates(
+          context.openExceptions,
+          merged,
+          context.base,
+        );
+        const autoResolveEvents: RunEventInput[] = cleared.map((cid) => {
+          const exc = context.openExceptions.find((e) => e.id === cid);
+          return {
+            kind: "resolved",
+            label: `${exc ? exceptionMeta(exc).label : "Issue"} cleared`,
+            sub: "Cleared automatically after correction",
+            time: "Just now",
+            auto: true,
+            exception: exc,
+          };
+        });
+        const settledSub =
+          extras?.settledSub ??
+          (cleared.length > 0
+            ? `All checks re-run, ${cleared.length} issue${cleared.length > 1 ? "s" : ""} cleared`
+            : "All checks re-run, nothing new");
+        const revalidatedEvent: RunEventInput = {
+          kind: "revalidated",
+          label: "Re-validated",
+          sub: settledSub,
+          time: "Just now",
+          pending: false,
+        };
+        const patchedScalars = Object.keys(corrections).filter(
+          (k) => k !== "lines",
+        );
+        const patchedLineNums = Object.keys(corrections.lines ?? {}).map(
+          Number,
+        );
+        setMap((prev) => {
+          const c = prev[id] ?? EMPTY;
+          const mergedC = mergeDetailCorrections(
+            c.detailCorrections,
+            corrections,
+          );
+          let surfaced = c.surfaced;
+          if (extras?.surfaced?.length) {
+            const existing = new Set(c.surfaced.map((e) => e.id));
+            const fresh = extras.surfaced.filter((e) => !existing.has(e.id));
+            if (fresh.length) surfaced = [...c.surfaced, ...fresh];
+          }
+          return {
+            ...prev,
+            [id]: {
+              ...c,
+              detailCorrections: mergedC,
+              surfaced,
+              dataPatch: extras?.dataPatch
+                ? { ...c.dataPatch, ...extras.dataPatch }
+                : c.dataPatch,
+              events: [
+                ...c.events,
+                ...withKeys(id, c.events, correctionEvents),
+              ],
+              correctionPulse: {
+                nonce: (c.correctionPulse?.nonce ?? 0) + 1,
+                detailFields: patchedScalars,
+                lineNums: patchedLineNums,
+                autoResolvedIds: cleared,
+                aiSourced: true,
+              },
+              undoTarget: {
+                prevDetailCorrections: c.detailCorrections,
+                autoResolvedIds: cleared,
+              },
+            },
+          };
+        });
+        return { cleared, autoResolveEvents, revalidatedEvent };
+      },
+      correctDetailStep2: (id, cleared, autoResolveEvents, revalidatedEvent) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          const newResolvedIds = cleared.length
+            ? Array.from(new Set([...cur.resolvedIds, ...cleared]))
+            : cur.resolvedIds;
+          const allEvents: RunEventInput[] = [
+            ...autoResolveEvents,
+            revalidatedEvent,
+          ];
+          return {
+            ...prev,
+            [id]: {
+              ...cur,
+              resolvedIds: newResolvedIds,
+              events: [...cur.events, ...withKeys(id, cur.events, allEvents)],
             },
           };
         }),
