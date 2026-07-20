@@ -60,10 +60,17 @@ describe('case-flow manifest', () => {
     const outer = caseStageManifest.handleConfiguration.filter((g) => g.boundary !== 'inner');
     const inner = caseStageManifest.handleConfiguration.filter((g) => g.boundary === 'inner');
 
-    const outerIds = outer.flatMap((g) => g.handles.map((h) => h.id));
-    const innerIds = inner.flatMap((g) => g.handles.map((h) => h.id));
+    const outerHandles = outer.flatMap((g) => g.handles);
+    const innerHandles = inner.flatMap((g) => g.handles);
 
-    expect(outerIds).toEqual(['enter', 'complete', 'exit']);
-    expect(innerIds).toEqual(['onEnter', 'onComplete']);
+    expect(outerHandles.map((h) => h.id)).toEqual(['enter', 'complete', 'exit']);
+    expect(innerHandles.map((h) => h.id)).toEqual(['onEnter', 'onComplete', 'onExit']);
+
+    // The lifecycle labels live on the INNER handles (loop start / continue / break);
+    // the outer boundary stays unlabeled like a regular loop container.
+    expect(innerHandles.map((h) => h.label)).toEqual(['Enter', 'Complete', 'Exit']);
+    for (const handle of outerHandles) {
+      expect(handle.label, handle.id).toBeUndefined();
+    }
   });
 });

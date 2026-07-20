@@ -9,16 +9,17 @@
  * adhoc circle markers), rule condition circles, and case complete / case exit
  * lifecycle circles. Every case rule is representable as a handle, a node, or an
  * edge:
- * - stage enter / complete / exit are the stage's outer handles (the loop node's
- *   start / end / break handles respectively)
+ * - the stage's INNER handles carry the labeled lifecycle, Enter / Complete /
+ *   Exit, mapping 1:1 onto the loop node's start / continue / break; the outer
+ *   handles are unlabeled connection points
  * - stage-level rules live OUTSIDE the stage, on the transitions: entry rule
- *   circles sit before the stage's `enter` handle; complete / exit rule circles
- *   are fed by the stage's `complete` / `exit` handles and gate what happens
- *   next (the next stage, case complete, case exit). A rule circle on the edge
- *   between two stages IS the cross-stage dependency rule.
+ *   circles sit before the stage's outer `enter` handle; complete / exit rule
+ *   circles are fed by the stage's outer `complete` / `exit` handles and gate
+ *   what happens next (the next stage, case complete, case exit). A rule circle
+ *   on the edge between two stages IS the cross-stage dependency rule.
  * - inside the stage there are only tasks and task-level rule markers (event /
- *   adhoc); sequential task order is the edge chain from the stage's inner
- *   onEnter handle to its inner onComplete handle (loop start / continue)
+ *   adhoc); sequential task order is the edge chain from the inner Enter handle
+ *   to the inner Complete (or Exit) handle
  * - case complete / case exit rules are big lifecycle circles fed by stage
  *   complete / exit handles (directly or through a rule circle)
  */
@@ -161,17 +162,16 @@ export const caseManagementTriggerManifest: NodeManifest = {
 /**
  * Case stage rendered by the loop container node (LoopNode).
  *
- * Outer handles map loop semantics onto stage lifecycle:
- * - `enter` (loop start): the stage is entered. Entry rule circles and upstream
- *   stages/triggers connect into it from outside.
- * - `complete` (loop end): the stage completed. Feeds complete rule circles,
- *   downstream stages, and case-complete.
- * - `exit` (loop break): the stage was exited without completing. Feeds exit
- *   rule circles and case-exit.
+ * INNER handles carry the labeled stage lifecycle, mapping 1:1 onto the loop
+ * node's start / continue / break:
+ * - `onEnter` (label "Enter", loop start): starts the sequential task chain
+ * - `onComplete` (label "Complete", loop continue): tasks that finish the stage
+ * - `onExit` (label "Exit", loop break): tasks that abandon the stage
  *
- * Inner handles carry only the task chain (loop start / continue):
- * - `onEnter` starts the sequential task chain inside the stage
- * - `onComplete` is where the sequential chain terminates
+ * OUTER handles are unlabeled plain connection points (like a regular loop
+ * container): `enter` receives the trigger / previous stage / entry rules;
+ * `complete` and `exit` feed rule circles, downstream stages, and the case
+ * lifecycle circles.
  */
 export const caseStageManifest: NodeManifest = {
   nodeType: 'uipath.case.stage',
@@ -191,8 +191,9 @@ export const caseStageManifest: NodeManifest = {
       position: 'left',
       handles: [
         {
+          // Unlabeled on purpose: the outer boundary reads like a regular loop
+          // container. The stage lifecycle labels live on the INNER handles.
           id: 'enter',
-          label: 'Enter',
           type: 'target',
           handleType: 'input',
           constraints: {
@@ -208,7 +209,6 @@ export const caseStageManifest: NodeManifest = {
       handles: [
         {
           id: 'complete',
-          label: 'Complete',
           type: 'source',
           handleType: 'output',
           showButton: true,
@@ -218,7 +218,6 @@ export const caseStageManifest: NodeManifest = {
         },
         {
           id: 'exit',
-          label: 'Exit',
           type: 'source',
           handleType: 'output',
           showButton: true,
@@ -234,12 +233,12 @@ export const caseStageManifest: NodeManifest = {
       handles: [
         {
           id: 'onEnter',
-          label: 'On enter',
+          label: 'Enter',
           type: 'source',
           handleType: 'output',
           constraints: {
             allowedTargetCategories: ['case-task'],
-            validationMessage: 'On enter starts the sequential task chain of this stage',
+            validationMessage: 'Enter starts the sequential task chain of this stage',
           },
         },
       ],
@@ -250,12 +249,22 @@ export const caseStageManifest: NodeManifest = {
       handles: [
         {
           id: 'onComplete',
-          label: 'On complete',
+          label: 'Complete',
           type: 'target',
           handleType: 'input',
           constraints: {
             allowedSourceCategories: ['case-task'],
-            validationMessage: 'The sequential task chain of this stage ends at On complete',
+            validationMessage: 'Tasks that finish the stage connect to Complete',
+          },
+        },
+        {
+          id: 'onExit',
+          label: 'Exit',
+          type: 'target',
+          handleType: 'input',
+          constraints: {
+            allowedSourceCategories: ['case-task'],
+            validationMessage: 'Tasks that abandon the stage connect to Exit',
           },
         },
       ],
