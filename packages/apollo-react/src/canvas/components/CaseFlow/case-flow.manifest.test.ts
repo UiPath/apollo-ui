@@ -28,25 +28,31 @@ describe('case-flow manifest', () => {
     }
   });
 
-  it('rule circles target existing inner handles of the stage', () => {
-    const stageHandleIds = new Set(
-      caseStageManifest.handleConfiguration.flatMap((group) => group.handles.map((h) => h.id))
+  it('rule circles attach to the stage outer handles from outside', () => {
+    const stageOuterHandleIds = new Set(
+      caseStageManifest.handleConfiguration
+        .filter((group) => group.boundary !== 'inner')
+        .flatMap((group) => group.handles.map((h) => h.id))
     );
 
-    const ruleNodes = caseFlowManifest.nodes.filter((n) =>
-      n.nodeType.startsWith('uipath.case.rule.')
-    );
-    expect(ruleNodes).toHaveLength(3);
+    const findRule = (suffix: string) => {
+      const node = caseFlowManifest.nodes.find((n) => n.nodeType === `uipath.case.rule.${suffix}`);
+      expect(node, suffix).toBeTruthy();
+      return node!;
+    };
+    const handleConstraints = (node: (typeof caseFlowManifest.nodes)[number], handleId: string) =>
+      node.handleConfiguration.flatMap((g) => g.handles).find((h) => h.id === handleId)
+        ?.constraints;
 
-    for (const node of ruleNodes) {
-      const allowedTargets = node.handleConfiguration
-        .flatMap((group) => group.handles)
-        .flatMap((handle) => handle.constraints?.allowedTargets ?? []);
-      expect(allowedTargets.length, node.nodeType).toBeGreaterThan(0);
-      for (const target of allowedTargets) {
-        expect(target.nodeType).toBe('uipath.case.stage');
-        expect(target.handleId && stageHandleIds.has(target.handleId), node.nodeType).toBe(true);
-      }
+    // Entry rules sit before the stage: output goes into the stage's enter handle.
+    const entryTargets = handleConstraints(findRule('entry'), 'output')?.allowedTargets ?? [];
+    expect(entryTargets).toEqual([{ nodeType: 'uipath.case.stage', handleId: 'enter' }]);
+
+    // Complete / exit rules sit after the stage: input is fed by the matching outer handle.
+    for (const suffix of ['complete', 'exit'] as const) {
+      const sources = handleConstraints(findRule(suffix), 'input')?.allowedSources ?? [];
+      expect(sources).toEqual([{ nodeType: 'uipath.case.stage', handleId: suffix }]);
+      expect(stageOuterHandleIds.has(suffix)).toBe(true);
     }
   });
 
@@ -58,6 +64,6 @@ describe('case-flow manifest', () => {
     const innerIds = inner.flatMap((g) => g.handles.map((h) => h.id));
 
     expect(outerIds).toEqual(['enter', 'complete', 'exit']);
-    expect(innerIds).toEqual(['onEnter', 'entryRules', 'completeRules', 'exitRules']);
+    expect(innerIds).toEqual(['onEnter', 'onComplete']);
   });
 });
