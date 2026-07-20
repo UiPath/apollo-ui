@@ -120,6 +120,7 @@ import {
   LayoutVersionMenuItem,
   useInvoiceVersion,
 } from "./invoice-version";
+import styles from "./invoice-review.module.css";
 import { ExceptionTimeline } from "./next/ExceptionTimeline";
 import { HeaderDecision } from "./next/HeaderDecision";
 import {
@@ -4647,6 +4648,21 @@ function DetailsCombinedTab() {
 
   useEffect(() => {
     if (pulseNonce === undefined) return;
+    // Scroll the first corrected field into view so the glow is visible.
+    const firstField = correctionPulse?.detailFields[0];
+    const firstLine = correctionPulse?.lineNums[0];
+    const scrollTarget = firstField
+      ? document.querySelector<HTMLElement>(
+          `[data-detail-field="${firstField}"]`,
+        )
+      : firstLine !== undefined
+        ? document.querySelector<HTMLElement>(
+            `[data-detail-line="${firstLine}"]`,
+          )
+        : null;
+    scrollTarget?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // AI glow is driven entirely by the CSS keyframe; skip the React settle path.
+    if (correctionPulse?.aiSourced) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     setPulseSettle("peak");
     let r2 = 0;
@@ -4660,25 +4676,35 @@ function DetailsCombinedTab() {
     // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the animation
   }, [pulseNonce]);
 
+  const isAiPulse = !!correctionPulse?.aiSourced;
+
   const pulseClass = (field: string): string | undefined => {
     if (!pulseFields.has(field)) return undefined;
+    if (isAiPulse) return cn("rounded-sm px-0.5", styles.aiCorrectionGlow);
     return cn(
       "rounded-sm px-0.5 ring-1 ring-inset",
       pulseSettle === "peak"
         ? "bg-warning/40 ring-warning/70"
-        : "bg-warning/15 ring-warning/50 transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none",
+        : "bg-transparent ring-transparent transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none",
     );
   };
 
   const pulseLineClass = (lineNum: number): string | undefined => {
     if (!pulseLineNums.has(lineNum)) return undefined;
+    if (isAiPulse) return cn("rounded-sm px-0.5", styles.aiCorrectionGlow);
     return cn(
       "rounded-sm px-0.5 ring-1 ring-inset",
       pulseSettle === "peak"
         ? "bg-warning/40 ring-warning/70"
-        : "bg-warning/15 ring-warning/50 transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none",
+        : "bg-transparent ring-transparent transition-[background-color,box-shadow] duration-[600ms] ease-out motion-reduce:transition-none",
     );
   };
+
+  // Key helpers — changing key forces element remount, which restarts the CSS animation.
+  const pulsedKey = (field: string): string =>
+    `${field}-${isAiPulse && pulseFields.has(field) ? (pulseNonce ?? 0) : 0}`;
+  const pulsedLineKey = (lineNum: number): string =>
+    `line-${lineNum}-${isAiPulse && pulseLineNums.has(lineNum) ? (pulseNonce ?? 0) : 0}`;
 
   // Panel aim suppressed: rings/ghosts only render in the center evidence pair.
   const AIM_STYLE: CSSProperties = {
@@ -4772,11 +4798,12 @@ function DetailsCombinedTab() {
               Document date{dc?.documentDateFormatted && <CorrectedMark />}
             </span>
             <span
+              key={pulsedKey("documentDateFormatted")}
+              data-detail-field="documentDateFormatted"
               className={cn(
                 "text-[14px] font-medium text-foreground",
                 pulseClass("documentDateFormatted"),
               )}
-              style={isAimed("documentDateFormatted") ? AIM_STYLE : undefined}
             >
               {cd.documentDateFormatted}
               {isAimed("documentDateFormatted") &&
@@ -4793,11 +4820,12 @@ function DetailsCombinedTab() {
               Due date{dc?.dueFormatted && <CorrectedMark />}
             </span>
             <span
+              key={pulsedKey("dueFormatted")}
+              data-detail-field="dueFormatted"
               className={cn(
                 "text-[14px] font-medium text-foreground",
                 pulseClass("dueFormatted"),
               )}
-              style={isAimed("dueFormatted") ? AIM_STYLE : undefined}
             >
               {cd.dueFormatted}
               {isAimed("dueFormatted") && aimGhost("dueFormatted") && (
@@ -4813,11 +4841,12 @@ function DetailsCombinedTab() {
               Payment terms{dc?.paymentTerms && <CorrectedMark />}
             </span>
             <span
+              key={pulsedKey("paymentTerms")}
+              data-detail-field="paymentTerms"
               className={cn(
                 "text-[14px] font-medium text-foreground",
                 pulseClass("paymentTerms"),
               )}
-              style={isAimed("paymentTerms") ? AIM_STYLE : undefined}
             >
               {cd.paymentTerms}
               {isAimed("paymentTerms") && aimGhost("paymentTerms") && (
@@ -4834,11 +4863,12 @@ function DetailsCombinedTab() {
                 VAT number{dc?.vat && <CorrectedMark />}
               </span>
               <span
+                key={pulsedKey("vat")}
+                data-detail-field="vat"
                 className={cn(
                   "text-[14px] font-medium text-foreground",
                   pulseClass("vat"),
                 )}
-                style={isAimed("vat") ? AIM_STYLE : undefined}
               >
                 {cd.vat}
                 {isAimed("vat") && aimGhost("vat") && (
@@ -4856,11 +4886,12 @@ function DetailsCombinedTab() {
                 Service period{dc?.servicePeriod && <CorrectedMark />}
               </span>
               <span
+                key={pulsedKey("servicePeriod")}
+                data-detail-field="servicePeriod"
                 className={cn(
                   "text-[14px] font-medium text-foreground",
                   pulseClass("servicePeriod"),
                 )}
-                style={isAimed("servicePeriod") ? AIM_STYLE : undefined}
               >
                 {cd.servicePeriod}
                 {isAimed("servicePeriod") && aimGhost("servicePeriod") && (
@@ -4881,8 +4912,9 @@ function DetailsCombinedTab() {
               Vendor{dc?.vendor && <CorrectedMark />}
             </span>
             <div
+              key={pulsedKey("vendor")}
+              data-detail-field="vendor"
               className={cn("min-w-0", pulseClass("vendor"))}
-              style={isAimed("vendor") ? AIM_STYLE : undefined}
             >
               <div className="text-[14px] font-medium text-foreground">
                 {cd.vendor}
@@ -4923,8 +4955,9 @@ function DetailsCombinedTab() {
               Bill to{dc?.billTo && <CorrectedMark />}
             </span>
             <div
+              key={pulsedKey("billTo")}
+              data-detail-field="billTo"
               className={cn("min-w-0", pulseClass("billTo"))}
-              style={isAimed("billTo") ? AIM_STYLE : undefined}
             >
               <div className="text-[14px] font-medium text-foreground">
                 {cd.billTo}
@@ -5048,6 +5081,8 @@ function DetailsCombinedTab() {
                   <div className="text-right whitespace-nowrap">
                     {hasPo && line.poQty !== undefined ? (
                       <span
+                        key={pulsedLineKey(lineNum)}
+                        data-detail-line={lineNum}
                         className={cn(
                           "text-[12px]",
                           qtyMismatch
@@ -5055,17 +5090,17 @@ function DetailsCombinedTab() {
                             : "text-muted-foreground",
                           pulseLineClass(lineNum),
                         )}
-                        style={isLineAimed(lineNum) ? AIM_STYLE : undefined}
                       >
                         {line.qty} / {line.poQty}
                       </span>
                     ) : (
                       <span
+                        key={pulsedLineKey(lineNum)}
+                        data-detail-line={lineNum}
                         className={cn(
                           "text-[13px] text-muted-foreground",
                           pulseLineClass(lineNum),
                         )}
-                        style={isLineAimed(lineNum) ? AIM_STYLE : undefined}
                       >
                         {line.qty}
                       </span>

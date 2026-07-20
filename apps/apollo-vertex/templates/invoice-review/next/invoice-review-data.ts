@@ -431,6 +431,8 @@ export interface InvoiceRuntime {
     lineNums: readonly number[];
     /** Exception IDs auto-cleared by predicate re-run in this batch. */
     autoResolvedIds: readonly string[];
+    /** True when the correction came from an agent-sourced fix action or reference-chip apply. */
+    aiSourced?: boolean;
   };
   /** Transient aim state: set while a mutating fix action is hovered/focused. */
   aimCorrection?: DetailCorrections;
