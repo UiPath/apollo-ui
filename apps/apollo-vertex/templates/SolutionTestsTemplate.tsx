@@ -137,6 +137,7 @@ function SolutionTestsTemplateContent() {
           loading={false}
           hasActiveRuns={false}
           runningAll={false}
+          runningSelected={false}
           runningTestId={null}
           togglingTestId={null}
           isDeleting={false}
