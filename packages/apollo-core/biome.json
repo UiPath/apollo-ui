@@ -13,7 +13,6 @@
       "!**/fonts/**",
       "!**/src/icons/index.ts",
       "!**/*.css",
-      "!**/src/tokens/build.js",
       "!**/src/tokens/config.js",
       "!**/build-tokens.js"
     ]
