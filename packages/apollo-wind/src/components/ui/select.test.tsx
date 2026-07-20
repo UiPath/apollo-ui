@@ -265,4 +265,56 @@ describe('Select', () => {
     const trigger = screen.getByRole('combobox');
     expect(trigger).toHaveAttribute('aria-label', 'Select a fruit');
   });
+
+  it('defaults to portaling content into document.body', async () => {
+    const user = userEvent.setup();
+    render(
+      <div data-testid="root">
+        <SelectExample />
+      </div>
+    );
+
+    const trigger = screen.getByRole('combobox');
+    await user.click(trigger);
+
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'Apple' })).toBeInTheDocument();
+    });
+
+    const option = screen.getByRole('option', { name: 'Apple' });
+    const root = screen.getByTestId('root');
+    // Content is portaled out of the app root and into document.body by default.
+    expect(root).not.toContainElement(option);
+    expect(document.body).toContainElement(option);
+  });
+
+  it('renders content into a provided container', async () => {
+    const user = userEvent.setup();
+    const container = document.createElement('div');
+    container.setAttribute('data-testid', 'portal-container');
+    document.body.appendChild(container);
+
+    render(
+      <Select>
+        <SelectTrigger aria-label="Select a fruit">
+          <SelectValue placeholder="Select a fruit" />
+        </SelectTrigger>
+        <SelectContent container={container}>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+
+    const trigger = screen.getByRole('combobox');
+    await user.click(trigger);
+
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'Apple' })).toBeInTheDocument();
+    });
+
+    expect(container).toContainElement(screen.getByRole('option', { name: 'Apple' }));
+
+    document.body.removeChild(container);
+  });
 });

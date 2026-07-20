@@ -60,9 +60,22 @@ SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayNam
 
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = 'popper', ...props }, ref) => (
-  <SelectPrimitive.Portal>
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & {
+    /**
+     * The container the select content portals into. Defaults to
+     * `document.body` (Radix's fallback).
+     *
+     * Provide a container when rendering inside a shadow DOM or a
+     * scoped-styles boundary (e.g. `@uipath/traceview` web components):
+     * such consumers inject their CSS into a style scope that cannot reach
+     * `document.body`, so dropdown content portaled to the body is left
+     * unstyled. Pointing the portal at an element inside the style scope
+     * keeps the content within reach of the injected styles.
+     */
+    container?: React.ComponentProps<typeof SelectPrimitive.Portal>['container'];
+  }
+>(({ className, children, position = 'popper', container, ...props }, ref) => (
+  <SelectPrimitive.Portal container={container}>
     <SelectPrimitive.Content
       ref={ref}
       className={cn(

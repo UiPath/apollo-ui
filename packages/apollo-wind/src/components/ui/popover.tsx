@@ -11,9 +11,22 @@ const PopoverAnchor = PopoverPrimitive.Anchor;
 
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
->(({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
-  <PopoverPrimitive.Portal>
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> & {
+    /**
+     * The container the popover content portals into. Defaults to
+     * `document.body` (Radix's fallback).
+     *
+     * Provide a container when rendering inside a shadow DOM or a
+     * scoped-styles boundary (e.g. `@uipath/traceview` web components):
+     * such consumers inject their CSS into a style scope that cannot reach
+     * `document.body`, so dropdown content portaled to the body is left
+     * unstyled. Pointing the portal at an element inside the style scope
+     * keeps the content within reach of the injected styles.
+     */
+    container?: React.ComponentProps<typeof PopoverPrimitive.Portal>['container'];
+  }
+>(({ className, align = 'center', sideOffset = 4, container, ...props }, ref) => (
+  <PopoverPrimitive.Portal container={container}>
     <PopoverPrimitive.Content
       ref={ref}
       align={align}

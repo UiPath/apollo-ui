@@ -216,6 +216,53 @@ describe('Popover', () => {
     });
   });
 
+  it('defaults to portaling content into document.body', async () => {
+    const user = userEvent.setup();
+    render(
+      <div data-testid="root">
+        <PopoverExample />
+      </div>
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Open Popover' });
+    await user.click(trigger);
+
+    await waitFor(() => {
+      expect(screen.getByText('Popover content goes here')).toBeInTheDocument();
+    });
+
+    const content = screen.getByText('Popover content goes here');
+    const root = screen.getByTestId('root');
+    // Content is portaled out of the app root and into document.body by default.
+    expect(root).not.toContainElement(content);
+    expect(document.body).toContainElement(content);
+  });
+
+  it('renders content into a provided container', async () => {
+    const user = userEvent.setup();
+    const container = document.createElement('div');
+    container.setAttribute('data-testid', 'portal-container');
+    document.body.appendChild(container);
+
+    render(
+      <Popover>
+        <PopoverTrigger>Open</PopoverTrigger>
+        <PopoverContent container={container}>Contained content</PopoverContent>
+      </Popover>
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Open' });
+    await user.click(trigger);
+
+    await waitFor(() => {
+      expect(screen.getByText('Contained content')).toBeInTheDocument();
+    });
+
+    expect(container).toContainElement(screen.getByText('Contained content'));
+
+    document.body.removeChild(container);
+  });
+
   it('supports asChild on trigger', async () => {
     const user = userEvent.setup();
     render(
