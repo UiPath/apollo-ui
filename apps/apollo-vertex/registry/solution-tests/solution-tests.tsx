@@ -30,6 +30,8 @@ import {
 } from "./solution-tests-view";
 import { ExpandedAgents } from "./expanded-agents";
 import { ExpandedRunTests } from "./expanded-run-tests";
+import { RunDetails } from "./run-details";
+import { isRunDone } from "./utils";
 
 function getRunsForBatch(
   batchId: string,
@@ -84,9 +86,39 @@ export const SolutionTests = () => {
     });
   };
 
+  // The selected run drives the full-page run-details view. It's synced to the
+  // `?run=` search param so it survives reloads and is shareable.
+  const selectedRunId = useSearch({
+    strict: false,
+    select: (search: Record<string, unknown>) =>
+      typeof search.run === "string" ? search.run : "",
+  });
+  // Only completed runs have results to show. A stale or shared
+  // `?run=<pending-id>` falls through to the table instead of an empty page.
+  const selectedRun = allRuns.find(
+    (r) => r.Id === selectedRunId && isRunDone(r.Status),
+  );
+
   const hasActiveRuns = batchRuns.some(
     (r) => r.Status === RunStatus.Pending || r.Status === RunStatus.Running,
   );
+
+  if (selectedRun) {
+    const test = tests.find((x) => x.Id === selectedRun.SolutionTestId);
+    const subjectId = test?.SubjectId ?? selectedRun.SolutionTestId;
+    return (
+      <RunDetails
+        run={selectedRun}
+        subjectId={subjectId}
+        onBack={() =>
+          void navigate({
+            to: ".",
+            search: ({ run: _run, ...rest }: Record<string, unknown>) => rest,
+          })
+        }
+      />
+    );
+  }
 
   return (
     <SolutionTestsView

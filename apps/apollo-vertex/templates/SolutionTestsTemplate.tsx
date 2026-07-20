@@ -23,10 +23,9 @@ import type { SolutionTestsConfig } from "@/registry/solution-tests/config";
 import { ExpandedAgentsView } from "@/registry/solution-tests/expanded-agents-view";
 import { ExpandedRunTestsView } from "@/registry/solution-tests/expanded-run-tests-view";
 import {
-  RunDetailsDialogView,
+  RunDetailsView,
   type BaselineJobMap,
-} from "@/registry/solution-tests/run-details-dialog-view";
-import type { ExpandedRowData } from "@/registry/solution-tests/result-expanded-content";
+} from "@/registry/solution-tests/run-details-view";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 import { createMockDb } from "./solution-tests/mock-db";
 
@@ -59,12 +58,12 @@ function SolutionTestsTemplateContent() {
     data: unknown;
     loading: boolean;
   } | null>(null);
-  // Run-details dialog (runs expansion).
+  // Run-details page (runs expansion → full-page agent detail view).
   const [detailsRun, setDetailsRun] = useState<{
     run: SolutionTestRun;
     subjectId: string;
   } | null>(null);
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
 
   const baselineJobsByTest = new Map<string, SolutionTestJob[]>();
   for (const job of db.jobs) {
@@ -123,6 +122,73 @@ function SolutionTestsTemplateContent() {
     subjectNoun: { singular: "Loan", plural: "Loans" },
   };
 
+  const mainView = (
+    <SolutionTestsView
+      tests={db.tests}
+      batchRuns={db.batchRuns}
+      loading={false}
+      hasActiveRuns={false}
+      runningAll={false}
+      runningSelected={false}
+      runningTestId={null}
+      togglingTestId={null}
+      isDeleting={false}
+      forceStoppingBatchId={null}
+      deleteConfirmId={deleteConfirmId}
+      setDeleteConfirmId={setDeleteConfirmId}
+      runConfirm={runConfirm}
+      setRunConfirm={setRunConfirm}
+      onConfirmRun={() => setRunConfirm(null)}
+      onToggleActive={noop}
+      onDeleteTest={() => setDeleteConfirmId(null)}
+      onForceStopBatch={noop}
+      renderExpandedTest={(test: SolutionTest) => {
+        const baselines = baselineJobsByTest.get(test.Id) ?? [];
+        // Jobs with no mock expected output render as "no output".
+        const noOutputJobIds = new Set(
+          baselines
+            .filter((job) => db.jobOutputs[job.Id] == null)
+            .map((job) => job.Id),
+        );
+        return (
+          <ExpandedAgentsView
+            test={test}
+            baselines={baselines}
+            isLoading={false}
+            noOutputJobIds={noOutputJobIds}
+            viewing={viewing}
+            onViewExpected={(job) =>
+              setViewing({
+                job,
+                data: db.jobOutputs[job.Id] ?? null,
+                loading: false,
+              })
+            }
+            onCloseViewer={() => setViewing(null)}
+          />
+        );
+      }}
+      renderExpandedRun={(batch: SolutionTestBatchRun) => (
+        <ExpandedRunTestsView
+          runs={getRunsForBatch(batch.Id, db.runs)}
+          tests={db.tests}
+          stoppingRunId={null}
+          onOpenDetails={(run) => {
+            const test = db.tests.find((x) => x.Id === run.SolutionTestId);
+            setSelectedResultId(null);
+            setDetailsRun({
+              run,
+              subjectId: test?.SubjectId ?? run.SolutionTestId,
+            });
+          }}
+          onForceStop={noop}
+        />
+      )}
+    />
+  );
+
+  const detailsPage = detailsRun ? renderDetailsPage(detailsRun) : null;
+
   return (
     <LocaleProvider>
       {/* Presentational demo: writes are no-ops, so trigger deps are stubs. */}
@@ -131,132 +197,72 @@ function SolutionTestsTemplateContent() {
         triggerBaseUrl=""
         getToken={() => null}
       >
-        <SolutionTestsView
-          tests={db.tests}
-          batchRuns={db.batchRuns}
-          loading={false}
-          hasActiveRuns={false}
-          runningAll={false}
-          runningSelected={false}
-          runningTestId={null}
-          togglingTestId={null}
-          isDeleting={false}
-          forceStoppingBatchId={null}
-          deleteConfirmId={deleteConfirmId}
-          setDeleteConfirmId={setDeleteConfirmId}
-          runConfirm={runConfirm}
-          setRunConfirm={setRunConfirm}
-          onConfirmRun={() => setRunConfirm(null)}
-          onToggleActive={noop}
-          onDeleteTest={() => setDeleteConfirmId(null)}
-          onForceStopBatch={noop}
-          renderExpandedTest={(test: SolutionTest) => {
-            const baselines = baselineJobsByTest.get(test.Id) ?? [];
-            // Jobs with no mock expected output render as "no output".
-            const noOutputJobIds = new Set(
-              baselines
-                .filter((job) => db.jobOutputs[job.Id] == null)
-                .map((job) => job.Id),
-            );
-            return (
-              <ExpandedAgentsView
-                test={test}
-                baselines={baselines}
-                isLoading={false}
-                noOutputJobIds={noOutputJobIds}
-                viewing={viewing}
-                onViewExpected={(job) =>
-                  setViewing({
-                    job,
-                    data: db.jobOutputs[job.Id] ?? null,
-                    loading: false,
-                  })
-                }
-                onCloseViewer={() => setViewing(null)}
-              />
-            );
-          }}
-          renderExpandedRun={(batch: SolutionTestBatchRun) => {
-            const results = detailsRun
-              ? db.results.filter(
-                  (r) => r.SolutionTestRunId === detailsRun.run.Id,
-                )
-              : [];
-            const baselineJobMap: BaselineJobMap = detailsRun
-              ? new Map(
-                  db.jobs
-                    .filter(
-                      (j) => j.SolutionTestId === detailsRun.run.SolutionTestId,
-                    )
-                    .map((j) => [
-                      j.ProcessName,
-                      { id: j.Id, sourceRunResultId: j.SourceRunResultId },
-                    ]),
-                )
-              : new Map();
-            const rowData: Record<string, ExpandedRowData> = {};
-            for (const id of expandedRows) {
-              const att = db.resultAttachments[id];
-              if (!att) continue;
-              rowData[id] = {
-                loading: false,
-                expected: att.ExpectedOutput,
-                expectedInput: att.ExpectedInput,
-                actual: att.ActualOutput,
-                actualInput: att.ActualInput,
-                evaluatorResults: att.EvaluatorResults,
-              };
-            }
-            return (
-              <ExpandedRunTestsView
-                runs={getRunsForBatch(batch.Id, db.runs)}
-                tests={db.tests}
-                stoppingRunId={null}
-                onOpenDetails={(run, subjectId) =>
-                  setDetailsRun({ run, subjectId })
-                }
-                onForceStop={noop}
-                detailsDialog={
-                  detailsRun?.run.RunBatchId === batch.Id && (
-                    <RunDetailsDialogView
-                      open
-                      onClose={() => {
-                        setDetailsRun(null);
-                        setExpandedRows(new Set());
-                      }}
-                      subjectId={detailsRun?.subjectId ?? ""}
-                      results={results}
-                      isLoading={false}
-                      baselineJobMap={baselineJobMap}
-                      expandedRows={expandedRows}
-                      rowData={rowData}
-                      adoptingResultId={null}
-                      updatingResultId={null}
-                      removingBaselineId={null}
-                      onToggleRow={(result) =>
-                        setExpandedRows((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(result.Id)) {
-                            next.delete(result.Id);
-                          } else {
-                            next.add(result.Id);
-                          }
-                          return next;
-                        })
-                      }
-                      onAdopt={noop}
-                      onUpdateBaseline={noop}
-                      onRemoveBaseline={noop}
-                    />
-                  )
-                }
-              />
-            );
-          }}
-        />
+        {detailsPage ? (
+          <div className="h-[720px]">{detailsPage}</div>
+        ) : (
+          mainView
+        )}
       </SolutionTestsProvider>
     </LocaleProvider>
   );
+
+  function renderDetailsPage(target: {
+    run: SolutionTestRun;
+    subjectId: string;
+  }) {
+    const results = db.results.filter(
+      (r) => r.SolutionTestRunId === target.run.Id,
+    );
+    const baselineJobMap: BaselineJobMap = new Map(
+      db.jobs
+        .filter((j) => j.SolutionTestId === target.run.SolutionTestId)
+        .map((j) => [
+          j.ProcessName,
+          { id: j.Id, sourceRunResultId: j.SourceRunResultId },
+        ]),
+    );
+    // Default the demo to the agent whose tested version differs from baseline
+    // so the version-change indicator is visible without interaction.
+    const versionChangedId = results.find(
+      (r) =>
+        r.BaselineProcessVersion &&
+        r.ProcessVersion &&
+        r.BaselineProcessVersion !== r.ProcessVersion,
+    )?.Id;
+    const selectedId = selectedResultId ?? versionChangedId ?? results[0]?.Id;
+    const att = db.resultAttachments[selectedId ?? ""];
+    const selectedRowData = att && {
+      loading: false,
+      expected: att.ExpectedOutput,
+      expectedInput: att.ExpectedInput,
+      actual: att.ActualOutput,
+      actualInput: att.ActualInput,
+      evaluatorResults: att.EvaluatorResults,
+    };
+
+    return (
+      <RunDetailsView
+        subjectId={target.subjectId}
+        run={target.run}
+        results={results}
+        isLoading={false}
+        baselineJobMap={baselineJobMap}
+        selectedResultId={selectedId}
+        selectedRowData={selectedRowData}
+        adoptingResultId={null}
+        updatingResultId={null}
+        removingBaselineId={null}
+        onBack={() => {
+          setDetailsRun(null);
+          setSelectedResultId(null);
+        }}
+        onSelect={setSelectedResultId}
+        onAdopt={noop}
+        onUpdateBaseline={noop}
+        onRemoveBaseline={noop}
+      />
+    );
+  }
 }
 
 export const SolutionTestsTemplate = dynamic(

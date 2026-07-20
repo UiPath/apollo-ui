@@ -190,8 +190,7 @@ export function createMockDb(): MockDb {
         CreateTime: batch.CreateTime,
       });
 
-      // Only flesh out per-agent results for the latest batch's run.
-      if (bIdx !== 0) return;
+      // Per-agent results for every run so each detail page has content.
       const statuses = [
         RunResultStatus.Passed,
         RunResultStatus.Failed,
