@@ -11,20 +11,30 @@
  * edge:
  * - stage enter / complete / exit are the stage's outer handles (the loop node's
  *   start / end / break handles respectively)
- * - entry / complete / exit rule sets attach to the stage's INNER handles via
- *   small rule circle nodes (or direct edges from other stages for cross-stage
- *   dependency rules)
- * - sequential task order is the edge chain from the stage's inner onEnter handle
+ * - stage-level rules live OUTSIDE the stage, on the transitions: entry rule
+ *   circles sit before the stage's `enter` handle; complete / exit rule circles
+ *   are fed by the stage's `complete` / `exit` handles and gate what happens
+ *   next (the next stage, case complete, case exit). A rule circle on the edge
+ *   between two stages IS the cross-stage dependency rule.
+ * - inside the stage there are only tasks and task-level rule markers (event /
+ *   adhoc); sequential task order is the edge chain from the stage's inner
+ *   onEnter handle to its inner onComplete handle (loop start / continue)
  * - case complete / case exit rules are big lifecycle circles fed by stage
- *   complete / exit handles
+ *   complete / exit handles (directly or through a rule circle)
  */
 
 import type { CategoryManifest, NodeManifest } from '../../schema/node-definition';
 
 /** Default diameter for the big lifecycle circles (trigger, case complete/exit). */
 export const CASE_LIFECYCLE_NODE_SIZE = 96;
-/** Default diameter for the small rule / event / adhoc marker circles. */
-export const CASE_MARKER_NODE_SIZE = 48;
+/**
+ * Default diameter for the small rule / event / adhoc marker circles.
+ * 64px is the smallest square BaseNode supports for a node with one handle per
+ * side: its minimum-height rule reserves a 2-grid lane per left/right handle
+ * plus 2 grid spaces of padding ((1 * 2 + 2) * 16px). Anything smaller gets its
+ * height forced back up, which renders as an oval instead of a circle.
+ */
+export const CASE_MARKER_NODE_SIZE = 64;
 
 // ============================================================================
 // Categories
@@ -107,8 +117,9 @@ export const caseManagementTriggerManifest: NodeManifest = {
           showButton: true,
           constraints: {
             minConnections: 1,
-            allowedTargetCategories: ['case-stage'],
-            forbiddenTargetCategories: ['case-management-trigger', 'case-condition'],
+            // Triggers start stages, either directly or through an entry rule circle.
+            allowedTargetCategories: ['case-stage', 'case-condition'],
+            forbiddenTargetCategories: ['case-management-trigger'],
           },
         },
       ],
@@ -151,13 +162,16 @@ export const caseManagementTriggerManifest: NodeManifest = {
  * Case stage rendered by the loop container node (LoopNode).
  *
  * Outer handles map loop semantics onto stage lifecycle:
- * - `enter` (loop start): the stage is entered
- * - `complete` (loop end): the stage completed
- * - `exit` (loop break): the stage was exited without completing
+ * - `enter` (loop start): the stage is entered. Entry rule circles and upstream
+ *   stages/triggers connect into it from outside.
+ * - `complete` (loop end): the stage completed. Feeds complete rule circles,
+ *   downstream stages, and case-complete.
+ * - `exit` (loop break): the stage was exited without completing. Feeds exit
+ *   rule circles and case-exit.
  *
- * Inner handles receive rule circles (or direct cross-stage edges):
+ * Inner handles carry only the task chain (loop start / continue):
  * - `onEnter` starts the sequential task chain inside the stage
- * - `entryRules` / `completeRules` / `exitRules` collect the respective rule sets
+ * - `onComplete` is where the sequential chain terminates
  */
 export const caseStageManifest: NodeManifest = {
   nodeType: 'uipath.case.stage',
@@ -182,8 +196,9 @@ export const caseStageManifest: NodeManifest = {
           type: 'target',
           handleType: 'input',
           constraints: {
-            allowedSourceCategories: ['case-management-trigger', 'case-stage'],
-            validationMessage: 'Stages are entered from the case trigger or from other stages',
+            allowedSourceCategories: ['case-management-trigger', 'case-stage', 'case-condition'],
+            validationMessage:
+              'Stages are entered from the case trigger, other stages, or an entry rule',
           },
         },
       ],
@@ -227,15 +242,6 @@ export const caseStageManifest: NodeManifest = {
             validationMessage: 'On enter starts the sequential task chain of this stage',
           },
         },
-        {
-          id: 'entryRules',
-          label: 'Entry rules',
-          type: 'target',
-          handleType: 'input',
-          constraints: {
-            allowedSourceCategories: ['case-condition', 'case-stage', 'case-management-trigger'],
-          },
-        },
       ],
     },
     {
@@ -243,21 +249,13 @@ export const caseStageManifest: NodeManifest = {
       boundary: 'inner',
       handles: [
         {
-          id: 'completeRules',
-          label: 'Complete rules',
+          id: 'onComplete',
+          label: 'On complete',
           type: 'target',
           handleType: 'input',
           constraints: {
-            allowedSourceCategories: ['case-condition', 'case-task', 'case-stage'],
-          },
-        },
-        {
-          id: 'exitRules',
-          label: 'Exit rules',
-          type: 'target',
-          handleType: 'input',
-          constraints: {
-            allowedSourceCategories: ['case-condition', 'case-task', 'case-stage'],
+            allowedSourceCategories: ['case-task'],
+            validationMessage: 'The sequential task chain of this stage ends at On complete',
           },
         },
       ],
@@ -521,14 +519,45 @@ const RULE_TYPE_OPTIONS = [
   { label: 'Adhoc (manual)', value: 'adhoc' },
 ];
 
+/**
+ * Rule circles live on the transitions outside the stage:
+ * - entry rules sit BEFORE the stage: upstream (trigger / another stage's
+ *   complete or exit handle) -> entry rule -> stage `enter`.
+ * - complete / exit rules sit AFTER the stage: stage `complete` / `exit` ->
+ *   rule -> downstream (next stage's enter or entry rule, case complete/exit).
+ * A rule circle on the edge between two stages is exactly a cross-stage
+ * dependency rule.
+ */
 function createRuleConditionManifest(options: {
   nodeType: string;
   label: string;
   description: string;
   icon: string;
   sortOrder: number;
-  targetHandleId: 'entryRules' | 'completeRules' | 'exitRules';
+  attachment: 'entry' | 'complete' | 'exit';
 }): NodeManifest {
+  const inputConstraints =
+    options.attachment === 'entry'
+      ? {
+          allowedSourceCategories: ['case-management-trigger', 'case-stage'],
+          validationMessage: 'Entry rules are fed by the case trigger or by other stages',
+        }
+      : {
+          allowedSources: [{ nodeType: 'uipath.case.stage', handleId: options.attachment }],
+          validationMessage: `This rule is fed by a stage's ${options.attachment} handle`,
+        };
+  const outputConstraints =
+    options.attachment === 'entry'
+      ? {
+          allowedTargets: [{ nodeType: 'uipath.case.stage', handleId: 'enter' }],
+          validationMessage: "Entry rules connect to a stage's enter handle",
+        }
+      : {
+          forbiddenTargetCategories: ['case-management-trigger', 'case-task'],
+          validationMessage:
+            'Complete and exit rules gate the transition to the next stage or the case lifecycle',
+        };
+
   return {
     nodeType: options.nodeType,
     version: '1.0.0',
@@ -551,12 +580,7 @@ function createRuleConditionManifest(options: {
             id: 'input',
             type: 'target',
             handleType: 'input',
-            visible: false,
-            constraints: {
-              allowedSourceCategories: ['case-stage', 'case-management-trigger', 'case-task'],
-              validationMessage:
-                'Cross-stage dependencies connect from other stages into this rule',
-            },
+            constraints: inputConstraints,
           },
         ],
       },
@@ -568,10 +592,7 @@ function createRuleConditionManifest(options: {
             type: 'source',
             handleType: 'output',
             showButton: true,
-            constraints: {
-              allowedTargets: [{ nodeType: 'uipath.case.stage', handleId: options.targetHandleId }],
-              validationMessage: `This rule connects to a stage's ${options.targetHandleId} handle`,
-            },
+            constraints: outputConstraints,
           },
         ],
       },
@@ -611,7 +632,7 @@ export const caseEntryRuleManifest = createRuleConditionManifest({
   description: 'Controls when the stage is entered',
   icon: 'log-in',
   sortOrder: 3,
-  targetHandleId: 'entryRules',
+  attachment: 'entry',
 });
 
 export const caseCompleteRuleManifest = createRuleConditionManifest({
@@ -620,7 +641,7 @@ export const caseCompleteRuleManifest = createRuleConditionManifest({
   description: 'Controls when the stage is considered complete',
   icon: 'check-check',
   sortOrder: 4,
-  targetHandleId: 'completeRules',
+  attachment: 'complete',
 });
 
 export const caseExitRuleManifest = createRuleConditionManifest({
@@ -629,7 +650,7 @@ export const caseExitRuleManifest = createRuleConditionManifest({
   description: 'Controls when the stage is exited without completing',
   icon: 'log-out',
   sortOrder: 5,
-  targetHandleId: 'exitRules',
+  attachment: 'exit',
 });
 
 // ============================================================================
