@@ -7,7 +7,7 @@ import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import type { LoopNodeData } from '../LoopNode/LoopNode.types';
 import { StageHeaderChipType } from '../StageNode/StageNode.types';
-import { CASE_MARKER_NODE_SIZE, caseFlowManifest } from './case-flow.manifest';
+import { caseFlowManifest } from './case-flow.manifest';
 
 /**
  * Case-flow canvas POC. Demonstrates the full case-management visual language
@@ -16,9 +16,10 @@ import { CASE_MARKER_NODE_SIZE, caseFlowManifest } from './case-flow.manifest';
  * - Big circles: the case trigger (uipath.case.trigger) and the case complete /
  *   case exit lifecycle rules.
  * - Stages: loop container nodes. The INNER handles carry the labeled,
- *   always-visible lifecycle: Enter (left, starts the task chain), Complete
- *   (right), and Exit (bottom). They map onto the loop node's start / continue /
- *   break. The outer boundary handles are unlabeled connection points.
+ *   always-visible lifecycle: Enter (left, starts the task chain), and Complete
+ *   with Exit below it (right), aligned with the matching outer handles. They
+ *   map onto the loop node's start / continue / break. The outer boundary
+ *   handles are unlabeled connection points.
  * - Stage-level rules are the transitions themselves: the edge into a stage is
  *   its entry rule, the edges leaving its complete / exit handles are its
  *   complete / exit rules. Rule sets are summarized by the header chips and
@@ -71,9 +72,9 @@ function childNode(
 }
 
 /**
- * Small circle task marker (event or manual), parented inside its stage. 64px
- * square so BaseNode's minimum-height rule keeps it a true circle (see
- * CASE_MARKER_NODE_SIZE).
+ * Circle task marker (event or manual), parented inside its stage. Uses the
+ * regular BaseNode size so the circle geometry stays standard; explicit
+ * smaller sizes fight BaseNode's minimum-height math and render as ovals.
  */
 function markerNode(
   id: string,
@@ -87,8 +88,6 @@ function markerNode(
     ...node,
     parentId,
     extent: 'parent' as const,
-    width: CASE_MARKER_NODE_SIZE,
-    height: CASE_MARKER_NODE_SIZE,
   };
 }
 
@@ -150,7 +149,7 @@ function createCaseFlowNodes(): Node[] {
     stageNode(
       'stage-assessment',
       { x: 928, y: 96 },
-      { width: 640, height: 512 },
+      { width: 640, height: 592 },
       {
         display: {
           label: 'Assessment',
@@ -206,7 +205,7 @@ function createCaseFlowNodes(): Node[] {
       'assessment-withdrawn-event',
       'uipath.case.task.event',
       'stage-assessment',
-      { x: 304, y: 416 },
+      { x: 304, y: 432 },
       { display: { label: 'Claim withdrawn' }, inputs: { eventType: 'connector' } }
     ),
 
