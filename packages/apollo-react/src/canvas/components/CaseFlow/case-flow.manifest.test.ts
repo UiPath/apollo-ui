@@ -55,6 +55,10 @@ describe('case-flow manifest', () => {
     }
   });
 
+  it('hides the loop Sequential / Parallel mode pill on stages', () => {
+    expect(caseStageManifest.display.showModePill).toBe(false);
+  });
+
   it('maps loop semantics onto the stage lifecycle handles', () => {
     const outer = caseStageManifest.handleConfiguration.filter((g) => g.boundary !== 'inner');
     const inner = caseStageManifest.handleConfiguration.filter((g) => g.boundary === 'inner');
