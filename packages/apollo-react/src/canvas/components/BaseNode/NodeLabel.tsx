@@ -120,7 +120,7 @@ const SubHeader = forwardRef<HTMLDivElement, SubHeaderProps>(
       data-testid={dataTestId}
       onDoubleClick={onDoubleClick}
       className={cx(
-        'text-center text-xs leading-[18px] text-foreground-muted wrap-break-word overflow-hidden',
+        'text-center text-xs leading-[18px] text-foreground-muted wrap-break-word overflow-hidden whitespace-pre-line',
         shape === 'rectangle' ? 'w-full text-left line-clamp-2' : 'line-clamp-5',
         className
       )}
