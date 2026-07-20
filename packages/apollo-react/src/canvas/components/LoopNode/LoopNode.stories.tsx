@@ -27,6 +27,7 @@ import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { StageHeaderChipType } from '../StageNode/StageNode.types';
 import { LoopNode } from './LoopNode';
 import type { LoopNodeData, LoopNodeExecutionCountState } from './LoopNode.types';
 import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
@@ -1510,4 +1511,85 @@ export const ExecutionCount: Story = {
     }),
   ],
   render: (_, { globals }) => <ExecutionCountPage globalTheme={globals.theme || 'future-dark'} />,
+};
+
+// ============================================================================
+// Header Chips — rule chips, wrapped titles, and description text in the
+// loop header (the case-management "stage" flavor of the loop container).
+// ============================================================================
+
+function WithHeaderChipsStory() {
+  const { initialNodes, initialEdges } = useMemo(() => {
+    const chipCounts = createLoopContainerNode(
+      'loop-chip-counts',
+      { x: 64, y: 64 },
+      { width: 448, height: 256 },
+      {
+        data: {
+          display: { label: 'Intake' },
+          headerChips: [
+            { type: StageHeaderChipType.Entry, count: 2, tooltip: '2 entry rules' },
+            { type: StageHeaderChipType.Completion, count: 1, tooltip: '1 complete rule' },
+            { type: StageHeaderChipType.Exit, count: 1, tooltip: '1 exit rule' },
+          ],
+        },
+      }
+    );
+
+    const statusPills = createLoopContainerNode(
+      'loop-status-pills',
+      { x: 576, y: 64 },
+      { width: 448, height: 256 },
+      {
+        data: {
+          display: {
+            label: 'A stage title long enough to wrap onto a second line before clamping',
+          },
+          headerChips: [
+            { type: StageHeaderChipType.Optional },
+            { type: StageHeaderChipType.EndsCase },
+          ],
+        },
+      }
+    );
+
+    const withDescription = createLoopContainerNode(
+      'loop-description',
+      { x: 64, y: 384 },
+      { width: 960, height: 256 },
+      {
+        data: {
+          display: {
+            label: 'Assessment',
+            description:
+              'Instance-supplied description text renders as a muted secondary line under the title and clamps at two lines. Manifest descriptions stay out of the header.',
+          },
+          headerChips: [
+            { type: StageHeaderChipType.Entry, count: 1 },
+            { type: StageHeaderChipType.ReturnToOrigin, count: 1, tooltip: 'Returns to origin' },
+            { type: StageHeaderChipType.Optional },
+          ],
+        },
+      }
+    );
+
+    return { initialNodes: [chipCounts, statusPills, withDescription], initialEdges: [] };
+  }, []);
+
+  return (
+    <LoopCanvasStory
+      initialNodes={initialNodes}
+      initialEdges={initialEdges}
+      storyInfo={{
+        title: 'Header Chips',
+        description:
+          'Rule chips in the loop header via data.headerChips (or the headerChips prop): entry / complete / exit / return-to-origin icon chips with counts, plus Optional and Ends case status pills. Titles wrap to two lines and data.display.description adds a secondary text line, so the loop container can serve as the case-management stage visual.',
+      }}
+    />
+  );
+}
+
+export const WithHeaderChips: Story = {
+  name: 'With Header Chips',
+  render: () => <WithHeaderChipsStory />,
 };
