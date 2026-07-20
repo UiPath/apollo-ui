@@ -787,6 +787,7 @@ function HandleGroup({
       nodeWidth={nodeWidth}
       nodeHeight={nodeHeight}
       portalActions={group.boundary === 'outer'}
+      slotCount={group.slotCount}
     />
   );
 }
