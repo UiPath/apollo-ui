@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Info, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,10 +24,8 @@ export interface ExpandedRunTestsViewProps {
   runs: SolutionTestRun[];
   tests: SolutionTest[];
   stoppingRunId: string | null;
-  onOpenDetails: (run: SolutionTestRun, subjectId: string) => void;
+  onOpenDetails: (run: SolutionTestRun) => void;
   onForceStop: (runId: string) => void;
-  /** Rendered below the table when a run's details dialog is open. */
-  detailsDialog?: ReactNode;
 }
 
 export const ExpandedRunTestsView = ({
@@ -37,7 +34,6 @@ export const ExpandedRunTestsView = ({
   stoppingRunId,
   onOpenDetails,
   onForceStop,
-  detailsDialog,
 }: ExpandedRunTestsViewProps) => {
   const { t } = useTranslation();
 
@@ -60,8 +56,20 @@ export const ExpandedRunTestsView = ({
               const test = tests.find((x) => x.Id === run.SolutionTestId);
               const subjectId = test?.SubjectId ?? run.SolutionTestId;
 
+              const done = isRunDone(run.Status);
+
               return (
-                <TableRow key={run.Id}>
+                <TableRow
+                  key={run.Id}
+                  className={
+                    done
+                      ? "cursor-pointer hover:bg-muted/50"
+                      : "cursor-not-allowed opacity-60"
+                  }
+                  onClick={() => {
+                    if (done) onOpenDetails(run);
+                  }}
+                >
                   <TableCell className="px-3 py-2">
                     {test?.TestName ?? subjectId}
                   </TableCell>
@@ -86,13 +94,13 @@ export const ExpandedRunTestsView = ({
                     <UserMessagesIcon messages={run.UserMessages} />
                   </TableCell>
                   <TableCell className="px-3 py-2">
-                    {isRunDone(run.Status) ? (
+                    {done ? (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onOpenDetails(run, subjectId);
+                          onOpenDetails(run);
                         }}
                       >
                         <Info className="size-3" />
@@ -123,8 +131,6 @@ export const ExpandedRunTestsView = ({
           </TableBody>
         </Table>
       </div>
-
-      {detailsDialog}
     </div>
   );
 };

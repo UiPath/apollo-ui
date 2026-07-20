@@ -3167,14 +3167,19 @@
           "target": "components/ui/solution-tests/run-confirm-dialog.tsx"
         },
         {
-          "path": "registry/solution-tests/run-details-dialog.tsx",
+          "path": "registry/solution-tests/run-details.tsx",
           "type": "registry:ui",
-          "target": "components/ui/solution-tests/run-details-dialog.tsx"
+          "target": "components/ui/solution-tests/run-details.tsx"
         },
         {
-          "path": "registry/solution-tests/run-details-dialog-view.tsx",
+          "path": "registry/solution-tests/run-details-view.tsx",
           "type": "registry:ui",
-          "target": "components/ui/solution-tests/run-details-dialog-view.tsx"
+          "target": "components/ui/solution-tests/run-details-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/run-details-agent-list.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/run-details-agent-list.tsx"
         },
         {
           "path": "registry/solution-tests/expanded-run-tests.tsx",
