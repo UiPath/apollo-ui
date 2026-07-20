@@ -21,6 +21,20 @@ export interface PickerPopupProps {
   footer?: React.ReactNode;
   /** Optional className forwarded to the inner Paper for host overrides. */
   className?: string;
+  /**
+   * Portal target for the popper. Hosts that render inside a shadow root must
+   * pass their shadow-root element (or a node within it) so the popup — and the
+   * styles/CSS variables scoped to that root — resolve correctly. Defaults to
+   * MUI's own default (`document.body`).
+   */
+  container?: React.ComponentProps<typeof Popper>['container'];
+  /**
+   * Render the popper in place (no portal) instead of into `container` /
+   * `document.body`. Shadow-root hosts should set this so the popup inherits
+   * the in-tree Emotion cache + theme, which fixes icon sizing and positioning
+   * when a portal would otherwise escape the root.
+   */
+  disablePortal?: boolean;
   /** Test id forwarded to the inner Paper. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   'data-testid'?: string;
@@ -47,6 +61,8 @@ export const PickerPopup: React.FC<PickerPopupProps> = ({
   header,
   footer,
   className,
+  container,
+  disablePortal,
   'data-testid': dataTestId,
   children,
 }) => (
@@ -54,6 +70,8 @@ export const PickerPopup: React.FC<PickerPopupProps> = ({
     open={open}
     anchorEl={anchorEl}
     placement={placement}
+    container={container}
+    disablePortal={disablePortal}
     style={{
       zIndex,
       width: width ?? anchorEl?.clientWidth,

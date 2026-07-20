@@ -10,7 +10,7 @@ import type { ModelBadgeKind } from './badges';
 import { FolderSwitcher, type FolderSwitcherFolder } from './primitives/FolderSwitcher';
 import { defaultRowActions } from './primitives/ModelOptionRow';
 import { GroupedOptionList, optionDomId, VirtualOptionList } from './primitives/OptionList';
-import { PickerPopup } from './primitives/PickerPopup';
+import { PickerPopup, type PickerPopupProps } from './primitives/PickerPopup';
 import { PickerSearchInput } from './primitives/PickerSearchInput';
 import { PickerTrigger } from './primitives/PickerTrigger';
 import type { DiscoveryModel, ModelTag } from './types';
@@ -277,6 +277,35 @@ export interface ModelPickerProps {
    * first, then Recommended, Preview, More, Deprecating.
    */
   showGroupHeaders?: boolean;
+  /**
+   * Portal target for the dropdown popup. Hosts that mount the picker inside a
+   * shadow root should pass their shadow-root element so the popup resolves the
+   * styles + CSS variables scoped to that root. Ignored when `disablePortal`
+   * is set. Defaults to `document.body`.
+   */
+  popupContainer?: PickerPopupProps['container'];
+  /**
+   * Render the popup in place instead of portaling it. Shadow-root hosts should
+   * set this: a portal to `document.body` escapes the root's Emotion cache and
+   * theme, which breaks icon sizing/positioning. Rendering in-tree keeps the
+   * popup styled correctly. Defaults to `false`.
+   */
+  disablePortal?: boolean;
+  /**
+   * Open the built-in BYO add/edit navigation (to the AI Trust Layer
+   * LLM-configurations pages) in a new browser tab instead of navigating the
+   * current one. Products embedded in a larger surface (e.g. an agent designer)
+   * set this so the user doesn't lose in-progress work. Default: `false`.
+   */
+  openLinksInNewTab?: boolean;
+  /**
+   * Delete handler for a BYO model. When provided (and BYO management is
+   * enabled), the picker renders a delete row action next to edit on BYO rows.
+   * Omit to keep the default (no delete action — removal via the configurations
+   * page). The picker only surfaces the affordance; the host performs the
+   * delete and refreshes its `models`.
+   */
+  onDeleteModel?: (model: DiscoveryModel) => void;
   /** Extensibility slots. See `ModelPickerSlots`. */
   slots?: ModelPickerSlots;
 }
@@ -329,6 +358,10 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       loading,
       error,
       showGroupHeaders = true,
+      popupContainer,
+      disablePortal,
+      openLinksInNewTab,
+      onDeleteModel,
       slots,
     },
     forwardedRef
@@ -429,27 +462,32 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     );
     const effectiveFolders = folders ?? (enableFolders ? fetchedFolders : undefined);
 
-    // Default BYO-management navigation target: the AI Trust Layer
-    // LLM-configurations pages. Same-tab full navigation — the target
-    // is the portal admin app, not a picker-internal view. Deep-links
-    // into add/edit need the numeric folder id of the selected folder;
-    // without one (e.g. "All folders") the URL falls back to the
-    // configurations list.
+    // Numeric folder id for the add/edit deep-links. Prefer the selected
+    // folder; when none is selected (e.g. "All folders"), fall back to the
+    // first available folder so the affordances still deep-link into a
+    // concrete folder's add/edit page instead of dead-ending on the
+    // configurations list. Only when there are no folders at all does the
+    // URL fall back to the list.
     const selectedFolderNumericId = React.useMemo(
-      () => effectiveFolders?.find((f) => f.id === folder)?.numericId,
+      () =>
+        effectiveFolders?.find((f) => f.id === folder)?.numericId ??
+        effectiveFolders?.find((f) => f.numericId != null)?.numericId,
       [effectiveFolders, folder]
     );
     const navigateToLlmConfigurations = React.useMemo(() => {
       if (!requestContext) return undefined;
       return (link: Omit<LlmConfigurationsLinkOptions, 'folderNumericId'>) => {
-        platformNavigation.assign(
-          buildLlmConfigurationsUrl(requestContext, {
-            ...link,
-            folderNumericId: selectedFolderNumericId,
-          })
-        );
+        const url = buildLlmConfigurationsUrl(requestContext, {
+          ...link,
+          folderNumericId: selectedFolderNumericId,
+        });
+        // Products embedded in a larger surface (e.g. an agent designer) pass
+        // `openLinksInNewTab` so navigating to the AI Trust Layer admin pages
+        // doesn't unload their in-progress work.
+        if (openLinksInNewTab) platformNavigation.openInNewTab(url);
+        else platformNavigation.assign(url);
       };
-    }, [requestContext, selectedFolderNumericId]);
+    }, [requestContext, selectedFolderNumericId, openLinksInNewTab]);
 
     // Dev-time guard: duplicate folder ids silently break the switcher's
     // selection highlight. Warn once per list change. `typeof process`
@@ -509,17 +547,25 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     // list otherwise.
     const renderRowActions = React.useMemo(() => {
       if (slots?.optionActions) return slots.optionActions;
-      if (!effectiveCanManageByo || !navigateToLlmConfigurations) return () => null;
-      return (m: DiscoveryModel) =>
-        defaultRowActions(m, {
-          i18n,
-          onEdit: (model) =>
+      if (!effectiveCanManageByo) return () => null;
+      // Edit needs the navigation target; delete only needs the host handler.
+      // Render whichever actions are available (both gated on BYO-management).
+      const onEdit = navigateToLlmConfigurations
+        ? (model: DiscoveryModel) =>
             navigateToLlmConfigurations({
               intent: 'edit',
-              configurationId: model.byomDetails?.productLlmConfigurationId,
-            }),
-        });
-    }, [slots?.optionActions, effectiveCanManageByo, navigateToLlmConfigurations, i18n]);
+              configurationId: model.byomDetails?.byoConfigurationId,
+            })
+        : undefined;
+      if (!onEdit && !onDeleteModel) return () => null;
+      return (m: DiscoveryModel) => defaultRowActions(m, { i18n, onEdit, onDelete: onDeleteModel });
+    }, [
+      slots?.optionActions,
+      effectiveCanManageByo,
+      navigateToLlmConfigurations,
+      onDeleteModel,
+      i18n,
+    ]);
 
     // Footer: explicit slot override (including `null`) wins; otherwise
     // the default "Use custom model" CTA appears when the user may
@@ -539,8 +585,12 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       return (
         <UseCustomModelFooter
           onActivate={() => {
-            closePopup();
+            // Navigate first, then close: opening a new tab (openLinksInNewTab)
+            // must happen synchronously within the click gesture or the browser
+            // blocks it as a popup. Closing the popup first can sever that
+            // gesture chain.
             activate?.();
+            closePopup();
           }}
           disabled={!activate}
         />
@@ -626,6 +676,8 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           open={open}
           anchorEl={triggerRef.current}
           onClose={closePopup}
+          container={popupContainer}
+          disablePortal={disablePortal}
           header={
             <>
               {slots?.popupHeader?.()}
