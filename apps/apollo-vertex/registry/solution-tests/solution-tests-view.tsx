@@ -1,7 +1,6 @@
-"use client";
+'use client';
 
-/* eslint-disable max-lines -- page-level view composition */
-import { useState, type ReactNode } from "react";
+import { Link } from '@tanstack/react-router';
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -9,55 +8,43 @@ import type {
   PaginationState,
   SortingState,
   VisibilityState,
-} from "@tanstack/react-table";
-import { Link } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
-import {
-  ChevronRightIcon,
-  Play,
-  Trash2,
-  PlayCircle,
-  Square,
-} from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
+} from '@tanstack/react-table';
+import { ChevronRightIcon, Play, PlayCircle, Square, Trash2 } from 'lucide-react';
+/* eslint-disable max-lines -- page-level view composition */
+import { type ReactNode, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import {
   PageHeader,
   PageHeaderActions,
   PageHeaderNav,
   PageHeaderTitle,
   PageHeaderTitleGroup,
-} from "@/components/ui/page-header";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { SolutionTestStatus } from "./types";
-import type { SolutionTest, SolutionTestBatchRun } from "./types";
-import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
-import { defaultRunStatusLabels, defaultTestStatusLabels } from "./constants";
-import { useSolutionTestsConfig } from "./context";
-import { testStatusBadgeMap, runStatusBadgeMap } from "./status-maps";
-import { isRunDone } from "./utils";
-import { KpiBar } from "./kpi-bar";
-import { UserMessagesIcon } from "./user-messages-view";
-import { DeleteConfirmDialog } from "./delete-confirm-dialog";
-import { RunConfirmDialog } from "./run-confirm-dialog";
-
-import type { SolutionTestsTab } from "./tabs";
+} from '@/components/ui/page-header';
+import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { renderValueOrEmptyState } from '@/lib/renderValueOrEmptyState';
+import { defaultRunStatusLabels, defaultTestStatusLabels } from './constants';
+import { useSolutionTestsConfig } from './context';
+import { DeleteConfirmDialog } from './delete-confirm-dialog';
+import { KpiBar } from './kpi-bar';
+import { RunConfirmDialog } from './run-confirm-dialog';
+import { runStatusBadgeMap, testStatusBadgeMap } from './status-maps';
+import type { SolutionTestsTab } from './tabs';
+import type { SolutionTest, SolutionTestBatchRun } from './types';
+import { SolutionTestStatus } from './types';
+import { UserMessagesIcon } from './user-messages-view';
+import { isRunDone } from './utils';
 
 export type TabValue = SolutionTestsTab;
 
 /** The pending run awaiting confirmation: all active tests, or a single test. */
-export type RunConfirmTarget =
-  | { mode: "all" }
-  | { mode: "test"; testId: string };
+export type RunConfirmTarget = { mode: 'all' } | { mode: 'test'; testId: string };
 
 /**
  * The apollo-vertex DataTable is controlled — the caller owns table state.
@@ -66,13 +53,10 @@ export type RunConfirmTarget =
  */
 function useControlledTable(initialSorting: SortingState = []) {
   const [sorting, onSortingChange] = useState<SortingState>(initialSorting);
-  const [columnFilters, onColumnFiltersChange] = useState<ColumnFiltersState>(
-    [],
-  );
-  const [columnVisibility, onColumnVisibilityChange] =
-    useState<VisibilityState>({});
+  const [columnFilters, onColumnFiltersChange] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, onColumnVisibilityChange] = useState<VisibilityState>({});
   const [columnOrder, onColumnOrderChange] = useState<string[]>([]);
-  const [globalFilter, onGlobalFilterChange] = useState("");
+  const [globalFilter, onGlobalFilterChange] = useState('');
   const [pagination, onPaginationChange] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -152,7 +136,7 @@ export const SolutionTestsView = ({
 }: SolutionTestsViewProps) => {
   const { t } = useTranslation();
   const config = useSolutionTestsConfig();
-  const [internalTab, setInternalTab] = useState<TabValue>("cases");
+  const [internalTab, setInternalTab] = useState<TabValue>('cases');
   const activeTab = activeTabProp ?? internalTab;
   const handleTabChange = (tab: TabValue) => {
     // When controlled, `activeTab` resolves to the prop so this is ignored.
@@ -161,11 +145,11 @@ export const SolutionTestsView = ({
   };
   const casesTable = useControlledTable();
   // Runs default to newest-first by run date; the user can re-sort.
-  const runsTable = useControlledTable([{ id: "StartedAt", desc: true }]);
+  const runsTable = useControlledTable([{ id: 'StartedAt', desc: true }]);
 
   const testCasesColumns: ColumnDef<SolutionTest>[] = [
     {
-      id: "expand",
+      id: 'expand',
       header: () => null,
       size: 48,
       enableSorting: false,
@@ -174,24 +158,22 @@ export const SolutionTestsView = ({
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={row.getIsExpanded() ? t("collapse") : t("expand")}
+          aria-label={row.getIsExpanded() ? t('collapse') : t('expand')}
           onClick={(e) => {
             e.stopPropagation();
             row.toggleExpanded();
           }}
         >
           <ChevronRightIcon
-            className={`size-4 transition-transform ${row.getIsExpanded() ? "rotate-90" : ""}`}
+            className={`size-4 transition-transform ${row.getIsExpanded() ? 'rotate-90' : ''}`}
           />
         </Button>
       ),
     },
     {
-      accessorKey: "TestName",
-      meta: { displayName: t("test_name") },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("test_name")} />
-      ),
+      accessorKey: 'TestName',
+      meta: { displayName: t('test_name') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('test_name')} />,
       cell: ({ row }) => {
         const test = row.original;
         const href = config.getSubjectHref?.(test);
@@ -212,49 +194,38 @@ export const SolutionTestsView = ({
     },
     ...config.subjectColumns,
     {
-      accessorKey: "VerticalSolutionVersion",
-      meta: { displayName: t("version") },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("version")} />
-      ),
+      accessorKey: 'VerticalSolutionVersion',
+      meta: { displayName: t('version') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('version')} />,
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
-          {row.original.VerticalSolutionVersion ?? "-"}
+          {row.original.VerticalSolutionVersion ?? '-'}
         </span>
       ),
       enableSorting: true,
     },
     {
-      accessorKey: "Status",
-      meta: { displayName: t("status") },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("status")} />
-      ),
+      accessorKey: 'Status',
+      meta: { displayName: t('status') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('status')} />,
       cell: ({ row }) => (
-        <Badge
-          variant="secondary"
-          status={testStatusBadgeMap[row.original.Status] ?? "info"}
-        >
-          {defaultTestStatusLabels[row.original.Status] ?? "Unknown"}
+        <Badge variant="secondary" status={testStatusBadgeMap[row.original.Status] ?? 'info'}>
+          {defaultTestStatusLabels[row.original.Status] ?? 'Unknown'}
         </Badge>
       ),
       enableSorting: true,
     },
     {
-      id: "testMessages",
+      id: 'testMessages',
       header: () => null,
       enableSorting: false,
       size: 24,
-      cell: ({ row }) => (
-        <UserMessagesIcon messages={row.original.UserMessages} />
-      ),
+      cell: ({ row }) => <UserMessagesIcon messages={row.original.UserMessages} />,
     },
     {
-      id: "actions",
+      id: 'actions',
       header: () => (
-        <span className="text-xs font-semibold text-muted-foreground">
-          {t("actions")}
-        </span>
+        <span className="text-xs font-semibold text-muted-foreground">{t('actions')}</span>
       ),
       enableSorting: false,
       enableHiding: false,
@@ -265,43 +236,28 @@ export const SolutionTestsView = ({
         const isReady = test.Status === SolutionTestStatus.Ready;
 
         return (
-          <div
-            className="flex items-center gap-2"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="inline-flex">
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={
-                      !isReady || isRunning || runningAll || hasActiveRuns
-                    }
-                    onClick={() =>
-                      setRunConfirm({ mode: "test", testId: test.Id })
-                    }
+                    disabled={!isReady || isRunning || runningAll || hasActiveRuns}
+                    onClick={() => setRunConfirm({ mode: 'test', testId: test.Id })}
                   >
-                    {isRunning ? (
-                      <Spinner className="size-3" />
-                    ) : (
-                      <Play className="size-3" />
-                    )}
-                    {t("run")}
+                    {isRunning ? <Spinner className="size-3" /> : <Play className="size-3" />}
+                    {t('run')}
                   </Button>
                 </span>
               </TooltipTrigger>
-              {hasActiveRuns && (
-                <TooltipContent>{t("runs_in_progress")}</TooltipContent>
-              )}
+              {hasActiveRuns && <TooltipContent>{t('runs_in_progress')}</TooltipContent>}
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="inline-flex items-center">
                   <Switch
-                    aria-label={
-                      test.IsActive === false ? t("disabled") : t("enabled")
-                    }
+                    aria-label={test.IsActive === false ? t('disabled') : t('enabled')}
                     checked={test.IsActive !== false}
                     disabled={isDisabling}
                     onCheckedChange={(val) => onToggleActive(test.Id, val)}
@@ -309,13 +265,13 @@ export const SolutionTestsView = ({
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                {test.IsActive === false ? t("disabled") : t("enabled")}
+                {test.IsActive === false ? t('disabled') : t('enabled')}
               </TooltipContent>
             </Tooltip>
             <Button
               variant="ghost"
               size="sm"
-              aria-label={t("delete")}
+              aria-label={t('delete')}
               disabled={isDeleting}
               onClick={() => setDeleteConfirmId(test.Id)}
             >
@@ -329,7 +285,7 @@ export const SolutionTestsView = ({
 
   const testRunsColumns: ColumnDef<SolutionTestBatchRun>[] = [
     {
-      id: "expand",
+      id: 'expand',
       header: () => null,
       size: 48,
       enableSorting: false,
@@ -338,55 +294,50 @@ export const SolutionTestsView = ({
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={row.getIsExpanded() ? t("collapse") : t("expand")}
+          aria-label={row.getIsExpanded() ? t('collapse') : t('expand')}
           onClick={(e) => {
             e.stopPropagation();
             row.toggleExpanded();
           }}
         >
           <ChevronRightIcon
-            className={`size-4 transition-transform ${row.getIsExpanded() ? "rotate-90" : ""}`}
+            className={`size-4 transition-transform ${row.getIsExpanded() ? 'rotate-90' : ''}`}
           />
         </Button>
       ),
     },
     {
-      id: "StartedAt",
+      id: 'StartedAt',
       accessorFn: (row) => row.StartedAt ?? row.CreateTime,
-      meta: { displayName: t("run_date") },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("run_date")} />
-      ),
+      meta: { displayName: t('run_date') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('run_date')} />,
       cell: ({ row }) => (
         <span className="text-sm">
-          {renderValueOrEmptyState(
-            row.original.StartedAt ?? row.original.CreateTime,
-            { type: "datetime" },
-          )}
+          {renderValueOrEmptyState(row.original.StartedAt ?? row.original.CreateTime, {
+            type: 'datetime',
+          })}
         </span>
       ),
       enableSorting: true,
     },
     {
-      accessorKey: "VerticalSolutionVersion",
-      meta: { displayName: t("version") },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("version")} />
-      ),
+      accessorKey: 'VerticalSolutionVersion',
+      meta: { displayName: t('version') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('version')} />,
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
-          {row.original.VerticalSolutionVersion ?? "-"}
+          {row.original.VerticalSolutionVersion ?? '-'}
         </span>
       ),
       enableSorting: true,
     },
     {
-      id: "testsPassed",
+      id: 'testsPassed',
       header: () => (
         <span className="text-xs font-semibold text-muted-foreground">
           {config.subjectNoun
-            ? t("subject_passed", { subject: config.subjectNoun.plural })
-            : t("tests_passed")}
+            ? t('subject_passed', { subject: config.subjectNoun.plural })
+            : t('tests_passed')}
         </span>
       ),
       enableSorting: false,
@@ -397,52 +348,41 @@ export const SolutionTestsView = ({
       ),
     },
     {
-      accessorKey: "Status",
-      meta: { displayName: t("status") },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("status")} />
-      ),
+      accessorKey: 'Status',
+      meta: { displayName: t('status') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('status')} />,
       cell: ({ row }) => (
-        <Badge
-          variant="secondary"
-          status={runStatusBadgeMap[row.original.Status] ?? "info"}
-        >
-          {defaultRunStatusLabels[row.original.Status] ?? "Unknown"}
+        <Badge variant="secondary" status={runStatusBadgeMap[row.original.Status] ?? 'info'}>
+          {defaultRunStatusLabels[row.original.Status] ?? 'Unknown'}
         </Badge>
       ),
       enableSorting: true,
     },
     {
-      accessorKey: "OverallScore",
-      meta: { displayName: t("overall_score") },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("overall_score")} />
-      ),
+      accessorKey: 'OverallScore',
+      meta: { displayName: t('overall_score') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('overall_score')} />,
       cell: ({ row }) => (
         <span className="text-sm font-medium">
           {renderValueOrEmptyState(row.original.OverallScore, {
-            type: "number",
-            options: { style: "percent", maximumFractionDigits: 0 },
+            type: 'number',
+            options: { style: 'percent', maximumFractionDigits: 0 },
           })}
         </span>
       ),
       enableSorting: true,
     },
     {
-      id: "messages",
+      id: 'messages',
       header: () => null,
       enableSorting: false,
       size: 24,
-      cell: ({ row }) => (
-        <UserMessagesIcon messages={row.original.UserMessages} />
-      ),
+      cell: ({ row }) => <UserMessagesIcon messages={row.original.UserMessages} />,
     },
     {
-      id: "actions",
+      id: 'actions',
       header: () => (
-        <span className="text-xs font-semibold text-muted-foreground">
-          {t("actions")}
-        </span>
+        <span className="text-xs font-semibold text-muted-foreground">{t('actions')}</span>
       ),
       enableSorting: false,
       enableHiding: false,
@@ -458,12 +398,8 @@ export const SolutionTestsView = ({
               disabled={isStopping}
               onClick={() => onForceStopBatch(batch.Id)}
             >
-              {isStopping ? (
-                <Spinner className="size-3" />
-              ) : (
-                <Square className="size-3" />
-              )}
-              {t("force_stop")}
+              {isStopping ? <Spinner className="size-3" /> : <Square className="size-3" />}
+              {t('force_stop')}
             </Button>
           </div>
         );
@@ -476,12 +412,12 @@ export const SolutionTestsView = ({
       <PageHeader>
         <PageHeaderNav>
           <PageHeaderTitleGroup>
-            <PageHeaderTitle>{t("solution_tests")}</PageHeaderTitle>
+            <PageHeaderTitle>{t('solution_tests')}</PageHeaderTitle>
           </PageHeaderTitleGroup>
           {hasActiveRuns && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Spinner className="size-4" />
-              {t("runs_in_progress")}
+              {t('runs_in_progress')}
             </div>
           )}
         </PageHeaderNav>
@@ -490,23 +426,15 @@ export const SolutionTestsView = ({
             <TooltipTrigger asChild>
               <span className="inline-flex">
                 <Button
-                  disabled={
-                    runningAll || loading || tests.length === 0 || hasActiveRuns
-                  }
-                  onClick={() => setRunConfirm({ mode: "all" })}
+                  disabled={runningAll || loading || tests.length === 0 || hasActiveRuns}
+                  onClick={() => setRunConfirm({ mode: 'all' })}
                 >
-                  {runningAll ? (
-                    <Spinner className="size-4" />
-                  ) : (
-                    <PlayCircle className="size-4" />
-                  )}
-                  {t("run_all")}
+                  {runningAll ? <Spinner className="size-4" /> : <PlayCircle className="size-4" />}
+                  {t('run_all')}
                 </Button>
               </span>
             </TooltipTrigger>
-            {hasActiveRuns && (
-              <TooltipContent>{t("runs_in_progress")}</TooltipContent>
-            )}
+            {hasActiveRuns && <TooltipContent>{t('runs_in_progress')}</TooltipContent>}
           </Tooltip>
         </PageHeaderActions>
       </PageHeader>
@@ -528,12 +456,14 @@ export const SolutionTestsView = ({
           <Tabs
             value={activeTab}
             onValueChange={(v) => {
-              if (v === "cases" || v === "runs") handleTabChange(v);
+              if (v === 'cases' || v === 'runs') handleTabChange(v);
             }}
           >
             <TabsList>
-              <TabsTrigger value="cases">{t("test_cases")}</TabsTrigger>
-              <TabsTrigger value="runs">{t("test_runs")}</TabsTrigger>
+              <TabsTrigger value="cases">
+                {t('test_cases', { subject: config.subjectNoun?.plural.toLowerCase() ?? 'cases' })}
+              </TabsTrigger>
+              <TabsTrigger value="runs">{t('test_runs')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="cases">
@@ -575,7 +505,7 @@ export const SolutionTestsView = ({
       {runConfirm != null && (
         <RunConfirmDialog
           open
-          confirmLabel={runConfirm.mode === "all" ? t("run_all") : t("run")}
+          confirmLabel={runConfirm.mode === 'all' ? t('run_all') : t('run')}
           onConfirm={onConfirmRun}
           onCancel={() => setRunConfirm(null)}
         />
