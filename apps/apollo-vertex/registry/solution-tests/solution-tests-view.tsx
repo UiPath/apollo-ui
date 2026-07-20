@@ -6,6 +6,7 @@ import type {
   ColumnFiltersState,
   ExpandedState,
   PaginationState,
+  RowSelectionState,
   SortingState,
   VisibilityState,
 } from '@tanstack/react-table';
@@ -16,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import {
   PageHeader,
@@ -43,8 +45,11 @@ import { isRunDone } from './utils';
 
 export type TabValue = SolutionTestsTab;
 
-/** The pending run awaiting confirmation: all active tests, or a single test. */
-export type RunConfirmTarget = { mode: 'all' } | { mode: 'test'; testId: string };
+/** The pending run awaiting confirmation: all active tests, a single test, or the selected tests. */
+export type RunConfirmTarget =
+  | { mode: 'all' }
+  | { mode: 'test'; testId: string }
+  | { mode: 'selected'; testIds: string[] };
 
 /**
  * The apollo-vertex DataTable is controlled — the caller owns table state.
@@ -62,6 +67,7 @@ function useControlledTable(initialSorting: SortingState = []) {
     pageSize: 10,
   });
   const [expanded, onExpandedChange] = useState<ExpandedState>({});
+  const [rowSelection, onRowSelectionChange] = useState<RowSelectionState>({});
   return {
     sorting,
     onSortingChange,
@@ -77,6 +83,8 @@ function useControlledTable(initialSorting: SortingState = []) {
     onPaginationChange,
     expanded,
     onExpandedChange,
+    rowSelection,
+    onRowSelectionChange,
   };
 }
 
@@ -87,6 +95,7 @@ export interface SolutionTestsViewProps {
   error?: string;
   hasActiveRuns: boolean;
   runningAll: boolean;
+  runningSelected: boolean;
   runningTestId: string | null;
   togglingTestId: string | null;
   isDeleting: boolean;
@@ -117,6 +126,7 @@ export const SolutionTestsView = ({
   error,
   hasActiveRuns,
   runningAll,
+  runningSelected,
   runningTestId,
   togglingTestId,
   isDeleting,
@@ -146,8 +156,39 @@ export const SolutionTestsView = ({
   const casesTable = useControlledTable();
   // Runs default to newest-first by run date; the user can re-sort.
   const runsTable = useControlledTable([{ id: 'StartedAt', desc: true }]);
+  // `getRowId` is the test `Id`, so selection keys are test ids directly.
+  const selectedTestIds = Object.keys(casesTable.rowSelection).filter(
+    (id) => casesTable.rowSelection[id],
+  );
 
   const testCasesColumns: ColumnDef<SolutionTest>[] = [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          aria-label={t('select_all')}
+          checked={
+            table.getIsAllRowsSelected()
+              ? true
+              : table.getIsSomeRowsSelected()
+                ? 'indeterminate'
+                : false
+          }
+          onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
+        />
+      ),
+      size: 48,
+      enableSorting: false,
+      enableHiding: false,
+      cell: ({ row }) => (
+        <Checkbox
+          aria-label={t('select_row')}
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
+    },
     {
       id: 'expand',
       header: () => null,
@@ -422,6 +463,20 @@ export const SolutionTestsView = ({
           )}
         </PageHeaderNav>
         <PageHeaderActions>
+          <Button
+            variant="outline"
+            disabled={
+              selectedTestIds.length === 0 ||
+              runningSelected ||
+              runningAll ||
+              loading ||
+              hasActiveRuns
+            }
+            onClick={() => setRunConfirm({ mode: 'selected', testIds: selectedTestIds })}
+          >
+            {runningSelected ? <Spinner className="size-4" /> : <Play className="size-4" />}
+            {t('run_selected', { count: selectedTestIds.length })}
+          </Button>
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="inline-flex">
@@ -505,7 +560,13 @@ export const SolutionTestsView = ({
       {runConfirm != null && (
         <RunConfirmDialog
           open
-          confirmLabel={runConfirm.mode === 'all' ? t('run_all') : t('run')}
+          confirmLabel={
+            runConfirm.mode === 'all'
+              ? t('run_all')
+              : runConfirm.mode === 'selected'
+                ? t('run_selected', { count: runConfirm.testIds.length })
+                : t('run')
+          }
           onConfirm={onConfirmRun}
           onCancel={() => setRunConfirm(null)}
         />

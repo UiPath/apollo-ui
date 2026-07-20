@@ -52,12 +52,16 @@ export const SolutionTests = () => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [runConfirm, setRunConfirm] = useState<RunConfirmTarget | null>(null);
 
-  // Per-row pending derives from each mutation's in-flight variables (run-all
-  // carries no test ids, so it's the only run without `variables.testIds`).
-  const runningAll = runTests.isPending && !runTests.variables?.testIds;
-  const runningTestId = runTests.isPending
-    ? (runTests.variables?.testIds?.[0] ?? null)
+  // Per-run pending derives from the in-flight mutation's `mode`, which
+  // disambiguates a single-row run from a bulk run of one selected test (both
+  // carry exactly one `testId`).
+  const runMode = runTests.isPending
+    ? (runTests.variables?.mode ?? null)
     : null;
+  const runningAll = runMode === "all";
+  const runningSelected = runMode === "selected";
+  const runningTestId =
+    runMode === "test" ? (runTests.variables?.testIds?.[0] ?? null) : null;
   const togglingTestId = toggleActive.isPending
     ? (toggleActive.variables?.testId ?? null)
     : null;
@@ -93,6 +97,7 @@ export const SolutionTests = () => {
       onTabChange={onTabChange}
       hasActiveRuns={hasActiveRuns}
       runningAll={runningAll}
+      runningSelected={runningSelected}
       runningTestId={runningTestId}
       togglingTestId={togglingTestId}
       isDeleting={deleteTest.isPending}
@@ -103,26 +108,40 @@ export const SolutionTests = () => {
       setRunConfirm={setRunConfirm}
       onConfirmRun={() => {
         if (!runConfirm) return;
+        setRunConfirm(null);
+
         if (runConfirm.mode === "all") {
           runTests.mutate(
-            {},
+            { mode: "all" },
             {
               onSuccess: () => toast.success(t("all_tests_triggered")),
               onError: (err) =>
                 toast.error(err.message || t("failed_to_run_tests")),
             },
           );
-        } else {
+          return;
+        }
+
+        if (runConfirm.mode === "selected") {
           runTests.mutate(
-            { testIds: [runConfirm.testId] },
+            { testIds: runConfirm.testIds, mode: "selected" },
             {
-              onSuccess: () => toast.success(t("test_triggered")),
+              onSuccess: () => toast.success(t("selected_tests_triggered")),
               onError: (err) =>
-                toast.error(err.message || t("failed_to_run_test")),
+                toast.error(err.message || t("failed_to_run_tests")),
             },
           );
+          return;
         }
-        setRunConfirm(null);
+
+        runTests.mutate(
+          { testIds: [runConfirm.testId], mode: "test" },
+          {
+            onSuccess: () => toast.success(t("test_triggered")),
+            onError: (err) =>
+              toast.error(err.message || t("failed_to_run_test")),
+          },
+        );
       }}
       onToggleActive={(testId, newValue) =>
         toggleActive.mutate(

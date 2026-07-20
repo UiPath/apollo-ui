@@ -30,11 +30,18 @@ export function useSolutionTests(): UseSolutionTestsResult {
   return { tests: data ?? [], isLoading };
 }
 
+/** Which run a `useRunTests` mutation represents; lets callers tell a single
+ * bulk-selected run apart from a single-row run (both carry one `testId`). */
+export type RunTestsMode = "all" | "test" | "selected";
+
 /** Run the given tests (all active tests when `testIds` is omitted). */
-export function useRunTests(): MutationHook<{ testIds?: string[] }> {
+export function useRunTests(): MutationHook<{
+  testIds?: string[];
+  mode: RunTestsMode;
+}> {
   const actions = useSolutionTestsActions();
   return useMutation({
-    mutationFn: ({ testIds }: { testIds?: string[] }) =>
+    mutationFn: ({ testIds }: { testIds?: string[]; mode: RunTestsMode }) =>
       actions.runTests(testIds),
   });
 }
