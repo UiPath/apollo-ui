@@ -1,4 +1,5 @@
 import { FormWizardDemo } from './form-wizard-demo';
+import { FormWizardHeadlessDemo } from './form-wizard-headless-demo';
 
 # Form Wizard
 
@@ -137,3 +138,35 @@ Pass `persist: { key }` to save the values and current step to `localStorage`, b
 ## Validation
 
 Advancing runs the current step's `FormGroup` schema against its slice; errors render inline on that step's fields. The final `next()` calls `form.handleSubmit()`, which validates the full `onDynamic` schema as a backstop.
+
+## Customizing the design
+
+The chrome is composable at three levels, from smallest change to full control.
+
+### Restyle in place
+
+Every part carries a `data-slot` attribute and merges an incoming `className`, so most theming needs only Tailwind classes. Because the registry copies the source into your app, you also own it outright.
+
+### Customize the Stepper and nav
+
+`FormWizardSteps` accepts a render prop that keeps the step and state wiring while letting you own each node's markup:
+
+```tsx
+<FormWizardSteps>
+  {({ step, index, state, goTo }) => (
+    <button type="button" onClick={goTo} data-state={state}>
+      {index + 1}. {step.title}
+    </button>
+  )}
+</FormWizardSteps>
+```
+
+`FormWizardNav` composes `FormWizardBackButton` and `FormWizardNextButton`; use those parts directly to reorder, relabel, or add actions. `FormWizardNextButton` stays a submit button, so it advances the enclosing step's `FormGroup`.
+
+### Bring your own chrome
+
+For full control, read everything from `useFormWizardContext()` (`stepIndex`, `stepCount`, `currentStep`, `isFirst`, `isLast`, `progress`, `next`, `back`, `goToStep`, `reset`, `form`) and render your own header and buttons. The step logic, validation, and persistence stay intact. The demo below uses a custom progress bar and custom buttons with no Stepper.
+
+<div className="p-6 border rounded-lg mt-4 max-w-md">
+  <FormWizardHeadlessDemo />
+</div>

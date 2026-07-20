@@ -6,8 +6,15 @@ export {
   FormWizardSteps,
   type FormWizardStepsProps,
   useFormWizardContext,
+  type WizardStepRenderProps,
 } from "./form-wizard";
-export { FormWizardNav, type FormWizardNavProps } from "./form-wizard-nav";
+export {
+  FormWizardBackButton,
+  type FormWizardButtonProps,
+  FormWizardNav,
+  type FormWizardNavProps,
+  FormWizardNextButton,
+} from "./form-wizard-nav";
 export {
   useFormWizard,
   type UseFormWizardOptions,
