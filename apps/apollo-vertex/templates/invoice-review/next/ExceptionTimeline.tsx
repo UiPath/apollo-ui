@@ -509,9 +509,11 @@ function FindingView({
   // (e.g. "On file" shows the vendor-master VAT), suppress the inline → ghost
   // and switch to pair-mode: solid ring on the source, dashed ring on the target,
   // and a directional arrow at the divider so the aim reads without repeating.
+  // Exact match handles VAT/amount; substring containment handles date windows and
+  // ranges (e.g. "Apr 30, 2026" ⊆ "Jan 1 - Apr 30, 2026").
   const sourceCell =
     aimed && aimGhostValue
-      ? cells.find((c) => c.tone !== "warn" && c.value === aimGhostValue)
+      ? cells.find((c) => c.tone !== "warn" && c.value.includes(aimGhostValue))
       : undefined;
   const pairMode = !!sourceCell;
   return (
@@ -2172,6 +2174,12 @@ export function ExceptionTimeline({
   const [applyingExcId, setApplyingExcId] = useState<string | null>(null);
   const arcNonceRef = useRef<number>(0);
   const arcTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Holds the deferred auto-resolve events computed at ACT, applied at REST.
+  const arcDeferredRef = useRef<{
+    cleared: string[];
+    autoResolveEvents: RunEventInput[];
+    revalidatedEvent: RunEventInput;
+  } | null>(null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: cleanup only
   useEffect(() => () => arcTimersRef.current.forEach(clearTimeout), []);
   // Approve is the one true completion, so it earns the full resolve
@@ -2693,6 +2701,8 @@ export function ExceptionTimeline({
       lineNums: patchedLineNums,
       count,
     };
+    // Computed at ACT, applied at REST to gate carousel advance behind the pill.
+    let nextId = "";
 
     setApplyingExcId(exc.id);
     // PRE (t=0): set state immediately so the panel scroll effect fires; ring+pill invisible.
@@ -2710,7 +2720,8 @@ export function ExceptionTimeline({
       } satisfies ArcState);
     }, 50);
 
-    // ACT (t=450ms): commit corrections; value crossfades in; ring+pill frozen.
+    // ACT (t=450ms): commit correction + one corrected event; value crossfades in; ring+pill frozen.
+    // Deferred consequences (auto-resolve, re-validated, carousel) wait until REST.
     const t2 = setTimeout(() => {
       if (arcNonceRef.current !== nonce) return;
       const meta = exceptionMeta(exc);
@@ -2721,25 +2732,24 @@ export function ExceptionTimeline({
         { kind: "corrected", label, sub, time: "Just now" },
       ];
       const openExcs = openExceptions(review, rt);
-      runtime.correctDetail(
+      // Step 1: correction commits; auto-resolve events returned for REST.
+      const deferred = runtime.correctDetailStep1(
         review.id,
         corrections,
         { openExceptions: openExcs, base: {} },
         correctionEvents,
-        {
-          dataPatch: exc.resolution?.dataPatch,
-          settledSub: sub,
-          aiSourced: true,
-        },
+        { dataPatch: exc.resolution?.dataPatch, settledSub: sub },
       );
+      arcDeferredRef.current = deferred;
       runtime.setArcState(review.id, {
         ...arcBase,
         phase: "act",
       } satisfies ArcState);
       setApplyingExcId(null);
+      // Compute cursor target now; advance at REST so center stays frozen while pill is visible.
       const idx = list.findIndex((e) => e.id === exc.id);
       const next = list[idx + 1] ?? (list.length > 1 ? list[0] : undefined);
-      setActiveId(next?.id === exc.id ? "" : (next?.id ?? ""));
+      nextId = next?.id === exc.id ? "" : (next?.id ?? "");
     }, 450);
 
     // CONFIRM (t=700ms): ring → success token; pill → "✓ Updated" — both in one state update.
@@ -2760,17 +2770,29 @@ export function ExceptionTimeline({
       } satisfies ArcState);
     }, 1400);
 
-    // REST (t=1800ms): clear arc state; toast fires via correctionPulse delay.
+    // REST (t=1800ms): apply deferred consequences + advance carousel; toast fires via delay.
     const t5 = setTimeout(() => {
       if (arcNonceRef.current !== nonce) return;
+      const deferred = arcDeferredRef.current;
+      if (deferred) {
+        runtime.correctDetailStep2(
+          review.id,
+          deferred.cleared,
+          deferred.autoResolveEvents,
+          deferred.revalidatedEvent,
+        );
+        arcDeferredRef.current = null;
+      }
       runtime.setArcState(review.id, null);
+      setActiveId(nextId);
     }, 1800);
 
     arcTimersRef.current.push(t1, t2, t3, t4, t5);
   }
 
   function resolveActive(s: Suggestion, reason?: string, note?: string) {
-    if (!active || resolve || emailModal || !!applyingExcId) return;
+    if (!active || resolve || emailModal || !!applyingExcId || !!rt.arcState)
+      return;
     // Supplier routes confirm through the draft modal: nothing about the
     // exception changes until the message is sent (Send commits the park).
     if (isSupplierRoute(s)) {
