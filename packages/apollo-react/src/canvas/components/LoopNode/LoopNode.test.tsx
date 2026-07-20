@@ -24,6 +24,8 @@ const { mockExecutionState, mockGetContainerResizeMinimums, mockManifest, mockVa
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
+  // Stub: the real Handle requires a mounted React Flow store provider.
+  Handle: ({ id }: { id?: string }) => <div data-testid={`xy-handle-${id}`} />,
   NodeResizeControl: ({
     children,
     minHeight,
@@ -483,5 +485,42 @@ describe('LoopNode header chips and description', () => {
     renderLoopNode();
 
     expect(screen.queryByTestId('loop-node-header-description')).toBeNull();
+  });
+});
+
+describe('LoopNode always-visible handle groups', () => {
+  const innerGroup = (alwaysVisible: boolean) => ({
+    position: 'right',
+    boundary: 'inner',
+    ...(alwaysVisible ? { alwaysVisible: true } : {}),
+    handles: [{ id: 'onComplete', label: 'Complete', type: 'target', handleType: 'input' }],
+  });
+
+  function labelElement() {
+    const label = screen.getByText('Complete');
+    // The opacity class lives on the pill wrapper around the label text.
+    return label.parentElement as HTMLElement;
+  }
+
+  it('renders handle labels at all times when the group is alwaysVisible', () => {
+    mockManifest.current = {
+      display: { label: 'Stage', icon: 'repeat', shape: 'container' },
+      handleConfiguration: [innerGroup(true)],
+    };
+
+    renderLoopNode();
+
+    expect(labelElement().className).toContain('opacity-100');
+  });
+
+  it('keeps handle labels hover-gated when the group is not alwaysVisible', () => {
+    mockManifest.current = {
+      display: { label: 'Stage', icon: 'repeat', shape: 'container' },
+      handleConfiguration: [innerGroup(false)],
+    };
+
+    renderLoopNode();
+
+    expect(labelElement().className).toContain('opacity-0');
   });
 });
