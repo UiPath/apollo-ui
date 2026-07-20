@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v5.0.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@5.0.1...@uipath/apollo-react@5.0.2) (2026-07-20)
+
+### Bug Fixes
+
+* **apollo-react:** clear node faces so routed edges exit perpendicular [MST-11337] ([d02f221](https://github.com/UiPath/apollo-ui/commit/d02f221fc0005b50998a914d1faceb50540876b8))
+
 ## [@uipath/apollo-react-v5.0.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@5.0.0...@uipath/apollo-react@5.0.1) (2026-07-20)
 
 ### Bug Fixes
