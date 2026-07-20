@@ -25,8 +25,11 @@ import { CASE_MARKER_NODE_SIZE, caseFlowManifest } from './case-flow.manifest';
  *   between two stages is the cross-stage dependency rule.
  * - Small circles INSIDE the stages: task-level event (zap icon) and manual
  *   (play icon) markers that start event-based and adhoc tasks.
- * - Squares: tasks. The sequential chain runs from the stage's inner "On enter"
- *   handle through the tasks to the inner "On complete" handle.
+ * - Squares: tasks. The stage's INNER handles carry the labeled lifecycle,
+ *   Enter / Complete / Exit (the loop node's start / continue / break). The
+ *   sequential chain runs from inner Enter through the tasks into inner
+ *   Complete; a task wired into inner Exit abandons the stage. The outer
+ *   boundary handles are unlabeled connection points.
  */
 
 const STAGE_TYPE = 'uipath.case.stage';
@@ -279,6 +282,8 @@ function createCaseFlowEdges(): Edge[] {
     edge('e-review-oncomplete', 'task-review', 'output', 'stage-assessment', 'onComplete'),
     edge('e-event-adjuster', 'assessment-event', 'output', 'task-adjuster', 'input'),
     edge('e-adhoc-escalate', 'assessment-adhoc', 'output', 'task-escalate', 'input'),
+    // Escalating abandons the stage: the task lands on the inner Exit (loop break) handle.
+    edge('e-escalate-onexit', 'task-escalate', 'output', 'stage-assessment', 'onExit'),
 
     // Stage exit (loop break) feeds the exit rule, which gates the case exit.
     edge('e-assessment-exit-rule', 'stage-assessment', 'exit', 'assessment-exit-rule', 'input'),
