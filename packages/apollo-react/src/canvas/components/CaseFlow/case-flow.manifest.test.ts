@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { categoryManifestSchema } from '../../schema/node-definition/category-manifest';
 import { nodeManifestSchema } from '../../schema/node-definition/node-manifest';
-import { caseFlowCategories, caseFlowManifest, caseStageManifest } from './case-flow.manifest';
+import {
+  caseEventMarkerManifest,
+  caseFlowCategories,
+  caseFlowManifest,
+  caseStageManifest,
+} from './case-flow.manifest';
 
 describe('case-flow manifest', () => {
   it('every category validates against the category manifest schema', () => {
@@ -28,31 +33,25 @@ describe('case-flow manifest', () => {
     }
   });
 
-  it('rule circles attach to the stage outer handles from outside', () => {
-    const stageOuterHandleIds = new Set(
-      caseStageManifest.handleConfiguration
-        .filter((group) => group.boundary !== 'inner')
-        .flatMap((group) => group.handles.map((h) => h.id))
+  it('has no dedicated stage-level rule nodes: rules are edges', () => {
+    const ruleNodes = caseFlowManifest.nodes.filter((n) =>
+      n.nodeType.startsWith('uipath.case.rule.')
     );
+    expect(ruleNodes).toHaveLength(0);
+  });
 
-    const findRule = (suffix: string) => {
-      const node = caseFlowManifest.nodes.find((n) => n.nodeType === `uipath.case.rule.${suffix}`);
-      expect(node, suffix).toBeTruthy();
-      return node!;
-    };
-    const handleConstraints = (node: (typeof caseFlowManifest.nodes)[number], handleId: string) =>
-      node.handleConfiguration.flatMap((g) => g.handles).find((h) => h.id === handleId)
-        ?.constraints;
+  it('event circles may start tasks or feed the stage inner Complete / Exit handles', () => {
+    const output = caseEventMarkerManifest.handleConfiguration
+      .flatMap((g) => g.handles)
+      .find((h) => h.id === 'output');
+    expect(output?.constraints?.allowedTargetCategories).toEqual(['case-task', 'case-stage']);
 
-    // Entry rules sit before the stage: output goes into the stage's enter handle.
-    const entryTargets = handleConstraints(findRule('entry'), 'output')?.allowedTargets ?? [];
-    expect(entryTargets).toEqual([{ nodeType: 'uipath.case.stage', handleId: 'enter' }]);
-
-    // Complete / exit rules sit after the stage: input is fed by the matching outer handle.
-    for (const suffix of ['complete', 'exit'] as const) {
-      const sources = handleConstraints(findRule(suffix), 'input')?.allowedSources ?? [];
-      expect(sources).toEqual([{ nodeType: 'uipath.case.stage', handleId: suffix }]);
-      expect(stageOuterHandleIds.has(suffix)).toBe(true);
+    const innerTargets = caseStageManifest.handleConfiguration
+      .filter((g) => g.boundary === 'inner')
+      .flatMap((g) => g.handles)
+      .filter((h) => h.type === 'target');
+    for (const handle of innerTargets) {
+      expect(handle.constraints?.allowedSourceCategories, handle.id).toContain('case-condition');
     }
   });
 
@@ -71,6 +70,13 @@ describe('case-flow manifest', () => {
     expect(innerHandles.map((h) => h.label)).toEqual(['Enter', 'Complete', 'Exit']);
     for (const handle of outerHandles) {
       expect(handle.label, handle.id).toBeUndefined();
+    }
+
+    // Enter sits on the left inner wall, Complete on the right, Exit on the bottom,
+    // and all three are permanently visible.
+    expect(inner.map((g) => g.position)).toEqual(['left', 'right', 'bottom']);
+    for (const group of inner) {
+      expect(group.alwaysVisible, group.position).toBe(true);
     }
   });
 });

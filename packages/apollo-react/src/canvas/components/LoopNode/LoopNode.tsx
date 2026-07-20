@@ -729,7 +729,8 @@ function HandleGroup({
   connectedHandleIds,
   onHandleAction,
 }: HandleGroupProps) {
-  const groupVisible = shouldShowHandles && (group.visible ?? true);
+  const groupVisible =
+    (shouldShowHandles || group.alwaysVisible === true) && (group.visible ?? true);
   const position = group.position as Position;
   const enhancedHandles = useMemo(
     () =>
