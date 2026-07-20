@@ -2526,6 +2526,7 @@ export function ExceptionTimeline({
               surfaced: s.fresh,
               dataPatch: s.dataPatch,
               settledSub: s.settledSub,
+              aiSourced: true,
             },
           );
         } else {

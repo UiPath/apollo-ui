@@ -113,6 +113,7 @@ interface RuntimeStore {
       surfaced?: InvoiceException[];
       dataPatch?: Partial<InvoiceReview>;
       settledSub?: string;
+      aiSourced?: boolean;
     },
   ) => void;
   /**
@@ -332,6 +333,7 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
             detailFields: patchedScalars,
             lineNums: patchedLineNums,
             autoResolvedIds: cleared,
+            aiSourced: extras?.aiSourced,
           };
           return {
             ...prev,
