@@ -145,6 +145,15 @@ export const handleGroupManifestSchema = z.object({
    */
   alwaysVisible: z.boolean().optional(),
 
+  /**
+   * Lay the group out as if it had this many handle slots (must be >= the
+   * actual handle count; ignored otherwise). Handles fill slots from the
+   * first. Lets a group with fewer handles align with a sibling group on the
+   * opposite wall: e.g. the case stage's single Enter handle uses slotCount 2
+   * so it sits level with Complete, the first of the right wall's pair.
+   */
+  slotCount: z.number().int().positive().optional(),
+
   customPositionAndOffsets: handleConfigurationSpecificPositionSchema.optional(),
 
   /** Array of handles at this position */

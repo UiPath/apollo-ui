@@ -425,6 +425,7 @@ const ButtonHandlesBase = ({
   nodeWidth,
   nodeHeight,
   portalActions = false,
+  slotCount,
 }: {
   nodeId: string;
   handles: ButtonHandleConfig[];
@@ -440,6 +441,13 @@ const ButtonHandlesBase = ({
   nodeHeight?: number;
   /** Render source handle affordances (button and label) in the node overlay layer. */
   portalActions?: boolean;
+
+  /**
+   * Lay the group out as if it had this many handle slots (>= the visible
+   * handle count; ignored otherwise). Handles fill slots from the first, so a
+   * group with fewer handles can align with a fuller group on the opposite wall.
+   */
+  slotCount?: number;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -465,6 +473,9 @@ const ButtonHandlesBase = ({
   // Handles with visible: false are excluded from the DOM entirely —
   // group-level visibility (hover/selection state) is handled via opacity.
   const visibleHandles = handles.filter((h) => h.visible ?? true);
+
+  const layoutSlotCount =
+    slotCount && slotCount >= visibleHandles.length ? slotCount : visibleHandles.length;
 
   // Show the hover bridge when any source handle in this group has an onAction callback.
   const hasSourceButtons = visibleHandles.some((h) => h.type === 'source' && h.onAction);
@@ -496,7 +507,7 @@ const ButtonHandlesBase = ({
             labelBackgroundColor={handle.labelBackgroundColor}
             labelVisibility={handle.labelVisibility}
             index={index}
-            total={visibleHandles.length}
+            total={layoutSlotCount}
             selected={selected}
             visible={handleVisible}
             labelVisible={labelVisible}

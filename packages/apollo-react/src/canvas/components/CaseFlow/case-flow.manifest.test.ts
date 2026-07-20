@@ -90,5 +90,12 @@ describe('case-flow manifest', () => {
     const innerBySide = new Map(inner.map((g) => [g.position, g.handles.length]));
     expect(innerBySide.get('left')).toBe(outerBySide.get('left'));
     expect(innerBySide.get('right')).toBe(outerBySide.get('right'));
+
+    // Both left groups lay out with 2 slots so enter / Enter sit level with
+    // the first slot of the right wall pair (complete / Complete).
+    const leftGroups = caseStageManifest.handleConfiguration.filter((g) => g.position === 'left');
+    for (const group of leftGroups) {
+      expect(group.slotCount, group.boundary ?? 'outer').toBe(2);
+    }
   });
 });

@@ -198,6 +198,9 @@ export const caseStageManifest: NodeManifest = {
   handleConfiguration: [
     {
       position: 'left',
+      // Two layout slots so the single enter handle sits level with the outer
+      // complete handle (first slot of the right wall's pair).
+      slotCount: 2,
       handles: [
         {
           // Unlabeled on purpose: the outer boundary reads like a regular loop
@@ -239,6 +242,8 @@ export const caseStageManifest: NodeManifest = {
       position: 'left',
       boundary: 'inner',
       alwaysVisible: true,
+      // Matches the outer left group: Enter sits level with Complete.
+      slotCount: 2,
       handles: [
         {
           id: 'onEnter',
