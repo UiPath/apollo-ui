@@ -50,6 +50,25 @@ module.exports = {
             showFileHeader: false,
           },
         },
+        {
+          destination: '_scoped-theme-variables.scss',
+          format: 'scss/scoped-theme-variables',
+          filter: {
+            attributes: {
+              category: 'color',
+            },
+          },
+          options: {
+            showFileHeader: false,
+          },
+        },
+        {
+          destination: '_css-variables.scss',
+          format: 'scss/css-variables-mixin',
+          options: {
+            showFileHeader: false,
+          },
+        },
       ],
     },
     css: {
