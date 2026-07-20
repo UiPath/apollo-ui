@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.29.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.28.0...@uipath/apollo-wind@2.29.0) (2026-07-20)
+
+### Features
+
+* **apollo-wind:** add autoGrow in textArea [MST-12041] ([1df2659](https://github.com/UiPath/apollo-ui/commit/1df2659fbd0bf94fd16fe58b685c9072378b6537))
+
 ## [@uipath/apollo-wind-v2.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.27.1...@uipath/apollo-wind@2.28.0) (2026-07-14)
 
 ### Features
