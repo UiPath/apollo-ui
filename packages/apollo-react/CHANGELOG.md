@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v5.0.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@5.0.0...@uipath/apollo-react@5.0.1) (2026-07-20)
+
+### Bug Fixes
+
+* **apollo-react:** description rendering [MST-11496] ([0966da2](https://github.com/UiPath/apollo-ui/commit/0966da2945dc3d6248fdc2bd439bd8e5992e6547))
+
 ## [@uipath/apollo-react-v4.65.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.65.1...@uipath/apollo-react@4.65.2) (2026-07-17)
 
 ### Bug Fixes
