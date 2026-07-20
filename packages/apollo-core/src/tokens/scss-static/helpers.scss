@@ -1,0 +1,26 @@
+@use './variables';
+
+@function ui-color($name, $hue, $contrast: false) {
+  $colors: map-get(variables.$tokens, 'color');
+  $pallete: map-get($colors, $name);
+  @return map-get($pallete, $hue + if($contrast, '-contrast', ''));
+}
+
+@function ui-color-contrast($name, $hue) {
+  @return ui-color($name, $hue, true);
+}
+
+@function ui-icon-size($size) {
+  $icon-sizes: map-get(variables.$tokens, 'icon');
+  @return map-get($icon-sizes, $size);
+}
+
+@function ui-padding($size) {
+  $paddings: map-get(variables.$tokens, 'pad');
+  @return map-get($paddings, $size);
+}
+
+@function ui-spacing($size) {
+  $spacings: map-get(variables.$tokens, 'spacing');
+  @return map-get($spacings, $size);
+}

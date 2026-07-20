@@ -1,0 +1,55 @@
+@import "./variables";
+
+@mixin scoped-theme-variables($child: null) {
+  $child-selector: if($child, ' #{$child}', '');
+
+  body.light#{$child-selector} {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-light') && !property.name.endsWith('-future-light')) {
+%>    --<%= property.name.slice(0, -'-light'.length) %>: #{$<%= property.name %>};
+<% }}); %>
+    --border: #{$border-light};
+    color-scheme: light;
+  }
+
+  body.light-hc#{$child-selector} {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-light-hc')) {
+%>    --<%= property.name.slice(0, -'-light-hc'.length) %>: #{$<%= property.name %>};
+<% }}); %>
+    --border: #{$border-light-hc};
+    color-scheme: light-hc;
+  }
+
+  body.dark#{$child-selector} {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-dark') && !property.name.endsWith('-future-dark')) {
+%>    --<%= property.name.slice(0, -'-dark'.length) %>: #{$<%= property.name %>};
+<% }}); %>
+    --border: #{$border-dark};
+    color-scheme: dark;
+  }
+
+  body.dark-hc#{$child-selector} {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-dark-hc')) {
+%>    --<%= property.name.slice(0, -'-dark-hc'.length) %>: #{$<%= property.name %>};
+<% }}); %>
+    --border: #{$border-dark-hc};
+    color-scheme: dark-hc;
+  }
+
+  /* Future themes also emit bare class selectors (not gated on body)
+     so they can be scoped to any element, matching theme-variables.scss. */
+  body.future-dark#{$child-selector}, .future-dark#{$child-selector} {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-future-dark')) {
+%>    --<%= property.name.slice(0, -'-future-dark'.length) %>: #{$<%= property.name %>};
+<% }}); %>
+    --border: #{$border-future-dark};
+    color-scheme: dark;
+  }
+
+  body.future-light#{$child-selector}, .future-light#{$child-selector} {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-future-light')) {
+%>    --<%= property.name.slice(0, -'-future-light'.length) %>: #{$<%= property.name %>};
+<% }}); %>
+    --border: #{$border-future-light};
+    color-scheme: light;
+  }
+}

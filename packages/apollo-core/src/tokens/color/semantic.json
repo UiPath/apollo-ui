@@ -2388,6 +2388,46 @@
         "value": "{color.gradient.4L-end.value}"
       }
     },
+    "canvasBackground": {
+      "light": {
+        "value": "#f4f5f7"
+      },
+      "light-hc": {
+        "value": "#f4f5f7"
+      },
+      "dark": {
+        "value": "#10151a"
+      },
+      "dark-hc": {
+        "value": "#10151a"
+      },
+      "future-dark": {
+        "value": "{color.zinc.950.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.50.value}"
+      }
+    },
+    "dotGrid": {
+      "light": {
+        "value": "#dce5eb"
+      },
+      "light-hc": {
+        "value": "#dce5eb"
+      },
+      "dark": {
+        "value": "#2f3133"
+      },
+      "dark-hc": {
+        "value": "#2f3133"
+      },
+      "future-dark": {
+        "value": "{color.zinc.800.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.200.value}"
+      }
+    },
     "backgroundOverlay": {
       "light": {
         "value": "{color.ink.150.value}"
