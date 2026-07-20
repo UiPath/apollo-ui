@@ -1,3 +1,4 @@
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -163,6 +164,10 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
         justifyContent: 'flex-start',
         textAlign: 'left',
         position: 'relative',
+        // Establish a query container so the row can drop its lowest-priority
+        // column (the context-window size) in narrow hosts — e.g. a product
+        // sidebar — where it would otherwise crowd or overlap the model name.
+        containerType: 'inline-size',
         // Selected state: 3px left accent bar (primary) plus a
         // `colorBackgroundSelected` fill across the whole row. Both
         // colors read through CSS variables so the row dark-modes
@@ -215,7 +220,24 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
             {primary}
           </Typography>
           {inlineTags.map((t) => (
-            <Box key={`${t.kind}-${t.label}`} sx={{ flexShrink: 0 }}>
+            <Box
+              key={`${t.kind}-${t.label}`}
+              sx={{
+                // Long chips (notably the "Routes to …" substitution chip) may
+                // exceed the available width. Let the chip shrink and ellipsize
+                // its label rather than overflow into the context column, which
+                // otherwise overlaps the model name in narrow hosts.
+                flexShrink: 1,
+                minWidth: 0,
+                overflow: 'hidden',
+                '& .MuiChip-root': { maxWidth: '100%' },
+                '& .MuiChip-label': {
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                },
+              }}
+            >
               <ModelTagChip tag={t} variants={tagVariants} />
             </Box>
           ))}
@@ -276,6 +298,12 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
             alignItems: 'flex-end',
             gap: 0.5,
             pt: 0.125,
+            // Lowest-priority column: in a narrow row (e.g. a product sidebar)
+            // the model name and chips take precedence, so hide the context
+            // size below the threshold rather than overlap the name.
+            '@container (max-width: 380px)': {
+              display: 'none',
+            },
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -340,10 +368,16 @@ export function defaultRowActions(
     i18n?: PickerTranslator;
     /** Edit activation — the picker navigates to the configuration page. */
     onEdit?: (model: DiscoveryModel) => void;
+    /**
+     * Delete activation — optional. When provided, a delete icon renders
+     * alongside edit on BYO rows; the host performs the deletion and refreshes
+     * its `models`. Omit to keep edit-only (removal via the configurations page).
+     */
+    onDelete?: (model: DiscoveryModel) => void;
   } = {}
 ): React.ReactNode {
-  const { i18n, onEdit } = options;
-  if (!onEdit) return null;
+  const { i18n, onEdit, onDelete } = options;
+  if (!onEdit && !onDelete) return null;
   const isByo =
     model.modelSubscriptionType === 'BYOMAdded' ||
     model.modelSubscriptionType === 'BYOMReplacedAlternative' ||
@@ -355,17 +389,39 @@ export function defaultRowActions(
         message: 'Edit configuration',
       })
     : 'Edit configuration';
+  const deleteTitle = i18n
+    ? i18n._({
+        id: 'modelPicker.row.deleteConfiguration',
+        message: 'Delete configuration',
+      })
+    : 'Delete configuration';
   return (
-    <Tooltip title={editTitle} arrow>
-      <IconButton
-        size="small"
-        sx={{ color: 'inherit' }}
-        aria-label={editTitle}
-        onClick={() => onEdit(model)}
-      >
-        <EditOutlinedIcon fontSize="small" />
-      </IconButton>
-    </Tooltip>
+    <>
+      {onEdit && (
+        <Tooltip title={editTitle} arrow>
+          <IconButton
+            size="small"
+            sx={{ color: 'inherit' }}
+            aria-label={editTitle}
+            onClick={() => onEdit(model)}
+          >
+            <EditOutlinedIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      )}
+      {onDelete && (
+        <Tooltip title={deleteTitle} arrow>
+          <IconButton
+            size="small"
+            sx={{ color: 'inherit' }}
+            aria-label={deleteTitle}
+            onClick={() => onDelete(model)}
+          >
+            <DeleteOutlineIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      )}
+    </>
   );
 }
 

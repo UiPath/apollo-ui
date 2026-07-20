@@ -8,9 +8,21 @@ import type { FolderSwitcherFolder } from './primitives/FolderSwitcher';
  * navigation into the AI Trust Layer LLM-configurations pages. Mirrors
  * how the Automation Cloud portal reaches the same endpoints.
  */
+/**
+ * Bearer token, or a getter the picker calls fresh on every request. Prefer the
+ * getter form in hosts whose access token rotates (portal-shell, silent-refresh
+ * SPAs): a plain string is captured once when the (memoized) `requestContext` is
+ * built, so it can go stale and make the picker's platform calls 401 — which
+ * fails the BYO-admin check closed and hides the affordances.
+ */
+export type PlatformToken = string | (() => string | Promise<string>);
+
+const resolveToken = async (token: PlatformToken): Promise<string> =>
+  typeof token === 'function' ? token() : token;
+
 export interface PlatformRequestContext {
-  /** Bearer token (no `Bearer ` prefix). */
-  token: string;
+  /** Bearer token (no `Bearer ` prefix), or a getter resolved per request. */
+  token: PlatformToken;
   /**
    * Origin + organization path segment, e.g.
    * `https://cloud.uipath.com/acme`. The picker joins its platform
@@ -109,10 +121,15 @@ export function useUserFolders(ctx: PlatformRequestContext | null): UseUserFolde
       `GetFoldersForCurrentUser?take=${FOLDERS_PAGE_SIZE}`;
 
     try {
+      const bearer = await resolveToken(ctx.token);
       const res = await fetch(url, {
         headers: {
-          Authorization: `Bearer ${ctx.token}`,
+          Authorization: `Bearer ${bearer}`,
           Accept: 'application/json',
+          // Some UiPath platform endpoints (e.g. portal_ APIs) reject requests
+          // without a JSON Content-Type with 415, even on GET. Send it to match
+          // how the platform's own clients call these routes.
+          'Content-Type': 'application/json',
         },
         signal: ctrl.signal,
       });
@@ -225,13 +242,18 @@ export function useCanManageByo(ctx: PlatformRequestContext | null): UseCanManag
     const base = (ctx.baseUrl ?? '').replace(/\/$/, '');
     const url = `${base}/portal_/api/organization/UserOrganizationInfo`;
 
-    fetch(url, {
-      headers: {
-        Authorization: `Bearer ${ctx.token}`,
-        Accept: 'application/json',
-      },
-      signal: ctrl.signal,
-    })
+    resolveToken(ctx.token)
+      .then((bearer) =>
+        fetch(url, {
+          headers: {
+            Authorization: `Bearer ${bearer}`,
+            Accept: 'application/json',
+            // portal_ APIs 415 without a JSON Content-Type, even on GET.
+            'Content-Type': 'application/json',
+          },
+          signal: ctrl.signal,
+        })
+      )
       .then(async (res) => {
         if (!res.ok) {
           throw new Error(`UserOrganizationInfo API ${res.status} ${res.statusText}`);
@@ -315,12 +337,21 @@ export function buildLlmConfigurationsUrl(
 
 /**
  * Navigation seam for the picker's default add/edit affordances.
- * Same-tab full navigation (the target is the portal admin app);
- * indirected through this object so tests can spy without fighting
+ * Indirected through this object so tests can spy without fighting
  * jsdom's unforgeable `window.location`.
+ *
+ * `assign` does a same-tab full navigation (the target is the portal
+ * admin app). `openInNewTab` opens the target in a new browser tab and
+ * keeps the current page — products embedded in a larger surface (e.g.
+ * an agent designer) prefer this so the user doesn't lose their work.
+ * The `noopener,noreferrer` features are set for the usual security
+ * reasons (the opened page can't reach back via `window.opener`).
  */
 export const platformNavigation = {
   assign(url: string): void {
     globalThis.location?.assign(url);
+  },
+  openInNewTab(url: string): void {
+    globalThis.open?.(url, '_blank', 'noopener,noreferrer');
   },
 };

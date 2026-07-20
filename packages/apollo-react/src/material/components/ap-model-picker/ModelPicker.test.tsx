@@ -217,4 +217,145 @@ describe('<ModelPicker>', () => {
     await user.keyboard('{Enter}');
     expect(onChange).toHaveBeenCalledTimes(1);
   });
+
+  it('opens the LLM-configurations pages in a new tab when openLinksInNewTab is set', async () => {
+    const user = userEvent.setup();
+    const openInNewTab = vi.spyOn(platformNavigation, 'openInNewTab').mockImplementation(() => {});
+    const assign = vi.spyOn(platformNavigation, 'assign').mockImplementation(() => {});
+    try {
+      renderPicker(
+        <ModelPicker
+          models={MODELS}
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          openLinksInNewTab
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            tenantId: 'tenant-guid',
+            requestingProduct: 'agents',
+            requestingFeature: 'design-eval-deploy',
+          }}
+          enableFolders
+          folders={[{ id: 'folder-key', label: 'Shared', numericId: 2241521 }]}
+          folder="folder-key"
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      await user.click(screen.getByText(/use custom model/i));
+      // New-tab navigation, not a same-tab assign.
+      expect(openInNewTab).toHaveBeenLastCalledWith(
+        'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations' +
+          '/tenant-guid/2241521/add?product=agents&feature=design-eval-deploy'
+      );
+      expect(assign).not.toHaveBeenCalled();
+    } finally {
+      openInNewTab.mockRestore();
+      assign.mockRestore();
+    }
+  });
+
+  it('falls back to the first folder for the add deep-link when none is selected', async () => {
+    const user = userEvent.setup();
+    const assign = vi.spyOn(platformNavigation, 'assign').mockImplementation(() => {});
+    try {
+      renderPicker(
+        <ModelPicker
+          models={MODELS}
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            tenantId: 'tenant-guid',
+            requestingProduct: 'agents',
+            requestingFeature: 'design-eval-deploy',
+          }}
+          enableFolders
+          folders={[{ id: 'folder-key', label: 'Shared', numericId: 2241521 }]}
+          // No `folder` selected ("All folders") — should still deep-link
+          // /add using the first available folder, not fall back to the list.
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      await user.click(screen.getByText(/use custom model/i));
+      expect(assign).toHaveBeenLastCalledWith(
+        'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations' +
+          '/tenant-guid/2241521/add?product=agents&feature=design-eval-deploy'
+      );
+    } finally {
+      assign.mockRestore();
+    }
+  });
+
+  it('renders a delete row action on BYO rows when onDeleteModel is provided', async () => {
+    const user = userEvent.setup();
+    const onDeleteModel = vi.fn();
+    renderPicker(
+      <ModelPicker
+        models={MODELS}
+        value={null}
+        onChange={() => {}}
+        canManageByo
+        onDeleteModel={onDeleteModel}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const deleteButton = await screen.findByRole('button', { name: /delete configuration/i });
+    await user.click(deleteButton);
+    expect(onDeleteModel).toHaveBeenCalledTimes(1);
+    // Called with the BYO model row.
+    expect(onDeleteModel.mock.calls[0][0]).toMatchObject({ modelSubscriptionType: 'BYOMAdded' });
+  });
+
+  it('deep-links the edit form when the DTO carries byomDetails.byoConfigurationId', async () => {
+    const user = userEvent.setup();
+    const assign = vi.spyOn(platformNavigation, 'assign').mockImplementation(() => {});
+    try {
+      const models: DiscoveryModel[] = MODELS.map((m) =>
+        m.modelSubscriptionType === 'BYOMAdded'
+          ? {
+              ...m,
+              byomDetails: {
+                availableOperationCodes: [],
+                integrationServiceConnectionId: 'conn-1',
+                defaultModel: 'gpt-4o',
+                byoConfigurationId: 'cfg-123',
+              },
+            }
+          : m
+      );
+      renderPicker(
+        <ModelPicker
+          models={models}
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            tenantId: 'tenant-guid',
+            requestingProduct: 'agents',
+            requestingFeature: 'design-eval-deploy',
+          }}
+          enableFolders
+          folders={[{ id: 'folder-key', label: 'Shared', numericId: 2241521 }]}
+          folder="folder-key"
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /edit configuration/i }));
+      expect(assign).toHaveBeenLastCalledWith(
+        'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations' +
+          '/tenant-guid/2241521/edit/cfg-123'
+      );
+    } finally {
+      assign.mockRestore();
+    }
+  });
 });

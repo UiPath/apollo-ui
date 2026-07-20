@@ -148,11 +148,15 @@ export const FOLDER_SWITCHER = {
  * ─────────────────────────────────────────────────────────────────── */
 
 export const ROW_ACTIONS = {
-  // Opens the AI Trust Layer LLM-configurations edit page; removal
-  // lives there too, so there is no separate delete action.
+  // Opens the AI Trust Layer LLM-configurations edit page.
   editConfiguration: msg({
     id: 'modelPicker.row.editConfiguration',
     message: 'Edit configuration',
+  }),
+  // Optional delete action, surfaced only when the host passes `onDeleteModel`.
+  deleteConfiguration: msg({
+    id: 'modelPicker.row.deleteConfiguration',
+    message: 'Delete configuration',
   }),
 } as const;
 

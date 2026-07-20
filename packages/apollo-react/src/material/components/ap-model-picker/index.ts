@@ -64,6 +64,7 @@ export type {
 export { useModelPickerState } from './useModelPickerState';
 export type {
   PlatformRequestContext,
+  PlatformToken,
   UseCanManageByoResult,
   UseUserFoldersResult,
 } from './usePlatformAccess';

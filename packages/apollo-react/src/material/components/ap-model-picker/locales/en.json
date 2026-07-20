@@ -13,6 +13,7 @@
   "modelPicker.group.byo.label": "Custom Models (BYO)",
   "modelPicker.tag.deprecating.label": "Deprecating {date}",
   "modelPicker.group.deprecating.label": "Deprecating soon",
+  "modelPicker.row.deleteConfiguration": "Delete configuration",
   "modelPicker.row.editConfiguration": "Edit configuration",
   "modelPicker.groupBy.ariaLabel": "Group models by",
   "modelPicker.loading.label": "Loading models",
