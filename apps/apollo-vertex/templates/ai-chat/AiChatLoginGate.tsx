@@ -19,6 +19,7 @@ import {
 import { useAuth } from "@/registry/shell/shell-auth-provider";
 import {
   AICHAT_DIRECT_BASE_URL,
+  AICHAT_IS_CODED_APP,
   AICHAT_STATIC_ORG,
   AICHAT_STORAGE_KEYS,
 } from "./ai-chat-example-utils";
@@ -192,9 +193,11 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
     );
     logout();
 
-    // In Coded App builds the identity endpoints live on the platform host,
-    // not on the origin serving the static export.
-    const identityOrigin = AICHAT_DIRECT_BASE_URL || window.location.origin;
+    // Coded App builds reach identity on the baked platform host; dev reaches
+    // it through the same-origin proxy.
+    const identityOrigin = AICHAT_IS_CODED_APP
+      ? AICHAT_DIRECT_BASE_URL
+      : window.location.origin;
     const endSessionUrl = new URL(
       "/identity_/connect/endsession",
       identityOrigin,
