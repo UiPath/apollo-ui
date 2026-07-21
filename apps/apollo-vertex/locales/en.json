@@ -15,6 +15,7 @@
   "agents": "Agents",
   "agents_passed": "Agents passed",
   "ai_assistant": "AI Assistant",
+  "ai_caveat_default": "The output is AI generated. Please review.",
   "ai_response_disclaimer": "AI-generated responses should be reviewed for accuracy.",
   "all": "All",
   "all_tests_triggered": "All tests triggered",

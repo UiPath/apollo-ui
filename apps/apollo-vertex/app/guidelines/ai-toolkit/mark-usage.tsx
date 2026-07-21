@@ -1,3 +1,5 @@
+"use client";
+
 import { Link2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -269,13 +271,21 @@ export function MarkUsage() {
                 Compared price, warranty, and lead time
               </p>
               <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground/70">
-                <Link2 className="size-3 shrink-0" />
+                <Link2 className="size-3 shrink-0" aria-hidden="true" />
                 From{" "}
-                <a href="#" className="text-primary hover:underline">
+                <a
+                  href="#"
+                  className="text-primary hover:underline"
+                  onClick={(e) => e.preventDefault()}
+                >
                   Coupa catalog
                 </a>{" "}
                 and{" "}
-                <a href="#" className="text-primary hover:underline">
+                <a
+                  href="#"
+                  className="text-primary hover:underline"
+                  onClick={(e) => e.preventDefault()}
+                >
                   2 supplier quotes
                 </a>
               </p>

@@ -89,7 +89,7 @@ export function SelectableCards() {
                     style={{ background: "var(--ai-gradient-fill)" }}
                   >
                     <AiIcon />
-                    Picked for you
+                    Best match
                   </Badge>
                 )}
               </div>

@@ -138,7 +138,7 @@ export function Surfaces() {
                     <p className="text-sm leading-relaxed text-foreground">
                       Matches your request. $350/unit cheaper with EPP applied.
                     </p>
-                    <AiCaveat variant="withMark" className="mt-4 pl-0" />
+                    <AiCaveat variant="withMark" className="pl-0" />
                   </div>
                 </CardContent>
               </Card>
