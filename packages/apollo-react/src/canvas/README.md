@@ -195,3 +195,58 @@ If you already use `@uipath/apollo-react/canvas/styles/variables.css` with shado
 **Cause:** The Tailwind base layer includes `* { border-color: var(--color-border-de-emp) }` and `body { background-color: var(--background) }`. These may conflict with existing component styles.
 
 **Fix:** These rules are in `@layer base`, so they lose to un-layered styles. If conflicts persist in Shadow DOM, override with more specific selectors in your injected CSS.
+
+---
+
+## Sequential view
+
+`SequentialCanvas` is an n8n/Zapier-style vertical projection of the same flow graph, built on the existing `BaseCanvas`. It reuses the same node manifests, icons, execution status, validation badges, and theming as the flow view; only the layout is different. A `ViewSwitcher` lets the host toggle a canvas between the free-form `flow` layout and the vertical `sequential` layout.
+
+### Projection model
+
+The consumer keeps one canonical `nodes`/`edges` array. Flow-view positions (`node.position`) remain the persisted source of truth: `SequentialCanvas` derives a vertical layout from the graph's structure and renders that derived layout through `BaseCanvas`, but it never writes computed positions back onto the canonical nodes. Toggling from sequential back to flow is lossless because of this. The one exception is a node added while the sequential view is active: it has no meaningful flow position yet, so it is stamped `data.seqInserted` and given a real, non-overlapping position by `synthesizePositionsForFlow` the next time the canvas switches to flow view.
+
+### Minimal usage
+
+```tsx
+import {
+  SequentialCanvas,
+  useCanvasViewMode,
+  ViewSwitcher,
+} from '@uipath/apollo-react/canvas';
+
+function MyFlow({ nodes, edges, onNodesChange, onEdgesChange }) {
+  const [view, setView] = useCanvasViewMode('my-flow.view');
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <ViewSwitcher value={view} onChange={setView} />
+      <SequentialCanvas
+        view={view}
+        mode="design"
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+      />
+    </div>
+  );
+}
+```
+
+`SequentialCanvas` supplies its own `ReactFlowProvider` and keeps one `BaseCanvas` mounted while `view` changes. For a worked example, including per-view viewport save/restore, see `SequentialCanvasStoryHarness` and the `Wireframe` story.
+
+### Degraded graphs
+
+Not every graph is a clean, structured sequence. The projection degrades gracefully instead of failing:
+
+| Shape | Rendering |
+|---|---|
+| Multiple roots or disconnected components | Stacked lanes ordered by flow-view y |
+| Unstructured merge (a node with more than one incoming edge) | Placed under its first incomer; the extra incoming edge draws a dashed goto connector |
+| Cycles other than a loop's `loopBack` handle | A dashed, arrowless goto connector closes the cycle |
+| Orphans (no sequence edges at all) | A de-emphasized trailing section after the terminal placeholder |
+
+Every case renders something rather than crashing or dropping a node: the cycle guard prevents infinite recursion, and unreachable or disconnected nodes are always appended as trailing rows. The toggle is never blocked.
+
+Both CSS delivery patterns described earlier in this guide (PostCSS scanning and precompiled Shadow DOM injection) cover the sequential view's markup with no extra configuration, since it is built entirely from Tailwind utility classes scanned from this package's `dist/canvas`.

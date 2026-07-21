@@ -42,13 +42,20 @@ const previewNodeSelectedSelector = (state: ReactFlowState) => {
 // Selector to track edges connected to preview node
 // Returns minimal edge data to avoid unnecessary re-renders
 const edgesConnectedToPreviewSelector = (state: ReactFlowState): Edge[] => {
-  return state.edges.filter(isPreviewEdge).map((edge) => ({
-    id: edge.id,
-    source: edge.source,
-    target: edge.target,
-    sourceHandle: edge.sourceHandle,
-    targetHandle: edge.targetHandle,
-  }));
+  return state.edges
+    .filter(
+      (edge) =>
+        isPreviewEdge(edge) &&
+        (edge.data as { ignorePreviewConnection?: boolean } | undefined)
+          ?.ignorePreviewConnection !== true
+    )
+    .map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      sourceHandle: edge.sourceHandle,
+      targetHandle: edge.targetHandle,
+    }));
 };
 
 interface UsePreviewNodeResult {

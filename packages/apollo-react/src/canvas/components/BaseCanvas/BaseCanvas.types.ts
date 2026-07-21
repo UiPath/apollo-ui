@@ -141,6 +141,18 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
   initialAutoLayout?: () => Promise<void> | void;
 
   /**
+   * Whether the post-mount `initialAutoLayout` + fitView should re-run each time
+   * the set of node ids changes (e.g. a node is added or removed).
+   *
+   * `true` (default) preserves the existing behavior: canvases that re-layout on
+   * data change re-fit to the new graph. Set `false` for canvases with a
+   * deterministic layout that must preserve the user's zoom/pan across edits, so
+   * the fit runs only once on first entry and inserting a node never re-zooms.
+   * @default true
+   */
+  refitOnNodeSetChange?: boolean;
+
+  /**
    * Array of node IDs to keep in view when the canvas resizes.
    * The canvas will automatically pan (without changing zoom) to keep these nodes visible.
    * If multiple nodes are specified, the canvas will try to keep all of them in view.

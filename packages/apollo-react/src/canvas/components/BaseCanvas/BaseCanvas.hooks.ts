@@ -26,7 +26,13 @@ const waitForNodeMeasurements = (getNodes: () => Node[]): Promise<void> => {
 export const useAutoLayout = (
   nodes: Node[] | undefined,
   initialAutoLayout?: () => Promise<void> | void,
-  fitViewOptions?: BaseCanvasFitViewOptions
+  fitViewOptions?: BaseCanvasFitViewOptions,
+  // When false, the layout + fitView runs ONCE (first ready node set) and never
+  // again — subsequent node-set changes (e.g. inserting/removing a node) do not
+  // re-fit. Canvases with a deterministic layout that must preserve the user's
+  // zoom/pan across edits opt out; the default preserves the re-fit-on-change
+  // behavior other canvases rely on.
+  refitOnNodeSetChange = true
 ) => {
   const [isReady, setIsReady] = useState(false);
   const hasRunLayout = useRef(false);
@@ -46,7 +52,9 @@ export const useAutoLayout = (
   const isNewNodeSet = currentNodeIds !== prevNodeIds.current && currentNodeIds?.length > 0;
 
   if (isNewNodeSet) {
-    hasRunLayout.current = false;
+    // Only re-arm the layout for the new set when re-fitting is enabled; when
+    // opted out we keep `hasRunLayout` sticky so the fit stays one-shot.
+    if (refitOnNodeSetChange) hasRunLayout.current = false;
     prevNodeIds.current = currentNodeIds;
   }
 
@@ -59,8 +67,9 @@ export const useAutoLayout = (
       return;
     }
 
-    // Already ran layout for this node set
-    if (hasRunLayout.current && !isNewNodeSet) {
+    // Already ran layout: skip when it's the same node set, or always when
+    // re-fitting on node-set change is opted out (one-shot fit).
+    if (hasRunLayout.current && (!isNewNodeSet || !refitOnNodeSetChange)) {
       return;
     }
 
@@ -102,7 +111,15 @@ export const useAutoLayout = (
         timeoutRef.current = null;
       }
     };
-  }, [nodes?.length, reactFlow, initialAutoLayout, isNewNodeSet, fitViewOptions, isReady]);
+  }, [
+    nodes?.length,
+    reactFlow,
+    initialAutoLayout,
+    isNewNodeSet,
+    fitViewOptions,
+    isReady,
+    refitOnNodeSetChange,
+  ]);
 
   return { isReady };
 };

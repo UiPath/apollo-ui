@@ -20,6 +20,7 @@ export * from './NodeContextMenu';
 export * from './NodeInspector';
 export * from './NodePropertiesPanel';
 export * from './NodePropertyPanel';
+export * from './SequentialCanvas';
 export * from './shared';
 export * from './StageNode';
 export * from './StickyNoteNode';

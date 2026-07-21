@@ -193,6 +193,8 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   }),
   ViewportPortal: ({ children }: { children: React.ReactNode }) =>
     React.createElement('div', { 'data-testid': 'viewport-portal' }, children),
+  EdgeLabelRenderer: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement('div', { 'data-testid': 'edge-label-renderer' }, children),
   addEdge: vi.fn((connection, edges) => [...edges, { id: 'new-edge', ...connection }]),
   applyEdgeChanges: vi.fn((changes: any[], edges: any[]) => {
     return edges.map((edge: any) => {

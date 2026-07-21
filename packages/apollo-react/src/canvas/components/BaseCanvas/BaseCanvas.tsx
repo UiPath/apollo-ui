@@ -93,6 +93,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
     // Layout
     initialAutoLayout,
+    refitOnNodeSetChange,
     maintainNodesInView,
 
     // Toolbar
@@ -113,7 +114,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance<NodeType, EdgeType>>();
 
-  const { isReady } = useAutoLayout(nodes, initialAutoLayout, fitViewOptions);
+  const { isReady } = useAutoLayout(nodes, initialAutoLayout, fitViewOptions, refitOnNodeSetChange);
   const { ensureNodesInView, ensureAllNodesInView, centerNode } = useEnsureNodesInView();
 
   // Maintain specified nodes in view when canvas resizes
