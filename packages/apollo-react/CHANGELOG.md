@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v5.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@5.0.2...@uipath/apollo-react@5.1.0) (2026-07-21)
+
+### Features
+
+* **apollo-react:** add task breakpoints to case-management StageNode [MST-12196] ([2e315a1](https://github.com/UiPath/apollo-ui/commit/2e315a170654a0693e27f83199842c99abdac1c9))
+
 ## [@uipath/apollo-react-v5.0.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@5.0.1...@uipath/apollo-react@5.0.2) (2026-07-20)
 
 ### Bug Fixes
