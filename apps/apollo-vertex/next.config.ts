@@ -23,10 +23,9 @@ export default withNextra({
         env: {
           NEXT_PUBLIC_APOLLO_CODED_APP: "1",
           NEXT_PUBLIC_APOLLO_CODED_APP_PATH: codedAppPath ?? "",
-          NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_CLIENT_ID:
-            process.env.UIP_GO_PLATFORM_AUTH_CLIENT_ID ?? "",
-          NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_SCOPE:
-            process.env.UIP_GO_PLATFORM_AUTH_SCOPE ?? "",
+          // Client id and scope are fixed constants in the app (first-party
+          // Uber.Client), so they are not injected here. uip-go still resolves
+          // the per-deployment platform context below.
           NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_BASE_URL:
             process.env.UIP_GO_PLATFORM_AUTH_BASE_URL ?? "",
           NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_ORG_NAME:

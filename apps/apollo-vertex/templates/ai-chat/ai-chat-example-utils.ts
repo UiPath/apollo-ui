@@ -1,4 +1,5 @@
 import { UiPath } from "@uipath/uipath-typescript/core";
+import { z } from "zod";
 import type { OrgTenantInfo } from "./AiChatLoginGate";
 
 export type ChatMode = "agenthub" | "conversational-agent";
@@ -9,59 +10,88 @@ export const AICHAT_STORAGE_KEYS = {
   AGENT: "apollo-vertex:ai-chat:agent",
 } as const;
 
-// Coded App preview builds (uip-go) inject the NEXT_PUBLIC_APOLLO_VERTEX_*
-// values via next.config.ts. In dev and regular builds they are undefined and
-// the defaults below apply, with platform calls going through the same-origin
-// Next.js proxy routes.
-//
-// The ?? here is load-bearing: coded-app builds define the env vars
-// unconditionally (as "" when uip-go injected nothing), so an empty string
-// survives and the disabled-state check in AiChatTemplate can detect a
-// missing client id. The dev fallbacks only apply when the vars are truly
-// undefined, which never happens in a coded-app build.
-export const AICHAT_CLIENT_ID =
-  process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_CLIENT_ID ??
-  "1119a927-10ab-4543-bd1a-ad6bfbbc27f4";
-export const AICHAT_SCOPE =
-  process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_SCOPE ??
-  "openid profile offline_access";
-
-// Non-empty only in Coded App builds, where there is no server for the proxy
-// routes and the browser must call the platform host directly.
-export const AICHAT_DIRECT_BASE_URL = (
-  process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_BASE_URL ?? ""
-).replace(/\/+$/, "");
-
-const rawRedirectPath =
-  process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_REDIRECT_PATH ?? "";
-export const AICHAT_REDIRECT_PATH = rawRedirectPath
-  ? rawRedirectPath.startsWith("/")
-    ? rawRedirectPath
-    : `/${rawRedirectPath}`
-  : "/auth_callback";
+// UiPath's first-party Portal client (Uber.Client). Its browser tokens skip
+// the external-app audience checks, so the demo reaches Data Fabric and
+// AgentHub with just the base OIDC scopes. Coded App preview hosts are
+// pre-registered as redirect URIs on this client via a host wildcard in
+// first-party-service-metadata, so there is no per-deployment client or
+// redirect-URI registration. Same client id in dev and in Coded App builds.
+export const AICHAT_CLIENT_ID = "1119a927-10ab-4543-bd1a-ad6bfbbc27f4";
+export const AICHAT_SCOPE = "openid profile offline_access";
 
 export const AICHAT_IS_CODED_APP =
   process.env.NEXT_PUBLIC_APOLLO_CODED_APP === "1";
 
-const staticOrgName =
-  process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_ORG_NAME ?? "";
-const staticTenantName =
-  process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_TENANT_NAME ?? "";
-const staticTenantId =
-  process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_TENANT_ID ??
-  staticTenantName;
+// Two modes, chosen at build time:
+//   - Coded App export: there is no server, so the browser calls the platform
+//     host directly. uip-go bakes the platform context (base URL, org, tenant,
+//     redirect path) into the bundle, and it is required — a missing value
+//     fails the build here rather than shipping a chat that cannot sign in.
+//   - Dev / regular build: the app reaches the platform through the
+//     same-origin Next.js proxy routes, so there is no baked platform context
+//     and the org/tenant are discovered at runtime.
+function loadCodedAppPlatformAuth() {
+  const parsed = z
+    .object({
+      baseUrl: z.string().min(1),
+      orgName: z.string().min(1),
+      tenantName: z.string().min(1),
+      tenantId: z.string().min(1).optional(),
+      redirectPath: z.string().min(1),
+    })
+    .safeParse({
+      baseUrl: process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_BASE_URL,
+      orgName: process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_ORG_NAME,
+      tenantName:
+        process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_TENANT_NAME,
+      tenantId: process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_TENANT_ID,
+      redirectPath:
+        process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_REDIRECT_PATH,
+    });
+  if (!parsed.success) {
+    const missing = parsed.error.issues
+      .map((issue) => issue.path.join("."))
+      .join(", ");
+    throw new Error(
+      `Coded App build is missing platform-auth context (${missing}). uip-go injects these from the platformAuth section of .uip-go.json; check the deployment recipe.`,
+    );
+  }
+  return parsed.data;
+}
+
+const codedAppPlatformAuth = AICHAT_IS_CODED_APP
+  ? loadCodedAppPlatformAuth()
+  : null;
+
+// Empty in dev (use the same-origin proxy); the platform host in a Coded App
+// build (call it directly).
+export const AICHAT_DIRECT_BASE_URL = codedAppPlatformAuth
+  ? codedAppPlatformAuth.baseUrl.replace(/\/+$/, "")
+  : "";
+
+export const AICHAT_REDIRECT_PATH = codedAppPlatformAuth
+  ? codedAppPlatformAuth.redirectPath.startsWith("/")
+    ? codedAppPlatformAuth.redirectPath
+    : `/${codedAppPlatformAuth.redirectPath}`
+  : "/auth_callback";
 
 // Coded App builds bake in the org/tenant the deployment targets because the
-// portal endpoint that lists them is not reachable cross-origin.
-export const AICHAT_STATIC_ORG =
-  staticOrgName && staticTenantName
-    ? {
-        orgName: staticOrgName,
-        tenants: [{ id: staticTenantId, name: staticTenantName }],
-      }
-    : null;
+// portal endpoint that lists them is not reachable cross-origin. In dev the
+// login gate discovers them at runtime instead.
+export const AICHAT_STATIC_ORG = codedAppPlatformAuth
+  ? {
+      orgName: codedAppPlatformAuth.orgName,
+      tenants: [
+        {
+          id: codedAppPlatformAuth.tenantId ?? codedAppPlatformAuth.tenantName,
+          name: codedAppPlatformAuth.tenantName,
+        },
+      ],
+    }
+  : null;
 
-const UIPATH_BASE_URL = AICHAT_DIRECT_BASE_URL
+// Coded App builds call the baked host directly; dev targets alpha.
+const UIPATH_BASE_URL = AICHAT_IS_CODED_APP
   ? AICHAT_DIRECT_BASE_URL
   : "https://alpha.uipath.com";
 
