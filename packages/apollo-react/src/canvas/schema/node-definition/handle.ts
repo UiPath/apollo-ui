@@ -120,6 +120,20 @@ export const handleManifestSchema = z.object({
 
   /** Whether this handle is the default for its type. Helps determine how to connect when node is newly added. */
   isDefaultForType: z.boolean().optional(),
+
+  /**
+   * Container nodes only: walls this handle's label pill may be dragged along
+   * (grid-snapped, kept clear of corners). Omit to keep the handle fixed.
+   * The drag writes per-node offsets into `data.handleOffsets`.
+   */
+  draggableWalls: z.array(handlePositionSchema).optional(),
+
+  /**
+   * Container nodes only: id of a sibling handle (typically the outer
+   * counterpart of an inner lifecycle handle) that follows this handle's
+   * dragged wall + offset so the pair stays glued together.
+   */
+  dragMirrors: z.string().optional(),
 });
 
 /**

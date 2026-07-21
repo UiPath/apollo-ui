@@ -26,6 +26,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
   // Stub: the real Handle requires a mounted React Flow store provider.
   Handle: ({ id }: { id?: string }) => <div data-testid={`xy-handle-${id}`} />,
+  useReactFlow: () => ({ updateNodeData: vi.fn() }),
   NodeResizeControl: ({
     children,
     minHeight,
@@ -542,5 +543,56 @@ describe('LoopNode header mode pill', () => {
 
     expect(screen.queryByText('Sequential')).toBeNull();
     expect(screen.queryByText('Parallel')).toBeNull();
+  });
+});
+
+describe('LoopNode draggable handle pills', () => {
+  it('marks pills of draggable handles as drag grips', () => {
+    mockManifest.current = {
+      display: { label: 'Stage', icon: 'repeat', shape: 'container' },
+      handleConfiguration: [
+        {
+          position: 'right',
+          boundary: 'inner',
+          alwaysVisible: true,
+          handles: [
+            {
+              id: 'onComplete',
+              label: 'Complete',
+              type: 'target',
+              handleType: 'input',
+              draggableWalls: ['right', 'bottom'],
+              dragMirrors: 'complete',
+            },
+          ],
+        },
+      ],
+    };
+
+    renderLoopNode();
+
+    const pill = screen.getByText('Complete').parentElement as HTMLElement;
+    expect(pill.className).toContain('cursor-grab');
+    expect(pill.className).toContain('nodrag');
+  });
+
+  it('keeps pills of fixed handles non-interactive', () => {
+    mockManifest.current = {
+      display: { label: 'Stage', icon: 'repeat', shape: 'container' },
+      handleConfiguration: [
+        {
+          position: 'right',
+          boundary: 'inner',
+          alwaysVisible: true,
+          handles: [{ id: 'onComplete', label: 'Complete', type: 'target', handleType: 'input' }],
+        },
+      ],
+    };
+
+    renderLoopNode();
+
+    const pill = screen.getByText('Complete').parentElement as HTMLElement;
+    expect(pill.className).toContain('pointer-events-none');
+    expect(pill.className).not.toContain('cursor-grab');
   });
 });

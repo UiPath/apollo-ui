@@ -250,6 +250,10 @@ export const caseStageManifest: NodeManifest = {
           label: 'Enter',
           type: 'source',
           handleType: 'output',
+          // The pill is a drag grip: Enter stays on the left wall; the outer
+          // enter handle mirrors the dragged position.
+          draggableWalls: ['left'],
+          dragMirrors: 'enter',
           constraints: {
             allowedTargetCategories: ['case-task'],
             validationMessage: 'Enter starts the sequential task chain of this stage',
@@ -270,6 +274,8 @@ export const caseStageManifest: NodeManifest = {
           label: 'Complete',
           type: 'target',
           handleType: 'input',
+          draggableWalls: ['right', 'bottom'],
+          dragMirrors: 'complete',
           constraints: {
             allowedSourceCategories: ['case-task', 'case-condition'],
             validationMessage: 'Tasks or event rules that finish the stage connect to Complete',
@@ -280,6 +286,8 @@ export const caseStageManifest: NodeManifest = {
           label: 'Exit',
           type: 'target',
           handleType: 'input',
+          draggableWalls: ['right', 'bottom'],
+          dragMirrors: 'exit',
           constraints: {
             allowedSourceCategories: ['case-task', 'case-condition'],
             validationMessage: 'Tasks or event rules that abandon the stage connect to Exit',
