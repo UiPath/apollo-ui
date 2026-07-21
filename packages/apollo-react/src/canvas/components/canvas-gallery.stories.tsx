@@ -1,11 +1,12 @@
 import type { Meta } from '@storybook/react-vite';
-import { useMemo, useState } from 'react';
 import { Button, Input } from '@uipath/apollo-wind';
 import { Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import type { IRawSpan } from '../../types/TraceModels';
 import { TimelinePlayer } from './AgentCanvas/components/TimelinePlayer';
 import { ExecutionStatusIcon } from './ExecutionStatusIcon/ExecutionStatusIcon';
 import { TaskIcon } from './TaskIcon/TaskIcon';
-import type { IRawSpan } from '../../types/TraceModels';
+import { TaskItemTypeValues } from './TaskIcon/TaskIcon.types';
 
 const meta = {
   title: 'Components/All Components',
@@ -164,6 +165,23 @@ const components: ComponentInfo[] = [
             <div className="w-6 h-6 rounded border border-border bg-card" />
           </div>
         </div>
+      </div>
+    ),
+  },
+  {
+    name: 'Sequential Canvas',
+    description:
+      'Vertical, n8n-style projection of a flow graph with a flow/sequential view toggle',
+    storyPath: 'components-sequentialcanvas-sequentialcanvas--wireframe',
+    category: Category.Canvas,
+    preview: (
+      <div className="w-full h-20 rounded border border-border bg-muted/20 relative overflow-hidden p-2 flex flex-col gap-1 justify-center">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <span className="text-[9px] text-muted-foreground w-2 text-right">{i + 1}</span>
+            <div className="h-3 flex-1 rounded border border-border bg-card" />
+          </div>
+        ))}
       </div>
     ),
   },
@@ -524,10 +542,10 @@ const components: ComponentInfo[] = [
     category: Category.Utilities,
     preview: (
       <div className="flex gap-2 flex-wrap">
-        <TaskIcon type="user" size="sm" />
-        <TaskIcon type="agent" size="sm" />
-        <TaskIcon type="process" size="sm" />
-        <TaskIcon type="external_agent" size="sm" />
+        <TaskIcon type={TaskItemTypeValues.User} size="sm" />
+        <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />
+        <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />
+        <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />
       </div>
     ),
   },
