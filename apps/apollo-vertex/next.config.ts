@@ -17,8 +17,9 @@ const codedAppPath = process.env.APOLLO_CODED_APP_PATH?.replaceAll(
 // A Coded App build calls the platform directly, so uip-go must have injected
 // the platform context. Validate it here — next.config runs in Node during
 // `next build`, so a misconfigured deployment fails the build immediately
-// rather than shipping a bundle that crashes in the browser. (tenantId is
-// optional; it falls back to the tenant name.)
+// rather than shipping a bundle that crashes in the browser. uip-go always
+// resolves the tenant id (falling back to the tenant name), so it is required
+// too.
 if (codedApp) {
   const missing = [
     "UIP_GO_PLATFORM_AUTH_BASE_URL",
