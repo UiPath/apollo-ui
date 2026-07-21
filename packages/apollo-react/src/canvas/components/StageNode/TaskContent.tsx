@@ -75,8 +75,8 @@ const TaskPlayButton = memo(
           aria-label={triggerTaskLabel}
           className={
             small
-              ? 'task-menu-icon-button h-4 w-4 [&_svg]:size-3.5'
-              : 'task-menu-icon-button h-4 w-4'
+              ? 'task-menu-icon-button h-4 w-4 [&_svg]:size-3.5 rounded-sm'
+              : 'task-menu-icon-button h-4 w-4 rounded-sm'
           }
           style={{
             color: 'var(--canvas-icon-default)',
@@ -181,7 +181,7 @@ export const TaskContent = memo(
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-4 w-4"
+                  className="h-4 w-4 rounded-sm"
                   aria-label={taskStatusTooltip}
                 >
                   <ExecutionStatusIcon status={taskExecution.status} />
