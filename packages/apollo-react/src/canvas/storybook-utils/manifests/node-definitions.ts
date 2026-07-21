@@ -13,7 +13,19 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'plus',
       shape: 'circle',
     },
-    handleConfiguration: [],
+    handleConfiguration: [
+      {
+        position: 'right',
+        handles: [
+          {
+            id: 'output',
+            type: 'source',
+            handleType: 'output',
+          },
+        ],
+        visible: true,
+      },
+    ],
   },
 
   // Blank Node
@@ -313,14 +325,12 @@ export const allNodeManifests: NodeManifest[] = [
     display: {
       label: 'While',
       icon: 'repeat',
+      shape: 'container',
     },
     handleConfiguration: [
       {
         position: 'left',
-        handles: [
-          { id: 'input', type: 'target', handleType: 'input' },
-          { id: 'loopBack', type: 'target', handleType: 'input' },
-        ],
+        handles: [{ id: 'input', type: 'target', handleType: 'input' }],
       },
       {
         position: 'right',
@@ -331,11 +341,29 @@ export const allNodeManifests: NodeManifest[] = [
             type: 'source',
             handleType: 'output',
           },
+        ],
+      },
+      {
+        position: 'left',
+        boundary: 'inner',
+        handles: [
           {
             id: 'body',
             label: 'Body',
             type: 'source',
             handleType: 'output',
+          },
+        ],
+      },
+      {
+        position: 'right',
+        boundary: 'inner',
+        handles: [
+          {
+            id: 'loopBack',
+            label: 'Loop back',
+            type: 'target',
+            handleType: 'input',
           },
         ],
       },
