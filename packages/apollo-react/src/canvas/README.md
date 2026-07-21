@@ -195,3 +195,90 @@ If you already use `@uipath/apollo-react/canvas/styles/variables.css` with shado
 **Cause:** The Tailwind base layer includes `* { border-color: var(--color-border-de-emp) }` and `body { background-color: var(--background) }`. These may conflict with existing component styles.
 
 **Fix:** These rules are in `@layer base`, so they lose to un-layered styles. If conflicts persist in Shadow DOM, override with more specific selectors in your injected CSS.
+
+---
+
+## Sequential view
+
+`SequentialCanvas` is an n8n/Zapier-style vertical projection of the same flow graph, built on the existing `BaseCanvas`. It reuses the same node manifests, icons, execution status, validation badges, and theming as the flow view; only the layout is different. A `ViewSwitcher` lets the host toggle a canvas between the free-form `flow` layout and the vertical `sequential` layout.
+
+### Projection model
+
+The consumer keeps one canonical `nodes`/`edges` array. `SequentialCanvas` derives vertical geometry from graph structure and never writes that geometry back. Entering Flow through `prepareCanvasViewTransition` computes a deterministic left-to-right layout and updates only canonical presentation fields (`position` and container dimensions); ids, data, containment, handles, and edges are unchanged. Nodes added in Sequential are normalized during the same transition.
+
+Sequential is not a symmetric conversion for every graph. `prepareCanvasViewTransition('sequential', ...)` returns a compatibility report with a `level` and an `editable` flag, and the guidance is three-way:
+
+1. **Editable.** `level: 'exact'`, and also `level: 'degraded'` when the only issues are `multiple-roots` or `orphan`. These graphs render correctly and are recoverable by ordinary editing, so keep them fully editable. Locking the view as soon as a user has two disconnected steps would lock them out of the only view that flags the problem.
+2. **Read-only.** A report containing a `cycle` or `unstructured-merge` issue. The slot-based mutation operations cannot express a safe splice across a `goto` connector, because a `goto` carries no insertion slot.
+3. **Not supported.** `level: 'unsupported'`, which means malformed containment (a duplicate node id, a missing parent, or a parent cycle).
+
+The component does not enforce any of this. The host reads `report.editable` and chooses the `mode` it passes to `SequentialCanvas`, which is what the example below does. Presentation-only nodes and edges can be excluded from the projection and preserved in the canonical graph.
+
+### Availability
+
+Everything ships from `@uipath/apollo-react/canvas`, the same entry point as the rest of the canvas. The component surface (`SequentialCanvas`, `SequentialCanvasProps`, `prepareCanvasViewTransition`, `ViewSwitcher`, `useCanvasViewMode`, `SequentialViewProvider`) and the pure projection engine (`analyzeSequentialCompatibility`, `projectSequence`, `layoutSequence`, the report types) are both re-exported from it, and both follow the package's normal semver.
+
+One caveat to plan around: the sequential view is pre-GA. Its documented v1 limitations (see "Degraded graphs" below, plus bare branch owners that cannot be moved and loop-close edges that are not relocated) mean the props are still likely to change, so pin the package version if you adopt it early and read the release notes before upgrading. If you only need to reason about a graph rather than render it, depend on the projection engine and skip the component entirely: it is pure, has no xyflow or registry dependency, and is the more settled half of the two.
+
+### Minimal usage
+
+```tsx
+import { useState } from 'react';
+import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  prepareCanvasViewTransition,
+  SequentialCanvas,
+  useCanvasViewMode,
+  ViewSwitcher,
+} from '@uipath/apollo-react/canvas';
+
+function MyFlow({ initialNodes, initialEdges }) {
+  const [view, setView] = useCanvasViewMode('my-flow.view');
+  const [nodes, setNodes] = useState(initialNodes);
+  const [edges, setEdges] = useState(initialEdges);
+  const [report, setReport] = useState(undefined);
+
+  const changeView = (nextView) => {
+    const transition = prepareCanvasViewTransition(nextView, nodes, edges);
+    setNodes(transition.nodes);
+    // Only populated when entering sequential. Recompute it whenever the graph
+    // changes while sequential is on screen, or the advice below goes stale.
+    setReport(transition.sequentialCompatibility);
+    setView(nextView);
+  };
+
+  // The component never locks itself. The host decides, from `editable`.
+  const mode = view === 'sequential' && report && !report.editable ? 'readonly' : 'design';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <ViewSwitcher value={view} onChange={changeView} />
+      <SequentialCanvas
+        view={view}
+        mode={mode}
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={(changes) => setNodes((current) => applyNodeChanges(changes, current))}
+        onEdgesChange={(changes) => setEdges((current) => applyEdgeChanges(changes, current))}
+      />
+    </div>
+  );
+}
+```
+
+`SequentialCanvas` supplies its own `ReactFlowProvider` and keeps one `BaseCanvas` mounted while `view` changes. For a worked example, including per-view pan save/restore and a live compatibility banner, see `SequentialCanvasStoryHarness` and the `Wireframe` story. Note that pan is saved per view but zoom is not: it carries across the toggle from the view being left, so switching views reframes the graph without changing how far the user is zoomed in.
+
+### Degraded graphs
+
+Not every graph is a clean, structured sequence. The projection degrades gracefully instead of failing:
+
+| Shape | Issue code | Rendering | Still editable? |
+|---|---|---|---|
+| Multiple roots or disconnected components | `multiple-roots` | Stacked lanes ordered by flow-view y | Yes |
+| Orphans (no sequence edges at all) | `orphan` | A de-emphasized trailing section after the terminal placeholder | Yes |
+| Unstructured merge (a node with more than one incoming edge) | `unstructured-merge` | Placed under its first incomer; the extra incoming edge draws a dashed goto connector | No |
+| Cycles other than a loop's `loopBack` handle | `cycle` | A dashed, arrowless goto connector closes the cycle | No |
+
+Every case renders something rather than crashing or dropping a node: the cycle guard prevents infinite recursion, and unreachable or disconnected nodes are always appended as trailing rows. The toggle is never blocked, and rendering is independent of editability. A read-only degraded graph is still worth showing, since seeing the dashed goto connector is how a user finds the structure to fix.
+
+Both CSS delivery patterns described earlier in this guide (PostCSS scanning and precompiled Shadow DOM injection) cover the sequential view's markup with no extra configuration, since it is built entirely from Tailwind utility classes scanned from this package's `dist/canvas`.
