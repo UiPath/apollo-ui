@@ -1,3 +1,10 @@
+## [@uipath/apollo-core-v5.11.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.11.0...@uipath/apollo-core@5.11.1) (2026-07-21)
+
+### Bug Fixes
+
+* **apollo-core:** scope base design tokens to :root, .apollo-design for shadow DOM ([6a726c1](https://github.com/UiPath/apollo-ui/commit/6a726c12715ba0bd8ed309204e075b6a74082816))
+* **apollo-core:** scope base tokens to :root, :host for shadow DOM ([3f7a84f](https://github.com/UiPath/apollo-ui/commit/3f7a84f7079a5506235b383bd2973f48805df47d))
+
 ## [@uipath/apollo-core-v5.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.10.0...@uipath/apollo-core@5.11.0) (2026-07-21)
 
 ### Features

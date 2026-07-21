@@ -1,3 +1,9 @@
+## [@uipath/ap-chat-v1.6.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.6.0...@uipath/ap-chat@1.6.1) (2026-07-21)
+
+### Bug Fixes
+
+* **ap-chat:** adopt apollo tokens without shadow-DOM selector rewriting ([a3d9580](https://github.com/UiPath/apollo-ui/commit/a3d95803238d0abf798dec3c059ebf6b2cb4dd38))
+
 ## [@uipath/ap-chat-v1.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.7...@uipath/ap-chat@1.6.0) (2026-06-27)
 
 ### Features
