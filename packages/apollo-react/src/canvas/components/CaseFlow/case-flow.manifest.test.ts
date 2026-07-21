@@ -59,6 +59,22 @@ describe('case-flow manifest', () => {
     expect(caseStageManifest.display.showModePill).toBe(false);
   });
 
+  it('constrains draggable lifecycle pills to their walls', () => {
+    const innerHandles = caseStageManifest.handleConfiguration
+      .filter((g) => g.boundary === 'inner')
+      .flatMap((g) => g.handles);
+    const byId = new Map(innerHandles.map((h) => [h.id, h]));
+
+    // Enter is left-wall only; Complete and Exit may roam the right and bottom
+    // walls. Each drags its outer counterpart along.
+    expect(byId.get('onEnter')?.draggableWalls).toEqual(['left']);
+    expect(byId.get('onEnter')?.dragMirrors).toBe('enter');
+    expect(byId.get('onComplete')?.draggableWalls).toEqual(['right', 'bottom']);
+    expect(byId.get('onComplete')?.dragMirrors).toBe('complete');
+    expect(byId.get('onExit')?.draggableWalls).toEqual(['right', 'bottom']);
+    expect(byId.get('onExit')?.dragMirrors).toBe('exit');
+  });
+
   it('maps loop semantics onto the stage lifecycle handles', () => {
     const outer = caseStageManifest.handleConfiguration.filter((g) => g.boundary !== 'inner');
     const inner = caseStageManifest.handleConfiguration.filter((g) => g.boundary === 'inner');
