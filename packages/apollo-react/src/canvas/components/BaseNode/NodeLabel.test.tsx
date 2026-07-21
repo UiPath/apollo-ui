@@ -559,5 +559,18 @@ describe('NodeLabel', () => {
 
       expect(screen.getByText('Test Node')).toBeInTheDocument();
     });
+
+    it('should apply horizontal padding to the edit inputs regardless of background color', async () => {
+      const user = userEvent.setup();
+      render(<NodeLabel {...defaultProps} />);
+
+      await user.dblClick(screen.getByText('Test Node'));
+
+      const labelInput = screen.getByRole('textbox', { name: 'Edit node name' });
+      const subLabelInput = screen.getByRole('textbox', { name: 'Edit node description' });
+
+      expect(labelInput.className).toContain('px-1.5');
+      expect(subLabelInput.className).toContain('px-1.5');
+    });
   });
 });
