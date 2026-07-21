@@ -240,6 +240,12 @@ export {
 } from './components/ui/popover';
 
 export {
+  PortalContainerProvider,
+  usePortalContainer,
+} from './components/ui/portal-container';
+export type { PortalContainerProviderProps } from './components/ui/portal-container';
+
+export {
   Tooltip,
   TooltipContent,
   TooltipPortal,
