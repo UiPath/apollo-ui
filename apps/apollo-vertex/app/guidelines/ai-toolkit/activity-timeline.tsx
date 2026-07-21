@@ -1,3 +1,5 @@
+"use client";
+
 import { Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
@@ -5,6 +7,52 @@ import { AiIcon } from "./ai-icon";
 
 // Strong gradient for the completed-step marker (decorative, no text on it).
 const STRONG = "var(--ai-gradient-strong)";
+
+function SourceLink({
+  label,
+  href,
+  isFirst = true,
+}: {
+  label: string;
+  href: string;
+  isFirst?: boolean;
+}) {
+  return (
+    <>
+      {!isFirst && " and "}
+      <a
+        href={href}
+        className="text-primary hover:underline"
+        onClick={(e) => {
+          if (href === "#") e.preventDefault();
+        }}
+      >
+        {label}
+      </a>
+    </>
+  );
+}
+
+function SourceList({
+  sources,
+}: {
+  sources: { label: string; href: string }[];
+}) {
+  return (
+    <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground/70">
+      <Link2 className="size-3 shrink-0" aria-hidden="true" />
+      {"From "}
+      {sources.map((s, i) => (
+        <SourceLink
+          key={s.label}
+          label={s.label}
+          href={s.href}
+          isFirst={i === 0}
+        />
+      ))}
+    </p>
+  );
+}
 
 type TimelineEvent = {
   title: string;
@@ -154,21 +202,7 @@ export function ActivityTimeline() {
                   </p>
                 )}
                 {event.sources && event.sources.length > 0 && (
-                  <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground/70">
-                    <Link2 className="size-3 shrink-0" />
-                    From{" "}
-                    {event.sources.map((s, i) => (
-                      <span key={s.label}>
-                        {i > 0 && " and "}
-                        <a
-                          href={s.href}
-                          className="text-primary hover:underline"
-                        >
-                          {s.label}
-                        </a>
-                      </span>
-                    ))}
-                  </p>
+                  <SourceList sources={event.sources} />
                 )}
               </div>
             </li>
