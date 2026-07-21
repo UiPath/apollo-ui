@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v5.1.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@5.1.0...@uipath/apollo-react@5.1.1) (2026-07-21)
+
+### Bug Fixes
+
+* **apollo-react:** square task status and play icon hover backgrounds ([7646ad4](https://github.com/UiPath/apollo-ui/commit/7646ad4eb74375b5c31d8f49a31476a7df89409f))
+
 ## [@uipath/apollo-react-v5.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@5.0.2...@uipath/apollo-react@5.1.0) (2026-07-21)
 
 ### Features
