@@ -551,6 +551,20 @@ export const RESOLUTION_PREDICATES: Partial<
   // Any explicit account correction clears the missing-account flag.
   "billing-account": (_exc, corrections) =>
     corrections.billingAccount === undefined,
+  "price-mismatch": (exc, corrections) => {
+    const match = exc.reference?.fieldKey?.match(/^lineItems\.(\d+)\.amount$/);
+    if (!match) return true;
+    const lineNum = parseInt(match[1], 10) + 1;
+    const corrected = corrections.lines?.[lineNum]?.amount;
+    if (corrected === undefined) return true;
+    const poSide =
+      exc.finding.type === "compare"
+        ? exc.finding.sides?.find((s) => s.tone !== "warn")
+        : undefined;
+    if (!poSide) return true;
+    const strip = (s: string) => parseFloat(s.replace(/[^0-9.]/g, ""));
+    return Math.abs(strip(corrected) - strip(poSide.value)) >= 0.005;
+  },
 };
 
 /**
@@ -1502,7 +1516,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             data: {},
             reasoning:
               "Billed 12 against PO qty 10; adjust or hold for the remaining receipt.",
-            correction: { lines: { 1: { qty: 10 } } },
+            correction: { lines: { 1: { qty: 10, amount: "$5,900.00" } } },
           },
           { type: "suggest_supplier", data: {} },
         ],
@@ -1545,7 +1559,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             data: {},
             reasoning:
               "Billed 30 against PO qty 25; adjust or hold for the remaining receipt.",
-            correction: { lines: { 2: { qty: 25 } } },
+            correction: { lines: { 2: { qty: 25, amount: "$5,250.00" } } },
           },
           { type: "suggest_supplier", data: {} },
         ],
@@ -1626,7 +1640,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             data: {},
             reasoning:
               "Billed 25 against PO qty 20; adjust or hold for the remaining receipt.",
-            correction: { lines: { 3: { qty: 20 } } },
+            correction: { lines: { 3: { qty: 20, amount: "$4,016.00" } } },
           },
           { type: "suggest_supplier", data: {} },
         ],
@@ -1723,6 +1737,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             data: { label: "Adjust to 10 units" },
             reasoning:
               "Billed 18 against PO qty 10; adjust or hold for a corrected invoice.",
+            correction: { lines: { 1: { qty: 10, amount: "€462.50" } } },
           },
           { type: "suggest_supplier", data: {} },
         ],
@@ -1765,6 +1780,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             data: { label: "Adjust to 10 units" },
             reasoning:
               "Billed 15 against PO qty 10; adjust or hold for a corrected invoice.",
+            correction: { lines: { 3: { qty: 10, amount: "€1,950.00" } } },
           },
           { type: "suggest_supplier", data: {} },
         ],
@@ -1948,6 +1964,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             data: { label: "Adjust to $689.55" },
             reasoning:
               "The PO note records a discounted price the invoice didn't apply.",
+            correction: { lines: { 1: { amount: "$689.55" } } },
           },
           { type: "suggest_supplier", data: {} },
         ],

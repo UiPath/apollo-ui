@@ -268,10 +268,10 @@ const SECTION_GAP = "pb-7"; // 28px, into a section node
 const PILL_REVEAL_PX = 160;
 
 // Expanded-peek list shell (agent history + resolve history). Shared so both
-// peeks indent to the same x (titles align across peeks). Spacing: 12px from the
-// parent node to the first step (mt-3), 8px between steps (space-y-2), so the
-// steps sit tighter than their offset from the parent.
-const PEEK_LIST = "mt-3 space-y-2 border-l border-border pl-4";
+// peeks indent to the same x (titles align across peeks). ml-4 places the
+// connector rail under the label text (past the leading chevron). py-2 gives
+// 8px breathing room above the first child and below the last.
+const PEEK_LIST = "mt-3 ml-4 space-y-3 border-l border-border pl-4 py-2";
 
 /**
  * The single metadata separator for the whole column. One grammar: a middot
@@ -283,6 +283,63 @@ function Middot() {
     <span aria-hidden="true" className="shrink-0 text-sm text-muted-foreground">
       ·
     </span>
+  );
+}
+
+// Canonical child-row used by both expandable systems (agent-history peek and
+// revision-fold cluster). Three tiers: cluster header (14/500) > child label
+// (13/500 primary) > description + timestamp (12/400 muted). Description wraps
+// up to 2 lines; timestamp is reserved in its own shrink-0 column on the label
+// line so a long description never pushes it.
+function ChildRow({
+  markerKind,
+  primaryText,
+  secondaryText,
+  time,
+  showTime = true,
+}: {
+  markerKind: "ai" | "reviewer";
+  primaryText: string;
+  secondaryText?: string;
+  time: string;
+  showTime?: boolean;
+}) {
+  const marker =
+    markerKind === "ai" ? (
+      <span
+        className="flex size-4 shrink-0 items-center justify-center rounded-full text-white"
+        style={{ background: "var(--ai-gradient-strong)" }}
+      >
+        <AiMark size={9} />
+      </span>
+    ) : (
+      <Avatar className="size-4 shrink-0">
+        <AvatarFallback className="text-[8px] font-medium text-muted-foreground">
+          {REVIEWER_INITIALS}
+        </AvatarFallback>
+      </Avatar>
+    );
+  return (
+    <div className="flex items-start gap-2">
+      {marker}
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="flex items-start justify-between gap-2">
+          <span className="text-[13px] font-medium leading-[18px] text-foreground">
+            {primaryText}
+          </span>
+          {showTime && (
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {time}
+            </span>
+          )}
+        </div>
+        {secondaryText && (
+          <span className="line-clamp-2 text-xs leading-[16px] text-muted-foreground">
+            {secondaryText}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -304,25 +361,27 @@ function AgentHistoryPeek({
         onClick={() => setOpen((v) => !v)}
         className="mt-0.5 flex w-full items-center gap-1.5 text-left"
       >
+        <ChevronRight
+          className={cn(
+            "mt-[3px] size-3 shrink-0 text-muted-foreground transition-transform duration-150",
+            open && "rotate-90",
+          )}
+        />
         <span className="text-sm font-medium text-foreground">
           {steps.length} checks cleared before escalating
         </span>
-        {open ? (
-          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
-        ) : (
-          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-        )}
       </button>
       {open && (
         <ol className={PEEK_LIST}>
           {steps.map((step) => (
-            // No exception attached => flat step, no chevron.
-            <PeekRow
-              key={step.title}
-              label={step.title}
-              sub={step.sub}
-              time={step.time}
-            />
+            <li key={step.title}>
+              <ChildRow
+                markerKind="ai"
+                primaryText={step.title}
+                secondaryText={step.sub}
+                time={step.time}
+              />
+            </li>
           ))}
         </ol>
       )}
@@ -639,7 +698,7 @@ function LiveExceptionContent({
         ) : (
           <div className={stepClass} style={stepStyle(3)}>
             <SuggestedFixCard
-              key={exception.id}
+              key={`issue-${exception.id}`}
               suggestions={exception.suggestions}
               onResolve={onResolve}
               onAim={onAim}
@@ -967,7 +1026,7 @@ function JumpMenu({
                 : "bg-info";
           return (
             <button
-              key={e.id}
+              key={`issue-${e.id}`}
               ref={(el) => {
                 rowRefs.current[i] = el;
               }}
@@ -1062,7 +1121,7 @@ function IssueDots({
             : "pending";
         return (
           <button
-            key={e.id}
+            key={`issue-${e.id}`}
             type="button"
             onClick={() => !isDying && onSelect(e.id)}
             aria-label={`Issue ${i + 1} · ${exceptionMeta(e).label} · ${stateLabel}`}
@@ -1501,6 +1560,245 @@ function HistoryEventRow({
   );
 }
 
+// ── Event grouping ────────────────────────────────────────────────────────────
+//
+// Before rendering, consecutive correction triples and revision cycles are
+// folded into a single CollapsedClusterRow so the raw event stream never shows
+// three flat rows for a resolved issue. The fold is purely visual — expanding
+// reveals the full audit trail with all original events.
+
+type SingleGroup = { type: "single"; event: RunEvent };
+type ClusterGroup = {
+  type: "cluster";
+  clusterKey: string; // first event's key — stable React key + toggle anchor
+  allEvents: RunEvent[]; // full ordered list, shown when expanded
+  summary: RunEvent; // header: last non-reverted corrected event
+  correctionCount: number; // how many "corrected" events (drives "N revisions" badge)
+  reverted: boolean; // true when net state is a full revert (no re-application)
+};
+type DisplayGroup = SingleGroup | ClusterGroup;
+
+function isRevertEvent(e: RunEvent): boolean {
+  return (
+    e.kind === "corrected" &&
+    (e.label.toLowerCase().includes("revert") ||
+      (e.sub?.toLowerCase().includes("previous values") ?? false))
+  );
+}
+
+// Walk the flat events array and collapse completed correction triples and
+// revision cycles into ClusterGroups. Incomplete clusters (mid-arc, no
+// revalidated event yet) fall through as plain SingleGroups so the live
+// "Corrected…" row renders normally until REST appends the trailing events.
+function groupEvents(events: RunEvent[]): DisplayGroup[] {
+  const result: DisplayGroup[] = [];
+  let i = 0;
+
+  while (i < events.length) {
+    const e = events[i];
+
+    if (e.kind !== "corrected") {
+      result.push({ type: "single", event: e });
+      i++;
+      continue;
+    }
+
+    const clusterEvents: RunEvent[] = [e];
+    let j = i + 1;
+
+    // Consume one triple: optional resolved(auto)* then revalidated.
+    // Returns true only when the triple is complete (ends with revalidated).
+    const advanceTriple = (): boolean => {
+      while (j < events.length) {
+        const nx = events[j];
+        if (nx.kind === "resolved" && nx.auto) {
+          clusterEvents.push(nx);
+          j++;
+        } else {
+          break;
+        }
+      }
+      if (j < events.length && events[j].kind === "revalidated") {
+        clusterEvents.push(events[j]);
+        j++;
+        return true;
+      }
+      return false;
+    };
+
+    if (!advanceTriple()) {
+      // Still mid-arc: show the bare corrected event flat.
+      result.push({ type: "single", event: e });
+      i++;
+      continue;
+    }
+
+    // Extend only for explicit revision cycles: a revert event (which the user
+    // produces via the Undo toast) optionally followed by a re-correction.
+    // Independent corrections to different fields are NOT merged.
+    while (
+      j < events.length &&
+      events[j].kind === "corrected" &&
+      isRevertEvent(events[j])
+    ) {
+      clusterEvents.push(events[j]);
+      j++;
+      advanceTriple();
+      // After a revert, a re-correction (non-revert) may immediately follow.
+      if (
+        j < events.length &&
+        events[j].kind === "corrected" &&
+        !isRevertEvent(events[j])
+      ) {
+        clusterEvents.push(events[j]);
+        j++;
+        advanceTriple();
+      }
+    }
+
+    const correctedEvents = clusterEvents.filter(
+      (ev) => ev.kind === "corrected",
+    );
+    const lastCorrected = correctedEvents[correctedEvents.length - 1];
+    const reverted = isRevertEvent(lastCorrected);
+
+    result.push({
+      type: "cluster",
+      clusterKey: e.key,
+      allEvents: clusterEvents,
+      summary: reverted ? correctedEvents[0] : lastCorrected,
+      correctionCount: correctedEvents.length,
+      reverted,
+    });
+    i = j;
+  }
+
+  return result;
+}
+
+// Returns true when this index should show its timestamp.
+// Hides timestamps that fall in the middle of a consecutive same-time run
+// (e.g. a block of "Just now" rows) — the start and end of each run still show.
+function showTimeAt(index: number, events: RunEvent[]): boolean {
+  if (index === 0 || index === events.length - 1) return true;
+  const t = events[index].time;
+  return !(events[index - 1].time === t && events[index + 1].time === t);
+}
+
+// Sub-event row inside an expanded CollapsedClusterRow. Prepares display text
+// from the raw event and delegates layout entirely to ChildRow.
+function SubEventRow({
+  event,
+  showTime,
+}: {
+  event: RunEvent;
+  showTime: boolean;
+}) {
+  const isAgentEvent =
+    (event.kind === "resolved" && event.auto) || event.kind === "revalidated";
+
+  let primaryText: string;
+  let secondaryText: string | undefined;
+
+  if (event.kind === "resolved" && event.auto) {
+    primaryText = "Cleared automatically";
+  } else if (event.kind === "revalidated") {
+    primaryText = "All checks re-run";
+  } else if (event.kind === "corrected") {
+    if (isRevertEvent(event)) {
+      primaryText = "Reverted";
+      secondaryText = event.sub;
+    } else {
+      // label = field name (already in parent header); sub = action detail
+      primaryText = event.sub;
+    }
+  } else {
+    primaryText = event.label;
+    secondaryText = event.sub;
+  }
+
+  return (
+    <ChildRow
+      markerKind={isAgentEvent ? "ai" : "reviewer"}
+      primaryText={primaryText}
+      secondaryText={secondaryText}
+      time={event.time}
+      showTime={showTime}
+    />
+  );
+}
+
+// A completed correction cluster rendered as a single collapsible row.
+// Default collapsed; disclosure chevron reveals the full audit trail.
+function CollapsedClusterRow({
+  group,
+  gap,
+  reducedMotion,
+}: {
+  group: ClusterGroup;
+  gap: string;
+  reducedMotion: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const { summary, allEvents, correctionCount, reverted } = group;
+  const marker: MarkerKind = reverted ? "agent" : "reviewer";
+  const headerLabel = reverted
+    ? "Corrected then reverted · no net change"
+    : summary.label;
+
+  return (
+    <TimelineRow marker={marker} className={gap}>
+      <div className="space-y-1">
+        <button
+          type="button"
+          className="flex w-full items-start gap-1.5 text-left"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+        >
+          <ChevronRight
+            className={cn(
+              "mt-[3px] size-3 shrink-0 text-muted-foreground",
+              !reducedMotion && "transition-transform duration-150",
+              expanded && "rotate-90",
+            )}
+          />
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className={cn(
+                  "text-sm font-medium",
+                  reverted ? "text-muted-foreground" : "text-foreground",
+                )}
+              >
+                {headerLabel}
+              </span>
+              {correctionCount > 1 && (
+                <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  {correctionCount} revisions
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {summary.time}
+            </span>
+          </div>
+        </button>
+        {expanded && (
+          <div className="ml-4 space-y-3 border-l border-border pl-4 py-2">
+            {allEvents.map((ev, idx) => (
+              <SubEventRow
+                key={ev.key}
+                event={ev}
+                showTime={showTimeAt(idx, allEvents)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </TimelineRow>
+  );
+}
+
 // The three-phase resolve choreography (see ResolvingNode). One region changes
 // at a time, in causal order: confirm -> check -> reveal, then commit.
 //
@@ -1712,12 +2010,14 @@ function ResolveHistoryPeek({
         onClick={() => setOpen((v) => !v)}
         className="flex min-h-7 w-full items-center gap-1.5 text-left"
       >
+        <ChevronRight
+          className={cn(
+            "mt-[3px] size-3 shrink-0 text-muted-foreground",
+            !reducedMotion && "transition-transform duration-150",
+            open && "rotate-90",
+          )}
+        />
         <span className="text-sm text-muted-foreground">{label}</span>
-        {open ? (
-          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
-        ) : (
-          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-        )}
       </button>
       {open && (
         <ol className={PEEK_LIST}>
@@ -2405,6 +2705,16 @@ export function ExceptionTimeline({
     // biome-ignore lint/correctness/useExhaustiveDependencies: nonce keys the scroll
   }, [scrollTrigger]);
 
+  // After any timeline mutation (arc commits at ACT, deferred events land at
+  // REST, revert appends), keep "Needs your decision" in view. Only fires when
+  // the reviewer hasn't manually scrolled away; the pill re-engages if they have.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: events.length keys the scroll
+  useEffect(() => {
+    if (!userScrolledRef.current) {
+      requestAnimationFrame(() => scrollToLive());
+    }
+  }, [events.length]);
+
   // Resolve choreography. Fix mode: confirm -> check -> reveal -> commit, one
   // region per phase, next state hidden until re-validation settles. Route mode:
   // confirm (collapse into a waiting row) -> commit; no re-check, no
@@ -2720,7 +3030,7 @@ export function ExceptionTimeline({
       } satisfies ArcState);
     }, 50);
 
-    // ACT (t=450ms): commit correction + one corrected event; value crossfades in; ring+pill frozen.
+    // ACT (t=500ms): commit correction + one corrected event; value crossfades in; ring+pill frozen.
     // Deferred consequences (auto-resolve, re-validated, carousel) wait until REST.
     const t2 = setTimeout(() => {
       if (arcNonceRef.current !== nonce) return;
@@ -2750,27 +3060,27 @@ export function ExceptionTimeline({
       const idx = list.findIndex((e) => e.id === exc.id);
       const next = list[idx + 1] ?? (list.length > 1 ? list[0] : undefined);
       nextId = next?.id === exc.id ? "" : (next?.id ?? "");
-    }, 450);
+    }, 500);
 
-    // CONFIRM (t=700ms): ring → success token; pill → "✓ Updated" — both in one state update.
+    // CONFIRM (t=750ms): ring → success token; pill → "✓ Updated" — both in one state update.
     const t3 = setTimeout(() => {
       if (arcNonceRef.current !== nonce) return;
       runtime.setArcState(review.id, {
         ...arcBase,
         phase: "confirm",
       } satisfies ArcState);
-    }, 700);
+    }, 750);
 
-    // RELEASE (t=1400ms): ring + pill fade out together; marker is seated by now.
+    // RELEASE (t=1350ms): ring + pill fade out together; marker is seated by now.
     const t4 = setTimeout(() => {
       if (arcNonceRef.current !== nonce) return;
       runtime.setArcState(review.id, {
         ...arcBase,
         phase: "release",
       } satisfies ArcState);
-    }, 1400);
+    }, 1350);
 
-    // REST (t=1800ms): apply deferred consequences + advance carousel; toast fires via delay.
+    // REST (t=1650ms): apply deferred consequences + advance carousel; toast fires via delay.
     const t5 = setTimeout(() => {
       if (arcNonceRef.current !== nonce) return;
       const deferred = arcDeferredRef.current;
@@ -2785,7 +3095,7 @@ export function ExceptionTimeline({
       }
       runtime.setArcState(review.id, null);
       setActiveId(nextId);
-    }, 1800);
+    }, 1650);
 
     arcTimersRef.current.push(t1, t2, t3, t4, t5);
   }
@@ -3043,12 +3353,26 @@ export function ExceptionTimeline({
     if (e.kind === "followed-up") followUpByExc[e.exception.id] = e.time;
   }
 
-  // The full event log rendered as rows: shared by the live view and the held
-  // view (a header Hold can pause the invoice mid-review, before completion).
-  const eventRows = events.map((ev, i) => {
-    // The last event sits before the present (group) node: a section
-    // transition, so it opens 28px instead of the 20px event gap.
-    const gap = i === events.length - 1 ? SECTION_GAP : ROW_GAP;
+  // The full event log rendered as rows. Consecutive correction triples and
+  // revision cycles are pre-grouped so a resolved issue always appears as one
+  // collapsible row, never three flat rows.
+  const displayGroups = groupEvents(events);
+  const eventRows = displayGroups.map((group, i) => {
+    // Last group before the decision block: wider section gap.
+    const gap = i === displayGroups.length - 1 ? SECTION_GAP : ROW_GAP;
+
+    if (group.type === "cluster") {
+      return (
+        <CollapsedClusterRow
+          key={group.clusterKey}
+          group={group}
+          gap={gap}
+          reducedMotion={reducedMotion}
+        />
+      );
+    }
+
+    const ev = group.event;
     if (
       ev.kind === "resolved" ||
       ev.kind === "waiting" ||
@@ -3063,8 +3387,7 @@ export function ExceptionTimeline({
         />
       );
     }
-    // Flat rows: disposition (a reviewer action -> person marker, per its stated
-    // actor), revalidated (agent, spinner while pending), received (agent).
+    // Flat rows: disposition, revalidated (pending), received.
     const marker: MarkerKind =
       ev.kind === "disposition"
         ? ev.actor === "reviewer"

@@ -1473,13 +1473,6 @@ const BETWEEN_INVOICE_STYLES = `
   .skeleton-content-enter {
     animation: skeleton-content-enter 180ms ease-out both;
   }
-  @keyframes inv-glow-in {
-    from { opacity: 0; }
-    to   { opacity: 0.04; }
-  }
-  .inv-glow-in {
-    animation: inv-glow-in 480ms ease-out 320ms both;
-  }
   @keyframes fadeSlideIn {
     from { transform: translateY(-6px); }
     to   { transform: translateY(0); }
@@ -4597,6 +4590,20 @@ function DetailsCombinedTab() {
     return lc ? { ...line, ...lc } : line;
   });
 
+  const correctedLinesTotal = (() => {
+    const hasAmountFix =
+      dc?.lines &&
+      Object.values(dc.lines).some((lc) => lc.amount !== undefined);
+    if (!hasAmountFix) return d.linesTotal;
+    const strip = (s: string) => parseFloat(String(s).replace(/[^0-9.]/g, ""));
+    const total = correctedLines.reduce(
+      (sum, line) => sum + strip(line.amount),
+      0,
+    );
+    const prefix = String(d.linesTotal).match(/^[^0-9-]*/)?.[0] ?? "";
+    return `${prefix}${total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  })();
+
   // Map the timeline cursor to a 1-based line number; null = invoice-level cursor.
   const review = getReview(d.id);
   const cursorId = runtime.getCursor(d.id);
@@ -4666,7 +4673,6 @@ function DetailsCombinedTab() {
       };
     }
     if (phase === "act") {
-      // Ring frozen; inner content will crossfade via arcValueStyle.
       return {
         borderRadius: "4px",
         boxShadow: gradientRing,
@@ -4674,7 +4680,6 @@ function DetailsCombinedTab() {
       };
     }
     if (phase === "confirm") {
-      // Ring + pill switch simultaneously in one render — both count as one mover.
       return {
         borderRadius: "4px",
         boxShadow: "inset 0 0 0 1.5px rgb(34 197 94)",
@@ -4685,16 +4690,31 @@ function DetailsCombinedTab() {
       return {
         borderRadius: "4px",
         boxShadow: "inset 0 0 0 0px transparent",
-        transition: "box-shadow 400ms ease-out",
+        transition: "box-shadow 300ms ease-in",
       };
     }
     return {};
   }
 
   function arcValueStyle(phase: ArcPhase): CSSProperties | undefined {
-    return phase === "act"
-      ? { animation: "arcValueIn 200ms ease-out both" }
-      : undefined;
+    if (phase !== "act") return undefined;
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return undefined;
+    return { animation: "arcValueIn 220ms ease-in-out both" };
+  }
+
+  // Forces a remount of the inner value span when ACT starts so the arcValueIn
+  // animation fires reliably from opacity:0 on a fresh DOM node.
+  function arcValueKey(field: string): string {
+    return arcState?.phase === "act" ? `arc-${arcState.nonce}` : `val-${field}`;
+  }
+  function arcLineKey(lineNum: number): string {
+    return arcState?.phase === "act"
+      ? `arc-${arcState.nonce}-${lineNum}`
+      : `line-val-${lineNum}`;
   }
 
   // Scroll the first arc field into view when a new arc starts.
@@ -4730,7 +4750,7 @@ function DetailsCombinedTab() {
           )
         : null;
     scrollTarget?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    // AI glow is driven entirely by the CSS keyframe; skip the React settle path.
+    // AI glow is driven by the arc phase machine (arcState); skip the React settle path.
     if (correctionPulse?.aiSourced) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     setPulseSettle("peak");
@@ -4795,7 +4815,7 @@ function DetailsCombinedTab() {
           phase === "pre" && "opacity-0 duration-0",
           phase === "claim" && "opacity-100 duration-150",
           (phase === "act" || phase === "confirm") && "opacity-100 duration-0",
-          phase === "release" && "opacity-0 duration-[400ms]",
+          phase === "release" && "opacity-0 duration-[300ms] ease-in",
         )}
       >
         {!isConfirmed ? (
@@ -4838,8 +4858,8 @@ function DetailsCombinedTab() {
           : "Correction applied";
     toast.dismiss(undoToastIdRef.current);
     // For AI arc corrections delay the toast until REST (correctDetail fires at
-    // ACT = t+450ms; REST = t+1800ms → delay = 1350ms after the pulse nonce bumps).
-    const delay = correctionPulse?.aiSourced ? 1350 : 0;
+    // ACT = t+450ms; REST = t+1700ms → delay = 1250ms after the pulse nonce bumps).
+    const delay = correctionPulse?.aiSourced ? 1250 : 0;
     const tid = setTimeout(() => {
       const id = toast(label, {
         duration: 8000,
@@ -4921,6 +4941,11 @@ function DetailsCombinedTab() {
                 }
               >
                 <span
+                  key={
+                    arcFields.has("documentDateFormatted") && arcState
+                      ? arcValueKey("documentDateFormatted")
+                      : "v"
+                  }
                   style={
                     arcFields.has("documentDateFormatted") && arcState
                       ? arcValueStyle(arcState.phase)
@@ -4952,6 +4977,11 @@ function DetailsCombinedTab() {
                 }
               >
                 <span
+                  key={
+                    arcFields.has("dueFormatted") && arcState
+                      ? arcValueKey("dueFormatted")
+                      : "v"
+                  }
                   style={
                     arcFields.has("dueFormatted") && arcState
                       ? arcValueStyle(arcState.phase)
@@ -4983,6 +5013,11 @@ function DetailsCombinedTab() {
                 }
               >
                 <span
+                  key={
+                    arcFields.has("paymentTerms") && arcState
+                      ? arcValueKey("paymentTerms")
+                      : "v"
+                  }
                   style={
                     arcFields.has("paymentTerms") && arcState
                       ? arcValueStyle(arcState.phase)
@@ -5015,6 +5050,11 @@ function DetailsCombinedTab() {
                   }
                 >
                   <span
+                    key={
+                      arcFields.has("vat") && arcState
+                        ? arcValueKey("vat")
+                        : "v"
+                    }
                     style={
                       arcFields.has("vat") && arcState
                         ? arcValueStyle(arcState.phase)
@@ -5048,6 +5088,11 @@ function DetailsCombinedTab() {
                   }
                 >
                   <span
+                    key={
+                      arcFields.has("servicePeriod") && arcState
+                        ? arcValueKey("servicePeriod")
+                        : "v"
+                    }
                     style={
                       arcFields.has("servicePeriod") && arcState
                         ? arcValueStyle(arcState.phase)
@@ -5279,6 +5324,11 @@ function DetailsCombinedTab() {
                           }
                         >
                           <span
+                            key={
+                              arcLineNums.has(lineNum) && arcState
+                                ? arcLineKey(lineNum)
+                                : `line-${lineNum}`
+                            }
                             style={
                               arcLineNums.has(lineNum) && arcState
                                 ? arcValueStyle(arcState.phase)
@@ -5303,6 +5353,11 @@ function DetailsCombinedTab() {
                           }
                         >
                           <span
+                            key={
+                              arcLineNums.has(lineNum) && arcState
+                                ? arcLineKey(lineNum)
+                                : `line-${lineNum}`
+                            }
                             style={
                               arcLineNums.has(lineNum) && arcState
                                 ? arcValueStyle(arcState.phase)
@@ -5342,7 +5397,7 @@ function DetailsCombinedTab() {
                 Total
               </span>
               <span className="text-[15px] font-medium text-foreground ml-auto">
-                {d.linesTotal}
+                {correctedLinesTotal}
               </span>
             </div>
           </div>
@@ -6483,6 +6538,17 @@ function RightPanel({
   const tabLabel = (t: RightTab) =>
     t === "lines" ? "Line items" : t.charAt(0).toUpperCase() + t.slice(1);
 
+  // Arc panel glow: reads arc state to drive the Details pane overlay.
+  const d = useInvoiceDetail();
+  const runtime = useInvoiceRuntime();
+  const arcState = runtime.getRuntime(d.id).arcState;
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const showGlow =
+    !prefersReducedMotion && effectiveTab === "details" && !!arcState;
+
   return (
     <div
       className={cn(
@@ -6521,7 +6587,34 @@ function RightPanel({
           </button>
         ))}
       </div>
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="relative flex-1 flex flex-col overflow-hidden">
+        {/* Arc glow — Details pane only. Keyed by nonce so each arc mounts a
+            fresh node at opacity:0; phase state drives the opacity transitions
+            so the glow is synchronized with the ring, pill, and value swap. */}
+        {showGlow && (
+          <div
+            key={arcState!.nonce}
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-10"
+            style={{
+              background:
+                "radial-gradient(ellipse at top right, oklch(0.48 0.19 274) 0%, transparent 70%), " +
+                "radial-gradient(ellipse at bottom left, oklch(0.77 0.10 202) 0%, transparent 70%)",
+              opacity:
+                arcState!.phase === "claim" ||
+                arcState!.phase === "act" ||
+                arcState!.phase === "confirm"
+                  ? 0.15
+                  : 0,
+              transition:
+                arcState!.phase === "claim"
+                  ? "opacity 450ms ease-out"
+                  : arcState!.phase === "release"
+                    ? "opacity 300ms ease-in"
+                    : "none",
+            }}
+          />
+        )}
         {effectiveTab === "activity" && (
           <ActivityTabC
             extraEntries={extraTimelineEntries}
@@ -6593,6 +6686,27 @@ function TopBarNext({
   const review = getReview(d.id);
   // A data-changing resolution (e.g. Link PO-5123) patches the shared record.
   const patchedPo = rt.dataPatch?.purchaseOrder ?? d.po;
+  // When a line-amount correction is applied, recompute the total from corrected
+  // lines rather than using the static dataPatch so stacked corrections stay consistent.
+  const correctedAmount = (() => {
+    const dc = rt.detailCorrections;
+    const hasAmountFix =
+      dc?.lines &&
+      Object.values(dc.lines).some((lc) => lc.amount !== undefined);
+    if (!hasAmountFix) return rt.dataPatch?.amount ?? d.amount;
+    const lines = d.lines.map((line, i) => {
+      const lc = dc!.lines?.[i + 1];
+      return lc ? { ...line, ...lc } : line;
+    });
+    const strip = (s: string) => parseFloat(String(s).replace(/[^0-9.]/g, ""));
+    const total = lines.reduce((sum, line) => sum + strip(line.amount), 0);
+    const prefix = String(d.amount).match(/^[^0-9-]*/)?.[0] ?? "";
+    const formatted = total.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    return `${prefix}${formatted}${d.currency ? ` ${d.currency}` : ""}`;
+  })();
   // Approve/hold/reject come ONLY from the runtime disposition in v2/v3; the
   // template maps are never consulted for those (flag stays legacy).
   const summary = getExceptionSummary(review, rt);
@@ -6663,7 +6777,7 @@ function TopBarNext({
       <PageHeaderContent className="@3xl:justify-between">
         <PageHeaderField>
           <PageHeaderFieldLabel>Amount</PageHeaderFieldLabel>
-          <PageHeaderFieldValue>{d.amount}</PageHeaderFieldValue>
+          <PageHeaderFieldValue>{correctedAmount}</PageHeaderFieldValue>
         </PageHeaderField>
         <PageHeaderField>
           <PageHeaderFieldLabel>Due</PageHeaderFieldLabel>
@@ -8373,7 +8487,8 @@ function InvoiceReviewContent() {
     return () => {
       style.remove();
     };
-  }, []);
+    // Constant at runtime; listed so Fast Refresh re-injects when styles change in dev.
+  }, [BETWEEN_INVOICE_STYLES]);
 
   // Deep link: ?invoice=INV-XXXX opens that invoice's detail view directly
   // (e.g. the "View invoice in Apollo" link from the Slack card).
@@ -8586,7 +8701,7 @@ function InvoiceReviewContent() {
         {/* Ambient glow — bleeds across left nav and center panel */}
         {isDetail && (
           <div
-            className="inv-glow-in pointer-events-none absolute -top-20 -left-20 size-[480px] rounded-full blur-[110px] z-0"
+            className="pointer-events-none absolute -top-20 -left-20 size-[480px] rounded-full blur-[110px] z-0 opacity-[0.06]"
             style={{
               background:
                 "radial-gradient(ellipse at 30% 30%, oklch(0.65 0.04 207), oklch(0.48 0.16 290))",

@@ -48,7 +48,7 @@ function withKeys(
   inputs: RunEventInput[],
 ): RunEvent[] {
   return inputs.map(
-    (e, i) => ({ ...e, key: `evt-${id}-${current.length + i}` }) as RunEvent,
+    (e, i) => ({ ...e, key: `event-${id}-${current.length + i}` }) as RunEvent,
   );
 }
 
