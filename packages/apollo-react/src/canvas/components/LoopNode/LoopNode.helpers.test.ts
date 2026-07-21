@@ -1,7 +1,14 @@
 import type { Edge, Node, ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it } from 'vitest';
 import type { NodeManifest } from '../../schema/node-definition';
-import { getInnerHandleContainerId, resolveContainerAddNodePreview } from './LoopNode.helpers';
+import {
+  applyHandleOffsets,
+  getInnerHandleContainerId,
+  HANDLE_DRAG_CORNER_MARGIN_PX,
+  HANDLE_DRAG_TOP_MARGIN_PX,
+  resolveContainerAddNodePreview,
+  resolveHandleWallDrag,
+} from './LoopNode.helpers';
 
 type PreviewManifest = Pick<NodeManifest, 'display' | 'handleConfiguration'>;
 
@@ -528,5 +535,147 @@ describe('getInnerHandleContainerId', () => {
         getManifestForNode,
       })
     ).toBeUndefined();
+  });
+});
+
+describe('applyHandleOffsets', () => {
+  const makeGroup = (position: string, ids: string[], extra: Record<string, unknown> = {}) =>
+    ({
+      position,
+      boundary: 'inner',
+      alwaysVisible: true,
+      slotCount: 2,
+      ...extra,
+      handles: ids.map((id) => ({ id, type: 'target', handleType: 'input', visible: true })),
+    }) as never;
+
+  it('returns groups unchanged when there are no offsets', () => {
+    const groups = [makeGroup('right', ['onComplete', 'onExit'])];
+    expect(applyHandleOffsets(groups, undefined)).toBe(groups);
+    expect(applyHandleOffsets(groups, {})).toBe(groups);
+  });
+
+  it('moves an offset handle into a synthetic group on the dragged wall', () => {
+    const groups = [makeGroup('right', ['onComplete', 'onExit'])];
+    const result = applyHandleOffsets(groups, { onExit: { position: 'bottom', offset: 160 } });
+
+    expect(result).toHaveLength(2);
+    expect(result[0]?.position).toBe('right');
+    expect(result[0]?.handles.map((h) => h.id)).toEqual(['onComplete']);
+    expect(result[1]?.position).toBe('bottom');
+    expect(result[1]?.handles.map((h) => h.id)).toEqual(['onExit']);
+    expect((result[1]?.handles[0] as { offsetPx?: number }).offsetPx).toBe(160);
+    // Synthetic groups drop slot layout so the explicit offset wins.
+    expect(result[1]?.slotCount).toBeUndefined();
+    // Group traits like boundary and alwaysVisible carry over.
+    expect(result[1]?.boundary).toBe('inner');
+    expect((result[1] as { alwaysVisible?: boolean }).alwaysVisible).toBe(true);
+  });
+
+  it('drops the source group entirely when all its handles moved', () => {
+    const groups = [makeGroup('left', ['onEnter'])];
+    const result = applyHandleOffsets(groups, { onEnter: { position: 'left', offset: 128 } });
+
+    expect(result).toHaveLength(1);
+    expect((result[0]?.handles[0] as { offsetPx?: number }).offsetPx).toBe(128);
+  });
+});
+
+describe('resolveHandleWallDrag', () => {
+  const size = { nodeWidth: 640, nodeHeight: 480 };
+
+  it('snaps the offset to the 16px grid', () => {
+    const result = resolveHandleWallDrag({
+      ...size,
+      localX: 630,
+      localY: 201,
+      allowedWalls: ['right'],
+    });
+    expect(result).toEqual({ position: 'right', offset: 208 });
+  });
+
+  it('picks the nearest allowed wall', () => {
+    const nearBottom = resolveHandleWallDrag({
+      ...size,
+      localX: 320,
+      localY: 470,
+      allowedWalls: ['right', 'bottom'],
+    });
+    expect(nearBottom?.position).toBe('bottom');
+
+    const nearRight = resolveHandleWallDrag({
+      ...size,
+      localX: 630,
+      localY: 240,
+      allowedWalls: ['right', 'bottom'],
+    });
+    expect(nearRight?.position).toBe('right');
+  });
+
+  it('ignores walls that are not allowed', () => {
+    const result = resolveHandleWallDrag({
+      ...size,
+      localX: 2,
+      localY: 240,
+      allowedWalls: ['left'],
+    });
+    expect(result?.position).toBe('left');
+
+    // Pointer hugs the (disallowed) left wall: the drag falls back to the
+    // nearest allowed wall instead.
+    const constrained = resolveHandleWallDrag({
+      ...size,
+      localX: 2,
+      localY: 240,
+      allowedWalls: ['right', 'bottom'],
+    });
+    expect(constrained?.position).toBe('bottom');
+  });
+
+  it('keeps side-wall offsets clear of the header and the corners', () => {
+    const nearTop = resolveHandleWallDrag({
+      ...size,
+      localX: 638,
+      localY: 0,
+      allowedWalls: ['right'],
+    });
+    expect(nearTop?.offset).toBe(HANDLE_DRAG_TOP_MARGIN_PX);
+
+    const nearBottomCorner = resolveHandleWallDrag({
+      ...size,
+      localX: 638,
+      localY: 479,
+      allowedWalls: ['right'],
+    });
+    expect(nearBottomCorner?.offset).toBe(432); // 480 - 48, already grid-aligned
+  });
+
+  it('keeps bottom-wall offsets clear of both corners', () => {
+    const nearLeftCorner = resolveHandleWallDrag({
+      ...size,
+      localX: 0,
+      localY: 479,
+      allowedWalls: ['bottom'],
+    });
+    expect(nearLeftCorner?.offset).toBe(HANDLE_DRAG_CORNER_MARGIN_PX);
+
+    const nearRightCorner = resolveHandleWallDrag({
+      ...size,
+      localX: 639,
+      localY: 479,
+      allowedWalls: ['bottom'],
+    });
+    expect(nearRightCorner?.offset).toBe(592); // 640 - 48, already grid-aligned
+  });
+
+  it('returns null when the wall is too small for a corner-safe slot', () => {
+    const result = resolveHandleWallDrag({
+      nodeWidth: 80,
+      nodeHeight: 480,
+      localX: 40,
+      localY: 479,
+      allowedWalls: ['bottom'],
+    });
+    expect(result).toBeNull();
   });
 });

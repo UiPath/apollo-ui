@@ -23,6 +23,25 @@ export type ContainerHandleGroup = ResolvedHandleGroup & {
   connectionPosition: Position;
 };
 
+/** A user-dragged handle position: which wall it sits on and how far along it (px). */
+export interface HandleWallOffset {
+  position: 'left' | 'right' | 'top' | 'bottom';
+  offset: number;
+}
+
+/** Per-node dragged handle positions, keyed by handle id. Stored in `data.handleOffsets`. */
+export type HandleOffsets = Record<string, HandleWallOffset>;
+
+/** Grid step dragged handles snap to. */
+export const HANDLE_DRAG_GRID_PX = 16;
+/** Minimum distance a dragged handle keeps from any container corner. */
+export const HANDLE_DRAG_CORNER_MARGIN_PX = 48;
+/**
+ * Minimum distance from the container top for handles on the side walls, so a
+ * dragged handle never collides with the header area.
+ */
+export const HANDLE_DRAG_TOP_MARGIN_PX = 112;
+
 export interface ContainerPreviewConnectionHandles {
   sourceHandleId: string;
   sourceHandlePosition: Position;
@@ -261,4 +280,92 @@ export function getInnerHandleContainerId({
   });
 
   return clickedHandle?.boundary === 'inner' ? sourceNode.id : undefined;
+}
+
+/**
+ * Re-buckets resolved handle groups according to user-dragged offsets: a handle
+ * with an entry in `offsets` leaves its manifest group and renders in a
+ * synthetic single-handle group on the dragged wall, carrying an explicit
+ * `offsetPx` so it bypasses the slot distribution. Handles without offsets stay
+ * in their manifest group and keep the default layout.
+ */
+export function applyHandleOffsets(
+  groups: ResolvedHandleGroup[],
+  offsets: HandleOffsets | undefined
+): ResolvedHandleGroup[] {
+  if (!offsets || Object.keys(offsets).length === 0) {
+    return groups;
+  }
+
+  const result: ResolvedHandleGroup[] = [];
+
+  for (const group of groups) {
+    const staying = group.handles.filter((handle) => !offsets[handle.id]);
+    const moved = group.handles.filter((handle) => offsets[handle.id]);
+
+    if (staying.length > 0) {
+      result.push(staying.length === group.handles.length ? group : { ...group, handles: staying });
+    }
+
+    for (const handle of moved) {
+      const target = offsets[handle.id];
+      if (!target) continue;
+      result.push({
+        ...group,
+        position: target.position,
+        slotCount: undefined,
+        customPositionAndOffsets: undefined,
+        handles: [{ ...handle, offsetPx: target.offset } as (typeof group.handles)[number]],
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Projects a pointer position (in node-local px) onto the nearest allowed wall,
+ * snapped to the drag grid and clamped away from the corners (and away from the
+ * header on the side walls). Returns null when the node is too small to offer a
+ * valid slot on any allowed wall.
+ */
+export function resolveHandleWallDrag(options: {
+  localX: number;
+  localY: number;
+  nodeWidth: number;
+  nodeHeight: number;
+  allowedWalls: ReadonlyArray<HandleWallOffset['position']>;
+}): HandleWallOffset | null {
+  const { localX, localY, nodeWidth, nodeHeight, allowedWalls } = options;
+  if (allowedWalls.length === 0 || nodeWidth <= 0 || nodeHeight <= 0) return null;
+
+  const distances: Record<HandleWallOffset['position'], number> = {
+    left: localX,
+    right: nodeWidth - localX,
+    top: localY,
+    bottom: nodeHeight - localY,
+  };
+
+  let wall: HandleWallOffset['position'] | null = null;
+  for (const candidate of allowedWalls) {
+    if (wall === null || distances[candidate] < distances[wall]) {
+      wall = candidate;
+    }
+  }
+  if (wall === null) return null;
+
+  const isSideWall = wall === 'left' || wall === 'right';
+  const wallLength = isSideWall ? nodeHeight : nodeWidth;
+  const raw = isSideWall ? localY : localX;
+
+  const startMargin = isSideWall ? HANDLE_DRAG_TOP_MARGIN_PX : HANDLE_DRAG_CORNER_MARGIN_PX;
+  // Grid-aligned clamp bounds so snapping never lands inside a corner margin.
+  const lo = Math.ceil(startMargin / HANDLE_DRAG_GRID_PX) * HANDLE_DRAG_GRID_PX;
+  const hi =
+    Math.floor((wallLength - HANDLE_DRAG_CORNER_MARGIN_PX) / HANDLE_DRAG_GRID_PX) *
+    HANDLE_DRAG_GRID_PX;
+  if (hi < lo) return null;
+
+  const snapped = Math.round(raw / HANDLE_DRAG_GRID_PX) * HANDLE_DRAG_GRID_PX;
+  return { position: wall, offset: Math.min(hi, Math.max(lo, snapped)) };
 }

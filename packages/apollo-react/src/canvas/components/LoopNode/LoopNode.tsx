@@ -2,11 +2,12 @@ import {
   NodeResizeControl,
   type Position,
   type ReactFlowState,
+  useReactFlow,
   useStore,
   useUpdateNodeInternals,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { cn } from '@uipath/apollo-wind';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { shallow } from 'zustand/shallow';
 import { useSafeLingui } from '../../../i18n';
 import { NODE_BADGE_INSET_SQUARE, NODE_BADGE_SIZE } from '../../constants';
@@ -42,13 +43,20 @@ import { CanvasTooltip } from '../CanvasTooltip';
 import type { StageHeaderChip } from '../StageNode/StageNode.types';
 import { NodeToolbar } from '../Toolbar';
 import { lockToolbarConfig } from '../Toolbar/NodeToolbar/NodeToolbar.utils';
-import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
+import {
+  applyHandleOffsets,
+  type ContainerHandleGroup,
+  type HandleOffsets,
+  resolveContainerHandleGroups,
+  resolveHandleWallDrag,
+} from './LoopNode.helpers';
 import type { LoopNodeExecutionCountState, LoopNodeProps } from './LoopNode.types';
 import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 import { LoopNodeHeaderChips } from './LoopNodeHeaderChips';
 
 const DEFAULT_LOOP_ICON = 'repeat';
 const EMPTY_DATA: Record<string, unknown> = {};
+const selectZoom = (state: ReactFlowState) => state.transform?.[2] ?? 1;
 const LOOP_HEADER_ADORNMENT_GAP = 8;
 const LOOP_HEADER_ADORNMENT_PADDING =
   NODE_BADGE_INSET_SQUARE + NODE_BADGE_SIZE + LOOP_HEADER_ADORNMENT_GAP;
@@ -216,6 +224,18 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const { multipleNodesSelected } = useSelectionState();
   const isConnecting = useStore(selectIsConnecting);
   const hasChildNodes = useHasChildNodes(id, isDesignMode && !!onAddFirstChild);
+  const { updateNodeData } = useReactFlow();
+  const zoom = useStore(selectZoom);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pillDragCleanupRef = useRef<(() => void) | null>(null);
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
+
+  useEffect(() => {
+    return () => {
+      pillDragCleanupRef.current?.();
+    };
+  }, []);
 
   const executionState = useNodeExecutionState(id);
   const validationState = useElementValidationStatus(id);
@@ -316,16 +336,78 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const hasTopLeftAdornment = !!adornments.topLeft;
   const hasTopRightAdornment = !!adornments.topRight;
 
+  const handleOffsets = resolvedData.handleOffsets as HandleOffsets | undefined;
   const resolvedHandleGroups = useMemo(() => {
     const handleConfigurations = resolveLoopHandleConfigurations(
       manifest?.handleConfiguration,
       resolvedData
     );
-    return resolveHandles(handleConfigurations, { ...resolvedData, nodeId: id });
-  }, [manifest?.handleConfiguration, id, resolvedData]);
+    const resolved = resolveHandles(handleConfigurations, { ...resolvedData, nodeId: id });
+    return applyHandleOffsets(resolved, handleOffsets);
+  }, [manifest?.handleConfiguration, id, resolvedData, handleOffsets]);
   const containerHandleGroups = useMemo(
     () => resolveContainerHandleGroups(resolvedHandleGroups),
     [resolvedHandleGroups]
+  );
+
+  /**
+   * Drag session for a movable handle pill. Projects the pointer onto the
+   * nearest allowed wall (grid-snapped, corner-safe) and writes the wall +
+   * offset into data.handleOffsets for the handle and its mirror, so the
+   * inner/outer pair moves together. Edges follow automatically: the resolved
+   * groups change re-triggers updateNodeInternals.
+   */
+  const startHandlePillDrag = useCallback(
+    (handleId: string, allowedWalls: HandleOffsets[string]['position'][], mirrorId?: string) =>
+      (event: React.PointerEvent) => {
+        if (!isDesignMode) return;
+        event.preventDefault();
+        event.stopPropagation();
+        pillDragCleanupRef.current?.();
+
+        const container = containerRef.current;
+        if (!container) return;
+
+        const onPointerMove = (moveEvent: PointerEvent) => {
+          const rect = container.getBoundingClientRect();
+          const scale = zoomRef.current || 1;
+          const next = resolveHandleWallDrag({
+            localX: (moveEvent.clientX - rect.left) / scale,
+            localY: (moveEvent.clientY - rect.top) / scale,
+            nodeWidth: rect.width / scale,
+            nodeHeight: rect.height / scale,
+            allowedWalls,
+          });
+          if (!next) return;
+          updateNodeData(id, (node) => {
+            const previous = (node.data?.handleOffsets ?? {}) as HandleOffsets;
+            const current = previous[handleId];
+            if (current && current.position === next.position && current.offset === next.offset) {
+              return {};
+            }
+            return {
+              handleOffsets: {
+                ...previous,
+                [handleId]: next,
+                ...(mirrorId ? { [mirrorId]: next } : {}),
+              },
+            };
+          });
+        };
+
+        const onPointerUp = () => {
+          pillDragCleanupRef.current?.();
+        };
+
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+        pillDragCleanupRef.current = () => {
+          window.removeEventListener('pointermove', onPointerMove);
+          window.removeEventListener('pointerup', onPointerUp);
+          pillDragCleanupRef.current = null;
+        };
+      },
+    [id, isDesignMode, updateNodeData]
   );
 
   useContainerNodeInternalsRefresh(id, containerHandleGroups, containerWidth, containerHeight);
@@ -392,6 +474,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   return (
     <div
+      ref={containerRef}
       data-loop-container
       data-selected={selected ? 'true' : 'false'}
       data-execution-status={executionStatus}
@@ -483,6 +566,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
         nodeHeight={containerHeight}
         connectedHandleIds={connectedHandleIds}
         onHandleAction={handleHandleAction}
+        startHandlePillDrag={isDesignMode ? startHandlePillDrag : undefined}
       />
     </div>
   );
@@ -707,6 +791,11 @@ type SharedHandleGroupProps = {
   nodeHeight: number;
   connectedHandleIds: ReadonlySet<string>;
   onHandleAction: (event: HandleActionEvent) => void;
+  startHandlePillDrag?: (
+    handleId: string,
+    allowedWalls: HandleOffsets[string]['position'][],
+    mirrorId?: string
+  ) => (event: React.PointerEvent) => void;
 };
 
 type HandleGroupsProps = SharedHandleGroupProps & {
@@ -745,6 +834,7 @@ function HandleGroup({
   nodeHeight,
   connectedHandleIds,
   onHandleAction,
+  startHandlePillDrag,
 }: HandleGroupProps) {
   const groupVisible =
     (shouldShowHandles || group.alwaysVisible === true) && (group.visible ?? true);
@@ -753,6 +843,11 @@ function HandleGroup({
     () =>
       group.handles.map((handle) => {
         const showHandle = connectedHandleIds.has(handle.id) || groupVisible;
+        const draggableWalls = handle.draggableWalls;
+        const onLabelPointerDown =
+          startHandlePillDrag && draggableWalls && draggableWalls.length > 0
+            ? startHandlePillDrag(handle.id, draggableWalls, handle.dragMirrors)
+            : undefined;
 
         if (group.boundary === 'inner') {
           return {
@@ -760,6 +855,7 @@ function HandleGroup({
             showHandle,
             showButton: false,
             onAction: undefined,
+            onLabelPointerDown,
           };
         }
 
@@ -768,9 +864,17 @@ function HandleGroup({
           showHandle,
           showButton: handle.showButton,
           onAction: handle.onAction ?? onHandleAction,
+          onLabelPointerDown,
         };
       }),
-    [group.boundary, group.handles, connectedHandleIds, groupVisible, onHandleAction]
+    [
+      group.boundary,
+      group.handles,
+      connectedHandleIds,
+      groupVisible,
+      onHandleAction,
+      startHandlePillDrag,
+    ]
   );
 
   return (

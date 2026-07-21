@@ -31,6 +31,10 @@ import { caseFlowManifest } from './case-flow.manifest';
  *   as stage complete / exit rules.
  * - Squares: tasks. The sequential chain runs from inner Enter through the
  *   tasks into inner Complete; a task wired into inner Exit abandons the stage.
+ * - The lifecycle pills are draggable: grab Enter to slide it along the left
+ *   wall, or Complete / Exit to move them along the right and bottom walls.
+ *   Positions snap to the 16px grid, stay clear of the corners, and the outer
+ *   connection handle plus every attached edge follows the pill.
  */
 
 const STAGE_TYPE = 'uipath.case.stage';
