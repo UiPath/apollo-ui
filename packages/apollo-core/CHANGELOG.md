@@ -1,3 +1,15 @@
+## [@uipath/apollo-core-v5.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.10.0...@uipath/apollo-core@5.11.0) (2026-07-21)
+
+### Features
+
+* **apollo-core:** ship v4-compat SCSS (helpers, mixins, scoped-theme-variables, css-variables) ([e954608](https://github.com/UiPath/apollo-ui/commit/e954608685e0095c97c7b26c3acde4e039be8930))
+
+### Bug Fixes
+
+* **apollo-core:** guarantee static SCSS reaches dist in dev/watch builds ([a75169f](https://github.com/UiPath/apollo-ui/commit/a75169f018353b2fc185f4b6378f697e60e3182a))
+* **apollo-core:** rename $pallete local to $palette in ui-color helper ([a43011e](https://github.com/UiPath/apollo-ui/commit/a43011e4037267b5a10d1b0d66d493bbf54b2f26))
+* **apollo-core:** valid color-scheme for HC scoped themes, drop dead token build script ([3785556](https://github.com/UiPath/apollo-ui/commit/3785556313a61268259e8fc7c996387de30a0d80))
+
 ## [@uipath/apollo-core-v5.10.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.9.1...@uipath/apollo-core@5.10.0) (2026-06-10)
 
 ### Features
