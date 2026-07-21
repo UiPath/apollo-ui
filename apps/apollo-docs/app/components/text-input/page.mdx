@@ -1,0 +1,80 @@
+# Text input
+
+Text input is an interactive field that allows users to enter any combination of letters, numbers, or symbols.
+
+## Usage
+
+Use text input when users need to enter freeform text or data. It is the right choice when:
+
+- **The response is unpredictable.** You can't predict a user's answer, and there may be wide variability.
+- **Input simplicity matters.** Using another input type (e.g., a date picker) would make answering more difficult.
+- **Users may paste content.** When users want to paste a response directly into the field.
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Label** | Text that informs the user about the content they need to enter |
+| **Field** | The container in which a user enters data |
+| **Value** | The content the user has typed into the field |
+| **Helper text** | (Optional) Provides instructions or format guidance below the field |
+
+## Appearance
+
+### Labeling
+
+Input labels appear above the field. Always provide a visible label — do not use placeholder text as a substitute for a label.
+
+### Placeholder and helper text
+
+- **Placeholder text** can provide an example or hint inside the field, but should not contain essential information. It disappears when the user starts typing.
+- **Helper text** appears below the field and should be used for format requirements, character counts, or critical completion instructions. Use it sparingly.
+
+## States
+
+| State | Description |
+|---|---|
+| **Enabled** | Default state; field is ready for input |
+| **Hover** | Cursor is over the field |
+| **Focus** | Field has keyboard focus |
+| **Active** | User is actively typing |
+| **Filled** | Field contains a value |
+| **Error** | Validation has failed; error message explains the issue |
+| **Disabled** | Field is not interactive; not focusable by keyboard |
+| **Read-only** | Value is visible but cannot be edited; remains keyboard-focusable so users can copy the value |
+
+Error messages should explain why the value is invalid and guide the user toward a valid value.
+
+## Size
+
+| Size | Height | Best for |
+|---|---|---|
+| **Tall** | 40px | Default size; use when in doubt |
+| **Small** | 32px | High-density forms or complex, long forms |
+
+Use a consistent field height when pairing form components on the same page.
+
+## Guidelines
+
+- Keep input labels brief; use placeholder or helper text to add explanatory context
+- Do not remove field borders
+- Do not use more than two sentences in helper text or error text
+- Read-only fields should not be marked as required, since users cannot edit them
+
+## Accessibility
+
+- Read-only components remain navigable by keyboard so users can review and copy values; disabled components are not keyboard-accessible
+- Placeholder text must be associated with an `aria-label` for assistive technologies
+
+## Content
+
+- Avoid using placeholder text for essential information — combine it with a label if used
+- Do not use punctuation at the end of labels
+- Omit the period from placeholder text
+- Use sentence case for labels (except product names and proper nouns)
+
+## Related
+
+- [Combobox](/components/combobox)
+- [Dropdown](/components/dropdown)
+- [Rich-text editor](/components/rich-text-editor)
