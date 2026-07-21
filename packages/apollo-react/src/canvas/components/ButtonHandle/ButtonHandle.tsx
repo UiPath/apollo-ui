@@ -63,6 +63,10 @@ type ButtonHandleProps = {
   nodeWidth?: number;
   nodeHeight?: number;
   portalAction?: boolean;
+  /** Explicit pixel position along the wall. Bypasses the slot distribution (e.g. a user-dragged handle). */
+  offsetPx?: number;
+  /** When set, the inward label pill becomes a drag grip and fires this on pointer down. */
+  onLabelPointerDown?: (event: React.PointerEvent) => void;
 };
 
 const ButtonHandleBase = ({
@@ -90,6 +94,8 @@ const ButtonHandleBase = ({
   nodeWidth,
   nodeHeight,
   portalAction = false,
+  offsetPx,
+  onLabelPointerDown,
 }: ButtonHandleProps) => {
   const handleRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -128,6 +134,12 @@ const ButtonHandleBase = ({
     // Determine which dimension to use based on handle position
     const relevantSize = isVertical ? nodeWidth : nodeHeight;
 
+    // An explicit pixel offset (e.g. a user-dragged lifecycle handle) bypasses
+    // the slot distribution entirely.
+    if (offsetPx != null && relevantSize && relevantSize > 0) {
+      return pixelToPercent(Math.min(Math.max(offsetPx, 0), relevantSize), relevantSize);
+    }
+
     // If node size is available, use grid-aligned positioning
     if (relevantSize && relevantSize > 0) {
       const gridPositions = calculateGridAlignedHandlePositions(relevantSize, total);
@@ -137,7 +149,7 @@ const ButtonHandleBase = ({
 
     // Fallback to percentage-based positioning
     return ((index + 1) / (total + 1)) * 100;
-  }, [index, total, isVertical, nodeWidth, nodeHeight]);
+  }, [index, total, isVertical, nodeWidth, nodeHeight, offsetPx]);
 
   const handleButtonClick = useCallback(
     (event: React.MouseEvent) => {
@@ -222,6 +234,7 @@ const ButtonHandleBase = ({
           labelBackgroundColor={labelBackgroundColor}
           labelVisible={resolvedLabelVisible}
           layout={layout}
+          onLabelPointerDown={onLabelPointerDown}
         />
         <Handle
           ref={handleRef}
@@ -342,6 +355,7 @@ function InwardHandleContent({
   labelBackgroundColor,
   labelVisible = true,
   layout,
+  onLabelPointerDown,
 }: {
   handleType: HandleType;
   isVertical: boolean;
@@ -353,16 +367,24 @@ function InwardHandleContent({
   labelBackgroundColor?: string;
   labelVisible?: boolean;
   layout: InwardHandleLayout;
+  onLabelPointerDown?: (event: React.PointerEvent) => void;
 }) {
+  const isDraggableGrip = !!onLabelPointerDown;
   const labelElement = label ? (
     <div
       aria-hidden={labelVisible ? undefined : true}
       className={cx(
-        'pointer-events-none flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-surface px-2 py-0.5',
+        'flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-surface px-2 py-0.5',
         'text-xs font-medium leading-4 text-foreground-muted transition-opacity duration-250',
-        labelVisible ? 'opacity-100' : 'opacity-0'
+        labelVisible ? 'opacity-100' : 'opacity-0',
+        // The pill doubles as the drag grip for movable handles. nodrag/nopan
+        // keep React Flow from starting a node drag or canvas pan underneath.
+        isDraggableGrip && labelVisible
+          ? 'nodrag nopan pointer-events-auto cursor-grab select-none active:cursor-grabbing'
+          : 'pointer-events-none'
       )}
       style={labelBackgroundColor ? { backgroundColor: labelBackgroundColor } : undefined}
+      onPointerDown={isDraggableGrip && labelVisible ? onLabelPointerDown : undefined}
     >
       {labelIcon}
       <span>{label}</span>
@@ -407,6 +429,10 @@ export interface ButtonHandleConfig {
   onMouseEnter?: (event: HandleMouseEvent) => void;
   onMouseLeave?: (event: HandleMouseEvent) => void;
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
+  /** Explicit pixel position along the wall. Bypasses the slot distribution. */
+  offsetPx?: number;
+  /** When set, the inward label pill becomes a drag grip and fires this on pointer down. */
+  onLabelPointerDown?: (event: React.PointerEvent) => void;
 }
 
 const ButtonHandlesBase = ({
@@ -520,6 +546,8 @@ const ButtonHandlesBase = ({
             nodeWidth={nodeWidth}
             nodeHeight={nodeHeight}
             portalAction={portalActions && handle.type === 'source'}
+            offsetPx={handle.offsetPx}
+            onLabelPointerDown={handle.onLabelPointerDown}
           />
         );
       })}
