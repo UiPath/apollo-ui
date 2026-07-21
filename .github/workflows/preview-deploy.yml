@@ -139,16 +139,11 @@ jobs:
           UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
           UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
           UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
-          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE || 'Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution PM.OAuthApp' }}
-          UIPATH_RUNTIME_CLIENT_ID: ${{ vars.UIPATH_RUNTIME_CLIENT_ID || secrets.UIPATH_RUNTIME_CLIENT_ID }}
+          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE || 'Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution' }}
         run: |
           set -euo pipefail
 
-          # Runtime OAuth client id is only needed for the platform-auth app.
           required=(GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION)
-          if [ "$PLATFORM_AUTH" = "true" ]; then
-            required+=(UIPATH_RUNTIME_CLIENT_ID)
-          fi
           missing=0
           for name in "${required[@]}"; do
             if [ -z "${!name:-}" ]; then
@@ -193,9 +188,13 @@ jobs:
           NODE
           }
 
+          # The platform-auth app (vertex) carries its client id in the recipe
+          # (first-party Uber.Client). Its Coded App host is pre-registered as a
+          # redirect URI via a host wildcard in first-party-service-metadata, so
+          # skip per-deployment redirect-URI registration.
           extra_args=()
           if [ "$PLATFORM_AUTH" = "true" ]; then
-            extra_args+=(--auth-client-id "$UIPATH_RUNTIME_CLIENT_ID")
+            extra_args+=(--no-aichat-redirects)
           fi
 
           output_file="$(mktemp)"
@@ -401,13 +400,12 @@ jobs:
           UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
           UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
           UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
-          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE || 'Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution PM.OAuthApp' }}
-          UIPATH_RUNTIME_CLIENT_ID: ${{ vars.UIPATH_RUNTIME_CLIENT_ID || secrets.UIPATH_RUNTIME_CLIENT_ID }}
+          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE || 'Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution' }}
         run: |
           set -euo pipefail
 
           missing=0
-          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION UIPATH_RUNTIME_CLIENT_ID; do
+          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION; do
             if [ -z "${!name:-}" ]; then
               echo "::error::$name is required for Apollo Coded App preview cleanup."
               missing=1
@@ -417,7 +415,6 @@ jobs:
             exit 1
           fi
 
-          vertex_app="apollo-vertex-pr-${PR_NUMBER}"
           uip_go_npmrc="${RUNNER_TEMP}/uip-go.npmrc"
           uip_go_prefix="${RUNNER_TEMP}/uip-go"
           {
@@ -427,15 +424,8 @@ jobs:
           NPM_CONFIG_USERCONFIG="$uip_go_npmrc" npm install --prefix "$uip_go_prefix" "@uipath/uip-go@${UIP_GO_VERSION}"
           UIP_GO="${uip_go_prefix}/node_modules/.bin/uip-go"
 
-          "$UIP_GO" apollo-vertex \
-            --aichat-redirects remove \
-            --name "$vertex_app" \
-            --path-name "$vertex_app" \
-            --base-url "$UIPATH_BASE_URL" \
-            --org-name "$UIPATH_ORG_NAME" \
-            --tenant-name "$UIPATH_TENANT_NAME" \
-            --auth-client-id "$UIPATH_RUNTIME_CLIENT_ID"
-
+          # No redirect-URI cleanup: previews reuse the first-party Uber.Client,
+          # whose Coded App host is covered by a static wildcard registration.
           for label in apollo-landing apollo-docs apollo-design apollo-vertex; do
             app_name="${label}-pr-${PR_NUMBER}"
             if ! "$UIP_GO" "$label" \

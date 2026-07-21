@@ -66,9 +66,9 @@
       "pathNameEnv": "APOLLO_CODED_APP_PATH",
       "folderKeyEnv": "UIPATH_FOLDER_KEY",
       "postprocess": ["static-next-export"],
+      "authClientId": "1119a927-10ab-4543-bd1a-ad6bfbbc27f4",
       "platformAuth": {
-        "redirectPath": "patterns/ai-chat/index.html",
-        "scope": "openid profile offline_access DataFabric.Data.Read DataFabric.Schema.Read OR.Execution OR.Folders OR.Jobs ConversationalAgents Traces.Api"
+        "redirectPath": "auth_callback/index.html"
       },
       "tags": "apollo,apollo-vertex",
       "env": {
