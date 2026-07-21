@@ -3061,18 +3061,54 @@ function LockableValueFieldShowcase({
 function QuickFormStory() {
   const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
   const nextIdRef = useRef(4);
+  const [formView, setFormView] = useState<'edit' | 'json'>('edit');
   const [formTitle, setFormTitle] = useState('Quick Approve');
   const [formDescription, setFormDescription] = useState('Add a description');
   const [editingFormTitle, setEditingFormTitle] = useState(false);
   const [editingFormDescription, setEditingFormDescription] = useState(false);
   const formTitleRef = useRef<HTMLInputElement>(null);
   const formDescriptionRef = useRef<HTMLInputElement>(null);
+  const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(DEFAULT_LOCKABLE_CASES, null, 2));
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [jsonCopied, setJsonCopied] = useState(false);
   const [showcaseControlsVisibility, setShowcaseControlsVisibility] = useState<'visible' | 'hover'>(
     'visible'
   );
   const [buttons, setButtons] = useState<FormButtonItem[]>(DEFAULT_FORM_BUTTONS);
   const nextButtonIdRef = useRef(3);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (formView !== 'json') {
+      setJsonDraft(JSON.stringify(cases, null, 2));
+      setJsonError(null);
+    }
+  }, [cases, formView]);
+
+  const handleJsonChange = (value: string) => {
+    setJsonDraft(value);
+    try {
+      const parsed = JSON.parse(value);
+      if (!Array.isArray(parsed)) {
+        setJsonError('Expected a JSON array of fields.');
+        return;
+      }
+      setCases(parsed);
+      setJsonError(null);
+    } catch {
+      setJsonError('Invalid JSON.');
+    }
+  };
+
+  const handleCopyJson = () => {
+    navigator.clipboard
+      ?.writeText(jsonDraft)
+      ?.then(() => {
+        setJsonCopied(true);
+        setTimeout(() => setJsonCopied(false), 1500);
+      })
+      ?.catch(() => {});
+  };
 
   const addCaseWithType = (fieldType: LockableFieldType) => {
     const id = nextIdRef.current++;
@@ -3184,38 +3220,53 @@ function QuickFormStory() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-foreground-muted">Quick form</span>
-                  <Popover>
-                    <TooltipProvider delayDuration={300}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <PopoverTrigger asChild>
-                            <button
-                              type="button"
-                              aria-label="Generate with AI"
-                              className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground aria-expanded:bg-surface-overlay aria-expanded:text-foreground"
-                            >
-                              <Sparkles size={14} />
-                            </button>
-                          </PopoverTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent>Generate with AI</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <PopoverContent align="end" className="w-64 space-y-1.5">
-                      <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-                        <Sparkles size={12} className="text-brand" />
-                        Describe the form you want
-                      </span>
-                      <Textarea
-                        rows={3}
-                        placeholder="e.g. An invoice approval form with amount and due date"
-                        className="resize-none text-sm"
-                      />
-                      <Button size="sm" className="w-full">
-                        Generate
-                      </Button>
-                    </PopoverContent>
-                  </Popover>
+                  <div className="flex items-center gap-2">
+                    <Popover>
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <PopoverTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label="Generate with AI"
+                                className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground aria-expanded:bg-surface-overlay aria-expanded:text-foreground"
+                              >
+                                <Sparkles size={14} />
+                              </button>
+                            </PopoverTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>Generate with AI</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <PopoverContent align="end" className="w-64 space-y-1.5">
+                        <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                          <Sparkles size={12} className="text-brand" />
+                          Describe the form you want
+                        </span>
+                        <Textarea
+                          rows={3}
+                          placeholder="e.g. An invoice approval form with amount and due date"
+                          className="resize-none text-sm"
+                        />
+                        <Button size="sm" className="w-full">
+                          Generate
+                        </Button>
+                      </PopoverContent>
+                    </Popover>
+                    <ToggleGroup
+                      type="single"
+                      size="xs"
+                      value={formView}
+                      onValueChange={(v) => v && setFormView(v as 'edit' | 'json')}
+                    >
+                      <ToggleGroupItem value="edit" className="!px-2.5 !text-xs">
+                        UI
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="json" className="!px-2.5 !text-xs">
+                        JSON
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
                 </div>
                 <Card>
                   <CardContent className="flex flex-col gap-4 p-4">
@@ -3301,91 +3352,133 @@ function QuickFormStory() {
                         )}
                       </div>
                     </div>
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragStart={handleDragStart}
-                      onDragOver={handleDragOver}
-                      onDragEnd={handleDragEnd}
-                      onDragCancel={handleDragCancel}
-                    >
-                      <SortableContext
-                        items={cases.map((c) => c.id)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <div className="flex flex-col gap-4">
-                          {cases.map((c, index) => {
-                            const activeIndex = cases.findIndex((x) => x.id === activeDragId);
-                            const isOver =
-                              activeDragId != null && overDragId === c.id && c.id !== activeDragId;
-                            return (
-                              <LockableCaseRow
-                                key={c.id}
-                                id={c.id}
-                                caseTitle={c.title}
-                                onTitleChange={(title) => updateCase(c.id, { title })}
-                                required={c.required}
-                                onRequiredChange={(required) => updateCase(c.id, { required })}
-                                onDelete={() => deleteCase(c.id)}
-                                value={c.value}
-                                onValueChange={(value) => updateCase(c.id, { value })}
-                                locked={c.locked}
-                                onLockedChange={(locked) => updateCase(c.id, { locked })}
-                                mode={c.mode}
-                                onModeChange={(mode) => updateCase(c.id, { mode })}
-                                fieldType={c.fieldType}
-                                compact
-                                onFieldTypeChange={(fieldType) =>
-                                  updateCaseFieldType(c.id, fieldType)
-                                }
-                                controlsVisibility={showcaseControlsVisibility}
-                                insertBefore={isOver && activeIndex > index}
-                                insertAfter={isOver && activeIndex < index}
-                              />
-                            );
-                          })}
-                        </div>
-                      </SortableContext>
-                      {createPortal(
-                        <DragOverlay>
-                          {activeCase ? <FieldDragOverlay caseItem={activeCase} /> : null}
-                        </DragOverlay>,
-                        document.body
-                      )}
-                    </DndContext>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                    {formView === 'edit' && (
+                      <>
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragStart={handleDragStart}
+                          onDragOver={handleDragOver}
+                          onDragEnd={handleDragEnd}
+                          onDragCancel={handleDragCancel}
                         >
-                          <Plus size={12} />
-                          Add field
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-44">
-                        <DropdownMenuItem onClick={() => addCaseWithType('string')}>
-                          <Type className="text-foreground-muted" />
-                          <span>Add field</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={addButton}>
-                          <MousePointerClick className="text-foreground-muted" />
-                          <span>Add button</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    {buttons.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        {buttons.map((b) => (
-                          <FormButtonChip
-                            key={b.id}
-                            label={b.label}
-                            onLabelChange={(label) => updateButton(b.id, { label })}
-                            variant={b.variant}
-                            onVariantChange={(variant) => updateButton(b.id, { variant })}
-                            onDelete={() => deleteButton(b.id)}
-                          />
-                        ))}
+                          <SortableContext
+                            items={cases.map((c) => c.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="flex flex-col gap-4">
+                              {cases.map((c, index) => {
+                                const activeIndex = cases.findIndex((x) => x.id === activeDragId);
+                                const isOver =
+                                  activeDragId != null &&
+                                  overDragId === c.id &&
+                                  c.id !== activeDragId;
+                                return (
+                                  <LockableCaseRow
+                                    key={c.id}
+                                    id={c.id}
+                                    caseTitle={c.title}
+                                    onTitleChange={(title) => updateCase(c.id, { title })}
+                                    required={c.required}
+                                    onRequiredChange={(required) => updateCase(c.id, { required })}
+                                    onDelete={() => deleteCase(c.id)}
+                                    value={c.value}
+                                    onValueChange={(value) => updateCase(c.id, { value })}
+                                    locked={c.locked}
+                                    onLockedChange={(locked) => updateCase(c.id, { locked })}
+                                    mode={c.mode}
+                                    onModeChange={(mode) => updateCase(c.id, { mode })}
+                                    fieldType={c.fieldType}
+                                    compact
+                                    onFieldTypeChange={(fieldType) =>
+                                      updateCaseFieldType(c.id, fieldType)
+                                    }
+                                    controlsVisibility={showcaseControlsVisibility}
+                                    insertBefore={isOver && activeIndex > index}
+                                    insertAfter={isOver && activeIndex < index}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </SortableContext>
+                          {createPortal(
+                            <DragOverlay>
+                              {activeCase ? <FieldDragOverlay caseItem={activeCase} /> : null}
+                            </DragOverlay>,
+                            document.body
+                          )}
+                        </DndContext>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                            >
+                              <Plus size={12} />
+                              Add field
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-44">
+                            <DropdownMenuItem onClick={() => addCaseWithType('string')}>
+                              <Type className="text-foreground-muted" />
+                              <span>Add field</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={addButton}>
+                              <MousePointerClick className="text-foreground-muted" />
+                              <span>Add button</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {buttons.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-2">
+                            {buttons.map((b) => (
+                              <FormButtonChip
+                                key={b.id}
+                                label={b.label}
+                                onLabelChange={(label) => updateButton(b.id, { label })}
+                                variant={b.variant}
+                                onVariantChange={(variant) => updateButton(b.id, { variant })}
+                                onDelete={() => deleteButton(b.id)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {formView === 'json' && (
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-foreground-muted">
+                            Form schema
+                          </span>
+                          <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={handleCopyJson}
+                                  aria-label="Copy JSON"
+                                  className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                                >
+                                  {jsonCopied ? (
+                                    <CircleCheck size={13} className="text-brand" />
+                                  ) : (
+                                    <Copy size={13} />
+                                  )}
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>{jsonCopied ? 'Copied' : 'Copy JSON'}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <Textarea
+                          value={jsonDraft}
+                          onChange={(e) => handleJsonChange(e.target.value)}
+                          rows={14}
+                          spellCheck={false}
+                          className="resize-none font-mono text-xs"
+                        />
+                        {jsonError && <span className="text-xs text-destructive">{jsonError}</span>}
                       </div>
                     )}
                   </CardContent>
