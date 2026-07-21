@@ -269,7 +269,7 @@ export interface LlmConfigurationsLinkOptions {
   intent: 'add' | 'edit';
   /** Numeric Orchestrator folder id — route segment of the add/edit pages. */
   folderNumericId?: number;
-  /** `ByoProductLlmConfiguration` id — required to deep-link `edit`. */
+  /** BYO configuration id — required to deep-link `edit`. */
   configurationId?: string;
 }
 
