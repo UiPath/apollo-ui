@@ -214,7 +214,7 @@ const { models } = useDiscoveryModels({
 />
 ```
 
-Under the hood: `GET {baseUrl}/{tenantName}/orchestrator_/api/FoldersNavigation/GetFoldersForCurrentUser` (the same call the Automation Cloud portal makes). Folder ids are Orchestrator folder **Keys** (GUIDs) — pass the selected id straight through as `folderKey` on your Discovery re-fetch.
+Under the hood: `GET {baseUrl}/{tenantName}/orchestrator_/api/FoldersNavigation/GetFoldersForCurrentUser` (the same call the Automation Cloud portal makes). Folder ids are Orchestrator folder **Keys** (GUIDs) — pass the selected id straight through as `folderKey` on your Discovery re-fetch. Personal-workspace folders (`FolderType === 'Personal'`) are always excluded — a personal workspace is not a meaningful scope for shared model configurations; a host that really needs one can supply it via the `folders` prop.
 
 The picker prepends an "All folders" sentinel automatically; picking it fires `onFolderChange(null)` — re-fetch without a `folderKey` to get the union of all folders the user can see.
 

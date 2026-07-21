@@ -62,6 +62,8 @@ interface OrchestratorFolderDto {
   Key: string;
   DisplayName: string;
   FullyQualifiedName?: string;
+  /** `'Personal'` marks a personal-workspace folder; `'Standard'` otherwise. */
+  FolderType?: string;
 }
 
 interface FoldersNavigationResponse {
@@ -99,6 +101,12 @@ const FOLDERS_PAGE_SIZE = 100;
  * Pass `null` to disable (e.g. `enableFolders` is off). Minimal
  * fetch-and-state — hosts on SWR/React Query can fetch themselves and
  * pass the `folders` prop instead.
+ *
+ * Personal-workspace folders (`FolderType === 'Personal'`) are always
+ * excluded: a personal workspace is not a meaningful scope for shared
+ * model configurations. The filter is a no-op on responses that don't
+ * carry `FolderType`. Hosts that really need one can pass it via the
+ * picker's `folders` prop.
  */
 export function useUserFolders(ctx: PlatformRequestContext | null): UseUserFoldersResult {
   const [folders, setFolders] = useState<FolderSwitcherFolder[]>([]);
@@ -139,11 +147,13 @@ export function useUserFolders(ctx: PlatformRequestContext | null): UseUserFolde
       const data = (await res.json()) as FoldersNavigationResponse;
       if (!ctrl.signal.aborted) {
         setFolders(
-          (data.PageItems ?? []).map((f) => ({
-            id: f.Key,
-            label: f.DisplayName,
-            numericId: f.Id,
-          }))
+          (data.PageItems ?? [])
+            .filter((f) => f.FolderType !== 'Personal')
+            .map((f) => ({
+              id: f.Key,
+              label: f.DisplayName,
+              numericId: f.Id,
+            }))
         );
       }
     } catch (err: unknown) {
