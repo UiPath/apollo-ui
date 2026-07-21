@@ -36,7 +36,7 @@ function loadCodedAppPlatformAuth() {
       baseUrl: z.string().min(1),
       orgName: z.string().min(1),
       tenantName: z.string().min(1),
-      tenantId: z.string().min(1).optional(),
+      tenantId: z.string().min(1),
       redirectPath: z.string().min(1),
     })
     .safeParse({
@@ -83,7 +83,7 @@ export const AICHAT_STATIC_ORG = codedAppPlatformAuth
       orgName: codedAppPlatformAuth.orgName,
       tenants: [
         {
-          id: codedAppPlatformAuth.tenantId ?? codedAppPlatformAuth.tenantName,
+          id: codedAppPlatformAuth.tenantId,
           name: codedAppPlatformAuth.tenantName,
         },
       ],
