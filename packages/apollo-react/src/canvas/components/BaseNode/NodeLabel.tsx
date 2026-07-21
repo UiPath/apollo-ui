@@ -171,12 +171,12 @@ const EditableLabel = forwardRef<HTMLTextAreaElement, EditableLabelProps>(
       onKeyDown={onKeyDown}
       onBlur={onBlur}
       className={cx(
-        'nodrag nowheel resize-none font-[inherit] text-foreground border-none rounded-sm outline-1 outline-dashed outline-border-de-emp max-w-full',
+        'nodrag nowheel resize-none font-[inherit] text-foreground border-none rounded-sm outline-1 outline-dashed outline-border-de-emp max-w-full px-1.5',
         variant === 'subtext'
           ? 'text-xs leading-[18px] font-normal mb-0'
           : 'text-sm leading-[18px] font-semibold mb-0.5',
         shape === 'rectangle' ? 'field-sizing-fixed w-full' : 'field-sizing-content text-center',
-        backgroundColor && 'px-1.5 py-0.5'
+        backgroundColor && 'py-0.5'
       )}
       style={backgroundColor ? { backgroundColor } : undefined}
     />
