@@ -14,6 +14,27 @@ const codedAppPath = process.env.APOLLO_CODED_APP_PATH?.replaceAll(
   "",
 );
 
+// A Coded App build calls the platform directly, so uip-go must have injected
+// the platform context. Validate it here — next.config runs in Node during
+// `next build`, so a misconfigured deployment fails the build immediately
+// rather than shipping a bundle that crashes in the browser. (tenantId is
+// optional; it falls back to the tenant name.)
+if (codedApp) {
+  const missing = [
+    "UIP_GO_PLATFORM_AUTH_BASE_URL",
+    "UIP_GO_PLATFORM_AUTH_ORG_NAME",
+    "UIP_GO_PLATFORM_AUTH_TENANT_NAME",
+    "UIP_GO_PLATFORM_AUTH_TENANT_ID",
+    "UIP_GO_PLATFORM_AUTH_REDIRECT_PATH",
+  ].filter((name) => !process.env[name]);
+  if (missing.length > 0) {
+    throw new Error(
+      `Coded App build is missing platform-auth context: ${missing.join(", ")}. ` +
+        "uip-go injects these from the platformAuth section of .uip-go.json; check the deployment recipe.",
+    );
+  }
+}
+
 export default withNextra({
   ...(codedApp
     ? {
