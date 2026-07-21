@@ -2,8 +2,8 @@
 
 @function ui-color($name, $hue, $contrast: false) {
   $colors: map-get(variables.$tokens, 'color');
-  $pallete: map-get($colors, $name);
-  @return map-get($pallete, $hue + if($contrast, '-contrast', ''));
+  $palette: map-get($colors, $name);
+  @return map-get($palette, $hue + if($contrast, '-contrast', ''));
 }
 
 @function ui-color-contrast($name, $hue) {
