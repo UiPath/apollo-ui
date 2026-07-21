@@ -14,14 +14,39 @@ export type EdgeLabelProps = {
 
 // Falls back to core color tokens when canvas-specific tokens are unavailable,
 // such as in a host that doesn't import canvas/styles/variables.css.
-const EDGE_LABEL_BASE_CLASS =
-  'react-flow__edge-label nodrag nopan absolute top-0 left-0 max-w-48 overflow-hidden text-ellipsis ' +
-  'whitespace-nowrap pointer-events-auto cursor-default ' +
+const EDGE_LABEL_VISUAL_CLASS =
+  'react-flow__edge-label nodrag nopan whitespace-nowrap ' +
   'px-2 py-1 rounded text-xs font-medium border shadow-[0_1px_3px_0_rgba(0,0,0,0.1)] ' +
   'text-[var(--canvas-foreground,var(--color-foreground))] ' +
   'bg-[var(--canvas-background,var(--color-background))]';
 
+const EDGE_LABEL_BASE_CLASS =
+  `${EDGE_LABEL_VISUAL_CLASS} absolute top-0 left-0 max-w-48 overflow-hidden text-ellipsis ` +
+  'pointer-events-auto cursor-default';
+
 export const EDGE_LABEL_DEFAULT_BORDER_COLOR = 'var(--canvas-border,var(--color-border))';
+
+export type EdgeLabelContentProps = Pick<EdgeLabelProps, 'text'> & {
+  selected?: boolean;
+};
+
+/**
+ * Shared visual treatment for callers that own their own positioning, such as
+ * a branch header anchored to a row rather than to a point on the edge path.
+ */
+export function EdgeLabelContent({ text, selected }: EdgeLabelContentProps) {
+  return (
+    <div
+      className={
+        selected
+          ? `${EDGE_LABEL_VISUAL_CLASS} border-[var(--canvas-primary,var(--color-primary))]`
+          : `${EDGE_LABEL_VISUAL_CLASS} border-[var(--canvas-border,var(--color-border))]`
+      }
+    >
+      {text}
+    </div>
+  );
+}
 
 /**
  * Portals into xyflow's `edgelabel-renderer` div, which is a DOM sibling that
