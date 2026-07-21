@@ -10,7 +10,10 @@ export const usePortalContainer = (): HTMLElement | null =>
 
 export interface PortalContainerProviderProps {
   children: React.ReactNode;
-  /** Node to portal into. Omit to auto-use an in-tree boundary. */
+  /**
+   * Node to portal into. Omit (`undefined`) to auto-use an in-tree boundary;
+   * pass `null` to force Radix's default (`document.body`) for the subtree.
+   */
   container?: HTMLElement | null;
 }
 
@@ -21,12 +24,10 @@ export interface PortalContainerProviderProps {
  * Fixes overlays breaking under shadow-DOM or focus-trapped hosts, where
  * body-level content lands outside the trigger's root. Mount one per React root.
  */
-export function PortalContainerProvider({
-  children,
-  container,
-}: PortalContainerProviderProps) {
+export function PortalContainerProvider({ children, container }: PortalContainerProviderProps) {
   const [boundary, setBoundary] = React.useState<HTMLElement | null>(null);
-  const value = container ?? boundary;
+  // `undefined` → auto boundary; explicit `null` → force `document.body`.
+  const value = container !== undefined ? container : boundary;
   return (
     <PortalContainerContext.Provider value={value}>
       {children}
