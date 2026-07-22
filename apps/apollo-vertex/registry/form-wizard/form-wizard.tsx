@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, type ComponentProps, useContext } from "react";
+import { Slot } from "@radix-ui/react-slot";
+import {
+  createContext,
+  type ComponentProps,
+  type ReactNode,
+  useContext,
+} from "react";
 import {
   Stepper,
   StepperContent,
@@ -29,39 +35,54 @@ function useFormWizardContext(): FormWizardApi {
 interface FormWizardProps<TValues extends Record<string, unknown>>
   extends ComponentProps<"div"> {
   wizard: ReturnType<typeof useFormWizard<TValues>>;
+  asChild?: boolean;
 }
 
 function FormWizard<TValues extends Record<string, unknown>>({
   wizard,
   className,
   children,
+  asChild = false,
   ...props
 }: FormWizardProps<TValues>) {
+  const Comp = asChild ? Slot : "div";
   return (
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- context is field-type agnostic; parts read only step metadata and generic helpers
     <FormWizardContext.Provider value={wizard as unknown as FormWizardApi}>
-      <div
+      <Comp
         data-slot="form-wizard"
         className={cn("flex flex-col gap-8", className)}
         {...props}
       >
         {children}
-      </div>
+      </Comp>
     </FormWizardContext.Provider>
   );
 }
 
+interface FormWizardStepsRenderApi {
+  steps: FormWizardApi["steps"];
+  stepIndex: number;
+  goToStep: (id: string) => void;
+}
+
 interface FormWizardStepsProps
-  extends Omit<ComponentProps<typeof Stepper>, "activeStep"> {
+  extends Omit<ComponentProps<typeof Stepper>, "activeStep" | "children"> {
   clickable?: boolean;
+  children?: (api: FormWizardStepsRenderApi) => ReactNode;
 }
 
 function FormWizardSteps({
   clickable,
   className,
+  children,
   ...props
 }: FormWizardStepsProps) {
   const { steps, stepIndex, goToStep } = useFormWizardContext();
+
+  if (typeof children === "function") {
+    return <>{children({ steps, stepIndex, goToStep })}</>;
+  }
 
   return (
     <Stepper activeStep={stepIndex} className={className} {...props}>
@@ -91,27 +112,35 @@ function FormWizardSteps({
 
 interface FormWizardStepProps extends ComponentProps<"div"> {
   stepId: string;
+  asChild?: boolean;
 }
 
 function FormWizardStep({
   stepId,
   className,
   children,
+  asChild = false,
   ...props
 }: FormWizardStepProps) {
   const { currentStepId } = useFormWizardContext();
   if (stepId !== currentStepId) return null;
 
+  const Comp = asChild ? Slot : "div";
   return (
-    <div
+    <Comp
       data-slot="form-wizard-step"
       className={cn("flex flex-col", className)}
       {...props}
     >
       {children}
-    </div>
+    </Comp>
   );
 }
 
 export { FormWizard, FormWizardStep, FormWizardSteps, useFormWizardContext };
-export type { FormWizardProps, FormWizardStepProps, FormWizardStepsProps };
+export type {
+  FormWizardProps,
+  FormWizardStepProps,
+  FormWizardStepsProps,
+  FormWizardStepsRenderApi,
+};
