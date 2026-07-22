@@ -79,22 +79,12 @@ export function layoutSequence(
     }
   }
 
-  const center = (nodeId: string): { x: number; y: number } | undefined => {
-    const position = positions.get(nodeId);
-    if (!position) return undefined;
-    return { x: position.x + barWidth / 2, y: position.y + barHeight / 2 };
-  };
-
   const connectorWaypoints = new Map<string, Waypoint[]>();
   for (const connector of projection.connectors) {
     if (connector.kind === 'merge-back' || connector.kind === 'goto') {
       const source = positions.get(connector.sourceRowId);
       const target = positions.get(connector.targetRowId);
       if (!source || !target) continue;
-      const sourceCenter = center(connector.sourceRowId);
-      const targetCenter = center(connector.targetRowId);
-      if (!sourceCenter || !targetCenter) continue;
-
       // A container's body-exit merge-back (its forward continuation after the
       // indented body) has its source and target at the SAME depth, so both
       // handles already sit on the same spine column and the only rows between
@@ -104,17 +94,38 @@ export function layoutSequence(
       // left of the spine and read as a broken dashed line.
       if (connector.kind === 'merge-back' && source.x === target.x) continue;
 
-      // A branch-lane merge-back / goto routes through a corridor to the left
-      // of the shallower endpoint's column rather than dropping straight down
-      // the source's own column: bars are 896px wide with only a 64px indent
-      // per depth, so every row's span overlaps every other row's, and a
-      // vertical run through a row's own column would cross any sibling lane's
-      // bar in between. Here the source is a deeper descendant within the same
-      // branch subtree as its target, so this corridor stays clear of every bar.
+      // A branch-lane merge-back routes through a corridor to the left of the
+      // shallower endpoint. Exit below the source, traverse that corridor, and
+      // enter above the target on its real handle column. Every branch that
+      // converges on the same target therefore shares the corridor + final
+      // approach as one visual join trunk, while retaining its own canonical
+      // edge and source-side insertion slot.
+      //
+      // Gotos use the same safe orthogonal shape. They may point upward, but the
+      // explicit source/target stubs still keep the path out of either bar.
       const laneX = Math.min(source.x, target.x) - indent / 2;
+      const sourceHandleX = source.x + SEQ_HANDLE_LEFT_OFFSET;
+      const targetHandleX = target.x + SEQ_HANDLE_LEFT_OFFSET;
+      const sourceExitY = source.y + barHeight + rowGap / 2;
+      const targetEntryY = target.y - rowGap / 2;
+
+      // The last branch normally exits into the very same gap where the target
+      // entry starts. Route it straight to that entry instead of sending it
+      // past the target handle to the outer corridor and then doubling back.
+      // Earlier branches still descend through the shared outer trunk below.
+      if (connector.kind === 'merge-back' && sourceExitY >= targetEntryY) {
+        connectorWaypoints.set(connector.id, [
+          { id: `${connector.id}:wp0`, x: sourceHandleX, y: sourceExitY },
+          { id: `${connector.id}:wp1`, x: targetHandleX, y: targetEntryY },
+        ]);
+        continue;
+      }
+
       connectorWaypoints.set(connector.id, [
-        { id: `${connector.id}:wp0`, x: laneX, y: sourceCenter.y },
-        { id: `${connector.id}:wp1`, x: laneX, y: targetCenter.y },
+        { id: `${connector.id}:wp0`, x: sourceHandleX, y: sourceExitY },
+        { id: `${connector.id}:wp1`, x: laneX, y: sourceExitY },
+        { id: `${connector.id}:wp2`, x: laneX, y: targetEntryY },
+        { id: `${connector.id}:wp3`, x: targetHandleX, y: targetEntryY },
       ]);
       continue;
     }

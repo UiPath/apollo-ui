@@ -111,11 +111,11 @@ describe('projectSequence', () => {
       expect(projection.connectors.some((c) => c.kind === 'goto')).toBe(false);
     });
 
-    it('renders the container-continuation out of For Each as a dashed merge-back that still carries an insertable slot', () => {
+    it('renders the container-continuation out of For Each as a merge-back that still carries an insertable slot', () => {
       // Per the concept wireframe, the edge leaving a container AFTER its
       // indented body (here: For Each -> Send Message) visually rejoins the
       // spine from the body, exactly like a branch lane's merge-back - so it
-      // must be classified 'merge-back' (dashed), NOT 'step' (solid), even
+      // must be classified 'merge-back', NOT 'step', even
       // though it is still a genuine single-edge spine continuation and so,
       // unlike an ordinary branch merge-back, keeps its InsertionSlot.
       const forEachToSend = connector(projection, ids.forEach, ids.sendMessage);

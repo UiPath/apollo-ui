@@ -16,9 +16,9 @@ import type { Waypoint } from '../../Edges/shared/types';
  *
  * Field-by-field contract:
  *  - `kind`            copy from `connector.kind`. Drives stroke style: `step`
- *                      and `branch-entry` render solid; branch rejoins and
- *                      `goto` render dashed; straight container continuations
- *                      remain solid. See {@link resolveConnectorStrokeStyle}.
+ *                      `branch-entry`, and `merge-back` render solid; only
+ *                      irregular `goto` references render dashed. See
+ *                      {@link resolveConnectorStrokeStyle}.
  *  - `label`           copy from `connector.label`. Branch-entry labels render
  *                      above their first row using the shared edge-label style;
  *                      other kinds

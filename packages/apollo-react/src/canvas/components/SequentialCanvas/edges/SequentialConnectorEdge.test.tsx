@@ -56,7 +56,7 @@ describe('SequentialConnectorEdge', () => {
       });
     });
 
-    it('keeps an elbowed branch rejoin dashed', () => {
+    it('renders an elbowed branch rejoin solid', () => {
       const { container } = renderEdge({
         kind: 'merge-back',
         waypoints: [
@@ -66,7 +66,7 @@ describe('SequentialConnectorEdge', () => {
       });
 
       const visiblePath = container.querySelector('.react-flow__edge-path') as SVGPathElement;
-      expect(visiblePath.style.strokeDasharray).toBe('5,5');
+      expect(visiblePath.style.strokeDasharray).toBe('0');
     });
   });
 

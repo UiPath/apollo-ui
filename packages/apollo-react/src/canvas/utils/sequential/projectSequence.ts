@@ -338,7 +338,7 @@ export function projectSequence(
         // A branch/loop lane closing into the shared merge. The closing edge is a
         // real graph edge, so it stays insertable: splitting it appends a step to
         // the END of this lane (before the merge), the same as any other gap. The
-        // dashed merge-back style is kept; only the missing slot is restored.
+        // merge-back geometry is kept; only the missing slot is restored.
         pushConnector(
           'merge-back',
           `conn:merge:${edge.id}`,
@@ -481,7 +481,7 @@ export function projectSequence(
       // Plain single successor (not a declared branch). A container's own
       // forward continuation rejoins the spine after its indented body, so it
       // uses merge-back geometry while keeping its slot. Straight container
-      // continuations still render solid in SequentialConnectorEdge.
+      // continuations render solid in SequentialConnectorEdge.
       const nextId = stepToSuccessor(currentId, out[0]!);
       if (nextId === undefined) break;
       currentId = nextId;

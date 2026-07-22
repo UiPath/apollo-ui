@@ -81,17 +81,31 @@ describe('layoutSequence', () => {
     const projection = projectSequence(nodes, edges);
     const layout = layoutSequence(projection);
 
-    it('routes each merge-back with two waypoints sharing one corridor column', () => {
-      const mergeBacks = projection.connectors.filter((c) => c.kind === 'merge-back');
-      expect(mergeBacks.length).toBeGreaterThan(0);
-      for (const c of mergeBacks) {
-        const waypoints = layout.connectorWaypoints.get(c.id);
-        expect(waypoints, c.id).toHaveLength(2);
-        // Both bends share one corridor x (a vertical run entirely inside the
-        // corridor), rather than each bend sitting under its own row's center.
-        expect(waypoints?.[0]?.x).toBe(waypoints?.[1]?.x);
-        expect(waypoints?.every((w) => typeof w.id === 'string')).toBe(true);
-      }
+    it('routes an earlier branch through source-exit, corridor, and target-entry waypoints', () => {
+      const waypoints = layout.connectorWaypoints.get(connector(projection, 'b', 'd').id);
+      expect(waypoints).toHaveLength(4);
+      // The middle pair is the vertical corridor; the outer pair align with
+      // the source and target handles so neither stub loops through a row.
+      expect(waypoints?.[1]?.x).toBe(waypoints?.[2]?.x);
+      expect(waypoints?.[0]?.y).toBe(waypoints?.[1]?.y);
+      expect(waypoints?.[2]?.y).toBe(waypoints?.[3]?.y);
+      expect(waypoints?.every((w) => typeof w.id === 'string')).toBe(true);
+    });
+
+    it('routes the lowest branch directly into the target entry without doubling back', () => {
+      const waypoints = layout.connectorWaypoints.get(connector(projection, 'c', 'd').id);
+      expect(waypoints).toHaveLength(2);
+      expect(waypoints?.[0]?.y).toBe(waypoints?.[1]?.y);
+      expect(waypoints?.[0]?.x ?? 0).toBeGreaterThan(waypoints?.[1]?.x ?? 0);
+    });
+
+    it('bundles branches converging on one target into a shared join trunk', () => {
+      const first = layout.connectorWaypoints.get(connector(projection, 'b', 'd').id);
+      const second = layout.connectorWaypoints.get(connector(projection, 'c', 'd').id);
+
+      // Both paths meet at one target-entry point and share only the clean final
+      // stem into D. The lower branch never traverses the outer corridor.
+      expect(first?.[3]).toMatchObject({ x: second?.[1]?.x, y: second?.[1]?.y });
     });
 
     it('routes the corridor strictly left of every row it could cross (F5 regression)', () => {
@@ -99,7 +113,7 @@ describe('layoutSequence', () => {
       // c (same depth, between b and d in row order); the old implementation
       // dropped straight down b's own column, straight through c's bar.
       const waypoints = layout.connectorWaypoints.get(connector(projection, 'b', 'd').id);
-      const corridorX = waypoints?.[0]?.x ?? Number.POSITIVE_INFINITY;
+      const corridorX = waypoints?.[1]?.x ?? Number.POSITIVE_INFINITY;
       const allRowLeftEdges = projection.rows.map((r) => layout.positions.get(r.nodeId)?.x ?? 0);
       for (const rowX of allRowLeftEdges) {
         expect(corridorX).toBeLessThan(rowX);

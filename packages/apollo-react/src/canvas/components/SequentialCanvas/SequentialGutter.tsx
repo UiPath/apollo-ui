@@ -1,6 +1,6 @@
 import type { XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ViewportPortal } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Fragment } from 'react';
+import { Fragment, memo } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { SEQ_BAR_HEIGHT } from '../../constants';
 import type { SequenceRow } from '../../utils/sequential/sequential.types';
@@ -68,7 +68,7 @@ export interface SequentialGutterProps {
  * `useSequentialGraph` (D8), not here; the number span is `aria-hidden` so it
  * isn't announced twice. The leader line is purely decorative (`aria-hidden`).
  */
-export function SequentialGutter({
+export const SequentialGutter = memo(function SequentialGutter({
   rows,
   positions,
   barHeight = SEQ_BAR_HEIGHT,
@@ -162,4 +162,4 @@ export function SequentialGutter({
       </div>
     </ViewportPortal>
   );
-}
+});

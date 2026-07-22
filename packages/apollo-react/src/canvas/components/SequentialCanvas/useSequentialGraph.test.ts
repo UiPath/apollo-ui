@@ -458,6 +458,31 @@ describe('useSequentialGraph memoization (D12)', () => {
     expect((http.data as { display: { label: string } }).display.label).toBe('Renamed');
   });
 
+  it('reuses every unchanged derived node across a single-node selection update', () => {
+    const { nodes, edges } = makeWireframeFixture();
+    const { result, rerender } = renderHook(
+      (props: { nodes: Node[] }) =>
+        useSequentialGraph({ nodes: props.nodes, edges, view: 'sequential' }),
+      { initialProps: { nodes } }
+    );
+    const firstNodesById = new Map(result.current.nodes.map((node) => [node.id, node]));
+    const selectedId = WIREFRAME_NODE_IDS.http;
+    const selected = nodes.map((node) =>
+      node.id === selectedId ? { ...node, selected: true } : node
+    );
+
+    rerender({ nodes: selected });
+
+    for (const node of result.current.nodes) {
+      if (node.id === selectedId) {
+        expect(node).not.toBe(firstNodesById.get(node.id));
+        expect(node.selected).toBe(true);
+      } else {
+        expect(node).toBe(firstNodesById.get(node.id));
+      }
+    }
+  });
+
   it('reuses projection when equivalent registry predicates change identity on rename', () => {
     const { nodes, edges } = makeWireframeFixture();
     const { result, rerender } = renderHook(

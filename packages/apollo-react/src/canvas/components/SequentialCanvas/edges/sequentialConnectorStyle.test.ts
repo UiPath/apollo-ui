@@ -3,20 +3,14 @@ import type { SequenceConnectorKind } from '../../../utils/sequential/sequential
 import { resolveConnectorStrokeStyle } from './sequentialConnectorStyle';
 
 describe('resolveConnectorStrokeStyle', () => {
-  it('renders structural spine connectors solid', () => {
+  it('renders structural flow connectors solid', () => {
     expect(resolveConnectorStrokeStyle('step')).toBe('solid');
     expect(resolveConnectorStrokeStyle('branch-entry')).toBe('solid');
+    expect(resolveConnectorStrokeStyle('merge-back')).toBe('solid');
   });
 
-  it('renders rejoin / reference connectors dashed', () => {
-    expect(resolveConnectorStrokeStyle('merge-back')).toBe('dashed');
+  it('renders irregular references dashed', () => {
     expect(resolveConnectorStrokeStyle('goto')).toBe('dashed');
-  });
-
-  it('renders a straight structural-container continuation solid', () => {
-    expect(resolveConnectorStrokeStyle('merge-back', { straightContainerContinuation: true })).toBe(
-      'solid'
-    );
   });
 
   it('covers every connector kind', () => {

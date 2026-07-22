@@ -57,8 +57,8 @@ export function getLeftEntryArrowTargetY(
  * Sequential-view connector edge. Composes the shared edge primitives
  * (EdgePath / EdgeArrow / EdgeLabel) and renders behavior from `data`:
  *
- * - stroke style by kind ('step' / 'branch-entry' solid; 'merge-back' / 'goto'
- *   dashed) via {@link resolveConnectorStrokeStyle};
+ * - stroke style by kind (ordinary structural flow solid; irregular `goto`
+ *   references and transient previews dashed) via {@link resolveConnectorStrokeStyle};
  * - an edge-styled label above the first row of each labeled branch;
  * - `data.waypoints` rendered verbatim (elbows supplied by layoutSequence; no
  *   router, no waypoint editing);
@@ -155,14 +155,10 @@ export const SequentialConnectorEdge = memo(function SequentialConnectorEdge({
     statusColor: execution.statusColor,
   });
 
-  // A merge-back without routed waypoints is the straight continuation below a
-  // structural container. It keeps merge-back geometry (including the bottom
-  // insert anchor) but uses the same solid stroke as While's continuation.
-  const strokeStyle = isPreview
-    ? 'dashed'
-    : resolveConnectorStrokeStyle(kind, {
-        straightContainerContinuation: kind === 'merge-back' && waypoints.length === 0,
-      });
+  // Merge-backs are ordinary structural flow regardless of whether they are a
+  // straight container continuation or an elbowed branch rejoin. Only
+  // irregular goto references and transient previews use a dashed stroke.
+  const strokeStyle = isPreview ? 'dashed' : resolveConnectorStrokeStyle(kind);
   const showInsert = isDesignMode && !!slot;
   const hasLabel = typeof label === 'string' && label.length > 0;
 

@@ -1,5 +1,5 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import {
   DEFAULT_SOURCE_HANDLE_ID,
@@ -507,6 +507,66 @@ function stampStepAriaLabels(
   });
 }
 
+function shallowRecordEqual(
+  previous: Record<string, unknown>,
+  next: Record<string, unknown>
+): boolean {
+  const previousKeys = Object.keys(previous);
+  const nextKeys = Object.keys(next);
+  if (previousKeys.length !== nextKeys.length) return false;
+  for (const key of previousKeys) {
+    if (!Object.hasOwn(next, key)) return false;
+    if (!Object.is(previous[key], next[key])) return false;
+  }
+  return true;
+}
+
+function shallowNodeEqualExceptPositionAndData(previous: Node, next: Node): boolean {
+  const previousRecord = previous as unknown as Record<string, unknown>;
+  const nextRecord = next as unknown as Record<string, unknown>;
+  const previousKeys = Object.keys(previousRecord);
+  const nextKeys = Object.keys(nextRecord);
+  if (previousKeys.length !== nextKeys.length) return false;
+  for (const key of previousKeys) {
+    if (!Object.hasOwn(nextRecord, key)) return false;
+    if (key === 'position' || key === 'data') continue;
+    if (!Object.is(previousRecord[key], nextRecord[key])) return false;
+  }
+  return true;
+}
+
+/**
+ * Reuses the prior object for every derived row whose rendered inputs did not
+ * change. A canonical selection update replaces the canonical nodes array, but
+ * normally changes only the previously-selected and newly-selected nodes.
+ * Keeping every other derived node reference stable lets xyflow preserve its
+ * internal node entries instead of reconciling the entire graph.
+ */
+function reuseUnchangedSequentialNodes(previous: Node[], next: Node[]): Node[] {
+  const previousById = new Map(previous.map((node) => [node.id, node]));
+  return next.map((node) => {
+    const prior = previousById.get(node.id);
+    if (!prior) return node;
+
+    const priorPosition = prior.position;
+    const nextPosition = node.position;
+    const priorData = prior.data as Record<string, unknown>;
+    const nextData = node.data as Record<string, unknown>;
+    const hasGeneratedData =
+      node.type === SEQ_START_NODE_TYPE || node.type === SEQ_PLACEHOLDER_NODE_TYPE;
+    const dataEqual =
+      Object.is(prior.data, node.data) ||
+      (hasGeneratedData && shallowRecordEqual(priorData, nextData));
+
+    return priorPosition.x === nextPosition.x &&
+      priorPosition.y === nextPosition.y &&
+      dataEqual &&
+      shallowNodeEqualExceptPositionAndData(prior, node)
+      ? prior
+      : node;
+  });
+}
+
 /**
  * React hook wrapping {@link deriveSequentialGraph} with the D12 memoization:
  * projection + layout recompute only when the STRUCTURAL fingerprint changes, so
@@ -538,6 +598,7 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
 
   const { _ } = useSafeLingui();
   const registry = useOptionalNodeTypeRegistry();
+  const previousSeqNodesRef = useRef<Node[]>([]);
 
   const collapsed = collapsedStepIds ?? EMPTY_COLLAPSED;
   const fingerprint = useMemo(
@@ -649,7 +710,10 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
       },
       layoutOptions
     );
-    return stampStepAriaLabels(built, projection, registry, _);
+    const stamped = stampStepAriaLabels(built, projection, registry, _);
+    const stable = reuseUnchangedSequentialNodes(previousSeqNodesRef.current, stamped);
+    previousSeqNodesRef.current = stable;
+    return stable;
   }, [
     projection,
     layout,

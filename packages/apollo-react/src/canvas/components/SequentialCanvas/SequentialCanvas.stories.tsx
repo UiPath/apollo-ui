@@ -10,9 +10,9 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useEdgesState, useNodesState } from '@uipath/apollo-react/canvas/xyflow/react';
+import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Switch, ToggleGroup, ToggleGroupItem } from '@uipath/apollo-wind';
-import { useCallback, useMemo, useState } from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SEQ_INDENT_PX } from '../../constants';
 import { StoryInfoPanel, withCanvasProviders } from '../../storybook-utils';
 import {
@@ -315,6 +315,7 @@ const PERF_TYPES = {
 const DEFAULT_PERF_UNIT_COUNT = 30;
 const MIN_PERF_UNIT_COUNT = 1;
 const MAX_PERF_UNIT_COUNT = 60;
+const PERF_GRAPH_REBUILD_DEBOUNCE_MS = 150;
 
 function perfNode(id: string, type: string, label: string, parentId?: string): Node {
   return {
@@ -388,48 +389,137 @@ function createPerformanceFixture(unitCount: number): { nodes: Node[]; edges: Ed
   return { nodes, edges };
 }
 
-function PerformanceStory() {
+function preservePerformanceFixtureReferences(
+  current: { nodes: Node[]; edges: Edge[] },
+  next: { nodes: Node[]; edges: Edge[] }
+): { nodes: Node[]; edges: Edge[] } {
+  const currentNodesById = new Map(current.nodes.map((node) => [node.id, node]));
+  const currentEdgesById = new Map(current.edges.map((edge) => [edge.id, edge]));
+  return {
+    nodes: next.nodes.map((node) => currentNodesById.get(node.id) ?? node),
+    edges: next.edges.map((edge) => currentEdgesById.get(edge.id) ?? edge),
+  };
+}
+
+interface PerformanceControlsProps {
+  showDesignAffordances: boolean;
+  onShowDesignAffordancesChange: (checked: boolean) => void;
+  onUnitCountCommit: (unitCount: number) => void;
+}
+
+/**
+ * Keeps high-frequency slider state below SequentialCanvas. If this state lived
+ * in PerformanceStory, every pointer tick would reconcile the full xyflow tree
+ * even though graph rebuilding itself was debounced.
+ */
+function PerformanceControls({
+  showDesignAffordances,
+  onShowDesignAffordancesChange,
+  onUnitCountCommit,
+}: PerformanceControlsProps) {
   const [unitCount, setUnitCount] = useState(DEFAULT_PERF_UNIT_COUNT);
-  const initialFixture = useMemo(() => createPerformanceFixture(DEFAULT_PERF_UNIT_COUNT), []);
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialFixture.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialFixture.edges);
+  const rebuildTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const targetNodeCount = unitCount * 5 + 1;
+
+  useEffect(
+    () => () => {
+      if (rebuildTimerRef.current) clearTimeout(rebuildTimerRef.current);
+    },
+    []
+  );
 
   const handleUnitCountChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const nextCount = Number.parseInt(event.target.value, 10);
-      const nextFixture = createPerformanceFixture(nextCount);
       setUnitCount(nextCount);
-      setNodes(nextFixture.nodes);
-      setEdges(nextFixture.edges);
+
+      if (rebuildTimerRef.current) clearTimeout(rebuildTimerRef.current);
+      rebuildTimerRef.current = setTimeout(() => {
+        onUnitCountCommit(nextCount);
+        rebuildTimerRef.current = null;
+      }, PERF_GRAPH_REBUILD_DEBOUNCE_MS);
     },
-    [setNodes, setEdges]
+    [onUnitCountCommit]
+  );
+
+  return (
+    <StoryInfoPanel
+      title="Performance"
+      description="Adjust the unit count to profile projection, layout, and render cost at scale. Graph rebuilding is deferred until the slider pauses; enable design affordances to include every add control in the profile."
+    >
+      <div className="flex items-center justify-between gap-4 text-xs font-medium">
+        <span>Design affordances</span>
+        <Switch
+          size="sm"
+          checked={showDesignAffordances}
+          onCheckedChange={onShowDesignAffordancesChange}
+          aria-label="Design affordances"
+          className="nodrag nopan nowheel"
+        />
+      </div>
+      <div className="mt-3 flex items-center justify-between text-xs">
+        <span>Nodes</span>
+        <strong>{targetNodeCount}</strong>
+      </div>
+      <input
+        type="range"
+        aria-label="Performance unit count"
+        className="nodrag nopan nowheel mt-2 w-full cursor-pointer"
+        min={MIN_PERF_UNIT_COUNT}
+        max={MAX_PERF_UNIT_COUNT}
+        value={unitCount}
+        onChange={handleUnitCountChange}
+      />
+    </StoryInfoPanel>
+  );
+}
+
+function PerformanceStory() {
+  const [showDesignAffordances, setShowDesignAffordances] = useState(false);
+  const [collapsedStepIds, setCollapsedStepIds] = useState<string[]>([]);
+  const [graph, setGraph] = useState(() => createPerformanceFixture(DEFAULT_PERF_UNIT_COUNT));
+
+  const handleUnitCountCommit = useCallback((nextCount: number) => {
+    const nextGraph = createPerformanceFixture(nextCount);
+    const nextNodeIds = new Set(nextGraph.nodes.map((node) => node.id));
+    startTransition(() => {
+      setGraph((current) => preservePerformanceFixtureReferences(current, nextGraph));
+      setCollapsedStepIds((current) => current.filter((id) => nextNodeIds.has(id)));
+    });
+  }, []);
+
+  const onNodesChange = useCallback(
+    (changes: Parameters<typeof applyNodeChanges<Node>>[0]) =>
+      setGraph((current) => ({
+        ...current,
+        nodes: applyNodeChanges(changes, current.nodes),
+      })),
+    []
+  );
+  const onEdgesChange = useCallback(
+    (changes: Parameters<typeof applyEdgeChanges<Edge>>[0]) =>
+      setGraph((current) => ({
+        ...current,
+        edges: applyEdgeChanges(changes, current.edges),
+      })),
+    []
   );
 
   return (
     <SequentialCanvas
-      nodes={nodes}
-      edges={edges}
+      nodes={graph.nodes}
+      edges={graph.edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      mode="design"
+      mode={showDesignAffordances ? 'design' : 'view'}
+      collapsedStepIds={collapsedStepIds}
+      onCollapsedStepIdsChange={setCollapsedStepIds}
     >
-      <StoryInfoPanel
-        title="Performance"
-        description="Adjust the unit count to profile projection, layout, and render cost at scale. Each unit adds a Decision, two branches, and a For Each container."
-      >
-        <div className="mt-3 flex items-center justify-between text-xs">
-          <span>Nodes</span>
-          <strong>{nodes.length}</strong>
-        </div>
-        <input
-          type="range"
-          className="nodrag nopan nowheel mt-2 w-full cursor-pointer"
-          min={MIN_PERF_UNIT_COUNT}
-          max={MAX_PERF_UNIT_COUNT}
-          value={unitCount}
-          onChange={handleUnitCountChange}
-        />
-      </StoryInfoPanel>
+      <PerformanceControls
+        showDesignAffordances={showDesignAffordances}
+        onShowDesignAffordancesChange={setShowDesignAffordances}
+        onUnitCountCommit={handleUnitCountCommit}
+      />
     </SequentialCanvas>
   );
 }
