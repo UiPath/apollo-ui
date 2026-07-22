@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Edge, Node, OnNodeDrag } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Panel, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
+import { BackgroundVariant, Panel, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useMemo, useState } from 'react';
 import { createNode, StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import type { AlignmentGuideLine } from './AlignmentGuides.types';
+import type { AlignmentGuideLine, NodeBounds } from './AlignmentGuides.types';
 import { AlignmentGuidesOverlay } from './AlignmentGuidesOverlay';
 import { computeAlignmentGuides, toBounds, useAlignmentGuides } from './useAlignmentGuides';
 
@@ -545,4 +545,325 @@ function ThresholdPlaygroundDemo() {
 export const ThresholdPlayground: Story = {
   name: 'Variant: Threshold Playground',
   render: () => <ThresholdPlaygroundDemo />,
+};
+
+// ============================================================================
+// Variant: Multi-select Drag. Dragging a multi-selected group compares the
+// group's combined bounding box against the rest of the canvas, not just one
+// node in isolation.
+// ============================================================================
+
+function groupBounds(boundsList: NodeBounds[]): NodeBounds {
+  const x1 = Math.min(...boundsList.map((b) => b.x1));
+  const y1 = Math.min(...boundsList.map((b) => b.y1));
+  const x2 = Math.max(...boundsList.map((b) => b.x2));
+  const y2 = Math.max(...boundsList.map((b) => b.y2));
+  return { id: '__group__', x1, y1, x2, y2, cx: (x1 + x2) / 2, cy: (y1 + y2) / 2 };
+}
+
+function GroupBoundsOverlay({ bounds }: { bounds: NodeBounds | null }) {
+  const { x: viewportX, y: viewportY, zoom } = useViewport();
+
+  if (!bounds) return null;
+
+  return (
+    <div
+      className="pointer-events-none absolute rounded-md border border-dashed"
+      style={{
+        left: bounds.x1 * zoom + viewportX - 8,
+        top: bounds.y1 * zoom + viewportY - 8,
+        width: (bounds.x2 - bounds.x1) * zoom + 16,
+        height: (bounds.y2 - bounds.y1) * zoom + 16,
+        borderColor: 'var(--canvas-selection-indicator)',
+      }}
+    />
+  );
+}
+
+function useMultiSelectAlignmentGuides(nodes: Node[], thresholdPx = 8) {
+  const { zoom } = useViewport();
+  const [guides, setGuides] = useState<AlignmentGuideLine[]>([]);
+  const [draggedGroupBounds, setDraggedGroupBounds] = useState<NodeBounds | null>(null);
+
+  const onNodeDrag = useCallback<OnNodeDrag>(
+    (_event, _node, draggedNodes) => {
+      const draggedIds = new Set(draggedNodes.map((n) => n.id));
+      const others = nodes.filter((n) => !draggedIds.has(n.id)).map(toBounds);
+      const group = groupBounds(draggedNodes.map(toBounds));
+      setDraggedGroupBounds(group);
+      setGuides(computeAlignmentGuides(group, others, thresholdPx / zoom));
+    },
+    [nodes, thresholdPx, zoom]
+  );
+
+  const onNodeDragStop = useCallback<OnNodeDrag>(() => {
+    setGuides([]);
+    setDraggedGroupBounds(null);
+  }, []);
+
+  return useMemo(
+    () => ({ guides, draggedGroupBounds, onNodeDrag, onNodeDragStop }),
+    [guides, draggedGroupBounds, onNodeDrag, onNodeDragStop]
+  );
+}
+
+function MultiSelectDemo() {
+  const initialNodes = useMemo(() => createWorkflowNodes(), []);
+  const { nodes, canvasProps } = useCanvasStory({ initialNodes, initialEdges: workflowEdges });
+  const { guides, draggedGroupBounds, onNodeDrag, onNodeDragStop } = useMultiSelectAlignmentGuides(nodes);
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}>
+      <AlignmentGuidesOverlay guides={guides} />
+      <GroupBoundsOverlay bounds={draggedGroupBounds} />
+      <StoryInfoPanel title="Multi-select drag">
+        <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+          Shift-click multiple nodes (or Shift-drag a selection box over empty canvas), then drag
+          the group. Guides compare the whole selection's bounding box, outlined here, against
+          the rest of the canvas, not just one node in isolation.
+        </p>
+      </StoryInfoPanel>
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+export const MultiSelectDrag: Story = {
+  name: 'Variant: Multi-select Drag',
+  render: () => <MultiSelectDemo />,
+};
+
+// ============================================================================
+// Variant: Grid-snap Interplay. Node-to-node guides and xyflow's native
+// snapToGrid are independent systems that already compose: grid-snap
+// quantizes the raw drag position, guides just read whatever position
+// results and compare it to the rest of the canvas.
+// ============================================================================
+
+function GridSnapInterplayDemo() {
+  const [gridSnapEnabled, setGridSnapEnabled] = useState(false);
+  const initialNodes = useMemo(() => createWorkflowNodes(), []);
+  const { nodes, canvasProps } = useCanvasStory({ initialNodes, initialEdges: workflowEdges });
+  const { guides, onNodeDrag, onNodeDragStop } = useAlignmentGuides(nodes);
+
+  return (
+    <BaseCanvas
+      {...canvasProps}
+      mode="design"
+      onNodeDrag={onNodeDrag}
+      onNodeDragStop={onNodeDragStop}
+      snapToGrid={gridSnapEnabled}
+      snapGrid={[16, 16]}
+      backgroundVariant={gridSnapEnabled ? BackgroundVariant.Lines : undefined}
+      backgroundGap={16}
+    >
+      <AlignmentGuidesOverlay guides={guides} />
+      <StoryInfoPanel title="Grid-snap interplay">
+        <div className="mt-2 flex max-w-xs flex-col gap-2">
+          <p className="text-sm text-muted-foreground">
+            Grid snap, xyflow's native snapToGrid, and these node-to-node guides are independent
+            of each other. Grid-snap quantizes the raw drag position to 16px, and guides simply
+            compare whatever position results against the rest of the canvas. No special
+            integration code is needed for the two to coexist.
+          </p>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={gridSnapEnabled}
+              onChange={(e) => setGridSnapEnabled(e.target.checked)}
+            />
+            Grid snap (16px)
+          </label>
+        </div>
+      </StoryInfoPanel>
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+export const GridSnapInterplay: Story = {
+  name: 'Variant: Grid-snap Interplay',
+  render: () => <GridSnapInterplayDemo />,
+};
+
+// ============================================================================
+// Variant: Equal-spacing Detection. When the dragged node has a neighbor on
+// each side, roughly aligned on the other axis, with matching gaps, both
+// gaps are highlighted with a shared label. Limited to the dragged node's
+// immediate neighbors, not full n-way spacing detection across the canvas.
+// ============================================================================
+
+interface EqualSpacingMatch {
+  orientation: 'horizontal' | 'vertical';
+  gap: number;
+  firstGapStart: number;
+  firstGapEnd: number;
+  secondGapStart: number;
+  secondGapEnd: number;
+  /** Position along the perpendicular axis to draw the indicator at (dragged node's center). */
+  crossPosition: number;
+}
+
+function findEqualSpacing(dragged: NodeBounds, others: NodeBounds[], tolerance: number): EqualSpacingMatch[] {
+  const matches: EqualSpacingMatch[] = [];
+
+  const rowOthers = others.filter((o) => o.y1 < dragged.y2 && o.y2 > dragged.y1);
+  const left = rowOthers.filter((o) => o.x2 <= dragged.x1).sort((a, b) => b.x2 - a.x2)[0];
+  const right = rowOthers.filter((o) => o.x1 >= dragged.x2).sort((a, b) => a.x1 - b.x1)[0];
+  if (left && right) {
+    const leftGap = dragged.x1 - left.x2;
+    const rightGap = right.x1 - dragged.x2;
+    if (leftGap > 0 && rightGap > 0 && Math.abs(leftGap - rightGap) <= tolerance) {
+      matches.push({
+        orientation: 'horizontal',
+        gap: Math.round((leftGap + rightGap) / 2),
+        firstGapStart: left.x2,
+        firstGapEnd: dragged.x1,
+        secondGapStart: dragged.x2,
+        secondGapEnd: right.x1,
+        crossPosition: dragged.cy,
+      });
+    }
+  }
+
+  const columnOthers = others.filter((o) => o.x1 < dragged.x2 && o.x2 > dragged.x1);
+  const above = columnOthers.filter((o) => o.y2 <= dragged.y1).sort((a, b) => b.y2 - a.y2)[0];
+  const below = columnOthers.filter((o) => o.y1 >= dragged.y2).sort((a, b) => a.y1 - b.y1)[0];
+  if (above && below) {
+    const aboveGap = dragged.y1 - above.y2;
+    const belowGap = below.y1 - dragged.y2;
+    if (aboveGap > 0 && belowGap > 0 && Math.abs(aboveGap - belowGap) <= tolerance) {
+      matches.push({
+        orientation: 'vertical',
+        gap: Math.round((aboveGap + belowGap) / 2),
+        firstGapStart: above.y2,
+        firstGapEnd: dragged.y1,
+        secondGapStart: dragged.y2,
+        secondGapEnd: below.y1,
+        crossPosition: dragged.cx,
+      });
+    }
+  }
+
+  return matches;
+}
+
+function EqualSpacingOverlay({ matches }: { matches: EqualSpacingMatch[] }) {
+  const { x: viewportX, y: viewportY, zoom } = useViewport();
+
+  if (matches.length === 0) return null;
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-40 overflow-hidden">
+      {matches.map((match) => {
+        const isHorizontal = match.orientation === 'horizontal';
+        const barStyle = (start: number, end: number) =>
+          isHorizontal
+            ? {
+                top: match.crossPosition * zoom + viewportY - 1,
+                left: start * zoom + viewportX,
+                width: (end - start) * zoom,
+                height: 2,
+              }
+            : {
+                left: match.crossPosition * zoom + viewportX - 1,
+                top: start * zoom + viewportY,
+                width: 2,
+                height: (end - start) * zoom,
+              };
+        const labelStyle = isHorizontal
+          ? {
+              top: match.crossPosition * zoom + viewportY - 20,
+              left: ((match.firstGapEnd + match.secondGapStart) / 2) * zoom + viewportX - 20,
+            }
+          : {
+              left: match.crossPosition * zoom + viewportX + 6,
+              top: ((match.firstGapEnd + match.secondGapStart) / 2) * zoom + viewportY - 10,
+            };
+
+        return (
+          <div key={match.orientation}>
+            <div
+              className="absolute rounded-full bg-[var(--canvas-warning-icon)]"
+              style={barStyle(match.firstGapStart, match.firstGapEnd)}
+            />
+            <div
+              className="absolute rounded-full bg-[var(--canvas-warning-icon)]"
+              style={barStyle(match.secondGapStart, match.secondGapEnd)}
+            />
+            <div
+              className="absolute rounded bg-[var(--canvas-warning-icon)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--canvas-foreground-inverse)]"
+              style={labelStyle}
+            >
+              {match.gap}px equal
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function useEqualSpacing(nodes: Node[], draggedNodeId: string | null, thresholdPx = 8): EqualSpacingMatch[] {
+  const { zoom } = useViewport();
+
+  return useMemo(() => {
+    if (!draggedNodeId) return [];
+    const draggedNode = nodes.find((n) => n.id === draggedNodeId);
+    if (!draggedNode) return [];
+    const dragged = toBounds(draggedNode);
+    const others = nodes.filter((n) => n.id !== draggedNodeId).map(toBounds);
+    return findEqualSpacing(dragged, others, thresholdPx / zoom);
+  }, [nodes, draggedNodeId, thresholdPx, zoom]);
+}
+
+function EqualSpacingDemo() {
+  const initialNodes = useMemo(() => createWorkflowNodes(), []);
+  const { nodes, canvasProps } = useCanvasStory({ initialNodes, initialEdges: workflowEdges });
+  const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
+  const { guides, onNodeDrag: baseOnNodeDrag, onNodeDragStop: baseOnNodeDragStop } = useAlignmentGuides(nodes);
+  const equalSpacingMatches = useEqualSpacing(nodes, draggedNodeId);
+
+  const onNodeDrag = useCallback<OnNodeDrag>(
+    (event, node, draggedNodes) => {
+      setDraggedNodeId(node.id);
+      baseOnNodeDrag(event, node, draggedNodes);
+    },
+    [baseOnNodeDrag]
+  );
+
+  const onNodeDragStop = useCallback<OnNodeDrag>(
+    (event, node, draggedNodes) => {
+      setDraggedNodeId(null);
+      baseOnNodeDragStop(event, node, draggedNodes);
+    },
+    [baseOnNodeDragStop]
+  );
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}>
+      <AlignmentGuidesOverlay guides={guides} />
+      <EqualSpacingOverlay matches={equalSpacingMatches} />
+      <StoryInfoPanel title="Equal-spacing detection">
+        <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+          Drag "Route" between the Start/Notify columns. When its gap to the left neighbor
+          matches its gap to the right neighbor within tolerance, both gaps get a highlighted
+          tick and a shared "Npx equal" label, similar to Figma. Limited to the dragged node's
+          immediate left/right or top/bottom neighbor, not full n-way spacing across the canvas.
+        </p>
+      </StoryInfoPanel>
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+export const EqualSpacingDetection: Story = {
+  name: 'Variant: Equal-spacing Detection',
+  render: () => <EqualSpacingDemo />,
 };
