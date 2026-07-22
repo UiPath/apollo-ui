@@ -315,6 +315,8 @@ export interface ModelPickerProps {
   onDeleteModel?: (model: DiscoveryModel) => void | Promise<void>;
   /** Extensibility slots. See `ModelPickerSlots`. */
   slots?: ModelPickerSlots;
+  /** Rendered as `data-testid` on the picker's root element. */
+  testId?: string;
 }
 
 // Visual-only marker. The input is announced as required via
@@ -369,6 +371,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       disablePortal,
       onDeleteModel,
       slots,
+      testId,
     },
     forwardedRef
   ) => {
@@ -666,6 +669,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       // Angular shells, and bare web-component hosts.
       <Box
         className="apollo-model-picker"
+        data-testid={testId}
         sx={{ width: '100%', fontFamily: FontFamily.FontNormal }}
       >
         <Typography

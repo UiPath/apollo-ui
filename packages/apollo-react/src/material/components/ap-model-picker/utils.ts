@@ -212,17 +212,25 @@ export function deriveModelTags(
   // users see the design-system semantics before any tenant noise.
   // Pool badges first (sanctioned, centrally defined), then any
   // free-form `customTagsFor` extras (escape hatch).
-  if (context.badgesFor) {
-    for (const kind of context.badgesFor(model) ?? []) {
-      const def = MODEL_BADGES[kind];
-      if (!def) continue;
-      tags.push({
-        kind,
-        label: localize(def.label),
-        tooltip: def.tooltip ? localize(def.tooltip) : undefined,
-        variant: def.variant,
-      });
-    }
+  // Default: stamp the model's cost tier from the pool whenever the DTO
+  // carries cost data — every product gets cost badges with no wiring.
+  // A host-supplied `badgesFor` takes over entirely (return [] to
+  // suppress badges).
+  const poolBadges =
+    context.badgesFor?.(model) ??
+    (() => {
+      const tier = defaultCostTier(model);
+      return tier ? ([`cost-${tier}`] as const) : [];
+    })();
+  for (const kind of poolBadges) {
+    const def = MODEL_BADGES[kind];
+    if (!def) continue;
+    tags.push({
+      kind,
+      label: localize(def.label),
+      tooltip: def.tooltip ? localize(def.tooltip) : undefined,
+      variant: def.variant,
+    });
   }
   if (context.customTagsFor) {
     const extra = context.customTagsFor(model);
