@@ -9,8 +9,7 @@ import * as React from 'react';
  */
 const PortalContainerContext = React.createContext<HTMLElement | null>(null);
 
-export const usePortalContainer = (): HTMLElement | null =>
-  React.useContext(PortalContainerContext);
+const usePortalContainer = (): HTMLElement | null => React.useContext(PortalContainerContext);
 
 /**
  * Per-overlay portal target: `undefined`/`null` inherit the nearest
@@ -57,8 +56,8 @@ export function PortalContainerProvider({ children, container }: PortalContainer
     <PortalContainerContext.Provider value={value}>
       {children}
       {container == null && (
-        // display:contents so the boundary never affects layout.
-        <div ref={setBoundary} style={{ display: 'contents' }} />
+        // `contents` (display:contents) so the boundary never affects layout.
+        <div ref={setBoundary} className="contents" />
       )}
     </PortalContainerContext.Provider>
   );
