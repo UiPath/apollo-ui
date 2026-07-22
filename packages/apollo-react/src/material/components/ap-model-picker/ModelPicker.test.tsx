@@ -436,4 +436,91 @@ describe('<ModelPicker>', () => {
       vi.unstubAllGlobals();
     }
   });
+
+  it('fetches the Discovery catalog itself when models is omitted', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          modelId: 'gpt-6-mini',
+          modelName: 'gpt-6-mini',
+          displayName: 'GPT-6 mini',
+          vendor: 'OpenAi',
+          modelSubscriptionType: 'UiPathOwned',
+        },
+      ],
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo={false}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            requestingProduct: 'agents',
+            requestingFeature: 'agents-prompt',
+            userId: 'user-1',
+          }}
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      expect(await screen.findByText('GPT-6 mini')).toBeInTheDocument();
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://cloud.local/acme/DefaultTenant/llmgateway_/api/discovery',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer t',
+            'X-UiPath-LlmGateway-RequestingProduct': 'agents',
+            'X-UiPath-LlmGateway-RequestingFeature': 'agents-prompt',
+            'X-UiPath-LlmGateway-UserId': 'user-1',
+          }),
+        })
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('self-fetch mode refetches Discovery scoped to the folder picked in the switcher', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => [] });
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo={false}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            userId: 'user-1',
+          }}
+          enableFolders
+          folders={[{ id: 'folder-key', label: 'Shared', numericId: 1 }]}
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /all folders/i }));
+      await user.click(await screen.findByRole('menuitem', { name: /shared/i }));
+
+      const discoveryCalls = fetchMock.mock.calls.filter(([url]) =>
+        String(url).endsWith('/llmgateway_/api/discovery')
+      );
+      expect(discoveryCalls.length).toBe(2);
+      expect(discoveryCalls[1][1]).toEqual(
+        expect.objectContaining({
+          headers: expect.objectContaining({ 'X-UiPath-FolderKey': 'folder-key' }),
+        })
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });

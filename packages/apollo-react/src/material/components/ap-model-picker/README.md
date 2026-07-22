@@ -4,35 +4,37 @@ Apollo's shared LLM model picker, built on the UiPath LLM Gateway Discovery API.
 
 It renders a labeled trigger that opens a popup with a built-in folder switcher, a search field, a Category ⇆ Provider grouping pill, grouped sections — Custom Models (BYO) always first — and a "Use custom model" footer for users who can manage BYO.
 
-The picker is **fully controlled** — your code owns the `value` and the catalog (`models[]`). The picker only renders the UI.
+The picker owns its data: given a `requestContext` it fetches the Discovery catalog, the folder list, BYO connection names, and the org-admin check itself. Your code owns only the `value`. (Every fetch can be overridden by the matching prop — `models`, `folders`, `canManageByo` — for hosts with their own data layer.)
 
 ---
 
 ## Quick start
 
 ```tsx
-import { ModelPicker, useDiscoveryModels } from '@uipath/apollo-react/material/components';
+import { ModelPicker } from '@uipath/apollo-react/material/components';
 
-const { models, loading, error } = useDiscoveryModels({
-  token,
-  accountId,
-  tenantId,
+const requestContext = React.useMemo(() => ({
+  token: () => getAccessToken(),    // getter → never goes stale
+  baseUrl,                          // 'https://cloud.uipath.com/acme'
+  tenantName,
+  tenantId,                         // tenant GUID (admin-page deep links)
+  userId,                           // token's `sub` claim (Discovery user scoping)
   requestingProduct: 'agents',
   requestingFeature: 'design-eval-deploy',
-});
+}), [baseUrl, tenantName, tenantId, userId]);
 
 const [value, setValue] = React.useState<string | null>(null);
 
 <ModelPicker
-  models={models}
-  loading={loading}
-  error={error}
   value={value}
   onChange={(model) => setValue(model.modelId)}
+  requestContext={requestContext}
+  enableFolders
+  openLinksInNewTab
 />
 ```
 
-That's the minimum. The rest of this document covers the per-product customization surface.
+That's the whole integration: the picker fetches Discovery (`{baseUrl}/{tenantName}/llmgateway_/api/discovery`), refetches when the user switches folders, resolves BYO connection names, gates the BYO affordances on the org-admin check, and renders its own loading/error states. The rest of this document covers the per-product customization surface.
 
 ---
 
@@ -198,27 +200,17 @@ By default these navigations replace the current tab; set `openLinksInNewTab` to
 
 ### 7. Folder scoping
 
-Set `enableFolders` and the picker fetches the current user's Orchestrator folders (via the same `requestContext`) and renders the toolbar switcher. Your product only decides whether folder scoping applies to its surface:
+Set `enableFolders` and the picker fetches the current user's Orchestrator folders (via the same `requestContext`), renders the toolbar switcher, owns the selection, and refetches Discovery scoped to the picked folder (`X-UiPath-FolderKey`). Your product only decides whether folder scoping applies to its surface:
 
 ```tsx
-const [folder, setFolder] = React.useState<string | null>(null);
-const { models } = useDiscoveryModels({
-  ...ctx,
-  folderKey: folder ?? undefined,  // omit → backend returns the union
-});
-
-<ModelPicker
-  models={models}
-  requestContext={requestContext}   // same object as section 6
-  enableFolders
-  folder={folder}
-  onFolderChange={setFolder}
-/>
+<ModelPicker requestContext={requestContext} enableFolders />
 ```
 
-Under the hood: `GET {baseUrl}/{tenantName}/orchestrator_/api/FoldersNavigation/GetFoldersForCurrentUser` (the same call the Automation Cloud portal makes). Folder ids are Orchestrator folder **Keys** (GUIDs) — pass the selected id straight through as `folderKey` on your Discovery re-fetch. Personal-workspace folders (`FolderType === 'Personal'`) are always excluded — a personal workspace is not a meaningful scope for shared model configurations; a host that really needs one can supply it via the `folders` prop.
+Pass `folder` + `onFolderChange` to control the selection instead (e.g. when the host owns the catalog via `models` and refetches itself).
 
-The picker prepends an "All folders" sentinel automatically; picking it fires `onFolderChange(null)` — re-fetch without a `folderKey` to get the union of all folders the user can see.
+Under the hood: `GET {baseUrl}/{tenantName}/orchestrator_/api/FoldersNavigation/GetFoldersForCurrentUser` (the same call the Automation Cloud portal makes). Folder ids are Orchestrator folder **Keys** (GUIDs). Personal-workspace folders (`FolderType === 'Personal'`) are always excluded — a personal workspace is not a meaningful scope for shared model configurations; a host that really needs one can supply it via the `folders` prop.
+
+The picker prepends an "All folders" sentinel automatically; picking it selects `null` — Discovery is refetched without a `folderKey`, returning the union of all folders the user can see.
 
 For tests and Storybook, the `folders` prop overrides the internal fetch with a static list.
 
@@ -313,24 +305,9 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 
 ## Data flow
 
-The picker is **data-agnostic**. Pass `models` and get `onChange(model)` back.
+With only a `requestContext`, the picker fetches Discovery itself over the platform route (`{baseUrl}/{tenantName}/llmgateway_/api/discovery`, headers `X-UiPath-LlmGateway-RequestingProduct`/`-RequestingFeature`/`-UserId`, plus `X-UiPath-FolderKey` when a folder is selected) — exposed as `usePlatformDiscoveryModels` for hosts that want the same fetch outside the picker.
 
-Optional Discovery API integration via `useDiscoveryModels({ ctx })`:
-
-```ts
-const { models, loading, error, refetch } = useDiscoveryModels({
-  token,
-  baseUrl,
-  accountId,
-  tenantId,
-  requestingProduct: 'agents',
-  requestingFeature: 'design-eval-deploy',
-  folderKey,         // optional — scopes BYO results
-  operationCode,     // optional
-});
-```
-
-Or skip the hook and feed the picker from your existing data layer (SWR, React Query, Redux, etc.).
+Pass `models` to take over: the built-in fetch turns off and the picker renders exactly what you give it (SWR, React Query, Redux, or `useDiscoveryModels` — the direct-gateway flavor with internal account/tenant headers).
 
 ---
 

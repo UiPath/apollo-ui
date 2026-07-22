@@ -22,9 +22,12 @@ import {
   platformNavigation,
   useByoConnectionNames,
   useCanManageByo,
+  usePlatformDiscoveryModels,
   useUserFolders,
 } from './usePlatformAccess';
 import type { DeriveModelTagsContext, GroupStrategy } from './utils';
+
+const EMPTY_MODELS: DiscoveryModel[] = [];
 
 export type ModelPickerVariant = 'searchable' | 'virtualized';
 
@@ -107,8 +110,15 @@ export interface ModelPickerSlots {
 }
 
 export interface ModelPickerProps {
-  /** The catalog to render, typically from the LLM Gateway Discovery API. */
-  models: DiscoveryModel[];
+  /**
+   * The catalog to render, typically from the LLM Gateway Discovery API.
+   * Optional when a `requestContext` (with `userId`) is provided: the
+   * picker then fetches Discovery itself — including refetching when the
+   * folder selection changes and after a BYO delete — so products need no
+   * catalog plumbing at all. Pass `models` to override with a host-owned
+   * fetch.
+   */
+  models?: DiscoveryModel[];
   /** Selected `modelId`, or `null`/`undefined` for no selection. */
   value?: string | null;
   /**
@@ -256,10 +266,12 @@ export interface ModelPickerProps {
   folders?: readonly FolderSwitcherFolder[];
   /**
    * Selected folder id. `null` means the "All folders" sentinel (omit
-   * `X-UiPath-FolderKey` on the Discovery request).
+   * `X-UiPath-FolderKey` on the Discovery request). Leave undefined to
+   * let the picker own the selection (uncontrolled) — with the built-in
+   * Discovery fetch this makes folder switching fully self-contained.
    */
   folder?: string | null;
-  /** Folder change callback. */
+  /** Folder change callback. Optional in uncontrolled/self-fetch mode. */
   onFolderChange?: (next: string | null) => void;
   /** Label for the "All folders" sentinel. Default: `'All folders'`. */
   allFoldersLabel?: string;
@@ -303,10 +315,11 @@ export interface ModelPickerProps {
    * Delete handler for a BYO model. When provided (and BYO management is
    * enabled), the picker renders a delete row action next to edit on BYO rows.
    * Omit to keep the default (no delete action — removal via the configurations
-   * page). The picker only surfaces the affordance; the host performs the
-   * delete and refreshes its `models`.
+   * page). The host performs the delete; with a host-owned `models` it also
+   * refreshes the catalog, while in self-fetch mode the picker refetches
+   * Discovery itself once the returned promise resolves.
    */
-  onDeleteModel?: (model: DiscoveryModel) => void;
+  onDeleteModel?: (model: DiscoveryModel) => void | Promise<void>;
   /** Extensibility slots. See `ModelPickerSlots`. */
   slots?: ModelPickerSlots;
 }
@@ -353,7 +366,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       requestContext,
       enableFolders = false,
       folders,
-      folder = null,
+      folder: folderProp,
       onFolderChange,
       allFoldersLabel,
       loading,
@@ -388,18 +401,55 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     // want to focus on the hosted catalog.
     const initiallyCollapsedGroups = React.useMemo<readonly string[]>(() => [], []);
 
+    // Folder selection: controlled via `folder`/`onFolderChange`, or owned
+    // by the picker when the prop is left undefined.
+    const [internalFolder, setInternalFolder] = React.useState<string | null>(null);
+    const folderIsControlled = folderProp !== undefined;
+    const folder = folderIsControlled ? folderProp : internalFolder;
+    const handleFolderChange = React.useCallback(
+      (next: string | null) => {
+        if (!folderIsControlled) setInternalFolder(next);
+        onFolderChange?.(next);
+      },
+      [folderIsControlled, onFolderChange]
+    );
+
+    // Catalog: host-supplied `models`, or fetched from Discovery by the
+    // picker itself when only a `requestContext` is provided.
+    const selfFetchCtx = !models && requestContext ? requestContext : null;
+    const {
+      models: fetchedModels,
+      loading: discoveryLoading,
+      error: discoveryError,
+      refetch: refetchDiscovery,
+    } = usePlatformDiscoveryModels(selfFetchCtx, folder ?? null);
+    const catalog = models ?? fetchedModels ?? EMPTY_MODELS;
+    const effectiveLoading = (loading ?? false) || discoveryLoading;
+    const effectiveError = error ?? discoveryError;
+
+    // In self-fetch mode a BYO delete refetches the catalog once the
+    // host's handler resolves; with host-owned models the host refreshes.
+    const handleDeleteModel = React.useMemo(() => {
+      if (!onDeleteModel) return undefined;
+      if (!selfFetchCtx) return onDeleteModel;
+      return async (m: DiscoveryModel) => {
+        await onDeleteModel(m);
+        refetchDiscovery();
+      };
+    }, [onDeleteModel, selfFetchCtx, refetchDiscovery]);
+
     // BYO rows without a host-supplied `byoConnectionLabel` get their
     // Integration Service connection name resolved by the picker itself.
-    const connectionNames = useByoConnectionNames(models, requestContext ?? null);
+    const connectionNames = useByoConnectionNames(catalog, requestContext ?? null);
     const effectiveModels = React.useMemo(() => {
-      if (connectionNames.size === 0) return models;
-      return models.map((m) => {
+      if (connectionNames.size === 0) return catalog;
+      return catalog.map((m) => {
         if (m.byoConnectionLabel) return m;
         const id = m.byomDetails?.integrationServiceConnectionId;
         const name = id ? connectionNames.get(id) : undefined;
         return name ? { ...m, byoConnectionLabel: name } : m;
       });
-    }, [models, connectionNames]);
+    }, [catalog, connectionNames]);
 
     const state = useModelPickerState({
       models: effectiveModels,
@@ -572,13 +622,13 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
               configurationId: model.byomDetails?.byoConfigurationId,
             })
         : undefined;
-      if (!onEdit && !onDeleteModel) return () => null;
-      return (m: DiscoveryModel) => defaultRowActions(m, { i18n, onEdit, onDelete: onDeleteModel });
+      if (!onEdit && !handleDeleteModel) return () => null;
+      return (m: DiscoveryModel) => defaultRowActions(m, { i18n, onEdit, onDelete: handleDeleteModel });
     }, [
       slots?.optionActions,
       effectiveCanManageByo,
       navigateToLlmConfigurations,
-      onDeleteModel,
+      handleDeleteModel,
       i18n,
     ]);
 
@@ -660,18 +710,18 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           unknownValue={unknownValue}
           placeholder={resolvedPlaceholder}
           disabled={disabled}
-          invalid={!!invalid || !!error || !!unknownValue}
+          invalid={!!invalid || !!effectiveError || !!unknownValue}
           required={required}
           open={open}
           controlsId={listboxId}
-          describedById={(errorText ?? error) ? `${id}-error` : undefined}
+          describedById={(errorText ?? effectiveError) ? `${id}-error` : undefined}
           tagContext={tagContext}
           tagVariants={customTagVariants}
           extra={slots?.triggerExtra?.(selected)}
           onClick={() => setOpen(!open)}
         />
 
-        {(errorText ?? error) && (
+        {(errorText ?? effectiveError) && (
           <Typography
             id={`${id}-error`}
             variant="caption"
@@ -683,7 +733,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
               fontSize: 12,
             }}
           >
-            {errorText ?? error?.message}
+            {errorText ?? effectiveError?.message}
           </Typography>
         )}
 
@@ -712,11 +762,11 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                 }
                 leading={
                   slots?.searchLeading?.() ??
-                  (effectiveFolders && effectiveFolders.length > 0 && onFolderChange ? (
+                  (effectiveFolders && effectiveFolders.length > 0 && (onFolderChange || selfFetchCtx) ? (
                     <FolderSwitcher
                       folders={effectiveFolders}
                       value={folder ?? null}
-                      onChange={onFolderChange}
+                      onChange={handleFolderChange}
                       allFoldersLabel={allFoldersLabel}
                     />
                   ) : undefined)
@@ -731,7 +781,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           }
           footer={footerNode}
         >
-          {loading && (
+          {effectiveLoading && (
             <Box
               role="status"
               aria-live="polite"
@@ -749,7 +799,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
               <CircularProgress size={20} />
             </Box>
           )}
-          {error && !loading && (
+          {effectiveError && !effectiveLoading && (
             <Box
               role="alert"
               sx={{

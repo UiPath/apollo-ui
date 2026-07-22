@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { FolderSwitcherFolder } from './primitives/FolderSwitcher';
+import type { DiscoveryModel } from './types';
+import { normalizeDiscoveryModels } from './useDiscoveryModels';
 
 /**
  * Auth + routing context for the picker's built-in platform calls
@@ -50,6 +52,13 @@ export interface PlatformRequestContext {
    */
   requestingProduct?: string;
   requestingFeature?: string;
+  /**
+   * Current user id (the token's `sub` claim) — sent to Discovery as
+   * `X-UiPath-LlmGateway-UserId`. Mandatory for products whose gateway
+   * catalog is user-scoped (e.g. agents: omitting it is a 400/3010).
+   * Required for the picker's built-in Discovery fetch.
+   */
+  userId?: string;
 }
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -181,6 +190,98 @@ export function useUserFolders(ctx: PlatformRequestContext | null): UseUserFolde
   }, [ctx, fetchFolders]);
 
   return { folders, loading, error, refetch: fetchFolders };
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Discovery catalog
+ * ─────────────────────────────────────────────────────────────────── */
+
+export interface UsePlatformDiscoveryModelsResult {
+  /** `undefined` until the first successful fetch. */
+  models: DiscoveryModel[] | undefined;
+  loading: boolean;
+  error: Error | null;
+  refetch: () => void;
+}
+
+/**
+ * Fetches the model catalog from the LLM Gateway Discovery API:
+ *
+ *   GET {baseUrl}/{tenantName}/llmgateway_/api/discovery
+ *   X-UiPath-LlmGateway-RequestingProduct / -RequestingFeature / -UserId
+ *   X-UiPath-FolderKey (only when a folder is selected)
+ *
+ * This is the platform-route flavor of `useDiscoveryModels` (which
+ * calls the gateway directly with internal headers): it reuses the
+ * `requestContext` the picker already holds, so a product can drop the
+ * picker in with no catalog fetching, folder refetching, or
+ * loading/error plumbing of its own. Pass `null` to disable (the host
+ * supplies `models` itself).
+ */
+export function usePlatformDiscoveryModels(
+  ctx: PlatformRequestContext | null,
+  folderKey: string | null
+): UsePlatformDiscoveryModelsResult {
+  const [models, setModels] = useState<DiscoveryModel[] | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const fetchModels = useCallback(async () => {
+    if (!ctx) return;
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
+    setLoading(true);
+    setError(null);
+
+    const base = (ctx.baseUrl ?? '').replace(/\/$/, '');
+    const url = `${base}/${ctx.tenantName}/llmgateway_/api/discovery`;
+
+    try {
+      const bearer = await resolveToken(ctx.token);
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${bearer}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      };
+      if (ctx.requestingProduct) headers['X-UiPath-LlmGateway-RequestingProduct'] = ctx.requestingProduct;
+      if (ctx.requestingFeature) headers['X-UiPath-LlmGateway-RequestingFeature'] = ctx.requestingFeature;
+      if (ctx.userId) headers['X-UiPath-LlmGateway-UserId'] = ctx.userId;
+      if (folderKey) headers['X-UiPath-FolderKey'] = folderKey;
+
+      const res = await fetch(url, { headers, signal: ctrl.signal });
+      if (!res.ok) {
+        throw new Error(`Discovery API ${res.status} ${res.statusText}`);
+      }
+      const data = (await res.json()) as unknown;
+      if (!ctrl.signal.aborted) {
+        setModels(normalizeDiscoveryModels(Array.isArray(data) ? data : []));
+      }
+    } catch (err: unknown) {
+      if ((err as { name?: string })?.name === 'AbortError') return;
+      if (!ctrl.signal.aborted) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+      }
+    } finally {
+      if (!ctrl.signal.aborted) setLoading(false);
+    }
+  }, [ctx, folderKey]);
+
+  useEffect(() => {
+    if (!ctx) {
+      abortRef.current?.abort();
+      setModels(undefined);
+      setLoading(false);
+      setError(null);
+      return undefined;
+    }
+    fetchModels();
+    return () => abortRef.current?.abort();
+  }, [ctx, fetchModels]);
+
+  return { models, loading, error, refetch: fetchModels };
 }
 
 /* ──────────────────────────────────────────────────────────────────────
