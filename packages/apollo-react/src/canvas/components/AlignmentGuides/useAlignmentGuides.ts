@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { DEFAULT_NODE_SIZE } from '../../constants';
 import type { AlignmentGuideLine, NodeBounds } from './AlignmentGuides.types';
 
-function toBounds(node: Node): NodeBounds {
+export function toBounds(node: Node): NodeBounds {
   const width = node.measured?.width ?? node.width ?? DEFAULT_NODE_SIZE;
   const height = node.measured?.height ?? node.height ?? DEFAULT_NODE_SIZE;
   const x1 = node.position.x;
@@ -38,32 +38,44 @@ function collectAxisGuides(
   const draggedRange =
     orientation === 'vertical' ? ([dragged.y1, dragged.y2] as const) : ([dragged.x1, dragged.x2] as const);
 
-  const matchesByPosition = new Map<number, { start: number; end: number }>();
+  const matchesByPosition = new Map<
+    number,
+    { start: number; end: number; nodeIds: Set<string>; isCenterOnly: boolean }
+  >();
 
   for (const other of others) {
     for (const draggedValue of draggedValues) {
-      for (const otherValue of otherValues(other)) {
-        if (Math.abs(draggedValue - otherValue) > threshold) continue;
+      otherValues(other).forEach((otherValue, otherIndex) => {
+        if (Math.abs(draggedValue - otherValue) > threshold) return;
         const key = Math.round(otherValue);
         const [oStart, oEnd] = otherRange(other);
         const start = Math.min(draggedRange[0], oStart);
         const end = Math.max(draggedRange[1], oEnd);
+        const isCenterMatch = otherIndex === 1;
         const existing = matchesByPosition.get(key);
+        const nodeIds = existing?.nodeIds ?? new Set<string>();
+        nodeIds.add(other.id);
         matchesByPosition.set(key, {
           start: existing ? Math.min(existing.start, start) : start,
           end: existing ? Math.max(existing.end, end) : end,
+          nodeIds,
+          isCenterOnly: existing ? existing.isCenterOnly && isCenterMatch : isCenterMatch,
         });
-      }
+      });
     }
   }
 
-  return Array.from(matchesByPosition.entries()).map(([position, { start, end }]) => ({
-    id: `${orientation}-${position}`,
-    orientation,
-    position,
-    start,
-    end,
-  }));
+  return Array.from(matchesByPosition.entries()).map(
+    ([position, { start, end, nodeIds, isCenterOnly }]) => ({
+      id: `${orientation}-${position}`,
+      orientation,
+      position,
+      start,
+      end,
+      kind: isCenterOnly ? 'center' : 'edge',
+      matchedNodeIds: Array.from(nodeIds),
+    })
+  );
 }
 
 export function computeAlignmentGuides(
