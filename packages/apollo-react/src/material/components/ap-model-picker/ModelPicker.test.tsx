@@ -136,9 +136,9 @@ describe('<ModelPicker>', () => {
     expect(screen.getByText(/use custom model/i)).toBeInTheDocument();
   });
 
-  it('navigates to the LLM-configurations pages by default (add CTA + row edit)', async () => {
+  it('navigates to the LLM-configurations pages in a new tab (add CTA + row edit)', async () => {
     const user = userEvent.setup();
-    const assign = vi.spyOn(platformNavigation, 'assign').mockImplementation(() => {});
+    const assign = vi.spyOn(platformNavigation, 'openInNewTab').mockImplementation(() => {});
     try {
       renderPicker(
         <ModelPicker
@@ -218,48 +218,9 @@ describe('<ModelPicker>', () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 
-  it('opens the LLM-configurations pages in a new tab when openLinksInNewTab is set', async () => {
-    const user = userEvent.setup();
-    const openInNewTab = vi.spyOn(platformNavigation, 'openInNewTab').mockImplementation(() => {});
-    const assign = vi.spyOn(platformNavigation, 'assign').mockImplementation(() => {});
-    try {
-      renderPicker(
-        <ModelPicker
-          models={MODELS}
-          value={null}
-          onChange={() => {}}
-          canManageByo
-          openLinksInNewTab
-          requestContext={{
-            token: 't',
-            baseUrl: 'https://cloud.local/acme',
-            tenantName: 'DefaultTenant',
-            tenantId: 'tenant-guid',
-            requestingProduct: 'agents',
-            requestingFeature: 'design-eval-deploy',
-          }}
-          enableFolders
-          folders={[{ id: 'folder-key', label: 'Shared', numericId: 2241521 }]}
-          folder="folder-key"
-        />
-      );
-      await user.click(screen.getByRole('button', { expanded: false }));
-      await user.click(screen.getByText(/use custom model/i));
-      // New-tab navigation, not a same-tab assign.
-      expect(openInNewTab).toHaveBeenLastCalledWith(
-        'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations' +
-          '/tenant-guid/2241521/add?product=agents&feature=design-eval-deploy'
-      );
-      expect(assign).not.toHaveBeenCalled();
-    } finally {
-      openInNewTab.mockRestore();
-      assign.mockRestore();
-    }
-  });
-
   it('falls back to the first folder for the add deep-link when none is selected', async () => {
     const user = userEvent.setup();
-    const assign = vi.spyOn(platformNavigation, 'assign').mockImplementation(() => {});
+    const assign = vi.spyOn(platformNavigation, 'openInNewTab').mockImplementation(() => {});
     try {
       renderPicker(
         <ModelPicker
@@ -314,7 +275,7 @@ describe('<ModelPicker>', () => {
 
   it('deep-links the edit form when the DTO carries byomDetails.byoConfigurationId', async () => {
     const user = userEvent.setup();
-    const assign = vi.spyOn(platformNavigation, 'assign').mockImplementation(() => {});
+    const assign = vi.spyOn(platformNavigation, 'openInNewTab').mockImplementation(() => {});
     try {
       const models: DiscoveryModel[] = MODELS.map((m) =>
         m.modelSubscriptionType === 'BYOMAdded'
