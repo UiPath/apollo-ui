@@ -1,4 +1,5 @@
 import type { Node, OnNodeDrag } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useMemo, useState } from 'react';
 import { DEFAULT_NODE_SIZE } from '../../constants';
 import type { AlignmentGuideLine, NodeBounds } from './AlignmentGuides.types';
@@ -77,8 +78,13 @@ export function computeAlignmentGuides(
 }
 
 export interface UseAlignmentGuidesOptions {
-  /** Match distance in flow-space units. @default 6 */
-  threshold?: number;
+  /**
+   * Match distance in screen pixels, independent of zoom level. Converted to
+   * flow-space internally (thresholdPx / zoom) so guides are equally easy to
+   * hit whether the canvas is zoomed in or out.
+   * @default 8
+   */
+  thresholdPx?: number;
 }
 
 export interface UseAlignmentGuidesReturn {
@@ -99,17 +105,18 @@ export function useAlignmentGuides(
   nodes: Node[],
   options: UseAlignmentGuidesOptions = {}
 ): UseAlignmentGuidesReturn {
-  const { threshold = 6 } = options;
+  const { thresholdPx = 8 } = options;
+  const { zoom } = useViewport();
   const [guides, setGuides] = useState<AlignmentGuideLine[]>([]);
 
   const onNodeDrag = useCallback<OnNodeDrag>(
     (_event, draggedNode) => {
       const others = nodes.filter((n) => n.id !== draggedNode.id);
       setGuides(
-        computeAlignmentGuides(toBounds(draggedNode), others.map(toBounds), threshold)
+        computeAlignmentGuides(toBounds(draggedNode), others.map(toBounds), thresholdPx / zoom)
       );
     },
-    [nodes, threshold]
+    [nodes, thresholdPx, zoom]
   );
 
   const onNodeDragStop = useCallback<OnNodeDrag>(() => {

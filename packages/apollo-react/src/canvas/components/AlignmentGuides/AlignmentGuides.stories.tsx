@@ -7,11 +7,12 @@ import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import type { AlignmentGuideLine } from './AlignmentGuides.types';
 import { AlignmentGuidesOverlay } from './AlignmentGuidesOverlay';
 import { useAlignmentGuides } from './useAlignmentGuides';
 
 const meta: Meta = {
-  title: 'Templates/Canvas Alignment Guides',
+  title: 'Components/Canvas/AlignmentGuides',
   decorators: [withCanvasProviders()],
   parameters: { layout: 'fullscreen' },
 };
@@ -106,4 +107,37 @@ function AlignmentGuidesDemo() {
 export const AlignmentGuidesPrototype: Story = {
   name: 'Alignment Guides',
   render: () => <AlignmentGuidesDemo />,
+};
+
+// Hand-authored guides matching createWorkflowNodes(): a vertical line through the
+// decision/trigger/notify column plus a horizontal line through the top row
+// (fetch/approve), rendered with no drag required so both axes are visible at once.
+const staticGuides: AlignmentGuideLine[] = [
+  { id: 'vertical-620', orientation: 'vertical', position: 620, start: 80, end: 536 },
+  { id: 'horizontal-120', orientation: 'horizontal', position: 120, start: 80, end: 996 },
+];
+
+function StaticGuidesDemo() {
+  const initialNodes = useMemo(() => createWorkflowNodes(), []);
+  const { canvasProps } = useCanvasStory({ initialNodes, initialEdges: workflowEdges });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="view">
+      <AlignmentGuidesOverlay guides={staticGuides} />
+      <StoryInfoPanel title="Static guide preview">
+        <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+          Hardcoded guide lines (no drag required) for visual QA of both the vertical and
+          horizontal line styles at once.
+        </p>
+      </StoryInfoPanel>
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+export const StaticPreview: Story = {
+  name: 'Static Guide Preview',
+  render: () => <StaticGuidesDemo />,
 };
