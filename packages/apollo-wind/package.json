@@ -115,6 +115,7 @@
     "@radix-ui/react-toggle": "^1.1.10",
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@shadcn/react": "0.2.1",
     "@tailwindcss/postcss": "^4.1.17",
     "@tanstack/react-table": "^8.21.3",
     "@uipath/apollo-core": "workspace:*",
