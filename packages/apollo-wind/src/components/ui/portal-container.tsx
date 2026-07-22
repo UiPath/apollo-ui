@@ -2,36 +2,57 @@
 
 import * as React from 'react';
 
-/** Node that Radix overlays portal into. `null` falls back to `document.body`. */
+/** Node overlays portal into; `null` means no provider → `document.body`. */
 const PortalContainerContext = React.createContext<HTMLElement | null>(null);
 
 export const usePortalContainer = (): HTMLElement | null =>
   React.useContext(PortalContainerContext);
 
+/**
+ * Per-overlay portal target: `undefined`/`null` inherit the nearest
+ * {@link PortalContainerProvider} (or `document.body` if none), `'body'` forces
+ * `document.body`, an element portals into it. `null` inherits rather than
+ * forcing body so `container={ref.current}` is safe before the ref attaches.
+ */
+export type PortalContainerOverride = HTMLElement | 'body' | null;
+
+/**
+ * Resolves an overlay's portal target from its `container` and the ambient
+ * provider, shared so the behavior stays identical across overlays. `undefined`
+ * is Radix's default (`document.body`) and keeps SSR clear of `document`.
+ */
+export function useResolvedPortalContainer(
+  container?: PortalContainerOverride
+): HTMLElement | undefined {
+  const portalContainer = usePortalContainer();
+  if (container === 'body') return undefined;
+  return container ?? portalContainer ?? undefined;
+}
+
 export interface PortalContainerProviderProps {
   children: React.ReactNode;
-  /**
-   * Node to portal into. Omit (`undefined`) to auto-use an in-tree boundary;
-   * pass `null` to force Radix's default (`document.body`) for the subtree.
-   */
+  /** Node to portal into; omit (or pass a not-yet-attached ref, i.e. `null`) for an auto in-tree boundary. */
   container?: HTMLElement | null;
 }
 
 /**
- * Portals overlays into its own subtree instead of `document.body`, keeping
- * them in the same DOM root and focus boundary as their trigger.
+ * Portals Popover/Select/DropdownMenu content (and Combobox/MultiSelect built on
+ * them) into its own subtree instead of `document.body`, keeping overlays in the
+ * trigger's DOM root and focus boundary. Without it they break under shadow-DOM
+ * or focus-trapped hosts, where body-level content escapes the root. Mount one
+ * per React root.
  *
- * Fixes overlays breaking under shadow-DOM or focus-trapped hosts, where
- * body-level content lands outside the trigger's root. Mount one per React root.
+ * Known limitation: an overlay open *on mount* portals to `document.body` for
+ * the first commit (the boundary ref hasn't attached yet) then remounts; pass a
+ * stable `container` you own for that case.
  */
 export function PortalContainerProvider({ children, container }: PortalContainerProviderProps) {
   const [boundary, setBoundary] = React.useState<HTMLElement | null>(null);
-  // `undefined` → auto boundary; explicit `null` → force `document.body`.
-  const value = container !== undefined ? container : boundary;
+  const value = container ?? boundary;
   return (
     <PortalContainerContext.Provider value={value}>
       {children}
-      {container === undefined && (
+      {container == null && (
         // display:contents so the boundary never affects layout.
         <div ref={setBoundary} style={{ display: 'contents' }} />
       )}

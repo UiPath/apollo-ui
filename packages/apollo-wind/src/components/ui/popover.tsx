@@ -1,6 +1,11 @@
+'use client';
+
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import * as React from 'react';
-import { usePortalContainer } from '@/components/ui/portal-container';
+import {
+  type PortalContainerOverride,
+  useResolvedPortalContainer,
+} from '@/components/ui/portal-container';
 import { cn } from '@/lib';
 
 const Popover = PopoverPrimitive.Root;
@@ -12,13 +17,12 @@ const PopoverAnchor = PopoverPrimitive.Anchor;
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> & {
-    container?: HTMLElement | null;
+    container?: PortalContainerOverride;
   }
 >(({ className, align = 'center', sideOffset = 4, container, ...props }, ref) => {
-  const portalContainer = usePortalContainer();
-  const resolvedContainer = container !== undefined ? container : portalContainer;
+  const resolvedContainer = useResolvedPortalContainer(container);
   return (
-    <PopoverPrimitive.Portal container={resolvedContainer ?? undefined}>
+    <PopoverPrimitive.Portal container={resolvedContainer}>
       <PopoverPrimitive.Content
         ref={ref}
         align={align}
