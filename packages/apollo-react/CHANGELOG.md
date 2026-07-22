@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v5.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@5.1.1...@uipath/apollo-react@5.2.0) (2026-07-22)
+
+### Features
+
+* **apollo-react:** always exclude personal folders from the ModelPicker folder switcher ([dda5931](https://github.com/UiPath/apollo-ui/commit/dda5931b23c953bb435ff1b8c004b3f543815179))
+* **apollo-react:** ModelPicker shadow-DOM host support + BYO/nav improvements ([be6b8fd](https://github.com/UiPath/apollo-ui/commit/be6b8fd7c89074aefe804da0f4de62cbe68ed0b2)), closes [UiPath/Arima#2659](https://github.com/UiPath/Arima/issues/2659)
+
 ## [@uipath/apollo-react-v5.1.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@5.1.0...@uipath/apollo-react@5.1.1) (2026-07-21)
 
 ### Bug Fixes
