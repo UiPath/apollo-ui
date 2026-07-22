@@ -105,6 +105,12 @@ export interface DiscoveryModel {
    * (`UiPathOwned && !preview && !deprecating`).
    */
   isRecommended?: boolean;
+  /**
+   * AITL governance verdict: the requesting org's policy blocks this
+   * model. The picker never renders blocked models — mirroring how the
+   * platform's BFFs drop them from their catalogs.
+   */
+  isBlockedByPolicy?: boolean;
   isPreview?: boolean;
   deprecationDetails?: DeprecationDetails | null;
   byomDetails?: ByomDetails | null;

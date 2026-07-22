@@ -398,6 +398,20 @@ describe('<ModelPicker>', () => {
     }
   });
 
+  it('never renders policy-blocked models', async () => {
+    const user = userEvent.setup();
+    renderPicker(
+      <ModelPicker
+        models={[...MODELS, { ...MODELS[0]!, modelId: 'blocked-model', isBlockedByPolicy: true }]}
+        value={null}
+        onChange={() => {}}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    await screen.findByRole('listbox');
+    expect(screen.queryByText('blocked-model')).toBeNull();
+  });
+
   it('fetches the Discovery catalog itself when models is omitted', async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn().mockResolvedValue({
