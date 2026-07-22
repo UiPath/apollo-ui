@@ -30,6 +30,7 @@ import {
   TooltipTrigger,
 } from '@uipath/apollo-wind';
 import {
+  ALargeSmall,
   Asterisk,
   Braces,
   Calendar as CalendarIcon,
@@ -71,7 +72,7 @@ interface FieldTypeMeta {
 export const FIELD_TYPE_META: Record<LockableFieldType, FieldTypeMeta> = {
   string: {
     label: 'String',
-    icon: Type,
+    icon: ALargeSmall,
     supportsExpression: true,
     fixedLabel: 'Fixed value',
     fixedDescription: 'Use a literal string value',
@@ -427,62 +428,25 @@ export function LockableValueField({
       {typeMeta.supportsExpression ? (
         <InputGroup>
           <InputGroupAddon align="inline-start">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <InputGroupButton
-                  icon
-                  size="3xs"
-                  aria-label={
-                    locked ? 'Read-only. Click to make editable.' : 'Editable. Click to make read-only.'
-                  }
-                >
-                  {locked ? <Lock /> : <LockOpen />}
-                </InputGroupButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem
-                  className="flex-col items-start gap-0.5 py-2"
-                  onClick={() => onLockedChange?.(false)}
-                >
-                  <div className="flex items-center gap-2">
-                    <LockOpen
-                      size={13}
-                      className={!locked ? 'text-brand' : 'text-foreground-muted'}
-                    />
-                    <span
-                      className={cn(
-                        'text-xs font-medium',
-                        !locked ? 'text-brand' : 'text-foreground'
-                      )}
-                    >
-                      Editable
-                    </span>
-                  </div>
-                  <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
-                    User can edit this field
-                  </span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="flex-col items-start gap-0.5 py-2"
-                  onClick={() => onLockedChange?.(true)}
-                >
-                  <div className="flex items-center gap-2">
-                    <Lock size={13} className={locked ? 'text-brand' : 'text-foreground-muted'} />
-                    <span
-                      className={cn(
-                        'text-xs font-medium',
-                        locked ? 'text-brand' : 'text-foreground'
-                      )}
-                    >
-                      Read-only
-                    </span>
-                  </div>
-                  <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
-                    User sees this field as read-only
-                  </span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <InputGroupButton
+                    icon
+                    size="3xs"
+                    onClick={() => onLockedChange?.(!locked)}
+                    aria-label={
+                      locked
+                        ? 'Read-only. Click to make editable.'
+                        : 'Editable. Click to make read-only.'
+                    }
+                  >
+                    {locked ? <Lock /> : <LockOpen />}
+                  </InputGroupButton>
+                </TooltipTrigger>
+                <TooltipContent>{locked ? 'Read-only' : 'Editable'}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </InputGroupAddon>
 
           {effectiveMode === 'expression' ? (
@@ -608,59 +572,25 @@ export function LockableValueField({
         </InputGroup>
       ) : (
         <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <InputGroupButton
-                icon
-                size="3xs"
-                aria-label={
-                  locked ? 'Read-only. Click to make editable.' : 'Editable. Click to make read-only.'
-                }
-              >
-                {locked ? <Lock /> : <LockOpen />}
-              </InputGroupButton>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem
-                className="flex-col items-start gap-0.5 py-2"
-                onClick={() => onLockedChange?.(false)}
-              >
-                <div className="flex items-center gap-2">
-                  <LockOpen
-                    size={13}
-                    className={!locked ? 'text-brand' : 'text-foreground-muted'}
-                  />
-                  <span
-                    className={cn(
-                      'text-xs font-medium',
-                      !locked ? 'text-brand' : 'text-foreground'
-                    )}
-                  >
-                    Editable
-                  </span>
-                </div>
-                <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
-                  User can edit this field
-                </span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex-col items-start gap-0.5 py-2"
-                onClick={() => onLockedChange?.(true)}
-              >
-                <div className="flex items-center gap-2">
-                  <Lock size={13} className={locked ? 'text-brand' : 'text-foreground-muted'} />
-                  <span
-                    className={cn('text-xs font-medium', locked ? 'text-brand' : 'text-foreground')}
-                  >
-                    Read-only
-                  </span>
-                </div>
-                <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
-                  User sees this field as read-only
-                </span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <InputGroupButton
+                  icon
+                  size="3xs"
+                  onClick={() => onLockedChange?.(!locked)}
+                  aria-label={
+                    locked
+                      ? 'Read-only. Click to make editable.'
+                      : 'Editable. Click to make read-only.'
+                  }
+                >
+                  {locked ? <Lock /> : <LockOpen />}
+                </InputGroupButton>
+              </TooltipTrigger>
+              <TooltipContent>{locked ? 'Read-only' : 'Editable'}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {locked ? (
             <Input

@@ -77,7 +77,6 @@ import {
   GitFork,
   Globe,
   GripVertical,
-  MousePointerClick,
   Pencil,
   Play,
   Plus,
@@ -3130,7 +3129,7 @@ function QuickFormStory() {
     setCases((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   const addButton = () => {
     const id = nextButtonIdRef.current++;
-    setButtons((prev) => [...prev, { id, label: 'New button', variant: 'outline' }]);
+    setButtons((prev) => [...prev, { id, label: 'Button', variant: 'outline' }]);
   };
   const deleteButton = (id: number) => setButtons((prev) => prev.filter((b) => b.id !== id));
   const updateButton = (id: number, patch: Partial<FormButtonItem>) =>
@@ -3408,41 +3407,41 @@ function QuickFormStory() {
                             document.body
                           )}
                         </DndContext>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
-                            >
-                              <Plus size={12} />
-                              Add field
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="w-44">
-                            <DropdownMenuItem onClick={() => addCaseWithType('string')}>
-                              <Type className="text-foreground-muted" />
-                              <span>Add field</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={addButton}>
-                              <MousePointerClick className="text-foreground-muted" />
-                              <span>Add button</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        {buttons.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-2">
-                            {buttons.map((b) => (
-                              <FormButtonChip
-                                key={b.id}
-                                label={b.label}
-                                onLabelChange={(label) => updateButton(b.id, { label })}
-                                variant={b.variant}
-                                onVariantChange={(variant) => updateButton(b.id, { variant })}
-                                onDelete={() => deleteButton(b.id)}
-                              />
-                            ))}
-                          </div>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => addCaseWithType('string')}
+                          className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                        >
+                          <Plus size={12} />
+                          Add field
+                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {buttons.map((b) => (
+                            <FormButtonChip
+                              key={b.id}
+                              label={b.label}
+                              onLabelChange={(label) => updateButton(b.id, { label })}
+                              variant={b.variant}
+                              onVariantChange={(variant) => updateButton(b.id, { variant })}
+                              onDelete={() => deleteButton(b.id)}
+                            />
+                          ))}
+                          <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={addButton}
+                                  aria-label="Add button"
+                                  className="grid size-10 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                                >
+                                  <Plus size={16} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>Add button</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                       </>
                     )}
                     {formView === 'json' && (
