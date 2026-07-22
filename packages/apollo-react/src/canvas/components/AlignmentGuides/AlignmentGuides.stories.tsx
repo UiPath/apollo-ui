@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useMemo } from 'react';
+import type { Edge, Node, OnNodeDrag } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useCallback, useMemo, useState } from 'react';
 import { createNode, StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
@@ -9,7 +9,7 @@ import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import type { AlignmentGuideLine } from './AlignmentGuides.types';
 import { AlignmentGuidesOverlay } from './AlignmentGuidesOverlay';
-import { useAlignmentGuides } from './useAlignmentGuides';
+import { computeAlignmentGuides, toBounds, useAlignmentGuides } from './useAlignmentGuides';
 
 const meta: Meta = {
   title: 'Components/Canvas/AlignmentGuides',
@@ -19,6 +19,11 @@ const meta: Meta = {
 export default meta;
 
 type Story = StoryObj;
+
+// ============================================================================
+// Shared workflow fixture. Every variant below drags nodes on the same layout
+// so the pages are directly comparable.
+// ============================================================================
 
 function createWorkflowNodes(): Node<BaseNodeData>[] {
   return [
@@ -78,20 +83,19 @@ const workflowEdges: Edge[] = [
   { id: 'e-reject-notify', source: 'reject', sourceHandle: 'output', target: 'notify', targetHandle: 'input' },
 ];
 
+// ============================================================================
+// Baseline: dashed lines, edge + center detection, zoom-aware threshold.
+// ============================================================================
+
 function AlignmentGuidesDemo() {
   const initialNodes = useMemo(() => createWorkflowNodes(), []);
   const { nodes, canvasProps } = useCanvasStory({ initialNodes, initialEdges: workflowEdges });
   const { guides, onNodeDrag, onNodeDragStop } = useAlignmentGuides(nodes);
 
   return (
-    <BaseCanvas
-      {...canvasProps}
-      mode="design"
-      onNodeDrag={onNodeDrag}
-      onNodeDragStop={onNodeDragStop}
-    >
+    <BaseCanvas {...canvasProps} mode="design" onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}>
       <AlignmentGuidesOverlay guides={guides} />
-      <StoryInfoPanel title="Alignment guides">
+      <StoryInfoPanel title="Alignment guides (baseline)">
         <p className="mt-2 max-w-xs text-sm text-muted-foreground">
           Drag any node. Dashed guide lines appear when its edges or center line up with another
           node's edges or center. Guides are visual only, nothing snaps into place.
@@ -105,16 +109,34 @@ function AlignmentGuidesDemo() {
 }
 
 export const AlignmentGuidesPrototype: Story = {
-  name: 'Alignment Guides',
+  name: 'Alignment Guides (Baseline)',
   render: () => <AlignmentGuidesDemo />,
 };
 
-// Hand-authored guides matching createWorkflowNodes(): a vertical line through the
-// decision/trigger/notify column plus a horizontal line through the top row
-// (fetch/approve), rendered with no drag required so both axes are visible at once.
+// ============================================================================
+// Static preview: hardcoded guides, no drag required. Useful as a fixed
+// reference when comparing screenshots or reviewing async.
+// ============================================================================
+
 const staticGuides: AlignmentGuideLine[] = [
-  { id: 'vertical-620', orientation: 'vertical', position: 620, start: 80, end: 536 },
-  { id: 'horizontal-120', orientation: 'horizontal', position: 120, start: 80, end: 996 },
+  {
+    id: 'vertical-620',
+    orientation: 'vertical',
+    position: 620,
+    start: 80,
+    end: 536,
+    kind: 'edge',
+    matchedNodeIds: ['trigger', 'notify'],
+  },
+  {
+    id: 'horizontal-120',
+    orientation: 'horizontal',
+    position: 120,
+    start: 80,
+    end: 996,
+    kind: 'edge',
+    matchedNodeIds: ['fetch', 'approve'],
+  },
 ];
 
 function StaticGuidesDemo() {
@@ -140,4 +162,387 @@ function StaticGuidesDemo() {
 export const StaticPreview: Story = {
   name: 'Static Guide Preview',
   render: () => <StaticGuidesDemo />,
+};
+
+// ============================================================================
+// Variant: Center vs. Edge Styling. Center-only matches render as a thicker
+// dotted line in a distinct color, so it's clear which kind of match fired.
+// ============================================================================
+
+function CenterVsEdgeOverlay({ guides }: { guides: AlignmentGuideLine[] }) {
+  const { x: viewportX, y: viewportY, zoom } = useViewport();
+
+  if (guides.length === 0) return null;
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-40 overflow-hidden">
+      {guides.map((guide) => {
+        const isVertical = guide.orientation === 'vertical';
+        const isCenter = guide.kind === 'center';
+        const style = isVertical
+          ? {
+              left: guide.position * zoom + viewportX,
+              top: guide.start * zoom + viewportY,
+              height: (guide.end - guide.start) * zoom,
+            }
+          : {
+              top: guide.position * zoom + viewportY,
+              left: guide.start * zoom + viewportX,
+              width: (guide.end - guide.start) * zoom,
+            };
+        const className = isVertical
+          ? isCenter
+            ? 'absolute border-l-2 border-dotted'
+            : 'absolute border-l border-dashed'
+          : isCenter
+            ? 'absolute border-t-2 border-dotted'
+            : 'absolute border-t border-dashed';
+
+        return (
+          <div
+            key={guide.id}
+            className={className}
+            style={{
+              ...style,
+              borderColor: isCenter ? 'var(--canvas-warning-icon)' : 'var(--canvas-selection-indicator)',
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function CenterVsEdgeDemo() {
+  const initialNodes = useMemo(() => createWorkflowNodes(), []);
+  const { nodes, canvasProps } = useCanvasStory({ initialNodes, initialEdges: workflowEdges });
+  const { guides, onNodeDrag, onNodeDragStop } = useAlignmentGuides(nodes);
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}>
+      <CenterVsEdgeOverlay guides={guides} />
+      <StoryInfoPanel title="Center vs. edge styling">
+        <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+          Same detection as the baseline, but a center-to-center match renders as a thicker
+          dotted amber line instead of the default dashed line, so you can tell at a glance
+          whether you're aligned on an edge or a center.
+        </p>
+      </StoryInfoPanel>
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+export const CenterVsEdgeStyling: Story = {
+  name: 'Variant: Center vs Edge Styling',
+  render: () => <CenterVsEdgeDemo />,
+};
+
+// ============================================================================
+// Variant: Spacing Labels. Shows the gap (in px) between the dragged node
+// and the matched span while a guide is active.
+// ============================================================================
+
+function SpacingLabelsOverlay({
+  guides,
+  nodes,
+  draggedNodeId,
+}: {
+  guides: AlignmentGuideLine[];
+  nodes: Node[];
+  draggedNodeId: string | null;
+}) {
+  const { x: viewportX, y: viewportY, zoom } = useViewport();
+  const draggedNode = draggedNodeId ? nodes.find((n) => n.id === draggedNodeId) : undefined;
+
+  if (guides.length === 0 || !draggedNode) return null;
+
+  const dragged = toBounds(draggedNode);
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-40 overflow-hidden">
+      {guides.map((guide) => {
+        const isVertical = guide.orientation === 'vertical';
+        const lineStyle = isVertical
+          ? {
+              left: guide.position * zoom + viewportX,
+              top: guide.start * zoom + viewportY,
+              height: (guide.end - guide.start) * zoom,
+            }
+          : {
+              top: guide.position * zoom + viewportY,
+              left: guide.start * zoom + viewportX,
+              width: (guide.end - guide.start) * zoom,
+            };
+
+        // Gap between the dragged node and the nearer end of the matched span,
+        // a simplification of "distance to nearest object", not full equal-spacing detection.
+        const gapFlow = isVertical
+          ? Math.min(Math.abs(dragged.y1 - guide.start), Math.abs(guide.end - dragged.y2))
+          : Math.min(Math.abs(dragged.x1 - guide.start), Math.abs(guide.end - dragged.x2));
+        const gapPx = Math.round(gapFlow * zoom);
+
+        const labelStyle = isVertical
+          ? {
+              left: guide.position * zoom + viewportX + 6,
+              top: (guide.start + (guide.end - guide.start) / 2) * zoom + viewportY - 10,
+            }
+          : {
+              top: guide.position * zoom + viewportY - 20,
+              left: guide.start * zoom + viewportX + ((guide.end - guide.start) * zoom) / 2 - 16,
+            };
+
+        return (
+          <div key={guide.id}>
+            <div
+              className={isVertical ? 'absolute border-l border-dashed' : 'absolute border-t border-dashed'}
+              style={{ ...lineStyle, borderColor: 'var(--canvas-selection-indicator)' }}
+            />
+            <div
+              className="absolute rounded bg-[var(--canvas-selection-indicator)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--canvas-foreground-inverse)]"
+              style={labelStyle}
+            >
+              {gapPx}px
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SpacingLabelsDemo() {
+  const initialNodes = useMemo(() => createWorkflowNodes(), []);
+  const { nodes, canvasProps } = useCanvasStory({ initialNodes, initialEdges: workflowEdges });
+  const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
+  const { guides, onNodeDrag: baseOnNodeDrag, onNodeDragStop: baseOnNodeDragStop } = useAlignmentGuides(nodes);
+
+  const onNodeDrag = useCallback<OnNodeDrag>(
+    (event, node, draggedNodes) => {
+      setDraggedNodeId(node.id);
+      baseOnNodeDrag(event, node, draggedNodes);
+    },
+    [baseOnNodeDrag]
+  );
+
+  const onNodeDragStop = useCallback<OnNodeDrag>(
+    (event, node, draggedNodes) => {
+      setDraggedNodeId(null);
+      baseOnNodeDragStop(event, node, draggedNodes);
+    },
+    [baseOnNodeDragStop]
+  );
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}>
+      <SpacingLabelsOverlay guides={guides} nodes={nodes} draggedNodeId={draggedNodeId} />
+      <StoryInfoPanel title="Spacing labels">
+        <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+          Shows the gap in px between the dragged node and the matched span while a guide is
+          active. A fuller "equal spacing between 3+ nodes" indicator, like Figma's tick marks,
+          is a natural next step but isn't built here yet.
+        </p>
+      </StoryInfoPanel>
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+export const SpacingLabels: Story = {
+  name: 'Variant: Spacing Labels',
+  render: () => <SpacingLabelsDemo />,
+};
+
+// ============================================================================
+// Variant: Highlighted Match. The guide line plus a ring highlight around
+// every node the line is actually aligned with.
+// ============================================================================
+
+function HighlightedMatchOverlay({ guides, nodes }: { guides: AlignmentGuideLine[]; nodes: Node[] }) {
+  const { x: viewportX, y: viewportY, zoom } = useViewport();
+  const matchedIds = useMemo(() => new Set(guides.flatMap((g) => g.matchedNodeIds)), [guides]);
+
+  if (guides.length === 0) return null;
+
+  return (
+    <>
+      <AlignmentGuidesOverlay guides={guides} />
+      <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden">
+        {nodes
+          .filter((n) => matchedIds.has(n.id))
+          .map((n) => {
+            const bounds = toBounds(n);
+            return (
+              <div
+                key={n.id}
+                className="absolute rounded-md ring-2 ring-[var(--canvas-selection-indicator)]"
+                style={{
+                  left: bounds.x1 * zoom + viewportX - 4,
+                  top: bounds.y1 * zoom + viewportY - 4,
+                  width: (bounds.x2 - bounds.x1) * zoom + 8,
+                  height: (bounds.y2 - bounds.y1) * zoom + 8,
+                }}
+              />
+            );
+          })}
+      </div>
+    </>
+  );
+}
+
+function HighlightedMatchDemo() {
+  const initialNodes = useMemo(() => createWorkflowNodes(), []);
+  const { nodes, canvasProps } = useCanvasStory({ initialNodes, initialEdges: workflowEdges });
+  const { guides, onNodeDrag, onNodeDragStop } = useAlignmentGuides(nodes);
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}>
+      <HighlightedMatchOverlay guides={guides} nodes={nodes} />
+      <StoryInfoPanel title="Highlighted match">
+        <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+          In addition to the guide line, the specific node(s) you're aligned with get a subtle
+          ring highlight, useful once there are many nodes and it's not obvious at a glance
+          which one a line is relative to.
+        </p>
+      </StoryInfoPanel>
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+export const HighlightedMatch: Story = {
+  name: 'Variant: Highlighted Match',
+  render: () => <HighlightedMatchDemo />,
+};
+
+// ============================================================================
+// Variant: Magnetic Snap. Same detection, but the dragged node's position
+// snaps onto the matched edge/center instead of only drawing a line.
+// ============================================================================
+
+function useMagneticSnap(
+  nodes: Node[],
+  setNodes: React.Dispatch<React.SetStateAction<Node[]>>,
+  thresholdPx = 8
+) {
+  const { zoom } = useViewport();
+  const [guides, setGuides] = useState<AlignmentGuideLine[]>([]);
+
+  const onNodeDrag = useCallback<OnNodeDrag>(
+    (_event, draggedNode) => {
+      const threshold = thresholdPx / zoom;
+      const dragged = toBounds(draggedNode);
+      const others = nodes.filter((n) => n.id !== draggedNode.id).map(toBounds);
+      const computed = computeAlignmentGuides(dragged, others, threshold);
+      setGuides(computed);
+
+      const vGuide = computed.find((g) => g.orientation === 'vertical');
+      const hGuide = computed.find((g) => g.orientation === 'horizontal');
+      if (!vGuide && !hGuide) return;
+
+      const snapDelta = (guide: AlignmentGuideLine | undefined, values: number[]) => {
+        if (!guide) return 0;
+        const closest = values.reduce((a, b) =>
+          Math.abs(b - guide.position) < Math.abs(a - guide.position) ? b : a
+        );
+        return guide.position - closest;
+      };
+
+      const dx = snapDelta(vGuide, [dragged.x1, dragged.cx, dragged.x2]);
+      const dy = snapDelta(hGuide, [dragged.y1, dragged.cy, dragged.y2]);
+      if (dx === 0 && dy === 0) return;
+
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === draggedNode.id
+            ? { ...n, position: { x: n.position.x + dx, y: n.position.y + dy } }
+            : n
+        )
+      );
+    },
+    [nodes, setNodes, thresholdPx, zoom]
+  );
+
+  const onNodeDragStop = useCallback<OnNodeDrag>(() => setGuides([]), []);
+
+  return useMemo(() => ({ guides, onNodeDrag, onNodeDragStop }), [guides, onNodeDrag, onNodeDragStop]);
+}
+
+function MagneticSnapDemo() {
+  const initialNodes = useMemo(() => createWorkflowNodes(), []);
+  const { nodes, setNodes, canvasProps } = useCanvasStory({ initialNodes, initialEdges: workflowEdges });
+  const { guides, onNodeDrag, onNodeDragStop } = useMagneticSnap(nodes, setNodes);
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}>
+      <AlignmentGuidesOverlay guides={guides} />
+      <StoryInfoPanel title="Magnetic snap">
+        <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+          Same detection as the baseline, but once within range the node's position snaps
+          exactly onto the aligned edge or center instead of only showing a line. Trade-off:
+          less control over sub-pixel placement, and it can fight slightly with the raw mouse
+          position while dragging.
+        </p>
+      </StoryInfoPanel>
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+export const MagneticSnap: Story = {
+  name: 'Variant: Magnetic Snap',
+  render: () => <MagneticSnapDemo />,
+};
+
+// ============================================================================
+// Variant: Threshold Playground. Tune the match distance live to compare
+// how forgiving or precise the guides feel.
+// ============================================================================
+
+function ThresholdPlaygroundDemo() {
+  const [thresholdPx, setThresholdPx] = useState(8);
+  const initialNodes = useMemo(() => createWorkflowNodes(), []);
+  const { nodes, canvasProps } = useCanvasStory({ initialNodes, initialEdges: workflowEdges });
+  const { guides, onNodeDrag, onNodeDragStop } = useAlignmentGuides(nodes, { thresholdPx });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}>
+      <AlignmentGuidesOverlay guides={guides} />
+      <StoryInfoPanel title="Threshold playground">
+        <div className="mt-2 flex max-w-xs flex-col gap-2">
+          <p className="text-sm text-muted-foreground">
+            Tune the match distance live to compare how forgiving or precise the guides feel at
+            different zoom levels.
+          </p>
+          <label className="flex items-center gap-2 text-sm">
+            <span className="w-14 shrink-0">{thresholdPx}px</span>
+            <input
+              type="range"
+              min={2}
+              max={32}
+              value={thresholdPx}
+              onChange={(e) => setThresholdPx(Number(e.target.value))}
+              className="w-full"
+            />
+          </label>
+        </div>
+      </StoryInfoPanel>
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+export const ThresholdPlayground: Story = {
+  name: 'Variant: Threshold Playground',
+  render: () => <ThresholdPlaygroundDemo />,
 };
