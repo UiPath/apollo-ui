@@ -5,9 +5,9 @@
  * See: https://uipath.atlassian.net/wiki/spaces/~5d0b4d163e70300bc9758674/pages/90446398009/Case+Unified+schema+onboarding
  *
  * Phase 1: trigger nodes.
- * Phase 2 (POC): stage (container/loop-based), tasks (sequential square, event and
- * adhoc circle markers), and case complete / case exit lifecycle circles. Every
- * case rule is representable as a handle, a node, or an edge:
+ * Phase 2 (POC): stage (container/loop-based), tasks (sequential squares), and
+ * case complete / case exit lifecycle circles. Every case rule is representable
+ * as a handle, a node, or an edge:
  * - the stage's INNER handles carry the labeled lifecycle, Enter / Complete /
  *   Exit, mapping 1:1 onto the loop node's start / continue / break; the outer
  *   handles are unlabeled connection points
@@ -19,9 +19,11 @@
  * - the one exception is EVENT-BASED complete / exit rules: those are event
  *   circles INSIDE the stage wired into the inner Complete / Exit handles
  *   ("when this event arrives, the stage completes / exits")
- * - inside the stage there are otherwise only tasks and task-level markers
- *   (event / adhoc); sequential task order is the edge chain from the inner
- *   Enter handle to the inner Complete (or Exit) handle
+ * - TASK-level start rules (event-based / manual) are `marker` variant HANDLES
+ *   on the task itself, not separate nodes: a zap or play icon badge on the
+ *   task's top wall, driven by the task's `inputs.eventTrigger` /
+ *   `inputs.manualTrigger` data. Sequential task order stays the edge chain
+ *   from the inner Enter handle to the inner Complete (or Exit) handle.
  * - case complete / case exit rules are big lifecycle circles fed by stage
  *   complete / exit handles
  */
@@ -31,10 +33,10 @@ import type { CategoryManifest, NodeManifest } from '../../schema/node-definitio
 /** Default diameter for the big lifecycle circles (trigger, case complete/exit). */
 export const CASE_LIFECYCLE_NODE_SIZE = 96;
 /**
- * Diameter for the event / adhoc task marker circles. The regular BaseNode
- * size (96px, DEFAULT_NODE_SIZE): letting the node use its standard geometry
- * is the only way it reliably renders as a true circle, because BaseNode owns
- * its own minimum-height math and fights any smaller explicit size.
+ * Diameter for the stage-rule event circles. The regular BaseNode size (96px,
+ * DEFAULT_NODE_SIZE): letting the node use its standard geometry is the only
+ * way it reliably renders as a true circle, because BaseNode owns its own
+ * minimum-height math and fights any smaller explicit size.
  */
 export const CASE_MARKER_NODE_SIZE = 96;
 
@@ -71,9 +73,11 @@ export const caseFlowCategories: CategoryManifest[] = [
     tags: ['case', 'task'],
   },
   {
-    // Task-level rule markers (event / adhoc). Stage-level rules are edges, not nodes.
+    // Stage-level event rules (event circles feeding the inner Complete / Exit
+    // handles). Task-level start rules are marker handles on the task itself,
+    // and the remaining stage-level rules are edges, not nodes.
     id: 'case-condition',
-    name: 'Task rules',
+    name: 'Stage event rules',
     sortOrder: 3,
     color: 'linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%)',
     colorDark: 'linear-gradient(135deg, #4A148C 0%, #6A1B9A 100%)',
@@ -332,7 +336,14 @@ export const caseStageManifest: NodeManifest = {
 // Tasks
 // ============================================================================
 
-/** Square task node. An incoming edge from the stage onEnter handle or a previous task is a sequential run rule. */
+/**
+ * Square task node. An incoming edge from the stage onEnter handle or a
+ * previous task is a sequential run rule. Event-based and manual (adhoc) start
+ * rules are NOT separate nodes: they are `marker` variant handles on the
+ * task's top wall (zap / play icon badges), toggled by the task's
+ * `inputs.eventTrigger` / `inputs.manualTrigger` data and configured in the
+ * task's properties panel.
+ */
 export const caseTaskManifest: NodeManifest = {
   nodeType: 'uipath.case.task',
   version: '1.0.0',
@@ -355,9 +366,8 @@ export const caseTaskManifest: NodeManifest = {
           type: 'target',
           handleType: 'input',
           constraints: {
-            allowedSourceCategories: ['case-stage', 'case-task', 'case-condition'],
-            validationMessage:
-              'Tasks run sequentially from the stage or a previous task, or from an event/adhoc marker',
+            allowedSourceCategories: ['case-stage', 'case-task'],
+            validationMessage: 'Tasks run sequentially from the stage or a previous task',
           },
         },
       ],
@@ -365,6 +375,32 @@ export const caseTaskManifest: NodeManifest = {
     {
       position: 'right',
       handles: [{ id: 'output', type: 'source', handleType: 'output', showButton: true }],
+    },
+    {
+      // Task start-rule markers: permanently visible icon badges on the top
+      // wall. Only one renders at a time (visibility is data-driven), so the
+      // active marker sits centered. The event marker carries the rule name.
+      position: 'top',
+      alwaysVisible: true,
+      handles: [
+        {
+          id: 'eventTrigger',
+          type: 'target',
+          handleType: 'input',
+          variant: 'marker',
+          icon: 'zap',
+          label: '{inputs.triggerLabel}',
+          visible: 'inputs.eventTrigger',
+        },
+        {
+          id: 'manualTrigger',
+          type: 'target',
+          handleType: 'input',
+          variant: 'marker',
+          icon: 'play',
+          visible: 'inputs.manualTrigger',
+        },
+      ],
     },
   ],
   inputDefinition: {
@@ -375,6 +411,9 @@ export const caseTaskManifest: NodeManifest = {
     },
     isRequired: { type: 'boolean', default: true },
     runsOnlyOnce: { type: 'boolean', default: false },
+    eventTrigger: { type: 'boolean', default: false },
+    manualTrigger: { type: 'boolean', default: false },
+    triggerLabel: { type: 'string' },
   },
   form: {
     id: 'case-task-properties',
@@ -411,25 +450,37 @@ export const caseTaskManifest: NodeManifest = {
           { name: 'inputs.runsOnlyOnce', type: 'switch', label: 'Runs only once' },
         ],
       },
+      {
+        id: 'start-rule',
+        title: 'Start rule',
+        collapsible: true,
+        defaultExpanded: true,
+        fields: [
+          { name: 'inputs.eventTrigger', type: 'switch', label: 'Started by an event' },
+          { name: 'inputs.manualTrigger', type: 'switch', label: 'Started manually (adhoc)' },
+          { name: 'inputs.triggerLabel', type: 'text', label: 'Trigger name' },
+        ],
+      },
     ],
   },
 };
 
 /**
- * Small circle event rule: starts an event-based task, or acts as a stage
- * complete / exit rule when wired into the stage's inner Complete / Exit handles.
+ * Small circle event rule: a stage-level complete / exit rule, wired into the
+ * stage's inner Complete / Exit handles. Task-level start rules are marker
+ * handles on the task itself, not these circles.
  */
 export const caseEventMarkerManifest: NodeManifest = {
   nodeType: 'uipath.case.task.event',
   version: '1.0.0',
   description:
-    'Event rule inside a stage. Starts an event-based task, or completes/exits the stage when wired into the inner Complete / Exit handles.',
+    'Event rule inside a stage. Completes or exits the stage when wired into the inner Complete / Exit handles.',
   category: 'case-condition',
-  tags: ['case', 'task', 'event', 'rule'],
+  tags: ['case', 'stage', 'event', 'rule'],
   sortOrder: 1,
   display: {
     label: 'Event',
-    description: 'Starts the connected task when the event arrives',
+    description: 'Completes or exits the stage when the event arrives',
     icon: 'zap',
     shape: 'circle',
     shadow: false,
@@ -456,9 +507,9 @@ export const caseEventMarkerManifest: NodeManifest = {
           handleType: 'output',
           showButton: true,
           constraints: {
-            allowedTargetCategories: ['case-task', 'case-stage'],
+            allowedTargetCategories: ['case-stage'],
             validationMessage:
-              'Event rules start tasks, or complete/exit their stage via the inner Complete / Exit handles',
+              'Event rules complete or exit their stage via the inner Complete / Exit handles',
           },
         },
       ],
@@ -494,52 +545,6 @@ export const caseEventMarkerManifest: NodeManifest = {
             rows: 2,
           },
         ],
-      },
-    ],
-  },
-};
-
-/** Small circle marker: an adhoc (manually triggered) task entry. */
-export const caseAdhocMarkerManifest: NodeManifest = {
-  nodeType: 'uipath.case.task.adhoc',
-  version: '1.0.0',
-  description: 'Manual (adhoc) rule that lets a user start the connected task on demand.',
-  category: 'case-condition',
-  tags: ['case', 'task', 'adhoc', 'manual', 'rule'],
-  sortOrder: 2,
-  display: {
-    label: 'Manual',
-    description: 'The connected task is started manually by a user',
-    icon: 'play',
-    shape: 'circle',
-    shadow: false,
-  },
-  handleConfiguration: [
-    {
-      position: 'right',
-      handles: [
-        {
-          id: 'output',
-          type: 'source',
-          handleType: 'output',
-          showButton: true,
-          constraints: {
-            allowedTargetCategories: ['case-task'],
-            validationMessage: 'Manual markers start tasks',
-          },
-        },
-      ],
-    },
-  ],
-  form: {
-    id: 'case-adhoc-marker-properties',
-    title: 'Manual rule',
-    sections: [
-      {
-        id: 'general',
-        title: 'General',
-        defaultExpanded: true,
-        fields: [{ name: 'display.label', type: 'text', label: 'Name' }],
       },
     ],
   },
@@ -650,7 +655,6 @@ export const caseFlowManifest = {
     caseStageManifest,
     caseTaskManifest,
     caseEventMarkerManifest,
-    caseAdhocMarkerManifest,
     caseCompleteManifest,
     caseExitManifest,
   ],

@@ -26,11 +26,12 @@ import { caseFlowManifest } from './case-flow.manifest';
  *   configured in the edge / stage properties, not drawn as dedicated nodes.
  *   The one exception: event-based complete / exit rules are event circles
  *   inside the stage wired into the inner Complete / Exit handles.
- * - Small circles INSIDE the stages: event (zap icon) and manual (play icon)
- *   markers that start event-based and adhoc tasks, plus event circles acting
- *   as stage complete / exit rules.
  * - Squares: tasks. The sequential chain runs from inner Enter through the
  *   tasks into inner Complete; a task wired into inner Exit abandons the stage.
+ *   Event-based and manual (adhoc) start rules are MARKER HANDLES on the task
+ *   itself: a zap or play icon badge on the task's top wall, driven by the
+ *   task's inputs (eventTrigger / manualTrigger / triggerLabel). They are not
+ *   separate nodes.
  * - The lifecycle pills are draggable: grab Enter to slide it along the left
  *   wall, or Complete / Exit to move them along the right and bottom walls.
  *   Positions snap to the 16px grid, stay clear of the corners, and the outer
@@ -76,9 +77,9 @@ function childNode(
 }
 
 /**
- * Circle task marker (event or manual), parented inside its stage. Uses the
- * regular BaseNode size so the circle geometry stays standard; explicit
- * smaller sizes fight BaseNode's minimum-height math and render as ovals.
+ * Circle stage event rule, parented inside its stage. Uses the regular
+ * BaseNode size so the circle geometry stays standard; explicit smaller sizes
+ * fight BaseNode's minimum-height math and render as ovals.
  */
 function markerNode(
   id: string,
@@ -173,35 +174,28 @@ function createCaseFlowNodes(): Node[] {
       { x: 144, y: 112 },
       { display: { label: 'Review claim', icon: 'file-search' } }
     ),
-    // Event-based task: small circle with the event icon feeding the task.
-    markerNode(
-      'assessment-event',
-      'uipath.case.task.event',
-      'stage-assessment',
-      { x: 128, y: 288 },
-      { display: { label: 'Fraud signal' }, inputs: { eventType: 'connector' } }
-    ),
+    // Event-based task: the zap marker handle on the task's top wall carries
+    // the rule ("Fraud signal"); no separate event node or edge needed.
     childNode(
       'task-adjuster',
       TASK_TYPE,
       'stage-assessment',
       { x: 304, y: 272 },
-      { display: { label: 'Adjuster review', icon: 'user-search' } }
+      {
+        display: { label: 'Adjuster review', icon: 'user-search' },
+        inputs: { eventTrigger: true, triggerLabel: 'Fraud signal' },
+      }
     ),
-    // Adhoc task: small circle with the play icon feeding the task.
-    markerNode(
-      'assessment-adhoc',
-      'uipath.case.task.adhoc',
-      'stage-assessment',
-      { x: 464, y: 288 },
-      { display: { label: 'Manual' } }
-    ),
+    // Adhoc task: the play marker handle on the top wall marks it as manually started.
     childNode(
       'task-escalate',
       TASK_TYPE,
       'stage-assessment',
       { x: 528, y: 112 },
-      { display: { label: 'Escalate to expert', icon: 'user-plus' } }
+      {
+        display: { label: 'Escalate to expert', icon: 'user-plus' },
+        inputs: { manualTrigger: true },
+      }
     ),
     // Event-based EXIT rule: an event circle inside the stage wired into the
     // inner Exit handle. When the claim is withdrawn, the stage exits.
@@ -250,11 +244,10 @@ function createCaseFlowEdges(): Edge[] {
     // Stage-to-stage transition: the complete edge carries the complete rule.
     edge('e-intake-assessment', 'stage-intake', 'complete', 'stage-assessment', 'enter'),
 
-    // Assessment tasks: sequential, event-based, and adhoc.
+    // Assessment tasks: sequential runs on edges; the event-based (adjuster)
+    // and adhoc (escalate) tasks carry their start rules as marker handles.
     edge('e-assessment-onenter', 'stage-assessment', 'onEnter', 'task-review', 'input'),
     edge('e-review-oncomplete', 'task-review', 'output', 'stage-assessment', 'onComplete'),
-    edge('e-event-adjuster', 'assessment-event', 'output', 'task-adjuster', 'input'),
-    edge('e-adhoc-escalate', 'assessment-adhoc', 'output', 'task-escalate', 'input'),
     // Escalating abandons the stage: the task lands on the inner Exit (loop break) handle.
     edge('e-escalate-onexit', 'task-escalate', 'output', 'stage-assessment', 'onExit'),
     // Event-based exit rule: the event circle feeds the same inner Exit handle.
