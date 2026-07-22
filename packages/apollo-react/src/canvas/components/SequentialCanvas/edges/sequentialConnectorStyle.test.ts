@@ -13,6 +13,12 @@ describe('resolveConnectorStrokeStyle', () => {
     expect(resolveConnectorStrokeStyle('goto')).toBe('dashed');
   });
 
+  it('renders a straight structural-container continuation solid', () => {
+    expect(resolveConnectorStrokeStyle('merge-back', { straightContainerContinuation: true })).toBe(
+      'solid'
+    );
+  });
+
   it('covers every connector kind', () => {
     const kinds: SequenceConnectorKind[] = ['step', 'branch-entry', 'merge-back', 'goto'];
     for (const kind of kinds) {

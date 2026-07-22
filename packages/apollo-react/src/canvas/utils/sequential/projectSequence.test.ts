@@ -1,3 +1,4 @@
+import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it } from 'vitest';
 import {
   makeBranchCycleFixture,
@@ -16,6 +17,7 @@ import {
   makeWireframeFixture,
   WIREFRAME_NODE_IDS,
 } from './fixtures';
+import { SEQ_CONTINUATION_EDGE_KEY } from './graph-helpers';
 import { projectSequence } from './projectSequence';
 import type { SequenceConnector, SequenceProjection, SequenceRow } from './sequential.types';
 
@@ -193,10 +195,15 @@ describe('projectSequence', () => {
       expect(rowById(projection, 'c').depth).toBe(1);
     });
 
-    it('draws merge-back connectors from both lane tails into the join', () => {
+    it('draws merge-back connectors from both lane tails into the join, each still insertable', () => {
       expect(connector(projection, 'b', 'd').kind).toBe('merge-back');
       expect(connector(projection, 'c', 'd').kind).toBe('merge-back');
-      expect(connector(projection, 'b', 'd').slot).toBeUndefined();
+      // A branch that rejoins the flow must still be appendable at its end: the
+      // lane-closing edge carries the slot that splits it, so you can add a step
+      // before the merge (regression for the "cannot add at the end of the true
+      // path" gap).
+      expect(connector(projection, 'b', 'd').slot?.graphEdgeId).toBe('b-d');
+      expect(connector(projection, 'c', 'd').slot?.graphEdgeId).toBe('c-d');
     });
   });
 
@@ -282,6 +289,61 @@ describe('projectSequence', () => {
       expect(connector(projection, 'if', laneRows[0]?.nodeId ?? '').kind).toBe('branch-entry');
       // The If is a branch parent, never a leaf.
       expect(rowById(projection, 'if').isLeaf).toBeFalsy();
+      expect(rowById(projection, 'if').collapsible).toBe(true);
+    });
+
+    it('makes every nested declared branch owner collapsible and hides only its descendants', () => {
+      const nodes = [
+        { id: 'outer', type: 'if', position: { x: 0, y: 0 }, data: {} },
+        { id: 'middle', type: 'if', position: { x: 0, y: 100 }, data: {} },
+        { id: 'inner', type: 'if', position: { x: 0, y: 200 }, data: {} },
+      ];
+      const edges = [
+        { id: 'outer-middle', source: 'outer', sourceHandle: 'true', target: 'middle' },
+        { id: 'middle-inner', source: 'middle', sourceHandle: 'true', target: 'inner' },
+      ];
+      const getBranchHandles = (node: Node) =>
+        node.type === 'if'
+          ? [
+              { id: 'true', label: 'True' },
+              { id: 'false', label: 'False' },
+            ]
+          : [];
+      const projection = projectSequence(nodes, edges, {
+        getBranchHandles,
+        collapsedStepIds: new Set(['middle']),
+      });
+
+      expect(['outer', 'middle', 'inner'].map((id) => rowById(projection, id).collapsible)).toEqual(
+        [true, true, true]
+      );
+      expect(rowById(projection, 'inner').visible).toBe(false);
+      expect(
+        projection.rows.find((row) => row.nodeId === '__sequential-lane__middle::false')?.visible
+      ).toBe(false);
+      expect(
+        projection.rows.find((row) => row.nodeId === '__sequential-lane__outer::false')?.visible
+      ).toBe(true);
+    });
+
+    it('uses bottom-anchored continuation geometry after a declared body lane', () => {
+      const nodes = [
+        { id: 'while', type: 'while', position: { x: 0, y: 0 }, data: {} },
+        { id: 'next', position: { x: 0, y: 100 }, data: {} },
+      ];
+      const edges = [
+        { id: 'while-next', source: 'while', sourceHandle: 'success', target: 'next' },
+      ];
+      const projection = projectSequence(nodes, edges, {
+        getBranchHandles: (node) => (node.id === 'while' ? [{ id: 'body', label: 'Body' }] : []),
+      });
+
+      expect(projection.rows.map((row) => row.nodeId)).toEqual([
+        'while',
+        '__sequential-lane__while::body',
+        'next',
+      ]);
+      expect(connector(projection, 'while', 'next').kind).toBe('merge-back');
     });
 
     it('walks a populated lane and adds the same placeholder after it as the empty lane', () => {
@@ -312,6 +374,81 @@ describe('projectSequence', () => {
         '__sequential-lane__if::true',
         'x',
         '__sequential-lane__x::__tail__',
+      ]);
+    });
+
+    it('keeps an inserted decision downstream edge on the spine while every branch stays empty', () => {
+      const nodes = [
+        { id: 'a', position: { x: 0, y: 0 }, data: {} },
+        { id: 'if', type: 'if', position: { x: 0, y: 100 }, data: {} },
+        { id: 'b', position: { x: 0, y: 200 }, data: {} },
+      ];
+      const edges = [
+        { id: 'a-if', source: 'a', target: 'if' },
+        {
+          id: 'if-b',
+          source: 'if',
+          sourceHandle: 'true',
+          target: 'b',
+          data: { [SEQ_CONTINUATION_EDGE_KEY]: true },
+        },
+      ];
+      const projection = projectSequence(nodes, edges, { getBranchHandles: ifBranches });
+
+      expect(projection.rows.map((row) => row.nodeId)).toEqual([
+        'a',
+        'if',
+        '__sequential-lane__if::true',
+        '__sequential-lane__if::false',
+        'b',
+      ]);
+      expect(rowById(projection, 'b')).toMatchObject({ depth: 0, parentRowId: undefined });
+      expect(connector(projection, 'if', 'b')).toMatchObject({
+        kind: 'merge-back',
+        slot: { continuation: true },
+      });
+    });
+
+    it('keeps downstream nodes at the insertion level when adding a decision inside a branch', () => {
+      const nodes = [
+        { id: 'outer', type: 'if', position: { x: 0, y: 0 }, data: {} },
+        { id: 'inserted', type: 'if', position: { x: 0, y: 100 }, data: {} },
+        { id: 'downstream', position: { x: 0, y: 200 }, data: {} },
+      ];
+      const edges = [
+        { id: 'outer-inserted', source: 'outer', sourceHandle: 'true', target: 'inserted' },
+        {
+          id: 'inserted-downstream',
+          source: 'inserted',
+          sourceHandle: 'true',
+          target: 'downstream',
+          data: { [SEQ_CONTINUATION_EDGE_KEY]: true },
+        },
+      ];
+      const projection = projectSequence(nodes, edges, {
+        getBranchHandles: (node) =>
+          node.type === 'if'
+            ? [
+                { id: 'true', label: 'Then' },
+                { id: 'false', label: 'Else' },
+              ]
+            : [],
+      });
+
+      expect(rowById(projection, 'inserted')).toMatchObject({ depth: 1, parentRowId: 'outer' });
+      expect(rowById(projection, 'downstream')).toMatchObject({
+        depth: 1,
+        parentRowId: 'outer',
+      });
+      expect(projection.rows.filter((row) => row.parentRowId === 'inserted')).toEqual([
+        expect.objectContaining({
+          placeholderKind: 'lane',
+          branch: expect.objectContaining({ handleId: 'true' }),
+        }),
+        expect.objectContaining({
+          placeholderKind: 'lane',
+          branch: expect.objectContaining({ handleId: 'false' }),
+        }),
       ]);
     });
   });

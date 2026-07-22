@@ -41,6 +41,35 @@ describe('SequentialConnectorEdge', () => {
     });
   });
 
+  describe('merge-back kind', () => {
+    it('renders a straight container continuation solid', () => {
+      const { container } = renderEdge({
+        kind: 'merge-back',
+        waypoints: [],
+        slot: { id: 'container-continuation' },
+      });
+
+      const visiblePath = container.querySelector('.react-flow__edge-path') as SVGPathElement;
+      expect(visiblePath.style.strokeDasharray).toBe('0');
+      expect(screen.getByRole('button', { name: 'Insert step' }).parentElement).toHaveStyle({
+        transform: 'translate(-50%, -50%) translate(100px, 180px)',
+      });
+    });
+
+    it('keeps an elbowed branch rejoin dashed', () => {
+      const { container } = renderEdge({
+        kind: 'merge-back',
+        waypoints: [
+          { x: 0, y: 100 },
+          { x: 100, y: 100 },
+        ],
+      });
+
+      const visiblePath = container.querySelector('.react-flow__edge-path') as SVGPathElement;
+      expect(visiblePath.style.strokeDasharray).toBe('5,5');
+    });
+  });
+
   it('centers a left-entry arrow using the target node height', () => {
     expect(getLeftEntryArrowTargetY(200, 999, 48)).toBe(224);
     expect(getLeftEntryArrowTargetY(undefined, 200, undefined)).toBe(228);
@@ -51,8 +80,9 @@ describe('SequentialConnectorEdge', () => {
       renderEdge({ kind: 'step', slot: { id: 's-1', graphEdgeId: 'e1' } }, 'design');
       const button = screen.getByRole('button', { name: 'Insert step' });
       expect(button).toBeInTheDocument();
+      // Faint at rest (discoverable without hover), full on hover/focus.
       expect(button).toHaveClass(
-        'opacity-0',
+        'opacity-40',
         'group-hover:opacity-100',
         'group-focus-within:opacity-100'
       );

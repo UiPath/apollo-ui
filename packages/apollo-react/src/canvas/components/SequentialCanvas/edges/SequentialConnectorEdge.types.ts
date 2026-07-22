@@ -15,9 +15,10 @@ import type { Waypoint } from '../../Edges/shared/types';
  * can short-circuit the memo during pan/zoom and data-only edits (D12).
  *
  * Field-by-field contract:
- *  - `kind`            copy from `connector.kind`. Drives stroke style:
- *                      'step' | 'branch-entry' render solid; 'merge-back' |
- *                      'goto' render dashed. See {@link resolveConnectorStrokeStyle}.
+ *  - `kind`            copy from `connector.kind`. Drives stroke style: `step`
+ *                      and `branch-entry` render solid; branch rejoins and
+ *                      `goto` render dashed; straight container continuations
+ *                      remain solid. See {@link resolveConnectorStrokeStyle}.
  *  - `label`           copy from `connector.label`. Branch-entry labels render
  *                      above their first row using the shared edge-label style;
  *                      other kinds
@@ -51,6 +52,12 @@ export type SequentialConnectorData = {
   preview?: boolean;
   /** Visual-only preview join that AddNodeManager must not materialize. */
   ignorePreviewConnection?: boolean;
+  /**
+   * Canonical manifest handle on the existing endpoint of a preview edge.
+   * The rendered edge stays on the guaranteed sequential bar handle while
+   * AddNodeManager uses this id for connection filtering and materialization.
+   */
+  previewConnectionHandleId?: string;
   enableExecution?: boolean;
   hideArrowHead?: boolean;
 };

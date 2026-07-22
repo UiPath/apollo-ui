@@ -5,9 +5,15 @@ import type { EdgeStrokeStyle } from '../../Edges/shared/types';
  * Maps a connector kind to its stroke style.
  *
  * - `step` / `branch-entry` are part of the structural spine: solid.
- * - `merge-back` / `goto` are the "degrade" rejoin/reference connectors and
- *   read as secondary: dashed (D9).
+ * - branch `merge-back` / `goto` connectors are secondary rejoins/references:
+ *   dashed (D9).
+ * - a straight `merge-back` is a structural container's ordinary continuation
+ *   and reads like the equivalent While continuation: solid.
  */
-export function resolveConnectorStrokeStyle(kind: SequenceConnectorKind): EdgeStrokeStyle {
+export function resolveConnectorStrokeStyle(
+  kind: SequenceConnectorKind,
+  options?: { straightContainerContinuation?: boolean }
+): EdgeStrokeStyle {
+  if (kind === 'merge-back' && options?.straightContainerContinuation) return 'solid';
   return kind === 'merge-back' || kind === 'goto' ? 'dashed' : 'solid';
 }

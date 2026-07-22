@@ -9,6 +9,7 @@ import {
   SEQ_PLACEHOLDER_NODE_TYPE,
   SEQ_START_NODE_TYPE,
 } from '../../../constants';
+import { SEQ_CONTINUATION_EDGE_KEY } from '../../../utils/sequential/graph-helpers';
 import type { InsertionSlot } from '../../../utils/sequential/sequential.types';
 import { SEQUENTIAL_BAR_HANDLE_IDS } from '../nodes';
 import {
@@ -210,6 +211,36 @@ describe('sequentialOnBeforeNodeAdded', () => {
       }
     });
 
+    it('marks the inserted-node-to-downstream half as a continuation', () => {
+      vi.spyOn(crypto, 'randomUUID').mockReturnValue(FAKE_UUID);
+      const { newEdges } = sequentialOnBeforeNodeAdded(seedNode(), seedEdges(), {
+        sourceNodeId: 'srcA',
+        targetNodeId: 'tgtB',
+        graphEdgeId: 'canonical-edge-7',
+      });
+
+      const incoming = newEdges.find((edge) => edge.target === FAKE_UUID);
+      const outgoing = newEdges.find((edge) => edge.source === FAKE_UUID);
+      expect(
+        (incoming?.data as Record<string, unknown>)[SEQ_CONTINUATION_EDGE_KEY]
+      ).toBeUndefined();
+      expect((outgoing?.data as Record<string, unknown>)[SEQ_CONTINUATION_EDGE_KEY]).toBe(true);
+    });
+
+    it('preserves an existing continuation marker on the source half when splitting it again', () => {
+      vi.spyOn(crypto, 'randomUUID').mockReturnValue(FAKE_UUID);
+      const { newEdges } = sequentialOnBeforeNodeAdded(seedNode(), seedEdges(), {
+        sourceNodeId: 'srcA',
+        targetNodeId: 'tgtB',
+        graphEdgeId: 'canonical-edge-7',
+        splitEdgeWasContinuation: true,
+      });
+
+      for (const edge of newEdges) {
+        expect((edge.data as Record<string, unknown>)[SEQ_CONTINUATION_EDGE_KEY]).toBe(true);
+      }
+    });
+
     it('leaves non-bar handle ids untouched even when a pending value is present', () => {
       vi.spyOn(crypto, 'randomUUID').mockReturnValue(FAKE_UUID);
       const pending: PendingSequentialInsert = {
@@ -260,7 +291,18 @@ describe('resolvePendingSequentialInsert', () => {
       sourceHandleId: 'true',
       targetHandleId: 'input',
       containerId: 'loop-1',
+      splitEdgeWasContinuation: undefined,
     });
+  });
+
+  it('captures continuation semantics when inserting into an already-healed spine', () => {
+    const pending = resolvePendingSequentialInsert({
+      id: 'slot-1',
+      source: { nodeId: 'a' },
+      target: { nodeId: 'b' },
+      continuation: true,
+    });
+    expect(pending.splitEdgeWasContinuation).toBe(true);
   });
 
   it('yields undefined handle ids (never a bar handle) when the slot endpoint omits one', () => {

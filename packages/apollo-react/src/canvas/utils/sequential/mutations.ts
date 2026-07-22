@@ -1,4 +1,5 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { SEQ_CONTINUATION_EDGE_KEY } from './graph-helpers';
 import type {
   GraphChangeSet,
   InsertionSlot,
@@ -26,7 +27,8 @@ function makeEdge(
   source: string,
   sourceHandle: string | undefined,
   target: string,
-  targetHandle: string | undefined
+  targetHandle: string | undefined,
+  continuation = false
 ): Edge {
   return {
     id: `edge_${source}-${sourceHandle ?? ''}-${target}-${targetHandle ?? ''}`,
@@ -35,6 +37,7 @@ function makeEdge(
     sourceHandle: sourceHandle ?? undefined,
     targetHandle: targetHandle ?? undefined,
     type: 'default',
+    ...(continuation ? { data: { [SEQ_CONTINUATION_EDGE_KEY]: true } } : {}),
   };
 }
 
@@ -42,6 +45,7 @@ interface Incomer {
   source: string;
   sourceHandle?: string;
   edgeId: string;
+  continuation?: boolean;
 }
 interface Outgoer {
   target: string;
@@ -68,6 +72,7 @@ function collectSeam(
         source: connector.slot?.source?.nodeId ?? connector.sourceRowId,
         sourceHandle: connector.slot?.source?.handleId,
         edgeId,
+        continuation: connector.slot?.continuation,
       });
     }
     if (connector.sourceRowId === nodeId) {
@@ -92,14 +97,18 @@ export function insertAtSlot(
 
   if (slot.graphEdgeId && slot.source && slot.target) {
     // Splitting an existing edge: it is removed and re-formed around the node.
-    addEdges.push(makeEdge(slot.source.nodeId, slot.source.handleId, node.id, undefined));
-    addEdges.push(makeEdge(node.id, undefined, slot.target.nodeId, slot.target.handleId));
+    addEdges.push(
+      makeEdge(slot.source.nodeId, slot.source.handleId, node.id, undefined, slot.continuation)
+    );
+    addEdges.push(makeEdge(node.id, undefined, slot.target.nodeId, slot.target.handleId, true));
     return { addNodes: [node], addEdges, removeNodeIds: [], removeEdgeIds: [slot.graphEdgeId] };
   }
   if (slot.source) {
-    addEdges.push(makeEdge(slot.source.nodeId, slot.source.handleId, node.id, undefined));
+    addEdges.push(
+      makeEdge(slot.source.nodeId, slot.source.handleId, node.id, undefined, slot.continuation)
+    );
   } else if (slot.target) {
-    addEdges.push(makeEdge(node.id, undefined, slot.target.nodeId, slot.target.handleId));
+    addEdges.push(makeEdge(node.id, undefined, slot.target.nodeId, slot.target.handleId, true));
   }
   return { addNodes: [node], addEdges, removeNodeIds: [], removeEdgeIds: [] };
 }
@@ -118,7 +127,8 @@ function healEdges(incomers: Incomer[], outgoers: Outgoer[]): Edge[] {
         incomer.source,
         incomer.sourceHandle,
         outgoer.target,
-        outgoer.targetHandle
+        outgoer.targetHandle,
+        incomer.continuation
       );
       if (!seen.has(edge.id)) {
         seen.add(edge.id);
@@ -179,6 +189,7 @@ function collectOwnSeam(
         source: connector.slot?.source?.nodeId ?? connector.sourceRowId,
         sourceHandle: connector.slot?.source?.handleId,
         edgeId,
+        continuation: connector.slot?.continuation,
       });
     }
     if (connector.sourceRowId === nodeId && connector.kind !== 'branch-entry') {
@@ -219,13 +230,58 @@ function collectProjectedDescendantIds(projection: SequenceProjection, rootId: s
   return result;
 }
 
-/** A shallow clone of `node` with `parentId` set to `parentId`, or removed entirely when `undefined`. */
-function withParentId(node: Node, parentId: string | undefined): Node {
-  const next: Node = { ...node };
+/** Resolves a node's flow-view position into the root coordinate space. */
+function absolutePosition(
+  node: Node,
+  nodesById: ReadonlyMap<string, Node>
+): { x: number; y: number } {
+  let x = node.position.x;
+  let y = node.position.y;
+  let parentId = node.parentId;
+  const visited = new Set<string>([node.id]);
+
+  while (parentId && !visited.has(parentId)) {
+    visited.add(parentId);
+    const parent = nodesById.get(parentId);
+    if (!parent) break;
+    x += parent.position.x;
+    y += parent.position.y;
+    parentId = parent.parentId;
+  }
+
+  return { x, y };
+}
+
+/**
+ * Reparents a node without changing its flow-view absolute position. React Flow
+ * stores a child position relative to its parent, so crossing a container
+ * boundary requires a coordinate conversion as well as a `parentId` rewrite.
+ * Parent-only containment flags are added/removed with the relationship so an
+ * outdented node never retains an invalid `extent: 'parent'`/`expandParent`.
+ */
+function reparentNode(
+  node: Node,
+  parentId: string | undefined,
+  nodesById: ReadonlyMap<string, Node>
+): Node {
+  const absolute = absolutePosition(node, nodesById);
+  const parent = parentId ? nodesById.get(parentId) : undefined;
+  const parentAbsolute = parent ? absolutePosition(parent, nodesById) : { x: 0, y: 0 };
+  const next: Node = {
+    ...node,
+    position: {
+      x: absolute.x - parentAbsolute.x,
+      y: absolute.y - parentAbsolute.y,
+    },
+  };
+
   if (parentId === undefined) {
     delete next.parentId;
+    if (next.extent === 'parent') delete next.extent;
+    delete next.expandParent;
   } else {
     next.parentId = parentId;
+    next.extent = 'parent';
   }
   return next;
 }
@@ -363,14 +419,15 @@ function isNestedContainer(
  * external outgoer and corrupt the container/branch on splice - see
  * `moveSubtree`'s doc comment. This delegation does not depend on whether
  * `graph` is supplied: the seam fix is needed either way, `graph` only
- * additionally lets a cross-container move correct `parentId`. For leaf nodes
- * the two ops are equivalent (no `branch-entry` connector is ever sourced at a
- * leaf), so this changes nothing for existing leaf-only callers/tests.
+ * additionally lets a cross-container move correct its parent-relative
+ * position and containment. For leaf nodes the two ops are equivalent (no
+ * `branch-entry` connector is ever sourced at a leaf), so this changes nothing
+ * for existing leaf-only callers/tests.
  *
  * The VIEW layer's four tree operations (move up/down, indent, outdent)
  * should call `moveSubtree` directly with `graph`, not this function: even a
  * plain leaf crosses a container boundary on indent/outdent, and only
- * `moveSubtree` updates `parentId`.
+ * `moveSubtree` updates its parent-relative geometry and containment.
  */
 export function moveStep(
   projection: SequenceProjection,
@@ -418,18 +475,24 @@ export function moveStep(
     for (const outgoer of outgoers) {
       if (incomer.source === nodeId || outgoer.target === nodeId) continue;
       pushEdge(
-        makeEdge(incomer.source, incomer.sourceHandle, outgoer.target, outgoer.targetHandle)
+        makeEdge(
+          incomer.source,
+          incomer.sourceHandle,
+          outgoer.target,
+          outgoer.targetHandle,
+          incomer.continuation
+        )
       );
     }
   }
 
   if (to.source && to.target && to.graphEdgeId) {
-    pushEdge(makeEdge(to.source.nodeId, to.source.handleId, nodeId, undefined));
-    pushEdge(makeEdge(nodeId, undefined, to.target.nodeId, to.target.handleId));
+    pushEdge(makeEdge(to.source.nodeId, to.source.handleId, nodeId, undefined, to.continuation));
+    pushEdge(makeEdge(nodeId, undefined, to.target.nodeId, to.target.handleId, true));
   } else if (to.source) {
-    pushEdge(makeEdge(to.source.nodeId, to.source.handleId, nodeId, undefined));
+    pushEdge(makeEdge(to.source.nodeId, to.source.handleId, nodeId, undefined, to.continuation));
   } else if (to.target) {
-    pushEdge(makeEdge(nodeId, undefined, to.target.nodeId, to.target.handleId));
+    pushEdge(makeEdge(nodeId, undefined, to.target.nodeId, to.target.handleId, true));
   }
 
   return { addNodes: [], addEdges, removeNodeIds: [], removeEdgeIds: [...removeEdgeIds] };
@@ -453,16 +516,16 @@ export function moveStep(
  *
  * ONE thing edges alone cannot carry: a branch owner's lane content shares
  * the OWNER's OWN `parentId` (branches never reparent - see graph-helpers.ts's
- * dual nesting model), so if `nodeId` itself crosses a container boundary
- * (its `parentId` changes), any descendant that shared `nodeId`'s OLD
- * `parentId` must be rewritten to `nodeId`'s NEW one too, or it is silently
- * left behind in the old container. A genuine container-child of `nodeId`
- * (`parentId === nodeId`) needs no such rewrite: its `parentId` still points
- * at the same (unchanged) id wherever `nodeId` now lives. Both the `parentId`
- * rewrite and the fix above require the raw `graph` (a `Node`'s full shape
- * cannot be reconstructed from the projection alone); without it, `nodeId`'s
- * `parentId` is left untouched, matching `moveStep`'s existing documented
- * limitation.
+ * dual nesting model), so if `nodeId` itself crosses a container boundary,
+ * any descendant that shared `nodeId`'s OLD parent must move to the NEW parent
+ * too, or it is silently left behind. Reparenting also converts each moved
+ * node's absolute position into the destination parent's coordinate space and
+ * synchronizes `extent`/`expandParent`, keeping the flow view stable and valid.
+ * A genuine container-child of `nodeId` (`parentId === nodeId`) needs no such
+ * rewrite: it follows the unchanged owner id and retains its local position.
+ * These rewrites require the raw `graph` (a `Node`'s full shape cannot be
+ * reconstructed from the projection alone); without it, containment and
+ * geometry are left untouched, matching `moveStep`'s documented limitation.
  *
  * KNOWN LIMITATION: a container idiom where a body's tail closes the loop via
  * an edge back into the container itself (e.g. For Each's `continue` handle)
@@ -517,18 +580,24 @@ export function moveSubtree(
     for (const outgoer of outgoers) {
       if (incomer.source === nodeId || outgoer.target === nodeId) continue;
       pushEdge(
-        makeEdge(incomer.source, incomer.sourceHandle, outgoer.target, outgoer.targetHandle)
+        makeEdge(
+          incomer.source,
+          incomer.sourceHandle,
+          outgoer.target,
+          outgoer.targetHandle,
+          incomer.continuation
+        )
       );
     }
   }
 
   if (to.source && to.target && to.graphEdgeId) {
-    pushEdge(makeEdge(to.source.nodeId, to.source.handleId, nodeId, undefined));
-    pushEdge(makeEdge(nodeId, undefined, to.target.nodeId, to.target.handleId));
+    pushEdge(makeEdge(to.source.nodeId, to.source.handleId, nodeId, undefined, to.continuation));
+    pushEdge(makeEdge(nodeId, undefined, to.target.nodeId, to.target.handleId, true));
   } else if (to.source) {
-    pushEdge(makeEdge(to.source.nodeId, to.source.handleId, nodeId, undefined));
+    pushEdge(makeEdge(to.source.nodeId, to.source.handleId, nodeId, undefined, to.continuation));
   } else if (to.target) {
-    pushEdge(makeEdge(nodeId, undefined, to.target.nodeId, to.target.handleId));
+    pushEdge(makeEdge(nodeId, undefined, to.target.nodeId, to.target.handleId, true));
   }
 
   const removeNodeIds: string[] = [];
@@ -539,7 +608,7 @@ export function moveSubtree(
     if (rawNode && rawNode.parentId !== to.containerId) {
       const oldParentId = rawNode.parentId;
       removeNodeIds.push(nodeId);
-      addNodes.push(withParentId(rawNode, to.containerId));
+      addNodes.push(reparentNode(rawNode, to.containerId, nodesById));
 
       // Branch-lane content shares nodeId's OLD parentId (it has none of its
       // own distinct from its owner); it must travel with nodeId. A genuine
@@ -549,7 +618,7 @@ export function moveSubtree(
         const rawDescendant = nodesById.get(descendantId);
         if (rawDescendant && rawDescendant.parentId === oldParentId) {
           removeNodeIds.push(descendantId);
-          addNodes.push(withParentId(rawDescendant, to.containerId));
+          addNodes.push(reparentNode(rawDescendant, to.containerId, nodesById));
         }
       }
     }

@@ -8,6 +8,7 @@ import {
   forwardOut,
   isBranchSource,
   isLoopBackEdge,
+  isSequentialContinuationEdge,
   isContainerNode as isStructuralContainerNode,
   lanePlaceholderId,
   leafPlaceholderId,
@@ -78,6 +79,16 @@ export function projectSequence(
       (!!node && options?.isContainerNode?.(node) === true)
     );
   };
+  const declaredBranchHandlesByNodeId = new Map<string, { id: string; label: string }[]>();
+  const declaredBranchHandles = (nodeId: string): { id: string; label: string }[] => {
+    if (isContainer(nodeId)) return [];
+    const cached = declaredBranchHandlesByNodeId.get(nodeId);
+    if (cached) return cached;
+    const node = index.nodesById.get(nodeId);
+    const handles = node ? (options?.getBranchHandles?.(node) ?? []) : [];
+    declaredBranchHandlesByNodeId.set(nodeId, handles);
+    return handles;
+  };
 
   const visited = new Set<string>();
   const onStack = new Set<string>();
@@ -97,6 +108,7 @@ export function projectSequence(
       target: { nodeId: edge.target, handleId: edge.targetHandle ?? undefined },
       graphEdgeId: edge.id,
       containerId: containerId ?? undefined,
+      continuation: isSequentialContinuationEdge(edge) || undefined,
     });
 
   const pushConnector = (
@@ -125,7 +137,10 @@ export function projectSequence(
       depth,
       parentRowId,
       branch,
-      collapsible: isContainer(nodeId) || isBranchSource(index, nodeId, scope),
+      collapsible:
+        isContainer(nodeId) ||
+        isBranchSource(index, nodeId, scope) ||
+        declaredBranchHandles(nodeId).length > 0,
       collapsed: collapsedSet.has(nodeId),
       visible: true, // resolved in a post-pass once every row exists
       orphan: orphan || undefined,
@@ -169,6 +184,7 @@ export function projectSequence(
       collapsed: false,
       visible: true,
       lanePlaceholder: slot,
+      placeholderKind: 'lane',
     });
     // No ⊕ slot on the connector — the placeholder bar itself is the affordance.
     pushConnector(
@@ -312,10 +328,25 @@ export function projectSequence(
     // edge. Returns the next node id, or undefined when the walk must stop
     // (merge-back / goto / cycle). Shared by the plain single-successor case and
     // a declared branch node's continuation output.
-    const stepToSuccessor = (fromId: string, edge: Edge): string | undefined => {
+    const stepToSuccessor = (
+      fromId: string,
+      edge: Edge,
+      followsIndentedContent = false
+    ): string | undefined => {
       const next = edge.target;
       if (stopBefore.has(next)) {
-        pushConnector('merge-back', `conn:merge:${edge.id}`, fromId, next);
+        // A branch/loop lane closing into the shared merge. The closing edge is a
+        // real graph edge, so it stays insertable: splitting it appends a step to
+        // the END of this lane (before the merge), the same as any other gap. The
+        // dashed merge-back style is kept; only the missing slot is restored.
+        pushConnector(
+          'merge-back',
+          `conn:merge:${edge.id}`,
+          fromId,
+          next,
+          undefined,
+          slotFromEdge(edge, scope)
+        );
         return undefined;
       }
       if (onStack.has(next) || visited.has(next)) {
@@ -323,7 +354,7 @@ export function projectSequence(
         return undefined;
       }
       pushConnector(
-        isContainer(fromId) ? 'merge-back' : 'step',
+        isContainer(fromId) || followsIndentedContent ? 'merge-back' : 'step',
         `conn:${edge.id}`,
         fromId,
         next,
@@ -351,9 +382,7 @@ export function projectSequence(
       // routed through its DECLARED handles rather than the edge-count heuristic,
       // so every lane renders — populated ones walk, empty ones get a "+ Add
       // step" placeholder — regardless of how many branches are wired yet.
-      const branchHandles: { id: string; label: string }[] = isContainer(currentId)
-        ? []
-        : (options?.getBranchHandles?.(node) ?? []);
+      const branchHandles = declaredBranchHandles(currentId);
       const isDeclaredBranch: boolean = branchHandles.length > 0;
 
       if (out.length === 0 && !isDeclaredBranch) {
@@ -380,6 +409,7 @@ export function projectSequence(
               collapsed: false,
               visible: leafRow.visible,
               lanePlaceholder: slot,
+              placeholderKind: 'append',
             });
             pushConnector('step', `conn:leaf:${currentId}`, currentId, placeholderNodeId);
           }
@@ -392,10 +422,16 @@ export function projectSequence(
         // handles) vs a single continuation output (e.g. a loop's Completed).
         const branchHandleIds = new Set(branchHandles.map((h) => h.id));
         const laneEdges: Edge[] = isDeclaredBranch
-          ? out.filter((edge) => branchHandleIds.has(sourceHandleOf(edge)))
+          ? out.filter(
+              (edge) =>
+                !isSequentialContinuationEdge(edge) && branchHandleIds.has(sourceHandleOf(edge))
+            )
           : out;
         const continuationEdges: Edge[] = isDeclaredBranch
-          ? out.filter((edge) => !branchHandleIds.has(sourceHandleOf(edge)))
+          ? out.filter(
+              (edge) =>
+                isSequentialContinuationEdge(edge) || !branchHandleIds.has(sourceHandleOf(edge))
+            )
           : [];
 
         let merge: string | undefined;
@@ -432,7 +468,7 @@ export function projectSequence(
           continue;
         }
         if (continuationEdges.length === 1) {
-          const nextId = stepToSuccessor(currentId, continuationEdges[0]!);
+          const nextId = stepToSuccessor(currentId, continuationEdges[0]!, true);
           if (nextId !== undefined) {
             currentId = nextId;
             branchMeta = undefined;
@@ -443,8 +479,9 @@ export function projectSequence(
       }
 
       // Plain single successor (not a declared branch). A container's own
-      // forward continuation rejoins the spine from its indented body, so
-      // stepToSuccessor renders it dashed (merge-back) while keeping its slot.
+      // forward continuation rejoins the spine after its indented body, so it
+      // uses merge-back geometry while keeping its slot. Straight container
+      // continuations still render solid in SequentialConnectorEdge.
       const nextId = stepToSuccessor(currentId, out[0]!);
       if (nextId === undefined) break;
       currentId = nextId;

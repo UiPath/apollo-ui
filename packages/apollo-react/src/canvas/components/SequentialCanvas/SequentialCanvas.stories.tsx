@@ -11,9 +11,9 @@ import { waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useEdgesState, useNodesState } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ToggleGroup, ToggleGroupItem } from '@uipath/apollo-wind';
+import { Switch, ToggleGroup, ToggleGroupItem } from '@uipath/apollo-wind';
 import { useCallback, useMemo, useState } from 'react';
-import { SEQ_BAR_HEIGHT, SEQ_BAR_WIDTH, SEQ_INDENT_PX, SEQ_ROW_GAP } from '../../constants';
+import { SEQ_INDENT_PX } from '../../constants';
 import { StoryInfoPanel, withCanvasProviders } from '../../storybook-utils';
 import {
   SequentialCanvasStoryHarness,
@@ -23,7 +23,7 @@ import { makeWireframeFixture } from '../../utils/sequential/fixtures';
 import { SequentialCanvas } from './SequentialCanvas';
 
 const meta: Meta = {
-  title: 'Components/SequentialCanvas/SequentialCanvas',
+  title: 'Components/Canvas/SequentialCanvas',
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],
 };
@@ -35,39 +35,43 @@ const SEQUENCE_DENSITY_PRESETS = [
   {
     id: 'compact',
     label: 'Compact',
-    nodeWidth: 704,
-    nodeHeight: 48,
-    indentMultiplier: 0.75,
-    rowGap: 32,
+    nodeWidth: 512,
+    nodeHeight: 40,
+    indentMultiplier: 1,
+    rowGap: 24,
   },
   {
     id: 'balanced',
     label: 'Balanced',
-    nodeWidth: SEQ_BAR_WIDTH,
-    nodeHeight: SEQ_BAR_HEIGHT,
-    indentMultiplier: 1,
-    rowGap: SEQ_ROW_GAP,
+    nodeWidth: 640,
+    nodeHeight: 48,
+    indentMultiplier: 1.5,
+    rowGap: 48,
   },
   {
     id: 'spacious',
     label: 'Spacious',
-    nodeWidth: 1120,
-    nodeHeight: 72,
-    indentMultiplier: 1.5,
-    rowGap: 80,
+    nodeWidth: 800,
+    nodeHeight: 64,
+    indentMultiplier: 2,
+    rowGap: 64,
   },
 ] as const;
+const BALANCED_DENSITY_PRESET = SEQUENCE_DENSITY_PRESETS[1];
 
 // ---------------------------------------------------------------------------
-// (a) Wireframe: reproduces the design concept graph exactly.
+// (a) Interactive Sequence: configurable sequential workflow example.
 // ---------------------------------------------------------------------------
 
-function WireframeStory() {
+function InteractiveSequenceStory() {
   const fixture = useMemo(() => makeWireframeFixture(), []);
-  const [nodeWidth, setNodeWidth] = useState(SEQ_BAR_WIDTH);
-  const [nodeHeight, setNodeHeight] = useState(SEQ_BAR_HEIGHT);
-  const [indentMultiplier, setIndentMultiplier] = useState(1);
-  const [rowGap, setRowGap] = useState(SEQ_ROW_GAP);
+  const [isReadonly, setIsReadonly] = useState(false);
+  const [nodeWidth, setNodeWidth] = useState(BALANCED_DENSITY_PRESET.nodeWidth);
+  const [nodeHeight, setNodeHeight] = useState(BALANCED_DENSITY_PRESET.nodeHeight);
+  const [indentMultiplier, setIndentMultiplier] = useState(
+    BALANCED_DENSITY_PRESET.indentMultiplier
+  );
+  const [rowGap, setRowGap] = useState(BALANCED_DENSITY_PRESET.rowGap);
   const sequenceLayoutOptions = useMemo(
     () => ({
       barWidth: nodeWidth,
@@ -102,16 +106,27 @@ function WireframeStory() {
         initialNodes={fixture.nodes}
         initialEdges={fixture.edges}
         extraManifests={sequentialWireframeManifests}
+        mode={isReadonly ? 'readonly' : 'design'}
         sequenceLayoutOptions={sequenceLayoutOptions}
         onAddTrigger={() => console.log('Add trigger clicked')}
       />
       <StoryInfoPanel
         collapsible
         defaultCollapsed
-        title="Sequence layout"
-        description="Adjust the sequential projection geometry without changing the canonical graph."
+        title="Sequence controls"
+        description="Toggle interaction mode and adjust projection geometry without changing the canonical graph."
       >
         <div>
+          <div className="flex items-center justify-between gap-4 text-xs font-medium">
+            <span>Readonly canvas</span>
+            <Switch
+              size="sm"
+              checked={isReadonly}
+              onCheckedChange={setIsReadonly}
+              aria-label="Readonly canvas"
+              className="nodrag nopan nowheel"
+            />
+          </div>
           <div className="mt-3">
             <span className="block text-xs font-medium">Density preset</span>
             <ToggleGroup
@@ -139,8 +154,8 @@ function WireframeStory() {
               type="range"
               aria-label="Node width"
               className="nodrag nopan nowheel mt-1 w-full cursor-pointer"
-              min={512}
-              max={1280}
+              min={384}
+              max={960}
               step={16}
               value={nodeWidth}
               onChange={(event) => setNodeWidth(Number(event.target.value))}
@@ -155,8 +170,8 @@ function WireframeStory() {
               type="range"
               aria-label="Node height"
               className="nodrag nopan nowheel mt-1 w-full cursor-pointer"
-              min={48}
-              max={96}
+              min={40}
+              max={80}
               step={8}
               value={nodeHeight}
               onChange={(event) => setNodeHeight(Number(event.target.value))}
@@ -172,7 +187,7 @@ function WireframeStory() {
               aria-label="Indent multiplier"
               className="nodrag nopan nowheel mt-1 w-full cursor-pointer"
               min={0.5}
-              max={2}
+              max={2.5}
               step={0.25}
               value={indentMultiplier}
               onChange={(event) => setIndentMultiplier(Number(event.target.value))}
@@ -187,8 +202,8 @@ function WireframeStory() {
               type="range"
               aria-label="Gap between nodes"
               className="nodrag nopan nowheel mt-1 w-full cursor-pointer"
-              min={32}
-              max={112}
+              min={24}
+              max={80}
               step={8}
               value={rowGap}
               onChange={(event) => setRowGap(Number(event.target.value))}
@@ -200,17 +215,17 @@ function WireframeStory() {
   );
 }
 
-export const Wireframe: Story = {
-  name: 'Wireframe',
+export const InteractiveSequence: Story = {
+  name: 'Interactive Sequence',
   parameters: {
     docs: {
       description: {
         story:
-          'Reproduces the design concept: a Workflow start bar, HTTP Request, Javascript, a For Each container whose body is an If branching into Then: Javascript 1 and Else: HTTP Request 1, Send Message to User, and the terminal Add step placeholder. Built from utils/sequential/fixtures.ts makeWireframeFixture, the same fixture the projection engine unit tests assert exact step numbers and connectors against.',
+          'Reproduces the design concept: a Workflow start bar, HTTP Request, Javascript, a For Each container whose body is an If branching into Then: Javascript 1 and Else: HTTP Request 1, Send Message to User, and the terminal add-step control. Built from utils/sequential/fixtures.ts makeWireframeFixture, the same fixture the projection engine unit tests assert exact step numbers and connectors against.',
       },
     },
   },
-  render: () => <WireframeStory />,
+  render: () => <InteractiveSequenceStory />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
@@ -221,16 +236,46 @@ export const Wireframe: Story = {
       const indent = canvas.getByRole('slider', { name: 'Indent multiplier' }) as HTMLInputElement;
       const gap = canvas.getByRole('slider', { name: 'Gap between nodes' }) as HTMLInputElement;
       if (
-        width.value !== '704' ||
-        height.value !== '48' ||
-        indent.value !== '0.75' ||
-        gap.value !== '32'
+        width.value !== '512' ||
+        height.value !== '40' ||
+        indent.value !== '1' ||
+        gap.value !== '24'
       ) {
         throw new Error('Expected the Compact preset to update all layout controls.');
       }
     });
 
+    await userEvent.click(canvas.getByRole('radio', { name: 'Spacious' }));
+    await waitFor(() => {
+      const width = canvas.getByRole('slider', { name: 'Node width' }) as HTMLInputElement;
+      const height = canvas.getByRole('slider', { name: 'Node height' }) as HTMLInputElement;
+      const indent = canvas.getByRole('slider', { name: 'Indent multiplier' }) as HTMLInputElement;
+      const gap = canvas.getByRole('slider', { name: 'Gap between nodes' }) as HTMLInputElement;
+      if (
+        width.value !== '800' ||
+        height.value !== '64' ||
+        indent.value !== '2' ||
+        gap.value !== '64'
+      ) {
+        throw new Error('Expected the Spacious preset to update all layout controls.');
+      }
+    });
+
     await userEvent.click(canvas.getByRole('radio', { name: 'Balanced' }));
+    await waitFor(() => {
+      const width = canvas.getByRole('slider', { name: 'Node width' }) as HTMLInputElement;
+      const height = canvas.getByRole('slider', { name: 'Node height' }) as HTMLInputElement;
+      const indent = canvas.getByRole('slider', { name: 'Indent multiplier' }) as HTMLInputElement;
+      const gap = canvas.getByRole('slider', { name: 'Gap between nodes' }) as HTMLInputElement;
+      if (
+        width.value !== '640' ||
+        height.value !== '48' ||
+        indent.value !== '1.5' ||
+        gap.value !== '48'
+      ) {
+        throw new Error('Expected the Balanced preset to update all layout controls.');
+      }
+    });
 
     // For Each is step 3 (D7); its body (If=4, Javascript 1=5, HTTP Request 1=6)
     // starts expanded.

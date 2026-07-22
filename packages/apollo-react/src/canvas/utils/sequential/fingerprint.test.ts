@@ -2,6 +2,7 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it } from 'vitest';
 import { sequenceFingerprint } from './fingerprint';
 import { makeMultiRootFixture, makeWireframeFixture, WIREFRAME_NODE_IDS } from './fixtures';
+import { SEQ_CONTINUATION_EDGE_KEY } from './graph-helpers';
 
 const EMPTY = new Set<string>();
 
@@ -52,6 +53,15 @@ describe('sequenceFingerprint', () => {
       edge.id === 'e-http-js' ? { ...edge, target: WIREFRAME_NODE_IDS.forEach } : edge
     );
     expect(sequenceFingerprint(base.nodes, rewired, EMPTY)).not.toBe(baseline);
+  });
+
+  it('changes when an edge becomes an explicit sequential continuation', () => {
+    const marked = base.edges.map((edge) =>
+      edge.id === 'e-http-js'
+        ? { ...edge, data: { ...edge.data, [SEQ_CONTINUATION_EDGE_KEY]: true } }
+        : edge
+    );
+    expect(sequenceFingerprint(base.nodes, marked, EMPTY)).not.toBe(baseline);
   });
 
   it('changes when a node type changes', () => {

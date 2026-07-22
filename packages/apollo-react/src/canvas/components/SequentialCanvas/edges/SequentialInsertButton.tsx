@@ -13,10 +13,12 @@ export interface SequentialInsertButtonProps {
 
 /**
  * Statically centered ⊕ affordance for a sequential connector (design mode
- * only; the caller gates on slot presence + mode). It stays in the DOM for
- * keyboard navigation but is visually revealed on hover/focus, avoiding a wall
- * of competing plus buttons when several nested insertion slots are nearby.
- * Unlike the
+ * only; the caller gates on slot presence + mode). It rests at a low opacity so
+ * every insertable connector shows a quiet ⊕, then brightens to full on
+ * hover/focus. This keeps add points discoverable without a wall of
+ * full-strength buttons when several nested slots are nearby, and pairs with the
+ * plus variant of SequentialPlaceholderNode so "add a step" looks identical
+ * everywhere. Unlike the
  * hover-following EdgeToolbar (see Toolbar/EdgeToolbar/useEdgeToolbarPositioning.ts),
  * this sits at a fixed point on the connector and never tracks the pointer.
  *
@@ -47,7 +49,7 @@ export function SequentialInsertButton({ point, label, onInsert }: SequentialIns
         <CanvasInlineButton
           aria-label={label}
           icon="plus"
-          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+          className="opacity-40 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
           onMouseDown={stopMouseDown}
           onClick={handleClick}
         />

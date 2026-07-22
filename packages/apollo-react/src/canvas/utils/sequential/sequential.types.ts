@@ -74,13 +74,23 @@ export interface SequenceRow {
    */
   isLeaf?: boolean;
   /**
-   * Set on a synthetic empty-branch-lane placeholder row (a parent node's
-   * declared branch handle with no child yet). The row renders as a dashed
-   * "+ Add step" bar; the carried slot appends the first node into that lane
-   * with the correct source handle + containment. Such rows have no canonical
-   * node and are never numbered, forwarded, or keyboard-focused.
+   * Set on a synthetic placeholder row (a parent's empty declared branch handle
+   * or empty container body, or the trailing add point after a populated lane's
+   * last step). The carried slot appends a node into that scope with the correct
+   * source handle + containment. Such rows have no canonical node and are never
+   * numbered, forwarded, or keyboard-focused. See {@link placeholderKind} for how
+   * the two shapes render.
    */
   lanePlaceholder?: InsertionSlot;
+  /**
+   * Which add-step affordance a {@link lanePlaceholder} row renders as:
+   *  - 'lane'   : a genuinely EMPTY branch lane or container body. Renders as the
+   *               dashed "Add step" row, because there is no connector to host a plus.
+   *  - 'append' : the trailing add point AFTER the last step of a populated lane
+   *               or body. Renders as the same quiet plus used between steps, so
+   *               adding a step looks identical wherever a line already exists.
+   */
+  placeholderKind?: 'lane' | 'append';
 }
 
 /** An insertion point between two endpoints (graft: hybrid). */
@@ -93,6 +103,8 @@ export interface InsertionSlot {
   graphEdgeId?: string;
   /** parentId for the inserted node. */
   containerId?: string;
+  /** The split edge is an explicit spine continuation, not branch/body content. */
+  continuation?: boolean;
 }
 
 export type SequenceConnectorKind = 'step' | 'branch-entry' | 'merge-back' | 'goto';

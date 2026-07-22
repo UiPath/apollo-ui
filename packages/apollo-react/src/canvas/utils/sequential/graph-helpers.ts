@@ -16,6 +16,18 @@ import { DEFAULT_SOURCE_HANDLE_ID, PREVIEW_NODE_ID } from '../../constants';
 export const LOOP_BACK_HANDLE_ID = 'loopBack';
 
 /**
+ * Canonical edge-data marker for a structural continuation through an inserted
+ * node. It prevents a downstream edge from being reinterpreted as one of a
+ * newly inserted decision/container node's own lanes merely because the Add
+ * Node pipeline selected that node's default source handle.
+ */
+export const SEQ_CONTINUATION_EDGE_KEY = '__sequentialContinuation';
+
+export function isSequentialContinuationEdge(edge: Edge): boolean {
+  return (edge.data as Record<string, unknown> | undefined)?.[SEQ_CONTINUATION_EDGE_KEY] === true;
+}
+
+/**
  * Prefix for synthetic empty-branch-lane placeholder node ids (a parent's
  * declared branch handle with no child yet). These rows are view-only: they
  * never appear in canonical state. Change forwarding receives the exact set of

@@ -37,8 +37,8 @@ describe('layoutSequence', () => {
       expect(layout.positions.get(ids.forEach)).toEqual({ x: 0, y: 2 * PITCH });
       expect(layout.positions.get(ids.ifNode)).toEqual({ x: SEQ_INDENT_PX, y: 3 * PITCH });
       expect(layout.positions.get(ids.thenJs)).toEqual({ x: 2 * SEQ_INDENT_PX, y: 4 * PITCH });
-      expect(layout.positions.get(ids.elseHttp)).toEqual({ x: 2 * SEQ_INDENT_PX, y: 6 * PITCH });
-      expect(layout.positions.get(ids.sendMessage)).toEqual({ x: 0, y: 8 * PITCH });
+      expect(layout.positions.get(ids.elseHttp)).toEqual({ x: 2 * SEQ_INDENT_PX, y: 5 * PITCH });
+      expect(layout.positions.get(ids.sendMessage)).toEqual({ x: 0, y: 6 * PITCH });
     });
 
     it('computes bounds spanning the deepest and lowest rows', () => {
@@ -46,7 +46,7 @@ describe('layoutSequence', () => {
         x: 0,
         y: 0,
         width: 2 * SEQ_INDENT_PX + SEQ_BAR_WIDTH,
-        height: 8 * PITCH + SEQ_BAR_HEIGHT,
+        height: 6 * PITCH + SEQ_BAR_HEIGHT,
       });
     });
   });

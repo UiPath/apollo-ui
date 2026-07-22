@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import {
   DEFAULT_SOURCE_HANDLE_ID,
+  DEFAULT_TARGET_HANDLE_ID,
   PREVIEW_NODE_ID,
   SEQ_BAR_HEIGHT,
   SEQ_BAR_WIDTH,
@@ -209,7 +210,9 @@ function buildSequentialNodes<N extends Node>(
         type: SEQ_PLACEHOLDER_NODE_TYPE,
         position: layout.positions.get(row.nodeId) ?? { x: 0, y: 0 },
         width: barWidth,
-        height: barHeight,
+        // An append plus is an overlay in the row gap (rowGap tall, no reserved
+        // row); an empty lane/body is a full dashed row.
+        height: row.placeholderKind === 'append' ? rowGap : barHeight,
         draggable: false,
         // ReactFlow sets pointer-events:none on wrappers that are neither
         // selectable nor draggable and have no node-level click handler. Keep
@@ -220,6 +223,9 @@ function buildSequentialNodes<N extends Node>(
         data: {
           onAdd: onLaneAdd ? () => onLaneAdd(laneSlot) : undefined,
           insertionSlotId: laneSlot.id,
+          // Empty lane/body renders the dashed row; a populated lane's trailing
+          // add point renders the same quiet plus used between steps.
+          variant: row.placeholderKind === 'append' ? 'plus' : 'row',
         } satisfies SequentialPlaceholderNodeData,
       });
       continue;
@@ -277,8 +283,13 @@ function buildSequentialNodes<N extends Node>(
   // Below the ENTIRE visible stack (any depth), not just the last top-level row,
   // so it never lands inside a trailing container's body and overlap a nested
   // leaf's add affordance.
+  // A non-empty flow's tail is a plus overlay in the gap just below the last row
+  // (no reserved row); an empty flow shows the dashed "Add step" row as a full row.
+  const tailIsPlus = firstTopY !== undefined;
   const placeholderY =
-    firstOrphanY !== undefined ? firstOrphanY - pitch : (maxVisibleY ?? -pitch) + pitch;
+    firstOrphanY !== undefined
+      ? firstOrphanY - pitch
+      : (maxVisibleY ?? -pitch) + (tailIsPlus ? barHeight : pitch);
 
   const startNode: Node = {
     id: SEQ_START_ROW_ID,
@@ -296,19 +307,39 @@ function buildSequentialNodes<N extends Node>(
     type: SEQ_PLACEHOLDER_NODE_TYPE,
     position: { x: 0, y: placeholderY },
     width: barWidth,
-    height: barHeight,
+    height: tailIsPlus ? rowGap : barHeight,
     draggable: false,
     selectable: callbacks.onPlaceholderAdd !== undefined,
-    data: { onAdd: callbacks.onPlaceholderAdd } satisfies SequentialPlaceholderNodeData,
+    data: {
+      onAdd: callbacks.onPlaceholderAdd,
+      // With real steps above, the tail is a plus overlay in the gap (append); an
+      // empty flow shows the dashed "Add step" row instead.
+      variant: tailIsPlus ? 'plus' : 'row',
+    } satisfies SequentialPlaceholderNodeData,
   };
 
   return [startNode, ...clones, placeholderNode, ...orphanClones];
 }
 
 function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLayout): Edge[] {
+  // A connector into a trailing insert (plus) placeholder must not draw an
+  // arrowhead: its target is an add affordance, not a real step.
+  const appendPlaceholderIds = new Set(
+    projection.rows.filter((row) => row.placeholderKind === 'append').map((row) => row.nodeId)
+  );
+  // A connector touching a row hidden by a collapsed ancestor must not offer an
+  // insert: you cannot see where the node would land.
+  const hiddenRowIds = new Set(
+    projection.rows.filter((row) => !row.visible).map((row) => row.nodeId)
+  );
   const edges: Edge[] = projection.connectors.map((connector) => {
     const isPreviewConnector =
       connector.sourceRowId === PREVIEW_NODE_ID || connector.targetRowId === PREVIEW_NODE_ID;
+    const previewConnectionHandleId = !isPreviewConnector
+      ? undefined
+      : connector.sourceRowId === PREVIEW_NODE_ID
+        ? (connector.slot?.target?.handleId ?? DEFAULT_TARGET_HANDLE_ID)
+        : (connector.slot?.source?.handleId ?? DEFAULT_SOURCE_HANDLE_ID);
     const data: SequentialConnectorData = {
       kind: connector.kind,
       label: connector.label,
@@ -316,20 +347,22 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
       // The preview connectors retain the semantic slot for canonical handle
       // resolution below, but must not offer another insert button while the
       // Add Node panel is already open.
-      slot: isPreviewConnector ? undefined : connector.slot,
+      slot:
+        isPreviewConnector ||
+        hiddenRowIds.has(connector.targetRowId) ||
+        hiddenRowIds.has(connector.sourceRowId)
+          ? undefined
+          : connector.slot,
       preview: isPreviewConnector || undefined,
-      hideArrowHead: connector.kind === 'goto',
+      previewConnectionHandleId,
+      hideArrowHead: connector.kind === 'goto' || appendPlaceholderIds.has(connector.targetRowId),
     };
     return {
       id: connector.id,
       source: connector.sourceRowId,
       target: connector.targetRowId,
       sourceHandle:
-        connector.sourceRowId === PREVIEW_NODE_ID
-          ? 'output'
-          : isPreviewConnector
-            ? (connector.slot?.source?.handleId ?? SEQUENTIAL_BAR_HANDLE_IDS.source)
-            : SEQUENTIAL_BAR_HANDLE_IDS.source,
+        connector.sourceRowId === PREVIEW_NODE_ID ? 'output' : SEQUENTIAL_BAR_HANDLE_IDS.source,
       // Branch/container-entry connectors enter the child's mid-left; every
       // other kind drops into its top handle.
       targetHandle:
@@ -337,11 +370,9 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
           ? connector.kind === 'branch-entry'
             ? SEQUENTIAL_BAR_HANDLE_IDS.branchTarget
             : 'input'
-          : isPreviewConnector
-            ? (connector.slot?.target?.handleId ?? SEQUENTIAL_BAR_HANDLE_IDS.target)
-            : connector.kind === 'branch-entry'
-              ? SEQUENTIAL_BAR_HANDLE_IDS.branchTarget
-              : SEQUENTIAL_BAR_HANDLE_IDS.target,
+          : connector.kind === 'branch-entry'
+            ? SEQUENTIAL_BAR_HANDLE_IDS.branchTarget
+            : SEQUENTIAL_BAR_HANDLE_IDS.target,
       type: SEQ_CONNECTOR_EDGE_TYPE,
       data,
       ...(isPreviewConnector

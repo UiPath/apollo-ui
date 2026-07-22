@@ -28,7 +28,7 @@ import { isContainerNodeManifest } from '../../utils';
 import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { resolveHandles } from '../../utils/manifest-resolver';
 import { SEQ_LANE_PLACEHOLDER_PREFIX } from '../../utils/sequential/graph-helpers';
-import { moveSubtree, removeStep } from '../../utils/sequential/mutations';
+import { removeStep } from '../../utils/sequential/mutations';
 import type { InsertionSlot } from '../../utils/sequential/sequential.types';
 import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
 import { BaseCanvas } from '../BaseCanvas/BaseCanvas';
@@ -61,15 +61,13 @@ import {
   SEQ_PLACEHOLDER_ROW_ID,
 } from './sequentialGraph.constants';
 import {
-  closesLoopToOwner,
-  computeSequentialMoveOptions,
   getSequentialMoveSlot,
-  resolveSlotForCommit,
   resolveTailInsertionSlot,
   type SequentialMoveDirection,
 } from './sequentialMoveActions';
 import { SEQ_SYNTHETIC_ROW_IDS, useSequentialGraph } from './useSequentialGraph';
 import { toggleCollapsedStepIds, useSequentialKeyboard } from './useSequentialKeyboard';
+import { useSequentialMoveActionsValue } from './useSequentialMoveActionsValue';
 
 const EDGE_TYPES: EdgeTypes = {
   [SEQ_CONNECTOR_EDGE_TYPE]: SequentialConnectorEdge as EdgeTypes[string],
@@ -547,57 +545,9 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     [canonicalById, childParentIds, isProjectedContainerNode]
   );
 
-  const getMoveOptions = useCallback(
-    (nodeId: string) => {
-      if (!projection)
-        return { up: undefined, down: undefined, indent: undefined, outdent: undefined };
-      const options = computeSequentialMoveOptions(projection, nodeId, isContainerNode);
-      if (options.outdent && closesLoopToOwner(projection, nodeId, edges)) {
-        return { ...options, outdent: undefined };
-      }
-      return options;
-    },
-    [projection, isContainerNode, edges]
-  );
-
   const getDefaultSourceHandleId = useCallback(
     (nodeType: string) => registry?.getDefaultHandle(nodeType, 'source')?.id,
     [registry]
-  );
-
-  // Applies moveSubtree's GraphChangeSet through the canonical onNodesChange /
-  // onEdgesChange props DIRECTLY (D10: the public API stays those two
-  // callbacks; this is NOT routed through handleNodesChange/handleEdgesChange
-  // above, because those exist to strip view-only geometry off changes the
-  // DERIVED view's own xyflow instance emits -- a move's GraphChangeSet is
-  // built straight from the CANONICAL {nodes, edges} via moveSubtree, so it is
-  // already canonical-shaped and carries a real parentId rewrite that the
-  // clone-stripping `replace` translation would otherwise drop).
-  const commitMove = useCallback(
-    (nodeId: string, slot: InsertionSlot) => {
-      if (!projection) return;
-      const resolvedSlot = resolveSlotForCommit(slot, canonicalById, getDefaultSourceHandleId);
-      const changeSet = moveSubtree(projection, nodeId, resolvedSlot, { nodes, edges });
-      if (
-        changeSet.addNodes.length === 0 &&
-        changeSet.addEdges.length === 0 &&
-        changeSet.removeNodeIds.length === 0 &&
-        changeSet.removeEdgeIds.length === 0
-      ) {
-        return;
-      }
-      onNodesChange?.(graphChangeSetToNodeChanges<N>(changeSet));
-      onEdgesChange?.(graphChangeSetToEdgeChanges<E>(changeSet));
-    },
-    [
-      projection,
-      canonicalById,
-      getDefaultSourceHandleId,
-      nodes,
-      edges,
-      onNodesChange,
-      onEdgesChange,
-    ]
   );
 
   const deleteStep = useCallback(
@@ -629,7 +579,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   // the raw ReactFlow instance already held above, since that instance -- not
   // the imperative BaseCanvasRef, which is only for external consumers -- is
   // what this component itself has in scope.
-  const centerOnNode = useCallback(
+  const centerViewportOnNode = useCallback(
     (nodeId: string) => {
       const node = reactFlow.getInternalNode(nodeId);
       if (!node) return;
@@ -644,14 +594,23 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     [reactFlow]
   );
 
-  const moveActionsValue = useMemo(
-    () => ({
-      getMoveOptions,
-      commitMove,
-      centerOnNode,
-    }),
-    [getMoveOptions, commitMove, centerOnNode]
-  );
+  // Move-actions binding shared by the kebab items and Alt+Arrow keyboard.
+  // Rebuilt only on a structural projection change, so its identity is stable
+  // across a selection or data-only change; every consuming SequentialStepNode
+  // reads it through context, so a churning value would re-render every bar on
+  // each click. The commit path reads the latest graph at call time. See
+  // useSequentialMoveActionsValue.
+  const moveActionsValue = useSequentialMoveActionsValue<N, E>({
+    projection,
+    nodes,
+    edges,
+    canonicalById,
+    isContainerNode,
+    getDefaultSourceHandleId,
+    onNodesChange,
+    onEdgesChange,
+    centerOnNode: centerViewportOnNode,
+  });
 
   // Alt+Arrow keyboard move: same guards as the kebab (design mode
   // only) and the same commit path (commitMove), so kebab and keyboard can
@@ -659,10 +618,10 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   const handleMoveNode = useCallback(
     (nodeId: string, direction: SequentialMoveDirection) => {
       if (!isDesignMode) return;
-      const slot = getSequentialMoveSlot(getMoveOptions(nodeId), direction);
-      if (slot) commitMove(nodeId, slot);
+      const slot = getSequentialMoveSlot(moveActionsValue.getMoveOptions(nodeId), direction);
+      if (slot) moveActionsValue.commitMove(nodeId, slot);
     },
-    [isDesignMode, getMoveOptions, commitMove]
+    [isDesignMode, moveActionsValue]
   );
 
   // Gutter + keyboard (D8): the visible, numbered row order is the single

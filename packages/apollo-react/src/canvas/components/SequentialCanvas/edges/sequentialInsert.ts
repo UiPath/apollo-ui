@@ -14,8 +14,8 @@ import {
   SEQ_START_NODE_TYPE,
 } from '../../../constants';
 import type { CreatePreviewGraphOptions } from '../../../utils/createPreviewGraph';
+import { SEQ_CONTINUATION_EDGE_KEY } from '../../../utils/sequential/graph-helpers';
 import type { InsertionSlot } from '../../../utils/sequential/sequential.types';
-import { SEQUENTIAL_BAR_HANDLE_IDS } from '../nodes';
 
 /**
  * Node `type` values excluded from the Add Node collision passes
@@ -61,7 +61,7 @@ export interface SequentialInsertArgs {
   source: string;
   /**
    * The connector's own rendered source handle (always one of
-   * {@link SEQUENTIAL_BAR_HANDLE_IDS}). No longer consulted for handle-id
+   * the sequential bar's view-only handles). No longer consulted for handle-id
    * resolution (see {@link buildSequentialPreviewOptions} and
    * {@link resolvePendingSequentialInsert}) — propagating it into canonical
    * state is exactly the bug those functions guard against. Kept on the arg
@@ -91,14 +91,14 @@ export interface SequentialInsertArgs {
  * pure builder so the option shape is unit-testable without a live canvas.
  *
  * The preview node is sized to a bar (SEQ_BAR_WIDTH x SEQ_BAR_HEIGHT) so the
- * stack visibly opens a slot. Both preview edges anchor on
- * {@link SEQUENTIAL_BAR_HANDLE_IDS} unconditionally: source/target in
- * sequential view are always bar clones, which render only those two handles
- * (BaseNodeBar), so any other handle id (a canonical manifest handle, or the
- * generic DEFAULT_SOURCE_HANDLE_ID) fails to resolve and xyflow silently drops
- * the edge. The canonical handle id the slot may carry is preserved
- * separately — see {@link resolvePendingSequentialInsert} — and rewritten
- * back onto the materialized edges in {@link sequentialOnBeforeNodeAdded}.
+ * stack visibly opens a slot. These options retain canonical manifest handles
+ * as the preview is created. When the sequential projection rebuilds those
+ * edges, `buildSequentialEdges` renders them on the guaranteed bar handles and
+ * carries the canonical existing-endpoint handle separately for Add Node
+ * filtering/materialization. This keeps preview geometry reliable without
+ * losing connection semantics. The exact slot endpoints are also captured by
+ * {@link resolvePendingSequentialInsert} and restored by
+ * {@link sequentialOnBeforeNodeAdded}.
  *
  * The split connector (found by its OWN rendered id, `connectorEdgeId` — the
  * store in sequential view holds derived connector edges, never canonical
@@ -139,13 +139,9 @@ export function buildSequentialPreviewOptions(
     reactFlowInstance,
     source: {
       nodeId: previewSourceNodeId,
-      // Anchor on the slot's CANONICAL handle id (falling back to the default
-      // output), not the bar's generic seq-source. The bar now also renders an
-      // invisible handle with this canonical id (BaseNodeBar
-      // manifestSourceHandleIds), so the preview edge both renders AND lets
-      // usePreviewNode resolve the existing node's handle manifest for the Add
-      // Node connection filter. sequentialOnBeforeNodeAdded still normalizes the
-      // committed edge's handles.
+      // Preserve the canonical handle in the semantic preview graph. The
+      // derived sequential edge remaps its visual anchor to the bar handle and
+      // carries this id as previewConnectionHandleId for registry filtering.
       handleId: previewSourceHandleId,
     },
     ...(targetNodeId
@@ -184,6 +180,8 @@ export interface PendingSequentialInsert {
   targetHandleId?: string;
   /** parentId for the materialized node, if the slot is scoped to a container. */
   containerId?: string;
+  /** Whether the split source edge already represented an explicit continuation. */
+  splitEdgeWasContinuation?: boolean;
 }
 
 /**
@@ -202,6 +200,7 @@ export function resolvePendingSequentialInsert(slot: InsertionSlot): PendingSequ
     sourceHandleId: slot.source?.handleId,
     targetHandleId: slot.target?.handleId,
     containerId: slot.containerId,
+    splitEdgeWasContinuation: slot.continuation,
   };
 }
 
@@ -226,7 +225,10 @@ export function resolvePendingSequentialInsert(slot: InsertionSlot): PendingSequ
  *     handles. The inserted node's endpoints are deliberately left alone:
  *     AddNodeManager resolves those from the inserted node's own manifest.
  *     `pending` is captured by `useSequentialInsert` from the slot at the
- *     moment the panel opened (see resolvePendingSequentialInsert).
+ *     moment the panel opened (see resolvePendingSequentialInsert);
+ *  5. marks the inserted-node-to-existing-target edge as the sequence
+ *     continuation. This keeps the old downstream sequence at the insertion
+ *     scope instead of treating it as a branch/body child of the new node.
  */
 export function sequentialOnBeforeNodeAdded(
   newNode: Node,
@@ -266,9 +268,23 @@ export function sequentialOnBeforeNodeAdded(
     ) {
       nextTargetHandle = pending.targetHandleId;
     }
-    const data = pending?.graphEdgeId
-      ? { ...edge.data, [SEQ_SPLIT_EDGE_ID_KEY]: pending.graphEdgeId }
-      : edge.data;
+    const preservesSplitContinuation =
+      pending?.splitEdgeWasContinuation === true &&
+      edge.source === pending.sourceNodeId &&
+      edge.target === previousId;
+    const keepsDownstreamOutsideInsertedNode =
+      pending?.targetNodeId !== undefined &&
+      edge.source === previousId &&
+      edge.target === pending.targetNodeId;
+    const carriesContinuation = preservesSplitContinuation || keepsDownstreamOutsideInsertedNode;
+    const data =
+      pending?.graphEdgeId || carriesContinuation
+        ? {
+            ...edge.data,
+            ...(pending?.graphEdgeId ? { [SEQ_SPLIT_EDGE_ID_KEY]: pending.graphEdgeId } : {}),
+            ...(carriesContinuation ? { [SEQ_CONTINUATION_EDGE_KEY]: true } : {}),
+          }
+        : edge.data;
     if (
       nextSource === edge.source &&
       nextTarget === edge.target &&

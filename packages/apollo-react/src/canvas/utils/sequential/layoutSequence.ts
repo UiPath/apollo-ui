@@ -51,6 +51,14 @@ export function layoutSequence(
   for (const row of projection.rows) {
     const x = row.depth * indent;
     if (row.visible) {
+      // Append placeholders (the trailing "+" after a lane's last step) are
+      // layout-neutral overlays: they sit in the gap just below the previous row
+      // and reserve NO vertical space, so showing/hiding the plus (e.g. toggling
+      // readonly) never moves a node.
+      if (row.placeholderKind === 'append') {
+        positions.set(row.nodeId, { x, y: cursorY - rowGap });
+        continue;
+      }
       // Reserve one synthetic-row pitch before the trailing orphan section.
       // SequentialCanvas places its terminal "Add step" placeholder in this
       // gap, so visual order and DOM order are main sequence -> placeholder ->

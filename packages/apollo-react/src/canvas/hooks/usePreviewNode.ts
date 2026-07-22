@@ -8,9 +8,15 @@ import {
 import { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 import { PREVIEW_NODE_ID } from '../constants';
-import { useOptionalNodeTypeRegistry } from '../core';
+import { type NodeTypeRegistry, useOptionalNodeTypeRegistry } from '../core';
 import type { HandleManifest, NodeManifest } from '../schema/node-definition';
 import { isPreviewEdge } from '../utils/createPreviewNode';
+
+type PreviewConnectionEdgeData = {
+  ignorePreviewConnection?: boolean;
+  /** Canonical existing-endpoint handle when the rendered edge uses a view-only anchor. */
+  previewConnectionHandleId?: string;
+};
 
 /**
  * Information about an existing node connected to the preview node.
@@ -46,8 +52,7 @@ const edgesConnectedToPreviewSelector = (state: ReactFlowState): Edge[] => {
     .filter(
       (edge) =>
         isPreviewEdge(edge) &&
-        (edge.data as { ignorePreviewConnection?: boolean } | undefined)
-          ?.ignorePreviewConnection !== true
+        (edge.data as PreviewConnectionEdgeData | undefined)?.ignorePreviewConnection !== true
     )
     .map((edge) => ({
       id: edge.id,
@@ -55,6 +60,10 @@ const edgesConnectedToPreviewSelector = (state: ReactFlowState): Edge[] => {
       target: edge.target,
       sourceHandle: edge.sourceHandle,
       targetHandle: edge.targetHandle,
+      data: {
+        previewConnectionHandleId: (edge.data as PreviewConnectionEdgeData | undefined)
+          ?.previewConnectionHandleId,
+      },
     }));
 };
 
@@ -66,6 +75,48 @@ interface UsePreviewNodeResult {
    * Null if no preview node is selected.
    */
   previewNodeConnectionInfo: Array<PreviewNodeConnectionInfo> | null;
+}
+
+/**
+ * Resolves the existing node's canonical handle for Add Node validation.
+ * Some derived views render preview edges on view-only handles, so they carry
+ * the manifest handle separately in edge data.
+ */
+export function resolvePreviewExistingHandleId(previewEdge: Edge): string {
+  const sourceIsPreviewNode = previewEdge.source === PREVIEW_NODE_ID;
+  const canonicalHandleId = (previewEdge.data as PreviewConnectionEdgeData | undefined)
+    ?.previewConnectionHandleId;
+  return sourceIsPreviewNode
+    ? (canonicalHandleId ?? previewEdge.targetHandle ?? 'input')
+    : (canonicalHandleId ?? previewEdge.sourceHandle ?? 'output');
+}
+
+/**
+ * Resolves a requested existing-node handle against its manifest. Generic
+ * `input`/`output` ids are aliases for the manifest default when that literal
+ * id is absent; any other unknown explicit id remains invalid.
+ */
+export function resolvePreviewExistingHandle(
+  registry: Pick<NodeTypeRegistry, 'getDefaultHandle' | 'getManifest'> | null,
+  nodeType: string | undefined,
+  requestedHandleId: string,
+  handleType: 'source' | 'target'
+): { handleId: string; manifest: HandleManifest | undefined } {
+  const manifest = nodeType ? registry?.getManifest(nodeType) : undefined;
+  const exactHandle = manifest?.handleConfiguration
+    .flatMap((group) => group.handles)
+    .find((handle) => handle.id === requestedHandleId);
+  if (exactHandle) return { handleId: requestedHandleId, manifest: exactHandle };
+
+  const genericAlias = handleType === 'source' ? 'output' : 'input';
+  const defaultHandle =
+    requestedHandleId === genericAlias && nodeType
+      ? registry?.getDefaultHandle(nodeType, handleType)
+      : undefined;
+  return {
+    handleId: defaultHandle?.id ?? requestedHandleId,
+    manifest: defaultHandle,
+  };
 }
 
 /**
@@ -112,29 +163,32 @@ export const usePreviewNode = (): UsePreviewNodeResult => {
         : undefined;
 
       // Determine which handle on the existing node is involved.
-      const existingHandleId = sourceIsPreviewNode
-        ? previewEdge.targetHandle || 'input'
-        : previewEdge.sourceHandle || 'output';
+      const existingHandleId = resolvePreviewExistingHandleId(previewEdge);
 
       // Pre-compute the handle manifest here so consumers don't need to look it up repeatedly.
-      const existingHandleManifest = existingNodeManifest?.handleConfiguration
+      // Repeating handles retain their existing prefix matching; ordinary handles
+      // additionally allow generic input/output to resolve to the manifest default.
+      const repeatedHandleManifest = existingNodeManifest?.handleConfiguration
         .flatMap((hg) => hg.handles)
-        .find((h) => {
-          if (h.id === existingHandleId) return true;
-
-          const repeatHandleIdBase = h.repeat && h.id.split('{')[0];
-          if (repeatHandleIdBase) {
-            return existingHandleId.startsWith(repeatHandleIdBase);
-          }
-          return false;
+        .find((handle) => {
+          const repeatHandleIdBase = handle.repeat && handle.id.split('{')[0];
+          return repeatHandleIdBase ? existingHandleId.startsWith(repeatHandleIdBase) : false;
         });
+      const resolvedHandle = repeatedHandleManifest
+        ? { handleId: existingHandleId, manifest: repeatedHandleManifest }
+        : resolvePreviewExistingHandle(
+            registry,
+            existingNodeType,
+            existingHandleId,
+            sourceIsPreviewNode ? 'target' : 'source'
+          );
 
       return {
         addNewNodeAsSource: sourceIsPreviewNode,
         existingNodeId,
-        existingHandleId,
+        existingHandleId: resolvedHandle.handleId,
         existingNodeManifest,
-        existingHandleManifest,
+        existingHandleManifest: resolvedHandle.manifest,
         previewEdgeId: previewEdge.id,
       };
     });

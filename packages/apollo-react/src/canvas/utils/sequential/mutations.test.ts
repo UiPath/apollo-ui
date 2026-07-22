@@ -10,6 +10,7 @@ import {
   makeWireframeFixture,
   WIREFRAME_NODE_IDS,
 } from './fixtures';
+import { SEQ_CONTINUATION_EDGE_KEY } from './graph-helpers';
 import { insertAtSlot, moveStep, moveSubtree, removeStep } from './mutations';
 import { projectSequence } from './projectSequence';
 import type { GraphChangeSet, InsertionSlot } from './sequential.types';
@@ -62,6 +63,20 @@ function makeNode(id: string): Node {
   return { id, type: 'uipath.script', position: { x: 0, y: 0 }, data: {} };
 }
 
+function absolutePosition(node: Node, nodes: readonly Node[]): { x: number; y: number } {
+  let x = node.position.x;
+  let y = node.position.y;
+  let parentId = node.parentId;
+  while (parentId) {
+    const parent = nodes.find((candidate) => candidate.id === parentId);
+    if (!parent) break;
+    x += parent.position.x;
+    y += parent.position.y;
+    parentId = parent.parentId;
+  }
+  return { x, y };
+}
+
 function firstStepSlot(fixture: GraphFixture): InsertionSlot {
   const projection = projectSequence(fixture.nodes, fixture.edges);
   const stepConnector = projection.connectors.find((c) => c.kind === 'step');
@@ -88,6 +103,25 @@ describe('mutations', () => {
       expect(incoming.target).toBe('new');
       expect(outgoing.source).toBe('new');
       expect(outgoing.target).toBe(slot.target?.nodeId);
+      expect(
+        (incoming.data as Record<string, unknown> | undefined)?.[SEQ_CONTINUATION_EDGE_KEY]
+      ).toBeUndefined();
+      expect((outgoing.data as Record<string, unknown>)[SEQ_CONTINUATION_EDGE_KEY]).toBe(true);
+    });
+
+    it('preserves continuation semantics on both halves when splitting an existing continuation', () => {
+      const fixture = makeWireframeFixture();
+      const slot = { ...firstStepSlot(fixture), continuation: true };
+      const changeSet = insertAtSlot(
+        projectSequence(fixture.nodes, fixture.edges),
+        slot,
+        makeNode('new')
+      );
+
+      expect(changeSet.addEdges).toHaveLength(2);
+      for (const edge of changeSet.addEdges) {
+        expect((edge.data as Record<string, unknown>)[SEQ_CONTINUATION_EDGE_KEY]).toBe(true);
+      }
     });
 
     it('stamps the container id as parentId when the slot is inside a container', () => {
@@ -448,13 +482,28 @@ describe('mutations', () => {
     it('outdents a step out of a container body to just after the container', () => {
       const ids = CONTAINER_CHAIN_NODE_IDS;
       const fixture = makeContainerChainFixture();
+      fixture.nodes = fixture.nodes.map((node) => {
+        if (node.id === ids.container) return { ...node, position: { x: 100, y: 200 } };
+        if (node.id === ids.y) {
+          return {
+            ...node,
+            position: { x: 25, y: 75 },
+            extent: 'parent' as const,
+            expandParent: true,
+          };
+        }
+        return node;
+      });
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findOutdentSlot(projection, ids.y);
       expect(slot).toBeDefined();
 
       const changeSet = moveSubtree(projection, ids.y, slot!, fixture);
       expect(changeSet.removeNodeIds).toEqual([ids.y]);
+      expect(changeSet.addNodes[0]).toMatchObject({ position: { x: 125, y: 275 } });
       expect(changeSet.addNodes[0]?.parentId).toBeUndefined();
+      expect(changeSet.addNodes[0]?.extent).toBeUndefined();
+      expect(changeSet.addNodes[0]?.expandParent).toBeUndefined();
 
       const moved = applyChangeSet(fixture, changeSet);
       const movedProjection = projectSequence(moved.nodes, moved.edges);
@@ -467,6 +516,18 @@ describe('mutations', () => {
     it('relocates a bare branch owner WITH its lane content across a container boundary', () => {
       const ids = CROSS_CONTAINER_BRANCH_NODE_IDS;
       const fixture = makeCrossContainerBranchFixture();
+      fixture.nodes = fixture.nodes.map((node) => {
+        if (node.id === ids.c1) return { ...node, position: { x: 100, y: 200 } };
+        if (node.id === ids.c2) return { ...node, position: { x: 500, y: 700 } };
+        if (node.id === ids.ifNode) return { ...node, expandParent: true };
+        return node;
+      });
+      const absoluteBefore = new Map(
+        [ids.ifNode, ids.thenLeaf, ids.elseLeaf].map((id) => {
+          const node = fixture.nodes.find((candidate) => candidate.id === id)!;
+          return [id, absolutePosition(node, fixture.nodes)] as const;
+        })
+      );
       const projection = projectSequence(fixture.nodes, fixture.edges);
       // Append after C2's Filler: a source-only slot, so the splice only ADDS
       // an incoming edge to `If` and never a competing outgoing one.
@@ -480,11 +541,14 @@ describe('mutations', () => {
       expect(new Set(changeSet.removeNodeIds)).toEqual(
         new Set([ids.ifNode, ids.thenLeaf, ids.elseLeaf])
       );
+      const moved = applyChangeSet(fixture, changeSet);
       for (const node of changeSet.addNodes) {
         expect(node.parentId).toBe(ids.c2);
+        expect(node.extent).toBe('parent');
+        expect(absolutePosition(node, moved.nodes)).toEqual(absoluteBefore.get(node.id));
       }
+      expect(changeSet.addNodes.find((node) => node.id === ids.ifNode)?.expandParent).toBe(true);
 
-      const moved = applyChangeSet(fixture, changeSet);
       const movedProjection = projectSequence(moved.nodes, moved.edges);
       expect(moved.nodes.find((n) => n.id === ids.thenLeaf)?.parentId).toBe(ids.c2);
       expect(moved.nodes.find((n) => n.id === ids.elseLeaf)?.parentId).toBe(ids.c2);

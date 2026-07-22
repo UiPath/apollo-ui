@@ -84,11 +84,11 @@ export function makeWireframeFixture(): GraphFixture {
   ];
   const edges: Edge[] = [
     edge('e-http-js', ids.http, 'output', ids.javascript, 'input'),
-    edge('e-js-foreach', ids.javascript, 'output', ids.forEach, 'input'),
+    edge('e-js-foreach', ids.javascript, 'success', ids.forEach, 'input'),
     edge('e-foreach-if', ids.forEach, 'start', ids.ifNode, 'input'),
     edge('e-if-then', ids.ifNode, 'true', ids.thenJs, 'input', 'Then'),
     edge('e-if-else', ids.ifNode, 'false', ids.elseHttp, 'input', 'Else'),
-    edge('e-then-continue', ids.thenJs, 'output', ids.forEach, 'continue'),
+    edge('e-then-continue', ids.thenJs, 'success', ids.forEach, 'continue'),
     edge('e-else-continue', ids.elseHttp, 'output', ids.forEach, 'continue'),
     edge('e-foreach-send', ids.forEach, 'success', ids.sendMessage, 'input'),
   ];

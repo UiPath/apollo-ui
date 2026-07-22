@@ -1,13 +1,18 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { buildGraphIndex, defaultIsSequenceEdge, sortByFlow } from './graph-helpers';
+import {
+  buildGraphIndex,
+  defaultIsSequenceEdge,
+  isSequentialContinuationEdge,
+  sortByFlow,
+} from './graph-helpers';
 
 /**
  * Structural fingerprint used to memoize the projection and layout (D12): node
  * ids + node types + parentId (structural nesting) + edge ids/endpoints/handles
- * + each scope's resolved entry order + the collapsed set. Deliberately
- * excludes `node.data` and raw `node.position`, so data-only changes (rename
- * keystrokes touch node.data per keypress) reuse the cached projection and
- * positions unchanged.
+ * + the sequential-continuation edge bit + each scope's resolved entry order
+ * + the collapsed set. Deliberately excludes all other `node.data`/`edge.data`
+ * and raw `node.position`, so data-only changes (rename keystrokes touch
+ * node.data per keypress) reuse the cached projection and positions unchanged.
  *
  * Every channel value is JSON-encoded before joining so a value containing a
  * separator character (`:`, `|`, `#`) can never be confused with a field
@@ -45,6 +50,7 @@ export function sequenceFingerprint(
         edge.sourceHandle ?? '',
         edge.target,
         edge.targetHandle ?? '',
+        isSequentialContinuationEdge(edge),
       ])
     )
     .sort();

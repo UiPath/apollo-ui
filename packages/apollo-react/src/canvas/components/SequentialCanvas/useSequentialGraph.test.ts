@@ -48,12 +48,16 @@ describe('deriveSequentialGraph', () => {
   // controlled `nodes` array re-applies `height: undefined` each sync, BaseNode
   // re-writes it via updateNode, and the two fight through updateNodeInternals --
   // a loop that blows React's nested-update limit at ~150 nodes.
-  it('stamps every row with the fixed bar height so the store height never churns', () => {
+  it('stamps every row with an explicit height so the store height never churns', () => {
     const { nodes, edges } = makeWireframeFixture();
     const graph = deriveSequentialGraph({ nodes, edges, view: 'sequential' });
 
     for (const node of graph.nodes) {
-      expect(node.height).toBe(SEQ_BAR_HEIGHT);
+      // Append plus overlays are layout-neutral (row-gap tall, no reserved row);
+      // every other row declares the fixed bar height. Both are explicit, which
+      // is what keeps the controlled store height from churning.
+      const isAppendOverlay = (node.data as { variant?: string } | undefined)?.variant === 'plus';
+      expect(node.height).toBe(isAppendOverlay ? SEQ_ROW_GAP : SEQ_BAR_HEIGHT);
     }
   });
 
@@ -71,7 +75,7 @@ describe('deriveSequentialGraph', () => {
     expect(graph.nodes.find((node) => node.id === SEQ_PLACEHOLDER_ROW_ID)?.selectable).toBe(true);
   });
 
-  it('renders populated branch tails with the same clickable placeholder row as empty lanes', () => {
+  it('renders a populated lane tail as a plus placeholder wired to the same onLaneAdd path', () => {
     const { nodes, edges } = makeWireframeFixture();
     const onLaneAdd = vi.fn();
     const graph = deriveSequentialGraph({
@@ -89,6 +93,9 @@ describe('deriveSequentialGraph', () => {
       type: SEQ_PLACEHOLDER_NODE_TYPE,
       selectable: true,
     });
+    // The trailing add point of a populated lane renders as the between-step
+    // plus, not the dashed row an empty lane uses.
+    expect((placeholder?.data as { variant?: string } | undefined)?.variant).toBe('plus');
     const onAdd = (placeholder?.data as { onAdd?: () => void } | undefined)?.onAdd;
     expect(onAdd).toBeTypeOf('function');
     onAdd?.();
@@ -99,11 +106,51 @@ describe('deriveSequentialGraph', () => {
         containerId: WIREFRAME_NODE_IDS.forEach,
       })
     );
-    expect(
-      graph.edges.some(
-        (edge) => edge.source === WIREFRAME_NODE_IDS.thenJs && edge.target === placeholder?.id
+    const join = graph.edges.find(
+      (edge) => edge.source === WIREFRAME_NODE_IDS.thenJs && edge.target === placeholder?.id
+    );
+    expect(join).toBeDefined();
+    // No arrowhead into an add affordance.
+    expect((join?.data as { hideArrowHead?: boolean } | undefined)?.hideArrowHead).toBe(true);
+  });
+
+  it('renders the terminal tail as a plus when there are steps, and a dashed row when empty', () => {
+    const { nodes, edges } = makeWireframeFixture();
+    const populated = deriveSequentialGraph({
+      nodes,
+      edges,
+      view: 'sequential',
+      onPlaceholderAdd: () => {},
+    });
+    const populatedTail = populated.nodes.find((node) => node.id === SEQ_PLACEHOLDER_ROW_ID);
+    expect((populatedTail?.data as { variant?: string } | undefined)?.variant).toBe('plus');
+
+    const empty = deriveSequentialGraph({
+      nodes: [],
+      edges: [],
+      view: 'sequential',
+      onPlaceholderAdd: () => {},
+    });
+    const emptyTail = empty.nodes.find((node) => node.id === SEQ_PLACEHOLDER_ROW_ID);
+    expect((emptyTail?.data as { variant?: string } | undefined)?.variant).toBe('row');
+  });
+
+  it('renders an empty container body as a dashed Add step row, not a plus', () => {
+    const nodes: Node[] = [{ id: 'loop', type: 'loop', position: { x: 0, y: 0 }, data: {} }];
+    const graph = deriveSequentialGraph({
+      nodes,
+      edges: [],
+      view: 'sequential',
+      isContainerNode: (node) => node.id === 'loop',
+      onLaneAdd: () => {},
+    });
+    const bodyPlaceholder = graph.nodes.find((node) =>
+      (node.data as { insertionSlotId?: string } | undefined)?.insertionSlotId?.startsWith(
+        'slot:lane:loop'
       )
-    ).toBe(true);
+    );
+    expect(bodyPlaceholder).toBeDefined();
+    expect((bodyPlaceholder?.data as { variant?: string } | undefined)?.variant).toBe('row');
   });
 
   it('flattens container children and indents them by depth', () => {
@@ -301,6 +348,63 @@ describe('deriveSequentialGraph', () => {
     // deriveSequentialGraph always projects; the hook is what short-circuits flow
     // view. This asserts the projection still runs without throwing.
     expect(graph.projection).not.toBeNull();
+  });
+
+  it('keeps preview edges on guaranteed bar handles while carrying canonical handles for filtering', () => {
+    const nodes: Node[] = [
+      { id: 'javascript', type: 'script', position: { x: 0, y: 0 }, data: {} },
+      { id: 'for-each', type: 'foreach', position: { x: 0, y: 100 }, data: {} },
+    ];
+    const edges: Edge[] = [
+      {
+        id: 'javascript-success-for-each',
+        source: 'javascript',
+        sourceHandle: 'success',
+        target: 'for-each',
+        targetHandle: 'input',
+      },
+    ];
+    const getBranchHandles = (node: Node) =>
+      node.id === 'javascript' ? [{ id: 'error', label: 'Error' }] : [];
+    const base = deriveSequentialGraph({
+      nodes,
+      edges,
+      view: 'sequential',
+      getBranchHandles,
+    });
+    const slot = base.projection?.connectors.find(
+      (connector) => connector.sourceRowId === 'javascript' && connector.targetRowId === 'for-each'
+    )?.slot;
+
+    expect(slot).toMatchObject({
+      source: { nodeId: 'javascript', handleId: 'success' },
+      target: { nodeId: 'for-each', handleId: 'input' },
+    });
+
+    const preview = deriveSequentialGraph({
+      nodes,
+      edges,
+      view: 'sequential',
+      getBranchHandles,
+      insertSlot: slot,
+    });
+    const incoming = preview.edges.find(
+      (edge) => edge.source === 'javascript' && edge.target === PREVIEW_NODE_ID
+    );
+    const outgoing = preview.edges.find(
+      (edge) => edge.source === PREVIEW_NODE_ID && edge.target === 'for-each'
+    );
+
+    expect(incoming).toMatchObject({
+      sourceHandle: SEQUENTIAL_BAR_HANDLE_IDS.source,
+      targetHandle: 'input',
+      data: { previewConnectionHandleId: 'success' },
+    });
+    expect(outgoing).toMatchObject({
+      sourceHandle: 'output',
+      targetHandle: SEQUENTIAL_BAR_HANDLE_IDS.target,
+      data: { previewConnectionHandleId: 'input' },
+    });
   });
 });
 

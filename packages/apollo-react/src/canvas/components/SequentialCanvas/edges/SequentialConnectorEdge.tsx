@@ -32,6 +32,15 @@ const INSERT_BUTTON_LABEL_OFFSET_PX = 26;
  * reads as connected rather than leaving a hairline gap, with the body in the
  * clear row gap above it so it stays fully visible without elevating the edge.
  */
+/**
+ * Vertical offset (flow px) that anchors a merge-back connector's insert plus
+ * to an endpoint instead of the line midpoint. A merge-back's midpoint drifts
+ * onto whichever row sits alongside it (e.g. a collapsed child), colliding with
+ * that row's own add points; anchoring near an endpoint reads as "add right
+ * here" and never lands on an unrelated row.
+ */
+const MERGE_BACK_INSERT_OFFSET_PX = 20;
+
 const ARROW_TIP_AT_BAR_EDGE = { x: 0, y: 1 } as const;
 /** Same 1px bite, but into the LEFT face for branch-entry (mid-left) arrows. */
 const ARROW_TIP_AT_BAR_LEFT_EDGE = { x: 1, y: 0 } as const;
@@ -146,7 +155,14 @@ export const SequentialConnectorEdge = memo(function SequentialConnectorEdge({
     statusColor: execution.statusColor,
   });
 
-  const strokeStyle = isPreview ? 'dashed' : resolveConnectorStrokeStyle(kind);
+  // A merge-back without routed waypoints is the straight continuation below a
+  // structural container. It keeps merge-back geometry (including the bottom
+  // insert anchor) but uses the same solid stroke as While's continuation.
+  const strokeStyle = isPreview
+    ? 'dashed'
+    : resolveConnectorStrokeStyle(kind, {
+        straightContainerContinuation: kind === 'merge-back' && waypoints.length === 0,
+      });
   const showInsert = isDesignMode && !!slot;
   const hasLabel = typeof label === 'string' && label.length > 0;
 
@@ -158,7 +174,18 @@ export const SequentialConnectorEdge = memo(function SequentialConnectorEdge({
   const wp0 = waypoints[0];
   const wp1 = waypoints[1];
   const isBranchElbow = kind === 'branch-entry' && wp0 !== undefined && wp1 !== undefined;
-  const insertPoint = isBranchElbow ? { x: (wp0.x + wp1.x) / 2, y: wp0.y } : geometry.labelPoint;
+  // Merge-back placement: a straight merge-back (a container's continuation,
+  // no waypoints) anchors just ABOVE its target, so "add after the container"
+  // sits after the whole body rather than in the middle of it. An elbowed
+  // merge-back (a branch lane rejoining the flow) anchors just BELOW its source,
+  // so "add at the end of this branch" sits under the branch's last step.
+  const insertPoint = isBranchElbow
+    ? { x: (wp0.x + wp1.x) / 2, y: wp0.y }
+    : kind === 'merge-back'
+      ? waypoints.length === 0
+        ? { x: targetX, y: targetY - MERGE_BACK_INSERT_OFFSET_PX }
+        : { x: sourceX, y: sourceY + MERGE_BACK_INSERT_OFFSET_PX }
+      : geometry.labelPoint;
   const labelPoint = showInsert
     ? { x: geometry.labelPoint.x, y: geometry.labelPoint.y - INSERT_BUTTON_LABEL_OFFSET_PX }
     : geometry.labelPoint;
