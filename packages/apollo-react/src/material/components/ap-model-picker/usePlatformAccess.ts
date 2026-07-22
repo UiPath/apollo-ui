@@ -39,10 +39,18 @@ export interface PlatformRequestContext {
   /** Tenant name (path segment for Orchestrator routes). */
   tenantName: string;
   /**
+   * Organization GUID. With `tenantId`, forms the canonical
+   * `/{organizationId}/{tenantId}/llmgateway_/…` Discovery route — the
+   * form the platform's own LLM pages use. Without it the Discovery
+   * fetch falls back to the name-based `{baseUrl}/{tenantName}` route.
+   */
+  organizationId?: string;
+  /**
    * Tenant GUID — route segment of the AI Trust Layer
-   * LLM-configurations pages. Without it the default add/edit
+   * LLM-configurations pages (without it the default add/edit
    * affordances land on the configurations list instead of
-   * deep-linking.
+   * deep-linking) and of the canonical Discovery route (see
+   * `organizationId`).
    */
   tenantId?: string;
   /**
@@ -237,7 +245,21 @@ export function usePlatformDiscoveryModels(
     setError(null);
 
     const base = (ctx.baseUrl ?? '').replace(/\/$/, '');
-    const url = `${base}/${ctx.tenantName}/llmgateway_/api/discovery`;
+    // Prefer the canonical GUID route (the form the platform's own LLM
+    // pages use); `baseUrl` carries the org *name* path, so strip to the
+    // origin. Fall back to the name-based route when GUIDs are absent.
+    let url: string;
+    if (ctx.organizationId && ctx.tenantId) {
+      let origin = '';
+      try {
+        origin = base ? new URL(base).origin : '';
+      } catch {
+        origin = '';
+      }
+      url = `${origin}/${ctx.organizationId}/${ctx.tenantId}/llmgateway_/api/discovery`;
+    } else {
+      url = `${base}/${ctx.tenantName}/llmgateway_/api/discovery`;
+    }
 
     try {
       const bearer = await resolveToken(ctx.token);

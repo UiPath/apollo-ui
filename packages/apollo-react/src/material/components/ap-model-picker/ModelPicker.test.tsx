@@ -423,6 +423,8 @@ describe('<ModelPicker>', () => {
             token: 't',
             baseUrl: 'https://cloud.local/acme',
             tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
             requestingProduct: 'agents',
             requestingFeature: 'agents-prompt',
             userId: 'user-1',
@@ -431,8 +433,9 @@ describe('<ModelPicker>', () => {
       );
       await user.click(screen.getByRole('button', { expanded: false }));
       expect(await screen.findByText('GPT-6 mini')).toBeInTheDocument();
+      // Canonical GUID route: origin only — baseUrl's org-name path is dropped.
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://cloud.local/acme/DefaultTenant/llmgateway_/api/discovery',
+        'https://cloud.local/org-guid/tenant-guid/llmgateway_/api/discovery',
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: 'Bearer t',
