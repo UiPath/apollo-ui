@@ -125,20 +125,20 @@ export const ResultExpandedContent = ({
       )}
 
       {status === RunResultStatus.NoBaseline &&
-        (data.actual != null ? (
-          <ProcessOutputView
-            title={t("actual_output")}
-            agentId={result.AgentId}
-            processName={result.ProcessName}
-            output={data.actual}
-          />
-        ) : (
+        (data.actual == null ? (
           <div>
             <h4 className="mb-2 text-sm font-semibold">{t("actual_output")}</h4>
             <p className="text-sm text-muted-foreground">
               {t("agent_produced_no_output")}
             </p>
           </div>
+        ) : (
+          <ProcessOutputView
+            title={t("actual_output")}
+            agentId={result.AgentId}
+            processName={result.ProcessName}
+            output={data.actual}
+          />
         ))}
 
       {status === RunResultStatus.Error && (
