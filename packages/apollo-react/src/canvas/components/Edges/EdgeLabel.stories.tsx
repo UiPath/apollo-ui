@@ -26,7 +26,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          'Set `data.label` on a CanvasEdge (or SequenceEdge) to render a label at the midpoint of the path. The label portals through `EdgeLabelRenderer`, so it always paints after every edge\'s own line, and falls back to `--color-background` when a host does not theme its ancestor with one of the canvas theme classes. Labels are decorative: `pointer-events: none`, no hover state, not clickable.',
+          "Set `data.label` on a CanvasEdge (or SequenceEdge) to render a label at the midpoint of the path. The label portals through `EdgeLabelRenderer`, so it always paints after every edge's own line, and falls back to `--color-background` when a host does not theme its ancestor with one of the canvas theme classes. Labels are decorative: `pointer-events: none`, no hover state, not clickable.",
       },
     },
   },
@@ -78,8 +78,20 @@ function createNode(config: NodeConfig): Node {
 function MiniLabeledEdgeCanvas({ label = 'Success' }: { label?: string }) {
   const initialNodes = useMemo(
     () => [
-      createNode({ id: 'mini-source', label: 'Source', x: 10, y: 50, sourcePositions: [Position.Right] }),
-      createNode({ id: 'mini-target', label: 'Target', x: 195, y: 50, targetPositions: [Position.Left] }),
+      createNode({
+        id: 'mini-source',
+        label: 'Source',
+        x: 10,
+        y: 50,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'mini-target',
+        label: 'Target',
+        x: 195,
+        y: 50,
+        targetPositions: [Position.Left],
+      }),
     ],
     []
   );
@@ -110,10 +122,28 @@ function MiniLabeledEdgeCanvas({ label = 'Success' }: { label?: string }) {
 function OrientationStory() {
   const initialNodes = useMemo(
     () => [
-      createNode({ id: 'h-source', label: 'Source', x: 100, y: 120, sourcePositions: [Position.Right] }),
-      createNode({ id: 'h-target', label: 'Target', x: 450, y: 120, targetPositions: [Position.Left] }),
+      createNode({
+        id: 'h-source',
+        label: 'Source',
+        x: 100,
+        y: 120,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'h-target',
+        label: 'Target',
+        x: 450,
+        y: 120,
+        targetPositions: [Position.Left],
+      }),
 
-      createNode({ id: 'v-source', label: 'Start', x: 250, y: 280, sourcePositions: [Position.Bottom] }),
+      createNode({
+        id: 'v-source',
+        label: 'Start',
+        x: 250,
+        y: 280,
+        sourcePositions: [Position.Bottom],
+      }),
       createNode({ id: 'v-target', label: 'End', x: 250, y: 480, targetPositions: [Position.Top] }),
     ],
     []
@@ -258,7 +288,13 @@ function CrossingLabeledEdgesStory() {
         y: 120,
         sourcePositions: [Position.Right],
       }),
-      createNode({ id: 'b1', label: 'End Alpha', x: 550, y: 380, targetPositions: [Position.Left] }),
+      createNode({
+        id: 'b1',
+        label: 'End Alpha',
+        x: 550,
+        y: 380,
+        targetPositions: [Position.Left],
+      }),
       createNode({
         id: 'a2',
         label: 'Start Beta',
@@ -305,7 +341,7 @@ export const CrossingLabeledEdges: Story = {
     docs: {
       description: {
         story:
-          'Two labeled edges routed through the same center point. Both labels stay legible on top of the crossing line, regardless of array order. Before the EdgeLabelRenderer fix, whichever edge was later in the array could paint its line over the other edge\'s label.',
+          "Two labeled edges routed through the same center point. Both labels stay legible on top of the crossing line, regardless of array order. Before the EdgeLabelRenderer fix, whichever edge was later in the array could paint its line over the other edge's label.",
       },
     },
   },
@@ -375,7 +411,7 @@ export const Themes: Story = {
     docs: {
       description: {
         story:
-          'The same labeled edge rendered under all nine canvas themes at once, to compare label contrast against each theme\'s background and border colors.',
+          "The same labeled edge rendered under all nine canvas themes at once, to compare label contrast against each theme's background and border colors.",
       },
     },
   },
@@ -550,7 +586,13 @@ export const Overflow: Story = {
 function ExecutionStatusStory() {
   const initialNodes = useMemo(
     () => [
-      createNode({ id: 'exec-source', label: 'Start', x: 100, y: 120, sourcePositions: [Position.Right] }),
+      createNode({
+        id: 'exec-source',
+        label: 'Start',
+        x: 100,
+        y: 120,
+        sourcePositions: [Position.Right],
+      }),
       createNode({
         id: 'exec-InProgress',
         label: 'In Progress',
@@ -711,6 +753,69 @@ export const ReadOnly: Story = {
     docs: {
       description: {
         story: 'Label rendering in readonly mode, for edges representing a completed workflow run.',
+      },
+    },
+  },
+};
+
+/**
+ * Open question for review, not resolved here. Node labels support
+ * double-click-to-edit (see BaseNode's NodeLabel and its EditableLabel
+ * sub-component), but edge labels are pure display: EdgeLabel is
+ * `pointer-events: none` and CanvasEdgeData has no `onLabelChange` field,
+ * so there is no way to rename this label from the canvas. Click it; the
+ * click passes straight through to the edge underneath and selects the
+ * whole edge instead, since the label has no hit target of its own. Any
+ * editing solution has to decide that click behavior too: enabling
+ * pointer events on the label changes what clicking it does today.
+ */
+function NoInlineEditingStory() {
+  const initialNodes = useMemo(
+    () => [
+      createNode({
+        id: 'edit-source',
+        label: 'Source',
+        x: 100,
+        y: 120,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'edit-target',
+        label: 'Target',
+        x: 450,
+        y: 120,
+        targetPositions: [Position.Left],
+      }),
+    ],
+    []
+  );
+
+  const initialEdges: Edge<CanvasEdgeData>[] = useMemo(
+    () => [
+      {
+        id: 'e-not-editable',
+        source: 'edit-source',
+        target: 'edit-target',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'canvas-edge',
+        data: { label: 'Try clicking me' },
+      },
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({ initialNodes, initialEdges });
+  return <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design" />;
+}
+
+export const NoInlineEditing: Story = {
+  render: () => <NoInlineEditingStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Open question for review: node labels support double-click-to-edit (BaseNode/NodeLabel's EditableLabel), but edge labels do not. EdgeLabel is pointer-events: none and CanvasEdgeData has no onLabelChange field. Click this label: the click passes through to the edge underneath and selects the whole edge instead, since the label isn't a hit target itself, the same root cause as the missing editing support. Enabling pointer events on the label to support editing also changes what clicking it does today, so the two questions have to be decided together.\n\nTwo paths forward. Path A, keep labels as pure display: clicking continues to select the edge, labels stay a rendered property of the edge rather than a directly editable element, no new interaction model or engineering risk, but renaming a label still requires going through whatever set data.label upstream (host app UI, not the canvas itself). Path B, add inline editing for parity with node labels: needs an onLabelChange callback on CanvasEdgeData, pointer-events: auto on the label (likely gated on a handler being provided, so consumers who don't opt in see no behavior change), an explicit decision on click semantics (does a single click still select the edge, does double-click enter edit mode like NodeLabel does), an inline textarea reusing that same editing pattern, and handling for empty labels, Escape-to-cancel, and Enter-to-commit.",
       },
     },
   },
