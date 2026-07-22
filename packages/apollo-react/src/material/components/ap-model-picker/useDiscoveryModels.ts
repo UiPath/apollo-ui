@@ -67,7 +67,7 @@ export function useDiscoveryModels(ctx: DiscoveryRequestContext | null): UseDisc
       const data = (await res.json()) as { models?: DiscoveryModel[] } | DiscoveryModel[];
       const list = Array.isArray(data) ? data : (data.models ?? []);
       if (!ctrl.signal.aborted) {
-        setModels(normalizeKeys(list));
+        setModels(normalizeDiscoveryModels(list));
       }
     } catch (err: unknown) {
       if ((err as { name?: string })?.name === 'AbortError') return;
@@ -117,6 +117,6 @@ function camelizeDeep(value: unknown): unknown {
   return camel;
 }
 
-function normalizeKeys(list: unknown[]): DiscoveryModel[] {
+export function normalizeDiscoveryModels(list: unknown[]): DiscoveryModel[] {
   return list.map((raw) => camelizeDeep(raw) as DiscoveryModel);
 }
