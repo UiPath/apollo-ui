@@ -2967,7 +2967,7 @@
         "@tanstack/react-table",
         "@tanstack/react-router",
         "@uipath/vs-core@^2.0.6",
-        "@uipath/uipath-typescript@^1.0.0",
+        "@uipath/uipath-typescript@^1.5.4",
         "react-i18next",
         "recharts@2.15.4",
         "sonner",
@@ -3127,9 +3127,9 @@
           "target": "components/ui/solution-tests/user-messages-view.tsx"
         },
         {
-          "path": "registry/solution-tests/json-viewer-dialog.tsx",
+          "path": "registry/solution-tests/process-results-viewer-dialog.tsx",
           "type": "registry:ui",
-          "target": "components/ui/solution-tests/json-viewer-dialog.tsx"
+          "target": "components/ui/solution-tests/process-results-viewer-dialog.tsx"
         },
         {
           "path": "registry/solution-tests/delete-confirm-dialog.tsx",
@@ -3195,6 +3195,16 @@
           "path": "registry/solution-tests/evaluators/registry.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/registry.tsx"
+        },
+        {
+          "path": "registry/solution-tests/outputs/registry.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/outputs/registry.tsx"
+        },
+        {
+          "path": "registry/solution-tests/outputs/process-output-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/outputs/process-output-view.tsx"
         },
         {
           "path": "registry/solution-tests/evaluators/output-panels.tsx",

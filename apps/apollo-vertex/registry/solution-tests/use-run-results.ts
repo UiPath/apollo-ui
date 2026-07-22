@@ -12,7 +12,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useSolution } from "@uipath/vs-core";
 import { fetchAttachment } from "./attachments";
 import { ENTITY } from "./constants";
-import { useSolutionTestsActions } from "./context";
+import { useSolutionTestsActions, useSolutionTestsContext } from "./context";
 import type { AttachmentFetcher, MutationHook } from "./mutations";
 import { JobRole } from "./types";
 import type {
@@ -88,11 +88,18 @@ export function useResultAttachment(): AttachmentFetcher<
   [resultId: string, field: ResultAttachmentField]
 > {
   const solution = useSolution();
+  const { attachmentScope } = useSolutionTestsContext();
   return {
     fetch: (resultId: string, field: ResultAttachmentField) => {
       const entityId = solution?.api.entityIds?.[ENTITY.runResults];
       if (!entityId) return Promise.resolve(null);
-      return fetchAttachment(solution, entityId, resultId, field);
+      return fetchAttachment(
+        solution,
+        entityId,
+        resultId,
+        field,
+        attachmentScope?.(),
+      );
     },
   };
 }

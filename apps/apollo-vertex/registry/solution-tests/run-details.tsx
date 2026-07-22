@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useSolutionTestsConfig } from "./context";
 import {
   useAdoptJob,
   useBaselineJobs,
@@ -27,10 +28,16 @@ type ResultAttachments = Omit<ExpandedRowData, "loading">;
 async function fetchResultAttachments(
   result: SolutionTestRunResult,
   attachment: ReturnType<typeof useResultAttachment>,
+  showDebug: boolean,
 ): Promise<ResultAttachments> {
   const status = result.Status;
 
-  if (status === RunResultStatus.Passed || status === RunResultStatus.Failed) {
+  // The debug view renders every slot, so it needs the full fetch.
+  if (
+    showDebug ||
+    status === RunResultStatus.Passed ||
+    status === RunResultStatus.Failed
+  ) {
     const [expected, expectedInput, actual, actualInput, evalResults] =
       await Promise.allSettled([
         attachment.fetch(result.Id, "ExpectedOutput"),
@@ -83,6 +90,7 @@ interface RunDetailsProps {
  *  fetch + baseline write actions, driving the full-page run-details view. */
 export const RunDetails = ({ run, subjectId, onBack }: RunDetailsProps) => {
   const { t } = useTranslation();
+  const { showDebug } = useSolutionTestsConfig();
   const { results, isLoading } = useRunResults(run.Id);
   const { jobs: baselines } = useBaselineJobs(run.SolutionTestId);
 
@@ -119,11 +127,15 @@ export const RunDetails = ({ run, subjectId, onBack }: RunDetailsProps) => {
   // Selected-agent attachments, cached per result id so revisiting an agent is
   // instant and the fetch tracks the selection without manual effects/state.
   const attachments = useQuery({
-    queryKey: ["solution-test-result-attachments", selectedResult?.Id],
+    queryKey: [
+      "solution-test-result-attachments",
+      selectedResult?.Id,
+      showDebug,
+    ],
     enabled: !!selectedResult,
     queryFn: () =>
       selectedResult
-        ? fetchResultAttachments(selectedResult, attachment)
+        ? fetchResultAttachments(selectedResult, attachment, showDebug)
         : Promise.resolve<ResultAttachments>({}),
   });
 

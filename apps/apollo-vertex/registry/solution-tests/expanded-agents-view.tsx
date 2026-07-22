@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/table";
 import { SolutionTestStatus } from "./types";
 import type { SolutionTest, SolutionTestJob } from "./types";
-import { JsonViewerDialog } from "./json-viewer-dialog";
+import { ProcessResultsViewerDialog } from "./process-results-viewer-dialog";
+import { ProcessOutputView } from "./outputs/process-output-view";
 
 export interface ExpandedAgentsViewProps {
   test: SolutionTest;
@@ -128,12 +129,20 @@ export const ExpandedAgentsView = ({
       </div>
 
       {viewing && (
-        <JsonViewerDialog
+        <ProcessResultsViewerDialog
           open
           onClose={onCloseViewer}
           title={t("expected_output_for", { name: viewing.job.ProcessName })}
           data={viewing.data}
           loading={viewing.loading}
+          renderData={(data) => (
+            <ProcessOutputView
+              agentId={viewing.job.AgentId}
+              processName={viewing.job.ProcessName}
+              output={data}
+              variant="bare"
+            />
+          )}
         />
       )}
     </div>

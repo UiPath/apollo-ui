@@ -10,6 +10,11 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   IxpDocStatus,
   IxpVerdict,
   type IxpDocument,
@@ -89,6 +94,7 @@ const DocumentSummary = ({
 /** A collapsible per-document section. Clean (all-identical) documents start
  * collapsed; anything with a change or a missing/new status starts open. */
 export const DocumentRow = ({ doc }: { doc: IxpDocument }) => {
+  const { t } = useTranslation();
   const verdictCounts = doc.fields.reduce<Record<string, number>>((acc, f) => {
     acc[f.verdict] = (acc[f.verdict] ?? 0) + 1;
     return acc;
@@ -113,16 +119,34 @@ export const DocumentRow = ({ doc }: { doc: IxpDocument }) => {
           className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`}
           aria-hidden="true"
         />
-        <span className="flex-1 truncate text-sm font-medium">
-          {doc.document}
-        </span>
+        <div className="flex flex-1 items-center gap-2 truncate">
+          <span className="truncate text-sm font-medium">{doc.document}</span>
+          {doc.previous_document ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  status="warning"
+                  variant="secondary"
+                  className="shrink-0"
+                >
+                  {t("ixp_doc_reclassified")}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t("ixp_doc_reclassified_tooltip", {
+                  previous: doc.previous_document,
+                })}
+              </TooltipContent>
+            </Tooltip>
+          ) : null}
+        </div>
         <DocumentSummary
           doc={doc}
           different={different}
           semanticallySame={semanticallySame}
         />
       </CollapsibleTrigger>
-      <CollapsibleContent className="border-t px-3 pb-3">
+      <CollapsibleContent className="border-t p-3">
         {groups.map(([group, fields]) => (
           <FieldGroup key={group} group={group} fields={fields} />
         ))}

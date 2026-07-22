@@ -47,6 +47,17 @@ export type {
   EvaluatorResultProps,
 } from "./evaluators/registry";
 export {
+  makeProcessOutputRenderer,
+  resolveProcessOutputRenderer,
+} from "./outputs/registry";
+export type {
+  ProcessOutputRenderer,
+  ProcessOutputRenderers,
+  ProcessOutputRenderArgs,
+  ProcessOutputProps,
+} from "./outputs/registry";
+export { ProcessOutputView } from "./outputs/process-output-view";
+export {
   useSolutionTests,
   useSolutionTestBatchRuns,
   useSolutionTestRuns,

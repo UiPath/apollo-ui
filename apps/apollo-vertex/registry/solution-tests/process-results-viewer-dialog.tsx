@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -10,27 +11,31 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-interface JsonViewerDialogProps {
+interface ProcessResultsViewerDialogProps {
   open: boolean;
   onClose: () => void;
   title: string;
   data: unknown;
   loading?: boolean;
+  renderData?: (data: unknown) => ReactNode;
 }
 
-export const JsonViewerDialog = ({
+export const ProcessResultsViewerDialog = ({
   open,
   onClose,
   title,
   data,
   loading,
-}: JsonViewerDialogProps) => {
+  renderData,
+}: ProcessResultsViewerDialogProps) => {
   const { t } = useTranslation();
   return (
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
-        if (!isOpen) onClose();
+        if (!isOpen) {
+          onClose();
+        }
       }}
     >
       <DialogContent
@@ -40,7 +45,7 @@ export const JsonViewerDialog = ({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="sr-only">
-            {t("json_viewer_description")}
+            {t("process_results_viewer_description")}
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-auto rounded-md border bg-muted/50 p-4">
@@ -53,6 +58,8 @@ export const JsonViewerDialog = ({
               <Skeleton className="h-3 w-full" />
               <Skeleton className="h-3 w-4/5" />
             </div>
+          ) : renderData ? (
+            renderData(data)
           ) : (
             <pre className="whitespace-pre-wrap break-words text-xs">
               {typeof data === "string" ? data : JSON.stringify(data, null, 2)}

@@ -14,6 +14,7 @@ import { createSolutionTestActions } from "./create-actions";
 interface SolutionTestsContextValue {
   config: ResolvedSolutionTestsConfig;
   actions: SolutionTestsActions;
+  attachmentScope?: () => { folderKey?: string };
 }
 
 const SolutionTestsContext = createContext<SolutionTestsContextValue | null>(
@@ -25,6 +26,8 @@ interface SolutionTestsProviderProps {
   /** Base URL each action slug is appended to (no trailing slash). */
   triggerBaseUrl: string;
   getToken: () => Promise<string | null> | string | null;
+  /** Folder scope forwarded to entity attachment downloads (in-solution hosting). */
+  attachmentScope?: () => { folderKey?: string };
   children: ReactNode;
 }
 
@@ -32,14 +35,16 @@ export const SolutionTestsProvider = ({
   config,
   triggerBaseUrl,
   getToken,
+  attachmentScope,
   children,
 }: SolutionTestsProviderProps) => {
   const value = useMemo(
     () => ({
       config: resolveConfig(config),
       actions: createSolutionTestActions({ triggerBaseUrl, getToken }),
+      attachmentScope,
     }),
-    [config, triggerBaseUrl, getToken],
+    [config, triggerBaseUrl, getToken, attachmentScope],
   );
   return (
     <SolutionTestsContext.Provider value={value}>

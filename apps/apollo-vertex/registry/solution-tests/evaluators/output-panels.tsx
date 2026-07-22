@@ -18,11 +18,11 @@ export const JsonPanel = ({
   title,
   data,
 }: {
-  title: string;
+  title?: string;
   data: unknown;
 }) => (
   <div>
-    <h4 className="mb-2 text-sm font-semibold">{title}</h4>
+    {title != null && <h4 className="mb-2 text-sm font-semibold">{title}</h4>}
     <div className="max-h-[30vh] overflow-auto rounded-md border bg-muted/50 p-3">
       <pre className="whitespace-pre-wrap break-words text-xs">
         {formatJson(data)}

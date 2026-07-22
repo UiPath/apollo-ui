@@ -73,6 +73,8 @@ export interface SolutionTestJob {
   JobRole: number;
   ProcessName: string;
   ProcessVersion?: string;
+  /** Stable agent id (uipath.json#id). */
+  AgentId?: string;
   SourceRunResultId?: string;
 }
 
@@ -112,6 +114,8 @@ export interface SolutionTestRunResult {
   ProcessName: string;
   ProcessVersion?: string;
   BaselineProcessVersion?: string;
+  /** Stable agent id (uipath.json#id). */
+  AgentId?: string;
   Status: number;
   Score?: number;
   UserMessages?: string;

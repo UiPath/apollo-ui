@@ -24,7 +24,6 @@ import {
   defaultRunResultStatusLabels,
   defaultRunStatusLabels,
 } from "./constants";
-import { useSolutionTestsConfig } from "./context";
 import {
   type ExpandedRowData,
   ResultExpandedContent,
@@ -83,16 +82,10 @@ export const RunDetailsView = ({
   onRemoveBaseline,
 }: RunDetailsViewProps) => {
   const { t } = useTranslation();
-  const config = useSolutionTestsConfig();
 
-  const title = `${
-    config.subjectNoun
-      ? t("subject_run_results", {
-          subject: config.subjectNoun.singular,
-          id: subjectId,
-        })
-      : subjectId
-  } — ${t("run_results")}`;
+  // subjectId carries the test's display label (e.g. "Loan LOAN-…"), so the
+  // title reads "Loan LOAN-… Run Results".
+  const title = t("subject_run_results", { subject: subjectId });
 
   const selectedResult = results.find((r) => r.Id === selectedResultId);
 

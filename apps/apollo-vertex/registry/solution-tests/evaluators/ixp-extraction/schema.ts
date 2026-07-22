@@ -37,6 +37,8 @@ const FieldSchema = z.object({
 
 const DocumentSchema = z.object({
   document: z.string(),
+  // Baseline's name when the same file was re-classified this run, else null/absent.
+  previous_document: z.string().nullish(),
   status: z.string(),
   score: z.number(),
   identical_count: z.number(),

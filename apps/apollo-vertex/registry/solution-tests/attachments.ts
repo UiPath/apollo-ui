@@ -24,10 +24,16 @@ export async function fetchAttachment(
   entityId: string,
   recordId: string,
   field: string,
+  scope?: { folderKey?: string },
 ): Promise<unknown> {
   if (!solution) return null;
   const entities = new Entities(solution.api.sdk.core);
-  const blob = await entities.downloadAttachment(entityId, recordId, field);
+  const blob = await entities.downloadAttachment(
+    entityId,
+    recordId,
+    field,
+    scope,
+  );
   const text = await blob.text();
   try {
     return JSON.parse(text);
