@@ -246,8 +246,10 @@ export function usePlatformDiscoveryModels(
         Accept: 'application/json',
         'Content-Type': 'application/json',
       };
-      if (ctx.requestingProduct) headers['X-UiPath-LlmGateway-RequestingProduct'] = ctx.requestingProduct;
-      if (ctx.requestingFeature) headers['X-UiPath-LlmGateway-RequestingFeature'] = ctx.requestingFeature;
+      if (ctx.requestingProduct)
+        headers['X-UiPath-LlmGateway-RequestingProduct'] = ctx.requestingProduct;
+      if (ctx.requestingFeature)
+        headers['X-UiPath-LlmGateway-RequestingFeature'] = ctx.requestingFeature;
       if (ctx.userId) headers['X-UiPath-LlmGateway-UserId'] = ctx.userId;
       if (folderKey) headers['X-UiPath-FolderKey'] = folderKey;
 
@@ -546,17 +548,13 @@ export function buildLlmConfigurationsUrl(
  * Indirected through this object so tests can spy without fighting
  * jsdom's unforgeable `window.location`.
  *
- * `assign` does a same-tab full navigation (the target is the portal
- * admin app). `openInNewTab` opens the target in a new browser tab and
- * keeps the current page — products embedded in a larger surface (e.g.
- * an agent designer) prefer this so the user doesn't lose their work.
- * The `noopener,noreferrer` features are set for the usual security
- * reasons (the opened page can't reach back via `window.opener`).
+ * Always a new browser tab: the picker is embedded in a product
+ * surface, and a same-tab navigation to the AI Trust Layer admin pages
+ * would unload the user's in-progress work. The `noopener,noreferrer`
+ * features are set for the usual security reasons (the opened page
+ * can't reach back via `window.opener`).
  */
 export const platformNavigation = {
-  assign(url: string): void {
-    globalThis.location?.assign(url);
-  },
   openInNewTab(url: string): void {
     globalThis.open?.(url, '_blank', 'noopener,noreferrer');
   },

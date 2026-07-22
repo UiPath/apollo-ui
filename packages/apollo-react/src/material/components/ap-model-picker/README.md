@@ -30,7 +30,6 @@ const [value, setValue] = React.useState<string | null>(null);
   onChange={(model) => setValue(model.modelId)}
   requestContext={requestContext}
   enableFolders
-  openLinksInNewTab
 />
 ```
 
@@ -196,7 +195,7 @@ Under the hood: `GET {baseUrl}/portal_/api/organization/UserOrganizationInfo` â€
 - The **edit row action** (BYO rows only) opens the configuration's *edit* form when the model carries `byomDetails.byoConfigurationId` (served by Discovery on UiPath/Arima#2659); when absent it lands on the configurations list scoped to the tenant + folder.
 - The **delete row action** (BYO rows only) is opt-in: pass `onDeleteModel` and the picker renders a delete icon next to edit, calling your handler (which performs the deletion and refreshes `models`). Omit it to keep removal on the configurations page only.
 
-By default these navigations replace the current tab; set `openLinksInNewTab` to open the AI Trust Layer pages in a new tab instead (products embedded in a larger surface use this so the user keeps their in-progress work). `onUseCustomModel` overrides the footer's default navigation (e.g. an in-app wizard), and `slots.optionActions` overrides the row actions. Products with their own authorization model can pass `canManageByo` (`true`/`false`); when set, no admin check request is made.
+These navigations always open the AI Trust Layer pages in a new browser tab - the picker is embedded in a product surface, and navigating it away would unload the user's in-progress work. `onUseCustomModel` overrides the footer's default navigation (e.g. an in-app wizard), and `slots.optionActions` overrides the row actions. Products with their own authorization model can pass `canManageByo` (`true`/`false`); when set, no admin check request is made.
 
 ### 7. Folder scoping
 

@@ -305,13 +305,6 @@ export interface ModelPickerProps {
    */
   disablePortal?: boolean;
   /**
-   * Open the built-in BYO add/edit navigation (to the AI Trust Layer
-   * LLM-configurations pages) in a new browser tab instead of navigating the
-   * current one. Products embedded in a larger surface (e.g. an agent designer)
-   * set this so the user doesn't lose in-progress work. Default: `false`.
-   */
-  openLinksInNewTab?: boolean;
-  /**
    * Delete handler for a BYO model. When provided (and BYO management is
    * enabled), the picker renders a delete row action next to edit on BYO rows.
    * Omit to keep the default (no delete action — removal via the configurations
@@ -374,7 +367,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       showGroupHeaders = true,
       popupContainer,
       disablePortal,
-      openLinksInNewTab,
       onDeleteModel,
       slots,
     },
@@ -546,13 +538,12 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           ...link,
           folderNumericId: selectedFolderNumericId,
         });
-        // Products embedded in a larger surface (e.g. an agent designer) pass
-        // `openLinksInNewTab` so navigating to the AI Trust Layer admin pages
-        // doesn't unload their in-progress work.
-        if (openLinksInNewTab) platformNavigation.openInNewTab(url);
-        else platformNavigation.assign(url);
+        // Always a new tab: the picker is embedded in a product surface and
+        // navigating it away to the AI Trust Layer admin pages would unload
+        // the user's in-progress work.
+        platformNavigation.openInNewTab(url);
       };
-    }, [requestContext, selectedFolderNumericId, openLinksInNewTab]);
+    }, [requestContext, selectedFolderNumericId]);
 
     // Dev-time guard: duplicate folder ids silently break the switcher's
     // selection highlight. Warn once per list change. `typeof process`
@@ -623,7 +614,8 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
             })
         : undefined;
       if (!onEdit && !handleDeleteModel) return () => null;
-      return (m: DiscoveryModel) => defaultRowActions(m, { i18n, onEdit, onDelete: handleDeleteModel });
+      return (m: DiscoveryModel) =>
+        defaultRowActions(m, { i18n, onEdit, onDelete: handleDeleteModel });
     }, [
       slots?.optionActions,
       effectiveCanManageByo,
@@ -650,10 +642,9 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       return (
         <UseCustomModelFooter
           onActivate={() => {
-            // Navigate first, then close: opening a new tab (openLinksInNewTab)
-            // must happen synchronously within the click gesture or the browser
-            // blocks it as a popup. Closing the popup first can sever that
-            // gesture chain.
+            // Navigate first, then close: opening the new tab must happen
+            // synchronously within the click gesture or the browser blocks it
+            // as a popup. Closing the popup first can sever that gesture chain.
             activate?.();
             closePopup();
           }}
@@ -762,7 +753,9 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                 }
                 leading={
                   slots?.searchLeading?.() ??
-                  (effectiveFolders && effectiveFolders.length > 0 && (onFolderChange || selfFetchCtx) ? (
+                  (effectiveFolders &&
+                  effectiveFolders.length > 0 &&
+                  (onFolderChange || selfFetchCtx) ? (
                     <FolderSwitcher
                       folders={effectiveFolders}
                       value={folder ?? null}
