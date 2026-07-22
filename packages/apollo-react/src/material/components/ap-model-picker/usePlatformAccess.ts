@@ -61,6 +61,13 @@ export interface PlatformRequestContext {
   requestingProduct?: string;
   requestingFeature?: string;
   /**
+   * Operation code sent to Discovery as
+   * `X-UiPath-LlmGateway-OperationCode`, scoping the catalog to an
+   * operation the way the product's own backend calls do. Omit to get
+   * every model the product/feature defines.
+   */
+  operationCode?: string;
+  /**
    * Current user id (the token's `sub` claim) — sent to Discovery as
    * `X-UiPath-LlmGateway-UserId`. Mandatory for products whose gateway
    * catalog is user-scoped (e.g. agents: omitting it is a 400/3010).
@@ -273,6 +280,7 @@ export function usePlatformDiscoveryModels(
       if (ctx.requestingFeature)
         headers['X-UiPath-LlmGateway-RequestingFeature'] = ctx.requestingFeature;
       if (ctx.userId) headers['X-UiPath-LlmGateway-UserId'] = ctx.userId;
+      if (ctx.operationCode) headers['X-UiPath-LlmGateway-OperationCode'] = ctx.operationCode;
       if (folderKey) headers['X-UiPath-FolderKey'] = folderKey;
 
       const res = await fetch(url, { headers, signal: ctrl.signal });

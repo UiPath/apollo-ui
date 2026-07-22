@@ -435,10 +435,12 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
 
     // BYO rows without a host-supplied `byoConnectionLabel` get their
     // Integration Service connection name resolved by the picker itself.
+    // Policy-blocked models are never rendered (same as the platform BFFs).
     const connectionNames = useByoConnectionNames(catalog, requestContext ?? null);
     const effectiveModels = React.useMemo(() => {
-      if (connectionNames.size === 0) return catalog;
-      return catalog.map((m) => {
+      const allowed = catalog.filter((m) => !m.isBlockedByPolicy);
+      if (connectionNames.size === 0) return allowed;
+      return allowed.map((m) => {
         if (m.byoConnectionLabel) return m;
         const id = m.byomDetails?.integrationServiceConnectionId;
         const name = id ? connectionNames.get(id) : undefined;
