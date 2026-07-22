@@ -154,21 +154,13 @@ Resolution order: `recommendedModelIds` prop (test/storybook override) → DTO `
 
 ### 5. Cost badges
 
-Cost badges live in the Apollo pool (`cost-basic` / `cost-standard` / `cost-premium`), so the classification is the only per-product decision. The agents product classifies with the exported `defaultCostTier` helper and stamps the matching pool kind:
+Cost badges are **on by default**: whenever the Discovery DTO carries cost data, each row gets its tier from the Apollo pool (`cost-basic` / `cost-standard` / `cost-premium`) via `defaultCostTier`, which bins `modelDetails.costDetails.inputTokenCost` (USD per million input tokens) at `$1` / `$5`. No wiring needed.
+
+A host-supplied `badgesFor` takes over entirely — return your own pool kinds to reclassify, or `[]` to suppress badges:
 
 ```tsx
-import { defaultCostTier } from '@uipath/apollo-react/material/components';
-
-<ModelPicker
-  models={models}
-  badgesFor={(m) => {
-    const tier = defaultCostTier(m); // null when the DTO has no cost data
-    return tier ? [`cost-${tier}` as const] : [];
-  }}
-/>
+<ModelPicker badgesFor={(m) => (isExpensive(m) ? ['cost-premium'] : [])} … />
 ```
-
-`defaultCostTier` bins Discovery's `modelDetails.costDetails.inputTokenCost` (USD per million input tokens) at `$1` / `$5`. Copy it, change the thresholds, or classify on something else entirely — the pool badge kinds are the shared contract, the classifier is yours.
 
 ### 6. BYO management
 

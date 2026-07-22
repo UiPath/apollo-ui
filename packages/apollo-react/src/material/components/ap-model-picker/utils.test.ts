@@ -242,16 +242,28 @@ describe('deriveModelTags', () => {
     expect(customIdx).toBeGreaterThan(recIdx);
   });
 
-  it('never stamps cost chips itself — cost is a customTagsFor decision', () => {
-    // A model with full cost data still produces no cost-* chips from
-    // the core derivation.
+  it('stamps the cost-tier pool badge by default when the DTO carries cost data', () => {
     const tags = deriveModelTags(
       model({
         modelId: 'a',
         modelDetails: { costDetails: { inputTokenCost: 6 } },
       })
     );
-    expect(tags.find((t) => t.kind.startsWith('cost-'))).toBeFalsy();
+    expect(tags.find((t) => t.kind === 'cost-premium')).toBeTruthy();
+  });
+
+  it('does not stamp cost badges without cost data, and badgesFor([]) suppresses them', () => {
+    expect(
+      deriveModelTags(model({ modelId: 'a' })).find((t) => t.kind.startsWith('cost-'))
+    ).toBeFalsy();
+    const suppressed = deriveModelTags(
+      model({
+        modelId: 'a',
+        modelDetails: { costDetails: { inputTokenCost: 6 } },
+      }),
+      { badgesFor: () => [] }
+    );
+    expect(suppressed.find((t) => t.kind.startsWith('cost-'))).toBeFalsy();
   });
 
   it('supports the agents cost-badge pattern via customTagsFor + defaultCostTier', () => {
