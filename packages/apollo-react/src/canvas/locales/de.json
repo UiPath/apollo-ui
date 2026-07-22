@@ -31,7 +31,7 @@
   "stage-node.status.paused": "Angehalten",
   "stage-node.status.terminated": "Beendet",
   "stage-node.status.warning": "Warnung",
-  "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} weitere {Ran # times}}",
+  "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} other {Ran # times}}",
   "stage-node.task-badge.running-again": "Wird erneut ausgeführt",
   "stage-node.ungroup-parallel-tasks": "Gruppierung paralleler Aufgaben aufheben",
   "stage-node.untitled-stage": "Schritt ohne Titel",
