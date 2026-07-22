@@ -3,10 +3,12 @@ import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import type {
   HandleConfigurationSpecificPosition,
   HandleLabelVisibility,
+  HandleVariant,
 } from '../../schema/node-definition/handle';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { cx } from '../../utils/CssUtil';
 import { calculateGridAlignedHandlePositions } from '../../utils/handle-positioning';
+import { CanvasIcon } from '../../utils/icon-registry';
 import {
   getHandleActionPortal,
   getInwardHandleLayout,
@@ -67,6 +69,10 @@ type ButtonHandleProps = {
   offsetPx?: number;
   /** When set, the inward label pill becomes a drag grip and fires this on pointer down. */
   onLabelPointerDown?: (event: React.PointerEvent) => void;
+  /** Visual variant: `marker` renders a circular icon badge instead of the notch. */
+  variant?: HandleVariant;
+  /** Canvas icon name shown inside a `marker` variant handle. */
+  icon?: string;
 };
 
 const ButtonHandleBase = ({
@@ -96,10 +102,13 @@ const ButtonHandleBase = ({
   portalAction = false,
   offsetPx,
   onLabelPointerDown,
+  variant = 'default',
+  icon,
 }: ButtonHandleProps) => {
   const handleRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const isVertical = position === Position.Top || position === Position.Bottom;
+  const isMarker = variant === 'marker';
 
   const dispatchMouseEvent = useCallback(
     (
@@ -180,7 +189,8 @@ const ButtonHandleBase = ({
 
   const markAsHovered = useCallback(() => setIsHovered(true), []);
   const unmarkAsHovered = useCallback(() => setIsHovered(false), []);
-  const showActionButton = !!onAction && type === 'source';
+  // Marker handles are semantic badges; they never grow an inline add button.
+  const showActionButton = !isMarker && !!onAction && type === 'source';
 
   // Label visibility defaults to the handle's own visibility (current behavior).
   const resolvedLabelVisible = labelVisible ?? visible;
@@ -305,13 +315,26 @@ const ButtonHandleBase = ({
         transform,
       }}
     >
-      <HandleNotch
-        handleType={handleType}
-        isVertical={isVertical}
-        selected={selected}
-        hovered={isHovered}
-        showNotch={showNotches}
-      />
+      {isMarker ? (
+        <span
+          aria-hidden
+          data-testid={`marker-handle-${id}`}
+          className={cx(
+            'pointer-events-none flex h-6 w-6 shrink-0 items-center justify-center',
+            'rounded-full border border-border bg-surface text-foreground shadow-sm'
+          )}
+        >
+          <CanvasIcon icon={icon ?? 'zap'} size={12} />
+        </span>
+      ) : (
+        <HandleNotch
+          handleType={handleType}
+          isVertical={isVertical}
+          selected={selected}
+          hovered={isHovered}
+          showNotch={showNotches}
+        />
+      )}
       {showActionButton ? (
         <HandleButton
           visible={showButton}
@@ -433,6 +456,10 @@ export interface ButtonHandleConfig {
   offsetPx?: number;
   /** When set, the inward label pill becomes a drag grip and fires this on pointer down. */
   onLabelPointerDown?: (event: React.PointerEvent) => void;
+  /** Visual variant: `marker` renders a circular icon badge instead of the notch. */
+  variant?: HandleVariant;
+  /** Canvas icon name shown inside a `marker` variant handle. */
+  icon?: string;
 }
 
 const ButtonHandlesBase = ({
@@ -548,6 +575,8 @@ const ButtonHandlesBase = ({
             portalAction={portalActions && handle.type === 'source'}
             offsetPx={handle.offsetPx}
             onLabelPointerDown={handle.onLabelPointerDown}
+            variant={handle.variant}
+            icon={handle.icon}
           />
         );
       })}

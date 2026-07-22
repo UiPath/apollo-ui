@@ -6,6 +6,7 @@ import {
   caseFlowCategories,
   caseFlowManifest,
   caseStageManifest,
+  caseTaskManifest,
 } from './case-flow.manifest';
 
 describe('case-flow manifest', () => {
@@ -40,11 +41,38 @@ describe('case-flow manifest', () => {
     expect(ruleNodes).toHaveLength(0);
   });
 
-  it('event circles may start tasks or feed the stage inner Complete / Exit handles', () => {
+  it('has no adhoc marker node: task start rules are marker handles on the task', () => {
+    const adhocNodes = caseFlowManifest.nodes.filter(
+      (n) => n.nodeType === 'uipath.case.task.adhoc'
+    );
+    expect(adhocNodes).toHaveLength(0);
+  });
+
+  it('tasks carry event / manual start rules as data-driven marker handles', () => {
+    const markerGroup = caseTaskManifest.handleConfiguration.find((g) =>
+      g.handles.some((h) => h.variant === 'marker')
+    );
+    expect(markerGroup?.position).toBe('top');
+    expect(markerGroup?.alwaysVisible).toBe(true);
+
+    const byId = new Map(markerGroup?.handles.map((h) => [h.id, h]));
+    const eventHandle = byId.get('eventTrigger');
+    expect(eventHandle?.variant).toBe('marker');
+    expect(eventHandle?.icon).toBe('zap');
+    expect(eventHandle?.visible).toBe('inputs.eventTrigger');
+    expect(eventHandle?.label).toBe('{inputs.triggerLabel}');
+
+    const manualHandle = byId.get('manualTrigger');
+    expect(manualHandle?.variant).toBe('marker');
+    expect(manualHandle?.icon).toBe('play');
+    expect(manualHandle?.visible).toBe('inputs.manualTrigger');
+  });
+
+  it('event circles are stage rules only: they feed the inner Complete / Exit handles', () => {
     const output = caseEventMarkerManifest.handleConfiguration
       .flatMap((g) => g.handles)
       .find((h) => h.id === 'output');
-    expect(output?.constraints?.allowedTargetCategories).toEqual(['case-task', 'case-stage']);
+    expect(output?.constraints?.allowedTargetCategories).toEqual(['case-stage']);
 
     const innerTargets = caseStageManifest.handleConfiguration
       .filter((g) => g.boundary === 'inner')

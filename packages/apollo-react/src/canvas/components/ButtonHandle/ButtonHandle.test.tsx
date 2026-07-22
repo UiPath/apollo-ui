@@ -582,3 +582,70 @@ describe('ButtonHandles', () => {
     });
   });
 });
+
+describe('marker variant handles', () => {
+  it('renders a circular icon badge instead of the notch', () => {
+    const defaultHandle: ButtonHandleConfig[] = [
+      { id: 'plain', type: 'target', handleType: 'input' },
+    ];
+    const { container: defaultContainer } = render(
+      <ButtonHandles
+        handles={defaultHandle}
+        nodeId="test-node"
+        position={Position.Top}
+        visible={true}
+      />
+    );
+    // Control: a default handle renders the border-2 notch element.
+    expect(defaultContainer.querySelector('.border-2')).not.toBeNull();
+
+    const markerHandle: ButtonHandleConfig[] = [
+      {
+        id: 'eventTrigger',
+        type: 'target',
+        handleType: 'input',
+        variant: 'marker',
+        icon: 'zap',
+      },
+    ];
+    const { container } = render(
+      <ButtonHandles
+        handles={markerHandle}
+        nodeId="test-node"
+        position={Position.Top}
+        visible={true}
+      />
+    );
+
+    expect(screen.getByTestId('marker-handle-eventTrigger')).toBeInTheDocument();
+    // The notch is replaced by the badge for marker handles.
+    expect(container.querySelector('.border-2')).toBeNull();
+  });
+
+  it('shows the marker label but never an inline add button', () => {
+    const handles: ButtonHandleConfig[] = [
+      {
+        id: 'eventTrigger',
+        type: 'target',
+        handleType: 'input',
+        variant: 'marker',
+        icon: 'zap',
+        label: 'Fraud signal',
+        onAction: vi.fn(),
+      },
+    ];
+
+    render(
+      <ButtonHandles
+        handles={handles}
+        nodeId="test-node"
+        position={Position.Top}
+        selected={true}
+        visible={true}
+      />
+    );
+
+    expect(screen.getByText('Fraud signal')).toBeInTheDocument();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+});
