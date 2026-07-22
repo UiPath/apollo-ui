@@ -1,37 +1,38 @@
 import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { EdgeLabel } from './EdgeLabel';
 
+// EdgeLabelRenderer portals into a DOM node xyflow only creates once a full
+// <ReactFlow> instance has mounted, which this unit test doesn't set up.
+// Render straight through so we can assert on the label markup itself.
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
+  EdgeLabelRenderer: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 function renderLabel(props: Partial<React.ComponentProps<typeof EdgeLabel>> = {}) {
-  const { container } = render(
-    <svg>
-      <EdgeLabel x={150} y={50} text="Run" {...props} />
-    </svg>
-  );
+  const { container } = render(<EdgeLabel x={150} y={50} text="Run" {...props} />);
   return {
-    foreignObject: container.querySelector('foreignObject'),
     label: container.querySelector('.react-flow__edge-label') as HTMLDivElement,
   };
 }
 
-/** Locks the label markup the legacy SequenceEdge rendered inline. */
 describe('EdgeLabel', () => {
   it('renders the text centered on the given point, opted out of pan/drag', () => {
-    const { foreignObject, label } = renderLabel();
+    const { label } = renderLabel();
     expect(label.textContent).toBe('Run');
-    expect(foreignObject?.getAttribute('x')).toBe('150');
-    expect(foreignObject?.getAttribute('y')).toBe('50');
     expect(label.className).toContain('nodrag');
     expect(label.className).toContain('nopan');
-    expect(label.style.transform).toBe('translate(-50%, -50%)');
-    expect(label.style.pointerEvents).toBe('none');
+    expect(label.style.transform).toBe('translate(-50%, -50%) translate(150px, 50px)');
   });
 
   it('uses the primary border when selected and the default border otherwise', () => {
-    // assert on the raw attribute — happy-dom's border shorthand drops var() colors
-    expect(renderLabel().label.getAttribute('style')).toContain('var(--canvas-border)');
-    expect(renderLabel({ selected: true }).label.getAttribute('style')).toContain(
-      'var(--canvas-primary)'
+    expect(renderLabel().label.className).toContain('border-(--canvas-border)');
+    expect(renderLabel({ selected: true }).label.className).toContain('border-(--canvas-primary)');
+  });
+
+  it('falls back to --color-background when --canvas-background is unresolved', () => {
+    expect(renderLabel().label.className).toContain(
+      'bg-[var(--canvas-background,var(--color-background))]'
     );
   });
 });

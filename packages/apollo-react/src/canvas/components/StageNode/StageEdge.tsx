@@ -10,7 +10,7 @@ import { memo, useMemo } from 'react';
 export const StageEdgeLabel = styled.div`
   position: absolute;
   color: var(--canvas-foreground);
-  background: var(--canvas-background);
+  background: var(--canvas-background, var(--color-background));
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -20,7 +20,7 @@ export const StageEdgeLabel = styled.div`
   pointer-events: all;
 
   &:hover {
-    background: var(--canvas-background-hover);
+    background: var(--canvas-background-hover, var(--color-background-hover));
     border-color: var(--canvas-border-hover);
   }
 `;
