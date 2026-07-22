@@ -1,7 +1,12 @@
+'use client';
+
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import * as React from 'react';
-import { usePortalContainer } from '@/components/ui/portal-container';
+import {
+  type PortalContainerOverride,
+  useResolvedPortalContainer,
+} from '@/components/ui/portal-container';
 import { cn } from '@/lib/index';
 
 const Select = SelectPrimitive.Root;
@@ -61,13 +66,12 @@ SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayNam
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & {
-    container?: HTMLElement | null;
+    container?: PortalContainerOverride;
   }
 >(({ className, children, position = 'popper', container, ...props }, ref) => {
-  const portalContainer = usePortalContainer();
-  const resolvedContainer = container !== undefined ? container : portalContainer;
+  const resolvedContainer = useResolvedPortalContainer(container);
   return (
-    <SelectPrimitive.Portal container={resolvedContainer ?? undefined}>
+    <SelectPrimitive.Portal container={resolvedContainer}>
       <SelectPrimitive.Content
         ref={ref}
         className={cn(
