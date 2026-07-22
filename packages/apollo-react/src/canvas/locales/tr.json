@@ -31,7 +31,7 @@
   "stage-node.status.paused": "Duraklatıldı",
   "stage-node.status.terminated": "Sonlandırıldı",
   "stage-node.status.warning": "Uyarı",
-  "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} diğer {Ran # times}}",
+  "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} other {Ran # times}}",
   "stage-node.task-badge.running-again": "Tekrar çalıştırılıyor",
   "stage-node.ungroup-parallel-tasks": "Paralel görevlerin grubunu çöz",
   "stage-node.untitled-stage": "Adsız adım",

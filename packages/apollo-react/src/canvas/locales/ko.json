@@ -31,7 +31,7 @@
   "stage-node.status.paused": "일시 중지됨",
   "stage-node.status.terminated": "종료됨",
   "stage-node.status.warning": "경고",
-  "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} 기타 {Ran # times}}",
+  "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} other {Ran # times}}",
   "stage-node.task-badge.running-again": "다시 실행 중",
   "stage-node.ungroup-parallel-tasks": "병렬 태스크 그룹 해제",
   "stage-node.untitled-stage": "제목 없는 단계",
