@@ -184,6 +184,101 @@ export function useUserFolders(ctx: PlatformRequestContext | null): UseUserFolde
 }
 
 /* ──────────────────────────────────────────────────────────────────────
+ * BYO connection names
+ * ─────────────────────────────────────────────────────────────────── */
+
+interface IntegrationServiceConnectionDto {
+  id?: string;
+  name?: string;
+}
+
+/** Discovery serves this when a config carries no parseable connection id. */
+const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
+
+/**
+ * Resolves Integration Service connection display names for BYO models,
+ * so hosts don't have to join them in from their own catalogs:
+ *
+ *   GET {baseUrl}/{tenantName}/connections_/api/v1/Connections/{connectionId}
+ *   → { "id": …, "name": "My Azure OpenAI connection", … }
+ *
+ * One request per distinct `byomDetails.integrationServiceConnectionId`
+ * among models that don't already carry a `byoConnectionLabel` (a
+ * host-supplied label always wins). Results are cached for the
+ * component's lifetime; failures (e.g. the user cannot read the
+ * connection) resolve to no label — the row simply renders without a
+ * caption. Pass `null` to disable.
+ */
+export function useByoConnectionNames(
+  models: readonly {
+    byoConnectionLabel?: string;
+    byomDetails?: { integrationServiceConnectionId?: string } | null;
+  }[],
+  ctx: PlatformRequestContext | null
+): ReadonlyMap<string, string> {
+  const [names, setNames] = useState<ReadonlyMap<string, string>>(new Map());
+  const requestedRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!ctx) return undefined;
+
+    const pending = [
+      ...new Set(
+        models
+          .filter((m) => !m.byoConnectionLabel)
+          .map((m) => m.byomDetails?.integrationServiceConnectionId)
+          .filter((id): id is string => !!id && id !== EMPTY_GUID)
+      ),
+    ].filter((id) => !requestedRef.current.has(id));
+    if (pending.length === 0) return undefined;
+
+    pending.forEach((id) => requestedRef.current.add(id));
+    const ctrl = new AbortController();
+    const base = (ctx.baseUrl ?? '').replace(/\/$/, '');
+
+    (async () => {
+      const bearer = await resolveToken(ctx.token);
+      const resolved = await Promise.all(
+        pending.map(async (id): Promise<[string, string] | null> => {
+          try {
+            const res = await fetch(
+              `${base}/${ctx.tenantName}/connections_/api/v1/Connections/${encodeURIComponent(id)}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${bearer}`,
+                  Accept: 'application/json',
+                  'Content-Type': 'application/json',
+                },
+                signal: ctrl.signal,
+              }
+            );
+            if (!res.ok) return null;
+            const data = (await res.json()) as IntegrationServiceConnectionDto;
+            return data.name ? [id, data.name] : null;
+          } catch {
+            // Aborted runs may retry these ids later; real failures stay
+            // cached as label-less rather than refetching on every render.
+            if (ctrl.signal.aborted) requestedRef.current.delete(id);
+            return null;
+          }
+        })
+      );
+      const found = resolved.filter((entry): entry is [string, string] => entry !== null);
+      if (!ctrl.signal.aborted && found.length > 0) {
+        setNames((prev) => new Map([...prev, ...found]));
+      }
+    })().catch(() => {
+      // Token resolution failed: allow a later run to retry.
+      pending.forEach((id) => requestedRef.current.delete(id));
+    });
+
+    return () => ctrl.abort();
+  }, [ctx, models]);
+
+  return names;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
  * BYO management (organization admin)
  * ─────────────────────────────────────────────────────────────────── */
 

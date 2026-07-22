@@ -73,6 +73,8 @@ Display names travel on the Discovery DTO, like Recommended. Product teams autho
 
 **Products cannot rename models.** There is deliberately no name prop: the same model reads identically in every product surface, and a wrong or missing name is fixed once, centrally, not patched per product. Models without an authored name fall back to the raw `modelName`. Search matches display names as well as technical ids.
 
+**BYO connection names.** BYO rows render a disambiguating caption from `byoConnectionLabel`. When the DTO doesn't carry one (Discovery serves only `byomDetails.integrationServiceConnectionId`), the picker resolves the connection's display name itself via `GET {baseUrl}/{tenantName}/connections_/api/v1/Connections/{id}` — one request per distinct connection, cached for the component's lifetime; a host-supplied `byoConnectionLabel` always wins and suppresses the lookup. If the user cannot read a connection, its row simply renders without a caption.
+
 ### 3. Badges from the Apollo pool
 
 The picker derives lifecycle chips automatically (Recommended, Preview, Deprecating, Substituted, Custom, Out-of-region). For product badges beyond those, Apollo owns a shared **badge pool** (`MODEL_BADGES` in `badges.ts`): each pool entry defines the badge's label, tooltip, color variant, and localization once, so the same badge reads identically in every product. Products stamp pool badges per model with `badgesFor`:

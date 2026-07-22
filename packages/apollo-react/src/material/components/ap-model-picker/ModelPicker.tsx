@@ -20,6 +20,7 @@ import {
   type LlmConfigurationsLinkOptions,
   type PlatformRequestContext,
   platformNavigation,
+  useByoConnectionNames,
   useCanManageByo,
   useUserFolders,
 } from './usePlatformAccess';
@@ -386,8 +387,22 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     // still renders a chevron so users can collapse it manually if they
     // want to focus on the hosted catalog.
     const initiallyCollapsedGroups = React.useMemo<readonly string[]>(() => [], []);
+
+    // BYO rows without a host-supplied `byoConnectionLabel` get their
+    // Integration Service connection name resolved by the picker itself.
+    const connectionNames = useByoConnectionNames(models, requestContext ?? null);
+    const effectiveModels = React.useMemo(() => {
+      if (connectionNames.size === 0) return models;
+      return models.map((m) => {
+        if (m.byoConnectionLabel) return m;
+        const id = m.byomDetails?.integrationServiceConnectionId;
+        const name = id ? connectionNames.get(id) : undefined;
+        return name ? { ...m, byoConnectionLabel: name } : m;
+      });
+    }, [models, connectionNames]);
+
     const state = useModelPickerState({
-      models,
+      models: effectiveModels,
       value,
       onChange,
       groupBy,
