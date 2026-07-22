@@ -680,9 +680,10 @@ describe('resolveHandleWallDrag', () => {
     expect(result).toBeNull();
   });
 
-  it('derives the side-wall top clamp from the measured header, symmetric with the bottom', () => {
-    // Header bottom (= dashed frame top) measured at 90px. The top clamp keeps
-    // the pill 48 - 10 (frame inset) = 38px below the frame top: 90 + 38 = 128.
+  it('derives the side-wall top clamp from the measured header', () => {
+    // Header bottom (= dashed frame top) measured at 90px. The top clamp is
+    // the bottom clearance (48 - 10 frame inset) minus one grid step:
+    // 90 + 38 - 16 = 112, already grid-aligned.
     const nearTop = resolveHandleWallDrag({
       ...size,
       localX: 638,
@@ -690,10 +691,9 @@ describe('resolveHandleWallDrag', () => {
       allowedWalls: ['right'],
       contentTopPx: 90,
     });
-    expect(nearTop?.offset).toBe(128);
+    expect(nearTop?.offset).toBe(112);
 
-    // Symmetric frame clearances at both extremes: 128 - 90 = 38 below the
-    // frame top, and (480 - 10) - 432 = 38 above the frame bottom.
+    // The bottom clamp is unchanged: 480 - 48 = 432.
     const nearBottom = resolveHandleWallDrag({
       ...size,
       localX: 638,
@@ -705,7 +705,7 @@ describe('resolveHandleWallDrag', () => {
   });
 
   it('grid-aligns the header-derived top clamp', () => {
-    // 100 + 38 = 138 is off-grid; the clamp rounds up to the next slot, 144.
+    // 100 + 38 - 16 = 122 is off-grid; the clamp rounds up to the next slot, 128.
     const result = resolveHandleWallDrag({
       ...size,
       localX: 638,
@@ -713,13 +713,13 @@ describe('resolveHandleWallDrag', () => {
       allowedWalls: ['right'],
       contentTopPx: 100,
     });
-    expect(result?.offset).toBe(144);
+    expect(result?.offset).toBe(128);
   });
 
-  it('keeps the pill at least 32px away from other handles on the same wall', () => {
+  it('keeps the pill at least 64px away from other handles on the same wall', () => {
     // Pointer snaps onto an occupied slot (208): the nearest free slots sit
-    // 32px away on either side, and the pointer leans up (201 < 208), so the
-    // pill settles at 176.
+    // 64px away on either side, and the pointer leans up (201 < 208), so the
+    // pill settles at 144.
     const upward = resolveHandleWallDrag({
       ...size,
       localX: 638,
@@ -727,9 +727,9 @@ describe('resolveHandleWallDrag', () => {
       allowedWalls: ['right'],
       occupiedOffsets: { right: [208] },
     });
-    expect(upward).toEqual({ position: 'right', offset: 176 });
+    expect(upward).toEqual({ position: 'right', offset: 144 });
 
-    // Leaning down (215 still snaps to 208) resolves to the slot below, 240.
+    // Leaning down (215 still snaps to 208) resolves to the slot below, 272.
     const downward = resolveHandleWallDrag({
       ...size,
       localX: 638,
@@ -737,16 +737,29 @@ describe('resolveHandleWallDrag', () => {
       allowedWalls: ['right'],
       occupiedOffsets: { right: [208] },
     });
-    expect(downward).toEqual({ position: 'right', offset: 240 });
+    expect(downward).toEqual({ position: 'right', offset: 272 });
   });
 
-  it('allows exactly 32px of separation', () => {
+  it('keeps bottom-wall pills 64px apart so side-by-side labels never overlap', () => {
+    // Dragging toward a sibling at 320 on the bottom wall: 304 is only 16px
+    // away, so the pill settles at 256, the nearest slot 64px clear.
+    const result = resolveHandleWallDrag({
+      ...size,
+      localX: 310,
+      localY: 478,
+      allowedWalls: ['bottom'],
+      occupiedOffsets: { bottom: [320] },
+    });
+    expect(result).toEqual({ position: 'bottom', offset: 256 });
+  });
+
+  it('allows exactly 64px of separation', () => {
     const result = resolveHandleWallDrag({
       ...size,
       localX: 638,
       localY: 208,
       allowedWalls: ['right'],
-      occupiedOffsets: { right: [240] },
+      occupiedOffsets: { right: [272] },
     });
     expect(result?.offset).toBe(208);
   });
@@ -763,15 +776,15 @@ describe('resolveHandleWallDrag', () => {
   });
 
   it('returns null when every slot on the wall is blocked', () => {
-    // A 160px bottom wall offers slots 48..112; siblings at 64 and 96 leave no
-    // slot 32px clear of both, so the drag keeps its previous position.
+    // A 160px bottom wall offers slots 48..112; a sibling at 80 leaves no slot
+    // 64px clear of it, so the drag keeps its previous position.
     const result = resolveHandleWallDrag({
       nodeWidth: 160,
       nodeHeight: 480,
       localX: 80,
       localY: 479,
       allowedWalls: ['bottom'],
-      occupiedOffsets: { bottom: [64, 96] },
+      occupiedOffsets: { bottom: [80] },
     });
     expect(result).toBeNull();
   });

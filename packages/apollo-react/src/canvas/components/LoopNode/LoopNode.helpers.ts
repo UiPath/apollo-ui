@@ -40,13 +40,16 @@ export const HANDLE_DRAG_CORNER_MARGIN_PX = 48;
 /**
  * Fallback minimum distance from the container top for handles on the side
  * walls when the header cannot be measured. When the caller passes the
- * measured header bottom (`contentTopPx`), the top clamp is derived from it so
- * the pill keeps the same clearance from the dashed body frame's top edge as
- * the corner margin gives it from the frame's bottom edge.
+ * measured header bottom (`contentTopPx`), the top clamp is derived from it
+ * instead: the bottom clearance minus one grid step.
  */
 export const HANDLE_DRAG_TOP_MARGIN_PX = 112;
-/** Minimum center-to-center distance between two handles on the same wall. */
-export const HANDLE_DRAG_MIN_SPACING_PX = 32;
+/**
+ * Minimum center-to-center distance between two handles on the same wall.
+ * Sized so the pills themselves never overlap, including on the top/bottom
+ * walls where they sit side by side along their (wider) horizontal axis.
+ */
+export const HANDLE_DRAG_MIN_SPACING_PX = 64;
 
 export interface ContainerPreviewConnectionHandles {
   sourceHandleId: string;
@@ -389,10 +392,9 @@ export function resolveHandleWallDrag(options: {
   allowedWalls: ReadonlyArray<HandleWallOffset['position']>;
   /**
    * Node-local y of the dashed body frame's top edge (the measured header
-   * bottom). When provided, the side-wall top clamp mirrors the bottom one:
-   * the pill keeps the same clearance from the frame's top edge as
-   * HANDLE_DRAG_CORNER_MARGIN_PX gives it from the frame's bottom edge.
-   * Falls back to HANDLE_DRAG_TOP_MARGIN_PX when absent.
+   * bottom). When provided, the side-wall top clamp derives from it: the
+   * bottom clearance (HANDLE_DRAG_CORNER_MARGIN_PX from the node edge) minus
+   * one grid step. Falls back to HANDLE_DRAG_TOP_MARGIN_PX when absent.
    */
   contentTopPx?: number;
   /** Offsets already taken by other handles, per wall (from collectOccupiedWallOffsets). */
@@ -422,12 +424,12 @@ export function resolveHandleWallDrag(options: {
   const raw = isSideWall ? localY : localX;
 
   // Side walls start below the header. With a measured header bottom the top
-  // clearance from the dashed frame (frame top = header bottom) equals the
-  // bottom clearance (corner margin measured from the node edge, frame inset
-  // CONTAINER_FRAME_INSET_PX above it), keeping both limits symmetric.
+  // clamp derives from the dashed frame's top edge (frame top = header bottom):
+  // the bottom clearance minus one grid step, letting the pill sit one slot
+  // closer to the frame top than the corner margin allows at the bottom.
   const startMargin = isSideWall
     ? contentTopPx != null
-      ? contentTopPx + HANDLE_DRAG_CORNER_MARGIN_PX - CONTAINER_FRAME_INSET_PX
+      ? contentTopPx + HANDLE_DRAG_CORNER_MARGIN_PX - CONTAINER_FRAME_INSET_PX - HANDLE_DRAG_GRID_PX
       : HANDLE_DRAG_TOP_MARGIN_PX
     : HANDLE_DRAG_CORNER_MARGIN_PX;
   // Grid-aligned clamp bounds so snapping never lands inside a corner margin.
