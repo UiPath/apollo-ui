@@ -32,6 +32,16 @@ export const handleTypeDisplaySchema = z.enum(['artifact', 'input', 'output']);
  */
 export const handleLabelVisibilitySchema = z.enum(['always', 'hover']);
 
+/**
+ * Visual variant of a handle.
+ * - `default`: the standard notch connection handle.
+ * - `marker`: a small circular icon badge on the node boundary. Used for
+ *   semantic affordances that belong to the node itself (e.g. a case task's
+ *   event / manual trigger) rather than plain connection points. Marker
+ *   handles keep normal handle identity so edges and constraints still work.
+ */
+export const handleVariantSchema = z.enum(['default', 'marker']);
+
 export const handleConfigurationSpecificPositionSchema = z.object({
   /** The height of the area where the handles will be located in the node. Has no effect if no top or bottom is set. */
   height: z.number().optional(),
@@ -114,6 +124,12 @@ export const handleManifestSchema = z.object({
 
   /** When this handle's label is shown. Defaults to `always`. */
   labelVisibility: handleLabelVisibilitySchema.optional(),
+
+  /** Visual variant. Defaults to `default` (notch handle). */
+  variant: handleVariantSchema.optional(),
+
+  /** Canvas icon name rendered inside a `marker` variant handle (e.g. 'zap', 'play'). */
+  icon: z.string().optional(),
 
   /** Connection constraints for this handle */
   constraints: connectionConstraintSchema.optional(),
@@ -198,6 +214,7 @@ export type HandleBoundary = z.infer<typeof handleBoundarySchema>;
 export type HandleType = z.infer<typeof handleTypeSchema>;
 export type HandleCategory = z.infer<typeof handleTypeDisplaySchema>;
 export type HandleLabelVisibility = z.infer<typeof handleLabelVisibilitySchema>;
+export type HandleVariant = z.infer<typeof handleVariantSchema>;
 export type HandleManifest = z.infer<typeof handleManifestSchema>;
 export type HandleGroupManifest = z.infer<typeof handleGroupManifestSchema>;
 export type HandleGroupOverride = z.infer<typeof handleGroupOverrideSchema>;
