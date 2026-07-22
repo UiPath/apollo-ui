@@ -2,7 +2,11 @@
 
 import * as React from 'react';
 
-/** Node overlays portal into; `null` means no provider → `document.body`. */
+/**
+ * Node overlays portal into. `null` means fall back to `document.body` — either
+ * no provider is mounted, or one is but its boundary hasn't attached yet; it is
+ * not a reliable "is a provider mounted?" signal.
+ */
 const PortalContainerContext = React.createContext<HTMLElement | null>(null);
 
 export const usePortalContainer = (): HTMLElement | null =>
