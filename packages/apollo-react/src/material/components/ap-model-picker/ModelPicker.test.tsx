@@ -358,4 +358,82 @@ describe('<ModelPicker>', () => {
       assign.mockRestore();
     }
   });
+
+  it('resolves BYO connection names from Integration Service when the DTO lacks a label', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'conn-1', name: 'Acme Azure OpenAI' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const models: DiscoveryModel[] = [
+        ...MODELS,
+        {
+          modelId: 'byo-acme-gpt-4o',
+          modelName: 'gpt-4o',
+          vendor: 'OpenAi',
+          modelSubscriptionType: 'BYOMAdded',
+          byomDetails: { integrationServiceConnectionId: 'conn-1' },
+        },
+      ];
+      renderPicker(
+        <ModelPicker
+          models={models}
+          value={null}
+          onChange={() => {}}
+          canManageByo={false}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+          }}
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      expect(await screen.findByText('Acme Azure OpenAI')).toBeInTheDocument();
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://cloud.local/acme/DefaultTenant/connections_/api/v1/Connections/conn-1',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer t' }),
+        })
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('does not look up connections whose DTO already carries a host-supplied label', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const models: DiscoveryModel[] = [
+        {
+          modelId: 'byo-cigna-gpt-4o',
+          modelName: 'gpt-4o',
+          vendor: 'OpenAi',
+          modelSubscriptionType: 'BYOMAdded',
+          byoConnectionLabel: 'CignaSandbox',
+          byomDetails: { integrationServiceConnectionId: 'conn-1' },
+        },
+      ];
+      renderPicker(
+        <ModelPicker
+          models={models}
+          value={null}
+          onChange={() => {}}
+          canManageByo={false}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+          }}
+        />
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });
