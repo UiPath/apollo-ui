@@ -5,9 +5,14 @@ export {
   type FormWizardStepProps,
   FormWizardSteps,
   type FormWizardStepsProps,
+  type FormWizardStepsRenderApi,
   useFormWizardContext,
 } from "./form-wizard";
-export { FormWizardNav, type FormWizardNavProps } from "./form-wizard-nav";
+export {
+  FormWizardNav,
+  type FormWizardNavProps,
+  type FormWizardNavRenderApi,
+} from "./form-wizard-nav";
 export {
   useFormWizard,
   type UseFormWizardOptions,
