@@ -125,7 +125,7 @@ export const ResultExpandedContent = ({
       )}
 
       {status === RunResultStatus.NoBaseline &&
-        (data.actual ? (
+        (data.actual != null ? (
           <ProcessOutputView
             title={t("actual_output")}
             agentId={result.AgentId}
@@ -153,7 +153,7 @@ export const ResultExpandedContent = ({
               </div>
             </div>
           )}
-          {data.actual && (
+          {data.actual != null && (
             <ProcessOutputView
               title={t("actual_output")}
               agentId={result.AgentId}

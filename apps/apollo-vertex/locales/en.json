@@ -251,7 +251,7 @@
   "stop": "Stop",
   "subject_passed": "{{subject}} passed",
   "subject_passing": "{{subject}} passing in last run",
-  "subject_run_results": "{{subject}} {{id}}",
+  "subject_run_results": "{{subject}} Run Results",
   "success": "Success",
   "system": "System",
   "table_no_valid_fields": "None of the requested fields exist on {{entity}}: {{fields}}.",
