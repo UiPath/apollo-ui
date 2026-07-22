@@ -1,7 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
+import * as React from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { PortalContainerProvider } from './portal-container';
 import {
   Select,
   SelectContent,
@@ -264,5 +266,51 @@ describe('Select', () => {
     render(<SelectExample />);
     const trigger = screen.getByRole('combobox');
     expect(trigger).toHaveAttribute('aria-label', 'Select a fruit');
+  });
+
+  describe('portal container', () => {
+    const OpenSelect = ({ container }: { container?: HTMLElement }) => (
+      <Select open>
+        <SelectTrigger aria-label="Fruit">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent container={container}>
+          <SelectItem value="apple">Apple</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+
+    it('portals into the PortalContainerProvider boundary', async () => {
+      render(
+        <div data-testid="host">
+          <PortalContainerProvider>
+            <OpenSelect />
+          </PortalContainerProvider>
+        </div>
+      );
+
+      await waitFor(() => {
+        const option = screen.getByRole('option', { name: 'Apple' });
+        expect(screen.getByTestId('host').contains(option)).toBe(true);
+      });
+    });
+
+    it('routes its portal through an explicit container prop', async () => {
+      const Harness = () => {
+        const [target, setTarget] = React.useState<HTMLElement | null>(null);
+        return (
+          <>
+            <div data-testid="custom" ref={setTarget} />
+            {target && <OpenSelect container={target} />}
+          </>
+        );
+      };
+      render(<Harness />);
+
+      await waitFor(() => {
+        const option = screen.getByRole('option', { name: 'Apple' });
+        expect(screen.getByTestId('custom').contains(option)).toBe(true);
+      });
+    });
   });
 });

@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
+import * as React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from './dropdown-menu';
+import { PortalContainerProvider } from './portal-container';
 
 describe('DropdownMenu', () => {
   describe('rendering', () => {
@@ -377,6 +379,50 @@ describe('DropdownMenu', () => {
       await waitFor(() => {
         const item = screen.getByText('Disabled Action');
         expect(item).toHaveAttribute('data-disabled');
+      });
+    });
+  });
+
+  describe('portal container', () => {
+    const OpenMenu = ({ container }: { container?: HTMLElement }) => (
+      <DropdownMenu open>
+        <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+        <DropdownMenuContent container={container}>
+          <DropdownMenuItem>Action</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+
+    it('portals into the PortalContainerProvider boundary', async () => {
+      render(
+        <div data-testid="host">
+          <PortalContainerProvider>
+            <OpenMenu />
+          </PortalContainerProvider>
+        </div>
+      );
+
+      await waitFor(() => {
+        const item = screen.getByRole('menuitem', { name: 'Action' });
+        expect(screen.getByTestId('host').contains(item)).toBe(true);
+      });
+    });
+
+    it('routes its portal through an explicit container prop', async () => {
+      const Harness = () => {
+        const [target, setTarget] = React.useState<HTMLElement | null>(null);
+        return (
+          <>
+            <div data-testid="custom" ref={setTarget} />
+            {target && <OpenMenu container={target} />}
+          </>
+        );
+      };
+      render(<Harness />);
+
+      await waitFor(() => {
+        const item = screen.getByRole('menuitem', { name: 'Action' });
+        expect(screen.getByTestId('custom').contains(item)).toBe(true);
       });
     });
   });
