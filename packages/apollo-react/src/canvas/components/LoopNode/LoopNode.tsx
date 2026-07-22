@@ -44,6 +44,7 @@ import { NodeToolbar } from '../Toolbar';
 import {
   applyHandleOffsets,
   type ContainerHandleGroup,
+  collectOccupiedWallOffsets,
   type HandleOffsets,
   resolveContainerHandleGroups,
   resolveHandleWallDrag,
@@ -341,10 +342,11 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   /**
    * Drag session for a movable handle pill. Projects the pointer onto the
-   * nearest allowed wall (grid-snapped, corner-safe) and writes the wall +
-   * offset into data.handleOffsets for the handle and its mirror, so the
-   * inner/outer pair moves together. Edges follow automatically: the resolved
-   * groups change re-triggers updateNodeInternals.
+   * nearest allowed wall (grid-snapped, corner-safe, clear of the measured
+   * header and of sibling pills) and writes the wall + offset into
+   * data.handleOffsets for the handle and its mirror, so the inner/outer pair
+   * moves together. Edges follow automatically: the resolved groups change
+   * re-triggers updateNodeInternals.
    */
   const startHandlePillDrag = useCallback(
     (handleId: string, allowedWalls: HandleOffsets[string]['position'][], mirrorId?: string) =>
@@ -357,15 +359,27 @@ function LoopNodeComponent(props: LoopNodeProps) {
         const container = containerRef.current;
         if (!container) return;
 
+        // Sibling pill positions are fixed for the whole session; only the
+        // dragged pill (and its outer mirror) moves.
+        const occupiedOffsets = collectOccupiedWallOffsets(containerHandleGroups, {
+          nodeWidth: containerWidth,
+          nodeHeight: containerHeight,
+          excludeHandleIds: mirrorId ? [handleId, mirrorId] : [handleId],
+        });
+        const headerElement = container.querySelector('[data-testid="loop-node-header"]');
+
         const onPointerMove = (moveEvent: PointerEvent) => {
           const rect = container.getBoundingClientRect();
           const scale = zoomRef.current || 1;
+          const headerRect = headerElement?.getBoundingClientRect();
           const next = resolveHandleWallDrag({
             localX: (moveEvent.clientX - rect.left) / scale,
             localY: (moveEvent.clientY - rect.top) / scale,
             nodeWidth: rect.width / scale,
             nodeHeight: rect.height / scale,
             allowedWalls,
+            contentTopPx: headerRect ? (headerRect.bottom - rect.top) / scale : undefined,
+            occupiedOffsets,
           });
           if (!next) return;
           updateNodeData(id, (node) => {
@@ -396,7 +410,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
           pillDragCleanupRef.current = null;
         };
       },
-    [id, isDesignMode, updateNodeData]
+    [containerHandleGroups, containerHeight, containerWidth, id, isDesignMode, updateNodeData]
   );
 
   useContainerNodeInternalsRefresh(id, containerHandleGroups, containerWidth, containerHeight);
