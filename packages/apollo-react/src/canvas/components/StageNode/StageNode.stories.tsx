@@ -313,6 +313,41 @@ export const Default: Story = {
   },
 };
 
+export const ManifestAddNextStage: Story = {
+  name: 'Manifest Add Next Stage',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Handles come from caseManagementStageManifest. Providing onHandleAction renders the standard add button on the right source handle (the next handle). Hover or select the stage to reveal it.',
+      },
+    },
+    nodes: [
+      {
+        id: 'stage-manifest-demo',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'Intake',
+            tasks: sampleTasks,
+            sla: '4h',
+          },
+          execution: {
+            stageStatus: {
+              slaText: 'SLA: 4h',
+            },
+          },
+          onHandleAction: () => {
+            console.info('Add next stage: this would append a new stage after Intake');
+          },
+        },
+      },
+    ],
+  },
+};
+
 export const WithTaskIcons: Story = {
   name: 'With Task Icons',
   parameters: {
@@ -567,25 +602,25 @@ export const ExecutionStatus: Story = {
         id: 'e1',
         type: 'stage',
         source: '0',
-        sourceHandle: '0____source____right',
+        sourceHandle: 'next',
         target: '1',
-        targetHandle: '1____target____left',
+        targetHandle: 'input',
       },
       {
         id: 'e2',
         type: 'stage',
         source: '1',
-        sourceHandle: '1____source____right',
+        sourceHandle: 'next',
         target: '2',
-        targetHandle: '2____target____left',
+        targetHandle: 'input',
       },
       {
         id: 'e3',
         type: 'stage',
         source: '2',
-        sourceHandle: '2____source____right',
+        sourceHandle: 'next',
         target: '3',
-        targetHandle: '3____target____left',
+        targetHandle: 'input',
       },
     ] as Edge[],
   },
@@ -1043,33 +1078,33 @@ export const LoanProcessingWorkflow: Story = {
         id: 'e1',
         type: 'stage',
         source: 'application',
-        sourceHandle: 'application____source____right',
+        sourceHandle: 'next',
         target: 'processing',
-        targetHandle: 'processing____target____left',
+        targetHandle: 'input',
       },
       {
         id: 'e2',
         type: 'stage',
         source: 'processing',
-        sourceHandle: 'processing____source____right',
+        sourceHandle: 'next',
         target: 'underwriting',
-        targetHandle: 'underwriting____target____left',
+        targetHandle: 'input',
       },
       {
         id: 'e3',
         type: 'stage',
         source: 'underwriting',
-        sourceHandle: 'underwriting____source____right',
+        sourceHandle: 'next',
         target: 'closing',
-        targetHandle: 'closing____target____left',
+        targetHandle: 'input',
       },
       {
         id: 'e4',
         type: 'stage',
         source: 'closing',
-        sourceHandle: 'closing____source____right',
+        sourceHandle: 'next',
         target: 'funding',
-        targetHandle: 'funding____target____left',
+        targetHandle: 'input',
       },
     ] as Edge[],
   },
