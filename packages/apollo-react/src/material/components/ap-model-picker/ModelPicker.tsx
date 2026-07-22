@@ -803,10 +803,10 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                 fontSize: 13,
               }}
             >
-              {error.message}
+              {effectiveError.message}
             </Box>
           )}
-          {!loading && !error && filtered.length === 0 && (
+          {!effectiveLoading && !effectiveError && filtered.length === 0 && (
             <Box
               role="status"
               aria-live="polite"
@@ -853,7 +853,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
               border: 0,
             }}
           >
-            {!loading && !error && filtered.length > 0
+            {!effectiveLoading && !effectiveError && filtered.length > 0
               ? filtered.length === 1
                 ? _({
                     id: 'modelPicker.count.one',
@@ -867,7 +867,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                   })
               : ''}
           </Box>
-          {!loading && !error && filtered.length > 0 && (
+          {!effectiveLoading && !effectiveError && filtered.length > 0 && (
             <>
               <List
                 id={listboxId}
