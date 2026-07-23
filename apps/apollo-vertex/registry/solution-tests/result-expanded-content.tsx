@@ -76,14 +76,23 @@ export const ResultExpandedContent = ({
     <div className="flex flex-col gap-4 p-4">
       <UserMessagesView messages={result.UserMessages} />
 
-      {isPassedOrFailed && !isAutoPass && hasEvaluatorResults && (
-        <EvaluatorResultsView
-          data={evaluatorResults}
-          expectedOutput={data.expected}
-          actualOutput={data.actual}
-          result={result}
-        />
-      )}
+      {isPassedOrFailed &&
+        !isAutoPass &&
+        (hasEvaluatorResults ? (
+          <EvaluatorResultsView
+            data={evaluatorResults}
+            expectedOutput={data.expected}
+            actualOutput={data.actual}
+            result={result}
+          />
+        ) : (
+          // No parseable evaluator results — fall back to the raw output panels
+          // so a passed/failed row always shows something.
+          <div className="grid grid-cols-2 gap-4">
+            <JsonPanel title={t("expected_output")} data={data.expected} />
+            <JsonPanel title={t("actual_output")} data={data.actual} />
+          </div>
+        ))}
 
       {/* Dev-only debug aid, identical for every status. */}
       {showDebug && (
