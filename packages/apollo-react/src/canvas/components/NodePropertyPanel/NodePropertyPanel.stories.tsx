@@ -1,23 +1,59 @@
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  type DragOverEvent,
+  DragOverlay,
+  type DragStartEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { FormSchema } from '@uipath/apollo-wind';
 import {
   Badge,
   Button,
+  Card,
+  CardContent,
   cn,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
   Input,
+  Label,
   MetadataForm,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   ScrollableTabsList,
   Switch,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
+  Textarea,
+  ToggleGroup,
+  ToggleGroupItem,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@uipath/apollo-wind';
 import {
   apolloCoreDarkHCMonaco,
@@ -37,19 +73,25 @@ import {
   CircleOff,
   Code2,
   Copy,
+  FileBracesCorner,
   GitFork,
   Globe,
   GripVertical,
+  Pencil,
   Play,
   Plus,
   Search,
-  FileBracesCorner,
   Sparkles,
   Type,
+  Upload,
+  UserRoundCheck,
   X,
 } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import type { LockableFieldType, LockableValueFieldMode } from './LockableValueField';
+import { FIELD_TYPE_META, LockableValueField } from './LockableValueField';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
 // @monaco-editor/react uses a CJS build without an `exports` field, which
@@ -117,6 +159,23 @@ function DebugButton() {
       <Play size={14} />
       Debug
     </button>
+  );
+}
+
+function ApproveRejectActions() {
+  return (
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="xs" className="h-8">
+        Reject
+      </Button>
+      <button
+        type="button"
+        className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
+      >
+        <CircleCheck size={14} />
+        Approve
+      </button>
+    </div>
   );
 }
 
@@ -647,6 +706,8 @@ const JSON_VIEWER_OPTIONS = {
   },
   automaticLayout: true,
 } as const;
+
+const JSON_EDITOR_OPTIONS = { ...JSON_VIEWER_OPTIONS, readOnly: false } as const;
 
 const INLINE_EDITOR_OPTIONS = {
   fontSize: 13,
@@ -2468,10 +2529,1099 @@ function InputOutputStory() {
   );
 }
 
+// ============================================================================
+// Prototype — LockableValueField
+// ============================================================================
+
+interface LockableCase {
+  id: number;
+  title: string;
+  required: boolean;
+  value: string;
+  locked: boolean;
+  mode: LockableValueFieldMode;
+  fieldType: LockableFieldType;
+}
+
+const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
+  {
+    id: 1,
+    title: 'Invoice Number',
+    required: true,
+    value: '',
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'string',
+  },
+  {
+    id: 2,
+    title: 'Submission Date',
+    required: true,
+    value: '',
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'date',
+  },
+  {
+    id: 3,
+    title: 'Approved Amount',
+    required: true,
+    value: '',
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'integer',
+  },
+];
+
+const REVIEW_LOCKABLE_CASES: LockableCase[] = [
+  {
+    id: 1,
+    title: 'Invoice Number',
+    required: true,
+    value: 'INV-2024-0587',
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'string',
+  },
+  {
+    id: 2,
+    title: 'Submission Date',
+    required: true,
+    value: new Date('2026-07-10').toISOString(),
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'date',
+  },
+  {
+    id: 3,
+    title: 'Approved Amount',
+    required: true,
+    value: '1240',
+    locked: false,
+    mode: 'fixed',
+    fieldType: 'integer',
+  },
+];
+
+function LockableCaseRow({
+  id,
+  caseTitle,
+  onTitleChange,
+  required,
+  onRequiredChange,
+  onDelete,
+  value,
+  onValueChange,
+  locked,
+  onLockedChange,
+  mode,
+  onModeChange,
+  fieldType,
+  onFieldTypeChange,
+  compact,
+  controlsVisibility,
+  insertBefore,
+  insertAfter,
+}: {
+  id: number;
+  caseTitle: string;
+  onTitleChange: (title: string) => void;
+  required: boolean;
+  onRequiredChange: (required: boolean) => void;
+  onDelete: () => void;
+  value: string;
+  onValueChange: (value: string) => void;
+  locked: boolean;
+  onLockedChange: (locked: boolean) => void;
+  mode: LockableValueFieldMode;
+  onModeChange: (mode: LockableValueFieldMode) => void;
+  fieldType: LockableFieldType;
+  onFieldTypeChange: (fieldType: LockableFieldType) => void;
+  compact?: boolean;
+  controlsVisibility?: 'visible' | 'hover';
+  /** Shows the insertion line above this row (the dragged item would land here). */
+  insertBefore?: boolean;
+  /** Shows the insertion line below this row (the dragged item would land here). */
+  insertAfter?: boolean;
+}) {
+  const [editingTitle, setEditingTitle] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className="group relative"
+    >
+      {/* Rendered as a child of this row's own transformed wrapper (not an
+          outer sibling) so it moves in lockstep with the row during the
+          sortable reflow animation instead of drifting out of sync. */}
+      {insertBefore && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -top-2 z-10 h-0.5 rounded-full bg-brand"
+        />
+      )}
+      <div
+        className={cn(isDragging && 'rounded-lg border-2 border-dashed border-brand/50 opacity-50')}
+      >
+        <LockableValueField
+          id={`return-value-${id}`}
+          label={
+            <div className="flex min-w-0 flex-1 items-center gap-1">
+              <button
+                type="button"
+                {...attributes}
+                {...listeners}
+                aria-label="Drag to reorder"
+                title="Drag to reorder"
+                className="grid size-5 shrink-0 touch-none place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground [cursor:grab]"
+              >
+                <GripVertical size={12} />
+              </button>
+              {editingTitle ? (
+                <input
+                  ref={titleRef}
+                  value={caseTitle}
+                  onChange={(e) => onTitleChange(e.target.value)}
+                  onBlur={() => setEditingTitle(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false);
+                  }}
+                  className="min-w-0 flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
+                  autoFocus
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingTitle(true);
+                    setTimeout(() => titleRef.current?.select(), 0);
+                  }}
+                  className="truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                >
+                  {caseTitle}
+                  {required && <span className="ml-0.5 text-destructive">*</span>}
+                </button>
+              )}
+            </div>
+          }
+          headerActions={
+            <button
+              type="button"
+              onClick={onDelete}
+              aria-label="Delete field"
+              title="Delete field"
+              className={cn(
+                'grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                controlsVisibility === 'hover' &&
+                  'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+              )}
+            >
+              <X size={12} />
+            </button>
+          }
+          value={value}
+          onValueChange={onValueChange}
+          locked={locked}
+          onLockedChange={onLockedChange}
+          mode={mode}
+          onModeChange={onModeChange}
+          fieldType={fieldType}
+          onFieldTypeChange={onFieldTypeChange}
+          required={required}
+          onRequiredChange={onRequiredChange}
+          compact={compact}
+          controlsVisibility={controlsVisibility}
+        />
+      </div>
+      {insertAfter && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -bottom-2 z-10 h-0.5 rounded-full bg-brand"
+        />
+      )}
+    </div>
+  );
+}
+
+interface FormButtonItem {
+  id: number;
+  label: string;
+  variant: 'default' | 'outline';
+}
+
+const DEFAULT_FORM_BUTTONS: FormButtonItem[] = [
+  { id: 1, label: 'Approve', variant: 'default' },
+  { id: 2, label: 'Cancel', variant: 'outline' },
+];
+
+function FormButtonChip({
+  label,
+  onLabelChange,
+  variant,
+  onVariantChange,
+  onDelete,
+}: {
+  label: string;
+  onLabelChange: (label: string) => void;
+  variant: 'default' | 'outline';
+  onVariantChange: (variant: 'default' | 'outline') => void;
+  onDelete: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div
+      className={cn(
+        'group/button flex h-10 items-stretch overflow-hidden rounded-lg text-sm font-semibold transition',
+        variant === 'default'
+          ? 'bg-brand text-foreground-on-accent'
+          : 'border border-input bg-background text-foreground future:border-border-subtle future:text-muted-foreground'
+      )}
+    >
+      {editing ? (
+        <input
+          ref={inputRef}
+          value={label}
+          onChange={(e) => onLabelChange(e.target.value)}
+          onBlur={() => setEditing(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === 'Escape') setEditing(false);
+          }}
+          autoFocus
+          size={Math.max(label.length, 4)}
+          className="bg-transparent px-3 outline-none"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setEditing(true);
+            setTimeout(() => inputRef.current?.select(), 0);
+          }}
+          className={cn(
+            'px-4 transition',
+            variant === 'default'
+              ? 'hover:bg-brand-hover'
+              : 'hover:bg-accent hover:text-accent-foreground future:hover:text-foreground'
+          )}
+        >
+          {label}
+        </button>
+      )}
+      <Popover>
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Edit button"
+                  className={cn(
+                    'grid w-0 shrink-0 place-items-center overflow-hidden px-0 opacity-0 transition-all duration-200 group-hover/button:w-8 group-hover/button:px-2 group-hover/button:opacity-100 aria-expanded:w-8 aria-expanded:px-2 aria-expanded:opacity-100',
+                    variant === 'default'
+                      ? 'hover:bg-brand-hover'
+                      : 'hover:bg-accent hover:text-accent-foreground future:hover:text-foreground'
+                  )}
+                >
+                  <Pencil size={12} className="shrink-0" />
+                </button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Edit button</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <PopoverContent align="start" className="w-48 space-y-3">
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-foreground-muted">Type</span>
+            <ToggleGroup
+              type="single"
+              value={variant}
+              onValueChange={(value) => {
+                if (value) onVariantChange(value as 'default' | 'outline');
+              }}
+              className="w-full"
+            >
+              <ToggleGroupItem value="default" className="flex-1 text-xs">
+                Primary
+              </ToggleGroupItem>
+              <ToggleGroupItem value="outline" className="flex-1 text-xs">
+                Secondary
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          <div className="h-px bg-border-subtle" />
+          <button
+            type="button"
+            onClick={onDelete}
+            className="flex w-full items-center gap-1.5 rounded-lg px-1.5 py-1 text-xs text-destructive transition hover:bg-destructive/10"
+          >
+            <X size={12} />
+            Delete button
+          </button>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
+function FieldDragOverlay({ caseItem }: { caseItem: LockableCase }) {
+  const meta = FIELD_TYPE_META[caseItem.fieldType];
+  return (
+    <div
+      className="flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 shadow-lg"
+      style={{ cursor: 'grabbing' }}
+    >
+      <GripVertical size={12} className="shrink-0 text-foreground-subtle" />
+      <meta.icon size={12} className="shrink-0 text-foreground-subtle" />
+      <span className="truncate text-xs font-medium text-foreground">
+        {caseItem.title}
+        {caseItem.required && <span className="ml-0.5 text-destructive">*</span>}
+      </span>
+    </div>
+  );
+}
+
+function LockableValueFieldShowcase({
+  controlsVisibility,
+  onControlsVisibilityChange,
+}: {
+  controlsVisibility: 'visible' | 'hover';
+  onControlsVisibilityChange: (visibility: 'visible' | 'hover') => void;
+}) {
+  const [showcaseValue, setShowcaseValue] = useState('');
+  const [showcaseLocked, setShowcaseLocked] = useState(true);
+  const [showcaseMode, setShowcaseMode] = useState<LockableValueFieldMode>('fixed');
+  const [showcaseFieldType, setShowcaseFieldType] = useState<LockableFieldType>('string');
+  const [showcaseRequired, setShowcaseRequired] = useState(true);
+  const [showcaseDetailsExpanded, setShowcaseDetailsExpanded] = useState(false);
+
+  const handleShowcaseFieldTypeChange = (type: LockableFieldType) => {
+    setShowcaseFieldType(type);
+    setShowcaseValue('');
+    if (!FIELD_TYPE_META[type].supportsExpression) {
+      setShowcaseMode('fixed');
+    }
+  };
+
+  return (
+    <div className="flex w-[380px] shrink-0 flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-raised p-5">
+      <div className="flex flex-col gap-1">
+        <span className="text-sm font-semibold text-foreground">LockableValueField</span>
+        <button
+          type="button"
+          onClick={() => setShowcaseDetailsExpanded((v) => !v)}
+          aria-expanded={showcaseDetailsExpanded}
+          className="group/details flex items-start gap-1 text-left text-xs leading-4 text-foreground-muted transition hover:text-foreground"
+        >
+          <span className="flex-1">
+            A reusable string field that can be locked to read-only and switched between a literal
+            value and a JS expression.
+          </span>
+          <ChevronDown
+            size={14}
+            className={cn(
+              'mt-0.5 shrink-0 text-foreground-subtle transition-transform group-hover/details:text-foreground',
+              showcaseDetailsExpanded && 'rotate-180'
+            )}
+          />
+        </button>
+        {showcaseDetailsExpanded && (
+          <ul className="flex list-disc flex-col gap-1.5 pl-4 pt-1 text-xs leading-4 text-foreground-muted">
+            <li>
+              Left lock icon toggles Editable / Read-only. Read-only fields show plain text, not a
+              disabled control.
+            </li>
+            <li>
+              Right value-mode icon switches between Fixed value and Expression, updating the value
+              styling. Only shown for types an expression can produce.
+            </li>
+            <li>
+              Field type dropdown swaps the control itself: String, Integer, Date, Boolean, Single
+              select, Multiselect, and File each render their own matching input.
+            </li>
+            <li>
+              Required switch toggles the red asterisk on the label. Only shown when
+              onRequiredChange is provided. Collapses to an icon that opens a popover in compact
+              view.
+            </li>
+            <li>Built-in AI-assist popover to describe and generate a value.</li>
+            <li>Insert-variable affordance for binding to upstream data.</li>
+            <li>Built entirely on apollo-wind&apos;s InputGroup primitive.</li>
+            <li>
+              Header row is responsive (container query): the type, required, AI-assist, and
+              insert-variable controls collapse to icon-only once the field gets too narrow for
+              their labels.
+            </li>
+          </ul>
+        )}
+      </div>
+      <div className="flex items-center justify-between border-t border-border-subtle pt-4">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
+          Controls
+        </span>
+        <ToggleGroup
+          type="single"
+          size="xs"
+          value={controlsVisibility}
+          onValueChange={(v) => v && onControlsVisibilityChange(v as 'visible' | 'hover')}
+        >
+          <ToggleGroupItem value="visible" className="!px-2.5 !text-xs">
+            Show
+          </ToggleGroupItem>
+          <ToggleGroupItem value="hover" className="!px-2.5 !text-xs">
+            Hide
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+      <div className="flex flex-col gap-2">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
+          Full view
+        </span>
+        <LockableValueField
+          label={
+            <Label className="text-xs font-medium text-foreground-muted">
+              Label
+              {showcaseRequired && <span className="ml-0.5 text-destructive">*</span>}
+            </Label>
+          }
+          headerActions={
+            <button
+              type="button"
+              aria-label="Close field"
+              className={cn(
+                'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                controlsVisibility === 'hover' &&
+                  'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+              )}
+            >
+              <X size={14} />
+            </button>
+          }
+          value={showcaseValue}
+          onValueChange={setShowcaseValue}
+          locked={showcaseLocked}
+          onLockedChange={setShowcaseLocked}
+          mode={showcaseMode}
+          onModeChange={setShowcaseMode}
+          fieldType={showcaseFieldType}
+          onFieldTypeChange={handleShowcaseFieldTypeChange}
+          required={showcaseRequired}
+          onRequiredChange={setShowcaseRequired}
+          controlsVisibility={controlsVisibility}
+        />
+      </div>
+      <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
+          Compact view (narrow container)
+        </span>
+        <div className="w-[200px]">
+          <LockableValueField
+            label={
+              <Label className="text-xs font-medium text-foreground-muted">
+                Label
+                {showcaseRequired && <span className="ml-0.5 text-destructive">*</span>}
+              </Label>
+            }
+            headerActions={
+              <button
+                type="button"
+                aria-label="Close field"
+                className={cn(
+                  'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                  controlsVisibility === 'hover' &&
+                    'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+                )}
+              >
+                <X size={14} />
+              </button>
+            }
+            value={showcaseValue}
+            onValueChange={setShowcaseValue}
+            locked={showcaseLocked}
+            onLockedChange={setShowcaseLocked}
+            mode={showcaseMode}
+            onModeChange={setShowcaseMode}
+            fieldType={showcaseFieldType}
+            onFieldTypeChange={handleShowcaseFieldTypeChange}
+            required={showcaseRequired}
+            onRequiredChange={setShowcaseRequired}
+            controlsVisibility={controlsVisibility}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuickFormStory() {
+  const monacoTheme = useMonacoTheme();
+  const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
+  const nextIdRef = useRef(4);
+  const [formView, setFormView] = useState<'edit' | 'json'>('edit');
+  const [formTitle, setFormTitle] = useState('Quick Approve');
+  const [formDescription, setFormDescription] = useState('Add a description');
+  const [editingFormTitle, setEditingFormTitle] = useState(false);
+  const [editingFormDescription, setEditingFormDescription] = useState(false);
+  const formTitleRef = useRef<HTMLInputElement>(null);
+  const formDescriptionRef = useRef<HTMLInputElement>(null);
+  const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(DEFAULT_LOCKABLE_CASES, null, 2));
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [jsonCopied, setJsonCopied] = useState(false);
+  const [showcaseControlsVisibility, setShowcaseControlsVisibility] = useState<'visible' | 'hover'>(
+    'visible'
+  );
+  const [buttons, setButtons] = useState<FormButtonItem[]>(DEFAULT_FORM_BUTTONS);
+  const nextButtonIdRef = useRef(3);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (formView !== 'json') {
+      setJsonDraft(JSON.stringify(cases, null, 2));
+      setJsonError(null);
+    }
+  }, [cases, formView]);
+
+  const handleJsonChange = (value: string) => {
+    setJsonDraft(value);
+    try {
+      const parsed = JSON.parse(value);
+      if (!Array.isArray(parsed)) {
+        setJsonError('Expected a JSON array of fields.');
+        return;
+      }
+      setCases(parsed);
+      setJsonError(null);
+    } catch {
+      setJsonError('Invalid JSON.');
+    }
+  };
+
+  const handleCopyJson = () => {
+    navigator.clipboard
+      ?.writeText(jsonDraft)
+      ?.then(() => {
+        setJsonCopied(true);
+        setTimeout(() => setJsonCopied(false), 1500);
+      })
+      ?.catch(() => {});
+  };
+
+  const addCaseWithType = (fieldType: LockableFieldType) => {
+    const id = nextIdRef.current++;
+    setCases((prev) => [
+      ...prev,
+      {
+        id,
+        title: `Field ${id}`,
+        required: true,
+        value: '',
+        locked: true,
+        mode: 'fixed',
+        fieldType,
+      },
+    ]);
+  };
+  const deleteCase = (id: number) => setCases((prev) => prev.filter((c) => c.id !== id));
+  const updateCase = (id: number, patch: Partial<LockableCase>) =>
+    setCases((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  const addButton = () => {
+    const id = nextButtonIdRef.current++;
+    setButtons((prev) => [...prev, { id, label: 'Button', variant: 'outline' }]);
+  };
+  const deleteButton = (id: number) => setButtons((prev) => prev.filter((b) => b.id !== id));
+  const updateButton = (id: number, patch: Partial<FormButtonItem>) =>
+    setButtons((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+  const updateCaseFieldType = (id: number, fieldType: LockableFieldType) =>
+    setCases((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              fieldType,
+              value: '',
+              mode: FIELD_TYPE_META[fieldType].supportsExpression ? c.mode : 'fixed',
+            }
+          : c
+      )
+    );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const [activeDragId, setActiveDragId] = useState<number | null>(null);
+  const [overDragId, setOverDragId] = useState<number | null>(null);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as number);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    setOverDragId((event.over?.id as number) ?? null);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setCases((prev) => {
+        const oldIndex = prev.findIndex((c) => c.id === active.id);
+        const newIndex = prev.findIndex((c) => c.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+    setActiveDragId(null);
+    setOverDragId(null);
+  };
+
+  const handleDragCancel = () => {
+    setActiveDragId(null);
+    setOverDragId(null);
+  };
+
+  const activeCase = cases.find((c) => c.id === activeDragId);
+
+  return (
+    <div className="flex items-start gap-8">
+      <PanelFrame>
+        <NodePropertyPanel
+          panelTitle="Properties"
+          nodeIcon={<UserRoundCheck />}
+          nodeLabel="Quick Approve"
+          nodeCategory="Quick approve/reject decision for the extracted invoice."
+          action={<DebugButton />}
+          onClose={() => {}}
+          contentInset="0.875rem"
+          className="h-[760px]"
+        >
+          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <TabsList className={TAB_LIST_CLASS}>
+                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                  Parameters
+                </TabsTrigger>
+                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                  Branching
+                </TabsTrigger>
+                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                  Error handling
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            <TabsContent
+              value="parameters"
+              className="mt-0 flex min-h-0 flex-1 flex-col gap-4 overflow-auto py-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
+            >
+              {/* Quick form */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-foreground-muted">Quick form</span>
+                  <div className="flex items-center gap-2">
+                    <Popover>
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <PopoverTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label="Generate with AI"
+                                className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground aria-expanded:bg-surface-overlay aria-expanded:text-foreground"
+                              >
+                                <Sparkles size={14} />
+                              </button>
+                            </PopoverTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>Generate with AI</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <PopoverContent align="end" className="w-64 space-y-1.5">
+                        <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                          <Sparkles size={12} className="text-brand" />
+                          Describe the form you want
+                        </span>
+                        <Textarea
+                          rows={3}
+                          placeholder="e.g. An invoice approval form with amount and due date"
+                          className="resize-none text-sm"
+                        />
+                        <Button size="sm" className="w-full">
+                          Generate
+                        </Button>
+                      </PopoverContent>
+                    </Popover>
+                    <ToggleGroup
+                      type="single"
+                      size="xs"
+                      value={formView}
+                      onValueChange={(v) => v && setFormView(v as 'edit' | 'json')}
+                    >
+                      <ToggleGroupItem value="edit" className="!px-2.5 !text-xs">
+                        UI
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="json" className="!px-2.5 !text-xs">
+                        JSON
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                </div>
+                <Card>
+                  <CardContent className="flex flex-col gap-4 p-4">
+                    <div className="flex items-center gap-3.5">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={() => {}}
+                      />
+                      <HoverCard openDelay={300}>
+                        <HoverCardTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            aria-label="Upload a file"
+                            className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle transition hover:bg-surface-overlay/70 hover:text-foreground [&>svg]:size-5"
+                          >
+                            <Upload />
+                          </button>
+                        </HoverCardTrigger>
+                        <HoverCardContent align="start" className="w-56 space-y-1.5">
+                          <p className="text-xs font-semibold text-foreground">Upload form logo</p>
+                          <p className="text-xs text-foreground-muted">
+                            Images are automatically resized to fit the logo area.
+                          </p>
+                          <div className="space-y-0.5 text-[11px] text-foreground-subtle">
+                            <div>Type: PNG, JPG, SVG</div>
+                            <div>Size: 512 × 512 px</div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                      <div className="flex min-w-0 flex-1 flex-col justify-center">
+                        {editingFormTitle ? (
+                          <input
+                            ref={formTitleRef}
+                            value={formTitle}
+                            onChange={(e) => setFormTitle(e.target.value)}
+                            onBlur={() => setEditingFormTitle(false)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === 'Escape')
+                                setEditingFormTitle(false);
+                            }}
+                            className="rounded bg-surface-overlay px-1 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                            autoFocus
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingFormTitle(true);
+                              setTimeout(() => formTitleRef.current?.select(), 0);
+                            }}
+                            className="truncate rounded px-1 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                          >
+                            {formTitle}
+                          </button>
+                        )}
+                        {editingFormDescription ? (
+                          <input
+                            ref={formDescriptionRef}
+                            value={formDescription}
+                            onChange={(e) => setFormDescription(e.target.value)}
+                            onBlur={() => setEditingFormDescription(false)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === 'Escape')
+                                setEditingFormDescription(false);
+                            }}
+                            className="rounded bg-surface-overlay px-1 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                            autoFocus
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingFormDescription(true);
+                              setTimeout(() => formDescriptionRef.current?.select(), 0);
+                            }}
+                            className="truncate rounded px-1 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                          >
+                            {formDescription}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {formView === 'edit' && (
+                      <>
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragStart={handleDragStart}
+                          onDragOver={handleDragOver}
+                          onDragEnd={handleDragEnd}
+                          onDragCancel={handleDragCancel}
+                        >
+                          <SortableContext
+                            items={cases.map((c) => c.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="flex flex-col gap-4">
+                              {cases.map((c, index) => {
+                                const activeIndex = cases.findIndex((x) => x.id === activeDragId);
+                                const isOver =
+                                  activeDragId != null &&
+                                  overDragId === c.id &&
+                                  c.id !== activeDragId;
+                                return (
+                                  <LockableCaseRow
+                                    key={c.id}
+                                    id={c.id}
+                                    caseTitle={c.title}
+                                    onTitleChange={(title) => updateCase(c.id, { title })}
+                                    required={c.required}
+                                    onRequiredChange={(required) => updateCase(c.id, { required })}
+                                    onDelete={() => deleteCase(c.id)}
+                                    value={c.value}
+                                    onValueChange={(value) => updateCase(c.id, { value })}
+                                    locked={c.locked}
+                                    onLockedChange={(locked) => updateCase(c.id, { locked })}
+                                    mode={c.mode}
+                                    onModeChange={(mode) => updateCase(c.id, { mode })}
+                                    fieldType={c.fieldType}
+                                    compact
+                                    onFieldTypeChange={(fieldType) =>
+                                      updateCaseFieldType(c.id, fieldType)
+                                    }
+                                    controlsVisibility={showcaseControlsVisibility}
+                                    insertBefore={isOver && activeIndex > index}
+                                    insertAfter={isOver && activeIndex < index}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </SortableContext>
+                          {createPortal(
+                            <DragOverlay>
+                              {activeCase ? <FieldDragOverlay caseItem={activeCase} /> : null}
+                            </DragOverlay>,
+                            document.body
+                          )}
+                        </DndContext>
+                        <button
+                          type="button"
+                          onClick={() => addCaseWithType('string')}
+                          className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                        >
+                          <Plus size={12} />
+                          Add field
+                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {buttons.map((b) => (
+                            <FormButtonChip
+                              key={b.id}
+                              label={b.label}
+                              onLabelChange={(label) => updateButton(b.id, { label })}
+                              variant={b.variant}
+                              onVariantChange={(variant) => updateButton(b.id, { variant })}
+                              onDelete={() => deleteButton(b.id)}
+                            />
+                          ))}
+                          <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={addButton}
+                                  aria-label="Add button"
+                                  className="grid size-10 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                                >
+                                  <Plus size={16} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>Add button</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </>
+                    )}
+                    {formView === 'json' && (
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-foreground-muted">
+                            Form schema
+                          </span>
+                          <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={handleCopyJson}
+                                  aria-label="Copy JSON"
+                                  className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                                >
+                                  {jsonCopied ? (
+                                    <CircleCheck size={13} className="text-brand" />
+                                  ) : (
+                                    <Copy size={13} />
+                                  )}
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>{jsonCopied ? 'Copied' : 'Copy JSON'}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <div className="h-[320px] overflow-hidden rounded-xl border border-surface-overlay">
+                          <MonacoEditor
+                            height="100%"
+                            language="json"
+                            value={jsonDraft}
+                            onChange={(value) => handleJsonChange(value ?? '')}
+                            theme={monacoTheme}
+                            beforeMount={registerMonacoThemes}
+                            options={JSON_EDITOR_OPTIONS}
+                          />
+                        </div>
+                        {jsonError && <span className="text-xs text-destructive">{jsonError}</span>}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            <TabsContent value="error-handling" className="mt-0" />
+            <TabsContent value="advanced" className="mt-0" />
+          </Tabs>
+        </NodePropertyPanel>
+      </PanelFrame>
+
+      <LockableValueFieldShowcase
+        controlsVisibility={showcaseControlsVisibility}
+        onControlsVisibilityChange={setShowcaseControlsVisibility}
+      />
+    </div>
+  );
+}
+
+export const InlineEditing: Story = {
+  name: 'Inline Editing',
+  render: () => <InlineEditingStory />,
+};
+
 export const Output: Story = {
   name: 'Input / Output',
   render: () => <InputOutputStory />,
   parameters: { layout: 'fullscreen' },
+};
+
+export const QuickForm: Story = {
+  name: 'Form HITL',
+  render: () => <QuickFormStory />,
+};
+
+function FormHitlReviewStory() {
+  const [cases, setCases] = useState<LockableCase[]>(REVIEW_LOCKABLE_CASES);
+  const [controlsVisibility, setControlsVisibility] = useState<'visible' | 'hover'>('visible');
+
+  const updateCase = (id: number, patch: Partial<LockableCase>) =>
+    setCases((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+
+  return (
+    <div className="flex items-start gap-8">
+      <PanelFrame>
+        <NodePropertyPanel
+          panelTitle="Properties"
+          nodeLabel="Quick Approve"
+          nodeCategory="Review the extracted invoice details, then approve or reject."
+          action={<ApproveRejectActions />}
+          onClose={() => {}}
+          contentInset="0.875rem"
+          className="h-[760px]"
+        >
+          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <TabsList className={TAB_LIST_CLASS}>
+                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                  Parameters
+                </TabsTrigger>
+                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                  Branching
+                </TabsTrigger>
+                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                  Error handling
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            <TabsContent
+              value="parameters"
+              className="mt-0 flex min-h-0 flex-1 flex-col gap-4 overflow-auto py-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
+            >
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-medium text-foreground-muted">Quick form</span>
+                <Card>
+                  <CardContent className="flex flex-col gap-4 p-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
+                        <Upload />
+                      </div>
+                      <div className="flex min-w-0 flex-1 flex-col justify-center">
+                        <span className="truncate text-base font-semibold leading-5 tracking-[-0.3px] text-foreground">
+                          Quick Approve
+                        </span>
+                        <span className="truncate text-xs leading-4 text-foreground-muted">
+                          Extracted from invoice.pdf &middot; 92% confidence
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      {cases.map((c) => (
+                        <LockableValueField
+                          key={c.id}
+                          id={`review-${c.id}`}
+                          label={
+                            <Label
+                              htmlFor={`review-${c.id}`}
+                              className="text-xs font-medium text-foreground-muted"
+                            >
+                              {c.title}
+                              {c.required && <span className="ml-0.5 text-destructive">*</span>}
+                            </Label>
+                          }
+                          value={c.value}
+                          onValueChange={(value) => updateCase(c.id, { value })}
+                          locked={c.locked}
+                          onLockedChange={(locked) => updateCase(c.id, { locked })}
+                          mode={c.mode}
+                          onModeChange={(mode) => updateCase(c.id, { mode })}
+                          fieldType={c.fieldType}
+                          required={c.required}
+                          showFieldActions={false}
+                        />
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            <TabsContent value="error-handling" className="mt-0" />
+            <TabsContent value="advanced" className="mt-0" />
+          </Tabs>
+        </NodePropertyPanel>
+      </PanelFrame>
+
+      <LockableValueFieldShowcase
+        controlsVisibility={controlsVisibility}
+        onControlsVisibilityChange={setControlsVisibility}
+      />
+    </div>
+  );
+}
+
+export const FormHitlReview: Story = {
+  name: 'Form HITL Review',
+  render: () => <FormHitlReviewStory />,
 };
 
 // ============================================================================
@@ -2554,11 +3704,6 @@ function InlineEditingStory() {
     </PanelFrame>
   );
 }
-
-export const InlineEditing: Story = {
-  name: 'Inline Editing',
-  render: () => <InlineEditingStory />,
-};
 
 export const AlertsAndErrors: Story = {
   name: 'Alerts and Errors',
