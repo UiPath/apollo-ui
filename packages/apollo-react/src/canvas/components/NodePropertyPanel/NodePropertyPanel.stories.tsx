@@ -707,6 +707,8 @@ const JSON_VIEWER_OPTIONS = {
   automaticLayout: true,
 } as const;
 
+const JSON_EDITOR_OPTIONS = { ...JSON_VIEWER_OPTIONS, readOnly: false } as const;
+
 const INLINE_EDITOR_OPTIONS = {
   fontSize: 13,
   lineHeight: 20,
@@ -3058,6 +3060,7 @@ function LockableValueFieldShowcase({
 }
 
 function QuickFormStory() {
+  const monacoTheme = useMonacoTheme();
   const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
   const nextIdRef = useRef(4);
   const [formView, setFormView] = useState<'edit' | 'json'>('edit');
@@ -3470,13 +3473,17 @@ function QuickFormStory() {
                             </Tooltip>
                           </TooltipProvider>
                         </div>
-                        <Textarea
-                          value={jsonDraft}
-                          onChange={(e) => handleJsonChange(e.target.value)}
-                          rows={14}
-                          spellCheck={false}
-                          className="resize-none font-mono text-xs"
-                        />
+                        <div className="h-[320px] overflow-hidden rounded-xl border border-surface-overlay">
+                          <MonacoEditor
+                            height="100%"
+                            language="json"
+                            value={jsonDraft}
+                            onChange={(value) => handleJsonChange(value ?? '')}
+                            theme={monacoTheme}
+                            beforeMount={registerMonacoThemes}
+                            options={JSON_EDITOR_OPTIONS}
+                          />
+                        </div>
                         {jsonError && <span className="text-xs text-destructive">{jsonError}</span>}
                       </div>
                     )}
