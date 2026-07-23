@@ -1,5 +1,6 @@
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { GroupModificationType } from '../../utils/GroupModificationUtils';
+import type { HandleActionEvent, HandleMouseEvent } from '../ButtonHandle/ButtonHandle';
 import type { NodeMenuItem } from '../NodeContextMenu';
 import type { ListItem, ToolboxSearchHandler } from '../Toolbox';
 
@@ -100,6 +101,17 @@ export interface StageNodeBaseProps {
   getTaskContextMenuItems?: (args: StageTaskContextMenuArgs) => NodeMenuItem[] | undefined;
   hideParallelOptions?: boolean;
   loadingTaskIds?: ReadonlySet<string>;
+  /**
+   * Fired when the manifest-driven add button on a source handle is clicked.
+   * `HandleActionEvent.handleId` is the manifest handle id from
+   * `caseManagementStageManifest` (the add button lives on `next`). The add
+   * button only renders when this callback is provided.
+   */
+  onHandleAction?: (event: HandleActionEvent) => void;
+  /** Fired when the pointer enters a handle's add button (e.g. to show a preview node). */
+  onHandleMouseEnter?: (event: HandleMouseEvent) => void;
+  /** Fired when the pointer leaves a handle's add button. */
+  onHandleMouseLeave?: (event: HandleMouseEvent) => void;
 }
 
 export interface StageNodeCanvasProps extends NodeProps, StageNodeBaseProps {}
