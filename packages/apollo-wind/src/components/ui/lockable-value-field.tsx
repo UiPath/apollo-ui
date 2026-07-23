@@ -15,7 +15,7 @@ import {
   Type,
 } from 'lucide-react';
 import type { ReactNode, SVGProps } from 'react';
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -88,6 +88,47 @@ function MaterialLockOpenRight({
     >
       <path d="M240-160h480v-400H240v400Zm296.5-143.5Q560-327 560-360t-23.5-56.5Q513-440 480-440t-56.5 23.5Q400-393 400-360t23.5 56.5Q447-280 480-280t56.5-23.5ZM240-160v-400 400Zm0 80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h280v-80q0-83 58.5-141.5T720-920q83 0 141.5 58.5T920-720h-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80h120q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Z" />
     </svg>
+  );
+}
+
+/**
+ * The lock/unlock toggle shared by both the InputGroup and plain-Input
+ * layouts. Disabled (and its label adjusted) when onLockedChange isn't
+ * provided, since clicking it wouldn't do anything otherwise.
+ */
+function LockToggleButton({
+  locked,
+  onLockedChange,
+}: {
+  locked: boolean;
+  onLockedChange?: (locked: boolean) => void;
+}) {
+  const interactive = !!onLockedChange;
+  return (
+    <TooltipProvider delayDuration={300}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <InputGroupButton
+            icon
+            size="3xs"
+            disabled={!interactive}
+            onClick={() => onLockedChange?.(!locked)}
+            aria-label={
+              interactive
+                ? locked
+                  ? 'Read-only. Click to make editable.'
+                  : 'Editable. Click to make read-only.'
+                : locked
+                  ? 'Read-only'
+                  : 'Editable'
+            }
+          >
+            {locked ? <MaterialLock size={16} /> : <MaterialLockOpenRight size={16} />}
+          </InputGroupButton>
+        </TooltipTrigger>
+        <TooltipContent>{locked ? 'Read-only' : 'Editable'}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -172,7 +213,7 @@ export const FIELD_TYPE_ORDER: LockableFieldType[] = [
   'file',
 ];
 
-const DEMO_SELECT_OPTIONS = [
+const DEFAULT_SELECT_OPTIONS = [
   { label: 'Option 1', value: 'option-1' },
   { label: 'Option 2', value: 'option-2' },
   { label: 'Option 3', value: 'option-3' },
@@ -187,10 +228,33 @@ function parseListValue(value: string): string[] {
   }
 }
 
-/** Parses a date field's stored value, returning undefined for empty or invalid input. */
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Parses a date field's stored value, returning undefined for empty or invalid input.
+ *
+ * Date-only strings (`YYYY-MM-DD`) are parsed as a local date instead of going through
+ * `new Date(string)` directly -- the latter treats date-only strings as UTC midnight,
+ * which rolls over to the previous day once formatted in a negative-UTC-offset
+ * timezone. Full ISO timestamps (which already carry explicit time/zone info) go
+ * through `new Date` as-is.
+ */
 function parseDateValue(value: string): Date | undefined {
+  if (DATE_ONLY_PATTERN.test(value)) {
+    const [year, month, day] = value.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return Number.isNaN(date.getTime()) ? undefined : date;
+  }
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+/** Formats a Date as a local `YYYY-MM-DD` string, the inverse of parseDateValue's date-only path. */
+function toDateOnlyString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 /** Formats a date field's value for display, falling back to the raw value if it isn't a valid date. */
@@ -232,6 +296,10 @@ export interface LockableValueFieldProps {
   controlsVisibility?: 'visible' | 'hover';
   /** Whether the AI-assist and Insert-variable actions render at all. Set to false for read-only reviewer contexts where field configuration isn't editable. Defaults to true. */
   showFieldActions?: boolean;
+  /** Options for 'single-select' / 'multi-select' field types. Defaults to a small set of demo options. */
+  options?: { label: string; value: string }[];
+  /** Called with the entered prompt when the user clicks Generate in the AI-assist popover. */
+  onGenerateWithAi?: (prompt: string) => void;
   id?: string;
   className?: string;
 }
@@ -252,8 +320,10 @@ const FIELD_PLACEHOLDER: Record<LockableValueFieldMode, string> = {
  * value and a JS expression.
  *
  * The expression mode is styled as code (monospace) but does not carry real
- * syntax highlighting or evaluation. Select/multiselect options are demo
- * placeholders; file uploads aren't persisted anywhere.
+ * syntax highlighting or evaluation. Select/multiselect options default to a
+ * small demo set unless `options` is provided. The built-in AI-assist
+ * "Generate" button is a no-op unless `onGenerateWithAi` is provided; file
+ * uploads aren't persisted anywhere.
  */
 export function LockableValueField({
   value = '',
@@ -271,10 +341,15 @@ export function LockableValueField({
   compact,
   controlsVisibility = 'visible',
   showFieldActions = true,
+  options = DEFAULT_SELECT_OPTIONS,
+  onGenerateWithAi,
   id,
   className,
 }: LockableValueFieldProps) {
   const promptId = useId();
+  const generatedId = useId();
+  const fieldId = id ?? generatedId;
+  const [aiPrompt, setAiPrompt] = useState('');
   const typeMeta = FIELD_TYPE_META[fieldType];
   const effectiveMode = typeMeta.supportsExpression ? mode : 'fixed';
   const collapsedTextClass = cn('@max-[259px]:hidden', compact && '!hidden');
@@ -293,10 +368,10 @@ export function LockableValueField({
           ? formatDateValue(value)
           : ''
         : fieldType === 'single-select'
-          ? (DEMO_SELECT_OPTIONS.find((option) => option.value === value)?.label ?? '')
+          ? (options.find((option) => option.value === value)?.label ?? '')
           : fieldType === 'multi-select'
             ? parseListValue(value)
-                .map((v) => DEMO_SELECT_OPTIONS.find((option) => option.value === v)?.label ?? v)
+                .map((v) => options.find((option) => option.value === v)?.label ?? v)
                 .join(', ')
             : value;
 
@@ -304,7 +379,7 @@ export function LockableValueField({
     <div className={cn('@container group flex flex-col gap-1.5', className)}>
       <div className="flex items-center gap-1">
         {label ?? (
-          <Label htmlFor={id} className="text-xs font-medium text-foreground-muted">
+          <Label htmlFor={fieldId} className="text-xs font-medium text-foreground-muted">
             {FIELD_LABEL[effectiveMode]}
             {required && <span className="ml-0.5 text-destructive">*</span>}
           </Label>
@@ -438,6 +513,8 @@ export function LockableValueField({
                         <Textarea
                           id={promptId}
                           rows={3}
+                          value={aiPrompt}
+                          onChange={(e) => setAiPrompt(e.target.value)}
                           placeholder="Display a value from the previous step"
                           className="resize-none text-sm"
                         />
@@ -445,7 +522,12 @@ export function LockableValueField({
                       <span className="block text-[11px] text-foreground-subtle">
                         Output: String expression
                       </span>
-                      <Button size="sm" className="w-full">
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        disabled={!onGenerateWithAi}
+                        onClick={() => onGenerateWithAi?.(aiPrompt)}
+                      >
                         Generate
                       </Button>
                     </PopoverContent>
@@ -478,30 +560,12 @@ export function LockableValueField({
       {typeMeta.supportsExpression ? (
         <InputGroup>
           <InputGroupAddon align="inline-start">
-            <TooltipProvider delayDuration={300}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <InputGroupButton
-                    icon
-                    size="3xs"
-                    onClick={() => onLockedChange?.(!locked)}
-                    aria-label={
-                      locked
-                        ? 'Read-only. Click to make editable.'
-                        : 'Editable. Click to make read-only.'
-                    }
-                  >
-                    {locked ? <MaterialLock size={16} /> : <MaterialLockOpenRight size={16} />}
-                  </InputGroupButton>
-                </TooltipTrigger>
-                <TooltipContent>{locked ? 'Read-only' : 'Editable'}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <LockToggleButton locked={locked} onLockedChange={onLockedChange} />
           </InputGroupAddon>
 
           {effectiveMode === 'expression' ? (
             <InputGroupInput
-              id={id}
+              id={fieldId}
               readOnly={locked}
               value={value}
               onChange={(e) => onValueChange?.(e.target.value)}
@@ -510,7 +574,7 @@ export function LockableValueField({
             />
           ) : locked ? (
             <InputGroupInput
-              id={id}
+              id={fieldId}
               readOnly
               value={lockedDisplayValue}
               placeholder={FIELD_PLACEHOLDER.fixed}
@@ -518,7 +582,7 @@ export function LockableValueField({
           ) : fieldType === 'boolean' ? (
             <div className="flex h-full flex-1 items-center px-3">
               <Switch
-                id={id}
+                id={fieldId}
                 checked={value === 'true'}
                 onCheckedChange={(checked) => onValueChange?.(String(checked))}
               />
@@ -528,7 +592,7 @@ export function LockableValueField({
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  id={id}
+                  id={fieldId}
                   data-slot="input-group-control"
                   className="flex h-full flex-1 items-center text-left text-sm text-foreground outline-none"
                 >
@@ -543,14 +607,14 @@ export function LockableValueField({
                 <Calendar
                   mode="single"
                   selected={parseDateValue(value)}
-                  onSelect={(date) => onValueChange?.(date ? date.toISOString() : '')}
+                  onSelect={(date) => onValueChange?.(date ? toDateOnlyString(date) : '')}
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
           ) : (
             <InputGroupInput
-              id={id}
+              id={fieldId}
               type={fieldType === 'integer' ? 'number' : 'text'}
               value={value}
               onChange={(e) => onValueChange?.(e.target.value)}
@@ -618,29 +682,11 @@ export function LockableValueField({
         </InputGroup>
       ) : (
         <div className="flex items-center gap-2">
-          <TooltipProvider delayDuration={300}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <InputGroupButton
-                  icon
-                  size="3xs"
-                  onClick={() => onLockedChange?.(!locked)}
-                  aria-label={
-                    locked
-                      ? 'Read-only. Click to make editable.'
-                      : 'Editable. Click to make read-only.'
-                  }
-                >
-                  {locked ? <MaterialLock size={16} /> : <MaterialLockOpenRight size={16} />}
-                </InputGroupButton>
-              </TooltipTrigger>
-              <TooltipContent>{locked ? 'Read-only' : 'Editable'}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <LockToggleButton locked={locked} onLockedChange={onLockedChange} />
 
           {locked ? (
             <Input
-              id={id}
+              id={fieldId}
               readOnly
               value={lockedDisplayValue}
               placeholder={FIELD_PLACEHOLDER.fixed}
@@ -648,11 +694,11 @@ export function LockableValueField({
             />
           ) : fieldType === 'single-select' ? (
             <Select value={value || undefined} onValueChange={onValueChange}>
-              <SelectTrigger id={id} className="flex-1">
+              <SelectTrigger id={fieldId} className="flex-1">
                 <SelectValue placeholder="Select an option" />
               </SelectTrigger>
               <SelectContent>
-                {DEMO_SELECT_OPTIONS.map((option) => (
+                {options.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -662,7 +708,7 @@ export function LockableValueField({
           ) : fieldType === 'multi-select' ? (
             <MultiSelect
               className="flex-1"
-              options={DEMO_SELECT_OPTIONS}
+              options={options}
               selected={parseListValue(value)}
               onChange={(selected) => onValueChange?.(JSON.stringify(selected))}
               placeholder="Select options..."

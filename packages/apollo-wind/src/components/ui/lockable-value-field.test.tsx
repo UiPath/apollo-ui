@@ -97,10 +97,79 @@ describe('LockableValueField', () => {
   });
 
   it('shows the raw value instead of throwing when unlocked with an invalid date', () => {
-    expect(() =>
-      render(<LockableValueField locked={false} fieldType="date" value="not-a-date" />)
-    ).not.toThrow();
-    expect(screen.getByRole('button', { name: 'not-a-date' })).toBeInTheDocument();
+    const { container } = render(
+      <LockableValueField locked={false} fieldType="date" value="not-a-date" />
+    );
+    expect(container).toHaveTextContent('not-a-date');
+  });
+
+  it('formats a date-only value using the local calendar day, not UTC', () => {
+    const originalTz = process.env.TZ;
+    process.env.TZ = 'America/Los_Angeles';
+    try {
+      render(<LockableValueField locked fieldType="date" value="2024-01-15" />);
+      expect(screen.getByPlaceholderText('String value')).toHaveValue('January 15, 2024');
+    } finally {
+      process.env.TZ = originalTz;
+    }
+  });
+
+  it('associates the default label with the field via a generated id when none is provided', () => {
+    render(<LockableValueField locked={false} />);
+    expect(screen.getByLabelText('String value')).toBeInTheDocument();
+  });
+
+  it('disables the lock button when onLockedChange is not provided', () => {
+    render(<LockableValueField locked />);
+    expect(screen.getByRole('button', { name: 'Read-only' })).toBeDisabled();
+  });
+
+  it('enables the lock button and uses the click-to-toggle label when onLockedChange is provided', () => {
+    render(<LockableValueField locked onLockedChange={vi.fn()} />);
+    expect(
+      screen.getByRole('button', { name: 'Read-only. Click to make editable.' })
+    ).not.toBeDisabled();
+  });
+
+  it('renders consumer-supplied options for single-select instead of the demo defaults', () => {
+    const options = [{ label: 'Custom option', value: 'custom' }];
+    render(
+      <LockableValueField
+        locked={false}
+        fieldType="single-select"
+        value="custom"
+        options={options}
+      />
+    );
+    expect(screen.getByRole('combobox')).toHaveTextContent('Custom option');
+    expect(screen.queryByText('Option 1')).not.toBeInTheDocument();
+  });
+
+  it('shows a consumer-supplied option label for a locked single-select value', () => {
+    const options = [{ label: 'Custom option', value: 'custom' }];
+    render(
+      <LockableValueField locked fieldType="single-select" value="custom" options={options} />
+    );
+    expect(screen.getByPlaceholderText('String value')).toHaveValue('Custom option');
+  });
+
+  it('disables Generate and does not call onGenerateWithAi when not provided', async () => {
+    const user = userEvent.setup();
+    render(<LockableValueField locked={false} />);
+    await user.click(screen.getByRole('button', { name: 'AI assist' }));
+    expect(screen.getByRole('button', { name: 'Generate' })).toBeDisabled();
+  });
+
+  it('calls onGenerateWithAi with the entered prompt when Generate is clicked', async () => {
+    const user = userEvent.setup();
+    const handleGenerate = vi.fn();
+    render(<LockableValueField locked={false} onGenerateWithAi={handleGenerate} />);
+
+    await user.click(screen.getByRole('button', { name: 'AI assist' }));
+    await user.type(screen.getByLabelText('Describe what you want'), 'a random number');
+    await user.click(screen.getByRole('button', { name: 'Generate' }));
+
+    expect(handleGenerate).toHaveBeenCalledWith('a random number');
   });
 
   it('has no accessibility violations', async () => {
