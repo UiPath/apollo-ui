@@ -151,6 +151,7 @@ const preview: Preview = {
                 'File Upload',
                 'Input',
                 'Input Group',
+                'Lockable Value Field',
                 'Label',
                 'Multi Select',
                 'Radio Group',

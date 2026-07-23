@@ -8,6 +8,14 @@ on:
 
 env:
   BASE_REF: ${{ github.event.pull_request.base.ref }}
+  # Turbo's own GitHub Actions event auto-detection for `--affected` doesn't
+  # reliably resolve the base ref in this repo (falls back to treating every
+  # package as affected, silently running Format/Lint/etc. against the whole
+  # monorepo instead of just what the PR touched). Giving it a concrete SHA
+  # sidesteps the ambiguity entirely -- verified locally that `--affected`
+  # correctly narrows to just the changed packages (+ their dependents) once
+  # this is set, versus all 9 packages without it.
+  TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
