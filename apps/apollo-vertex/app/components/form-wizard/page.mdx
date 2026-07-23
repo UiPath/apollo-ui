@@ -1,4 +1,5 @@
 import { FormWizardDemo } from './form-wizard-demo';
+import { FormWizardHeadlessDemo } from './form-wizard-headless-demo';
 
 # Form Wizard
 
@@ -113,6 +114,39 @@ function SignUpWizard() {
   )
 }
 ```
+
+## Bring your own UI
+
+`useFormWizard` is the headless engine: it renders nothing and returns the `form`, the visible `steps`, navigation helpers, and derived flags (`stepIndex`, `isFirst`, `isLast`, `progress`). The styled `FormWizardSteps` and `FormWizardNav` are one recipe on top of it. Consumers get three levels of control.
+
+1. **Defaults.** Drop in `<FormWizardSteps />` and `<FormWizardNav />` for the Apollo look.
+2. **Restyle with render props.** Pass a function child to keep the wiring but own the markup. `FormWizardSteps` calls it with `{ steps, stepIndex, goToStep }`, and `FormWizardNav` with `{ back, next, isFirst, isLast, form }`.
+3. **Fully headless.** Ignore the styled parts and drive everything from the `useFormWizard` return value directly.
+
+`FormWizard` and `FormWizardStep` also accept `asChild` to swap their wrapper element.
+
+The demo below replaces the Stepper with a custom progress rail and the nav with custom buttons, using the render-prop escape hatches:
+
+<div className="p-6 border rounded-lg mt-4 max-w-md">
+  <FormWizardHeadlessDemo />
+</div>
+
+```tsx
+// Keep the wiring, own the design.
+<FormWizardSteps>
+  {({ steps, stepIndex, goToStep }) => (
+    <MyStepRail steps={steps} active={stepIndex} onJump={goToStep} />
+  )}
+</FormWizardSteps>
+
+<FormWizardNav>
+  {({ back, next, isFirst, isLast }) => (
+    <MyToolbar onBack={back} onNext={next} atStart={isFirst} atEnd={isLast} />
+  )}
+</FormWizardNav>
+```
+
+The default nav's "Next" button is a submit that runs the current step's `FormGroup` validation before `onGroupSubmit` calls `next()`. A custom nav that calls `next()` directly skips that per-step validation, so drive advancement through a submit button (as the demo does) when you want the same guardrails.
 
 ## Step definition
 
