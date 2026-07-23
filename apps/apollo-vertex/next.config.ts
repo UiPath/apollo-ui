@@ -15,17 +15,12 @@ const codedAppPath = process.env.APOLLO_CODED_APP_PATH?.replaceAll(
 );
 
 // A Coded App build calls the platform directly, so uip-go must have injected
-// the platform context. Validate it here — next.config runs in Node during
+// the platform-auth context. Validate it here. next.config runs in Node during
 // `next build`, so a misconfigured deployment fails the build immediately
-// rather than shipping a bundle that crashes in the browser. uip-go always
-// resolves the tenant id (falling back to the tenant name), so it is required
-// too.
+// rather than shipping a bundle that crashes in the browser.
 if (codedApp) {
   const missing = [
     "UIP_GO_PLATFORM_AUTH_BASE_URL",
-    "UIP_GO_PLATFORM_AUTH_ORG_NAME",
-    "UIP_GO_PLATFORM_AUTH_TENANT_NAME",
-    "UIP_GO_PLATFORM_AUTH_TENANT_ID",
     "UIP_GO_PLATFORM_AUTH_REDIRECT_PATH",
   ].filter((name) => !process.env[name]);
   if (missing.length > 0) {
@@ -50,12 +45,6 @@ export default withNextra({
           // the per-deployment platform context below.
           NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_BASE_URL:
             process.env.UIP_GO_PLATFORM_AUTH_BASE_URL ?? "",
-          NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_ORG_NAME:
-            process.env.UIP_GO_PLATFORM_AUTH_ORG_NAME ?? "",
-          NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_TENANT_NAME:
-            process.env.UIP_GO_PLATFORM_AUTH_TENANT_NAME ?? "",
-          NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_TENANT_ID:
-            process.env.UIP_GO_PLATFORM_AUTH_TENANT_ID ?? "",
           NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_REDIRECT_PATH:
             process.env.UIP_GO_PLATFORM_AUTH_REDIRECT_PATH ?? "",
         },

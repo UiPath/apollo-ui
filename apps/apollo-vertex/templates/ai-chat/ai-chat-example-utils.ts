@@ -24,9 +24,9 @@ export const AICHAT_IS_CODED_APP =
 
 // Two modes, chosen at build time:
 //   - Coded App export: there is no server, so the browser calls the platform
-//     host directly. uip-go bakes the platform context (base URL, org, tenant,
-//     redirect path) into the bundle, and it is required — a missing value
-//     fails the build here rather than shipping a chat that cannot sign in.
+//     host directly. uip-go bakes the platform context (base URL, redirect
+//     path) into the bundle, and it is required — a missing value fails the
+//     build here rather than shipping a chat that cannot sign in.
 //   - Dev / regular build: the app reaches the platform through the
 //     same-origin Next.js proxy routes, so there is no baked platform context
 //     and the org/tenant are discovered at runtime.
@@ -34,17 +34,10 @@ function loadCodedAppPlatformAuth() {
   const parsed = z
     .object({
       baseUrl: z.string().min(1),
-      orgName: z.string().min(1),
-      tenantName: z.string().min(1),
-      tenantId: z.string().min(1),
       redirectPath: z.string().min(1),
     })
     .safeParse({
       baseUrl: process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_BASE_URL,
-      orgName: process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_ORG_NAME,
-      tenantName:
-        process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_TENANT_NAME,
-      tenantId: process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_TENANT_ID,
       redirectPath:
         process.env.NEXT_PUBLIC_APOLLO_VERTEX_PLATFORM_AUTH_REDIRECT_PATH,
     });
@@ -75,19 +68,24 @@ export const AICHAT_REDIRECT_PATH = codedAppPlatformAuth
     : `/${codedAppPlatformAuth.redirectPath}`
   : "/auth_callback";
 
-// Coded App builds bake in the org/tenant the deployment targets because the
-// portal endpoint that lists them is not reachable cross-origin. In dev the
-// login gate discovers them at runtime instead.
-export const AICHAT_STATIC_ORG = codedAppPlatformAuth
-  ? {
-      orgName: codedAppPlatformAuth.orgName,
-      tenants: [
-        {
-          id: codedAppPlatformAuth.tenantId,
-          name: codedAppPlatformAuth.tenantName,
-        },
-      ],
-    }
+// The portal endpoint that lists the caller's org + tenants has no CORS on the
+// portal domain, but it DOES on the api host. So a Coded App calls it directly
+// from the browser for the CALLER'S OWN org (taken from their token) — which
+// works across any org the user belongs to, with no deployment-pinned org.
+// Map the portal host to the api host:
+//   cloud.uipath.com  -> api.uipath.com         (prod: "cloud" is dropped)
+//   <env>.uipath.com  -> <env>.api.uipath.com   (staging, alpha, ...)
+// In dev the login gate uses the same-origin proxy instead (null here).
+function toApiBaseUrl(baseUrl: string): string {
+  const url = new URL(baseUrl);
+  const [env, ...rest] = url.hostname.split(".");
+  const domain = rest.join(".");
+  url.hostname = env === "cloud" ? `api.${domain}` : `${env}.api.${domain}`;
+  return url.origin;
+}
+
+export const AICHAT_PORTAL_API_BASE = codedAppPlatformAuth
+  ? toApiBaseUrl(codedAppPlatformAuth.baseUrl)
   : null;
 
 // Coded App builds call the baked host directly; dev targets alpha.
