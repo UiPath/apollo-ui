@@ -11,16 +11,23 @@ import {
   TooltipTrigger,
 } from '@uipath/apollo-wind';
 import { BrushCleaning, Scan, ZoomIn, ZoomOut } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Fragment, forwardRef, memo, useCallback } from 'react';
 import { useSafeLingui } from '../../../i18n';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { ToolbarButton } from '../ToolbarButton';
 
 /** A single choice offered by the "Tidy up" menu, e.g. a layout strategy. */
 export interface TidyUpMenuOption {
   id: string;
   label: string;
-  description?: string;
   disabled?: boolean;
+  /**
+   * Icon shown next to the label, matching NodeToolbar's overflow-menu
+   * format. Pass a canvas icon id string (resolved via the icon registry,
+   * e.g. "grid-3x3") or a pre-rendered ReactNode.
+   */
+  icon?: ReactNode;
   /** Renders a separator above this option, e.g. to set a destructive/reset action apart. */
   separatorBefore?: boolean;
 }
@@ -142,7 +149,7 @@ export const CanvasZoomControls = memo(
                 {_({ id: 'canvas.zoom.tidy_up', message: 'Tidy up' })}
               </TooltipContent>
             </Tooltip>
-            <DropdownMenuContent align="end" side={tooltipSide} sideOffset={8} className="w-64">
+            <DropdownMenuContent align="end" side={tooltipSide} sideOffset={8} className="w-48">
               {tidyUpOptions.map((option) => (
                 <Fragment key={option.id}>
                   {option.separatorBefore && <DropdownMenuSeparator />}
@@ -151,14 +158,12 @@ export const CanvasZoomControls = memo(
                     disabled={option.disabled}
                     onSelect={() => onTidyUpSelect?.(option.id)}
                   >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium">{option.label}</p>
-                      {option.description && (
-                        <p className="text-xs text-foreground-muted truncate">
-                          {option.description}
-                        </p>
-                      )}
-                    </div>
+                    {typeof option.icon === 'string' ? (
+                      <CanvasIcon icon={option.icon} size={16} />
+                    ) : (
+                      option.icon
+                    )}
+                    <span>{option.label}</span>
                   </DropdownMenuItem>
                 </Fragment>
               ))}

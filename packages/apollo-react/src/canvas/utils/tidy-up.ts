@@ -6,19 +6,20 @@ export type TidyUpStrategyId = 'subtle' | 'compact';
 export interface TidyUpStrategyOption {
   id: TidyUpStrategyId;
   label: string;
-  description: string;
+  /** Canvas icon id (resolved via the icon registry), matching NodeToolbar's overflow-menu format. */
+  icon: string;
 }
 
 export const TIDY_UP_STRATEGIES: TidyUpStrategyOption[] = [
   {
     id: 'subtle',
     label: 'Subtle align',
-    description: 'Snaps close nodes into a neat grid.',
+    icon: 'grid-3x3',
   },
   {
     id: 'compact',
     label: 'Compact layout',
-    description: 'Re-flows into a tight hierarchy.',
+    icon: 'shrink',
   },
 ];
 

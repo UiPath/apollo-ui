@@ -1,18 +1,51 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   createNode,
-  HandleConfigs,
   StoryInfoPanel,
   useCanvasStory,
   withCanvasProviders,
 } from '../../storybook-utils';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { compactAlignNodes, subtleAlignNodes, TIDY_UP_STRATEGIES } from '../../utils/tidy-up';
 import { BaseCanvas } from '../BaseCanvas';
+import { BaseNodeOverrideConfigProvider } from '../BaseNode';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
+import type { NodeToolbarConfig } from '../Toolbar';
 import { CanvasZoomControls, type TidyUpMenuOption } from './CanvasZoomControls';
+
+// Handle presets for "Horizontal layout"/"Vertical layout", scoped to this
+// story only. Deliberately label-less (unlike storybook-utils' HandleConfigs
+// presets): at compact spacing, an "Input"/"Output" caption overlaps the
+// neighboring node's own label/subLabel text. Only the handle *position*
+// (left/right vs top/bottom) matters for keeping edges straight.
+const LEFT_RIGHT_HANDLES = [
+  {
+    position: Position.Left,
+    handles: [{ id: 'input', type: 'target' as const, handleType: 'input' as const }],
+  },
+  {
+    position: Position.Right,
+    handles: [{ id: 'output', type: 'source' as const, handleType: 'output' as const }],
+  },
+];
+const TOP_BOTTOM_HANDLES = [
+  {
+    position: Position.Top,
+    handles: [{ id: 'input', type: 'target' as const, handleType: 'input' as const }],
+  },
+  {
+    position: Position.Bottom,
+    handles: [{ id: 'output', type: 'source' as const, handleType: 'output' as const }],
+  },
+];
+
+// Wider than compactAlignNodes' own default spacing -- used only by
+// "Horizontal layout"/"Vertical layout" for a less cramped feel. Compact
+// layout keeps its own default untouched.
+const SPACIOUS_LAYOUT_SPACING: [number, number] = [80, 96];
 
 // ============================================================================
 // Meta Configuration
@@ -34,17 +67,35 @@ type Story = StoryObj<typeof CanvasZoomControls>;
 // Story Components
 // ============================================================================
 
+// A component consumer can pass onOrganize, tidyUpOptions, both, or neither --
+// the "Tidy up" icon only renders when one of those is provided. Shown here so
+// Vertical/Horizontal double as the canonical full-toolbar reference for each
+// orientation, not just zoom/fit.
+const REFERENCE_TIDY_UP_OPTIONS: TidyUpMenuOption[] = [
+  ...TIDY_UP_STRATEGIES,
+  {
+    id: 'reset',
+    label: 'Reset to original',
+    icon: 'rotate-ccw',
+    separatorBefore: true,
+  },
+];
+
 function VerticalStory() {
   const { canvasProps } = useCanvasStory({ initialNodes: [], initialEdges: [] });
+  const [lastSelected, setLastSelected] = useState<string | null>(null);
 
   return (
     <BaseCanvas {...canvasProps} mode="design">
       <Panel position="bottom-right">
-        <CanvasZoomControls />
+        <CanvasZoomControls
+          tidyUpOptions={REFERENCE_TIDY_UP_OPTIONS}
+          onTidyUpSelect={setLastSelected}
+        />
       </Panel>
       <StoryInfoPanel
         title="Zoom controls — vertical"
-        description="Default vertical orientation. Zoom in, zoom out, and fit to screen buttons are stacked vertically."
+        description={`Default vertical orientation. Zoom in, zoom out, fit to screen, and Tidy up are stacked vertically. Last selected: ${lastSelected ?? 'none'}.`}
       />
     </BaseCanvas>
   );
@@ -52,15 +103,20 @@ function VerticalStory() {
 
 function HorizontalStory() {
   const { canvasProps } = useCanvasStory({ initialNodes: [], initialEdges: [] });
+  const [lastSelected, setLastSelected] = useState<string | null>(null);
 
   return (
     <BaseCanvas {...canvasProps} mode="design">
       <Panel position="bottom-center">
-        <CanvasZoomControls orientation="horizontal" />
+        <CanvasZoomControls
+          orientation="horizontal"
+          tidyUpOptions={REFERENCE_TIDY_UP_OPTIONS}
+          onTidyUpSelect={setLastSelected}
+        />
       </Panel>
       <StoryInfoPanel
         title="Zoom controls — horizontal"
-        description="Horizontal orientation. Buttons are laid out in a row."
+        description={`Horizontal orientation. Buttons, including Tidy up, are laid out in a row. Last selected: ${lastSelected ?? 'none'}.`}
       />
     </BaseCanvas>
   );
@@ -80,35 +136,7 @@ function WithOrganizeStory() {
       </Panel>
       <StoryInfoPanel
         title="Zoom controls — with organize"
-        description={`Includes the optional "Tidy up" button. Organize pressed: ${organizeCount} time${organizeCount === 1 ? '' : 's'}.`}
-      />
-    </BaseCanvas>
-  );
-}
-
-function WithTidyUpMenuStory() {
-  const { canvasProps } = useCanvasStory({ initialNodes: [], initialEdges: [] });
-  const [lastSelected, setLastSelected] = useState<string | null>(null);
-
-  return (
-    <BaseCanvas {...canvasProps} mode="design">
-      <Panel position="bottom-right">
-        <CanvasZoomControls
-          orientation="vertical"
-          tidyUpOptions={[
-            ...TIDY_UP_STRATEGIES,
-            {
-              id: 'reset',
-              label: 'Reset to original',
-              separatorBefore: true,
-            },
-          ]}
-          onTidyUpSelect={setLastSelected}
-        />
-      </Panel>
-      <StoryInfoPanel
-        title="Zoom controls: with tidy up menu"
-        description={`The "Tidy up" button opens a menu of strategies instead of running one hardcoded action -- a destructive/reset-style option can be set apart with "separatorBefore". Last selected: ${lastSelected ?? 'none'}. See "With Tidy Up Menu and Interaction" below for the strategies actually applied to a real workflow.`}
+        description={`Uses "onOrganize" -- a single hardcoded action on click, no menu. This is what AgentCanvas uses in production today. Compare to Vertical/Horizontal, which use "tidyUpOptions" for a menu of strategies instead. Organize pressed: ${organizeCount} time${organizeCount === 1 ? '' : 's'}.`}
       />
     </BaseCanvas>
   );
@@ -244,8 +272,8 @@ function WithTidyUpMenuAndInteractionStory() {
         // otherwise every edge still has to bend around the node to reach a
         // side handle, defeating the point of re-flowing top-to-bottom.
         const handleConfigurations =
-          optionId === 'horizontal' ? HandleConfigs.inputOutput : HandleConfigs.topBottom;
-        compactAlignNodes(canvasProps.nodes, messyEdges, undefined, direction)
+          optionId === 'horizontal' ? LEFT_RIGHT_HANDLES : TOP_BOTTOM_HANDLES;
+        compactAlignNodes(canvasProps.nodes, messyEdges, SPACIOUS_LAYOUT_SPACING, direction)
           .then((laidOut) => {
             setNodes(
               laidOut.map((node) => ({ ...node, data: { ...node.data, handleConfigurations } }))
@@ -278,16 +306,17 @@ function WithTidyUpMenuAndInteractionStory() {
       {
         id: 'horizontal',
         label: 'Horizontal layout',
-        description: 'Re-flows left-to-right.',
+        icon: 'move-horizontal',
       },
       {
         id: 'vertical',
         label: 'Vertical layout',
-        description: 'Re-flows top-to-bottom.',
+        icon: 'move-vertical',
       },
       {
         id: 'reset',
         label: 'Reset to original',
+        icon: 'rotate-ccw',
         disabled: isTidying,
         separatorBefore: true,
       },
@@ -295,24 +324,93 @@ function WithTidyUpMenuAndInteractionStory() {
     [isTidying]
   );
 
+  // Story-scoped only: overrides every node's toolbar to add the same tidy-up
+  // strategies to its "more options" overflow menu, so a user can trigger
+  // them from a node's own toolbar as well as the corner control. Uses
+  // BaseNodeOverrideConfigProvider rather than extending the real
+  // uipath.blank-node/uipath.manual-trigger manifests, so this has no effect
+  // outside this one story.
+  const nodeToolbarConfig: NodeToolbarConfig = useMemo(
+    () => ({
+      actions: [
+        {
+          id: 'delete',
+          icon: <CanvasIcon icon="trash" size={14} />,
+          label: 'Delete',
+          onAction: () => {},
+        },
+        {
+          id: 'duplicate',
+          icon: <CanvasIcon icon="copy" size={14} />,
+          label: 'Duplicate',
+          onAction: () => {},
+        },
+        {
+          id: 'breakpoint',
+          icon: <CanvasIcon icon="circle" size={14} />,
+          label: 'Toggle breakpoint',
+          onAction: () => {},
+        },
+      ],
+      overflowLabel: 'Tidy up',
+      overflowActions: [
+        {
+          id: 'subtle',
+          icon: <CanvasIcon icon="grid-3x3" size={14} />,
+          label: 'Subtle align',
+          onAction: () => handleTidyUpSelect('subtle'),
+        },
+        {
+          id: 'compact',
+          icon: <CanvasIcon icon="shrink" size={14} />,
+          label: 'Compact layout',
+          onAction: () => handleTidyUpSelect('compact'),
+        },
+        {
+          id: 'horizontal',
+          icon: <CanvasIcon icon="move-horizontal" size={14} />,
+          label: 'Horizontal layout',
+          onAction: () => handleTidyUpSelect('horizontal'),
+        },
+        {
+          id: 'vertical',
+          icon: <CanvasIcon icon="move-vertical" size={14} />,
+          label: 'Vertical layout',
+          onAction: () => handleTidyUpSelect('vertical'),
+        },
+        { id: 'separator' },
+        {
+          id: 'reset',
+          icon: <CanvasIcon icon="rotate-ccw" size={14} />,
+          label: 'Reset to original',
+          disabled: isTidying,
+          onAction: () => handleTidyUpSelect('reset'),
+        },
+      ],
+    }),
+    [handleTidyUpSelect, isTidying]
+  );
+
   return (
-    <BaseCanvas {...canvasProps} mode="design">
-      <Panel position="bottom-right">
-        <CanvasZoomControls
-          orientation="vertical"
-          tidyUpOptions={tidyUpOptions}
-          onTidyUpSelect={handleTidyUpSelect}
+    <BaseNodeOverrideConfigProvider value={{ toolbarConfig: nodeToolbarConfig }}>
+      <BaseCanvas {...canvasProps} mode="design">
+        <Panel position="bottom-right">
+          <CanvasZoomControls
+            orientation="vertical"
+            tidyUpOptions={tidyUpOptions}
+            onTidyUpSelect={handleTidyUpSelect}
+          />
+        </Panel>
+        <StoryInfoPanel
+          title="Zoom controls: tidy up on a workflow"
+          description={
+            isTidying
+              ? 'Tidying up...'
+              : 'This workflow\'s nodes were placed carelessly. Trigger a strategy from the brush icon in the bottom-right toolbar, or from the "Tidy up" overflow menu above any node. Subtle align nudges nearly-aligned nodes onto a shared grid without changing the overall shape. Compact layout re-flows everything left-to-right. Horizontal layout does the same but also forces every handle back to left/right. Vertical layout re-flows top-to-bottom and flips handles to match. Reset to original restores the initial mess so you can try again.'
+          }
         />
-      </Panel>
-      <StoryInfoPanel
-        title="Zoom controls: with tidy up menu and interaction"
-        description={
-          isTidying
-            ? 'Tidying up...'
-            : "This workflow's nodes were placed carelessly. Click the brush icon in the bottom-right toolbar to pick a strategy: Subtle align nudges nearly-aligned nodes onto a shared grid without changing the overall shape. Compact layout re-flows everything left-to-right. Horizontal layout does the same but also forces every handle back to left/right. Vertical layout re-flows top-to-bottom and flips handles to match. Reset to original restores the initial mess so you can try again."
-        }
-      />
-    </BaseCanvas>
+      </BaseCanvas>
+    </BaseNodeOverrideConfigProvider>
   );
 }
 
@@ -335,12 +433,7 @@ export const WithOrganize: Story = {
   render: () => <WithOrganizeStory />,
 };
 
-export const WithTidyUpMenu: Story = {
-  name: 'Tidy up menu',
-  render: () => <WithTidyUpMenuStory />,
-};
-
 export const WithTidyUpMenuAndInteraction: Story = {
-  name: 'Tidy up interactions',
+  name: 'Tidy up: workflow',
   render: () => <WithTidyUpMenuAndInteractionStory />,
 };
