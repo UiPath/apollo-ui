@@ -7,7 +7,7 @@ import { ChevronRight, LogIn, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { STORAGE_KEYS } from "@/lib/auth";
+import { STORAGE_KEYS, toCodedAppFilePath } from "@/lib/auth";
 import { STALE_TIME_MS } from "@/lib/constants";
 import {
   Select,
@@ -18,6 +18,7 @@ import {
 } from "@/registry/select/select";
 import { useAuth } from "@/registry/shell/shell-auth-provider";
 import {
+  AICHAT_CODED_APP_PATH,
   AICHAT_DIRECT_BASE_URL,
   AICHAT_IS_CODED_APP,
   AICHAT_PORTAL_API_BASE,
@@ -204,9 +205,15 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
     if (idToken) {
       endSessionUrl.searchParams.set("id_token_hint", idToken);
     }
+    // Return to THIS app's bounce page, not the platform portal: identity lives
+    // on identityOrigin, but the target is the app's own host + base path.
+    // toCodedAppFilePath resolves the bounce path to a real file on Coded App
+    // builds (no-op in dev).
+    const basePath = AICHAT_CODED_APP_PATH ? `/${AICHAT_CODED_APP_PATH}` : "";
+    const bouncePath = toCodedAppFilePath("/portal_/cloudrpa");
     endSessionUrl.searchParams.set(
       "post_logout_redirect_uri",
-      `${identityOrigin}/portal_/cloudrpa`,
+      `${window.location.origin}${basePath}${bouncePath}`,
     );
     window.location.href = endSessionUrl.toString();
   }

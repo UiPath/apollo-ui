@@ -23,6 +23,37 @@ export const STORAGE_KEYS = {
   LOGOUT_RETURN_TO: "logout_return_to",
 } as const;
 
+// The Coded App host serves the root shell for any path that is not an explicit
+// file, so a hard navigation to a bare route path renders the docs home. Map it
+// to its "/index.html" form on Coded App builds; no-op in dev.
+export function toCodedAppFilePath(path: string): string {
+  if (process.env.NEXT_PUBLIC_APOLLO_CODED_APP !== "1") return path;
+  const trimmed = path.replace(/\/+$/, "");
+  const lastSegment = trimmed.slice(trimmed.lastIndexOf("/") + 1);
+  // Already an explicit file (e.g. ".../index.html"); leave it alone.
+  if (lastSegment.includes(".")) return path;
+  return `${trimmed}/index.html`;
+}
+
+// Same-origin absolute path only; rejects protocol-relative ("//") and
+// backslash ("/\\") forms that window.location resolves off-origin.
+function isSafeReturnPath(value: string): boolean {
+  return (
+    value.startsWith("/") && !value.startsWith("//") && !value.startsWith("/\\")
+  );
+}
+
+// Resolve a stored return path (from sessionStorage) into a safe navigation
+// target: reject off-origin values, falling back to the app root (which honors
+// the Coded App basePath, not the host root), then map to the "/index.html"
+// file form for Coded App builds.
+export function resolveReturnPath(stored: string | null): string {
+  const codedAppPath = process.env.NEXT_PUBLIC_APOLLO_CODED_APP_PATH;
+  const fallback = codedAppPath ? `/${codedAppPath}` : "/";
+  const path = stored && isSafeReturnPath(stored) ? stored : fallback;
+  return toCodedAppFilePath(path);
+}
+
 const TokenResponseSchema = z.object({
   access_token: z.string(),
   id_token: z.string(),

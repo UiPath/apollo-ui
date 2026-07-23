@@ -1,23 +1,19 @@
 "use client";
 
 import { useEffect } from "react";
-import { STORAGE_KEYS } from "@/lib/auth";
-
-const FALLBACK_PATH = "/";
+import { resolveReturnPath, STORAGE_KEYS } from "@/lib/auth";
 
 export default function AuthCallback() {
   useEffect(() => {
-    const returnTo =
-      sessionStorage.getItem(STORAGE_KEYS.AUTH_RETURN_TO) ?? FALLBACK_PATH;
+    const stored = sessionStorage.getItem(STORAGE_KEYS.AUTH_RETURN_TO);
     sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
 
-    // returnTo is an absolute path already including the Coded App base path
-    // (captured from window.location.pathname at sign-in), so navigate with
-    // window.location rather than Next's router, which would prepend basePath
-    // again and double it. Carries the ?code/?state through to the page that
-    // completes the token exchange.
+    // resolveReturnPath guards origin, falls back to the app root, and resolves
+    // to the real file on Coded App builds. window.location avoids Next's router
+    // doubling the basePath. Carries ?code/?state through to complete the token
+    // exchange.
     const search = window.location.search;
-    window.location.replace(`${returnTo}${search}`);
+    window.location.replace(`${resolveReturnPath(stored)}${search}`);
   }, []);
 
   return null;

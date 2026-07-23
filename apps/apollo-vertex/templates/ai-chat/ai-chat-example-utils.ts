@@ -22,6 +22,12 @@ export const AICHAT_SCOPE = "openid profile offline_access";
 export const AICHAT_IS_CODED_APP =
   process.env.NEXT_PUBLIC_APOLLO_CODED_APP === "1";
 
+// The Coded App base path (e.g. "apollo-vertex"), baked by next.config. Empty
+// in dev / regular builds. Used to build same-app absolute URLs such as the
+// post-logout return target.
+export const AICHAT_CODED_APP_PATH =
+  process.env.NEXT_PUBLIC_APOLLO_CODED_APP_PATH ?? "";
+
 // Two modes, chosen at build time:
 //   - Coded App export: there is no server, so the browser calls the platform
 //     host directly. uip-go bakes the platform context (base URL, redirect
