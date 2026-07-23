@@ -916,6 +916,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           container={popupContainer}
           disablePortal={disablePortal}
           maxWidth="xs"
+          sx={{ zIndex: 1500 }}
         >
           <DialogTitle sx={{ fontFamily: FontFamily.FontNormal, fontSize: 16 }}>
             {_(DELETE_CONFIRM.title)}
