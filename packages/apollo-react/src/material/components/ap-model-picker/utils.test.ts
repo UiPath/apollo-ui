@@ -246,7 +246,7 @@ describe('deriveModelTags', () => {
     const tags = deriveModelTags(
       model({
         modelId: 'a',
-        modelDetails: { costDetails: { inputTokenCost: 6 } },
+        modelDetails: { costDetails: { flatCosts: { inputTokenCost: 600 } } },
       })
     );
     expect(tags.find((t) => t.kind === 'cost-premium')).toBeTruthy();
@@ -259,7 +259,7 @@ describe('deriveModelTags', () => {
     const suppressed = deriveModelTags(
       model({
         modelId: 'a',
-        modelDetails: { costDetails: { inputTokenCost: 6 } },
+        modelDetails: { costDetails: { flatCosts: { inputTokenCost: 600 } } },
       }),
       { badgesFor: () => [] }
     );
@@ -274,7 +274,7 @@ describe('deriveModelTags', () => {
     const tags = deriveModelTags(
       model({
         modelId: 'a',
-        modelDetails: { costDetails: { inputTokenCost: 6 } },
+        modelDetails: { costDetails: { flatCosts: { inputTokenCost: 600 } } },
       }),
       { customTagsFor: costBadges }
     );
@@ -305,15 +305,21 @@ describe('defaultCostTier', () => {
   });
 
   it('bins at < $1 / < $5 / >= $5 thresholds', () => {
-    expect(defaultCostTier(model({ modelDetails: { costDetails: { inputTokenCost: 0.4 } } }))).toBe(
-      'basic'
-    );
-    expect(defaultCostTier(model({ modelDetails: { costDetails: { inputTokenCost: 3 } } }))).toBe(
-      'standard'
-    );
-    expect(defaultCostTier(model({ modelDetails: { costDetails: { inputTokenCost: 6 } } }))).toBe(
-      'premium'
-    );
+    expect(
+      defaultCostTier(
+        model({ modelDetails: { costDetails: { flatCosts: { inputTokenCost: 40 } } } })
+      )
+    ).toBe('basic');
+    expect(
+      defaultCostTier(
+        model({ modelDetails: { costDetails: { flatCosts: { inputTokenCost: 300 } } } })
+      )
+    ).toBe('standard');
+    expect(
+      defaultCostTier(
+        model({ modelDetails: { costDetails: { flatCosts: { inputTokenCost: 600 } } } })
+      )
+    ).toBe('premium');
   });
 });
 

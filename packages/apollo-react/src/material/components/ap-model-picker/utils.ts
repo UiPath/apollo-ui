@@ -250,15 +250,18 @@ export function deriveModelTags(
  *     return tier ? [`cost-${tier}` as const] : [];
  *   }}
  *
- * Bins Discovery's `inputTokenCost` (USD per million input tokens) at
+ * Bins Discovery's `costDetails.flatCosts.inputTokenCost` (cents per million input tokens) at
  * $1 / $5. Copy it and change the thresholds, or classify on something
  * else entirely — the pool badge kinds are the shared contract, the
  * classifier is yours.
  */
-const DEFAULT_BASIC_THRESHOLD = 1.0;
-const DEFAULT_PREMIUM_THRESHOLD = 5.0;
+// Cents per million input tokens: $1/M and $5/M.
+const DEFAULT_BASIC_THRESHOLD = 100;
+const DEFAULT_PREMIUM_THRESHOLD = 500;
 export function defaultCostTier(model: DiscoveryModel): CostTier | null {
-  const inputCost = model.modelDetails?.costDetails?.inputTokenCost;
+  const costDetails = model.modelDetails?.costDetails;
+  const inputCost =
+    costDetails?.flatCosts?.inputTokenCost ?? costDetails?.tieredCosts?.[0]?.inputTokenCost;
   if (inputCost == null) return null;
   if (inputCost < DEFAULT_BASIC_THRESHOLD) return 'basic';
   if (inputCost < DEFAULT_PREMIUM_THRESHOLD) return 'standard';
