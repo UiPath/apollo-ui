@@ -1,6 +1,7 @@
 export * from './AddNodePanel';
 export * from './ProbeCard';
 export * from './AgentCanvas';
+export * from './AlignmentGuides';
 export * from './BaseCanvas';
 export * from './BaseNode';
 export * from './ButtonHandle';
