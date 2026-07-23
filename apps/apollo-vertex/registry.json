@@ -2093,6 +2093,16 @@
           "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx",
           "type": "registry:ui",
           "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-welcome-modal.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-welcome-modal.tsx"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-provider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-provider.tsx"
         }
       ]
     },
