@@ -90,7 +90,7 @@ interface RunDetailsProps {
  *  fetch + baseline write actions, driving the full-page run-details view. */
 export const RunDetails = ({ run, subjectId, onBack }: RunDetailsProps) => {
   const { t } = useTranslation();
-  const { showDebug } = useSolutionTestsConfig();
+  const { showDebug, track } = useSolutionTestsConfig();
   const { results, isLoading } = useRunResults(run.Id);
   const { jobs: baselines } = useBaselineJobs(run.SolutionTestId);
 
@@ -166,7 +166,14 @@ export const RunDetails = ({ run, subjectId, onBack }: RunDetailsProps) => {
       updatingResultId={updatingResultId}
       removingBaselineId={removingBaselineId}
       onBack={onBack}
-      onSelect={setSelectedResultId}
+      onSelect={(id) => {
+        // Only a genuine selection change is a "view" — re-clicking the shown
+        // agent should not re-emit.
+        if (id !== selectedResult?.Id) {
+          track?.("VS.SolutionTest.ResultViewed", { resultId: id });
+        }
+        setSelectedResultId(id);
+      }}
       onAdopt={(id) =>
         adopt.mutate(id, {
           onSuccess: () => toast.success(t("agent_adopted_successfully")),

@@ -85,6 +85,8 @@ interface SolutionTestsConfig {
   passThreshold?: number;
   /** Show the Expected/Actual input panels in run-result details. Defaults to false (outputs only). */
   showInputs?: boolean;
+  /** Typed telemetry callback. Fires a named event when each action is triggered; a no-op unless supplied. */
+  track?: TrackSolutionTestEvent;
 }
 ```
 
@@ -109,6 +111,62 @@ via `config.passThreshold`. Consumers who want to supply their own data plumbing
 render the dumb `SolutionTestsView`, which takes all data and callbacks via
 props. It must still be wrapped in `SolutionTestsProvider` (the view reads
 `config` from context via `useSolutionTestsConfig`), as the preview above does.
+
+## Telemetry
+
+The template emits typed telemetry events for both user *actions* (run, create,
+delete, force-stop, adopt / update / remove baseline) and *UI interactions*
+(switching tabs, expanding rows, opening run details, inspecting a result or its
+raw output). The template only *names* the events. It never ships an analytics
+backend. Pass a `track` callback through `config` to route them wherever you
+collect analytics. Omit it and tracking is a no-op.
+
+```tsx
+const config: SolutionTestsConfig = {
+  subjectColumns,
+  track: (event, properties) => analytics.track(event, properties),
+};
+```
+
+Action events fire on intent (the mutation's `onMutate`, not on success), so they
+report only when writes go through the action hooks (`useRunTests`,
+`useCreateTest`, and friends) in the smart container. UI-interaction events fire
+straight from the view components, so they emit whenever the view renders inside a
+`SolutionTestsProvider` that carries a `track`, including the bare
+`SolutionTestsView`.
+
+`SolutionTestEventMap` is the single source of truth for the event contract, so
+the callback is fully typed: `properties` is narrowed to the payload of the
+`event` you pass. Compose the map into your own app's event map to keep the
+wiring type-safe end to end.
+
+**Actions**
+
+| Event                               | Payload                                              | Fired when                          |
+| ----------------------------------- | ---------------------------------------------------- | ----------------------------------- |
+| `VS.SolutionTest.Run`               | `{ mode: "all" \| "test" \| "selected", testCount }` | A test run is started               |
+| `VS.SolutionTest.Created`           | `{ subjectId }`                                      | A test is created from a subject    |
+| `VS.SolutionTest.ActiveToggled`     | `{ testId, isActive }`                               | A test is enabled or disabled       |
+| `VS.SolutionTest.Deleted`           | `{ testId }`                                         | A test is deleted                   |
+| `VS.SolutionTest.BatchForceStopped` | `{ batchId }`                                        | A batch run is force-stopped        |
+| `VS.SolutionTest.RunForceStopped`   | `{ runId }`                                          | A single run is force-stopped       |
+| `VS.SolutionTest.JobAdopted`        | `{ resultId }`                                       | A run result is adopted as baseline |
+| `VS.SolutionTest.BaselineUpdated`   | `{ resultId }`                                       | A baseline is updated from a result |
+| `VS.SolutionTest.BaselineRemoved`   | `{ baselineId }`                                     | A baseline is removed               |
+
+**UI interactions**
+
+| Event                              | Payload                       | Fired when                                    |
+| ---------------------------------- | ----------------------------- | --------------------------------------------- |
+| `VS.SolutionTest.TabViewed`        | `{ tab: "cases" \| "runs" }`  | The Test cases / Test runs tab is switched    |
+| `VS.SolutionTest.TestExpanded`     | `{ testId }`                  | A test case row is expanded                   |
+| `VS.SolutionTest.BatchExpanded`    | `{ batchId }`                 | A batch run row is expanded                   |
+| `VS.SolutionTest.RunDetailsOpened` | `{ runId }`                   | A run's details page is opened                |
+| `VS.SolutionTest.ResultViewed`     | `{ resultId }`                | A different agent result is selected          |
+| `VS.SolutionTest.RawOutputViewed`  | `{ processName }`             | An agent's raw expected output is opened      |
+
+`SolutionTestEventMap`, `SolutionTestEventName`, and `TrackSolutionTestEvent`
+are all exported from the package barrel.
 
 ## Saving a subject as a test
 
@@ -227,6 +285,9 @@ you prefer to supply your own data plumbing or render the view against a mock
 - **Fixed setup** — evaluator labels, status labels, and the poll interval are
   hard-coded in `constants.ts`; edit there to retarget a deployment. The pass
   threshold defaults to `0.9` but is overridable via `config.passThreshold`.
+- **Telemetry** — `config.track` receives a typed event when each action is
+  triggered; wire it to your analytics backend (see [Telemetry](#telemetry)).
+  Omit it for no tracking.
 - **i18n** — framework strings use `react-i18next`; wrap your app in
   `ApolloShell` (which initializes i18n via `LocaleProvider`) or provide your
   own `I18nextProvider`.

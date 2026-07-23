@@ -30,6 +30,9 @@ export {
 export type {
   SolutionTestsConfig,
   ResolvedSolutionTestsConfig,
+  SolutionTestEventMap,
+  SolutionTestEventName,
+  TrackSolutionTestEvent,
 } from "./config";
 export {
   makeRenderer,
