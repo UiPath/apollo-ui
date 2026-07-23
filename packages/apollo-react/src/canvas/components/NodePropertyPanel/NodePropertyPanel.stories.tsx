@@ -162,23 +162,6 @@ function DebugButton() {
   );
 }
 
-function ApproveRejectActions() {
-  return (
-    <div className="flex items-center gap-2">
-      <Button variant="outline" size="xs" className="h-8">
-        Reject
-      </Button>
-      <button
-        type="button"
-        className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
-      >
-        <CircleCheck size={14} />
-        Approve
-      </button>
-    </div>
-  );
-}
-
 // ── Monaco ──────────────────────────────────────────────────────────────────
 
 let _monacoThemesRegistered = false;
@@ -2573,36 +2556,6 @@ const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
   },
 ];
 
-const REVIEW_LOCKABLE_CASES: LockableCase[] = [
-  {
-    id: 1,
-    title: 'Invoice Number',
-    required: true,
-    value: 'INV-2024-0587',
-    locked: true,
-    mode: 'fixed',
-    fieldType: 'string',
-  },
-  {
-    id: 2,
-    title: 'Submission Date',
-    required: true,
-    value: new Date('2026-07-10').toISOString(),
-    locked: true,
-    mode: 'fixed',
-    fieldType: 'date',
-  },
-  {
-    id: 3,
-    title: 'Approved Amount',
-    required: true,
-    value: '1240',
-    locked: false,
-    mode: 'fixed',
-    fieldType: 'integer',
-  },
-];
-
 function LockableCaseRow({
   id,
   caseTitle,
@@ -3519,109 +3472,6 @@ export const Output: Story = {
 export const QuickForm: Story = {
   name: 'Form HITL',
   render: () => <QuickFormStory />,
-};
-
-function FormHitlReviewStory() {
-  const [cases, setCases] = useState<LockableCase[]>(REVIEW_LOCKABLE_CASES);
-  const [controlsVisibility, setControlsVisibility] = useState<'visible' | 'hover'>('visible');
-
-  const updateCase = (id: number, patch: Partial<LockableCase>) =>
-    setCases((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
-
-  return (
-    <div className="flex items-start gap-8">
-      <PanelFrame>
-        <NodePropertyPanel
-          panelTitle="Properties"
-          nodeLabel="Quick Approve"
-          nodeCategory="Review the extracted invoice details, then approve or reject."
-          action={<ApproveRejectActions />}
-          onClose={() => {}}
-          contentInset="0.875rem"
-          className="h-[760px]"
-        >
-          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-              <TabsList className={TAB_LIST_CLASS}>
-                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                  Parameters
-                </TabsTrigger>
-                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                  Branching
-                </TabsTrigger>
-                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                  Error handling
-                </TabsTrigger>
-              </TabsList>
-            </div>
-            <TabsContent
-              value="parameters"
-              className="mt-0 flex min-h-0 flex-1 flex-col gap-4 overflow-auto py-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
-            >
-              <div className="flex flex-col gap-2">
-                <span className="text-xs font-medium text-foreground-muted">Quick form</span>
-                <Card>
-                  <CardContent className="flex flex-col gap-4 p-4">
-                    <div className="flex items-center gap-3.5">
-                      <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
-                        <Upload />
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-col justify-center">
-                        <span className="truncate text-base font-semibold leading-5 tracking-[-0.3px] text-foreground">
-                          Quick Approve
-                        </span>
-                        <span className="truncate text-xs leading-4 text-foreground-muted">
-                          Extracted from invoice.pdf &middot; 92% confidence
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-4">
-                      {cases.map((c) => (
-                        <LockableValueField
-                          key={c.id}
-                          id={`review-${c.id}`}
-                          label={
-                            <Label
-                              htmlFor={`review-${c.id}`}
-                              className="text-xs font-medium text-foreground-muted"
-                            >
-                              {c.title}
-                              {c.required && <span className="ml-0.5 text-destructive">*</span>}
-                            </Label>
-                          }
-                          value={c.value}
-                          onValueChange={(value) => updateCase(c.id, { value })}
-                          locked={c.locked}
-                          onLockedChange={(locked) => updateCase(c.id, { locked })}
-                          mode={c.mode}
-                          onModeChange={(mode) => updateCase(c.id, { mode })}
-                          fieldType={c.fieldType}
-                          required={c.required}
-                          showFieldActions={false}
-                        />
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            <TabsContent value="error-handling" className="mt-0" />
-            <TabsContent value="advanced" className="mt-0" />
-          </Tabs>
-        </NodePropertyPanel>
-      </PanelFrame>
-
-      <LockableValueFieldShowcase
-        controlsVisibility={controlsVisibility}
-        onControlsVisibilityChange={setControlsVisibility}
-      />
-    </div>
-  );
-}
-
-export const FormHitlReview: Story = {
-  name: 'Form HITL Review',
-  render: () => <FormHitlReviewStory />,
 };
 
 // ============================================================================
