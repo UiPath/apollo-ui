@@ -2,11 +2,12 @@ import {
   NodeResizeControl,
   type Position,
   type ReactFlowState,
+  useReactFlow,
   useStore,
   useUpdateNodeInternals,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { cn } from '@uipath/apollo-wind';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { shallow } from 'zustand/shallow';
 import { useSafeLingui } from '../../../i18n';
 import { NODE_BADGE_INSET_SQUARE, NODE_BADGE_SIZE } from '../../constants';
@@ -38,13 +39,23 @@ import { MissingManifestNode } from '../BaseNode/BaseNodeMissingManifest';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 import { CanvasTooltip } from '../CanvasTooltip';
+import type { StageHeaderChip } from '../StageNode/StageNode.types';
 import { NodeToolbar } from '../Toolbar';
-import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
+import {
+  applyHandleOffsets,
+  type ContainerHandleGroup,
+  collectOccupiedWallOffsets,
+  type HandleOffsets,
+  resolveContainerHandleGroups,
+  resolveHandleWallDrag,
+} from './LoopNode.helpers';
 import type { LoopNodeExecutionCountState, LoopNodeProps } from './LoopNode.types';
 import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
+import { LoopNodeHeaderChips } from './LoopNodeHeaderChips';
 
 const DEFAULT_LOOP_ICON = 'repeat';
 const EMPTY_DATA: Record<string, unknown> = {};
+const selectZoom = (state: ReactFlowState) => state.transform?.[2] ?? 1;
 const LOOP_HEADER_ADORNMENT_GAP = 8;
 const LOOP_HEADER_ADORNMENT_PADDING =
   NODE_BADGE_INSET_SQUARE + NODE_BADGE_SIZE + LOOP_HEADER_ADORNMENT_GAP;
@@ -192,6 +203,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
     executionStatusOverride,
     suggestionType: suggestionTypeProp,
     iterationPillState: iterationPillStateProp,
+    headerChips: headerChipsProp,
   } = props;
   const nodeTypeRegistry = useOptionalNodeTypeRegistry();
   const { _ } = useSafeLingui();
@@ -209,6 +221,18 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const { multipleNodesSelected } = useSelectionState();
   const isConnecting = useStore(selectIsConnecting);
   const hasChildNodes = useHasChildNodes(id, isDesignMode && !!onAddFirstChild);
+  const { updateNodeData } = useReactFlow();
+  const zoom = useStore(selectZoom);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pillDragCleanupRef = useRef<(() => void) | null>(null);
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
+
+  useEffect(() => {
+    return () => {
+      pillDragCleanupRef.current?.();
+    };
+  }, []);
 
   const executionState = useNodeExecutionState(id);
   const validationState = useElementValidationStatus(id);
@@ -246,7 +270,18 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   const displayTitle = display.label ?? _({ id: 'loop-node.title', message: 'Loop' });
   const displayIcon = display.icon ?? DEFAULT_LOOP_ICON;
+  const headerChips =
+    headerChipsProp ??
+    (Array.isArray(resolvedData.headerChips)
+      ? (resolvedData.headerChips as StageHeaderChip[])
+      : undefined);
+  // Only instance-supplied descriptions render on the canvas. Manifest-level
+  // `display.description` stays add-panel/tooltip copy so existing loop nodes
+  // keep their compact single-row header.
+  const headerDescription = (resolvedData.display as { description?: string } | undefined)
+    ?.description;
   const isParallel = resolvedData.parallel === true;
+  const showModePill = display.showModePill !== false;
   const label = isParallel
     ? _({ id: 'loop-node.mode.parallel', message: 'Parallel' })
     : _({ id: 'loop-node.mode.sequential', message: 'Sequential' });
@@ -291,16 +326,91 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const hasTopLeftAdornment = !!adornments.topLeft;
   const hasTopRightAdornment = !!adornments.topRight;
 
+  const handleOffsets = resolvedData.handleOffsets as HandleOffsets | undefined;
   const resolvedHandleGroups = useMemo(() => {
     const handleConfigurations = resolveLoopHandleConfigurations(
       manifest?.handleConfiguration,
       resolvedData
     );
-    return resolveHandles(handleConfigurations, { ...resolvedData, nodeId: id });
-  }, [manifest?.handleConfiguration, id, resolvedData]);
+    const resolved = resolveHandles(handleConfigurations, { ...resolvedData, nodeId: id });
+    return applyHandleOffsets(resolved, handleOffsets);
+  }, [manifest?.handleConfiguration, id, resolvedData, handleOffsets]);
   const containerHandleGroups = useMemo(
     () => resolveContainerHandleGroups(resolvedHandleGroups),
     [resolvedHandleGroups]
+  );
+
+  /**
+   * Drag session for a movable handle pill. Projects the pointer onto the
+   * nearest allowed wall (grid-snapped, corner-safe, clear of the measured
+   * header and of sibling pills) and writes the wall + offset into
+   * data.handleOffsets for the handle and its mirror, so the inner/outer pair
+   * moves together. Edges follow automatically: the resolved groups change
+   * re-triggers updateNodeInternals.
+   */
+  const startHandlePillDrag = useCallback(
+    (handleId: string, allowedWalls: HandleOffsets[string]['position'][], mirrorId?: string) =>
+      (event: React.PointerEvent) => {
+        if (!isDesignMode) return;
+        event.preventDefault();
+        event.stopPropagation();
+        pillDragCleanupRef.current?.();
+
+        const container = containerRef.current;
+        if (!container) return;
+
+        // Sibling pill positions are fixed for the whole session; only the
+        // dragged pill (and its outer mirror) moves.
+        const occupiedOffsets = collectOccupiedWallOffsets(containerHandleGroups, {
+          nodeWidth: containerWidth,
+          nodeHeight: containerHeight,
+          excludeHandleIds: mirrorId ? [handleId, mirrorId] : [handleId],
+        });
+        const headerElement = container.querySelector('[data-testid="loop-node-header"]');
+
+        const onPointerMove = (moveEvent: PointerEvent) => {
+          const rect = container.getBoundingClientRect();
+          const scale = zoomRef.current || 1;
+          const headerRect = headerElement?.getBoundingClientRect();
+          const next = resolveHandleWallDrag({
+            localX: (moveEvent.clientX - rect.left) / scale,
+            localY: (moveEvent.clientY - rect.top) / scale,
+            nodeWidth: rect.width / scale,
+            nodeHeight: rect.height / scale,
+            allowedWalls,
+            contentTopPx: headerRect ? (headerRect.bottom - rect.top) / scale : undefined,
+            occupiedOffsets,
+          });
+          if (!next) return;
+          updateNodeData(id, (node) => {
+            const previous = (node.data?.handleOffsets ?? {}) as HandleOffsets;
+            const current = previous[handleId];
+            if (current && current.position === next.position && current.offset === next.offset) {
+              return {};
+            }
+            return {
+              handleOffsets: {
+                ...previous,
+                [handleId]: next,
+                ...(mirrorId ? { [mirrorId]: next } : {}),
+              },
+            };
+          });
+        };
+
+        const onPointerUp = () => {
+          pillDragCleanupRef.current?.();
+        };
+
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+        pillDragCleanupRef.current = () => {
+          window.removeEventListener('pointermove', onPointerMove);
+          window.removeEventListener('pointerup', onPointerUp);
+          pillDragCleanupRef.current = null;
+        };
+      },
+    [containerHandleGroups, containerHeight, containerWidth, id, isDesignMode, updateNodeData]
   );
 
   useContainerNodeInternalsRefresh(id, containerHandleGroups, containerWidth, containerHeight);
@@ -367,6 +477,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: canvas node hover state is mouse-driven
     <div
+      ref={containerRef}
       data-loop-container
       data-selected={selected ? 'true' : 'false'}
       data-execution-status={executionStatus}
@@ -398,9 +509,12 @@ function LoopNodeComponent(props: LoopNodeProps) {
         <Header
           title={displayTitle}
           icon={displayIcon}
+          description={headerDescription}
+          chips={headerChips}
           loading={isLoading}
           isParallel={isParallel}
           label={label}
+          showModePill={showModePill}
           iterationPillState={iterationPillStateProp}
           nodeWidth={containerWidth}
           hasTopLeftAdornment={hasTopLeftAdornment}
@@ -455,6 +569,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
         nodeHeight={containerHeight}
         connectedHandleIds={connectedHandleIds}
         onHandleAction={handleHandleAction}
+        startHandlePillDrag={isDesignMode ? startHandlePillDrag : undefined}
       />
     </div>
   );
@@ -465,9 +580,12 @@ export const LoopNode = memo(LoopNodeComponent, areNodePropsEqualIgnoringPositio
 function Header({
   title,
   icon,
+  description,
+  chips,
   loading,
   isParallel,
   label,
+  showModePill,
   iterationPillState,
   nodeWidth,
   hasTopLeftAdornment,
@@ -475,9 +593,12 @@ function Header({
 }: {
   title: string;
   icon?: string;
+  description?: string;
+  chips?: StageHeaderChip[];
   loading: boolean;
   isParallel: boolean;
   label: string;
+  showModePill: boolean;
   iterationPillState?: LoopNodeExecutionCountState;
   nodeWidth: number;
   hasTopLeftAdornment: boolean;
@@ -486,8 +607,11 @@ function Header({
   const titleContent = loading ? (
     <div className="h-5 w-28 animate-pulse rounded bg-(--canvas-background-overlay)" />
   ) : (
-    <span className="truncate text-[15px] font-semibold leading-5 tracking-normal">{title}</span>
+    <span className="line-clamp-2 break-words text-[15px] font-semibold leading-5 tracking-normal">
+      {title}
+    </span>
   );
+  const hasSecondaryRow = !loading && (!!description || (chips?.length ?? 0) > 0);
 
   const iconContent = loading ? (
     <div className="h-4 w-4 shrink-0 animate-pulse rounded bg-(--canvas-background-overlay)" />
@@ -508,31 +632,48 @@ function Header({
   return (
     <div
       className={cn(
-        'relative z-10 flex shrink-0 cursor-grab items-center justify-between gap-2.5 rounded-t-[18px]',
+        'relative z-10 flex shrink-0 cursor-grab flex-col gap-1.5 rounded-t-[18px]',
         '-mb-2.5 bg-surface-overlay px-3.5 pb-2.5 pt-2.5 text-foreground',
         'active:cursor-grabbing'
       )}
       style={headerStyle}
       data-testid="loop-node-header"
     >
-      <div className="flex min-w-0 items-center gap-2.5">
-        {iconContent}
-        {titleContent}
+      <div className="flex items-center justify-between gap-2.5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {iconContent}
+          {titleContent}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {iterationPillState ? (
+            <LoopNodeExecutionCount
+              state={iterationPillState}
+              size={nodeWidth >= 400 ? 'full' : nodeWidth >= 260 ? 'compact' : 'minimal'}
+            />
+          ) : null}
+          {showModePill ? (
+            <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
+              <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
+                <CanvasIcon icon="text-align-justify" size={12} />
+              </span>
+              {label}
+            </span>
+          ) : null}
+        </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        {iterationPillState ? (
-          <LoopNodeExecutionCount
-            state={iterationPillState}
-            size={nodeWidth >= 400 ? 'full' : nodeWidth >= 260 ? 'compact' : 'minimal'}
-          />
-        ) : null}
-        <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
-          <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
-            <CanvasIcon icon="text-align-justify" size={12} />
-          </span>
-          {label}
-        </span>
-      </div>
+      {hasSecondaryRow ? (
+        <div className="flex min-w-0 flex-col gap-1.5">
+          {description ? (
+            <span
+              className="line-clamp-2 break-words text-xs font-normal leading-4 text-foreground-muted"
+              data-testid="loop-node-header-description"
+            >
+              {description}
+            </span>
+          ) : null}
+          {chips && chips.length > 0 ? <LoopNodeHeaderChips chips={chips} /> : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -653,6 +794,11 @@ type SharedHandleGroupProps = {
   nodeHeight: number;
   connectedHandleIds: ReadonlySet<string>;
   onHandleAction: (event: HandleActionEvent) => void;
+  startHandlePillDrag?: (
+    handleId: string,
+    allowedWalls: HandleOffsets[string]['position'][],
+    mirrorId?: string
+  ) => (event: React.PointerEvent) => void;
 };
 
 type HandleGroupsProps = SharedHandleGroupProps & {
@@ -691,13 +837,20 @@ function HandleGroup({
   nodeHeight,
   connectedHandleIds,
   onHandleAction,
+  startHandlePillDrag,
 }: HandleGroupProps) {
-  const groupVisible = shouldShowHandles && (group.visible ?? true);
+  const groupVisible =
+    (shouldShowHandles || group.alwaysVisible === true) && (group.visible ?? true);
   const position = group.position as Position;
   const enhancedHandles = useMemo(
     () =>
       group.handles.map((handle) => {
         const showHandle = connectedHandleIds.has(handle.id) || groupVisible;
+        const draggableWalls = handle.draggableWalls;
+        const onLabelPointerDown =
+          startHandlePillDrag && draggableWalls && draggableWalls.length > 0
+            ? startHandlePillDrag(handle.id, draggableWalls, handle.dragMirrors)
+            : undefined;
 
         if (group.boundary === 'inner') {
           return {
@@ -705,6 +858,7 @@ function HandleGroup({
             showHandle,
             showButton: false,
             onAction: undefined,
+            onLabelPointerDown,
           };
         }
 
@@ -713,9 +867,17 @@ function HandleGroup({
           showHandle,
           showButton: handle.showButton,
           onAction: handle.onAction ?? onHandleAction,
+          onLabelPointerDown,
         };
       }),
-    [group.boundary, group.handles, connectedHandleIds, groupVisible, onHandleAction]
+    [
+      group.boundary,
+      group.handles,
+      connectedHandleIds,
+      groupVisible,
+      onHandleAction,
+      startHandlePillDrag,
+    ]
   );
 
   return (
@@ -732,6 +894,7 @@ function HandleGroup({
       nodeWidth={nodeWidth}
       nodeHeight={nodeHeight}
       portalActions={group.boundary === 'outer'}
+      slotCount={group.slotCount}
     />
   );
 }
