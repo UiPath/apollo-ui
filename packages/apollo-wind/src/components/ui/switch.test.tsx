@@ -135,14 +135,14 @@ describe('Switch', () => {
     it('renders sm size when size="sm"', () => {
       render(<Switch size="sm" aria-label="Toggle" />);
       const switchElement = screen.getByRole('switch');
-      expect(switchElement).toHaveClass('h-5', 'w-9');
+      expect(switchElement).toHaveClass('h-[14px]', 'w-[24px]');
       expect(switchElement).not.toHaveClass('h-6', 'w-11');
     });
 
     it('renders sm thumb when size="sm"', () => {
       render(<Switch size="sm" aria-label="Toggle" />);
       const thumb = screen.getByRole('switch').firstElementChild;
-      expect(thumb).toHaveClass('h-4', 'w-4');
+      expect(thumb).toHaveClass('size-3');
     });
 
     it('has no accessibility violations at sm size', async () => {
