@@ -451,66 +451,76 @@ function TabbedStepForm({
 
   return (
     <>
-      <Tabs value={currentTab} onValueChange={setActiveTab} className="flex flex-col gap-1">
-        {/* Segmented pill tabs (properties-panel style). When the tabs overflow a
-          narrow panel, ScrollableTabsList reveals prev/next chevrons and auto-
-          scrolls the active tab into view; in a wide panel it renders no chevrons
-          and reads identically to a plain tab strip. */}
-        {/* px-0 cancels the list's built-in p-1 horizontal padding so the first
-            tab's pill edge sits flush on the host content inset; py-0.5 keeps a
-            little vertical breathing room. The label stays inset inside the pill,
-            as segmented pill tabs do. */}
-        <ScrollableTabsList
-          className="h-auto justify-start gap-0.5 rounded-lg bg-transparent px-0 py-0.5 text-muted-foreground"
-          scrollButtonClassName="size-6 hover:bg-surface-overlay"
-        >
-          {visibleSteps.map((step) => {
-            const errorCount = errorCountByStepId[step.id] ?? 0;
-            return (
-              <TabsTrigger
-                key={step.id}
-                value={step.id}
-                className="inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-              >
-                {step.title}
-                {errorCount > 0 && (
-                  <span
-                    role="img"
-                    aria-label={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
-                    title={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
-                    className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-foreground-on-accent"
-                  >
-                    {errorCount}
-                  </span>
-                )}
-              </TabsTrigger>
-            );
-          })}
-        </ScrollableTabsList>
+      <Tabs
+        value={currentTab}
+        onValueChange={setActiveTab}
+        className="flex min-h-0 flex-1 flex-col gap-1"
+      >
+        {/* Pinned tab bar: shrink-0 keeps it under the panel header while the
+            active tab's content scrolls below. The wrapper supplies the
+            horizontal inset (matching the content) so the tab strip lines up
+            with the fields; px-0 on the list keeps the first pill flush to it.
+            Segmented pill tabs (properties-panel style): in a narrow panel
+            ScrollableTabsList reveals prev/next chevrons and auto-scrolls the
+            active tab into view; in a wide panel it reads as a plain strip. */}
+        <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0px)]">
+          <ScrollableTabsList
+            className="h-auto justify-start gap-0.5 rounded-lg bg-transparent px-0 py-0.5 text-muted-foreground"
+            scrollButtonClassName="size-6 hover:bg-surface-overlay"
+          >
+            {visibleSteps.map((step) => {
+              const errorCount = errorCountByStepId[step.id] ?? 0;
+              return (
+                <TabsTrigger
+                  key={step.id}
+                  value={step.id}
+                  className="inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                >
+                  {step.title}
+                  {errorCount > 0 && (
+                    <span
+                      role="img"
+                      aria-label={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
+                      title={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
+                      className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-foreground-on-accent"
+                    >
+                      {errorCount}
+                    </span>
+                  )}
+                </TabsTrigger>
+              );
+            })}
+          </ScrollableTabsList>
+        </div>
 
         {visibleSteps.map((step) => (
-          // Plain: cancel TabsContent's built-in mt-2 — the first section's own
-          // pt-3 already provides the tab-strip inset, and stacking both makes
-          // the tab→content gap as large as the full section-to-section rhythm.
-          <TabsContent
-            key={step.id}
-            value={step.id}
-            className={sectionVariant === 'plain' ? 'mt-0' : 'space-y-2'}
-          >
-            {step.sections
-              .filter(
-                (section) => !section.conditions || context.evaluateConditions(section.conditions)
-              )
-              .map((section) => (
-                <FormSection
-                  key={section.id}
-                  section={section}
-                  context={context}
-                  customComponents={customComponents}
-                  disabled={disabled}
-                  sectionVariant={sectionVariant}
-                />
-              ))}
+          // The active tab is the scroll container so the tab bar above stays
+          // pinned and the scrollbar sits at the panel edge; the inner wrapper
+          // carries the content inset + bottom padding. Plain drops space-y-2
+          // (sections self-space); card keeps the 2-unit rhythm between boxes.
+          <TabsContent key={step.id} value={step.id} className="mt-0 min-h-0 flex-1 overflow-auto">
+            <div
+              className={
+                sectionVariant === 'plain'
+                  ? 'pb-6 [padding-inline:var(--mf-content-inset,0px)]'
+                  : 'space-y-2 pb-6 [padding-inline:var(--mf-content-inset,0px)]'
+              }
+            >
+              {step.sections
+                .filter(
+                  (section) => !section.conditions || context.evaluateConditions(section.conditions)
+                )
+                .map((section) => (
+                  <FormSection
+                    key={section.id}
+                    section={section}
+                    context={context}
+                    customComponents={customComponents}
+                    disabled={disabled}
+                    sectionVariant={sectionVariant}
+                  />
+                ))}
+            </div>
           </TabsContent>
         ))}
       </Tabs>
@@ -542,8 +552,8 @@ function FormSection({
   // instead separates stacked sections with a full-width hairline divider above
   // every section except the first, so groups stay distinguishable without boxes
   // (the host provides the frame + horizontal inset). Sections carry symmetric
-  // vertical padding (py-3 header / pb-3 content) so the inter-section rhythm
-  // (12px + divider + 12px) reads clearly against the tighter field gap; the
+  // vertical padding (py-4 header / pb-4 content) so the inter-section rhythm
+  // (16px + divider + 16px) reads clearly against the tighter field gap; the
   // parent list renders plain sections with no extra gap of its own.
   const isPlain = sectionVariant === 'plain';
   // Lives on each section's OUTERMOST element (the Accordion root for
@@ -557,7 +567,7 @@ function FormSection({
   // (vs the field labels' medium) keeps the header distinguishable from its own
   // fields even when the collapse chevron is absent.
   const triggerClassName = isPlain
-    ? 'justify-start gap-2 py-3 text-sm font-semibold hover:no-underline'
+    ? 'justify-start gap-2 py-4 text-sm font-semibold hover:no-underline'
     : 'text-sm font-medium';
 
   const fieldsGrid = (
@@ -588,7 +598,7 @@ function FormSection({
   // than a multi-section tab whose leading header carries that padding.
   if (!section.title) {
     return isPlain ? (
-      <div className={`${dividerClassName} pb-3 pt-3`}>{fieldsGrid}</div>
+      <div className={`${dividerClassName} pb-4 pt-4`}>{fieldsGrid}</div>
     ) : (
       fieldsGrid
     );
@@ -617,7 +627,7 @@ function FormSection({
         <AccordionItem value={section.id} className={wrapperClassName}>
           <AccordionTrigger className={triggerClassName}>{section.title}</AccordionTrigger>
           {/* AccordionContent adds pb-4 pt-0 internally; plain tightens it to pb-3. */}
-          <AccordionContent className={isPlain ? 'pb-3' : undefined}>
+          <AccordionContent className={isPlain ? 'pb-4' : undefined}>
             {innerContent}
           </AccordionContent>
         </AccordionItem>
@@ -634,7 +644,7 @@ function FormSection({
         <div
           className={
             isPlain
-              ? 'flex flex-1 items-center justify-start gap-2 py-3 text-sm font-semibold'
+              ? 'flex flex-1 items-center justify-start gap-2 py-4 text-sm font-semibold'
               : 'flex flex-1 items-center justify-between py-4 text-sm font-medium'
           }
         >
@@ -643,7 +653,7 @@ function FormSection({
       </div>
       {/* Match AccordionContent: outer has text-sm, inner has pb-4 pt-0 (pb-3 in plain) */}
       <div className="text-sm">
-        <div className={isPlain ? 'pb-3 pt-0' : 'pb-4 pt-0'}>{innerContent}</div>
+        <div className={isPlain ? 'pb-4 pt-0' : 'pb-4 pt-0'}>{innerContent}</div>
       </div>
     </div>
   );

@@ -130,7 +130,29 @@ export function NodePropertyPanel({
         <div className="py-4 text-xs text-foreground-subtle [padding-inline:var(--mf-content-inset,1.5rem)]">
           No form schema defined for this node.
         </div>
+      ) : formSchema.steps ? (
+        // Tabbed schema: MetadataForm owns the scroll so its tab bar pins under
+        // the header. This wrapper is a height-filling flex column, NOT the
+        // scroll container — the form's inset/padding move inside TabbedStepForm.
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div
+            style={SURFACE_REMAP}
+            className="flex min-h-0 flex-1 flex-col [&_label]:text-foreground-muted"
+          >
+            <MetadataForm
+              key={resetKey}
+              schema={formSchema}
+              plugins={plugins}
+              stepVariant="tabs"
+              sectionVariant={sectionVariant}
+              onSubmit={onSubmit}
+              disabled={disabled}
+              className="flex min-h-0 flex-1 flex-col"
+            />
+          </div>
+        </div>
       ) : (
+        // Single-page schema: classic behavior — this wrapper scrolls the whole form.
         <div className="min-h-0 flex-1 overflow-auto">
           <div style={SURFACE_REMAP} className="[&_label]:text-foreground-muted">
             <MetadataForm
