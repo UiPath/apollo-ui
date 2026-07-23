@@ -143,6 +143,7 @@ function InlineEditableLabel({
         if (e.key === 'Enter' || e.key === 'Escape') setEditing(false);
       }}
       className="min-w-0 flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
+      // biome-ignore lint/a11y/noAutofocus: only mounts in response to the user's own click on the label, not on page load
       autoFocus
     />
   ) : (

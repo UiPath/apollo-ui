@@ -44,12 +44,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib';
 
 /**
@@ -177,19 +172,33 @@ export const FIELD_TYPE_ORDER: LockableFieldType[] = [
   'file',
 ];
 
-export const DEMO_SELECT_OPTIONS = [
+const DEMO_SELECT_OPTIONS = [
   { label: 'Option 1', value: 'option-1' },
   { label: 'Option 2', value: 'option-2' },
   { label: 'Option 3', value: 'option-3' },
 ];
 
-export function parseListValue(value: string): string[] {
+function parseListValue(value: string): string[] {
   try {
     const parsed = JSON.parse(value);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
+}
+
+/** Parses a date field's stored value, returning undefined for empty or invalid input. */
+function parseDateValue(value: string): Date | undefined {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+/** Formats a date field's value for display, falling back to the raw value if it isn't a valid date. */
+function formatDateValue(value: string): string {
+  const date = parseDateValue(value);
+  return date
+    ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+    : value;
 }
 
 export interface LockableValueFieldProps {
@@ -281,11 +290,7 @@ export function LockableValueField({
         : 'False'
       : fieldType === 'date'
         ? value
-          ? new Date(value).toLocaleDateString(undefined, {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })
+          ? formatDateValue(value)
           : ''
         : fieldType === 'single-select'
           ? (DEMO_SELECT_OPTIONS.find((option) => option.value === value)?.label ?? '')
@@ -300,7 +305,7 @@ export function LockableValueField({
       <div className="flex items-center gap-1">
         {label ?? (
           <Label htmlFor={id} className="text-xs font-medium text-foreground-muted">
-            {FIELD_LABEL[mode]}
+            {FIELD_LABEL[effectiveMode]}
             {required && <span className="ml-0.5 text-destructive">*</span>}
           </Label>
         )}
@@ -528,11 +533,7 @@ export function LockableValueField({
                   className="flex h-full flex-1 items-center text-left text-sm text-foreground outline-none"
                 >
                   {value ? (
-                    new Date(value).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })
+                    formatDateValue(value)
                   ) : (
                     <span className="text-muted-foreground">Pick a date</span>
                   )}
@@ -541,7 +542,7 @@ export function LockableValueField({
               <PopoverContent align="start" className="w-auto p-0">
                 <Calendar
                   mode="single"
-                  selected={value ? new Date(value) : undefined}
+                  selected={parseDateValue(value)}
                   onSelect={(date) => onValueChange?.(date ? date.toISOString() : '')}
                   initialFocus
                 />

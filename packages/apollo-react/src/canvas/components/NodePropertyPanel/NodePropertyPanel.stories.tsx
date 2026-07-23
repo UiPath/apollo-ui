@@ -20,11 +20,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type {
-  FormSchema,
-  LockableFieldType,
-  LockableValueFieldMode,
-} from '@uipath/apollo-wind';
+import type { FormSchema, LockableFieldType, LockableValueFieldMode } from '@uipath/apollo-wind';
 import {
   Badge,
   Button,
@@ -2530,6 +2526,23 @@ interface LockableCase {
   fieldType: LockableFieldType;
 }
 
+/** Guards against malformed JSON (e.g. from hand-editing the schema view) reaching setCases -- a
+ *  missing/wrong-typed id would break Sortable, and an unknown fieldType would break rendering. */
+function isValidLockableCase(item: unknown): item is LockableCase {
+  if (typeof item !== 'object' || item === null) return false;
+  const c = item as Record<string, unknown>;
+  return (
+    typeof c.id === 'number' &&
+    typeof c.title === 'string' &&
+    typeof c.required === 'boolean' &&
+    typeof c.value === 'string' &&
+    typeof c.locked === 'boolean' &&
+    (c.mode === 'fixed' || c.mode === 'expression') &&
+    typeof c.fieldType === 'string' &&
+    c.fieldType in FIELD_TYPE_META
+  );
+}
+
 const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
   {
     id: 1,
@@ -3013,6 +3026,10 @@ function QuickFormStory() {
       const parsed = JSON.parse(value);
       if (!Array.isArray(parsed)) {
         setJsonError('Expected a JSON array of fields.');
+        return;
+      }
+      if (!parsed.every(isValidLockableCase)) {
+        setJsonError('Each field needs id, title, required, value, locked, mode, and fieldType.');
         return;
       }
       setCases(parsed);

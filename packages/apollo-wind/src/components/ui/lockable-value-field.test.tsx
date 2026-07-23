@@ -89,6 +89,20 @@ describe('LockableValueField', () => {
     expect(screen.getByText(/drag/i, { exact: false })).toBeInTheDocument();
   });
 
+  it('falls back to the raw value instead of throwing on an invalid date string', () => {
+    expect(() =>
+      render(<LockableValueField locked fieldType="date" value="not-a-date" />)
+    ).not.toThrow();
+    expect(screen.getByPlaceholderText('String value')).toHaveValue('not-a-date');
+  });
+
+  it('shows the raw value instead of throwing when unlocked with an invalid date', () => {
+    expect(() =>
+      render(<LockableValueField locked={false} fieldType="date" value="not-a-date" />)
+    ).not.toThrow();
+    expect(screen.getByRole('button', { name: 'not-a-date' })).toBeInTheDocument();
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <LockableValueField

@@ -61,8 +61,6 @@ export type {
 export {
   FIELD_TYPE_META,
   FIELD_TYPE_ORDER,
-  DEMO_SELECT_OPTIONS,
-  parseListValue,
   LockableValueField,
 } from './components/ui/lockable-value-field';
 export type {
