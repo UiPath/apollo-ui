@@ -2,8 +2,8 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
-import { MetadataForm } from './metadata-form';
 import type { FormPlugin, FormSchema } from './form-schema';
+import { MetadataForm } from './metadata-form';
 
 // Basic form schema for tests
 const basicSchema: FormSchema = {
@@ -463,6 +463,138 @@ describe('MetadataForm', () => {
         name: /Parameters/,
       });
       await waitFor(() => expect(within(parametersTab).getByText('3')).toBeInTheDocument());
+    });
+
+    it('controlled: an activeStepId not among the visible steps clamps to the first tab without firing onActiveStepChange', async () => {
+      const onActiveStepChange = vi.fn();
+      render(
+        <MetadataForm
+          schema={tabbedSchema}
+          stepVariant="tabs"
+          activeStepId="does-not-exist"
+          onActiveStepChange={onActiveStepChange}
+        />
+      );
+
+      // Clamped to the first visible tab rather than stranded on a dead id.
+      const parametersTab = await screen.findByRole('tab', { name: 'Parameters' });
+      await waitFor(() => expect(parametersTab).toHaveAttribute('data-state', 'active'));
+      // Clamping is internal: it must not fire the change callback (nor mutate the caller's value).
+      expect(onActiveStepChange).not.toHaveBeenCalled();
+    });
+
+    it('controlled: selecting a tab fires onActiveStepChange but leaves the displayed tab to the caller', async () => {
+      const user = userEvent.setup();
+      const onActiveStepChange = vi.fn();
+      render(
+        <MetadataForm
+          schema={tabbedSchema}
+          stepVariant="tabs"
+          activeStepId="parameters"
+          onActiveStepChange={onActiveStepChange}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: 'Advanced' }));
+
+      // Callback fires with the selection...
+      expect(onActiveStepChange).toHaveBeenCalledWith('advanced');
+      // ...but the form stays on the caller-controlled tab until the caller updates activeStepId.
+      await waitFor(() =>
+        expect(screen.getByRole('tab', { name: 'Parameters' })).toHaveAttribute(
+          'data-state',
+          'active'
+        )
+      );
+    });
+
+    it('uncontrolled: selecting a tab both fires onActiveStepChange and moves to that tab', async () => {
+      const user = userEvent.setup();
+      const onActiveStepChange = vi.fn();
+      render(
+        <MetadataForm
+          schema={tabbedSchema}
+          stepVariant="tabs"
+          onActiveStepChange={onActiveStepChange}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: 'Advanced' }));
+
+      expect(onActiveStepChange).toHaveBeenCalledWith('advanced');
+      await waitFor(() =>
+        expect(screen.getByRole('tab', { name: 'Advanced' })).toHaveAttribute(
+          'data-state',
+          'active'
+        )
+      );
+    });
+
+    it('keeps an otherwise-empty step in the tab bar when it defines an emptyState, and renders that message', async () => {
+      const withEmptyState: FormSchema = {
+        id: 'with-empty-state',
+        title: 'With empty state',
+        actions: [],
+        steps: [
+          {
+            id: 'parameters',
+            title: 'Parameters',
+            sections: [{ id: 'p', fields: [{ name: 'field1', type: 'text', label: 'Field 1' }] }],
+          },
+          {
+            id: 'advanced',
+            title: 'Advanced',
+            emptyState: 'No advanced settings for this node.',
+            sections: [],
+          },
+        ],
+      };
+
+      const user = userEvent.setup();
+      render(<MetadataForm schema={withEmptyState} stepVariant="tabs" />);
+
+      // The empty step still gets a tab (unlike a section-less, message-less step, which is omitted).
+      const advancedTab = await screen.findByRole('tab', { name: 'Advanced' });
+      await user.click(advancedTab);
+
+      // Its emptyState message renders in place of sections.
+      await waitFor(() =>
+        expect(screen.getByText('No advanced settings for this node.')).toBeInTheDocument()
+      );
+    });
+
+    it('omits a step whose sections are all hidden by section conditions and has no emptyState (no blank tab)', async () => {
+      const schema: FormSchema = {
+        id: 'hidden-sections',
+        title: 'Hidden sections',
+        actions: [],
+        steps: [
+          {
+            id: 'parameters',
+            title: 'Parameters',
+            sections: [{ id: 'p', fields: [{ name: 'field1', type: 'text', label: 'Field 1' }] }],
+          },
+          {
+            id: 'conditional',
+            title: 'Conditional',
+            sections: [
+              {
+                id: 'c',
+                // Hidden until field1 === 'show-me'; field1 is empty here.
+                conditions: [{ when: 'field1', is: 'show-me' }],
+                fields: [{ name: 'field2', type: 'text', label: 'Field 2' }],
+              },
+            ],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} stepVariant="tabs" />);
+
+      // The Conditional step's only section is hidden and it has no emptyState,
+      // so it must not surface a blank tab.
+      expect(await screen.findByRole('tab', { name: 'Parameters' })).toBeInTheDocument();
+      expect(screen.queryByRole('tab', { name: 'Conditional' })).not.toBeInTheDocument();
     });
   });
 });

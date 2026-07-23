@@ -51,6 +51,8 @@ export function NodePropertyPanel({
   children,
   headerExtra,
   sectionVariant,
+  activeStepId,
+  onActiveStepChange,
 }: NodePropertyPanelProps) {
   const hasNodeHeader = !!(nodeLabel || nodeCategory || nodeIcon || action);
 
@@ -145,6 +147,8 @@ export function NodePropertyPanel({
               plugins={plugins}
               stepVariant="tabs"
               sectionVariant={sectionVariant}
+              activeStepId={activeStepId}
+              onActiveStepChange={onActiveStepChange}
               onSubmit={onSubmit}
               disabled={disabled}
               className="flex min-h-0 flex-1 flex-col"
@@ -152,14 +156,14 @@ export function NodePropertyPanel({
           </div>
         </div>
       ) : (
-        // Single-page schema: classic behavior — this wrapper scrolls the whole form.
+        // Single-page schema: classic behavior — this wrapper scrolls the whole
+        // form. No stepVariant: it only applies to step-based schemas.
         <div className="min-h-0 flex-1 overflow-auto">
           <div style={SURFACE_REMAP} className="[&_label]:text-foreground-muted">
             <MetadataForm
               key={resetKey}
               schema={formSchema}
               plugins={plugins}
-              stepVariant="tabs"
               sectionVariant={sectionVariant}
               onSubmit={onSubmit}
               disabled={disabled}
