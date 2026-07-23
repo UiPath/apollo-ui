@@ -9,21 +9,19 @@
  * reads the stored return path and navigates the user back to where they were.
  */
 
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { STORAGE_KEYS } from "@/lib/auth";
-
-const FALLBACK_PATH = "/";
+import { resolveReturnPath, STORAGE_KEYS } from "@/lib/auth";
 
 export default function PostLogoutRedirect() {
-  const router = useRouter();
-
   useEffect(() => {
-    const returnTo =
-      sessionStorage.getItem(STORAGE_KEYS.LOGOUT_RETURN_TO) ?? FALLBACK_PATH;
+    const stored = sessionStorage.getItem(STORAGE_KEYS.LOGOUT_RETURN_TO);
     sessionStorage.removeItem(STORAGE_KEYS.LOGOUT_RETURN_TO);
-    router.replace(returnTo);
-  }, [router]);
+
+    // resolveReturnPath guards origin, falls back to the app root, and resolves
+    // to the real file on Coded App builds. window.location avoids Next's router
+    // doubling the basePath already present in the stored path.
+    window.location.replace(resolveReturnPath(stored));
+  }, []);
 
   return null;
 }
