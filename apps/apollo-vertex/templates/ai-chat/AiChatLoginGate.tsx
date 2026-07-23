@@ -20,7 +20,7 @@ import { useAuth } from "@/registry/shell/shell-auth-provider";
 import {
   AICHAT_DIRECT_BASE_URL,
   AICHAT_IS_CODED_APP,
-  AICHAT_STATIC_ORG,
+  AICHAT_PORTAL_API_BASE,
   AICHAT_STORAGE_KEYS,
 } from "./ai-chat-example-utils";
 
@@ -44,14 +44,17 @@ const TenantsAndOrgSchema = z.object({
 
 const PrtIdSchema = z.object({ prt_id: z.string() });
 
+// Resolves the caller's org + tenants from the portal endpoint. `url` is the
+// same-origin proxy path in dev, or the api-host absolute URL in a Coded App
+// build (the api host has CORS and is called for the caller's OWN org, so it
+// works across any org the user belongs to).
 async function fetchOrgInfo(
-  orgId: string,
+  url: string,
   accessToken: string,
 ): Promise<OrgInfo> {
-  const res = await fetch(
-    `/_proxy/portal/${orgId}/filtering/leftnav/tenantsAndOrganizationInfo`,
-    { headers: { Authorization: `Bearer ${accessToken}` } },
-  );
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch org tenant info (${res.status})`);
   }
@@ -91,16 +94,12 @@ function useOrgInfo(accessToken: string | null) {
     queryFn: () => {
       if (!orgId || !accessToken)
         throw new Error("Missing orgId or accessToken");
-      // Coded App builds cannot reach the portal proxy that lists tenants, so
-      // the deployment's org/tenant is baked in at build time instead.
-      if (AICHAT_STATIC_ORG) {
-        return Promise.resolve({
-          orgId,
-          orgName: AICHAT_STATIC_ORG.orgName,
-          tenants: AICHAT_STATIC_ORG.tenants,
-        });
-      }
-      return fetchOrgInfo(orgId, accessToken);
+      // Coded App builds hit the portal via the api host (which has CORS) for
+      // the caller's own org; dev builds use the same-origin proxy.
+      const url = AICHAT_PORTAL_API_BASE
+        ? `${AICHAT_PORTAL_API_BASE}/${orgId}/portal_/api/filtering/leftnav/tenantsAndOrganizationInfo`
+        : `/_proxy/portal/${orgId}/filtering/leftnav/tenantsAndOrganizationInfo`;
+      return fetchOrgInfo(url, accessToken);
     },
     enabled: !!accessToken && !!orgId,
     staleTime: STALE_TIME_MS,
