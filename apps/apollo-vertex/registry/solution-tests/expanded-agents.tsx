@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { SolutionTest, SolutionTestJob } from "./types";
+import { useSolutionTestsConfig } from "./context";
 import { useBaselineJobs, useJobExpectedOutput } from "./hooks";
 import { ExpandedAgentsView } from "./expanded-agents-view";
 
@@ -17,6 +18,7 @@ interface ExpandedAgentsProps {
 export const ExpandedAgents = ({ test }: ExpandedAgentsProps) => {
   const { jobs: baselines, isLoading } = useBaselineJobs(test.Id);
   const expectedOutput = useJobExpectedOutput();
+  const { track } = useSolutionTestsConfig();
 
   const [openJob, setOpenJob] = useState<SolutionTestJob | null>(null);
 
@@ -42,7 +44,12 @@ export const ExpandedAgents = ({ test }: ExpandedAgentsProps) => {
       isLoading={isLoading}
       noOutputJobIds={noOutputJobIds}
       viewing={viewing}
-      onViewExpected={(job) => setOpenJob(job)}
+      onViewExpected={(job) => {
+        track?.("VS.SolutionTest.RawOutputViewed", {
+          processName: job.ProcessName,
+        });
+        setOpenJob(job);
+      }}
       onCloseViewer={() => setOpenJob(null)}
     />
   );

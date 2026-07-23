@@ -12,7 +12,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useSolution } from "@uipath/vs-core";
 import { fetchAttachment } from "./attachments";
 import { ENTITY } from "./constants";
-import { useSolutionTestsActions, useSolutionTestsContext } from "./context";
+import {
+  useSolutionTestsActions,
+  useSolutionTestsConfig,
+  useSolutionTestsContext,
+} from "./context";
 import type { AttachmentFetcher, MutationHook } from "./mutations";
 import { JobRole } from "./types";
 import type { SolutionTestJob } from "./types";
@@ -39,12 +43,15 @@ export function useBaselineJobs(testId: string): UseBaselineJobsResult {
 /** Remove a job from the test's expected (baseline) results. */
 export function useRemoveJobBaseline(): MutationHook<string> {
   const actions = useSolutionTestsActions();
+  const { track } = useSolutionTestsConfig();
   const jobsCollection = useSolutionTestCollection(ENTITY.jobs);
   return useMutation({
     mutationFn: async (baselineId: string) => {
       await actions.removeJobBaseline(baselineId);
       await jobsCollection.utils.refetch();
     },
+    onMutate: (baselineId) =>
+      track?.("VS.SolutionTest.BaselineRemoved", { baselineId }),
   });
 }
 

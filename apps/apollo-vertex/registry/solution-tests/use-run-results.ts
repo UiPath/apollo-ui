@@ -12,7 +12,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useSolution } from "@uipath/vs-core";
 import { fetchAttachment } from "./attachments";
 import { ENTITY } from "./constants";
-import { useSolutionTestsActions, useSolutionTestsContext } from "./context";
+import {
+  useSolutionTestsActions,
+  useSolutionTestsConfig,
+  useSolutionTestsContext,
+} from "./context";
 import type { AttachmentFetcher, MutationHook } from "./mutations";
 import { JobRole } from "./types";
 import type {
@@ -70,16 +74,21 @@ export function useRunResults(runId: string): UseRunResultsResult {
 /** Adopt a run result's job as the test baseline. */
 export function useAdoptJob(): MutationHook<string> {
   const actions = useSolutionTestsActions();
+  const { track } = useSolutionTestsConfig();
   return useMutation({
     mutationFn: (resultId: string) => actions.adoptJob(resultId),
+    onMutate: (resultId) => track?.("VS.SolutionTest.JobAdopted", { resultId }),
   });
 }
 
 /** Update the test baseline from a run result. */
 export function useUpdateBaseline(): MutationHook<string> {
   const actions = useSolutionTestsActions();
+  const { track } = useSolutionTestsConfig();
   return useMutation({
     mutationFn: (resultId: string) => actions.updateBaseline(resultId),
+    onMutate: (resultId) =>
+      track?.("VS.SolutionTest.BaselineUpdated", { resultId }),
   });
 }
 

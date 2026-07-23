@@ -163,6 +163,7 @@ export const SolutionTestsView = ({
   const activeTab = activeTabProp ?? internalTab;
   const handleTabChange = (tab: TabValue) => {
     // When controlled, `activeTab` resolves to the prop so this is ignored.
+    config.track?.("VS.SolutionTest.TabViewed", { tab });
     setInternalTab(tab);
     onTabChange?.(tab);
   };
@@ -215,6 +216,10 @@ export const SolutionTestsView = ({
           aria-label={row.getIsExpanded() ? t("collapse") : t("expand")}
           onClick={(e) => {
             e.stopPropagation();
+            if (!row.getIsExpanded())
+              config.track?.("VS.SolutionTest.TestExpanded", {
+                testId: row.original.Id,
+              });
             row.toggleExpanded();
           }}
         >
@@ -379,6 +384,10 @@ export const SolutionTestsView = ({
           aria-label={row.getIsExpanded() ? t("collapse") : t("expand")}
           onClick={(e) => {
             e.stopPropagation();
+            if (!row.getIsExpanded())
+              config.track?.("VS.SolutionTest.BatchExpanded", {
+                batchId: row.original.Id,
+              });
             row.toggleExpanded();
           }}
         >

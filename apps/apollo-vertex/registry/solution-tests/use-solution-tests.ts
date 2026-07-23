@@ -10,7 +10,7 @@ import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import { useSolution } from "@uipath/vs-core";
 import { ENTITY } from "./constants";
-import { useSolutionTestsActions } from "./context";
+import { useSolutionTestsActions, useSolutionTestsConfig } from "./context";
 import type { MutationHook } from "./mutations";
 import type { SolutionTest } from "./types";
 import { useSolutionTestCollection } from "./use-solution-test-collection";
@@ -40,21 +40,27 @@ export function useRunTests(): MutationHook<{
   mode: RunTestsMode;
 }> {
   const actions = useSolutionTestsActions();
+  const { track } = useSolutionTestsConfig();
   return useMutation({
     mutationFn: ({ testIds }: { testIds?: string[]; mode: RunTestsMode }) =>
       actions.runTests(testIds),
+    // Track the user action on trigger (not success) — we want intent, not outcome.
+    onMutate: ({ testIds, mode }) =>
+      track?.("VS.SolutionTest.Run", { mode, testCount: testIds?.length ?? 0 }),
   });
 }
 
 /** Create a solution test from a subject id (e.g. a loan). */
 export function useCreateTest(): MutationHook<string> {
   const actions = useSolutionTestsActions();
+  const { track } = useSolutionTestsConfig();
   const testsCollection = useSolutionTestCollection(ENTITY.tests);
   return useMutation({
     mutationFn: async (subjectId: string) => {
       await actions.createTest(subjectId);
       await testsCollection.utils.refetch();
     },
+    onMutate: (subjectId) => track?.("VS.SolutionTest.Created", { subjectId }),
   });
 }
 
@@ -69,6 +75,7 @@ export function useToggleTestActive(): MutationHook<{
   isActive: boolean;
 }> {
   const solution = useSolution();
+  const { track } = useSolutionTestsConfig();
   return useMutation({
     mutationFn: async ({
       testId,
@@ -86,12 +93,15 @@ export function useToggleTestActive(): MutationHook<{
       });
       await transaction.isPersisted.promise;
     },
+    onMutate: ({ testId, isActive }) =>
+      track?.("VS.SolutionTest.ActiveToggled", { testId, isActive }),
   });
 }
 
 /** Delete a test. */
 export function useDeleteTest(): MutationHook<string> {
   const actions = useSolutionTestsActions();
+  const { track } = useSolutionTestsConfig();
   const testsCollection = useSolutionTestCollection(ENTITY.tests);
   const jobsCollection = useSolutionTestCollection(ENTITY.jobs);
   return useMutation({
@@ -102,5 +112,6 @@ export function useDeleteTest(): MutationHook<string> {
         jobsCollection.utils.refetch(),
       ]);
     },
+    onMutate: (testId) => track?.("VS.SolutionTest.Deleted", { testId }),
   });
 }
