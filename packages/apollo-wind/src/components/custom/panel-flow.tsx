@@ -222,7 +222,6 @@ function ToolCard({ card }: { card: FlowPanelToolCard }) {
               {card.items.map((item, i) => {
                 const Icon = toolIconMap[item.icon];
                 return (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: static display list
                   <div key={i} className="flex items-start gap-2.5 pl-4 pr-9">
                     <div className="flex h-5 w-5 shrink-0 items-center justify-center">
                       <Icon className="h-4 w-4 text-foreground-secondary" />
