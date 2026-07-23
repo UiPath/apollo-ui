@@ -1,5 +1,6 @@
 export default {
   index: "Introduction",
+  "design-system-status": "Roadmap status",
   foundation: "Foundation",
   components: "Components",
   patterns: "Patterns",
