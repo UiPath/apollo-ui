@@ -362,7 +362,9 @@ export function LockableValueField({
     fieldType === 'boolean'
       ? value === 'true'
         ? 'True'
-        : 'False'
+        : value === 'false'
+          ? 'False'
+          : ''
       : fieldType === 'date'
         ? value
           ? formatDateValue(value)
@@ -520,7 +522,8 @@ export function LockableValueField({
                         />
                       </div>
                       <span className="block text-[11px] text-foreground-subtle">
-                        Output: String expression
+                        Output: {typeMeta.label}
+                        {typeMeta.supportsExpression ? ' expression' : ' value'}
                       </span>
                       <Button
                         size="sm"
@@ -625,7 +628,12 @@ export function LockableValueField({
           <InputGroupAddon align="inline-end">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <InputGroupButton icon size="3xs" aria-label="Choose value type">
+                <InputGroupButton
+                  icon
+                  size="3xs"
+                  disabled={!onModeChange}
+                  aria-label="Choose value type"
+                >
                   {effectiveMode === 'expression' ? <Code2 /> : <Type />}
                 </InputGroupButton>
               </DropdownMenuTrigger>

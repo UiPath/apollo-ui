@@ -2539,7 +2539,7 @@ function isValidLockableCase(item: unknown): item is LockableCase {
     typeof c.locked === 'boolean' &&
     (c.mode === 'fixed' || c.mode === 'expression') &&
     typeof c.fieldType === 'string' &&
-    c.fieldType in FIELD_TYPE_META
+    Object.hasOwn(FIELD_TYPE_META, c.fieldType)
   );
 }
 

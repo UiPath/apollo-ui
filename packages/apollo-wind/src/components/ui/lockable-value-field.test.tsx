@@ -172,6 +172,36 @@ describe('LockableValueField', () => {
     expect(handleGenerate).toHaveBeenCalledWith('a random number');
   });
 
+  it('shows an empty display instead of "False" for an unset boolean value when locked', () => {
+    const { container } = render(<LockableValueField locked fieldType="boolean" value="" />);
+    expect(screen.getByPlaceholderText('String value')).toHaveValue('');
+    expect(container).not.toHaveTextContent('False');
+  });
+
+  it('disables the Fixed/Expression dropdown trigger when onModeChange is not provided', () => {
+    render(<LockableValueField locked={false} fieldType="string" />);
+    expect(screen.getByRole('button', { name: 'Choose value type' })).toBeDisabled();
+  });
+
+  it('enables the Fixed/Expression dropdown trigger when onModeChange is provided', () => {
+    render(<LockableValueField locked={false} fieldType="string" onModeChange={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Choose value type' })).not.toBeDisabled();
+  });
+
+  it('reflects the current field type in the AI-assist output hint', async () => {
+    const user = userEvent.setup();
+    render(<LockableValueField locked={false} fieldType="date" />);
+    await user.click(screen.getByRole('button', { name: 'AI assist' }));
+    expect(screen.getByText('Output: Date expression')).toBeInTheDocument();
+  });
+
+  it('shows a value (not expression) output hint for types that do not support expressions', async () => {
+    const user = userEvent.setup();
+    render(<LockableValueField locked={false} fieldType="single-select" />);
+    await user.click(screen.getByRole('button', { name: 'AI assist' }));
+    expect(screen.getByText('Output: Single select value')).toBeInTheDocument();
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <LockableValueField
