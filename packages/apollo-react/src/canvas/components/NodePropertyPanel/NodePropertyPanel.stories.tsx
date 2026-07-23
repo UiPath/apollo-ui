@@ -20,7 +20,11 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { FormSchema } from '@uipath/apollo-wind';
+import type {
+  FormSchema,
+  LockableFieldType,
+  LockableValueFieldMode,
+} from '@uipath/apollo-wind';
 import {
   Badge,
   Button,
@@ -32,11 +36,13 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  FIELD_TYPE_META,
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
   Input,
   Label,
+  LockableValueField,
   MetadataForm,
   Popover,
   PopoverContent,
@@ -90,8 +96,6 @@ import {
 import type { CSSProperties, ReactNode } from 'react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { LockableFieldType, LockableValueFieldMode } from './LockableValueField';
-import { FIELD_TYPE_META, LockableValueField } from './LockableValueField';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
 // @monaco-editor/react uses a CJS build without an `exports` field, which
@@ -2852,7 +2856,6 @@ function LockableValueFieldShowcase({
   const [showcaseMode, setShowcaseMode] = useState<LockableValueFieldMode>('fixed');
   const [showcaseFieldType, setShowcaseFieldType] = useState<LockableFieldType>('string');
   const [showcaseRequired, setShowcaseRequired] = useState(true);
-  const [showcaseDetailsExpanded, setShowcaseDetailsExpanded] = useState(false);
 
   const handleShowcaseFieldTypeChange = (type: LockableFieldType) => {
     setShowcaseFieldType(type);
@@ -2865,54 +2868,18 @@ function LockableValueFieldShowcase({
   return (
     <div className="flex w-[380px] shrink-0 flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-raised p-5">
       <div className="flex flex-col gap-1">
-        <span className="text-sm font-semibold text-foreground">LockableValueField</span>
-        <button
-          type="button"
-          onClick={() => setShowcaseDetailsExpanded((v) => !v)}
-          aria-expanded={showcaseDetailsExpanded}
-          className="group/details flex items-start gap-1 text-left text-xs leading-4 text-foreground-muted transition hover:text-foreground"
-        >
-          <span className="flex-1">
-            A reusable string field that can be locked to read-only and switched between a literal
-            value and a JS expression.
-          </span>
-          <ChevronDown
-            size={14}
-            className={cn(
-              'mt-0.5 shrink-0 text-foreground-subtle transition-transform group-hover/details:text-foreground',
-              showcaseDetailsExpanded && 'rotate-180'
-            )}
-          />
-        </button>
-        {showcaseDetailsExpanded && (
-          <ul className="flex list-disc flex-col gap-1.5 pl-4 pt-1 text-xs leading-4 text-foreground-muted">
-            <li>
-              Left lock icon toggles Editable / Read-only. Read-only fields show plain text, not a
-              disabled control.
-            </li>
-            <li>
-              Right value-mode icon switches between Fixed value and Expression, updating the value
-              styling. Only shown for types an expression can produce.
-            </li>
-            <li>
-              Field type dropdown swaps the control itself: String, Integer, Date, Boolean, Single
-              select, Multiselect, and File each render their own matching input.
-            </li>
-            <li>
-              Required switch toggles the red asterisk on the label. Only shown when
-              onRequiredChange is provided. Collapses to an icon that opens a popover in compact
-              view.
-            </li>
-            <li>Built-in AI-assist popover to describe and generate a value.</li>
-            <li>Insert-variable affordance for binding to upstream data.</li>
-            <li>Built entirely on apollo-wind&apos;s InputGroup primitive.</li>
-            <li>
-              Header row is responsive (container query): the type, required, AI-assist, and
-              insert-variable controls collapse to icon-only once the field gets too narrow for
-              their labels.
-            </li>
-          </ul>
-        )}
+        <span className="text-sm font-semibold text-foreground">Demo controls</span>
+        <p className="text-xs leading-4 text-foreground-muted">
+          Toggle Show/Hide to preview how field controls behave in the panel on the left. Uses
+          component →{' '}
+          <a
+            href="/?path=/docs/apollo-wind-components-core-lockable-value-field--docs"
+            target="_top"
+            className="font-medium text-brand transition hover:text-brand-hover"
+          >
+            Lockable Value Field
+          </a>
+        </p>
       </div>
       <div className="flex items-center justify-between border-t border-border-subtle pt-4">
         <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
