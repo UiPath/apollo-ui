@@ -1,6 +1,6 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { type FieldValues, FormProvider, useForm } from 'react-hook-form';
+import { type FieldValues, FormProvider, useForm, useFormState } from 'react-hook-form';
 import { z } from 'zod/v4';
 import {
   Accordion,
@@ -9,7 +9,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollableTabsList, Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 
 import { DataFetcher } from './data-fetcher';
 import { FormFieldRenderer } from './field-renderer';
@@ -46,6 +46,17 @@ interface MetadataFormProps {
    * across every step. Ignored for single-page (`sections`) schemas.
    */
   stepVariant?: 'wizard' | 'tabs';
+  /**
+   * Visual treatment for each titled section. `'card'` (default) wraps every
+   * section in a bordered, rounded, horizontally-padded box. `'plain'` drops the
+   * border, rounding, and horizontal padding so sections read as flush headers
+   * over their content, separated by a full-width hairline divider between
+   * consecutive sections — used by hosts (e.g. the canvas properties panel) that
+   * already frame the form and want a borderless list. Applies to both
+   * collapsible (accordion) and non-collapsible sections across every layout
+   * (single-page, wizard, tabs).
+   */
+  sectionVariant?: 'card' | 'plain';
 }
 
 // Stable default to prevent re-renders
@@ -59,6 +70,7 @@ export function MetadataForm({
   disabled = false,
   autoComplete,
   stepVariant = 'wizard',
+  sectionVariant = 'card',
 }: MetadataFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [customComponents, setCustomComponents] = useState<
@@ -196,6 +208,7 @@ export function MetadataForm({
             context={context}
             customComponents={customComponents}
             disabled={disabled}
+            sectionVariant={sectionVariant}
             onReset={() => reset()}
           />
         );
@@ -208,6 +221,7 @@ export function MetadataForm({
           setCurrentStep={setCurrentStep}
           customComponents={customComponents}
           disabled={disabled}
+          sectionVariant={sectionVariant}
         />
       );
     }
@@ -218,6 +232,7 @@ export function MetadataForm({
         context={context}
         customComponents={customComponents}
         disabled={disabled}
+        sectionVariant={sectionVariant}
       />
     );
   };
@@ -245,9 +260,16 @@ interface SinglePageFormProps {
   context: FormContext;
   customComponents: Record<string, React.ComponentType<CustomFieldComponentProps>>;
   disabled?: boolean;
+  sectionVariant?: 'card' | 'plain';
 }
 
-function SinglePageForm({ schema, context, customComponents, disabled }: SinglePageFormProps) {
+function SinglePageForm({
+  schema,
+  context,
+  customComponents,
+  disabled,
+  sectionVariant,
+}: SinglePageFormProps) {
   const sections = schema.sections || [];
 
   // Filter visible sections
@@ -256,7 +278,9 @@ function SinglePageForm({ schema, context, customComponents, disabled }: SingleP
   );
 
   return (
-    <div className="space-y-2">
+    // Plain sections carry their own vertical rhythm (py-3 + divider), so the
+    // list adds no extra gap; card sections are spaced apart as separate boxes.
+    <div className={sectionVariant === 'plain' ? undefined : 'space-y-2'}>
       {visibleSections.map((section) => (
         <FormSection
           key={section.id}
@@ -264,6 +288,7 @@ function SinglePageForm({ schema, context, customComponents, disabled }: SingleP
           context={context}
           customComponents={customComponents}
           disabled={disabled}
+          sectionVariant={sectionVariant}
         />
       ))}
     </div>
@@ -282,6 +307,7 @@ function MultiStepForm({
   setCurrentStep,
   customComponents,
   disabled,
+  sectionVariant,
 }: MultiStepFormProps) {
   const steps = schema.steps || [];
   const step = steps[currentStep];
@@ -310,8 +336,8 @@ function MultiStepForm({
         </div>
       </div>
 
-      {/* Step content */}
-      <div className="space-y-2">
+      {/* Step content (plain sections carry their own rhythm, see SinglePageForm) */}
+      <div className={sectionVariant === 'plain' ? undefined : 'space-y-2'}>
         {step.sections.map((section) => (
           <FormSection
             key={section.id}
@@ -319,6 +345,7 @@ function MultiStepForm({
             context={context}
             customComponents={customComponents}
             disabled={disabled}
+            sectionVariant={sectionVariant}
           />
         ))}
       </div>
@@ -357,6 +384,7 @@ function TabbedStepForm({
   context,
   customComponents,
   disabled,
+  sectionVariant,
   onReset,
 }: TabbedStepFormProps) {
   const steps = schema.steps || [];
@@ -368,6 +396,43 @@ function TabbedStepForm({
     (step) =>
       step.sections.length > 0 && (!step.conditions || context.evaluateConditions(step.conditions))
   );
+
+  // Subscribe to validation state so a tab's error badge updates live as errors
+  // are set/cleared. Without this subscription the getters on `context.errors`
+  // don't re-render this component when only the error state changes.
+  const formState = useFormState({ control: context.form.control });
+
+  // Per-step error count = number of validation issues on that step. A plain
+  // field contributes 1; a composite field whose error is an array of issues
+  // (e.g. a connector editor holding many sub-fields) contributes one per issue,
+  // so the badge reflects what the user sees inside it rather than always "1".
+  // Fields on inactive tabs are counted too (their errors persist in form state
+  // even while unmounted), so a badge surfaces a problem the user can't currently
+  // see. Conditionally-hidden sections AND individually-hidden fields are skipped
+  // (mirroring FormFieldRenderer) so a badge never points at something the form
+  // isn't showing and the user can't reach to fix.
+  //
+  // Recomputed every render on purpose: `formState` (the reactive dependency) and
+  // `visibleSteps` (a fresh array from `steps.filter`) both change per render, so
+  // memoizing would never hit; the walk over sections/fields is cheap.
+  const errorCountByStepId: Record<string, number> = {};
+  for (const step of visibleSteps) {
+    let count = 0;
+    for (const section of step.sections) {
+      if (section.conditions && !context.evaluateConditions(section.conditions)) {
+        continue;
+      }
+      for (const field of section.fields) {
+        if (field.rules && !RulesEngine.isFieldVisible(field.rules, context.values)) {
+          continue;
+        }
+        const fieldError: unknown = context.form.getFieldState(field.name, formState).error;
+        if (!fieldError) continue;
+        count += Array.isArray(fieldError) ? fieldError.filter(Boolean).length : 1;
+      }
+    }
+    errorCountByStepId[step.id] = count;
+  }
 
   // Clamp the active tab to a still-visible step so a step that disappears
   // (condition flips, manifest swap) can't strand the form on a dead tab.
@@ -386,24 +451,52 @@ function TabbedStepForm({
 
   return (
     <>
-      <Tabs value={currentTab} onValueChange={setActiveTab} className="flex flex-col gap-4">
-        {/* Segmented pill tabs (properties-panel style). Horizontal scroll when
-          tabs overflow a narrow panel; scrollbar is hidden so tabs stay on one
-          line without clipping. */}
-        <TabsList className="h-auto justify-start gap-0.5 overflow-x-auto rounded-lg bg-transparent p-0.5 text-muted-foreground [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {visibleSteps.map((step) => (
-            <TabsTrigger
-              key={step.id}
-              value={step.id}
-              className="inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-            >
-              {step.title}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <Tabs value={currentTab} onValueChange={setActiveTab} className="flex flex-col gap-1">
+        {/* Segmented pill tabs (properties-panel style). When the tabs overflow a
+          narrow panel, ScrollableTabsList reveals prev/next chevrons and auto-
+          scrolls the active tab into view; in a wide panel it renders no chevrons
+          and reads identically to a plain tab strip. */}
+        {/* px-0 cancels the list's built-in p-1 horizontal padding so the first
+            tab's pill edge sits flush on the host content inset; py-0.5 keeps a
+            little vertical breathing room. The label stays inset inside the pill,
+            as segmented pill tabs do. */}
+        <ScrollableTabsList
+          className="h-auto justify-start gap-0.5 rounded-lg bg-transparent px-0 py-0.5 text-muted-foreground"
+          scrollButtonClassName="size-6 hover:bg-surface-overlay"
+        >
+          {visibleSteps.map((step) => {
+            const errorCount = errorCountByStepId[step.id] ?? 0;
+            return (
+              <TabsTrigger
+                key={step.id}
+                value={step.id}
+                className="inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              >
+                {step.title}
+                {errorCount > 0 && (
+                  <span
+                    role="img"
+                    aria-label={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
+                    title={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
+                    className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-foreground-on-accent"
+                  >
+                    {errorCount}
+                  </span>
+                )}
+              </TabsTrigger>
+            );
+          })}
+        </ScrollableTabsList>
 
         {visibleSteps.map((step) => (
-          <TabsContent key={step.id} value={step.id} className="space-y-2">
+          // Plain: cancel TabsContent's built-in mt-2 — the first section's own
+          // pt-3 already provides the tab-strip inset, and stacking both makes
+          // the tab→content gap as large as the full section-to-section rhythm.
+          <TabsContent
+            key={step.id}
+            value={step.id}
+            className={sectionVariant === 'plain' ? 'mt-0' : 'space-y-2'}
+          >
             {step.sections
               .filter(
                 (section) => !section.conditions || context.evaluateConditions(section.conditions)
@@ -415,6 +508,7 @@ function TabbedStepForm({
                   context={context}
                   customComponents={customComponents}
                   disabled={disabled}
+                  sectionVariant={sectionVariant}
                 />
               ))}
           </TabsContent>
@@ -430,11 +524,41 @@ interface FormSectionProps {
   context: FormContext;
   customComponents: Record<string, React.ComponentType<CustomFieldComponentProps>>;
   disabled?: boolean;
+  sectionVariant?: 'card' | 'plain';
 }
 
-function FormSection({ section, context, customComponents, disabled }: FormSectionProps) {
+function FormSection({
+  section,
+  context,
+  customComponents,
+  disabled,
+  sectionVariant = 'card',
+}: FormSectionProps) {
   const gridColumns = context.schema.layout?.columns || 1;
   const gap = context.schema.layout?.gap || 4;
+
+  // `'card'` frames each section in a bordered, rounded, horizontally-padded box;
+  // `'plain'` drops all of that — plus the accordion's default bottom border — and
+  // instead separates stacked sections with a full-width hairline divider above
+  // every section except the first, so groups stay distinguishable without boxes
+  // (the host provides the frame + horizontal inset). Sections carry symmetric
+  // vertical padding (py-3 header / pb-3 content) so the inter-section rhythm
+  // (12px + divider + 12px) reads clearly against the tighter field gap; the
+  // parent list renders plain sections with no extra gap of its own.
+  const isPlain = sectionVariant === 'plain';
+  // Lives on each section's OUTERMOST element (the Accordion root for
+  // collapsible sections, not the AccordionItem — an item is always its
+  // Accordion's first child) so `first:` resolves against the sibling list.
+  const dividerClassName = 'border-t first:border-t-0';
+  const wrapperClassName = isPlain ? 'border-b-0' : 'border rounded-lg px-3';
+  // Plain: the chevron sits immediately right of the title (packed left with a
+  // small gap) rather than pushed to the far edge, and the header no longer
+  // underlines on hover — it reads as a section label, not a link. Semibold
+  // (vs the field labels' medium) keeps the header distinguishable from its own
+  // fields even when the collapse chevron is absent.
+  const triggerClassName = isPlain
+    ? 'justify-start gap-2 py-3 text-sm font-semibold hover:no-underline'
+    : 'text-sm font-medium';
 
   const fieldsGrid = (
     <div
@@ -456,9 +580,18 @@ function FormSection({ section, context, customComponents, disabled }: FormSecti
     </div>
   );
 
-  // If no title, render fields directly without wrapper
+  // If no title, render fields directly without a header. In the plain variant
+  // (properties panel) a titleless section is typically a tab's sole section,
+  // where the host drops the title/collapse chrome. Add a top inset equal to the
+  // accordion trigger's py-3 so the first field lines up with where a section
+  // header would sit — otherwise a single-section tab hugs the tab strip tighter
+  // than a multi-section tab whose leading header carries that padding.
   if (!section.title) {
-    return fieldsGrid;
+    return isPlain ? (
+      <div className={`${dividerClassName} pb-3 pt-3`}>{fieldsGrid}</div>
+    ) : (
+      fieldsGrid
+    );
   }
 
   // Shared inner content (without padding - wrapper handles that)
@@ -476,28 +609,41 @@ function FormSection({ section, context, customComponents, disabled }: FormSecti
     const defaultValue = section.defaultExpanded !== false ? [section.id] : [];
 
     return (
-      <Accordion type="multiple" defaultValue={defaultValue}>
-        <AccordionItem value={section.id} className="border rounded-lg px-3">
-          <AccordionTrigger className="text-sm font-medium">{section.title}</AccordionTrigger>
-          {/* AccordionContent adds pb-4 pt-0 wrapper internally */}
-          <AccordionContent>{innerContent}</AccordionContent>
+      <Accordion
+        type="multiple"
+        defaultValue={defaultValue}
+        className={isPlain ? dividerClassName : undefined}
+      >
+        <AccordionItem value={section.id} className={wrapperClassName}>
+          <AccordionTrigger className={triggerClassName}>{section.title}</AccordionTrigger>
+          {/* AccordionContent adds pb-4 pt-0 internally; plain tightens it to pb-3. */}
+          <AccordionContent className={isPlain ? 'pb-3' : undefined}>
+            {innerContent}
+          </AccordionContent>
         </AccordionItem>
       </Accordion>
     );
   }
 
-  // Non-collapsible section - match AccordionItem/Trigger/Content structure exactly
+  // Non-collapsible section - match Accordion structure exactly, including the
+  // plain variant's divider + tightened header/content padding.
   return (
-    <div className="border rounded-lg px-3">
+    <div className={isPlain ? dividerClassName : wrapperClassName}>
       {/* Match AccordionPrimitive.Header + Trigger structure */}
       <div className="flex">
-        <div className="flex flex-1 items-center justify-between py-4 text-sm font-medium">
+        <div
+          className={
+            isPlain
+              ? 'flex flex-1 items-center justify-start gap-2 py-3 text-sm font-semibold'
+              : 'flex flex-1 items-center justify-between py-4 text-sm font-medium'
+          }
+        >
           {section.title}
         </div>
       </div>
-      {/* Match AccordionContent: outer has text-sm, inner has pb-4 pt-0 */}
+      {/* Match AccordionContent: outer has text-sm, inner has pb-4 pt-0 (pb-3 in plain) */}
       <div className="text-sm">
-        <div className="pb-4 pt-0">{innerContent}</div>
+        <div className={isPlain ? 'pb-3 pt-0' : 'pb-4 pt-0'}>{innerContent}</div>
       </div>
     </div>
   );
