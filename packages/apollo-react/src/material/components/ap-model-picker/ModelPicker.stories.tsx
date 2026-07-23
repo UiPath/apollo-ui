@@ -363,6 +363,30 @@ export const AdminCanManageByo: Story = {
   },
 };
 
+export const DeleteWithConfirmation: Story = {
+  name: 'Admin: delete asks for confirmation',
+  render: Controlled,
+  args: {
+    variant: 'searchable',
+    models: MOCK_MODELS,
+    canManageByo: true,
+    onDeleteModel: (model: DiscoveryModel) => {
+      // eslint-disable-next-line no-console
+      console.log('[story] confirmed delete of', model.modelId);
+    },
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Pass `onDeleteModel` and BYO rows gain a delete action. The picker ' +
+          'always shows a confirmation dialog naming the configuration before ' +
+          'invoking the handler — deletion affects every consumer in the tenant.',
+      },
+    },
+  },
+};
+
 export const ViewerCannotManageByo: Story = {
   name: 'Viewer: read-only BYO',
   render: Controlled,
