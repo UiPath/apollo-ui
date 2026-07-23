@@ -1,0 +1,16 @@
+{
+  "name": "apollo-vertex-slack",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Standalone Slack Socket Mode listener for the Invoice Processing demo. Isolated from the pnpm workspace so it depends only on public npm packages.",
+  "scripts": {
+    "start": "node --env-file=../.env server.js",
+    "reset-demo": "node --env-file=../.env reset-demo.js"
+  },
+  "dependencies": {
+    "@slack/bolt": "^4.4.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
