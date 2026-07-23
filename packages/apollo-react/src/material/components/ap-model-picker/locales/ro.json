@@ -1,1 +1,6 @@
-{}
+{
+  "modelPicker.deleteConfirm.title": "Delete custom model",
+  "modelPicker.deleteConfirm.message": "This permanently deletes the \"{name}\" configuration for everyone in this tenant. This action cannot be undone.",
+  "modelPicker.deleteConfirm.cancel": "Cancel",
+  "modelPicker.deleteConfirm.confirm": "Delete"
+}

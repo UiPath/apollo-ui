@@ -253,7 +253,7 @@ describe('<ModelPicker>', () => {
     }
   });
 
-  it('renders a delete row action on BYO rows when onDeleteModel is provided', async () => {
+  it('delete row action asks for confirmation before invoking onDeleteModel', async () => {
     const user = userEvent.setup();
     const onDeleteModel = vi.fn();
     renderPicker(
@@ -267,9 +267,18 @@ describe('<ModelPicker>', () => {
     );
     await user.click(screen.getByRole('button', { expanded: false }));
     const deleteButton = await screen.findByRole('button', { name: /delete configuration/i });
+
+    // Cancel: nothing happens.
     await user.click(deleteButton);
+    await user.click(await screen.findByRole('button', { name: /cancel/i }));
+    expect(onDeleteModel).not.toHaveBeenCalled();
+
+    // Confirm: the host handler runs with the BYO row. Opening the dialog
+    // closes the popup, so reopen it once the dialog's aria-hidden lifts.
+    await user.click(await screen.findByRole('button', { expanded: false }));
+    await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+    await user.click(await screen.findByRole('button', { name: /^delete$/i }));
     expect(onDeleteModel).toHaveBeenCalledTimes(1);
-    // Called with the BYO model row.
     expect(onDeleteModel.mock.calls[0][0]).toMatchObject({ modelSubscriptionType: 'BYOMAdded' });
   });
 

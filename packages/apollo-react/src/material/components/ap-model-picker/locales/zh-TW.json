@@ -41,5 +41,9 @@
   "modelPicker.useCustomModel.title": "Use custom model",
   "modelPicker.tag.deprecating.tooltip": "Will be replaced by {replacement}",
   "modelPicker.empty.noMatch": "No models match \"{query}\".",
-  "modelPicker.empty.noModels": "No models available."
+  "modelPicker.empty.noModels": "No models available.",
+  "modelPicker.deleteConfirm.title": "Delete custom model",
+  "modelPicker.deleteConfirm.message": "This permanently deletes the \"{name}\" configuration for everyone in this tenant. This action cannot be undone.",
+  "modelPicker.deleteConfirm.cancel": "Cancel",
+  "modelPicker.deleteConfirm.confirm": "Delete"
 }

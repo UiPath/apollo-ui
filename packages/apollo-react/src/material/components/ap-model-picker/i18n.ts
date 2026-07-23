@@ -161,6 +161,30 @@ export const ROW_ACTIONS = {
 } as const;
 
 /* ──────────────────────────────────────────────────────────────────────
+ * Delete confirmation
+ * ─────────────────────────────────────────────────────────────────── */
+
+export const DELETE_CONFIRM = {
+  title: msg({
+    id: 'modelPicker.deleteConfirm.title',
+    message: 'Delete custom model',
+  }),
+  message: msg({
+    id: 'modelPicker.deleteConfirm.message',
+    message:
+      'This permanently deletes the "{name}" configuration for everyone in this tenant. This action cannot be undone.',
+  }),
+  cancel: msg({
+    id: 'modelPicker.deleteConfirm.cancel',
+    message: 'Cancel',
+  }),
+  confirm: msg({
+    id: 'modelPicker.deleteConfirm.confirm',
+    message: 'Delete',
+  }),
+} as const;
+
+/* ──────────────────────────────────────────────────────────────────────
  * Footer CTA
  * ─────────────────────────────────────────────────────────────────── */
 
