@@ -50,6 +50,7 @@ export function NodePropertyPanel({
   contentInset = '1.5rem',
   children,
   headerExtra,
+  sectionVariant,
 }: NodePropertyPanelProps) {
   const hasNodeHeader = !!(nodeLabel || nodeCategory || nodeIcon || action);
 
@@ -137,6 +138,7 @@ export function NodePropertyPanel({
               schema={formSchema}
               plugins={plugins}
               stepVariant="tabs"
+              sectionVariant={sectionVariant}
               onSubmit={onSubmit}
               disabled={disabled}
               className="flex flex-col gap-4 pb-6 pt-3 [padding-inline:var(--mf-content-inset)]"

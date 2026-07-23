@@ -29,6 +29,13 @@ export interface NodePropertyPanelProps {
    * verbatim to the underlying single form instance.
    */
   plugins?: FormPlugin[];
+  /**
+   * Visual treatment for each form section, forwarded to `MetadataForm`.
+   * `'card'` (default) frames every section in a bordered box; `'plain'` drops
+   * the border/rounding/horizontal padding so sections read as flush headers —
+   * for hosts that already frame the panel and want a borderless list.
+   */
+  sectionVariant?: 'card' | 'plain';
   /** Called when the form is submitted (only when the schema defines a submit action). */
   onSubmit?: (data: unknown) => void | Promise<void>;
   /** Disables all fields (e.g. read-only nodes). */

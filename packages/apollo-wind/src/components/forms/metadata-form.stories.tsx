@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 import {
   Controller,
   type FieldValues,
@@ -874,6 +875,134 @@ export const TabbedSteps: Story = {
   args: {
     schema: tabbedNodeSchema,
     stepVariant: 'tabs',
+  },
+};
+
+// A tabbed node schema exercising both section shapes the properties panel
+// produces: Parameters carries two titled, collapsible sections (where the two
+// sectionVariants differ visibly), while Error handling and Advanced each hold a
+// single untitled, non-collapsible section — mirroring the consumer rule that a
+// tab's lone section drops the collapse affordance and title because the tab
+// already labels it. `card` frames each section in its own bordered box; `plain`
+// renders flush headers separated by hairline dividers (the host frames the
+// panel).
+const sectionVariantSchema: FormSchema = {
+  id: 'section-variant-demo',
+  title: 'Node properties',
+  actions: [],
+  initialData: {
+    'inputs.method': 'GET',
+    'inputs.url': 'https://api.example.com/v1/orders',
+    'inputs.timeout': 30,
+    'inputs.errorHandlingEnabled': false,
+    nodeId: 'httpRequest1',
+    'display.label': 'HTTP request',
+  },
+  steps: [
+    {
+      id: 'parameters',
+      title: 'Parameters',
+      sections: [
+        {
+          id: 'connection',
+          title: 'Connection',
+          collapsible: true,
+          defaultExpanded: true,
+          fields: [
+            {
+              name: 'inputs.method',
+              type: 'select',
+              label: 'Method',
+              options: [
+                { label: 'GET', value: 'GET' },
+                { label: 'POST', value: 'POST' },
+                { label: 'PUT', value: 'PUT' },
+              ],
+            },
+            { name: 'inputs.url', type: 'text', label: 'URL' },
+          ],
+        },
+        {
+          id: 'options',
+          title: 'Options',
+          collapsible: true,
+          defaultExpanded: true,
+          fields: [{ name: 'inputs.timeout', type: 'number', label: 'Timeout (s)' }],
+        },
+      ],
+    },
+    {
+      id: 'error-handling',
+      title: 'Error handling',
+      sections: [
+        // Sole section in its tab: no title, no collapse — the tab labels it.
+        {
+          id: 'error',
+          fields: [
+            {
+              name: 'inputs.errorHandlingEnabled',
+              type: 'switch',
+              label: 'Enable error handling',
+              description: 'Add an error output handle on the node to catch and handle failures.',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'advanced',
+      title: 'Advanced',
+      sections: [
+        // Sole section in its tab: no title, no collapse — the tab labels it.
+        {
+          id: 'general',
+          fields: [
+            { name: 'nodeId', type: 'text', label: 'ID', disabled: true },
+            { name: 'display.label', type: 'text', label: 'Label' },
+            { name: 'display.description', type: 'textarea', label: 'Description' },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+/**
+ * Section variants (card vs plain)
+ *
+ * Flip the toggle to compare the two `sectionVariant` treatments live. `card`
+ * (default) wraps each section in its own bordered, rounded box. `plain` drops
+ * the border, rounding, and horizontal padding so sections read as flush headers
+ * over their content. `plain` assumes the host already frames the panel, so the
+ * form is rendered inside a narrow panel-like container here to match that use
+ * case (the canvas node properties panel).
+ */
+export const SectionVariants: Story = {
+  render: (args) => {
+    const [plain, setPlain] = useState(true);
+    return (
+      // Canvas backdrop + panel frame matching the NodePropertyPanel stories:
+      // the canvas sits on `--surface` and the docked panel is a raised,
+      // subtly-bordered card (bg-surface-raised) floating over it. The variant
+      // toggle floats on the canvas, centered above the panel it controls.
+      <div className="flex flex-col items-center gap-6 rounded-lg bg-surface p-10">
+        <div className="flex items-center gap-2">
+          <Switch id="section-variant-toggle" checked={plain} onCheckedChange={setPlain} />
+          <Label htmlFor="section-variant-toggle">
+            Plain sections (host-framed) {'·'} currently{' '}
+            <code>sectionVariant="{plain ? 'plain' : 'card'}"</code>
+          </Label>
+        </div>
+        <div className="w-[380px] overflow-hidden rounded-2xl border border-border-subtle bg-surface-raised px-4 py-3 shadow-lg">
+          <MetadataForm
+            {...args}
+            schema={sectionVariantSchema}
+            stepVariant="tabs"
+            sectionVariant={plain ? 'plain' : 'card'}
+          />
+        </div>
+      </div>
+    );
   },
 };
 

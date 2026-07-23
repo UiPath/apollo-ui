@@ -1,9 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import { MetadataForm } from './metadata-form';
-import type { FormSchema } from './form-schema';
+import type { FormPlugin, FormSchema } from './form-schema';
 
 // Basic form schema for tests
 const basicSchema: FormSchema = {
@@ -417,6 +417,52 @@ describe('MetadataForm', () => {
       // TabbedStepForm renders nothing, so FormActions (and its default Submit) is suppressed.
       expect(screen.queryByRole('tab')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Submit' })).not.toBeInTheDocument();
+    });
+
+    it("badges a tab with the count of its errored fields, including a tab that isn't active", async () => {
+      // Seed an error on `field2`, which lives on the (inactive) Advanced tab.
+      const seedError: FormPlugin = {
+        name: 'seed-error',
+        version: '1.0.0',
+        onFormInit: (context) => {
+          context.form.setError('field2', { message: 'Bad value' });
+        },
+      };
+
+      render(<MetadataForm schema={tabbedSchema} stepVariant="tabs" plugins={[seedError]} />);
+
+      // The Advanced tab (not active) shows a "1" badge for its single errored field.
+      const advancedTab = await screen.findByRole('tab', { name: /Advanced/ });
+      await waitFor(() => expect(within(advancedTab).getByText('1')).toBeInTheDocument());
+
+      // The Parameters tab has no errored field, so it stays badge-free.
+      expect(screen.getByRole('tab', { name: 'Parameters' })).toBeInTheDocument();
+      expect(within(screen.getByRole('tab', { name: 'Parameters' })).queryByText('1')).toBeNull();
+    });
+
+    it('counts each issue of a composite field whose error is an array (not just the field)', async () => {
+      // A composite field (e.g. a connector editor) surfaces several issues at once,
+      // stored as an array of errors under one field name. The badge should reflect
+      // the issue count, not collapse the whole field to a single "1".
+      const seedArrayError: FormPlugin = {
+        name: 'seed-array-error',
+        version: '1.0.0',
+        onFormInit: (context) => {
+          context.form.setError('field1.0', { message: 'Channel is required' });
+          context.form.setError('field1.1', {
+            message: 'Timestamp is required',
+          });
+          context.form.setError('field1.2', { message: 'Message is required' });
+        },
+      };
+
+      render(<MetadataForm schema={tabbedSchema} stepVariant="tabs" plugins={[seedArrayError]} />);
+
+      // `field1` lives on Parameters; its three issues make the badge read "3".
+      const parametersTab = await screen.findByRole('tab', {
+        name: /Parameters/,
+      });
+      await waitFor(() => expect(within(parametersTab).getByText('3')).toBeInTheDocument());
     });
   });
 });
