@@ -105,7 +105,9 @@ export const SolutionTests = () => {
 
   if (selectedRun) {
     const test = tests.find((x) => x.Id === selectedRun.SolutionTestId);
-    const subjectId = test?.SubjectId ?? selectedRun.SolutionTestId;
+    // The test's display label (e.g. "Loan LOAN-…") — the run-details title subject.
+    const subjectId =
+      test?.TestName ?? test?.SubjectId ?? selectedRun.SolutionTestId;
     return (
       <RunDetails
         run={selectedRun}
