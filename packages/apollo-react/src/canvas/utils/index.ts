@@ -21,3 +21,4 @@ export * from './resource-operations';
 export * from './sequential';
 export * from './Storage';
 export * from './StyleUtil';
+export * from './workflow-layout';

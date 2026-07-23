@@ -5,7 +5,6 @@ import type {
   Node,
   NodeChange,
   NodeTypes,
-  OnMove,
   XYPosition,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
@@ -41,6 +40,8 @@ import {
   SequentialInsertPreviewNode,
   SequentialStepNode,
 } from './nodes';
+import { resolveFlowEdgeTypes } from './resolveFlowEdgeTypes';
+import { resolveFlowNodeComponent } from './resolveFlowNodeComponent';
 import { SequentialAccessibleList } from './SequentialAccessibleList';
 import type { SequentialCanvasProps } from './SequentialCanvas.types';
 import { SequentialCollapsedRowsProvider } from './SequentialCollapsedRowsContext';
@@ -65,6 +66,7 @@ import {
   resolveTailInsertionSlot,
   type SequentialMoveDirection,
 } from './sequentialMoveActions';
+import { useCanvasViewViewport } from './useCanvasViewViewport';
 import { SEQ_SYNTHETIC_ROW_IDS, useSequentialGraph } from './useSequentialGraph';
 import { toggleCollapsedStepIds, useSequentialKeyboard } from './useSequentialKeyboard';
 import { useSequentialMoveActionsValue } from './useSequentialMoveActionsValue';
@@ -145,6 +147,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   edges,
   view = 'sequential',
   sequenceLayoutOptions,
+  isSequenceNode,
   flowNodeTypes,
   flowEdgeTypes,
   onNodesChange,
@@ -236,6 +239,11 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   const isProjectedContainerNode = useCallback(
     (node: N) => isContainerNodeManifest(node.type ? registry?.getManifest(node.type) : undefined),
     [registry]
+  );
+
+  const isProjectedSequenceNode = useCallback(
+    (node: N) => (isSequenceNode ? isSequenceNode(node) : node.type !== 'stickyNote'),
+    [isSequenceNode]
   );
 
   const resolveBranchLabel = useCallback(
@@ -352,6 +360,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     onAddTrigger: isDesignMode && view === 'sequential' ? onAddTrigger : undefined,
     onPlaceholderAdd: isDesignMode && view === 'sequential' ? onPlaceholderAdd : undefined,
     isSequenceEdge,
+    isSequenceNode: isProjectedSequenceNode,
     isStartNode,
     isContainerNode: isProjectedContainerNode,
     resolveBranchLabel,
@@ -460,13 +469,16 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     if (flowNodeTypes) return flowNodeTypes;
     const types: NodeTypes = {};
     for (const key of nodeTypeKey.split('|')) {
-      if (key) types[key] = BaseNode;
+      if (key) {
+        types[key] = resolveFlowNodeComponent(registry?.getManifest(key));
+      }
     }
     types.default ??= BaseNode;
     return types;
-  }, [flowNodeTypes, nodeTypeKey]);
+  }, [flowNodeTypes, nodeTypeKey, registry]);
   const nodeTypes = view === 'sequential' ? sequentialNodeTypes : resolvedFlowNodeTypes;
-  const edgeTypes = view === 'sequential' ? EDGE_TYPES : flowEdgeTypes;
+  const resolvedFlowEdgeTypes = useMemo(() => resolveFlowEdgeTypes(flowEdgeTypes), [flowEdgeTypes]);
+  const edgeTypes = view === 'sequential' ? EDGE_TYPES : resolvedFlowEdgeTypes;
 
   // Change forwarding (seam 2): position/dimension changes and synthetic rows are
   // dropped; renames merge onto canonical; inserts + their healed edges pass
@@ -710,41 +722,16 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     ...remainingAddNodeManagerProps
   } = addNodeManagerProps ?? {};
 
-  // Per-view viewport save/restore (D11): track the sequential viewport into the
-  // optional context and restore it on mount, following the HierarchicalCanvas
-  // save/restore precedent applied to the view axis.
-  const handleMove = useCallback<OnMove>(
-    (_event, viewport) => seqView?.saveViewport(view, viewport),
-    [seqView, view]
-  );
-  const defaultViewport = seqView?.getViewport(view);
-
-  const previousViewRef = useRef(view);
-  useEffect(() => {
-    if (previousViewRef.current === view) return;
-    previousViewRef.current = view;
-    const saved = seqView?.getViewport(view);
-    if (saved) {
-      void reactFlow.setViewport(saved, { duration: 300 });
-    } else {
-      void reactFlow.fitView({ ...fitViewOptions, duration: 300 });
-    }
-  }, [view, seqView, reactFlow, fitViewOptions]);
-
-  // fitView on first entry (D3): BaseCanvas only runs its post-mount fitView
-  // when an `initialAutoLayout` is provided; without one the viewport stays at
-  // the raw {0,0,1} origin and the gutter, the Workflow start bar, and any
-  // tall graph's trailing rows render off-screen. Sequential positions are
-  // already deterministic (layoutSequence), so no real layout work is needed:
-  // a stable no-op is enough to trigger the fit and fade-in. Skip it only when
-  // this instance mounted with a saved viewport to restore (returning to a
-  // previously-panned sequential view), so the fit does not clobber the
-  // restored position. Captured once at mount so a later saveViewport does not
-  // flip the behavior mid-session.
-  const hadSavedViewportAtMount = useRef(defaultViewport !== undefined);
-  const noopInitialLayout = useCallback(() => {}, []);
-  const initialAutoLayout =
-    view === 'sequential' && !hadSavedViewportAtMount.current ? noopInitialLayout : undefined;
+  // Per-view viewport save/restore (D11). The hook keeps a local fallback so a
+  // standalone SequentialCanvas does not re-center on every toggle, and mirrors
+  // it into SequentialViewProvider when the host opts into persisted state.
+  const { onMove: handleMove, defaultViewport } = useCanvasViewViewport({
+    view,
+    reactFlow,
+    externalStore: seqView,
+    fitViewOptions,
+    fitOnMount: view === 'sequential',
+  });
 
   // Render every row into the DOM for reading-order a11y (D8), but only up to a
   // ceiling: past it, re-enable xyflow's viewport virtualization so a mount
@@ -789,11 +776,6 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
             onEdgesChange={handleEdgesChange}
             onMove={handleMove}
             defaultViewport={defaultViewport}
-            initialAutoLayout={initialAutoLayout}
-            // Sequential layout is deterministic (layoutSequence) and the
-            // initial fit is one-shot: never re-fit when a node is inserted or
-            // removed, so an edit never quietly zooms the canvas out (D3).
-            refitOnNodeSetChange={view !== 'sequential'}
           >
             {children}
             {view === 'sequential' && (

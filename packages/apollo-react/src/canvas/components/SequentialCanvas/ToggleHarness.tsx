@@ -2,9 +2,9 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useRef, useState } from 'react';
 import { BaseNode } from '../BaseNode/BaseNode';
+import { prepareCanvasViewTransition } from './prepareCanvasViewTransition';
 import { SequentialCanvas } from './SequentialCanvas';
 import { SequentialViewProvider, useSequentialView } from './SequentialViewContext';
-import { synthesizePositionsForFlow } from './synthesizePositionsForFlow';
 import { ViewSwitcher } from './ViewSwitcher';
 
 export interface ToggleHarnessProps {
@@ -20,8 +20,8 @@ const FLOW_NODE_TYPES = { default: BaseNode };
  * Minimal composition demonstrating the flow<->sequential toggle (D11): a single
  * canonical nodes/edges state, a ViewSwitcher, and one mounted SequentialCanvas
  * that swaps its derived arrays in place. On toggle back to flow, nodes inserted
- * while in sequential view (stamped `seqInserted`) get real positions via
- * synthesizePositionsForFlow, so the round-trip is lossless.
+ * while in sequential view are normalized and the canonical graph receives a
+ * deterministic left-to-right layout through prepareCanvasViewTransition.
  *
  * Used by tests and stories; not part of the public barrel (D13).
  */
@@ -51,12 +51,10 @@ function ToggleHarnessInner({
   edgesRef.current = edges;
   const handleViewChange = useCallback(
     (nextView: typeof view) => {
-      if (view === 'sequential' && nextView === 'flow') {
-        setNodes((current) => synthesizePositionsForFlow(current, edgesRef.current));
-      }
+      setNodes((current) => prepareCanvasViewTransition(nextView, current, edgesRef.current).nodes);
       setView(nextView);
     },
-    [view, setView]
+    [setView]
   );
 
   const onNodesChange = useCallback(

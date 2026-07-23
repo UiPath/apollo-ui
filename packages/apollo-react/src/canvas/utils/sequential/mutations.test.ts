@@ -214,6 +214,7 @@ describe('mutations', () => {
       const survivingIds = new Set(healed.nodes.map((n) => n.id));
       expect(survivingIds).toEqual(
         new Set([
+          WIREFRAME_NODE_IDS.trigger,
           WIREFRAME_NODE_IDS.http,
           WIREFRAME_NODE_IDS.javascript,
           WIREFRAME_NODE_IDS.sendMessage,

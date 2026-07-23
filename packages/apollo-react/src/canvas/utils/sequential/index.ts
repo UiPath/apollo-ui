@@ -1,3 +1,4 @@
+export * from './compatibility';
 export * from './fingerprint';
 export * from './layoutSequence';
 export * from './mutations';

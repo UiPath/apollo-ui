@@ -77,6 +77,8 @@ export interface UseSequentialGraphArgs<N extends Node, E extends Edge> {
   onPlaceholderAdd?: () => void;
   /** Registry-driven predicate excluding artifact/resource edges (see projectSequence). */
   isSequenceEdge?: (edge: E) => boolean;
+  /** Excludes presentation-only nodes while retaining them in the canonical graph. */
+  isSequenceNode?: (node: N) => boolean;
   /** Registry-driven trigger predicate; matching nodes collapse into the synthetic start row. */
   isStartNode?: (node: N) => boolean;
   /** Registry-driven predicate preserving empty manifest containers. */
@@ -134,7 +136,12 @@ export function deriveSequentialGraph<N extends Node, E extends Edge>(
 ): SequentialGraph<N, E> {
   const { nodes, edges } = args;
   const collapsed = args.collapsedStepIds ?? EMPTY_COLLAPSED;
-  const projection = projectSequence(nodes, edges, {
+  const sequenceNodes = args.isSequenceNode ? nodes.filter(args.isSequenceNode) : nodes;
+  const sequenceNodeIds = new Set(sequenceNodes.map((node) => node.id));
+  const sequenceEdges = edges.filter(
+    (edge) => sequenceNodeIds.has(edge.source) && sequenceNodeIds.has(edge.target)
+  );
+  const projection = projectSequence(sequenceNodes, sequenceEdges, {
     collapsedStepIds: collapsed,
     isSequenceEdge: args.isSequenceEdge as ((edge: Edge) => boolean) | undefined,
     isStartNode: args.isStartNode as ((node: Node) => boolean) | undefined,
@@ -587,6 +594,7 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
     onAddTrigger,
     onPlaceholderAdd,
     isSequenceEdge,
+    isSequenceNode,
     isStartNode,
     isContainerNode,
     resolveBranchLabel,
@@ -628,6 +636,10 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
     () => (inSequentialView ? predicateFingerprint(edges, isSequenceEdge, 1) : ''),
     [inSequentialView, edges, isSequenceEdge]
   );
+  const nodeInclusionFingerprint = useMemo(
+    () => (inSequentialView ? predicateFingerprint(nodes, isSequenceNode, 1) : ''),
+    [inSequentialView, nodes, isSequenceNode]
+  );
   const startNodeFingerprint = useMemo(
     () => (inSequentialView ? predicateFingerprint(nodes, isStartNode, 0) : ''),
     [inSequentialView, nodes, isStartNode]
@@ -661,7 +673,12 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
   // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the structural fingerprint by design (D12).
   const projection = useMemo(() => {
     if (view !== 'sequential') return null;
-    return projectSequence(nodes, edges, {
+    const sequenceNodes = isSequenceNode ? nodes.filter(isSequenceNode) : nodes;
+    const sequenceNodeIds = new Set(sequenceNodes.map((node) => node.id));
+    const sequenceEdges = edges.filter(
+      (edge) => sequenceNodeIds.has(edge.source) && sequenceNodeIds.has(edge.target)
+    );
+    return projectSequence(sequenceNodes, sequenceEdges, {
       collapsedStepIds: collapsed,
       isSequenceEdge: isSequenceEdge as ((edge: Edge) => boolean) | undefined,
       isStartNode: isStartNode as ((node: Node) => boolean) | undefined,
@@ -675,6 +692,7 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
     fingerprint,
     labelFingerprint,
     edgeInclusionFingerprint,
+    nodeInclusionFingerprint,
     startNodeFingerprint,
     containerNodeFingerprint,
     branchHandlesFingerprint,

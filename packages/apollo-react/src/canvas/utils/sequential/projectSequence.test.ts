@@ -620,7 +620,9 @@ describe('projectSequence', () => {
       const canonicalRowIds = new Set(
         projection.rows.filter((row) => !row.lanePlaceholder).map((row) => row.nodeId)
       );
-      expect(canonicalRowIds).toEqual(new Set(nodes.map((node) => node.id)));
+      expect(canonicalRowIds).toEqual(
+        new Set(nodes.filter((node) => node.type !== 'uipath.first-run').map((node) => node.id))
+      );
     });
   });
 });

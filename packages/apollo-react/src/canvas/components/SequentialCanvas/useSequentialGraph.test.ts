@@ -33,6 +33,7 @@ describe('deriveSequentialGraph', () => {
     expect(graph.nodes).toHaveLength(11);
     expect(graph.nodes[0]?.id).toBe(SEQ_START_ROW_ID);
     expect(graph.nodes[0]?.type).toBe(SEQ_START_NODE_TYPE);
+    expect(graph.nodes.some((node) => node.id === WIREFRAME_NODE_IDS.trigger)).toBe(false);
     expect(graph.nodes.at(-1)?.id).toBe(SEQ_PLACEHOLDER_ROW_ID);
     expect(graph.nodes.at(-1)?.type).toBe(SEQ_PLACEHOLDER_NODE_TYPE);
 
@@ -405,6 +406,35 @@ describe('deriveSequentialGraph', () => {
       targetHandle: SEQUENTIAL_BAR_HANDLE_IDS.target,
       data: { previewConnectionHandleId: 'input' },
     });
+  });
+});
+
+describe('presentation-only node preservation', () => {
+  it('omits excluded nodes and their edges from sequential without mutating canonical state', () => {
+    const { nodes, edges } = makeWireframeFixture();
+    const sticky: Node = {
+      id: 'note',
+      type: 'stickyNote',
+      position: { x: 900, y: 700 },
+      data: { content: 'Keep me in Flow' },
+    };
+    const annotationEdge: Edge = {
+      id: 'note-http',
+      source: sticky.id,
+      target: WIREFRAME_NODE_IDS.http,
+    };
+
+    const graph = deriveSequentialGraph({
+      nodes: [...nodes, sticky],
+      edges: [...edges, annotationEdge],
+      view: 'sequential',
+      isSequenceNode: (node) => node.type !== 'stickyNote',
+    });
+
+    expect(graph.nodes.some((node) => node.id === sticky.id)).toBe(false);
+    expect(graph.edges.some((edge) => edge.id === annotationEdge.id)).toBe(false);
+    expect(sticky.position).toEqual({ x: 900, y: 700 });
+    expect(graph.projection?.rows.filter((row) => !row.lanePlaceholder)).toHaveLength(7);
   });
 });
 

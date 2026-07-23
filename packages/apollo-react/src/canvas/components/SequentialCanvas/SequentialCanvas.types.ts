@@ -36,8 +36,15 @@ export interface SequentialCanvasProps<N extends Node = Node, E extends Edge = E
   view?: CanvasView;
   /** Optional sequential-view geometry overrides. Flow-view geometry is untouched. */
   sequenceLayoutOptions?: LayoutSequenceOptions;
-  /** Node/edge registrations used while `view="flow"`. */
+  /**
+   * Controls which canonical nodes participate in the sequential projection.
+   * Excluded presentation-only nodes remain untouched and reappear in Flow.
+   * Sticky notes are excluded by default.
+   */
+  isSequenceNode?: (node: N) => boolean;
+  /** Node registrations used while `view="flow"`. */
   flowNodeTypes?: NodeTypes;
+  /** Flow edge registrations merged over the standard `SequenceEdge` default. */
   flowEdgeTypes?: EdgeTypes;
   /** Synthetic rows are filtered out before forwarding. */
   onNodesChange?: OnNodesChange<N>;

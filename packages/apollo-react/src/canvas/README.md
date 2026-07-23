@@ -204,30 +204,43 @@ If you already use `@uipath/apollo-react/canvas/styles/variables.css` with shado
 
 ### Projection model
 
-The consumer keeps one canonical `nodes`/`edges` array. Flow-view positions (`node.position`) remain the persisted source of truth: `SequentialCanvas` derives a vertical layout from the graph's structure and renders that derived layout through `BaseCanvas`, but it never writes computed positions back onto the canonical nodes. Toggling from sequential back to flow is lossless because of this. The one exception is a node added while the sequential view is active: it has no meaningful flow position yet, so it is stamped `data.seqInserted` and given a real, non-overlapping position by `synthesizePositionsForFlow` the next time the canvas switches to flow view.
+The consumer keeps one canonical `nodes`/`edges` array. `SequentialCanvas` derives vertical geometry from graph structure and never writes that geometry back. Entering Flow through `prepareCanvasViewTransition` computes a deterministic left-to-right layout and updates only canonical presentation fields (`position` and container dimensions); ids, data, containment, handles, and edges are unchanged. Nodes added in Sequential are normalized during the same transition.
+
+Sequential is not a symmetric conversion for every graph. `prepareCanvasViewTransition('sequential', ...)` returns a compatibility report: exact graphs are safely editable, degraded graphs (cycles, multiple roots, unstructured merges, orphans) should be presented read-only, and malformed containment is unsupported. Presentation-only nodes and edges can be excluded from the projection and preserved in the canonical graph.
 
 ### Minimal usage
 
 ```tsx
+import { useState } from 'react';
+import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
+  prepareCanvasViewTransition,
   SequentialCanvas,
   useCanvasViewMode,
   ViewSwitcher,
 } from '@uipath/apollo-react/canvas';
 
-function MyFlow({ nodes, edges, onNodesChange, onEdgesChange }) {
+function MyFlow({ initialNodes, initialEdges }) {
   const [view, setView] = useCanvasViewMode('my-flow.view');
+  const [nodes, setNodes] = useState(initialNodes);
+  const [edges, setEdges] = useState(initialEdges);
+
+  const changeView = (nextView) => {
+    const transition = prepareCanvasViewTransition(nextView, nodes, edges);
+    setNodes(transition.nodes);
+    setView(nextView);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <ViewSwitcher value={view} onChange={setView} />
+      <ViewSwitcher value={view} onChange={changeView} />
       <SequentialCanvas
         view={view}
         mode="design"
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
+        onNodesChange={(changes) => setNodes((current) => applyNodeChanges(changes, current))}
+        onEdgesChange={(changes) => setEdges((current) => applyEdgeChanges(changes, current))}
       />
     </div>
   );

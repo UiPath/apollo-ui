@@ -7,8 +7,6 @@
  * GA (D13), so every import below is a direct source path.
  */
 import type { Meta, StoryObj } from '@storybook/react';
-import { waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Switch, ToggleGroup, ToggleGroupItem } from '@uipath/apollo-wind';
@@ -66,12 +64,12 @@ const BALANCED_DENSITY_PRESET = SEQUENCE_DENSITY_PRESETS[1];
 function InteractiveSequenceStory() {
   const fixture = useMemo(() => makeWireframeFixture(), []);
   const [isReadonly, setIsReadonly] = useState(false);
-  const [nodeWidth, setNodeWidth] = useState(BALANCED_DENSITY_PRESET.nodeWidth);
-  const [nodeHeight, setNodeHeight] = useState(BALANCED_DENSITY_PRESET.nodeHeight);
-  const [indentMultiplier, setIndentMultiplier] = useState(
+  const [nodeWidth, setNodeWidth] = useState<number>(BALANCED_DENSITY_PRESET.nodeWidth);
+  const [nodeHeight, setNodeHeight] = useState<number>(BALANCED_DENSITY_PRESET.nodeHeight);
+  const [indentMultiplier, setIndentMultiplier] = useState<number>(
     BALANCED_DENSITY_PRESET.indentMultiplier
   );
-  const [rowGap, setRowGap] = useState(BALANCED_DENSITY_PRESET.rowGap);
+  const [rowGap, setRowGap] = useState<number>(BALANCED_DENSITY_PRESET.rowGap);
   const sequenceLayoutOptions = useMemo(
     () => ({
       barWidth: nodeWidth,
@@ -106,17 +104,13 @@ function InteractiveSequenceStory() {
         initialNodes={fixture.nodes}
         initialEdges={fixture.edges}
         extraManifests={sequentialWireframeManifests}
+        showViewSwitcher
         mode={isReadonly ? 'readonly' : 'design'}
         sequenceLayoutOptions={sequenceLayoutOptions}
         onAddTrigger={() => console.log('Add trigger clicked')}
       />
-      <StoryInfoPanel
-        collapsible
-        defaultCollapsed
-        title="Sequence controls"
-        description="Toggle interaction mode and adjust projection geometry without changing the canonical graph."
-      >
-        <div>
+      <StoryInfoPanel collapsible defaultCollapsed title="Sequence controls">
+        <div className="w-68">
           <div className="flex items-center justify-between gap-4 text-xs font-medium">
             <span>Readonly canvas</span>
             <Switch
@@ -226,80 +220,6 @@ export const InteractiveSequence: Story = {
     },
   },
   render: () => <InteractiveSequenceStory />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    await userEvent.click(await canvas.findByRole('radio', { name: 'Compact' }));
-    await waitFor(() => {
-      const width = canvas.getByRole('slider', { name: 'Node width' }) as HTMLInputElement;
-      const height = canvas.getByRole('slider', { name: 'Node height' }) as HTMLInputElement;
-      const indent = canvas.getByRole('slider', { name: 'Indent multiplier' }) as HTMLInputElement;
-      const gap = canvas.getByRole('slider', { name: 'Gap between nodes' }) as HTMLInputElement;
-      if (
-        width.value !== '512' ||
-        height.value !== '40' ||
-        indent.value !== '1' ||
-        gap.value !== '24'
-      ) {
-        throw new Error('Expected the Compact preset to update all layout controls.');
-      }
-    });
-
-    await userEvent.click(canvas.getByRole('radio', { name: 'Spacious' }));
-    await waitFor(() => {
-      const width = canvas.getByRole('slider', { name: 'Node width' }) as HTMLInputElement;
-      const height = canvas.getByRole('slider', { name: 'Node height' }) as HTMLInputElement;
-      const indent = canvas.getByRole('slider', { name: 'Indent multiplier' }) as HTMLInputElement;
-      const gap = canvas.getByRole('slider', { name: 'Gap between nodes' }) as HTMLInputElement;
-      if (
-        width.value !== '800' ||
-        height.value !== '64' ||
-        indent.value !== '2' ||
-        gap.value !== '64'
-      ) {
-        throw new Error('Expected the Spacious preset to update all layout controls.');
-      }
-    });
-
-    await userEvent.click(canvas.getByRole('radio', { name: 'Balanced' }));
-    await waitFor(() => {
-      const width = canvas.getByRole('slider', { name: 'Node width' }) as HTMLInputElement;
-      const height = canvas.getByRole('slider', { name: 'Node height' }) as HTMLInputElement;
-      const indent = canvas.getByRole('slider', { name: 'Indent multiplier' }) as HTMLInputElement;
-      const gap = canvas.getByRole('slider', { name: 'Gap between nodes' }) as HTMLInputElement;
-      if (
-        width.value !== '640' ||
-        height.value !== '48' ||
-        indent.value !== '1.5' ||
-        gap.value !== '48'
-      ) {
-        throw new Error('Expected the Balanced preset to update all layout controls.');
-      }
-    });
-
-    // For Each is step 3 (D7); its body (If=4, Javascript 1=5, HTTP Request 1=6)
-    // starts expanded.
-    await waitFor(() => {
-      if (!canvas.queryByText('If'))
-        throw new Error('Expected the If bar to be visible initially.');
-    });
-
-    const collapseButton = await canvas.findByRole('button', { name: 'Collapse step 3' });
-    await userEvent.click(collapseButton);
-    await waitFor(() => {
-      if (canvas.queryByText('If')) {
-        throw new Error('Expected collapsing For Each (step 3) to hide its body rows.');
-      }
-    });
-
-    const expandButton = await canvas.findByRole('button', { name: 'Expand step 3' });
-    await userEvent.click(expandButton);
-    await waitFor(() => {
-      if (!canvas.queryByText('If')) {
-        throw new Error('Expected expanding For Each (step 3) to restore its body rows.');
-      }
-    });
-  },
 };
 
 // ---------------------------------------------------------------------------

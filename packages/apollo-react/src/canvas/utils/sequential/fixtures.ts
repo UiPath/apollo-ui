@@ -50,18 +50,20 @@ function edge(
 
 /**
  * The wireframe reference graph:
- *   HTTP Request -> Javascript -> For Each [ If -> Then: Javascript 1 / Else: HTTP Request 1 ] -> Send Message to User
+ *   Trigger -> HTTP Request -> Javascript -> For Each [ If -> Then: Javascript 1 / Else: HTTP Request 1 ] -> Send Message to User
  *
  * `For Each` is a container; `If` is its sole body child; the If's two branches
  * both wire back to the container's `continue` handle (loop iteration), so they
  * dead-end at the container boundary with no in-body merge. The synthetic start
- * bar + trailing placeholder are injected view-only by the assembly, not by the projection.
+ * bar replaces the canonical trigger in Sequential; the trailing placeholder is
+ * injected view-only. Flow renders the same trigger as its manifest-defined circle.
  *
  * Expected projection: 7 numbered rows (HTTP=1, Javascript=2, For Each=3, If=4,
  * Javascript 1=5, HTTP Request 1=6, Send Message=7); depths 0,0,0,1,2,2,0; six
  * connectors (three `step`, three `branch-entry`: Body/Then/Else); no diagnostics.
  */
 export const WIREFRAME_NODE_IDS = {
+  trigger: 'trigger',
   http: 'http',
   javascript: 'javascript',
   forEach: 'for-each',
@@ -74,6 +76,7 @@ export const WIREFRAME_NODE_IDS = {
 export function makeWireframeFixture(): GraphFixture {
   const ids = WIREFRAME_NODE_IDS;
   const nodes: Node[] = [
+    node(ids.trigger, 'uipath.first-run', 'Workflow start', { y: -200 }),
     node(ids.http, 'uipath.http-request', 'HTTP Request', { y: 0 }),
     node(ids.javascript, 'uipath.script', 'Javascript', { y: 200 }),
     node(ids.forEach, 'uipath.control-flow.foreach', 'For Each', { y: 400 }),
@@ -83,6 +86,7 @@ export function makeWireframeFixture(): GraphFixture {
     node(ids.elseHttp, 'uipath.http-request', 'HTTP Request 1', { parentId: ids.forEach, y: 240 }),
   ];
   const edges: Edge[] = [
+    edge('e-trigger-http', ids.trigger, 'output', ids.http, 'input'),
     edge('e-http-js', ids.http, 'output', ids.javascript, 'input'),
     edge('e-js-foreach', ids.javascript, 'success', ids.forEach, 'input'),
     edge('e-foreach-if', ids.forEach, 'start', ids.ifNode, 'input'),

@@ -1,4 +1,9 @@
 export { SequentialCanvas } from './SequentialCanvas';
+export type {
+  CanvasViewTransitionResult,
+  PrepareCanvasViewTransitionOptions,
+} from './prepareCanvasViewTransition';
+export { prepareCanvasViewTransition } from './prepareCanvasViewTransition';
 export type { SequentialCanvasProps, ViewSwitcherProps } from './SequentialCanvas.types';
 export type {
   SequentialViewContextValue,
