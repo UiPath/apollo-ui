@@ -36,6 +36,17 @@ export interface NodePropertyPanelProps {
    * for hosts that already frame the panel and want a borderless list.
    */
   sectionVariant?: 'card' | 'plain';
+  /**
+   * Controlled active tab id for a tabbed (multi-step) schema. Persist it
+   * across node switches to keep the user on the same tab; an id absent from
+   * the current node's tabs falls back to the first tab. Omit for uncontrolled.
+   */
+  activeStepId?: string;
+  /**
+   * Fires with the tab id whenever the user selects a tab, in both controlled
+   * and uncontrolled mode. Pair it with `activeStepId` to persist the selection.
+   */
+  onActiveStepChange?: (stepId: string) => void;
   /** Called when the form is submitted (only when the schema defines a submit action). */
   onSubmit?: (data: unknown) => void | Promise<void>;
   /** Disables all fields (e.g. read-only nodes). */

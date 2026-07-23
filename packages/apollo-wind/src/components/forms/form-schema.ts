@@ -339,6 +339,14 @@ export interface FormStep {
   validation?: 'onChange' | 'onBlur' | 'onSubmit';
   canSkip?: boolean;
   conditions?: FieldCondition[]; // Show/hide entire step
+  /**
+   * Message shown (in the `tabs` step variant) when this step has no visible
+   * sections. A step that sets this stays in the tab bar even while empty and
+   * renders the message in place of its content — e.g. a "Parameters" tab that
+   * always shows, reading "No available parameters" for a node with no inputs.
+   * Steps without both sections and `emptyState` are hidden from the tab bar.
+   */
+  emptyState?: string;
 }
 
 export interface FormAction {

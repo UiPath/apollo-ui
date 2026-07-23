@@ -881,7 +881,7 @@ export const TabbedSteps: Story = {
 // A tabbed node schema exercising both section shapes the properties panel
 // produces: Parameters carries two titled, collapsible sections (where the two
 // sectionVariants differ visibly), while Error handling and Advanced each hold a
-// single untitled, non-collapsible section — mirroring the consumer rule that a
+// single untitled, non-collapsible section. That mirrors the consumer rule that a
 // tab's lone section drops the collapse affordance and title because the tab
 // already labels it. `card` frames each section in its own bordered box; `plain`
 // renders flush headers separated by hairline dividers (the host frames the
@@ -935,7 +935,7 @@ const sectionVariantSchema: FormSchema = {
       id: 'error-handling',
       title: 'Error handling',
       sections: [
-        // Sole section in its tab: no title, no collapse — the tab labels it.
+        // Sole section in its tab: no title, no collapse. The tab labels it.
         {
           id: 'error',
           fields: [
@@ -953,7 +953,7 @@ const sectionVariantSchema: FormSchema = {
       id: 'advanced',
       title: 'Advanced',
       sections: [
-        // Sole section in its tab: no title, no collapse — the tab labels it.
+        // Sole section in its tab: no title, no collapse. The tab labels it.
         {
           id: 'general',
           fields: [

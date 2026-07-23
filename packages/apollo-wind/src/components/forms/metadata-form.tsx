@@ -57,6 +57,19 @@ interface MetadataFormProps {
    * (single-page, wizard, tabs).
    */
   sectionVariant?: 'card' | 'plain';
+  /**
+   * Controlled active step id for the `tabs` step variant. When provided the
+   * caller owns which tab is selected — persist it across remounts to keep the
+   * user on the same tab when switching between nodes. If the id isn't one of
+   * the currently visible steps, the form shows the first tab without mutating
+   * the caller's value. Omit for uncontrolled (internal) tab state.
+   */
+  activeStepId?: string;
+  /**
+   * Fires with the step id whenever the user selects a tab, in both controlled
+   * and uncontrolled mode. Pair it with `activeStepId` to persist the selection.
+   */
+  onActiveStepChange?: (stepId: string) => void;
 }
 
 // Stable default to prevent re-renders
@@ -71,6 +84,8 @@ export function MetadataForm({
   autoComplete,
   stepVariant = 'wizard',
   sectionVariant = 'card',
+  activeStepId,
+  onActiveStepChange,
 }: MetadataFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [customComponents, setCustomComponents] = useState<
@@ -209,6 +224,8 @@ export function MetadataForm({
             customComponents={customComponents}
             disabled={disabled}
             sectionVariant={sectionVariant}
+            activeStepId={activeStepId}
+            onActiveStepChange={onActiveStepChange}
             onReset={() => reset()}
           />
         );
@@ -278,7 +295,7 @@ function SinglePageForm({
   );
 
   return (
-    // Plain sections carry their own vertical rhythm (py-3 + divider), so the
+    // Plain sections carry their own vertical rhythm (py-4 + divider), so the
     // list adds no extra gap; card sections are spaced apart as separate boxes.
     <div className={sectionVariant === 'plain' ? undefined : 'space-y-2'}>
       {visibleSections.map((section) => (
@@ -377,6 +394,8 @@ function MultiStepForm({
 
 interface TabbedStepFormProps extends SinglePageFormProps {
   onReset: () => void;
+  activeStepId?: string;
+  onActiveStepChange?: (stepId: string) => void;
 }
 
 function TabbedStepForm({
@@ -386,20 +405,28 @@ function TabbedStepForm({
   disabled,
   sectionVariant,
   onReset,
+  activeStepId,
+  onActiveStepChange,
 }: TabbedStepFormProps) {
   const steps = schema.steps || [];
 
-  // Hide steps that have no sections or whose conditions evaluate to false, so a
-  // node that doesn't supply a given step (e.g. a trigger with no parameters)
-  // never renders an empty tab.
-  const visibleSteps = steps.filter(
-    (step) =>
-      step.sections.length > 0 && (!step.conditions || context.evaluateConditions(step.conditions))
-  );
+  // Hide steps whose conditions evaluate to false, or that would render nothing:
+  // a step needs at least one *currently visible* section (sections hidden by
+  // their own `section.conditions` don't count, matching the render path and the
+  // error-count walk below) or an `emptyState` message. A step with an
+  // `emptyState` stays in the tab bar even while empty (e.g. an always-shown
+  // "Parameters" tab) and renders that message in place of its sections.
+  const visibleSteps = steps.filter((step) => {
+    if (step.conditions && !context.evaluateConditions(step.conditions)) return false;
+    const hasVisibleSection = step.sections.some(
+      (section) => !section.conditions || context.evaluateConditions(section.conditions)
+    );
+    return hasVisibleSection || step.emptyState !== undefined;
+  });
 
   // Subscribe to validation state so a tab's error badge updates live as errors
-  // are set/cleared. Without this subscription the getters on `context.errors`
-  // don't re-render this component when only the error state changes.
+  // are set/cleared. This subscription is what re-renders the component (and
+  // feeds `getFieldState` below) when only the error state changes.
   const formState = useFormState({ control: context.form.control });
 
   // Per-step error count = number of validation issues on that step. A plain
@@ -434,18 +461,30 @@ function TabbedStepForm({
     errorCountByStepId[step.id] = count;
   }
 
-  // Clamp the active tab to a still-visible step so a step that disappears
-  // (condition flips, manifest swap) can't strand the form on a dead tab.
-  const [activeTab, setActiveTab] = useState<string>('');
-  const currentTab = visibleSteps.some((step) => step.id === activeTab)
-    ? activeTab
+  // Active tab: controlled by the caller when `activeStepId` is provided (so it
+  // can persist across remounts — e.g. keep the user on the same tab when
+  // switching nodes), otherwise internal state. Either way it's clamped to a
+  // still-visible step, so a step that disappears (condition flips, manifest
+  // swap, or a node-specific tab absent on the next node) falls back to the
+  // first tab instead of stranding the form on a dead tab.
+  const [internalTab, setInternalTab] = useState<string>('');
+  const controlled = activeStepId !== undefined;
+  const requestedTab = controlled ? activeStepId : internalTab;
+  const currentTab = visibleSteps.some((step) => step.id === requestedTab)
+    ? requestedTab
     : (visibleSteps[0]?.id ?? '');
+  const selectTab = (stepId: string) => {
+    if (!controlled) setInternalTab(stepId);
+    onActiveStepChange?.(stepId);
+  };
 
-  // Persist the clamp into state: once a selected step disappears we settle on the
-  // fallback, so a later reappearance doesn't snap the user back to the old tab.
+  // Uncontrolled only: settle internal state on the clamped value so a step that
+  // disappeared and later reappears doesn't snap the user back to it. In
+  // controlled mode the caller owns the value and we never overwrite it, so a
+  // node-specific tab stays remembered for nodes that do have it.
   useEffect(() => {
-    if (activeTab !== currentTab) setActiveTab(currentTab);
-  }, [activeTab, currentTab]);
+    if (!controlled && internalTab !== currentTab) setInternalTab(currentTab);
+  }, [controlled, internalTab, currentTab]);
 
   if (visibleSteps.length === 0) return null;
 
@@ -453,7 +492,7 @@ function TabbedStepForm({
     <>
       <Tabs
         value={currentTab}
-        onValueChange={setActiveTab}
+        onValueChange={selectTab}
         className="flex min-h-0 flex-1 flex-col gap-1"
       >
         {/* Pinned tab bar: shrink-0 keeps it under the panel header while the
@@ -493,36 +532,50 @@ function TabbedStepForm({
           </ScrollableTabsList>
         </div>
 
-        {visibleSteps.map((step) => (
-          // The active tab is the scroll container so the tab bar above stays
-          // pinned and the scrollbar sits at the panel edge; the inner wrapper
-          // carries the content inset + bottom padding. Plain drops space-y-2
-          // (sections self-space); card keeps the 2-unit rhythm between boxes.
-          <TabsContent key={step.id} value={step.id} className="mt-0 min-h-0 flex-1 overflow-auto">
-            <div
-              className={
-                sectionVariant === 'plain'
-                  ? 'pb-6 [padding-inline:var(--mf-content-inset,0px)]'
-                  : 'space-y-2 pb-6 [padding-inline:var(--mf-content-inset,0px)]'
-              }
+        {visibleSteps.map((step) => {
+          const stepSections = step.sections.filter(
+            (section) => !section.conditions || context.evaluateConditions(section.conditions)
+          );
+          return (
+            // The active tab is the scroll container so the tab bar above stays
+            // pinned and the scrollbar sits at the panel edge; the inner wrapper
+            // carries the content inset + bottom padding. Plain drops space-y-2
+            // (sections self-space) and gets its leading whitespace from the first
+            // section's own py-4/pt-4; card boxes have none, so the wrapper adds a
+            // matching pt-4 to keep the first card off the tab strip by the same
+            // amount. A step with no visible sections renders its `emptyState`.
+            <TabsContent
+              key={step.id}
+              value={step.id}
+              className="mt-0 min-h-0 flex-1 overflow-auto"
             >
-              {step.sections
-                .filter(
-                  (section) => !section.conditions || context.evaluateConditions(section.conditions)
-                )
-                .map((section) => (
-                  <FormSection
-                    key={section.id}
-                    section={section}
-                    context={context}
-                    customComponents={customComponents}
-                    disabled={disabled}
-                    sectionVariant={sectionVariant}
-                  />
-                ))}
-            </div>
-          </TabsContent>
-        ))}
+              {stepSections.length === 0 && step.emptyState !== undefined ? (
+                <div className="pt-4 text-sm text-muted-foreground [padding-inline:var(--mf-content-inset,0px)]">
+                  {step.emptyState}
+                </div>
+              ) : (
+                <div
+                  className={
+                    sectionVariant === 'plain'
+                      ? 'pb-6 [padding-inline:var(--mf-content-inset,0px)]'
+                      : 'space-y-2 pb-6 pt-4 [padding-inline:var(--mf-content-inset,0px)]'
+                  }
+                >
+                  {stepSections.map((section) => (
+                    <FormSection
+                      key={section.id}
+                      section={section}
+                      context={context}
+                      customComponents={customComponents}
+                      disabled={disabled}
+                      sectionVariant={sectionVariant}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          );
+        })}
       </Tabs>
       <FormActions schema={schema} context={context} onReset={onReset} />
     </>
@@ -590,12 +643,15 @@ function FormSection({
     </div>
   );
 
-  // If no title, render fields directly without a header. In the plain variant
-  // (properties panel) a titleless section is typically a tab's sole section,
-  // where the host drops the title/collapse chrome. Add a top inset equal to the
-  // accordion trigger's py-3 so the first field lines up with where a section
-  // header would sit — otherwise a single-section tab hugs the tab strip tighter
-  // than a multi-section tab whose leading header carries that padding.
+  // Titleless section: render fields directly, with no header (the sole-section
+  // case where the host drops the title/collapse chrome). Card keeps its
+  // long-standing behavior — bare fields, no extra padding — so existing
+  // single-page/wizard layouts (e.g. contactFormSchema) are unchanged. Plain
+  // adds the header-aligned pt-4/pb-4 and the between-sections divider so a
+  // titleless section lines up with where a section header would sit. Any
+  // tab-specific top inset for the card variant is supplied by the
+  // TabbedStepForm content wrapper's pt-4, not here, so it can't leak into
+  // non-tabbed layouts.
   if (!section.title) {
     return isPlain ? (
       <div className={`${dividerClassName} pb-4 pt-4`}>{fieldsGrid}</div>
@@ -626,17 +682,15 @@ function FormSection({
       >
         <AccordionItem value={section.id} className={wrapperClassName}>
           <AccordionTrigger className={triggerClassName}>{section.title}</AccordionTrigger>
-          {/* AccordionContent adds pb-4 pt-0 internally; plain tightens it to pb-3. */}
-          <AccordionContent className={isPlain ? 'pb-4' : undefined}>
-            {innerContent}
-          </AccordionContent>
+          {/* AccordionContent adds pb-4 pt-0 internally, which both variants keep. */}
+          <AccordionContent>{innerContent}</AccordionContent>
         </AccordionItem>
       </Accordion>
     );
   }
 
   // Non-collapsible section - match Accordion structure exactly, including the
-  // plain variant's divider + tightened header/content padding.
+  // plain variant's divider and left-packed semibold header.
   return (
     <div className={isPlain ? dividerClassName : wrapperClassName}>
       {/* Match AccordionPrimitive.Header + Trigger structure */}
@@ -651,9 +705,9 @@ function FormSection({
           {section.title}
         </div>
       </div>
-      {/* Match AccordionContent: outer has text-sm, inner has pb-4 pt-0 (pb-3 in plain) */}
+      {/* Match AccordionContent: outer has text-sm, inner has pb-4 pt-0 */}
       <div className="text-sm">
-        <div className={isPlain ? 'pb-4 pt-0' : 'pb-4 pt-0'}>{innerContent}</div>
+        <div className="pb-4 pt-0">{innerContent}</div>
       </div>
     </div>
   );
