@@ -1,3 +1,12 @@
+## [@uipath/apollo-wind-v2.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.29.0...@uipath/apollo-wind@2.30.0) (2026-07-23)
+
+### Features
+
+* **apollo-wind:** add support for passing containers for portal ([1ad44aa](https://github.com/UiPath/apollo-ui/commit/1ad44aaa7025476459dcafbf2e3f0c26a838a566))
+* **apollo-wind:** copilot suggested changes ([ffa68a7](https://github.com/UiPath/apollo-ui/commit/ffa68a78ed2f80a5607832c184cc1e98ad9caf46))
+* **apollo-wind:** suggested changes ([0a92ead](https://github.com/UiPath/apollo-ui/commit/0a92ead1ac0cceb699eea5368164991d2bf98cdb))
+* **apollo-wind:** use tailwind and remove export ([e513fad](https://github.com/UiPath/apollo-ui/commit/e513fad9229a34db19585b95aa9dc92eb23e4244))
+
 ## [@uipath/apollo-wind-v2.29.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.28.0...@uipath/apollo-wind@2.29.0) (2026-07-20)
 
 ### Features

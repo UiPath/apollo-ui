@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-wind",
-  "version": "2.29.0",
+  "version": "2.30.0",
   "description": "UiPath wind design system - A Tailwind CSS based React component library",
   "type": "module",
   "main": "./dist/index.js",
