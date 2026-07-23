@@ -57,10 +57,24 @@ export interface ByomDetails {
   byoConfigurationId?: string;
 }
 
-export interface ModelCostDetails {
+/** Token costs in cents per million tokens (the gateway's unit). */
+export interface ModelFlatCosts {
   inputTokenCost?: number;
   outputTokenCost?: number;
-  currency?: string;
+  cacheReadInputTokenCost?: number;
+  cacheWriteInputTokenCost?: number;
+}
+
+export interface ModelTieredCost extends ModelFlatCosts {
+  minimumTokens?: number;
+  maximumTokens?: number;
+}
+
+export interface ModelCostDetails {
+  /** `Flat` | `Tiered` */
+  pricingType?: string;
+  flatCosts?: ModelFlatCosts;
+  tieredCosts?: ModelTieredCost[];
 }
 
 export interface ModelDetails {
