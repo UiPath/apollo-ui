@@ -50,6 +50,13 @@ export type UseEdgeGeometryArgs = {
    * arrow polygon would have filled.
    */
   hideArrowHead?: boolean;
+  /**
+   * Corner radius (px) for the rounded (smooth-step) waypoint path. Defaults to
+   * `EDGE_CONSTANTS.BORDER_RADIUS`. `createRoundedPath` clamps it to half the
+   * shorter adjacent segment, so an over-large value degrades gracefully on
+   * short segments. Only affects `waypoint` routing.
+   */
+  borderRadius?: number;
 };
 
 export type EdgeGeometry = {
@@ -93,6 +100,7 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
     autoRouted = false,
     enableSegments = true,
     hideArrowHead = false,
+    borderRadius = EDGE_CONSTANTS.BORDER_RADIUS,
   } = args;
 
   const arrowOffset = ARROW_OFFSETS[targetPosition];
@@ -132,8 +140,8 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
   );
 
   const waypointPath = useMemo(
-    () => createRoundedPath(pathPoints, EDGE_CONSTANTS.BORDER_RADIUS),
-    [pathPoints]
+    () => createRoundedPath(pathPoints, borderRadius),
+    [pathPoints, borderRadius]
   );
 
   const handle = useEdgePath({

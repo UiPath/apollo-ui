@@ -195,3 +195,71 @@ If you already use `@uipath/apollo-react/canvas/styles/variables.css` with shado
 **Cause:** The Tailwind base layer includes `* { border-color: var(--color-border-de-emp) }` and `body { background-color: var(--background) }`. These may conflict with existing component styles.
 
 **Fix:** These rules are in `@layer base`, so they lose to un-layered styles. If conflicts persist in Shadow DOM, override with more specific selectors in your injected CSS.
+
+---
+
+## Sequential view
+
+`SequentialCanvas` is an n8n/Zapier-style vertical projection of the same flow graph, built on the existing `BaseCanvas`. It reuses the same node manifests, icons, execution status, validation badges, and theming as the flow view; only the layout is different. A `ViewSwitcher` lets the host toggle a canvas between the free-form `flow` layout and the vertical `sequential` layout.
+
+### Projection model
+
+The consumer keeps one canonical `nodes`/`edges` array. `SequentialCanvas` derives vertical geometry from graph structure and never writes that geometry back. Entering Flow through `prepareCanvasViewTransition` computes a deterministic left-to-right layout and updates only canonical presentation fields (`position` and container dimensions); ids, data, containment, handles, and edges are unchanged. Nodes added in Sequential are normalized during the same transition.
+
+Sequential is not a symmetric conversion for every graph. `prepareCanvasViewTransition('sequential', ...)` returns a compatibility report: exact graphs are safely editable, degraded graphs (cycles, multiple roots, unstructured merges, orphans) should be presented read-only, and malformed containment is unsupported. Presentation-only nodes and edges can be excluded from the projection and preserved in the canonical graph.
+
+### Minimal usage
+
+```tsx
+import { useState } from 'react';
+import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  prepareCanvasViewTransition,
+  SequentialCanvas,
+  useCanvasViewMode,
+  ViewSwitcher,
+} from '@uipath/apollo-react/canvas';
+
+function MyFlow({ initialNodes, initialEdges }) {
+  const [view, setView] = useCanvasViewMode('my-flow.view');
+  const [nodes, setNodes] = useState(initialNodes);
+  const [edges, setEdges] = useState(initialEdges);
+
+  const changeView = (nextView) => {
+    const transition = prepareCanvasViewTransition(nextView, nodes, edges);
+    setNodes(transition.nodes);
+    setView(nextView);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <ViewSwitcher value={view} onChange={changeView} />
+      <SequentialCanvas
+        view={view}
+        mode="design"
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={(changes) => setNodes((current) => applyNodeChanges(changes, current))}
+        onEdgesChange={(changes) => setEdges((current) => applyEdgeChanges(changes, current))}
+      />
+    </div>
+  );
+}
+```
+
+`SequentialCanvas` supplies its own `ReactFlowProvider` and keeps one `BaseCanvas` mounted while `view` changes. For a worked example, including per-view viewport save/restore, see `SequentialCanvasStoryHarness` and the `Wireframe` story.
+
+### Degraded graphs
+
+Not every graph is a clean, structured sequence. The projection degrades gracefully instead of failing:
+
+| Shape | Rendering |
+|---|---|
+| Multiple roots or disconnected components | Stacked lanes ordered by flow-view y |
+| Unstructured merge (a node with more than one incoming edge) | Placed under its first incomer; the extra incoming edge draws a dashed goto connector |
+| Cycles other than a loop's `loopBack` handle | A dashed, arrowless goto connector closes the cycle |
+| Orphans (no sequence edges at all) | A de-emphasized trailing section after the terminal placeholder |
+
+Every case renders something rather than crashing or dropping a node: the cycle guard prevents infinite recursion, and unreachable or disconnected nodes are always appended as trailing rows. The toggle is never blocked.
+
+Both CSS delivery patterns described earlier in this guide (PostCSS scanning and precompiled Shadow DOM injection) cover the sequential view's markup with no extra configuration, since it is built entirely from Tailwind utility classes scanned from this package's `dist/canvas`.

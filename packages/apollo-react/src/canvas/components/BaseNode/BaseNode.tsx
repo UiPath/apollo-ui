@@ -22,6 +22,8 @@ import {
   NODE_INNER_ICON_RATIO,
   NODE_INNER_RADIUS_RATIO,
   NODE_INNER_SHAPE_RATIO,
+  SEQ_BAR_HEIGHT,
+  SEQ_BAR_WIDTH,
 } from '../../constants';
 import { useNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
@@ -40,6 +42,7 @@ import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import { SmartHandle, SmartHandleProvider } from '../ButtonHandle/SmartHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
+import type { NodeMenuItem } from '../NodeContextMenu';
 import { InitialsBadge } from '../shared/InitialsBadge';
 import { NodeToolbar } from '../Toolbar';
 import type {
@@ -49,6 +52,7 @@ import type {
   NodeStatusContext,
 } from './BaseNode.types';
 import { BaseBadgeSlot } from './BaseNodeBadgeSlot';
+import { BaseNodeBar } from './BaseNodeBar';
 import { useBaseNodeOverrideConfig } from './BaseNodeConfigContext';
 import { BaseContainer } from './BaseNodeContainer';
 import { BaseInnerShape } from './BaseNodeInnerShape';
@@ -81,8 +85,48 @@ const getIntrinsicHeight = (
   return NODE_HEIGHT_DEFAULT;
 };
 
-const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
-  const { type, data, selected, id, dragging, width, parentId } = props;
+export type BaseNodeProps = NodeProps<Node<BaseNodeData>> & {
+  /**
+   * Visual variant, selected by the wrapping node component (never by wire
+   * schema or node data, per plan D2). 'card' (default) is the free-form canvas
+   * node; 'bar' is the horizontal Sequential Canvas row. The existing card /
+   * circle / rectangle code paths are reached only when this is 'card'.
+   */
+  renderVariant?: 'card' | 'bar';
+  /**
+   * Bar variant only: true when this Sequential Canvas row
+   * is a collapsed collapsible step. Passed straight through to BaseNodeBar's
+   * `stacked` prop; the wrapping SequentialStepNode reads it from view-local
+   * context (never node.data, keeping the clone reference-stable per D12).
+   * Ignored for `renderVariant="card"`.
+   */
+  stacked?: boolean;
+  /**
+   * Bar variant only: extra kebab menu items appended after the
+   * resolved toolbar actions (D3 -- no new `BaseNodeOverrideConfig` field,
+   * just a direct passthrough prop), with a divider between the two groups
+   * when both are non-empty. `SequentialStepNode` computes these from the
+   * Sequential Canvas move-actions context (`useSequentialMoveMenuItems`).
+   * Ignored for `renderVariant="card"` (the card has no kebab of its own).
+   */
+  extraMenuItems?: NodeMenuItem[];
+};
+
+const BaseNodeComponent = (props: BaseNodeProps) => {
+  const {
+    type,
+    data,
+    selected,
+    id,
+    dragging,
+    width,
+    height,
+    parentId,
+    renderVariant = 'card',
+    stacked,
+    extraMenuItems,
+  } = props;
+  const isBar = renderVariant === 'bar';
 
   // Read runtime configuration from context (provided by parent node components)
   const {
@@ -222,6 +266,27 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     }));
   }, [handleConfigurationsProp, manifest, data, id]);
 
+  // Manifest handle ids, split by direction, for the bar variant to expose as
+  // invisible anchor handles (in addition to the generic seq-source/seq-target
+  // it renders for derived connectors). A bar collapses every side to one
+  // visual point, but the Add Node pipeline's connection validator resolves the
+  // existing node's handle by id against its manifest, so the sequential insert
+  // preview must anchor on a REAL manifest handle id (e.g. 'output'/'input',
+  // or a branch's 'true'/'false') that the bar actually renders -- otherwise the
+  // lookup misses and every candidate is filtered out. Only computed for bars.
+  const barManifestHandleIds = useMemo(() => {
+    if (!isBar) return { sources: [] as string[], targets: [] as string[] };
+    const sources: string[] = [];
+    const targets: string[] = [];
+    for (const group of handleConfigurations) {
+      for (const handle of group.handles) {
+        if (handle.type === 'source') sources.push(handle.id);
+        else if (handle.type === 'target') targets.push(handle.id);
+      }
+    }
+    return { sources, targets };
+  }, [isBar, handleConfigurations]);
+
   // Toolbar config resolution with priority: props > manifest
   const toolbarConfig = useMemo(() => {
     // Priority 1: Prop override (runtime callbacks)
@@ -251,6 +316,11 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // height. Pure (never reads the measured `height`); written to node.height below as
   // the authoritative size, so node content is expected to fit within it.
   const computedHeight = useMemo(() => {
+    // Bars use the sequential layout-owned height and skip the left/right
+    // handle-lane floor (they carry only top/bottom handles, which add no floor).
+    if (isBar) {
+      return height ?? SEQ_BAR_HEIGHT;
+    }
     const leftHandles = handleConfigurations
       .filter((config) => config.position === Position.Left && config.visible !== false)
       .reduce(
@@ -271,7 +341,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     const handleFloor = (leftRightHandles * 2 + 2) * GRID_SPACING;
 
     return Math.max(getIntrinsicHeight(!!footerComponent, footerVariant), handleFloor);
-  }, [handleConfigurations, footerComponent, footerVariant]);
+  }, [handleConfigurations, footerComponent, footerVariant, isBar, height]);
 
   // Write computedHeight to node.height and recalculate handle positions. Compare
   // against node.height (not the measured `height` prop) so a lagging measurement
@@ -317,7 +387,11 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // having per-component inline style objects.
   // ---------------------------------------------------------------------------
   const hasFooter = !!displayFooter;
-  const containerWidth = getContainerWidth(displayShape, width);
+  const containerWidth = isBar
+    ? width && width !== DEFAULT_NODE_SIZE && width !== DEFAULT_RECTANGLE_NODE_WIDTH
+      ? width
+      : SEQ_BAR_WIDTH
+    : getContainerWidth(displayShape, width);
   const containerHeight = computedHeight;
 
   const nodeVars = useMemo((): React.CSSProperties => {
@@ -464,7 +538,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       }
     }
     return { hasButton, hasLabel };
-  }, [toolbarPosition, handleConfigurations]);
+  }, [toolbarPosition, handleConfigurations, useSmartHandles]);
 
   // Offset the toolbar to clear whichever handle affordance is actually rendered
   // at its side — not merely configured. A shown add button stacks button + label
@@ -596,7 +670,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   if (!manifest) {
     return (
-      // biome-ignore lint/a11y/noStaticElementInteractions: canvas node interaction
       <div
         ref={containerRef}
         className="relative"
@@ -616,8 +689,47 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     );
   }
 
+  // Sequential Canvas bar variant (D2/D3): same resolved display, adornments,
+  // and toolbar as the card, rendered as a horizontal row. Corner badge slots
+  // and the floating NodeToolbar are intentionally not rendered for bars; the
+  // trailing group inside BaseNodeBar carries the status indicator and kebab.
+  if (isBar) {
+    return (
+      <BaseNodeBar
+        nodeId={id}
+        width={containerWidth}
+        height={computedHeight}
+        mode={mode}
+        selected={selected}
+        dragging={dragging}
+        disabled={disabled}
+        label={displayLabel}
+        subLabel={displaySubLabel}
+        labelTooltip={displayLabelTooltip}
+        labelBackgroundColor={displayLabelBackgroundColor}
+        icon={Icon}
+        loading={data.loading}
+        iconBackground={displayIconBackground}
+        iconColor={displayColor}
+        background={displayBackground}
+        shadow={displayShadow}
+        executionStatus={executionStatus}
+        validationStatus={validationState?.validationStatus}
+        suggestionType={suggestionType}
+        statusIndicator={adornments?.topRight}
+        toolbarConfig={toolbarConfig}
+        multipleNodesSelected={multipleNodesSelected}
+        stacked={stacked}
+        extraMenuItems={extraMenuItems}
+        manifestSourceHandleIds={barManifestHandleIds.sources}
+        manifestTargetHandleIds={barManifestHandleIds.targets}
+        onLabelChange={handleLabelChange}
+        onActionNeeded={onActionNeeded}
+      />
+    );
+  }
+
   const nodeContent = (
-    // biome-ignore lint/a11y/noStaticElementInteractions: canvas node interaction
     <div
       ref={containerRef}
       className="relative"
