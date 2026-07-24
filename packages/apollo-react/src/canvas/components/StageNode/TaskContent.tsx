@@ -179,6 +179,7 @@ export const TaskContent = memo(
             <CanvasTooltip content={runsTooltip} placement="top" hide={isDragging}>
               <Badge
                 variant="warning"
+                role="img"
                 aria-label={runsTooltip}
                 className="h-[14px] gap-px rounded-full px-1 py-0 text-[11px] leading-none [&>svg]:size-3"
               >
@@ -191,6 +192,7 @@ export const TaskContent = memo(
             <CanvasTooltip content={reworkTooltip} placement="top" hide={isDragging}>
               <Badge
                 variant="warning"
+                role="img"
                 aria-label={reworkTooltip}
                 className="h-[14px] rounded-full px-1 py-0 [&>svg]:size-3"
               >
