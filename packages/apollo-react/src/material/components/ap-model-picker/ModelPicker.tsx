@@ -917,43 +917,20 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           disablePortal={disablePortal}
           maxWidth="xs"
           // Destructive interrupt: announce as an alert dialog wired to its
-          // own title and description.
+          // own title and description. Visuals are deliberately left to the
+          // host's MUI theme so the dialog matches the product's other
+          // confirmation dialogs.
           role="alertdialog"
           aria-labelledby={`${id}-delete-title`}
           aria-describedby={`${id}-delete-description`}
           sx={{ zIndex: 1500 }}
-          PaperProps={{
-            sx: {
-              borderRadius: '10px',
-              border: '1px solid',
-              borderColor: `var(--color-border-de-emp, ${Colors.ColorGray300})`,
-              backgroundColor: `var(--color-background-raised, ${Colors.ColorWhite})`,
-              backgroundImage: 'none',
-              boxShadow: '0 12px 30px rgba(16, 24, 40, 0.10), 0 2px 6px rgba(16, 24, 40, 0.04)',
-              fontFamily: FontFamily.FontNormal,
-            },
-          }}
+          PaperProps={{ sx: { fontFamily: FontFamily.FontNormal } }}
         >
-          <DialogTitle
-            id={`${id}-delete-title`}
-            sx={{
-              fontFamily: FontFamily.FontNormal,
-              fontSize: 16,
-              fontWeight: 600,
-              color: `var(--color-foreground, ${Colors.ColorGray850})`,
-            }}
-          >
+          <DialogTitle id={`${id}-delete-title`} sx={{ fontFamily: 'inherit' }}>
             {_(DELETE_CONFIRM.title)}
           </DialogTitle>
           <DialogContent>
-            <DialogContentText
-              id={`${id}-delete-description`}
-              sx={{
-                fontFamily: FontFamily.FontNormal,
-                fontSize: 14,
-                color: `var(--color-foreground-de-emp, ${Colors.ColorGray550})`,
-              }}
-            >
+            <DialogContentText id={`${id}-delete-description`} sx={{ fontFamily: 'inherit' }}>
               {_({
                 ...DELETE_CONFIRM.message,
                 values: {
@@ -962,12 +939,22 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
               })}
             </DialogContentText>
           </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
+          <DialogActions>
             {/* Focus lands on the safe action for a destructive confirm. */}
-            <Button autoFocus onClick={() => setPendingDelete(null)}>
+            <Button
+              autoFocus
+              color="secondary"
+              disableElevation
+              onClick={() => setPendingDelete(null)}
+            >
               {_(DELETE_CONFIRM.cancel)}
             </Button>
-            <Button color="error" variant="contained" onClick={confirmPendingDelete}>
+            <Button
+              color="error"
+              variant="contained"
+              disableElevation
+              onClick={confirmPendingDelete}
+            >
               {_(DELETE_CONFIRM.confirm)}
             </Button>
           </DialogActions>
