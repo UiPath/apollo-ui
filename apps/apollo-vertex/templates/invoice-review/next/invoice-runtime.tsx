@@ -2,17 +2,17 @@
 
 import {
   createContext,
-  useEffect,
   type ReactNode,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
 import {
-  exceptionMeta,
-  runPredicates,
   type ArcState,
+  type AttestationRecord,
   type DetailCorrections,
+  exceptionMeta,
   type InvoiceDisposition,
   type InvoiceException,
   type InvoiceReview,
@@ -20,6 +20,8 @@ import {
   type PredicateBaseData,
   type RunEvent,
   type RunEventInput,
+  runPredicates,
+  type SuggestionFeedbackRecord,
   type WaitingRef,
 } from "./invoice-review-data";
 
@@ -39,6 +41,7 @@ const EMPTY: InvoiceRuntime = {
   surfaced: [],
   waiting: [],
   events: [],
+  attestations: [],
 };
 
 /** Stamp keys onto a batch of event inputs, continuing the log's index. */
@@ -150,10 +153,55 @@ interface RuntimeStore {
   revertDetail: (invoiceId: string, revertEvents: RunEventInput[]) => void;
   /**
    * Un-resolve a single exception committed via commitResolve. Removes it from
-   * resolvedIds so it reappears in the open set. Used by the undo toast after an
-   * attestation (verify) commits; the original resolved event stays in the log.
+   * resolvedIds so it reappears in the open set. When dataPatchRevert is supplied,
+   * also merges those values back into dataPatch (used by Link PO undo to restore
+   * the pre-link purchaseOrder/poPill). The original resolved event stays in the log.
    */
-  undoResolve: (invoiceId: string, excId: string) => void;
+  undoResolve: (
+    invoiceId: string,
+    excId: string,
+    dataPatchRevert?: Partial<InvoiceReview>,
+  ) => void;
+  /**
+   * Write an attestation record, run predicates against open exceptions with the
+   * updated attestations in base, and auto-resolve any whose condition is now
+   * satisfied — all in one atomic update. Returns the set of auto-resolved IDs so
+   * the caller can fire the undo toast.
+   */
+  addAttestation: (
+    invoiceId: string,
+    record: AttestationRecord,
+    context: { openExceptions: InvoiceException[]; base: PredicateBaseData },
+    events: RunEventInput[],
+  ) => { cleared: string[] };
+  /**
+   * Undo a kept-without-po attestation: removes the record and un-resolves the
+   * exception so it reappears in the open set. The original events stay in the log.
+   */
+  undoAttestation: (invoiceId: string, findingId: string) => void;
+  /**
+   * Write a suggestion feedback record and its associated timeline events atomically.
+   * For correction-path submissions, pass supersededProse to append it to the per-finding
+   * audit trail in the store (not rendered). The record itself is the deliverable.
+   */
+  addSuggestionFeedback: (
+    invoiceId: string,
+    record: SuggestionFeedbackRecord,
+    events: RunEventInput[],
+    supersededProse?: string,
+  ) => void;
+  /**
+   * Approve only if openCount + waitingCount = 0 at commit time. Returns true and
+   * sets the approved disposition; returns false without any state change if the
+   * guard fails. This is the authoritative gate — the button's disabled prop is
+   * only a visual hint. The caller should skip the seam stub if false is returned.
+   */
+  approveGated: (
+    invoiceId: string,
+    openCount: number,
+    waitingCount: number,
+    event: RunEventInput,
+  ) => boolean;
   /** Wipe all runtime state for every invoice and clear sessionStorage. Demo reset. */
   resetAllRuntimes: () => void;
   /** Read the transient arc animation state for an invoice (not persisted). */
@@ -245,10 +293,23 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
             ? Array.from(new Set([...cur.resolvedIds, ...patch.resolvedIds]))
             : cur.resolvedIds;
           let surfaced = cur.surfaced;
+          let surfacedBy = cur.surfacedBy ?? {};
           if (patch.surfaced?.length) {
             const existing = new Set(cur.surfaced.map((e) => e.id));
             const fresh = patch.surfaced.filter((e) => !existing.has(e.id));
-            if (fresh.length) surfaced = [...cur.surfaced, ...fresh];
+            if (fresh.length) {
+              surfaced = [...cur.surfaced, ...fresh];
+              // Record which primary resolved exception introduced these surfaced
+              // findings so undoResolve can purge them atomically.
+              const primaryId = patch.resolvedIds?.[0];
+              if (primaryId) {
+                const freshIds = fresh.map((e) => e.id);
+                surfacedBy = {
+                  ...surfacedBy,
+                  [primaryId]: [...(surfacedBy[primaryId] ?? []), ...freshIds],
+                };
+              }
+            }
           }
           const waiting = patch.unparkIds?.length
             ? cur.waiting.filter((w) => !patch.unparkIds?.includes(w.id))
@@ -271,6 +332,7 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
               ...cur,
               resolvedIds,
               surfaced,
+              surfacedBy,
               waiting,
               dataPatch,
               detailCorrections,
@@ -464,15 +526,112 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
           setCursorMap((prev) => ({ ...prev, [id]: firstReopened }));
         }
       },
-      undoResolve: (id, excId) =>
+      undoResolve: (id, excId, dataPatchRevert?) =>
         setMap((prev) => {
           const cur = prev[id] ?? EMPTY;
           if (!cur.resolvedIds.includes(excId)) return prev;
+          const dataPatch = dataPatchRevert
+            ? { ...cur.dataPatch, ...dataPatchRevert }
+            : cur.dataPatch;
+          // Retract any surfaced wave findings that were introduced by this resolution.
+          const waveIds = cur.surfacedBy?.[excId] ?? [];
+          const surfaced = waveIds.length
+            ? cur.surfaced.filter((e) => !waveIds.includes(e.id))
+            : cur.surfaced;
+          const surfacedBy = waveIds.length
+            ? Object.fromEntries(
+                Object.entries(cur.surfacedBy ?? {}).filter(
+                  ([k]) => k !== excId,
+                ),
+              )
+            : cur.surfacedBy;
           return {
             ...prev,
             [id]: {
               ...cur,
               resolvedIds: cur.resolvedIds.filter((rid) => rid !== excId),
+              dataPatch,
+              surfaced,
+              surfacedBy,
+            },
+          };
+        }),
+      addAttestation: (id, record, context, events) => {
+        let clearedResult: string[] = [];
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          const newAttestations = [...(cur.attestations ?? []), record];
+          const base: PredicateBaseData = {
+            ...context.base,
+            linkedPo: cur.dataPatch?.purchaseOrder as string | undefined,
+            attestations: newAttestations,
+          };
+          const { cleared } = runPredicates(
+            context.openExceptions,
+            cur.detailCorrections ?? {},
+            base,
+          );
+          clearedResult = cleared;
+          const autoResolveEvents: RunEventInput[] = cleared.map((cid) => {
+            const exc = context.openExceptions.find((e) => e.id === cid);
+            return {
+              kind: "resolved",
+              label: `${exc ? exceptionMeta(exc).label : "Issue"} cleared`,
+              sub: "Cleared automatically after attestation",
+              time: "Just now",
+              auto: true,
+              exception: exc,
+            };
+          });
+          const newResolvedIds = cleared.length
+            ? Array.from(new Set([...cur.resolvedIds, ...cleared]))
+            : cur.resolvedIds;
+          const allEvents: RunEventInput[] = [...events, ...autoResolveEvents];
+          return {
+            ...prev,
+            [id]: {
+              ...cur,
+              attestations: newAttestations,
+              resolvedIds: newResolvedIds,
+              events: [...cur.events, ...withKeys(id, cur.events, allEvents)],
+            },
+          };
+        });
+        return { cleared: clearedResult };
+      },
+      undoAttestation: (id, findingId) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          return {
+            ...prev,
+            [id]: {
+              ...cur,
+              attestations: (cur.attestations ?? []).filter(
+                (a) => a.findingId !== findingId,
+              ),
+              resolvedIds: cur.resolvedIds.filter((rid) => rid !== findingId),
+            },
+          };
+        }),
+      addSuggestionFeedback: (id, record, events, supersededProse) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          const newSuperseded = supersededProse
+            ? {
+                ...(cur.supersededProse ?? {}),
+                [record.findingId]: [
+                  ...(cur.supersededProse?.[record.findingId] ?? []),
+                  supersededProse,
+                ],
+              }
+            : cur.supersededProse;
+          return {
+            ...prev,
+            [id]: {
+              ...cur,
+              suggestionFeedback: [...(cur.suggestionFeedback ?? []), record],
+              supersededProse: newSuperseded,
+              events: [...cur.events, ...withKeys(id, cur.events, events)],
             },
           };
         }),
@@ -583,6 +742,22 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
             },
           };
         }),
+      approveGated: (id, openCount, waitingCount, event) => {
+        if (openCount + waitingCount > 0) return false;
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          const time = new Date().toISOString();
+          return {
+            ...prev,
+            [id]: {
+              ...cur,
+              disposition: { type: "approved", time },
+              events: [...cur.events, ...withKeys(id, cur.events, [event])],
+            },
+          };
+        });
+        return true;
+      },
       resetAllRuntimes: () => {
         try {
           sessionStorage.removeItem(STORAGE_KEY);

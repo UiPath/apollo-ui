@@ -149,6 +149,12 @@ export interface Suggestion {
    * different timeline events (e.g. "Corrected VAT" vs "Kept invoice VAT").
    */
   resolution?: Pick<ExceptionResolution, "label" | "sub" | "shortLabel">;
+  /**
+   * For suggest_po only: ordered candidate POs. The entry marked primary: true is
+   * the default selection; others appear in the chevron popover. The primary button
+   * label derives from the selected candidate — never hardcoded.
+   */
+  candidates?: { po: string; evidence: string; primary?: boolean }[];
 }
 
 export interface InvoiceException {
@@ -189,6 +195,11 @@ export interface InvoiceException {
     value: string;
     source: string;
   };
+  /**
+   * SEAM: canned re-generation result for the prototype. Rendered in the fix card
+   * after a correction-path feedback submission triggers a re-run.
+   */
+  regenResult?: { prose: string };
 }
 
 export interface AgentStep {
@@ -220,7 +231,12 @@ export interface InvoiceReview {
   /** ordered: invoice-level first, then by line, then loop-surfaced (append) */
   exceptions: InvoiceException[];
   /** what a re-check reports for this invoice; consumed once, then deduped */
-  revalidation?: { cleared: string[]; surfaced: InvoiceException[] };
+  revalidation?: {
+    cleared: string[];
+    surfaced: InvoiceException[];
+    /** per-exception activation guards evaluated at surface time */
+    conditions?: Record<string, { requiresLinkedPo?: string }>;
+  };
   /** seam for the rollup card (section C): present only when a single root cause explains all findings */
   rootCause?: { summary: string; secondaryLine: string; poReceiptDate: string };
 }
@@ -269,6 +285,10 @@ export interface DetailCorrections {
 export interface PredicateBaseData {
   vat?: string;
   lines?: Array<{ qty?: number; poQty?: number }>;
+  /** Linked PO from a committed Link PO action — satisfies the missing-po predicate. */
+  linkedPo?: string;
+  /** Attestation records for this invoice — satisfies missing-po via kept-without-po. */
+  attestations?: AttestationRecord[];
 }
 
 /** An exception parked by a routing action, awaiting a corrected invoice/data. */
@@ -302,7 +322,8 @@ export interface RouteOwner {
 export type InvoiceDisposition =
   | { type: "approved"; time: string }
   | { type: "held"; reason?: string; time: string }
-  | { type: "rejected"; reason?: string; note?: string; time: string };
+  | { type: "rejected"; reason?: string; note?: string; time: string }
+  | { type: "waiting"; time: string };
 
 /**
  * The unified timeline event log lives in the runtime store, so the whole
@@ -386,6 +407,20 @@ export type RunEventInput =
       label: string;
       sub: string;
       time: string;
+    }
+  | {
+      /** a reviewer-authored annotation not tied to a resolution (e.g. feedback shared) */
+      kind: "person";
+      label: string;
+      sub: string;
+      time: string;
+    }
+  | {
+      /** an agent-initiated action not tied to a resolution (e.g. suggest solutions re-ran) */
+      kind: "regen";
+      label: string;
+      sub: string;
+      time: string;
     };
 
 /** A logged event: an input plus the store-assigned key (intersection over the
@@ -446,6 +481,15 @@ export interface InvoiceRuntime {
   };
   /** Transient arc animation state set by startArcResolve; not persisted. */
   arcState?: ArcState;
+  /** Attestation records written by reviewer actions (e.g. kept-without-po). */
+  attestations?: AttestationRecord[];
+  /** Maps resolved exception id → ids of surfaced exceptions it introduced.
+   *  Used by undoResolve to retract wave findings when a resolution is undone. */
+  surfacedBy?: Record<string, string[]>;
+  /** Suggestion feedback records written via the Share feedback flow. */
+  suggestionFeedback?: SuggestionFeedbackRecord[];
+  /** Maps findingId → superseded prose history for the audit trail (not rendered). */
+  supersededProse?: Record<string, string[]>;
 }
 
 export type ArcPhase = "pre" | "claim" | "act" | "confirm" | "release";
@@ -456,6 +500,33 @@ export interface ArcState {
   lineNums: readonly number[];
   phase: ArcPhase;
   count: number;
+}
+
+export type AttestationKind = "kept-without-po";
+
+export interface AttestationRecord {
+  findingId: string;
+  kind: AttestationKind;
+  by: "person";
+  at: string;
+}
+
+/** Taxonomy ids for the correction-branch chips (stored, not rendered). */
+export type ChipId =
+  | "rule-incorrect"
+  | "rule-misapplied"
+  | "wrong-value"
+  | "value-not-found";
+
+/** A suggestion feedback record written via the Share feedback flow. */
+export interface SuggestionFeedbackRecord {
+  findingId: string;
+  sentiment: "right" | "correction";
+  chips: ChipId[];
+  note?: string;
+  shareWithUiPath: boolean;
+  by: "person";
+  at: string;
 }
 
 export function exceptionMeta(e: InvoiceException): {
@@ -525,6 +596,12 @@ export type ResolutionPredicate = (
 export const RESOLUTION_PREDICATES: Partial<
   Record<ExceptionType, ResolutionPredicate>
 > = {
+  // Open if no PO has been linked AND no kept-without-po attestation exists.
+  "missing-po": (exc, _corrections, base) =>
+    !base.linkedPo &&
+    !base.attestations?.some(
+      (a) => a.findingId === exc.id && a.kind === "kept-without-po",
+    ),
   "qty-over-invoiced": (exc, corrections) => {
     if (exc.scope.level !== "line") return true;
     const lineNum = exc.scope.line; // 1-indexed
@@ -1045,21 +1122,40 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             data: { po: "PO-5123" },
             reasoning:
               "PO-5123 (Acme Supply Co., facility supplies) matches the vendor, amount, and date on this invoice.",
+            candidates: [
+              {
+                po: "PO-5123",
+                evidence: "Vendor, amount, and date match",
+                primary: true,
+              },
+              { po: "PO-4988", evidence: "Same vendor · open balance" },
+            ],
           },
           { type: "suggest_supplier", data: {} },
         ],
+        // resolution.dataPatch is intentionally absent: the Link PO path builds
+        // dataPatch dynamically from the chosen candidate, so hardcoding PO-5123
+        // here would produce a stale patch when the reviewer picks PO-4988.
         resolution: {
-          label: "Linked PO-5123",
+          label: "Linked PO",
           sub: "Missing PO, resolved by you",
-          shortLabel: "PO-5123 linked",
-          dataPatch: {
-            poPill: { label: "PO-5123", tone: "neutral" },
-            purchaseOrder: "PO-5123",
-          },
+          shortLabel: "PO linked",
+        },
+        // Canned no-change regen: honest acknowledgment is the flagship beat.
+        regenResult: {
+          prose:
+            "Re-ran with your note. No better match found; PO-5123 remains the closest (vendor, amount, and date match). Sending to the supplier may be the fastest path.",
         },
       },
     ],
-    revalidation: { cleared: [], surfaced: [ACME_PRICE_LINE2, ACME_TAX] },
+    revalidation: {
+      cleared: [],
+      surfaced: [ACME_PRICE_LINE2, ACME_TAX],
+      // exc-acme-price-l2 compares invoice lines against PO-5123 specifically.
+      // Linking PO-4988 produces no price-discrepancy data, so only surface it
+      // when the reviewer commits PO-5123.
+      conditions: { "exc-acme-price-l2": { requiresLinkedPo: "PO-5123" } },
+    },
   },
 
   // 2. Outside PO period (lead) + High value (waiting).
@@ -2102,13 +2198,21 @@ export function getSuggestions(exception: InvoiceException): Suggestion[] {
  */
 export function revalidateException(
   invoiceId: string,
+  context?: { linkedPo?: string },
 ): Promise<{ cleared: string[]; surfaced: InvoiceException[] }> {
   const reval = invoiceReviewMap[invoiceId]?.revalidation;
   return new Promise((resolve) => {
     setTimeout(() => {
+      const allSurfaced = reval?.surfaced ?? [];
+      const conditions = reval?.conditions ?? {};
+      const surfaced = allSurfaced.filter((exc) => {
+        const cond = conditions[exc.id];
+        if (!cond?.requiresLinkedPo) return true;
+        return cond.requiresLinkedPo === context?.linkedPo;
+      });
       resolve({
         cleared: reval?.cleared ?? [],
-        surfaced: reval?.surfaced ?? [],
+        surfaced,
       });
     }, 1200);
   });
@@ -2236,6 +2340,63 @@ export function buildResume(): {
     },
   };
 }
+
+export function waitInvoice(invoiceId: string): void {
+  // eslint-disable-next-line no-console
+  console.info(`[waitInvoice] ${invoiceId}`);
+}
+
+export function sendBackInvoice(invoiceId: string, reason?: string): void {
+  // eslint-disable-next-line no-console
+  console.info(`[sendBackInvoice] ${invoiceId}${reason ? ` — ${reason}` : ""}`);
+}
+
+export function buildWaiting(review: InvoiceReview): {
+  disposition: InvoiceDisposition;
+  event: RunEventInput;
+} {
+  const time = new Date().toISOString();
+  return {
+    disposition: { type: "waiting", time },
+    event: {
+      kind: "disposition",
+      label: "Marked as waiting",
+      sub: "Waiting on an external reply",
+      time: "Just now",
+      actor: "reviewer",
+    },
+  };
+}
+
+export function buildSendBack(
+  review: InvoiceReview,
+  reason?: string,
+  note?: string,
+): {
+  event: RunEventInput;
+} {
+  const trimmed = reason?.trim();
+  const trimmedNote = note?.trim();
+  return {
+    event: {
+      kind: "disposition",
+      label: "Sent back",
+      sub: trimmed
+        ? `${trimmed}${trimmedNote ? ` · ${trimmedNote}` : ""}`
+        : "Returned to submitter for correction",
+      time: "Just now",
+      actor: "reviewer",
+    },
+  };
+}
+
+export const SEND_BACK_REASONS = [
+  "Incorrect amount",
+  "Missing supporting documents",
+  "Wrong cost center",
+  "Vendor details mismatch",
+  "Other",
+] as const;
 
 /**
  * SEAM CONTRACT (exception-resolution-loop workstream). The OUTBOUND leg: send

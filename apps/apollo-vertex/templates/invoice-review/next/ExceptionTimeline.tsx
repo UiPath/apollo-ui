@@ -8,8 +8,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Pencil,
   Pause,
+  Pencil,
   UserRound,
   UserRoundCheck,
   X,
@@ -23,6 +23,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,20 +33,22 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
+import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/registry/popover/popover";
-import { AiMark } from "@/registry/ai-mark/ai-mark";
-import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
 import {
   type AgentStep,
-  approveInvoice,
   type ArcState,
+  type AttestationRecord,
+  approveInvoice,
   buildApproval,
   buildHold,
   buildResume,
+  type DetailCorrections,
   EXCEPTION_META,
   type ExceptionType,
   exceptionMeta,
@@ -55,7 +58,6 @@ import {
   generateSupplierEmailBody,
   HOLD_REASONS,
   holdInvoice,
-  type DetailCorrections,
   type InvoiceException,
   type InvoiceReview,
   isRouteSuggestion,
@@ -70,12 +72,13 @@ import {
   routeMeta,
   routeOwner,
   routeToOwner,
+  runPredicates,
   type Suggestion,
+  type SuggestionFeedbackRecord,
   type SupplierEmailDraft,
   scopeLabel,
   sendSupplierEmail,
 } from "./invoice-review-data";
-import { toast } from "sonner";
 import { useInvoiceRuntime } from "./invoice-runtime";
 import { ReasonDialog } from "./ReasonDialog";
 import { SuggestedFixCard } from "./SuggestedFixCard";
@@ -314,7 +317,7 @@ function ChildRow({
       </span>
     ) : (
       <Avatar className="size-4 shrink-0">
-        <AvatarFallback className="text-[8px] font-medium text-muted-foreground">
+        <AvatarFallback className="text-[11px] font-medium text-muted-foreground">
           {REVIEWER_INITIALS}
         </AvatarFallback>
       </Avatar>
@@ -610,6 +613,10 @@ function LiveExceptionContent({
   aimGhostValue,
   onAim,
   applying,
+  onAttest,
+  onFeedback,
+  onFeedbackRegen,
+  revisionCount,
 }: {
   exception: InvoiceException;
   isNew: boolean;
@@ -625,6 +632,14 @@ function LiveExceptionContent({
   onAim?: (correction: DetailCorrections | null) => void;
   /** Fix action is mid-arc (button shows spinner, disabled). */
   applying?: boolean;
+  onAttest?: (record: AttestationRecord) => void;
+  onFeedback?: (
+    record: SuggestionFeedbackRecord,
+    personEvent: RunEventInput,
+    supersededProse?: string,
+  ) => void;
+  onFeedbackRegen?: (sparkleEvent: RunEventInput) => void;
+  revisionCount?: number;
 }) {
   const isJudgment = exception.suggestions.length === 0;
   // Each section fades and slides in a beat after the previous one.
@@ -703,6 +718,12 @@ function LiveExceptionContent({
               onResolve={onResolve}
               onAim={onAim}
               applying={applying}
+              onAttest={onAttest}
+              exceptionId={exception.id}
+              onFeedback={onFeedback}
+              onFeedbackRegen={onFeedbackRegen}
+              regenResult={exception.regenResult}
+              revisionCount={revisionCount}
             />
           </div>
         ))}
@@ -797,6 +818,10 @@ function Stage({
   aimGhostValue,
   onAim,
   applying,
+  onAttest,
+  onFeedback,
+  onFeedbackRegen,
+  revisionCount,
 }: {
   exception: InvoiceException;
   isNew: (e: InvoiceException) => boolean;
@@ -806,6 +831,14 @@ function Stage({
   aimGhostValue?: string;
   onAim?: (correction: DetailCorrections | null) => void;
   applying?: boolean;
+  onAttest?: (record: AttestationRecord) => void;
+  onFeedback?: (
+    record: SuggestionFeedbackRecord,
+    personEvent: RunEventInput,
+    supersededProse?: string,
+  ) => void;
+  onFeedbackRegen?: (sparkleEvent: RunEventInput) => void;
+  revisionCount?: number;
 }) {
   const [displayed, setDisplayed] = useState(exception);
   const [phase, setPhase] = useState<"in" | "out">("in");
@@ -841,6 +874,10 @@ function Stage({
         aimGhostValue={aimGhostValue}
         onAim={onAim}
         applying={applying}
+        onAttest={onAttest}
+        onFeedback={onFeedback}
+        onFeedbackRegen={onFeedbackRegen}
+        revisionCount={revisionCount}
       />
     </div>
   );
@@ -1164,6 +1201,10 @@ function ExceptionGroup({
   aimGhostValue,
   onAim,
   applying,
+  onAttest,
+  onFeedback,
+  onFeedbackRegen,
+  revisionCount,
 }: {
   active: InvoiceException;
   openList: InvoiceException[];
@@ -1182,6 +1223,14 @@ function ExceptionGroup({
   aimGhostValue?: string;
   onAim?: (correction: DetailCorrections | null) => void;
   applying?: boolean;
+  onAttest?: (record: AttestationRecord) => void;
+  onFeedback?: (
+    record: SuggestionFeedbackRecord,
+    personEvent: RunEventInput,
+    supersededProse?: string,
+  ) => void;
+  onFeedbackRegen?: (sparkleEvent: RunEventInput) => void;
+  revisionCount?: number;
 }) {
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "ArrowLeft" && canPrev) {
@@ -1257,6 +1306,10 @@ function ExceptionGroup({
         aimGhostValue={aimGhostValue}
         onAim={onAim}
         applying={applying}
+        onAttest={onAttest}
+        onFeedback={onFeedback}
+        onFeedbackRegen={onFeedbackRegen}
+        revisionCount={revisionCount}
       />
       <IssueDots
         items={openList}
@@ -1773,7 +1826,7 @@ function CollapsedClusterRow({
                 {headerLabel}
               </span>
               {correctionCount > 1 && (
-                <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
                   {correctionCount} revisions
                 </span>
               )}
@@ -1834,6 +1887,13 @@ type ResolveState = {
   correctedRevalidation?: { cleared: string[]; surfaced: InvoiceException[] };
   /** when true, show an undo toast after commit (verify / attestation path) */
   needsUndoToast?: boolean;
+  /**
+   * When true the final commitResolve omits a hardcoded resolvedIds entry and
+   * instead runs the predicate registry against the committed dataPatch so
+   * resolution is data-driven. Used by the suggest_po path so undo can honestly
+   * revert the PO mutation and reopen the finding without a stale flag.
+   */
+  resolveViaPredicate?: boolean;
 };
 
 /**
@@ -2715,26 +2775,29 @@ export function ExceptionTimeline({
     }
   }, [events.length]);
 
+  // Advance to the next open (non-resolved, non-waiting) exception after
+  // resolving excId. Also skips IDs in alsoSkip (auto-cleared findings).
+  const nextOpenId = (excId: string, alsoSkip: string[] = []) => {
+    const waitingIdSet = new Set(waitingRefs.map((w) => w.id));
+    const isCandidate = (e: InvoiceException) =>
+      e.id !== excId &&
+      !alsoSkip.includes(e.id) &&
+      !resolvedIds.includes(e.id) &&
+      !waitingIdSet.has(e.id);
+    const currentIdx = list.findIndex((e) => e.id === excId);
+    const afterCurrent =
+      currentIdx !== -1
+        ? list.slice(currentIdx + 1).find(isCandidate)
+        : undefined;
+    return afterCurrent ?? list.find(isCandidate);
+  };
+
   // Resolve choreography. Fix mode: confirm -> check -> reveal -> commit, one
   // region per phase, next state hidden until re-validation settles. Route mode:
   // confirm (collapse into a waiting row) -> commit; no re-check, no
   // "Re-validated" event, because routing changes no data.
   useEffect(() => {
     if (!resolve) return;
-    const nextOpenId = (excId: string, alsoSkip: string[] = []) => {
-      const waitingIdSet = new Set(waitingRefs.map((w) => w.id));
-      const isCandidate = (e: InvoiceException) =>
-        e.id !== excId &&
-        !alsoSkip.includes(e.id) &&
-        !resolvedIds.includes(e.id) &&
-        !waitingIdSet.has(e.id);
-      const currentIdx = list.findIndex((e) => e.id === excId);
-      const afterCurrent =
-        currentIdx !== -1
-          ? list.slice(currentIdx + 1).find(isCandidate)
-          : undefined;
-      return afterCurrent ?? list.find(isCandidate);
-    };
 
     if (resolve.phase === "confirm") {
       if (resolve.mode === "route") {
@@ -2816,7 +2879,9 @@ export function ExceptionTimeline({
         return;
       }
       let cancelled = false;
-      revalidateException(review.id).then((r) => {
+      revalidateException(review.id, {
+        linkedPo: s.dataPatch?.purchaseOrder as string | undefined,
+      }).then((r) => {
         if (!cancelled) applyReval(r);
       });
       return () => {
@@ -2865,6 +2930,23 @@ export function ExceptionTimeline({
             },
           );
         } else {
+          // resolveViaPredicate: run the predicate against the committed dataPatch
+          // instead of hardcoding exc.id in resolvedIds. This keeps resolution
+          // data-driven so undo (which reverts dataPatch) honestly reopens the finding.
+          const resolvedViaPredicate = s.resolveViaPredicate && s.dataPatch;
+          const predicateCleared = resolvedViaPredicate
+            ? runPredicates(
+                openExceptions(review, rt),
+                rt.detailCorrections ?? {},
+                {
+                  linkedPo: s.dataPatch?.purchaseOrder as string | undefined,
+                  attestations: rt.attestations,
+                },
+              ).cleared
+            : [];
+          const resolvedIds = resolvedViaPredicate
+            ? [...predicateCleared, ...s.clearedInList]
+            : [s.exc.id, ...s.clearedInList];
           const events: RunEventInput[] = [
             {
               kind: "resolved",
@@ -2894,7 +2976,7 @@ export function ExceptionTimeline({
             },
           ];
           runtime.commitResolve(review.id, {
-            resolvedIds: [s.exc.id, ...s.clearedInList],
+            resolvedIds,
             surfaced: s.fresh,
             dataPatch: s.dataPatch,
             events,
@@ -2906,6 +2988,12 @@ export function ExceptionTimeline({
         setResolve(null);
         if (s.needsUndoToast) {
           const undoExcId = s.exc.id;
+          // suggest_po undo must also revert dataPatch so the predicate doesn't
+          // immediately re-resolve the finding on the next predicate run.
+          const isPoLink = s.resolveViaPredicate && s.dataPatch?.purchaseOrder;
+          const poPatchRevert: Partial<InvoiceReview> | undefined = isPoLink
+            ? { purchaseOrder: review.purchaseOrder, poPill: review.poPill }
+            : undefined;
           toast(s.label, {
             duration: 8000,
             classNames: {
@@ -2918,7 +3006,7 @@ export function ExceptionTimeline({
             action: {
               label: "Undo",
               onClick: () => {
-                runtime.undoResolve(review.id, undoExcId);
+                runtime.undoResolve(review.id, undoExcId, poPatchRevert);
                 setActiveId(undoExcId);
               },
             },
@@ -3138,29 +3226,113 @@ export function ExceptionTimeline({
     }
 
     const meta = exceptionMeta(active);
+    // suggest_po: build dataPatch from the chosen PO (s.data.po reflects the
+    // candidate selected in the split button, not necessarily the fixture primary).
+    const chosenPo =
+      s.type === "suggest_po" ? (s.data.po as string | undefined) : undefined;
+    const dataPatch: Partial<InvoiceReview> | undefined = chosenPo
+      ? {
+          purchaseOrder: chosenPo,
+          poPill: { label: chosenPo, tone: "neutral" },
+        }
+      : active.resolution?.dataPatch;
     // Per-suggestion resolution overrides the exception-level resolution so two
     // suggestions on the same exception can log distinct event copy.
     const r = s.resolution ?? active.resolution;
-    const label = r?.label ?? `${meta.label} resolved`;
-    const sub = r?.sub ?? `${meta.label}, resolved by you`;
     // Do NOT lowercase the label: it would mangle acronyms ("PO" -> "po", "VAT"
     // -> "vat"). Labels are written sentence-ready; use as-is. Fixtures can
     // supply a lowercase shortLabel for a smoother completion summary.
-    const shortLabel = r?.shortLabel ?? `${meta.label} resolved`;
+    const label = chosenPo
+      ? `Linked ${chosenPo}`
+      : (r?.label ?? `${meta.label} resolved`);
+    const sub = r?.sub ?? `${meta.label}, resolved by you`;
+    const shortLabel = chosenPo
+      ? `${chosenPo} linked`
+      : (r?.shortLabel ?? `${meta.label} resolved`);
     setResolve({
       exc: active,
       mode: "fix",
       label,
       sub,
       shortLabel,
-      dataPatch: active.resolution?.dataPatch,
+      dataPatch,
       detailCorrections: s.type === "verify" ? undefined : s.correction,
       phase: "confirm",
       fresh: [],
       clearedInList: [],
       settledSub: "",
-      needsUndoToast: s.type === "verify",
+      needsUndoToast: s.type === "verify" || s.type === "suggest_po",
+      resolveViaPredicate: s.type === "suggest_po",
     });
+  }
+
+  function attestActive(record: AttestationRecord) {
+    if (!active || resolve || emailModal || !!applyingExcId || !!rt.arcState)
+      return;
+    const openExcs = openExceptions(review, rt);
+    const base: PredicateBaseData = { attestations: rt.attestations };
+    const events: RunEventInput[] = [
+      {
+        kind: "resolved",
+        label: "Kept without a purchase order",
+        sub: "Attested by you · No PO on file",
+        time: "Just now",
+        shortLabel: "No PO",
+        exception: active,
+      },
+      {
+        kind: "revalidated",
+        label: "Re-validated",
+        sub: "Checks re-run after attestation",
+        time: "Just now",
+        pending: false,
+      },
+    ];
+    const { cleared } = runtime.addAttestation(
+      review.id,
+      record,
+      { openExceptions: openExcs, base },
+      events,
+    );
+    const nextId = nextOpenId(active.id, cleared)?.id ?? "";
+    setActiveId(nextId);
+    toast("Kept without a purchase order", {
+      duration: 8000,
+      classNames: {
+        toast: "!bg-card-foreground !border-card-foreground/20",
+        title: "!text-primary-foreground",
+        actionButton:
+          "!bg-primary-foreground/15 !text-primary-foreground hover:!bg-primary-foreground/25",
+        closeButton: "!hidden",
+      },
+      action: {
+        label: "Undo",
+        onClick: () => {
+          runtime.undoAttestation(review.id, record.findingId);
+          setActiveId(record.findingId);
+        },
+      },
+    });
+  }
+
+  function feedbackActive(
+    record: SuggestionFeedbackRecord,
+    personEvent: RunEventInput,
+    supersededProse?: string,
+  ) {
+    if (!active || resolve || emailModal || !!applyingExcId || !!rt.arcState)
+      return;
+    runtime.addSuggestionFeedback(
+      review.id,
+      record,
+      [personEvent],
+      supersededProse,
+    );
+  }
+
+  function feedbackRegenActive(sparkleEvent: RunEventInput) {
+    if (!active) return;
+    runtime.appendEvents(review.id, [sparkleEvent]);
   }
 
   // Open the draft modal as a follow-up on an already-parked exception.
@@ -3387,13 +3559,13 @@ export function ExceptionTimeline({
         />
       );
     }
-    // Flat rows: disposition, revalidated (pending), received.
+    // Flat rows: disposition, revalidated (pending), received, person, regen.
     const marker: MarkerKind =
       ev.kind === "disposition"
         ? ev.actor === "reviewer"
           ? "reviewer"
           : "agent"
-        : ev.kind === "corrected"
+        : ev.kind === "corrected" || ev.kind === "person"
           ? "reviewer"
           : ev.kind === "revalidated" && ev.pending
             ? "progress"
@@ -3588,6 +3760,16 @@ export function ExceptionTimeline({
                     runtime.setAimCorrection(review.id, correction)
                   }
                   applying={applyingExcId === active.id}
+                  onAttest={attestActive}
+                  onFeedback={feedbackActive}
+                  onFeedbackRegen={feedbackRegenActive}
+                  revisionCount={
+                    rt.suggestionFeedback?.filter(
+                      (r) =>
+                        r.findingId === active.id &&
+                        r.sentiment === "correction",
+                    ).length ?? 0
+                  }
                 />
               ) : null}
             </>
