@@ -230,7 +230,7 @@ export function SuggestedFixCard({
       ? regenResult.prose
       : primary.reasoning;
 
-  // Label: gradient "Suggested fix" + muted "· revised N×" when applicable.
+  // Label: gradient "Suggested next step" + muted "· revised N×" when applicable.
   const revised = revisionCount > 0;
 
   return (
@@ -263,7 +263,7 @@ export function SuggestedFixCard({
             <div className="flex items-center gap-1.5">
               <AiMark size={14} gradientId={gradientId} />
               <span
-                className="text-[13px] font-bold"
+                className="text-base font-semibold tracking-tight"
                 style={{
                   backgroundImage: "var(--ai-gradient-text)",
                   WebkitBackgroundClip: "text",
@@ -271,7 +271,7 @@ export function SuggestedFixCard({
                   color: "transparent",
                 }}
               >
-                Suggested fix
+                Suggested next step
               </span>
               {revised && (
                 <span className="text-[12px] font-medium text-muted-foreground/70">
@@ -670,7 +670,15 @@ function PoSplitButton({
                 <span className="flex items-center gap-1.5 text-sm font-medium">
                   {c.po}
                   {c.primary && (
-                    <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                    <span
+                      className="text-[10px] font-medium"
+                      style={{
+                        backgroundImage: "var(--ai-gradient-text)",
+                        WebkitBackgroundClip: "text",
+                        backgroundClip: "text",
+                        color: "transparent",
+                      }}
+                    >
                       Best match
                     </span>
                   )}

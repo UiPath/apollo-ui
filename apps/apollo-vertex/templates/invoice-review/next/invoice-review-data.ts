@@ -47,7 +47,7 @@ export const EXCEPTION_META: Record<
   "goods-not-received": { label: "Goods not received", tone: "error" },
   "qty-over-invoiced": { label: "Quantity over-invoiced", tone: "warning" },
   "tax-mismatch": { label: "Tax mismatch", tone: "warning" },
-  "new-vendor": { label: "New vendor", tone: "info" },
+  "new-vendor": { label: "New supplier", tone: "info" },
   "no-exchange-rate": { label: "No exchange rate", tone: "info" },
 };
 
@@ -672,7 +672,7 @@ const DEFAULT_AGENT_HISTORY: AgentStep[] = [
   },
   {
     title: "Validated",
-    sub: "Checked against Coupa: vendor, terms, totals",
+    sub: "Checked against Coupa: supplier, terms, totals",
     time: "9:10 AM",
   },
   {
@@ -860,7 +860,7 @@ export const FLAG_REASONS = [
 
 export const REJECT_REASONS = [
   "Incorrect price",
-  "Wrong vendor",
+  "Wrong supplier",
   "Duplicate invoice",
   "No PO found",
   "Other",
@@ -1121,14 +1121,14 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             type: "suggest_po",
             data: { po: "PO-5123" },
             reasoning:
-              "PO-5123 (Acme Supply Co., facility supplies) matches the vendor, amount, and date on this invoice.",
+              "PO-5123 (Acme Supply Co., facility supplies) matches the supplier, amount, and date on this invoice.",
             candidates: [
               {
                 po: "PO-5123",
                 evidence: "Supplier, amount, and date match",
                 primary: true,
               },
-              { po: "PO-4988", evidence: "Same vendor · open balance" },
+              { po: "PO-4988", evidence: "Same supplier · open balance" },
             ],
           },
           { type: "suggest_supplier", data: {} },
@@ -1144,7 +1144,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         // Canned no-change regen: honest acknowledgment is the flagship beat.
         regenResult: {
           prose:
-            "Re-ran with your note. No better match found; PO-5123 remains the closest (vendor, amount, and date match). Sending to the supplier may be the fastest path.",
+            "Re-ran with your note. No better match found; PO-5123 remains the closest (supplier, amount, and date match). Sending to the supplier may be the fastest path.",
         },
       },
     ],
@@ -1253,7 +1253,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-vat",
         type: "vat-mismatch",
         headline: "VAT number does not match the supplier record",
-        synthesis: "VAT on invoice doesn't match vendor record",
+        synthesis: "VAT on invoice doesn't match supplier record",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
@@ -1285,12 +1285,12 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           {
             type: "suggest_correction",
             correction: { vat: "US-82-4470911" },
-            data: { label: "Use vendor master" },
+            data: { label: "Use supplier master" },
             reasoning:
-              "Apply the vendor-master VAT number; the invoice value is one digit off.",
+              "Apply the supplier-master VAT number; the invoice value is one digit off.",
             resolution: {
               label: "Corrected VAT number",
-              sub: "Applied vendor master value",
+              sub: "Applied supplier master value",
               shortLabel: "VAT corrected",
             },
           },
@@ -1302,7 +1302,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
               "The invoice VAT is one digit off the record; likely a typo on the invoice.",
             resolution: {
               label: "Kept invoice VAT",
-              sub: "Verified against vendor master",
+              sub: "Verified against supplier master",
               shortLabel: "invoice VAT kept",
             },
           },
@@ -1310,7 +1310,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         ],
         resolution: {
           label: "Kept invoice VAT",
-          sub: "Verified against vendor master",
+          sub: "Verified against supplier master",
           shortLabel: "invoice VAT kept",
         },
       },
@@ -1357,7 +1357,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             type: "suggest_account",
             data: { label: "Use account 4020", account: "4020" },
             reasoning:
-              "Account 4020, Facilities, received the last 6 invoices from this vendor.",
+              "Account 4020, Facilities, received the last 6 invoices from this supplier.",
             correction: { billingAccount: "4020" },
           },
           { type: "route", data: { owner: "Data owner" } },
@@ -1392,7 +1392,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             type: "suggest_supplier",
             data: {},
             reasoning:
-              "No PO matches this vendor and amount. The supplier can confirm which PO to bill against.",
+              "No PO matches this supplier and amount. The supplier can confirm which PO to bill against.",
           },
           { type: "route", data: { owner: "Procurement" } },
         ],
@@ -2134,7 +2134,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
       {
         id: "exc-newvendor",
         type: "new-vendor",
-        headline: "First invoice from an unverified vendor",
+        headline: "First invoice from an unverified supplier",
         synthesis: "Supplier not yet in the approved master list",
         scope: { level: "invoice" },
         origin: "initial",
@@ -2153,20 +2153,20 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         suggestions: [
           {
             type: "verify",
-            data: { label: "Approve vendor" },
+            data: { label: "Approve supplier" },
             reasoning: "Banking details match the W-9 on file.",
             resolution: {
-              label: "Approved new vendor",
+              label: "Approved new supplier",
               sub: "Supplier confirmed by you",
-              shortLabel: "vendor approved",
+              shortLabel: "supplier approved",
             },
           },
           { type: "route", data: { owner: "Supplier onboarding" } },
         ],
         resolution: {
-          label: "Approved new vendor",
+          label: "Approved new supplier",
           sub: "Supplier confirmed by you",
-          shortLabel: "vendor approved",
+          shortLabel: "supplier approved",
         },
       },
     ],

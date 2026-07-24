@@ -880,15 +880,15 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     vat: "N/A",
     description:
       "Software licensing and implementation services for Folio Systems document management platform, Q2 2026.",
-    exceptionTag: "New vendor",
+    exceptionTag: "New supplier",
     exceptionTagStatus: "info",
-    exceptionHeadline: "First invoice from unverified vendor",
+    exceptionHeadline: "First invoice from unverified supplier",
     exceptionMetrics: [
       { label: "Invoiced", value: "$7,620", cls: "text-foreground" },
       { label: "PO matched", value: "1", cls: "text-foreground" },
     ],
     exceptionBody:
-      "Folio Systems is not in the approved vendor master. PO-820044891 was located and amounts match exactly. Approve to add vendor to master list and process payment, or reject to request procurement sign-off first.",
+      "Folio Systems is not in the approved supplier master. PO-820044891 was located and amounts match exactly. Approve to add supplier to master list and process payment, or reject to request procurement sign-off first.",
     exceptionPrimaryAction: "Approve",
     exceptionSecondaryAction: "Reject invoice",
     lines: [
@@ -3669,7 +3669,7 @@ function ActionBlock({
                 ))}
               </div>
               <Textarea
-                placeholder="Add a note for the vendor (optional)…"
+                placeholder="Add a note for the supplier (optional)…"
                 rows={2}
                 className="text-sm mt-3"
                 value={rejectNote}
