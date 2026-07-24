@@ -1,3 +1,11 @@
+## [@uipath/apollo-wind-v2.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.30.0...@uipath/apollo-wind@2.31.0) (2026-07-24)
+
+### Features
+
+* **apollo-wind:** always-shown tabs with empty-state + controlled active tab ([a7bfe14](https://github.com/UiPath/apollo-ui/commit/a7bfe14737af315657d31e82ebe1b82167e16f2b))
+* **apollo-wind:** pin tab bar under header, scroll only active tab content ([e70cba2](https://github.com/UiPath/apollo-ui/commit/e70cba29bfe8d7f985047f4e28b7f1d8ba2cf01a))
+* **apollo-wind:** scrollable tabs, per-tab error badges, plain sections in MetadataForm ([d7a36ac](https://github.com/UiPath/apollo-ui/commit/d7a36ac8e24c595128a602cf115037ed144d5268))
+
 ## [@uipath/apollo-wind-v2.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.29.0...@uipath/apollo-wind@2.30.0) (2026-07-23)
 
 ### Features
