@@ -19,6 +19,12 @@ minimumReleaseAgeExclude:
   - '@uipath/*'                   # permanent — own scope, always installable immediately
   - '@turbo/*'                    # 2.9.14 — platform binaries co-published with turbo (scope rename from turbo-*), same OIDC provenance ✓
   - '@esbuild/*'                  # 0.28.1 — platform binaries co-published with esbuild in the same OIDC release, vetted 2026-06-16
+  - 'next'                        # 16.2.11 — security release (GHSA-m99w-x7hq-7vfj, GHSA-6gpp-xcg3-4w24, GHSA-p9j2-gv94-2wf4, GHSA-89xv-2m56-2m9x + 5 moderate), vetted 2026-07-24: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
+  - '@next/*'                     # 16.2.11 — swc platform binaries + env co-published with next in the same OIDC release
+  - 'fast-uri'                    # 3.1.4 — GHSA-v2hh-gcrm-f6hx, vetted 2026-07-24: publisher (mcollina) ✓, release tag ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
+  - 'svgo'                        # 4.0.2 / 3.3.4 — GHSA-2p49-hgcm-8545, vetted 2026-07-24: publisher (sethiii) ✓, release tags ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
+  - 'dompurify'                   # 3.4.12 — GHSA-c2j3-45gr-mqc4, vetted 2026-07-24: publisher (cure53) ✓, release tag ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
+  - '@hono/node-server'           # 2.0.10/2.0.11 — GHSA-9mqv-5hh9-4cgg, vetted 2026-07-24: provenance ✓, publisher (OIDC, approver yusukebe) ✓, tag+diff ✓, integrity ✓
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 
@@ -29,8 +35,10 @@ overrides:
   tmp: "^0.2.6"
   picomatch: ">=4.0.4"
   postcss: "^8.5.14"
-  hono: "^4.12.25"                      # GHSA-88fw-hqm2-52qc (high)/rv63/wwfh/j6c9/wgpf (moderate) — vetted 2026-06-16; transitive via @modelcontextprotocol/sdk + @hono/node-server (both pin ^4)
-  dompurify: ">=3.4.11"                 # GHSA-vxr8-fq34-vvx9/gvmj/x4vx/rp9w/r47g/hpcv/76mc + GHSA-cmwh-pvxp-8882 (moderate, setConfig hook config leak; patched 3.4.11), vetted 2026-06-22
+  hono: "^4.12.27"                      # GHSA-88fw-hqm2-52qc (high)/rv63/wwfh/j6c9/wgpf + GHSA-xgm2-5f3f-mvvc/hvrm-45r6-mjfj/w62v-xxxg-mg59 (moderate, fixed 4.12.27) — vetted 2026-07-24; transitive via @modelcontextprotocol/sdk
+  "@hono/node-server": "^2.0.10"        # GHSA-frvp-7c67-39w9 (moderate, Windows serve-static path traversal; no 1.x patch) + GHSA-9mqv-5hh9-4cgg (moderate, WebSocket handshake memory-leak DoS; patched 2.0.10) — @modelcontextprotocol/sdk still pins ^1.19.9; v2 public API unchanged (Node 20+ only), vetted 2026-07-24
+  dompurify: ">=3.4.12"                 # GHSA-vxr8-fq34-vvx9/gvmj/x4vx/rp9w/r47g/hpcv/76mc + GHSA-cmwh-pvxp-8882 + GHSA-c2j3-45gr-mqc4 (low, custom-element hook bypass; patched 3.4.12), vetted 2026-07-24; monaco-editor pins exact 3.2.7
+  sharp: "^0.35.0"                      # GHSA-f88m-g3jw-g9cj (high, libvips CVE-2026-33327/33328/35590/35591) — next@16.2.11 pins ^0.34.5 (0.x caret excludes 0.35); next canary already on ^0.35.3, vetted 2026-07-24
   js-yaml: ">=4.1.2"                   # GHSA-h67p-54hq-rp68 (moderate) — transitive via @commitlint/load>cosmiconfig
   markdown-it: ">=14.1.2"              # GHSA-6v5v-wf23-fmfq (moderate) — transitive via storybook toolchain
   "@babel/core": ">=7.29.1"            # GHSA-4x5r-pxfx-6jf8 (low) — transitive via storybook/babel transform
