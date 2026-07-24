@@ -41,8 +41,8 @@ import {
   X,
 } from "lucide-react";
 import {
-  createContext,
   type CSSProperties,
+  createContext,
   useContext,
   useEffect,
   useMemo,
@@ -88,16 +88,6 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
-import { Avatar, AvatarFallback, AvatarImage } from "@/registry/avatar/avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/registry/dialog/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -108,6 +98,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/registry/alert-dialog/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/registry/avatar/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/registry/dialog/dialog";
 import { Input } from "@/registry/input/input";
 import { Label } from "@/registry/label/label";
 import { ScrollArea } from "@/registry/scroll-area/scroll-area";
@@ -123,12 +123,14 @@ import {
 import { ExceptionTimeline } from "./next/ExceptionTimeline";
 import { HeaderDecision } from "./next/HeaderDecision";
 import {
-  approveInvoice,
   type ArcPhase,
   type ArcState,
+  approveInvoice,
   buildApproval,
   buildHold,
   buildReject,
+  buildSendBack,
+  buildWaiting,
   type DetailCorrections,
   exceptionMeta,
   FLAG_REASONS,
@@ -142,9 +144,11 @@ import {
   openExceptions,
   type PredicateBaseData,
   REJECT_REASONS,
+  type RunEventInput,
   rejectInvoice,
   runPredicates,
-  type RunEventInput,
+  sendBackInvoice,
+  waitInvoice,
 } from "./next/invoice-review-data";
 import {
   InvoiceRuntimeProvider,
@@ -180,7 +184,8 @@ type InvoiceStatus =
   | "rejected"
   | "sent-for-approval"
   | "flagged"
-  | "on-hold";
+  | "on-hold"
+  | "waiting";
 
 interface InvoiceTableRow {
   id: string;
@@ -1655,6 +1660,7 @@ const statusBadgeMap: Record<
   "sent-for-approval": { label: "Sent for approval", status: "info" },
   flagged: { label: "Flagged", status: "warning" },
   "on-hold": { label: "On hold", status: "warning" },
+  waiting: { label: "Waiting", status: "info" },
 };
 
 const timeFilterOptions = [
@@ -2601,9 +2607,12 @@ function LeftNav({
     runtime.getRuntime(id).disposition?.type === "rejected";
   const isHeld = (id: string) =>
     runtime.getRuntime(id).disposition?.type === "held";
+  const isWaitingDisp = (id: string) =>
+    runtime.getRuntime(id).disposition?.type === "waiting";
   const isWaitingOnly = (id: string) => {
     if (isDone(id) || isApproved(id) || isRejected(id) || isHeld(id))
       return false;
+    if (isWaitingDisp(id)) return true;
     const s = getExceptionSummary(getReview(id), runtime.getRuntime(id));
     return s.openCount === 0 && s.waitingCount > 0;
   };
@@ -6714,24 +6723,18 @@ function TopBarNext({
   const approved = disposition?.type === "approved";
   const rejected = disposition?.type === "rejected";
   const onHoldDisp = disposition?.type === "held";
-  // Approve is only actionable from a fully-resolved, undisposed invoice.
-  let blockedReason: string | null = null;
-  if (!approved && !rejected) {
-    if (onHoldDisp) {
-      blockedReason =
-        summary.waitingCount > 0
-          ? `Waiting on ${summary.waitingOn}`
-          : "On hold. Resume review to approve.";
-    } else if (summary.waitingCount > 0) {
-      blockedReason = `Waiting on ${summary.waitingOn}`;
-    } else if (summary.openCount > 0) {
-      blockedReason = "Resolve all issues to approve.";
-    }
-  }
+  const waitingDisp = disposition?.type === "waiting";
+  // Approve is gated: both open findings AND parked (waiting) ones block it.
+  // The gate lives in the runtime action (approveGated); this mirrors it for the UI.
   function doApprove() {
-    approveInvoice(review.id);
-    const { disposition: dd, event } = buildApproval(review);
-    runtime.setDisposition(review.id, dd, event);
+    const { event } = buildApproval(review);
+    const granted = runtime.approveGated(
+      review.id,
+      summary.openCount,
+      summary.waitingCount,
+      event,
+    );
+    if (granted) approveInvoice(review.id);
   }
   // Hold from the header uses the SAME runtime disposition as the terminal Hold,
   // so the status badge, timeline, and Resume all stay consistent (v2/v3 single
@@ -6749,17 +6752,29 @@ function TopBarNext({
     const { disposition: dd, event } = buildReject(review, reason, note);
     runtime.setDisposition(review.id, dd, event);
   }
+  function doWait() {
+    waitInvoice(review.id);
+    const { disposition: dd, event } = buildWaiting(review);
+    runtime.setDisposition(review.id, dd, event);
+  }
+  function doSendBack(reason: string, note?: string) {
+    sendBackInvoice(review.id, reason);
+    const { event } = buildSendBack(review, reason, note);
+    runtime.appendEvents(review.id, [event]);
+  }
   const tableRow = invoiceTableData.find((r) => r.id === d.id);
   const baseStatus: InvoiceStatus = tableRow?.status ?? "pending-review";
   const effectiveStatus: InvoiceStatus = approved
     ? "approved"
     : rejected || completion?.type === "rejected"
       ? "rejected"
-      : onHoldDisp
-        ? "on-hold"
-        : flagged
-          ? "flagged"
-          : baseStatus;
+      : waitingDisp
+        ? "waiting"
+        : onHoldDisp
+          ? "on-hold"
+          : flagged
+            ? "flagged"
+            : baseStatus;
   const statusInfo = statusBadgeMap[effectiveStatus];
   return (
     <PageHeader bordered className="@3xl:!grid-cols-[auto_1fr_auto]">
@@ -6820,12 +6835,15 @@ function TopBarNext({
       </PageHeaderContent>
       <PageHeaderActions className="@3xl:ml-6">
         <HeaderDecision
+          openCount={summary.openCount}
+          waitingCount={summary.waitingCount}
           approved={approved}
           rejected={rejected}
-          blockedReason={blockedReason}
           onApprove={doApprove}
           onReject={doReject}
           onHold={doHold}
+          onSendBack={doSendBack}
+          onWait={doWait}
         />
       </PageHeaderActions>
     </PageHeader>

@@ -1,111 +1,203 @@
 "use client";
 
-import { EllipsisVertical } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   ButtonGroup,
   ButtonGroupSeparator,
 } from "@/registry/button-group/button-group";
-import { HOLD_REASONS, REJECT_REASONS } from "./invoice-review-data";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/registry/popover/popover";
+import {
+  HOLD_REASONS,
+  REJECT_REASONS,
+  SEND_BACK_REASONS,
+} from "./invoice-review-data";
 import { ReasonDialog } from "./ReasonDialog";
 
-/** Which overflow dialog is open (only one at a time), or null. */
-type HeaderDialog = "reject" | "hold" | null;
+type HeaderDialog = "reject" | "hold" | "send-back" | null;
 
 /**
- * Per-invoice disposition control for the page header: an Approve split-button
- * with an attached overflow (Reject / Hold). Each overflow action opens the
- * shared park-family dialog (reason chips + optional note), so the header
- * decisions read as one family with the terminal Hold and the route confirm.
- * Reject and Hold both set the runtime disposition (Reject is permanent, Hold
- * reversible). Flag is intentionally absent until it can park a resumable state
- * like Hold; a half-wired legacy flag would leave a dead menu item. Once
- * committed to a permanent disposition (approved OR rejected), BOTH halves and
- * the overflow are disabled: no further decisions. Otherwise Approve is enabled,
- * or blocked with a tooltip naming why.
+ * Split-button disposition control for the invoice page header.
+ *
+ * Face:
+ *   - pendingCount = openCount + waitingCount
+ *   - pendingCount > 0 → "Mark as waiting" (secondary/outline), clicking parks
+ *     the invoice at its current state
+ *   - pendingCount = 0 → "Approve" (primary), clicking commits approval
+ *   - locked (approved/rejected) → face disabled
+ *
+ * Chevron opens a 5-item popover:
+ *   1. Approve — disabled while pendingCount > 0, sub-line states why
+ *   2. Reject invoice… — danger, opens reason dialog
+ *   3. Send back — opens reason dialog, returns to submitter
+ *   4. Put on hold — opens reason dialog, pauses review
+ *   5. Mark as waiting — one-click, sets waiting status
+ *
+ * The Approve item in the popover maps to the same onApprove handler as the
+ * face — the guard lives in the store action, not only the disabled prop.
  */
-export function HeaderDecision({
-  approved,
-  rejected,
-  blockedReason,
-  onApprove,
-  onReject,
-  onHold,
-}: {
-  /** true once approved: both halves disable (no more disposition to make) */
+interface HeaderDecisionProps {
+  openCount: number;
+  waitingCount: number;
   approved?: boolean;
-  /** true once rejected (permanent): both halves + overflow disable */
   rejected?: boolean;
-  /** when set (and not approved), Approve is disabled with this tooltip */
-  blockedReason?: string | null;
   onApprove: () => void;
   onReject: (reason: string, note?: string) => void;
   onHold: (reason: string, note?: string) => void;
-}) {
+  onSendBack: (reason: string, note?: string) => void;
+  onWait: () => void;
+}
+
+export function HeaderDecision({
+  openCount,
+  waitingCount,
+  approved,
+  rejected,
+  onApprove,
+  onReject,
+  onHold,
+  onSendBack,
+  onWait,
+}: HeaderDecisionProps) {
   const [dialog, setDialog] = useState<HeaderDialog>(null);
-  // A permanent disposition locks the header: no further decisions to make.
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
   const locked = approved || rejected;
+  const pendingCount = openCount + waitingCount;
+  const gateOpen = pendingCount > 0;
+
+  // Face: shows "Approve" only when everything is resolved.
+  const faceIsApprove = !locked && !gateOpen;
+
+  const approveSub = gateOpen
+    ? `${pendingCount} exception${pendingCount === 1 ? "" : "s"} open`
+    : "All checks passed";
+
+  const handleFaceClick = () => {
+    if (locked) return;
+    if (faceIsApprove) {
+      onApprove();
+    } else {
+      onWait();
+    }
+  };
+
+  const handlePopoverApprove = () => {
+    if (gateOpen || locked) return;
+    setPopoverOpen(false);
+    onApprove();
+  };
 
   return (
     <>
       <ButtonGroup>
-        {locked ? (
-          <Button disabled>Approve</Button>
-        ) : blockedReason ? (
-          // aria-disabled (not disabled) so the button keeps the pointer events the
-          // tooltip needs, and stays a direct ButtonGroup child so the split
-          // rounding holds.
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                aria-disabled
-                onClick={(e) => e.preventDefault()}
-                className={cn("opacity-50", "cursor-not-allowed")}
-              >
-                Approve
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{blockedReason}</TooltipContent>
-          </Tooltip>
-        ) : (
-          <Button onClick={onApprove}>Approve</Button>
-        )}
-        {/* Rule between the two same-color halves: primary -100 (lighter) in
-          light, +100 (darker) in dark. Both resolve to primary-600. */}
-        <ButtonGroupSeparator className="bg-primary-600" />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            {/* Disabled once a permanent disposition is set: no further
-                decisions from the header. */}
-            <Button aria-label="More decisions" disabled={locked}>
-              <EllipsisVertical className="size-4" />
+        <Button
+          disabled={locked}
+          variant={faceIsApprove ? "default" : "outline"}
+          onClick={handleFaceClick}
+          className={cn(!faceIsApprove && "text-foreground")}
+        >
+          {faceIsApprove ? "Approve" : "Mark as waiting"}
+        </Button>
+        <ButtonGroupSeparator
+          className={faceIsApprove ? "bg-primary-600" : "bg-border"}
+        />
+        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              disabled={locked}
+              variant={faceIsApprove ? "default" : "outline"}
+              aria-label="More dispositions"
+              className={cn(!faceIsApprove && "text-foreground")}
+            >
+              <ChevronDown className="size-4" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {/* Each opens the shared dialog; the menu closes first, then the
-                controlled dialog opens (a trigger inside the item would unmount
-                with the menu). Both set the runtime disposition. */}
-            <DropdownMenuItem onSelect={() => setDialog("reject")}>
-              Reject
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setDialog("hold")}>
-              Hold
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-60 p-1">
+            {/* 1. Approve */}
+            <button
+              type="button"
+              disabled={gateOpen || locked}
+              className={cn(
+                "flex w-full flex-col gap-0.5 rounded-sm px-3 py-2 text-left",
+                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                gateOpen || locked
+                  ? "cursor-not-allowed opacity-50"
+                  : "hover:bg-accent",
+              )}
+              onClick={handlePopoverApprove}
+            >
+              <span className="text-sm font-medium">Approve</span>
+              <span className="text-xs text-muted-foreground">
+                {approveSub}
+              </span>
+            </button>
+
+            <div className="my-1 h-px bg-border" />
+
+            {/* 2. Reject invoice… */}
+            <button
+              type="button"
+              className="flex w-full flex-col gap-0.5 rounded-sm px-3 py-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              onClick={() => {
+                setPopoverOpen(false);
+                setDialog("reject");
+              }}
+            >
+              <span className="text-sm font-medium text-destructive">
+                Reject invoice…
+              </span>
+            </button>
+
+            {/* 3. Send back */}
+            <button
+              type="button"
+              className="flex w-full flex-col gap-0.5 rounded-sm px-3 py-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              onClick={() => {
+                setPopoverOpen(false);
+                setDialog("send-back");
+              }}
+            >
+              <span className="text-sm font-medium">Send back</span>
+            </button>
+
+            {/* 4. Put on hold */}
+            <button
+              type="button"
+              className="flex w-full flex-col gap-0.5 rounded-sm px-3 py-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              onClick={() => {
+                setPopoverOpen(false);
+                setDialog("hold");
+              }}
+            >
+              <span className="text-sm font-medium">Put on hold</span>
+              <span className="text-xs text-muted-foreground">
+                Pause internally, keep assigned
+              </span>
+            </button>
+
+            {/* 5. Mark as waiting */}
+            <button
+              type="button"
+              className="flex w-full flex-col gap-0.5 rounded-sm px-3 py-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              onClick={() => {
+                setPopoverOpen(false);
+                onWait();
+              }}
+            >
+              <span className="text-sm font-medium">Mark as waiting</span>
+              <span className="text-xs text-muted-foreground">
+                Waiting on an external reply
+              </span>
+            </button>
+          </PopoverContent>
+        </Popover>
       </ButtonGroup>
 
       <ReasonDialog
@@ -126,6 +218,15 @@ export function HeaderDecision({
         chips={HOLD_REASONS}
         commitLabel="Hold invoice"
         onCommit={onHold}
+      />
+      <ReasonDialog
+        open={dialog === "send-back"}
+        onOpenChange={(o) => setDialog(o ? "send-back" : null)}
+        title="Send back"
+        description="Return this invoice to the submitter for correction."
+        chips={SEND_BACK_REASONS}
+        commitLabel="Send back"
+        onCommit={onSendBack}
       />
     </>
   );
