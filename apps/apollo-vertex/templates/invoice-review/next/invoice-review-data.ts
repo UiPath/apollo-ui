@@ -818,10 +818,10 @@ const ROUTE_OWNERS: Record<string, RouteOwner> = {
   "Data owner": { name: "Sarah Chen", role: "AP lead" },
   Approver: { name: "Marcus Webb", role: "Finance approver" },
   "Tax data owner": { name: "Priya Nair", role: "Tax data owner" },
-  "Vendor data owner": { name: "Diego Alvarez", role: "Vendor data owner" },
+  "Supplier data owner": { name: "Diego Alvarez", role: "Supplier data owner" },
   Procurement: { name: "Tom Fletcher", role: "Procurement lead" },
   Receiving: { name: "Ana Duarte", role: "Receiving lead" },
-  "Vendor onboarding": { name: "Nadia Rahman", role: "Vendor onboarding" },
+  "Supplier onboarding": { name: "Nadia Rahman", role: "Supplier onboarding" },
 };
 
 /**
@@ -1125,7 +1125,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             candidates: [
               {
                 po: "PO-5123",
-                evidence: "Vendor, amount, and date match",
+                evidence: "Supplier, amount, and date match",
                 primary: true,
               },
               { po: "PO-4988", evidence: "Same vendor · open balance" },
@@ -1262,7 +1262,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           fieldKey: "vatNumber",
           label: "On file",
           value: "US-82-4470911",
-          source: "Vendor master",
+          source: "Supplier master",
         },
         finding: {
           type: "compare",
@@ -1277,7 +1277,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             {
               label: "On file",
               value: "US-82-4470911",
-              provenance: "Vendor master",
+              provenance: "Supplier master",
             },
           ],
         },
@@ -1306,7 +1306,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
               shortLabel: "invoice VAT kept",
             },
           },
-          { type: "route", data: { owner: "Vendor data owner" } },
+          { type: "route", data: { owner: "Supplier data owner" } },
         ],
         resolution: {
           label: "Kept invoice VAT",
@@ -2135,7 +2135,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         id: "exc-newvendor",
         type: "new-vendor",
         headline: "First invoice from an unverified vendor",
-        synthesis: "Vendor not yet in the approved master list",
+        synthesis: "Supplier not yet in the approved master list",
         scope: { level: "invoice" },
         origin: "initial",
         status: "open",
@@ -2143,10 +2143,10 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
           type: "single",
           items: [
             {
-              label: "Vendor record",
+              label: "Supplier record",
               value: "Not yet verified",
               tone: "muted",
-              provenance: "Vendor master",
+              provenance: "Supplier master",
             },
           ],
         },
@@ -2157,15 +2157,15 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
             reasoning: "Banking details match the W-9 on file.",
             resolution: {
               label: "Approved new vendor",
-              sub: "Vendor confirmed by you",
+              sub: "Supplier confirmed by you",
               shortLabel: "vendor approved",
             },
           },
-          { type: "route", data: { owner: "Vendor onboarding" } },
+          { type: "route", data: { owner: "Supplier onboarding" } },
         ],
         resolution: {
           label: "Approved new vendor",
-          sub: "Vendor confirmed by you",
+          sub: "Supplier confirmed by you",
           shortLabel: "vendor approved",
         },
       },
@@ -2394,7 +2394,7 @@ export const SEND_BACK_REASONS = [
   "Incorrect amount",
   "Missing supporting documents",
   "Wrong cost center",
-  "Vendor details mismatch",
+  "Supplier details mismatch",
   "Other",
 ] as const;
 

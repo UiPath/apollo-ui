@@ -1770,7 +1770,7 @@ const invoiceColumns: ColumnDef<InvoiceTableRow>[] = [
   {
     accessorKey: "vendor",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Vendor" />
+      <DataTableColumnHeader column={column} title="Supplier" />
     ),
   },
   {
@@ -2960,7 +2960,7 @@ function ActivityBarC({
 
   const baseChecks = [
     { label: "Extracted", status: "pass" as const },
-    { label: "Vendor", status: "pass" as const },
+    { label: "Supplier", status: "pass" as const },
     { label: "Duplicate", status: "pass" as const },
     { label: "Price", status: "fail" as const },
     { label: "Lines", status: "skip" as const },
@@ -3077,7 +3077,7 @@ const activityChecks = [
   },
   {
     status: "pass" as const,
-    label: "Vendor matched",
+    label: "Supplier matched",
     desc: "ACME Industrial confirmed.",
   },
   {
@@ -4850,7 +4850,7 @@ function DetailsCombinedTab() {
     paymentTerms: "Payment terms",
     vat: "VAT number",
     servicePeriod: "Service period",
-    vendor: "Vendor",
+    vendor: "Supplier",
     billTo: "Bill to",
   };
 
@@ -6976,7 +6976,7 @@ function fieldEventLabel(formKey: string): string {
 }
 
 function sourcedEventSub(provenance: string, formKey: string): string {
-  if (provenance === "Vendor master") return "applied vendor master value";
+  if (provenance === "Supplier master") return "applied supplier master value";
   if (provenance.startsWith("PO-")) {
     if (formKey.endsWith(":qty")) return "applied PO quantity";
     if (formKey.endsWith(":amount")) return "applied PO amount";
@@ -7234,7 +7234,7 @@ function DetailsEditForm({
                     dirtyFields.vendor && "text-primary",
                   )}
                 >
-                  {lbl("Vendor", "vendor")}
+                  {lbl("Supplier", "vendor")}
                 </Label>
                 <Input
                   id="edit-vendor"
@@ -7266,7 +7266,7 @@ function DetailsEditForm({
                     dirtyFields.vendorEmail && "text-primary",
                   )}
                 >
-                  {lbl("Vendor email", "vendorEmail")}
+                  {lbl("Supplier email", "vendorEmail")}
                 </Label>
                 <Input
                   id="edit-vendor-email"
@@ -7298,7 +7298,7 @@ function DetailsEditForm({
                     dirtyFields.vendorAddress && "text-primary",
                   )}
                 >
-                  {lbl("Vendor address", "vendorAddress")}
+                  {lbl("Supplier address", "vendorAddress")}
                 </Label>
                 <Input
                   id="edit-vendor-address"
