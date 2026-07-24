@@ -45,7 +45,10 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
         <InputGroupInput
           ref={ref}
           type="search"
-          className={className}
+          className={cn(
+            '[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none',
+            className
+          )}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           {...props}
