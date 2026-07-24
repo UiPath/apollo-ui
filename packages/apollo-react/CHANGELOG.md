@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v6.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.2.0...@uipath/apollo-react@6.3.0) (2026-07-24)
+
+### Features
+
+* **apollo-react:** collapse stage-node task execution to one line with runs/rework icons ([82016b7](https://github.com/UiPath/apollo-ui/commit/82016b76346a3b688b9eb42bb7cba48327ebd1c2))
+
+### Bug Fixes
+
+* **apollo-react:** add role=img to task runs/rework chips for reliable a11y naming ([db43e29](https://github.com/UiPath/apollo-ui/commit/db43e291310163ec37f1ac00dd354196f0a6373b))
+* **apollo-react:** add runs-chip aria-label and correct execution badge/retryCount docs ([7443329](https://github.com/UiPath/apollo-ui/commit/744332928897e8585636393d8940577fa4ee8951))
+
 ## [@uipath/apollo-react-v6.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.1.0...@uipath/apollo-react@6.2.0) (2026-07-24)
 
 ### Features
