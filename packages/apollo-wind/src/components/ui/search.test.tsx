@@ -97,6 +97,13 @@ describe('Search', () => {
     expect(input).toHaveClass('custom-search');
   });
 
+  it('suppresses the native search clear button to avoid a duplicate', () => {
+    render(<Search value="test" onChange={vi.fn()} />);
+    const input = screen.getByRole('searchbox');
+    expect(input).toHaveClass('[&::-webkit-search-cancel-button]:appearance-none');
+    expect(input).toHaveClass('[&::-webkit-search-decoration]:appearance-none');
+  });
+
   it('forwards ref correctly', () => {
     const ref = { current: null };
     render(<Search ref={ref} />);
