@@ -162,7 +162,7 @@ export const TaskContent = memo(
             </Row>
           </CanvasTooltip>
         </Row>
-        <Row align="center" gap={Spacing.SpacingXs} style={{ flexShrink: 0 }}>
+        <Row align="center" gap={Spacing.SpacingMicro} style={{ flexShrink: 0 }}>
           {durationLabel &&
             (taskExecution?.durationTooltip ? (
               <CanvasTooltip
