@@ -179,6 +179,7 @@ export const TaskContent = memo(
             <CanvasTooltip content={runsTooltip} placement="top" hide={isDragging}>
               <Badge
                 variant="warning"
+                aria-label={runsTooltip}
                 className="h-[14px] gap-px rounded-full px-1 py-0 text-[11px] leading-none [&>svg]:size-3"
               >
                 <Redo2 aria-hidden />

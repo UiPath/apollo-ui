@@ -113,14 +113,24 @@ export interface StageTaskExecution {
   duration?: string;
   /** Tooltip text shown on hover over the duration text (e.g. a wait-for-timer countdown). */
   durationTooltip?: string;
+  /**
+   * Total time spent re-working/re-running this task (e.g. `"25m"`). When set, a "rework" icon-chip
+   * (↺) is shown; the value is surfaced as `Reworked (+{retryDuration})` in the chip's tooltip.
+   */
   retryDuration?: string;
+  /**
+   * @deprecated No longer rendered. Execution now shows dedicated "runs" and "rework" icon-chips
+   * derived from `retryCount` and `retryDuration`; consumer-supplied badge text is ignored.
+   */
   badge?: string;
+  /**
+   * @deprecated No longer rendered. See `badge`.
+   */
   badgeStatus?: 'warning' | 'info' | 'error';
   /**
-   * Total run count to display in the badge. Requires `badge` to be set. When `> 1`, Apollo
-   * overrides the `badge` text with a localized "Ran N times" (or "Running again" when `status` is
-   * `'InProgress'`). When `1` or absent, the `badge` string is rendered as-is and must be
-   * pre-localized by the consumer.
+   * Number of re-runs (retries) of this task — i.e. total runs minus one. When `> 0`, a "runs"
+   * icon-chip (↱) is shown displaying the total run count (`retryCount + 1`), with a localized
+   * "Ran N times" tooltip (or "Running again" when `status` is `'InProgress'`).
    */
   retryCount?: number;
   /**
