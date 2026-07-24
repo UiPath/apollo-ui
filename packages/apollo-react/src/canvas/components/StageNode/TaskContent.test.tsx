@@ -93,74 +93,132 @@ describe('TaskContent - execution status tooltip', () => {
   });
 });
 
-describe('TaskContent - badge', () => {
+describe('TaskContent - runs chip', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders "Running again" when retryCount > 1 and status is InProgress', () => {
+  it('shows the total-run count (retryCount + 1) with a "Ran N times" tooltip when not InProgress', () => {
     renderTaskContent({
-      taskExecution: { status: 'InProgress', duration: '1m', retryCount: 2, badge: 'Running' },
+      taskExecution: { status: 'Completed', duration: '1m', retryCount: 2 },
     });
-    expect(screen.getByText('Running again')).toBeInTheDocument();
+    // retryCount = 2 re-runs => 3 total runs.
+    const chip = screen.getByText('3');
+    expect(chip.closest('[data-testid="canvas-tooltip"]')).toHaveAttribute(
+      'data-tooltip-content',
+      'Ran 3 times'
+    );
   });
 
-  it('renders "Ran N times" when retryCount > 1 and status is not InProgress', () => {
+  it('shows a "Running again" tooltip while the task is InProgress', () => {
     renderTaskContent({
-      taskExecution: { status: 'Completed', duration: '1m', retryCount: 2, badge: 'Ran' },
+      taskExecution: { status: 'InProgress', duration: '1m', retryCount: 2 },
     });
-    expect(screen.getByText('Ran 2 times')).toBeInTheDocument();
+    const chip = screen.getByText('3');
+    expect(chip.closest('[data-testid="canvas-tooltip"]')).toHaveAttribute(
+      'data-tooltip-content',
+      'Running again'
+    );
   });
 
-  it('interpolates the count into the plural form', () => {
+  it('interpolates the total-run count into the plural tooltip form', () => {
     renderTaskContent({
-      taskExecution: { status: 'Failed', duration: '1m', retryCount: 3, badge: 'Ran' },
+      taskExecution: { status: 'Failed', duration: '1m', retryCount: 3 },
     });
-    expect(screen.getByText('Ran 3 times')).toBeInTheDocument();
+    const chip = screen.getByText('4');
+    expect(chip.closest('[data-testid="canvas-tooltip"]')).toHaveAttribute(
+      'data-tooltip-content',
+      'Ran 4 times'
+    );
   });
 
-  it('overrides the consumer-supplied badge string when retryCount > 1', () => {
+  it('shows the runs chip for a single re-run (retryCount 1 => 2 runs)', () => {
     renderTaskContent({
+      taskExecution: { status: 'Completed', duration: '1m', retryCount: 1 },
+    });
+    const chip = screen.getByText('2');
+    expect(chip.closest('[data-testid="canvas-tooltip"]')).toHaveAttribute(
+      'data-tooltip-content',
+      'Ran 2 times'
+    );
+  });
+
+  it('does not show the runs chip when there were no re-runs', () => {
+    renderTaskContent({ taskExecution: { status: 'Completed', duration: '1m' } });
+    expect(screen.queryByText('1')).not.toBeInTheDocument();
+  });
+
+  it('suppresses a retry-driven consumer badge string in favour of the runs chip', () => {
+    renderTaskContent({
+      taskExecution: { status: 'Completed', duration: '1m', retryCount: 2, badge: 'Ran 3 times' },
+    });
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.queryByText('Ran 3 times', { selector: 'div' })).not.toBeInTheDocument();
+  });
+});
+
+describe('TaskContent - rework chip', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('shows the rework chip with the added-time tooltip when a rework duration is present', () => {
+    const { container } = renderTaskContent({
       taskExecution: {
         status: 'Completed',
-        duration: '1m',
+        duration: '1h 30m',
         retryCount: 2,
-        badge: 'Reworked',
+        retryDuration: '25m',
       },
     });
-    expect(screen.getByText('Ran 2 times')).toBeInTheDocument();
-    expect(screen.queryByText('Reworked')).not.toBeInTheDocument();
+    const tooltip = container.querySelector('[data-tooltip-content="Reworked (+25m)"]');
+    expect(tooltip).not.toBeNull();
   });
 
-  it('renders the consumer-supplied badge string as-is when retryCount is 1', () => {
-    renderTaskContent({
-      taskExecution: { status: 'Completed', duration: '1m', retryCount: 1, badge: 'Ran' },
+  it('does not show the rework chip when there is no rework duration', () => {
+    const { container } = renderTaskContent({
+      taskExecution: { status: 'Completed', duration: '1m', retryCount: 2 },
     });
-    expect(screen.getByText('Ran')).toBeInTheDocument();
+    expect(container.querySelector('[data-tooltip-content^="Reworked"]')).toBeNull();
+  });
+});
+
+describe('TaskContent - badge suppression', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('renders the consumer-supplied badge string as-is when retryCount is 1 and status is InProgress', () => {
-    renderTaskContent({
-      taskExecution: { status: 'InProgress', duration: '1m', retryCount: 1, badge: 'Running' },
-    });
-    expect(screen.getByText('Running')).toBeInTheDocument();
-  });
-
-  it('renders the consumer-supplied badge string when retryCount is absent', () => {
+  it('does not render a consumer-supplied badge string (only runs/rework chips are shown)', () => {
     renderTaskContent({
       taskExecution: { status: 'Completed', duration: '1m', badge: 'Action needed' },
     });
-    expect(screen.getByText('Action needed')).toBeInTheDocument();
+    expect(screen.queryByText('Action needed')).not.toBeInTheDocument();
   });
 
-  it('renders no badge when no badge string is supplied (even if retryCount > 1)', () => {
-    renderTaskContent({ taskExecution: { status: 'Completed', duration: '1m', retryCount: 2 } });
-    expect(screen.queryByText(/Ran|Running/)).not.toBeInTheDocument();
-  });
-
-  it('renders no badge when neither retryCount nor a badge string is supplied', () => {
+  it('renders no chip when there are no runs and no rework', () => {
     renderTaskContent({ taskExecution: { status: 'Completed', duration: '1m' } });
-    expect(screen.queryByText(/Ran|Running|Reworked/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Ran|Running|Reworked|Action/)).not.toBeInTheDocument();
+  });
+});
+
+describe('TaskContent - required marker', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('shows the "*" marker for a required non-adhoc task', () => {
+    renderTaskContent({ task: { isRequired: true } });
+    expect(screen.getByText('*')).toBeInTheDocument();
+  });
+
+  it('hides the "*" marker for a required adhoc task (isAdhoc)', () => {
+    renderTaskContent({ task: { isRequired: true, isAdhoc: true } });
+    expect(screen.queryByText('*')).not.toBeInTheDocument();
+  });
+
+  it('hides the "*" marker for a required adhoc task (taskGroupType)', () => {
+    renderTaskContent({ task: { isRequired: true, taskGroupType: 'adhoc' } });
+    expect(screen.queryByText('*')).not.toBeInTheDocument();
   });
 });
 
@@ -208,14 +266,14 @@ describe('TaskContent - entry-condition icon', () => {
     expect(icon).toHaveAttribute('height', '20');
   });
 
-  it('renders a 16px entry-condition diamond on a task with second-row content', () => {
+  it('renders a 20px entry-condition diamond even when the task has execution details', () => {
     const { container } = renderTaskContent({
       task: { hasEntryCondition: true },
       taskExecution: { status: 'Completed', duration: '1m' },
     });
     const icon = getEntryIcon(container);
-    expect(icon).toHaveAttribute('width', '16');
-    expect(icon).toHaveAttribute('height', '16');
+    expect(icon).toHaveAttribute('width', '20');
+    expect(icon).toHaveAttribute('height', '20');
   });
 });
 
@@ -237,14 +295,15 @@ describe('TaskContent - play button placement', () => {
     expect(screen.queryByTestId(playButtonId)).not.toBeInTheDocument();
   });
 
-  it('renders the small play button on the second row for executed tasks with row content', () => {
+  it('renders the play button for executed tasks alongside their execution details', () => {
     renderTaskContent({
       onTaskPlay: vi.fn(async () => {}),
       taskExecution: { status: 'Completed', duration: '1m' },
     });
     const playButton = screen.getByTestId(playButtonId);
-    // small variant shrinks the icon via the button's descendant selector
-    expect(playButton.className).toContain('[&_svg]:size-3.5');
+    expect(playButton).toBeInTheDocument();
+    // Now rendered inline on the single row — no shrunk "small" variant.
+    expect(playButton.className).not.toContain('[&_svg]:size-3.5');
   });
 
   it('renders no play button for executed tasks without a play handler', () => {
