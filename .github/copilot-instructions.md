@@ -141,6 +141,31 @@ Flag these patterns immediately:
 
 ---
 
+## Commit Messages & Semantic Versioning
+
+Every package publishes via `semantic-release` with the `conventionalcommits` preset (`semantic-release-monorepo` scopes each release to the commits that touch that package's path). **The commit message alone decides the version bump — there is no manual approval gate.** A published version can never be unpublished (npm blocks unpublish once a package has dependents), so a wrong bump is permanent.
+
+**What triggers each bump:**
+
+| Commit | Bump |
+|---|---|
+| `fix: ...` | patch (`x.y.Z`) |
+| `feat: ...` | minor (`x.Y.z`) |
+| `feat(scope)!: ...` / `fix!: ...` — any `!` after the type/scope | **major (`X.y.z`)** |
+| `BREAKING CHANGE:` in the body/footer | **major (`X.y.z`)** |
+
+**Rules for authoring commits (including AI-generated / co-authored messages):**
+
+- **Never add `!` or a `BREAKING CHANGE:` footer unless the change actually breaks the package's public contract:** a removed or renamed export/prop, a changed prop type or required-ness, a removed variant, or a documented default that existing consumers depend on.
+- A behavior tweak, bug fix, new optional prop, or internal refactor is **`fix:` or `feat:`, not breaking**, even when runtime behavior changes. "The button now opens a new tab" is `feat:`/`fix:`, not `feat!:`.
+- When unsure whether a change is breaking, default to `feat:`/`fix:` and flag the uncertainty to a maintainer in the PR. Do **not** reflexively mark a change breaking.
+- Prefer the package name as the commit scope (`apollo-react`, `apollo-wind`, `apollo-core`, `ap-chat`) for a readable changelog. Release attribution is by **file path**, not scope, so a non-package scope like `docs(repo)` / `ci` won't misroute a bump.
+- **Keep a single commit's changes within one package's folder.** `semantic-release-monorepo` routes each commit to a package by the files it touched, so a commit that edits two packages' files applies its bump level (including a `!` major) to *both*, regardless of scope. Split cross-package changes into separate commits.
+
+**In review, block any commit (including the squash-merge title) that marks a change breaking when it does not remove, rename, or retype a public export or prop.** Ask the author to reword it before merge. Once merged to `main` and released, a bad major bump cannot be reverted.
+
+---
+
 ## Release and Publishing Review
 
 When reviewing `release.yml`, `dev-publish.yml`, `dev-cleanup.yml`, or `scripts/`:
@@ -211,6 +236,8 @@ The package is migrating from Emotion/MUI → Tailwind + `apollo-wind`. **Block:
 
 When a PR significantly modifies an existing styled/MUI component, migrate it to Tailwind as part of the change.
 
+**Prefer keeping components platform-data-agnostic.** These packages are open-source and consumed externally, so lean away from "connected" components that embed UiPath platform data-fetching (Discovery, Orchestrator folders, BYO connections, etc.). Prefer accepting data via props, render props, or callbacks and leaving the platform wiring to the consuming app. This is a preference, not a hard block. Raise it in review when a new component reaches into platform data sources directly.
+
 ---
 
 ## Code Review
@@ -227,6 +254,7 @@ When a PR significantly modifies an existing styled/MUI component, migrate it to
 - Modification to `monitor-npm-publishes.yml` that removes or weakens the alert-on-mismatch logic
 - Literal `EOF` heredoc delimiter in a `run:` step where the output value is attacker-influenced — use `openssl rand -hex 8`
 - New Emotion/MUI usage in `apollo-react`
+- A commit marked breaking (`!` or `BREAKING CHANGE:`) for a change that does not remove/rename/retype a public export or prop — mislabeling forces a permanent, irreversible major version bump (see Commit Messages & Semantic Versioning)
 - Breaking public API changes
 - Runtime security vulnerabilities (XSS, injection, prototype pollution)
 - TypeScript errors
