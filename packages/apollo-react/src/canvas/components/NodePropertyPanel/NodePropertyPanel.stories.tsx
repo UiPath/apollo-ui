@@ -22,10 +22,18 @@ import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { FormSchema, LockableFieldType, LockableValueFieldMode } from '@uipath/apollo-wind';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Badge,
   Button,
   Card,
   CardContent,
+  Checkbox,
   cn,
   DropdownMenu,
   DropdownMenuContent,
@@ -46,7 +54,15 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
+  RadioGroup,
+  RadioGroupItem,
   ScrollableTabsList,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Slider,
   Switch,
   Tabs,
   TabsContent,
@@ -3599,6 +3615,510 @@ function InlineEditingStory() {
     </PanelFrame>
   );
 }
+
+export const InlineEditing: Story = {
+  name: 'Inline Editing',
+  render: () => <InlineEditingStory />,
+};
+
+// ============================================================================
+// Panel UI Inventory
+// Interactive reference of common controls and layout patterns used in panels.
+// ============================================================================
+
+function InventoryField({
+  label,
+  description,
+  children,
+}: {
+  label: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="grid gap-1.5">
+      <Label className="text-xs font-medium text-foreground">{label}</Label>
+      {children}
+      {description && <p className="text-xs leading-4 text-foreground-muted">{description}</p>}
+    </div>
+  );
+}
+
+function PatternNote({ title, children }: { title: string; children: ReactNode }) {
+  const [dismissed, setDismissed] = useState(false);
+
+  if (dismissed) return null;
+
+  return (
+    <aside className="rounded-lg border border-border-subtle bg-surface-overlay p-3">
+      <div className="flex items-start justify-between gap-3">
+        <p className="pt-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-brand">
+          Layout pattern
+        </p>
+        <Button
+          variant="ghost"
+          size="4xs"
+          icon
+          onClick={() => setDismissed(true)}
+          aria-label={`Dismiss ${title} note`}
+          title="Dismiss note"
+          className="-mr-1 -mt-1 shrink-0 text-foreground-subtle hover:bg-surface-raised hover:text-foreground"
+        >
+          <X size={12} />
+        </Button>
+      </div>
+      <h3 className="mt-1 text-sm font-semibold text-foreground">{title}</h3>
+      <p className="mt-1 text-xs leading-4 text-foreground-muted">{children}</p>
+    </aside>
+  );
+}
+
+function InventorySubContainer({
+  expandedSections,
+  onExpandedSectionsChange,
+}: {
+  expandedSections: string[];
+  onExpandedSectionsChange: (sections: string[]) => void;
+}) {
+  const [enabled, setEnabled] = useState(true);
+  const [checked, setChecked] = useState(true);
+  const toggleSection = (section: string) => {
+    onExpandedSectionsChange(
+      expandedSections.includes(section)
+        ? expandedSections.filter((value) => value !== section)
+        : [...expandedSections, section]
+    );
+  };
+
+  return (
+    <div className="grid gap-3">
+      <div className="overflow-hidden rounded-xl border border-border-subtle">
+        <button
+          type="button"
+          onClick={() => toggleSection('text-fields')}
+          aria-expanded={expandedSections.includes('text-fields')}
+          className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-surface-overlay"
+        >
+          <ChevronDown
+            size={12}
+            className={cn(
+              'shrink-0 text-foreground-subtle transition-transform duration-150',
+              !expandedSections.includes('text-fields') && '-rotate-90'
+            )}
+          />
+          <span className="min-w-0 flex-1 text-xs font-medium text-foreground">
+            Text and numeric fields
+          </span>
+        </button>
+
+        {expandedSections.includes('text-fields') && (
+          <div className="border-t border-border-subtle">
+            <section className="grid gap-4 px-3 py-4">
+              <InventoryField label="Display name">
+                <Input defaultValue="Invoice extraction" />
+              </InventoryField>
+              <InventoryField label="Instructions">
+                <Textarea defaultValue="Extract the invoice number and total." rows={3} />
+              </InventoryField>
+              <InventoryField label="Retries">
+                <Input type="number" defaultValue="3" min="0" />
+              </InventoryField>
+              <InventoryField label="System identifier">
+                <Input value="invoice-extraction-01" readOnly disabled />
+              </InventoryField>
+            </section>
+          </div>
+        )}
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-border-subtle">
+        <button
+          type="button"
+          onClick={() => toggleSection('choices')}
+          aria-expanded={expandedSections.includes('choices')}
+          className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-surface-overlay"
+        >
+          <ChevronDown
+            size={12}
+            className={cn(
+              'shrink-0 text-foreground-subtle transition-transform duration-150',
+              !expandedSections.includes('choices') && '-rotate-90'
+            )}
+          />
+          <span className="min-w-0 flex-1 text-xs font-medium text-foreground">
+            Selection controls
+          </span>
+        </button>
+        {expandedSections.includes('choices') && (
+          <section className="grid gap-5 border-t border-border-subtle px-3 py-4">
+            <InventoryField label="Connection">
+              <Select defaultValue="production">
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="production">Production</SelectItem>
+                  <SelectItem value="staging">Staging</SelectItem>
+                </SelectContent>
+              </Select>
+            </InventoryField>
+            <InventoryField label="Processing mode">
+              <RadioGroup defaultValue="automatic" className="grid gap-2">
+                <Label className="flex items-center gap-2 font-normal">
+                  <RadioGroupItem value="automatic" />
+                  Automatic
+                </Label>
+                <Label className="flex items-center gap-2 font-normal">
+                  <RadioGroupItem value="manual" />
+                  Manual review
+                </Label>
+              </RadioGroup>
+            </InventoryField>
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="sub-container-save-output"
+                checked={checked}
+                onCheckedChange={(value) => setChecked(value === true)}
+              />
+              <Label htmlFor="sub-container-save-output" className="text-xs">
+                Save output for later steps
+              </Label>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="sub-container-enabled" className="text-xs">
+                Enabled
+              </Label>
+              <Switch
+                id="sub-container-enabled"
+                checked={enabled}
+                onCheckedChange={setEnabled}
+              />
+            </div>
+            <InventoryField label="Confidence threshold" description="Current value: 75%">
+              <Slider defaultValue={[75]} max={100} step={5} />
+            </InventoryField>
+          </section>
+        )}
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-border-subtle">
+        <button
+          type="button"
+          onClick={() => toggleSection('advanced')}
+          aria-expanded={expandedSections.includes('advanced')}
+          className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-surface-overlay"
+        >
+          <ChevronDown
+            size={12}
+            className={cn(
+              'shrink-0 text-foreground-subtle transition-transform duration-150',
+              !expandedSections.includes('advanced') && '-rotate-90'
+            )}
+          />
+          <span className="min-w-0 flex-1 text-xs font-medium text-foreground">
+            Advanced options
+          </span>
+        </button>
+        {expandedSections.includes('advanced') && (
+          <section className="grid gap-4 border-t border-border-subtle px-3 py-4">
+            <Alert>
+              <CircleCheck />
+              <AlertTitle>Configuration is valid</AlertTitle>
+              <AlertDescription>All required values are ready.</AlertDescription>
+            </Alert>
+            <InventoryField label="Field with validation" description="Use a unique name.">
+              <Input
+                defaultValue="Existing configuration"
+                aria-invalid="true"
+                className="border-destructive"
+              />
+            </InventoryField>
+            <div className="flex flex-wrap gap-2">
+              <Badge>Active</Badge>
+              <Badge variant="outline">Optional</Badge>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
+              <Button variant="ghost">Cancel</Button>
+              <Button variant="outline">Test</Button>
+              <Button>Save</Button>
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PanelUIInventoryStory() {
+  const [enabled, setEnabled] = useState(true);
+  const [checked, setChecked] = useState(true);
+  const allInventorySections = ['text-fields', 'choices', 'collapsed'];
+  const allSubContainerSections = ['text-fields', 'choices', 'advanced'];
+  const [expandedSections, setExpandedSections] = useState(allInventorySections);
+  const [expandedSubContainerSections, setExpandedSubContainerSections] = useState(
+    allSubContainerSections
+  );
+  const allSectionsExpanded =
+    expandedSections.length === allInventorySections.length &&
+    expandedSubContainerSections.length === allSubContainerSections.length;
+
+  const toggleAllSections = () => {
+    if (allSectionsExpanded) {
+      setExpandedSections([]);
+      setExpandedSubContainerSections([]);
+      return;
+    }
+
+    setExpandedSections(allInventorySections);
+    setExpandedSubContainerSections(allSubContainerSections);
+  };
+
+  return (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle="Properties"
+        nodeIcon={<Sparkles />}
+        nodeLabel="UI element inventory"
+        nodeCategory="Panel reference"
+        action={<RunButton />}
+        contentInset="0.875rem"
+        onClose={() => {}}
+        className="h-[720px]"
+      >
+        <Tabs defaultValue="fields" className="flex h-full min-h-0 flex-col">
+          <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle px-3.5 py-3">
+            <ScrollableTabsList
+              className={cn(TAB_LIST_CLASS, 'min-w-0 flex-1')}
+              scrollButtonClassName="size-6 hover:bg-surface-overlay"
+            >
+              <TabsTrigger value="fields" className={TAB_TRIGGER_CLASS}>
+                Form fields
+              </TabsTrigger>
+              <TabsTrigger value="states" className={TAB_TRIGGER_CLASS}>
+                States
+              </TabsTrigger>
+              <TabsTrigger value="actions" className={TAB_TRIGGER_CLASS}>
+                Actions
+              </TabsTrigger>
+            </ScrollableTabsList>
+            <Button
+              variant="ghost"
+              size="4xs"
+              icon
+              onClick={toggleAllSections}
+              aria-label={allSectionsExpanded ? 'Collapse all sections' : 'Expand all sections'}
+              title={allSectionsExpanded ? 'Collapse all sections' : 'Expand all sections'}
+              className="shrink-0 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+            >
+              <ChevronsUpDown size={13} />
+            </Button>
+          </div>
+
+          <TabsContent value="fields" className="mt-0 min-h-0 flex-1 overflow-y-auto">
+            <div className="px-3.5 pt-5">
+              <PatternNote title="Expandable sections">
+                Full-width sections that reveal or hide related fields without adding nested
+                container chrome.
+              </PatternNote>
+            </div>
+            <Accordion
+              type="multiple"
+              value={expandedSections}
+              onValueChange={setExpandedSections}
+            >
+              <AccordionItem value="text-fields" className="border-border-subtle px-3.5">
+                <AccordionTrigger className="py-4 text-sm">Text and numeric fields</AccordionTrigger>
+                <AccordionContent className="grid gap-4 pb-5">
+                  <InventoryField label="Name" description="Short, single-line text input.">
+                    <Input defaultValue="Extract invoice data" />
+                  </InventoryField>
+                  <InventoryField label="Description">
+                    <Textarea
+                      defaultValue="Extract structured fields from incoming invoices."
+                      rows={3}
+                    />
+                  </InventoryField>
+                  <InventoryField label="Retry count">
+                    <Input type="number" defaultValue="3" min="0" />
+                  </InventoryField>
+                  <InventoryField label="Read-only value">
+                    <Input value="Generated by the system" readOnly disabled />
+                  </InventoryField>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="choices" className="border-border-subtle px-3.5">
+                <AccordionTrigger className="py-4 text-sm">Selection controls</AccordionTrigger>
+                <AccordionContent className="grid gap-5 pb-5">
+                  <InventoryField label="Connection">
+                    <Select defaultValue="production">
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Choose a connection" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="production">Production</SelectItem>
+                        <SelectItem value="staging">Staging</SelectItem>
+                        <SelectItem value="development">Development</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </InventoryField>
+                  <InventoryField label="Processing mode">
+                    <RadioGroup defaultValue="automatic" className="grid gap-2">
+                      <Label className="flex items-center gap-2 font-normal">
+                        <RadioGroupItem value="automatic" />
+                        Automatic
+                      </Label>
+                      <Label className="flex items-center gap-2 font-normal">
+                        <RadioGroupItem value="manual" />
+                        Manual review
+                      </Label>
+                    </RadioGroup>
+                  </InventoryField>
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="save-output"
+                      checked={checked}
+                      onCheckedChange={(value) => setChecked(value === true)}
+                    />
+                    <div className="grid gap-0.5">
+                      <Label htmlFor="save-output" className="text-xs">
+                        Save output to storage
+                      </Label>
+                      <p className="text-xs text-foreground-muted">
+                        Makes the result available to later steps.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <Label htmlFor="enabled-switch" className="text-xs">
+                        Enabled
+                      </Label>
+                      <p className="text-xs text-foreground-muted">Run this node in the workflow.</p>
+                    </div>
+                    <Switch
+                      id="enabled-switch"
+                      checked={enabled}
+                      onCheckedChange={setEnabled}
+                    />
+                  </div>
+                  <InventoryField label="Confidence threshold" description="Current value: 75%">
+                    <Slider defaultValue={[75]} max={100} step={5} />
+                  </InventoryField>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="collapsed" className="border-border-subtle px-3.5">
+                <AccordionTrigger className="py-4 text-sm">Advanced options</AccordionTrigger>
+                <AccordionContent className="grid gap-4 pb-5">
+                  <InventoryField label="Internal identifier">
+                    <Input defaultValue="invoice-extractor-01" />
+                  </InventoryField>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+            <div className="grid gap-3 border-t border-border-subtle px-3.5 py-5">
+              <PatternNote title="Sub-containers">
+                Dense, collapsible cards for related configuration when stronger visual grouping is
+                useful.
+              </PatternNote>
+              <InventorySubContainer
+                expandedSections={expandedSubContainerSections}
+                onExpandedSectionsChange={setExpandedSubContainerSections}
+              />
+            </div>
+            <div className="grid gap-4 border-t border-border-subtle px-3.5 py-5">
+              <PatternNote title="Flat content">
+                A simple, always-visible layout for short configurations that do not need
+                collapsible sections or nested containers.
+              </PatternNote>
+              <div className="grid gap-4">
+                <InventoryField label="Name" description="A field placed directly in the panel.">
+                  <Input defaultValue="Extract invoice data" />
+                </InventoryField>
+                <InventoryField label="Connection">
+                  <Select defaultValue="production">
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="production">Production</SelectItem>
+                      <SelectItem value="staging">Staging</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </InventoryField>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <Label htmlFor="flat-pattern-enabled" className="text-xs">
+                      Enabled
+                    </Label>
+                    <p className="text-xs text-foreground-muted">
+                      Run this node in the workflow.
+                    </p>
+                  </div>
+                  <Switch id="flat-pattern-enabled" defaultChecked />
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="states" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
+            <div className="grid gap-4">
+              <div className="flex flex-wrap gap-2">
+                <Badge>Default</Badge>
+                <Badge variant="secondary">Optional</Badge>
+                <Badge variant="outline">Read only</Badge>
+              </div>
+              <Alert>
+                <CircleCheck />
+                <AlertTitle>Configuration is valid</AlertTitle>
+                <AlertDescription>All required fields have been completed.</AlertDescription>
+              </Alert>
+              <Alert variant="destructive">
+                <CircleAlert />
+                <AlertTitle>Connection required</AlertTitle>
+                <AlertDescription>Select a valid connection before running this node.</AlertDescription>
+              </Alert>
+              <InventoryField label="Field with validation" description="Use a unique node name.">
+                <Input
+                  defaultValue="Existing node"
+                  aria-invalid="true"
+                  className="border-destructive"
+                />
+              </InventoryField>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="actions" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
+            <div className="grid gap-5">
+              <div className="grid gap-2">
+                <Label className="text-xs">Button hierarchy</Label>
+                <div className="flex flex-wrap gap-2">
+                  <Button>Primary</Button>
+                  <Button variant="outline">Secondary</Button>
+                  <Button variant="ghost">Tertiary</Button>
+                  <Button variant="destructive">Delete</Button>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label className="text-xs">Footer pattern</Label>
+                <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
+                  <Button variant="ghost">Cancel</Button>
+                  <Button>Save changes</Button>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </NodePropertyPanel>
+    </PanelFrame>
+  );
+}
+
+export const PanelUIInventory: Story = {
+  name: 'Panel UI Inventory',
+  render: () => <PanelUIInventoryStory />,
+};
 
 export const AlertsAndErrors: Story = {
   name: 'Alerts and Errors',
