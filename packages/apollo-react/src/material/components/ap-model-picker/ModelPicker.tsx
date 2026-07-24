@@ -1,11 +1,18 @@
 import AddIcon from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import Typography from '@mui/material/Typography';
 import { Colors, FontFamily } from '@uipath/apollo-core';
 import React from 'react';
 import { useSafeLingui } from '../../../i18n';
+import { DELETE_CONFIRM } from './i18n';
 import type { ModelBadgeKind } from './badges';
 import { FolderSwitcher, type FolderSwitcherFolder } from './primitives/FolderSwitcher';
 import { defaultRowActions } from './primitives/ModelOptionRow';
@@ -424,14 +431,20 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
 
     // In self-fetch mode a BYO delete refetches the catalog once the
     // host's handler resolves; with host-owned models the host refreshes.
+    // Deleting a configuration affects every consumer in the tenant, so the
+    // picker always confirms before invoking the host's handler.
+    const [pendingDelete, setPendingDelete] = React.useState<DiscoveryModel | null>(null);
     const handleDeleteModel = React.useMemo(() => {
       if (!onDeleteModel) return undefined;
-      if (!selfFetchCtx) return onDeleteModel;
-      return async (m: DiscoveryModel) => {
-        await onDeleteModel(m);
-        refetchDiscovery();
-      };
-    }, [onDeleteModel, selfFetchCtx, refetchDiscovery]);
+      return (m: DiscoveryModel) => setPendingDelete(m);
+    }, [onDeleteModel]);
+    const confirmPendingDelete = React.useCallback(async () => {
+      const model = pendingDelete;
+      setPendingDelete(null);
+      if (!model) return;
+      await onDeleteModel?.(model);
+      if (selfFetchCtx) refetchDiscovery();
+    }, [pendingDelete, onDeleteModel, selfFetchCtx, refetchDiscovery]);
 
     // BYO rows without a host-supplied `byoConnectionLabel` get their
     // Integration Service connection name resolved by the picker itself.
@@ -896,6 +909,69 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
             </>
           )}
         </PickerPopup>
+
+        <Dialog
+          open={pendingDelete !== null}
+          onClose={() => setPendingDelete(null)}
+          container={popupContainer}
+          disablePortal={disablePortal}
+          maxWidth="xs"
+          // Destructive interrupt: announce as an alert dialog wired to its
+          // own title and description.
+          role="alertdialog"
+          aria-labelledby={`${id}-delete-title`}
+          aria-describedby={`${id}-delete-description`}
+          sx={{ zIndex: 1500 }}
+          PaperProps={{
+            sx: {
+              borderRadius: '10px',
+              border: '1px solid',
+              borderColor: `var(--color-border-de-emp, ${Colors.ColorGray300})`,
+              backgroundColor: `var(--color-background-raised, ${Colors.ColorWhite})`,
+              backgroundImage: 'none',
+              boxShadow: '0 12px 30px rgba(16, 24, 40, 0.10), 0 2px 6px rgba(16, 24, 40, 0.04)',
+              fontFamily: FontFamily.FontNormal,
+            },
+          }}
+        >
+          <DialogTitle
+            id={`${id}-delete-title`}
+            sx={{
+              fontFamily: FontFamily.FontNormal,
+              fontSize: 16,
+              fontWeight: 600,
+              color: `var(--color-foreground, ${Colors.ColorGray850})`,
+            }}
+          >
+            {_(DELETE_CONFIRM.title)}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText
+              id={`${id}-delete-description`}
+              sx={{
+                fontFamily: FontFamily.FontNormal,
+                fontSize: 14,
+                color: `var(--color-foreground-de-emp, ${Colors.ColorGray550})`,
+              }}
+            >
+              {_({
+                ...DELETE_CONFIRM.message,
+                values: {
+                  name: pendingDelete ? (pendingDelete.displayName ?? pendingDelete.modelName) : '',
+                },
+              })}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            {/* Focus lands on the safe action for a destructive confirm. */}
+            <Button autoFocus onClick={() => setPendingDelete(null)}>
+              {_(DELETE_CONFIRM.cancel)}
+            </Button>
+            <Button color="error" variant="contained" onClick={confirmPendingDelete}>
+              {_(DELETE_CONFIRM.confirm)}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     );
   }

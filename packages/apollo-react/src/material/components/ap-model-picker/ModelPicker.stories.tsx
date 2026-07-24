@@ -25,9 +25,7 @@ const MOCK_MODELS: DiscoveryModel[] = [
       // would be wrong; we bump it via the test rate to demonstrate the
       // boundary). Real gateway rates here.
       costDetails: {
-        inputTokenCost: 3.0,
-        outputTokenCost: 15.0,
-        currency: 'USD',
+        flatCosts: { inputTokenCost: 300, outputTokenCost: 1500 },
       },
     },
   },
@@ -40,9 +38,7 @@ const MOCK_MODELS: DiscoveryModel[] = [
     modelDetails: {
       contextWindowTokens: 200000,
       costDetails: {
-        inputTokenCost: 3.0,
-        outputTokenCost: 15.0,
-        currency: 'USD',
+        flatCosts: { inputTokenCost: 300, outputTokenCost: 1500 },
       },
     },
   },
@@ -56,9 +52,7 @@ const MOCK_MODELS: DiscoveryModel[] = [
     modelDetails: {
       contextWindowTokens: 1000000,
       costDetails: {
-        inputTokenCost: 0.35,
-        outputTokenCost: 1.5,
-        currency: 'USD',
+        flatCosts: { inputTokenCost: 35, outputTokenCost: 150 },
       },
     },
   },
@@ -74,9 +68,7 @@ const MOCK_MODELS: DiscoveryModel[] = [
       maxOutputTokens: 128000,
       // gpt-5 large: premium
       costDetails: {
-        inputTokenCost: 6.0,
-        outputTokenCost: 18.0,
-        currency: 'USD',
+        flatCosts: { inputTokenCost: 600, outputTokenCost: 1800 },
       },
     },
   },
@@ -94,9 +86,7 @@ const MOCK_MODELS: DiscoveryModel[] = [
       contextWindowTokens: 128000,
       maxOutputTokens: 16384,
       costDetails: {
-        inputTokenCost: 2.5,
-        outputTokenCost: 10.0,
-        currency: 'USD',
+        flatCosts: { inputTokenCost: 250, outputTokenCost: 1000 },
       },
     },
   },
@@ -189,9 +179,7 @@ const MOCK_MODELS: DiscoveryModel[] = [
       maxOutputTokens: 32768,
       // gpt-4.1-mini: basic
       costDetails: {
-        inputTokenCost: 0.4,
-        outputTokenCost: 1.6,
-        currency: 'USD',
+        flatCosts: { inputTokenCost: 40, outputTokenCost: 160 },
       },
     },
   },
@@ -213,9 +201,7 @@ const MOCK_MODELS: DiscoveryModel[] = [
       contextWindowTokens: 400000,
       maxOutputTokens: 128000,
       costDetails: {
-        inputTokenCost: 2.5,
-        outputTokenCost: 10.0,
-        currency: 'USD',
+        flatCosts: { inputTokenCost: 250, outputTokenCost: 1000 },
       },
     },
   },
@@ -372,6 +358,30 @@ export const AdminCanManageByo: Story = {
           'edit/delete icons on every BYO row and a "Use custom model" ' +
           'CTA at the bottom of the popup. Wire `onUseCustomModel` to ' +
           'open your BYO connection wizard.',
+      },
+    },
+  },
+};
+
+export const DeleteWithConfirmation: Story = {
+  name: 'Admin: delete asks for confirmation',
+  render: Controlled,
+  args: {
+    variant: 'searchable',
+    models: MOCK_MODELS,
+    canManageByo: true,
+    onDeleteModel: (model: DiscoveryModel) => {
+      // eslint-disable-next-line no-console
+      console.log('[story] confirmed delete of', model.modelId);
+    },
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Pass `onDeleteModel` and BYO rows gain a delete action. The picker ' +
+          'always shows a confirmation dialog naming the configuration before ' +
+          'invoking the handler — deletion affects every consumer in the tenant.',
       },
     },
   },
