@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.1.0...@uipath/apollo-react@6.2.0) (2026-07-24)
+
+### Features
+
+* **apollo-react:** add NodeIOView + JsonTree schema-aware JSON components ([5de1582](https://github.com/UiPath/apollo-ui/commit/5de15826b8207a5d716ae4edbc84b3d4de63bde2))
+
 ## [@uipath/apollo-react-v6.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.0.0...@uipath/apollo-react@6.1.0) (2026-07-24)
 
 ### Features
