@@ -1,13 +1,13 @@
-import { Padding, Spacing } from '@uipath/apollo-core';
-import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+import { Spacing } from '@uipath/apollo-core';
+import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Badge, Button, Spinner } from '@uipath/apollo-wind';
 import debounce from 'debounce';
-import { CirclePlay } from 'lucide-react';
+import { CirclePlay, Redo2, RotateCcw } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
-import { StageTaskIcon, StageTaskRetryDuration } from './StageNode.styles';
+import { StageTaskIcon } from './StageNode.styles';
 import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
 import { StageTaskEntryConditionIcon } from './StageTaskEntryConditionIcon';
 import { useExecutionStatusLabel } from './useExecutionStatusLabel';
@@ -22,15 +22,7 @@ const ProcessCanvasIcon = () => (
 );
 
 const TaskPlayButton = memo(
-  ({
-    taskId,
-    onTaskPlay,
-    small,
-  }: {
-    taskId: string;
-    onTaskPlay: (taskId: string) => Promise<void>;
-    small?: boolean;
-  }) => {
+  ({ taskId, onTaskPlay }: { taskId: string; onTaskPlay: (taskId: string) => Promise<void> }) => {
     const [playLoading, setPlayLoading] = useState(false);
     const { _ } = useSafeLingui();
     const triggerTaskLabel = _({ id: 'stage-node.trigger-task', message: 'Trigger task' });
@@ -73,11 +65,7 @@ const TaskPlayButton = memo(
           onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
           onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
           aria-label={triggerTaskLabel}
-          className={
-            small
-              ? 'task-menu-icon-button h-4 w-4 [&_svg]:size-3.5 rounded-sm'
-              : 'task-menu-icon-button h-4 w-4 rounded-sm'
-          }
+          className="task-menu-icon-button h-4 w-4 rounded-sm"
           style={{
             color: 'var(--canvas-icon-default)',
             minWidth: 'unset',
@@ -103,131 +91,128 @@ export const TaskContent = memo(
     const { _ } = useSafeLingui();
     const getStatusName = useExecutionStatusLabel();
     const hasExecutionStatus = !!taskExecution?.status;
-    const badgeText = useMemo(() => {
-      if (!taskExecution?.badge) {
-        return undefined;
-      }
-      if (taskExecution.retryCount && taskExecution.retryCount > 1) {
-        if (taskExecution.status === 'InProgress') {
-          return _({
-            id: 'stage-node.task-badge.running-again',
-            message: 'Running again',
+    // Runs and rework collapse to two compact amber icon-chips (per design): a "runs" chip
+    // (↱ + total-run count) driven by retryCount, and a "rework" chip (↺) driven by the
+    // rework duration. The localised phrasing lives in each chip's tooltip so the row stays
+    // on one line and still reads for screen readers. retryCount is the number of re-runs, so
+    // the total-run count shown is retryCount + 1.
+    const retries = taskExecution?.retryCount ?? 0;
+    const hasRuns = retries > 0;
+    const totalRuns = retries + 1;
+    const runsTooltip =
+      taskExecution?.status === 'InProgress'
+        ? _({ id: 'stage-node.task-badge.running-again', message: 'Running again' })
+        : _({
+            id: 'stage-node.task-badge.ran-n-times',
+            message: '{count, plural, one {Ran # time} other {Ran # times}}',
+            values: { count: totalRuns },
           });
-        }
-        return _({
-          id: 'stage-node.task-badge.ran-n-times',
-          message: '{count, plural, one {Ran # time} other {Ran # times}}',
-          values: { count: taskExecution.retryCount },
-        });
-      }
-      return taskExecution.badge;
-    }, [taskExecution?.badge, taskExecution?.retryCount, taskExecution?.status, _]);
-    const hasSecondRowContent =
-      taskExecution && (taskExecution.duration || taskExecution.retryDuration || badgeText);
-    const showTaskPlayButton = onTaskPlay && hasExecutionStatus;
+    const hasRework = !!taskExecution?.retryDuration;
+    const reworkTooltip = _({
+      id: 'stage-node.task-badge.rework-time',
+      message: 'Reworked (+{duration})',
+      values: { duration: taskExecution?.retryDuration ?? '' },
+    });
     const taskStatusFallbackName = hasExecutionStatus ? getStatusName(taskExecution?.status) : '';
     const taskStatusTooltip = taskExecution?.message || taskStatusFallbackName;
-    const durationLabel = useMemo(
-      () =>
-        taskExecution?.duration ? (
-          <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
-        ) : null,
-      [taskExecution?.duration]
-    );
+    // Ad hoc tasks are by definition not required, so never show the "*" marker on them.
+    const showRequiredMarker = task.isRequired && !task.isAdhoc && task.taskGroupType !== 'adhoc';
+    const durationLabel = taskExecution?.duration ? (
+      <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
+    ) : null;
 
     return (
-      <Column
+      <Row
         flex={1}
-        style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        gap={Padding.PadXs}
+        align="center"
+        justify="space-between"
+        gap={Spacing.SpacingXs}
+        style={{ overflow: 'hidden' }}
       >
-        <Row align="center" justify="space-between" gap={Spacing.SpacingXs}>
-          {/* disable tooltip when dragging to avoid tooltip flickering */}
-          <Row
-            gap={Spacing.SpacingXs}
-            align="center"
-            style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        {/* disable tooltip when dragging to avoid tooltip flickering */}
+        <Row
+          gap={Spacing.SpacingXs}
+          align="center"
+          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          <StageTaskIcon>{task.icon ?? <ProcessCanvasIcon />}</StageTaskIcon>
+          <CanvasTooltip
+            content={task.label}
+            placement="top"
+            smartTooltip
+            {...(isDragging && { isOpen: false })}
           >
-            <StageTaskIcon>{task.icon ?? <ProcessCanvasIcon />}</StageTaskIcon>
-            <CanvasTooltip
-              content={task.label}
-              placement="top"
-              smartTooltip
-              {...(isDragging && { isOpen: false })}
+            <Row
+              gap={'2px'}
+              align="center"
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
             >
-              <Row
-                gap={'2px'}
-                align="center"
-                style={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <span className="text-sm truncate" style={{ minWidth: 0 }}>
-                  {task.label}
+              <span className="text-sm truncate" style={{ minWidth: 0 }}>
+                {task.label}
+              </span>
+              {showRequiredMarker && (
+                <span className="text-sm" style={{ flexShrink: 0 }}>
+                  {'*'}
                 </span>
-                {task.isRequired && (
-                  <span className="text-sm" style={{ flexShrink: 0 }}>
-                    {'*'}
-                  </span>
-                )}
-              </Row>
-            </CanvasTooltip>
-          </Row>
-          <Row align="center" gap={Spacing.SpacingXs} style={{ flexShrink: 0 }}>
-            {hasExecutionStatus && (
-              <CanvasTooltip content={taskStatusTooltip} placement="top">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-4 w-4 rounded-sm"
-                  aria-label={taskStatusTooltip}
-                >
-                  <ExecutionStatusIcon status={taskExecution.status} />
-                </Button>
-              </CanvasTooltip>
-            )}
-            {!hasSecondRowContent && <StageTaskEntryConditionIcon task={task} />}
-            {showTaskPlayButton && !hasSecondRowContent && (
-              <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />
-            )}
-            {onTaskPlay && !hasExecutionStatus && (
-              <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />
-            )}
-          </Row>
+              )}
+            </Row>
+          </CanvasTooltip>
         </Row>
-        {taskExecution && hasSecondRowContent && (
-          <Row align="center" justify="space-between">
-            <Row gap={'2px'}>
-              {durationLabel &&
-                (taskExecution?.durationTooltip ? (
-                  <CanvasTooltip
-                    content={taskExecution.durationTooltip}
-                    placement="top"
-                    hide={isDragging}
-                  >
-                    {durationLabel}
-                  </CanvasTooltip>
-                ) : (
-                  durationLabel
-                ))}
-              {taskExecution?.retryDuration && (
-                <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
-                  <span className="text-xs">{`(+${taskExecution.retryDuration})`}</span>
-                </StageTaskRetryDuration>
-              )}
-            </Row>
-            <Row align="center" gap={Spacing.SpacingXs}>
-              {badgeText && <Badge variant={taskExecution.badgeStatus}>{badgeText}</Badge>}
-              <StageTaskEntryConditionIcon task={task} small />
-              {showTaskPlayButton && (
-                <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
-              )}
-            </Row>
-          </Row>
-        )}
-      </Column>
+        <Row align="center" gap={Spacing.SpacingXs} style={{ flexShrink: 0 }}>
+          {durationLabel &&
+            (taskExecution?.durationTooltip ? (
+              <CanvasTooltip
+                content={taskExecution.durationTooltip}
+                placement="top"
+                hide={isDragging}
+              >
+                {durationLabel}
+              </CanvasTooltip>
+            ) : (
+              durationLabel
+            ))}
+          {hasRuns && (
+            <CanvasTooltip content={runsTooltip} placement="top" hide={isDragging}>
+              <Badge
+                variant="warning"
+                className="h-[14px] gap-px rounded-full px-1 py-0 text-[11px] leading-none [&>svg]:size-3"
+              >
+                <Redo2 aria-hidden />
+                {totalRuns}
+              </Badge>
+            </CanvasTooltip>
+          )}
+          {hasRework && (
+            <CanvasTooltip content={reworkTooltip} placement="top" hide={isDragging}>
+              <Badge
+                variant="warning"
+                aria-label={reworkTooltip}
+                className="h-[14px] rounded-full px-1 py-0 [&>svg]:size-3"
+              >
+                <RotateCcw aria-hidden />
+              </Badge>
+            </CanvasTooltip>
+          )}
+          <StageTaskEntryConditionIcon task={task} />
+          {hasExecutionStatus && (
+            <CanvasTooltip content={taskStatusTooltip} placement="top">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-4 w-4 rounded-sm"
+                aria-label={taskStatusTooltip}
+              >
+                <ExecutionStatusIcon status={taskExecution.status} />
+              </Button>
+            </CanvasTooltip>
+          )}
+          {onTaskPlay && <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />}
+        </Row>
+      </Row>
     );
   }
 );
