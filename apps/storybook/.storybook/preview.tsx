@@ -1,3 +1,4 @@
+import { loader } from '@monaco-editor/react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import type { Preview } from '@storybook/react';
@@ -15,6 +16,14 @@ import React, { useEffect } from 'react';
 import { ApolloDocsContainer } from './DocsContainer';
 import { GlobalStyles } from './GlobalStyles';
 import { ALL_THEMES, clampThemeForMaterial, DEFAULT_THEME, type ThemeMode } from './themes';
+
+// Load Monaco from the app's own origin (/monaco/vs, copied via staticDirs in
+// main.ts) instead of the default jsdelivr CDN, which is blocked on the Coded
+// App host. Resolve against document.baseURI so it is correct under the Coded
+// App sub-path and in dev.
+if (typeof document !== 'undefined') {
+  loader.config({ paths: { vs: new URL('monaco/vs', document.baseURI).href } });
+}
 
 // The react-scan devtools hook is installed via previewBody in main.ts
 // (must happen before React initializes). Here we configure the overlay/canvas

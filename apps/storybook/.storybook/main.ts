@@ -1,12 +1,26 @@
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
-import { mergeAlias } from 'vite';
 import type { PluginOption } from 'vite';
+import { mergeAlias } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Self-host Monaco's `vs` assets (served at /monaco/vs via staticDirs) instead
+// of the @monaco-editor default jsdelivr CDN, which is blocked on the Coded App
+// host. monaco-editor is a direct dep of apollo-wind, so resolve from there.
+const require = createRequire(import.meta.url);
+const monacoVsDir = resolve(
+  dirname(
+    require.resolve('monaco-editor/package.json', {
+      paths: [resolve(__dirname, '../../../packages/apollo-wind')],
+    })
+  ),
+  'min/vs'
+);
 
 // react-scan must install its devtools hook before React initializes.
 // Two Storybook behaviors interfere with this:
@@ -69,6 +83,7 @@ const config: StorybookConfig = {
       from: '../../../packages/apollo-core/src/icons/svg/third-party',
       to: '/brand',
     },
+    { from: monacoVsDir, to: '/monaco/vs' },
   ],
   framework: {
     name: '@storybook/react-vite',
