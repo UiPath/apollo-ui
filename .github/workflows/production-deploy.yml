@@ -16,7 +16,7 @@ concurrency:
 env:
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
-  UIP_GO_VERSION: 0.3.0
+  UIP_GO_VERSION: 0.3.1
 
 jobs:
   deploy:
