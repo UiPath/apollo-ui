@@ -916,13 +916,44 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           container={popupContainer}
           disablePortal={disablePortal}
           maxWidth="xs"
+          // Destructive interrupt: announce as an alert dialog wired to its
+          // own title and description.
+          role="alertdialog"
+          aria-labelledby={`${id}-delete-title`}
+          aria-describedby={`${id}-delete-description`}
           sx={{ zIndex: 1500 }}
+          PaperProps={{
+            sx: {
+              borderRadius: '10px',
+              border: '1px solid',
+              borderColor: `var(--color-border-de-emp, ${Colors.ColorGray300})`,
+              backgroundColor: `var(--color-background-raised, ${Colors.ColorWhite})`,
+              backgroundImage: 'none',
+              boxShadow: '0 12px 30px rgba(16, 24, 40, 0.10), 0 2px 6px rgba(16, 24, 40, 0.04)',
+              fontFamily: FontFamily.FontNormal,
+            },
+          }}
         >
-          <DialogTitle sx={{ fontFamily: FontFamily.FontNormal, fontSize: 16 }}>
+          <DialogTitle
+            id={`${id}-delete-title`}
+            sx={{
+              fontFamily: FontFamily.FontNormal,
+              fontSize: 16,
+              fontWeight: 600,
+              color: `var(--color-foreground, ${Colors.ColorGray850})`,
+            }}
+          >
             {_(DELETE_CONFIRM.title)}
           </DialogTitle>
           <DialogContent>
-            <DialogContentText sx={{ fontFamily: FontFamily.FontNormal, fontSize: 14 }}>
+            <DialogContentText
+              id={`${id}-delete-description`}
+              sx={{
+                fontFamily: FontFamily.FontNormal,
+                fontSize: 14,
+                color: `var(--color-foreground-de-emp, ${Colors.ColorGray550})`,
+              }}
+            >
               {_({
                 ...DELETE_CONFIRM.message,
                 values: {
@@ -931,8 +962,11 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
               })}
             </DialogContentText>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setPendingDelete(null)}>{_(DELETE_CONFIRM.cancel)}</Button>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            {/* Focus lands on the safe action for a destructive confirm. */}
+            <Button autoFocus onClick={() => setPendingDelete(null)}>
+              {_(DELETE_CONFIRM.cancel)}
+            </Button>
             <Button color="error" variant="contained" onClick={confirmPendingDelete}>
               {_(DELETE_CONFIRM.confirm)}
             </Button>
