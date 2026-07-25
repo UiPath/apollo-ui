@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.31.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.31.0...@uipath/apollo-wind@2.31.1) (2026-07-25)
+
+### Bug Fixes
+
+* **apollo-wind:** suppress native search clear button to avoid duplicate in Search ([f4739e4](https://github.com/UiPath/apollo-ui/commit/f4739e463ba883b210caf6cb981ca5ac9cec390f))
+
 ## [@uipath/apollo-wind-v2.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.30.0...@uipath/apollo-wind@2.31.0) (2026-07-24)
 
 ### Features
