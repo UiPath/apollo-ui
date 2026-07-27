@@ -1,6 +1,5 @@
 "use client";
 
-import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { SolutionTest, SolutionTestRun } from "./types";
@@ -13,11 +12,11 @@ interface ExpandedRunTestsProps {
   tests: SolutionTest[];
 }
 
-/** Smart wrapper: force-stop action + navigation to the run-details page. */
+/** Smart wrapper: force-stop action + opening the run-details route (the host
+ *  owns navigation via `config.onOpenRun`). */
 export const ExpandedRunTests = ({ runs, tests }: ExpandedRunTestsProps) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { track } = useSolutionTestsConfig();
+  const { track, onOpenRun } = useSolutionTestsConfig();
   const forceStopRun = useForceStopRun();
 
   const stoppingRunId = forceStopRun.isPending
@@ -30,14 +29,10 @@ export const ExpandedRunTests = ({ runs, tests }: ExpandedRunTestsProps) => {
       tests={tests}
       stoppingRunId={stoppingRunId}
       onOpenDetails={(run) => {
+        // No host navigation wired up — don't track an open that can't happen.
+        if (!onOpenRun) return;
         track?.("VS.SolutionTest.RunDetailsOpened", { runId: run.Id });
-        void navigate({
-          to: ".",
-          search: (prev: Record<string, unknown>) => ({
-            ...prev,
-            run: run.Id,
-          }),
-        });
+        onOpenRun(run);
       }}
       onForceStop={(runId) =>
         forceStopRun.mutate(runId, {

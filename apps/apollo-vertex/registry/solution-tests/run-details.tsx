@@ -4,6 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { useSolutionTestsConfig } from "./context";
 import {
   useAdoptJob,
@@ -11,15 +19,14 @@ import {
   useRemoveJobBaseline,
   useResultAttachment,
   useRunResults,
+  useSolutionTestRuns,
+  useSolutionTests,
   useUpdateBaseline,
 } from "./hooks";
 import type { ExpandedRowData } from "./result-expanded-content";
 import { RunDetailsView, type BaselineJobMap } from "./run-details-view";
-import {
-  RunResultStatus,
-  type SolutionTestRun,
-  type SolutionTestRunResult,
-} from "./types";
+import { RunResultStatus, type SolutionTestRunResult } from "./types";
+import { isRunDone } from "./utils";
 
 type ResultAttachments = Omit<ExpandedRowData, "loading">;
 
@@ -81,18 +88,28 @@ async function fetchResultAttachments(
 }
 
 interface RunDetailsProps {
-  run: SolutionTestRun;
-  subjectId: string;
+  /** Run id from the route param. Resolved to a run via the live collections. */
+  runId: string;
   onBack: () => void;
 }
 
-/** Smart wrapper: live run results + baseline jobs, selected-agent attachment
- *  fetch + baseline write actions, driving the full-page run-details view. */
-export const RunDetails = ({ run, subjectId, onBack }: RunDetailsProps) => {
+/** Smart wrapper: resolves the run from the route id, loads its live results +
+ *  baseline jobs, fetches the selected-agent attachments, and drives the
+ *  full-page run-details view. A route id that doesn't resolve to a completed
+ *  run (stale/shared link, or a still-running run) renders an empty state with a
+ *  Back button rather than auto-navigating. */
+export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
   const { t } = useTranslation();
   const { showDebug, track } = useSolutionTestsConfig();
-  const { results, isLoading } = useRunResults(run.Id);
-  const { jobs: baselines } = useBaselineJobs(run.SolutionTestId);
+  const { runs, isLoading: runsLoading } = useSolutionTestRuns();
+  const { tests } = useSolutionTests();
+
+  const run = runs.find((r) => r.Id === runId);
+  const test = run && tests.find((x) => x.Id === run.SolutionTestId);
+  const subjectId = test?.SubjectId ?? run?.SolutionTestId ?? "";
+
+  const { results, isLoading } = useRunResults(runId);
+  const { jobs: baselines } = useBaselineJobs(run?.SolutionTestId ?? "");
 
   const attachment = useResultAttachment();
   const adopt = useAdoptJob();
@@ -152,6 +169,28 @@ export const RunDetails = ({ run, subjectId, onBack }: RunDetailsProps) => {
       setSelectedResultId(results[0].Id);
     }
   }, [results, selectedResultId]);
+
+  // A route id that isn't a completed run has nothing to show (a stale or shared
+  // deep-link). Wait for the runs collection to resolve so a valid link isn't
+  // judged early, then render an empty state — never navigate away on the user.
+  if (!run || !isRunDone(run.Status)) {
+    if (runsLoading) return null;
+    return (
+      <Empty className="h-full min-h-[600px]">
+        <EmptyHeader>
+          <EmptyTitle>{t("run_unavailable")}</EmptyTitle>
+          <EmptyDescription>
+            {t("run_unavailable_description")}
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button variant="outline" onClick={onBack}>
+            {t("back")}
+          </Button>
+        </EmptyContent>
+      </Empty>
+    );
+  }
 
   return (
     <RunDetailsView

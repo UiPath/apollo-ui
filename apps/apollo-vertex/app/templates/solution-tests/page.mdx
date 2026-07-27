@@ -79,6 +79,10 @@ interface SolutionTestsConfig {
   subjectColumns?: ColumnDef<SolutionTest>[];
   /** Turns the test name into a link to its subject. */
   getSubjectHref?: (test: SolutionTest) => string | undefined;
+  /** Opens a run's details page. The host owns the route and navigation: on that
+   * route, render the exported smart `RunDetails` (it's `runId`-driven). Without
+   * this callback the Details action is inert, so run details can't be opened. */
+  onOpenRun?: (run: SolutionTestRun) => void;
   /** Subject noun for labels, e.g. `{ singular: "Loan", plural: "Loans" }`. */
   subjectNoun?: { singular: string; plural: string };
   /** Score at/above which a result passes (drives pass color + KPI trend line). Defaults to 0.9. */
