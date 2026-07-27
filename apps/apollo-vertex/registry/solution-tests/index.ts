@@ -17,6 +17,7 @@
  */
 
 export { SolutionTests } from "./solution-tests";
+export { RunDetails } from "./run-details";
 export { SolutionTestsView } from "./solution-tests-view";
 export type { SolutionTestsViewProps } from "./solution-tests-view";
 export { SaveAsTestButton } from "./save-as-test-button";

@@ -2,7 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { DEFAULT_PASS_THRESHOLD } from "./constants";
 import type { EvaluatorRenderers } from "./evaluators/registry";
 import type { ProcessOutputRenderers } from "./outputs/registry";
-import type { SolutionTest } from "./types";
+import type { SolutionTest, SolutionTestRun } from "./types";
 
 /**
  * Telemetry events the Solution Tests actions emit, with payloads. The template
@@ -63,6 +63,9 @@ export interface SolutionTestsConfig {
   subjectColumns?: ColumnDef<SolutionTest>[];
   /** When set, the test name links to its subject. */
   getSubjectHref?: (test: SolutionTest) => string | undefined;
+  /** Opens a run's details. The host owns the route + navigation; the view
+   *  calls this when a run row is opened. Run details can't open without it. */
+  onOpenRun?: (run: SolutionTestRun) => void;
   subjectNoun?: { singular: string; plural: string };
   /** Score at/above which a result passes (drives pass color + KPI trend line). Defaults to 0.9. */
   passThreshold?: number;
@@ -80,6 +83,7 @@ export interface SolutionTestsConfig {
 export interface ResolvedSolutionTestsConfig {
   subjectColumns: ColumnDef<SolutionTest>[];
   getSubjectHref?: (test: SolutionTest) => string | undefined;
+  onOpenRun?: (run: SolutionTestRun) => void;
   subjectNoun?: { singular: string; plural: string };
   passThreshold: number;
   showDebug: boolean;
@@ -95,6 +99,7 @@ export function resolveConfig(
   return {
     subjectColumns: config.subjectColumns ?? [],
     getSubjectHref: config.getSubjectHref,
+    onOpenRun: config.onOpenRun,
     subjectNoun: config.subjectNoun,
     passThreshold: config.passThreshold ?? DEFAULT_PASS_THRESHOLD,
     showDebug: config.showDebug ?? false,
