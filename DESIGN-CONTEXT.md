@@ -14,7 +14,7 @@ Haidy Perez-Francis, Senior Director of Design at UiPath, leads design for Verti
 
 Apollo Vertex is the design system for UiPath Vertical Solutions. It is distinct from the broader Apollo platform design system.
 
-Reference: https://apollo-vertex.vercel.app
+Reference: https://engdogfood.staging.uipath.host/apollo-vertex
 
 Component library is a UiPath-themed shadcn/ui set. Available components:
 Accordion, Alert, Alert Dialog, Aspect Ratio, Avatar, Badge, Breadcrumb, Button, Button Group, Calendar, Card, Chart, Checkbox, Collapsible, Command, Context Menu, Date Picker, Dialog, Drawer, Dropdown Menu, Empty, Field, Form, Hover Card, Input, Input Group, Input OTP, Item, Kbd, Label, Menubar, Navigation Menu, Pagination, Popover, Progress, Radio Group, Resizable, Scroll Area, Select, Separator, Sheet, Sidebar, Skeleton, Slider, Sonner, Spinner, Switch, Table, Tabs, Textarea, Toggle, Toggle Group, Tooltip

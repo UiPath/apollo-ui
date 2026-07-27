@@ -13,7 +13,7 @@ const CARDS = [
     title: 'Apollo Vertex',
     description:
       'The design system for verticals — tailored components, patterns, and documentation for vertical product teams.',
-    url: 'https://apollo-vertex.vercel.app/',
+    url: 'https://engdogfood.staging.uipath.host/apollo-vertex/',
     iconClass: 'card__icon--vertex',
     iconSvg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 19.5h20L12 2zm0 4l6.5 11.5h-13L12 6z" fill="currentColor"/></svg>`,
   },
