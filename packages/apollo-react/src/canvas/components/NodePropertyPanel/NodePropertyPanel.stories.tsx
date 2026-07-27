@@ -3915,7 +3915,40 @@ function PanelUIInventoryStory() {
           </div>
 
           <TabsContent value="fields" className="mt-0 min-h-0 flex-1 overflow-y-auto">
-            <div className="px-3.5 pt-5">
+            <div className="grid gap-4 px-3.5 py-5">
+              <PatternNote title="Flat content">
+                A simple, always-visible layout for short configurations that do not need
+                collapsible sections or nested containers.
+              </PatternNote>
+              <div className="grid gap-4">
+                <InventoryField label="Name" description="A field placed directly in the panel.">
+                  <Input defaultValue="Extract invoice data" />
+                </InventoryField>
+                <InventoryField label="Connection">
+                  <Select defaultValue="production">
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="production">Production</SelectItem>
+                      <SelectItem value="staging">Staging</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </InventoryField>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <Label htmlFor="flat-pattern-enabled" className="text-xs">
+                      Enabled
+                    </Label>
+                    <p className="text-xs text-foreground-muted">
+                      Run this node in the workflow.
+                    </p>
+                  </div>
+                  <Switch id="flat-pattern-enabled" defaultChecked />
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-border-subtle px-3.5 pt-5">
               <PatternNote title="Expandable sections">
                 Full-width sections that reveal or hide related fields without adding nested
                 container chrome.
@@ -4026,39 +4059,6 @@ function PanelUIInventoryStory() {
                 expandedSections={expandedSubContainerSections}
                 onExpandedSectionsChange={setExpandedSubContainerSections}
               />
-            </div>
-            <div className="grid gap-4 border-t border-border-subtle px-3.5 py-5">
-              <PatternNote title="Flat content">
-                A simple, always-visible layout for short configurations that do not need
-                collapsible sections or nested containers.
-              </PatternNote>
-              <div className="grid gap-4">
-                <InventoryField label="Name" description="A field placed directly in the panel.">
-                  <Input defaultValue="Extract invoice data" />
-                </InventoryField>
-                <InventoryField label="Connection">
-                  <Select defaultValue="production">
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="production">Production</SelectItem>
-                      <SelectItem value="staging">Staging</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </InventoryField>
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <Label htmlFor="flat-pattern-enabled" className="text-xs">
-                      Enabled
-                    </Label>
-                    <p className="text-xs text-foreground-muted">
-                      Run this node in the workflow.
-                    </p>
-                  </div>
-                  <Switch id="flat-pattern-enabled" defaultChecked />
-                </div>
-              </div>
             </div>
           </TabsContent>
 
