@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "apollo-vertex",
-  "homepage": "https://apollo-vertex.vercel.app",
+  "homepage": "https://engdogfood.staging.uipath.host/apollo-vertex",
   "items": [
     {
       "name": "apollo-vertex-theme",
