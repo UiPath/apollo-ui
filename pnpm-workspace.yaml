@@ -22,8 +22,6 @@ minimumReleaseAgeExclude:
   - 'next'                        # 16.2.11 — security release (GHSA-m99w-x7hq-7vfj, GHSA-6gpp-xcg3-4w24, GHSA-p9j2-gv94-2wf4, GHSA-89xv-2m56-2m9x + 5 moderate), vetted 2026-07-24: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
   - '@next/*'                     # 16.2.11 — swc platform binaries + env co-published with next in the same OIDC release
   - 'fast-uri'                    # 3.1.4 — GHSA-v2hh-gcrm-f6hx, vetted 2026-07-24: publisher (mcollina) ✓, release tag ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
-  - 'svgo'                        # 4.0.2 / 3.3.4 — GHSA-2p49-hgcm-8545, vetted 2026-07-24: publisher (sethiii) ✓, release tags ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
-  - 'dompurify'                   # 3.4.12 — GHSA-c2j3-45gr-mqc4, vetted 2026-07-24: publisher (cure53) ✓, release tag ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
   - '@hono/node-server'           # 2.0.10/2.0.11 — GHSA-9mqv-5hh9-4cgg, vetted 2026-07-24: provenance ✓, publisher (OIDC, approver yusukebe) ✓, tag+diff ✓, integrity ✓
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
