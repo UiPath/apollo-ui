@@ -200,14 +200,14 @@ const RunDetailsPane = ({
     status === RunResultStatus.Passed || status === RunResultStatus.Failed;
 
   // Directional triangle indicating the tested version moved up or down from
-  // the baseline (not a warning — just a signal that it changed).
+  // the baseline (not a warning — just a signal that it changed). Versions that
+  // are numerically equal ("1.0" vs "1.0.0") or non-numeric get no glyph.
+  const versionComparison = compareVersions(
+    result.ProcessVersion ?? "",
+    result.BaselineProcessVersion ?? "",
+  );
   const versionGlyph =
-    compareVersions(
-      result.ProcessVersion ?? "",
-      result.BaselineProcessVersion ?? "",
-    ) < 0
-      ? "▼"
-      : "▲";
+    versionComparison < 0 ? "▼" : versionComparison > 0 ? "▲" : null;
 
   const baselineInfo = baselineJobMap.get(result.ProcessName);
   const inBaseline = !!baselineInfo;
@@ -245,7 +245,7 @@ const RunDetailsPane = ({
             <span className="inline-flex items-center gap-1">
               {`${t("tested_agent_version")}: `}
               {showActualVersion ? (result.ProcessVersion ?? "-") : "—"}
-              {showActualVersion && versionChanged && (
+              {showActualVersion && versionChanged && versionGlyph && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span

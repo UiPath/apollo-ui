@@ -171,8 +171,11 @@ export const SolutionTestsView = ({
   // Runs default to newest-first by run date; the user can re-sort.
   const runsTable = useControlledTable([{ id: "StartedAt", desc: true }]);
   // `getRowId` is the test `Id`, so selection keys are test ids directly.
+  // Prune ids whose test no longer exists (e.g. deleted while selected) so the
+  // Run-selected count and payload never reference a stale test.
+  const existingTestIds = new Set(tests.map((test) => test.Id));
   const selectedTestIds = Object.keys(casesTable.rowSelection).filter(
-    (id) => casesTable.rowSelection[id],
+    (id) => casesTable.rowSelection[id] && existingTestIds.has(id),
   );
 
   const testCasesColumns: ColumnDef<SolutionTest>[] = [
