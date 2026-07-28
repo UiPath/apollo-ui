@@ -3,8 +3,10 @@ import { GripVertical, X } from 'lucide-react';
 import { type CSSProperties, useMemo } from 'react';
 import type { NodePropertyPanelProps } from './NodePropertyPanel.types';
 
-// Remap surface-raised -> surface-overlay so inputs read lighter than the panel.
-const SURFACE_REMAP = { '--surface-raised': 'var(--surface-overlay)' } as CSSProperties;
+// Future themes raise the panel surface, so inputs remap surface-raised ->
+// surface-overlay to read lighter than the panel. Current themes keep the
+// classic bg-surface panel and stock input surfaces (no remap).
+const SURFACE_REMAP = 'future:[--surface-raised:var(--surface-overlay)]';
 
 /**
  * NodePropertyPanel — a presentational, docked properties panel for canvas nodes.
@@ -67,7 +69,7 @@ export function NodePropertyPanel({
 
   return (
     <div
-      className={cn('flex min-h-0 flex-col bg-surface-raised', className)}
+      className={cn('flex min-h-0 flex-col bg-surface future:bg-surface-raised', className)}
       style={{ '--mf-content-inset': contentInset } as CSSProperties}
     >
       {/* ── Title bar (optional; host panel system may own it) ── */}
@@ -126,9 +128,7 @@ export function NodePropertyPanel({
 
       {/* ── Content (children) or Form ── */}
       {children ? (
-        <div className="min-h-0 flex-1 overflow-auto" style={SURFACE_REMAP}>
-          {children}
-        </div>
+        <div className={cn('min-h-0 flex-1 overflow-auto', SURFACE_REMAP)}>{children}</div>
       ) : !formSchema ? (
         <div className="py-4 text-xs text-foreground-subtle [padding-inline:var(--mf-content-inset,1.5rem)]">
           No form schema defined for this node.
@@ -139,8 +139,10 @@ export function NodePropertyPanel({
         // scroll container — the form's inset/padding move inside TabbedStepForm.
         <div className="flex min-h-0 flex-1 flex-col">
           <div
-            style={SURFACE_REMAP}
-            className="flex min-h-0 flex-1 flex-col [&_label]:text-foreground-muted"
+            className={cn(
+              'flex min-h-0 flex-1 flex-col [&_label]:text-foreground-muted',
+              SURFACE_REMAP
+            )}
           >
             <MetadataForm
               key={resetKey}
@@ -161,7 +163,7 @@ export function NodePropertyPanel({
         // Single-page schema: classic behavior — this wrapper scrolls the whole
         // form. No stepVariant: it only applies to step-based schemas.
         <div className="min-h-0 flex-1 overflow-auto">
-          <div style={SURFACE_REMAP} className="[&_label]:text-foreground-muted">
+          <div className={cn('[&_label]:text-foreground-muted', SURFACE_REMAP)}>
             <MetadataForm
               key={resetKey}
               schema={formSchema}
