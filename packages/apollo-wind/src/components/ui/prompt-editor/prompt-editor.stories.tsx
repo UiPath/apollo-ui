@@ -5,7 +5,7 @@ import { PromptEditor } from './prompt-editor';
 import type { PromptEditorAutoCompleteOption, PromptEditorMode, PromptEditorToken } from './types';
 
 const meta = {
-  title: 'Components/PromptEditor',
+  title: 'Components/UiPath/Prompt Editor',
   component: PromptEditor,
   parameters: {
     layout: 'centered',

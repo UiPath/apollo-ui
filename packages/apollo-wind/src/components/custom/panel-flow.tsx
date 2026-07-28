@@ -13,11 +13,11 @@ import {
   Workflow,
 } from 'lucide-react';
 import * as React from 'react';
+import { ChatComposer } from '@/components/custom/chat-composer';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib';
-import { ChatComposer } from '@/components/custom/chat-composer';
 
 // ============================================================================
 // Types
@@ -30,6 +30,8 @@ export interface FlowPanelNavItem {
 }
 
 export interface FlowPanelToolItem {
+  /** Stable identifier used when rendering dynamic tool lists. */
+  id?: string;
   icon: 'search' | 'bot';
   title: string;
   description: string;
@@ -219,11 +221,13 @@ function ToolCard({ card }: { card: FlowPanelToolCard }) {
           <div className="flex flex-col gap-2 pb-4 pt-1">
             <p className="px-4 py-[5px] text-xs text-foreground-muted">Agents and tools used</p>
             <div className="flex flex-col gap-3">
-              {card.items.map((item, i) => {
+              {card.items.map((item, index) => {
                 const Icon = toolIconMap[item.icon];
                 return (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: static display list
-                  <div key={i} className="flex items-start gap-2.5 pl-4 pr-9">
+                  <div
+                    key={item.id ?? `${item.icon}-${item.title}-${item.description}-${index}`}
+                    className="flex items-start gap-2.5 pl-4 pr-9"
+                  >
                     <div className="flex h-5 w-5 shrink-0 items-center justify-center">
                       <Icon className="h-4 w-4 text-foreground-secondary" />
                     </div>

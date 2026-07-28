@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
@@ -35,9 +35,34 @@ describe('FileUpload', () => {
       expect(screen.getByText(/Max size: 5 MB/)).toBeInTheDocument();
     });
 
+    it('associates with an external label via id, so the label activates the file input', () => {
+      render(
+        <>
+          <label htmlFor="attachment">Attachment</label>
+          <FileUpload id="attachment" />
+        </>
+      );
+      expect(screen.getByLabelText('Attachment')).toBeInTheDocument();
+    });
+
     it('renders disabled state', () => {
       const { container } = render(<FileUpload disabled />);
       expect(container.querySelector('.opacity-50')).toBeInTheDocument();
+    });
+
+    it('makes the dropzone keyboard-focusable', () => {
+      render(<FileUpload />);
+      expect(screen.getByRole('button', { name: 'File upload area' })).toHaveAttribute(
+        'tabIndex',
+        '0'
+      );
+    });
+
+    it('removes the dropzone from tab order and marks it aria-disabled when disabled', () => {
+      render(<FileUpload disabled />);
+      const dropzone = screen.getByRole('button', { name: 'File upload area' });
+      expect(dropzone).toHaveAttribute('tabIndex', '-1');
+      expect(dropzone).toHaveAttribute('aria-disabled', 'true');
     });
   });
 
@@ -61,6 +86,31 @@ describe('FileUpload', () => {
 
       const results = await axe(container);
       expect(results).toHaveNoViolations();
+    });
+
+    it('calls onBlur only when focus leaves the entire file-upload widget', async () => {
+      const user = userEvent.setup();
+      const handleBlur = vi.fn();
+      const { container } = render(
+        <>
+          <FileUpload onBlur={handleBlur} />
+          <button type="button">Outside</button>
+        </>
+      );
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+      fireEvent.change(input, {
+        target: { files: [createMockFile('test.txt', 100, 'text/plain')] },
+      });
+
+      const dropzone = screen.getByRole('button', { name: 'File upload area' });
+      dropzone.focus();
+      await user.tab();
+      expect(screen.getByRole('button', { name: 'Remove test.txt' })).toHaveFocus();
+      expect(handleBlur).not.toHaveBeenCalled();
+
+      await user.tab();
+      expect(screen.getByRole('button', { name: 'Outside' })).toHaveFocus();
+      expect(handleBlur).toHaveBeenCalledOnce();
     });
   });
 

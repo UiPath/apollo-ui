@@ -58,6 +58,18 @@ export type {
   InputGroupTextareaProps,
 } from './components/ui/input-group';
 
+export {
+  FIELD_TYPE_META,
+  FIELD_TYPE_ORDER,
+  LockableValueField,
+} from './components/ui/lockable-value-field';
+export type {
+  LockableValueFieldProps,
+  LockableValueFieldMode,
+  LockableFieldType,
+  LockableValueFieldOption,
+} from './components/ui/lockable-value-field';
+
 export { Textarea } from './components/ui/textarea';
 export type { TextareaProps } from './components/ui/textarea';
 

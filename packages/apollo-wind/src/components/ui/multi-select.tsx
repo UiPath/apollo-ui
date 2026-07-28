@@ -15,6 +15,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/index';
 
 export interface MultiSelectProps {
+  /** Applied to the trigger button, so a `<label htmlFor>` pointing at it associates correctly. */
+  id?: string;
   options: { label: string; value: string }[];
   selected: string[];
   onChange: (selected: string[]) => void;
@@ -25,11 +27,14 @@ export interface MultiSelectProps {
   disabled?: boolean;
   searchPlaceholder?: string;
   clearAllText?: string | ((count: number) => string);
+  /** Called when the multi-select popover closes after being opened. */
+  onBlur?: () => void;
 }
 
 const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
   (
     {
+      id,
       options,
       selected,
       onChange,
@@ -40,6 +45,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
       disabled = false,
       searchPlaceholder = 'Search...',
       clearAllText,
+      onBlur,
     },
     ref
   ) => {
@@ -66,13 +72,30 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
 
     return (
       <div ref={ref} className={cn('relative', className)}>
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover
+          open={open}
+          onOpenChange={(nextOpen) => {
+            setOpen(nextOpen);
+            if (!nextOpen && open) onBlur?.();
+          }}
+        >
           <PopoverTrigger asChild>
             <Button
+              id={id}
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              aria-label={selected.length > 0 ? `${selected.length} items selected` : placeholder}
+              // aria-label always wins over a `<label htmlFor>` association in the
+              // accessible-name computation, so only set it when there's no id for a
+              // consumer's label to target -- otherwise the label's own text names
+              // the field, same as any other labelable control (Input, Select, ...).
+              aria-label={
+                id
+                  ? undefined
+                  : selected.length > 0
+                    ? `${selected.length} ${selected.length === 1 ? 'item' : 'items'} selected`
+                    : placeholder
+              }
               className={cn(
                 'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:hover:bg-surface-hover future:font-normal future:text-muted-foreground',
                 selected.length > 0 ? 'h-auto min-h-10' : 'h-10'

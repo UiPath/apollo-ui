@@ -6,6 +6,22 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib';
 
 export interface FileUploadProps {
+  /**
+   * Applied to the underlying `<input type="file">`, so an external
+   * `<label htmlFor>` can activate it (click-to-open) like any other labelable
+   * control. The dropzone itself is a `div[role=button]`, which isn't labelable,
+   * hence `ariaLabel` below for naming that part.
+   */
+  id?: string;
+  /**
+   * Names the dropzone (`div[role=button]`, not a labelable element, so a
+   * surrounding `<label htmlFor>` can't associate with it -- pass the field's
+   * visible label text here instead). Also names the `<input type="file">`
+   * itself when `id` is omitted; when `id` is provided, an external
+   * `<label htmlFor>` names the input instead (aria-label would otherwise
+   * override it in the accessible-name computation).
+   */
+  ariaLabel?: string;
   onFilesChange?: (files: File[]) => void;
   accept?: string;
   multiple?: boolean;
@@ -15,9 +31,12 @@ export interface FileUploadProps {
   showPreview?: boolean;
   /** External errors keyed by filename. Use this to set errors from outside (e.g., upload failures). */
   errors?: Record<string, string>;
+  onBlur?: React.FocusEventHandler<HTMLFieldSetElement>;
 }
 
 export function FileUpload({
+  id,
+  ariaLabel,
   onFilesChange,
   accept,
   multiple = false,
@@ -26,6 +45,7 @@ export function FileUpload({
   className,
   showPreview = false,
   errors,
+  onBlur,
 }: FileUploadProps) {
   const [files, setFiles] = React.useState<File[]>([]);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -211,14 +231,38 @@ export function FileUpload({
   };
 
   return (
-    <div className={cn('w-full', className)}>
-      {/** biome-ignore lint/a11y/useSemanticElements: Intended */}
+    <fieldset
+      className={cn('m-0 min-w-0 w-full border-0 p-0', className)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          onBlur?.(event);
+        }
+      }}
+    >
+      <input
+        ref={inputRef}
+        id={id}
+        type="file"
+        className="hidden"
+        accept={accept}
+        multiple={multiple}
+        disabled={disabled}
+        onChange={handleInputChange}
+        // aria-label always wins over a `<label htmlFor>` association in the
+        // accessible-name computation, so only set it when there's no id for a
+        // consumer's label to target (same pattern as MultiSelect).
+        aria-label={id ? undefined : (ariaLabel ?? 'File upload')}
+      />
+      {/** biome-ignore lint/a11y/useSemanticElements: A div avoids invalid nested buttons when uploaded files have remove actions. */}
       <div
-        role="group"
-        aria-label="File upload area"
+        role="button"
+        aria-label={ariaLabel ?? 'File upload area'}
+        aria-disabled={disabled}
+        tabIndex={disabled ? -1 : 0}
         className={cn(
           // Base styles (all themes)
           'relative flex flex-col items-center justify-center w-full h-32 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
           // Future Dark / Future Light overrides
           'future:rounded-xl',
           isDragging
@@ -239,16 +283,6 @@ export function FileUpload({
           }
         }}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          className="hidden"
-          accept={accept}
-          multiple={multiple}
-          disabled={disabled}
-          onChange={handleInputChange}
-          aria-label="File upload"
-        />
         <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
         <p className="text-sm text-muted-foreground text-center">
           <span className="font-semibold">Click to upload</span> or drag and drop
@@ -311,6 +345,6 @@ export function FileUpload({
           })}
         </div>
       )}
-    </div>
+    </fieldset>
   );
 }
