@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button } from '@uipath/apollo-wind';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   createNode,
   StoryInfoPanel,
@@ -15,6 +16,7 @@ import { BaseNodeOverrideConfigProvider } from '../BaseNode';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import type { NodeToolbarConfig } from '../Toolbar';
 import { CanvasZoomControls, type TidyUpMenuOption } from './CanvasZoomControls';
+import { CanvasZoomControlsUXGuidance } from './CanvasZoomControlsUXGuidance';
 
 // Handle presets for "Horizontal layout"/"Vertical layout", scoped to this
 // story only. Deliberately label-less (unlike storybook-utils' HandleConfigs
@@ -74,9 +76,10 @@ type Story = StoryObj<typeof CanvasZoomControls>;
 const REFERENCE_TIDY_UP_OPTIONS: TidyUpMenuOption[] = [
   ...TIDY_UP_STRATEGIES,
   {
-    id: 'reset',
-    label: 'Reset to original',
-    icon: 'rotate-ccw',
+    id: 'undo',
+    label: 'Undo Tidy up',
+    icon: 'undo-2',
+    disabled: true,
     separatorBefore: true,
   },
 ];
@@ -205,7 +208,7 @@ function messyEdge(id: string, source: string, target: string): Edge {
   return { id, source, target, sourceHandle: 'output', targetHandle: 'input' };
 }
 
-// Keyed by node id so "Reset to original" can restore positions on the
+// Keyed by node id so the Storybook-only "Reset demo" control can restore positions on the
 // existing node objects (preserving their measured dimensions) instead of
 // replacing them outright, which would force React Flow to re-measure
 // before fitView can compute correct bounds.
@@ -232,6 +235,8 @@ function WithTidyUpMenuAndInteractionStory() {
   });
   const [isTidying, setIsTidying] = useState(false);
   const [layoutVersion, setLayoutVersion] = useState(0);
+  const [canUndo, setCanUndo] = useState(false);
+  const previousNodesRef = useRef<Node<BaseNodeData>[] | null>(null);
   const { fitView } = useReactFlow();
 
   // Nodes can move well outside the current viewport (especially with
@@ -245,15 +250,26 @@ function WithTidyUpMenuAndInteractionStory() {
     fitView({ duration: 400, padding: 0.2 });
   }, [layoutVersion, fitView]);
 
+  const rememberCurrentLayout = useCallback(() => {
+    previousNodesRef.current = canvasProps.nodes.map((node) => ({
+      ...node,
+      position: { ...node.position },
+      data: { ...node.data },
+    }));
+    setCanUndo(true);
+  }, [canvasProps.nodes]);
+
   const handleTidyUpSelect = useCallback(
     (optionId: string) => {
       if (optionId === 'subtle') {
+        rememberCurrentLayout();
         setNodes((current) => subtleAlignNodes(current));
         setLayoutVersion((v) => v + 1);
         return;
       }
 
       if (optionId === 'compact') {
+        rememberCurrentLayout();
         setIsTidying(true);
         compactAlignNodes(canvasProps.nodes, messyEdges)
           .then((laidOut) => {
@@ -265,6 +281,7 @@ function WithTidyUpMenuAndInteractionStory() {
       }
 
       if (optionId === 'horizontal' || optionId === 'vertical') {
+        rememberCurrentLayout();
         setIsTidying(true);
         const direction = optionId === 'horizontal' ? 'LR' : 'TD';
         // Handles are side-mounted (left/right) by default, matching a
@@ -284,21 +301,28 @@ function WithTidyUpMenuAndInteractionStory() {
         return;
       }
 
-      if (optionId === 'reset') {
-        setNodes((current) =>
-          current.map((node) => ({
-            ...node,
-            position: MESSY_POSITIONS[node.id] ?? node.position,
-            // Clear the override so handles fall back to their manifest
-            // default (left/right), matching the original messy state.
-            data: { ...node.data, handleConfigurations: undefined },
-          }))
-        );
+      if (optionId === 'undo' && previousNodesRef.current) {
+        setNodes(previousNodesRef.current);
+        previousNodesRef.current = null;
+        setCanUndo(false);
         setLayoutVersion((v) => v + 1);
       }
     },
-    [canvasProps.nodes, setNodes]
+    [canvasProps.nodes, rememberCurrentLayout, setNodes]
   );
+
+  const handleResetDemo = useCallback(() => {
+    setNodes((current) =>
+      current.map((node) => ({
+        ...node,
+        position: MESSY_POSITIONS[node.id] ?? node.position,
+        data: { ...node.data, handleConfigurations: undefined },
+      }))
+    );
+    previousNodesRef.current = null;
+    setCanUndo(false);
+    setLayoutVersion((v) => v + 1);
+  }, [setNodes]);
 
   const tidyUpOptions: TidyUpMenuOption[] = useMemo(
     () => [
@@ -314,14 +338,14 @@ function WithTidyUpMenuAndInteractionStory() {
         icon: 'move-vertical',
       },
       {
-        id: 'reset',
-        label: 'Reset to original',
-        icon: 'rotate-ccw',
-        disabled: isTidying,
+        id: 'undo',
+        label: 'Undo Tidy up',
+        icon: 'undo-2',
+        disabled: isTidying || !canUndo,
         separatorBefore: true,
       },
     ],
-    [isTidying]
+    [canUndo, isTidying]
   );
 
   // Story-scoped only: overrides every node's toolbar to add the same tidy-up
@@ -380,20 +404,25 @@ function WithTidyUpMenuAndInteractionStory() {
         },
         { id: 'separator' },
         {
-          id: 'reset',
-          icon: <CanvasIcon icon="rotate-ccw" size={14} />,
-          label: 'Reset to original',
-          disabled: isTidying,
-          onAction: () => handleTidyUpSelect('reset'),
+          id: 'undo',
+          icon: <CanvasIcon icon="undo-2" size={14} />,
+          label: 'Undo Tidy up',
+          disabled: isTidying || !canUndo,
+          onAction: () => handleTidyUpSelect('undo'),
         },
       ],
     }),
-    [handleTidyUpSelect, isTidying]
+    [canUndo, handleTidyUpSelect, isTidying]
   );
 
   return (
     <BaseNodeOverrideConfigProvider value={{ toolbarConfig: nodeToolbarConfig }}>
       <BaseCanvas {...canvasProps} mode="design">
+        <Panel position="top-right">
+          <Button variant="outline" size="sm" onClick={handleResetDemo}>
+            Reset demo
+          </Button>
+        </Panel>
         <Panel position="bottom-right">
           <CanvasZoomControls
             orientation="vertical"
@@ -406,7 +435,7 @@ function WithTidyUpMenuAndInteractionStory() {
           description={
             isTidying
               ? 'Tidying up...'
-              : 'This workflow\'s nodes were placed carelessly. Trigger a strategy from the brush icon in the bottom-right toolbar, or from the "Tidy up" overflow menu above any node. Subtle align nudges nearly-aligned nodes onto a shared grid without changing the overall shape. Compact layout re-flows everything left-to-right. Horizontal layout does the same but also forces every handle back to left/right. Vertical layout re-flows top-to-bottom and flips handles to match. Reset to original restores the initial mess so you can try again.'
+              : 'This workflow\'s nodes were placed carelessly. Trigger a strategy from the brush icon in the bottom-right toolbar, or from the "Tidy up" overflow menu above any node. Undo Tidy up restores the immediately previous layout. Reset demo restores the initial mess so you can try again.'
           }
         />
       </BaseCanvas>
@@ -417,6 +446,16 @@ function WithTidyUpMenuAndInteractionStory() {
 // ============================================================================
 // Exported Stories
 // ============================================================================
+
+export const UXGuidance: Story = {
+  name: 'UX Guidance',
+  parameters: {
+    layout: 'fullscreen',
+  },
+  render: (_, { globals }) => (
+    <CanvasZoomControlsUXGuidance globalTheme={globals.theme || 'future-dark'} />
+  ),
+};
 
 export const Vertical: Story = {
   name: 'Vertical',
