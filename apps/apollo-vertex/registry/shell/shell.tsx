@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { FC, PropsWithChildren } from "react";
+import type { FC, PropsWithChildren, ReactNode } from "react";
 import { useContext } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthContext, useAuth } from "./shell-auth-provider";
@@ -46,6 +46,8 @@ export interface ApolloShellProps extends PropsWithChildren {
   user?: ShellUser;
   /** Make the identity chip a button (e.g. switch seats) instead of a menu. */
   onUserClick?: () => void;
+  /** Optional content rendered in the top-right of the content header bar. */
+  headerSlot?: ReactNode;
 }
 
 function toUser(u: ShellUser): User {
@@ -69,6 +71,7 @@ const ApolloShellContent: FC<ApolloShellProps> = ({
   loginDescription,
   user,
   onUserClick,
+  headerSlot,
 }) => {
   const authContext = useContext(AuthContext);
   const { accessToken } = useAuth();
@@ -86,6 +89,7 @@ const ApolloShellContent: FC<ApolloShellProps> = ({
         variant={variant}
         navItems={navItems}
         onUserClick={onUserClick}
+        headerSlot={headerSlot}
       >
         {children}
       </ShellLayout>
@@ -103,6 +107,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   loginDescription,
   user,
   onUserClick,
+  headerSlot,
 }) => {
   return (
     <LocaleProvider
@@ -122,6 +127,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
         loginDescription={loginDescription}
         user={user}
         onUserClick={onUserClick}
+        headerSlot={headerSlot}
       >
         {children}
       </ApolloShellContent>

@@ -38,8 +38,8 @@ function RequestTimeline({ steps }: { steps: RequestStep[] }) {
                 className={cn(
                   "flex size-5 shrink-0 items-center justify-center rounded-full",
                   done
-                    ? "bg-[#0f7b8a] text-white"
-                    : "border-[1.5px] border-[#0f7b8a]",
+                    ? "bg-(--gb-teal) text-white"
+                    : "border-[1.5px] border-(--gb-teal)",
                 )}
               >
                 {done && (

@@ -293,7 +293,7 @@ function Finding({
               className={cn(
                 "rounded-xl border p-3.5",
                 v.agentPick
-                  ? "border-[#0f7b8a] bg-[#0f7b8a]/[0.04]"
+                  ? "border-(--gb-teal) bg-(--gb-teal)/[0.04]"
                   : "border-border",
               )}
             >

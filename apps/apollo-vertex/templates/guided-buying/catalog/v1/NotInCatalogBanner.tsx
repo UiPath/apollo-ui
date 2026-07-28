@@ -28,7 +28,7 @@ export function NotInCatalogBanner() {
         {/* TODO(quote): kick off the custom-quote (Workbench) path. */}
         <Button variant="outline">Request custom quote</Button>
         {/* TODO(agent): launch the agent configuration flow. */}
-        <Button className="bg-[#0f7b8a] text-white hover:bg-[#0c6976]">
+        <Button className="bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)">
           Configure with agent
         </Button>
       </div>

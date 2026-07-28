@@ -15,7 +15,7 @@ import { usePriceBasis } from "./price-basis-context";
 import type { CatalogItem } from "./types";
 
 // Shared teal accent (already used by the featured card + escalation banner).
-const ACCENT = "bg-[#0f7b8a] text-white hover:bg-[#0c6976]";
+const ACCENT = "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)";
 // Vibrant AI gradient (readable with white text), used for the picked-for-you
 // row's border and badge.
 const AI_GRADIENT = { background: "var(--ai-gradient-strong)" };
@@ -126,7 +126,7 @@ export function ScanRow({
             {item.specs.join(" · ")}
           </p>
           {recommended && note && (
-            <p className="mt-0.5 text-sm font-medium text-[#0f7b8a]">{note}</p>
+            <p className="mt-0.5 text-sm font-medium text-(--gb-teal)">{note}</p>
           )}
         </div>
 

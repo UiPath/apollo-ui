@@ -2,17 +2,19 @@
 
 import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, Bookmark, Clock, Plus, User } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
+import { P1 } from "../../P1";
+import { P2 } from "../../P2";
 import { useCart } from "./cart-context";
 import {
   activePrice,
   CATALOG_ITEMS,
   defaultQuantityFor,
-  eppSavings,
   formatPrice,
   showsListStrike,
 } from "./data";
@@ -23,11 +25,31 @@ import type { CatalogItem } from "./types";
 // The agent's signature gradient — reused (not new) so the in-chat pick reads as
 // the same recommendation as the catalog's Picked-for-you lead row.
 const AI_GRADIENT = { background: "var(--ai-gradient-strong)" };
-const ACCENT = "bg-[#0f7b8a] text-white hover:bg-[#0c6976]";
+const ACCENT = "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)";
 // Request applied EPP, so cards price per unit under EPP.
 const BASIS = "epp" as const;
 // Soft ease-out for the reveal/morph beats.
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+// Lenovo ThinkPad X1 Yoga — set aside at P2 because it violates the saved 32GB rule.
+const YOGA_ID = "lnv-x1-yoga-g9";
+
+// Deck j1-04: why each non-pick card wasn't chosen. Shown as italic rationale.
+const NOT_PICKED_REASONS: Record<string, string> = {
+  [YOGA_ID]: "Not picked · touch adds cost, 16GB",
+  "dell-xps-14": "Not picked · $50 less, smaller discount",
+};
+
+// Reusable chip styles — teal (deck: .chip.teal) and indigo (deck: .chip.ind).
+const CHIP_TEAL =
+  "inline-flex items-center rounded-full border border-(--gb-tealline) bg-(--gb-tealbg) px-2 py-0.5 text-[11px] font-medium text-(--gb-teal)";
+const CHIP_INDIGO =
+  "inline-flex items-center gap-1 rounded-full border border-(--gb-indigoline) bg-(--gb-indigobg) px-2 py-0.5 text-[11px] font-medium text-(--gb-indigo)";
+// Action chip row — plain (deck: .chip) and indigo-bordered (deck: .chip + indigoline border).
+const CHIP_ACTION =
+  "inline-flex cursor-pointer items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-muted";
+const CHIP_ACTION_INDIGO =
+  "inline-flex cursor-pointer items-center gap-1 rounded-full border border-(--gb-indigoline) px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-(--gb-indigobg)";
 
 export interface MatchesOutput {
   leadId: string;
@@ -42,15 +64,31 @@ interface MatchCardProps {
   lead?: boolean;
   /** Stagger index for the reveal (pick = 0, first). */
   index: number;
+  /** Deck j1-04: italic "Not picked · reason" for non-lead cards. */
+  notPickedReason?: string;
+  /**
+   * Deck j1-05: renders the card in "set aside" state — dashed border, desaturated
+   * image, indigo chip explaining why. CTA becomes "Show anyway". Only used for the
+   * Yoga card at P2.
+   */
+  setAside?: boolean;
+  onShowAnyway?: () => void;
 }
 
 /**
  * One result card. Every card shares the template — image → title → spec →
  * rationale slot → price → CTA — so prices and buttons align across the row.
- * The pick fills the rationale and carries the badge + elevation; alternatives
- * reserve the rationale slot empty and stay quiet.
+ * The pick fills the rationale with evidence chips; alternatives show the italic
+ * "Not picked · reason" line; set-aside shows an indigo chip and "Show anyway".
  */
-function MatchCard({ item, lead = false, index }: MatchCardProps) {
+function MatchCard({
+  item,
+  lead = false,
+  index,
+  notPickedReason,
+  setAside = false,
+  onShowAnyway,
+}: MatchCardProps) {
   const reduceMotion = useReducedMotion();
   const { inCart, setQuantity, quantities } = useCart();
 
@@ -58,33 +96,47 @@ function MatchCard({ item, lead = false, index }: MatchCardProps) {
   const requestQty = defaultQuantityFor(item);
   const qty = added ? (quantities[item.id] ?? requestQty) : requestQty;
   const showStrike = showsListStrike(item, BASIS);
-  const savings = eppSavings(item);
 
   // Adding keeps the matches visible — the cart count is what grows. Quantity is
   // then adjustable here (stepper) or in the cart peek; removal lives in the peek.
   const onAdd = () => setQuantity(item, requestQty);
 
   const card = (
-    <div className={cn("flex h-full flex-col gap-2 p-3", GLASS_CLASSES)}>
-      {/* Image — the badge overlays here so the text rows below stay aligned. */}
+    <div
+      className={cn(
+        "flex h-full flex-col gap-2 p-3",
+        setAside
+          ? "rounded-2xl border-[1.5px] border-dashed border-border/60 bg-background"
+          : GLASS_CLASSES,
+      )}
+    >
+      {/* Image — the badge overlays here so the text rows below stay aligned.
+          Set-aside desaturates the image as the single visual "unavailable" cue. */}
       <div className="relative">
         <ProductImage
           src={item.image}
           alt={item.name}
           category={item.category}
           vendor={item.vendor}
-          className="h-28 rounded-xl"
+          className={cn("h-28 rounded-xl", setAside && "grayscale opacity-60")}
         />
         {lead && (
           <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-[var(--ai-gradient-start)]/10 px-2 py-0.5 text-xs font-medium text-[var(--ai-gradient-start)] shadow-sm">
             <AiMark size={12} aria-hidden />
-            Best match
+            {/* Deck j1-04: "✦ AI pick"; j1-05: "✦ AI pick · personalized" */}
+            <P1>AI pick</P1>
+            <P2>AI pick · personalized</P2>
           </span>
         )}
       </div>
 
       <div className="space-y-0.5">
-        <h3 className="line-clamp-2 min-h-[2.5rem] font-semibold leading-snug text-foreground">
+        <h3
+          className={cn(
+            "line-clamp-2 min-h-[2.5rem] font-semibold leading-snug",
+            setAside ? "text-muted-foreground" : "text-foreground",
+          )}
+        >
           {item.name}
         </h3>
         <p className="truncate text-xs text-muted-foreground">
@@ -92,25 +144,62 @@ function MatchCard({ item, lead = false, index }: MatchCardProps) {
         </p>
       </div>
 
-      {/* Rationale slot — filled on the pick, reserved (empty) on alternatives. */}
-      <p className="min-h-[2.25rem] text-xs font-medium leading-snug text-[#0f7b8a]">
-        {lead && savings > 0
-          ? `Matches your request · ${formatPrice(savings, item.currency)}/unit cheaper with EPP applied`
-          : ""}
-      </p>
+      {/* Rationale slot — evidence chips on pick, italic reason on alts, indigo chip on set-aside. */}
+      {lead ? (
+        <div className="flex min-h-[2.25rem] flex-wrap items-start gap-1 pt-0.5">
+          <span className={CHIP_TEAL}>Best price after EPP</span>
+          {/* Deck j1-04: teal "Meets full spec"; j1-05 drops it, adds indigo "Ordered in May" */}
+          <P1>
+            <span className={CHIP_TEAL}>Meets full spec</span>
+          </P1>
+          <P2>
+            <span className={CHIP_INDIGO}>Ordered in May</span>
+          </P2>
+        </div>
+      ) : setAside ? (
+        <div className="min-h-[2.25rem] pt-0.5">
+          <span className={CHIP_INDIGO}>
+            <Bookmark className="size-3" aria-hidden />
+            Set aside · below your 32GB min
+          </span>
+        </div>
+      ) : (
+        <p
+          className={cn(
+            "min-h-[2.25rem] text-xs leading-snug",
+            notPickedReason ? "pt-0.5 italic text-muted-foreground/70" : "",
+          )}
+        >
+          {notPickedReason ?? ""}
+        </p>
+      )}
 
       <div className="mt-auto space-y-2 pt-1">
         <div className="flex items-baseline gap-2">
-          <span className="text-lg font-semibold text-foreground">
+          <span
+            className={cn(
+              "text-lg font-semibold",
+              setAside ? "text-muted-foreground" : "text-foreground",
+            )}
+          >
             {formatPrice(activePrice(item, BASIS), item.currency)}
           </span>
-          {showStrike && (
+          {showStrike && !setAside && (
             <span className="text-xs text-muted-foreground line-through">
               {formatPrice(item.listPrice, item.currency)}
             </span>
           )}
         </div>
-        {added ? (
+        {setAside ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full text-muted-foreground"
+            onClick={onShowAnyway}
+          >
+            Show anyway
+          </Button>
+        ) : added ? (
           <div className="flex items-center justify-center">
             <QuantityStepper
               value={qty}
@@ -196,6 +285,9 @@ export function MatchCarousel({
     .map((id) => CATALOG_ITEMS.find((item) => item.id === id))
     .filter((item): item is CatalogItem => item != null);
 
+  // Deck j1-05: "Show anyway" restores the Yoga card after it was set aside.
+  const [yogaVisible, setYogaVisible] = useState(false);
+
   // Live cart total (EPP), baked into the primary so it doubles as a glance.
   const cartTotal = cartItems.reduce(
     (sum, item) => sum + activePrice(item, BASIS) * (quantities[item.id] ?? 0),
@@ -206,6 +298,43 @@ export function MatchCarousel({
 
   return (
     <div className="w-full">
+      {/* Deck j1-04: AI reasoning strip above the grid. P1 and P2 show different copy. */}
+      {!output.loading && (
+        <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-(--gb-indigoline) bg-(--gb-indigobg)/40 px-4 py-3">
+          <span className="mt-0.5 shrink-0 text-sm text-(--gb-indigo)">✦</span>
+          <div className="min-w-0 text-[13px] leading-[1.55]">
+            <P1>
+              I&apos;d go with the <strong>ThinkPad X1 Carbon</strong> — deepest
+              EPP discount, meets your full spec, and it&apos;s what these teams
+              usually order. Here are all three matches so you can see why.
+            </P1>
+            <P2>
+              <>
+                The <strong>X1 Carbon</strong> — it&apos;s what your team
+                ordered for the Brand Studio hires in May, fits the Design
+                contractor spec, and clears your 32GB minimum. One option
+                didn&apos;t, so I set it aside.
+                {/* Deck j1-05: provenance chips below the strip copy */}
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  <span className={CHIP_INDIGO}>
+                    <Clock className="size-3" aria-hidden />
+                    Your team&apos;s May order
+                  </span>
+                  <span className={CHIP_INDIGO}>
+                    <User className="size-3" aria-hidden />
+                    Design contractor spec
+                  </span>
+                  <span className={CHIP_INDIGO}>
+                    <Bookmark className="size-3" aria-hidden />
+                    32GB min · saved Jun 12
+                  </span>
+                </div>
+              </>
+            </P2>
+          </div>
+        </div>
+      )}
+
       {/* Only three matches (pick + two alternatives), so show them all in a row
           rather than a carousel. py gives the pick's glow vertical room. */}
       <div className="grid grid-cols-3 gap-4 py-2">
@@ -214,51 +343,111 @@ export function MatchCarousel({
         ) : (
           <>
             <MatchCard item={lead} lead index={0} />
-            {alts.map((item, i) => (
-              <MatchCard key={item.id} item={item} index={i + 1} />
-            ))}
+            {alts.map((item, i) =>
+              item.id === YOGA_ID ? (
+                // Deck j1-05: same grid slot, same document order — P2 swaps to set-aside.
+                <div key={item.id} className="h-full">
+                  <P1>
+                    <MatchCard
+                      item={item}
+                      index={i + 1}
+                      notPickedReason={NOT_PICKED_REASONS[item.id]}
+                    />
+                  </P1>
+                  <P2>
+                    {yogaVisible ? (
+                      <MatchCard
+                        item={item}
+                        index={i + 1}
+                        notPickedReason={NOT_PICKED_REASONS[item.id]}
+                      />
+                    ) : (
+                      <MatchCard
+                        item={item}
+                        index={i + 1}
+                        setAside
+                        onShowAnyway={() => setYogaVisible(true)}
+                      />
+                    )}
+                  </P2>
+                </div>
+              ) : (
+                <MatchCard
+                  key={item.id}
+                  item={item}
+                  index={i + 1}
+                  notPickedReason={NOT_PICKED_REASONS[item.id]}
+                />
+              ),
+            )}
           </>
         )}
       </div>
 
       {!output.loading && (
-        <div className="mt-3 flex items-center justify-end gap-2">
-          {/* Browse more (lateral, ghost) sits beside proceed (primary). */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onSeeAll ?? (() => void navigate({ to: "/catalog" }))}
-          >
-            See all {output.totalCount} in catalog
-          </Button>
-          {/* The primary transitions in once the cart has items (like the top bar). */}
-          <AnimatePresence>
-            {cartCount > 0 && (
-              <motion.div
-                key="review"
-                initial={
-                  reduceMotion ? false : { opacity: 0, x: 8, scale: 0.9 }
-                }
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={
-                  reduceMotion
-                    ? { opacity: 0 }
-                    : { opacity: 0, x: 8, scale: 0.9 }
-                }
-                transition={{ duration: 0.28, ease: EASE }}
-              >
-                <Button
-                  size="sm"
-                  className={ACCENT}
-                  onClick={() => void navigate({ to: "/review" })}
+        <>
+          {/* Deck j1-04/j1-05: action chip row. "Why not the XPS?" is the j1-07 dock trigger. */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {/* Must survive at both tiers — sole entry point for j1-07 dock. */}
+            <button type="button" className={CHIP_ACTION}>
+              Why not the XPS?
+            </button>
+            {/* Deck j1-04: "Compare all three"; j1-05: "Update my preferences" */}
+            <P1>
+              <button type="button" className={CHIP_ACTION}>
+                Compare all three
+              </button>
+            </P1>
+            <P2>
+              <button type="button" className={CHIP_ACTION}>
+                Update my preferences
+              </button>
+            </P2>
+            {/* Deck j1-04/j1-05: indigo-bordered "✦ Ask" chip */}
+            <button type="button" className={CHIP_ACTION_INDIGO}>
+              <span className="text-(--gb-indigo)">✦</span> Ask
+            </button>
+          </div>
+
+          <div className="mt-2 flex items-center justify-end gap-2">
+            {/* Browse more (lateral, ghost) sits beside proceed (primary). */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSeeAll ?? (() => void navigate({ to: "/catalog" }))}
+            >
+              See all {output.totalCount} in catalog
+            </Button>
+            {/* The primary transitions in once the cart has items (like the top bar). */}
+            <AnimatePresence>
+              {cartCount > 0 && (
+                <motion.div
+                  key="review"
+                  initial={
+                    reduceMotion ? false : { opacity: 0, x: 8, scale: 0.9 }
+                  }
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={
+                    reduceMotion
+                      ? { opacity: 0 }
+                      : { opacity: 0, x: 8, scale: 0.9 }
+                  }
+                  transition={{ duration: 0.28, ease: EASE }}
                 >
-                  Review &amp; submit · {cartCount} item
-                  {cartCount === 1 ? "" : "s"} · {formatPrice(cartTotal, "USD")}
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                  <Button
+                    size="sm"
+                    className={ACCENT}
+                    onClick={() => void navigate({ to: "/review" })}
+                  >
+                    Review &amp; submit · {cartCount} item
+                    {cartCount === 1 ? "" : "s"} ·{" "}
+                    {formatPrice(cartTotal, "USD")}
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </>
       )}
     </div>
   );

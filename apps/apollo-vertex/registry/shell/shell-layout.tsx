@@ -1,9 +1,15 @@
-import { type CSSProperties, type PropsWithChildren, useId } from "react";
+import {
+  type CSSProperties,
+  type PropsWithChildren,
+  type ReactNode,
+  useId,
+} from "react";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 import type { CompanyLogo, ShellNavItem } from "./shell";
 import { ShellSidebar } from "./shell-sidebar";
 import { useTheme } from "./shell-theme-provider";
@@ -24,6 +30,8 @@ interface ShellLayoutProps {
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
   onUserClick?: () => void;
+  /** Optional content rendered in the top-right of the content header bar. */
+  headerSlot?: ReactNode;
 }
 
 function DarkGradientBackground() {
@@ -179,6 +187,7 @@ export function ShellLayout({
   companyLogo,
   navItems,
   onUserClick,
+  headerSlot,
 }: PropsWithChildren<ShellLayoutProps>) {
   if (variant === "minimal") {
     return (
@@ -216,8 +225,16 @@ export function ShellLayout({
         onUserClick={onUserClick}
       />
       <SidebarInset className="relative flex-1 flex flex-col overflow-hidden rounded-none m-0 ml-0 shadow-none bg-transparent">
-        <header className="flex items-center h-12 px-4 md:hidden">
-          <SidebarTrigger />
+        <header
+          className={cn(
+            "flex items-center h-12 px-4",
+            !headerSlot && "md:hidden",
+          )}
+        >
+          <SidebarTrigger className={cn(headerSlot && "md:hidden")} />
+          {headerSlot && (
+            <div className="ml-auto flex items-center">{headerSlot}</div>
+          )}
         </header>
         <div className="relative flex-1 flex flex-col overflow-y-auto custom-scrollbar">
           {children}

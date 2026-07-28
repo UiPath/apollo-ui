@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { P2 } from "../P2";
 import {
   REQUEST_DETAILS,
   REQUEST_ROWS,
@@ -33,14 +34,26 @@ interface StatCardProps {
   value: string;
   hint: string;
   valueClass?: string;
+  delta?: string;
+  tealBorder?: boolean;
 }
 
-function StatCard({ label, value, hint, valueClass }: StatCardProps) {
+function StatCard({
+  label,
+  value,
+  hint,
+  valueClass,
+  delta,
+  tealBorder,
+}: StatCardProps) {
   return (
-    <Card variant="glass">
+    <Card variant="glass" className={cn(tealBorder && "border-(--gb-teal)")}>
       <CardContent className="px-5 pt-4 pb-4">
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className={cn("mt-1 text-3xl font-medium", valueClass)}>{value}</p>
+        {delta && (
+          <p className="mt-0.5 text-xs font-medium text-(--gb-teal)">{delta}</p>
+        )}
         <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       </CardContent>
     </Card>
@@ -88,8 +101,8 @@ export function MyRequestsList({ onOpen }: MyRequestsListProps) {
       </PageHeader>
 
       <div className="px-4 pb-8 sm:px-6 lg:px-8">
-        {/* Four stat cards */}
-        <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {/* Stat tiles — auto-fill so 3 tiles fill the row at P1, 4 at P2 with no reorder */}
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
           <StatCard
             label="Total requests"
             value={String(stats.total)}
@@ -108,12 +121,16 @@ export function MyRequestsList({ onOpen }: MyRequestsListProps) {
             hint="cleared to buy"
             valueClass="text-success"
           />
-          <StatCard
-            label="Total value"
-            value={`$${stats.totalValue.toLocaleString("en-US")}`}
-            hint="annual equivalent"
-            valueClass="text-foreground"
-          />
+          <P2>
+            <StatCard
+              label="Spend under management"
+              value={`$${stats.totalValue.toLocaleString("en-US")}`}
+              hint="annual equivalent"
+              valueClass="text-foreground"
+              delta="+$27,735 just now"
+              tealBorder
+            />
+          </P2>
         </div>
 
         {/* Search + filter */}
@@ -180,7 +197,7 @@ export function MyRequestsList({ onOpen }: MyRequestsListProps) {
                       openable && "cursor-pointer hover:bg-muted/50",
                     )}
                   >
-                    <TableCell className="font-medium text-[#0f7b8a]">
+                    <TableCell className="font-medium text-(--gb-teal)">
                       {row.id}
                     </TableCell>
                     <TableCell className="font-medium text-foreground">

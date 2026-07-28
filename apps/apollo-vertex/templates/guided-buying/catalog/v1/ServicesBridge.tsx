@@ -162,7 +162,7 @@ export function ServicesBridge() {
       >
         <Button
           size="sm"
-          className="bg-[#0f7b8a] text-white hover:bg-[#0c6976]"
+          className="bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)"
           onClick={sendToProcurement}
         >
           Send to procurement

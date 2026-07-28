@@ -619,7 +619,7 @@ export function Selection({
                         }}
                         className="absolute right-0 top-full z-30 mt-2 flex w-64 items-start gap-2.5 rounded-xl bg-foreground p-3 text-left text-background shadow-lg"
                       >
-                        <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#0f7b8a] text-white">
+                        <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-(--gb-teal) text-white">
                           <Check className="size-2.5" aria-hidden />
                         </span>
                         <div className="min-w-0">

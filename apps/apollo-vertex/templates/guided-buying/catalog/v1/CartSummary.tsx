@@ -35,7 +35,7 @@ export function CartSummary({
       {savings > 0 && (
         <div className="flex justify-between">
           <span className="text-muted-foreground">EPP savings</span>
-          <span className="font-medium text-[#0f7b8a]">
+          <span className="font-medium text-(--gb-teal)">
             −{formatPrice(savings, "USD")}
           </span>
         </div>

@@ -18,7 +18,7 @@ import { usePriceBasis } from "./price-basis-context";
 import { BrandMark } from "./ScanRow";
 import type { CatalogItem, PriceBasis } from "./types";
 
-const ACCENT = "bg-[#0f7b8a] text-white hover:bg-[#0c6976]";
+const ACCENT = "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)";
 
 interface CompareRow {
   label: string;
@@ -285,7 +285,7 @@ export function CompareView({
                             <span className="inline-flex items-center gap-1.5">
                               {value ?? "—"}
                               {isBest && (
-                                <span className="inline-flex items-center gap-0.5 text-xs font-medium text-[#0f7b8a]">
+                                <span className="inline-flex items-center gap-0.5 text-xs font-medium text-(--gb-teal)">
                                   <Check className="size-3" />
                                   Best
                                 </span>

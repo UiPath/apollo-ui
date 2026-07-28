@@ -14,7 +14,7 @@ import { CATALOG_PHASES, FlowPhaseBar } from "./FlowPhaseBar";
 
 // Catalog standard config prices under EPP.
 const BASIS = "epp" as const;
-const ACCENT = "bg-[#0f7b8a] text-white hover:bg-[#0c6976]";
+const ACCENT = "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)";
 const REQUEST_ID = "REQ-2052";
 
 // Bridge defaults — used if Review is reached without a resolved Bridge.
@@ -101,7 +101,7 @@ export function CatalogSubmitted() {
 
         {/* Outcome — success cue + where it went and what's next. */}
         <div className="flex items-start gap-3">
-          <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#0f7b8a] text-white">
+          <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-(--gb-teal) text-white">
             <Check className="size-5" aria-hidden />
           </span>
           <div className="space-y-2">
@@ -128,7 +128,7 @@ export function CatalogSubmitted() {
               <Row label="Total">
                 <span className="font-medium">{formatPrice(total, "USD")}</span>
                 {savings > 0 && (
-                  <span className="text-[#0f7b8a]">
+                  <span className="text-(--gb-teal)">
                     {" "}
                     · EPP savings {formatPrice(savings, "USD")} applied
                   </span>

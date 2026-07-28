@@ -108,7 +108,7 @@ export function ProductCard({
             className={cn(
               featured &&
                 !inCart &&
-                "bg-[#0f7b8a] text-white hover:bg-[#0c6976]",
+                "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)",
             )}
           >
             {inCart ? (

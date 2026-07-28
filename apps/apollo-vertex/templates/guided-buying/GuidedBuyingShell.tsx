@@ -24,6 +24,8 @@ import { ConversationProvider } from "./catalog/v1/ConversationProvider";
 import { Review } from "./catalog/v1/Review";
 import { MyRequests } from "./requests/MyRequests";
 import { RequestsProvider } from "./requests/RequestsProvider";
+import { TierToggle } from "./TierToggle";
+import { TierProvider } from "./tier-context";
 import { Workbench } from "./workbench/Workbench";
 
 // Buy and Catalog are shared front doors. The queue nav item is seat-dependent:
@@ -99,6 +101,7 @@ function GuidedBuyingLayout() {
       navItems={navItems}
       user={user}
       onUserClick={switchSeat}
+      headerSlot={<TierToggle />}
     >
       {/* Clips the Buy↔Configure horizontal slide so it can't flash a scrollbar. */}
       <div className="relative h-full overflow-hidden">
@@ -196,31 +199,33 @@ export function GuidedBuyingShell() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <ConversationProvider>
-          <RequestsProvider>
-            <AutopilotChatProvider>
-              {/* Global gradient def — all AiMark icons reference "gb-ai-mark" */}
-              <svg width={0} height={0} aria-hidden className="absolute">
-                <defs>
-                  <linearGradient
-                    id="gb-ai-mark"
-                    x1="2"
-                    y1="4"
-                    x2="22"
-                    y2="20"
-                    gradientUnits="userSpaceOnUse"
-                  >
-                    <stop offset="0" stopColor="var(--ai-gradient-start)" />
-                    <stop offset="1" stopColor="var(--ai-gradient-end)" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <RouterProvider router={router} />
-            </AutopilotChatProvider>
-          </RequestsProvider>
-        </ConversationProvider>
-      </CartProvider>
+      <TierProvider>
+        <CartProvider>
+          <ConversationProvider>
+            <RequestsProvider>
+              <AutopilotChatProvider>
+                {/* Global gradient def — all AiMark icons reference "gb-ai-mark" */}
+                <svg width={0} height={0} aria-hidden className="absolute">
+                  <defs>
+                    <linearGradient
+                      id="gb-ai-mark"
+                      x1="2"
+                      y1="4"
+                      x2="22"
+                      y2="20"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop offset="0" stopColor="var(--ai-gradient-start)" />
+                      <stop offset="1" stopColor="var(--ai-gradient-end)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <RouterProvider router={router} />
+              </AutopilotChatProvider>
+            </RequestsProvider>
+          </ConversationProvider>
+        </CartProvider>
+      </TierProvider>
     </QueryClientProvider>
   );
 }
