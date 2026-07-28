@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.11.1...@uipath/apollo-core@5.12.0) (2026-07-28)
+
+### Features
+
+* **apollo-wind:** add lockable value field ([f6fba73](https://github.com/UiPath/apollo-ui/commit/f6fba738d9e5c84c4b400fd0899106fbfc83cd6c))
+
 ## [@uipath/apollo-core-v5.11.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.11.0...@uipath/apollo-core@5.11.1) (2026-07-21)
 
 ### Bug Fixes

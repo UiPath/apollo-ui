@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.6.0...@uipath/apollo-react@6.7.0) (2026-07-28)
+
+### Features
+
+* **apollo-wind:** add lockable value field ([f6fba73](https://github.com/UiPath/apollo-ui/commit/f6fba738d9e5c84c4b400fd0899106fbfc83cd6c))
+
 ## [@uipath/apollo-react-v6.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.5.0...@uipath/apollo-react@6.6.0) (2026-07-28)
 
 ### Features
