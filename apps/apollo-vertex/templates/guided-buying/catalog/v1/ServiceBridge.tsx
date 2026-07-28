@@ -142,6 +142,11 @@ export function ServiceBridge({ onConfigure }: ServiceBridgeProps) {
         </span>
       </motion.div>
 
+      <p className="flex items-center gap-1.5 px-4 text-xs text-muted-foreground">
+        <Info className="size-3.5 shrink-0" aria-hidden />
+        The output is AI generated. Please review.
+      </p>
+
       <motion.div
         className="flex justify-end pt-2"
         initial={reduceMotion ? false : { opacity: 0, y: 4 }}

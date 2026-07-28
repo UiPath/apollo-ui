@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  Info,
   Plus,
   TriangleAlert,
 } from "lucide-react";
@@ -345,6 +346,11 @@ function Finding({
           </span>
         </div>
       )}
+
+      <p className="mb-6 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Info className="size-3.5 shrink-0" aria-hidden />
+        The output is AI generated. Please review.
+      </p>
 
       {decision ? (
         <ResolvedAlert detail={detail} decision={decision} />
