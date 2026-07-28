@@ -32,6 +32,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   generateDeleteTaskMenuItemForTask: (taskId: string) => NodeMenuItem | undefined;
 }) => {
   const {
+    id,
     execution,
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
@@ -72,9 +73,14 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   return (
     <StageAdditionalTasksSection style={{ marginTop }}>
       <StageAdditionalTasksHeaderSection>
-        <span className="text-xs font-bold text-foreground-muted">{labels.eventDrivenTasks}</span>
+        <span
+          data-testid={`event-driven-tasks-header-${id}`}
+          className="text-xs font-bold text-foreground-muted"
+        >
+          {labels.eventDrivenTasks}
+        </span>
       </StageAdditionalTasksHeaderSection>
-      <StageTaskList>
+      <StageTaskList data-testid={`event-driven-tasks-list-${id}`}>
         {eventDrivenTasks.map(({ task }) => {
           const taskExecution = execution?.taskStatus?.[task.id];
           // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;

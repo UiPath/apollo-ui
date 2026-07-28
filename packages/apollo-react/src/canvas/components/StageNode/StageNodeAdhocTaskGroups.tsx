@@ -32,6 +32,7 @@ const StageNodeAdhocTaskGroupsInner = ({
   generateDeleteTaskMenuItemForTask: (taskId: string) => NodeMenuItem | undefined;
 }) => {
   const {
+    id,
     execution,
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
@@ -73,9 +74,14 @@ const StageNodeAdhocTaskGroupsInner = ({
   return (
     <StageAdditionalTasksSection style={{ marginTop }}>
       <StageAdditionalTasksHeaderSection>
-        <span className="text-xs font-bold text-foreground-muted">{labels.adhocTasks}</span>
+        <span
+          data-testid={`adhoc-tasks-header-${id}`}
+          className="text-xs font-bold text-foreground-muted"
+        >
+          {labels.adhocTasks}
+        </span>
       </StageAdditionalTasksHeaderSection>
-      <StageTaskList>
+      <StageTaskList data-testid={`adhoc-tasks-list-${id}`}>
         {adhocTasks.map(({ task }) => {
           const taskExecution = execution?.taskStatus?.[task.id];
           // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;

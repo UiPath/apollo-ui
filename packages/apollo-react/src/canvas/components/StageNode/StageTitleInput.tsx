@@ -62,7 +62,10 @@ export const StageTitleInput = ({
   );
 
   return (
-    <div className={cn('py-0.5 text-sm', !isEditing && 'font-bold', className)}>
+    <div
+      className={cn('py-0.5 text-sm', !isEditing && 'font-bold', className)}
+      data-testid={`stage-title-input-${stageId}`}
+    >
       <CanvasTooltip content={label} placement="top" hide={isEditing} delay>
         <div
           className={cn(
