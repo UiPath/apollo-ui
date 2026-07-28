@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Edge, Node, OnNodeDrag } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BackgroundVariant, Panel, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useCallback, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { createNode, StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
@@ -19,6 +19,186 @@ const meta: Meta = {
 export default meta;
 
 type Story = StoryObj;
+
+function GuidanceCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-5">
+      <h3 className="text-base font-semibold text-foreground">{title}</h3>
+      <div className="mt-2 text-sm leading-6 text-muted-foreground">{children}</div>
+    </div>
+  );
+}
+
+function AlignmentGuidesUxGuidance() {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <main className="mx-auto max-w-4xl px-8 py-14">
+        <div className="mb-12">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            UX guidance
+          </p>
+          <h1 className="text-4xl font-bold tracking-tight">Alignment guides</h1>
+          <p className="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">
+            Alignment guides should be available by default, but visible only at the moment they
+            are useful. The experience should feel like quiet, contextual feedback—not a mode the
+            user has to find, configure, or remember.
+          </p>
+        </div>
+
+        <section className="mb-10 rounded-xl border border-border bg-card p-6">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Recommendation
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold">On by default. Hidden until dragging.</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Guides appear only while a node is being dragged near a meaningful alignment, then
+            disappear immediately when the drag ends. This makes the capability naturally
+            discoverable without adding permanent canvas UI.
+          </p>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="mb-2 text-xl font-semibold">Design review map</h2>
+          <p className="mb-4 text-sm leading-6 text-muted-foreground">
+            Use the colored markers in the Storybook sidebar to keep the discussion focused.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                marker: '🟢',
+                label: 'Must review',
+                stories: 'Baseline, Threshold Playground, Grid-snap Interplay',
+                prompt: 'A decision is needed for the initial experience.',
+              },
+              {
+                marker: '🔵',
+                label: 'Validate',
+                stories: 'Center vs Edge Styling, Highlighted Match, Multi-select Drag',
+                prompt: 'Confirm whether these match current workflow needs.',
+              },
+              {
+                marker: '🟠',
+                label: 'Nice to have',
+                stories: 'Spacing Labels, Magnetic Snap, Equal-spacing Detection',
+                prompt: 'Useful future directions; no decision is required now.',
+              },
+              {
+                marker: '⚪',
+                label: 'Reference',
+                stories: 'Static Guide Preview',
+                prompt: 'Visual QA reference rather than a product decision.',
+              },
+            ].map(({ marker, label, stories, prompt }) => (
+              <div key={label} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-base" aria-hidden="true">
+                    {marker}
+                  </span>
+                  <h3 className="text-sm font-semibold text-foreground">{label}</h3>
+                </div>
+                <div>
+                  <p className="mt-0.5 text-sm text-foreground">{stories}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{prompt}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="mb-4 text-xl font-semibold">Recommended rollout</h2>
+          <ol className="grid gap-3">
+            {[
+              'Ship contextual alignment guides on by default with conservative thresholds and minimal visuals.',
+              'Observe whether guides help placement without distracting from common drag tasks.',
+              'Tune match priority, visual weight, and flicker prevention from real usage.',
+              'Introduce a preference only when evidence shows that user control is necessary.',
+            ].map((item, index) => (
+              <li key={item} className="flex gap-4 rounded-xl border border-border bg-card p-4">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                  {index + 1}
+                </span>
+                <p className="pt-0.5 text-sm leading-6 text-muted-foreground">{item}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="mb-4 text-xl font-semibold">Interaction principles</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidanceCard title="Contextual, not persistent">
+              Render guides only during an active drag and only inside a small, zoom-aware match
+              threshold. Nothing remains on the canvas afterward.
+            </GuidanceCard>
+            <GuidanceCard title="Helpful, not forceful">
+              The baseline guides communicate alignment without moving the node. If magnetic
+              snapping is added, it should be subtle and easy to override.
+            </GuidanceCard>
+            <GuidanceCard title="Minimal, not noisy">
+              Prefer the smallest useful set of guide lines. Avoid showing every possible match,
+              and reserve labels for spacing information that changes the user's decision.
+            </GuidanceCard>
+            <GuidanceCard title="Stable, not flickery">
+              Apply a consistent threshold and match priority so nearby candidates do not cause
+              lines or labels to jump rapidly during a drag.
+            </GuidanceCard>
+          </div>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="mb-4 text-xl font-semibold">Why not add a canvas toggle?</h2>
+          <div className="overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="px-5 py-3 font-medium">Consideration</th>
+                  <th className="px-5 py-3 font-medium">UX impact</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border bg-card">
+                <tr>
+                  <td className="px-5 py-4 font-medium text-foreground">Discoverability</td>
+                  <td className="px-5 py-4 text-muted-foreground">
+                    Users who would benefit may never know to enable a feature they have not yet
+                    experienced.
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-5 py-4 font-medium text-foreground">Canvas simplicity</td>
+                  <td className="px-5 py-4 text-muted-foreground">
+                    A persistent control adds weight to the canvas for feedback that appears only
+                    during a temporary interaction.
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-5 py-4 font-medium text-foreground">Mental model</td>
+                  <td className="px-5 py-4 text-muted-foreground">
+                    “Tidy up” performs an explicit layout action; alignment guides are passive
+                    feedback. They should not be grouped as equivalent modes.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-4 text-sm leading-6 text-muted-foreground">
+            Add a saved preference only if user research or product feedback shows that a
+            meaningful group finds the default experience distracting. An advanced modifier key
+            can later expose richer spacing detail or temporarily suppress snapping without
+            making the basic feature harder to discover.
+          </p>
+        </section>
+
+      </main>
+    </div>
+  );
+}
 
 // ============================================================================
 // Shared workflow fixture. Every variant below drags nodes on the same layout
@@ -108,11 +288,6 @@ function AlignmentGuidesDemo() {
   );
 }
 
-export const AlignmentGuidesPrototype: Story = {
-  name: 'Alignment Guides (Baseline)',
-  render: () => <AlignmentGuidesDemo />,
-};
-
 // ============================================================================
 // Static preview: hardcoded guides, no drag required. Useful as a fixed
 // reference when comparing screenshots or reviewing async.
@@ -158,11 +333,6 @@ function StaticGuidesDemo() {
     </BaseCanvas>
   );
 }
-
-export const StaticPreview: Story = {
-  name: 'Static Guide Preview',
-  render: () => <StaticGuidesDemo />,
-};
 
 // ============================================================================
 // Variant: Center vs. Edge Styling. Center-only matches render as a thicker
@@ -234,11 +404,6 @@ function CenterVsEdgeDemo() {
     </BaseCanvas>
   );
 }
-
-export const CenterVsEdgeStyling: Story = {
-  name: 'Variant: Center vs Edge Styling',
-  render: () => <CenterVsEdgeDemo />,
-};
 
 // ============================================================================
 // Variant: Spacing Labels. Shows the gap (in px) between the dragged node
@@ -352,11 +517,6 @@ function SpacingLabelsDemo() {
   );
 }
 
-export const SpacingLabels: Story = {
-  name: 'Variant: Spacing Labels',
-  render: () => <SpacingLabelsDemo />,
-};
-
 // ============================================================================
 // Variant: Highlighted Match. The guide line plus a ring highlight around
 // every node the line is actually aligned with.
@@ -415,11 +575,6 @@ function HighlightedMatchDemo() {
     </BaseCanvas>
   );
 }
-
-export const HighlightedMatch: Story = {
-  name: 'Variant: Highlighted Match',
-  render: () => <HighlightedMatchDemo />,
-};
 
 // ============================================================================
 // Variant: Magnetic Snap. Same detection, but the dragged node's position
@@ -497,11 +652,6 @@ function MagneticSnapDemo() {
   );
 }
 
-export const MagneticSnap: Story = {
-  name: 'Variant: Magnetic Snap',
-  render: () => <MagneticSnapDemo />,
-};
-
 // ============================================================================
 // Variant: Threshold Playground. Tune the match distance live to compare
 // how forgiving or precise the guides feel.
@@ -541,11 +691,6 @@ function ThresholdPlaygroundDemo() {
     </BaseCanvas>
   );
 }
-
-export const ThresholdPlayground: Story = {
-  name: 'Variant: Threshold Playground',
-  render: () => <ThresholdPlaygroundDemo />,
-};
 
 // ============================================================================
 // Variant: Multi-select Drag. Dragging a multi-selected group compares the
@@ -613,14 +758,22 @@ function MultiSelectDemo() {
   const { guides, draggedGroupBounds, onNodeDrag, onNodeDragStop } = useMultiSelectAlignmentGuides(nodes);
 
   return (
-    <BaseCanvas {...canvasProps} mode="design" onNodeDrag={onNodeDrag} onNodeDragStop={onNodeDragStop}>
+    <BaseCanvas
+      {...canvasProps}
+      mode="design"
+      multiSelectionKeyCode="Shift"
+      selectionKeyCode={null}
+      selectionOnDrag
+      onNodeDrag={onNodeDrag}
+      onNodeDragStop={onNodeDragStop}
+    >
       <AlignmentGuidesOverlay guides={guides} />
       <GroupBoundsOverlay bounds={draggedGroupBounds} />
       <StoryInfoPanel title="Multi-select drag">
         <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-          Shift-click multiple nodes (or Shift-drag a selection box over empty canvas), then drag
-          the group. Guides compare the whole selection's bounding box, outlined here, against
-          the rest of the canvas, not just one node in isolation.
+          Shift-click multiple nodes, or drag a selection box over empty canvas, then drag the
+          group. Guides compare the whole selection's bounding box, outlined here, against the
+          rest of the canvas, not just one node in isolation.
         </p>
       </StoryInfoPanel>
       <Panel position="bottom-right">
@@ -629,11 +782,6 @@ function MultiSelectDemo() {
     </BaseCanvas>
   );
 }
-
-export const MultiSelectDrag: Story = {
-  name: 'Variant: Multi-select Drag',
-  render: () => <MultiSelectDemo />,
-};
 
 // ============================================================================
 // Variant: Grid-snap Interplay. Node-to-node guides and xyflow's native
@@ -684,11 +832,6 @@ function GridSnapInterplayDemo() {
     </BaseCanvas>
   );
 }
-
-export const GridSnapInterplay: Story = {
-  name: 'Variant: Grid-snap Interplay',
-  render: () => <GridSnapInterplayDemo />,
-};
 
 // ============================================================================
 // Variant: Equal-spacing Detection. When the dragged node has a neighbor on
@@ -863,7 +1006,58 @@ function EqualSpacingDemo() {
   );
 }
 
+// Keep exports in review order. Storybook preserves CSF export order in the sidebar.
+export const UxGuidance: Story = {
+  name: 'UX Guidance',
+  render: () => <AlignmentGuidesUxGuidance />,
+};
+
+export const AlignmentGuidesPrototype: Story = {
+  name: '🟢 Alignment Guides (Baseline)',
+  render: () => <AlignmentGuidesDemo />,
+};
+
+export const ThresholdPlayground: Story = {
+  name: '🟢 Threshold Playground',
+  render: () => <ThresholdPlaygroundDemo />,
+};
+
+export const GridSnapInterplay: Story = {
+  name: '🟢 Grid-snap Interplay',
+  render: () => <GridSnapInterplayDemo />,
+};
+
+export const CenterVsEdgeStyling: Story = {
+  name: '🔵 Center vs Edge Styling',
+  render: () => <CenterVsEdgeDemo />,
+};
+
+export const HighlightedMatch: Story = {
+  name: '🔵 Highlighted Match',
+  render: () => <HighlightedMatchDemo />,
+};
+
+export const MultiSelectDrag: Story = {
+  name: '🔵 Multi-select Drag',
+  render: () => <MultiSelectDemo />,
+};
+
+export const SpacingLabels: Story = {
+  name: '🟠 Spacing Labels',
+  render: () => <SpacingLabelsDemo />,
+};
+
+export const MagneticSnap: Story = {
+  name: '🟠 Magnetic Snap',
+  render: () => <MagneticSnapDemo />,
+};
+
 export const EqualSpacingDetection: Story = {
-  name: 'Variant: Equal-spacing Detection',
+  name: '🟠 Equal-spacing Detection',
   render: () => <EqualSpacingDemo />,
+};
+
+export const StaticPreview: Story = {
+  name: '⚪ Static Guide Preview',
+  render: () => <StaticGuidesDemo />,
 };
