@@ -118,7 +118,7 @@ type StepState = "done" | "current" | "pending";
 function StepDot({ state }: { state: StepState }) {
   if (state === "done")
     return (
-      <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-(--gb-teal) text-white">
+      <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-(--primary) text-white">
         <Check className="size-2.5" aria-hidden />
       </span>
     );
@@ -180,7 +180,7 @@ function OptionCard({
       onClick={onSelect}
       className={cn(
         "rounded-xl p-4",
-        selected && "border-(--gb-teal) ring-1 ring-(--gb-teal)",
+        selected && "border-(--primary) ring-1 ring-(--primary)",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -221,7 +221,7 @@ function OptionCard({
             className={cn(
               "flex size-5 items-center justify-center rounded-full border",
               selected
-                ? "border-(--gb-teal) bg-(--gb-teal) text-white"
+                ? "border-(--primary) bg-(--primary) text-white"
                 : "border-muted-foreground/40",
             )}
             aria-hidden
@@ -375,7 +375,7 @@ export function ConfigureFlow() {
                 <>
                   <div className="rounded-xl border bg-card p-5">
                     <div className="flex items-center gap-2">
-                      <span className="flex size-7 items-center justify-center rounded-full bg-(--gb-teal) text-white">
+                      <span className="flex size-7 items-center justify-center rounded-full bg-(--primary) text-white">
                         <Check className="size-4" aria-hidden />
                       </span>
                       <h2 className="text-lg font-semibold text-foreground">

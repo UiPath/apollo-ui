@@ -101,7 +101,7 @@ export function CatalogSubmitted() {
 
         {/* Outcome — success cue + where it went and what's next. */}
         <div className="flex items-start gap-3">
-          <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-(--gb-teal) text-white">
+          <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-(--primary) text-white">
             <Check className="size-5" aria-hidden />
           </span>
           <div className="space-y-2">
@@ -128,7 +128,7 @@ export function CatalogSubmitted() {
               <Row label="Total">
                 <span className="font-medium">{formatPrice(total, "USD")}</span>
                 {savings > 0 && (
-                  <span className="text-(--gb-teal)">
+                  <span className="text-(--primary)">
                     {" "}
                     · EPP savings {formatPrice(savings, "USD")} applied
                   </span>

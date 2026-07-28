@@ -10,17 +10,17 @@ interface TeamsResumeCardProps {
 
 export function TeamsResumeCard({ onResume, onDismiss }: TeamsResumeCardProps) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-(--gb-teal) bg-background p-4">
+    <div className="flex items-start gap-3 rounded-xl border border-(--primary) bg-background p-4">
       {/* Teams icon area */}
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-(--gb-indigobg)">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-(--insight-50)">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
           <path
             d="M10 3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM3.75 7.5a.75.75 0 0 1 .75-.75h9a.75.75 0 0 1 .75.75v1.25a5 5 0 0 1-10 0V7.5Z"
-            fill="var(--gb-indigo)"
+            fill="var(--insight-600)"
           />
           <path
             d="M12.5 5.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM12.75 7.5h1.5a.75.75 0 0 1 .75.75V9.5a3 3 0 0 1-2.25 2.91V7.5Z"
-            fill="var(--gb-indigo)"
+            fill="var(--insight-600)"
             opacity="0.5"
           />
         </svg>

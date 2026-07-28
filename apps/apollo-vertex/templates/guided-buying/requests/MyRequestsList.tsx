@@ -47,12 +47,12 @@ function StatCard({
   tealBorder,
 }: StatCardProps) {
   return (
-    <Card variant="glass" className={cn(tealBorder && "border-(--gb-teal)")}>
+    <Card variant="glass" className={cn(tealBorder && "border-(--primary)")}>
       <CardContent className="px-5 pt-4 pb-4">
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className={cn("mt-1 text-3xl font-medium", valueClass)}>{value}</p>
         {delta && (
-          <p className="mt-0.5 text-xs font-medium text-(--gb-teal)">{delta}</p>
+          <p className="mt-0.5 text-xs font-medium text-(--primary)">{delta}</p>
         )}
         <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       </CardContent>
@@ -197,7 +197,7 @@ export function MyRequestsList({ onOpen }: MyRequestsListProps) {
                       openable && "cursor-pointer hover:bg-muted/50",
                     )}
                   >
-                    <TableCell className="font-medium text-(--gb-teal)">
+                    <TableCell className="font-medium text-(--primary)">
                       {row.id}
                     </TableCell>
                     <TableCell className="font-medium text-foreground">
