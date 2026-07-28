@@ -406,21 +406,22 @@ export function RequestEnvelope() {
         })}
       </div>
 
-      {/* Routing consequence — where the catalog/standard fork becomes visible.
-          Icon + text indented to line up with the card's field rows (px-4, gap-3). */}
+      {/* Routing consequence — where the catalog/standard fork becomes visible. */}
       <motion.div
-        className="flex items-start gap-3 px-4 text-xs text-muted-foreground"
+        className="px-4 text-xs text-muted-foreground"
         initial={reduceMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, ease: EASE, delay: routingDelay }}
       >
-        <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-        <span>
-          Catalog standard config means this routes directly to{" "}
-          <span className="font-medium text-foreground">{approverName}</span>{" "}
-          for approval. No procurement review needed.
-        </span>
+        Catalog standard config means this routes directly to{" "}
+        <span className="font-medium text-foreground">{approverName}</span>{" "}
+        for approval. No procurement review needed.
       </motion.div>
+
+      <p className="flex items-center gap-1.5 px-4 text-xs text-muted-foreground">
+        <Info className="size-3.5 shrink-0" aria-hidden />
+        The output is AI generated. Please review.
+      </p>
 
       <motion.div
         className="flex items-center justify-end gap-2 pt-2"

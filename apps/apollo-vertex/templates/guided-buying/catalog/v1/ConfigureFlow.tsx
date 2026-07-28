@@ -3,7 +3,7 @@
 // oxlint-disable max-lines -- two-step cell-service configurator (scripted)
 import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Check, ChevronDown } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Info } from "lucide-react";
 import { Fragment, type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -397,6 +397,10 @@ export function ConfigureFlow() {
                       ))}
                     </dl>
                   </div>
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Info className="size-3.5 shrink-0" aria-hidden />
+                    The output is AI generated. Please review.
+                  </p>
                   <div className="flex justify-end">
                     <Button onClick={submitForApproval}>
                       Submit for approval
@@ -511,6 +515,11 @@ export function ConfigureFlow() {
                     </div>
                   </div>
                 )}
+
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Info className="size-3.5 shrink-0" aria-hidden />
+                  The output is AI generated. Please review.
+                </p>
 
                 {/* Actions — back lives in the header (consistent, top-left). */}
                 <motion.div {...stepItem(5)} className="flex justify-end">

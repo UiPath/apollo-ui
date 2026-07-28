@@ -2,8 +2,7 @@
 
 import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Bookmark, Clock, Plus, User } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Bookmark, Clock, Info, Plus, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -275,9 +274,6 @@ export function MatchCarousel({
     .map((id) => CATALOG_ITEMS.find((item) => item.id === id))
     .filter((item): item is CatalogItem => item != null);
 
-  // Deck j1-05: "Show anyway" restores the Yoga card after it was set aside.
-  const [yogaVisible, setYogaVisible] = useState(false);
-
   // Live cart total (EPP), baked into the primary so it doubles as a glance.
   const cartTotal = cartItems.reduce(
     (sum, item) => sum + activePrice(item, BASIS) * (quantities[item.id] ?? 0),
@@ -324,14 +320,6 @@ export function MatchCarousel({
                     <User className="size-3" aria-hidden />
                     Design contractor spec
                   </Badge>
-                  <Badge
-                    status="ai"
-                    variant="secondary"
-                    className="text-[11px]"
-                  >
-                    <Bookmark className="size-3" aria-hidden />
-                    32GB min · saved Jun 12
-                  </Badge>
                 </div>
               </>
             </P2>
@@ -349,32 +337,12 @@ export function MatchCarousel({
             <MatchCard item={lead} lead index={0} />
             {alts.map((item, i) =>
               item.id === YOGA_ID ? (
-                // Deck j1-05: same grid slot, same document order — P2 swaps to set-aside.
-                <div key={item.id} className="h-full">
-                  <P1>
-                    <MatchCard
-                      item={item}
-                      index={i + 1}
-                      notPickedReason={NOT_PICKED_REASONS[item.id]}
-                    />
-                  </P1>
-                  <P2>
-                    {yogaVisible ? (
-                      <MatchCard
-                        item={item}
-                        index={i + 1}
-                        notPickedReason={NOT_PICKED_REASONS[item.id]}
-                      />
-                    ) : (
-                      <MatchCard
-                        item={item}
-                        index={i + 1}
-                        setAside
-                        onShowAnyway={() => setYogaVisible(true)}
-                      />
-                    )}
-                  </P2>
-                </div>
+                <MatchCard
+                  key={item.id}
+                  item={item}
+                  index={i + 1}
+                  notPickedReason={NOT_PICKED_REASONS[item.id]}
+                />
               ) : (
                 <MatchCard
                   key={item.id}
@@ -390,6 +358,11 @@ export function MatchCarousel({
 
       {!output.loading && (
         <>
+          {/* AI disclosure — once below the grid of equal-height cards. */}
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Info className="size-3.5 shrink-0" aria-hidden />
+            The output is AI generated. Please review.
+          </p>
           {/* Deck j1-04/j1-05: action chip row. "Why not the XPS?" is the j1-07 dock trigger. */}
           <div className="mt-3 flex flex-wrap gap-2">
             {/* Must survive at both tiers — sole entry point for j1-07 dock. */}
