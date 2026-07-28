@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.4.0...@uipath/apollo-react@6.5.0) (2026-07-28)
+
+### Features
+
+* **apollo-react:** forward autoComplete through NodePropertyPanel ([da4d76a](https://github.com/UiPath/apollo-ui/commit/da4d76a38efbde4d22919f799e8446fd1210a060))
+
+### Bug Fixes
+
+* **apollo-react:** theme-scoped NodePropertyPanel surface ([b221e74](https://github.com/UiPath/apollo-ui/commit/b221e74da76c822570771b49f1d75279f4aaa969))
+
 ## [@uipath/apollo-react-v6.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.2.0...@uipath/apollo-react@6.3.0) (2026-07-24)
 
 ### Features
