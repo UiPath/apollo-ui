@@ -84,6 +84,9 @@ const preview: Preview = {
             [
               'UiPath',
               [
+                'Lockable Value Field',
+                'Prompt Editor',
+                'Canvas',
                 'Canvas Toolbar',
                 'Chat Composer',
                 'Chat Message',

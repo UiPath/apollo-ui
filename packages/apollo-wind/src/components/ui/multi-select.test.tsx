@@ -35,6 +35,34 @@ describe('MultiSelect', () => {
     expect(results).toHaveNoViolations();
   });
 
+  it('uses aria-label for its accessible name when no id is provided', () => {
+    const onChange = vi.fn();
+    render(<MultiSelect options={mockOptions} selected={['react']} onChange={onChange} />);
+    expect(screen.getByRole('combobox', { name: '1 item selected' })).toBeInTheDocument();
+  });
+
+  it('pluralizes the aria-label when more than one item is selected', () => {
+    const onChange = vi.fn();
+    render(<MultiSelect options={mockOptions} selected={['react', 'vue']} onChange={onChange} />);
+    expect(screen.getByRole('combobox', { name: '2 items selected' })).toBeInTheDocument();
+  });
+
+  it('lets an associated label name the field instead of the aria-label when an id is provided', () => {
+    const onChange = vi.fn();
+    render(
+      <>
+        <label htmlFor="frameworks">Frameworks</label>
+        <MultiSelect
+          id="frameworks"
+          options={mockOptions}
+          selected={['react']}
+          onChange={onChange}
+        />
+      </>
+    );
+    expect(screen.getByRole('combobox', { name: 'Frameworks' })).toBeInTheDocument();
+  });
+
   it('renders with default placeholder when none provided', () => {
     const onChange = vi.fn();
     render(<MultiSelect options={mockOptions} selected={[]} onChange={onChange} />);
@@ -58,6 +86,18 @@ describe('MultiSelect', () => {
 
     // Command input should be visible when popover is open
     expect(screen.getByPlaceholderText('Search...')).toBeInTheDocument();
+  });
+
+  it('calls onBlur when the popover closes, not when focus enters it', async () => {
+    const user = userEvent.setup();
+    const onBlur = vi.fn();
+    render(<MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} onBlur={onBlur} />);
+
+    await user.click(screen.getByRole('combobox'));
+    expect(onBlur).not.toHaveBeenCalled();
+
+    await user.keyboard('{Escape}');
+    expect(onBlur).toHaveBeenCalledOnce();
   });
 
   it('allows selecting items', async () => {

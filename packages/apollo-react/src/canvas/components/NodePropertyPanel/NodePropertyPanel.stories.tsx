@@ -1,16 +1,48 @@
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  type DragOverEvent,
+  DragOverlay,
+  type DragStartEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { FormSchema } from '@uipath/apollo-wind';
+import type { FormSchema, LockableFieldType, LockableValueFieldMode } from '@uipath/apollo-wind';
 import {
   Badge,
   Button,
+  Card,
+  CardContent,
   cn,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  FIELD_TYPE_META,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+  Input,
+  Label,
+  LockableValueField,
   MetadataForm,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -20,6 +52,13 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Textarea,
+  ToggleGroup,
+  ToggleGroupItem,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@uipath/apollo-wind';
 import {
   apolloCoreDarkHCMonaco,
@@ -31,27 +70,37 @@ import {
 } from '@uipath/apollo-wind/editor-themes';
 import {
   ChevronDown,
+  ChevronsDownUp,
+  ChevronsUpDown,
   CircleAlert,
   CircleCheck,
+  CircleDot,
+  CircleOff,
   Code2,
+  Copy,
   Eye,
   File,
+  FileBracesCorner,
   GitFork,
   Globe,
   GripVertical,
   HardDrive,
+  Pencil,
   Play,
   Plus,
   ScanText,
+  Search,
   Sparkles,
   Trash2,
   Type,
   Upload,
+  UserRoundCheck,
   X,
   Zap,
 } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NodeOutputModeSelect } from '../../controls';
 import type {
   DeriveTypeIcon,
@@ -639,6 +688,34 @@ const COMPACT_EDITOR_OPTIONS = {
   scrollbar: { vertical: 'auto', horizontal: 'hidden', alwaysConsumeMouseWheel: false },
   automaticLayout: true,
 } as const;
+
+const JSON_VIEWER_OPTIONS = {
+  readOnly: true,
+  fontSize: 12,
+  lineHeight: 18,
+  minimap: { enabled: false },
+  scrollBeyondLastLine: false,
+  wordWrap: 'off',
+  fontFamily:
+    'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+  padding: { top: 8, bottom: 8 },
+  lineNumbers: 'off' as const,
+  lineDecorationsWidth: 0,
+  glyphMargin: false,
+  folding: true,
+  renderLineHighlight: 'none' as const,
+  hideCursorInOverviewRuler: true,
+  overviewRulerBorder: false,
+  overviewRulerLanes: 0,
+  scrollbar: {
+    vertical: 'auto' as const,
+    horizontal: 'auto' as const,
+    alwaysConsumeMouseWheel: false,
+  },
+  automaticLayout: true,
+} as const;
+
+const JSON_EDITOR_OPTIONS = { ...JSON_VIEWER_OPTIONS, readOnly: false } as const;
 
 const INLINE_EDITOR_OPTIONS = {
   fontSize: 13,
@@ -1673,6 +1750,1776 @@ export const InputEditor: Story = {
 };
 
 // ============================================================================
+// Output Panel helpers
+// ============================================================================
+
+type OutputNode = {
+  key: string;
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'null';
+  value?: string | number | boolean | null;
+  children?: OutputNode[];
+  path: string;
+};
+
+function TypeBadge({ type }: { type: OutputNode['type'] }) {
+  const labels: Record<OutputNode['type'], string> = {
+    string: 'T',
+    number: '#',
+    boolean: '?',
+    object: '{}',
+    array: '[]',
+    null: '∅',
+  };
+  const label = labels[type];
+  const cls = 'border-border bg-surface-overlay text-foreground-muted';
+  return (
+    <span
+      className={cn(
+        'inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded border px-0.5 font-mono text-[9px] font-semibold leading-none',
+        cls
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
+function outputValueColorClass(type: OutputNode['type'], value: unknown): string {
+  if (type === 'string') return 'text-success';
+  if (type === 'number') return 'text-info';
+  if (type === 'boolean') return value ? 'text-success' : 'text-error';
+  if (type === 'null') return 'text-foreground-subtle';
+  return 'text-foreground';
+}
+
+function formatOutputValue(
+  type: OutputNode['type'],
+  value: string | number | boolean | null | undefined
+): string {
+  if (type === 'null' || value === null || value === undefined) return 'null';
+  if (type === 'string') return `"${value}"`;
+  return String(value);
+}
+
+function nodeMatchesQuery(node: OutputNode, q: string): boolean {
+  if (!q) return true;
+  if (node.key.toLowerCase().includes(q)) return true;
+  if (
+    node.value !== undefined &&
+    node.value !== null &&
+    String(node.value).toLowerCase().includes(q)
+  )
+    return true;
+  return node.children?.some((c) => nodeMatchesQuery(c, q)) ?? false;
+}
+
+function collectContainerPaths(nodes: OutputNode[]): string[] {
+  const paths: string[] = [];
+  for (const n of nodes) {
+    if (n.children) {
+      paths.push(n.path);
+      paths.push(...collectContainerPaths(n.children));
+    }
+  }
+  return paths;
+}
+
+type FlatRow = { node: OutputNode; depth: number };
+
+function flattenOutputTree(
+  nodes: OutputNode[],
+  collapsed: Record<string, boolean>,
+  query: string,
+  depth = 0
+): FlatRow[] {
+  const rows: FlatRow[] = [];
+  for (const n of nodes) {
+    if (query && !nodeMatchesQuery(n, query)) continue;
+    rows.push({ node: n, depth });
+    if (n.children && !collapsed[n.path]) {
+      rows.push(...flattenOutputTree(n.children, collapsed, query, depth + 1));
+    }
+  }
+  return rows;
+}
+
+const PANEL_NODE_ID = 'httpRequest1';
+const PANEL_NODE_LABEL = 'HTTP Request';
+
+// ============================================================================
+
+const REFERENCED_OUTPUTS = [
+  { name: 'responseBody', type: 'object' },
+  { name: 'statusCode', type: 'number' },
+  { name: 'headers', type: 'object' },
+  { name: 'errorMessage', type: 'string' },
+  { name: 'duration', type: 'number' },
+  { name: 'requestId', type: 'string' },
+  { name: 'token', type: 'string' },
+];
+
+const REFERENCED_INPUTS = [
+  { name: 'responseBody', type: 'object' },
+  { name: 'statusCode', type: 'number' },
+  { name: 'headers', type: 'object' },
+  { name: 'condition', type: 'string' },
+  { name: 'result', type: 'boolean' },
+  { name: 'prompt', type: 'string' },
+  { name: 'response', type: 'string' },
+  { name: 'assignee', type: 'string' },
+  { name: 'message', type: 'string' },
+];
+
+const HTTP_REQUEST_CHILDREN: OutputNode[] = [
+  { key: 'statusCode', type: 'number', value: 200, path: `${PANEL_NODE_ID}.statusCode` },
+  {
+    key: 'responseBody',
+    type: 'object',
+    path: `${PANEL_NODE_ID}.responseBody`,
+    children: [
+      { key: 'id', type: 'string', value: 'inv-001', path: `${PANEL_NODE_ID}.responseBody.id` },
+      {
+        key: 'amount',
+        type: 'number',
+        value: 1500,
+        path: `${PANEL_NODE_ID}.responseBody.amount`,
+      },
+      {
+        key: 'currency',
+        type: 'string',
+        value: 'USD',
+        path: `${PANEL_NODE_ID}.responseBody.currency`,
+      },
+      {
+        key: 'status',
+        type: 'string',
+        value: 'paid',
+        path: `${PANEL_NODE_ID}.responseBody.status`,
+      },
+    ],
+  },
+  {
+    key: 'headers',
+    type: 'object',
+    path: `${PANEL_NODE_ID}.headers`,
+    children: [
+      {
+        key: 'content-type',
+        type: 'string',
+        value: 'application/json',
+        path: `${PANEL_NODE_ID}.headers.content-type`,
+      },
+      {
+        key: 'x-request-id',
+        type: 'string',
+        value: 'abc-123',
+        path: `${PANEL_NODE_ID}.headers.x-request-id`,
+      },
+    ],
+  },
+  { key: 'errorMessage', type: 'string', value: null, path: `${PANEL_NODE_ID}.errorMessage` },
+  { key: 'duration', type: 'number', value: 342, path: `${PANEL_NODE_ID}.duration` },
+  { key: 'requestId', type: 'string', value: 'req-abc-123', path: `${PANEL_NODE_ID}.requestId` },
+  {
+    key: 'token',
+    type: 'string',
+    value: 'eyJhbGciOiJSUzI1NiJ9',
+    path: `${PANEL_NODE_ID}.token`,
+  },
+  { key: 'retryCount', type: 'number', value: 0, path: `${PANEL_NODE_ID}.retryCount` },
+  { key: 'cached', type: 'boolean', value: false, path: `${PANEL_NODE_ID}.cached` },
+];
+
+const INPUT_TREE_DATA: OutputNode[] = [
+  { key: PANEL_NODE_ID, type: 'object', path: PANEL_NODE_ID, children: HTTP_REQUEST_CHILDREN },
+  {
+    key: 'decision1',
+    type: 'object',
+    path: 'decision1',
+    children: [
+      {
+        key: 'condition',
+        type: 'string',
+        value: 'invoice.amount > 1000',
+        path: 'decision1.condition',
+      },
+      { key: 'result', type: 'boolean', value: true, path: 'decision1.result' },
+      { key: 'branch', type: 'string', value: 'approve', path: 'decision1.branch' },
+    ],
+  },
+  {
+    key: 'agent1',
+    type: 'object',
+    path: 'agent1',
+    children: [
+      {
+        key: 'prompt',
+        type: 'string',
+        value: 'Summarize the invoice details',
+        path: 'agent1.prompt',
+      },
+      { key: 'model', type: 'string', value: 'gpt-4o-mini', path: 'agent1.model' },
+      {
+        key: 'response',
+        type: 'string',
+        value: 'Invoice inv-001 for $1,500 USD is paid.',
+        path: 'agent1.response',
+      },
+      { key: 'tokens', type: 'number', value: 342, path: 'agent1.tokens' },
+    ],
+  },
+  {
+    key: 'approval1',
+    type: 'object',
+    path: 'approval1',
+    children: [
+      { key: 'assignee', type: 'string', value: 'finance-team', path: 'approval1.assignee' },
+      {
+        key: 'message',
+        type: 'string',
+        value: 'Please review this invoice',
+        path: 'approval1.message',
+      },
+      { key: 'dueDate', type: 'string', value: '2025-01-15', path: 'approval1.dueDate' },
+    ],
+  },
+];
+
+const HTTP_REQUEST_JSON = JSON.stringify(
+  {
+    statusCode: 200,
+    responseBody: {
+      id: 'inv-001',
+      amount: 1500.0,
+      currency: 'USD',
+      status: 'paid',
+    },
+    headers: {
+      'content-type': 'application/json',
+      'x-request-id': 'abc-123',
+    },
+    errorMessage: null,
+    duration: 342,
+    requestId: 'req-abc-123',
+    token: 'eyJhbGciOiJSUzI1NiJ9',
+    retryCount: 0,
+    cached: false,
+  },
+  null,
+  2
+);
+
+const OUTPUT_TREE_DATA: OutputNode[] = [
+  { key: PANEL_NODE_ID, type: 'object', path: PANEL_NODE_ID, children: HTTP_REQUEST_CHILDREN },
+];
+
+const INPUT_JSON = HTTP_REQUEST_JSON;
+const OUTPUT_JSON = HTTP_REQUEST_JSON;
+
+// ============================================================================
+// Concept 2 — Expression Reference Panel
+// Flat list of all leaf output paths as copyable expression references.
+// ============================================================================
+
+function Concept2PanelStory({
+  mode,
+  context = 'flow',
+}: {
+  mode: 'input' | 'output';
+  context?: 'studio' | 'flow';
+}) {
+  const monacoTheme = useMonacoTheme();
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'default' | 'referenced' | 'all'>('default');
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(
+      [...collectContainerPaths(OUTPUT_TREE_DATA), ...collectContainerPaths(INPUT_TREE_DATA)]
+        .filter((p) => p !== PANEL_NODE_ID)
+        .map((p) => [p, true])
+    )
+  );
+  const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [editingPath, setEditingPath] = useState<string | null>(null);
+  const [editedValues, setEditedValues] = useState<
+    Record<string, string | number | boolean | null>
+  >({});
+  const [nodeMode, setNodeMode] = useState<'live' | 'static' | 'simulated' | 'disabled'>('live');
+
+  const NODE_MODES = [
+    {
+      value: 'live',
+      label: 'Live',
+      description: 'Use the real response from this node',
+      icon: CircleDot,
+    },
+    {
+      value: 'static',
+      label: 'Static mock',
+      description: 'Always return a value you define',
+      icon: FileBracesCorner,
+    },
+    {
+      value: 'simulated',
+      label: 'Simulated',
+      description: 'Generate a response dynamically using an LLM',
+      icon: Sparkles,
+    },
+    {
+      value: 'disabled',
+      label: 'Skip node',
+      description: "Don't execute this node",
+      icon: CircleOff,
+    },
+  ] as const;
+  const currentNodeMode = NODE_MODES.find((m) => m.value === nodeMode) ?? NODE_MODES[0];
+  const CurrentModeIcon = currentNodeMode.icon;
+
+  const isOutput = mode === 'output';
+  const currentTreeData = isOutput ? OUTPUT_TREE_DATA : INPUT_TREE_DATA;
+  const currentReferenced = isOutput ? REFERENCED_OUTPUTS : REFERENCED_INPUTS;
+  const currentJson = isOutput ? OUTPUT_JSON : INPUT_JSON;
+  const referencedKeys = new Set(currentReferenced.map((r) => r.name));
+
+  const activeTreeData =
+    filter !== 'referenced'
+      ? currentTreeData
+      : currentTreeData
+          .map((root) => ({
+            ...root,
+            children: root.children?.filter((n) => referencedKeys.has(n.key)),
+          }))
+          .filter((root) => (root.children?.length ?? 0) > 0);
+
+  const rows = flattenOutputTree(activeTreeData, collapsed, search.toLowerCase());
+
+  const toggleCollapsed = (path: string) =>
+    setCollapsed((prev) => ({ ...prev, [path]: !prev[path] }));
+
+  const allContainerPaths = collectContainerPaths(activeTreeData);
+  const allCollapsed = allContainerPaths.length > 0 && allContainerPaths.every((p) => collapsed[p]);
+  const toggleAll = () => {
+    if (allCollapsed) {
+      setCollapsed({});
+    } else {
+      setCollapsed(Object.fromEntries(allContainerPaths.map((p) => [p, true])));
+    }
+  };
+
+  const escapeRef = useRef(false);
+
+  const saveEdit = (node: OutputNode, raw: string) => {
+    const val =
+      node.type === 'boolean' ? raw === 'true' : node.type === 'number' ? Number(raw) || 0 : raw;
+    setEditedValues((prev) => ({ ...prev, [node.path]: val }));
+    setEditingPath(null);
+  };
+
+  const copyExpr = (path: string) => {
+    navigator.clipboard
+      ?.writeText(`{{${path}}}`)
+      ?.then(() => {
+        setCopiedPath(path);
+        setTimeout(() => setCopiedPath(null), 1500);
+      })
+      ?.catch(() => {});
+  };
+
+  return (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle={isOutput ? 'Output' : 'Input'}
+        contentInset="0.875rem"
+        onClose={() => {}}
+        className="h-[640px]"
+      >
+        <div className="flex h-full min-h-0 flex-col">
+          {/* Node identity bar — hidden in Studio context */}
+          {context === 'flow' && (
+            <div className="shrink-0 flex items-center justify-between gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-3 pt-4">
+              <div className="flex min-w-0 items-center gap-2">
+                <Globe size={13} className="shrink-0 text-foreground-subtle" />
+                <span className="text-xs font-medium text-foreground">{PANEL_NODE_LABEL}</span>
+                <span className="font-mono text-[10px] text-foreground-muted">{PANEL_NODE_ID}</span>
+              </div>
+              {isOutput && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                    >
+                      <CurrentModeIcon size={10} className="text-foreground-subtle" />
+                      <span>{currentNodeMode.label}</span>
+                      <ChevronDown size={10} className="text-foreground-subtle" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64">
+                    {NODE_MODES.map((m) => {
+                      const Icon = m.icon;
+                      return (
+                        <DropdownMenuItem
+                          key={m.value}
+                          onClick={() => setNodeMode(m.value)}
+                          className={cn(
+                            'flex items-start gap-2',
+                            nodeMode === m.value && 'text-foreground'
+                          )}
+                        >
+                          <Icon size={13} className="mt-[2px] shrink-0 text-foreground-subtle" />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-xs font-medium">{m.label}</span>
+                            <span className="text-[10px] leading-tight text-foreground-muted">
+                              {m.description}
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+          )}
+
+          <Tabs defaultValue="schema" className="flex min-h-0 flex-1 flex-col">
+            {/* Tab strip — status badge moves here in Studio context */}
+            <div
+              className={cn(
+                'shrink-0 flex items-center gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1.5',
+                context === 'studio' && 'pt-3'
+              )}
+            >
+              <TabsList className={TAB_LIST_CLASS}>
+                <TabsTrigger value="schema" className={TAB_TRIGGER_CLASS}>
+                  Schema
+                </TabsTrigger>
+                <TabsTrigger value="json" className={TAB_TRIGGER_CLASS}>
+                  JSON
+                </TabsTrigger>
+              </TabsList>
+              {context === 'studio' && isOutput && (
+                <>
+                  <div className="flex-1" />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                      >
+                        <CurrentModeIcon size={10} className="text-foreground-subtle" />
+                        <span>{currentNodeMode.label}</span>
+                        <ChevronDown size={10} className="text-foreground-subtle" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64">
+                      {NODE_MODES.map((m) => {
+                        const Icon = m.icon;
+                        return (
+                          <DropdownMenuItem
+                            key={m.value}
+                            onClick={() => setNodeMode(m.value)}
+                            className={cn(
+                              'flex items-start gap-2',
+                              nodeMode === m.value && 'text-foreground'
+                            )}
+                          >
+                            <Icon size={13} className="mt-[2px] shrink-0 text-foreground-subtle" />
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-xs font-medium">{m.label}</span>
+                              <span className="text-[10px] leading-tight text-foreground-muted">
+                                {m.description}
+                              </span>
+                            </div>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
+            </div>
+
+            {/* Schema tab */}
+            <TabsContent value="schema" className="mt-0 flex min-h-0 flex-1 flex-col">
+              {/* Header: filter dropdown on left, search + collapse on right */}
+              <div className="shrink-0 flex items-center gap-1.5 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1 pt-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex cursor-pointer shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                    >
+                      <span>
+                        {filter === 'referenced'
+                          ? 'Filter: Referenced in this node'
+                          : filter === 'all'
+                            ? 'Filter: All'
+                            : 'Filter'}
+                      </span>
+                      {filter === 'referenced' && (
+                        <span className="rounded-sm bg-surface-raised px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground">
+                          {currentReferenced.length}
+                        </span>
+                      )}
+                      <ChevronDown size={10} className="text-foreground-subtle" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52">
+                    <DropdownMenuItem
+                      onClick={() => setFilter('referenced')}
+                      className={cn(
+                        'flex items-center justify-between',
+                        filter === 'referenced' && 'text-foreground'
+                      )}
+                    >
+                      <span className="text-[11px]">Referenced in this node</span>
+                      <span className="ml-3 rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground-muted">
+                        {currentReferenced.length}
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setFilter('all')}
+                      className={cn('text-[11px]', filter === 'all' && 'text-foreground')}
+                    >
+                      All
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <div className="flex-1" />
+                {searchOpen ? (
+                  <div className="relative flex items-center">
+                    <Search
+                      size={12}
+                      className="pointer-events-none absolute left-2 text-foreground-subtle"
+                    />
+                    <Input
+                      autoFocus
+                      type="text"
+                      variant="ghost"
+                      size="xs"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setSearch('');
+                          setSearchOpen(false);
+                        }
+                      }}
+                      aria-label={isOutput ? 'Search outputs' : 'Search inputs'}
+                      placeholder={isOutput ? 'Search outputs...' : 'Search inputs...'}
+                      className="w-36 pl-6 pr-6 text-foreground placeholder:text-foreground-subtle focus-visible:ring-0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearch('');
+                        setSearchOpen(false);
+                      }}
+                      aria-label="Clear search"
+                      className="absolute right-1.5 grid size-4 place-items-center text-foreground-subtle transition hover:text-foreground"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="4xs"
+                    icon
+                    onClick={() => setSearchOpen(true)}
+                    title="Search fields"
+                    aria-label="Search fields"
+                    className="rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+                  >
+                    <Search size={12} />
+                  </Button>
+                )}
+                {allContainerPaths.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="4xs"
+                    icon
+                    onClick={toggleAll}
+                    title={allCollapsed ? 'Expand all' : 'Collapse all'}
+                    aria-label={allCollapsed ? 'Expand all' : 'Collapse all'}
+                    className="rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+                  >
+                    {allCollapsed ? <ChevronsUpDown size={12} /> : <ChevronsDownUp size={12} />}
+                  </Button>
+                )}
+              </div>
+
+              {/* Tree list */}
+              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay bg-surface-overlay/40 pb-0 [margin-inline:var(--mf-content-inset,0.875rem)] mb-4 mt-1">
+                <div className="h-full overflow-y-auto pt-1.5">
+                  {rows.map(({ node, depth }) =>
+                    node.children !== undefined ? (
+                      <div
+                        key={node.path}
+                        className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
+                        style={{ paddingLeft: `${8 + depth * 16}px`, paddingRight: '14px' }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleCollapsed(node.path)}
+                          aria-label={
+                            collapsed[node.path] ? `Expand ${node.key}` : `Collapse ${node.key}`
+                          }
+                          className="cursor-pointer grid size-3 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
+                        >
+                          <ChevronDown
+                            size={10}
+                            className={cn(
+                              'transition-transform duration-100',
+                              collapsed[node.path] && '-rotate-90'
+                            )}
+                          />
+                        </button>
+                        <TypeBadge type={node.type} />
+                        <span className="flex-1 truncate font-mono text-xs text-foreground">
+                          {node.key}
+                        </span>
+                        <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
+                          {node.type === 'array'
+                            ? `${node.children.length} ${node.children.length === 1 ? 'item' : 'items'}`
+                            : `${node.children.length} ${node.children.length === 1 ? 'key' : 'keys'}`}
+                        </span>
+                      </div>
+                    ) : (
+                      <div
+                        key={node.path}
+                        className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
+                        style={{ paddingLeft: `${8 + depth * 16}px`, paddingRight: '14px' }}
+                      >
+                        <div className="size-3 shrink-0" />
+                        <TypeBadge type={node.type} />
+                        <span className="shrink-0 font-mono text-xs text-foreground">
+                          {node.key}
+                        </span>
+                        <span className="shrink-0 font-mono text-xs text-foreground-subtle">=</span>
+                        {editingPath === node.path ? (
+                          <input
+                            autoFocus
+                            type="text"
+                            defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
+                            onBlur={(e) => {
+                              if (!escapeRef.current) saveEdit(node, e.target.value);
+                              escapeRef.current = false;
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveEdit(node, e.currentTarget.value);
+                              if (e.key === 'Escape') {
+                                escapeRef.current = true;
+                                setEditingPath(null);
+                              }
+                            }}
+                            className={cn(
+                              'min-w-0 flex-1 rounded bg-transparent px-1 font-mono text-xs outline-none ring-1 ring-brand',
+                              outputValueColorClass(
+                                node.type,
+                                editedValues[node.path] ?? node.value
+                              )
+                            )}
+                          />
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => node.type !== 'null' && setEditingPath(node.path)}
+                              className={cn(
+                                'max-w-[55%] shrink-0 truncate font-mono text-xs',
+                                node.type !== 'null' ? 'cursor-text' : 'cursor-default',
+                                outputValueColorClass(
+                                  node.type,
+                                  editedValues[node.path] ?? node.value
+                                )
+                              )}
+                            >
+                              {formatOutputValue(
+                                node.type,
+                                (editedValues[node.path] ?? node.value) as
+                                  | string
+                                  | number
+                                  | boolean
+                                  | null
+                              )}
+                            </button>
+                            <div className="flex-1" />
+                            <Button
+                              variant="ghost"
+                              size="4xs"
+                              icon
+                              onClick={() => copyExpr(node.path)}
+                              title={`Copy {{${node.path}}}`}
+                              aria-label={`Copy expression for ${node.path}`}
+                              className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+                            >
+                              {copiedPath === node.path ? (
+                                <CircleCheck size={11} className="text-brand" />
+                              ) : (
+                                <Copy size={11} />
+                              )}
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )
+                  )}
+                  {rows.length === 0 && (
+                    <p className="py-4 text-center text-xs text-foreground-subtle">
+                      No references match your search.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* JSON tab */}
+            <TabsContent
+              value="json"
+              className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-1 [padding-inline:var(--mf-content-inset,0.875rem)]"
+            >
+              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay">
+                <MonacoEditor
+                  height="100%"
+                  language="json"
+                  value={currentJson}
+                  theme={monacoTheme}
+                  beforeMount={registerMonacoThemes}
+                  options={JSON_VIEWER_OPTIONS}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </NodePropertyPanel>
+    </PanelFrame>
+  );
+}
+
+// ============================================================================
+// In Studio / In Flow layout
+// ============================================================================
+
+function InputOutputStory() {
+  const [context, setContext] = useState<'studio' | 'flow'>('flow');
+  return (
+    <div className="flex flex-col items-center gap-6 p-8">
+      <div className="flex items-center overflow-hidden rounded border border-border">
+        {(['flow', 'studio'] as const).map((c, i) => (
+          <span key={c} className="contents">
+            {i > 0 && <div className="h-3 w-px bg-border" />}
+            <button
+              type="button"
+              onClick={() => setContext(c)}
+              className={cn(
+                'cursor-pointer px-3 py-1 text-xs font-medium transition',
+                context === c
+                  ? 'bg-surface-overlay text-foreground'
+                  : 'text-foreground-muted hover:text-foreground'
+              )}
+            >
+              {c === 'studio' ? 'In Studio' : 'In Flow'}
+            </button>
+          </span>
+        ))}
+      </div>
+      <div className="flex items-start gap-[50px]">
+        <div className="w-[380px]">
+          <Concept2PanelStory mode="input" context={context} />
+        </div>
+        <div className="w-[380px]">
+          <Concept2PanelStory mode="output" context={context} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Prototype — LockableValueField
+// ============================================================================
+
+interface LockableCase {
+  id: number;
+  title: string;
+  required: boolean;
+  value: string;
+  locked: boolean;
+  mode: LockableValueFieldMode;
+  fieldType: LockableFieldType;
+}
+
+/** Guards against malformed JSON (e.g. from hand-editing the schema view) reaching setCases -- a
+ *  missing/wrong-typed id would break Sortable, and an unknown fieldType would break rendering. */
+function isValidLockableCase(item: unknown): item is LockableCase {
+  if (typeof item !== 'object' || item === null) return false;
+  const c = item as Record<string, unknown>;
+  return (
+    typeof c.id === 'number' &&
+    Number.isSafeInteger(c.id) &&
+    c.id > 0 &&
+    typeof c.title === 'string' &&
+    typeof c.required === 'boolean' &&
+    typeof c.value === 'string' &&
+    typeof c.locked === 'boolean' &&
+    (c.mode === 'fixed' || c.mode === 'expression') &&
+    typeof c.fieldType === 'string' &&
+    Object.hasOwn(FIELD_TYPE_META, c.fieldType)
+  );
+}
+
+const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
+  {
+    id: 1,
+    title: 'Invoice Number',
+    required: true,
+    value: '',
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'string',
+  },
+  {
+    id: 2,
+    title: 'Submission Date',
+    required: true,
+    value: '',
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'date',
+  },
+  {
+    id: 3,
+    title: 'Approved Amount',
+    required: true,
+    value: '',
+    locked: true,
+    mode: 'fixed',
+    fieldType: 'integer',
+  },
+];
+
+function LockableCaseRow({
+  id,
+  caseTitle,
+  onTitleChange,
+  required,
+  onRequiredChange,
+  onDelete,
+  value,
+  onValueChange,
+  locked,
+  onLockedChange,
+  mode,
+  onModeChange,
+  fieldType,
+  onFieldTypeChange,
+  compact,
+  controlsVisibility,
+  monacoTheme,
+  insertBefore,
+  insertAfter,
+}: {
+  id: number;
+  caseTitle: string;
+  onTitleChange: (title: string) => void;
+  required: boolean;
+  onRequiredChange: (required: boolean) => void;
+  onDelete: () => void;
+  value: string;
+  onValueChange: (value: string) => void;
+  locked: boolean;
+  onLockedChange: (locked: boolean) => void;
+  mode: LockableValueFieldMode;
+  onModeChange: (mode: LockableValueFieldMode) => void;
+  fieldType: LockableFieldType;
+  onFieldTypeChange: (fieldType: LockableFieldType) => void;
+  compact?: boolean;
+  controlsVisibility?: 'visible' | 'hover';
+  monacoTheme: string;
+  /** Shows the insertion line above this row (the dragged item would land here). */
+  insertBefore?: boolean;
+  /** Shows the insertion line below this row (the dragged item would land here). */
+  insertAfter?: boolean;
+}) {
+  const [editingTitle, setEditingTitle] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className="group relative"
+    >
+      {/* Rendered as a child of this row's own transformed wrapper (not an
+          outer sibling) so it moves in lockstep with the row during the
+          sortable reflow animation instead of drifting out of sync. */}
+      {insertBefore && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -top-2 z-10 h-0.5 rounded-full bg-brand"
+        />
+      )}
+      <div
+        className={cn(isDragging && 'rounded-lg border-2 border-dashed border-brand/50 opacity-50')}
+      >
+        <LockableValueField
+          id={`return-value-${id}`}
+          label={
+            <div className="flex min-w-0 flex-1 items-center gap-1">
+              <button
+                type="button"
+                {...attributes}
+                {...listeners}
+                aria-label="Drag to reorder"
+                title="Drag to reorder"
+                className="grid size-5 shrink-0 touch-none place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground [cursor:grab]"
+              >
+                <GripVertical size={12} />
+              </button>
+              {editingTitle ? (
+                <input
+                  ref={titleRef}
+                  value={caseTitle}
+                  onChange={(e) => onTitleChange(e.target.value)}
+                  onBlur={() => setEditingTitle(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false);
+                  }}
+                  className="min-w-0 flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
+                  autoFocus
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingTitle(true);
+                    setTimeout(() => titleRef.current?.select(), 0);
+                  }}
+                  className="truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                >
+                  {caseTitle}
+                  {required && <span className="ml-0.5 text-destructive">*</span>}
+                </button>
+              )}
+            </div>
+          }
+          headerActions={
+            <button
+              type="button"
+              onClick={onDelete}
+              aria-label="Delete field"
+              title="Delete field"
+              className={cn(
+                'grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                controlsVisibility === 'hover' &&
+                  'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+              )}
+            >
+              <X size={12} />
+            </button>
+          }
+          value={value}
+          onValueChange={onValueChange}
+          locked={locked}
+          onLockedChange={onLockedChange}
+          mode={mode}
+          onModeChange={onModeChange}
+          renderExpressionEditor={({ id, value, onValueChange, onBlur, readOnly, placeholder }) => (
+            <div className="relative h-10 min-w-0 flex-1 overflow-visible" onBlur={onBlur}>
+              <MonacoEditor
+                height="40px"
+                language="javascript"
+                value={value}
+                onChange={(nextValue) => onValueChange?.(nextValue ?? '')}
+                theme={monacoTheme}
+                beforeMount={registerMonacoThemes}
+                options={{ ...INLINE_EDITOR_OPTIONS, readOnly, fixedOverflowWidgets: true }}
+              />
+              {value === '' && (
+                <label
+                  htmlFor={id}
+                  className="pointer-events-none absolute left-[14px] top-1/2 -translate-y-1/2 font-mono text-[13px] text-foreground-subtle"
+                >
+                  {placeholder}
+                </label>
+              )}
+            </div>
+          )}
+          fieldType={fieldType}
+          onFieldTypeChange={onFieldTypeChange}
+          required={required}
+          onRequiredChange={onRequiredChange}
+          compact={compact}
+          controlsVisibility={controlsVisibility}
+        />
+      </div>
+      {insertAfter && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -bottom-2 z-10 h-0.5 rounded-full bg-brand"
+        />
+      )}
+    </div>
+  );
+}
+
+interface FormButtonItem {
+  id: number;
+  label: string;
+  variant: 'default' | 'outline';
+}
+
+const DEFAULT_FORM_BUTTONS: FormButtonItem[] = [
+  { id: 1, label: 'Approve', variant: 'default' },
+  { id: 2, label: 'Cancel', variant: 'outline' },
+];
+
+function FormButtonChip({
+  label,
+  onLabelChange,
+  variant,
+  onVariantChange,
+  onDelete,
+}: {
+  label: string;
+  onLabelChange: (label: string) => void;
+  variant: 'default' | 'outline';
+  onVariantChange: (variant: 'default' | 'outline') => void;
+  onDelete: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div
+      className={cn(
+        'group/button flex h-10 items-stretch overflow-hidden rounded-lg text-sm font-semibold transition',
+        variant === 'default'
+          ? 'bg-brand text-foreground-on-accent'
+          : 'border border-input bg-background text-foreground future:border-border-subtle future:text-muted-foreground'
+      )}
+    >
+      {editing ? (
+        <input
+          ref={inputRef}
+          value={label}
+          onChange={(e) => onLabelChange(e.target.value)}
+          onBlur={() => setEditing(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === 'Escape') setEditing(false);
+          }}
+          autoFocus
+          size={Math.max(label.length, 4)}
+          className="bg-transparent px-3 outline-none"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setEditing(true);
+            setTimeout(() => inputRef.current?.select(), 0);
+          }}
+          className={cn(
+            'px-4 transition',
+            variant === 'default'
+              ? 'hover:bg-brand-hover'
+              : 'hover:bg-accent hover:text-accent-foreground future:hover:text-foreground'
+          )}
+        >
+          {label}
+        </button>
+      )}
+      <Popover>
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Edit button"
+                  className={cn(
+                    'grid w-0 shrink-0 place-items-center overflow-hidden px-0 opacity-0 transition-all duration-200 group-hover/button:w-8 group-hover/button:px-2 group-hover/button:opacity-100 aria-expanded:w-8 aria-expanded:px-2 aria-expanded:opacity-100',
+                    variant === 'default'
+                      ? 'hover:bg-brand-hover'
+                      : 'hover:bg-accent hover:text-accent-foreground future:hover:text-foreground'
+                  )}
+                >
+                  <Pencil size={12} className="shrink-0" />
+                </button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Edit button</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <PopoverContent align="start" className="w-48 space-y-3">
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-foreground-muted">Type</span>
+            <ToggleGroup
+              type="single"
+              value={variant}
+              onValueChange={(value) => {
+                if (value) onVariantChange(value as 'default' | 'outline');
+              }}
+              className="w-full"
+            >
+              <ToggleGroupItem value="default" className="flex-1 text-xs">
+                Primary
+              </ToggleGroupItem>
+              <ToggleGroupItem value="outline" className="flex-1 text-xs">
+                Secondary
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          <div className="h-px bg-border-subtle" />
+          <button
+            type="button"
+            onClick={onDelete}
+            className="flex w-full items-center gap-1.5 rounded-lg px-1.5 py-1 text-xs text-destructive transition hover:bg-destructive/10"
+          >
+            <X size={12} />
+            Delete button
+          </button>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
+function FieldDragOverlay({ caseItem }: { caseItem: LockableCase }) {
+  const meta = FIELD_TYPE_META[caseItem.fieldType];
+  return (
+    <div
+      className="flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 shadow-lg"
+      style={{ cursor: 'grabbing' }}
+    >
+      <GripVertical size={12} className="shrink-0 text-foreground-subtle" />
+      <meta.icon size={12} className="shrink-0 text-foreground-subtle" />
+      <span className="truncate text-xs font-medium text-foreground">
+        {caseItem.title}
+        {caseItem.required && <span className="ml-0.5 text-destructive">*</span>}
+      </span>
+    </div>
+  );
+}
+
+function LockableValueFieldShowcase({
+  controlsVisibility,
+  onControlsVisibilityChange,
+}: {
+  controlsVisibility: 'visible' | 'hover';
+  onControlsVisibilityChange: (visibility: 'visible' | 'hover') => void;
+}) {
+  const fullViewId = useId();
+  const compactViewId = useId();
+  const [showcaseValue, setShowcaseValue] = useState('');
+  const [showcaseLocked, setShowcaseLocked] = useState(true);
+  const [showcaseMode, setShowcaseMode] = useState<LockableValueFieldMode>('fixed');
+  const [showcaseFieldType, setShowcaseFieldType] = useState<LockableFieldType>('string');
+  const [showcaseRequired, setShowcaseRequired] = useState(true);
+
+  const handleShowcaseFieldTypeChange = (type: LockableFieldType) => {
+    setShowcaseFieldType(type);
+    setShowcaseValue('');
+    if (!FIELD_TYPE_META[type].supportsExpression) {
+      setShowcaseMode('fixed');
+    }
+  };
+
+  return (
+    <div className="flex w-[380px] shrink-0 flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-raised p-5">
+      <div className="flex flex-col gap-1">
+        <span className="text-sm font-semibold text-foreground">Demo controls</span>
+        <p className="text-xs leading-4 text-foreground-muted">
+          Toggle Show/Hide to preview how field controls behave in the panel on the left. Uses
+          component →{' '}
+          <a
+            href="/?path=/docs/apollo-wind-components-uipath-lockable-value-field--docs"
+            target="_top"
+            className="font-medium text-brand transition hover:text-brand-hover"
+          >
+            Lockable Value Field
+          </a>
+        </p>
+      </div>
+      <div className="flex items-center justify-between border-t border-border-subtle pt-4">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
+          Controls
+        </span>
+        <ToggleGroup
+          type="single"
+          size="xs"
+          value={controlsVisibility}
+          onValueChange={(v) => v && onControlsVisibilityChange(v as 'visible' | 'hover')}
+        >
+          <ToggleGroupItem value="visible" className="!px-2.5 !text-xs">
+            Show
+          </ToggleGroupItem>
+          <ToggleGroupItem value="hover" className="!px-2.5 !text-xs">
+            Hide
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+      <div className="flex flex-col gap-2">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
+          Full view
+        </span>
+        <LockableValueField
+          id={fullViewId}
+          label={
+            <Label htmlFor={fullViewId} className="text-xs font-medium text-foreground-muted">
+              Label
+              {showcaseRequired && <span className="ml-0.5 text-destructive">*</span>}
+            </Label>
+          }
+          headerActions={
+            <button
+              type="button"
+              aria-label="Close field"
+              className={cn(
+                'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                controlsVisibility === 'hover' &&
+                  'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+              )}
+            >
+              <X size={14} />
+            </button>
+          }
+          value={showcaseValue}
+          onValueChange={setShowcaseValue}
+          locked={showcaseLocked}
+          onLockedChange={setShowcaseLocked}
+          mode={showcaseMode}
+          onModeChange={setShowcaseMode}
+          fieldType={showcaseFieldType}
+          onFieldTypeChange={handleShowcaseFieldTypeChange}
+          required={showcaseRequired}
+          onRequiredChange={setShowcaseRequired}
+          controlsVisibility={controlsVisibility}
+        />
+      </div>
+      <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
+          Compact view (narrow container)
+        </span>
+        <div className="w-[200px]">
+          <LockableValueField
+            id={compactViewId}
+            label={
+              <Label htmlFor={compactViewId} className="text-xs font-medium text-foreground-muted">
+                Label
+                {showcaseRequired && <span className="ml-0.5 text-destructive">*</span>}
+              </Label>
+            }
+            headerActions={
+              <button
+                type="button"
+                aria-label="Close field"
+                className={cn(
+                  'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                  controlsVisibility === 'hover' &&
+                    'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+                )}
+              >
+                <X size={14} />
+              </button>
+            }
+            value={showcaseValue}
+            onValueChange={setShowcaseValue}
+            locked={showcaseLocked}
+            onLockedChange={setShowcaseLocked}
+            mode={showcaseMode}
+            onModeChange={setShowcaseMode}
+            fieldType={showcaseFieldType}
+            onFieldTypeChange={handleShowcaseFieldTypeChange}
+            required={showcaseRequired}
+            onRequiredChange={setShowcaseRequired}
+            controlsVisibility={controlsVisibility}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuickFormStory() {
+  const monacoTheme = useMonacoTheme();
+  const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
+  const nextIdRef = useRef(4);
+  const [formView, setFormView] = useState<'edit' | 'json'>('edit');
+  const [formTitle, setFormTitle] = useState('Quick Approve');
+  const [formDescription, setFormDescription] = useState('Add a description');
+  const [editingFormTitle, setEditingFormTitle] = useState(false);
+  const [editingFormDescription, setEditingFormDescription] = useState(false);
+  const formTitleRef = useRef<HTMLInputElement>(null);
+  const formDescriptionRef = useRef<HTMLInputElement>(null);
+  const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(DEFAULT_LOCKABLE_CASES, null, 2));
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [jsonCopied, setJsonCopied] = useState(false);
+  const [showcaseControlsVisibility, setShowcaseControlsVisibility] = useState<'visible' | 'hover'>(
+    'visible'
+  );
+  const [buttons, setButtons] = useState<FormButtonItem[]>(DEFAULT_FORM_BUTTONS);
+  const nextButtonIdRef = useRef(3);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (formView !== 'json') {
+      setJsonDraft(JSON.stringify(cases, null, 2));
+      setJsonError(null);
+    }
+  }, [cases, formView]);
+
+  const handleJsonChange = (value: string) => {
+    setJsonDraft(value);
+    try {
+      const parsed = JSON.parse(value);
+      if (!Array.isArray(parsed)) {
+        setJsonError('Expected a JSON array of fields.');
+        return;
+      }
+      if (!parsed.every(isValidLockableCase)) {
+        setJsonError('Each field needs id, title, required, value, locked, mode, and fieldType.');
+        return;
+      }
+      const fieldIds = parsed.map(({ id }) => id);
+      if (new Set(fieldIds).size !== fieldIds.length) {
+        setJsonError('Field IDs must be unique.');
+        return;
+      }
+      nextIdRef.current = Math.max(0, ...fieldIds) + 1;
+      setCases(parsed);
+      setJsonError(null);
+    } catch {
+      setJsonError('Invalid JSON.');
+    }
+  };
+
+  const handleCopyJson = () => {
+    navigator.clipboard
+      ?.writeText(jsonDraft)
+      ?.then(() => {
+        setJsonCopied(true);
+        setTimeout(() => setJsonCopied(false), 1500);
+      })
+      ?.catch(() => {});
+  };
+
+  const addCaseWithType = (fieldType: LockableFieldType) => {
+    const id = nextIdRef.current++;
+    setCases((prev) => [
+      ...prev,
+      {
+        id,
+        title: `Field ${id}`,
+        required: true,
+        value: '',
+        locked: true,
+        mode: 'fixed',
+        fieldType,
+      },
+    ]);
+  };
+  const deleteCase = (id: number) => setCases((prev) => prev.filter((c) => c.id !== id));
+  const updateCase = (id: number, patch: Partial<LockableCase>) =>
+    setCases((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  const addButton = () => {
+    const id = nextButtonIdRef.current++;
+    setButtons((prev) => [...prev, { id, label: 'Button', variant: 'outline' }]);
+  };
+  const deleteButton = (id: number) => setButtons((prev) => prev.filter((b) => b.id !== id));
+  const updateButton = (id: number, patch: Partial<FormButtonItem>) =>
+    setButtons((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+  const updateCaseFieldType = (id: number, fieldType: LockableFieldType) =>
+    setCases((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              fieldType,
+              value: '',
+              mode: FIELD_TYPE_META[fieldType].supportsExpression ? c.mode : 'fixed',
+            }
+          : c
+      )
+    );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const [activeDragId, setActiveDragId] = useState<number | null>(null);
+  const [overDragId, setOverDragId] = useState<number | null>(null);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as number);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    setOverDragId((event.over?.id as number) ?? null);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setCases((prev) => {
+        const oldIndex = prev.findIndex((c) => c.id === active.id);
+        const newIndex = prev.findIndex((c) => c.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+    setActiveDragId(null);
+    setOverDragId(null);
+  };
+
+  const handleDragCancel = () => {
+    setActiveDragId(null);
+    setOverDragId(null);
+  };
+
+  const activeCase = cases.find((c) => c.id === activeDragId);
+
+  return (
+    <div className="flex items-start gap-8">
+      <PanelFrame>
+        <NodePropertyPanel
+          panelTitle="Properties"
+          nodeIcon={<UserRoundCheck />}
+          nodeLabel="Quick Approve"
+          nodeCategory="Quick approve/reject decision for the extracted invoice."
+          action={<DebugButton />}
+          onClose={() => {}}
+          contentInset="0.875rem"
+          className="h-[760px]"
+        >
+          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <TabsList className={TAB_LIST_CLASS}>
+                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                  Parameters
+                </TabsTrigger>
+                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                  Branching
+                </TabsTrigger>
+                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                  Error handling
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            <TabsContent
+              value="parameters"
+              className="mt-0 flex min-h-0 flex-1 flex-col gap-4 overflow-auto py-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
+            >
+              {/* Quick form */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-foreground-muted">Quick form</span>
+                  <div className="flex items-center gap-2">
+                    <Popover>
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <PopoverTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label="Generate with AI"
+                                className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground aria-expanded:bg-surface-overlay aria-expanded:text-foreground"
+                              >
+                                <Sparkles size={14} />
+                              </button>
+                            </PopoverTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>Generate with AI</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <PopoverContent align="end" className="w-64 space-y-1.5">
+                        <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                          <Sparkles size={12} className="text-brand" />
+                          Describe the form you want
+                        </span>
+                        <Textarea
+                          rows={3}
+                          placeholder="e.g. An invoice approval form with amount and due date"
+                          className="resize-none text-sm"
+                        />
+                        <Button size="sm" className="w-full">
+                          Generate
+                        </Button>
+                      </PopoverContent>
+                    </Popover>
+                    <ToggleGroup
+                      type="single"
+                      size="xs"
+                      value={formView}
+                      onValueChange={(v) => v && setFormView(v as 'edit' | 'json')}
+                    >
+                      <ToggleGroupItem value="edit" className="!px-2.5 !text-xs">
+                        UI
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="json" className="!px-2.5 !text-xs">
+                        JSON
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                </div>
+                <Card>
+                  <CardContent className="flex flex-col gap-4 p-4">
+                    <div className="flex items-center gap-3.5">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={() => {}}
+                      />
+                      <HoverCard openDelay={300}>
+                        <HoverCardTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            aria-label="Upload a file"
+                            className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle transition hover:bg-surface-overlay/70 hover:text-foreground [&>svg]:size-5"
+                          >
+                            <Upload />
+                          </button>
+                        </HoverCardTrigger>
+                        <HoverCardContent align="start" className="w-56 space-y-1.5">
+                          <p className="text-xs font-semibold text-foreground">Upload form logo</p>
+                          <p className="text-xs text-foreground-muted">
+                            Images are automatically resized to fit the logo area.
+                          </p>
+                          <div className="space-y-0.5 text-[11px] text-foreground-subtle">
+                            <div>Type: PNG, JPG, SVG</div>
+                            <div>Size: 512 × 512 px</div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                      <div className="flex min-w-0 flex-1 flex-col justify-center">
+                        {editingFormTitle ? (
+                          <input
+                            ref={formTitleRef}
+                            value={formTitle}
+                            onChange={(e) => setFormTitle(e.target.value)}
+                            onBlur={() => setEditingFormTitle(false)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === 'Escape')
+                                setEditingFormTitle(false);
+                            }}
+                            className="rounded bg-surface-overlay px-1 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                            autoFocus
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingFormTitle(true);
+                              setTimeout(() => formTitleRef.current?.select(), 0);
+                            }}
+                            className="truncate rounded px-1 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                          >
+                            {formTitle}
+                          </button>
+                        )}
+                        {editingFormDescription ? (
+                          <input
+                            ref={formDescriptionRef}
+                            value={formDescription}
+                            onChange={(e) => setFormDescription(e.target.value)}
+                            onBlur={() => setEditingFormDescription(false)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === 'Escape')
+                                setEditingFormDescription(false);
+                            }}
+                            className="rounded bg-surface-overlay px-1 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                            autoFocus
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingFormDescription(true);
+                              setTimeout(() => formDescriptionRef.current?.select(), 0);
+                            }}
+                            className="truncate rounded px-1 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                          >
+                            {formDescription}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {formView === 'edit' && (
+                      <>
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragStart={handleDragStart}
+                          onDragOver={handleDragOver}
+                          onDragEnd={handleDragEnd}
+                          onDragCancel={handleDragCancel}
+                        >
+                          <SortableContext
+                            items={cases.map((c) => c.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="flex flex-col gap-4">
+                              {cases.map((c, index) => {
+                                const activeIndex = cases.findIndex((x) => x.id === activeDragId);
+                                const isOver =
+                                  activeDragId != null &&
+                                  overDragId === c.id &&
+                                  c.id !== activeDragId;
+                                return (
+                                  <LockableCaseRow
+                                    key={c.id}
+                                    id={c.id}
+                                    caseTitle={c.title}
+                                    onTitleChange={(title) => updateCase(c.id, { title })}
+                                    required={c.required}
+                                    onRequiredChange={(required) => updateCase(c.id, { required })}
+                                    onDelete={() => deleteCase(c.id)}
+                                    value={c.value}
+                                    onValueChange={(value) => updateCase(c.id, { value })}
+                                    locked={c.locked}
+                                    onLockedChange={(locked) => updateCase(c.id, { locked })}
+                                    mode={c.mode}
+                                    onModeChange={(mode) => updateCase(c.id, { mode })}
+                                    fieldType={c.fieldType}
+                                    compact
+                                    onFieldTypeChange={(fieldType) =>
+                                      updateCaseFieldType(c.id, fieldType)
+                                    }
+                                    controlsVisibility={showcaseControlsVisibility}
+                                    monacoTheme={monacoTheme}
+                                    insertBefore={isOver && activeIndex > index}
+                                    insertAfter={isOver && activeIndex < index}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </SortableContext>
+                          {createPortal(
+                            <DragOverlay>
+                              {activeCase ? <FieldDragOverlay caseItem={activeCase} /> : null}
+                            </DragOverlay>,
+                            document.body
+                          )}
+                        </DndContext>
+                        <button
+                          type="button"
+                          onClick={() => addCaseWithType('string')}
+                          className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                        >
+                          <Plus size={12} />
+                          Add field
+                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {buttons.map((b) => (
+                            <FormButtonChip
+                              key={b.id}
+                              label={b.label}
+                              onLabelChange={(label) => updateButton(b.id, { label })}
+                              variant={b.variant}
+                              onVariantChange={(variant) => updateButton(b.id, { variant })}
+                              onDelete={() => deleteButton(b.id)}
+                            />
+                          ))}
+                          <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={addButton}
+                                  aria-label="Add button"
+                                  className="grid size-10 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                                >
+                                  <Plus size={16} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>Add button</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </>
+                    )}
+                    {formView === 'json' && (
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-foreground-muted">
+                            Form schema
+                          </span>
+                          <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={handleCopyJson}
+                                  aria-label="Copy JSON"
+                                  className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                                >
+                                  {jsonCopied ? (
+                                    <CircleCheck size={13} className="text-brand" />
+                                  ) : (
+                                    <Copy size={13} />
+                                  )}
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>{jsonCopied ? 'Copied' : 'Copy JSON'}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <div className="h-[320px] overflow-hidden rounded-xl border border-surface-overlay">
+                          <MonacoEditor
+                            height="100%"
+                            language="json"
+                            value={jsonDraft}
+                            onChange={(value) => handleJsonChange(value ?? '')}
+                            theme={monacoTheme}
+                            beforeMount={registerMonacoThemes}
+                            options={JSON_EDITOR_OPTIONS}
+                          />
+                        </div>
+                        {jsonError && <span className="text-xs text-destructive">{jsonError}</span>}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            <TabsContent value="error-handling" className="mt-0" />
+            <TabsContent value="advanced" className="mt-0" />
+          </Tabs>
+        </NodePropertyPanel>
+      </PanelFrame>
+
+      <LockableValueFieldShowcase
+        controlsVisibility={showcaseControlsVisibility}
+        onControlsVisibilityChange={setShowcaseControlsVisibility}
+      />
+    </div>
+  );
+}
+
+export const InlineEditing: Story = {
+  name: 'Inline Editing',
+  render: () => <InlineEditingStory />,
+};
+
+export const Output: Story = {
+  name: 'Input / Output',
+  render: () => <InputOutputStory />,
+  parameters: { layout: 'fullscreen' },
+};
+
+export const QuickForm: Story = {
+  name: 'Form HITL',
+  render: () => <QuickFormStory />,
+};
+
+// ============================================================================
 // Inline Editing
 // Title and description in the node identity row are directly editable.
 // ============================================================================
@@ -1752,11 +3599,6 @@ function InlineEditingStory() {
     </PanelFrame>
   );
 }
-
-export const InlineEditing: Story = {
-  name: 'Inline Editing',
-  render: () => <InlineEditingStory />,
-};
 
 export const AlertsAndErrors: Story = {
   name: 'Alerts and Errors',
@@ -1863,32 +3705,6 @@ export const Responsive: Story = {
 // ============================================================================
 // Input / Output panels (NodeIOView)
 // ============================================================================
-
-const JSON_VIEWER_OPTIONS = {
-  readOnly: true,
-  fontSize: 12,
-  lineHeight: 18,
-  minimap: { enabled: false },
-  scrollBeyondLastLine: false,
-  wordWrap: 'off',
-  fontFamily:
-    'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-  padding: { top: 8, bottom: 8 },
-  lineNumbers: 'off' as const,
-  lineDecorationsWidth: 0,
-  glyphMargin: false,
-  folding: true,
-  renderLineHighlight: 'none' as const,
-  hideCursorInOverviewRuler: true,
-  overviewRulerBorder: false,
-  overviewRulerLanes: 0,
-  scrollbar: {
-    vertical: 'auto' as const,
-    horizontal: 'auto' as const,
-    alwaysConsumeMouseWheel: false,
-  },
-  automaticLayout: true,
-} as const;
 
 function MonacoJsonView({ value }: { value: JsonValue | undefined }) {
   const monacoTheme = useMonacoTheme();
