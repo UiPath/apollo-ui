@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.5.0...@uipath/apollo-react@6.6.0) (2026-07-28)
+
+### Features
+
+* **apollo-react:** add data-testids to stage/task node components ([b53d901](https://github.com/UiPath/apollo-ui/commit/b53d901a1f5cd5ba8daa2f05b0522aee9b2783a8))
+
 ## [@uipath/apollo-react-v6.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.4.0...@uipath/apollo-react@6.5.0) (2026-07-28)
 
 ### Features
