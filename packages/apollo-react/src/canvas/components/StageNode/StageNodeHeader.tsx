@@ -201,6 +201,7 @@ const StageNodeHeaderInner = ({
                 onClick={handleTaskAddClick}
                 aria-label={labels.addTask}
                 disabled={isAddTaskDisabled}
+                data-testid={`add-task-button-${id}`}
               >
                 <CanvasIcon icon="plus" size={20} />
               </Button>
@@ -243,6 +244,7 @@ const StageNodeHeaderInner = ({
                 const button = (
                   <StageChip
                     key={chip.type}
+                    data-testid={`stage-${chip.type}-chip-${id}`}
                     type="button"
                     aria-label={typeof chip.tooltip === 'string' ? chip.tooltip : chip.type}
                     onClick={(e) => {
@@ -268,7 +270,10 @@ const StageNodeHeaderInner = ({
         </div>
       )}
       {stageDuration && (
-        <span className="flex min-h-8 items-center text-xs text-foreground-muted">
+        <span
+          className="flex min-h-8 items-center text-xs text-foreground-muted"
+          data-testid={`stage-duration-${id}`}
+        >
           {stageDuration}
         </span>
       )}

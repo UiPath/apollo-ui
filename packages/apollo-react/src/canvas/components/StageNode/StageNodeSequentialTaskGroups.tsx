@@ -62,6 +62,7 @@ export const StageNodeSequentialTaskGroups = ({
   ) => NodeMenuItem | undefined;
 }) => {
   const {
+    id,
     execution,
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
@@ -202,7 +203,12 @@ export const StageNodeSequentialTaskGroups = ({
   return (
     <StageAdditionalTasksSection>
       <StageAdditionalTasksHeaderSection>
-        <span className="text-xs font-bold text-foreground-muted">{labels.sequentialTasks}</span>
+        <span
+          data-testid={`sequential-tasks-header-${id}`}
+          className="text-xs font-bold text-foreground-muted"
+        >
+          {labels.sequentialTasks}
+        </span>
       </StageAdditionalTasksHeaderSection>
       <DndContext
         collisionDetection={closestCenter}
@@ -215,7 +221,7 @@ export const StageNodeSequentialTaskGroups = ({
       >
         <SortableContext items={sequentialTaskIds} strategy={verticalListSortingStrategy}>
           {/* Disable dragging and panning the canvas when dragging a task */}
-          <StageTaskList className="nodrag nopan">
+          <StageTaskList data-testid={`sequential-tasks-list-${id}`} className="nodrag nopan">
             {sequentialTaskGroups.map((taskGroup, groupIndex) => {
               const isParallel = taskGroup.length > 1;
               return (

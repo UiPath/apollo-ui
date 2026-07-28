@@ -15,6 +15,7 @@ export const StageTaskEntryConditionIcon = ({
   return (
     <CanvasTooltip content="Entry condition" placement="top">
       <span
+        data-testid={`task-entry-condition-icon-${task.id}`}
         style={{
           display: 'flex',
           alignItems: 'center',

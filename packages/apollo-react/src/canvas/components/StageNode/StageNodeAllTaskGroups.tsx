@@ -157,11 +157,15 @@ const StageNodeAllTaskGroupsInner = ({
               size="sm"
               onClick={handleTaskAddClick}
               style={{ maxWidth: 'fit-content', padding: 0 }}
+              data-testid={`add-task-body-button-${id}`}
             >
               {defaultContent}
             </Button>
           ) : (
-            <span className="inline-flex items-center h-9 text-sm font-medium text-foreground-muted">
+            <span
+              data-testid={`no-tasks-body-${id}`}
+              className="inline-flex items-center h-9 text-sm font-medium text-foreground-muted"
+            >
               {defaultContent}
             </span>
           )}

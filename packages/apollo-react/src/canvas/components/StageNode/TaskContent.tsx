@@ -118,7 +118,12 @@ export const TaskContent = memo(
     // Ad hoc tasks are by definition not required, so never show the "*" marker on them.
     const showRequiredMarker = task.isRequired && !task.isAdhoc && task.taskGroupType !== 'adhoc';
     const durationLabel = taskExecution?.duration ? (
-      <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
+      <span
+        data-testid={`stage-task-duration-${task.id}`}
+        className="text-xs text-foreground-muted"
+      >
+        {taskExecution.duration}
+      </span>
     ) : null;
 
     return (
@@ -135,7 +140,9 @@ export const TaskContent = memo(
           align="center"
           style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
         >
-          <StageTaskIcon>{task.icon ?? <ProcessCanvasIcon />}</StageTaskIcon>
+          <StageTaskIcon data-testid={`stage-task-icon-${task.id}`}>
+            {task.icon ?? <ProcessCanvasIcon />}
+          </StageTaskIcon>
           <CanvasTooltip
             content={task.label}
             placement="top"
@@ -151,11 +158,19 @@ export const TaskContent = memo(
                 whiteSpace: 'nowrap',
               }}
             >
-              <span className="text-sm truncate" style={{ minWidth: 0 }}>
+              <span
+                data-testid={`stage-task-label-${task.id}`}
+                className="text-sm truncate"
+                style={{ minWidth: 0 }}
+              >
                 {task.label}
               </span>
               {showRequiredMarker && (
-                <span className="text-sm" style={{ flexShrink: 0 }}>
+                <span
+                  data-testid={`stage-task-required-marker-${task.id}`}
+                  className="text-sm"
+                  style={{ flexShrink: 0 }}
+                >
                   {'*'}
                 </span>
               )}
@@ -182,6 +197,7 @@ export const TaskContent = memo(
                 role="img"
                 aria-label={runsTooltip}
                 className="h-[14px] gap-px rounded-full px-1 py-0 text-[11px] leading-none [&>svg]:size-3"
+                data-testid={`stage-task-runs-${task.id}`}
               >
                 <Redo2 aria-hidden />
                 {totalRuns}
@@ -195,6 +211,7 @@ export const TaskContent = memo(
                 role="img"
                 aria-label={reworkTooltip}
                 className="h-[14px] rounded-full px-1 py-0 [&>svg]:size-3"
+                data-testid={`stage-task-rework-${task.id}`}
               >
                 <RotateCcw aria-hidden />
               </Badge>
@@ -208,6 +225,7 @@ export const TaskContent = memo(
                 size="icon"
                 className="h-4 w-4 rounded-sm"
                 aria-label={taskStatusTooltip}
+                data-testid={`stage-task-status-${task.id}`}
               >
                 <ExecutionStatusIcon status={taskExecution.status} />
               </Button>
