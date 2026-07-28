@@ -14,7 +14,7 @@ export function TierToggle() {
         className={cn(
           "px-3 py-1.5 transition-colors",
           tier === "p1"
-            ? "bg-(--gb-teal) text-white"
+            ? "bg-(--primary) text-white"
             : "bg-background text-muted-foreground hover:bg-muted",
         )}
       >
@@ -26,7 +26,7 @@ export function TierToggle() {
         className={cn(
           "px-3 py-1.5 transition-colors",
           tier === "p2"
-            ? "bg-(--gb-indigo) text-white"
+            ? "bg-(--insight-600) text-white"
             : "bg-background text-muted-foreground hover:bg-muted",
         )}
       >

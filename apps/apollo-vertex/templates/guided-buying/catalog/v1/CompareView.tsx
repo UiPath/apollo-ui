@@ -283,7 +283,7 @@ export function CompareView({
                             <span className="inline-flex items-center gap-1.5">
                               {value ?? "—"}
                               {isBest && (
-                                <span className="inline-flex items-center gap-0.5 text-xs font-medium text-(--gb-teal)">
+                                <span className="inline-flex items-center gap-0.5 text-xs font-medium text-(--primary)">
                                   <Check className="size-3" />
                                   Best
                                 </span>

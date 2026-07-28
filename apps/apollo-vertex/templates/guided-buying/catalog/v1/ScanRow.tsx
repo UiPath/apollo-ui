@@ -124,7 +124,7 @@ export function ScanRow({
             {item.specs.join(" · ")}
           </p>
           {recommended && note && (
-            <p className="mt-0.5 text-sm font-medium text-(--gb-teal)">
+            <p className="mt-0.5 text-sm font-medium text-(--primary)">
               {note}
             </p>
           )}

@@ -10,7 +10,6 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { type PointerEvent, useState } from "react";
-import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -18,9 +17,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { useRequests } from "../requests/requests-context";
 import {
   type Decision,
+  type WorkbenchDetail as Detail,
   FORK_BADGE_STATUS,
   FORK_DOT,
   FORK_LABEL,
@@ -29,7 +30,6 @@ import {
   type TimelineEntry,
   WORKBENCH_DETAILS,
   WORKBENCH_ROWS,
-  type WorkbenchDetail as Detail,
   type WorkbenchStatus,
 } from "./data";
 
@@ -293,7 +293,7 @@ function Finding({
               className={cn(
                 "rounded-xl border p-3.5",
                 v.agentPick
-                  ? "border-(--gb-teal) bg-(--gb-teal)/[0.04]"
+                  ? "border-(--primary) bg-(--primary)/[0.04]"
                   : "border-border",
               )}
             >
@@ -387,14 +387,14 @@ function renderDot(indicator: TimelineEntry["indicator"]) {
     );
   if (indicator === "ai-warn")
     return (
-      <div className="flex size-4 shrink-0 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500/20">
-        <AiMark size={8} className="text-amber-500" />
+      <div className="flex size-4 shrink-0 items-center justify-center rounded-full border border-warning/40 bg-warning/20">
+        <AiMark size={8} className="text-warning" />
       </div>
     );
   if (indicator === "ai-pass")
     return (
-      <div className="flex size-4 shrink-0 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/20">
-        <AiMark size={8} className="text-emerald-500" />
+      <div className="flex size-4 shrink-0 items-center justify-center rounded-full border border-success/40 bg-success/20">
+        <AiMark size={8} className="text-success" />
       </div>
     );
   return (

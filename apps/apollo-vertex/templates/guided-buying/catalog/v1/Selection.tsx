@@ -17,6 +17,10 @@ import {
 } from "@/components/ui/page-header";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
+import { useAutopilotChat } from "../../autopilot-chat-context";
+import { CartDrawer } from "./CartDrawer";
+import { CompareView } from "./CompareView";
+import { useCart } from "./cart-context";
 import {
   activePrice,
   CATALOG_ITEMS,
@@ -28,18 +32,14 @@ import {
   RECOMMENDATION,
   SAMPLE_REQUEST,
 } from "./data";
-import { useCart } from "./cart-context";
-import { CartDrawer } from "./CartDrawer";
-import { CompareView } from "./CompareView";
 import { type FilterChip, FilterChips } from "./FilterChips";
 import { ProductCard } from "./ProductCard";
 import { ProductDetail } from "./ProductDetail";
 import { ProductDetailOverlay } from "./ProductDetailOverlay";
-import { RecommendationCard } from "./RecommendationCard";
 import { PriceBasisProvider } from "./price-basis-context";
+import { RecommendationCard } from "./RecommendationCard";
 import { ScanRow } from "./ScanRow";
 import { Toolbar } from "./Toolbar";
-import { useAutopilotChat } from "../../autopilot-chat-context";
 import type {
   CatalogCategory,
   CatalogItem,
@@ -619,7 +619,7 @@ export function Selection({
                         }}
                         className="absolute right-0 top-full z-30 mt-2 flex w-64 items-start gap-2.5 rounded-xl bg-foreground p-3 text-left text-background shadow-lg"
                       >
-                        <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-(--gb-teal) text-white">
+                        <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-(--primary) text-white">
                           <Check className="size-2.5" aria-hidden />
                         </span>
                         <div className="min-w-0">

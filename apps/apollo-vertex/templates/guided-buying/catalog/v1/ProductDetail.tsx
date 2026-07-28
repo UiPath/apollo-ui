@@ -121,7 +121,7 @@ export function ProductDetail({
                 )}
               </div>
               {showStrike && (
-                <p className="text-sm font-medium text-(--gb-teal)">
+                <p className="text-sm font-medium text-(--primary)">
                   EPP pricing · save {formatPrice(savings, item.currency)}/unit
                 </p>
               )}
