@@ -45,6 +45,7 @@ export function NodePropertyPanel({
   plugins,
   onSubmit,
   disabled,
+  autoComplete,
   resetKey,
   className,
   contentInset = '1.5rem',
@@ -151,6 +152,7 @@ export function NodePropertyPanel({
               onActiveStepChange={onActiveStepChange}
               onSubmit={onSubmit}
               disabled={disabled}
+              autoComplete={autoComplete}
               className="flex min-h-0 flex-1 flex-col"
             />
           </div>
@@ -167,6 +169,7 @@ export function NodePropertyPanel({
               sectionVariant={sectionVariant}
               onSubmit={onSubmit}
               disabled={disabled}
+              autoComplete={autoComplete}
               className="flex flex-col gap-4 pb-6 pt-3 [padding-inline:var(--mf-content-inset)]"
             />
           </div>

@@ -87,4 +87,24 @@ describe('NodePropertyPanel', () => {
     );
     expect(screen.getByTestId('header-extra')).toBeInTheDocument();
   });
+
+  it('forwards autoComplete to the form for a multi-step schema', () => {
+    const { container } = render(<NodePropertyPanel schema={MULTI_STEP} autoComplete="off" />);
+    expect(container.querySelector('form')).toHaveAttribute('autocomplete', 'off');
+  });
+
+  it('forwards autoComplete to the form for a single-page schema', () => {
+    const SINGLE_PAGE: FormSchema = {
+      id: 'http',
+      title: 'HTTP',
+      sections: [{ id: 'p', fields: [{ id: 'url', name: 'url', type: 'text', label: 'URL' }] }],
+    };
+    const { container } = render(<NodePropertyPanel schema={SINGLE_PAGE} autoComplete="off" />);
+    expect(container.querySelector('form')).toHaveAttribute('autocomplete', 'off');
+  });
+
+  it('renders the form without an autocomplete attribute when autoComplete is omitted', () => {
+    const { container } = render(<NodePropertyPanel schema={MULTI_STEP} />);
+    expect(container.querySelector('form')).not.toHaveAttribute('autocomplete');
+  });
 });
