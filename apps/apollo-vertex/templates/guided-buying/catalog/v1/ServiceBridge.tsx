@@ -150,7 +150,6 @@ export function ServiceBridge({ onConfigure }: ServiceBridgeProps) {
       >
         <Button
           size="sm"
-          className="bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)"
           onClick={() => {
             if (onConfigure) onConfigure();
             else void navigate({ to: "/configure" });

@@ -37,7 +37,7 @@ declare module "@tanstack/react-router" {
 
 const LINES = 12;
 const AI_GRADIENT = { background: "var(--ai-gradient-strong)" };
-const ACCENT = "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)";
+
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 interface Option {
@@ -398,7 +398,7 @@ export function ConfigureFlow() {
                     </dl>
                   </div>
                   <div className="flex justify-end">
-                    <Button className={ACCENT} onClick={submitForApproval}>
+                    <Button onClick={submitForApproval}>
                       Submit for approval
                       <ArrowRight className="size-4" aria-hidden />
                     </Button>
@@ -515,18 +515,12 @@ export function ConfigureFlow() {
                 {/* Actions — back lives in the header (consistent, top-left). */}
                 <motion.div {...stepItem(5)} className="flex justify-end">
                   {step === "plan" ? (
-                    <Button
-                      className={ACCENT}
-                      onClick={() => setStep("device")}
-                    >
+                    <Button onClick={() => setStep("device")}>
                       Continue
                       <ArrowRight className="size-4" aria-hidden />
                     </Button>
                   ) : (
-                    <Button
-                      className={ACCENT}
-                      onClick={() => setConfirmed(true)}
-                    >
+                    <Button onClick={() => setConfirmed(true)}>
                       Confirm and continue
                       <ArrowRight className="size-4" aria-hidden />
                     </Button>

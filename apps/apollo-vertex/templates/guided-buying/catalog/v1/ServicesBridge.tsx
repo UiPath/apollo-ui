@@ -160,11 +160,7 @@ export function ServicesBridge() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: EASE, delay: ctaDelay }}
       >
-        <Button
-          size="sm"
-          className="bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)"
-          onClick={sendToProcurement}
-        >
+        <Button size="sm" onClick={sendToProcurement}>
           Send to procurement
           <ArrowRight className="size-4" aria-hidden />
         </Button>

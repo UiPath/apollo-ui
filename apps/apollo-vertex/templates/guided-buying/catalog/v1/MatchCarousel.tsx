@@ -4,9 +4,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Bookmark, Clock, Plus, User } from "lucide-react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { GLASS_CLASSES } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { P1 } from "../../P1";
 import { P2 } from "../../P2";
@@ -22,10 +24,6 @@ import { ProductImage } from "./ProductImage";
 import { QuantityStepper } from "./QuantityStepper";
 import type { CatalogItem } from "./types";
 
-// The agent's signature gradient — reused (not new) so the in-chat pick reads as
-// the same recommendation as the catalog's Picked-for-you lead row.
-const AI_GRADIENT = { background: "var(--ai-gradient-strong)" };
-const ACCENT = "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)";
 // Request applied EPP, so cards price per unit under EPP.
 const BASIS = "epp" as const;
 // Soft ease-out for the reveal/morph beats.
@@ -39,17 +37,6 @@ const NOT_PICKED_REASONS: Record<string, string> = {
   [YOGA_ID]: "Not picked · touch adds cost, 16GB",
   "dell-xps-14": "Not picked · $50 less, smaller discount",
 };
-
-// Reusable chip styles — teal (deck: .chip.teal) and indigo (deck: .chip.ind).
-const CHIP_TEAL =
-  "inline-flex items-center rounded-full border border-(--gb-tealline) bg-(--gb-tealbg) px-2 py-0.5 text-[11px] font-medium text-(--gb-teal)";
-const CHIP_INDIGO =
-  "inline-flex items-center gap-1 rounded-full border border-(--gb-indigoline) bg-(--gb-indigobg) px-2 py-0.5 text-[11px] font-medium text-(--gb-indigo)";
-// Action chip row — plain (deck: .chip) and indigo-bordered (deck: .chip + indigoline border).
-const CHIP_ACTION =
-  "inline-flex cursor-pointer items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-muted";
-const CHIP_ACTION_INDIGO =
-  "inline-flex cursor-pointer items-center gap-1 rounded-full border border-(--gb-indigoline) px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-(--gb-indigobg)";
 
 export interface MatchesOutput {
   leadId: string;
@@ -68,8 +55,8 @@ interface MatchCardProps {
   notPickedReason?: string;
   /**
    * Deck j1-05: renders the card in "set aside" state — dashed border, desaturated
-   * image, indigo chip explaining why. CTA becomes "Show anyway". Only used for the
-   * Yoga card at P2.
+   * image, AI chip explaining why. CTA becomes "Show anyway". Only used for the
+   * Yoga card at P2 after the dock correction in stop 3.
    */
   setAside?: boolean;
   onShowAnyway?: () => void;
@@ -79,7 +66,7 @@ interface MatchCardProps {
  * One result card. Every card shares the template — image → title → spec →
  * rationale slot → price → CTA — so prices and buttons align across the row.
  * The pick fills the rationale with evidence chips; alternatives show the italic
- * "Not picked · reason" line; set-aside shows an indigo chip and "Show anyway".
+ * "Not picked · reason" line; set-aside shows an AI chip and "Show anyway".
  */
 function MatchCard({
   item,
@@ -101,18 +88,24 @@ function MatchCard({
   // then adjustable here (stepper) or in the cart peek; removal lives in the peek.
   const onAdd = () => setQuantity(item, requestQty);
 
-  const card = (
-    <div
-      className={cn(
-        "flex h-full flex-col gap-2 p-3",
-        setAside
-          ? "rounded-2xl border-[1.5px] border-dashed border-border/60 bg-background"
-          : GLASS_CLASSES,
+  // Content shared by both glass card (normal/lead) and plain div (set-aside).
+  const cardContent = (
+    <>
+      {/* Deck j1-04 .badge: --ai-gradient-fill, white text, rides the card's top border. */}
+      {lead && (
+        <Badge
+          status="ai"
+          variant="default"
+          className="absolute -top-[9px] left-3 text-[11px] font-semibold"
+        >
+          <AiMark size={12} aria-hidden />
+          <P1>AI pick</P1>
+          <P2>AI pick · personalized</P2>
+        </Badge>
       )}
-    >
-      {/* Image — the badge overlays here so the text rows below stay aligned.
-          Set-aside desaturates the image as the single visual "unavailable" cue. */}
-      <div className="relative">
+
+      {/* Image — set-aside desaturates as the single visual "unavailable" cue. */}
+      <div>
         <ProductImage
           src={item.image}
           alt={item.name}
@@ -120,14 +113,6 @@ function MatchCard({
           vendor={item.vendor}
           className={cn("h-28 rounded-xl", setAside && "grayscale opacity-60")}
         />
-        {lead && (
-          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-[var(--ai-gradient-start)]/10 px-2 py-0.5 text-xs font-medium text-[var(--ai-gradient-start)] shadow-sm">
-            <AiMark size={12} aria-hidden />
-            {/* Deck j1-04: "✦ AI pick"; j1-05: "✦ AI pick · personalized" */}
-            <P1>AI pick</P1>
-            <P2>AI pick · personalized</P2>
-          </span>
-        )}
       </div>
 
       <div className="space-y-0.5">
@@ -144,24 +129,30 @@ function MatchCard({
         </p>
       </div>
 
-      {/* Rationale slot — evidence chips on pick, italic reason on alts, indigo chip on set-aside. */}
+      {/* Rationale slot — evidence chips on pick, italic reason on alts, AI chip on set-aside. */}
       {lead ? (
         <div className="flex min-h-[2.25rem] flex-wrap items-start gap-1 pt-0.5">
-          <span className={CHIP_TEAL}>Best price after EPP</span>
-          {/* Deck j1-04: teal "Meets full spec"; j1-05 drops it, adds indigo "Ordered in May" */}
+          <Badge variant="secondary" className="text-[11px]">
+            Best price after EPP
+          </Badge>
+          {/* Deck j1-04: "Meets full spec"; j1-05 drops it, adds memory chip */}
           <P1>
-            <span className={CHIP_TEAL}>Meets full spec</span>
+            <Badge variant="secondary" className="text-[11px]">
+              Meets full spec
+            </Badge>
           </P1>
           <P2>
-            <span className={CHIP_INDIGO}>Ordered in May</span>
+            <Badge status="ai" variant="secondary" className="text-[11px]">
+              Ordered in May
+            </Badge>
           </P2>
         </div>
       ) : setAside ? (
         <div className="min-h-[2.25rem] pt-0.5">
-          <span className={CHIP_INDIGO}>
+          <Badge status="ai" variant="secondary" className="gap-1 text-[11px]">
             <Bookmark className="size-3" aria-hidden />
             Set aside · below your 32GB min
-          </span>
+          </Badge>
         </div>
       ) : (
         <p
@@ -211,7 +202,7 @@ function MatchCard({
             size="sm"
             variant={lead ? "default" : "secondary"}
             onClick={onAdd}
-            className={cn("w-full", lead && ACCENT)}
+            className="w-full"
           >
             <motion.span
               initial={reduceMotion ? false : { opacity: 0, scale: 0.85 }}
@@ -225,29 +216,28 @@ function MatchCard({
           </Button>
         )}
       </div>
-    </div>
+    </>
   );
 
-  // Reveal: staggered fade-up, pick first. The gradient border wraps the pick.
+  // Reveal: staggered fade-up, pick first.
+  // motion wrapper is relative so AiGlow (absolute -inset) positions correctly.
   return (
     <motion.div
-      className="h-full"
+      className="relative h-full"
       initial={reduceMotion ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: EASE, delay: index * 0.09 }}
     >
-      {lead ? (
-        <div className="relative h-full">
-          {/* AI-gradient glow behind the pick (no border). */}
-          <div
-            className="pointer-events-none absolute -inset-0.5 rounded-[20px] opacity-15 blur-md"
-            style={AI_GRADIENT}
-            aria-hidden
-          />
-          <div className="relative h-full">{card}</div>
+      {/* AiGlow sits behind the glass card; only the AI pick gets one. */}
+      {lead && <AiGlow variant="card" />}
+      {setAside ? (
+        <div className="relative flex h-full flex-col gap-2 rounded-2xl border-[1.5px] border-dashed border-border/60 bg-background p-3">
+          {cardContent}
         </div>
       ) : (
-        card
+        <Card variant="glass" className="relative h-full gap-2 p-3">
+          {cardContent}
+        </Card>
       )}
     </motion.div>
   );
@@ -298,10 +288,12 @@ export function MatchCarousel({
 
   return (
     <div className="w-full">
-      {/* Deck j1-04: AI reasoning strip above the grid. P1 and P2 show different copy. */}
+      {/* Deck j1-04: AI reasoning strip above the grid. ✦ marks the group once. */}
       {!output.loading && (
-        <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-(--gb-indigoline) bg-(--gb-indigobg)/40 px-4 py-3">
-          <span className="mt-0.5 shrink-0 text-sm text-(--gb-indigo)">✦</span>
+        <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-(--insight-200) [background-image:var(--ai-gradient)] px-4 py-3">
+          <span className="mt-0.5 shrink-0 text-sm text-(--insight-600)">
+            ✦
+          </span>
           <div className="min-w-0 text-[13px] leading-[1.55]">
             <P1>
               I&apos;d go with the <strong>ThinkPad X1 Carbon</strong> — deepest
@@ -316,18 +308,30 @@ export function MatchCarousel({
                 didn&apos;t, so I set it aside.
                 {/* Deck j1-05: provenance chips below the strip copy */}
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  <span className={CHIP_INDIGO}>
+                  <Badge
+                    status="ai"
+                    variant="secondary"
+                    className="text-[11px]"
+                  >
                     <Clock className="size-3" aria-hidden />
                     Your team&apos;s May order
-                  </span>
-                  <span className={CHIP_INDIGO}>
+                  </Badge>
+                  <Badge
+                    status="ai"
+                    variant="secondary"
+                    className="text-[11px]"
+                  >
                     <User className="size-3" aria-hidden />
                     Design contractor spec
-                  </span>
-                  <span className={CHIP_INDIGO}>
+                  </Badge>
+                  <Badge
+                    status="ai"
+                    variant="secondary"
+                    className="text-[11px]"
+                  >
                     <Bookmark className="size-3" aria-hidden />
                     32GB min · saved Jun 12
-                  </span>
+                  </Badge>
                 </div>
               </>
             </P2>
@@ -389,24 +393,44 @@ export function MatchCarousel({
           {/* Deck j1-04/j1-05: action chip row. "Why not the XPS?" is the j1-07 dock trigger. */}
           <div className="mt-3 flex flex-wrap gap-2">
             {/* Must survive at both tiers — sole entry point for j1-07 dock. */}
-            <button type="button" className={CHIP_ACTION}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-auto rounded-full px-3 py-1 text-xs"
+            >
               Why not the XPS?
-            </button>
+            </Button>
             {/* Deck j1-04: "Compare all three"; j1-05: "Update my preferences" */}
             <P1>
-              <button type="button" className={CHIP_ACTION}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-auto rounded-full px-3 py-1 text-xs"
+              >
                 Compare all three
-              </button>
+              </Button>
             </P1>
             <P2>
-              <button type="button" className={CHIP_ACTION}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-auto rounded-full px-3 py-1 text-xs"
+              >
                 Update my preferences
-              </button>
+              </Button>
             </P2>
-            {/* Deck j1-04/j1-05: indigo-bordered "✦ Ask" chip */}
-            <button type="button" className={CHIP_ACTION_INDIGO}>
-              <span className="text-(--gb-indigo)">✦</span> Ask
-            </button>
+            {/* Deck j1-04/j1-05: AI ask chip — ai-outline is the toolkit's "Ask AI" pattern. */}
+            <Button
+              type="button"
+              variant="ai-outline"
+              size="sm"
+              className="h-auto rounded-full px-3 py-1 text-xs"
+            >
+              ✦ Ask
+            </Button>
           </div>
 
           <div className="mt-2 flex items-center justify-end gap-2">
@@ -436,7 +460,6 @@ export function MatchCarousel({
                 >
                   <Button
                     size="sm"
-                    className={ACCENT}
                     onClick={() => void navigate({ to: "/review" })}
                   >
                     Review &amp; submit · {cartCount} item
