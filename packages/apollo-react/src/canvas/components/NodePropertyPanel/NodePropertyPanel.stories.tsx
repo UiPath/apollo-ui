@@ -985,6 +985,29 @@ function ErrorFieldBlock({
   );
 }
 
+function SuccessFieldBlock({
+  title,
+  message,
+  action,
+}: {
+  title: string;
+  message: string;
+  action: string;
+}) {
+  return (
+    <div className="rounded-xl border border-success/50 bg-success-background/25 p-3">
+      <div className="flex items-start gap-2">
+        <CircleCheck size={14} className="mt-0.5 shrink-0 text-success" />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold text-foreground">{title}</p>
+          <p className="mt-1 text-xs leading-4 text-success">{message}</p>
+          <p className="mt-1 text-xs leading-4 text-foreground-muted">{action}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const ALERT_PATTERN_NOTES = [
   {
     title: 'Tab error count',
@@ -3854,10 +3877,8 @@ function PanelUIInventoryStory() {
   const [checked, setChecked] = useState(true);
   const allInventorySections = ['text-fields', 'choices', 'collapsed'];
   const allSubContainerSections = ['text-fields', 'choices', 'advanced'];
-  const [expandedSections, setExpandedSections] = useState(allInventorySections);
-  const [expandedSubContainerSections, setExpandedSubContainerSections] = useState(
-    allSubContainerSections
-  );
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
+  const [expandedSubContainerSections, setExpandedSubContainerSections] = useState<string[]>([]);
   const allSectionsExpanded =
     expandedSections.length === allInventorySections.length &&
     expandedSubContainerSections.length === allSubContainerSections.length;
@@ -3960,7 +3981,11 @@ function PanelUIInventoryStory() {
               onValueChange={setExpandedSections}
             >
               <AccordionItem value="text-fields" className="border-border-subtle px-3.5">
-                <AccordionTrigger className="py-4 text-sm">Text and numeric fields</AccordionTrigger>
+                <AccordionTrigger className="group py-4 text-sm hover:no-underline">
+                  <span className="text-foreground transition-colors group-hover:text-foreground-muted">
+                    Text and numeric fields
+                  </span>
+                </AccordionTrigger>
                 <AccordionContent className="grid gap-4 pb-5">
                   <InventoryField label="Name" description="Short, single-line text input.">
                     <Input defaultValue="Extract invoice data" />
@@ -3981,7 +4006,11 @@ function PanelUIInventoryStory() {
               </AccordionItem>
 
               <AccordionItem value="choices" className="border-border-subtle px-3.5">
-                <AccordionTrigger className="py-4 text-sm">Selection controls</AccordionTrigger>
+                <AccordionTrigger className="group py-4 text-sm hover:no-underline">
+                  <span className="text-foreground transition-colors group-hover:text-foreground-muted">
+                    Selection controls
+                  </span>
+                </AccordionTrigger>
                 <AccordionContent className="grid gap-5 pb-5">
                   <InventoryField label="Connection">
                     <Select defaultValue="production">
@@ -4042,7 +4071,11 @@ function PanelUIInventoryStory() {
               </AccordionItem>
 
               <AccordionItem value="collapsed" className="border-border-subtle px-3.5">
-                <AccordionTrigger className="py-4 text-sm">Advanced options</AccordionTrigger>
+                <AccordionTrigger className="group py-4 text-sm hover:no-underline">
+                  <span className="text-foreground transition-colors group-hover:text-foreground-muted">
+                    Advanced options
+                  </span>
+                </AccordionTrigger>
                 <AccordionContent className="grid gap-4 pb-5">
                   <InventoryField label="Internal identifier">
                     <Input defaultValue="invoice-extractor-01" />
@@ -4069,22 +4102,28 @@ function PanelUIInventoryStory() {
                 <Badge variant="secondary">Optional</Badge>
                 <Badge variant="outline">Read only</Badge>
               </div>
-              <Alert>
-                <CircleCheck />
-                <AlertTitle>Configuration is valid</AlertTitle>
-                <AlertDescription>All required fields have been completed.</AlertDescription>
-              </Alert>
-              <Alert variant="destructive">
-                <CircleAlert />
-                <AlertTitle>Connection required</AlertTitle>
-                <AlertDescription>Select a valid connection before running this node.</AlertDescription>
-              </Alert>
+              <SuccessFieldBlock
+                title="Configuration is valid"
+                message="All required fields have been completed."
+                action="This node is ready to run."
+              />
+              <ErrorFieldBlock
+                title="Connection required"
+                message="No valid connection is configured for this node."
+                action="Select a connection before running this node."
+              />
               <InventoryField label="Field with validation" description="Use a unique node name.">
-                <Input
-                  defaultValue="Existing node"
-                  aria-invalid="true"
-                  className="border-destructive"
-                />
+                <div>
+                  <Input
+                    defaultValue="Existing node"
+                    aria-invalid="true"
+                    className="border-destructive"
+                  />
+                  <InlineValidationMessage
+                    message="This node name is already in use."
+                    action="Enter a unique name before saving."
+                  />
+                </div>
               </InventoryField>
             </div>
           </TabsContent>
