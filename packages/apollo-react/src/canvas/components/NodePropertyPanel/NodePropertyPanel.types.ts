@@ -52,6 +52,12 @@ export interface NodePropertyPanelProps {
   /** Disables all fields (e.g. read-only nodes). */
   disabled?: boolean;
   /**
+   * Forwarded to the underlying `MetadataForm`'s `<form>` element. Set `'off'`
+   * to keep browser autofill dropdowns from covering fields whose names match
+   * common autofill categories (e.g. `label`, `url`, `description`).
+   */
+  autoComplete?: 'off' | 'on';
+  /**
    * Change this (e.g. to the selected node id) to remount the form with fresh
    * initial data. The form reads `schema.initialData` once per mount, so a
    * stable identity per selected node prevents stale values across selections.
