@@ -75,6 +75,8 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  toast,
+  Toaster,
 } from '@uipath/apollo-wind';
 import {
   apolloCoreDarkHCMonaco,
@@ -106,6 +108,7 @@ import {
   Plus,
   ScanText,
   Search,
+  RefreshCw,
   Sparkles,
   Trash2,
   Type,
@@ -133,6 +136,7 @@ import type {
 } from '../JsonTree';
 import { isJsonObject } from '../JsonTree';
 import { NodeIOView, type NodeIOViewTab } from '../NodeIOView';
+import { CanvasTooltip } from '../CanvasTooltip';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
 // @monaco-editor/react uses a CJS build without an `exports` field, which
@@ -3639,11 +3643,6 @@ function InlineEditingStory() {
   );
 }
 
-export const InlineEditing: Story = {
-  name: 'Inline Editing',
-  render: () => <InlineEditingStory />,
-};
-
 // ============================================================================
 // Panel UI Inventory
 // Interactive reference of common controls and layout patterns used in panels.
@@ -3667,7 +3666,15 @@ function InventoryField({
   );
 }
 
-function PatternNote({ title, children }: { title: string; children: ReactNode }) {
+function PatternNote({
+  title,
+  eyebrow = 'Layout pattern',
+  children,
+}: {
+  title: string;
+  eyebrow?: string;
+  children: ReactNode;
+}) {
   const [dismissed, setDismissed] = useState(false);
 
   if (dismissed) return null;
@@ -3676,7 +3683,7 @@ function PatternNote({ title, children }: { title: string; children: ReactNode }
     <aside className="rounded-lg border border-border-subtle bg-surface-overlay p-3">
       <div className="flex items-start justify-between gap-3">
         <p className="pt-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-brand">
-          Layout pattern
+          {eyebrow}
         </p>
         <Button
           variant="ghost"
@@ -3895,8 +3902,9 @@ function PanelUIInventoryStory() {
   };
 
   return (
-    <PanelFrame>
-      <NodePropertyPanel
+    <>
+      <PanelFrame>
+        <NodePropertyPanel
         panelTitle="Properties"
         nodeIcon={<Sparkles />}
         nodeLabel="UI element inventory"
@@ -4096,61 +4104,182 @@ function PanelUIInventoryStory() {
           </TabsContent>
 
           <TabsContent value="states" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
-            <div className="grid gap-4">
-              <div className="flex flex-wrap gap-2">
-                <Badge>Default</Badge>
-                <Badge variant="secondary">Optional</Badge>
-                <Badge variant="outline">Read only</Badge>
-              </div>
-              <SuccessFieldBlock
-                title="Configuration is valid"
-                message="All required fields have been completed."
-                action="This node is ready to run."
-              />
-              <ErrorFieldBlock
-                title="Connection required"
-                message="No valid connection is configured for this node."
-                action="Select a connection before running this node."
-              />
-              <InventoryField label="Field with validation" description="Use a unique node name.">
-                <div>
-                  <Input
-                    defaultValue="Existing node"
-                    aria-invalid="true"
-                    className="border-destructive"
-                  />
-                  <InlineValidationMessage
-                    message="This node name is already in use."
-                    action="Enter a unique name before saving."
-                  />
+            <div className="grid gap-5">
+              <section className="grid gap-3">
+                <PatternNote title="Status labels" eyebrow="State pattern">
+                  Short labels communicate a field or setting state without interrupting the task.
+                </PatternNote>
+                <div className="flex flex-wrap gap-2">
+                  <Badge>Default</Badge>
+                  <Badge variant="secondary">Optional</Badge>
+                  <Badge variant="outline">Read only</Badge>
                 </div>
-              </InventoryField>
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Section messages" eyebrow="State pattern">
+                  Persistent feedback summarizes a panel-level result and provides the next action
+                  when one is needed.
+                </PatternNote>
+                <SuccessFieldBlock
+                  title="Configuration is valid"
+                  message="All required fields have been completed."
+                  action="This node is ready to run."
+                />
+                <ErrorFieldBlock
+                  title="Connection required"
+                  message="No valid connection is configured for this node."
+                  action="Select a connection before running this node."
+                />
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Inline validation" eyebrow="State pattern">
+                  Field-specific feedback stays beside the control so the issue and resolution are
+                  clear in context.
+                </PatternNote>
+                <InventoryField
+                  label="Field with validation"
+                  description="Use a unique node name."
+                >
+                  <div>
+                    <Input
+                      defaultValue="Existing node"
+                      aria-invalid="true"
+                      className="border-destructive"
+                    />
+                    <InlineValidationMessage
+                      message="This node name is already in use."
+                      action="Enter a unique name before saving."
+                    />
+                  </div>
+                </InventoryField>
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Transient feedback" eyebrow="State pattern">
+                  Toasts confirm the result of a user action without interrupting the task. Keep
+                  actionable errors visible in the panel instead.
+                </PatternNote>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      toast.info('Background sync complete', {
+                        description: 'The latest panel data is available.',
+                      })
+                    }
+                  >
+                    Info
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      toast.success('Changes saved', {
+                        description: 'Panel settings are up to date.',
+                      })
+                    }
+                  >
+                    Success
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      toast.warning('Review recommended', {
+                        description: 'Some optional settings still use defaults.',
+                      })
+                    }
+                  >
+                    Warning
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      toast.error('Update failed', {
+                        description: 'Your changes were not saved. Try again.',
+                      })
+                    }
+                  >
+                    Error
+                  </Button>
+                </div>
+              </section>
             </div>
           </TabsContent>
 
           <TabsContent value="actions" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
             <div className="grid gap-5">
-              <div className="grid gap-2">
-                <Label className="text-xs">Button hierarchy</Label>
+              <section className="grid gap-3">
+                <PatternNote title="Button hierarchy" eyebrow="Action pattern">
+                  Use one primary action per context, with secondary, tertiary, and destructive
+                  styles reflecting lower emphasis or greater consequence.
+                </PatternNote>
                 <div className="flex flex-wrap gap-2">
                   <Button>Primary</Button>
                   <Button variant="outline">Secondary</Button>
                   <Button variant="ghost">Tertiary</Button>
                   <Button variant="destructive">Delete</Button>
                 </div>
-              </div>
-              <div className="grid gap-2">
-                <Label className="text-xs">Footer pattern</Label>
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Header actions" eyebrow="Action pattern">
+                  Reserve the panel header for high-frequency node-level commands such as running
+                  or debugging. Keep the set small so the primary task remains clear.
+                </PatternNote>
+                <div className="flex flex-wrap items-center gap-2">
+                  <RunButton />
+                  <DebugButton />
+                </div>
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Footer actions" eyebrow="Action pattern">
+                  Place panel-level actions at the end of the content, with the primary action last
+                  and the cancel action immediately before it.
+                </PatternNote>
                 <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
                   <Button variant="ghost">Cancel</Button>
                   <Button>Save changes</Button>
                 </div>
-              </div>
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Icon-only utilities" eyebrow="Action pattern">
+                  Use compact icon actions for familiar utilities when space is limited. Always
+                  provide a tooltip and accessible name.
+                </PatternNote>
+                <div className="flex items-center gap-1">
+                  <CanvasTooltip content="Refresh data">
+                    <Button variant="ghost" size="4xs" icon aria-label="Refresh data">
+                      <RefreshCw size={14} />
+                    </Button>
+                  </CanvasTooltip>
+                  <CanvasTooltip content="Duplicate node">
+                    <Button variant="ghost" size="4xs" icon aria-label="Duplicate node">
+                      <Copy size={14} />
+                    </Button>
+                  </CanvasTooltip>
+                  <CanvasTooltip content="Delete node">
+                    <Button
+                      variant="ghost"
+                      size="4xs"
+                      icon
+                      aria-label="Delete node"
+                      className="text-error hover:text-error"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </CanvasTooltip>
+                </div>
+              </section>
             </div>
           </TabsContent>
-        </Tabs>
-      </NodePropertyPanel>
-    </PanelFrame>
+          </Tabs>
+        </NodePropertyPanel>
+      </PanelFrame>
+      <Toaster className="[&_[data-description]]:!text-foreground-muted [&_[data-icon]]:!mt-0.5 [&_[data-icon]]:!self-start" />
+    </>
   );
 }
 
