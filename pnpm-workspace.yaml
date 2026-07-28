@@ -13,16 +13,20 @@ minimumReleaseAge: 20160
 # Exempt packages whose latest release is too new to satisfy the quarantine.
 # The weekly `prune-release-age-exemptions` workflow auto-PRs removal of entries once aged.
 #
-# Format: - 'pkg'  # <version> — <reason>
-# The version is required — the prune script uses it to decide when to remove the entry.
+# Format: - 'pkg@<vetted-version>'  # <version> — <reason>   (use `||` for multiple versions)
+# Version-scope every entry: only the vetted version bypasses the quarantine; anything newer
+# stays quarantined. Scope globs (platform binaries co-published per release) stay name-only.
+# The version in the comment is required — the prune script uses it to decide when to remove the entry.
 minimumReleaseAgeExclude:
   - '@uipath/*'                   # permanent — own scope, always installable immediately
   - '@turbo/*'                    # 2.9.14 — platform binaries co-published with turbo (scope rename from turbo-*), same OIDC provenance ✓
   - '@esbuild/*'                  # 0.28.1 — platform binaries co-published with esbuild in the same OIDC release, vetted 2026-06-16
-  - 'next'                        # 16.2.11 — security release (GHSA-m99w-x7hq-7vfj, GHSA-6gpp-xcg3-4w24, GHSA-p9j2-gv94-2wf4, GHSA-89xv-2m56-2m9x + 5 moderate), vetted 2026-07-24: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
+  - 'next@16.2.11'                # 16.2.11 — security release (GHSA-m99w-x7hq-7vfj, GHSA-6gpp-xcg3-4w24, GHSA-p9j2-gv94-2wf4, GHSA-89xv-2m56-2m9x + 5 moderate), vetted 2026-07-24: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
   - '@next/*'                     # 16.2.11 — swc platform binaries + env co-published with next in the same OIDC release
-  - 'fast-uri'                    # 3.1.4 — GHSA-v2hh-gcrm-f6hx, vetted 2026-07-24: publisher (mcollina) ✓, release tag ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
-  - '@hono/node-server'           # 2.0.10/2.0.11 — GHSA-9mqv-5hh9-4cgg, vetted 2026-07-24: provenance ✓, publisher (OIDC, approver yusukebe) ✓, tag+diff ✓, integrity ✓
+  - 'fast-uri@3.1.4'              # 3.1.4 — GHSA-v2hh-gcrm-f6hx, vetted 2026-07-24: publisher (mcollina) ✓, release tag ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
+  - '@hono/node-server@2.0.10 || 2.0.11' # 2.0.11 — GHSA-9mqv-5hh9-4cgg (2.0.10 + 2.0.11 vetted 2026-07-24): provenance ✓, publisher (OIDC, approver yusukebe) ✓, tag+diff ✓, integrity ✓
+  - 'js-yaml@5.2.2'               # 5.2.2 — GHSA-pm4m-ph32-ghv5 (high, flow-collection parsing DoS), vetted 2026-07-28: publisher (vitaly) ✓, tag+diff ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
+  - 'brace-expansion@5.0.8'       # 5.0.8 — GHSA-mh99-v99m-4gvg / CVE-2026-14257 (high, unbounded expansion OOM), vetted 2026-07-28: publisher (juliangruber) ✓, tag+diff ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 
@@ -32,12 +36,12 @@ overrides:
   lodash: "^4.18.1"
   tmp: "^0.2.6"
   picomatch: ">=4.0.4"
-  postcss: "^8.5.14"
+  postcss: "^8.5.18"                    # GHSA-r28c-9q8g-f849 (high, sourceMappingURL path traversal; patched 8.5.18) — vetted 2026-07-28: provenance ✓, publisher (OIDC, approver ai) ✓, tag+diff ✓, integrity ✓ (resolves 8.5.19, also vetted; 8.5.20+ still quarantined)
   hono: "^4.12.27"                      # GHSA-88fw-hqm2-52qc (high)/rv63/wwfh/j6c9/wgpf + GHSA-xgm2-5f3f-mvvc/hvrm-45r6-mjfj/w62v-xxxg-mg59 (moderate, fixed 4.12.27) — vetted 2026-07-24; transitive via @modelcontextprotocol/sdk
   "@hono/node-server": "^2.0.10"        # GHSA-frvp-7c67-39w9 (moderate, Windows serve-static path traversal; no 1.x patch) + GHSA-9mqv-5hh9-4cgg (moderate, WebSocket handshake memory-leak DoS; patched 2.0.10) — @modelcontextprotocol/sdk still pins ^1.19.9; v2 public API unchanged (Node 20+ only), vetted 2026-07-24
   dompurify: ">=3.4.12"                 # GHSA-vxr8-fq34-vvx9/gvmj/x4vx/rp9w/r47g/hpcv/76mc + GHSA-cmwh-pvxp-8882 + GHSA-c2j3-45gr-mqc4 (low, custom-element hook bypass; patched 3.4.12), vetted 2026-07-24; monaco-editor pins exact 3.2.7
   sharp: "^0.35.0"                      # GHSA-f88m-g3jw-g9cj (high, libvips CVE-2026-33327/33328/35590/35591) — next@16.2.11 pins ^0.34.5 (0.x caret excludes 0.35); next canary already on ^0.35.3, vetted 2026-07-24
-  js-yaml: ">=4.1.2"                   # GHSA-h67p-54hq-rp68 (moderate) — transitive via @commitlint/load>cosmiconfig
+  js-yaml: ">=5.2.2"                   # GHSA-h67p-54hq-rp68 (moderate) + GHSA-pm4m-ph32-ghv5 (high, flow-collection parsing DoS; patched 5.2.2) — transitive via @commitlint/load>cosmiconfig; vetted 2026-07-28
   markdown-it: ">=14.1.2"              # GHSA-6v5v-wf23-fmfq (moderate) — transitive via storybook toolchain
   "@babel/core": ">=7.29.1"            # GHSA-4x5r-pxfx-6jf8 (low) — transitive via storybook/babel transform
   rolldown: "1.0.1"                    # vite 8 dep-optimizer regression: rolldown 1.0.2/1.0.3 emit chunks that call cross-chunk init_*() without importing it -> "init_*_esm is not defined" at runtime (Storybook preview crash). Upstream still open (rolldown#9515 / vite#22583, both p1). 1.0.1 is the last good rolldown; keep vite 8.0.16 (security-patched) and pin rolldown back. Remove once fixed upstream.
@@ -46,7 +50,7 @@ overrides:
   "ws@>=8.0.0 <9": "^8.21.0"            # GHSA-96hv-2xvq-fx4p (high) — latest engine.io-client (6.6.5) still pins ws ~8.20.1; blocked upstream at Socket.IO
   "@opentelemetry/core": "^2.8.0"       # GHSA-8988-4f7v-96qf (moderate) — @uipath/core-telemetry pins sdk-logs ^0.204.0 which pins core/resources exactly 2.1.0; bump upstream to drop
   "@opentelemetry/resources": "^2.8.0"  # lockstep with core 2.8.0 (sdk-logs/resources pin core exactly at 2.1.0)
-
+  valibot: "^1.4.2"                     # GHSA-5qjj-4xww-7phc (moderate, flatten() throws on inherited Object property names; patched 1.4.2) — @storybook/mcp & @storybook/addon-mcp pin exact 1.2.0 (even latest 0.7.0/0.8.0 still do), no parent fix as of 2026-07-28; vetted 2026-07-28: provenance ✓, publisher (OIDC) ✓, tag+diff (#1522 by fabian-hiller) ✓, integrity ✓
 # packageExtensions (moved from package.json#pnpm for the same reason)
 packageExtensions:
   "@tanstack/ai":

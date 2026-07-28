@@ -15,7 +15,9 @@ Fix each vulnerability by working through the steps in order. Stop as soon as on
 
 **Pre-install gate: Before running any `pnpm install` or `pnpm add`, always complete the full supply-chain vetting protocol below for every third-party package that would enter the install. Use `npm view` to gather all vetting data — it queries the registry without downloading or executing anything and is always safe to run. Do not install first and check later.**
 
-**14-day quarantine: This repo enforces `minimumReleaseAge: 20160` in `pnpm-workspace.yaml`. If a third-party package is younger than 14 days, pnpm will block the install. In that case, supply-chain vetting must still pass before adding an exemption to `minimumReleaseAgeExclude`. First-party packages (e.g. `@uipath/*` own-scope packages) are already configured as permanent exemptions and do not require vetting.**
+**14-day quarantine: This repo enforces `minimumReleaseAge: 20160` in `pnpm-workspace.yaml`. If a third-party package is younger than 14 days, pnpm will block the install. In that case, supply-chain vetting must still pass before adding an exemption to `minimumReleaseAgeExclude`. Exemptions must be version-scoped (`'pkg@<vetted-version>'`, `||` for several versions) — a bare package name exempts EVERY future release of that package from the quarantine for as long as the entry exists, which defeats the quarantine exactly where an attacker would want it. First-party packages (e.g. `@uipath/*` own-scope packages) are already configured as permanent exemptions and do not require vetting; scope globs for co-published platform binaries (`@esbuild/*` etc.) are the only other legitimately name-scoped entries.**
+
+**Vet the version that will actually resolve: a range override (`^x.y.z` / `>=x.y.z`) resolves to the NEWEST version the range and the quarantine admit — not the minimum patched version. Check `npm view <pkg> time --json` for versions above the patched one, work out which one resolution will land on (newest release older than 14 days, unless version-scope-exempted), and run the vetting protocol on THAT version. If newer-but-unvetted versions exist that the range would reach, pin the exact vetted version in the override instead.**
 
 ---
 
@@ -42,12 +44,14 @@ If the vulnerable package appears directly in a workspace `package.json`:
 
 Complete the **full supply-chain vetting protocol** below for `<vulnerable-package>@<fix-version>`. Do not edit `package.json` or run `pnpm install` until vetting passes.
 
-If the fix version is younger than 14 days, also add to `minimumReleaseAgeExclude` before installing:
+If the fix version is younger than 14 days, also add a version-scoped exemption to `minimumReleaseAgeExclude` before installing (never a bare package name — that would exempt all future releases too):
 
 ```yaml
 minimumReleaseAgeExclude:
-  - 'package-name'    # <version> — security fix for <CVE/advisory>, vetted <date>: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
+  - 'package-name@<fix-version>'    # <version> — security fix for <CVE/advisory>, vetted <date>: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
 ```
+
+The inline comment must start with the version — the weekly prune workflow parses it to decide when the entry has aged out and can be removed. Multiple vetted versions use `||`: `'pkg@1.2.3 || 1.2.4'` (comment version = the newest one).
 
 ### 2b. Install (only after vetting passes)
 
@@ -78,7 +82,7 @@ npm view <parent>@<locked-version> dependencies --json
 
 Complete the **full supply-chain vetting protocol** below for `<vulnerable-package>@<fix-version>`. Do not edit `pnpm-workspace.yaml` or run `pnpm install` until vetting passes.
 
-If the fix version is younger than 14 days, add it to `minimumReleaseAgeExclude` before installing.
+If the fix version is younger than 14 days, add a version-scoped `'pkg@<fix-version>'` entry to `minimumReleaseAgeExclude` before installing (see Step 2a for the format).
 
 ### 3b. Surgical override pattern (add → install → remove → install)
 
@@ -137,7 +141,7 @@ Use this when:
 
 Complete the **full supply-chain vetting protocol** below for `<vulnerable-package>@<fix-version>`. Do not edit `pnpm-workspace.yaml` or run `pnpm install` until vetting passes.
 
-If the fix version is younger than 14 days, add it to `minimumReleaseAgeExclude` before installing.
+If the fix version is younger than 14 days, add a version-scoped `'pkg@<fix-version>'` entry to `minimumReleaseAgeExclude` before installing (see Step 2a for the format).
 
 ### 4b. Install (only after vetting passes)
 
@@ -233,10 +237,10 @@ Fetch the advisory URL from `pnpm audit` output directly. Confirm:
 
 ### Vetting result
 
-After completing all six checks, document the result in the commit message or PR description. If a `minimumReleaseAgeExclude` entry is also needed, record it there:
+After completing all six checks, document the result in the commit message or PR description. If a `minimumReleaseAgeExclude` entry is also needed, record it there (version-scoped, never a bare name):
 
 ```yaml
-  - 'package-name'    # <version> — <CVE/GHSA>, vetted <date>: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
+  - 'package-name@<version>'    # <version> — <CVE/GHSA>, vetted <date>: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
 ```
 
 If any check could not be completed (e.g., no GitHub repo, no provenance), note it explicitly and consider whether the risk is acceptable before proceeding.
@@ -284,7 +288,8 @@ If the lockfile diff shows resolutions for packages *other than* the target, the
 | Situation | Action |
 |-----------|--------|
 | Every fix | Complete supply-chain vetting with `npm view` before editing files or installing |
-| Package < 14 days old | Vetting required (as always) + add to `minimumReleaseAgeExclude` after vetting passes |
+| Package < 14 days old | Vetting required (as always) + add version-scoped `'pkg@<version>'` entry to `minimumReleaseAgeExclude` after vetting passes |
+| Range override could resolve above the vetted version | Vet the version resolution will actually pick, or pin the exact vetted version |
 | Direct dep | Vet, then bump version in package.json — Step 2 |
 | Transitive, parent uses `^` and admits the fix | Vet, then surgical override (add → install → remove → install) — Step 3 |
 | Transitive, parent uses `~`/exact, newer parent version widens the range | Vet, apply Step 3 against the ancestor (surgical override on the ancestor, not the leaf) |
