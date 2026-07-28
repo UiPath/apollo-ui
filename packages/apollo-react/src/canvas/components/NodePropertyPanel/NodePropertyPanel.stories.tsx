@@ -111,7 +111,6 @@ import {
   RefreshCw,
   Sparkles,
   Trash2,
-  Type,
   Upload,
   UserRoundCheck,
   X,
@@ -458,6 +457,7 @@ const TAB_TRIGGER_CLASS =
 // ============================================================================
 
 export const Default: Story = {
+  name: 'Form Default',
   render: () => (
     <PanelFrame>
       <NodePropertyPanel
@@ -475,7 +475,13 @@ export const Default: Story = {
   ),
 };
 
+export const QuickForm: Story = {
+  name: 'Form HITL',
+  render: () => <QuickFormStory />,
+};
+
 export const EmbeddedNoTitleBar: Story = {
+  name: 'Form Embedded',
   render: () => (
     <PanelFrame>
       <NodePropertyPanel
@@ -491,6 +497,7 @@ export const EmbeddedNoTitleBar: Story = {
 };
 
 export const NoParametersTab: Story = {
+  name: 'Form No Parameters',
   render: () => (
     <PanelFrame>
       <NodePropertyPanel
@@ -610,7 +617,7 @@ function FullEditorStory() {
             </div>
             <TabsContent value="parameters" className="mt-0 flex min-h-0 flex-1 flex-col">
               <div className="flex shrink-0 items-center justify-between py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <span className="text-xs font-medium text-foreground-muted">Path</span>
+                <span className="text-xs font-medium leading-4 text-foreground">Path</span>
                 <div className="flex items-center gap-0.5">
                   <button
                     type="button"
@@ -849,7 +856,7 @@ function CasePanel({
         <>
           {/* Condition label + buttons */}
           <div className="flex items-center justify-between border-t border-border-subtle px-3 py-2">
-            <span className="text-xs font-medium text-foreground-muted">Condition</span>
+            <span className="text-xs font-medium leading-4 text-foreground">Condition</span>
             <div className="flex items-center gap-0.5">
               <button
                 type="button"
@@ -1163,7 +1170,7 @@ function CompactEditorStory() {
             <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
               {/* Cases field label row */}
               <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <span className="text-sm font-medium text-foreground-muted">Cases</span>
+                <span className="text-xs font-medium leading-4 text-foreground">Cases</span>
               </div>
 
               {/* Case accordion panels — inset cards with gap */}
@@ -1335,7 +1342,7 @@ function AlertsAndErrorsStory() {
 
               <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
                 <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <span className="text-sm font-medium text-foreground-muted">Cases</span>
+                  <span className="text-xs font-medium leading-4 text-foreground">Cases</span>
                 </div>
                 <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
                   {cases.map((c, i) => (
@@ -1369,7 +1376,7 @@ function AlertsAndErrorsStory() {
               <TabsContent value="error-handling" className="mt-0 min-h-0 flex-1 overflow-auto">
                 <div className="flex flex-col gap-3 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
                   <div className="flex flex-col gap-2">
-                    <span className="text-sm font-medium text-foreground-muted">
+                    <span className="text-xs font-medium leading-4 text-foreground">
                       Failure behavior
                     </span>
                     <ErrorFieldBlock
@@ -1384,7 +1391,7 @@ function AlertsAndErrorsStory() {
               <TabsContent value="advanced" className="mt-0 min-h-0 flex-1 overflow-auto">
                 <div className="flex flex-col gap-3 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
                   <div className="flex flex-col gap-2">
-                    <span className="text-sm font-medium text-foreground-muted">
+                    <span className="text-xs font-medium leading-4 text-foreground">
                       Execution limits
                     </span>
                     <ErrorFieldBlock
@@ -1422,229 +1429,67 @@ const INSERT_SNIPPETS = [
 function InlineCaseRow({
   caseTitle,
   onTitleChange,
-  onDelete,
-  monacoTheme,
   defaultValue = '',
 }: {
   caseTitle: string;
   onTitleChange: (title: string) => void;
-  onDelete: () => void;
-  monacoTheme: string;
   defaultValue?: string;
 }) {
+  const fieldId = useId();
   const [editingTitle, setEditingTitle] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(defaultValue);
-  const [mode, setMode] = useState<'fixed' | 'expression'>('fixed');
-  const [insertOpen, setInsertOpen] = useState(false);
-  const insertRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!insertOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (insertRef.current && !insertRef.current.contains(e.target as Node)) {
-        setInsertOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [insertOpen]);
-
-  const insertSnippet = (code: string) => {
-    setValue((v) => (v ? `${v} ${code}` : code));
-    setInsertOpen(false);
-  };
+  const [locked, setLocked] = useState(false);
+  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
 
   return (
-    <div className="flex flex-col gap-1.5">
-      {/* Case title row */}
-      <div className="group flex items-center">
-        {editingTitle ? (
-          <input
-            ref={titleRef}
-            value={caseTitle}
-            onChange={(e) => onTitleChange(e.target.value)}
-            onBlur={() => setEditingTitle(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false);
-            }}
-            className="flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
-            autoFocus
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setEditingTitle(true);
-              setTimeout(() => titleRef.current?.select(), 0);
-            }}
-            className="flex-1 truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-          >
-            {caseTitle}
-          </button>
-        )}
-        <div className="flex shrink-0 items-center gap-0.5">
-          <button
-            type="button"
-            onClick={onDelete}
-            aria-label="Delete case"
-            title="Delete case"
-            className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle opacity-0 transition hover:bg-surface-overlay hover:text-foreground group-hover:opacity-100"
-          >
-            <X size={12} />
-          </button>
-          <button
-            type="button"
-            aria-label="AI assist"
-            title="AI assist"
-            className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-          >
-            <Sparkles size={12} />
-          </button>
-          {/* Insert popover */}
-          <div ref={insertRef} className="relative">
+    <LockableValueField
+      id={fieldId}
+      label={
+        <div className="flex min-w-0 flex-1 items-center">
+          {editingTitle ? (
+            <input
+              ref={titleRef}
+              value={caseTitle}
+              onChange={(event) => onTitleChange(event.target.value)}
+              onBlur={() => setEditingTitle(false)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === 'Escape') setEditingTitle(false);
+              }}
+              className="min-w-0 flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium leading-4 text-foreground outline-none ring-1 ring-brand"
+              autoFocus
+            />
+          ) : (
             <button
               type="button"
-              aria-label="Insert snippet"
-              title="Insert snippet"
-              onClick={() => setInsertOpen((v) => !v)}
-              className={cn(
-                'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] transition',
-                insertOpen
-                  ? 'bg-surface-overlay text-foreground'
-                  : 'text-foreground-subtle hover:bg-surface-overlay hover:text-foreground'
-              )}
+              onClick={() => {
+                setEditingTitle(true);
+                setTimeout(() => titleRef.current?.select(), 0);
+              }}
+              className="min-w-0 flex-1 truncate rounded px-1 py-0.5 text-left text-xs font-medium leading-4 text-foreground transition hover:bg-surface-overlay"
             >
-              <span className="font-mono text-[10px]">{'{x}'}</span>
-              <span>Insert</span>
-              <ChevronDown size={9} />
+              {caseTitle}
             </button>
-            {insertOpen && (
-              <div className="absolute right-0 top-full z-50 mt-1 min-w-[192px] overflow-hidden rounded-xl border border-border-subtle bg-surface-overlay py-1 shadow-lg">
-                {INSERT_SNIPPETS.map((s) => (
-                  <button
-                    key={s.code}
-                    type="button"
-                    onClick={() => insertSnippet(s.code)}
-                    className="flex w-full items-center justify-between gap-3 px-3 py-1.5 text-left hover:bg-surface-raised"
-                  >
-                    <span className="text-xs text-foreground">{s.label}</span>
-                    <span className="font-mono text-[10px] text-foreground-muted">{s.code}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
-      </div>
-
-      {/* Monaco editor with mode toggle on the right.
-          Outer wrapper is NOT overflow-hidden so the popover can escape. */}
-      <div className="relative">
-        <div className="overflow-hidden rounded-xl border border-border-subtle">
-          <div className="relative h-10">
-            <MonacoEditor
-              height="40px"
-              language={mode === 'expression' ? 'javascript' : 'plaintext'}
-              value={value}
-              onChange={(val) => setValue(val ?? '')}
-              theme={monacoTheme}
-              beforeMount={registerMonacoThemes}
-              options={INLINE_EDITOR_OPTIONS}
-            />
-            {value === '' && (
-              <div className="pointer-events-none absolute left-[14px] top-1/2 -translate-y-1/2 font-mono text-[13px] text-foreground-subtle">
-                {mode === 'fixed' ? 'Enter a value' : 'Enter an expression'}
-              </div>
-            )}
-          </div>
-        </div>
-        {/* Mode toggle — DropdownMenu picker */}
-        <div className="absolute right-2 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1.5">
-          <div className="h-3.5 w-px bg-border" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                aria-label="Select expression mode"
-                className={cn(
-                  'flex h-6 items-center rounded border px-1.5 text-[10px] font-medium transition',
-                  mode === 'expression'
-                    ? 'border-brand/40 bg-brand/15 text-brand'
-                    : 'border-border bg-surface text-foreground-muted hover:text-foreground'
-                )}
-              >
-                {mode === 'fixed' ? 'PT' : 'JS'}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 p-1">
-              <DropdownMenuItem
-                onClick={() => setMode('fixed')}
-                className={cn(
-                  'flex flex-col items-start gap-0.5 py-2.5 focus:bg-surface-overlay',
-                  mode === 'fixed' && 'bg-surface-raised'
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <Type
-                    size={13}
-                    className={cn(
-                      'shrink-0',
-                      mode === 'fixed' ? 'text-brand' : 'text-foreground-muted'
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      'text-xs font-medium',
-                      mode === 'fixed' ? 'text-brand' : 'text-foreground'
-                    )}
-                  >
-                    Plain text
-                  </span>
-                </div>
-                <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
-                  Enter static values like "hello" or 42
-                </span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => setMode('expression')}
-                className={cn(
-                  'flex flex-col items-start gap-0.5 py-2.5 focus:bg-surface-overlay',
-                  mode === 'expression' && 'bg-surface-raised'
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <Code2
-                    size={13}
-                    className={cn(
-                      'shrink-0',
-                      mode === 'expression' ? 'text-brand' : 'text-foreground-muted'
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      'text-xs font-medium',
-                      mode === 'expression' ? 'text-brand' : 'text-foreground'
-                    )}
-                  >
-                    Javascript expression
-                  </span>
-                </div>
-                <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
-                  Compute the return value dynamically with JS
-                </span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-    </div>
+      }
+      value={value}
+      onValueChange={setValue}
+      locked={locked}
+      onLockedChange={setLocked}
+      mode={mode}
+      onModeChange={setMode}
+      fieldType="string"
+      variables={INSERT_SNIPPETS.map((snippet) => ({
+        label: snippet.label,
+        value: snippet.code,
+      }))}
+      controlsVisibility="visible"
+    />
   );
 }
 
 function InputEditorStory() {
-  const monacoTheme = useMonacoTheme();
   const [cases, setCases] = useState([{ id: 1, title: 'Return value' }]);
   const nextIdRef = useRef(2);
   const [defaultBranch, setDefaultBranch] = useState(false);
@@ -1659,7 +1504,6 @@ function InputEditorStory() {
     const id = nextIdRef.current++;
     setCases((prev) => [...prev, { id, title: `Output variable ${id}` }]);
   };
-  const deleteCase = (id: number) => setCases((prev) => prev.filter((c) => c.id !== id));
   const updateCaseTitle = (id: number, title: string) =>
     setCases((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
 
@@ -1751,7 +1595,7 @@ function InputEditorStory() {
             </div>
             <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
               <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <span className="text-sm font-medium text-foreground-muted">Output messaging</span>
+                <span className="text-xs font-medium leading-4 text-foreground">Output messaging</span>
               </div>
               <div className="flex flex-col gap-3 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
                 {cases.map((c) => (
@@ -1759,8 +1603,6 @@ function InputEditorStory() {
                     key={c.id}
                     caseTitle={c.title}
                     onTitleChange={(title) => updateCaseTitle(c.id, title)}
-                    onDelete={() => deleteCase(c.id)}
-                    monacoTheme={monacoTheme}
                     defaultValue=""
                   />
                 ))}
@@ -1790,6 +1632,12 @@ function InputEditorStory() {
 export const InputEditor: Story = {
   name: 'Editor Inline',
   render: () => <InputEditorStory />,
+};
+
+export const Output: Story = {
+  name: 'Input / Output',
+  render: () => <InputOutputStory />,
+  parameters: { layout: 'fullscreen' },
 };
 
 // ============================================================================
@@ -2743,7 +2591,7 @@ function LockableCaseRow({
                     setEditingTitle(true);
                     setTimeout(() => titleRef.current?.select(), 0);
                   }}
-                  className="truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                  className="truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
                 >
                   {caseTitle}
                   {required && <span className="ml-0.5 text-destructive">*</span>}
@@ -2901,7 +2749,7 @@ function FormButtonChip({
         </TooltipProvider>
         <PopoverContent align="start" className="w-48 space-y-3">
           <div className="space-y-1.5">
-            <span className="text-xs font-medium text-foreground-muted">Type</span>
+            <span className="text-xs font-medium leading-4 text-foreground">Type</span>
             <ToggleGroup
               type="single"
               value={variant}
@@ -3014,7 +2862,7 @@ function LockableValueFieldShowcase({
         <LockableValueField
           id={fullViewId}
           label={
-            <Label htmlFor={fullViewId} className="text-xs font-medium text-foreground-muted">
+            <Label htmlFor={fullViewId} className="text-xs font-medium leading-4 text-foreground">
               Label
               {showcaseRequired && <span className="ml-0.5 text-destructive">*</span>}
             </Label>
@@ -3053,7 +2901,7 @@ function LockableValueFieldShowcase({
           <LockableValueField
             id={compactViewId}
             label={
-              <Label htmlFor={compactViewId} className="text-xs font-medium text-foreground-muted">
+              <Label htmlFor={compactViewId} className="text-xs font-medium leading-4 text-foreground">
                 Label
                 {showcaseRequired && <span className="ml-0.5 text-destructive">*</span>}
               </Label>
@@ -3546,22 +3394,6 @@ function QuickFormStory() {
   );
 }
 
-export const InlineEditing: Story = {
-  name: 'Inline Editing',
-  render: () => <InlineEditingStory />,
-};
-
-export const Output: Story = {
-  name: 'Input / Output',
-  render: () => <InputOutputStory />,
-  parameters: { layout: 'fullscreen' },
-};
-
-export const QuickForm: Story = {
-  name: 'Form HITL',
-  render: () => <QuickFormStory />,
-};
-
 // ============================================================================
 // Inline Editing
 // Title and description in the node identity row are directly editable.
@@ -3882,6 +3714,18 @@ function InventorySubContainer({
 function PanelUIInventoryStory() {
   const [enabled, setEnabled] = useState(true);
   const [checked, setChecked] = useState(true);
+  const compositionFieldId = useId();
+  const [compositionValue, setCompositionValue] = useState('invoice.total');
+  const [compositionLocked, setCompositionLocked] = useState(true);
+  const [compositionMode, setCompositionMode] = useState<LockableValueFieldMode>('fixed');
+  const [compositionFieldType, setCompositionFieldType] =
+    useState<LockableFieldType>('string');
+  const [compositionRequired, setCompositionRequired] = useState(true);
+  const [compositionEditor, setCompositionEditor] = useState('ui');
+  const [compositionFields, setCompositionFields] = useState([
+    { id: 1, label: 'Invoice number' },
+    { id: 2, label: 'Approved amount' },
+  ]);
   const allInventorySections = ['text-fields', 'choices', 'collapsed'];
   const allSubContainerSections = ['text-fields', 'choices', 'advanced'];
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
@@ -3901,6 +3745,12 @@ function PanelUIInventoryStory() {
     setExpandedSubContainerSections(allSubContainerSections);
   };
 
+  const updateCompositionFieldType = (fieldType: LockableFieldType) => {
+    setCompositionFieldType(fieldType);
+    setCompositionValue('');
+    if (!FIELD_TYPE_META[fieldType].supportsExpression) setCompositionMode('fixed');
+  };
+
   return (
     <>
       <PanelFrame>
@@ -3914,14 +3764,14 @@ function PanelUIInventoryStory() {
         onClose={() => {}}
         className="h-[720px]"
       >
-        <Tabs defaultValue="fields" className="flex h-full min-h-0 flex-col">
+        <Tabs defaultValue="layout" className="flex h-full min-h-0 flex-col">
           <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle px-3.5 py-3">
             <ScrollableTabsList
               className={cn(TAB_LIST_CLASS, 'min-w-0 flex-1')}
               scrollButtonClassName="size-6 hover:bg-surface-overlay"
             >
-              <TabsTrigger value="fields" className={TAB_TRIGGER_CLASS}>
-                Form fields
+              <TabsTrigger value="layout" className={TAB_TRIGGER_CLASS}>
+                Layout
               </TabsTrigger>
               <TabsTrigger value="states" className={TAB_TRIGGER_CLASS}>
                 States
@@ -3943,7 +3793,7 @@ function PanelUIInventoryStory() {
             </Button>
           </div>
 
-          <TabsContent value="fields" className="mt-0 min-h-0 flex-1 overflow-y-auto">
+          <TabsContent value="layout" className="mt-0 min-h-0 flex-1 overflow-y-auto">
             <div className="grid gap-4 px-3.5 py-5">
               <PatternNote title="Flat content">
                 A simple, always-visible layout for short configurations that do not need
@@ -4100,6 +3950,134 @@ function PanelUIInventoryStory() {
                 expandedSections={expandedSubContainerSections}
                 onExpandedSectionsChange={setExpandedSubContainerSections}
               />
+            </div>
+            <div className="grid gap-5 border-t border-border-subtle px-3.5 py-5">
+              <section className="grid gap-3">
+                <PatternNote title="Lockable value field" eyebrow="Composition pattern">
+                  Combines field type, required state, AI assistance, variable insertion, and
+                  fixed or expression values in one reusable Flow control.
+                </PatternNote>
+                <LockableValueField
+                  id={compositionFieldId}
+                  label={
+                    <Label
+                      htmlFor={compositionFieldId}
+                      className="text-xs font-medium leading-4 text-foreground"
+                    >
+                      Invoice value
+                      {compositionRequired && <span className="ml-0.5 text-destructive">*</span>}
+                    </Label>
+                  }
+                  headerActions={
+                    <CanvasTooltip content="Remove field">
+                      <Button variant="ghost" size="4xs" icon aria-label="Remove field">
+                        <X size={14} />
+                      </Button>
+                    </CanvasTooltip>
+                  }
+                  value={compositionValue}
+                  onValueChange={setCompositionValue}
+                  locked={compositionLocked}
+                  onLockedChange={setCompositionLocked}
+                  mode={compositionMode}
+                  onModeChange={setCompositionMode}
+                  fieldType={compositionFieldType}
+                  onFieldTypeChange={updateCompositionFieldType}
+                  required={compositionRequired}
+                  onRequiredChange={setCompositionRequired}
+                  controlsVisibility="visible"
+                />
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Repeatable field list" eyebrow="Composition pattern">
+                  Use reorder, add, and remove controls when users build a variable-length set of
+                  related fields.
+                </PatternNote>
+                <div className="grid gap-2">
+                  {compositionFields.map((field) => (
+                    <div
+                      key={field.id}
+                      className="flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-raised p-2"
+                    >
+                      <button
+                        type="button"
+                        aria-label={`Drag ${field.label} to reorder`}
+                        title="Drag to reorder"
+                        className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground [cursor:grab]"
+                      >
+                        <GripVertical size={13} />
+                      </button>
+                      <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
+                        {field.label}
+                      </span>
+                      <CanvasTooltip content={`Delete ${field.label}`}>
+                        <Button
+                          variant="ghost"
+                          size="4xs"
+                          icon
+                          aria-label={`Delete ${field.label}`}
+                          onClick={() =>
+                            setCompositionFields((fields) =>
+                              fields.filter((item) => item.id !== field.id)
+                            )
+                          }
+                        >
+                          <Trash2 size={13} />
+                        </Button>
+                      </CanvasTooltip>
+                    </div>
+                  ))}
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-brand hover:text-brand-hover"
+                    onClick={() =>
+                      setCompositionFields((fields) => [
+                        ...fields,
+                        {
+                          id: Math.max(0, ...fields.map((field) => field.id)) + 1,
+                          label: `New field ${fields.length + 1}`,
+                        },
+                      ])
+                    }
+                  >
+                    <Plus size={13} />
+                    Add field
+                  </Button>
+                </div>
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Editing modes" eyebrow="Composition pattern">
+                  Switch between a guided interface and a source representation without changing
+                  the underlying configuration.
+                </PatternNote>
+                <ToggleGroup
+                  type="single"
+                  value={compositionEditor}
+                  onValueChange={(value) => value && setCompositionEditor(value)}
+                  className="w-fit"
+                >
+                  <ToggleGroupItem value="ui" className="px-3 text-xs">
+                    UI
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="json" className="px-3 text-xs">
+                    JSON
+                  </ToggleGroupItem>
+                </ToggleGroup>
+                {compositionEditor === 'ui' ? (
+                  <InventoryField label="Form title">
+                    <Input defaultValue="Quick approve" />
+                  </InventoryField>
+                ) : (
+                  <Textarea
+                    aria-label="JSON configuration"
+                    defaultValue={'{\n  "title": "Quick approve"\n}'}
+                    rows={4}
+                    className="font-mono text-xs"
+                  />
+                )}
+              </section>
             </div>
           </TabsContent>
 
@@ -4283,13 +4261,99 @@ function PanelUIInventoryStory() {
   );
 }
 
+export const InputOutput: IOStory = {
+  name: 'Input / Output 3 Column',
+  args: {
+    showExtractionTab: true,
+    readOnly: false,
+    inputData: 'schema-and-value',
+  },
+  argTypes: {
+    showExtractionTab: {
+      control: 'boolean',
+      description: 'Show the custom Extraction table tab on the Output panel.',
+    },
+    readOnly: {
+      control: 'boolean',
+      description: 'Force the Input and Output panels read-only.',
+    },
+    inputData: {
+      control: 'select',
+      options: ['schema-and-value', 'schema-only', 'value-only'],
+      description:
+        'Input panel data: schema and value, schema only (all rows unset), or value only (no schema).',
+    },
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+\`NodeIOView\` is the composed node input/output panel body used in the flow
+builder: a schema-aware value tree with Schema / JSON tabs, inline editing,
+custom value cells, and consumer-provided extra tabs. It is a panel *body*,
+composed inside \`NodePropertyPanel\`, which owns the chrome.
+
+This story pieces together the three panels a user sees while working a
+**Document Extraction** node (**Input**, **Properties**, **Output**) to show
+how they read as a set. Input is driven by upstream execution data; Properties
+is a standard \`MetadataForm\` (with a file field); Output is a believable
+extraction result with an optional custom **Extraction** table tab (toggle it
+with the control below). Switch the Output mode to **Static** to edit the
+mocked output inline.
+
+File rows (e.g. the source **document**) surface their affordances as custom
+**row actions** via \`nodeActions\`: **Upload** is always offered, while
+**Preview** and **Delete** appear only once a file is present, with the
+built-in copy/wrap actions omitted for those rows. Preview opens a banner atop
+the panel; Upload mock-populates a file.
+
+Use the controls to force read-only mode or swap the Input panel's data:
+schema only renders every row as unset, value only drops the schema. The
+Input toolbar's filter narrows the tree to fields referenced by this node.
+
+The three panels sit in a resizable split: drag a handle between them to grow
+one panel and shrink its neighbor, testing how the tree rows behave at
+different widths (truncation, action-button visibility).
+        `,
+      },
+    },
+  },
+  render: (args) => (
+    <div className="h-180 w-full max-w-350">
+      {/* Split-pane docked panels: drag a handle to grow one panel and shrink
+            its neighbor in tandem, exercising the width-sensitive tree layout. */}
+      <ResizablePanelGroup
+        orientation="horizontal"
+        className="overflow-hidden rounded-2xl border border-border-subtle shadow-lg"
+      >
+        <ResizablePanel defaultSize="33%" minSize="15%">
+          {/* Keyed so switching the data variant remounts with fresh edit state. */}
+          <InputPanel
+            key={args.inputData}
+            readOnly={args.readOnly}
+            {...INPUT_DATA[args.inputData]}
+          />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize="34%" minSize="15%">
+          <PropertiesPanel />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize="33%" minSize="15%">
+          <OutputPanel showExtractionTab={args.showExtractionTab} readOnly={args.readOnly} />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
+  ),
+};
+
 export const PanelUIInventory: Story = {
-  name: 'Panel UI Inventory',
+  name: 'UI Inventory',
   render: () => <PanelUIInventoryStory />,
 };
 
 export const AlertsAndErrors: Story = {
-  name: 'Alerts and Errors',
+  name: 'UI Alerts and Errors',
   render: () => <AlertsAndErrorsStory />,
 };
 
@@ -4340,7 +4404,7 @@ function CompactResponsivePanelStory() {
             <TabsContent
               key={step.id}
               value={step.id}
-              className="mt-0 min-h-0 flex-1 overflow-y-auto [&_label]:text-foreground-muted"
+              className="mt-0 min-h-0 flex-1 overflow-y-auto [&_[data-slot=form-description]]:text-xs [&_[data-slot=form-description]]:leading-4 [&_[data-slot=form-description]]:text-foreground-muted [&_[data-slot=form-label]]:text-xs [&_[data-slot=form-label]]:font-medium [&_[data-slot=form-label]]:leading-4 [&_[data-slot=form-label]]:text-foreground"
             >
               <MetadataForm
                 schema={flatSchema}
@@ -4355,7 +4419,7 @@ function CompactResponsivePanelStory() {
 }
 
 export const Responsive: Story = {
-  name: 'Responsive',
+  name: 'UI Responsive',
   render: () => (
     <div className="flex items-start gap-[80px]">
       <div className="flex flex-col gap-3">
@@ -5096,89 +5160,3 @@ interface StoryArgs {
 }
 
 type IOStory = StoryObj<StoryArgs>;
-
-export const InputOutput: IOStory = {
-  name: 'Input / Output',
-  args: {
-    showExtractionTab: true,
-    readOnly: false,
-    inputData: 'schema-and-value',
-  },
-  argTypes: {
-    showExtractionTab: {
-      control: 'boolean',
-      description: 'Show the custom Extraction table tab on the Output panel.',
-    },
-    readOnly: {
-      control: 'boolean',
-      description: 'Force the Input and Output panels read-only.',
-    },
-    inputData: {
-      control: 'select',
-      options: Object.keys(INPUT_DATA),
-      description:
-        'Input panel data: schema and value, schema only (all rows unset), or value only (no schema).',
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-\`NodeIOView\` is the composed node input/output panel body used in the flow
-builder: a schema-aware value tree with Schema / JSON tabs, inline editing,
-custom value cells, and consumer-provided extra tabs. It is a panel *body*,
-composed inside \`NodePropertyPanel\`, which owns the chrome.
-
-This story pieces together the three panels a user sees while working a
-**Document Extraction** node (**Input**, **Properties**, **Output**) to show
-how they read as a set. Input is driven by upstream execution data; Properties
-is a standard \`MetadataForm\` (with a file field); Output is a believable
-extraction result with an optional custom **Extraction** table tab (toggle it
-with the control below). Switch the Output mode to **Static** to edit the
-mocked output inline.
-
-File rows (e.g. the source **document**) surface their affordances as custom
-**row actions** via \`nodeActions\`: **Upload** is always offered, while
-**Preview** and **Delete** appear only once a file is present, with the
-built-in copy/wrap actions omitted for those rows. Preview opens a banner atop
-the panel; Upload mock-populates a file.
-
-Use the controls to force read-only mode or swap the Input panel's data:
-schema only renders every row as unset, value only drops the schema. The
-Input toolbar's filter narrows the tree to fields referenced by this node.
-
-The three panels sit in a resizable split: drag a handle between them to grow
-one panel and shrink its neighbor, testing how the tree rows behave at
-different widths (truncation, action-button visibility).
-        `,
-      },
-    },
-  },
-  render: (args) => (
-    <div className="h-180 w-full max-w-350">
-      {/* Split-pane docked panels: drag a handle to grow one panel and shrink
-            its neighbor in tandem, exercising the width-sensitive tree layout. */}
-      <ResizablePanelGroup
-        orientation="horizontal"
-        className="overflow-hidden rounded-2xl border border-border-subtle shadow-lg"
-      >
-        <ResizablePanel defaultSize="33%" minSize="15%">
-          {/* Keyed so switching the data variant remounts with fresh edit state. */}
-          <InputPanel
-            key={args.inputData}
-            readOnly={args.readOnly}
-            {...INPUT_DATA[args.inputData]}
-          />
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize="34%" minSize="15%">
-          <PropertiesPanel />
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize="33%" minSize="15%">
-          <OutputPanel showExtractionTab={args.showExtractionTab} readOnly={args.readOnly} />
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
-  ),
-};

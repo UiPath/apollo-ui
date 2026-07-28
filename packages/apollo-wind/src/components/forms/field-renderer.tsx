@@ -578,7 +578,11 @@ function FormField({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={cn('space-y-2', className)}>{children}</div>;
+  return (
+    <div data-slot="form-field" className={cn('grid gap-1.5', className)}>
+      {children}
+    </div>
+  );
 }
 
 function FormLabel({
@@ -593,7 +597,7 @@ function FormLabel({
   className?: string;
 }) {
   return (
-    <Label htmlFor={htmlFor} className={className}>
+    <Label data-slot="form-label" htmlFor={htmlFor} className={className}>
       {children}
       {required && <span className="text-destructive ml-1">*</span>}
     </Label>
@@ -602,7 +606,11 @@ function FormLabel({
 
 function FormDescription({ children }: { children?: React.ReactNode }) {
   if (!children) return null;
-  return <p className="text-sm text-muted-foreground">{children}</p>;
+  return (
+    <p data-slot="form-description" className="text-sm text-muted-foreground">
+      {children}
+    </p>
+  );
 }
 
 function FormError({ children }: { children?: React.ReactNode }) {

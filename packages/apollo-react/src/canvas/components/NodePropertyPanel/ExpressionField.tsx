@@ -35,11 +35,11 @@ export function ExpressionField({
   const activeMode = mode;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       {/* Label row */}
       {label && (
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-foreground-muted">{label}</span>
+          <span className="text-xs font-medium leading-4 text-foreground">{label}</span>
           <div className="flex items-center gap-0.5">
             <button
               type="button"
