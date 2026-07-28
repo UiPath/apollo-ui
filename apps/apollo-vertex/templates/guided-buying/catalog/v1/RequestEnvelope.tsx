@@ -278,7 +278,7 @@ export function RequestEnvelope() {
               key={field.label}
               className={cn(
                 "px-4 py-2.5 transition-colors duration-700",
-                isApprover && approverFlash && "bg-[#0f7b8a]/10",
+                isApprover && approverFlash && "bg-(--gb-teal)/10",
               )}
               initial={reduceMotion ? false : { opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
@@ -372,7 +372,7 @@ export function RequestEnvelope() {
                           className={cn(
                             "flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors",
                             selected
-                              ? "border-[#0f7b8a] bg-[#0f7b8a]/5"
+                              ? "border-(--gb-teal) bg-(--gb-teal)/5"
                               : "border-transparent hover:bg-muted",
                           )}
                         >
@@ -380,7 +380,7 @@ export function RequestEnvelope() {
                             className={cn(
                               "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
                               selected
-                                ? "border-[#0f7b8a] bg-[#0f7b8a] text-white"
+                                ? "border-(--gb-teal) bg-(--gb-teal) text-white"
                                 : "border-muted-foreground/40",
                             )}
                             aria-hidden

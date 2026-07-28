@@ -2,9 +2,12 @@
 
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
+import { RefreshCw } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { AiChatEmptySuggestions } from "@/registry/ai-chat/components/ai-chat-empty-suggestions";
 import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
+import { P1 } from "../../P1";
+import { P2 } from "../../P2";
 import { BuyScaffold } from "./BuyScaffold";
 import { type BuyPhase, useConversation } from "./conversation-context";
 import {
@@ -13,6 +16,7 @@ import {
   NON_CATALOG_PHASES,
 } from "./FlowPhaseBar";
 import { GuidedBuy } from "./GuidedBuy";
+import { TeamsResumeCard } from "./TeamsResumeCard";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -22,9 +26,9 @@ type Leaving = null | "catalog" | "configure";
 // The three demo launch points — one per use case. Catalog = requester
 // self-serving; quote = generic handoff to a seeded Workbench item; contract =
 // the Configure-with-agent wizard.
-const CATALOG_STARTER = "2 ThinkPad X1 laptops for our new designers.";
-const SOURCING_STARTER = "Hire 2 contract designers for the Q3 rebrand.";
-const CONTRACT_STARTER = "Add 12 mobile lines for the Denver team.";
+const CATALOG_STARTER = "2 ThinkPad X1 laptops for our new designers";
+const SOURCING_STARTER = "Hire 2 contract designers for the Q3 rebrand";
+const CONTRACT_STARTER = "Add 12 mobile lines for the Denver team";
 const STARTERS = [CATALOG_STARTER, SOURCING_STARTER, CONTRACT_STARTER];
 
 // Title + subtext per step — the constant header anchor. The first two ask
@@ -83,6 +87,7 @@ export function BuyFlow() {
   const reduceMotion = useReducedMotion();
   const [leaving, setLeaving] = useState<Leaving>(null);
   const [input, setInput] = useState("");
+  const [resumeDismissed, setResumeDismissed] = useState(false);
 
   // Returning from Configure: shift the surface back in from the left, and keep
   // the thread (the ServiceBridge they left) rather than resetting to the hero.
@@ -102,7 +107,9 @@ export function BuyFlow() {
   // Unique key for this navigation to /buy (changes on every new visit, even when
   // the component doesn't unmount). Fires startFresh on every fresh entry, but not
   // when returning from Configure mid-flow or stepping back from Review.
-  const locationKey = useRouterState({ select: (s) => s.location.state.__TSR_index });
+  const locationKey = useRouterState({
+    select: (s) => s.location.state.__TSR_index,
+  });
   useEffect(() => {
     if ((fromConfigure && !resetChat) || fromReview) return;
     startFresh();
@@ -192,7 +199,16 @@ export function BuyFlow() {
       <BuyScaffold
         stepKey={phase}
         title={header.title}
-        subtext={header.subtext}
+        subtext={
+          isIntake ? (
+            <>
+              <P1>Describe the item, quantity, and who it&apos;s for.</P1>
+              <P2>Or pick up where you left off.</P2>
+            </>
+          ) : (
+            header.subtext
+          )
+        }
         // The cart belongs once products are on screen (the Selection step).
         showCart={phase === "selection"}
         // No back/reset on Intake — there's no previous step and it's already fresh.
@@ -201,7 +217,18 @@ export function BuyFlow() {
       >
         {isIntake ? (
           // Intake — the one conversational surface (free text + chips).
-          <div className="space-y-7">
+          <div className="space-y-4">
+            <P2>
+              {!resumeDismissed && (
+                <TeamsResumeCard
+                  // Re-sends as a new request; does not load a persisted draft.
+                  onResume={() =>
+                    sendCatalogRequest("15 laptops for Fusion Event contractors")
+                  }
+                  onDismiss={() => setResumeDismissed(true)}
+                />
+              )}
+            </P2>
             <AiChatInput
               value={input}
               onChange={setInput}
@@ -223,6 +250,12 @@ export function BuyFlow() {
                 onSelect={handleSuggestion}
               />
             </div>
+            <P2>
+              <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                <RefreshCw size={11} aria-hidden />
+                Requests stay in sync across Teams, web, and email
+              </p>
+            </P2>
           </div>
         ) : (
           // Guided middle — structured surfaces fueled by the agent.

@@ -17,7 +17,7 @@ import { QuantityStepper } from "./QuantityStepper";
 import { BrandMark } from "./ScanRow";
 import type { CatalogItem } from "./types";
 
-const ACCENT = "bg-[#0f7b8a] text-white hover:bg-[#0c6976]";
+const ACCENT = "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)";
 
 interface ProductDetailProps {
   item: CatalogItem;
@@ -124,7 +124,7 @@ export function ProductDetail({
                 )}
               </div>
               {showStrike && (
-                <p className="text-sm font-medium text-[#0f7b8a]">
+                <p className="text-sm font-medium text-(--gb-teal)">
                   EPP pricing · save {formatPrice(savings, item.currency)}/unit
                 </p>
               )}

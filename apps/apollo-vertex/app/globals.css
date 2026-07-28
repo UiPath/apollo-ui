@@ -29,3 +29,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Guided Buying prototype tokens — not part of the Apollo design system */
+:root {
+  --gb-teal: #0D7D70;
+  --gb-teal-hover: color-mix(in srgb, var(--gb-teal) 88%, black);
+  --gb-tealbg: #E3F2EE;
+  --gb-tealline: #C9E4DE;
+  --gb-indigo: #4F46E5;
+  --gb-indigobg: #EEF0FB;
+  --gb-indigoline: #D8DCF7;
+  --gb-indigodeep: #3C3489;
+}
