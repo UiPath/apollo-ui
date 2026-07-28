@@ -1,7 +1,6 @@
 import { ArrowLeft, Check, Columns3, Plus } from "lucide-react";
 import { Fragment, type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import {
   activePrice,
@@ -11,13 +10,11 @@ import {
   priceBasis,
   showsListStrike,
 } from "./data";
-import { usePriceBasis } from "./price-basis-context";
 import { ProductImage } from "./ProductImage";
+import { usePriceBasis } from "./price-basis-context";
 import { QuantityStepper } from "./QuantityStepper";
 import { BrandMark } from "./ScanRow";
 import type { CatalogItem } from "./types";
-
-const ACCENT = "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)";
 
 interface ProductDetailProps {
   item: CatalogItem;
@@ -146,7 +143,6 @@ export function ProductDetail({
               <QuantityStepper value={quantity} onChange={onQtyChange} />
               <Button
                 variant={inCart ? "outline" : "default"}
-                className={cn(!inCart && ACCENT)}
                 onClick={() => onAddToCart(quantity)}
                 aria-pressed={inCart}
               >

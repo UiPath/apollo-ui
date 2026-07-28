@@ -18,8 +18,6 @@ import { usePriceBasis } from "./price-basis-context";
 import { BrandMark } from "./ScanRow";
 import type { CatalogItem, PriceBasis } from "./types";
 
-const ACCENT = "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)";
-
 interface CompareRow {
   label: string;
   values: (string | null)[];
@@ -224,7 +222,7 @@ export function CompareView({
                   </div>
                   <Button
                     size="sm"
-                    className={cn("mt-3 w-full", ACCENT)}
+                    className="mt-3 w-full"
                     onClick={() => onAddToCart(product)}
                   >
                     <Plus className="size-4" />

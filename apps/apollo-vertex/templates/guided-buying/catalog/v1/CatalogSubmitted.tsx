@@ -3,7 +3,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { formatDateDisplay } from "../../requests/data";
 import { useRequests } from "../../requests/requests-context";
@@ -14,7 +14,7 @@ import { CATALOG_PHASES, FlowPhaseBar } from "./FlowPhaseBar";
 
 // Catalog standard config prices under EPP.
 const BASIS = "epp" as const;
-const ACCENT = "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)";
+
 const REQUEST_ID = "REQ-2052";
 
 // Bridge defaults — used if Review is reached without a resolved Bridge.
@@ -153,9 +153,7 @@ export function CatalogSubmitted() {
           >
             View all requests
           </button>
-          <Button className={ACCENT} onClick={backToBuy}>
-            Back to Buy
-          </Button>
+          <Button onClick={backToBuy}>Back to Buy</Button>
         </div>
       </div>
     </motion.div>

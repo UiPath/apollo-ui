@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { activePrice, formatPrice, showsListStrike } from "./data";
-import { usePriceBasis } from "./price-basis-context";
 import { ProductImage } from "./ProductImage";
+import { usePriceBasis } from "./price-basis-context";
 import type { CatalogItem } from "./types";
 
 interface ProductCardProps {
@@ -105,11 +105,6 @@ export function ProductCard({
               onToggleCart(item);
             }}
             aria-pressed={inCart}
-            className={cn(
-              featured &&
-                !inCart &&
-                "bg-(--gb-teal) text-white hover:bg-(--gb-teal-hover)",
-            )}
           >
             {inCart ? (
               <>
