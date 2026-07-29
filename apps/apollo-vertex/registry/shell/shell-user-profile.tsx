@@ -17,6 +17,8 @@ interface UserProfileProps {
   collapsedMenuAlign?: "start" | "center" | "end";
   /** When set, a "Switch user" item appears in the menu (e.g. demo seats). */
   onUserClick?: () => void;
+  /** Extra items injected into the menu after Switch user, before Toggle theme. */
+  additionalItems?: React.ReactNode;
 }
 
 export const UserProfile = ({
@@ -24,6 +26,7 @@ export const UserProfile = ({
   collapsedMenuSide = "top",
   collapsedMenuAlign = "start",
   onUserClick,
+  additionalItems,
 }: UserProfileProps) => {
   const { t } = useTranslation();
   const { user } = useUser();
@@ -76,7 +79,10 @@ export const UserProfile = ({
               </div>
             </div>
             <DropdownMenuSeparator />
-            <UserProfileMenuItems onSwitchUser={onUserClick} />
+            <UserProfileMenuItems
+              onSwitchUser={onUserClick}
+              additionalItems={additionalItems}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
@@ -113,7 +119,10 @@ export const UserProfile = ({
             side="top"
             sideOffset={8}
           >
-            <UserProfileMenuItems onSwitchUser={onUserClick} />
+            <UserProfileMenuItems
+              onSwitchUser={onUserClick}
+              additionalItems={additionalItems}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       )}
