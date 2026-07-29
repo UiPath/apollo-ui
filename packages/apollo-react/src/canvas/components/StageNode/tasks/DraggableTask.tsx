@@ -2,14 +2,14 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useMemo, useRef } from 'react';
-import type { DraggableTaskProps } from './DraggableTask.types';
 import {
   INDENTATION_WIDTH,
-  StageTask,
+  StageItemPill,
   StageTaskDragPlaceholder,
   StageTaskDragPlaceholderWrapper,
   StageTaskWrapper,
-} from './StageNode.styles';
+} from '../StageNode.styles';
+import type { DraggableTaskProps } from './DraggableTask.types';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
@@ -83,7 +83,7 @@ const DraggableTaskComponent = ({
   }
 
   const taskElement = (
-    <StageTask
+    <StageItemPill
       ref={taskRef}
       data-testid={`stage-task-${task.id}`}
       selected={isSelected}
@@ -115,7 +115,7 @@ const DraggableTaskComponent = ({
           ) : undefined
         }
       />
-    </StageTask>
+    </StageItemPill>
   );
 
   if (isDragDisabled) {

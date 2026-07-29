@@ -1,7 +1,7 @@
 import { memo, useCallback, useRef } from 'react';
-import type { NodeMenuItem } from '../NodeContextMenu';
-import { StageTask } from './StageNode.styles';
-import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
+import type { NodeMenuItem } from '../../NodeContextMenu';
+import { StageItemPill } from '../StageNode.styles';
+import type { StageTaskExecution, StageTaskItem } from '../StageNode.types';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
@@ -48,7 +48,7 @@ const AdhocTaskItemComponent = ({
   }, []);
 
   return (
-    <StageTask
+    <StageItemPill
       ref={taskRef}
       data-testid={`stage-task-${task.id}`}
       selected={isSelected}
@@ -73,7 +73,7 @@ const AdhocTaskItemComponent = ({
           hideTrigger={isReadOnly}
         />
       )}
-    </StageTask>
+    </StageItemPill>
   );
 };
 

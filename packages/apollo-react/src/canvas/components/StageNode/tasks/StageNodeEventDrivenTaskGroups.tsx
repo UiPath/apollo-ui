@@ -1,29 +1,24 @@
 import { memo, useCallback } from 'react';
-import type { NodeMenuItem } from '../NodeContextMenu';
-import { AdhocTaskItem } from './AdhocTask';
-import {
-  StageAdditionalTasksHeaderSection,
-  StageAdditionalTasksSection,
-  StageTaskList,
-} from './StageNode.styles';
-import type { StageNodeProps, StageTaskGroup, StageTaskItem } from './StageNode.types';
-import { useStageNodeLabels } from './useStageNodeLabels';
+import type { NodeMenuItem } from '../../NodeContextMenu';
+import { StageItemsList, StageItemsSection } from '../StageNode.styles';
+import type { StageNodeProps, StageTaskGroup, StageTaskItem } from '../StageNode.types';
+import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
+import { useStageNodeLabels } from '../useStageNodeLabels';
+import { EventDrivenTaskItem } from './EventDrivenTask';
 
-const StageNodeAdhocTaskGroupsInner = ({
+const StageNodeEventDrivenTaskGroupsInner = ({
   props,
-  adhocTasks,
+  eventDrivenTasks,
   isReadOnly,
   selectedTaskId,
-  marginTop,
   handleTaskClick,
   generateReplaceTaskMenuItemForTask,
   generateDeleteTaskMenuItemForTask,
 }: {
   props: StageNodeProps;
-  adhocTasks: StageTaskGroup[];
+  eventDrivenTasks: StageTaskGroup[];
   isReadOnly: boolean;
   selectedTaskId?: string;
-  marginTop: string;
   handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
   generateReplaceTaskMenuItemForTask: (
     taskId: string,
@@ -36,7 +31,6 @@ const StageNodeAdhocTaskGroupsInner = ({
     execution,
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
-    onTaskPlay,
     loadingTaskIds,
     onTaskBreakpointToggle,
     getTaskContextMenuItems,
@@ -46,7 +40,7 @@ const StageNodeAdhocTaskGroupsInner = ({
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
-  const getAdhocContextMenuItems = useCallback(
+  const getEventDrivenContextMenuItems = useCallback(
     (task: StageTaskItem): NodeMenuItem[] => {
       const items: NodeMenuItem[] = [];
 
@@ -56,7 +50,7 @@ const StageNodeAdhocTaskGroupsInner = ({
       }
 
       const additionalMenuItems =
-        getTaskContextMenuItems?.({ task, taskGroupType: 'adhoc', isParallel: false }) ?? [];
+        getTaskContextMenuItems?.({ task, taskGroupType: 'event-driven', isParallel: false }) ?? [];
       items.push(...additionalMenuItems);
 
       const deleteTaskMenuItem = generateDeleteTaskMenuItemForTask(task.id);
@@ -69,21 +63,17 @@ const StageNodeAdhocTaskGroupsInner = ({
     [generateReplaceTaskMenuItemForTask, getTaskContextMenuItems, generateDeleteTaskMenuItemForTask]
   );
 
-  if (adhocTasks.length === 0) {
+  if (eventDrivenTasks.length === 0) {
     return null;
   }
   return (
-    <StageAdditionalTasksSection style={{ marginTop }}>
-      <StageAdditionalTasksHeaderSection>
-        <span
-          data-testid={`adhoc-tasks-header-${id}`}
-          className="text-xs font-bold text-foreground-muted"
-        >
-          {labels.adhocTasks}
-        </span>
-      </StageAdditionalTasksHeaderSection>
-      <StageTaskList data-testid={`adhoc-tasks-list-${id}`}>
-        {adhocTasks.map(({ task }) => {
+    <StageItemsSection>
+      <StageItemsHeaderTitle
+        title={labels.eventDrivenTasks}
+        testId={`event-driven-tasks-header-${id}`}
+      />
+      <StageItemsList data-testid={`event-driven-tasks-list-${id}`}>
+        {eventDrivenTasks.map(({ task }) => {
           const taskExecution = execution?.taskStatus?.[task.id];
           // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;
           // only the built-in edit actions are gated on !isReadOnly. When built-in actions
@@ -91,26 +81,25 @@ const StageNodeAdhocTaskGroupsInner = ({
           // consumer whether it contributes any items.
           const hasMenu =
             (!isReadOnly && hasBuiltInTaskActions) ||
-            (getTaskContextMenuItems?.({ task, taskGroupType: 'adhoc', isParallel: false })
+            (getTaskContextMenuItems?.({ task, taskGroupType: 'event-driven', isParallel: false })
               ?.length ?? 0) > 0;
           return (
-            <AdhocTaskItem
+            <EventDrivenTaskItem
               key={task.id}
               task={task}
               taskExecution={taskExecution}
               isSelected={selectedTaskId === task.id}
               onTaskClick={handleTaskClick}
-              onTaskPlay={onTaskPlay}
               isTaskLoading={loadingTaskIds?.has(task.id)}
               isReadOnly={isReadOnly}
               onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
-              getContextMenuItems={hasMenu ? getAdhocContextMenuItems : undefined}
+              getContextMenuItems={hasMenu ? getEventDrivenContextMenuItems : undefined}
             />
           );
         })}
-      </StageTaskList>
-    </StageAdditionalTasksSection>
+      </StageItemsList>
+    </StageItemsSection>
   );
 };
 
-export const StageNodeAdhocTaskGroups = memo(StageNodeAdhocTaskGroupsInner);
+export const StageNodeEventDrivenTaskGroups = memo(StageNodeEventDrivenTaskGroupsInner);

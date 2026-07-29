@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { NodeMenuItem } from '../NodeContextMenu';
+import type { NodeMenuItem } from '../../NodeContextMenu';
 import { DraggableTask } from './DraggableTask';
 import type { DraggableTaskProps } from './DraggableTask.types';
 

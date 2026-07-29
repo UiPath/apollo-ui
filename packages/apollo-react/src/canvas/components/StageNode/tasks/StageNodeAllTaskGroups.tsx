@@ -1,16 +1,14 @@
-import { Spacing } from '@uipath/apollo-core';
-import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { Button } from '@uipath/apollo-wind';
 import { type CSSProperties, memo, type RefObject, useCallback, useMemo } from 'react';
-import { GroupModificationType } from '../../utils';
-import { useStageTasksByGroups } from './hooks/useStageTasksByGroups';
-import { StageContent } from './StageNode.styles';
-import type { StageNodeProps, StageTaskItem, TaskStateReference } from './StageNode.types';
+import { GroupModificationType } from '../../../utils';
+import { useStageTasksByGroups } from '../hooks/useStageTasksByGroups';
+import type { StageNodeProps, StageTaskItem, TaskStateReference } from '../StageNode.types';
+import { CollapsibleStageHeader } from '../shared/CollapsibleStageHeader';
+import { useStageNodeLabels } from '../useStageNodeLabels';
 import { StageNodeAdhocTaskGroups } from './StageNodeAdhocTaskGroups';
 import { StageNodeEventDrivenTaskGroups } from './StageNodeEventDrivenTaskGroups';
 import { StageNodeSequentialTaskGroups } from './StageNodeSequentialTaskGroups';
 import { getMenuItem } from './StageNodeTaskUtilities';
-import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeAllTaskGroupsInner = ({
   props,
@@ -145,12 +143,12 @@ const StageNodeAllTaskGroupsInner = ({
     [allTasks, onTaskGroupModification, labels.deleteTask]
   );
 
-  return (
-    <StageContent>
+  const tasksContent = (
+    <>
       {sequentialTaskGroups.length === 0 &&
       adhocTaskGroups.length === 0 &&
       eventDrivenTaskGroups.length === 0 ? (
-        <Column py={2}>
+        <>
           {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly ? (
             <Button
               variant="link"
@@ -169,9 +167,9 @@ const StageNodeAllTaskGroupsInner = ({
               {defaultContent}
             </span>
           )}
-        </Column>
+        </>
       ) : (
-        <Column py={2}>
+        <>
           <StageNodeSequentialTaskGroups
             props={props}
             sequentialTaskGroups={sequentialTaskGroups}
@@ -189,7 +187,6 @@ const StageNodeAllTaskGroupsInner = ({
             eventDrivenTasks={eventDrivenTasks}
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
-            marginTop={sequentialTaskGroups.length > 0 ? Spacing.SpacingS : '0px'}
             handleTaskClick={handleTaskClick}
             generateReplaceTaskMenuItemForTask={generateReplaceTaskMenuItemForTask}
             generateDeleteTaskMenuItemForTask={generateDeleteTaskMenuItemForTask}
@@ -199,18 +196,29 @@ const StageNodeAllTaskGroupsInner = ({
             adhocTasks={adhocTasks}
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
-            marginTop={
-              sequentialTaskGroups.length > 0 || eventDrivenTaskGroups.length > 0
-                ? Spacing.SpacingS
-                : '0px'
-            }
             handleTaskClick={handleTaskClick}
             generateReplaceTaskMenuItemForTask={generateReplaceTaskMenuItemForTask}
             generateDeleteTaskMenuItemForTask={generateDeleteTaskMenuItemForTask}
           />
-        </Column>
+        </>
       )}
-    </StageContent>
+    </>
+  );
+
+  if (!stageDetails?.sectionStates?.tasks) {
+    // no need to include collapsible header
+    return tasksContent;
+  }
+
+  return (
+    <CollapsibleStageHeader
+      isOpen={!stageDetails?.sectionStates?.tasks.isCollapsed}
+      label="Tasks"
+      testId={`tasks-header-${id}`}
+      onToggle={stageDetails?.sectionStates?.tasks.onCollapsedToggle}
+    >
+      {tasksContent}
+    </CollapsibleStageHeader>
   );
 };
 

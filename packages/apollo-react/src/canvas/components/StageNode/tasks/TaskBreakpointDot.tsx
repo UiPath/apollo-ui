@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react';
-import { useSafeLingui } from '../../../i18n';
-import { CanvasTooltip } from '../CanvasTooltip';
+import { useSafeLingui } from '../../../../i18n';
+import { CanvasTooltip } from '../../CanvasTooltip';
 
 export interface TaskBreakpointDotProps {
   /** Whether a breakpoint is set (placed) on this task. */

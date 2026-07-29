@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useSafeLingui } from '../../../i18n';
-import type { StageContextMenuLabels } from './StageNodeTaskUtilities';
+import type { StageContextMenuLabels } from './tasks/StageNodeTaskUtilities';
 
 export interface StageNodeLabels {
   addFirstTask: string;
