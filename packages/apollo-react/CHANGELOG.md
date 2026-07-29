@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.8.0...@uipath/apollo-react@6.9.0) (2026-07-29)
+
+### Features
+
+* **apollo-react:** add a2a and context canvas icons ([bd47512](https://github.com/UiPath/apollo-ui/commit/bd4751268967f02890d91c6d7d185fe3c721d06b))
+
 ## [@uipath/apollo-react-v6.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.7.0...@uipath/apollo-react@6.8.0) (2026-07-29)
 
 ### Features
