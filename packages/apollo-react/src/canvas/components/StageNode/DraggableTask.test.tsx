@@ -66,6 +66,7 @@ describe('DraggableTask', () => {
 
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
       expect(menuButton).toBeInTheDocument();
+      expect(menuButton).toHaveClass('-ml-0.5', 'h-4', 'w-4', 'rounded-sm');
     });
 
     it('renders menu button when getContextMenuItems are provided', () => {
@@ -95,6 +96,26 @@ describe('DraggableTask', () => {
       expect(menuButton).toBeInTheDocument();
       // Button should be rendered as a button element
       expect(menuButton.tagName).toBe('BUTTON');
+    });
+
+    it('spaces the menu in the same trailing-controls row as the execution chips', () => {
+      const menuItems = createMenuItems(vi.fn());
+
+      render(
+        <DraggableTask
+          {...defaultProps}
+          taskExecution={{ status: 'Completed', retryCount: 1 }}
+          getContextMenuItems={() => menuItems}
+        />
+      );
+
+      const actions = screen.getByTestId('stage-task-actions-task-1');
+      const statusButton = screen.getByRole('button', { name: 'Completed' });
+      const menuButton = screen.getByTestId('stage-task-menu-task-1');
+
+      expect(actions).toHaveStyle({ gap: '4px' });
+      expect(statusButton.parentElement).toBe(actions);
+      expect(menuButton.parentElement).toBe(actions);
     });
   });
 

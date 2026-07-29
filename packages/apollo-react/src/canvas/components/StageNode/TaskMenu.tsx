@@ -59,6 +59,11 @@ const TaskMenuComponent = (
       onItemClick={handleMenuItemClick}
       triggerTestId={`stage-task-menu-${task.id}`}
       triggerAriaLabel="Task actions"
+      // The vertical ellipsis only paints a narrow line down the middle of its 16px
+      // button. A small optical correction reduces the excess visible gap on its left
+      // while retaining separation from the previous control and keeping the hover
+      // square flush inside the task's right edge.
+      triggerClassName="-ml-0.5 h-4 w-4 rounded-sm"
       contentClassName="w-[300px]"
       disabled={disabled}
     />

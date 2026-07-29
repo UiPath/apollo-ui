@@ -900,6 +900,62 @@ export const ExecutionModeWithSla: Story = {
   },
 };
 
+export const MaximumTaskAdornments: Story = {
+  name: 'Execution Mode - Maximum Task Adornments',
+  parameters: {
+    nodes: [
+      {
+        id: 'maximum-task-adornments',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'Maximum content',
+            isReadOnly: true,
+            tasks: [
+              [
+                {
+                  id: 'long-running-task',
+                  label: 'Longest running required task',
+                  icon: <VerificationIcon />,
+                  isRequired: true,
+                  hasEntryCondition: true,
+                },
+              ],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              duration: 'Duration: 6m, 2w, 2d, 2h, 59m, 36s',
+            },
+            taskStatus: {
+              'long-running-task': {
+                status: 'InProgress',
+                breakpoint: true,
+                duration: '6m, 2w, 2d, 2h, 59m, 36s',
+                durationTooltip: 'Elapsed: 6m, 2w, 2d, 2h, 59m, 36s',
+                retryCount: 98,
+                retryDuration: '5m, 4w, 3d, 2h, 1m',
+              },
+            },
+          },
+          onTaskPlay: async () => {},
+          getTaskContextMenuItems: () => [
+            {
+              id: 'toggle-breakpoint',
+              label: 'Remove breakpoint',
+              onClick: () => {},
+            },
+          ],
+        },
+      },
+    ],
+  },
+};
+
 export const LoanProcessingWorkflow: Story = {
   name: 'Loan Processing Workflow',
   parameters: {

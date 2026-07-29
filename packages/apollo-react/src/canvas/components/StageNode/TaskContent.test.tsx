@@ -244,6 +244,18 @@ describe('TaskContent - duration tooltip', () => {
     const tooltipWrapper = durationText.closest('[data-testid="canvas-tooltip"]');
     expect(tooltipWrapper).toBeNull();
   });
+
+  it('shows only the three largest duration units', () => {
+    renderTaskContent({
+      taskExecution: {
+        status: 'InProgress',
+        duration: '6m, 2w, 2d, 2h, 59m, 36s',
+      },
+    });
+
+    expect(screen.getByText('6m, 2w, 2d')).toBeInTheDocument();
+    expect(screen.queryByText(/2h/)).not.toBeInTheDocument();
+  });
 });
 
 describe('TaskContent - entry-condition icon', () => {
@@ -259,21 +271,34 @@ describe('TaskContent - entry-condition icon', () => {
     expect(getEntryIcon(container)).toBeNull();
   });
 
-  it('renders a 20px entry-condition diamond on a single-row task', () => {
+  it('uses a tight SVG box around the entry-condition diamond', () => {
     const { container } = renderTaskContent({ task: { hasEntryCondition: true } });
     const icon = getEntryIcon(container);
-    expect(icon).toHaveAttribute('width', '20');
-    expect(icon).toHaveAttribute('height', '20');
+    expect(icon).toHaveAttribute('width', '13');
+    expect(icon).toHaveAttribute('height', '15');
+    expect(icon).toHaveAttribute('viewBox', '3.5 2.5 13 15');
   });
 
-  it('renders a 20px entry-condition diamond even when the task has execution details', () => {
+  it('keeps the tight entry-condition box when the task has execution details', () => {
     const { container } = renderTaskContent({
       task: { hasEntryCondition: true },
       taskExecution: { status: 'Completed', duration: '1m' },
     });
     const icon = getEntryIcon(container);
-    expect(icon).toHaveAttribute('width', '20');
-    expect(icon).toHaveAttribute('height', '20');
+    expect(icon).toHaveAttribute('width', '13');
+    expect(icon).toHaveAttribute('height', '15');
+    expect(icon).toHaveAttribute('viewBox', '3.5 2.5 13 15');
+  });
+
+  it('places the entry condition before the task-type icon in the leading group', () => {
+    const { container } = renderTaskContent({ task: { hasEntryCondition: true } });
+    const icon = getEntryIcon(container);
+    const identity = screen.getByTestId(`stage-task-identity-${baseTask.id}`);
+    const leadingIcons = identity.firstElementChild;
+
+    expect(leadingIcons).toHaveStyle({ gap: '4px' });
+    expect(icon?.closest('[data-testid="canvas-tooltip"]')).toBe(leadingIcons?.firstElementChild);
+    expect(screen.getByTestId(`stage-task-actions-${baseTask.id}`)).not.toContainElement(icon);
   });
 });
 

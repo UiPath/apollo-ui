@@ -2,13 +2,7 @@ import { EntryConditionIcon } from '../../icons';
 import { CanvasTooltip } from '../CanvasTooltip';
 import type { StageTaskItem } from './StageNode.types';
 
-export const StageTaskEntryConditionIcon = ({
-  task,
-  small,
-}: {
-  task: StageTaskItem;
-  small?: boolean;
-}) => {
+export const StageTaskEntryConditionIcon = ({ task }: { task: StageTaskItem }) => {
   if (!task.hasEntryCondition) {
     return null;
   }
@@ -22,12 +16,9 @@ export const StageTaskEntryConditionIcon = ({
           justifyContent: 'center',
           color: 'var(--color-icon-default)',
           flexShrink: 0,
-          // Optically centre the diamond; the adjacent play button sits inset (more so when small).
-          // Value is in canvas-local px, so it renders ×canvas zoom — roughly 1–3px on screen in practice.
-          transform: small ? 'translateX(1px)' : 'translateX(0.5px)',
         }}
       >
-        <EntryConditionIcon w={small ? 16 : 20} h={small ? 16 : 20} />
+        <EntryConditionIcon w={13} h={15} tight />
       </span>
     </CanvasTooltip>
   );

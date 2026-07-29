@@ -7,6 +7,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
+import { formatDuration } from './formatDuration';
 import { StageTaskIcon } from './StageNode.styles';
 import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
 import { StageTaskEntryConditionIcon } from './StageTaskEntryConditionIcon';
@@ -84,10 +85,11 @@ export interface TaskContentProps {
   taskExecution?: StageTaskExecution;
   isDragging?: boolean;
   onTaskPlay?: (taskId: string) => Promise<void>;
+  trailingContent?: React.ReactNode;
 }
 
 export const TaskContent = memo(
-  ({ task, taskExecution, isDragging, onTaskPlay }: TaskContentProps) => {
+  ({ task, taskExecution, isDragging, onTaskPlay, trailingContent }: TaskContentProps) => {
     const { _ } = useSafeLingui();
     const getStatusName = useExecutionStatusLabel();
     const hasExecutionStatus = !!taskExecution?.status;
@@ -122,7 +124,7 @@ export const TaskContent = memo(
         data-testid={`stage-task-duration-${task.id}`}
         className="text-xs text-foreground-muted"
       >
-        {taskExecution.duration}
+        {formatDuration(taskExecution.duration)}
       </span>
     ) : null;
 
@@ -139,10 +141,14 @@ export const TaskContent = memo(
           gap={Spacing.SpacingXs}
           align="center"
           style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          data-testid={`stage-task-identity-${task.id}`}
         >
-          <StageTaskIcon data-testid={`stage-task-icon-${task.id}`}>
-            {task.icon ?? <ProcessCanvasIcon />}
-          </StageTaskIcon>
+          <Row gap={Spacing.SpacingMicro} align="center" style={{ flexShrink: 0 }}>
+            <StageTaskEntryConditionIcon task={task} />
+            <StageTaskIcon data-testid={`stage-task-icon-${task.id}`}>
+              {task.icon ?? <ProcessCanvasIcon />}
+            </StageTaskIcon>
+          </Row>
           <CanvasTooltip
             content={task.label}
             placement="top"
@@ -177,7 +183,12 @@ export const TaskContent = memo(
             </Row>
           </CanvasTooltip>
         </Row>
-        <Row align="center" gap={Spacing.SpacingMicro} style={{ flexShrink: 0 }}>
+        <Row
+          align="center"
+          gap={Spacing.SpacingMicro}
+          style={{ flexShrink: 0 }}
+          data-testid={`stage-task-actions-${task.id}`}
+        >
           {durationLabel &&
             (taskExecution?.durationTooltip ? (
               <CanvasTooltip
@@ -217,7 +228,6 @@ export const TaskContent = memo(
               </Badge>
             </CanvasTooltip>
           )}
-          <StageTaskEntryConditionIcon task={task} />
           {hasExecutionStatus && (
             <CanvasTooltip content={taskStatusTooltip} placement="top">
               <Button
@@ -232,6 +242,7 @@ export const TaskContent = memo(
             </CanvasTooltip>
           )}
           {onTaskPlay && <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />}
+          {trailingContent}
         </Row>
       </Row>
     );
