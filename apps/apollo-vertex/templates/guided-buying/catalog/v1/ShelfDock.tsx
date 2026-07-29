@@ -12,6 +12,7 @@ import { useSidebar } from "@/registry/sidebar/sidebar-provider";
 import { P1 } from "../../P1";
 import { P2 } from "../../P2";
 import { RailDock } from "./RailDock";
+import type { CatalogItem } from "./types";
 
 // Deck j1-06: XPS defense — bold numbered lines + price-priority closer.
 const XPS_DEFENSE = `**1. Price after EPP**: The X1 Carbon's employee discount brings it to $1,249. The XPS starts lower but its discount is smaller — after EPP, the Carbon wins by $38 per unit.
@@ -21,6 +22,17 @@ const XPS_DEFENSE = `**1. Price after EPP**: The X1 Carbon's employee discount b
 **3. Same IT image**: Your team's last two laptop orders were ThinkPads — same driver stack, same setup scripts, no re-enrollment.
 
 If price is the priority, the XPS is the closer call. On spec, delivery, and total cost, the Carbon leads.`;
+
+// Deck j1-06: Yoga defense — touch premium + memory shortfall + form factor.
+const YOGA_DEFENSE = `**1. Price after EPP**: The X1 Yoga's touchscreen adds $150 to the base price. After EPP, it lands at $1,999 — $150 more than the Carbon for hardware your contractors won't use in field work.
+
+**2. Spec shortfall**: The Yoga ships 16 GB. Your request calls for 32 GB; the Carbon meets it out of the box.
+
+**3. Form factor for the role**: The convertible hinge is built for designers who flip to tablet mode. For event contractors on a clamshell day, it adds weight and hinge wear with no payoff. The Carbon is lighter and lasts longer in laptop-only use.
+
+If touchscreen mobility matters for these contractors, the Yoga is worth a second look. On spec and total cost for this request, the Carbon leads.`;
+
+const DELL_XPS_ID = "dell-xps-14";
 
 // Deck j1-06: P1 correction — scoped to request only, nothing saved.
 const P1_CORRECTION =
@@ -40,11 +52,18 @@ function msg(
 }
 
 interface ShelfDockProps {
+  /** The catalog item whose "Why not this?" was triggered — drives the defense copy. */
+  subject: CatalogItem;
   onClose: () => void;
   onCorrectionMade: () => void;
 }
 
-export function ShelfDock({ onClose, onCorrectionMade }: ShelfDockProps) {
+export function ShelfDock({
+  subject,
+  onClose,
+  onCorrectionMade,
+}: ShelfDockProps) {
+  const defense = subject.id === DELL_XPS_ID ? XPS_DEFENSE : YOGA_DEFENSE;
   const { open: navOpen, setOpen: setNavOpen } = useSidebar();
   const prevNavOpen = useRef(navOpen);
   const [phase, setPhase] = useState<Phase>("thinking");
@@ -127,7 +146,7 @@ export function ShelfDock({ onClose, onCorrectionMade }: ShelfDockProps) {
           className="flex-1 space-y-3 overflow-y-auto px-3 py-3"
         >
           <AiChatMessage
-            message={msg("shelf-q", "user", "Why not the XPS?")}
+            message={msg("shelf-q", "user", `Why not the ${subject.name}?`)}
             hideActions
           />
 
@@ -136,7 +155,7 @@ export function ShelfDock({ onClose, onCorrectionMade }: ShelfDockProps) {
           {phase !== "thinking" && (
             <>
               <AiChatMessage
-                message={msg("shelf-a", "assistant", XPS_DEFENSE)}
+                message={msg("shelf-a", "assistant", defense)}
                 hideActions
               />
               {/* Deck j1-06 follow-up chips */}

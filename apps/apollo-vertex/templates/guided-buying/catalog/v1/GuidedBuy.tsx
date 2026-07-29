@@ -19,8 +19,8 @@ interface GuidedBuyProps {
   onSeeAll: () => void;
   /** Configure with agent → the configurator (contract path). */
   onConfigure: () => void;
-  /** Opens the shelf dock (XPS defense). Wired to "Why not the XPS?" chip. */
-  onXpsChipClick?: () => void;
+  /** Opens the shelf dock scoped to the selected card's item. */
+  onWhyNotThisClick?: (item: CatalogItem) => void;
   /** True after the P2 dock correction — Yoga card enters set-aside state. */
   correctionMade?: boolean;
   onYogaShowAnyway?: () => void;
@@ -39,7 +39,7 @@ type ToolPart = MessagePart & { id: string; name: string; output: unknown };
 export function GuidedBuy({
   onSeeAll,
   onConfigure,
-  onXpsChipClick,
+  onWhyNotThisClick,
   correctionMade,
   onYogaShowAnyway,
   onOpenDetail,
@@ -73,7 +73,7 @@ export function GuidedBuy({
             output={part.output as MatchesOutput}
             onSeeAll={onSeeAll}
             correctionMade={correctionMade}
-            onXpsChipClick={onXpsChipClick}
+            onWhyNotThisClick={onWhyNotThisClick}
             onYogaShowAnyway={onYogaShowAnyway}
             onOpenDetail={onOpenDetail}
           />
