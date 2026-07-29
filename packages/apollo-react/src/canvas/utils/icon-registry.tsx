@@ -43,6 +43,8 @@ const iconRegistry: Record<string, IconComponent> = {
   'agent-diagram': ({ w, h }) => <Icons.AgentDiagramIcon w={w ?? 24} h={h ?? 24} />,
   function: ({ w, h }) => <Icons.FunctionProject w={w ?? 29} h={h ?? 28} />,
   mcp: ({ w, h }) => <Icons.McpIcon w={w ?? 29} h={h ?? 28} />,
+  a2a: ({ w, h }) => <Icons.A2aIcon w={w ?? 29} h={h ?? 28} />,
+  context: ({ w, h }) => <Icons.ContextIcon w={w ?? 29} h={h ?? 28} />,
 };
 
 /**
