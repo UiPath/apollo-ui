@@ -20,22 +20,25 @@ interface BuyScaffoldProps {
   subtext: ReactNode;
   /** Back control (top-left). Omitted on Intake — there's no previous step. */
   onBack?: () => void;
-  /** Full reset (top-right "New purchase request"). Omitted on Intake. */
+  /** Full reset (top-right). Omitted on Intake. */
   onReset?: () => void;
-  /** Show the cart button — only once products are on screen (it transitions in). */
+  /** Show the cart button — only once products are on screen. */
   showCart?: boolean;
-  /** Flow phase indicator rendered between the utility bar and the AI anchor. */
+  /** Flow phase indicator rendered centered in the chrome band. */
   phaseBar?: ReactNode;
+  /**
+   * When true, the AI mark + title + subtitle anchor block is hidden. Use on
+   * steps that supply their own page-level hero (e.g. the Choose/selection phase).
+   */
+  hideBrand?: boolean;
   children: ReactNode;
 }
 
 /**
- * The constant frame for every Buy screen: a horizontally centered column with a
- * back/reset bar, the Autopilot mark, and a title + subtext pinned to the same
- * vertical anchor on every step. The mark stays put across steps; the title and
- * subtext slide up and fade (staggered) as the step changes, so moving through
- * the flow reads as one surface re-titling itself. The step's surface renders
- * directly beneath the anchor.
+ * The constant frame for every Buy screen. One chrome band — Back left,
+ * stepper centered (absolutely positioned so flanking button widths don't
+ * shift it), Reset + Cart right, hairline beneath. Below that, a scrollable
+ * column with the Autopilot mark, animated title/subtext, and the step surface.
  */
 export function BuyScaffold({
   stepKey,
@@ -45,17 +48,15 @@ export function BuyScaffold({
   onReset,
   showCart = false,
   phaseBar,
+  hideBrand = false,
   children,
 }: BuyScaffoldProps) {
   const reduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const { count: cartCount, setOpen: setCartOpen } = useCart();
 
-  // Orchestration only — the children carry the visible slide/fade, staggered.
   const group = {
     initial: {},
-    // delayChildren holds a beat after the old header has left (mode="wait") so
-    // the incoming title/subtext don't read as colliding with the outgoing ones.
     animate: { transition: { staggerChildren: 0.08, delayChildren: 0.18 } },
     exit: { transition: { staggerChildren: 0.05, staggerDirection: -1 } },
   };
@@ -71,183 +72,199 @@ export function BuyScaffold({
         exit: { opacity: 0, y: -10, transition: { duration: 0.2, ease: EASE } },
       };
 
-  return (
-    <div className="flex h-full flex-col overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-[720px] flex-1 flex-col px-4 pb-10">
-        {/* The bar reserves its full button-row height on every step (including
-            Intake, which has no controls) so the anchor below never shifts — note
-            the reserve must cover the buttons (h-8) plus this pt, since border-box
-            folds the padding into min-h. The buttons slide into that space. */}
-        <div className="flex min-h-[52px] items-center justify-between gap-2 pt-5">
-          {/* Back (left) — slides in once there's a previous step. */}
-          <div className="flex items-center">
-            <AnimatePresence>
-              {onBack && (
-                <motion.div
-                  key="back"
-                  initial={reduceMotion ? false : { opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -8 }}
-                  transition={{
-                    duration: 0.28,
-                    ease: EASE,
-                    delay: reduceMotion ? 0 : 0.15,
-                  }}
-                >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onBack}
-                    className="-ml-2 text-muted-foreground"
-                  >
-                    <ArrowLeft className="size-4" aria-hidden />
-                    Back
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          {/* Reset + the persistent cart — slide into the reserved bar. */}
-          <div className="flex items-center gap-2">
-            <AnimatePresence>
-              {onReset && (
-                <motion.div
-                  key="reset"
-                  initial={reduceMotion ? false : { opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 8 }}
-                  transition={{
-                    duration: 0.28,
-                    ease: EASE,
-                    delay: reduceMotion ? 0 : 0.15,
-                  }}
-                >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onReset}
-                    className="text-muted-foreground"
-                  >
-                    <Plus className="size-4" aria-hidden />
-                    New purchase request
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {/* The cart appears once products are on screen — transitions in. */}
-            <AnimatePresence>
-              {showCart && (
-                <motion.div
-                  key="cart"
-                  initial={
-                    reduceMotion ? false : { opacity: 0, x: 8, scale: 0.9 }
-                  }
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={
-                    reduceMotion
-                      ? { opacity: 0 }
-                      : { opacity: 0, x: 8, scale: 0.9 }
-                  }
-                  transition={{ duration: 0.28, ease: EASE }}
-                >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCartOpen(true)}
-                    className="gap-2 text-muted-foreground"
-                    aria-label="Open cart"
-                  >
-                    <ShoppingCart className="size-4" aria-hidden />
-                    {cartCount > 0 && (
-                      <motion.span
-                        key={cartCount}
-                        animate={reduceMotion ? {} : { scale: [1, 1.3, 1] }}
-                        transition={{ duration: 0.32, ease: EASE }}
-                        className="inline-flex"
-                      >
-                        <Badge variant="secondary" className="px-1.5">
-                          {cartCount}
-                        </Badge>
-                      </motion.span>
-                    )}
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+  // Border only when the band has content — absent on Intake where all slots are empty.
+  const hasBandContent = !!(onBack ?? onReset ?? phaseBar ?? showCart);
 
-        {/* The anchor — Autopilot mark + title + subtext, identical position. */}
-        <div className={cn("text-center", phaseBar ? "pt-[4vh]" : "pt-[7vh]")}>
-          {phaseBar && (
-            <div className="mb-4 flex justify-center">{phaseBar}</div>
-          )}
-          {/* Constant mark — stays put across steps. */}
-          <div className="flex items-center justify-center gap-1.5">
-            <svg width={0} height={0} aria-hidden className="absolute">
-              <defs>
-                <linearGradient
-                  id="buy-ai-mark"
-                  x1="2"
-                  y1="4"
-                  x2="22"
-                  y2="20"
-                  gradientUnits="userSpaceOnUse"
+  return (
+    <div className="flex h-full flex-col">
+      {/* Single chrome band: Back | stepper (centered) | Reset+Cart — hairline beneath. */}
+      <div
+        className={cn(
+          "relative flex h-12 shrink-0 items-center justify-between px-4",
+          hasBandContent && "border-b",
+        )}
+      >
+        {/* Back — left */}
+        <div className="flex items-center">
+          <AnimatePresence>
+            {onBack && (
+              <motion.div
+                key="back"
+                initial={reduceMotion ? false : { opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -8 }}
+                transition={{
+                  duration: 0.28,
+                  ease: EASE,
+                  delay: reduceMotion ? 0 : 0.15,
+                }}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onBack}
+                  className="-ml-2 text-muted-foreground"
                 >
-                  <stop offset="0" stopColor="var(--ai-gradient-start)" />
-                  <stop offset="1" stopColor="var(--ai-gradient-end)" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <AiMark size={20} gradientId="buy-ai-mark" />
-            <span
-              className="pt-0.5 text-sm font-bold leading-none tracking-tight"
-              style={{
-                backgroundImage: "var(--ai-gradient-text)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-              }}
-            >
-              AI Assistant
-            </span>
-          </div>
-          {/* Title + subtext — slide up & fade out/in as the step changes. */}
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={stepKey}
-              variants={group}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-            >
-              <motion.h1
-                variants={line}
-                className="mt-3 text-2xl font-semibold tracking-tight text-foreground"
-              >
-                {title}
-              </motion.h1>
-              <motion.p
-                variants={line}
-                className="mx-auto mt-1.5 max-w-prose text-sm leading-6 text-muted-foreground"
-              >
-                {subtext}
-              </motion.p>
-            </motion.div>
+                  <ArrowLeft className="size-4" aria-hidden />
+                  Back
+                </Button>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
-        {/* The step's surface, directly beneath the anchor. */}
-        <div className="mt-6">{children}</div>
+        {/* Stepper — absolutely centered, independent of flanking button widths. */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="pointer-events-auto">{phaseBar}</div>
+        </div>
+
+        {/* Reset + Cart — right */}
+        <div className="flex items-center gap-2">
+          <AnimatePresence>
+            {onReset && (
+              <motion.div
+                key="reset"
+                initial={reduceMotion ? false : { opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 8 }}
+                transition={{
+                  duration: 0.28,
+                  ease: EASE,
+                  delay: reduceMotion ? 0 : 0.15,
+                }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onReset}
+                  className="text-muted-foreground"
+                >
+                  <Plus className="size-4" aria-hidden />
+                  New purchase request
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {showCart && (
+              <motion.div
+                key="cart"
+                initial={
+                  reduceMotion ? false : { opacity: 0, x: 8, scale: 0.9 }
+                }
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={
+                  reduceMotion
+                    ? { opacity: 0 }
+                    : { opacity: 0, x: 8, scale: 0.9 }
+                }
+                transition={{ duration: 0.28, ease: EASE }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCartOpen(true)}
+                  className="gap-2 text-muted-foreground"
+                  aria-label="Open cart"
+                >
+                  <ShoppingCart className="size-4" aria-hidden />
+                  {cartCount > 0 && (
+                    <motion.span
+                      key={cartCount}
+                      animate={reduceMotion ? {} : { scale: [1, 1.3, 1] }}
+                      transition={{ duration: 0.32, ease: EASE }}
+                      className="inline-flex"
+                    >
+                      <Badge variant="secondary" className="px-1.5">
+                        {cartCount}
+                      </Badge>
+                    </motion.span>
+                  )}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* The cart peek — shared cart state; Review opens the full Review page. */}
-      <CartDrawer
-        onReviewSubmit={() => {
-          setCartOpen(false);
-          void navigate({ to: "/review" });
-        }}
-      />
+      {/* Scrollable content — anchor (when shown) + step surface. */}
+      <div className="flex flex-1 flex-col overflow-y-auto">
+        <div
+          className={cn(
+            "mx-auto flex w-full max-w-[720px] flex-1 flex-col px-4 pb-10",
+            hideBrand && "pt-8",
+          )}
+        >
+          {/* Autopilot mark + animated title/subtext. Hidden when the step
+              supplies its own hero (hideBrand=true, e.g. the Choose phase). */}
+          {!hideBrand && (
+            <div className="pt-[7vh] text-center">
+              <div className="flex items-center justify-center gap-1.5">
+                <svg width={0} height={0} aria-hidden className="absolute">
+                  <defs>
+                    <linearGradient
+                      id="buy-ai-mark"
+                      x1="2"
+                      y1="4"
+                      x2="22"
+                      y2="20"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop offset="0" stopColor="var(--ai-gradient-start)" />
+                      <stop offset="1" stopColor="var(--ai-gradient-end)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <AiMark size={20} gradientId="buy-ai-mark" />
+                <span
+                  className="pt-0.5 text-sm font-bold leading-none tracking-tight"
+                  style={{
+                    backgroundImage: "var(--ai-gradient-text)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                  }}
+                >
+                  AI Assistant
+                </span>
+              </div>
+              {/* Title + subtext slide up and fade as the step changes. */}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={stepKey}
+                  variants={group}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  <motion.h1
+                    variants={line}
+                    className="mt-3 text-2xl font-semibold tracking-tight text-foreground"
+                  >
+                    {title}
+                  </motion.h1>
+                  <motion.p
+                    variants={line}
+                    className="mx-auto mt-1.5 max-w-prose text-sm leading-6 text-muted-foreground"
+                  >
+                    {subtext}
+                  </motion.p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* Step surface, directly beneath the anchor. */}
+          <div className="mt-6">{children}</div>
+        </div>
+
+        <CartDrawer
+          onReviewSubmit={() => {
+            setCartOpen(false);
+            void navigate({ to: "/review" });
+          }}
+        />
+      </div>
     </div>
   );
 }
