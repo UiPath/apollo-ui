@@ -50,6 +50,7 @@ export interface ApolloShellProps extends PropsWithChildren {
   headerSlot?: ReactNode;
   /** Extra items injected into the user menu, after Switch user, before Toggle theme. */
   userMenuAdditionalItems?: ReactNode;
+  avatarClassName?: string;
 }
 
 function toUser(u: ShellUser): User {
@@ -75,6 +76,7 @@ const ApolloShellContent: FC<ApolloShellProps> = ({
   onUserClick,
   headerSlot,
   userMenuAdditionalItems,
+  avatarClassName,
 }) => {
   const authContext = useContext(AuthContext);
   const { accessToken } = useAuth();
@@ -94,6 +96,7 @@ const ApolloShellContent: FC<ApolloShellProps> = ({
         onUserClick={onUserClick}
         headerSlot={headerSlot}
         userMenuAdditionalItems={userMenuAdditionalItems}
+        avatarClassName={avatarClassName}
       >
         {children}
       </ShellLayout>
@@ -113,6 +116,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   onUserClick,
   headerSlot,
   userMenuAdditionalItems,
+  avatarClassName,
 }) => {
   return (
     <LocaleProvider
@@ -134,6 +138,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
         onUserClick={onUserClick}
         headerSlot={headerSlot}
         userMenuAdditionalItems={userMenuAdditionalItems}
+        avatarClassName={avatarClassName}
       >
         {children}
       </ApolloShellContent>

@@ -34,6 +34,7 @@ interface ShellLayoutProps {
   headerSlot?: ReactNode;
   /** Extra items injected into the user menu, after Switch user, before Toggle theme. */
   userMenuAdditionalItems?: ReactNode;
+  avatarClassName?: string;
 }
 
 function DarkGradientBackground() {
@@ -191,6 +192,7 @@ export function ShellLayout({
   onUserClick,
   headerSlot,
   userMenuAdditionalItems,
+  avatarClassName,
 }: PropsWithChildren<ShellLayoutProps>) {
   if (variant === "minimal") {
     return (
@@ -205,6 +207,7 @@ export function ShellLayout({
             navItems={navItems}
             onUserClick={onUserClick}
             userMenuAdditionalItems={userMenuAdditionalItems}
+            avatarClassName={avatarClassName}
           />
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {children}
@@ -228,6 +231,7 @@ export function ShellLayout({
         navItems={navItems}
         onUserClick={onUserClick}
         userMenuAdditionalItems={userMenuAdditionalItems}
+        avatarClassName={avatarClassName}
       />
       <SidebarInset className="relative flex-1 flex flex-col overflow-hidden rounded-none m-0 ml-0 shadow-none bg-transparent">
         <header

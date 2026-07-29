@@ -50,6 +50,7 @@ interface ShellSidebarProps {
   navItems: ShellNavItem[];
   onUserClick?: () => void;
   userMenuAdditionalItems?: ReactNode;
+  avatarClassName?: string;
 }
 
 export const ShellSidebar = ({
@@ -60,6 +61,7 @@ export const ShellSidebar = ({
   navItems,
   onUserClick,
   userMenuAdditionalItems,
+  avatarClassName,
 }: ShellSidebarProps) => {
   if (variant === "minimal") {
     return (
@@ -89,6 +91,7 @@ export const ShellSidebar = ({
             collapsedMenuAlign="end"
             onUserClick={onUserClick}
             additionalItems={userMenuAdditionalItems}
+            avatarClassName={avatarClassName}
           />
         </div>
       </header>
@@ -103,6 +106,7 @@ export const ShellSidebar = ({
       navItems={navItems}
       onUserClick={onUserClick}
       userMenuAdditionalItems={userMenuAdditionalItems}
+      avatarClassName={avatarClassName}
     />
   );
 };
@@ -114,6 +118,7 @@ interface SidebarNavProps {
   navItems: ShellNavItem[];
   onUserClick?: () => void;
   userMenuAdditionalItems?: ReactNode;
+  avatarClassName?: string;
 }
 
 function SidebarNav({
@@ -123,6 +128,7 @@ function SidebarNav({
   navItems,
   onUserClick,
   userMenuAdditionalItems,
+  avatarClassName,
 }: SidebarNavProps) {
   const { t } = useTranslation();
   const { state, toggleSidebar } = useSidebar();
@@ -355,6 +361,7 @@ function SidebarNav({
           isCollapsed={isCollapsed}
           onUserClick={onUserClick}
           additionalItems={userMenuAdditionalItems}
+          avatarClassName={avatarClassName}
         />
       </SidebarFooter>
 

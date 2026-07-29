@@ -94,14 +94,24 @@ function TierMenuSection() {
         onClick={() => setTier("p1")}
         className="justify-between"
       >
-        P1 · Now (CGA)
+        <span className="flex items-center gap-2">
+          <span className="flex size-4 items-center justify-center shrink-0">
+            <span className="size-2 rounded-full bg-primary" />
+          </span>
+          P1 · Now (CGA)
+        </span>
         {tier === "p1" && <Check className="size-3.5 shrink-0 text-primary" />}
       </DropdownMenuItem>
       <DropdownMenuItem
         onClick={() => setTier("p2")}
         className="justify-between"
       >
-        P2 · Next (V2)
+        <span className="flex items-center gap-2">
+          <span className="flex size-4 items-center justify-center shrink-0">
+            <span className="size-2 rounded-full bg-(--insight-600)" />
+          </span>
+          P2 · Next (V2)
+        </span>
         {tier === "p2" && (
           <Check className="size-3.5 shrink-0 text-(--insight-600)" />
         )}
@@ -123,6 +133,11 @@ function GuidedBuyingLayout() {
   const { location } = useRouterState();
   const { navItems } = SEATS[seat];
   const navigate = useNavigate();
+  const { tier } = useTier();
+  const avatarClassName =
+    tier === "p1"
+      ? "bg-primary/15 text-primary"
+      : "bg-(--insight-600)/15 text-(--insight-600)";
 
   // Decision route belongs to Alex Chen — reflect that in the shell identity chip
   // rather than showing Marcus while the page header says Alex.
@@ -152,6 +167,7 @@ function GuidedBuyingLayout() {
       user={user}
       onUserClick={switchSeat}
       userMenuAdditionalItems={<TierMenuSection />}
+      avatarClassName={avatarClassName}
     >
       {/* Clips the Buy↔Configure horizontal slide so it can't flash a scrollbar. */}
       <div className="relative h-full overflow-hidden">
