@@ -5,6 +5,7 @@ import {
   CaseManagementProject,
   ConnectorBuilderProject,
   HumanIcon,
+  PatternsIcon,
   RpaProject,
 } from '@uipath/apollo-react/canvas/icons';
 import {
@@ -53,6 +54,8 @@ const getIconForType = (type: TaskItemTypeValues, iconSize: number): React.React
       return <MoreIcon size={iconSize} />;
     case TaskItemTypeValues.CreateNew:
       return <CreateIcon size={iconSize} />;
+    case TaskItemTypeValues.Patterns:
+      return <PatternsIcon w={iconSize} h={iconSize} />;
   }
 };
 
