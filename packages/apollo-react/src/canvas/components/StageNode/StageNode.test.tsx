@@ -106,7 +106,7 @@ vi.mock('../Toolbox', () => ({
 }));
 
 // Mock DraggableTask
-vi.mock('./DraggableTask', () => ({
+vi.mock('./tasks/DraggableTask', () => ({
   DraggableTask: ({
     task,
     isDragDisabled,
@@ -1421,5 +1421,99 @@ describe('StageNode - pulse on the paused breakpoint', () => {
     // Emotion injects its styles at runtime, so a card animation would show up here.
     expect(getComputedStyle(screen.getByTestId('stage-task-adhoc-1')).animation).toBe('');
     expect(screen.getByTestId('stage-task-adhoc-1')).not.toHaveClass('animate-glow');
+  });
+});
+
+describe('StageNode - Entry, exit and completion rules', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('does not render any rule sections when no rules are provided', () => {
+    renderStageNode();
+
+    expect(screen.queryByTestId('entry-rules-container-stage-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('exit-rules-container-stage-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('completion-rules-container-stage-1')).not.toBeInTheDocument();
+  });
+
+  it('renders the entry rules section with a pill per rule', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        entryRules: [
+          { id: 'entry-1', label: 'Amount > 1000' },
+          { id: 'entry-2', label: 'Region is EU' },
+        ],
+      },
+    });
+
+    expect(screen.getByTestId('entry-rules-container-stage-1')).toBeInTheDocument();
+    expect(screen.getByTestId('stage-rule-entry-1')).toHaveTextContent('Amount > 1000');
+    expect(screen.getByTestId('stage-rule-entry-2')).toHaveTextContent('Region is EU');
+  });
+
+  it('renders the exit rules section with a pill per rule', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        exitRules: [{ id: 'exit-1', label: 'Approved' }],
+      },
+    });
+
+    expect(screen.getByTestId('exit-rules-container-stage-1')).toBeInTheDocument();
+    expect(screen.getByTestId('stage-rule-exit-1')).toHaveTextContent('Approved');
+  });
+
+  it('renders the completion rules section with a pill per rule', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        completionRules: [{ id: 'completion-1', label: 'All tasks done' }],
+      },
+    });
+
+    expect(screen.getByTestId('completion-rules-container-stage-1')).toBeInTheDocument();
+    expect(screen.getByTestId('stage-rule-completion-1')).toHaveTextContent('All tasks done');
+  });
+
+  it('invokes a rule onClick when the rule pill is clicked', async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        entryRules: [{ id: 'entry-1', label: 'Amount > 1000', onClick }],
+      },
+    });
+
+    await user.click(screen.getByTestId('stage-rule-entry-1'));
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders a collapsible entry rules header when a section state is provided', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        entryRules: [{ id: 'entry-1', label: 'Amount > 1000' }],
+        sectionStates: { entryRules: { isCollapsed: false, onCollapsedToggle: vi.fn() } },
+      },
+    });
+
+    expect(screen.getByTestId('entry-rules-header-stage-1-accordion-button')).toBeInTheDocument();
+    expect(screen.getByTestId('stage-rule-entry-1')).toBeInTheDocument();
+  });
+
+  it('collapses the entry rules body when the section state is collapsed', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        entryRules: [{ id: 'entry-1', label: 'Amount > 1000' }],
+        sectionStates: { entryRules: { isCollapsed: true, onCollapsedToggle: vi.fn() } },
+      },
+    });
+
+    expect(screen.queryByTestId('stage-rule-entry-1')).not.toBeInTheDocument();
   });
 });
