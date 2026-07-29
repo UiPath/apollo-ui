@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.7.0...@uipath/apollo-react@6.8.0) (2026-07-29)
+
+### Features
+
+* **apollo-react:** add Patterns TaskIcon type with stacked-cards glyph ([d5bf0c1](https://github.com/UiPath/apollo-ui/commit/d5bf0c1fe996aa52dd22dc31d50e29378575f2c7))
+
 ## [@uipath/apollo-react-v6.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.6.0...@uipath/apollo-react@6.7.0) (2026-07-28)
 
 ### Features
