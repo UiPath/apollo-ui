@@ -1,7 +1,9 @@
 "use client";
 
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +20,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { P2 } from "../P2";
 import {
   REQUEST_DETAILS,
@@ -60,21 +64,46 @@ function StatCard({
   );
 }
 
-interface MyRequestsListProps {
-  onOpen: (id: string) => void;
-}
-
 /** Requests landing — stat cards + the requester's queue table (Workbench twin). */
-export function MyRequestsList({ onOpen }: MyRequestsListProps) {
+export function MyRequestsList() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">(
     "all",
   );
 
   const { submittedRows } = useRequests();
-  const allRows = [...submittedRows, ...REQUEST_ROWS];
+  // Deduplicate: submittedRows wins over the static seed for the same id.
+  const seen = new Set<string>();
+  const allRows = [...submittedRows, ...REQUEST_ROWS].filter((r) => {
+    if (seen.has(r.id)) return false;
+    seen.add(r.id);
+    return true;
+  });
 
   const stats = requestStats(allRows);
+
+  const inflightEntry = (() => {
+    const row = allRows.find((r) => {
+      const d = REQUEST_DETAILS[r.id];
+      return d?.inFlight === true && d.approver != null;
+    });
+    if (row == null) return null;
+    const d = REQUEST_DETAILS[row.id]!;
+    const daysMatch = d.statusLabel?.match(/(\d+)\s+day/);
+    return {
+      id: row.id,
+      approverName: d.approver!.split(" · ")[0]!,
+      days: daysMatch != null ? parseInt(daysMatch[1]!, 10) : null,
+      noun:
+        row.request
+          .split(/\s+/)
+          .find((w) => !/^\d+$/.test(w) && w.length > 3)
+          ?.replace(/s$/, "")
+          .toLowerCase() ?? "request",
+    };
+  })();
+
   const query = search.trim().toLowerCase();
 
   const rows = allRows.filter((r) => {
@@ -101,7 +130,48 @@ export function MyRequestsList({ onOpen }: MyRequestsListProps) {
       </PageHeader>
 
       <div className="px-4 pb-8 sm:px-6 lg:px-8">
-        {/* Stat tiles — auto-fill so 3 tiles fill the row at P1, 4 at P2 with no reorder */}
+        {/* AI attention line — populated from in-flight request data, or empty state */}
+        <div className="mb-4 space-y-2">
+          <div className="flex gap-2.5 rounded-lg border bg-muted/40 px-3.5 py-3">
+            <AiMark
+              size={16}
+              className="mt-0.5 shrink-0"
+              gradientId="hub-ai-mark"
+              aria-hidden
+            />
+            <p className="text-sm leading-[1.6] text-foreground">
+              {inflightEntry != null ? (
+                <>
+                  Your {inflightEntry.noun} request has been with{" "}
+                  {inflightEntry.approverName}
+                  {inflightEntry.days != null
+                    ? ` for ${inflightEntry.days} day${inflightEntry.days !== 1 ? "s" : ""}`
+                    : ""}
+                  .<P2> I sent a reminder this morning.</P2>
+                </>
+              ) : (
+                "Nothing needs your attention today."
+              )}
+            </p>
+          </div>
+          {inflightEntry != null && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                void navigate({
+                  to: "/requests/$id",
+                  params: { id: inflightEntry.id },
+                })
+              }
+            >
+              Follow up
+            </Button>
+          )}
+          <AiCaveat className="mt-0" />
+        </div>
+
+        {/* Stat tiles — 3 tiles at both tiers */}
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
           <StatCard
             label="Total requests"
@@ -121,16 +191,6 @@ export function MyRequestsList({ onOpen }: MyRequestsListProps) {
             hint="cleared to buy"
             valueClass="text-success"
           />
-          <P2>
-            <StatCard
-              label="Spend under management"
-              value={`$${stats.totalValue.toLocaleString("en-US")}`}
-              hint="annual equivalent"
-              valueClass="text-foreground"
-              delta="+$27,735 just now"
-              tealBorder
-            />
-          </P2>
         </div>
 
         {/* Search + filter */}
@@ -190,7 +250,11 @@ export function MyRequestsList({ onOpen }: MyRequestsListProps) {
                   <TableRow
                     key={row.id}
                     onClick={() => {
-                      if (openable) onOpen(row.id);
+                      if (openable)
+                        void navigate({
+                          to: "/requests/$id",
+                          params: { id: row.id },
+                        });
                     }}
                     className={cn(
                       "h-[52px]",
