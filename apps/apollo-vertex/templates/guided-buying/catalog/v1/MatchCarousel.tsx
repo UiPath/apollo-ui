@@ -351,68 +351,72 @@ export function MatchCarousel({
         </div>
       )}
 
-      {/* Only three matches (pick + two alternatives), so show them all in a row
-          rather than a carousel. py gives the pick's glow vertical room. */}
-      <div className="grid grid-cols-3 gap-4 py-2">
-        {output.loading ? (
-          SKELETON_KEYS.map((key) => <MatchCardSkeleton key={key} />)
-        ) : (
-          <>
-            <MatchCard
-              item={lead}
-              lead
-              index={0}
-              onOpenDetail={onOpenDetail ? () => onOpenDetail(lead) : undefined}
-            />
-            {alts.map((item, i) => {
-              if (item.id === YOGA_ID) {
+      {/* Bleed the card grid 80px wider than the page column on each side so
+          cards feel roomier without reflowing the surrounding content. */}
+      <div className="-mx-20 w-[calc(100%+160px)]">
+        <div className="grid grid-cols-3 gap-4 py-2">
+          {output.loading ? (
+            SKELETON_KEYS.map((key) => <MatchCardSkeleton key={key} />)
+          ) : (
+            <>
+              <MatchCard
+                item={lead}
+                lead
+                index={0}
+                onOpenDetail={
+                  onOpenDetail ? () => onOpenDetail(lead) : undefined
+                }
+              />
+              {alts.map((item, i) => {
+                if (item.id === YOGA_ID) {
+                  return (
+                    <Fragment key={item.id}>
+                      {/* P1: always normal card — no set-aside */}
+                      <P1>
+                        <MatchCard
+                          item={item}
+                          index={i + 1}
+                          notPickedReason={NOT_PICKED_REASONS[item.id]}
+                          onOpenDetail={
+                            onOpenDetail ? () => onOpenDetail(item) : undefined
+                          }
+                        />
+                      </P1>
+                      {/* P2: set-aside after dock correction, normal before */}
+                      <P2>
+                        <MatchCard
+                          item={item}
+                          index={i + 1}
+                          notPickedReason={
+                            correctionMade
+                              ? undefined
+                              : NOT_PICKED_REASONS[item.id]
+                          }
+                          setAside={correctionMade}
+                          onShowAnyway={onYogaShowAnyway}
+                          onOpenDetail={
+                            onOpenDetail ? () => onOpenDetail(item) : undefined
+                          }
+                        />
+                      </P2>
+                    </Fragment>
+                  );
+                }
                 return (
-                  <Fragment key={item.id}>
-                    {/* P1: always normal card — no set-aside */}
-                    <P1>
-                      <MatchCard
-                        item={item}
-                        index={i + 1}
-                        notPickedReason={NOT_PICKED_REASONS[item.id]}
-                        onOpenDetail={
-                          onOpenDetail ? () => onOpenDetail(item) : undefined
-                        }
-                      />
-                    </P1>
-                    {/* P2: set-aside after dock correction, normal before */}
-                    <P2>
-                      <MatchCard
-                        item={item}
-                        index={i + 1}
-                        notPickedReason={
-                          correctionMade
-                            ? undefined
-                            : NOT_PICKED_REASONS[item.id]
-                        }
-                        setAside={correctionMade}
-                        onShowAnyway={onYogaShowAnyway}
-                        onOpenDetail={
-                          onOpenDetail ? () => onOpenDetail(item) : undefined
-                        }
-                      />
-                    </P2>
-                  </Fragment>
+                  <MatchCard
+                    key={item.id}
+                    item={item}
+                    index={i + 1}
+                    notPickedReason={NOT_PICKED_REASONS[item.id]}
+                    onOpenDetail={
+                      onOpenDetail ? () => onOpenDetail(item) : undefined
+                    }
+                  />
                 );
-              }
-              return (
-                <MatchCard
-                  key={item.id}
-                  item={item}
-                  index={i + 1}
-                  notPickedReason={NOT_PICKED_REASONS[item.id]}
-                  onOpenDetail={
-                    onOpenDetail ? () => onOpenDetail(item) : undefined
-                  }
-                />
-              );
-            })}
-          </>
-        )}
+              })}
+            </>
+          )}
+        </div>
       </div>
 
       {!output.loading && (
