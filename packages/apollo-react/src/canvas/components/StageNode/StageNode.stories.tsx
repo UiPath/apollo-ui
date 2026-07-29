@@ -2995,7 +2995,7 @@ export const WithRules: Story = {
               [
                 {
                   id: 't7',
-                  label: 'Human approvced',
+                  label: 'Human approved',
                   icon: <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />,
                   taskGroupType: 'event-driven',
                 },
@@ -3156,7 +3156,7 @@ export const WithCollapsibleHeaders: Story = {
               [
                 {
                   id: 't7',
-                  label: 'Human approvced',
+                  label: 'Human approved',
                   icon: <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />,
                   taskGroupType: 'event-driven',
                 },
@@ -3253,7 +3253,7 @@ export const WithCollapsibleHeaders: Story = {
               [
                 {
                   id: 't7',
-                  label: 'Human approvced',
+                  label: 'Human approved',
                   icon: <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />,
                   taskGroupType: 'event-driven',
                 },
@@ -3353,7 +3353,7 @@ export const WithCollapsibleHeaders: Story = {
               [
                 {
                   id: 't7',
-                  label: 'Human approvced',
+                  label: 'Human approved',
                   icon: <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />,
                   taskGroupType: 'event-driven',
                 },

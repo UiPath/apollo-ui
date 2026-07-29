@@ -12,11 +12,22 @@ export interface StageRuleItemPillProps {
 export const StageRuleItemPill = ({ rule, ruleType, isReadOnly }: StageRuleItemPillProps) => {
   const ruleRef = useRef<HTMLDivElement>(null);
 
+  const onClickFunction = isReadOnly ? undefined : rule.onClick;
+  const hasOnClickFunction = onClickFunction != null;
   return (
     <StageItemPill
       ref={ruleRef}
       data-testid={`stage-rule-${rule.id}`}
-      onClick={isReadOnly ? undefined : rule.onClick}
+      onClick={onClickFunction}
+      role={hasOnClickFunction ? 'button' : undefined}
+      tabIndex={hasOnClickFunction ? 0 : undefined}
+      style={hasOnClickFunction ? { cursor: 'pointer' } : undefined}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (hasOnClickFunction && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onClickFunction();
+        }
+      }}
     >
       <StageRuleContent rule={rule} ruleType={ruleType} />
     </StageItemPill>

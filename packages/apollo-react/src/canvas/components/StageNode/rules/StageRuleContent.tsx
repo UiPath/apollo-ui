@@ -29,7 +29,6 @@ export const StageRuleContent = memo(({ rule, ruleType }: StageRuleContentProps)
       gap={Spacing.SpacingXs}
       style={{ overflow: 'hidden' }}
     >
-      {/* disable tooltip when dragging to avoid tooltip flickering */}
       <Row
         gap={Spacing.SpacingXs}
         align="center"
