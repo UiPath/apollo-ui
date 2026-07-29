@@ -66,4 +66,18 @@ describe('TaskIcon', () => {
       }
     });
   });
+
+  describe('Patterns type', () => {
+    it('renders with SVG icon', () => {
+      const { container } = render(<TaskIcon type={TaskItemTypeValues.Patterns} />);
+      expect(container.querySelector('svg')).toBeInTheDocument();
+    });
+
+    it('renders at all sizes', () => {
+      for (const size of ['sm', 'md', 'lg'] as const) {
+        const { container } = render(<TaskIcon type={TaskItemTypeValues.Patterns} size={size} />);
+        expect(container.firstChild).toBeInTheDocument();
+      }
+    });
+  });
 });

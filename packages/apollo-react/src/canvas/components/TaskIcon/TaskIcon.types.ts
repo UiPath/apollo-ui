@@ -12,6 +12,7 @@ export enum TaskItemTypeValues {
   Tools = 'tools',
   MoreElements = 'more_elements',
   CreateNew = 'create_new',
+  Patterns = 'patterns',
 }
 
 export type TaskIconSize = 'sm' | 'md' | 'lg';
