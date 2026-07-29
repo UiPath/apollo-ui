@@ -13,6 +13,7 @@ import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { P1 } from "../../P1";
 import { P2 } from "../../P2";
 import { useCart } from "./cart-context";
+import { useConversation } from "./conversation-context";
 import {
   activePrice,
   CATALOG_ITEMS,
@@ -292,6 +293,7 @@ export function MatchCarousel({
 }) {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
+  const { requestText } = useConversation();
   const { items: cartItems, quantities, count: cartCount } = useCart();
   const lead = CATALOG_ITEMS.find((item) => item.id === output.leadId);
   const alts = output.altIds
@@ -308,6 +310,13 @@ export function MatchCarousel({
 
   return (
     <div className="w-full">
+      {/* Human's original ask — shown above the AI reasoning strip, clearly not AI output. */}
+      {requestText && (
+        <p className="mb-3 rounded-lg bg-muted/50 px-3 py-2 text-sm font-medium text-foreground">
+          &ldquo;{requestText}&rdquo;
+        </p>
+      )}
+
       {/* Deck j1-04: AI reasoning strip above the grid. ✦ marks the group once. */}
       {!output.loading && (
         <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-(--insight-200) [background-image:var(--ai-gradient)] px-4 py-3">
@@ -318,7 +327,7 @@ export function MatchCarousel({
             <P1>
               I&apos;d go with the <strong>ThinkPad X1 Carbon</strong> — deepest
               EPP discount, meets your full spec, and it&apos;s what these teams
-              usually order. Here are all three matches so you can see why.
+              usually order.
             </P1>
             <P2>
               <>
