@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -48,6 +49,7 @@ interface ShellSidebarProps {
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
   onUserClick?: () => void;
+  userMenuAdditionalItems?: ReactNode;
 }
 
 export const ShellSidebar = ({
@@ -57,6 +59,7 @@ export const ShellSidebar = ({
   companyLogo,
   navItems,
   onUserClick,
+  userMenuAdditionalItems,
 }: ShellSidebarProps) => {
   if (variant === "minimal") {
     return (
@@ -85,6 +88,7 @@ export const ShellSidebar = ({
             collapsedMenuSide="bottom"
             collapsedMenuAlign="end"
             onUserClick={onUserClick}
+            additionalItems={userMenuAdditionalItems}
           />
         </div>
       </header>
@@ -98,6 +102,7 @@ export const ShellSidebar = ({
       companyLogo={companyLogo}
       navItems={navItems}
       onUserClick={onUserClick}
+      userMenuAdditionalItems={userMenuAdditionalItems}
     />
   );
 };
@@ -108,6 +113,7 @@ interface SidebarNavProps {
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
   onUserClick?: () => void;
+  userMenuAdditionalItems?: ReactNode;
 }
 
 function SidebarNav({
@@ -116,6 +122,7 @@ function SidebarNav({
   companyLogo,
   navItems,
   onUserClick,
+  userMenuAdditionalItems,
 }: SidebarNavProps) {
   const { t } = useTranslation();
   const { state, toggleSidebar } = useSidebar();
@@ -344,7 +351,11 @@ function SidebarNav({
       </SidebarContent>
 
       <SidebarFooter className="p-4 pt-0">
-        <UserProfile isCollapsed={isCollapsed} onUserClick={onUserClick} />
+        <UserProfile
+          isCollapsed={isCollapsed}
+          onUserClick={onUserClick}
+          additionalItems={userMenuAdditionalItems}
+        />
       </SidebarFooter>
 
       <div

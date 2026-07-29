@@ -32,6 +32,8 @@ interface ShellLayoutProps {
   onUserClick?: () => void;
   /** Optional content rendered in the top-right of the content header bar. */
   headerSlot?: ReactNode;
+  /** Extra items injected into the user menu, after Switch user, before Toggle theme. */
+  userMenuAdditionalItems?: ReactNode;
 }
 
 function DarkGradientBackground() {
@@ -188,6 +190,7 @@ export function ShellLayout({
   navItems,
   onUserClick,
   headerSlot,
+  userMenuAdditionalItems,
 }: PropsWithChildren<ShellLayoutProps>) {
   if (variant === "minimal") {
     return (
@@ -201,6 +204,7 @@ export function ShellLayout({
             companyLogo={companyLogo}
             navItems={navItems}
             onUserClick={onUserClick}
+            userMenuAdditionalItems={userMenuAdditionalItems}
           />
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {children}
@@ -223,6 +227,7 @@ export function ShellLayout({
         companyLogo={companyLogo}
         navItems={navItems}
         onUserClick={onUserClick}
+        userMenuAdditionalItems={userMenuAdditionalItems}
       />
       <SidebarInset className="relative flex-1 flex flex-col overflow-hidden rounded-none m-0 ml-0 shadow-none bg-transparent">
         <header

@@ -11,11 +11,22 @@ import {
   useNavigate,
   useRouterState,
 } from "@tanstack/react-router";
-import { ClipboardList, ShoppingCart, Store, Wrench } from "lucide-react";
+import {
+  Check,
+  ClipboardList,
+  ShoppingCart,
+  Store,
+  Wrench,
+} from "lucide-react";
 import { useState } from "react";
+import {
+  DropdownMenuItem,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
 import { AutopilotChatProvider } from "./AutopilotChatProvider";
 import { AutopilotFab } from "./AutopilotFab";
+
 import { Catalog } from "./catalog/Catalog";
 import { BuyFlow } from "./catalog/v1/BuyFlow";
 import { CartProvider } from "./catalog/v1/CartProvider";
@@ -29,8 +40,7 @@ import { MyRequests } from "./requests/MyRequests";
 import { PORecord } from "./requests/PORecord";
 import { RequestsProvider } from "./requests/RequestsProvider";
 import { RequestWindow } from "./requests/RequestWindow";
-import { TierToggle } from "./TierToggle";
-import { TierProvider } from "./tier-context";
+import { TierProvider, useTier } from "./tier-context";
 import { Workbench } from "./workbench/Workbench";
 
 // Buy and Catalog are shared front doors. The queue nav item is seat-dependent:
@@ -73,6 +83,33 @@ const SEATS: Record<
   },
 };
 
+function TierMenuSection() {
+  const { tier, setTier } = useTier();
+  return (
+    <>
+      <DropdownMenuLabel className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Prototype tier
+      </DropdownMenuLabel>
+      <DropdownMenuItem
+        onClick={() => setTier("p1")}
+        className="justify-between"
+      >
+        P1 · Now (CGA)
+        {tier === "p1" && <Check className="size-3.5 shrink-0 text-primary" />}
+      </DropdownMenuItem>
+      <DropdownMenuItem
+        onClick={() => setTier("p2")}
+        className="justify-between"
+      >
+        P2 · Next (V2)
+        {tier === "p2" && (
+          <Check className="size-3.5 shrink-0 text-(--insight-600)" />
+        )}
+      </DropdownMenuItem>
+    </>
+  );
+}
+
 function EmptyPage({ title }: { title: string }) {
   return (
     <div className="flex h-full items-center justify-center">
@@ -114,7 +151,7 @@ function GuidedBuyingLayout() {
       navItems={navItems}
       user={user}
       onUserClick={switchSeat}
-      headerSlot={<TierToggle />}
+      userMenuAdditionalItems={<TierMenuSection />}
     >
       {/* Clips the Buy↔Configure horizontal slide so it can't flash a scrollbar. */}
       <div className="relative h-full overflow-hidden">

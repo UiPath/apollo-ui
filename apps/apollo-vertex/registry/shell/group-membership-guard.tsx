@@ -1,9 +1,9 @@
 import type { PropsWithChildren } from "react";
-import { useAuth } from "./shell-auth-provider";
 import {
   MembershipDenied,
   VerifyingMembership,
 } from "./group-membership-screens";
+import { useAuth } from "./shell-auth-provider";
 import { useIsGroupMember } from "./use-is-group-member";
 
 export interface GroupMembershipGuardProps {
