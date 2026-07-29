@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import { sidebarSpring } from "./shell-animations";
 import { UserProfileMenuItems } from "./shell-user-profile-menu-items";
 import { useUser } from "./shell-user-provider";
@@ -19,6 +20,8 @@ interface UserProfileProps {
   onUserClick?: () => void;
   /** Extra items injected into the menu after Switch user, before Toggle theme. */
   additionalItems?: React.ReactNode;
+  /** Override avatar background + text color (e.g. tier-driven). Defaults to bg-muted. */
+  avatarClassName?: string;
 }
 
 export const UserProfile = ({
@@ -27,6 +30,7 @@ export const UserProfile = ({
   collapsedMenuAlign = "start",
   onUserClick,
   additionalItems,
+  avatarClassName,
 }: UserProfileProps) => {
   const { t } = useTranslation();
   const { user } = useUser();
@@ -56,7 +60,12 @@ export const UserProfile = ({
               transition={sidebarSpring}
             >
               <Avatar className="w-9 h-9 rounded-full shrink-0">
-                <AvatarFallback className="w-9 h-9 bg-muted rounded-full text-sidebar-foreground">
+                <AvatarFallback
+                  className={cn(
+                    "w-9 h-9 rounded-full",
+                    avatarClassName ?? "bg-muted text-sidebar-foreground",
+                  )}
+                >
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
@@ -99,7 +108,12 @@ export const UserProfile = ({
               transition={sidebarSpring}
             >
               <Avatar className="w-9 h-9 rounded-full shrink-0">
-                <AvatarFallback className="w-9 h-9 bg-muted rounded-full text-sidebar-foreground">
+                <AvatarFallback
+                  className={cn(
+                    "w-9 h-9 rounded-full",
+                    avatarClassName ?? "bg-muted text-sidebar-foreground",
+                  )}
+                >
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
