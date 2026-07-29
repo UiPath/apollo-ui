@@ -137,6 +137,7 @@ import { isJsonObject } from '../JsonTree';
 import { NodeIOView, type NodeIOViewTab } from '../NodeIOView';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { NodePropertyPanel } from './NodePropertyPanel';
+import { PanelField, PanelFieldLabel } from './PanelField';
 
 // @monaco-editor/react uses a CJS build without an `exports` field, which
 // causes Rolldown (Vite 8 production bundler) to resolve the default import as
@@ -617,7 +618,7 @@ function FullEditorStory() {
             </div>
             <TabsContent value="parameters" className="mt-0 flex min-h-0 flex-1 flex-col">
               <div className="flex shrink-0 items-center justify-between py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <span className="text-xs font-medium leading-4 text-foreground">Path</span>
+                <PanelFieldLabel className="leading-4">Path</PanelFieldLabel>
                 <div className="flex items-center gap-0.5">
                   <button
                     type="button"
@@ -856,7 +857,7 @@ function CasePanel({
         <>
           {/* Condition label + buttons */}
           <div className="flex items-center justify-between border-t border-border-subtle px-3 py-2">
-            <span className="text-xs font-medium leading-4 text-foreground">Condition</span>
+            <PanelFieldLabel className="leading-4">Condition</PanelFieldLabel>
             <div className="flex items-center gap-0.5">
               <button
                 type="button"
@@ -2862,10 +2863,13 @@ function LockableValueFieldShowcase({
         <LockableValueField
           id={fullViewId}
           label={
-            <Label htmlFor={fullViewId} className="text-xs font-medium leading-4 text-foreground">
+            <PanelFieldLabel
+              htmlFor={fullViewId}
+              required={showcaseRequired}
+              className="leading-4"
+            >
               Label
-              {showcaseRequired && <span className="ml-0.5 text-destructive">*</span>}
-            </Label>
+            </PanelFieldLabel>
           }
           headerActions={
             <button
@@ -2901,10 +2905,13 @@ function LockableValueFieldShowcase({
           <LockableValueField
             id={compactViewId}
             label={
-              <Label htmlFor={compactViewId} className="text-xs font-medium leading-4 text-foreground">
+              <PanelFieldLabel
+                htmlFor={compactViewId}
+                required={showcaseRequired}
+                className="leading-4"
+              >
                 Label
-                {showcaseRequired && <span className="ml-0.5 text-destructive">*</span>}
-              </Label>
+              </PanelFieldLabel>
             }
             headerActions={
               <button
@@ -3490,11 +3497,9 @@ function InventoryField({
   children: ReactNode;
 }) {
   return (
-    <div className="grid gap-1.5">
-      <Label className="text-xs font-medium text-foreground">{label}</Label>
+    <PanelField label={label} description={description}>
       {children}
-      {description && <p className="text-xs leading-4 text-foreground-muted">{description}</p>}
-    </div>
+    </PanelField>
   );
 }
 
@@ -3960,13 +3965,13 @@ function PanelUIInventoryStory() {
                 <LockableValueField
                   id={compositionFieldId}
                   label={
-                    <Label
+                    <PanelFieldLabel
                       htmlFor={compositionFieldId}
-                      className="text-xs font-medium leading-4 text-foreground"
+                      required={compositionRequired}
+                      className="leading-4"
                     >
                       Invoice value
-                      {compositionRequired && <span className="ml-0.5 text-destructive">*</span>}
-                    </Label>
+                    </PanelFieldLabel>
                   }
                   headerActions={
                     <CanvasTooltip content="Remove field">
