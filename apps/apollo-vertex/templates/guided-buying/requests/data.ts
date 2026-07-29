@@ -117,12 +117,36 @@ export const REQUEST_ROWS: RequestRow[] = [
     submitted: "07 Jun 2026",
     updated: "07 Jun 2026",
   },
+  // J1-09 / J1-11 — the catalog submission the Buy flow produces
+  {
+    id: "REQ-2052",
+    request: "15 laptops for Fusion Event contractors",
+    requester: "Marcus Webb",
+    supplier: "Lenovo",
+    department: "Design : Brand Studio",
+    amount: "$27,735.00",
+    amountValue: 27735,
+    status: "pending-approval",
+    submitted: "21 Jul 2026",
+    updated: "23 Jul 2026",
+  },
 ];
 
 export interface RequestStep {
   label: string;
   desc?: string;
   state: "done" | "current";
+}
+
+// Journey bar stages — horizontal tracker on the Request Window page.
+export type JourneyStepState =
+  | "done"
+  | "active"
+  | "active-warning"
+  | "upcoming";
+export interface JourneyStep {
+  label: string;
+  state: JourneyStepState;
 }
 
 export interface RequestDetail {
@@ -137,9 +161,28 @@ export interface RequestDetail {
   /** In-flight (still with procurement) → offer follow-up actions. */
   inFlight: boolean;
   timeline: RequestStep[];
+  // ── Request Window (full-page route) ─────────────────────────────────────
+  /** Stages for the horizontal JourneyBar. */
+  journeyStages?: JourneyStep[];
+  /** Context note below the journey label row (e.g. owner + ETA). No leading emoji — icon added by caller. */
+  journeyOwnerNote?: string;
+  /** Summary strip fields. */
+  summary?: { items: string; total: string; needBy?: string };
+  /** Approver name for the "Full details" expand. */
+  approver?: string;
+  /** Cost center for the "Full details" expand. */
+  costCenter?: string;
+  /** Header badge label override (e.g. "Pending · 2 days" instead of status). */
+  statusLabel?: string;
+  /** Pre-seeded first message shown in the thread bubble. */
+  threadSeedMessage?: string;
+  /** P2 nudge capsule — system event shown in the thread. No leading emoji — icon added by caller. */
+  nudgeText?: string;
+  /** Prototype nav — if true, the last journey stage links to /close/{id}. */
+  hasClose?: boolean;
 }
 
-// Deep details exist only for the three requests that came through the flow.
+// Deep details exist only for requests that came through the flow.
 export const REQUEST_DETAILS: Record<string, RequestDetail> = {
   "REQ-2042": {
     id: "REQ-2042",
@@ -154,6 +197,12 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       { label: "Approved", desc: "Alex Chen · Design Director", state: "done" },
       { label: "Ordered", desc: "EPP pricing applied", state: "done" },
     ],
+    journeyStages: [
+      { label: "Submitted", state: "done" },
+      { label: "Approved", state: "done" },
+      { label: "Ordered", state: "done" },
+    ],
+    summary: { items: "2 × X1 Carbon", total: "$3,698" },
   },
   "REQ-2051": {
     id: "REQ-2051",
@@ -172,6 +221,13 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       },
       { label: "With procurement, awaiting approval", state: "current" },
     ],
+    journeyStages: [
+      { label: "Submitted", state: "done" },
+      { label: "MSA configured", state: "done" },
+      { label: "Pending approval", state: "active" },
+    ],
+    journeyOwnerNote: "With procurement · awaiting T-Mobile approval",
+    summary: { items: "12 mobile lines", total: "$660/mo" },
   },
   "REQ-2053": {
     id: "REQ-2053",
@@ -191,6 +247,45 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       { label: "3 vendors shortlisted", state: "done" },
       { label: "With procurement, awaiting decision", state: "current" },
     ],
+    journeyStages: [
+      { label: "Submitted", state: "done" },
+      { label: "RFQ drafted", state: "done" },
+      { label: "Vendors shortlisted", state: "done" },
+      { label: "Sourcing decision", state: "active" },
+    ],
+    journeyOwnerNote: "With procurement · decision expected this week",
+    summary: { items: "2 contract designers", total: "~$58,000" },
+  },
+  // J1-11 / J1-12 — catalog purchase, day 2 pending approval
+  "REQ-2052": {
+    id: "REQ-2052",
+    request: "15 laptops for Fusion Event contractors",
+    meta: "Pending approval · 15 × X1 Carbon · EPP pricing",
+    headline: "Pending approval",
+    agentLine:
+      "I configured 15 X1 Carbons under EPP pricing and sent it to Alex Chen for approval. You'll get an update here once it's decided.",
+    inFlight: true,
+    timeline: [
+      { label: "Submitted", state: "done" },
+      { label: "With Alex Chen, awaiting approval", state: "current" },
+    ],
+    journeyStages: [
+      { label: "Submitted · Jul 21", state: "done" },
+      { label: "Approval · 2 days with Alex", state: "active-warning" },
+      { label: "PO sent", state: "upcoming" },
+      { label: "Received", state: "upcoming" },
+    ],
+    journeyOwnerNote:
+      "Waiting on Alex Chen · Design Director — usually decides within a day.",
+    summary: { items: "15 × X1 Carbon", total: "$27,735", needBy: "Aug 28" },
+    approver: "Alex Chen · Design Director",
+    costCenter: "Design Operations · CC-4421",
+    statusLabel: "Pending · 2 days",
+    threadSeedMessage:
+      "Hi Alex — these are for the Fusion contractors starting Aug 3. Happy to answer anything.",
+    nudgeText:
+      "Pending 2 days — a reminder went to Alex this morning. You won't need to chase.",
+    hasClose: true,
   },
 };
 
@@ -200,6 +295,159 @@ export function getRequestDetail(id: string): RequestDetail | undefined {
 
 export function getRequestRow(id: string): RequestRow | undefined {
   return REQUEST_ROWS.find((r) => r.id === id);
+}
+
+// ── Decision Window ───────────────────────────────────────────────────────────
+
+export interface DecisionLineItem {
+  description: string;
+  amount: string;
+}
+
+export interface DecisionPacket {
+  budget: {
+    label: string;
+    /** "XX%" — also used as the inline progress bar width. */
+    pct: string;
+    detail: string;
+  };
+  itReview: { title: string; detail: string };
+}
+
+export interface DecisionDetail {
+  id: string;
+  request: string;
+  /** "Requester · Department · Supplier · needed by Date" */
+  meta: string;
+  /** Short date for the breadcrumb, e.g. "Jul 21". */
+  submittedDate: string;
+  lineItems: DecisionLineItem[];
+  total: string;
+  noteAuthor: string;
+  note: string;
+  packet: DecisionPacket;
+}
+
+export const DECISION_DETAILS: Record<string, DecisionDetail> = {
+  "REQ-2052": {
+    id: "REQ-2052",
+    request: "15 laptops for Fusion Event contractors",
+    meta: "Marcus Webb · Design Operations · Lenovo · needed by Aug 28",
+    submittedDate: "Jul 21",
+    lineItems: [
+      {
+        description: "ThinkPad X1 Carbon Gen 12 × 15 · EPP price $1,849",
+        amount: "$27,735",
+      },
+    ],
+    total: "$27,735",
+    noteAuthor: "Marcus",
+    note: "Hi Alex — these are for the Fusion contractors starting Aug 3. Happy to answer anything.",
+    packet: {
+      budget: {
+        label: "Hardware budget · Design Operations FY27",
+        pct: "31%",
+        detail: "$27,735 of $89,000 remaining this quarter",
+      },
+      itReview: {
+        title: "Device management · Ready",
+        detail:
+          "Enrollment pre-queued for 15 units — standard contractor image · IT Ops, today 09:14",
+      },
+    },
+  },
+};
+
+export function getDecisionDetail(id: string): DecisionDetail | undefined {
+  return DECISION_DETAILS[id];
+}
+
+// ── Close Window ──────────────────────────────────────────────────────────────
+
+export interface CloseDetail {
+  id: string;
+  request: string;
+  /** Short date for the breadcrumb, e.g. "Aug 3". */
+  receivedDate: string;
+  stages: JourneyStep[];
+  /** Record chip labels rendered below the journey bar. */
+  recordChips: string[];
+  summary: { heading: string; detail: string };
+  action: string;
+  banner: string;
+}
+
+export const CLOSE_DETAILS: Record<string, CloseDetail> = {
+  "REQ-2052": {
+    id: "REQ-2052",
+    request: "15 laptops for Fusion Event contractors",
+    receivedDate: "Aug 3",
+    stages: [
+      { label: "Submitted · Jul 21", state: "done" },
+      { label: "Approved", state: "done" },
+      { label: "PO sent", state: "done" },
+      { label: "Received · Aug 3", state: "done" },
+    ],
+    recordChips: ["PO-88421", "PR-2052"],
+    summary: {
+      heading: "Delivery complete · 15 units received Aug 3",
+      detail:
+        "15 × ThinkPad X1 Carbon Gen 12 · device enrollment confirmed · handed off to Fusion Event contractors · Lenovo",
+    },
+    action: "Confirm receipt",
+    banner:
+      "Request complete — 15 ThinkPads received, enrolled, and in contractors' hands.",
+  },
+};
+
+export function getCloseDetail(id: string): CloseDetail | undefined {
+  return CLOSE_DETAILS[id];
+}
+
+// ─── PO Record ────────────────────────────────────────────────────────────────
+
+export interface PoLineItem {
+  description: string;
+  qty: number;
+  unitPrice: string;
+  total: string;
+}
+
+export interface PoDetail {
+  poNumber: string;
+  vendor: string;
+  vendorAddress: string;
+  shipTo: string;
+  poDate: string;
+  lineItems: PoLineItem[];
+  subtotal: string;
+  tax: string;
+  total: string;
+}
+
+export const PO_DETAILS: Record<string, PoDetail> = {
+  "PO-88421": {
+    poNumber: "PO-88421",
+    vendor: "Lenovo Group Ltd.",
+    vendorAddress: "1009 Think Place, Morrisville, NC 27560",
+    shipTo: "Marcus Webb · Design Operations · 1600 17th St, Denver, CO 80202",
+    poDate: "Jul 22, 2026",
+    lineItems: [
+      {
+        description: "ThinkPad X1 Carbon Gen 12 · EPP · SKU LNV-X1C-G12-EP",
+        qty: 15,
+        unitPrice: "$1,849.00",
+        total: "$27,735.00",
+      },
+    ],
+    subtotal: "$27,735.00",
+    tax: "$0.00",
+    total: "$27,735.00",
+  },
+};
+
+export function getPoDetail(id: string): PoDetail | undefined {
+  return PO_DETAILS[id];
 }
 
 const MONTHS_SHORT = [

@@ -3,6 +3,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Bookmark, Clock, Info, Plus, User } from "lucide-react";
+import { Fragment } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -59,6 +60,7 @@ interface MatchCardProps {
    */
   setAside?: boolean;
   onShowAnyway?: () => void;
+  onOpenDetail?: () => void;
 }
 
 /**
@@ -74,6 +76,7 @@ function MatchCard({
   notPickedReason,
   setAside = false,
   onShowAnyway,
+  onOpenDetail,
 }: MatchCardProps) {
   const reduceMotion = useReducedMotion();
   const { inCart, setQuantity, quantities } = useCart();
@@ -214,6 +217,16 @@ function MatchCard({
             </motion.span>
           </Button>
         )}
+        {onOpenDetail && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={onOpenDetail}
+          >
+            Details
+          </Button>
+        )}
       </div>
     </>
   );
@@ -261,10 +274,21 @@ const SKELETON_KEYS = ["s1", "s2", "s3"];
 export function MatchCarousel({
   output,
   onSeeAll,
+  correctionMade = false,
+  onXpsChipClick,
+  onYogaShowAnyway,
+  onOpenDetail,
 }: {
   output: MatchesOutput;
   /** Override the "See all" action (Buy uses it to play the exit transition). */
   onSeeAll?: () => void;
+  /** True after the P2 dock correction — Yoga card enters set-aside state. */
+  correctionMade?: boolean;
+  /** Opens the shelf dock (j1-06 XPS defense). */
+  onXpsChipClick?: () => void;
+  onYogaShowAnyway?: () => void;
+  /** Opens the ProductDetail overlay for a given catalog item. */
+  onOpenDetail?: (item: CatalogItem) => void;
 }) {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
@@ -334,24 +358,59 @@ export function MatchCarousel({
           SKELETON_KEYS.map((key) => <MatchCardSkeleton key={key} />)
         ) : (
           <>
-            <MatchCard item={lead} lead index={0} />
-            {alts.map((item, i) =>
-              item.id === YOGA_ID ? (
+            <MatchCard
+              item={lead}
+              lead
+              index={0}
+              onOpenDetail={onOpenDetail ? () => onOpenDetail(lead) : undefined}
+            />
+            {alts.map((item, i) => {
+              if (item.id === YOGA_ID) {
+                return (
+                  <Fragment key={item.id}>
+                    {/* P1: always normal card — no set-aside */}
+                    <P1>
+                      <MatchCard
+                        item={item}
+                        index={i + 1}
+                        notPickedReason={NOT_PICKED_REASONS[item.id]}
+                        onOpenDetail={
+                          onOpenDetail ? () => onOpenDetail(item) : undefined
+                        }
+                      />
+                    </P1>
+                    {/* P2: set-aside after dock correction, normal before */}
+                    <P2>
+                      <MatchCard
+                        item={item}
+                        index={i + 1}
+                        notPickedReason={
+                          correctionMade
+                            ? undefined
+                            : NOT_PICKED_REASONS[item.id]
+                        }
+                        setAside={correctionMade}
+                        onShowAnyway={onYogaShowAnyway}
+                        onOpenDetail={
+                          onOpenDetail ? () => onOpenDetail(item) : undefined
+                        }
+                      />
+                    </P2>
+                  </Fragment>
+                );
+              }
+              return (
                 <MatchCard
                   key={item.id}
                   item={item}
                   index={i + 1}
                   notPickedReason={NOT_PICKED_REASONS[item.id]}
+                  onOpenDetail={
+                    onOpenDetail ? () => onOpenDetail(item) : undefined
+                  }
                 />
-              ) : (
-                <MatchCard
-                  key={item.id}
-                  item={item}
-                  index={i + 1}
-                  notPickedReason={NOT_PICKED_REASONS[item.id]}
-                />
-              ),
-            )}
+              );
+            })}
           </>
         )}
       </div>
@@ -365,12 +424,13 @@ export function MatchCarousel({
           </p>
           {/* Deck j1-04/j1-05: action chip row. "Why not the XPS?" is the j1-07 dock trigger. */}
           <div className="mt-3 flex flex-wrap gap-2">
-            {/* Must survive at both tiers — sole entry point for j1-07 dock. */}
+            {/* Must survive at both tiers — sole entry point for j1-06/j1-07 dock. */}
             <Button
               type="button"
               variant="outline"
               size="sm"
               className="h-auto rounded-full px-3 py-1 text-xs"
+              onClick={onXpsChipClick}
             >
               Why not the XPS?
             </Button>

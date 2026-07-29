@@ -1,7 +1,7 @@
 "use client";
 
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { AiChatEmptySuggestions } from "@/registry/ai-chat/components/ai-chat-empty-suggestions";
@@ -9,14 +9,21 @@ import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
 import { P1 } from "../../P1";
 import { P2 } from "../../P2";
 import { BuyScaffold } from "./BuyScaffold";
+import { useCart } from "./cart-context";
 import { type BuyPhase, useConversation } from "./conversation-context";
+import { CATALOG_ITEMS, defaultQuantityFor, RECOMMENDATION } from "./data";
 import {
   CATALOG_PHASES,
   FlowPhaseBar,
   NON_CATALOG_PHASES,
 } from "./FlowPhaseBar";
 import { GuidedBuy } from "./GuidedBuy";
+import { ProductDetail } from "./ProductDetail";
+import { ProductDetailOverlay } from "./ProductDetailOverlay";
+import { PriceBasisProvider } from "./price-basis-context";
+import { ShelfDock } from "./ShelfDock";
 import { TeamsResumeCard } from "./TeamsResumeCard";
+import type { CatalogItem } from "./types";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -88,6 +95,16 @@ export function BuyFlow() {
   const [leaving, setLeaving] = useState<Leaving>(null);
   const [input, setInput] = useState("");
   const [resumeDismissed, setResumeDismissed] = useState(false);
+  const [shelfDockOpen, setShelfDockOpen] = useState(false);
+  const [correctionMade, setCorrectionMade] = useState(false);
+  const [shelfDetailItem, setShelfDetailItem] = useState<CatalogItem | null>(
+    null,
+  );
+
+  const { inCart, setQuantity, quantities } = useCart();
+
+  const openShelfDetail = (item: CatalogItem) => setShelfDetailItem(item);
+  const closeShelfDetail = () => setShelfDetailItem(null);
 
   // Returning from Configure: shift the surface back in from the left, and keep
   // the thread (the ServiceBridge they left) rather than resetting to the hero.
@@ -187,7 +204,7 @@ export function BuyFlow() {
 
   return (
     <motion.div
-      className="h-full"
+      className="flex h-full"
       initial={fromConfigure && !reduceMotion ? { opacity: 0 } : false}
       animate={exitTarget}
       transition={{ duration: reduceMotion ? 0.12 : 0.32, ease: EASE }}
@@ -196,72 +213,118 @@ export function BuyFlow() {
         else if (leaving === "configure") void navigate({ to: "/configure" });
       }}
     >
-      <BuyScaffold
-        stepKey={phase}
-        title={header.title}
-        subtext={
-          isIntake ? (
-            <>
-              <P1>Describe the item, quantity, and who it&apos;s for.</P1>
-              <P2>Or pick up where you left off.</P2>
-            </>
-          ) : (
-            header.subtext
-          )
-        }
-        // The cart belongs once products are on screen (the Selection step).
-        showCart={phase === "selection"}
-        // No back/reset on Intake — there's no previous step and it's already fresh.
-        {...(isIntake ? {} : { onBack: stepBack, onReset: startFresh })}
-        phaseBar={phaseBar}
-      >
-        {isIntake ? (
-          // Intake — the one conversational surface (free text + chips).
-          <div className="space-y-4">
-            <P2>
-              {!resumeDismissed && (
-                <TeamsResumeCard
-                  // Re-sends as a new request; does not load a persisted draft.
-                  onResume={() =>
-                    sendCatalogRequest("15 laptops for Fusion Event contractors")
-                  }
-                  onDismiss={() => setResumeDismissed(true)}
-                />
-              )}
-            </P2>
-            <AiChatInput
-              value={input}
-              onChange={setInput}
-              onSubmit={handleIntakeSubmit}
-              onStop={stop}
-              isLoading={false}
-              placeholder="Tell us what you want to buy…"
-              // Attach a quote, spec, or PO for Autopilot to parse — the paperclip
-              // menu, paste, and the pending-file chips (which grow the input) all
-              // turn on with this.
-              acceptedFileTypes="image/*,.pdf,.csv,.xlsx,.docx,.txt"
-            />
-            <div>
-              <p className="text-center text-xs font-medium text-muted-foreground">
-                Try an example:
-              </p>
-              <AiChatEmptySuggestions
-                suggestions={STARTERS}
-                onSelect={handleSuggestion}
+      <div className="relative min-w-0 flex-1">
+        <BuyScaffold
+          stepKey={phase}
+          title={header.title}
+          subtext={
+            isIntake ? (
+              <>
+                <P1>Describe the item, quantity, and who it&apos;s for.</P1>
+                <P2>Or pick up where you left off.</P2>
+              </>
+            ) : (
+              header.subtext
+            )
+          }
+          // The cart belongs once products are on screen (the Selection step).
+          showCart={phase === "selection"}
+          // No back/reset on Intake — there's no previous step and it's already fresh.
+          {...(isIntake ? {} : { onBack: stepBack, onReset: startFresh })}
+          phaseBar={phaseBar}
+        >
+          {isIntake ? (
+            // Intake — the one conversational surface (free text + chips).
+            <div className="space-y-4">
+              <P2>
+                {!resumeDismissed && (
+                  <TeamsResumeCard
+                    // Re-sends as a new request; does not load a persisted draft.
+                    onResume={() =>
+                      sendCatalogRequest(
+                        "15 laptops for Fusion Event contractors",
+                      )
+                    }
+                    onDismiss={() => setResumeDismissed(true)}
+                  />
+                )}
+              </P2>
+              <AiChatInput
+                value={input}
+                onChange={setInput}
+                onSubmit={handleIntakeSubmit}
+                onStop={stop}
+                isLoading={false}
+                placeholder="Tell us what you want to buy…"
+                // Attach a quote, spec, or PO for Autopilot to parse — the paperclip
+                // menu, paste, and the pending-file chips (which grow the input) all
+                // turn on with this.
+                acceptedFileTypes="image/*,.pdf,.csv,.xlsx,.docx,.txt"
               />
+              <div>
+                <p className="text-center text-xs font-medium text-muted-foreground">
+                  Try an example:
+                </p>
+                <AiChatEmptySuggestions
+                  suggestions={STARTERS}
+                  onSelect={handleSuggestion}
+                />
+              </div>
+              <P2>
+                <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                  <RefreshCw size={11} aria-hidden />
+                  Requests stay in sync across Teams, web, and email
+                </p>
+              </P2>
             </div>
-            <P2>
-              <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-                <RefreshCw size={11} aria-hidden />
-                Requests stay in sync across Teams, web, and email
-              </p>
-            </P2>
-          </div>
-        ) : (
-          // Guided middle — structured surfaces fueled by the agent.
-          <GuidedBuy onSeeAll={handleSeeAll} onConfigure={handleConfigure} />
-        )}
-      </BuyScaffold>
+          ) : (
+            // Guided middle — structured surfaces fueled by the agent.
+            <GuidedBuy
+              onSeeAll={handleSeeAll}
+              onConfigure={handleConfigure}
+              onXpsChipClick={() => setShelfDockOpen(true)}
+              correctionMade={correctionMade}
+              onYogaShowAnyway={() => setCorrectionMade(false)}
+              onOpenDetail={openShelfDetail}
+            />
+          )}
+        </BuyScaffold>
+
+        <AnimatePresence>
+          {shelfDetailItem && (
+            <ProductDetailOverlay key="shelf-detail" onClose={closeShelfDetail}>
+              <PriceBasisProvider value="epp">
+                <ProductDetail
+                  item={shelfDetailItem}
+                  defaultQuantity={defaultQuantityFor(shelfDetailItem)}
+                  cartQuantity={quantities[shelfDetailItem.id] ?? 0}
+                  inCart={inCart(shelfDetailItem.id)}
+                  comparing={false}
+                  isPicked={shelfDetailItem.id === RECOMMENDATION.itemId}
+                  recommendationNote={
+                    shelfDetailItem.id === RECOMMENDATION.itemId
+                      ? (CATALOG_ITEMS.find(
+                          (i) => i.id === RECOMMENDATION.itemId,
+                        )?.name ?? "")
+                      : ""
+                  }
+                  onAddToCart={(qty) => setQuantity(shelfDetailItem, qty)}
+                  onToggleCompare={() => {}}
+                  onAskAgent={() => {}}
+                  onClose={closeShelfDetail}
+                />
+              </PriceBasisProvider>
+            </ProductDetailOverlay>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {shelfDockOpen && (
+        <ShelfDock
+          onClose={() => setShelfDockOpen(false)}
+          onCorrectionMade={() => setCorrectionMade(true)}
+        />
+      )}
     </motion.div>
   );
 }
