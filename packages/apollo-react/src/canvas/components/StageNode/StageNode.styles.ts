@@ -209,6 +209,13 @@ export const StageTaskIcon = styled.div`
   justify-content: center;
   flex-shrink: 0;
 
+  /* Plain SVG task icons paint at 16px, so collapse their otherwise transparent
+     24px wrapper. TaskIcon components with a visible 24px container keep it. */
+  &:has(> svg) {
+    width: 16px;
+    height: 16px;
+  }
+
   svg {
     width: 16px;
     height: 16px;

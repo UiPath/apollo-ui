@@ -17,6 +17,7 @@ interface CanvasDropdownMenuProps {
   onItemClick: (item: NodeMenuAction) => void;
   triggerTestId?: string;
   triggerAriaLabel?: string;
+  triggerClassName?: string;
   contentClassName?: string;
   disabled?: boolean;
 }
@@ -38,6 +39,7 @@ export function CanvasDropdownMenu({
   onItemClick,
   triggerTestId,
   triggerAriaLabel = 'Dropdown menu',
+  triggerClassName = 'h-6 w-6',
   contentClassName,
   disabled,
 }: CanvasDropdownMenuProps) {
@@ -47,7 +49,7 @@ export function CanvasDropdownMenu({
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6"
+          className={triggerClassName}
           data-testid={triggerTestId}
           aria-label={triggerAriaLabel}
           disabled={disabled}

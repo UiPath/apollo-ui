@@ -93,16 +93,20 @@ const DraggableTaskComponent = ({
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
       <TaskBreakpointDot taskId={task.id} active={!!taskExecution?.breakpoint} />
-      <TaskContent task={task} taskExecution={taskExecution} />
-
-      {getContextMenuItems && (
-        <TaskMenu
-          ref={menuRef}
-          task={task}
-          getContextMenuItems={getContextMenuItems}
-          disabled={isTaskLoading}
-        />
-      )}
+      <TaskContent
+        task={task}
+        taskExecution={taskExecution}
+        trailingContent={
+          getContextMenuItems ? (
+            <TaskMenu
+              ref={menuRef}
+              task={task}
+              getContextMenuItems={getContextMenuItems}
+              disabled={isTaskLoading}
+            />
+          ) : undefined
+        }
+      />
     </StageTask>
   );
 
