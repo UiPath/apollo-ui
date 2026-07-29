@@ -9,7 +9,7 @@ import {
   getProjection,
   reorderTasks,
 } from './StageNode.utils';
-import { transformMenuItems } from './StageNodeTaskUtilities';
+import { transformMenuItems } from './tasks/StageNodeTaskUtilities';
 
 const createTask = (id: string, label?: string): StageTaskItem => ({
   id,

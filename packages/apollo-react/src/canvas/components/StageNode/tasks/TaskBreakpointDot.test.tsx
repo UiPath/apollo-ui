@@ -1,6 +1,6 @@
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '../../utils/testing';
+import { render, screen } from '../../../utils/testing';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 
 describe('TaskBreakpointDot', () => {

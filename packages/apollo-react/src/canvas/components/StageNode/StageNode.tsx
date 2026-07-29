@@ -1,14 +1,24 @@
+import { Spacing } from '@uipath/apollo-core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu } from '../NodeContextMenu';
 import { useSetNodeSelection } from '../NodePropertiesPanel/hooks';
 import { type ListItem, Toolbox } from '../Toolbox';
-import { INDENTATION_WIDTH, STAGE_CONTENT_INSET, StageContainer } from './StageNode.styles';
+import { CompletionRulesContainer } from './rules/CompletionRulesContainer';
+import { EntryRulesContainer } from './rules/EntryRulesContainer';
+import { ExitRulesContainer } from './rules/ExitRulesContainer';
+import {
+  INDENTATION_WIDTH,
+  STAGE_CONTENT_INSET,
+  StageContainer,
+  StageContent,
+} from './StageNode.styles';
 import type { StageNodeProps, TaskStateReference } from './StageNode.types';
-import { StageNodeAllTaskGroups } from './StageNodeAllTaskGroups';
 import { StageNodeHandles } from './StageNodeHandles';
 import { StageNodeHeader } from './StageNodeHeader';
+import { StageNodeAllTaskGroups } from './tasks/StageNodeAllTaskGroups';
 import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeInner = (props: StageNodeProps) => {
@@ -149,16 +159,22 @@ const StageNodeInner = (props: StageNodeProps) => {
           status={status}
           handleTaskAddClick={handleTaskAddClick}
         />
-
-        <StageNodeAllTaskGroups
-          props={props}
-          isReadOnly={isReadOnly}
-          taskWidthStyle={taskWidthStyle}
-          taskStateReference={taskStateReference}
-          setSelectedNodeId={setSelectedNodeId}
-          handleTaskAddClick={handleTaskAddClick}
-          setIsReplacingTask={setIsReplacingTask}
-        />
+        <StageContent>
+          <Column py={2} gap={Spacing.SpacingS}>
+            <EntryRulesContainer props={props} isReadOnly={isReadOnly} />
+            <StageNodeAllTaskGroups
+              props={props}
+              isReadOnly={isReadOnly}
+              taskWidthStyle={taskWidthStyle}
+              taskStateReference={taskStateReference}
+              setSelectedNodeId={setSelectedNodeId}
+              handleTaskAddClick={handleTaskAddClick}
+              setIsReplacingTask={setIsReplacingTask}
+            />
+            <CompletionRulesContainer props={props} isReadOnly={isReadOnly} />
+            <ExitRulesContainer props={props} isReadOnly={isReadOnly} />
+          </Column>
+        </StageContent>
       </StageContainer>
 
       {/* Panels are mounted only while open: FloatingCanvasPanel subscribes to the

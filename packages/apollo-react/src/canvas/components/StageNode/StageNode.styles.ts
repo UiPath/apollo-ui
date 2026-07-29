@@ -87,7 +87,7 @@ export const StageContent = styled.div`
   justify-content: center;
 `;
 
-export const StageTaskList = styled.div`
+export const StageItemsList = styled.div`
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -132,7 +132,7 @@ export const StageTaskWrapper = styled.div<{ isParallel?: boolean }>`
   height: 36px;
 `;
 
-export const StageTask = styled.div<{
+export const StageItemPill = styled.div<{
   status?: StageStatus;
   selected?: boolean;
   isParallel?: boolean;
@@ -214,7 +214,7 @@ export const StageTask = styled.div<{
         `}
 `;
 
-export const StageTaskIcon = styled.div`
+export const StageItemIcon = styled.div`
   width: 24px;
   height: 24px;
   display: flex;
@@ -286,13 +286,13 @@ export const StageChip = styled.button`
   }
 `;
 
-export const StageAdditionalTasksSection = styled.div`
+export const StageItemsSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${Spacing.SpacingS};
 `;
 
-export const StageAdditionalTasksHeaderSection = styled.div`
+export const StageItemsHeaderSection = styled.div`
   height: 36px;
   display: flex;
   align-items: center;
