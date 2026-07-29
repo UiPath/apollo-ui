@@ -1,12 +1,12 @@
 import { memo, useCallback, useRef } from 'react';
-import type { NodeMenuItem } from '../NodeContextMenu';
-import { StageTask } from './StageNode.styles';
-import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
+import type { NodeMenuItem } from '../../NodeContextMenu';
+import { StageItemPill } from '../StageNode.styles';
+import type { StageTaskExecution, StageTaskItem } from '../StageNode.types';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 
-interface AdhocTaskItemProps {
+interface EventDrivenTaskItemProps {
   task: StageTaskItem;
   taskExecution?: StageTaskExecution;
   isSelected: boolean;
@@ -14,19 +14,17 @@ interface AdhocTaskItemProps {
    * instead of a per-task closure (which would defeat the memo below). */
   getContextMenuItems?: (task: StageTaskItem) => NodeMenuItem[];
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
-  onTaskPlay?: (taskId: string) => Promise<void>;
   isTaskLoading?: boolean;
 }
 
-const AdhocTaskItemComponent = ({
+const EventDrivenTaskItemComponent = ({
   task,
   taskExecution,
   isSelected,
   getContextMenuItems,
   onTaskClick,
-  onTaskPlay,
   isTaskLoading,
-}: AdhocTaskItemProps) => {
+}: EventDrivenTaskItemProps) => {
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
 
@@ -42,7 +40,7 @@ const AdhocTaskItemComponent = ({
   }, []);
 
   return (
-    <StageTask
+    <StageItemPill
       ref={taskRef}
       data-testid={`stage-task-${task.id}`}
       selected={isSelected}
@@ -52,7 +50,8 @@ const AdhocTaskItemComponent = ({
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
       <TaskBreakpointDot taskId={task.id} active={!!taskExecution?.breakpoint} />
-      <TaskContent task={task} taskExecution={taskExecution} onTaskPlay={onTaskPlay} />
+      <TaskContent task={task} taskExecution={taskExecution} />
+
       {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}
@@ -61,8 +60,8 @@ const AdhocTaskItemComponent = ({
           disabled={isTaskLoading}
         />
       )}
-    </StageTask>
+    </StageItemPill>
   );
 };
 
-export const AdhocTaskItem = memo(AdhocTaskItemComponent);
+export const EventDrivenTaskItem = memo(EventDrivenTaskItemComponent);

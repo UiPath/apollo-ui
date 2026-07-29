@@ -1,20 +1,16 @@
 import { memo, useCallback } from 'react';
-import type { NodeMenuItem } from '../NodeContextMenu';
+import type { NodeMenuItem } from '../../NodeContextMenu';
+import { StageItemsList, StageItemsSection } from '../StageNode.styles';
+import type { StageNodeProps, StageTaskGroup, StageTaskItem } from '../StageNode.types';
+import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
+import { useStageNodeLabels } from '../useStageNodeLabels';
 import { EventDrivenTaskItem } from './EventDrivenTask';
-import {
-  StageAdditionalTasksHeaderSection,
-  StageAdditionalTasksSection,
-  StageTaskList,
-} from './StageNode.styles';
-import type { StageNodeProps, StageTaskGroup, StageTaskItem } from './StageNode.types';
-import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeEventDrivenTaskGroupsInner = ({
   props,
   eventDrivenTasks,
   isReadOnly,
   selectedTaskId,
-  marginTop,
   handleTaskClick,
   generateReplaceTaskMenuItemForTask,
   generateDeleteTaskMenuItemForTask,
@@ -23,7 +19,6 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   eventDrivenTasks: StageTaskGroup[];
   isReadOnly: boolean;
   selectedTaskId?: string;
-  marginTop: string;
   handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
   generateReplaceTaskMenuItemForTask: (
     taskId: string,
@@ -71,16 +66,12 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     return null;
   }
   return (
-    <StageAdditionalTasksSection style={{ marginTop }}>
-      <StageAdditionalTasksHeaderSection>
-        <span
-          data-testid={`event-driven-tasks-header-${id}`}
-          className="text-xs font-bold text-foreground-muted"
-        >
-          {labels.eventDrivenTasks}
-        </span>
-      </StageAdditionalTasksHeaderSection>
-      <StageTaskList data-testid={`event-driven-tasks-list-${id}`}>
+    <StageItemsSection>
+      <StageItemsHeaderTitle
+        title={labels.eventDrivenTasks}
+        testId={`event-driven-tasks-header-${id}`}
+      />
+      <StageItemsList data-testid={`event-driven-tasks-list-${id}`}>
         {eventDrivenTasks.map(({ task }) => {
           const taskExecution = execution?.taskStatus?.[task.id];
           // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;
@@ -103,8 +94,8 @@ const StageNodeEventDrivenTaskGroupsInner = ({
             />
           );
         })}
-      </StageTaskList>
-    </StageAdditionalTasksSection>
+      </StageItemsList>
+    </StageItemsSection>
   );
 };
 

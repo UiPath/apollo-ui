@@ -18,22 +18,22 @@ import {
   GroupModificationType,
   moveGroupDown,
   moveGroupUp,
-} from '../../utils/GroupModificationUtils';
-import type { NodeMenuItem } from '../NodeContextMenu';
-import { DraggableTask } from './DraggableTask';
-import { useStageTaskDragHandler } from './hooks/useStageTaskDragHandler';
+} from '../../../utils/GroupModificationUtils';
+import type { NodeMenuItem } from '../../NodeContextMenu';
+import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
 import {
-  StageAdditionalTasksHeaderSection,
-  StageAdditionalTasksSection,
+  StageItemsList,
+  StageItemsSection,
   StageParallelBracket,
   StageParallelLabel,
   StageTaskGroupContainer,
-  StageTaskList,
-} from './StageNode.styles';
-import type { StageNodeProps, StageTaskGroup, StageTaskItem } from './StageNode.types';
+} from '../StageNode.styles';
+import type { StageNodeProps, StageTaskGroup, StageTaskItem } from '../StageNode.types';
+import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
+import { useStageNodeLabels } from '../useStageNodeLabels';
+import { DraggableTask } from './DraggableTask';
 import { getContextMenuItems, getDivider } from './StageNodeTaskUtilities';
 import { StageTaskDragOverlay } from './StageTaskDragOverlay';
-import { useStageNodeLabels } from './useStageNodeLabels';
 
 export const StageNodeSequentialTaskGroups = ({
   props,
@@ -201,15 +201,11 @@ export const StageNodeSequentialTaskGroups = ({
     return null;
   }
   return (
-    <StageAdditionalTasksSection>
-      <StageAdditionalTasksHeaderSection>
-        <span
-          data-testid={`sequential-tasks-header-${id}`}
-          className="text-xs font-bold text-foreground-muted"
-        >
-          {labels.sequentialTasks}
-        </span>
-      </StageAdditionalTasksHeaderSection>
+    <StageItemsSection>
+      <StageItemsHeaderTitle
+        title={labels.sequentialTasks}
+        testId={`sequential-tasks-header-${id}`}
+      />
       <DndContext
         collisionDetection={closestCenter}
         sensors={sensors}
@@ -221,7 +217,7 @@ export const StageNodeSequentialTaskGroups = ({
       >
         <SortableContext items={sequentialTaskIds} strategy={verticalListSortingStrategy}>
           {/* Disable dragging and panning the canvas when dragging a task */}
-          <StageTaskList data-testid={`sequential-tasks-list-${id}`} className="nodrag nopan">
+          <StageItemsList data-testid={`sequential-tasks-list-${id}`} className="nodrag nopan">
             {sequentialTaskGroups.map((taskGroup, groupIndex) => {
               const isParallel = taskGroup.length > 1;
               return (
@@ -267,7 +263,7 @@ export const StageNodeSequentialTaskGroups = ({
                 </Row>
               );
             })}
-          </StageTaskList>
+          </StageItemsList>
         </SortableContext>
         <StageTaskDragOverlay
           activeTask={activeSequentialTask?.task}
@@ -275,6 +271,6 @@ export const StageNodeSequentialTaskGroups = ({
           taskWidthStyle={taskWidthStyle}
         />
       </DndContext>
-    </StageAdditionalTasksSection>
+    </StageItemsSection>
   );
 };

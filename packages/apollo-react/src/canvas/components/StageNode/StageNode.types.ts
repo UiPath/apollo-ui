@@ -69,6 +69,15 @@ export interface StageNodeBaseProps {
     tasks: StageTaskItem[][];
     selectedTaskId?: string;
     headerChips?: StageHeaderChip[];
+    sectionStates?: {
+      tasks?: SectionState;
+      entryRules?: SectionState;
+      exitRules?: SectionState;
+      completionRules?: SectionState;
+    };
+    entryRules?: StageRule[];
+    exitRules?: StageRule[];
+    completionRules?: StageRule[];
   };
   taskOptions?: ListItem[];
   execution?: {
@@ -100,6 +109,19 @@ export interface StageNodeBaseProps {
   getTaskContextMenuItems?: (args: StageTaskContextMenuArgs) => NodeMenuItem[] | undefined;
   hideParallelOptions?: boolean;
   loadingTaskIds?: ReadonlySet<string>;
+}
+
+export interface SectionState {
+  isCollapsed: boolean;
+  onCollapsedToggle: () => void;
+}
+
+export type StageRuleType = 'entry' | 'exit' | 'completion';
+
+export interface StageRule {
+  id: string;
+  label: string;
+  onClick?: () => void;
 }
 
 export interface StageNodeCanvasProps extends NodeProps, StageNodeBaseProps {}

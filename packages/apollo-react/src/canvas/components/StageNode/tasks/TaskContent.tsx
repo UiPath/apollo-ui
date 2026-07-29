@@ -4,13 +4,13 @@ import { Badge, Button, Spinner } from '@uipath/apollo-wind';
 import debounce from 'debounce';
 import { CirclePlay, Redo2, RotateCcw } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { useSafeLingui } from '../../../i18n';
-import { CanvasTooltip } from '../CanvasTooltip';
-import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
-import { StageTaskIcon } from './StageNode.styles';
-import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
+import { useSafeLingui } from '../../../../i18n';
+import { CanvasTooltip } from '../../CanvasTooltip';
+import { ExecutionStatusIcon } from '../../ExecutionStatusIcon';
+import { StageItemIcon } from '../StageNode.styles';
+import type { StageTaskExecution, StageTaskItem } from '../StageNode.types';
+import { useExecutionStatusLabel } from '../useExecutionStatusLabel';
 import { StageTaskEntryConditionIcon } from './StageTaskEntryConditionIcon';
-import { useExecutionStatusLabel } from './useExecutionStatusLabel';
 
 const ProcessCanvasIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -65,7 +65,7 @@ const TaskPlayButton = memo(
           onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
           onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
           aria-label={triggerTaskLabel}
-          className="task-menu-icon-button h-4 w-4 rounded-sm"
+          className="stage-item-menu-icon-button h-4 w-4 rounded-sm"
           style={{
             color: 'var(--canvas-icon-default)',
             minWidth: 'unset',
@@ -140,9 +140,9 @@ export const TaskContent = memo(
           align="center"
           style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
         >
-          <StageTaskIcon data-testid={`stage-task-icon-${task.id}`}>
+          <StageItemIcon data-testid={`stage-task-icon-${task.id}`}>
             {task.icon ?? <ProcessCanvasIcon />}
-          </StageTaskIcon>
+          </StageItemIcon>
           <CanvasTooltip
             content={task.label}
             placement="top"

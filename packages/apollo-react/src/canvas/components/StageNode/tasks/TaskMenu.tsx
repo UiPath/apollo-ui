@@ -1,7 +1,7 @@
 import { forwardRef, memo, useCallback, useImperativeHandle, useState } from 'react';
-import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
-import { CanvasDropdownMenu } from '../shared/CanvasDropdownMenu';
-import type { StageTaskItem } from './StageNode.types';
+import type { NodeMenuAction, NodeMenuItem } from '../../NodeContextMenu';
+import { CanvasDropdownMenu } from '../../shared/CanvasDropdownMenu';
+import type { StageTaskItem } from '../StageNode.types';
 
 export interface TaskMenuHandle {
   handleContextMenu: (e: React.MouseEvent<HTMLElement>) => void;

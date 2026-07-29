@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { NodeMenuItem } from '../NodeContextMenu';
+import type { NodeMenuItem } from '../../NodeContextMenu';
+import type { StageTaskItem } from '../StageNode.types';
 import { AdhocTaskItem } from './AdhocTask';
-import type { StageTaskItem } from './StageNode.types';
 
 const createTask = (id: string, label?: string): StageTaskItem => ({
   id,

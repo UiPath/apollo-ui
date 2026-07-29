@@ -37,7 +37,7 @@ export function areNodePropsEqualIgnoringPosition(prevProps: object, nextProps: 
     // Guard against same-length-but-different key sets, where reading a missing
     // key on `next` would yield `undefined` and spuriously compare as equal
     // (e.g. { foo: undefined } vs { bar: undefined }).
-    if (!Object.prototype.hasOwnProperty.call(next, key)) {
+    if (!Object.hasOwn(next, key)) {
       return false;
     }
     if (!Object.is(prev[key], next[key])) {

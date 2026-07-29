@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '../../utils/testing';
+import { render, screen } from '../../../utils/testing';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 
 // The marker is display-only; adding/removing breakpoints is done via the task's

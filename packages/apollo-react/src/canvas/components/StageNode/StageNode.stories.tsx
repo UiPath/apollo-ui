@@ -2815,3 +2815,552 @@ export const WithStatusBadges: Story = {
     ],
   },
 };
+
+export const WithRules: Story = {
+  name: 'With Rules in Stage',
+  parameters: {
+    nodes: [
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'Stage 1',
+            tasks: [
+              [
+                {
+                  id: 't1',
+                  label: 'Prepare closing docs',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [
+                {
+                  id: 't2',
+                  label: 'eSign envelope',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+                {
+                  id: 't3',
+                  label: 'Pull credit report',
+                  icon: <VerificationIcon />,
+                  taskGroupType: 'sequential',
+                  hasEntryCondition: true,
+                },
+              ],
+              [
+                {
+                  id: 't4',
+                  label: 'Validate state',
+                  icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+                  taskGroupType: 'adhoc',
+                },
+              ],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 2,
+                tooltip: 'Entry rules',
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 4,
+                tooltip: 'Exit rules',
+              },
+            ],
+            entryRules: [
+              {
+                id: '1',
+                label: 'Case entered',
+              },
+              {
+                id: '2',
+                label: 'Re-enter stage',
+              },
+            ],
+            exitRules: [
+              {
+                id: '3',
+                label: 'Return to origin',
+              },
+            ],
+            completionRules: [
+              {
+                id: '4',
+                label: 'Tasks completed',
+              },
+              {
+                id: '5',
+                label: 'Data fabric connection',
+              },
+              {
+                id: '6',
+                label: 'Manually complete stage',
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'Stage 2',
+            tasks: [
+              [
+                {
+                  id: 't5',
+                  label: 'Check human',
+                  icon: <TaskIcon type={TaskItemTypeValues.User} size="sm" />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [
+                {
+                  id: 't6',
+                  label: 'Connection came in',
+                  icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+                  taskGroupType: 'event-driven',
+                },
+              ],
+              [
+                {
+                  id: 't7',
+                  label: 'Human approvced',
+                  icon: <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />,
+                  taskGroupType: 'event-driven',
+                },
+              ],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Exit,
+                count: 1,
+                tooltip: 'Exit rules',
+              },
+            ],
+            entryRules: [],
+            exitRules: [],
+            completionRules: [
+              {
+                id: '7',
+                label: 'Tasks completed',
+              },
+            ],
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const WithCollapsibleHeaders: Story = {
+  name: 'With Collapsible Headers',
+  parameters: {
+    nodes: [
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'Not collapsed',
+            tasks: [
+              [{ id: 't1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: 't2', label: 'eSign envelope', icon: <ProcessIcon /> }],
+            ],
+            sectionStates: {
+              tasks: {
+                isCollapsed: false,
+                onCollapsedToggle: () => window.alert('Toggle tasks collapsed state'),
+              },
+            },
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 1,
+                tooltip: 'Entry rules',
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 1,
+                tooltip: 'Exit rules',
+              },
+              {
+                type: StageHeaderChipType.Optional,
+                tooltip: 'Not required for case completion',
+              },
+            ],
+          },
+          execution: { stageStatus: { slaText: 'SLA: 3 days' } },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'Mixed',
+            tasks: [
+              [{ id: 't3', label: 'Summarize rejection', icon: <DocumentIcon /> }],
+              [{ id: 't4', label: 'Send customer letter', icon: <ProcessIcon /> }],
+            ],
+            sectionStates: {
+              tasks: {
+                isCollapsed: true,
+                onCollapsedToggle: () => window.alert('Toggle tasks collapsed state'),
+              },
+              entryRules: {
+                isCollapsed: false,
+                onCollapsedToggle: () => window.alert('Toggle entry rules collapsed state'),
+              },
+              exitRules: {
+                isCollapsed: false,
+                onCollapsedToggle: () => window.alert('Toggle exit rules collapsed state'),
+              },
+              completionRules: {
+                isCollapsed: false,
+                onCollapsedToggle: () => window.alert('Toggle completion rules collapsed state'),
+              },
+            },
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 1,
+                tooltip: 'Entry rules',
+              },
+              {
+                type: StageHeaderChipType.EndsCase,
+                tooltip: 'Entering this stage ends the case',
+              },
+            ],
+          },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+      {
+        id: '3',
+        type: 'stage',
+        position: { x: 764, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'All sections',
+            tasks: [
+              [
+                {
+                  id: 't1',
+                  label: 'Prepare closing docs',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [
+                {
+                  id: 't2',
+                  label: 'eSign envelope',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+                {
+                  id: 't3',
+                  label: 'Pull credit report',
+                  icon: <VerificationIcon />,
+                  taskGroupType: 'sequential',
+                  hasEntryCondition: true,
+                },
+              ],
+              [
+                {
+                  id: 't4',
+                  label: 'Validate state',
+                  icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+                  taskGroupType: 'adhoc',
+                },
+              ],
+              [
+                {
+                  id: 't7',
+                  label: 'Human approvced',
+                  icon: <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />,
+                  taskGroupType: 'event-driven',
+                },
+              ],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 2,
+                tooltip: 'Entry rules',
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 4,
+                tooltip: 'Exit rules',
+              },
+            ],
+            entryRules: [
+              {
+                id: '1',
+                label: 'Case entered',
+              },
+              {
+                id: '2',
+                label: 'Re-enter stage',
+              },
+            ],
+            exitRules: [
+              {
+                id: '3',
+                label: 'Return to origin',
+              },
+            ],
+            completionRules: [
+              {
+                id: '4',
+                label: 'Tasks completed',
+              },
+              {
+                id: '5',
+                label: 'Data fabric connection',
+              },
+              {
+                id: '6',
+                label: 'Manually complete stage',
+              },
+            ],
+            sectionStates: {
+              tasks: {
+                isCollapsed: false,
+                onCollapsedToggle: () => window.alert('Toggle tasks collapsed state'),
+              },
+              entryRules: {
+                isCollapsed: false,
+                onCollapsedToggle: () => window.alert('Toggle entry rules collapsed state'),
+              },
+              exitRules: {
+                isCollapsed: false,
+                onCollapsedToggle: () => window.alert('Toggle exit rules collapsed state'),
+              },
+              completionRules: {
+                isCollapsed: false,
+                onCollapsedToggle: () => window.alert('Toggle completion rules collapsed state'),
+              },
+            },
+          },
+        },
+      },
+      {
+        id: '4',
+        type: 'stage',
+        position: { x: 1156, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'All sections collapsed',
+            tasks: [
+              [
+                {
+                  id: 't1',
+                  label: 'Prepare closing docs',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [
+                {
+                  id: 't4',
+                  label: 'Validate state',
+                  icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+                  taskGroupType: 'adhoc',
+                },
+              ],
+              [
+                {
+                  id: 't7',
+                  label: 'Human approvced',
+                  icon: <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />,
+                  taskGroupType: 'event-driven',
+                },
+              ],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 1,
+                tooltip: 'Entry rules',
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 2,
+                tooltip: 'Exit rules',
+              },
+            ],
+            entryRules: [
+              {
+                id: '1',
+                label: 'Case entered',
+              },
+            ],
+            exitRules: [
+              {
+                id: '3',
+                label: 'Return to origin',
+              },
+            ],
+            completionRules: [
+              {
+                id: '4',
+                label: 'Tasks completed',
+              },
+            ],
+            sectionStates: {
+              tasks: {
+                isCollapsed: true,
+                onCollapsedToggle: () => window.alert('Toggle tasks collapsed state'),
+              },
+              entryRules: {
+                isCollapsed: true,
+                onCollapsedToggle: () => window.alert('Toggle entry rules collapsed state'),
+              },
+              exitRules: {
+                isCollapsed: true,
+                onCollapsedToggle: () => window.alert('Toggle exit rules collapsed state'),
+              },
+              completionRules: {
+                isCollapsed: true,
+                onCollapsedToggle: () => window.alert('Toggle completion rules collapsed state'),
+              },
+            },
+          },
+        },
+      },
+      {
+        id: '5',
+        type: 'stage',
+        position: { x: 1500, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'Mixed collapse states',
+            tasks: [
+              [
+                {
+                  id: 't1',
+                  label: 'Prepare closing docs',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [
+                {
+                  id: 't2',
+                  label: 'eSign envelope',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+                {
+                  id: 't3',
+                  label: 'Pull credit report',
+                  icon: <VerificationIcon />,
+                  taskGroupType: 'sequential',
+                  hasEntryCondition: true,
+                },
+              ],
+              [
+                {
+                  id: 't4',
+                  label: 'Validate state',
+                  icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+                  taskGroupType: 'adhoc',
+                },
+              ],
+              [
+                {
+                  id: 't7',
+                  label: 'Human approvced',
+                  icon: <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />,
+                  taskGroupType: 'event-driven',
+                },
+              ],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 2,
+                tooltip: 'Entry rules',
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 4,
+                tooltip: 'Exit rules',
+              },
+            ],
+            entryRules: [
+              {
+                id: '1',
+                label: 'Case entered',
+              },
+              {
+                id: '2',
+                label: 'Re-enter stage',
+              },
+            ],
+            exitRules: [
+              {
+                id: '3',
+                label: 'Return to origin',
+              },
+            ],
+            completionRules: [
+              {
+                id: '4',
+                label: 'Tasks completed',
+              },
+              {
+                id: '5',
+                label: 'Data fabric connection',
+              },
+              {
+                id: '6',
+                label: 'Manually complete stage',
+              },
+            ],
+            sectionStates: {
+              tasks: {
+                isCollapsed: true,
+                onCollapsedToggle: () => window.alert('Toggle tasks collapsed state'),
+              },
+              entryRules: {
+                isCollapsed: false,
+                onCollapsedToggle: () => window.alert('Toggle entry rules collapsed state'),
+              },
+              exitRules: {
+                isCollapsed: true,
+                onCollapsedToggle: () => window.alert('Toggle exit rules collapsed state'),
+              },
+              completionRules: {
+                isCollapsed: false,
+                onCollapsedToggle: () => window.alert('Toggle completion rules collapsed state'),
+              },
+            },
+          },
+        },
+      },
+    ],
+  },
+};
