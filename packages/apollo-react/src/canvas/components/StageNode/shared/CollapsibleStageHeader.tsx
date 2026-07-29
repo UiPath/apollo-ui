@@ -89,7 +89,6 @@ export const CollapsibleStageHeader = ({
         style={{
           height: isOpen ? 'auto' : 0,
           overflow: isOpen ? 'visible' : 'hidden',
-          transition: 'height 0.25s ease',
         }}
       >
         {isOpen && children}
