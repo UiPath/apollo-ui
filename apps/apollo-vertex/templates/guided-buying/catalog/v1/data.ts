@@ -12,15 +12,15 @@ import type {
  * to <Selection />) is the seam where real intake wires in later.
  */
 export const SAMPLE_REQUEST: BuyRequest = {
-  summary: "2 ThinkPad X1 laptops for our new designers.",
+  summary: "15 laptops for Fusion Event contractors.",
   agentNote: "Found 12 catalog matches · applied EPP pricing · in-stock only.",
 };
 
-/** Quantity inferred from the request ("2 ThinkPad X1 laptops…"). */
-export const INFERRED_REQUEST_QUANTITY = 2;
+/** Quantity inferred from the request ("15 laptops for Fusion Event contractors"). */
+export const INFERRED_REQUEST_QUANTITY = 15;
 
-/** Mock self-service approval limit; orders under this need no approver. */
-export const APPROVAL_LIMIT = 10000;
+/** Deck j1-08: event-purchase self-service limit; orders under this need no approver. */
+export const APPROVAL_LIMIT = 30000;
 
 // Every mock item ships from the same tier/source as in the reference design.
 const TIER = "Standard";
