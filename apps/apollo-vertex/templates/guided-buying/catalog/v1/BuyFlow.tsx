@@ -96,6 +96,9 @@ export function BuyFlow() {
   const [input, setInput] = useState("");
   const [resumeDismissed, setResumeDismissed] = useState(false);
   const [shelfDockOpen, setShelfDockOpen] = useState(false);
+  const [shelfDockSubject, setShelfDockSubject] = useState<CatalogItem | null>(
+    null,
+  );
   const [correctionMade, setCorrectionMade] = useState(false);
   const [shelfDetailItem, setShelfDetailItem] = useState<CatalogItem | null>(
     null,
@@ -229,6 +232,8 @@ export function BuyFlow() {
           }
           // The cart belongs once products are on screen (the Selection step).
           showCart={phase === "selection"}
+          // Selection supplies its own hero — hide the shared anchor block.
+          hideBrand={phase === "selection"}
           // No back/reset on Intake — there's no previous step and it's already fresh.
           {...(isIntake ? {} : { onBack: stepBack, onReset: startFresh })}
           phaseBar={phaseBar}
@@ -282,7 +287,10 @@ export function BuyFlow() {
             <GuidedBuy
               onSeeAll={handleSeeAll}
               onConfigure={handleConfigure}
-              onXpsChipClick={() => setShelfDockOpen(true)}
+              onWhyNotThisClick={(item) => {
+                setShelfDockSubject(item);
+                setShelfDockOpen(true);
+              }}
               correctionMade={correctionMade}
               onYogaShowAnyway={() => setCorrectionMade(false)}
               onOpenDetail={openShelfDetail}
@@ -319,9 +327,13 @@ export function BuyFlow() {
         </AnimatePresence>
       </div>
 
-      {shelfDockOpen && (
+      {shelfDockOpen && shelfDockSubject && (
         <ShelfDock
-          onClose={() => setShelfDockOpen(false)}
+          subject={shelfDockSubject}
+          onClose={() => {
+            setShelfDockOpen(false);
+            setShelfDockSubject(null);
+          }}
           onCorrectionMade={() => setCorrectionMade(true)}
         />
       )}

@@ -61,6 +61,8 @@ interface MatchCardProps {
    */
   setAside?: boolean;
   onShowAnyway?: () => void;
+  /** Opens the shelf dock scoped to this card's item. */
+  onWhyNotThisClick?: () => void;
   onOpenDetail?: () => void;
 }
 
@@ -77,6 +79,7 @@ function MatchCard({
   notPickedReason,
   setAside = false,
   onShowAnyway,
+  onWhyNotThisClick,
   onOpenDetail,
 }: MatchCardProps) {
   const reduceMotion = useReducedMotion();
@@ -158,14 +161,25 @@ function MatchCard({
           </Badge>
         </div>
       ) : (
-        <p
+        <div
           className={cn(
             "min-h-[2.25rem] text-xs leading-snug",
-            notPickedReason ? "pt-0.5 italic text-muted-foreground/70" : "",
+            notPickedReason ? "pt-0.5" : "",
           )}
         >
-          {notPickedReason ?? ""}
-        </p>
+          <p className="italic text-muted-foreground/70">
+            {notPickedReason ?? ""}
+          </p>
+          {notPickedReason && onWhyNotThisClick && (
+            <button
+              type="button"
+              className="mt-0.5 text-left text-muted-foreground/70 underline hover:text-muted-foreground"
+              onClick={onWhyNotThisClick}
+            >
+              Why not this?
+            </button>
+          )}
+        </div>
       )}
 
       <div className="mt-auto space-y-2 pt-1">
@@ -276,7 +290,7 @@ export function MatchCarousel({
   output,
   onSeeAll,
   correctionMade = false,
-  onXpsChipClick,
+  onWhyNotThisClick,
   onYogaShowAnyway,
   onOpenDetail,
 }: {
@@ -285,8 +299,8 @@ export function MatchCarousel({
   onSeeAll?: () => void;
   /** True after the P2 dock correction — Yoga card enters set-aside state. */
   correctionMade?: boolean;
-  /** Opens the shelf dock (j1-06 XPS defense). */
-  onXpsChipClick?: () => void;
+  /** Opens the shelf dock scoped to the given item. */
+  onWhyNotThisClick?: (item: CatalogItem) => void;
   onYogaShowAnyway?: () => void;
   /** Opens the ProductDetail overlay for a given catalog item. */
   onOpenDetail?: (item: CatalogItem) => void;
@@ -310,11 +324,11 @@ export function MatchCarousel({
 
   return (
     <div className="w-full">
-      {/* Human's original ask — shown above the AI reasoning strip, clearly not AI output. */}
+      {/* Human's original ask — the page hero on the Choose screen. */}
       {requestText && (
-        <p className="mb-3 rounded-lg bg-muted/50 px-3 py-2 text-sm font-medium text-foreground">
+        <h1 className="mb-4 text-2xl font-semibold leading-snug text-foreground">
           &ldquo;{requestText}&rdquo;
-        </p>
+        </h1>
       )}
 
       {/* Deck j1-04: AI reasoning strip above the grid. ✦ marks the group once. */}
@@ -354,6 +368,16 @@ export function MatchCarousel({
                     Design contractor spec
                   </Badge>
                 </div>
+                <div className="mt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-auto rounded-full px-3 py-1 text-xs"
+                  >
+                    Update my preferences
+                  </Button>
+                </div>
               </>
             </P2>
           </div>
@@ -386,6 +410,11 @@ export function MatchCarousel({
                           item={item}
                           index={i + 1}
                           notPickedReason={NOT_PICKED_REASONS[item.id]}
+                          onWhyNotThisClick={
+                            onWhyNotThisClick
+                              ? () => onWhyNotThisClick(item)
+                              : undefined
+                          }
                           onOpenDetail={
                             onOpenDetail ? () => onOpenDetail(item) : undefined
                           }
@@ -403,6 +432,11 @@ export function MatchCarousel({
                           }
                           setAside={correctionMade}
                           onShowAnyway={onYogaShowAnyway}
+                          onWhyNotThisClick={
+                            !correctionMade && onWhyNotThisClick
+                              ? () => onWhyNotThisClick(item)
+                              : undefined
+                          }
                           onOpenDetail={
                             onOpenDetail ? () => onOpenDetail(item) : undefined
                           }
@@ -417,6 +451,11 @@ export function MatchCarousel({
                     item={item}
                     index={i + 1}
                     notPickedReason={NOT_PICKED_REASONS[item.id]}
+                    onWhyNotThisClick={
+                      onWhyNotThisClick
+                        ? () => onWhyNotThisClick(item)
+                        : undefined
+                    }
                     onOpenDetail={
                       onOpenDetail ? () => onOpenDetail(item) : undefined
                     }
@@ -435,52 +474,9 @@ export function MatchCarousel({
             <Info className="size-3.5 shrink-0" aria-hidden />
             The output is AI generated. Please review.
           </p>
-          {/* Deck j1-04/j1-05: action chip row. "Why not the XPS?" is the j1-07 dock trigger. */}
-          <div className="mt-3 flex flex-wrap gap-2">
-            {/* Must survive at both tiers — sole entry point for j1-06/j1-07 dock. */}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-auto rounded-full px-3 py-1 text-xs"
-              onClick={onXpsChipClick}
-            >
-              Why not the XPS?
-            </Button>
-            {/* Deck j1-04: "Compare all three"; j1-05: "Update my preferences" */}
-            <P1>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-auto rounded-full px-3 py-1 text-xs"
-              >
-                Compare all three
-              </Button>
-            </P1>
-            <P2>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-auto rounded-full px-3 py-1 text-xs"
-              >
-                Update my preferences
-              </Button>
-            </P2>
-            {/* Deck j1-04/j1-05: AI ask chip — ai-outline is the toolkit's "Ask AI" pattern. */}
-            <Button
-              type="button"
-              variant="ai-outline"
-              size="sm"
-              className="h-auto rounded-full px-3 py-1 text-xs"
-            >
-              ✦ Ask
-            </Button>
-          </div>
 
-          <div className="mt-2 flex items-center justify-end gap-2">
-            {/* Browse more (lateral, ghost) sits beside proceed (primary). */}
+          <div className="mt-3 flex items-center justify-between gap-2">
+            {/* Browse more (lateral, ghost) sits at the start. */}
             <Button
               variant="ghost"
               size="sm"
@@ -488,33 +484,44 @@ export function MatchCarousel({
             >
               See all {output.totalCount} in catalog
             </Button>
-            {/* The primary transitions in once the cart has items (like the top bar). */}
-            <AnimatePresence>
-              {cartCount > 0 && (
-                <motion.div
-                  key="review"
-                  initial={
-                    reduceMotion ? false : { opacity: 0, x: 8, scale: 0.9 }
-                  }
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={
-                    reduceMotion
-                      ? { opacity: 0 }
-                      : { opacity: 0, x: 8, scale: 0.9 }
-                  }
-                  transition={{ duration: 0.28, ease: EASE }}
-                >
-                  <Button
-                    size="sm"
-                    onClick={() => void navigate({ to: "/review" })}
+            <div className="flex items-center gap-2">
+              {/* Ask chip — sits right of the cart-gated Review button. */}
+              <Button
+                type="button"
+                variant="ai-outline"
+                size="sm"
+                className="h-auto rounded-full px-3 py-1 text-xs"
+              >
+                ✦ Ask
+              </Button>
+              {/* The primary transitions in once the cart has items (like the top bar). */}
+              <AnimatePresence>
+                {cartCount > 0 && (
+                  <motion.div
+                    key="review"
+                    initial={
+                      reduceMotion ? false : { opacity: 0, x: 8, scale: 0.9 }
+                    }
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={
+                      reduceMotion
+                        ? { opacity: 0 }
+                        : { opacity: 0, x: 8, scale: 0.9 }
+                    }
+                    transition={{ duration: 0.28, ease: EASE }}
                   >
-                    Review &amp; submit · {cartCount} item
-                    {cartCount === 1 ? "" : "s"} ·{" "}
-                    {formatPrice(cartTotal, "USD")}
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    <Button
+                      size="sm"
+                      onClick={() => void navigate({ to: "/review" })}
+                    >
+                      Review &amp; submit · {cartCount} item
+                      {cartCount === 1 ? "" : "s"} ·{" "}
+                      {formatPrice(cartTotal, "USD")}
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </>
       )}
