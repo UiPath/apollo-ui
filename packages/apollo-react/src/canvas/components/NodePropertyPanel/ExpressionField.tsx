@@ -1,4 +1,5 @@
 import { ChevronDown, Maximize2, Redo2, Sparkles, Undo2 } from 'lucide-react';
+import { PanelFieldLabel } from './PanelField';
 
 export type ExpressionMode = 'expr' | 'json';
 
@@ -39,7 +40,7 @@ export function ExpressionField({
       {/* Label row */}
       {label && (
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium leading-4 text-foreground">{label}</span>
+          <PanelFieldLabel className="leading-4">{label}</PanelFieldLabel>
           <div className="flex items-center gap-0.5">
             <button
               type="button"
