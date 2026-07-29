@@ -10,35 +10,43 @@ interface TeamsResumeCardProps {
 
 export function TeamsResumeCard({ onResume, onDismiss }: TeamsResumeCardProps) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-(--primary) bg-background p-4">
-      {/* Teams icon area */}
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-(--insight-50)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-          <path
-            d="M10 3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM3.75 7.5a.75.75 0 0 1 .75-.75h9a.75.75 0 0 1 .75.75v1.25a5 5 0 0 1-10 0V7.5Z"
-            fill="var(--insight-600)"
-          />
-          <path
-            d="M12.5 5.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM12.75 7.5h1.5a.75.75 0 0 1 .75.75V9.5a3 3 0 0 1-2.25 2.91V7.5Z"
-            fill="var(--insight-600)"
-            opacity="0.5"
-          />
-        </svg>
-      </div>
+    <div
+      className="flex items-center gap-2.5 rounded-xl border-2 border-input px-3 pt-0.5 pb-4"
+      style={{ backgroundImage: "var(--ai-gradient)" }}
+    >
+      {/* Microsoft Teams icon — vectorised two-person figure */}
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 20 20"
+        fill="none"
+        aria-hidden
+        className="shrink-0"
+      >
+        <rect width="20" height="20" rx="5" fill="#5059C9" />
+        {/* Secondary person — behind the primary, lighter purple */}
+        <circle cx="14.5" cy="6" r="2" fill="#7B83EB" />
+        <rect x="12" y="9.5" width="6" height="5.5" rx="1.5" fill="#7B83EB" />
+        {/* Primary person — circle head */}
+        <circle cx="8.5" cy="5.5" r="2.5" fill="white" />
+        {/* Primary person — T-body: wide crossbar + narrow stem overlap to form T */}
+        <rect x="3" y="9" width="12" height="2.5" rx="1.2" fill="white" />
+        <rect x="7" y="9" width="3.5" height="6" rx="1.2" fill="white" />
+      </svg>
 
-      {/* Text content */}
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-foreground">
+      {/* Title + inline meta, single truncating row */}
+      <p className="min-w-0 flex-1 truncate text-sm text-foreground">
+        <span className="font-medium">
           15 laptops for Fusion Event contractors
-        </p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Started in Teams · 9:12 AM · Picks up at Details
-        </p>
-      </div>
+        </span>
+        <span className="ml-2 text-xs text-muted-foreground">
+          Teams · 9:12 AM
+        </span>
+      </p>
 
       {/* Actions */}
-      <div className="flex shrink-0 items-center gap-2">
-        <Button size="sm" onClick={onResume}>
+      <div className="flex shrink-0 items-center gap-1.5">
+        <Button variant="ghost" size="sm" onClick={onResume}>
           Resume
         </Button>
         <button

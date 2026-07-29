@@ -4,10 +4,12 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { AiChatEmptySuggestions } from "@/registry/ai-chat/components/ai-chat-empty-suggestions";
 import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
 import { P1 } from "../../P1";
 import { P2 } from "../../P2";
+import { useTier } from "../../tier-context";
 import { BuyScaffold } from "./BuyScaffold";
 import { useCart } from "./cart-context";
 import { type BuyPhase, useConversation } from "./conversation-context";
@@ -105,6 +107,10 @@ export function BuyFlow() {
   );
 
   const { inCart, setQuantity, quantities } = useCart();
+  const { tier } = useTier();
+  // True when the attached band should show — drives the composer's embedded mode
+  // so both elements share one continuous outline.
+  const showBand = tier === "p2" && !resumeDismissed;
 
   const openShelfDetail = (item: CatalogItem) => setShelfDetailItem(item);
   const closeShelfDetail = () => setShelfDetailItem(null);
@@ -241,31 +247,38 @@ export function BuyFlow() {
           {isIntake ? (
             // Intake — the one conversational surface (free text + chips).
             <div className="space-y-4">
-              <P2>
-                {!resumeDismissed && (
-                  <TeamsResumeCard
-                    // Re-sends as a new request; does not load a persisted draft.
-                    onResume={() =>
-                      sendCatalogRequest(
-                        "15 laptops for Fusion Event contractors",
-                      )
-                    }
-                    onDismiss={() => setResumeDismissed(true)}
+              <div>
+                <P2>
+                  {!resumeDismissed && (
+                    <TeamsResumeCard
+                      // Re-sends as a new request; does not load a persisted draft.
+                      onResume={() =>
+                        sendCatalogRequest(
+                          "15 laptops for Fusion Event contractors",
+                        )
+                      }
+                      onDismiss={() => setResumeDismissed(true)}
+                    />
+                  )}
+                </P2>
+                {/* When the band is showing, this wrapper sits above it in z-order
+                    and carries an opaque background so it covers the band's bottom
+                    portion — creating the layered peek effect. */}
+                <div className={cn(showBand && "relative z-10 bg-background -mt-3.5")}>
+                  <AiChatInput
+                    value={input}
+                    onChange={setInput}
+                    onSubmit={handleIntakeSubmit}
+                    onStop={stop}
+                    isLoading={false}
+                    placeholder="Tell us what you want to buy…"
+                    // Attach a quote, spec, or PO for Autopilot to parse — the paperclip
+                    // menu, paste, and the pending-file chips (which grow the input) all
+                    // turn on with this.
+                    acceptedFileTypes="image/*,.pdf,.csv,.xlsx,.docx,.txt"
                   />
-                )}
-              </P2>
-              <AiChatInput
-                value={input}
-                onChange={setInput}
-                onSubmit={handleIntakeSubmit}
-                onStop={stop}
-                isLoading={false}
-                placeholder="Tell us what you want to buy…"
-                // Attach a quote, spec, or PO for Autopilot to parse — the paperclip
-                // menu, paste, and the pending-file chips (which grow the input) all
-                // turn on with this.
-                acceptedFileTypes="image/*,.pdf,.csv,.xlsx,.docx,.txt"
-              />
+                </div>
+              </div>
               <div>
                 <p className="text-center text-xs font-medium text-muted-foreground">
                   Try an example:
