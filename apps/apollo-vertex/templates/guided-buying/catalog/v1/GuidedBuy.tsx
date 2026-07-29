@@ -12,12 +12,20 @@ import {
 import { RequestEnvelope } from "./RequestEnvelope";
 import { ServiceBridge } from "./ServiceBridge";
 import { ServicesBridge } from "./ServicesBridge";
+import type { CatalogItem } from "./types";
 
 interface GuidedBuyProps {
   /** See-all → catalog (plays Buy's exit transition). */
   onSeeAll: () => void;
   /** Configure with agent → the configurator (contract path). */
   onConfigure: () => void;
+  /** Opens the shelf dock (XPS defense). Wired to "Why not the XPS?" chip. */
+  onXpsChipClick?: () => void;
+  /** True after the P2 dock correction — Yoga card enters set-aside state. */
+  correctionMade?: boolean;
+  onYogaShowAnyway?: () => void;
+  /** Opens the ProductDetail overlay for a shelf card. */
+  onOpenDetail?: (item: CatalogItem) => void;
 }
 
 type ToolPart = MessagePart & { id: string; name: string; output: unknown };
@@ -28,7 +36,14 @@ type ToolPart = MessagePart & { id: string; name: string; output: unknown };
  * service Bridge / results) for the latest agent turn only — no transcript. The
  * ask affordance lives in the global Autopilot FAB, not here.
  */
-export function GuidedBuy({ onSeeAll, onConfigure }: GuidedBuyProps) {
+export function GuidedBuy({
+  onSeeAll,
+  onConfigure,
+  onXpsChipClick,
+  correctionMade,
+  onYogaShowAnyway,
+  onOpenDetail,
+}: GuidedBuyProps) {
   const { messages, status } = useConversation();
 
   // The surface tracks the latest agent turn only — no transcript.
@@ -57,6 +72,10 @@ export function GuidedBuy({ onSeeAll, onConfigure }: GuidedBuyProps) {
           <MatchCarousel
             output={part.output as MatchesOutput}
             onSeeAll={onSeeAll}
+            correctionMade={correctionMade}
+            onXpsChipClick={onXpsChipClick}
+            onYogaShowAnyway={onYogaShowAnyway}
+            onOpenDetail={onOpenDetail}
           />
         );
       case "reviewCta":

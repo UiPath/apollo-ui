@@ -2,10 +2,11 @@
 
 import { useNavigate } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Clock } from "lucide-react";
 import { type ReactNode, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { formatDateDisplay } from "../../requests/data";
+import { JourneyBar } from "../../JourneyBar";
+import { formatDateDisplay, getRequestDetail } from "../../requests/data";
 import { useRequests } from "../../requests/requests-context";
 import { useCart } from "./cart-context";
 import { useConversation } from "./conversation-context";
@@ -141,17 +142,41 @@ export function CatalogSubmitted() {
           </div>
         )}
 
+        {/* Approval chain — what happens next after submission. */}
+        <div className="rounded-xl border bg-card px-4 py-3.5">
+          <p className="mb-3 text-xs font-semibold text-muted-foreground">
+            What happens next
+          </p>
+          <JourneyBar
+            stages={[
+              { label: "Submitted · Jul 21", state: "done" },
+              { label: "Approval · Alex Chen", state: "active" },
+              { label: "PO sent", state: "upcoming" },
+              { label: "Received", state: "upcoming" },
+            ]}
+            ownerNote={
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="size-3 shrink-0" aria-hidden />
+                {getRequestDetail(REQUEST_ID)?.journeyOwnerNote}
+              </span>
+            }
+          />
+        </div>
+
         {/* One clear action; the request also lives on in My Requests. */}
         <div className="flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={() => {
               clear();
-              void navigate({ to: "/requests" });
+              void navigate({
+                to: "/requests/$id",
+                params: { id: REQUEST_ID },
+              });
             }}
             className="text-xs text-muted-foreground underline-offset-2 hover:underline"
           >
-            View all requests
+            Track this request
           </button>
           <Button onClick={backToBuy}>Back to Buy</Button>
         </div>

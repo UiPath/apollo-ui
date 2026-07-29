@@ -1,12 +1,12 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
+import type { RequestRow } from "./data";
 import {
+  type RequestNote,
   RequestsContext,
   type RequestsContextValue,
-  type RequestNote,
 } from "./requests-context";
-import type { RequestRow } from "./data";
 
 /**
  * Shared state across the two seats: the requester's My Requests and the buyer's

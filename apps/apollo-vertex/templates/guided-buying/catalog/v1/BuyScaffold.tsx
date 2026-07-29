@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
-import { useCart } from "./cart-context";
 import { CartDrawer } from "./CartDrawer";
+import { useCart } from "./cart-context";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 

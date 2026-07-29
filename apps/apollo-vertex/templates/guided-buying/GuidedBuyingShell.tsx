@@ -9,6 +9,7 @@ import {
   Outlet,
   RouterProvider,
   useNavigate,
+  useRouterState,
 } from "@tanstack/react-router";
 import { ClipboardList, ShoppingCart, Store, Wrench } from "lucide-react";
 import { useState } from "react";
@@ -22,8 +23,12 @@ import { CatalogSubmitted } from "./catalog/v1/CatalogSubmitted";
 import { ConfigureFlow } from "./catalog/v1/ConfigureFlow";
 import { ConversationProvider } from "./catalog/v1/ConversationProvider";
 import { Review } from "./catalog/v1/Review";
+import { CloseWindow } from "./requests/CloseWindow";
+import { DecisionWindow } from "./requests/DecisionWindow";
 import { MyRequests } from "./requests/MyRequests";
+import { PORecord } from "./requests/PORecord";
 import { RequestsProvider } from "./requests/RequestsProvider";
+import { RequestWindow } from "./requests/RequestWindow";
 import { TierToggle } from "./TierToggle";
 import { TierProvider } from "./tier-context";
 import { Workbench } from "./workbench/Workbench";
@@ -78,8 +83,16 @@ function EmptyPage({ title }: { title: string }) {
 
 function GuidedBuyingLayout() {
   const [seat, setSeat] = useState<Seat>("requester");
-  const { user, navItems } = SEATS[seat];
+  const { location } = useRouterState();
+  const { navItems } = SEATS[seat];
   const navigate = useNavigate();
+
+  // Decision route belongs to Alex Chen — reflect that in the shell identity chip
+  // rather than showing Marcus while the page header says Alex.
+  const isDecisionRoute = location.pathname.startsWith("/decision/");
+  const user = isDecisionRoute
+    ? { name: "Alex Chen", email: "Design Director" }
+    : SEATS[seat].user;
 
   // Switching seats swaps the nav and lands on that seat's own queue: the buyer
   // (procurement) drops into the Workbench; the requester into My Requests.
@@ -159,6 +172,34 @@ const requestsRoute = createRoute({
   component: MyRequests,
 });
 
+// Request Window — full-page detail for a single request.
+const requestDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/requests/$id",
+  component: RequestWindow,
+});
+
+// Close Window — delivery receipt after goods arrive.
+const closeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/close/$id",
+  component: CloseWindow,
+});
+
+// PO Record — purchase order detail, reachable from the Close screen chip only.
+const poRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/po/$id",
+  component: PORecord,
+});
+
+// Decision Window — approver's view of a pending-approval request.
+const decisionRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/decision/$id",
+  component: DecisionWindow,
+});
+
 // Review & submit (reached from the cart's "Review & submit").
 const reviewRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -181,6 +222,10 @@ const routeTree = rootRoute.addChildren([
   configureRoute,
   workbenchRoute,
   requestsRoute,
+  requestDetailRoute,
+  closeRoute,
+  poRoute,
+  decisionRoute,
   reviewRoute,
   trackRoute,
 ]);

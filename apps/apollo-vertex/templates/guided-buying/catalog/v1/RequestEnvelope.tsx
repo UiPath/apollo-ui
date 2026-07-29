@@ -414,8 +414,8 @@ export function RequestEnvelope() {
         transition={{ duration: 0.3, ease: EASE, delay: routingDelay }}
       >
         Catalog standard config means this routes directly to{" "}
-        <span className="font-medium text-foreground">{approverName}</span>{" "}
-        for approval. No procurement review needed.
+        <span className="font-medium text-foreground">{approverName}</span> for
+        approval. No procurement review needed.
       </motion.div>
 
       <p className="flex items-center gap-1.5 px-4 text-xs text-muted-foreground">

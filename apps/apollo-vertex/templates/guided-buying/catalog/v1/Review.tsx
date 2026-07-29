@@ -12,9 +12,9 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
-import { useCart } from "./cart-context";
 import { CartLine } from "./CartLine";
 import { CartSummary } from "./CartSummary";
+import { useCart } from "./cart-context";
 import { useConversation } from "./conversation-context";
 import { APPROVAL_LIMIT, formatPrice, leadTime, SAMPLE_REQUEST } from "./data";
 import { CATALOG_PHASES, FlowPhaseBar } from "./FlowPhaseBar";

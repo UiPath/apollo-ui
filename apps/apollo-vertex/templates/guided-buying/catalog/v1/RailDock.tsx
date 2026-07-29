@@ -1,13 +1,15 @@
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
-import { ChatRail } from "./ChatRail";
 
 interface RailDockProps {
   open: boolean;
-  hasUpdates: boolean;
-  cold?: boolean;
-  onCollapse: () => void;
+  hasUpdates?: boolean;
+  /** Expanded panel width. Defaults to "360px". */
+  width?: string;
   onExpand: () => void;
+  /** Content shown in the expanded panel. */
+  children: ReactNode;
 }
 
 /**
@@ -16,21 +18,19 @@ interface RailDockProps {
  */
 export function RailDock({
   open,
-  hasUpdates,
-  cold,
-  onCollapse,
+  hasUpdates = false,
+  width = "360px",
   onExpand,
+  children,
 }: RailDockProps) {
   return (
     <aside
       aria-label="Assistant"
-      className={cn(
-        "hidden shrink-0 overflow-hidden border-l bg-card transition-[width] duration-300 ease-out lg:block",
-        open ? "w-[360px]" : "w-14",
-      )}
+      className="hidden shrink-0 overflow-hidden border-l bg-card transition-[width] duration-300 ease-out lg:block"
+      style={{ width: open ? width : "3.5rem" }}
     >
       {open ? (
-        <ChatRail onCollapse={onCollapse} cold={cold} />
+        children
       ) : (
         <button
           type="button"

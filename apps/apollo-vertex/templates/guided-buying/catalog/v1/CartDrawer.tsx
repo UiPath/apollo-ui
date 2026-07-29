@@ -9,10 +9,10 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { useCart } from "./cart-context";
 import { CartLine } from "./CartLine";
 import { CartSummary } from "./CartSummary";
-import { activePrice, APPROVAL_LIMIT } from "./data";
+import { useCart } from "./cart-context";
+import { APPROVAL_LIMIT, activePrice } from "./data";
 import { usePriceBasis } from "./price-basis-context";
 
 interface CartDrawerProps {
