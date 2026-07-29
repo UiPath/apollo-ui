@@ -33,7 +33,7 @@ type Leaving = null | "catalog" | "configure";
 // The three demo launch points — one per use case. Catalog = requester
 // self-serving; quote = generic handoff to a seeded Workbench item; contract =
 // the Configure-with-agent wizard.
-const CATALOG_STARTER = "2 ThinkPad X1 laptops for our new designers";
+const CATALOG_STARTER = "15 laptops for Fusion Event contractors";
 const SOURCING_STARTER = "Hire 2 contract designers for the Q3 rebrand";
 const CONTRACT_STARTER = "Add 12 mobile lines for the Denver team";
 const STARTERS = [CATALOG_STARTER, SOURCING_STARTER, CONTRACT_STARTER];
