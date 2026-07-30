@@ -54,7 +54,7 @@
  * React Flow elevates selected edges to 1000; hover takes temporary precedence
  * at 1001 while remaining below hovered node controls at 1002.
  */
-.react-flow__edge:has([data-edge-hovered='true']) {
+.react-flow__edge:has([data-edge-hovered="true"]) {
   z-index: 1001 !important;
 }
 

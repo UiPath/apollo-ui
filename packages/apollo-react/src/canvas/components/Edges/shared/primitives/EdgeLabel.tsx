@@ -13,8 +13,8 @@ export type EdgeLabelProps = {
   onMouseLeave?: () => void;
 };
 
-// Falls back to --color-background when a host doesn't import canvas/styles/variables.css
-// (e.g. a shadow-DOM host), so the label never renders with a transparent background.
+// Falls back to --color-background when the canvas-specific background token is unavailable,
+// such as in a host that doesn't import canvas/styles/variables.css.
 const EDGE_LABEL_BASE_CLASS =
   'react-flow__edge-label nodrag nopan absolute top-0 left-0 max-w-48 overflow-hidden text-ellipsis ' +
   'whitespace-nowrap pointer-events-auto cursor-default ' +
