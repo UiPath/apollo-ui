@@ -94,7 +94,7 @@ const BreakpointPlaygroundStory = ({
   taskStatuses?: Record<string, StageTaskStatus>;
   /** Optional predicate gating which tasks can host a breakpoint. */
   allowBreakpoint?: (task: StageTaskItem) => boolean;
-  /** Render the stage read-only (like Debug view). The breakpoint menu must still work. */
+  /** Render the stage read-only (like Debug view): no "⋮", breakpoint menu via right-click. */
   isReadOnly?: boolean;
 }) => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
@@ -143,6 +143,15 @@ const BreakpointPlaygroundStory = ({
       execution: {
         stageStatus: anyPaused ? { status: 'Paused' as const, label: 'Paused on breakpoint' } : {},
         taskStatus,
+      },
+      // Read-only (Debug) only: click the gutter dot to remove, or the ghosted one to add.
+      // Apollo ignores this at design time, where breakpoints stay in the right-click menu.
+      onTaskBreakpointToggle: (taskId: string) => {
+        const task = tasks.flat().find((t) => t.id === taskId);
+        if (task && allowBreakpoint && !allowBreakpoint(task)) {
+          return;
+        }
+        toggleBreakpoint(taskId);
       },
       // Breakpoints are added/removed through the task's right-click menu (works read-only too).
       getTaskContextMenuItems: ({ task }: { task: StageTaskItem }): NodeMenuItem[] => {
@@ -263,9 +272,10 @@ export const Restricted: Story = {
   ),
 };
 
-// Read-only stage (as in Debug view): editing is disabled, but the breakpoint
-// right-click menu (Add/Remove) must still work. "Review and Decide" is paused,
-// shown by the amber card border and pause icon.
+// Read-only stage (as in Debug view): editing is disabled and tasks show no "⋮"
+// button — Add/Remove breakpoint is the only action left, so right-click is the
+// only way in. "Review and Decide" is paused, shown by the amber card border and
+// pause icon.
 export const ReadOnlyDebugView: Story = {
   name: 'Read-only / Debug view',
   render: () => (

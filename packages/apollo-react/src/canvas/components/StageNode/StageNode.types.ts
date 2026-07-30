@@ -97,6 +97,13 @@ export interface StageNodeBaseProps {
   onTaskReorder?: (reorderedTasks: StageTaskItem[][]) => void;
   onReplaceTaskFromToolbox?: (newTask: ListItem, groupIndex: number, taskIndex: number) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
+  /**
+   * Adds or removes a task's breakpoint from the gutter marker. Only wired up when the stage is
+   * read-only (the Debug view): a set breakpoint clicks to remove, and hovering a task without
+   * one ghosts in a dot to click. At design time breakpoints stay in the right-click menu, so
+   * this is ignored there. Reflect the result back through `execution.taskStatus[id].breakpoint`.
+   */
+  onTaskBreakpointToggle?: (taskId: string) => void;
   getTaskContextMenuItems?: (args: StageTaskContextMenuArgs) => NodeMenuItem[] | undefined;
   hideParallelOptions?: boolean;
   loadingTaskIds?: ReadonlySet<string>;

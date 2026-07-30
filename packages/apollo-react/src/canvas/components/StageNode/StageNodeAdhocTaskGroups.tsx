@@ -38,6 +38,7 @@ const StageNodeAdhocTaskGroupsInner = ({
     onReplaceTaskFromToolbox,
     onTaskPlay,
     loadingTaskIds,
+    onTaskBreakpointToggle,
     getTaskContextMenuItems,
   } = props;
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
@@ -101,6 +102,8 @@ const StageNodeAdhocTaskGroupsInner = ({
               onTaskClick={handleTaskClick}
               onTaskPlay={onTaskPlay}
               isTaskLoading={loadingTaskIds?.has(task.id)}
+              isReadOnly={isReadOnly}
+              onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
               getContextMenuItems={hasMenu ? getAdhocContextMenuItems : undefined}
             />
           );

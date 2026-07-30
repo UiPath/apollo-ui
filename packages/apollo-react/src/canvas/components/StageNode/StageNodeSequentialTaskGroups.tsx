@@ -69,6 +69,7 @@ export const StageNodeSequentialTaskGroups = ({
     onTaskReorder,
     hideParallelOptions,
     loadingTaskIds,
+    onTaskBreakpointToggle,
     getTaskContextMenuItems,
   } = props;
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
@@ -259,6 +260,8 @@ export const StageNodeSequentialTaskGroups = ({
                           }
                           isDragDisabled={!onTaskReorder || isReadOnly}
                           isTaskLoading={loadingTaskIds?.has(task.id)}
+                          isReadOnly={isReadOnly}
+                          onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
                           getContextMenuItems={hasMenu ? buildContextMenuItems : undefined}
                         />
                       );

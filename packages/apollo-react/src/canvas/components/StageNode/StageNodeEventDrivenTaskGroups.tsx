@@ -37,6 +37,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
     loadingTaskIds,
+    onTaskBreakpointToggle,
     getTaskContextMenuItems,
   } = props;
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
@@ -99,6 +100,8 @@ const StageNodeEventDrivenTaskGroupsInner = ({
               isSelected={selectedTaskId === task.id}
               onTaskClick={handleTaskClick}
               isTaskLoading={loadingTaskIds?.has(task.id)}
+              isReadOnly={isReadOnly}
+              onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
               getContextMenuItems={hasMenu ? getEventDrivenContextMenuItems : undefined}
             />
           );

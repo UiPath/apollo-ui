@@ -163,6 +163,19 @@ export const StageTask = styled.div<{
     display: flex;
   }
 
+  /* Breakpoint gutter (Debug view only): an unset breakpoint stays invisible until the row is
+     hovered, then ghosts in — matching Flow's ExecutionBreakpoint. The dot overhangs the card
+     corner but is a child, so hovering it hovers the row and it stays visible to be clicked. */
+  .task-breakpoint-add {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  &:hover .task-breakpoint-add,
+  .task-breakpoint-add:focus-visible {
+    opacity: 0.5;
+  }
+
   ${({ status }) =>
     status === 'InProgress' &&
     css`
