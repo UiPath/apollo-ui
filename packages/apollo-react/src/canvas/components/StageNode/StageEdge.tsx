@@ -9,19 +9,19 @@ import { memo, useMemo } from 'react';
 
 export const StageEdgeLabel = styled.div`
   position: absolute;
-  color: var(--canvas-foreground);
+  color: var(--canvas-foreground, var(--color-foreground));
   background: var(--canvas-background, var(--color-background));
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
-  border: 1px solid var(--canvas-border);
+  border: 1px solid var(--canvas-border, var(--color-border));
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   pointer-events: all;
 
   &:hover {
     background: var(--canvas-background-hover, var(--color-background-hover));
-    border-color: var(--canvas-border-hover);
+    border-color: var(--canvas-border-hover, var(--color-border-hover));
   }
 `;
 
