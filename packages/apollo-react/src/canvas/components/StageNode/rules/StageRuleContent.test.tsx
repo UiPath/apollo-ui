@@ -47,6 +47,7 @@ describe('StageRuleContent', () => {
 
     expect(screen.getByTestId('exit-condition-icon')).toBeInTheDocument();
     expect(screen.queryByTestId('entry-condition-icon')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('completion-condition-icon')).not.toBeInTheDocument();
   });
 
   it('renders the completion-condition icon for a completion rule', () => {
@@ -54,5 +55,6 @@ describe('StageRuleContent', () => {
 
     expect(screen.getByTestId('completion-condition-icon')).toBeInTheDocument();
     expect(screen.queryByTestId('entry-condition-icon')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('exit-condition-icon')).not.toBeInTheDocument();
   });
 });
