@@ -29,6 +29,17 @@ describe('PanelField', () => {
     expect(screen.getByText('Name is required.')).toHaveAttribute('id', 'name-error');
   });
 
+  it('keeps an explicit htmlFor aligned with the rendered control id', () => {
+    render(
+      <PanelField htmlFor="panel-name" label="Name">
+        <Input id="legacy-name" />
+      </PanelField>
+    );
+
+    expect(screen.getByLabelText('Name')).toHaveAttribute('id', 'panel-name');
+    expect(screen.queryByRole('textbox', { name: 'Name' })).toBeInTheDocument();
+  });
+
   it('provides the same label treatment to controls that own their layout', () => {
     render(
       <PanelFieldLabel htmlFor="expression" required>

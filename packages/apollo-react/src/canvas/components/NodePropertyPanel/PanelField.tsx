@@ -75,7 +75,7 @@ export function PanelField({
     .join(' ');
   const control = isValidElement(children)
     ? cloneElement(children, {
-        id: children.props.id ?? controlId,
+        id: controlId,
         'aria-describedby': describedBy || undefined,
         'aria-invalid': error ? true : children.props['aria-invalid'],
       })
