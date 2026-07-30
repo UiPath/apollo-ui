@@ -38,7 +38,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
   FIELD_TYPE_META,
   HoverCard,
@@ -97,12 +96,14 @@ import {
   Code2,
   Copy,
   Eye,
+  EyeOff,
   File,
   FileBracesCorner,
   GitFork,
   Globe,
   GripVertical,
   HardDrive,
+  Info,
   Pencil,
   Play,
   Plus,
@@ -111,13 +112,25 @@ import {
   RefreshCw,
   Sparkles,
   Trash2,
+  TriangleAlert,
   Upload,
   UserRoundCheck,
   X,
   Zap,
 } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
-import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  lazy,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { NodeOutputModeSelect } from '../../controls';
 import type {
@@ -456,6 +469,16 @@ const TAB_TRIGGER_CLASS =
 // ============================================================================
 // Stories — NodePropertyPanel
 // ============================================================================
+
+export const PanelUIInventory: Story = {
+  name: 'UI Inventory',
+  render: () => <PanelUIInventoryStory />,
+};
+
+export const Responsive: Story = {
+  name: 'UI Responsive',
+  render: () => <ResponsiveStory />,
+};
 
 export const Default: Story = {
   name: 'Form Default',
@@ -906,51 +929,6 @@ function CasePanel({
   );
 }
 
-type CompactTabId = 'parameters' | 'error-handling' | 'advanced';
-
-const ALERT_ISSUES: Array<{
-  id: string;
-  tab: CompactTabId;
-  tabLabel: string;
-  field: string;
-  message: string;
-  action: string;
-}> = [
-  {
-    id: 'condition',
-    tab: 'parameters',
-    tabLabel: 'Parameters',
-    field: 'Case 1 condition',
-    message: 'Condition cannot be evaluated because the expression returns text.',
-    action: 'Return a boolean expression, for example input.status === "active".',
-  },
-  {
-    id: 'fallback',
-    tab: 'error-handling',
-    tabLabel: 'Error handling',
-    field: 'Fallback path',
-    message: 'No fallback path is configured for failed case evaluation.',
-    action: 'Choose a fallback branch or enable Default branch.',
-  },
-  {
-    id: 'timeout',
-    tab: 'advanced',
-    tabLabel: 'Advanced',
-    field: 'Timeout',
-    message: 'Retry duration exceeds the node timeout.',
-    action: 'Increase timeout to 60 seconds or reduce retries to 1.',
-  },
-];
-
-const ALERT_ISSUE_COUNT_BY_TAB = ALERT_ISSUES.reduce<Record<CompactTabId, number>>(
-  (acc, issue) => ({ ...acc, [issue.tab]: acc[issue.tab] + 1 }),
-  {
-    parameters: 0,
-    'error-handling': 0,
-    advanced: 0,
-  }
-);
-
 function TabLabelWithError({ label, count }: { label: string; count: number }) {
   return (
     <span className="inline-flex items-center gap-1.5">
@@ -997,6 +975,52 @@ function ErrorFieldBlock({
   );
 }
 
+function InfoFieldBlock({
+  title,
+  message,
+  action,
+}: {
+  title: string;
+  message: string;
+  action: string;
+}) {
+  return (
+    <div className="rounded-xl border border-info/30 bg-info-background/10 p-3">
+      <div className="flex items-start gap-2">
+        <Info size={14} className="mt-0.5 shrink-0 text-info" />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold text-foreground">{title}</p>
+          <p className="mt-1 text-xs leading-4 text-foreground-muted">{message}</p>
+          <p className="mt-1 text-xs leading-4 text-foreground-muted">{action}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WarningFieldBlock({
+  title,
+  message,
+  action,
+}: {
+  title: string;
+  message: string;
+  action: string;
+}) {
+  return (
+    <div className="rounded-xl border border-warning/50 bg-warning-background/25 p-3">
+      <div className="flex items-start gap-2">
+        <TriangleAlert size={14} className="mt-0.5 shrink-0 text-warning" />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold text-foreground">{title}</p>
+          <p className="mt-1 text-xs leading-4 text-warning">{message}</p>
+          <p className="mt-1 text-xs leading-4 text-foreground-muted">{action}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SuccessFieldBlock({
   title,
   message,
@@ -1015,48 +1039,6 @@ function SuccessFieldBlock({
           <p className="mt-1 text-xs leading-4 text-success">{message}</p>
           <p className="mt-1 text-xs leading-4 text-foreground-muted">{action}</p>
         </div>
-      </div>
-    </div>
-  );
-}
-
-const ALERT_PATTERN_NOTES = [
-  {
-    title: 'Tab error count',
-    description: 'Marks each tab with the number of issues inside that section.',
-  },
-  {
-    title: 'Inline field error',
-    description: 'Places the message and next action directly under the invalid code editor.',
-  },
-  {
-    title: 'Section error block',
-    description:
-      'Explains tab-specific configuration problems when the field is not currently visible.',
-  },
-];
-
-function AlertPatternNoteCard() {
-  return (
-    <div className="w-[320px] rounded-xl border border-border-subtle bg-surface-overlay p-4 shadow-sm">
-      <div className="flex items-start gap-2">
-        <CircleAlert size={15} className="mt-0.5 shrink-0 text-error" />
-        <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-foreground">Alert and error types included</h3>
-          <p className="mt-1 text-xs leading-4 text-foreground-muted">
-            The story combines tab-level cues with local, action-oriented messages.
-          </p>
-        </div>
-      </div>
-      <div className="mt-3 flex flex-col gap-2">
-        {ALERT_PATTERN_NOTES.map((note) => (
-          <div key={note.title} className="flex gap-2">
-            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-error" />
-            <p className="text-xs leading-4 text-foreground-muted">
-              <span className="font-medium text-foreground">{note.title}:</span> {note.description}
-            </p>
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -1219,197 +1201,6 @@ export const CompactEditor: Story = {
   name: 'Editor Compact',
   render: () => <CompactEditorStory />,
 };
-
-function AlertsAndErrorsStory() {
-  const monacoTheme = useMonacoTheme();
-  const [activeTab, setActiveTab] = useState<CompactTabId>('parameters');
-  const [cases, setCases] = useState([{ id: 1, title: 'Case 1' }]);
-  const nextIdRef = useRef(2);
-  const [defaultBranch, setDefaultBranch] = useState(false);
-  const [label, setLabel] = useState('Switch');
-  const [category, setCategory] = useState('Control');
-  const [editingLabel, setEditingLabel] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(false);
-  const labelRef = useRef<HTMLInputElement>(null);
-  const categoryRef = useRef<HTMLInputElement>(null);
-
-  const addCase = () => {
-    const id = nextIdRef.current++;
-    setCases((prev) => [...prev, { id, title: `Case ${id}` }]);
-  };
-  const deleteCase = (id: number) => setCases((prev) => prev.filter((c) => c.id !== id));
-  const updateCaseTitle = (id: number, title: string) =>
-    setCases((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
-  const conditionIssue = ALERT_ISSUES.find((issue) => issue.id === 'condition');
-
-  return (
-    <div className="flex items-start gap-8">
-      <div className="flex w-[320px] shrink-0 flex-col gap-4">
-        <AlertPatternNoteCard />
-      </div>
-      <PanelFrame>
-        <NodePropertyPanel
-          panelTitle="Properties"
-          onClose={() => {}}
-          contentInset="0.875rem"
-          className="h-[760px]"
-        >
-          <div className="flex h-full flex-col">
-            <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-              <div className="flex min-w-0 flex-1 items-center gap-3.5">
-                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
-                  <GitFork />
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col justify-center">
-                  {editingLabel ? (
-                    <input
-                      ref={labelRef}
-                      value={label}
-                      onChange={(e) => setLabel(e.target.value)}
-                      onBlur={() => setEditingLabel(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
-                      }}
-                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
-                      autoFocus
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingLabel(true);
-                        setTimeout(() => labelRef.current?.select(), 0);
-                      }}
-                      className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
-                    >
-                      {label}
-                    </button>
-                  )}
-                  {editingCategory ? (
-                    <input
-                      ref={categoryRef}
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      onBlur={() => setEditingCategory(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
-                      }}
-                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
-                      autoFocus
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingCategory(true);
-                        setTimeout(() => categoryRef.current?.select(), 0);
-                      }}
-                      className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
-                    >
-                      {category}
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="shrink-0">
-                <DebugButton />
-              </div>
-            </div>
-
-            <Tabs
-              value={activeTab}
-              onValueChange={(value) => setActiveTab(value as CompactTabId)}
-              className="flex min-h-0 flex-1 flex-col"
-            >
-              <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <TabsList className={TAB_LIST_CLASS}>
-                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                    <TabLabelWithError
-                      label="Parameters"
-                      count={ALERT_ISSUE_COUNT_BY_TAB.parameters}
-                    />
-                  </TabsTrigger>
-                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                    <TabLabelWithError
-                      label="Error handling"
-                      count={ALERT_ISSUE_COUNT_BY_TAB['error-handling']}
-                    />
-                  </TabsTrigger>
-                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                    <TabLabelWithError label="Advanced" count={ALERT_ISSUE_COUNT_BY_TAB.advanced} />
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
-                <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <span className="text-xs font-medium leading-4 text-foreground">Cases</span>
-                </div>
-                <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  {cases.map((c, i) => (
-                    <CasePanel
-                      key={c.id}
-                      caseTitle={c.title}
-                      onTitleChange={(title) => updateCaseTitle(c.id, title)}
-                      onDelete={() => deleteCase(c.id)}
-                      monacoTheme={monacoTheme}
-                      defaultExpanded={i === 0}
-                      defaultValue={i === 0 ? 'input.status' : ''}
-                      errorMessage={i === 0 ? conditionIssue?.message : undefined}
-                      errorAction={i === 0 ? conditionIssue?.action : undefined}
-                    />
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={addCase}
-                  className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
-                >
-                  <Plus size={12} />
-                  Add case
-                </button>
-                <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
-                  <span className="text-xs text-foreground-muted">Default branch</span>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="error-handling" className="mt-0 min-h-0 flex-1 overflow-auto">
-                <div className="flex flex-col gap-3 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs font-medium leading-4 text-foreground">
-                      Failure behavior
-                    </span>
-                    <ErrorFieldBlock
-                      title="Fallback path"
-                      message="No fallback path is configured for failed case evaluation."
-                      action="Choose a fallback branch or enable Default branch before running this node."
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="advanced" className="mt-0 min-h-0 flex-1 overflow-auto">
-                <div className="flex flex-col gap-3 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs font-medium leading-4 text-foreground">
-                      Execution limits
-                    </span>
-                    <ErrorFieldBlock
-                      title="Timeout"
-                      message="Retry duration exceeds the node timeout."
-                      action="Increase timeout to 60 seconds or reduce retries to 1."
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </NodePropertyPanel>
-      </PanelFrame>
-    </div>
-  );
-}
 
 // ============================================================================
 // Input Editor
@@ -3402,87 +3193,6 @@ function QuickFormStory() {
 }
 
 // ============================================================================
-// Inline Editing
-// Title and description in the node identity row are directly editable.
-// ============================================================================
-
-function InlineEditingStory() {
-  const [name, setName] = useState('Policy check');
-  const [type, setType] = useState('AI Agent');
-  const [editingName, setEditingName] = useState(false);
-  const [editingType, setEditingType] = useState(false);
-  const nameRef = useRef<HTMLInputElement>(null);
-  const typeRef = useRef<HTMLInputElement>(null);
-
-  return (
-    <PanelFrame>
-      <NodePropertyPanel panelTitle="Properties" onClose={() => {}} contentInset="0.875rem">
-        {/* Node identity row — inline editable */}
-        <div className="flex shrink-0 items-center gap-3 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            {editingName ? (
-              <input
-                ref={nameRef}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onBlur={() => setEditingName(false)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === 'Escape') setEditingName(false);
-                }}
-                className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.4px] text-foreground outline-none ring-1 ring-brand"
-                autoFocus
-              />
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingName(true);
-                  setTimeout(() => nameRef.current?.select(), 0);
-                }}
-                className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.4px] text-foreground transition hover:bg-surface-overlay"
-              >
-                {name}
-              </button>
-            )}
-            {editingType ? (
-              <input
-                ref={typeRef}
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                onBlur={() => setEditingType(false)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === 'Escape') setEditingType(false);
-                }}
-                className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-sm leading-5 text-foreground outline-none ring-1 ring-brand"
-                autoFocus
-              />
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingType(true);
-                  setTimeout(() => typeRef.current?.select(), 0);
-                }}
-                className="truncate rounded px-1.5 py-0.5 text-left text-sm leading-5 text-foreground-muted transition hover:bg-surface-overlay"
-              >
-                {type}
-              </button>
-            )}
-          </div>
-          <button
-            type="button"
-            className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
-          >
-            <Play size={14} />
-            Run
-          </button>
-        </div>
-      </NodePropertyPanel>
-    </PanelFrame>
-  );
-}
-
-// ============================================================================
 // Panel UI Inventory
 // Interactive reference of common controls and layout patterns used in panels.
 // ============================================================================
@@ -3503,6 +3213,8 @@ function InventoryField({
   );
 }
 
+const PatternNotesVisibilityContext = createContext(true);
+
 function PatternNote({
   title,
   eyebrow = 'Layout pattern',
@@ -3513,8 +3225,9 @@ function PatternNote({
   children: ReactNode;
 }) {
   const [dismissed, setDismissed] = useState(false);
+  const notesVisible = useContext(PatternNotesVisibilityContext);
 
-  if (dismissed) return null;
+  if (dismissed || !notesVisible) return null;
 
   return (
     <aside className="rounded-lg border border-border-subtle bg-surface-overlay p-3">
@@ -3716,9 +3429,71 @@ function InventorySubContainer({
   );
 }
 
+type CompositionFieldItem = { id: number; label: string };
+
+function SortableCompositionField({
+  field,
+  onDelete,
+}: {
+  field: CompositionFieldItem;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: field.id,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn(
+        'flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-raised p-2',
+        isDragging && 'opacity-30'
+      )}
+    >
+      <button
+        type="button"
+        aria-label={`Drag ${field.label} to reorder`}
+        title="Drag to reorder"
+        className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground [cursor:grab] active:[cursor:grabbing]"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={13} />
+      </button>
+      <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
+        {field.label}
+      </span>
+      <CanvasTooltip content={`Delete ${field.label}`}>
+        <Button
+          variant="ghost"
+          size="4xs"
+          icon
+          aria-label={`Delete ${field.label}`}
+          onClick={onDelete}
+        >
+          <Trash2 size={13} />
+        </Button>
+      </CanvasTooltip>
+    </div>
+  );
+}
+
+function CompositionFieldDragOverlay({ field }: { field: CompositionFieldItem }) {
+  return (
+    <div className="flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-raised p-2 shadow-lg [cursor:grabbing]">
+      <GripVertical size={13} className="shrink-0 text-foreground-subtle" />
+      <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
+        {field.label}
+      </span>
+    </div>
+  );
+}
+
 function PanelUIInventoryStory() {
   const [enabled, setEnabled] = useState(true);
   const [checked, setChecked] = useState(true);
+  const [notesVisible, setNotesVisible] = useState(true);
   const compositionFieldId = useId();
   const [compositionValue, setCompositionValue] = useState('invoice.total');
   const [compositionLocked, setCompositionLocked] = useState(true);
@@ -3731,6 +3506,14 @@ function PanelUIInventoryStory() {
     { id: 1, label: 'Invoice number' },
     { id: 2, label: 'Approved amount' },
   ]);
+  const compositionSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+  const [activeCompositionFieldId, setActiveCompositionFieldId] = useState<number | null>(null);
+  const activeCompositionField = compositionFields.find(
+    (field) => field.id === activeCompositionFieldId
+  );
   const allInventorySections = ['text-fields', 'choices', 'collapsed'];
   const allSubContainerSections = ['text-fields', 'choices', 'advanced'];
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
@@ -3769,6 +3552,7 @@ function PanelUIInventoryStory() {
         onClose={() => {}}
         className="h-[720px]"
       >
+        <PatternNotesVisibilityContext.Provider value={notesVisible}>
         <Tabs defaultValue="layout" className="flex h-full min-h-0 flex-col">
           <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle px-3.5 py-3">
             <ScrollableTabsList
@@ -3784,7 +3568,21 @@ function PanelUIInventoryStory() {
               <TabsTrigger value="actions" className={TAB_TRIGGER_CLASS}>
                 Actions
               </TabsTrigger>
+              <TabsTrigger value="composition" className={TAB_TRIGGER_CLASS}>
+                Composition
+              </TabsTrigger>
             </ScrollableTabsList>
+            <Button
+              variant="ghost"
+              size="4xs"
+              icon
+              onClick={() => setNotesVisible((visible) => !visible)}
+              aria-label={notesVisible ? 'Hide notes' : 'Show notes'}
+              title={notesVisible ? 'Hide notes' : 'Show notes'}
+              className="shrink-0 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+            >
+              {notesVisible ? <EyeOff size={13} /> : <Eye size={13} />}
+            </Button>
             <Button
               variant="ghost"
               size="4xs"
@@ -3832,7 +3630,7 @@ function PanelUIInventoryStory() {
                 </div>
               </div>
             </div>
-            <div className="border-t border-border-subtle px-3.5 pt-5">
+            <div className="border-t border-border-subtle px-3.5 has-[aside]:pt-5">
               <PatternNote title="Expandable sections">
                 Full-width sections that reveal or hide related fields without adding nested
                 container chrome.
@@ -3956,164 +3754,58 @@ function PanelUIInventoryStory() {
                 onExpandedSectionsChange={setExpandedSubContainerSections}
               />
             </div>
-            <div className="grid gap-5 border-t border-border-subtle px-3.5 py-5">
-              <section className="grid gap-3">
-                <PatternNote title="Lockable value field" eyebrow="Composition pattern">
-                  Combines field type, required state, AI assistance, variable insertion, and
-                  fixed or expression values in one reusable Flow control.
-                </PatternNote>
-                <LockableValueField
-                  id={compositionFieldId}
-                  label={
-                    <PanelFieldLabel
-                      htmlFor={compositionFieldId}
-                      required={compositionRequired}
-                      className="leading-4"
-                    >
-                      Invoice value
-                    </PanelFieldLabel>
-                  }
-                  headerActions={
-                    <CanvasTooltip content="Remove field">
-                      <Button variant="ghost" size="4xs" icon aria-label="Remove field">
-                        <X size={14} />
-                      </Button>
-                    </CanvasTooltip>
-                  }
-                  value={compositionValue}
-                  onValueChange={setCompositionValue}
-                  locked={compositionLocked}
-                  onLockedChange={setCompositionLocked}
-                  mode={compositionMode}
-                  onModeChange={setCompositionMode}
-                  fieldType={compositionFieldType}
-                  onFieldTypeChange={updateCompositionFieldType}
-                  required={compositionRequired}
-                  onRequiredChange={setCompositionRequired}
-                  controlsVisibility="visible"
-                />
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Repeatable field list" eyebrow="Composition pattern">
-                  Use reorder, add, and remove controls when users build a variable-length set of
-                  related fields.
-                </PatternNote>
-                <div className="grid gap-2">
-                  {compositionFields.map((field) => (
-                    <div
-                      key={field.id}
-                      className="flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-raised p-2"
-                    >
-                      <button
-                        type="button"
-                        aria-label={`Drag ${field.label} to reorder`}
-                        title="Drag to reorder"
-                        className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground [cursor:grab]"
-                      >
-                        <GripVertical size={13} />
-                      </button>
-                      <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
-                        {field.label}
-                      </span>
-                      <CanvasTooltip content={`Delete ${field.label}`}>
-                        <Button
-                          variant="ghost"
-                          size="4xs"
-                          icon
-                          aria-label={`Delete ${field.label}`}
-                          onClick={() =>
-                            setCompositionFields((fields) =>
-                              fields.filter((item) => item.id !== field.id)
-                            )
-                          }
-                        >
-                          <Trash2 size={13} />
-                        </Button>
-                      </CanvasTooltip>
-                    </div>
-                  ))}
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-brand hover:text-brand-hover"
-                    onClick={() =>
-                      setCompositionFields((fields) => [
-                        ...fields,
-                        {
-                          id: Math.max(0, ...fields.map((field) => field.id)) + 1,
-                          label: `New field ${fields.length + 1}`,
-                        },
-                      ])
-                    }
-                  >
-                    <Plus size={13} />
-                    Add field
-                  </Button>
-                </div>
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Editing modes" eyebrow="Composition pattern">
-                  Switch between a guided interface and a source representation without changing
-                  the underlying configuration.
-                </PatternNote>
-                <ToggleGroup
-                  type="single"
-                  value={compositionEditor}
-                  onValueChange={(value) => value && setCompositionEditor(value)}
-                  className="w-fit"
-                >
-                  <ToggleGroupItem value="ui" className="px-3 text-xs">
-                    UI
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="json" className="px-3 text-xs">
-                    JSON
-                  </ToggleGroupItem>
-                </ToggleGroup>
-                {compositionEditor === 'ui' ? (
-                  <InventoryField label="Form title">
-                    <Input defaultValue="Quick approve" />
-                  </InventoryField>
-                ) : (
-                  <Textarea
-                    aria-label="JSON configuration"
-                    defaultValue={'{\n  "title": "Quick approve"\n}'}
-                    rows={4}
-                    className="font-mono text-xs"
-                  />
-                )}
-              </section>
-            </div>
           </TabsContent>
 
           <TabsContent value="states" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
             <div className="grid gap-5">
               <section className="grid gap-3">
-                <PatternNote title="Status labels" eyebrow="State pattern">
-                  Short labels communicate a field or setting state without interrupting the task.
-                </PatternNote>
-                <div className="flex flex-wrap gap-2">
-                  <Badge>Default</Badge>
-                  <Badge variant="secondary">Optional</Badge>
-                  <Badge variant="outline">Read only</Badge>
-                </div>
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
                 <PatternNote title="Section messages" eyebrow="State pattern">
                   Persistent feedback summarizes a panel-level result and provides the next action
                   when one is needed.
                 </PatternNote>
+                <InfoFieldBlock
+                  title="Configuration guidance"
+                  message="This node uses the connection selected for the current folder."
+                  action="Change the folder context to use a different connection."
+                />
                 <SuccessFieldBlock
                   title="Configuration is valid"
                   message="All required fields have been completed."
                   action="This node is ready to run."
+                />
+                <WarningFieldBlock
+                  title="Review recommended"
+                  message="The request timeout is higher than the recommended value."
+                  action="Review the timeout before publishing this workflow."
                 />
                 <ErrorFieldBlock
                   title="Connection required"
                   message="No valid connection is configured for this node."
                   action="Select a connection before running this node."
                 />
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Navigation validation" eyebrow="State pattern">
+                  Error counts on tabs reveal where unresolved issues live, including problems in
+                  sections that are not currently visible.
+                </PatternNote>
+                <Tabs defaultValue="parameters">
+                  <ScrollableTabsList
+                    className={cn(TAB_LIST_CLASS, 'w-full')}
+                    scrollButtonClassName="size-6 hover:bg-surface-overlay"
+                  >
+                    <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                      <TabLabelWithError label="Parameters" count={1} />
+                    </TabsTrigger>
+                    <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                      <TabLabelWithError label="Error handling" count={2} />
+                    </TabsTrigger>
+                    <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                      Advanced
+                    </TabsTrigger>
+                  </ScrollableTabsList>
+                </Tabs>
               </section>
 
               <section className="grid gap-3 border-t border-border-subtle pt-5">
@@ -4129,7 +3821,7 @@ function PanelUIInventoryStory() {
                     <Input
                       defaultValue="Existing node"
                       aria-invalid="true"
-                      className="border-destructive"
+                      className="!border !border-error"
                     />
                     <InlineValidationMessage
                       message="This node name is already in use."
@@ -4185,6 +3877,18 @@ function PanelUIInventoryStory() {
                   >
                     Error
                   </Button>
+                </div>
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Status labels" eyebrow="State pattern">
+                  Short labels communicate passive field or setting states without interrupting
+                  the task.
+                </PatternNote>
+                <div className="flex flex-wrap gap-2">
+                  <Badge>Default</Badge>
+                  <Badge variant="secondary">Optional</Badge>
+                  <Badge variant="outline">Read only</Badge>
                 </div>
               </section>
             </div>
@@ -4258,7 +3962,150 @@ function PanelUIInventoryStory() {
               </section>
             </div>
           </TabsContent>
+
+          <TabsContent value="composition" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
+            <div className="grid gap-5">
+              <section className="grid gap-3">
+                <PatternNote title="Repeatable field list" eyebrow="Composition pattern">
+                  Use reorder, add, and remove controls when users build a variable-length set of
+                  related fields.
+                </PatternNote>
+                <div className="grid gap-2">
+                  <DndContext
+                    sensors={compositionSensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={(event) => setActiveCompositionFieldId(event.active.id as number)}
+                    onDragEnd={({ active, over }) => {
+                      if (over && active.id !== over.id) {
+                        setCompositionFields((fields) => {
+                          const oldIndex = fields.findIndex((field) => field.id === active.id);
+                          const newIndex = fields.findIndex((field) => field.id === over.id);
+                          return arrayMove(fields, oldIndex, newIndex);
+                        });
+                      }
+                      setActiveCompositionFieldId(null);
+                    }}
+                    onDragCancel={() => setActiveCompositionFieldId(null)}
+                  >
+                    <SortableContext
+                      items={compositionFields.map((field) => field.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="grid gap-2">
+                        {compositionFields.map((field) => (
+                          <SortableCompositionField
+                            key={field.id}
+                            field={field}
+                            onDelete={() =>
+                              setCompositionFields((fields) =>
+                                fields.filter((item) => item.id !== field.id)
+                              )
+                            }
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                    {createPortal(
+                      <DragOverlay>
+                        {activeCompositionField ? (
+                          <CompositionFieldDragOverlay field={activeCompositionField} />
+                        ) : null}
+                      </DragOverlay>,
+                      document.body
+                    )}
+                  </DndContext>
+                  <button
+                    type="button"
+                    className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                    onClick={() =>
+                      setCompositionFields((fields) => [
+                        ...fields,
+                        {
+                          id: Math.max(0, ...fields.map((field) => field.id)) + 1,
+                          label: `New field ${fields.length + 1}`,
+                        },
+                      ])
+                    }
+                  >
+                    <Plus size={12} />
+                    Add field
+                  </button>
+                </div>
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Editing modes" eyebrow="Composition pattern">
+                  Switch between a guided interface and a source representation without changing
+                  the underlying configuration.
+                </PatternNote>
+                <ToggleGroup
+                  type="single"
+                  size="xs"
+                  value={compositionEditor}
+                  onValueChange={(value) => value && setCompositionEditor(value)}
+                  className="w-fit"
+                >
+                  <ToggleGroupItem value="ui" className="!px-2.5 !text-xs">
+                    UI
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="json" className="!px-2.5 !text-xs">
+                    JSON
+                  </ToggleGroupItem>
+                </ToggleGroup>
+                {compositionEditor === 'ui' ? (
+                  <InventoryField label="Form title">
+                    <Input defaultValue="Quick approve" />
+                  </InventoryField>
+                ) : (
+                  <Textarea
+                    aria-label="JSON configuration"
+                    defaultValue={'{\n  "title": "Quick approve"\n}'}
+                    rows={4}
+                    className="font-mono text-xs"
+                  />
+                )}
+              </section>
+
+              <section className="grid gap-3 border-t border-border-subtle pt-5">
+                <PatternNote title="Lockable value field" eyebrow="Composition pattern">
+                  Combines field type, required state, AI assistance, variable insertion, and
+                  fixed or expression values in one reusable Flow control.
+                </PatternNote>
+                <LockableValueField
+                  id={compositionFieldId}
+                  label={
+                    <PanelFieldLabel
+                      htmlFor={compositionFieldId}
+                      required={compositionRequired}
+                      className="leading-4"
+                    >
+                      Invoice value
+                    </PanelFieldLabel>
+                  }
+                  headerActions={
+                    <CanvasTooltip content="Remove field">
+                      <Button variant="ghost" size="4xs" icon aria-label="Remove field">
+                        <X size={14} />
+                      </Button>
+                    </CanvasTooltip>
+                  }
+                  value={compositionValue}
+                  onValueChange={setCompositionValue}
+                  locked={compositionLocked}
+                  onLockedChange={setCompositionLocked}
+                  mode={compositionMode}
+                  onModeChange={setCompositionMode}
+                  fieldType={compositionFieldType}
+                  onFieldTypeChange={updateCompositionFieldType}
+                  required={compositionRequired}
+                  onRequiredChange={setCompositionRequired}
+                  controlsVisibility="visible"
+                />
+              </section>
+            </div>
+          </TabsContent>
           </Tabs>
+        </PatternNotesVisibilityContext.Provider>
         </NodePropertyPanel>
       </PanelFrame>
       <Toaster className="[&_[data-description]]:!text-foreground-muted [&_[data-icon]]:!mt-0.5 [&_[data-icon]]:!self-start" />
@@ -4352,16 +4199,6 @@ different widths (truncation, action-button visibility).
   ),
 };
 
-export const PanelUIInventory: Story = {
-  name: 'UI Inventory',
-  render: () => <PanelUIInventoryStory />,
-};
-
-export const AlertsAndErrors: Story = {
-  name: 'UI Alerts and Errors',
-  render: () => <AlertsAndErrorsStory />,
-};
-
 const SURFACE_REMAP = { '--surface-raised': 'var(--surface-overlay)' } as CSSProperties;
 
 function CompactResponsivePanelStory() {
@@ -4423,15 +4260,11 @@ function CompactResponsivePanelStory() {
   );
 }
 
-export const Responsive: Story = {
-  name: 'UI Responsive',
-  render: () => (
-    <div className="flex items-start gap-[80px]">
+function ResponsiveStory() {
+  return (
+    <div className="flex items-start gap-[30px]">
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-xs font-medium text-foreground">Fixed Size</span>
-          <span className="text-xs text-foreground-muted">Example Spacious</span>
-        </div>
+        <span className="text-xs font-medium text-foreground">Example Spacious</span>
         <PanelFrame>
           <NodePropertyPanel
             panelTitle="Properties"
@@ -4447,17 +4280,14 @@ export const Responsive: Story = {
         </PanelFrame>
       </div>
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-xs font-medium text-foreground">Fixed Size</span>
-          <span className="text-xs text-foreground-muted">Example Compact</span>
-        </div>
+        <span className="text-xs font-medium text-foreground">Example Compact</span>
         <PanelFrame width="w-[280px]">
           <CompactResponsivePanelStory />
         </PanelFrame>
       </div>
     </div>
-  ),
-};
+  );
+}
 
 // ============================================================================
 // Input / Output panels (NodeIOView)
