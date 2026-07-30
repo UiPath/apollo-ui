@@ -24,6 +24,8 @@ const DraggableTaskComponent = ({
   isDragDisabled,
   projectedDepth,
   isTaskLoading,
+  isReadOnly,
+  onToggleBreakpoint,
 }: DraggableTaskProps) => {
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
@@ -92,7 +94,11 @@ const DraggableTaskComponent = ({
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
-      <TaskBreakpointDot taskId={task.id} active={!!taskExecution?.breakpoint} />
+      <TaskBreakpointDot
+        taskId={task.id}
+        active={!!taskExecution?.breakpoint}
+        onToggle={onToggleBreakpoint}
+      />
       <TaskContent
         task={task}
         taskExecution={taskExecution}
@@ -103,6 +109,7 @@ const DraggableTaskComponent = ({
               task={task}
               getContextMenuItems={getContextMenuItems}
               disabled={isTaskLoading}
+              hideTrigger={isReadOnly}
             />
           ) : undefined
         }

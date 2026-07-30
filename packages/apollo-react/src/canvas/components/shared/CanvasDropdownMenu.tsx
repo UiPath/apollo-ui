@@ -18,6 +18,18 @@ interface CanvasDropdownMenuProps {
   triggerTestId?: string;
   triggerAriaLabel?: string;
   triggerClassName?: string;
+  /**
+   * Drop the visible "⋮" button and keep only an invisible anchor, for callers whose menu is
+   * reached solely by right-click. Radix positions the popup against its trigger, so the anchor
+   * still has to exist and sit where the menu should open from.
+   */
+  hideTrigger?: boolean;
+  /**
+   * Placement for that invisible anchor, as the popup opens against it. Give it the box the "⋮"
+   * button would have occupied and the menu lands where it does with the button shown — only the
+   * caller knows that spot, since it depends on the surrounding padding.
+   */
+  hiddenTriggerClassName?: string;
   contentClassName?: string;
   disabled?: boolean;
 }
@@ -40,24 +52,36 @@ export function CanvasDropdownMenu({
   triggerTestId,
   triggerAriaLabel = 'Dropdown menu',
   triggerClassName = 'h-6 w-6',
+  hideTrigger,
+  hiddenTriggerClassName,
   contentClassName,
   disabled,
 }: CanvasDropdownMenuProps) {
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange} modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={triggerClassName}
-          data-testid={triggerTestId}
-          aria-label={triggerAriaLabel}
-          disabled={disabled}
-          onClick={(e: React.MouseEvent) => e.stopPropagation()}
-          onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
-        >
-          <CanvasIcon icon="ellipsis-vertical" size={16} />
-        </Button>
+        {hideTrigger ? (
+          // Absolute so the anchor leaves the flex flow entirely — a zero-width flex item would
+          // still draw one of the row's gaps. No test id: that identifies the visible button, so
+          // callers can assert the "⋮" is gone.
+          <span
+            aria-hidden
+            className={`pointer-events-none absolute ${hiddenTriggerClassName ?? ''}`}
+          />
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className={triggerClassName}
+            data-testid={triggerTestId}
+            aria-label={triggerAriaLabel}
+            disabled={disabled}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+          >
+            <CanvasIcon icon="ellipsis-vertical" size={16} />
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={4} className={contentClassName}>
         {menuItems.map((item, index) => {

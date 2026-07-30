@@ -1,33 +1,89 @@
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '../../utils/testing';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 
-// The marker is display-only; adding/removing breakpoints is done via the task's
-// right-click menu (consumer-supplied). These tests cover the marker itself.
 describe('TaskBreakpointDot', () => {
-  it('renders nothing when no breakpoint is set', () => {
-    render(<TaskBreakpointDot taskId="t1" active={false} />);
+  // Design time: no toggle handler, so the marker is inert and breakpoints are
+  // managed through the task's right-click menu.
+  describe('without a toggle handler', () => {
+    it('renders nothing when no breakpoint is set', () => {
+      render(<TaskBreakpointDot taskId="t1" active={false} />);
 
-    expect(screen.queryByTestId('stage-task-breakpoint-t1')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('stage-task-breakpoint-t1')).not.toBeInTheDocument();
+    });
+
+    it('renders a solid marker when a breakpoint is set', () => {
+      render(<TaskBreakpointDot taskId="t1" active={true} />);
+
+      expect(screen.getByTestId('stage-task-breakpoint-t1')).toBeInTheDocument();
+    });
+
+    it('is display-only and never intercepts pointer events', () => {
+      // The marker must let clicks/drags on the card corner pass through to the task.
+      render(<TaskBreakpointDot taskId="t1" active={true} />);
+
+      expect(screen.getByTestId('stage-task-breakpoint-t1')).toHaveClass('pointer-events-none');
+    });
+
+    it('offers no add affordance', () => {
+      render(<TaskBreakpointDot taskId="t1" active={false} />);
+
+      expect(screen.queryByTestId('stage-task-add-breakpoint-t1')).not.toBeInTheDocument();
+    });
+
+    it('is static: the marker never animates (matches Flow, which does not pulse)', () => {
+      const { container } = render(<TaskBreakpointDot taskId="t1" active={true} />);
+
+      expect(container.querySelector('[class*="animate-"]')).not.toBeInTheDocument();
+    });
   });
 
-  it('renders a solid marker when a breakpoint is set', () => {
-    render(<TaskBreakpointDot taskId="t1" active={true} />);
+  // Debug view: the gutter becomes clickable in both directions.
+  describe('with a toggle handler', () => {
+    it('removes the breakpoint when the solid marker is clicked', async () => {
+      const onToggle = vi.fn();
+      const user = userEvent.setup();
+      render(<TaskBreakpointDot taskId="t1" active={true} onToggle={onToggle} />);
 
-    expect(screen.getByTestId('stage-task-breakpoint-t1')).toBeInTheDocument();
-  });
+      await user.click(screen.getByTestId('stage-task-breakpoint-t1'));
 
-  it('is display-only and never intercepts pointer events', () => {
-    // Breakpoints are managed via the task menu / hover toolbar; the marker itself
-    // must let clicks/drags on the card corner pass through to the task.
-    render(<TaskBreakpointDot taskId="t1" active={true} />);
+      expect(onToggle).toHaveBeenCalledWith('t1');
+    });
 
-    expect(screen.getByTestId('stage-task-breakpoint-t1')).toHaveClass('pointer-events-none');
-  });
+    it('adds a breakpoint when the ghosted marker is clicked', async () => {
+      const onToggle = vi.fn();
+      const user = userEvent.setup();
+      render(<TaskBreakpointDot taskId="t1" active={false} onToggle={onToggle} />);
 
-  it('is static: the marker never animates (matches Flow, which does not pulse)', () => {
-    const { container } = render(<TaskBreakpointDot taskId="t1" active={true} />);
+      await user.click(screen.getByTestId('stage-task-add-breakpoint-t1'));
 
-    expect(container.querySelector('[class*="animate-"]')).not.toBeInTheDocument();
+      expect(onToggle).toHaveBeenCalledWith('t1');
+    });
+
+    it('keeps the add affordance out of the way until the row is hovered', () => {
+      render(<TaskBreakpointDot taskId="t1" active={false} onToggle={vi.fn()} />);
+
+      // Opacity is driven by StageTask's `:hover .task-breakpoint-add` rule.
+      expect(screen.getByTestId('stage-task-add-breakpoint-t1')).toHaveClass('task-breakpoint-add');
+    });
+
+    it('does not ghost a marker that is already set', () => {
+      render(<TaskBreakpointDot taskId="t1" active={true} onToggle={vi.fn()} />);
+
+      expect(screen.getByTestId('stage-task-breakpoint-t1')).not.toHaveClass('task-breakpoint-add');
+    });
+
+    it('labels each direction so the action is clear before clicking', () => {
+      const { rerender } = render(
+        <TaskBreakpointDot taskId="t1" active={false} onToggle={vi.fn()} />
+      );
+      expect(screen.getByRole('button', { name: 'Click to add a breakpoint' })).toBeInTheDocument();
+
+      rerender(<TaskBreakpointDot taskId="t1" active={true} onToggle={vi.fn()} />);
+      expect(
+        screen.getByRole('button', { name: 'Click to remove the breakpoint' })
+      ).toBeInTheDocument();
+    });
   });
 });

@@ -15,6 +15,10 @@ interface EventDrivenTaskItemProps {
   getContextMenuItems?: (task: StageTaskItem) => NodeMenuItem[];
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
   isTaskLoading?: boolean;
+  /** Read-only (Debug) view: the task's "⋮" button is dropped, right-click still opens the menu. */
+  isReadOnly?: boolean;
+  /** Makes the breakpoint gutter interactive. Passed only in the Debug view. */
+  onToggleBreakpoint?: (taskId: string) => void;
 }
 
 const EventDrivenTaskItemComponent = ({
@@ -24,6 +28,8 @@ const EventDrivenTaskItemComponent = ({
   getContextMenuItems,
   onTaskClick,
   isTaskLoading,
+  isReadOnly,
+  onToggleBreakpoint,
 }: EventDrivenTaskItemProps) => {
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
@@ -49,7 +55,11 @@ const EventDrivenTaskItemComponent = ({
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
-      <TaskBreakpointDot taskId={task.id} active={!!taskExecution?.breakpoint} />
+      <TaskBreakpointDot
+        taskId={task.id}
+        active={!!taskExecution?.breakpoint}
+        onToggle={onToggleBreakpoint}
+      />
       <TaskContent task={task} taskExecution={taskExecution} />
 
       {getContextMenuItems && (
@@ -58,6 +68,7 @@ const EventDrivenTaskItemComponent = ({
           task={task}
           getContextMenuItems={getContextMenuItems}
           disabled={isTaskLoading}
+          hideTrigger={isReadOnly}
         />
       )}
     </StageTask>

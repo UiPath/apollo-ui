@@ -14,4 +14,8 @@ export interface DraggableTaskProps {
   isDragDisabled?: boolean;
   projectedDepth?: number;
   isTaskLoading?: boolean;
+  /** Read-only (Debug) view: the task's "⋮" button is dropped, right-click still opens the menu. */
+  isReadOnly?: boolean;
+  /** Makes the breakpoint gutter interactive. Passed only in the Debug view. */
+  onToggleBreakpoint?: (taskId: string) => void;
 }

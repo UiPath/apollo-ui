@@ -117,6 +117,47 @@ describe('DraggableTask', () => {
       expect(statusButton.parentElement).toBe(actions);
       expect(menuButton.parentElement).toBe(actions);
     });
+
+    it('does not render the menu button when read-only', () => {
+      const menuItems = createMenuItems(vi.fn());
+
+      render(<DraggableTask {...defaultProps} isReadOnly getContextMenuItems={() => menuItems} />);
+
+      expect(screen.queryByTestId('stage-task-menu-task-1')).not.toBeInTheDocument();
+    });
+
+    it('takes the hidden trigger out of flow so it draws none of the row gap', () => {
+      const menuItems = createMenuItems(vi.fn());
+
+      render(
+        <DraggableTask
+          {...defaultProps}
+          isReadOnly
+          taskExecution={{ status: 'Completed' }}
+          getContextMenuItems={() => menuItems}
+        />
+      );
+
+      const actions = screen.getByTestId('stage-task-actions-task-1');
+      const anchor = actions.querySelector('[aria-haspopup="menu"]');
+      expect(anchor).toHaveClass('absolute', 'pointer-events-none', 'right-1.5', 'h-4', 'w-0');
+      expect(screen.getByRole('button', { name: 'Completed' })).toBeInTheDocument();
+    });
+  });
+
+  describe('Read-only Menu Access', () => {
+    it('still opens the menu on right-click when the button is hidden', async () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(<DraggableTask {...defaultProps} isReadOnly getContextMenuItems={() => menuItems} />);
+
+      fireEvent.contextMenu(screen.getByTestId('stage-task-task-1'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Move Up')).toBeInTheDocument();
+      });
+    });
   });
 
   describe('Menu Opening and Closing', () => {
