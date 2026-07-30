@@ -846,6 +846,17 @@ describe('StageNode - SLA Indicator', () => {
     expect(screen.queryByTestId('stage-sla-stage-1')).not.toBeInTheDocument();
   });
 
+  it('caps the stage duration at its three largest units', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { duration: 'Duration: 6m 2w 2d 2h 59m 36s' },
+        taskStatus: {},
+      },
+    });
+
+    expect(screen.getByTestId('stage-duration-stage-1')).toHaveTextContent('Duration: 6m 2w 2d');
+  });
+
   it('renders slaText without an icon when slaIcon is omitted', () => {
     renderStageNode({
       execution: {

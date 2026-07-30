@@ -8,6 +8,7 @@ import { CanvasIcon } from '../../utils/icon-registry';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { getExecutionStatusColor } from '../ExecutionStatusIcon/ExecutionStatusIcon';
+import { formatDuration } from './formatDuration';
 import { StageChip, StageHeader } from './StageNode.styles';
 import type { StageNodeProps, StageSlaIcon, StageStatus } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
@@ -274,7 +275,7 @@ const StageNodeHeaderInner = ({
           className="flex min-h-8 items-center text-xs text-foreground-muted"
           data-testid={`stage-duration-${id}`}
         >
-          {stageDuration}
+          {formatDuration(stageDuration)}
         </span>
       )}
     </StageHeader>
