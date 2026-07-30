@@ -118,7 +118,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import {
   createContext,
   lazy,
@@ -3202,7 +3202,7 @@ function InventoryField({
 }: {
   label: string;
   description?: string;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   return (
     <PanelField label={label} description={description}>
@@ -3507,7 +3507,7 @@ function PanelUIInventoryStory() {
   const activeCompositionField = compositionFields.find(
     (field) => field.id === activeCompositionFieldId
   );
-  const allInventorySections = ['text-fields', 'choices', 'collapsed'];
+  const allInventorySections = ['text-fields', 'choices', 'advanced'];
   const allSubContainerSections = ['text-fields', 'choices', 'advanced'];
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [expandedSubContainerSections, setExpandedSubContainerSections] = useState<string[]>([]);
@@ -3729,7 +3729,7 @@ function PanelUIInventoryStory() {
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="collapsed" className="border-border-subtle px-3.5">
+                  <AccordionItem value="advanced" className="border-border-subtle px-3.5">
                     <AccordionTrigger className="group py-4 text-sm hover:no-underline">
                       <span className="text-foreground transition-colors group-hover:text-foreground-muted">
                         Advanced options
