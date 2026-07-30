@@ -1387,7 +1387,9 @@ function InputEditorStory() {
             </div>
             <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
               <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <span className="text-xs font-medium leading-4 text-foreground">Output messaging</span>
+                <span className="text-xs font-medium leading-4 text-foreground">
+                  Output messaging
+                </span>
               </div>
               <div className="flex flex-col gap-3 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
                 {cases.map((c) => (
@@ -2654,11 +2656,7 @@ function LockableValueFieldShowcase({
         <LockableValueField
           id={fullViewId}
           label={
-            <PanelFieldLabel
-              htmlFor={fullViewId}
-              required={showcaseRequired}
-              className="leading-4"
-            >
+            <PanelFieldLabel htmlFor={fullViewId} required={showcaseRequired} className="leading-4">
               Label
             </PanelFieldLabel>
           }
@@ -3368,11 +3366,7 @@ function InventorySubContainer({
               <Label htmlFor="sub-container-enabled" className="text-xs">
                 Enabled
               </Label>
-              <Switch
-                id="sub-container-enabled"
-                checked={enabled}
-                onCheckedChange={setEnabled}
-              />
+              <Switch id="sub-container-enabled" checked={enabled} onCheckedChange={setEnabled} />
             </div>
             <InventoryField label="Confidence threshold" description="Current value: 75%">
               <Slider defaultValue={[75]} max={100} step={5} />
@@ -3498,8 +3492,7 @@ function PanelUIInventoryStory() {
   const [compositionValue, setCompositionValue] = useState('invoice.total');
   const [compositionLocked, setCompositionLocked] = useState(true);
   const [compositionMode, setCompositionMode] = useState<LockableValueFieldMode>('fixed');
-  const [compositionFieldType, setCompositionFieldType] =
-    useState<LockableFieldType>('string');
+  const [compositionFieldType, setCompositionFieldType] = useState<LockableFieldType>('string');
   const [compositionRequired, setCompositionRequired] = useState(true);
   const [compositionEditor, setCompositionEditor] = useState('ui');
   const [compositionFields, setCompositionFields] = useState([
@@ -3543,569 +3536,579 @@ function PanelUIInventoryStory() {
     <>
       <PanelFrame>
         <NodePropertyPanel
-        panelTitle="Properties"
-        nodeIcon={<Sparkles />}
-        nodeLabel="UI element inventory"
-        nodeCategory="Panel reference"
-        action={<RunButton />}
-        contentInset="0.875rem"
-        onClose={() => {}}
-        className="h-[720px]"
-      >
-        <PatternNotesVisibilityContext.Provider value={notesVisible}>
-        <Tabs defaultValue="layout" className="flex h-full min-h-0 flex-col">
-          <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle px-3.5 py-3">
-            <ScrollableTabsList
-              className={cn(TAB_LIST_CLASS, 'min-w-0 flex-1')}
-              scrollButtonClassName="size-6 hover:bg-surface-overlay"
-            >
-              <TabsTrigger value="layout" className={TAB_TRIGGER_CLASS}>
-                Layout
-              </TabsTrigger>
-              <TabsTrigger value="states" className={TAB_TRIGGER_CLASS}>
-                States
-              </TabsTrigger>
-              <TabsTrigger value="actions" className={TAB_TRIGGER_CLASS}>
-                Actions
-              </TabsTrigger>
-              <TabsTrigger value="composition" className={TAB_TRIGGER_CLASS}>
-                Composition
-              </TabsTrigger>
-            </ScrollableTabsList>
-            <Button
-              variant="ghost"
-              size="4xs"
-              icon
-              onClick={() => setNotesVisible((visible) => !visible)}
-              aria-label={notesVisible ? 'Hide notes' : 'Show notes'}
-              title={notesVisible ? 'Hide notes' : 'Show notes'}
-              className="shrink-0 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
-            >
-              {notesVisible ? <EyeOff size={13} /> : <Eye size={13} />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="4xs"
-              icon
-              onClick={toggleAllSections}
-              aria-label={allSectionsExpanded ? 'Collapse all sections' : 'Expand all sections'}
-              title={allSectionsExpanded ? 'Collapse all sections' : 'Expand all sections'}
-              className="shrink-0 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
-            >
-              <ChevronsUpDown size={13} />
-            </Button>
-          </div>
-
-          <TabsContent value="layout" className="mt-0 min-h-0 flex-1 overflow-y-auto">
-            <div className="grid gap-4 px-3.5 py-5">
-              <PatternNote title="Flat content">
-                A simple, always-visible layout for short configurations that do not need
-                collapsible sections or nested containers.
-              </PatternNote>
-              <div className="grid gap-4">
-                <InventoryField label="Name" description="A field placed directly in the panel.">
-                  <Input defaultValue="Extract invoice data" />
-                </InventoryField>
-                <InventoryField label="Connection">
-                  <Select defaultValue="production">
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="production">Production</SelectItem>
-                      <SelectItem value="staging">Staging</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </InventoryField>
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <Label htmlFor="flat-pattern-enabled" className="text-xs">
-                      Enabled
-                    </Label>
-                    <p className="text-xs text-foreground-muted">
-                      Run this node in the workflow.
-                    </p>
-                  </div>
-                  <Switch id="flat-pattern-enabled" defaultChecked />
-                </div>
+          panelTitle="Properties"
+          nodeIcon={<Sparkles />}
+          nodeLabel="UI element inventory"
+          nodeCategory="Panel reference"
+          action={<RunButton />}
+          contentInset="0.875rem"
+          onClose={() => {}}
+          className="h-[720px]"
+        >
+          <PatternNotesVisibilityContext.Provider value={notesVisible}>
+            <Tabs defaultValue="layout" className="flex h-full min-h-0 flex-col">
+              <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle px-3.5 py-3">
+                <ScrollableTabsList
+                  className={cn(TAB_LIST_CLASS, 'min-w-0 flex-1')}
+                  scrollButtonClassName="size-6 hover:bg-surface-overlay"
+                >
+                  <TabsTrigger value="layout" className={TAB_TRIGGER_CLASS}>
+                    Layout
+                  </TabsTrigger>
+                  <TabsTrigger value="states" className={TAB_TRIGGER_CLASS}>
+                    States
+                  </TabsTrigger>
+                  <TabsTrigger value="actions" className={TAB_TRIGGER_CLASS}>
+                    Actions
+                  </TabsTrigger>
+                  <TabsTrigger value="composition" className={TAB_TRIGGER_CLASS}>
+                    Composition
+                  </TabsTrigger>
+                </ScrollableTabsList>
+                <Button
+                  variant="ghost"
+                  size="4xs"
+                  icon
+                  onClick={() => setNotesVisible((visible) => !visible)}
+                  aria-label={notesVisible ? 'Hide notes' : 'Show notes'}
+                  title={notesVisible ? 'Hide notes' : 'Show notes'}
+                  className="shrink-0 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+                >
+                  {notesVisible ? <EyeOff size={13} /> : <Eye size={13} />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="4xs"
+                  icon
+                  onClick={toggleAllSections}
+                  aria-label={allSectionsExpanded ? 'Collapse all sections' : 'Expand all sections'}
+                  title={allSectionsExpanded ? 'Collapse all sections' : 'Expand all sections'}
+                  className="shrink-0 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+                >
+                  <ChevronsUpDown size={13} />
+                </Button>
               </div>
-            </div>
-            <div className="border-t border-border-subtle px-3.5 has-[aside]:pt-5">
-              <PatternNote title="Expandable sections">
-                Full-width sections that reveal or hide related fields without adding nested
-                container chrome.
-              </PatternNote>
-            </div>
-            <Accordion
-              type="multiple"
-              value={expandedSections}
-              onValueChange={setExpandedSections}
-            >
-              <AccordionItem value="text-fields" className="border-border-subtle px-3.5">
-                <AccordionTrigger className="group py-4 text-sm hover:no-underline">
-                  <span className="text-foreground transition-colors group-hover:text-foreground-muted">
-                    Text and numeric fields
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent className="grid gap-4 pb-5">
-                  <InventoryField label="Name" description="Short, single-line text input.">
-                    <Input defaultValue="Extract invoice data" />
-                  </InventoryField>
-                  <InventoryField label="Description">
-                    <Textarea
-                      defaultValue="Extract structured fields from incoming invoices."
-                      rows={3}
-                    />
-                  </InventoryField>
-                  <InventoryField label="Retry count">
-                    <Input type="number" defaultValue="3" min="0" />
-                  </InventoryField>
-                  <InventoryField label="Read-only value">
-                    <Input value="Generated by the system" readOnly disabled />
-                  </InventoryField>
-                </AccordionContent>
-              </AccordionItem>
 
-              <AccordionItem value="choices" className="border-border-subtle px-3.5">
-                <AccordionTrigger className="group py-4 text-sm hover:no-underline">
-                  <span className="text-foreground transition-colors group-hover:text-foreground-muted">
-                    Selection controls
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent className="grid gap-5 pb-5">
-                  <InventoryField label="Connection">
-                    <Select defaultValue="production">
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Choose a connection" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="production">Production</SelectItem>
-                        <SelectItem value="staging">Staging</SelectItem>
-                        <SelectItem value="development">Development</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </InventoryField>
-                  <InventoryField label="Processing mode">
-                    <RadioGroup defaultValue="automatic" className="grid gap-2">
-                      <Label className="flex items-center gap-2 font-normal">
-                        <RadioGroupItem value="automatic" />
-                        Automatic
-                      </Label>
-                      <Label className="flex items-center gap-2 font-normal">
-                        <RadioGroupItem value="manual" />
-                        Manual review
-                      </Label>
-                    </RadioGroup>
-                  </InventoryField>
-                  <div className="flex items-start gap-2">
-                    <Checkbox
-                      id="save-output"
-                      checked={checked}
-                      onCheckedChange={(value) => setChecked(value === true)}
-                    />
-                    <div className="grid gap-0.5">
-                      <Label htmlFor="save-output" className="text-xs">
-                        Save output to storage
-                      </Label>
-                      <p className="text-xs text-foreground-muted">
-                        Makes the result available to later steps.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <Label htmlFor="enabled-switch" className="text-xs">
-                        Enabled
-                      </Label>
-                      <p className="text-xs text-foreground-muted">Run this node in the workflow.</p>
-                    </div>
-                    <Switch
-                      id="enabled-switch"
-                      checked={enabled}
-                      onCheckedChange={setEnabled}
-                    />
-                  </div>
-                  <InventoryField label="Confidence threshold" description="Current value: 75%">
-                    <Slider defaultValue={[75]} max={100} step={5} />
-                  </InventoryField>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="collapsed" className="border-border-subtle px-3.5">
-                <AccordionTrigger className="group py-4 text-sm hover:no-underline">
-                  <span className="text-foreground transition-colors group-hover:text-foreground-muted">
-                    Advanced options
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent className="grid gap-4 pb-5">
-                  <InventoryField label="Internal identifier">
-                    <Input defaultValue="invoice-extractor-01" />
-                  </InventoryField>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-            <div className="grid gap-3 border-t border-border-subtle px-3.5 py-5">
-              <PatternNote title="Sub-containers">
-                Dense, collapsible cards for related configuration when stronger visual grouping is
-                useful.
-              </PatternNote>
-              <InventorySubContainer
-                expandedSections={expandedSubContainerSections}
-                onExpandedSectionsChange={setExpandedSubContainerSections}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="states" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
-            <div className="grid gap-5">
-              <section className="grid gap-3">
-                <PatternNote title="Section messages" eyebrow="State pattern">
-                  Persistent feedback summarizes a panel-level result and provides the next action
-                  when one is needed.
-                </PatternNote>
-                <InfoFieldBlock
-                  title="Configuration guidance"
-                  message="This node uses the connection selected for the current folder."
-                  action="Change the folder context to use a different connection."
-                />
-                <SuccessFieldBlock
-                  title="Configuration is valid"
-                  message="All required fields have been completed."
-                  action="This node is ready to run."
-                />
-                <WarningFieldBlock
-                  title="Review recommended"
-                  message="The request timeout is higher than the recommended value."
-                  action="Review the timeout before publishing this workflow."
-                />
-                <ErrorFieldBlock
-                  title="Connection required"
-                  message="No valid connection is configured for this node."
-                  action="Select a connection before running this node."
-                />
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Navigation validation" eyebrow="State pattern">
-                  Error counts on tabs reveal where unresolved issues live, including problems in
-                  sections that are not currently visible.
-                </PatternNote>
-                <Tabs defaultValue="parameters">
-                  <ScrollableTabsList
-                    className={cn(TAB_LIST_CLASS, 'w-full')}
-                    scrollButtonClassName="size-6 hover:bg-surface-overlay"
-                  >
-                    <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                      <TabLabelWithError label="Parameters" count={1} />
-                    </TabsTrigger>
-                    <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                      <TabLabelWithError label="Error handling" count={2} />
-                    </TabsTrigger>
-                    <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                      Advanced
-                    </TabsTrigger>
-                  </ScrollableTabsList>
-                </Tabs>
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Inline validation" eyebrow="State pattern">
-                  Field-specific feedback stays beside the control so the issue and resolution are
-                  clear in context.
-                </PatternNote>
-                <InventoryField
-                  label="Field with validation"
-                  description="Use a unique node name."
-                >
-                  <div>
-                    <Input
-                      defaultValue="Existing node"
-                      aria-invalid="true"
-                      className="!border !border-error"
-                    />
-                    <InlineValidationMessage
-                      message="This node name is already in use."
-                      action="Enter a unique name before saving."
-                    />
-                  </div>
-                </InventoryField>
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Transient feedback" eyebrow="State pattern">
-                  Toasts confirm the result of a user action without interrupting the task. Keep
-                  actionable errors visible in the panel instead.
-                </PatternNote>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      toast.info('Background sync complete', {
-                        description: 'The latest panel data is available.',
-                      })
-                    }
-                  >
-                    Info
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      toast.success('Changes saved', {
-                        description: 'Panel settings are up to date.',
-                      })
-                    }
-                  >
-                    Success
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      toast.warning('Review recommended', {
-                        description: 'Some optional settings still use defaults.',
-                      })
-                    }
-                  >
-                    Warning
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      toast.error('Update failed', {
-                        description: 'Your changes were not saved. Try again.',
-                      })
-                    }
-                  >
-                    Error
-                  </Button>
-                </div>
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Status labels" eyebrow="State pattern">
-                  Short labels communicate passive field or setting states without interrupting
-                  the task.
-                </PatternNote>
-                <div className="flex flex-wrap gap-2">
-                  <Badge>Default</Badge>
-                  <Badge variant="secondary">Optional</Badge>
-                  <Badge variant="outline">Read only</Badge>
-                </div>
-              </section>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="actions" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
-            <div className="grid gap-5">
-              <section className="grid gap-3">
-                <PatternNote title="Button hierarchy" eyebrow="Action pattern">
-                  Use one primary action per context, with secondary, tertiary, and destructive
-                  styles reflecting lower emphasis or greater consequence.
-                </PatternNote>
-                <div className="flex flex-wrap gap-2">
-                  <Button>Primary</Button>
-                  <Button variant="outline">Secondary</Button>
-                  <Button variant="ghost">Tertiary</Button>
-                  <Button variant="destructive">Delete</Button>
-                </div>
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Header actions" eyebrow="Action pattern">
-                  Reserve the panel header for high-frequency node-level commands such as running
-                  or debugging. Keep the set small so the primary task remains clear.
-                </PatternNote>
-                <div className="flex flex-wrap items-center gap-2">
-                  <RunButton />
-                  <DebugButton />
-                </div>
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Footer actions" eyebrow="Action pattern">
-                  Place panel-level actions at the end of the content, with the primary action last
-                  and the cancel action immediately before it.
-                </PatternNote>
-                <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
-                  <Button variant="ghost">Cancel</Button>
-                  <Button>Save changes</Button>
-                </div>
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Icon-only utilities" eyebrow="Action pattern">
-                  Use compact icon actions for familiar utilities when space is limited. Always
-                  provide a tooltip and accessible name.
-                </PatternNote>
-                <div className="flex items-center gap-1">
-                  <CanvasTooltip content="Refresh data">
-                    <Button variant="ghost" size="4xs" icon aria-label="Refresh data">
-                      <RefreshCw size={14} />
-                    </Button>
-                  </CanvasTooltip>
-                  <CanvasTooltip content="Duplicate node">
-                    <Button variant="ghost" size="4xs" icon aria-label="Duplicate node">
-                      <Copy size={14} />
-                    </Button>
-                  </CanvasTooltip>
-                  <CanvasTooltip content="Delete node">
-                    <Button
-                      variant="ghost"
-                      size="4xs"
-                      icon
-                      aria-label="Delete node"
-                      className="text-error hover:text-error"
+              <TabsContent value="layout" className="mt-0 min-h-0 flex-1 overflow-y-auto">
+                <div className="grid gap-4 px-3.5 py-5">
+                  <PatternNote title="Flat content">
+                    A simple, always-visible layout for short configurations that do not need
+                    collapsible sections or nested containers.
+                  </PatternNote>
+                  <div className="grid gap-4">
+                    <InventoryField
+                      label="Name"
+                      description="A field placed directly in the panel."
                     >
-                      <Trash2 size={14} />
-                    </Button>
-                  </CanvasTooltip>
-                </div>
-              </section>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="composition" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
-            <div className="grid gap-5">
-              <section className="grid gap-3">
-                <PatternNote title="Repeatable field list" eyebrow="Composition pattern">
-                  Use reorder, add, and remove controls when users build a variable-length set of
-                  related fields.
-                </PatternNote>
-                <div className="grid gap-2">
-                  <DndContext
-                    sensors={compositionSensors}
-                    collisionDetection={closestCenter}
-                    onDragStart={(event) => setActiveCompositionFieldId(event.active.id as number)}
-                    onDragEnd={({ active, over }) => {
-                      if (over && active.id !== over.id) {
-                        setCompositionFields((fields) => {
-                          const oldIndex = fields.findIndex((field) => field.id === active.id);
-                          const newIndex = fields.findIndex((field) => field.id === over.id);
-                          return arrayMove(fields, oldIndex, newIndex);
-                        });
-                      }
-                      setActiveCompositionFieldId(null);
-                    }}
-                    onDragCancel={() => setActiveCompositionFieldId(null)}
-                  >
-                    <SortableContext
-                      items={compositionFields.map((field) => field.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <div className="grid gap-2">
-                        {compositionFields.map((field) => (
-                          <SortableCompositionField
-                            key={field.id}
-                            field={field}
-                            onDelete={() =>
-                              setCompositionFields((fields) =>
-                                fields.filter((item) => item.id !== field.id)
-                              )
-                            }
-                          />
-                        ))}
+                      <Input defaultValue="Extract invoice data" />
+                    </InventoryField>
+                    <InventoryField label="Connection">
+                      <Select defaultValue="production">
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="production">Production</SelectItem>
+                          <SelectItem value="staging">Staging</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </InventoryField>
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <Label htmlFor="flat-pattern-enabled" className="text-xs">
+                          Enabled
+                        </Label>
+                        <p className="text-xs text-foreground-muted">
+                          Run this node in the workflow.
+                        </p>
                       </div>
-                    </SortableContext>
-                    {createPortal(
-                      <DragOverlay>
-                        {activeCompositionField ? (
-                          <CompositionFieldDragOverlay field={activeCompositionField} />
-                        ) : null}
-                      </DragOverlay>,
-                      document.body
-                    )}
-                  </DndContext>
-                  <button
-                    type="button"
-                    className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
-                    onClick={() =>
-                      setCompositionFields((fields) => [
-                        ...fields,
-                        {
-                          id: Math.max(0, ...fields.map((field) => field.id)) + 1,
-                          label: `New field ${fields.length + 1}`,
-                        },
-                      ])
-                    }
-                  >
-                    <Plus size={12} />
-                    Add field
-                  </button>
+                      <Switch id="flat-pattern-enabled" defaultChecked />
+                    </div>
+                  </div>
                 </div>
-              </section>
-
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Editing modes" eyebrow="Composition pattern">
-                  Switch between a guided interface and a source representation without changing
-                  the underlying configuration.
-                </PatternNote>
-                <ToggleGroup
-                  type="single"
-                  size="xs"
-                  value={compositionEditor}
-                  onValueChange={(value) => value && setCompositionEditor(value)}
-                  className="w-fit"
+                <div className="border-t border-border-subtle px-3.5 has-[aside]:pt-5">
+                  <PatternNote title="Expandable sections">
+                    Full-width sections that reveal or hide related fields without adding nested
+                    container chrome.
+                  </PatternNote>
+                </div>
+                <Accordion
+                  type="multiple"
+                  value={expandedSections}
+                  onValueChange={setExpandedSections}
                 >
-                  <ToggleGroupItem value="ui" className="!px-2.5 !text-xs">
-                    UI
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="json" className="!px-2.5 !text-xs">
-                    JSON
-                  </ToggleGroupItem>
-                </ToggleGroup>
-                {compositionEditor === 'ui' ? (
-                  <InventoryField label="Form title">
-                    <Input defaultValue="Quick approve" />
-                  </InventoryField>
-                ) : (
-                  <Textarea
-                    aria-label="JSON configuration"
-                    defaultValue={'{\n  "title": "Quick approve"\n}'}
-                    rows={4}
-                    className="font-mono text-xs"
-                  />
-                )}
-              </section>
+                  <AccordionItem value="text-fields" className="border-border-subtle px-3.5">
+                    <AccordionTrigger className="group py-4 text-sm hover:no-underline">
+                      <span className="text-foreground transition-colors group-hover:text-foreground-muted">
+                        Text and numeric fields
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent className="grid gap-4 pb-5">
+                      <InventoryField label="Name" description="Short, single-line text input.">
+                        <Input defaultValue="Extract invoice data" />
+                      </InventoryField>
+                      <InventoryField label="Description">
+                        <Textarea
+                          defaultValue="Extract structured fields from incoming invoices."
+                          rows={3}
+                        />
+                      </InventoryField>
+                      <InventoryField label="Retry count">
+                        <Input type="number" defaultValue="3" min="0" />
+                      </InventoryField>
+                      <InventoryField label="Read-only value">
+                        <Input value="Generated by the system" readOnly disabled />
+                      </InventoryField>
+                    </AccordionContent>
+                  </AccordionItem>
 
-              <section className="grid gap-3 border-t border-border-subtle pt-5">
-                <PatternNote title="Lockable value field" eyebrow="Composition pattern">
-                  Combines field type, required state, AI assistance, variable insertion, and
-                  fixed or expression values in one reusable Flow control.
-                </PatternNote>
-                <LockableValueField
-                  id={compositionFieldId}
-                  label={
-                    <PanelFieldLabel
-                      htmlFor={compositionFieldId}
-                      required={compositionRequired}
-                      className="leading-4"
+                  <AccordionItem value="choices" className="border-border-subtle px-3.5">
+                    <AccordionTrigger className="group py-4 text-sm hover:no-underline">
+                      <span className="text-foreground transition-colors group-hover:text-foreground-muted">
+                        Selection controls
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent className="grid gap-5 pb-5">
+                      <InventoryField label="Connection">
+                        <Select defaultValue="production">
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Choose a connection" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="production">Production</SelectItem>
+                            <SelectItem value="staging">Staging</SelectItem>
+                            <SelectItem value="development">Development</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </InventoryField>
+                      <InventoryField label="Processing mode">
+                        <RadioGroup defaultValue="automatic" className="grid gap-2">
+                          <Label className="flex items-center gap-2 font-normal">
+                            <RadioGroupItem value="automatic" />
+                            Automatic
+                          </Label>
+                          <Label className="flex items-center gap-2 font-normal">
+                            <RadioGroupItem value="manual" />
+                            Manual review
+                          </Label>
+                        </RadioGroup>
+                      </InventoryField>
+                      <div className="flex items-start gap-2">
+                        <Checkbox
+                          id="save-output"
+                          checked={checked}
+                          onCheckedChange={(value) => setChecked(value === true)}
+                        />
+                        <div className="grid gap-0.5">
+                          <Label htmlFor="save-output" className="text-xs">
+                            Save output to storage
+                          </Label>
+                          <p className="text-xs text-foreground-muted">
+                            Makes the result available to later steps.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <Label htmlFor="enabled-switch" className="text-xs">
+                            Enabled
+                          </Label>
+                          <p className="text-xs text-foreground-muted">
+                            Run this node in the workflow.
+                          </p>
+                        </div>
+                        <Switch
+                          id="enabled-switch"
+                          checked={enabled}
+                          onCheckedChange={setEnabled}
+                        />
+                      </div>
+                      <InventoryField label="Confidence threshold" description="Current value: 75%">
+                        <Slider defaultValue={[75]} max={100} step={5} />
+                      </InventoryField>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="collapsed" className="border-border-subtle px-3.5">
+                    <AccordionTrigger className="group py-4 text-sm hover:no-underline">
+                      <span className="text-foreground transition-colors group-hover:text-foreground-muted">
+                        Advanced options
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent className="grid gap-4 pb-5">
+                      <InventoryField label="Internal identifier">
+                        <Input defaultValue="invoice-extractor-01" />
+                      </InventoryField>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+                <div className="grid gap-3 border-t border-border-subtle px-3.5 py-5">
+                  <PatternNote title="Sub-containers">
+                    Dense, collapsible cards for related configuration when stronger visual grouping
+                    is useful.
+                  </PatternNote>
+                  <InventorySubContainer
+                    expandedSections={expandedSubContainerSections}
+                    onExpandedSectionsChange={setExpandedSubContainerSections}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="states" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
+                <div className="grid gap-5">
+                  <section className="grid gap-3">
+                    <PatternNote title="Section messages" eyebrow="State pattern">
+                      Persistent feedback summarizes a panel-level result and provides the next
+                      action when one is needed.
+                    </PatternNote>
+                    <InfoFieldBlock
+                      title="Configuration guidance"
+                      message="This node uses the connection selected for the current folder."
+                      action="Change the folder context to use a different connection."
+                    />
+                    <SuccessFieldBlock
+                      title="Configuration is valid"
+                      message="All required fields have been completed."
+                      action="This node is ready to run."
+                    />
+                    <WarningFieldBlock
+                      title="Review recommended"
+                      message="The request timeout is higher than the recommended value."
+                      action="Review the timeout before publishing this workflow."
+                    />
+                    <ErrorFieldBlock
+                      title="Connection required"
+                      message="No valid connection is configured for this node."
+                      action="Select a connection before running this node."
+                    />
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Navigation validation" eyebrow="State pattern">
+                      Error counts on tabs reveal where unresolved issues live, including problems
+                      in sections that are not currently visible.
+                    </PatternNote>
+                    <Tabs defaultValue="parameters">
+                      <ScrollableTabsList
+                        className={cn(TAB_LIST_CLASS, 'w-full')}
+                        scrollButtonClassName="size-6 hover:bg-surface-overlay"
+                      >
+                        <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                          <TabLabelWithError label="Parameters" count={1} />
+                        </TabsTrigger>
+                        <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                          <TabLabelWithError label="Error handling" count={2} />
+                        </TabsTrigger>
+                        <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                          Advanced
+                        </TabsTrigger>
+                      </ScrollableTabsList>
+                    </Tabs>
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Inline validation" eyebrow="State pattern">
+                      Field-specific feedback stays beside the control so the issue and resolution
+                      are clear in context.
+                    </PatternNote>
+                    <InventoryField
+                      label="Field with validation"
+                      description="Use a unique node name."
                     >
-                      Invoice value
-                    </PanelFieldLabel>
-                  }
-                  headerActions={
-                    <CanvasTooltip content="Remove field">
-                      <Button variant="ghost" size="4xs" icon aria-label="Remove field">
-                        <X size={14} />
+                      <div>
+                        <Input
+                          defaultValue="Existing node"
+                          aria-invalid="true"
+                          className="!border !border-error"
+                        />
+                        <InlineValidationMessage
+                          message="This node name is already in use."
+                          action="Enter a unique name before saving."
+                        />
+                      </div>
+                    </InventoryField>
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Transient feedback" eyebrow="State pattern">
+                      Toasts confirm the result of a user action without interrupting the task. Keep
+                      actionable errors visible in the panel instead.
+                    </PatternNote>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          toast.info('Background sync complete', {
+                            description: 'The latest panel data is available.',
+                          })
+                        }
+                      >
+                        Info
                       </Button>
-                    </CanvasTooltip>
-                  }
-                  value={compositionValue}
-                  onValueChange={setCompositionValue}
-                  locked={compositionLocked}
-                  onLockedChange={setCompositionLocked}
-                  mode={compositionMode}
-                  onModeChange={setCompositionMode}
-                  fieldType={compositionFieldType}
-                  onFieldTypeChange={updateCompositionFieldType}
-                  required={compositionRequired}
-                  onRequiredChange={setCompositionRequired}
-                  controlsVisibility="visible"
-                />
-              </section>
-            </div>
-          </TabsContent>
-          </Tabs>
-        </PatternNotesVisibilityContext.Provider>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          toast.success('Changes saved', {
+                            description: 'Panel settings are up to date.',
+                          })
+                        }
+                      >
+                        Success
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          toast.warning('Review recommended', {
+                            description: 'Some optional settings still use defaults.',
+                          })
+                        }
+                      >
+                        Warning
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          toast.error('Update failed', {
+                            description: 'Your changes were not saved. Try again.',
+                          })
+                        }
+                      >
+                        Error
+                      </Button>
+                    </div>
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Status labels" eyebrow="State pattern">
+                      Short labels communicate passive field or setting states without interrupting
+                      the task.
+                    </PatternNote>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge>Default</Badge>
+                      <Badge variant="secondary">Optional</Badge>
+                      <Badge variant="outline">Read only</Badge>
+                    </div>
+                  </section>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="actions" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
+                <div className="grid gap-5">
+                  <section className="grid gap-3">
+                    <PatternNote title="Button hierarchy" eyebrow="Action pattern">
+                      Use one primary action per context, with secondary, tertiary, and destructive
+                      styles reflecting lower emphasis or greater consequence.
+                    </PatternNote>
+                    <div className="flex flex-wrap gap-2">
+                      <Button>Primary</Button>
+                      <Button variant="outline">Secondary</Button>
+                      <Button variant="ghost">Tertiary</Button>
+                      <Button variant="destructive">Delete</Button>
+                    </div>
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Header actions" eyebrow="Action pattern">
+                      Reserve the panel header for high-frequency node-level commands such as
+                      running or debugging. Keep the set small so the primary task remains clear.
+                    </PatternNote>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <RunButton />
+                      <DebugButton />
+                    </div>
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Footer actions" eyebrow="Action pattern">
+                      Place panel-level actions at the end of the content, with the primary action
+                      last and the cancel action immediately before it.
+                    </PatternNote>
+                    <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
+                      <Button variant="ghost">Cancel</Button>
+                      <Button>Save changes</Button>
+                    </div>
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Icon-only utilities" eyebrow="Action pattern">
+                      Use compact icon actions for familiar utilities when space is limited. Always
+                      provide a tooltip and accessible name.
+                    </PatternNote>
+                    <div className="flex items-center gap-1">
+                      <CanvasTooltip content="Refresh data">
+                        <Button variant="ghost" size="4xs" icon aria-label="Refresh data">
+                          <RefreshCw size={14} />
+                        </Button>
+                      </CanvasTooltip>
+                      <CanvasTooltip content="Duplicate node">
+                        <Button variant="ghost" size="4xs" icon aria-label="Duplicate node">
+                          <Copy size={14} />
+                        </Button>
+                      </CanvasTooltip>
+                      <CanvasTooltip content="Delete node">
+                        <Button
+                          variant="ghost"
+                          size="4xs"
+                          icon
+                          aria-label="Delete node"
+                          className="text-error hover:text-error"
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </CanvasTooltip>
+                    </div>
+                  </section>
+                </div>
+              </TabsContent>
+
+              <TabsContent
+                value="composition"
+                className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5"
+              >
+                <div className="grid gap-5">
+                  <section className="grid gap-3">
+                    <PatternNote title="Repeatable field list" eyebrow="Composition pattern">
+                      Use reorder, add, and remove controls when users build a variable-length set
+                      of related fields.
+                    </PatternNote>
+                    <div className="grid gap-2">
+                      <DndContext
+                        sensors={compositionSensors}
+                        collisionDetection={closestCenter}
+                        onDragStart={(event) =>
+                          setActiveCompositionFieldId(event.active.id as number)
+                        }
+                        onDragEnd={({ active, over }) => {
+                          if (over && active.id !== over.id) {
+                            setCompositionFields((fields) => {
+                              const oldIndex = fields.findIndex((field) => field.id === active.id);
+                              const newIndex = fields.findIndex((field) => field.id === over.id);
+                              return arrayMove(fields, oldIndex, newIndex);
+                            });
+                          }
+                          setActiveCompositionFieldId(null);
+                        }}
+                        onDragCancel={() => setActiveCompositionFieldId(null)}
+                      >
+                        <SortableContext
+                          items={compositionFields.map((field) => field.id)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <div className="grid gap-2">
+                            {compositionFields.map((field) => (
+                              <SortableCompositionField
+                                key={field.id}
+                                field={field}
+                                onDelete={() =>
+                                  setCompositionFields((fields) =>
+                                    fields.filter((item) => item.id !== field.id)
+                                  )
+                                }
+                              />
+                            ))}
+                          </div>
+                        </SortableContext>
+                        {createPortal(
+                          <DragOverlay>
+                            {activeCompositionField ? (
+                              <CompositionFieldDragOverlay field={activeCompositionField} />
+                            ) : null}
+                          </DragOverlay>,
+                          document.body
+                        )}
+                      </DndContext>
+                      <button
+                        type="button"
+                        className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                        onClick={() =>
+                          setCompositionFields((fields) => [
+                            ...fields,
+                            {
+                              id: Math.max(0, ...fields.map((field) => field.id)) + 1,
+                              label: `New field ${fields.length + 1}`,
+                            },
+                          ])
+                        }
+                      >
+                        <Plus size={12} />
+                        Add field
+                      </button>
+                    </div>
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Editing modes" eyebrow="Composition pattern">
+                      Switch between a guided interface and a source representation without changing
+                      the underlying configuration.
+                    </PatternNote>
+                    <ToggleGroup
+                      type="single"
+                      size="xs"
+                      value={compositionEditor}
+                      onValueChange={(value) => value && setCompositionEditor(value)}
+                      className="w-fit"
+                    >
+                      <ToggleGroupItem value="ui" className="!px-2.5 !text-xs">
+                        UI
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="json" className="!px-2.5 !text-xs">
+                        JSON
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                    {compositionEditor === 'ui' ? (
+                      <InventoryField label="Form title">
+                        <Input defaultValue="Quick approve" />
+                      </InventoryField>
+                    ) : (
+                      <Textarea
+                        aria-label="JSON configuration"
+                        defaultValue={'{\n  "title": "Quick approve"\n}'}
+                        rows={4}
+                        className="font-mono text-xs"
+                      />
+                    )}
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Lockable value field" eyebrow="Composition pattern">
+                      Combines field type, required state, AI assistance, variable insertion, and
+                      fixed or expression values in one reusable Flow control.
+                    </PatternNote>
+                    <LockableValueField
+                      id={compositionFieldId}
+                      label={
+                        <PanelFieldLabel
+                          htmlFor={compositionFieldId}
+                          required={compositionRequired}
+                          className="leading-4"
+                        >
+                          Invoice value
+                        </PanelFieldLabel>
+                      }
+                      headerActions={
+                        <CanvasTooltip content="Remove field">
+                          <Button variant="ghost" size="4xs" icon aria-label="Remove field">
+                            <X size={14} />
+                          </Button>
+                        </CanvasTooltip>
+                      }
+                      value={compositionValue}
+                      onValueChange={setCompositionValue}
+                      locked={compositionLocked}
+                      onLockedChange={setCompositionLocked}
+                      mode={compositionMode}
+                      onModeChange={setCompositionMode}
+                      fieldType={compositionFieldType}
+                      onFieldTypeChange={updateCompositionFieldType}
+                      required={compositionRequired}
+                      onRequiredChange={setCompositionRequired}
+                      controlsVisibility="visible"
+                    />
+                  </section>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </PatternNotesVisibilityContext.Provider>
         </NodePropertyPanel>
       </PanelFrame>
       <Toaster className="[&_[data-description]]:!text-foreground-muted [&_[data-icon]]:!mt-0.5 [&_[data-icon]]:!self-start" />
