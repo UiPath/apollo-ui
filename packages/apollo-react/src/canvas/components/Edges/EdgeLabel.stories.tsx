@@ -7,8 +7,7 @@
  */
 import type { Meta, StoryObj } from '@storybook/react';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Position, ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { CSSProperties } from 'react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
 import {
   createNode as createMockNode,
@@ -26,7 +25,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          "Set `data.label` on a CanvasEdge (or SequenceEdge) to render a label at the midpoint of the path. The label portals through `EdgeLabelRenderer`, so it always paints after every edge's own line, and falls back to `--color-background` when a host does not theme its ancestor with one of the canvas theme classes. Labels are decorative: `pointer-events: none`, no hover state, not clickable.",
+          "Set `data.label` on a CanvasEdge (or SequenceEdge) to render a label at the midpoint of the path. The label portals through `EdgeLabelRenderer`, so it always paints after every edge's own line. Its border matches the resolved edge color across default, hover, selection, diff, validation, and execution states. Long text truncates with an ellipsis and reveals its full value in a tooltip. Hovering or clicking a label interacts with its owning edge; read-only canvases preserve hover tracing but disable selection.",
       },
     },
   },
@@ -68,51 +67,6 @@ function createNode(config: NodeConfig): Node {
       })),
     ],
   });
-}
-
-/**
- * Small two-node/one-edge canvas used to compare the label across themes and
- * fallback scenarios. Each instance gets its own `ReactFlowProvider` so
- * several can sit side by side on one page.
- */
-function MiniLabeledEdgeCanvas({ label = 'Success' }: { label?: string }) {
-  const initialNodes = useMemo(
-    () => [
-      createNode({
-        id: 'mini-source',
-        label: 'Source',
-        x: 10,
-        y: 50,
-        sourcePositions: [Position.Right],
-      }),
-      createNode({
-        id: 'mini-target',
-        label: 'Target',
-        x: 195,
-        y: 50,
-        targetPositions: [Position.Left],
-      }),
-    ],
-    []
-  );
-
-  const initialEdges: Edge<CanvasEdgeData>[] = useMemo(
-    () => [
-      {
-        id: 'mini-edge',
-        source: 'mini-source',
-        target: 'mini-target',
-        sourceHandle: `out-${Position.Right}`,
-        targetHandle: `in-${Position.Left}`,
-        type: 'canvas-edge',
-        data: { label },
-      },
-    ],
-    [label]
-  );
-
-  const { canvasProps } = useCanvasStory({ initialNodes, initialEdges });
-  return <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design" />;
 }
 
 /**
@@ -190,7 +144,7 @@ export const Orientation: Story = {
 
 /**
  * Labels alongside diff styling. `isDiffAdded`/`isDiffRemoved` drive the
- * stroke color via `resolveEdgeColor`; the label renders unaffected.
+ * stroke and label-border color via `resolveEdgeColor`.
  */
 function DiffStatesStory() {
   const initialNodes = useMemo(
@@ -262,7 +216,7 @@ export const DiffStates: Story = {
     docs: {
       description: {
         story:
-          'Labels alongside diff styling. isDiffAdded and isDiffRemoved color the stroke, the label renders the same either way.',
+          'Labels alongside diff styling. isDiffAdded and isDiffRemoved color both the stroke and its associated label border.',
       },
     },
   },
@@ -341,158 +295,7 @@ export const CrossingLabeledEdges: Story = {
     docs: {
       description: {
         story:
-          "Two labeled edges routed through the same center point. Both labels stay legible on top of the crossing line, regardless of array order. Before the EdgeLabelRenderer fix, whichever edge was later in the array could paint its line over the other edge's label.",
-      },
-    },
-  },
-};
-
-/**
- * The same labeled edge under every canvas theme. Each cell forces its theme
- * class on a wrapping div (the same selectors variables.css matches on
- * `body.<theme>`), independent of the global Storybook theme toolbar, so all
- * nine render simultaneously for comparison.
- */
-const THEME_CLASSES = [
-  'light',
-  'dark',
-  'light-hc',
-  'dark-hc',
-  'future-light',
-  'future-dark',
-  'wireframe',
-  'vertex',
-  'canvas',
-] as const;
-
-function ThemesStory() {
-  return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gridAutoRows: '220px',
-        gap: 16,
-        padding: 16,
-        height: '100%',
-        boxSizing: 'border-box',
-        overflowY: 'auto',
-      }}
-    >
-      {THEME_CLASSES.map((theme) => (
-        <div
-          key={theme}
-          className={theme}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            border: '1px solid rgba(128, 128, 128, 0.3)',
-            borderRadius: 8,
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ padding: '4px 8px', fontSize: 12, opacity: 0.7, flex: '0 0 auto' }}>
-            {theme}
-          </div>
-          <div style={{ flex: 1, minHeight: 0 }}>
-            <ReactFlowProvider>
-              <MiniLabeledEdgeCanvas />
-            </ReactFlowProvider>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export const Themes: Story = {
-  render: () => <ThemesStory />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "The same labeled edge rendered under all nine canvas themes at once, to compare label contrast against each theme's background and border colors.",
-      },
-    },
-  },
-};
-
-/**
- * Simulates a host that does not theme its canvas ancestor. `--canvas-background`
- * and `--color-background` are set to `initial` (the CSS-spec guaranteed-invalid
- * value) on a wrapping div, which is what actually happens when a host mounts
- * the canvas outside any `body.<theme>` / `.future-*` / `.vertex` / `.canvas`
- * ancestor (for example, a shadow-DOM host). Column 2 shows the fix's fallback
- * resolving; column 3 is the known remaining gap: when neither variable
- * resolves, the label background is transparent.
- */
-function MissingThemeFallbackStory() {
-  const columnStyle: CSSProperties = {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-    minWidth: 0,
-  };
-  const canvasBoxStyle: CSSProperties = {
-    flex: 1,
-    border: '1px solid rgba(128, 128, 128, 0.3)',
-    borderRadius: 8,
-    overflow: 'hidden',
-  };
-
-  return (
-    <div style={{ display: 'flex', gap: 24, padding: 24, height: '100%', boxSizing: 'border-box' }}>
-      <div style={columnStyle}>
-        <p style={{ fontSize: 13, margin: 0 }}>
-          Normal: the theme ancestor provides --canvas-background.
-        </p>
-        <div style={canvasBoxStyle}>
-          <ReactFlowProvider>
-            <MiniLabeledEdgeCanvas label="Resolved" />
-          </ReactFlowProvider>
-        </div>
-      </div>
-      <div style={{ ...columnStyle, '--canvas-background': 'initial' } as CSSProperties}>
-        <p style={{ fontSize: 13, margin: 0 }}>
-          --canvas-background unset (variables.css not imported): falls back to --color-background.
-        </p>
-        <div style={canvasBoxStyle}>
-          <ReactFlowProvider>
-            <MiniLabeledEdgeCanvas label="Fallback" />
-          </ReactFlowProvider>
-        </div>
-      </div>
-      <div
-        style={
-          {
-            ...columnStyle,
-            '--canvas-background': 'initial',
-            '--color-background': 'initial',
-          } as CSSProperties
-        }
-      >
-        <p style={{ fontSize: 13, margin: 0 }}>
-          Both unset, no themed ancestor at all: background is transparent. Known gap, not covered
-          by the current fallback chain.
-        </p>
-        <div style={canvasBoxStyle}>
-          <ReactFlowProvider>
-            <MiniLabeledEdgeCanvas label="Transparent" />
-          </ReactFlowProvider>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export const MissingThemeFallback: Story = {
-  render: () => <MissingThemeFallbackStory />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Simulates a host that never themes the canvas ancestor (e.g. a shadow-DOM host, or an app that forgot to theme body). Demonstrates the fallback chain added in EdgeLabel.tsx, and documents the remaining gap when neither variable resolves.',
+          "Two labeled edges routed through the same center point. Both labels stay legible on top of the crossing line, regardless of array order. Hovering or selecting an edge gives its label a matching one-pixel border, making the path-to-label relationship clear. The hovered edge also rises above intersecting edges so its full path remains traceable. Before the EdgeLabelRenderer fix, whichever edge was later in the array could paint its line over the other edge's label.",
       },
     },
   },
@@ -573,7 +376,7 @@ export const Overflow: Story = {
     docs: {
       description: {
         story:
-          'Long label text overflows since the label has no truncation, and a short edge with close nodes crowds the label against both node bodies. Neither case is currently guarded against.',
+          'Long labels are capped by pixel width and truncated with an ellipsis. Hover a truncated label to reveal its full value in a tooltip; hovering and clicking the label still interact with its owning edge. The short-edge example remains a separate crowding case because truncation cannot create space between nearby nodes.',
       },
     },
   },
@@ -704,8 +507,9 @@ export const BentPath: Story = {
 };
 
 /**
- * Label rendering in readonly mode. Visually identical to design mode; no
- * editing chrome is available regardless.
+ * Label rendering in readonly mode. Hover remains available for tracing the
+ * edge and revealing truncated text, while neither the path nor label can be
+ * selected and no editing chrome is available.
  */
 function ReadOnlyStory() {
   const initialNodes = useMemo(
@@ -752,70 +556,8 @@ export const ReadOnly: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Label rendering in readonly mode, for edges representing a completed workflow run.',
-      },
-    },
-  },
-};
-
-/**
- * Open question for review, not resolved here. Node labels support
- * double-click-to-edit (see BaseNode's NodeLabel and its EditableLabel
- * sub-component), but edge labels are pure display: EdgeLabel is
- * `pointer-events: none` and CanvasEdgeData has no `onLabelChange` field,
- * so there is no way to rename this label from the canvas. Click it; the
- * click passes straight through to the edge underneath and selects the
- * whole edge instead, since the label has no hit target of its own. Any
- * editing solution has to decide that click behavior too: enabling
- * pointer events on the label changes what clicking it does today.
- */
-function NoInlineEditingStory() {
-  const initialNodes = useMemo(
-    () => [
-      createNode({
-        id: 'edit-source',
-        label: 'Source',
-        x: 100,
-        y: 120,
-        sourcePositions: [Position.Right],
-      }),
-      createNode({
-        id: 'edit-target',
-        label: 'Target',
-        x: 450,
-        y: 120,
-        targetPositions: [Position.Left],
-      }),
-    ],
-    []
-  );
-
-  const initialEdges: Edge<CanvasEdgeData>[] = useMemo(
-    () => [
-      {
-        id: 'e-not-editable',
-        source: 'edit-source',
-        target: 'edit-target',
-        sourceHandle: `out-${Position.Right}`,
-        targetHandle: `in-${Position.Left}`,
-        type: 'canvas-edge',
-        data: { label: 'Try clicking me' },
-      },
-    ],
-    []
-  );
-
-  const { canvasProps } = useCanvasStory({ initialNodes, initialEdges });
-  return <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design" />;
-}
-
-export const NoInlineEditing: Story = {
-  render: () => <NoInlineEditingStory />,
-  parameters: {
-    docs: {
-      description: {
         story:
-          "Open question for review: node labels support double-click-to-edit (BaseNode/NodeLabel's EditableLabel), but edge labels do not. EdgeLabel is pointer-events: none and CanvasEdgeData has no onLabelChange field. Click this label: the click passes through to the edge underneath and selects the whole edge instead, since the label isn't a hit target itself, the same root cause as the missing editing support. Enabling pointer events on the label to support editing also changes what clicking it does today, so the two questions have to be decided together.\n\nTwo paths forward. Path A, keep labels as pure display: clicking continues to select the edge, labels stay a rendered property of the edge rather than a directly editable element, no new interaction model or engineering risk, but renaming a label still requires going through whatever set data.label upstream (host app UI, not the canvas itself). Path B, add inline editing for parity with node labels: needs an onLabelChange callback on CanvasEdgeData, pointer-events: auto on the label (likely gated on a handler being provided, so consumers who don't opt in see no behavior change), an explicit decision on click semantics (does a single click still select the edge, does double-click enter edit mode like NodeLabel does), an inline textarea reusing that same editing pattern, and handling for empty labels, Escape-to-cancel, and Enter-to-commit.",
+          'Label rendering in readonly mode for a completed workflow run. Hover still traces the path, but clicking either the path or label does not create persistent selection or expose editing controls.',
       },
     },
   },

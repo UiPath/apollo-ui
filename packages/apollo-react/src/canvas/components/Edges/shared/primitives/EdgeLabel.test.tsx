@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { EdgeLabel } from './EdgeLabel';
 
@@ -25,14 +25,37 @@ describe('EdgeLabel', () => {
     expect(label.style.transform).toBe('translate(-50%, -50%) translate(150px, 50px)');
   });
 
-  it('uses the primary border when selected and the default border otherwise', () => {
-    expect(renderLabel().label.className).toContain('border-(--canvas-border)');
-    expect(renderLabel({ selected: true }).label.className).toContain('border-(--canvas-primary)');
+  it('uses the supplied edge color for its border and defaults to the canvas border', () => {
+    const defaultLabel = renderLabel().label;
+    const coloredLabel = renderLabel({ borderColor: 'var(--canvas-success-icon)' }).label;
+
+    expect(defaultLabel.style.borderColor).toBe('var(--canvas-border)');
+    expect(coloredLabel.style.borderColor).toBe('var(--canvas-success-icon)');
   });
 
   it('falls back to --color-background when --canvas-background is unresolved', () => {
     expect(renderLabel().label.className).toContain(
       'bg-[var(--canvas-background,var(--color-background))]'
     );
+  });
+
+  it('truncates by width and forwards interaction to its owning edge', () => {
+    const onClick = vi.fn();
+    const onMouseEnter = vi.fn();
+    const onMouseLeave = vi.fn();
+    const { label } = renderLabel({ onClick, onMouseEnter, onMouseLeave });
+
+    expect(label.className).toContain('max-w-48');
+    expect(label.className).toContain('overflow-hidden');
+    expect(label.className).toContain('text-ellipsis');
+    expect(label.className).toContain('pointer-events-auto');
+
+    fireEvent.mouseEnter(label);
+    fireEvent.mouseLeave(label);
+    fireEvent.click(label);
+
+    expect(onMouseEnter).toHaveBeenCalledOnce();
+    expect(onMouseLeave).toHaveBeenCalledOnce();
+    expect(onClick).toHaveBeenCalledOnce();
   });
 });

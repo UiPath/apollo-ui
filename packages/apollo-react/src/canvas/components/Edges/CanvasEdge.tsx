@@ -1,5 +1,5 @@
-import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, useCallback, useRef, useState } from 'react';
+import { Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { memo, type MouseEvent, useCallback, useRef, useState } from 'react';
 import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { EdgeToolbar, useEdgeToolbarState } from '../Toolbar';
@@ -53,6 +53,30 @@ export const CanvasEdge = memo(function CanvasEdge({
   const onMouseEnter = useCallback(() => setIsHovered(true), []);
   const onMouseLeave = useCallback(() => setIsHovered(false), []);
   const pathRef = useRef<SVGPathElement | null>(null);
+  const { setEdges, setNodes } = useReactFlow();
+
+  const onLabelClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation();
+      const additiveSelection = event.metaKey || event.ctrlKey;
+
+      setEdges((edges) =>
+        edges.map((edge) => {
+          if (edge.id === id) {
+            return { ...edge, selected: additiveSelection ? !edge.selected : true };
+          }
+          return additiveSelection ? edge : { ...edge, selected: false };
+        })
+      );
+
+      if (!additiveSelection) {
+        setNodes((nodes) =>
+          nodes.map((node) => (node.selected ? { ...node, selected: false } : node))
+        );
+      }
+    },
+    [id, setEdges, setNodes]
+  );
 
   const routing = data?.routing ?? 'waypoint';
   const storedWaypoints = data?.waypoints ?? EMPTY_WAYPOINTS;
@@ -150,6 +174,7 @@ export const CanvasEdge = memo(function CanvasEdge({
   return (
     <>
       <g
+        data-edge-hovered={isHovered || undefined}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onMouseMove={toolbarEnabled ? toolbar.handleMouseMoveOnPath : undefined}
@@ -208,7 +233,10 @@ export const CanvasEdge = memo(function CanvasEdge({
             x={geometry.labelPoint.x}
             y={geometry.labelPoint.y}
             text={label}
-            selected={selected}
+            borderColor={color}
+            onClick={isReadOnly ? undefined : onLabelClick}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
           />
         )}
       </g>

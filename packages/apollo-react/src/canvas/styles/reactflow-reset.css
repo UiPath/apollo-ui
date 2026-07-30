@@ -49,6 +49,15 @@
   z-index: 1002 !important;
 }
 
+/**
+ * Keep the edge currently under the pointer visually continuous at crossings.
+ * React Flow elevates selected edges to 1000; hover takes temporary precedence
+ * at 1001 while remaining below hovered node controls at 1002.
+ */
+.react-flow__edge:has([data-edge-hovered='true']) {
+  z-index: 1001 !important;
+}
+
 /* Keep loop shells behind sticky-note annotations; empty loop body still hit-tests to the loop. */
 .react-flow__node:has([data-loop-container]) {
   z-index: -20 !important;
