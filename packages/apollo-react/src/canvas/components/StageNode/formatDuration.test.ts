@@ -29,7 +29,7 @@ describe('formatDurationMs', () => {
     expect(formatDurationMs(ms, 'en', 1)).toBe('2 days');
   });
 
-  it('truncates on the parts, so the cap survives translation', () => {
+  it('keeps the cap in other locales (de, ja)', () => {
     // The regression this replaced: trimming formatted text only worked for unit
     // spellings that happened to look like "2h 3m".
     const ms = 2 * DAY + 3 * HOUR + 4 * MINUTE + 5 * SECOND;
