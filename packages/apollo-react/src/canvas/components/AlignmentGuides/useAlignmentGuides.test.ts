@@ -1,10 +1,12 @@
-import { describe, expect, it } from 'vitest';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { describe, expect, it } from 'vitest';
 import type { NodeBounds } from './AlignmentGuides.types';
 import {
   computeAlignmentResult,
   computeAlignmentSnapDelta,
   createAlignmentPositionUpdates,
+  toBounds,
+  toGroupBounds,
 } from './useAlignmentGuides';
 
 function bounds(id: string, x: number, y: number, width = 100, height = 60): NodeBounds {
@@ -75,5 +77,32 @@ describe('computeAlignmentSnapDelta', () => {
       { id: 'first', position: { x: 96, y: 206 } },
       { id: 'second', position: { x: 256, y: 346 } },
     ]);
+  });
+});
+
+describe('alignment bounds', () => {
+  it('uses xyflow absolute coordinates when they are available', () => {
+    const node = {
+      id: 'child',
+      position: { x: 20, y: 30 },
+      measured: { width: 100, height: 60 },
+      internals: { positionAbsolute: { x: 220, y: 330 } },
+    } as Node;
+
+    expect(toBounds(node)).toMatchObject({ x1: 220, y1: 330, x2: 320, y2: 390 });
+  });
+
+  it('derives absolute coordinates for nested nodes when internals are unavailable', () => {
+    const parent = { id: 'parent', position: { x: 200, y: 300 } } as Node;
+    const child = {
+      id: 'child',
+      parentId: 'parent',
+      position: { x: 20, y: 30 },
+      measured: { width: 100, height: 60 },
+    } as Node;
+    const nodes = [parent, child];
+
+    expect(toBounds(child, nodes)).toMatchObject({ x1: 220, y1: 330, x2: 320, y2: 390 });
+    expect(toGroupBounds([child], nodes)).toMatchObject({ x1: 220, y1: 330, x2: 320, y2: 390 });
   });
 });

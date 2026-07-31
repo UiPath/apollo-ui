@@ -2,13 +2,21 @@ import type { Node, OnNodeDrag } from '@uipath/apollo-react/canvas/xyflow/react'
 import { useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useMemo, useState } from 'react';
 import { DEFAULT_NODE_SIZE } from '../../constants';
+import { getAbsolutePosition } from '../../utils/NodeUtils';
 import type { AlignmentGuideLine, NodeBounds } from './AlignmentGuides.types';
 
-export function toBounds(node: Node): NodeBounds {
+type NodeWithInternals = Node & {
+  internals?: { positionAbsolute?: { x: number; y: number } };
+};
+
+export function toBounds(node: Node, allNodes: Node[] = [node]): NodeBounds {
   const width = node.measured?.width ?? node.width ?? DEFAULT_NODE_SIZE;
   const height = node.measured?.height ?? node.height ?? DEFAULT_NODE_SIZE;
-  const x1 = node.position.x;
-  const y1 = node.position.y;
+  const absolutePosition =
+    (node as NodeWithInternals).internals?.positionAbsolute ??
+    (node.parentId ? getAbsolutePosition(node, allNodes) : node.position);
+  const x1 = absolutePosition.x;
+  const y1 = absolutePosition.y;
   const x2 = x1 + width;
   const y2 = y1 + height;
   return { id: node.id, x1, y1, x2, y2, cx: (x1 + x2) / 2, cy: (y1 + y2) / 2 };
@@ -34,10 +42,7 @@ interface AxisCandidate {
   priority: number;
 }
 
-function getAxisAnchors(
-  bounds: NodeBounds,
-  orientation: 'vertical' | 'horizontal'
-): AxisAnchors {
+function getAxisAnchors(bounds: NodeBounds, orientation: 'vertical' | 'horizontal'): AxisAnchors {
   return orientation === 'vertical'
     ? [bounds.x1, bounds.cx, bounds.x2]
     : [bounds.y1, bounds.cy, bounds.y2];
@@ -161,8 +166,8 @@ export function computeAlignmentSnapDelta(
   return computeAlignmentResult(dragged, others, threshold).delta;
 }
 
-export function toGroupBounds(nodes: Node[]): NodeBounds {
-  const bounds = nodes.map(toBounds);
+export function toGroupBounds(nodes: Node[], allNodes: Node[] = nodes): NodeBounds {
+  const bounds = nodes.map((node) => toBounds(node, allNodes));
   const x1 = Math.min(...bounds.map((item) => item.x1));
   const y1 = Math.min(...bounds.map((item) => item.y1));
   const x2 = Math.max(...bounds.map((item) => item.x2));
@@ -237,8 +242,10 @@ export function useAlignmentGuides(
     (draggedNode: Node, draggedNodes: Node[], showGuides: boolean) => {
       const activeNodes = draggedNodes.length > 0 ? draggedNodes : [draggedNode];
       const activeIds = new Set(activeNodes.map(({ id }) => id));
-      const others = nodes.filter(({ id }) => !activeIds.has(id)).map(toBounds);
-      const activeBounds = toGroupBounds(activeNodes);
+      const others = nodes
+        .filter(({ id }) => !activeIds.has(id))
+        .map((node) => toBounds(node, nodes));
+      const activeBounds = toGroupBounds(activeNodes, nodes);
       const result = computeAlignmentResult(activeBounds, others, thresholdPx / zoom);
       setDraggedBounds(
         showGuides
