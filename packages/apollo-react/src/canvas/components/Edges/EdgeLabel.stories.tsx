@@ -302,9 +302,9 @@ export const CrossingLabeledEdges: Story = {
 };
 
 /**
- * Two known-limitation cases. The label is `whitespace-nowrap` with no
- * truncation, so long text simply overflows; and a short edge with close
- * nodes crowds the label against both node bodies.
+ * Two edge-label boundary cases: long text truncates with an ellipsis and
+ * exposes its full value in a tooltip, while a short edge with close nodes
+ * crowds the label against both node bodies.
  */
 function OverflowStory() {
   const initialNodes = useMemo(
