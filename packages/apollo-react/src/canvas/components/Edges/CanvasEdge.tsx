@@ -1,5 +1,5 @@
-import { Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, type MouseEvent, useCallback, useRef, useState } from 'react';
+import { Position, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/react';
+import { type MouseEvent, memo, useCallback, useRef, useState } from 'react';
 import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { EdgeToolbar, useEdgeToolbarState } from '../Toolbar';
@@ -53,29 +53,30 @@ export const CanvasEdge = memo(function CanvasEdge({
   const onMouseEnter = useCallback(() => setIsHovered(true), []);
   const onMouseLeave = useCallback(() => setIsHovered(false), []);
   const pathRef = useRef<SVGPathElement | null>(null);
-  const { setEdges, setNodes } = useReactFlow();
+  const store = useStoreApi();
 
   const onLabelClick = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
       event.stopPropagation();
-      const additiveSelection = event.metaKey || event.ctrlKey;
+      const {
+        addSelectedEdges,
+        edgeLookup,
+        elementsSelectable,
+        multiSelectionActive,
+        unselectNodesAndEdges,
+      } = store.getState();
+      const edge = edgeLookup.get(id);
 
-      setEdges((edges) =>
-        edges.map((edge) => {
-          if (edge.id === id) {
-            return { ...edge, selected: additiveSelection ? !edge.selected : true };
-          }
-          return additiveSelection ? edge : { ...edge, selected: false };
-        })
-      );
+      if (!edge || !(edge.selectable ?? elementsSelectable)) return;
 
-      if (!additiveSelection) {
-        setNodes((nodes) =>
-          nodes.map((node) => (node.selected ? { ...node, selected: false } : node))
-        );
+      store.setState({ nodesSelectionActive: false });
+      if (edge.selected && multiSelectionActive) {
+        unselectNodesAndEdges({ nodes: [], edges: [edge] });
+      } else {
+        addSelectedEdges([id]);
       }
     },
-    [id, setEdges, setNodes]
+    [id, store]
   );
 
   const routing = data?.routing ?? 'waypoint';

@@ -55,12 +55,12 @@ export const EDGE_DASHARRAY = {
  * in canvas/styles/variables.css.
  */
 export const EDGE_COLORS = {
-  default: 'var(--canvas-border)',
-  hover: 'var(--canvas-primary-hover)',
-  selected: 'var(--canvas-primary)',
-  invalid: 'var(--canvas-error-icon)',
-  diffAdded: 'var(--canvas-success-icon)',
-  diffRemoved: 'var(--canvas-error-icon)',
+  default: 'var(--canvas-border, var(--color-border))',
+  hover: 'var(--canvas-primary-hover, var(--color-primary-hover))',
+  selected: 'var(--canvas-primary, var(--color-primary))',
+  invalid: 'var(--canvas-error-icon, var(--color-error-icon))',
+  diffAdded: 'var(--canvas-success-icon, var(--color-success-icon))',
+  diffRemoved: 'var(--canvas-error-icon, var(--color-error-icon))',
 } as const;
 
 /**

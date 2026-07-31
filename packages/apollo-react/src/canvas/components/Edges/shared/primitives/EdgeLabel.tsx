@@ -13,13 +13,16 @@ export type EdgeLabelProps = {
   onMouseLeave?: () => void;
 };
 
-// Falls back to --color-background when the canvas-specific background token is unavailable,
+// Falls back to core color tokens when canvas-specific tokens are unavailable,
 // such as in a host that doesn't import canvas/styles/variables.css.
 const EDGE_LABEL_BASE_CLASS =
   'react-flow__edge-label nodrag nopan absolute top-0 left-0 max-w-48 overflow-hidden text-ellipsis ' +
   'whitespace-nowrap pointer-events-auto cursor-default ' +
   'px-2 py-1 rounded text-xs font-medium border shadow-[0_1px_3px_0_rgba(0,0,0,0.1)] ' +
-  'text-(--canvas-foreground) bg-[var(--canvas-background,var(--color-background))]';
+  'text-[var(--canvas-foreground,var(--color-foreground))] ' +
+  'bg-[var(--canvas-background,var(--color-background))]';
+
+export const EDGE_LABEL_DEFAULT_BORDER_COLOR = 'var(--canvas-border,var(--color-border))';
 
 /**
  * Portals into xyflow's `edgelabel-renderer` div, which is a DOM sibling that
@@ -32,7 +35,7 @@ export function EdgeLabel({
   x,
   y,
   text,
-  borderColor = 'var(--canvas-border)',
+  borderColor = EDGE_LABEL_DEFAULT_BORDER_COLOR,
   onClick,
   onMouseEnter,
   onMouseLeave,
