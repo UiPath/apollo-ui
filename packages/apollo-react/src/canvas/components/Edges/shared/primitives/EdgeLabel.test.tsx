@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { EdgeLabel } from './EdgeLabel';
+import { EDGE_LABEL_DEFAULT_BORDER_COLOR, EdgeLabel } from './EdgeLabel';
 
 // EdgeLabelRenderer portals into a DOM node xyflow only creates once a full
 // <ReactFlow> instance has mounted, which this unit test doesn't set up.
@@ -29,14 +29,16 @@ describe('EdgeLabel', () => {
     const defaultLabel = renderLabel().label;
     const coloredLabel = renderLabel({ borderColor: 'var(--canvas-success-icon)' }).label;
 
-    expect(defaultLabel.style.borderColor).toBe('var(--canvas-border)');
+    expect(EDGE_LABEL_DEFAULT_BORDER_COLOR).toBe('var(--canvas-border,var(--color-border))');
+    // happy-dom drops nested var() fallback values from CSSStyleDeclaration.
+    expect(defaultLabel.style.borderColor).toBe('');
     expect(coloredLabel.style.borderColor).toBe('var(--canvas-success-icon)');
   });
 
-  it('falls back to --color-background when --canvas-background is unresolved', () => {
-    expect(renderLabel().label.className).toContain(
-      'bg-[var(--canvas-background,var(--color-background))]'
-    );
+  it('falls back to core color tokens when canvas tokens are unresolved', () => {
+    const { className } = renderLabel().label;
+    expect(className).toContain('bg-[var(--canvas-background,var(--color-background))]');
+    expect(className).toContain('text-[var(--canvas-foreground,var(--color-foreground))]');
   });
 
   it('truncates by width and forwards interaction to its owning edge', () => {

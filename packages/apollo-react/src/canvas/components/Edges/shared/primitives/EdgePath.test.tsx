@@ -49,7 +49,7 @@ describe('EdgePath', () => {
     expect(renderPath().outline).toBeNull();
     const { outline } = renderPath({ selected: true });
     expect(outline).not.toBeNull();
-    expect(outline?.getAttribute('stroke')).toBe('var(--canvas-primary)');
+    expect(outline?.getAttribute('stroke')).toBe('var(--canvas-primary, var(--color-primary))');
   });
 
   it('applies opacity to the visible path and keeps the 20px interaction layer', () => {
