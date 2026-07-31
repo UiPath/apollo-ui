@@ -4,6 +4,13 @@ import type { Palette } from '@uipath/apollo-core/tokens/jss/palette';
 
 export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
   deletable: { '&:focus:not(.Mui-disabled)': { backgroundColor: palette.semantic.colorHover } },
+  // The outlined variant is border-only: undo the filled background the root slot applies,
+  // keeping the hover fill for clickable chips (matches MUI's own outlined variant).
+  outlined: {
+    backgroundColor: 'transparent',
+    '&:hover': { backgroundColor: 'transparent' },
+    '&.MuiChip-clickable:hover': { backgroundColor: palette.semantic.colorHover },
+  },
   root: {
     paddingLeft: token.Padding.PadL,
     paddingRight: token.Padding.PadL,
