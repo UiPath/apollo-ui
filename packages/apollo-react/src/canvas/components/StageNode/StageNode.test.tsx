@@ -169,11 +169,6 @@ vi.mock('../BaseCanvas/ConnectedHandlesContext', () => ({
   useConnectedHandles: () => new Set(),
 }));
 
-// Mock useButtonHandles
-vi.mock('../ButtonHandle/useButtonHandles', () => ({
-  useButtonHandles: () => null,
-}));
-
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
   const actual = await vi.importActual('@uipath/apollo-react/canvas/xyflow/react');
   return {
@@ -188,6 +183,24 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
       };
       return selector(mockState);
     },
+    // xyflow's Handle renders nothing outside a real Node context (it needs a node
+    // id from context). Stub it, mirroring the data-handleid attribute the real
+    // component sets, so manifest-driven handle rendering is testable here.
+    Handle: ({
+      children,
+      id,
+      className,
+      style,
+    }: {
+      children?: React.ReactNode;
+      id?: string;
+      className?: string;
+      style?: React.CSSProperties;
+    }) => (
+      <div data-testid="xyflow-handle" data-handleid={id} className={className} style={style}>
+        {children}
+      </div>
+    ),
   };
 });
 
@@ -1364,5 +1377,70 @@ describe('StageNode - Breakpoints on adhoc and event-driven tasks', () => {
     });
 
     expect(screen.queryByTestId('stage-task-breakpoint-adhoc-1')).not.toBeInTheDocument();
+  });
+});
+
+describe('StageNode - Manifest-Driven Handles', () => {
+  it('renders the add button on the next handle when selected and onHandleAction is provided', () => {
+    renderStageNode({ onHandleAction: vi.fn() });
+
+    expect(screen.getByRole('button', { name: 'Add node' })).toBeInTheDocument();
+  });
+
+  it('fires onHandleAction with the manifest next handle id', async () => {
+    const user = userEvent.setup();
+    const onHandleAction = vi.fn();
+    renderStageNode({ onHandleAction });
+
+    await user.click(screen.getByRole('button', { name: 'Add node' }));
+
+    expect(onHandleAction).toHaveBeenCalledTimes(1);
+    expect(onHandleAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nodeId: 'stage-1',
+        handleId: 'next',
+        handleType: 'output',
+      })
+    );
+  });
+
+  it('does not render the add button when onHandleAction is not provided', () => {
+    renderStageNode();
+
+    expect(screen.queryByRole('button', { name: 'Add node' })).not.toBeInTheDocument();
+  });
+
+  it('does not render the add button in read-only mode', () => {
+    renderStageNode({
+      onHandleAction: vi.fn(),
+      stageDetails: {
+        label: 'Test Stage',
+        isReadOnly: true,
+        tasks: [[createTask('task-1', 'Task 1')]],
+      },
+    });
+
+    expect(screen.queryByRole('button', { name: 'Add node' })).not.toBeInTheDocument();
+  });
+
+  it('does not render the add button on exception stages', () => {
+    renderStageNode({
+      onHandleAction: vi.fn(),
+      stageDetails: {
+        label: 'Exception Stage',
+        isException: true,
+        tasks: [[createTask('task-1', 'Task 1')]],
+      },
+    });
+
+    expect(screen.queryByRole('button', { name: 'Add node' })).not.toBeInTheDocument();
+  });
+
+  it('renders the manifest handle ids from the unified flow schema', () => {
+    const { container } = renderStageNode({ onHandleAction: vi.fn() });
+
+    for (const handleId of ['input', 'next', 'reentry']) {
+      expect(container.querySelector(`[data-handleid="${handleId}"]`)).not.toBeNull();
+    }
   });
 });

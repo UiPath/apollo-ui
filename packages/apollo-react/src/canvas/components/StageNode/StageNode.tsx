@@ -28,6 +28,9 @@ const StageNodeInner = (props: StageNodeProps) => {
     onAddTaskFromToolbox,
     onTaskToolboxSearch,
     onReplaceTaskFromToolbox,
+    onHandleAction,
+    onHandleMouseEnter,
+    onHandleMouseLeave,
   } = props;
 
   const taskWidth = width ? width - STAGE_CONTENT_INSET : undefined;
@@ -198,6 +201,9 @@ const StageNodeInner = (props: StageNodeProps) => {
         selected={selected}
         isHovered={isHovered}
         isException={isException}
+        onHandleAction={onHandleAction}
+        onHandleMouseEnter={onHandleMouseEnter}
+        onHandleMouseLeave={onHandleMouseLeave}
       />
     </div>
   );
