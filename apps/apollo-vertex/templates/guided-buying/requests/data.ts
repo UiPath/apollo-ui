@@ -5,6 +5,7 @@
 
 export type RequestStatus =
   | "ordered"
+  | "delivered"
   | "approved"
   | "pending-approval"
   | "sourcing";
@@ -33,6 +34,7 @@ export interface RequestRow {
 
 export const STATUS_LABEL: Record<RequestStatus, string> = {
   ordered: "Ordered",
+  delivered: "Delivered",
   approved: "Approved",
   "pending-approval": "Pending Approval",
   sourcing: "Sourcing",
@@ -43,6 +45,7 @@ export const STATUS_BADGE: Record<
   "success" | "warning" | "info"
 > = {
   ordered: "success",
+  delivered: "success",
   approved: "success",
   "pending-approval": "warning",
   sourcing: "info",
@@ -105,7 +108,7 @@ export const REQUEST_ROWS: RequestRow[] = [
     department: "IT : Denver",
     amount: "$980.00",
     amountValue: 980,
-    status: "approved",
+    status: "delivered",
     submitted: "24 May 2026",
     updated: "27 May 2026",
   },
@@ -175,12 +178,26 @@ export interface RequestDetail {
   journeyStages?: JourneyStep[];
   /** Context note below the journey label row (e.g. owner + ETA). No leading emoji — icon added by caller. */
   journeyOwnerNote?: string;
+  /** Approver's usual decision turnaround, e.g. "a day" — the status card's
+   * bolded turnaround figure while pending. */
+  turnaround?: string;
+  /** Pricing program called out in the status card's summary sentence, e.g.
+   * "under EPP pricing". Scenario-specific — most requests have none. */
+  pricingNote?: string;
   /** Summary strip fields. */
-  summary?: { items: string; total: string; needBy?: string };
+  summary?: {
+    items: string;
+    total: string;
+    needBy?: string;
+    /** Savings vs. list price, called out in the status card's lead sentence. */
+    savings?: string;
+  };
   /** Approver name for the "Full details" expand. */
   approver?: string;
   /** Cost center for the "Full details" expand. */
   costCenter?: string;
+  /** Ship-to destination for the sidebar's record fields. */
+  shipTo?: string;
   /** Header badge label override (e.g. "Pending · 2 days" instead of status). */
   statusLabel?: string;
   /** Pre-seeded first message shown in the thread bubble. */
@@ -189,6 +206,10 @@ export interface RequestDetail {
   nudgeText?: string;
   /** Prototype nav — if true, the last journey stage links to /close/{id}. */
   hasClose?: boolean;
+  /** Approver sent it back for changes — the header's other owed-action
+   * state ("Respond"). No seed scenario sets this yet; implemented
+   * generically so the branch exists once one does. */
+  sentBack?: boolean;
 }
 
 // Deep details exist only for requests that came through the flow.
@@ -212,6 +233,28 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       { label: "Ordered", state: "done" },
     ],
     summary: { items: "2 × X1 Carbon", total: "$3,698" },
+  },
+  "REQ-2031": {
+    id: "REQ-2031",
+    request: "Standing desk converters ×4",
+    meta: "Delivered · 4 Ergotron converters",
+    headline: "Delivered",
+    agentLine:
+      "Approved and ordered from Ergotron. All 4 converters arrived and delivery is confirmed.",
+    inFlight: false,
+    timeline: [
+      { label: "Submitted", state: "done" },
+      { label: "Approved", state: "done" },
+      { label: "Delivered", desc: "4 units received", state: "done" },
+    ],
+    journeyStages: [
+      { label: "Submitted", state: "done" },
+      { label: "Approved", state: "done" },
+      { label: "Ordered", state: "done" },
+      { label: "Received · 27 May", state: "done" },
+    ],
+    summary: { items: "4 × Ergotron converter", total: "$980" },
+    hasClose: true,
   },
   "REQ-2051": {
     id: "REQ-2051",
@@ -237,6 +280,7 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
     ],
     journeyOwnerNote: "With procurement · awaiting T-Mobile approval",
     summary: { items: "12 mobile lines", total: "$660/mo" },
+    approver: "Procurement Team",
   },
   "REQ-2053": {
     id: "REQ-2053",
@@ -286,9 +330,19 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
     ],
     journeyOwnerNote:
       "Waiting on Alex Chen · Design Director. Usually decides within a day.",
-    summary: { items: "15 × X1 Carbon", total: "$27,735", needBy: "Aug 28" },
+    turnaround: "a day",
+    pricingNote: "under EPP pricing",
+    summary: {
+      items: "15 × X1 Carbon",
+      total: "$27,735",
+      needBy: "Aug 28",
+      // $2,138 list vs. $1,849 EPP unit price (see PO_DETAILS), × 15.
+      savings: "$4,335",
+    },
     approver: "Alex Chen · Design Director",
     costCenter: "Design Operations · CC-4421",
+    // Same canonical value the Bridge's envelope infers for this scenario.
+    shipTo: "Amsterdam office · Herengracht 124",
     statusLabel: "Pending · 2 days",
     threadSeedMessage:
       "Hi Alex — these are for the Fusion contractors starting Aug 3. Happy to answer anything.",
@@ -407,6 +461,26 @@ export const CLOSE_DETAILS: Record<string, CloseDetail> = {
     banner:
       "Request complete — 15 ThinkPads received, enrolled, and in contractors' hands.",
   },
+  "REQ-2031": {
+    id: "REQ-2031",
+    request: "Standing desk converters ×4",
+    receivedDate: "27 May",
+    stages: [
+      { label: "Submitted", state: "done" },
+      { label: "Approved", state: "done" },
+      { label: "Ordered", state: "done" },
+      { label: "Received · 27 May", state: "done" },
+    ],
+    // No PO line-item data seeded for this scenario — PR only, no PO chip.
+    recordChips: ["PR-2031"],
+    summary: {
+      heading: "Delivery complete · 4 units received May 27",
+      detail:
+        "4 × Ergotron standing desk converters · delivered to the Denver office.",
+    },
+    action: "Confirm receipt",
+    banner: "Request complete — 4 converters received and in place.",
+  },
 };
 
 export function getCloseDetail(id: string): CloseDetail | undefined {
@@ -489,7 +563,10 @@ export function requestStats(rows: RequestRow[] = REQUEST_ROWS) {
     (r) => r.status === "pending-approval" || r.status === "sourcing",
   ).length;
   const approved = rows.filter(
-    (r) => r.status === "approved" || r.status === "ordered",
+    (r) =>
+      r.status === "approved" ||
+      r.status === "ordered" ||
+      r.status === "delivered",
   ).length;
   const totalValue = rows.reduce((sum, r) => sum + r.amountValue, 0);
   return { total, awaitingDecision, approved, totalValue };
