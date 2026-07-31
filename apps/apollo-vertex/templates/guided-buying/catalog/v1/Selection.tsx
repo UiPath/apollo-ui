@@ -30,7 +30,6 @@ import {
   eppSavings,
   formatPrice,
   RECOMMENDATION,
-  SAMPLE_REQUEST,
 } from "./data";
 import { type FilterChip, FilterChips } from "./FilterChips";
 import { ProductCard } from "./ProductCard";
@@ -128,16 +127,19 @@ interface SelectionProps {
    * Scoped (reached via "See all in catalog") keeps the request framing.
    */
   cold?: boolean;
+  /** Initial list/grid toggle state. Defaults to "rows". */
+  initialLayout?: LayoutMode;
 }
 
 /** Selection step of Guided Buying — catalog browse-and-pick (catalog goods only). */
 export function Selection({
   imageMode = "photo",
   cold = false,
+  initialLayout = "rows",
 }: SelectionProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("recommended");
-  const [layout, setLayout] = useState<LayoutMode>("rows");
+  const [layout, setLayout] = useState<LayoutMode>(initialLayout);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [detailSlug, setDetailSlug] = useState<string | null>(null);
@@ -304,7 +306,13 @@ export function Selection({
 
   const reviewSubmit = () => {
     setCartOpen(false);
-    void navigate({ to: "/review" });
+    // Tags where Review's own Back button should return to — the standalone
+    // catalog page, not the guided /buy flow it didn't come from. `from`
+    // isn't a registered history-state key (ad hoc, like the sibling
+    // fromReview/fromConfigure flags elsewhere in this flow), hence the cast.
+    // biome-ignore lint/suspicious/noExplicitAny: `from` isn't a registered
+    // history-state key in this app's (unaugmented) HistoryState type.
+    void navigate({ to: "/review", state: { from: "catalog" } as any });
   };
 
   const toggleCompare = (item: CatalogItem) => {
@@ -561,8 +569,7 @@ export function Selection({
                     </PageHeaderDescription>
                   ) : (
                     <PageHeaderDescription>
-                      Sourcing {SAMPLE_REQUEST.summary.replace(/\.$/, "")} ·
-                      prices shown per unit
+                      Prices shown per unit
                     </PageHeaderDescription>
                   )}
                 </PageHeaderTitleGroup>

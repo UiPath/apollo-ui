@@ -11,7 +11,11 @@ export type RequestStatus =
 
 export interface RequestRow {
   id: string;
+  /** Short generated title — chrome, shown in the list and every header. */
   request: string;
+  /** Verbatim prompt, captured at submission (live Buy flow only) — shown in
+   * full in the detail sidebar's "Your request" field. Never truncated. */
+  prompt?: string;
   requester: string;
   /** Vendor / supplier the request is with. */
   supplier: string;
@@ -151,7 +155,12 @@ export interface JourneyStep {
 
 export interface RequestDetail {
   id: string;
+  /** Short generated title — chrome, shown in the header and everywhere else. */
   request: string;
+  /** Verbatim prompt for the detail sidebar's "Your request" field, when it
+   * differs from the generated title. Falls back to `request` when unset —
+   * these hand-seeded scenarios don't have a distinct recorded prompt. */
+  prompt?: string;
   /** Subtitle in the detail header. */
   meta: string;
   /** Detail outcome line (e.g. "Routed to procurement", "Ordered"). */
@@ -276,7 +285,7 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       { label: "Received", state: "upcoming" },
     ],
     journeyOwnerNote:
-      "Waiting on Alex Chen · Design Director — usually decides within a day.",
+      "Waiting on Alex Chen · Design Director. Usually decides within a day.",
     summary: { items: "15 × X1 Carbon", total: "$27,735", needBy: "Aug 28" },
     approver: "Alex Chen · Design Director",
     costCenter: "Design Operations · CC-4421",

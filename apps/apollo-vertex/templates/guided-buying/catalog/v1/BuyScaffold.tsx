@@ -3,7 +3,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, Plus, ShoppingCart } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,10 @@ const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 interface BuyScaffoldProps {
   /** The active step. Changing it animates the title/subtext out and in. */
   stepKey: string;
+  /** Small line above the title, e.g. a time-of-day greeting on Intake. Carries
+   * the AI mark; when present, the title itself steps up a size and loses its
+   * own mark. */
+  eyebrow?: ReactNode;
   title: string;
   subtext: ReactNode;
   /** Back control (top-left). Omitted on Intake — there's no previous step. */
@@ -27,10 +31,21 @@ interface BuyScaffoldProps {
   /** Flow phase indicator rendered centered in the chrome band. */
   phaseBar?: ReactNode;
   /**
+   * The current request in the user's own words (or "New request" before one
+   * exists) — the chrome band's left-slot thread title, in place of onBack.
+   */
+  headerTitle: string;
+  /** True while the assistant panel is open — hides the header's own trigger. */
+  assistantOpen: boolean;
+  /** Opens the assistant panel (the header's ✦ trigger, beside the title). */
+  onOpenAssistant: () => void;
+  /**
    * When true, the AI mark + title + subtitle anchor block is hidden. Use on
    * steps that supply their own page-level hero (e.g. the Choose/selection phase).
    */
   hideBrand?: boolean;
+  /** Attached to the scrollable content column — lets a parent measure overflow. */
+  contentRef?: Ref<HTMLDivElement>;
   children: ReactNode;
 }
 
@@ -42,6 +57,7 @@ interface BuyScaffoldProps {
  */
 export function BuyScaffold({
   stepKey,
+  eyebrow,
   title,
   subtext,
   onBack,
@@ -49,6 +65,10 @@ export function BuyScaffold({
   showCart = false,
   phaseBar,
   hideBrand = false,
+  headerTitle,
+  assistantOpen,
+  onOpenAssistant,
+  contentRef,
   children,
 }: BuyScaffoldProps) {
   const reduceMotion = useReducedMotion();
@@ -72,22 +92,25 @@ export function BuyScaffold({
         exit: { opacity: 0, y: -10, transition: { duration: 0.2, ease: EASE } },
       };
 
-  // Border only when the band has content — absent on Intake where all slots are empty.
+  // Border + thread title only once a request exists — absent on the blank
+  // Intake screen (before the first prompt or resume) where all slots are empty.
   const hasBandContent = !!(onBack ?? onReset ?? phaseBar ?? showCart);
 
   return (
     <div className="flex h-full flex-col">
-      {/* Single chrome band: Back | stepper (centered) | Reset+Cart — hairline beneath. */}
+      {/* Single chrome band: Back/thread title | stepper (centered) | Reset+Cart — hairline beneath. */}
       <div
         className={cn(
           "relative flex h-12 shrink-0 items-center justify-between px-4",
           hasBandContent && "border-b",
         )}
       >
-        {/* Back — left */}
-        <div className="flex items-center">
-          <AnimatePresence>
-            {onBack && (
+        {/* Back — left. When a step keeps Back off the header (it renders its
+            own, e.g. Bridge's closing row), the thread title takes that slot
+            instead: the current request, plus the panel's own open trigger. */}
+        <div className="flex min-w-0 items-center">
+          <AnimatePresence mode="wait">
+            {onBack ? (
               <motion.div
                 key="back"
                 initial={reduceMotion ? false : { opacity: 0, x: -8 }}
@@ -109,6 +132,67 @@ export function BuyScaffold({
                   Back
                 </Button>
               </motion.div>
+            ) : (
+              hasBandContent && (
+                <motion.div
+                  key="thread-title"
+                  initial={reduceMotion ? false : { opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -8 }}
+                  transition={{
+                    duration: 0.28,
+                    ease: EASE,
+                    delay: reduceMotion ? 0 : 0.15,
+                  }}
+                  className="flex min-w-0 items-center gap-1.5"
+                >
+                  {!assistantOpen && (
+                    <>
+                      <svg
+                        width={0}
+                        height={0}
+                        aria-hidden
+                        className="absolute"
+                      >
+                        <defs>
+                          <linearGradient
+                            id="back-slot-ai-mark"
+                            x1="2"
+                            y1="4"
+                            x2="22"
+                            y2="20"
+                            gradientUnits="userSpaceOnUse"
+                          >
+                            <stop
+                              offset="0"
+                              stopColor="var(--ai-gradient-start)"
+                            />
+                            <stop
+                              offset="1"
+                              stopColor="var(--ai-gradient-end)"
+                            />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={onOpenAssistant}
+                        aria-label="Open assistant"
+                        className="shrink-0"
+                      >
+                        <AiMark size={16} gradientId="back-slot-ai-mark" />
+                      </Button>
+                    </>
+                  )}
+                  <span
+                    title={headerTitle}
+                    className="max-w-[320px] truncate text-xs font-semibold text-foreground"
+                  >
+                    {headerTitle}
+                  </span>
+                </motion.div>
+              )
             )}
           </AnimatePresence>
         </div>
@@ -140,7 +224,7 @@ export function BuyScaffold({
                   className="text-muted-foreground"
                 >
                   <Plus className="size-4" aria-hidden />
-                  New purchase request
+                  New request
                 </Button>
               </motion.div>
             )}
@@ -188,46 +272,35 @@ export function BuyScaffold({
       </div>
 
       {/* Scrollable content — anchor (when shown) + step surface. */}
-      <div className="flex flex-1 flex-col overflow-y-auto">
+      <div ref={contentRef} className="flex flex-1 flex-col overflow-y-auto">
         <div
           className={cn(
             "mx-auto flex w-full max-w-[720px] flex-1 flex-col px-4 pb-10",
-            hideBrand && "pt-8",
+            // hideBrand steps supply their own hero (e.g. Choose) — same
+            // pt-[7vh] anchor as the shared title block, so the two screens
+            // place their headline at the same height.
+            hideBrand && "pt-[7vh]",
           )}
         >
           {/* Autopilot mark + animated title/subtext. Hidden when the step
               supplies its own hero (hideBrand=true, e.g. the Choose phase). */}
           {!hideBrand && (
             <div className="pt-[7vh] text-center">
-              <div className="flex items-center justify-center gap-1.5">
-                <svg width={0} height={0} aria-hidden className="absolute">
-                  <defs>
-                    <linearGradient
-                      id="buy-ai-mark"
-                      x1="2"
-                      y1="4"
-                      x2="22"
-                      y2="20"
-                      gradientUnits="userSpaceOnUse"
-                    >
-                      <stop offset="0" stopColor="var(--ai-gradient-start)" />
-                      <stop offset="1" stopColor="var(--ai-gradient-end)" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <AiMark size={20} gradientId="buy-ai-mark" />
-                <span
-                  className="pt-0.5 text-sm font-bold leading-none tracking-tight"
-                  style={{
-                    backgroundImage: "var(--ai-gradient-text)",
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    color: "transparent",
-                  }}
-                >
-                  AI Assistant
-                </span>
-              </div>
+              <svg width={0} height={0} aria-hidden className="absolute">
+                <defs>
+                  <linearGradient
+                    id="buy-ai-mark"
+                    x1="2"
+                    y1="4"
+                    x2="22"
+                    y2="20"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop offset="0" stopColor="var(--ai-gradient-start)" />
+                    <stop offset="1" stopColor="var(--ai-gradient-end)" />
+                  </linearGradient>
+                </defs>
+              </svg>
               {/* Title + subtext slide up and fade as the step changes. */}
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
@@ -237,25 +310,43 @@ export function BuyScaffold({
                   animate="animate"
                   exit="exit"
                 >
+                  {eyebrow && (
+                    <motion.p
+                      variants={line}
+                      className="flex items-center justify-center gap-1.5 text-sm font-semibold tracking-tight text-foreground"
+                    >
+                      <AiMark size={16} gradientId="buy-ai-mark" />
+                      {eyebrow}
+                    </motion.p>
+                  )}
                   <motion.h1
                     variants={line}
-                    className="mt-3 text-2xl font-semibold tracking-tight text-foreground"
+                    className={cn(
+                      "text-2xl font-semibold text-foreground",
+                      eyebrow
+                        ? "mt-1.5 text-3xl tracking-[-1px]"
+                        : "tracking-tight",
+                    )}
                   >
                     {title}
                   </motion.h1>
-                  <motion.p
-                    variants={line}
-                    className="mx-auto mt-1.5 max-w-prose text-sm leading-6 text-muted-foreground"
-                  >
-                    {subtext}
-                  </motion.p>
+                  {subtext && (
+                    <motion.p
+                      variants={line}
+                      className="mx-auto mt-1.5 max-w-prose text-sm leading-6 text-muted-foreground"
+                    >
+                      {subtext}
+                    </motion.p>
+                  )}
                 </motion.div>
               </AnimatePresence>
             </div>
           )}
 
-          {/* Step surface, directly beneath the anchor. */}
-          <div className="mt-6">{children}</div>
+          {/* Step surface, directly beneath the anchor. hideBrand steps carry
+              their own heading as part of children, so skip the extra gap —
+              it would double up with the shared anchor's spacing. */}
+          <div className={cn(!hideBrand && "mt-6")}>{children}</div>
         </div>
 
         <CartDrawer

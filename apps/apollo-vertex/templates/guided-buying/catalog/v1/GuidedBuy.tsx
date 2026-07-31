@@ -15,12 +15,13 @@ import { ServicesBridge } from "./ServicesBridge";
 import type { CatalogItem } from "./types";
 
 interface GuidedBuyProps {
-  /** See-all → catalog (plays Buy's exit transition). */
-  onSeeAll: () => void;
   /** Configure with agent → the configurator (contract path). */
   onConfigure: () => void;
   /** Opens the shelf dock scoped to the selected card's item. */
   onWhyNotThisClick?: (item: CatalogItem) => void;
+  /** Opens the shelf dock generically — the Shelf's "not finding what you're
+   * looking for?" entry point. */
+  onNotFindingClick?: () => void;
   /** True after the P2 dock correction — Yoga card enters set-aside state. */
   correctionMade?: boolean;
   onYogaShowAnyway?: () => void;
@@ -37,9 +38,9 @@ type ToolPart = MessagePart & { id: string; name: string; output: unknown };
  * ask affordance lives in the global Autopilot FAB, not here.
  */
 export function GuidedBuy({
-  onSeeAll,
   onConfigure,
   onWhyNotThisClick,
+  onNotFindingClick,
   correctionMade,
   onYogaShowAnyway,
   onOpenDetail,
@@ -71,9 +72,9 @@ export function GuidedBuy({
         return (
           <MatchCarousel
             output={part.output as MatchesOutput}
-            onSeeAll={onSeeAll}
             correctionMade={correctionMade}
             onWhyNotThisClick={onWhyNotThisClick}
+            onNotFindingClick={onNotFindingClick}
             onYogaShowAnyway={onYogaShowAnyway}
             onOpenDetail={onOpenDetail}
           />
@@ -91,7 +92,10 @@ export function GuidedBuy({
     <div className="space-y-4">
       {/* The structured surface, presented directly (no bubble chrome). */}
       {toolParts.length > 0 ? (
-        toolParts.map((part) => <div key={part.id}>{renderSurface(part)}</div>)
+        toolParts.map((part) => {
+          const surface = renderSurface(part);
+          return surface && <div key={part.id}>{surface}</div>;
+        })
       ) : working ? (
         <div className="flex justify-center py-6">
           <AiChatThinking size={36} />

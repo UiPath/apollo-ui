@@ -26,8 +26,13 @@ export interface ConversationContextValue {
   status: ChatClientState;
   /** The active Buy step (header anchor + back navigation). */
   phase: BuyPhase;
-  /** What the user prompted (free text or a starter chip) — shown on the Bridge. */
+  /** What the user prompted (free text or a starter chip) — shown verbatim on
+   * the Bridge and in the request detail sidebar. Never truncated. */
   requestText: string | null;
+  /** Short (~6 word) generated title, stable for the life of the request —
+   * chrome everywhere else (headers, thread title, Requests list). Set once
+   * per fresh submission (initial or post-Revise); untouched by field edits. */
+  requestTitle: string | null;
   /** The Bridge-confirmed routing/cost-center (null until a Bridge resolves). */
   requestDetails: RequestDetails | null;
   /** Record what the Bridge confirmed (called when continuing to selection). */
@@ -62,6 +67,31 @@ export interface ConversationContextValue {
   stepBack: () => void;
   /** Halt an in-flight scripted stream. */
   stop: () => void;
+  /**
+   * Returns to Intake with the current request text staged for the composer,
+   * so the user can restate it as a new turn (the agent then re-derives the
+   * whole envelope) rather than editing the request as a single field.
+   */
+  reviseRequest: () => void;
+  /** Staged by `reviseRequest` for the composer to pick up once Intake mounts
+   * — read once, then cleared via `clearPendingRevision`. */
+  pendingRevisionText: string | null;
+  /** Marks the staged revision text as consumed. */
+  clearPendingRevision: () => void;
+  /** The prior request text, set by `reviseRequest` for the Bridge to describe
+   * the restatement once it re-mounts — read once, then cleared. */
+  revisedFrom: string | null;
+  /** Marks the one-shot revision note as consumed. */
+  clearRevisedFrom: () => void;
+  /** Bridge envelope fields the user has directly overridden (keyed by field
+   * key, e.g. "cost"/"ship"/"need"/"approver") — carried across a Revise so
+   * re-deriving the envelope doesn't discard the user's own picks. Cleared by
+   * `startFresh`. */
+  envelopeOverrides: Record<string, string>;
+  /** Record a direct user override for a Bridge envelope field. */
+  setEnvelopeOverride: (key: string, value: string) => void;
+  /** Clear a Bridge envelope field's override (e.g. reverted to the default). */
+  clearEnvelopeOverride: (key: string) => void;
 }
 
 export const ConversationContext =

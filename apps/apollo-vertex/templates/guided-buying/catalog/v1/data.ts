@@ -47,7 +47,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     listPrice: 2199,
     eppPrice: 1849,
     currency: "USD",
-    specs: ["Carbon Gen 12", '14" 2.8K OLED', "32GB · 1TB"],
+    specs: ["Gen 12", '14" 2.8K OLED', "32GB · 1TB"],
     inStock: true,
     image: unsplashImage("1763162410742-1d0097cea556"),
     specGroups: [
@@ -104,7 +104,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     currency: "USD",
     specs: ["Gen 9", '14" 2.8K touch', "16GB · 1TB"],
     inStock: true,
-    image: unsplashImage("1673431738089-c4fc9c2e96a7"),
+    image: unsplashImage("1743456056112-0739a6742135"),
     specGroups: [
       {
         label: "Display",
@@ -156,7 +156,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     currency: "USD",
     specs: ["9440", '14.5" 3.2K', "32GB · 1TB"],
     inStock: true,
-    image: unsplashImage("1611186871348-b1ce696e52c9"),
+    image: unsplashImage("1575320854760-bfffc3550640"),
     specGroups: [
       {
         label: "Display",
@@ -475,6 +475,15 @@ export function defaultQuantityFor(item: CatalogItem): number {
   return item.category === "Laptops" ? INFERRED_REQUEST_QUANTITY : 1;
 }
 
+/** RAM in GB parsed from the item's specs, or null when none is listed. */
+export function ramGb(item: CatalogItem): number | null {
+  for (const spec of item.specs) {
+    const match = spec.match(/(\d+)\s*GB/);
+    if (match) return Number(match[1]);
+  }
+  return null;
+}
+
 /** The active price given the price basis (EPP when applied, else list). */
 export function activePrice(item: CatalogItem, basis: PriceBasis): number {
   return basis === "epp" ? effectivePrice(item) : item.listPrice;
@@ -511,4 +520,19 @@ export function formatPrice(amount: number, currency: string): string {
     currency,
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+/**
+ * The header's thread title: the short generated title (chrome, not the
+ * verbatim prompt) once a request has resolved without one (e.g. a direct
+ * /catalog entry), or "New request" before any request exists. Keeps the
+ * title consistent across every step — Bridge, Shelf, Review — instead of
+ * reverting to "New request" wherever a title wasn't set.
+ */
+export function displayRequestTitle(
+  requestTitle: string | null,
+  hasResolved: boolean,
+): string {
+  if (requestTitle) return requestTitle;
+  return hasResolved ? SAMPLE_REQUEST.summary : "New request";
 }

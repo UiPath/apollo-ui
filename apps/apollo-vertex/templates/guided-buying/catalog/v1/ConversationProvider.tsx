@@ -61,6 +61,14 @@ function textMessage(
   return { id, role, parts: [{ type: "text", content }] };
 }
 
+// Scripted stand-in for LLM title generation (no live model here): trims a
+// free-text prompt to roughly six words. The full prompt is preserved
+// separately as requestText — this is chrome only.
+function generateTitle(text: string): string {
+  const words = text.trim().split(/\s+/);
+  return words.length <= 6 ? text.trim() : words.slice(0, 6).join(" ");
+}
+
 // A mocked tool-call part — the gate is `output != null`, so renderToolPart
 // runs and renders our rich content inline in the message bubble.
 function toolPart(id: string, name: string, output: unknown): MessagePart {
@@ -83,11 +91,19 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<ChatClientState>("ready");
   const [phase, setPhase] = useState<BuyPhase>("intake");
   const [requestText, setRequestText] = useState<string | null>(null);
+  const [requestTitle, setRequestTitle] = useState<string | null>(null);
   const [requestDetails, setRequestDetails] = useState<RequestDetails | null>(
     null,
   );
   const [hasResolved, setHasResolved] = useState(false);
   const [routedRequestId, setRoutedRequestId] = useState<string | null>(null);
+  const [pendingRevisionText, setPendingRevisionText] = useState<string | null>(
+    null,
+  );
+  const [revisedFrom, setRevisedFrom] = useState<string | null>(null);
+  const [envelopeOverrides, setEnvelopeOverrides] = useState<
+    Record<string, string>
+  >({});
 
   const idRef = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -119,6 +135,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     clearTimers();
     setPhase("bridge");
     setRequestText(text);
+    setRequestTitle(generateTitle(text));
     selectionStartedRef.current = false;
     const userMsg = textMessage(nextId(), "user", text);
     const assistantId = nextId();
@@ -205,6 +222,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     clearTimers();
     setPhase("offcatalog");
     setRequestText(text);
+    setRequestTitle(generateTitle(text));
     setRoutedRequestId(requestId);
     const assistantId = nextId();
     setMessages((prev) => [
@@ -236,6 +254,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     clearTimers();
     setPhase("service");
     setRequestText(text);
+    setRequestTitle(generateTitle(text));
     const userMsg = textMessage(nextId(), "user", text);
     const assistantId = nextId();
     setMessages((prev) => [
@@ -262,6 +281,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     clearTimers();
     setPhase("sourcing");
     setRequestText(text);
+    setRequestTitle(generateTitle(text));
     const userMsg = textMessage(nextId(), "user", text);
     const assistantId = nextId();
     setMessages((prev) => [
@@ -321,9 +341,40 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setStatus("ready");
     setPhase("intake");
     setRequestText(null);
+    setRequestTitle(null);
     setRequestDetails(null);
     setHasResolved(false);
     setRoutedRequestId(null);
+    setPendingRevisionText(null);
+    setRevisedFrom(null);
+    setEnvelopeOverrides({});
+  };
+
+  // Returns to Intake with the current request staged in the composer — a new
+  // turn to restate the request, not a field edit. Envelope overrides are
+  // deliberately left alone: the re-derived envelope keeps what the user chose.
+  const reviseRequest = () => {
+    clearTimers();
+    setPendingRevisionText(requestText);
+    setRevisedFrom(requestText);
+    setStatus("ready");
+    setPhase("intake");
+    setHasResolved(false);
+  };
+
+  const clearPendingRevision = () => setPendingRevisionText(null);
+  const clearRevisedFrom = () => setRevisedFrom(null);
+
+  const setEnvelopeOverride = (key: string, value: string) => {
+    setEnvelopeOverrides((prev) => ({ ...prev, [key]: value }));
+  };
+  const clearEnvelopeOverride = (key: string) => {
+    setEnvelopeOverrides((prev) => {
+      if (!(key in prev)) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   };
 
   // Step back one screen. From Selection, drop the matches turn to reveal the
@@ -351,6 +402,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     status,
     phase,
     requestText,
+    requestTitle,
     requestDetails,
     setRequestDetails,
     hasResolved,
@@ -368,6 +420,14 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     startFresh,
     stepBack,
     stop,
+    reviseRequest,
+    pendingRevisionText,
+    clearPendingRevision,
+    revisedFrom,
+    clearRevisedFrom,
+    envelopeOverrides,
+    setEnvelopeOverride,
+    clearEnvelopeOverride,
   };
 
   return (

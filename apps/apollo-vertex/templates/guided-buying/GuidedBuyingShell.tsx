@@ -26,8 +26,8 @@ import {
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
 import { AutopilotChatProvider } from "./AutopilotChatProvider";
 import { AutopilotFab } from "./AutopilotFab";
-
 import { Catalog } from "./catalog/Catalog";
+import { AssistantThreadProvider } from "./catalog/v1/assistant-thread-context";
 import { BuyFlow } from "./catalog/v1/BuyFlow";
 import { CartProvider } from "./catalog/v1/CartProvider";
 import { CatalogSubmitted } from "./catalog/v1/CatalogSubmitted";
@@ -300,27 +300,29 @@ export function GuidedBuyingShell() {
       <TierProvider>
         <CartProvider>
           <ConversationProvider>
-            <RequestsProvider>
-              <AutopilotChatProvider>
-                {/* Global gradient def — all AiMark icons reference "gb-ai-mark" */}
-                <svg width={0} height={0} aria-hidden className="absolute">
-                  <defs>
-                    <linearGradient
-                      id="gb-ai-mark"
-                      x1="2"
-                      y1="4"
-                      x2="22"
-                      y2="20"
-                      gradientUnits="userSpaceOnUse"
-                    >
-                      <stop offset="0" stopColor="var(--ai-gradient-start)" />
-                      <stop offset="1" stopColor="var(--ai-gradient-end)" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <RouterProvider router={router} />
-              </AutopilotChatProvider>
-            </RequestsProvider>
+            <AssistantThreadProvider>
+              <RequestsProvider>
+                <AutopilotChatProvider>
+                  {/* Global gradient def — all AiMark icons reference "gb-ai-mark" */}
+                  <svg width={0} height={0} aria-hidden className="absolute">
+                    <defs>
+                      <linearGradient
+                        id="gb-ai-mark"
+                        x1="2"
+                        y1="4"
+                        x2="22"
+                        y2="20"
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset="0" stopColor="var(--ai-gradient-start)" />
+                        <stop offset="1" stopColor="var(--ai-gradient-end)" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <RouterProvider router={router} />
+                </AutopilotChatProvider>
+              </RequestsProvider>
+            </AssistantThreadProvider>
           </ConversationProvider>
         </CartProvider>
       </TierProvider>

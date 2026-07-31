@@ -19,6 +19,8 @@ interface ProductImageProps {
   /** "photo" shows the product image; "logo" shows the brand logo. */
   mode?: "photo" | "logo";
   className?: string;
+  /** Size of the fallback category icon — shrink it for small thumbnails. */
+  iconClassName?: string;
 }
 
 /**
@@ -33,6 +35,7 @@ export function ProductImage({
   vendor,
   mode = "photo",
   className,
+  iconClassName,
 }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
   const Icon = CATEGORY_ICON[category];
@@ -82,7 +85,10 @@ export function ProductImage({
           className="size-full object-cover"
         />
       ) : (
-        <Icon className="size-12 text-muted-foreground/50" aria-hidden />
+        <Icon
+          className={cn("size-12 text-muted-foreground/50", iconClassName)}
+          aria-hidden
+        />
       )}
     </div>
   );

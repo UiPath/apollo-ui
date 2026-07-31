@@ -3,6 +3,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
 import {
+  ArrowLeft,
   ArrowRight,
   Building2,
   CircleDollarSign,
@@ -61,7 +62,7 @@ const FIELDS: BridgeField[] = [
 export function ServicesBridge() {
   const reduceMotion = useReducedMotion();
   const navigate = useNavigate();
-  const { requestText } = useConversation();
+  const { requestText, stepBack } = useConversation();
   const { openRequest } = useRequests();
 
   const sendToProcurement = () => {
@@ -160,11 +161,16 @@ export function ServicesBridge() {
       </p>
 
       <motion.div
-        className="flex justify-end pt-2"
+        className="flex items-center justify-between gap-3 pt-2"
         initial={reduceMotion ? false : { opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: EASE, delay: ctaDelay }}
       >
+        {/* Back lives here now, not the header. */}
+        <Button variant="secondary" size="sm" onClick={stepBack}>
+          <ArrowLeft className="size-4" aria-hidden />
+          Back
+        </Button>
         <Button size="sm" onClick={sendToProcurement}>
           Send to procurement
           <ArrowRight className="size-4" aria-hidden />
