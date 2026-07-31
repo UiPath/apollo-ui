@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v6.10.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.9.0...@uipath/apollo-react@6.10.0) (2026-07-31)
+
+### Features
+
+* **apollo-react:** add property panel UI inventory ([780f4b6](https://github.com/UiPath/apollo-ui/commit/780f4b6d718166278b9ae49b723ae4d97f393ded))
+* **apollo-react:** add reusable panel field pattern ([e47d82b](https://github.com/UiPath/apollo-ui/commit/e47d82b6122a92164513384ffb69ae3eeba4b061))
+* **apollo-react:** refine panel UI inventory ([79f9974](https://github.com/UiPath/apollo-ui/commit/79f9974f00b846aa1ef11b0b271cd38ce8c98114))
+
+### Bug Fixes
+
+* **apollo-react:** address panel review feedback ([9ce9b30](https://github.com/UiPath/apollo-ui/commit/9ce9b3085f12886f619e43bb8685d25c2415aeca))
+
 ## [@uipath/apollo-react-v6.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.8.0...@uipath/apollo-react@6.9.0) (2026-07-29)
 
 ### Features
