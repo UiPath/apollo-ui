@@ -46,11 +46,11 @@ const fallbackTranslate = ((arg: Descriptor | string): string => {
 //
 // Use this in design-system components that need to render in hosts that
 // haven't (yet) wrapped them in `ApI18nProvider` / `I18nProvider`.
-export function useSafeLingui(): { _: Translate } {
+export function useSafeLingui(): { _: Translate; locale: string } {
   const ctx = useContext(LinguiContext);
   return useMemo(() => {
     if (!ctx) {
-      return { _: fallbackTranslate };
+      return { _: fallbackTranslate, locale: fallbackI18n.locale };
     }
     const providerTranslate = ((arg: Descriptor | string): string => {
       // Ids missing from the host's active catalog hit the same production
@@ -61,6 +61,7 @@ export function useSafeLingui(): { _: Translate } {
       }
       return (ctx._ as Translate)(arg as Descriptor);
     }) as Translate;
-    return { _: providerTranslate };
+    // Also surfaced for Intl-based formatting (durations, numbers) that lingui does not cover.
+    return { _: providerTranslate, locale: ctx.i18n.locale };
   }, [ctx]);
 }

@@ -246,15 +246,24 @@ describe('TaskContent - duration tooltip', () => {
   });
 
   it('shows only the three largest duration units', () => {
+    // 2 days, 3 hr, 4 min, 5 sec — the seconds are dropped.
     renderTaskContent({
       taskExecution: {
         status: 'InProgress',
-        duration: '6m, 2w, 2d, 2h, 59m, 36s',
+        durationMs: 2 * 86400000 + 3 * 3600000 + 4 * 60000 + 5000,
       },
     });
 
-    expect(screen.getByText('6m, 2w, 2d')).toBeInTheDocument();
-    expect(screen.queryByText(/2h/)).not.toBeInTheDocument();
+    expect(screen.getByText('2 days, 3 hr, 4 min')).toBeInTheDocument();
+    expect(screen.queryByText(/sec/)).not.toBeInTheDocument();
+  });
+
+  it('renders a legacy pre-formatted duration verbatim', () => {
+    renderTaskContent({
+      taskExecution: { status: 'InProgress', duration: '2h 15m' },
+    });
+
+    expect(screen.getByText('2h 15m')).toBeInTheDocument();
   });
 });
 
