@@ -1,0 +1,76 @@
+# Button
+
+Buttons are clickable items used to perform an action.
+
+## Usage
+
+Buttons should be used in situations where users might need to:
+
+- Submit a form
+- Begin a new task
+- Trigger a new UI element to appear on the page
+- Specify a new or next step in a process
+
+## Anatomy
+
+Buttons consist of a text label, icon, container, or a combination of these elements.
+
+| Element | Description |
+|---|---|
+| **Button label** | Relies on an active verb that encourages the user to take action |
+| **Button container** | The visual boundary of the button |
+
+## Appearance
+
+### Action styles
+
+Button has four core action types:
+
+| Style | Usage |
+|---|---|
+| **Primary (Contained)** | For the principal call to action on the page. High contrast; use sparingly — ideally one per page. |
+| **Secondary (Outlined)** | For secondary actions. Less contrasted; good for layouts with multiple buttons. Always used in conjunction with a primary button. |
+| **Tertiary** | For the least prominent actions, often used alongside primary and secondary buttons (e.g., *Cancel* in a multi-step flow). |
+| **Destructive** | For actions that could have destructive effects on the user's data (e.g., delete or remove). |
+
+### Button vs. link
+
+Buttons enable users to perform an action (submit, add, save, open a modal). Text links enable users to navigate to other locations. Don't use them interchangeably.
+
+### Buttons with icons
+
+- Use 16px icons within buttons
+- Icons must be directly related to the action
+- Icons must match the text color value
+- Don't use icons for decoration
+
+## Size
+
+- **40px** (tall): the most commonly used height
+- **32px** (small): for contexts where a smaller button is more appropriate
+
+Default width is defined by text length; minimum width is 120px.
+
+## Placement
+
+Most common usage is in forms, panels, and dialogs, aligned to the bottom right. The primary button is on the right when paired.
+
+## States
+
+Buttons communicate five states: enabled, hover, press, focus, and disabled.
+
+A focus indicator appears around a button when navigated via keyboard. Focus states do not appear on disabled buttons.
+
+## Guidelines
+
+- Use clear, straightforward verbs to describe the implied action
+- When possible, use verb + noun construction (e.g., *Save project*)
+- Don't use "Click here" or "Go to somewhere" — use specific labels instead
+- Avoid multiple primary buttons on a page
+- Use sentence-case capitalization for button labels
+- Avoid disabled buttons in forms — use validation and errors to show what needs to be done instead
+
+## Related
+
+- [Icon button](/components/icon-button)
+- [Link](/components/link)
