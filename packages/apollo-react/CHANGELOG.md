@@ -1,3 +1,17 @@
+## [@uipath/apollo-react-v6.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.10.0...@uipath/apollo-react@6.11.0) (2026-07-31)
+
+### Features
+
+* **apollo-react:** add alignment guide variant pages for coworker review ([c3ff2ce](https://github.com/UiPath/apollo-ui/commit/c3ff2cead478a4d93c643735b4a9aaa863d10e6d))
+* **apollo-react:** add alignment guides drag-hint prototype ([31871d4](https://github.com/UiPath/apollo-ui/commit/31871d4e651c7511bb622ff28754114233baffba))
+* **apollo-react:** add multi-select, grid-snap, and equal-spacing variants ([d6fc3db](https://github.com/UiPath/apollo-ui/commit/d6fc3dbbdec620d6a73259f4537a5fb3fb1e8cbb))
+* **apollo-react:** finalize canvas alignment guides ([b294fdc](https://github.com/UiPath/apollo-ui/commit/b294fdc7ff6a504742fba73d869cb19e132af1a7))
+
+### Bug Fixes
+
+* **apollo-react:** align nested canvas nodes ([d5ed7a8](https://github.com/UiPath/apollo-ui/commit/d5ed7a83787ae057d7a81b3d7d56694d8bd6d259))
+* **apollo-react:** make alignment guide threshold zoom-aware, relocate story ([557ef97](https://github.com/UiPath/apollo-ui/commit/557ef978195307a92c1cc48fdfd9508583e64f82))
+
 ## [@uipath/apollo-react-v6.10.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.9.0...@uipath/apollo-react@6.10.0) (2026-07-31)
 
 ### Features
