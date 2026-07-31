@@ -12,6 +12,19 @@ if (missingSelectors.length > 0) {
   );
 }
 
-if (!consumerCss.includes('@import "sonner/dist/styles.css";')) {
-  throw new Error('Apollo Wind tailwind.css is missing the sonner/dist/styles.css import');
+const sonnerImport = 'sonner/dist/styles.css';
+
+if (!consumerCss.includes(`@import "${sonnerImport}";`)) {
+  throw new Error(`Apollo Wind tailwind.css is missing the ${sonnerImport} import`);
+}
+
+// The import above is only useful if consumers can actually resolve it, which
+// requires `sonner` to stay a runtime dependency (not a devDependency).
+try {
+  await import.meta.resolve(sonnerImport);
+} catch (error) {
+  throw new Error(
+    `Apollo Wind tailwind.css imports "${sonnerImport}" but it does not resolve — ` +
+      `is "sonner" still a runtime dependency? (${error.message})`
+  );
 }
