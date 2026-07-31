@@ -1,3 +1,12 @@
+## [@uipath/apollo-react-v6.11.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.11.0...@uipath/apollo-react@6.11.1) (2026-07-31)
+
+### Bug Fixes
+
+* **apollo-react:** address edge label review feedback ([8ee681f](https://github.com/UiPath/apollo-ui/commit/8ee681f106c52e65cbf86b8ffffdd72a5e384305))
+* **apollo-react:** complete edge label fallbacks ([ae36c3e](https://github.com/UiPath/apollo-ui/commit/ae36c3ed5121a4152ba23d80fef73dc89aba5ad3))
+* **apollo-react:** edge labels lose their background and can render under crossing lines ([5e007b4](https://github.com/UiPath/apollo-ui/commit/5e007b4d4e67fc53e712050cc15301bec9e25a3f))
+* **apollo-react:** improve edge label interactions ([4f09dc4](https://github.com/UiPath/apollo-ui/commit/4f09dc43e5e576d1bea4a0c302e15e2c8e9b3cdf))
+
 ## [@uipath/apollo-react-v6.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.10.0...@uipath/apollo-react@6.11.0) (2026-07-31)
 
 ### Features
