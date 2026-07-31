@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.11.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.11.1...@uipath/apollo-react@6.11.2) (2026-07-31)
+
+### Bug Fixes
+
+* **apollo-react:** remove background fill from outlined Chip variant [MST-13017] ([d33dd35](https://github.com/UiPath/apollo-ui/commit/d33dd35f058ed95a1ccf00c0d78b8e2740bb8098))
+
 ## [@uipath/apollo-react-v6.11.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.11.0...@uipath/apollo-react@6.11.1) (2026-07-31)
 
 ### Bug Fixes
