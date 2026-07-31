@@ -9,7 +9,12 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { createNode, StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
+import {
+  createNode,
+  StoryInfoPanel,
+  useCanvasStory,
+  withCanvasProviders,
+} from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
@@ -42,13 +47,7 @@ function useApplyAlignmentSnap(setNodes: Dispatch<SetStateAction<Node[]>>) {
   );
 }
 
-function GuidanceCard({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
+function GuidanceCard({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <h3 className="text-base font-semibold text-foreground">{title}</h3>
@@ -67,9 +66,9 @@ function AlignmentGuidesUxGuidance() {
           </p>
           <h1 className="text-4xl font-bold tracking-tight">Alignment guides</h1>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">
-            Alignment guides should be available by default, but visible only at the moment they
-            are useful. The experience should feel like quiet, contextual feedback—not a mode the
-            user has to find, configure, or remember.
+            Alignment guides should be available by default, but visible only at the moment they are
+            useful. The experience should feel like quiet, contextual feedback—not a mode the user
+            has to find, configure, or remember.
           </p>
         </div>
 
@@ -116,12 +115,12 @@ function AlignmentGuidesUxGuidance() {
               finishes exactly where the line indicated.
             </GuidanceCard>
             <GuidanceCard title="Group-aware">
-              Multi-selected nodes move as one rigid shape. The group boundary communicates what
-              is moving, while one shared delta preserves spacing between selected nodes.
+              Multi-selected nodes move as one rigid shape. The group boundary communicates what is
+              moving, while one shared delta preserves spacing between selected nodes.
             </GuidanceCard>
             <GuidanceCard title="Stable, not flickery">
-              Prefer the closest eligible match with deterministic center and edge priorities,
-              then commit it again on release to prevent final-position drift.
+              Prefer the closest eligible match with deterministic center and edge priorities, then
+              commit it again on release to prevent final-position drift.
             </GuidanceCard>
           </div>
         </section>
@@ -154,20 +153,20 @@ function AlignmentGuidesUxGuidance() {
                 <tr>
                   <td className="px-5 py-4 font-medium text-foreground">Mental model</td>
                   <td className="px-5 py-4 text-muted-foreground">
-                    Alignment guides improve placement during dragging. “Tidy up” and align-selection
-                    commands intentionally rearrange existing layouts and remain separate actions.
+                    Alignment guides improve placement during dragging. “Tidy up” and
+                    align-selection commands intentionally rearrange existing layouts and remain
+                    separate actions.
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
           <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Add a saved preference only if user research or product feedback shows that a
-            meaningful group finds the default experience distracting. A modifier key can later
-            temporarily suppress snapping without making the basic feature harder to discover.
+            Add a saved preference only if user research or product feedback shows that a meaningful
+            group finds the default experience distracting. A modifier key can later temporarily
+            suppress snapping without making the basic feature harder to discover.
           </p>
         </section>
-
       </main>
     </div>
   );
@@ -226,14 +225,62 @@ function createWorkflowNodes(): Node<BaseNodeData>[] {
 }
 
 const workflowEdges: Edge[] = [
-  { id: 'e-trigger-fetch', source: 'trigger', sourceHandle: 'output', target: 'fetch', targetHandle: 'input' },
-  { id: 'e-trigger-validate', source: 'trigger', sourceHandle: 'output', target: 'validate', targetHandle: 'input' },
-  { id: 'e-fetch-decision', source: 'fetch', sourceHandle: 'output', target: 'decision', targetHandle: 'input' },
-  { id: 'e-validate-decision', source: 'validate', sourceHandle: 'output', target: 'decision', targetHandle: 'input' },
-  { id: 'e-decision-approve', source: 'decision', sourceHandle: 'output', target: 'approve', targetHandle: 'input' },
-  { id: 'e-decision-reject', source: 'decision', sourceHandle: 'output', target: 'reject', targetHandle: 'input' },
-  { id: 'e-approve-notify', source: 'approve', sourceHandle: 'output', target: 'notify', targetHandle: 'input' },
-  { id: 'e-reject-notify', source: 'reject', sourceHandle: 'output', target: 'notify', targetHandle: 'input' },
+  {
+    id: 'e-trigger-fetch',
+    source: 'trigger',
+    sourceHandle: 'output',
+    target: 'fetch',
+    targetHandle: 'input',
+  },
+  {
+    id: 'e-trigger-validate',
+    source: 'trigger',
+    sourceHandle: 'output',
+    target: 'validate',
+    targetHandle: 'input',
+  },
+  {
+    id: 'e-fetch-decision',
+    source: 'fetch',
+    sourceHandle: 'output',
+    target: 'decision',
+    targetHandle: 'input',
+  },
+  {
+    id: 'e-validate-decision',
+    source: 'validate',
+    sourceHandle: 'output',
+    target: 'decision',
+    targetHandle: 'input',
+  },
+  {
+    id: 'e-decision-approve',
+    source: 'decision',
+    sourceHandle: 'output',
+    target: 'approve',
+    targetHandle: 'input',
+  },
+  {
+    id: 'e-decision-reject',
+    source: 'decision',
+    sourceHandle: 'output',
+    target: 'reject',
+    targetHandle: 'input',
+  },
+  {
+    id: 'e-approve-notify',
+    source: 'approve',
+    sourceHandle: 'output',
+    target: 'notify',
+    targetHandle: 'input',
+  },
+  {
+    id: 'e-reject-notify',
+    source: 'reject',
+    sourceHandle: 'output',
+    target: 'notify',
+    targetHandle: 'input',
+  },
 ];
 
 // ============================================================================

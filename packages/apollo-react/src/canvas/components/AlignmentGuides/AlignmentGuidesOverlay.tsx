@@ -37,9 +37,7 @@ export function AlignmentGuidesOverlay({ guides, draggedBounds }: AlignmentGuide
           <div
             key={guide.id}
             className={
-              isVertical
-                ? 'absolute border-l border-dashed'
-                : 'absolute border-t border-dashed'
+              isVertical ? 'absolute border-l border-dashed' : 'absolute border-t border-dashed'
             }
             style={{ ...style, borderColor: 'var(--canvas-selection-indicator)' }}
           />
