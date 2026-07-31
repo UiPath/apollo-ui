@@ -1,42 +1,49 @@
 "use client";
 
+import { useClipboard } from "@mantine/hooks";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
   Bell,
-  Clock,
-  FlaskConical,
+  Check,
+  ChevronDown,
+  Copy,
   Info,
   Link as LinkIcon,
-  PackageCheck,
+  MoreHorizontal,
   TriangleAlert,
 } from "lucide-react";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import { useRef, useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
-  type CollapsibleAction,
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from "@/components/ui/button-group";
+import { Card, CardContent } from "@/components/ui/card";
+import {
   PageHeader,
   PageHeaderActions,
   PageHeaderBackButton,
-  PageHeaderCollapsibleActions,
+  PageHeaderContent,
   PageHeaderDescription,
+  PageHeaderField,
+  PageHeaderFieldLabel,
+  PageHeaderFieldValue,
   PageHeaderNav,
   PageHeaderTitle,
   PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
-import { JourneyBar } from "../JourneyBar";
 import { P2 } from "../P2";
-import {
-  getRequestDetail,
-  getRequestRow,
-  STATUS_BADGE,
-  STATUS_LABEL,
-} from "./data";
+import { type ActivityEvent, ActivityTrack } from "./ActivityTrack";
+import { getRequestDetail, getRequestRow } from "./data";
 import { useRequests } from "./requests-context";
 
 // ─── Thread message bubble ────────────────────────────────────────────────────
@@ -78,6 +85,39 @@ function NudgeCapsule({ text }: { text: string }) {
   );
 }
 
+// ─── Status card copy helpers ─────────────────────────────────────────────────
+
+const DAY_WORDS = [
+  "zero",
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "nine",
+];
+
+/** Spells out small day counts ("2" → "two") to match the summary's prose voice. */
+function spellDays(n: number): string {
+  return DAY_WORDS[n] ?? String(n);
+}
+
+/** The card's one notable-fact phrase — a soft AI-gradient wash behind the
+ * text, emphasis only (the sentence must still read correctly without it). */
+function Highlight({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      className="rounded-sm px-1 text-insight-900 dark:text-insight-50"
+      style={{ backgroundImage: "var(--ai-gradient)" }}
+    >
+      {children}
+    </span>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 /**
@@ -90,6 +130,10 @@ export function RequestWindow() {
   const { threads, addNote, urgent, markUrgent, submittedRows } = useRequests();
 
   const [draft, setDraft] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [nudged, setNudged] = useState(false);
+  const clipboard = useClipboard({ timeout: 1500 });
+  const composerRef = useRef<HTMLTextAreaElement>(null);
 
   const detail = getRequestDetail(id);
   // A request submitted this session (via the Buy flow) wins over the static
@@ -128,156 +172,483 @@ export function RequestWindow() {
     setDraft("");
   };
 
-  // Badge label: use statusLabel override (e.g. "Pending · 2 days") or fall
-  // through to the standard STATUS_LABEL for this request's status.
-  const badgeLabel =
-    detail.statusLabel ??
-    // STATUS_LABEL indexed by headline as a fallback — kept loose for seeded data
-    // that may not have a strict RequestStatus key.
-    STATUS_LABEL[detail.headline as keyof typeof STATUS_LABEL] ??
-    detail.headline;
+  // State detection — mirrors the invoice header's HeaderDecision split
+  // button, now driving the header's owed-action gate rather than a
+  // per-state primary. "Po-sent"/"delivered"/"sent-back" have no live
+  // example in the current seed data except REQ-2031 (delivered) — see
+  // report.
+  const receivedDone = detail.journeyStages?.some(
+    (s) => /received|delivered/i.test(s.label) && s.state === "done",
+  );
+  const poSentDone = detail.journeyStages?.some(
+    (s) => /po sent/i.test(s.label) && s.state === "done",
+  );
+  const isApprovedOrPoSent = row?.status === "approved" || poSentDone === true;
+  const isTerminal = !detail.inFlight;
 
-  const badgeStatus = detail.statusLabel
-    ? "warning"
-    : (STATUS_BADGE[detail.headline as keyof typeof STATUS_BADGE] ?? "warning");
+  const cardState = detail.sentBack
+    ? "sent-back"
+    : receivedDone
+      ? "delivered"
+      : poSentDone
+        ? "po-sent"
+        : isApprovedOrPoSent
+          ? "approved"
+          : isTerminal
+            ? "ordered"
+            : "pending";
 
-  // Routed through PageHeaderCollapsibleActions rather than plain buttons: at
-  // common laptop widths (~1280–1366px) two fixed-width buttons here forced
-  // the actions grid column past its fair share, squeezing the title/badge
-  // column enough to overlap the header fields beside it. The collapsible
-  // measurer shrinks this column to just its overflow trigger when tight,
-  // which frees that space back to the title and fields.
-  const collapsibleActions = [
-    detail.hasClose && {
-      key: "delivery-receipt",
-      button: (
-        <Button
-          key="delivery-receipt"
-          variant="outline"
-          size="sm"
-          onClick={() => void navigate({ to: "/close/$id", params: { id } })}
-        >
-          <PackageCheck className="size-4" aria-hidden />
-          Delivery receipt
-        </Button>
-      ),
-      menuItem: (
-        <DropdownMenuItem
-          key="delivery-receipt"
-          onClick={() => void navigate({ to: "/close/$id", params: { id } })}
-        >
-          <PackageCheck className="size-4" aria-hidden />
-          Delivery receipt
-        </DropdownMenuItem>
-      ),
-    },
-    detail.inFlight &&
-      detail.approver != null && {
-        key: "approver-view",
-        button: (
-          <Button
-            key="approver-view"
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              void navigate({ to: "/decision/$id", params: { id } })
-            }
-          >
-            <FlaskConical className="size-4" aria-hidden />
-            Approver view
-            <span className="text-muted-foreground/60">(demo)</span>
-          </Button>
-        ),
-        menuItem: (
-          <DropdownMenuItem
-            key="approver-view"
-            onClick={() =>
-              void navigate({ to: "/decision/$id", params: { id } })
-            }
-          >
-            <FlaskConical className="size-4" aria-hidden />
-            Approver view (demo)
-          </DropdownMenuItem>
-        ),
-      },
-  ].filter(Boolean) as CollapsibleAction[];
+  const approverFirstName =
+    detail.approver?.split(" · ")[0]?.split(" ")[0] ?? "procurement";
+
+  const focusComposer = () => {
+    composerRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    composerRef.current?.focus();
+  };
+
+  // The header's primary is only ever an owed action — everything else
+  // (View order, Reorder) is a navigational convenience, not an
+  // obligation, so it moves to the overflow menu instead.
+  const headerPrimaryAction =
+    cardState === "delivered"
+      ? {
+          label: "Confirm receipt",
+          onClick: () => void navigate({ to: "/close/$id", params: { id } }),
+        }
+      : cardState === "sent-back"
+        ? { label: "Respond", onClick: focusComposer }
+        : null;
+
+  const copyLink = () => {
+    clipboard.copy(window.location.href);
+    setMenuOpen(false);
+  };
+
+  const approverInitials =
+    detail.approver
+      ?.split(" · ")[0]
+      ?.split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ?? "?";
+
+  const requesterInitials =
+    row?.requester
+      ?.split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ?? "?";
+
+  // ── Status card — state-aware AI-summary sentence ─────────────────────────
+  // One flowing sentence per state; every figure comes from `detail`/`row`,
+  // with just the one notable fact highlighted. Only "pending" (REQ-2052,
+  // REQ-2051, REQ-2053) and "ordered" (REQ-2042) have a live data example —
+  // "approved", "po-sent" and "delivered" run generically but are unverified
+  // visually. See report.
+  const approverFullName = detail.approver?.split(" · ")[0];
+  const approverFirst = approverFullName?.split(" ")[0];
+  const supplierName = row?.supplier;
+  const savings = detail.summary?.savings;
+  const items = detail.summary?.items ?? displayTitle;
+  const turnaround = detail.turnaround;
+  const daysWaiting = detail.statusLabel?.match(/(\d+)\s+day/)?.[1];
+
+  let summaryText: React.ReactNode;
+
+  if (cardState === "sent-back") {
+    summaryText = (
+      <>
+        {approverFullName ?? "Your approver"}{" "}
+        <Highlight>sent this back</Highlight> for changes. Take a look and reply
+        when it's ready to go again.
+      </>
+    );
+  } else if (cardState === "delivered") {
+    const shipToShort = detail.shipTo?.split(" · ")[0];
+    summaryText = (
+      <>
+        {items} <Highlight>arrived</Highlight>
+        {shipToShort != null && <> at {shipToShort}</>}
+        {savings != null && <>, saving {savings}</>}. Enrollment is confirmed
+        and the units are handed off.
+      </>
+    );
+  } else if (cardState === "po-sent") {
+    summaryText = (
+      <>
+        I placed the order for {items}
+        {savings != null && <>, saving {savings}</>}, and{" "}
+        <Highlight>sent the PO</Highlight> to {supplierName ?? "the vendor"}.
+        Expect delivery by {detail.summary?.needBy ?? "the requested date"}.
+      </>
+    );
+  } else if (cardState === "approved") {
+    summaryText = (
+      <>
+        I configured {items}
+        {savings != null && <>, saving {savings}</>}, and sent it to{" "}
+        {approverFullName ?? "your approver"} for approval.{" "}
+        <Highlight>Approved</Highlight> — the purchase order should follow
+        {turnaround != null && <> within {turnaround}</>}.
+      </>
+    );
+  } else if (cardState === "ordered") {
+    summaryText = (
+      <>
+        {items} ({detail.summary?.total ?? "—"}) is{" "}
+        <Highlight>ordered</Highlight> and complete
+        {savings != null && <>, saving {savings}</>}. Nothing further to do.
+      </>
+    );
+  } else {
+    summaryText = (
+      <>
+        I configured {items}
+        {detail.pricingNote != null && <> {detail.pricingNote}</>}
+        {savings != null && <>, saving {savings}</>}, and sent it to{" "}
+        {approverFullName ?? "procurement"}. It's been with{" "}
+        {approverFirst ?? "them"} for{" "}
+        <Highlight>
+          {daysWaiting != null
+            ? `${spellDays(Number(daysWaiting))} days`
+            : "a bit"}
+        </Highlight>
+        .
+        {turnaround != null && (
+          <>
+            {" "}
+            {approverFirst != null
+              ? `${approverFirst} usually decides`
+              : "They usually decide"}{" "}
+            within {turnaround}
+            {detail.nudgeText != null
+              ? ", so I sent a reminder this morning."
+              : "."}
+          </>
+        )}
+      </>
+    );
+  }
+
+  // Event pins — derived from live thread state (notes/nudge/urgency), not a
+  // separate hardcoded list, so a note sent mid-session shows up here too.
+  const activeStageIndex =
+    detail.journeyStages?.findIndex(
+      (s) => s.state === "active" || s.state === "active-warning",
+    ) ?? -1;
+  const currentStageIndex =
+    activeStageIndex >= 0
+      ? activeStageIndex
+      : (detail.journeyStages?.length ?? 1) - 1;
+
+  const activityEvents: ActivityEvent[] = [];
+  if (detail.journeyStages != null) {
+    activityEvents.push({
+      type: "agent",
+      stageIndex: 0,
+      label: detail.agentLine,
+    });
+    if (detail.threadSeedMessage != null) {
+      activityEvents.push({
+        type: "user",
+        stageIndex: currentStageIndex,
+        label: detail.threadSeedMessage,
+        initials: requesterInitials,
+      });
+    }
+    for (const note of notes) {
+      activityEvents.push({
+        type: "user",
+        stageIndex: currentStageIndex,
+        label: note.text,
+        initials: requesterInitials,
+      });
+    }
+    // Unconditional on nudgeText, not on live isUrgent state — the reminder
+    // it describes already happened this morning, same as the thread's own
+    // NudgeCapsule below (P2-gated only, not tied to the session's nudge).
+    if (detail.nudgeText != null) {
+      activityEvents.push({
+        type: "agent",
+        stageIndex: currentStageIndex,
+        label: detail.nudgeText,
+      });
+    }
+  }
 
   return (
     <div className="h-full overflow-y-auto">
-      <PageHeader>
+      {/* auto_1fr_auto: nav and actions size to their own content instead of
+          a fixed fr-share, so the title never loses space to the fields or
+          the split button (see report — this is the invoice header's own
+          fix for the same problem). */}
+      <PageHeader bordered className="@3xl:!grid-cols-[auto_1fr_auto]">
         <PageHeaderNav>
           <PageHeaderBackButton
             onClick={() => void navigate({ to: "/requests" })}
           />
           <PageHeaderTitleGroup>
-            <div className="flex min-w-0 items-center gap-2">
-              <PageHeaderTitle>{displayTitle}</PageHeaderTitle>
-              <Badge
-                status={badgeStatus}
-                variant="secondary"
-                className="shrink-0"
-              >
-                {badgeLabel}
-              </Badge>
-              {isUrgent && (
-                <Badge
-                  status="error"
-                  variant="secondary"
-                  className="shrink-0 gap-1"
-                >
-                  <TriangleAlert className="size-3" aria-hidden />
-                  Urgent
-                </Badge>
-              )}
-            </div>
-            <PageHeaderDescription>
-              Updated {row?.updated ?? "just now"}
-            </PageHeaderDescription>
+            <PageHeaderTitle>{id}</PageHeaderTitle>
+            {/* PageHeaderDescription sets the native `title` attribute for
+                string children, so a truncated line still shows the full
+                text on hover — no separate tooltip needed. */}
+            <PageHeaderDescription>{displayTitle}</PageHeaderDescription>
           </PageHeaderTitleGroup>
         </PageHeaderNav>
 
-        <PageHeaderActions>
-          <PageHeaderCollapsibleActions items={collapsibleActions} />
+        <PageHeaderContent className="@3xl:justify-between @3xl:pl-6">
+          <PageHeaderField>
+            <PageHeaderFieldLabel>Total</PageHeaderFieldLabel>
+            <PageHeaderFieldValue>
+              {detail.summary?.total ?? "—"}
+            </PageHeaderFieldValue>
+          </PageHeaderField>
+          {detail.summary?.needBy != null && (
+            <PageHeaderField>
+              <PageHeaderFieldLabel>Need by</PageHeaderFieldLabel>
+              <PageHeaderFieldValue>
+                {detail.summary.needBy}
+              </PageHeaderFieldValue>
+            </PageHeaderField>
+          )}
+          {detail.approver != null && (
+            <PageHeaderField>
+              <PageHeaderFieldLabel>Approver</PageHeaderFieldLabel>
+              <PageHeaderFieldValue className="flex items-center gap-1.5">
+                <Avatar className="size-[18px] shrink-0">
+                  <AvatarFallback className="bg-primary/20 text-[8px] font-semibold text-primary">
+                    {approverInitials}
+                  </AvatarFallback>
+                </Avatar>
+                {detail.approver.split(" · ")[0]}
+              </PageHeaderFieldValue>
+            </PageHeaderField>
+          )}
+        </PageHeaderContent>
+
+        <PageHeaderActions className="@3xl:ml-6">
+          {/* Overflow content is shared between the two trigger shapes below
+              — only one of them ever mounts, so reusing the same element is
+              safe. View order/Reorder live here now: they're navigational
+              conveniences, not owed actions, so they don't belong in the
+              header's primary slot. */}
+          {(() => {
+            const overflowContent = (
+              <PopoverContent align="end" className="w-56 p-1">
+                {detail.hasClose && cardState !== "delivered" && (
+                  <button
+                    type="button"
+                    className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      void navigate({ to: "/close/$id", params: { id } });
+                    }}
+                  >
+                    Delivery receipt
+                  </button>
+                )}
+                {(cardState === "approved" || cardState === "po-sent") && (
+                  <button
+                    type="button"
+                    className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      void navigate({ to: "/catalog" });
+                    }}
+                  >
+                    View order
+                  </button>
+                )}
+                {cardState === "ordered" && (
+                  <button
+                    type="button"
+                    className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      void navigate({ to: "/buy" });
+                    }}
+                  >
+                    Reorder
+                  </button>
+                )}
+                {detail.inFlight && detail.approver != null && (
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-1 rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      void navigate({ to: "/decision/$id", params: { id } });
+                    }}
+                  >
+                    Approver view
+                    <span className="text-muted-foreground">(demo)</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  onClick={copyLink}
+                >
+                  {clipboard.copied ? "Copied!" : "Copy link"}
+                </button>
+                <div className="my-1 h-px bg-border" />
+                {/* No cancellation flow exists in the data model yet (no
+                    "cancelled" status, no runtime action) — see report. */}
+                <button
+                  type="button"
+                  className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium text-destructive hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Cancel request
+                </button>
+              </PopoverContent>
+            );
+
+            if (headerPrimaryAction != null) {
+              return (
+                <ButtonGroup>
+                  <Button onClick={headerPrimaryAction.onClick}>
+                    {headerPrimaryAction.label}
+                  </Button>
+                  <ButtonGroupSeparator className="bg-primary-600" />
+                  <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+                    <PopoverTrigger asChild>
+                      <Button aria-label="More actions">
+                        <ChevronDown className="size-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    {overflowContent}
+                  </Popover>
+                </ButtonGroup>
+              );
+            }
+
+            return (
+              <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="More actions"
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                </PopoverTrigger>
+                {overflowContent}
+              </Popover>
+            );
+          })()}
         </PageHeaderActions>
       </PageHeader>
 
       {/* Two columns: the narrative (agent line, journey, conversation) grows;
           the record — everything you'd look up rather than read — sits in a
           fixed sidebar. Stacks on narrow viewports. */}
-      <div className="grid grid-cols-1 gap-4 px-4 pb-8 sm:px-6 lg:grid-cols-[1fr_320px] lg:px-8">
+      <div className="grid grid-cols-1 gap-4 px-4 pb-8 sm:px-6 lg:grid-cols-[1fr_200px] lg:gap-8 lg:px-8">
         {/* ── Main column ──────────────────────────────────────────────── */}
         <div className="min-w-0 space-y-4">
-          {/* Agent line */}
-          <div className="flex gap-2.5 rounded-lg border bg-muted/40 px-3.5 py-3">
-            <AiMark
-              size={16}
-              className="mt-0.5 shrink-0"
-              gradientId="gb-ai-mark"
-              aria-hidden
-            />
-            <p className="text-sm leading-[1.6] text-foreground">
-              {detail.agentLine}
-            </p>
-          </div>
+          {/* Status card — an AI moment: mark + label, one summary sentence
+              with the notable fact highlighted, activity track, then
+              actions. Merges what used to be three tellings of the same
+              story (summary line, stage-bar waiting note, thread nudge
+              line) into one. */}
+          <Card variant="glass">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                <AiMark size={14} gradientId="gb-ai-mark" aria-hidden />
+                AI Summary
+              </div>
 
-          {/* Journey card */}
-          {detail.journeyStages != null && (
-            <Card variant="glass">
-              <CardContent className="px-4 py-3.5">
-                <JourneyBar
+              <p className="mt-5 text-[23px] font-semibold leading-snug text-foreground">
+                {summaryText}
+              </p>
+
+              {detail.journeyStages != null && (
+                <ActivityTrack
                   stages={detail.journeyStages}
-                  ownerNote={
-                    detail.journeyOwnerNote != null ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Clock className="size-3 shrink-0" aria-hidden />
-                        {detail.journeyOwnerNote}
-                      </span>
-                    ) : undefined
-                  }
+                  events={activityEvents}
+                  className="mt-5"
                 />
-              </CardContent>
-            </Card>
-          )}
+              )}
+
+              {/* Secondary actions — Nudge and Mark urgent live only here,
+                  directly beneath the stage track whose current-stage label
+                  already carries the elapsed-time context that makes
+                  nudging a reasonable judgement call. Neither is owed, so
+                  neither belongs in the header. Real button chrome, not
+                  text: a completed action keeps its button shape (filled
+                  muted, check icon, past tense) instead of turning to text. */}
+              <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+                <div className="flex items-center gap-2">
+                  {cardState === "pending" && (
+                    <>
+                      {nudged ? (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled
+                          className="disabled:opacity-100"
+                        >
+                          <Check className="size-3.5" aria-hidden />
+                          Nudged today
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setNudged(true)}
+                        >
+                          <Bell className="size-3.5" aria-hidden />
+                          Nudge {approverFirstName}
+                        </Button>
+                      )}
+                      {isUrgent ? (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled
+                          className="disabled:opacity-100"
+                        >
+                          <Check className="size-3.5" aria-hidden />
+                          Marked urgent today
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => markUrgent(id)}
+                        >
+                          <TriangleAlert className="size-3.5" aria-hidden />
+                          Mark urgent
+                        </Button>
+                      )}
+                    </>
+                  )}
+                  <Button
+                    size="icon-sm"
+                    variant="outline"
+                    onClick={copyLink}
+                    aria-label={clipboard.copied ? "Link copied" : "Copy link"}
+                  >
+                    {clipboard.copied ? (
+                      <Check className="size-3.5" aria-hidden />
+                    ) : (
+                      <Copy className="size-3.5" aria-hidden />
+                    )}
+                  </Button>
+                </div>
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Info className="size-3.5 shrink-0" aria-hidden />
+                  The output is AI generated. Please review.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Conversation — grows to fill the column; same caveat position
               and no terminal actions regardless of state (see sidebar). */}
@@ -321,15 +692,9 @@ export function RequestWindow() {
                 </div>
               )}
 
-              {/* Caveat — identical slot in every state: below the thread
-                  content, above (or here, beside) the composer. */}
-              <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Info className="size-3.5 shrink-0" aria-hidden />
-                The output is AI generated. Please review.
-              </p>
-
               {/* Composer — inFlight only; terminal-state actions live in the
-                  sidebar now, not here. */}
+                  sidebar now, not here. The AI-disclaimer caveat now lives
+                  once, in the status card above, instead of duplicated here. */}
               {detail.inFlight && (
                 <div className="mt-3 space-y-3 border-t border-border pt-4">
                   {isUrgent && (
@@ -346,6 +711,7 @@ export function RequestWindow() {
 
                   <div className="space-y-2">
                     <Textarea
+                      ref={composerRef}
                       value={draft}
                       onChange={(e) => setDraft(e.target.value)}
                       onKeyDown={(e) => {
@@ -355,21 +721,7 @@ export function RequestWindow() {
                       placeholder={`Message ${detail.agentLine.includes("Alex") ? "Alex" : "procurement"} about this request…`}
                       className="min-h-[72px] resize-none text-sm"
                     />
-                    <div
-                      className={cn(
-                        "flex items-center gap-2",
-                        isUrgent ? "justify-end" : "justify-between",
-                      )}
-                    >
-                      {!isUrgent && (
-                        <button
-                          type="button"
-                          onClick={() => markUrgent(id)}
-                          className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                          Mark urgent
-                        </button>
-                      )}
+                    <div className="flex items-center justify-end gap-2">
                       <Button size="sm" disabled={!draft.trim()} onClick={send}>
                         Send
                       </Button>
@@ -381,102 +733,105 @@ export function RequestWindow() {
           </Card>
         </div>
 
-        {/* ── Sidebar — the record ─────────────────────────────────────── */}
-        <div className="space-y-4">
-          <Card variant="glass">
-            <CardContent className="space-y-3 px-4 py-3.5">
-              <p className="text-[12.5px] font-semibold text-foreground">
-                Request details
+        {/* ── Reference column — what's in it, rarely visited. Plain list on
+            the page background: no border, no fill, narrow enough (~200px)
+            that it reads as reference material, not a competing column.
+            pt-5 lines its first label up with the lead card's first content
+            line (20px below its own top edge), not the card's outer edge.
+            space-y-4 (16px) is the field-to-field rhythm; the divider before
+            linked records rides the same rhythm for 16px on both sides. */}
+        <div className="w-full space-y-4 pt-5 lg:max-w-[200px]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Request details
+          </p>
+          {/* Total/Need by/Approver/Status moved to the header's metadata
+              strip — keeping them here too would just duplicate them. */}
+          {detail.summary?.items != null && (
+            <div>
+              <p className="text-sm text-muted-foreground">Items</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {detail.summary.items}
+                {detail.summary.total != null && (
+                  <span className="font-normal text-muted-foreground">
+                    {" "}
+                    · {detail.summary.total}
+                  </span>
+                )}
               </p>
-              <div>
-                <p className="text-xs text-muted-foreground">Request ID</p>
-                <p className="text-sm font-medium text-foreground">{id}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Submitted</p>
-                <p className="text-sm font-medium text-foreground">
-                  {row?.submitted ?? "—"}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total</p>
-                <p className="text-sm font-medium text-foreground">
-                  {detail.summary?.total ?? "—"}
-                </p>
-              </div>
-              {detail.summary?.needBy != null && (
+            </div>
+          )}
+          {row?.supplier != null && (
+            <div>
+              <p className="text-sm text-muted-foreground">Supplier</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {row.supplier}
+              </p>
+            </div>
+          )}
+          {detail.shipTo != null &&
+            (() => {
+              // Split "location · address" across two lines rather than
+              // wrapping the whole string mid-phrase at the column's width.
+              const [shipLocation, shipAddress] = detail.shipTo.split(" · ");
+              return (
                 <div>
-                  <p className="text-xs text-muted-foreground">Need by</p>
-                  <p className="text-sm font-medium text-foreground">
-                    {detail.summary.needBy}
+                  <p className="text-sm text-muted-foreground">Ship to</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">
+                    {shipLocation}
                   </p>
+                  {shipAddress != null && (
+                    <p className="text-sm font-semibold text-foreground">
+                      {shipAddress}
+                    </p>
+                  )}
                 </div>
-              )}
-              {detail.approver != null && (
+              );
+            })()}
+          {detail.costCenter != null &&
+            (() => {
+              // Same split: department name on its own line, cost centre
+              // code beneath it.
+              const [department, costCode] = detail.costCenter.split(" · ");
+              return (
                 <div>
-                  <p className="text-xs text-muted-foreground">Approver</p>
-                  <p className="text-sm font-medium text-foreground">
-                    {detail.approver}
+                  <p className="text-sm text-muted-foreground">Charged to</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">
+                    {department}
                   </p>
+                  {costCode != null && (
+                    <p className="text-sm font-semibold text-foreground">
+                      {costCode}
+                    </p>
+                  )}
                 </div>
-              )}
-              {detail.costCenter != null && (
-                <div>
-                  <p className="text-xs text-muted-foreground">Charged to</p>
-                  <p className="text-sm font-medium text-foreground">
-                    {detail.costCenter}
-                  </p>
-                </div>
-              )}
-              <div className="border-t border-border pt-3">
-                <p className="text-xs text-muted-foreground">Your request</p>
-                <p className="text-sm text-foreground">{verbatimRequest}</p>
-              </div>
-            </CardContent>
-          </Card>
+              );
+            })()}
+          <div>
+            <p className="text-sm text-muted-foreground">Your request</p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {verbatimRequest}
+            </p>
+          </div>
 
           {/* Linked records — same P2 gate the journey card used to carry;
-              moving the chips here just relocates that delta, doesn't drop it. */}
+              the divider before it rides the parent's space-y-4 rhythm, so
+              it's 16px below the field above and 16px above this label. */}
           {detail.nudgeText != null && (
             <P2>
-              <Card variant="glass">
-                <CardContent className="space-y-2 px-4 py-3.5">
-                  <p className="text-[12.5px] font-semibold text-foreground">
-                    Linked records
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/8 px-2.5 py-0.5 text-[10.5px] font-semibold text-primary">
-                      <LinkIcon className="size-3 shrink-0" aria-hidden />
-                      PR-2052
-                    </span>
-                    <span className="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-[10.5px] text-muted-foreground">
-                      PO · created on approval
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="h-px bg-border" />
+              <div>
+                <p className="text-sm text-muted-foreground">Linked records</p>
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/8 px-2.5 py-0.5 text-[10.5px] font-semibold text-primary">
+                    <LinkIcon className="size-3 shrink-0" aria-hidden />
+                    PR-2052
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-[10.5px] text-muted-foreground">
+                    PO · created on approval
+                  </span>
+                </div>
+              </div>
             </P2>
-          )}
-
-          {/* Terminal-state actions */}
-          {!detail.inFlight && (
-            <div className="flex flex-col gap-2">
-              <Button
-                size="sm"
-                className="w-full"
-                onClick={() => void navigate({ to: "/buy" })}
-              >
-                Reorder
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => void navigate({ to: "/catalog" })}
-              >
-                View order
-              </Button>
-            </div>
           )}
         </div>
       </div>
