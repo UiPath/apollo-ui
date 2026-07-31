@@ -1,23 +1,48 @@
-const DURATION_UNIT_PATTERN = /\d+(?:[.,]\d+)?\s*(?:ms|mo|w|d|h|m|s)\b/gi;
+import { Duration } from 'luxon';
 
 /**
- * Limits an already formatted, largest-to-smallest duration to its largest units.
- * Prefixes and separators are preserved (for example, "Duration: 6m, 2w, 2d").
+ * Largest to smallest. Matches the unit set consumers already normalize to, so the wording and
+ * arithmetic stay exactly what the app shows today. Sub-second precision is never shown on a
+ * canvas node.
  */
-export function formatDuration(duration: string, maxUnits = 3): string {
-  if (maxUnits < 1) {
+const UNITS = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'] as const;
+
+/**
+ * Formats a duration given in milliseconds, keeping only its largest `maxUnits` parts — a stage
+ * that ran for months should not spell out every unit down to seconds.
+ *
+ * Truncation happens on the parts, before they are ever turned into text, so it holds in every
+ * locale. (Formatting first and trimming the string back does not: "2 hr, 59 min" and
+ * "2 Std., 59 Min." share no unit spelling.) The conversion and wording are luxon's.
+ *
+ * Returns `''` for a non-positive, non-finite, or sub-second duration — callers skip rendering
+ * rather than show "0 sec".
+ */
+export function formatDurationMs(ms: number, locale = 'en', maxUnits = 3): string {
+  if (!Number.isFinite(ms) || ms <= 0 || maxUnits < 1) {
     return '';
   }
 
-  const unitMatches = [...duration.matchAll(DURATION_UNIT_PATTERN)];
-  if (unitMatches.length <= maxUnits) {
-    return duration;
+  const parts = Duration.fromMillis(ms)
+    .shiftTo(...UNITS)
+    .toObject();
+  const largest: Record<string, number> = {};
+
+  for (const unit of UNITS) {
+    // Seconds come back fractional; a partial unit is never worth a decimal here.
+    const value = Math.floor(parts[unit] ?? 0);
+    if (value <= 0) {
+      continue;
+    }
+    largest[unit] = value;
+    if (Object.keys(largest).length === maxUnits) {
+      break;
+    }
   }
 
-  const lastVisibleUnit = unitMatches[maxUnits - 1];
-  if (!lastVisibleUnit) {
-    return duration;
+  if (Object.keys(largest).length === 0) {
+    return '';
   }
 
-  return duration.slice(0, (lastVisibleUnit.index ?? 0) + lastVisibleUnit[0].length).trimEnd();
+  return Duration.fromObject(largest).reconfigure({ locale }).toHuman({ unitDisplay: 'short' });
 }

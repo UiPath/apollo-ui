@@ -900,6 +900,10 @@ export const ExecutionModeWithSla: Story = {
   },
 };
 
+/** 6 months, 2 weeks, 2 days, 2 hours, 59 minutes, 36 seconds. */
+const LONG_RUN_MS =
+  6 * 30 * 86400000 + 2 * 7 * 86400000 + 2 * 86400000 + 2 * 3600000 + 59 * 60000 + 36000;
+
 export const MaximumTaskAdornments: Story = {
   name: 'Execution Mode - Maximum Task Adornments',
   parameters: {
@@ -929,14 +933,15 @@ export const MaximumTaskAdornments: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: 'Duration: 6m, 2w, 2d, 2h, 59m, 36s',
+              // Half a year down to the second — only the 3 largest units are rendered.
+              durationMs: LONG_RUN_MS,
             },
             taskStatus: {
               'long-running-task': {
                 status: 'InProgress',
                 breakpoint: true,
-                duration: '6m, 2w, 2d, 2h, 59m, 36s',
-                durationTooltip: 'Elapsed: 6m, 2w, 2d, 2h, 59m, 36s',
+                durationMs: LONG_RUN_MS,
+                durationTooltip: 'Started just over 6 months ago',
                 retryCount: 98,
                 retryDuration: '5m, 4w, 3d, 2h, 1m',
               },

@@ -7,7 +7,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
-import { formatDuration } from './formatDuration';
+import { formatDurationMs } from './formatDuration';
 import { StageTaskIcon } from './StageNode.styles';
 import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
 import { StageTaskEntryConditionIcon } from './StageTaskEntryConditionIcon';
@@ -90,7 +90,7 @@ export interface TaskContentProps {
 
 export const TaskContent = memo(
   ({ task, taskExecution, isDragging, onTaskPlay, trailingContent }: TaskContentProps) => {
-    const { _ } = useSafeLingui();
+    const { _, locale } = useSafeLingui();
     const getStatusName = useExecutionStatusLabel();
     const hasExecutionStatus = !!taskExecution?.status;
     // Runs and rework collapse to two compact amber icon-chips (per design): a "runs" chip
@@ -119,12 +119,18 @@ export const TaskContent = memo(
     const taskStatusTooltip = taskExecution?.message || taskStatusFallbackName;
     // Ad hoc tasks are by definition not required, so never show the "*" marker on them.
     const showRequiredMarker = task.isRequired && !task.isAdhoc && task.taskGroupType !== 'adhoc';
-    const durationLabel = taskExecution?.duration ? (
+    // `durationMs` wins: only the number can be shortened to its largest units. A legacy
+    // pre-formatted string is rendered as the consumer supplied it.
+    const durationText =
+      taskExecution?.durationMs !== undefined
+        ? formatDurationMs(taskExecution.durationMs, locale)
+        : taskExecution?.duration;
+    const durationLabel = durationText ? (
       <span
         data-testid={`stage-task-duration-${task.id}`}
         className="text-xs text-foreground-muted"
       >
-        {formatDuration(taskExecution.duration)}
+        {durationText}
       </span>
     ) : null;
 

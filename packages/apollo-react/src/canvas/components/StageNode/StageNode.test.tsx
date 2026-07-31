@@ -847,14 +847,26 @@ describe('StageNode - SLA Indicator', () => {
   });
 
   it('caps the stage duration at its three largest units', () => {
+    // 2 days, 3 hr, 4 min, 5 sec — the seconds are dropped.
     renderStageNode({
       execution: {
-        stageStatus: { duration: 'Duration: 6m 2w 2d 2h 59m 36s' },
+        stageStatus: { durationMs: 2 * 86400000 + 3 * 3600000 + 4 * 60000 + 5000 },
         taskStatus: {},
       },
     });
 
-    expect(screen.getByTestId('stage-duration-stage-1')).toHaveTextContent('Duration: 6m 2w 2d');
+    expect(screen.getByTestId('stage-duration-stage-1')).toHaveTextContent('2 days, 3 hr, 4 min');
+  });
+
+  it('renders a legacy pre-formatted stage duration verbatim', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { duration: 'Duration: 1h 30m' },
+        taskStatus: {},
+      },
+    });
+
+    expect(screen.getByTestId('stage-duration-stage-1')).toHaveTextContent('Duration: 1h 30m');
   });
 
   it('renders slaText without an icon when slaIcon is omitted', () => {
