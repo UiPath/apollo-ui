@@ -47,6 +47,13 @@
         "APOLLO_CODED_APP": "1"
       }
     },
+    "apollo-design-diff": {
+      "type": "codedapp",
+      "outputDir": ".uipath-build/apollo-design-diff",
+      "pathNameEnv": "APOLLO_CODED_APP_PATH",
+      "folderKeyEnv": "UIPATH_FOLDER_KEY",
+      "tags": "apollo,apollo-design-diff"
+    },
     "apollo-vertex": {
       "type": "codedapp",
       "build": {
