@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.12.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.12.0...@uipath/apollo-react@6.12.1) (2026-07-31)
+
+### Bug Fixes
+
+* **apollo-react:** add horizontal padding to BaseNode inline edit inputs [MST-12529] ([c9bd6e2](https://github.com/UiPath/apollo-ui/commit/c9bd6e23b5a698d909a14a652e68e2a5cbc26cf5))
+
 ## [@uipath/apollo-react-v6.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.11.2...@uipath/apollo-react@6.12.0) (2026-07-31)
 
 ### Features
