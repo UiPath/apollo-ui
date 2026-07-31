@@ -12,6 +12,7 @@
 
 @import "tailwindcss";
 @import "@uipath/apollo-core/tokens/css/theme-variables.css";
+@import "sonner/dist/styles.css";
 
 @import "./tailwind.utilities.css";
 
