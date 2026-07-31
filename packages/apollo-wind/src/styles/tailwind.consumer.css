@@ -15,6 +15,9 @@
 
 @import "./tailwind.utilities.css";
 
+/* Exposes --apollo-wind-version (auto-generated from package.json on build). */
+@import "./version.generated.css";
+
 :root {
   --radius: 0.75rem;
   /* 12px — base border-radius for buttons and UI elements */

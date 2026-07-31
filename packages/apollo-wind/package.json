@@ -62,7 +62,7 @@
   ],
   "scripts": {
     "dev": "rslib build --watch",
-    "build": "rslib build && npm run build:css",
+    "build": "node scripts/generate-version-css.mjs && rslib build && npm run build:css",
     "build:css": "npx @tailwindcss/cli -i ./src/styles/tailwind.css -o ./dist/styles.css",
     "test": "vitest run",
     "test:ui": "vitest --ui",
