@@ -1,3 +1,16 @@
+## [@uipath/apollo-react-v6.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.11.2...@uipath/apollo-react@6.12.0) (2026-07-31)
+
+### Features
+
+* **apollo-react:** put debug-view breakpoints on the task gutter dot ([48ba3e6](https://github.com/UiPath/apollo-ui/commit/48ba3e6acbe4be342cb5d2dedcb1247f6785218f))
+* **apollo-react:** take task and stage duration in milliseconds ([0d70caa](https://github.com/UiPath/apollo-ui/commit/0d70caa6b1bc1a60ad340edf71eea520dea89167))
+
+### Bug Fixes
+
+* **apollo-react:** cap stage duration at its three largest units ([91bcd55](https://github.com/UiPath/apollo-ui/commit/91bcd55450584a7c5c6465d07b187b79e05ca4f3))
+* **apollo-react:** constrain stage task metadata spacing ([e2c8dfb](https://github.com/UiPath/apollo-ui/commit/e2c8dfbcaca902fdd7f66acc9ad738c4155c8ad5))
+* **apollo-react:** keep every stage task icon in the same 24px box ([54cee43](https://github.com/UiPath/apollo-ui/commit/54cee431539976d15f338a16a3f66521c906abc7))
+
 ## [@uipath/apollo-react-v6.11.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.11.1...@uipath/apollo-react@6.11.2) (2026-07-31)
 
 ### Bug Fixes
