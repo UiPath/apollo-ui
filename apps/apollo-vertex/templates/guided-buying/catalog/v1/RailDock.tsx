@@ -1,6 +1,17 @@
+import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
+import { sidebarSpring } from "@/registry/shell/shell-animations";
+
+// Matches the shell sidebar's collapsed icon-rail width (4rem).
+const COLLAPSED_WIDTH_PX = 64;
+
+function toPx(value: string): number {
+  return value.endsWith("rem")
+    ? Number.parseFloat(value) * 16
+    : Number.parseFloat(value);
+}
 
 interface RailDockProps {
   open: boolean;
@@ -14,7 +25,8 @@ interface RailDockProps {
 
 /**
  * The docked rail container. Animates between the full assistant panel and a
- * slim launcher; the main column reflows into the reclaimed width.
+ * slim launcher; the main column reflows into the reclaimed width. Uses the
+ * same spring as the shell sidebar so both expand/collapse identically.
  */
 export function RailDock({
   open,
@@ -24,10 +36,14 @@ export function RailDock({
   children,
 }: RailDockProps) {
   return (
-    <aside
+    <motion.aside
       aria-label="Assistant"
-      className="hidden shrink-0 overflow-hidden border-l bg-card transition-[width] duration-300 ease-out lg:block"
-      style={{ width: open ? width : "3.5rem" }}
+      initial={{ width: 0 }}
+      animate={{ width: open ? toPx(width) : COLLAPSED_WIDTH_PX }}
+      exit={{ width: 0 }}
+      transition={sidebarSpring}
+      // Left slot, same as the shell sidebar — border trails on the right.
+      className="hidden h-full shrink-0 overflow-hidden border-r bg-card lg:block"
     >
       {open ? (
         children
@@ -36,7 +52,7 @@ export function RailDock({
           type="button"
           onClick={onExpand}
           aria-label="Open assistant"
-          className="flex h-full w-14 flex-col items-center pt-4"
+          className="flex h-full w-16 flex-col items-center pt-4"
         >
           <span
             className="relative flex size-9 items-center justify-center rounded-full text-white"
@@ -49,6 +65,6 @@ export function RailDock({
           </span>
         </button>
       )}
-    </aside>
+    </motion.aside>
   );
 }

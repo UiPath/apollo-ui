@@ -163,10 +163,19 @@ export function JourneyBar({
     );
   }
 
-  // "below" mode — dot row + label row + optional slots
+  // "below" mode — dot row + label row + optional slots. With few stages the
+  // connectors (flex-1) would otherwise stretch across the full card width,
+  // leaving huge gaps between tiny dots — cap and center the bar so spacing
+  // stays proportionate. 4+ stages already read fine at full width.
+  const compact = stages.length <= 3;
+
   return (
     <div
-      className={cn("flex flex-col", className)}
+      className={cn(
+        "flex flex-col",
+        compact && "mx-auto w-full max-w-sm",
+        className,
+      )}
       aria-label="Request progress"
     >
       {/* Dot + connector row */}

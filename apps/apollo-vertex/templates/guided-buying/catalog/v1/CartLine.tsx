@@ -39,10 +39,7 @@ export function CartLine({
         <div className="mt-2 flex items-center justify-between gap-2">
           {readOnly ? (
             <span className="text-sm text-muted-foreground">
-              {formatPrice(unit, item.currency)} × {quantity} ={" "}
-              <span className="font-medium text-foreground">
-                {formatPrice(lineTotal, item.currency)}
-              </span>
+              {quantity} × {formatPrice(unit, item.currency)}
             </span>
           ) : (
             <>

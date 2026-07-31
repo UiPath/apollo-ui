@@ -1,17 +1,35 @@
 "use client";
 
 import { useNavigate } from "@tanstack/react-router";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Bookmark, Clock, Info, Plus, User } from "lucide-react";
-import { Fragment } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bookmark,
+  Check,
+  Clock,
+  Info,
+  MessageCircle,
+  Plus,
+  Store,
+  X,
+} from "lucide-react";
+import { Fragment, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { P1 } from "../../P1";
 import { P2 } from "../../P2";
+import { useAssistantThread } from "./assistant-thread-context";
 import { useCart } from "./cart-context";
 import { useConversation } from "./conversation-context";
 import {
@@ -19,10 +37,13 @@ import {
   CATALOG_ITEMS,
   defaultQuantityFor,
   formatPrice,
+  ramGb,
   showsListStrike,
 } from "./data";
+import { useFlowFooter } from "./FlowFooter";
 import { ProductImage } from "./ProductImage";
 import { QuantityStepper } from "./QuantityStepper";
+import { Selection } from "./Selection";
 import type { CatalogItem } from "./types";
 
 // Request applied EPP, so cards price per unit under EPP.
@@ -35,8 +56,8 @@ const YOGA_ID = "lnv-x1-yoga-g9";
 
 // Deck j1-04: why each non-pick card wasn't chosen. Shown as italic rationale.
 const NOT_PICKED_REASONS: Record<string, string> = {
-  [YOGA_ID]: "Not picked · touch adds cost, 16GB",
-  "dell-xps-14": "Not picked · $50 less, smaller discount",
+  [YOGA_ID]: "Touch adds cost, 16GB",
+  "dell-xps-14": "$50 less, smaller discount",
 };
 
 export interface MatchesOutput {
@@ -67,8 +88,9 @@ interface MatchCardProps {
 }
 
 /**
- * One result card. Every card shares the template — image → title → spec →
- * rationale slot → price → CTA — so prices and buttons align across the row.
+ * One result row. Every row shares the template — image, title + spec +
+ * rationale slot, then price + CTA — stacked in a list rather than a grid, so
+ * each row's height is its own; nothing needs to align across siblings.
  * The pick fills the rationale with evidence chips; alternatives show the italic
  * "Not picked · reason" line; set-aside shows an AI chip and "Show anyway".
  */
@@ -94,95 +116,92 @@ function MatchCard({
   // then adjustable here (stepper) or in the cart peek; removal lives in the peek.
   const onAdd = () => setQuantity(item, requestQty);
 
-  // Content shared by both glass card (normal/lead) and plain div (set-aside).
-  const cardContent = (
+  // Content shared by both glass row (normal/lead) and plain div (set-aside).
+  const rowContent = (
     <>
-      {/* Deck j1-04 .badge: --ai-gradient-fill, white text, rides the card's top border. */}
-      {lead && (
-        <Badge
-          status="ai"
-          variant="default"
-          className="absolute -top-[9px] left-3 text-[11px] font-semibold"
-        >
-          <AiMark size={12} aria-hidden />
-          <P1>AI pick</P1>
-          <P2>AI pick · personalized</P2>
-        </Badge>
-      )}
+      {/* Placeholder for now — subtle tint + category icon, no photo. */}
+      <ProductImage
+        alt={item.name}
+        category={item.category}
+        vendor={item.vendor}
+        className={cn(
+          "size-16 shrink-0 rounded-lg bg-muted",
+          setAside && "grayscale opacity-60",
+        )}
+        iconClassName="size-6 text-muted-foreground/50"
+      />
 
-      {/* Image — set-aside desaturates as the single visual "unavailable" cue. */}
-      <div>
-        <ProductImage
-          src={item.image}
-          alt={item.name}
-          category={item.category}
-          vendor={item.vendor}
-          className={cn("h-28 rounded-xl", setAside && "grayscale opacity-60")}
-        />
-      </div>
-
-      <div className="space-y-0.5">
+      <div className="min-w-0 flex-1">
         <h3
           className={cn(
-            "line-clamp-2 min-h-[2.5rem] font-semibold leading-snug",
+            "font-semibold leading-snug",
             setAside ? "text-muted-foreground" : "text-foreground",
           )}
         >
           {item.name}
         </h3>
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {item.specs.join(" · ")}
         </p>
+
+        {/* Rationale slot — a consistent minimum height regardless of
+            content, so rows with nothing to show (e.g. a browsed-in item
+            with no "why not" reasoning) don't read shorter than the rest. */}
+        <div className="mt-2 min-h-[18px]">
+          {lead ? (
+            // Evidence for the pick: roman (not italic), one step up in
+            // contrast from the alternatives' caveat line, one small icon
+            // per item. "Ordered in May" gets its own icon (memory-derived)
+            // rather than a colour tint — meaning shouldn't ride on colour
+            // alone.
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1">
+                <Check className="size-3" aria-hidden />
+                Best price after EPP
+              </span>
+              <P1>
+                <span className="inline-flex items-center gap-1">
+                  <Check className="size-3" aria-hidden />
+                  Meets full spec
+                </span>
+              </P1>
+              <P2>
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="size-3" aria-hidden />
+                  Ordered in May
+                </span>
+              </P2>
+            </div>
+          ) : setAside ? (
+            <Badge
+              status="ai"
+              variant="secondary"
+              className="gap-1 text-[11px]"
+            >
+              <Bookmark className="size-3" aria-hidden />
+              Set aside · below your 32GB min
+            </Badge>
+          ) : notPickedReason ? (
+            <p className="text-xs italic leading-snug text-muted-foreground/70">
+              {notPickedReason}
+              {onWhyNotThisClick && (
+                <>
+                  {" · "}
+                  <button
+                    type="button"
+                    className="not-italic underline hover:text-foreground"
+                    onClick={onWhyNotThisClick}
+                  >
+                    Why not this?
+                  </button>
+                </>
+              )}
+            </p>
+          ) : null}
+        </div>
       </div>
 
-      {/* Rationale slot — evidence chips on pick, italic reason on alts, AI chip on set-aside. */}
-      {lead ? (
-        <div className="flex min-h-[2.25rem] flex-wrap items-start gap-1 pt-0.5">
-          <Badge variant="secondary" className="text-[11px]">
-            Best price after EPP
-          </Badge>
-          {/* Deck j1-04: "Meets full spec"; j1-05 drops it, adds memory chip */}
-          <P1>
-            <Badge variant="secondary" className="text-[11px]">
-              Meets full spec
-            </Badge>
-          </P1>
-          <P2>
-            <Badge status="ai" variant="secondary" className="text-[11px]">
-              Ordered in May
-            </Badge>
-          </P2>
-        </div>
-      ) : setAside ? (
-        <div className="min-h-[2.25rem] pt-0.5">
-          <Badge status="ai" variant="secondary" className="gap-1 text-[11px]">
-            <Bookmark className="size-3" aria-hidden />
-            Set aside · below your 32GB min
-          </Badge>
-        </div>
-      ) : (
-        <div
-          className={cn(
-            "min-h-[2.25rem] text-xs leading-snug",
-            notPickedReason ? "pt-0.5" : "",
-          )}
-        >
-          <p className="italic text-muted-foreground/70">
-            {notPickedReason ?? ""}
-          </p>
-          {notPickedReason && onWhyNotThisClick && (
-            <button
-              type="button"
-              className="mt-0.5 text-left text-muted-foreground/70 underline hover:text-muted-foreground"
-              onClick={onWhyNotThisClick}
-            >
-              Why not this?
-            </button>
-          )}
-        </div>
-      )}
-
-      <div className="mt-auto space-y-2 pt-1">
+      <div className="flex shrink-0 flex-col items-end gap-2">
         <div className="flex items-baseline gap-2">
           <span
             className={cn(
@@ -198,50 +217,45 @@ function MatchCard({
             </span>
           )}
         </div>
-        {setAside ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full text-muted-foreground"
-            onClick={onShowAnyway}
-          >
-            Show anyway
-          </Button>
-        ) : added ? (
-          <div className="flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          {onOpenDetail && (
+            <Button variant="ghost" size="sm" onClick={onOpenDetail}>
+              Details
+            </Button>
+          )}
+          {setAside ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={onShowAnyway}
+            >
+              Show anyway
+            </Button>
+          ) : added ? (
             <QuantityStepper
               value={qty}
               onChange={(next) => setQuantity(item, next)}
+              min={0}
             />
-          </div>
-        ) : (
-          <Button
-            size="sm"
-            variant={lead ? "default" : "secondary"}
-            onClick={onAdd}
-            className="w-full"
-          >
-            <motion.span
-              initial={reduceMotion ? false : { opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.18, ease: EASE }}
-              className="flex items-center gap-1.5"
+          ) : (
+            <Button
+              size="sm"
+              variant={lead ? "default" : "secondary"}
+              onClick={onAdd}
             >
-              <Plus className="size-4" />
-              {`Add ${qty}`}
-            </motion.span>
-          </Button>
-        )}
-        {onOpenDetail && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={onOpenDetail}
-          >
-            Details
-          </Button>
-        )}
+              <motion.span
+                initial={reduceMotion ? false : { opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.18, ease: EASE }}
+                className="flex items-center gap-1.5"
+              >
+                <Plus className="size-4" />
+                {`Add ${qty}`}
+              </motion.span>
+            </Button>
+          )}
+        </div>
       </div>
     </>
   );
@@ -250,20 +264,41 @@ function MatchCard({
   // motion wrapper is relative so AiGlow (absolute -inset) positions correctly.
   return (
     <motion.div
-      className="relative h-full"
+      className="relative"
       initial={reduceMotion ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: EASE, delay: index * 0.09 }}
     >
-      {/* AiGlow sits behind the glass card; only the AI pick gets one. */}
+      {/* AiGlow sits behind the glass row; only the AI pick gets one. */}
       {lead && <AiGlow variant="card" />}
       {setAside ? (
-        <div className="relative flex h-full flex-col gap-2 rounded-2xl border-[1.5px] border-dashed border-border/60 bg-background p-3">
-          {cardContent}
+        <div className="relative flex items-center gap-4 rounded-lg border-[1.5px] border-dashed border-border/60 bg-background p-4">
+          {rowContent}
         </div>
       ) : (
-        <Card variant="glass" className="relative h-full gap-2 p-3">
-          {cardContent}
+        <Card
+          variant="glass"
+          className={cn(
+            "relative flex-row items-center gap-4 p-4",
+            // AI-toolkit guideline: a glass card paired with a glow needs the
+            // higher-opacity ai-glass surface, or the glow reads as barely
+            // visible behind it (especially in dark mode).
+            lead && "bg-[var(--ai-glass)] dark:bg-[var(--ai-glass)]",
+          )}
+        >
+          {/* Rides the row's top border, left-aligned — the same treatment
+              the card layout used before the switch to rows. */}
+          {lead && (
+            <Badge
+              status="ai"
+              variant="default"
+              className="absolute -top-[9px] left-4 text-[11px] font-semibold"
+            >
+              <AiMark size={12} aria-hidden />
+              AI pick
+            </Badge>
+          )}
+          {rowContent}
         </Card>
       )}
     </motion.div>
@@ -273,12 +308,13 @@ function MatchCard({
 /** Pulsing placeholder shown while the matches "load". */
 function MatchCardSkeleton() {
   return (
-    <div className="flex h-full animate-pulse flex-col gap-2 rounded-2xl border bg-card p-3">
-      <div className="h-28 rounded-xl bg-muted" />
-      <div className="h-4 w-3/4 rounded bg-muted" />
-      <div className="h-3 w-1/2 rounded bg-muted" />
-      <div className="min-h-[2.25rem]" />
-      <div className="mt-auto h-8 w-full rounded bg-muted" />
+    <div className="flex animate-pulse items-center gap-4 rounded-lg border bg-card p-4">
+      <div className="size-16 shrink-0 rounded-lg bg-muted" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="h-4 w-1/3 rounded bg-muted" />
+        <div className="h-3 w-1/2 rounded bg-muted" />
+      </div>
+      <div className="h-8 w-24 shrink-0 rounded bg-muted" />
     </div>
   );
 }
@@ -288,31 +324,73 @@ const SKELETON_KEYS = ["s1", "s2", "s3"];
 /** The matches carousel Autopilot presents inline in the chat after the confirm. */
 export function MatchCarousel({
   output,
-  onSeeAll,
   correctionMade = false,
   onWhyNotThisClick,
+  onNotFindingClick,
   onYogaShowAnyway,
   onOpenDetail,
 }: {
   output: MatchesOutput;
-  /** Override the "See all" action (Buy uses it to play the exit transition). */
-  onSeeAll?: () => void;
   /** True after the P2 dock correction — Yoga card enters set-aside state. */
   correctionMade?: boolean;
   /** Opens the shelf dock scoped to the given item. */
   onWhyNotThisClick?: (item: CatalogItem) => void;
+  /** Opens the shelf dock generically, from the "not finding what you're
+   * looking for?" prompt at the end of the expanded list. */
+  onNotFindingClick?: () => void;
   onYogaShowAnyway?: () => void;
   /** Opens the ProductDetail overlay for a given catalog item. */
   onOpenDetail?: (item: CatalogItem) => void;
 }) {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
-  const { requestText } = useConversation();
+  const { stepBack } = useConversation();
+  const { addStepEntry } = useAssistantThread();
   const { items: cartItems, quantities, count: cartCount } = useCart();
+  const [expanded, setExpanded] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
   const lead = CATALOG_ITEMS.find((item) => item.id === output.leadId);
   const alts = output.altIds
     .map((id) => CATALOG_ITEMS.find((item) => item.id === id))
     .filter((item): item is CatalogItem => item != null);
+  // The rest of the catalog, revealed by "See all N in catalog".
+  const shown = new Set([output.leadId, ...output.altIds]);
+  const remaining = CATALOG_ITEMS.filter((item) => !shown.has(item.id));
+
+  // The narrowing, derived from the catalog: how many laptops matched, how
+  // many cleared the 32GB minimum, and the one picked.
+  const laptops = CATALOG_ITEMS.filter((item) => item.category === "Laptops");
+  const qualifying = laptops.filter((item) => (ramGb(item) ?? 0) >= 32);
+
+  // Thread entry: live once the pick has resolved, not gated on any click.
+  useEffect(() => {
+    if (!lead || output.loading) return;
+    const summary = `Narrowed ${laptops.length} laptops to ${qualifying.length} that meet your 32GB minimum, picked the ${lead.name}.`;
+    const detail = [
+      `${laptops.length} laptops in the catalog matched your request.`,
+      `${qualifying.length} met the 32GB minimum.`,
+      `Picked ${lead.name}: best price after EPP and meets full spec.`,
+    ];
+    addStepEntry("choose", summary, detail);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lead, output.loading, laptops.length, qualifying.length]);
+
+  // Same staggered fade-up as Bridge/Intake's shared heading, so the Choose
+  // screen's own hero (supplied via hideBrand) animates in the same way.
+  const headingGroup = {
+    initial: {},
+    animate: { transition: { staggerChildren: 0.08, delayChildren: 0.18 } },
+  };
+  const headingLine = reduceMotion
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 } }
+    : {
+        initial: { opacity: 0, y: 10 },
+        animate: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.28, ease: EASE },
+        },
+      };
 
   // Live cart total (EPP), baked into the primary so it doubles as a glance.
   const cartTotal = cartItems.reduce(
@@ -320,74 +398,100 @@ export function MatchCarousel({
     0,
   );
 
+  useFlowFooter(
+    !lead || output.loading
+      ? null
+      : {
+          left: (
+            <Button variant="secondary" size="sm" onClick={stepBack}>
+              <ArrowLeft className="size-4" aria-hidden />
+              Back
+            </Button>
+          ),
+          right: (
+            // Always present — disabled with no total until the cart has items.
+            <Button
+              size="sm"
+              onClick={() =>
+                // biome-ignore lint/suspicious/noExplicitAny: `from` isn't a
+                // registered history-state key (see Selection.tsx's reviewSubmit).
+                void navigate({ to: "/review", state: { from: "buy" } as any })
+              }
+              disabled={cartCount === 0}
+            >
+              {cartCount > 0
+                ? `Review & submit · ${cartCount} item${cartCount === 1 ? "" : "s"} · ${formatPrice(cartTotal, "USD")}`
+                : "Review & submit"}
+            </Button>
+          ),
+        },
+  );
+
   if (!lead) return null;
 
   return (
     <div className="w-full">
-      {/* Human's original ask — the page hero on the Choose screen. */}
-      {requestText && (
-        <h1 className="mb-4 text-2xl font-semibold leading-snug text-foreground">
-          &ldquo;{requestText}&rdquo;
-        </h1>
-      )}
-
-      {/* Deck j1-04: AI reasoning strip above the grid. ✦ marks the group once. */}
-      {!output.loading && (
-        <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-(--insight-200) [background-image:var(--ai-gradient)] px-4 py-3">
-          <span className="mt-0.5 shrink-0 text-sm text-(--insight-600)">
-            ✦
-          </span>
-          <div className="min-w-0 text-[13px] leading-[1.55]">
-            <P1>
-              I&apos;d go with the <strong>ThinkPad X1 Carbon</strong> — deepest
-              EPP discount, meets your full spec, and it&apos;s what these teams
-              usually order.
-            </P1>
-            <P2>
-              <>
-                The <strong>X1 Carbon</strong> — it&apos;s what your team
-                ordered for the Brand Studio hires in May, fits the Design
-                contractor spec, and clears your 32GB minimum. One option
-                didn&apos;t, so I set it aside.
-                {/* Deck j1-05: provenance chips below the strip copy */}
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  <Badge
-                    status="ai"
-                    variant="secondary"
-                    className="text-[11px]"
-                  >
-                    <Clock className="size-3" aria-hidden />
-                    Your team&apos;s May order
-                  </Badge>
-                  <Badge
-                    status="ai"
-                    variant="secondary"
-                    className="text-[11px]"
-                  >
-                    <User className="size-3" aria-hidden />
-                    Design contractor spec
-                  </Badge>
-                </div>
-                <div className="mt-2">
-                  <Button
+      {/* Same centered column measure as Bridge, so the two screens read as
+          one family. */}
+      <div className="mx-auto mb-8 max-w-prose text-center">
+        {/* Same staggered fade-up as Bridge/Intake's shared heading. */}
+        <motion.div variants={headingGroup} initial="initial" animate="animate">
+          {/* The recommendation is the headline now — same copy at both
+              tiers, tier-stable. No eyebrow above it — same placement as
+              Bridge's own title, which also starts flush at pt-[7vh]. The
+              AI mark lives in the header now, not the headline. */}
+          {!output.loading && (
+            <>
+              <motion.h1
+                variants={headingLine}
+                className="text-2xl font-semibold text-foreground tracking-tight"
+              >
+                The{" "}
+                <span
+                  className="rounded px-1"
+                  style={{ backgroundImage: "var(--ai-gradient)" }}
+                >
+                  X1 Carbon
+                </span>{" "}
+                is the closest fit to your request
+              </motion.h1>
+              {/* Subhead: product reasons only, identical at both tiers —
+                  the heading block is a pure insertion below, no
+                  substitution. */}
+              <motion.p
+                variants={headingLine}
+                className="mt-1.5 text-sm leading-6 text-muted-foreground"
+              >
+                Best price after EPP, and it clears your 32GB minimum.
+              </motion.p>
+              {/* Attribution — smallest, muted, provenance only. P2-only
+                  insertion, not a substitution — P1 has no attribution
+                  line. */}
+              <P2>
+                <motion.p
+                  variants={headingLine}
+                  className="mt-1 text-xs text-muted-foreground"
+                >
+                  From your team&apos;s May order and the Design contractor
+                  spec.{" "}
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-auto rounded-full px-3 py-1 text-xs"
+                    className="underline hover:text-foreground"
                   >
                     Update my preferences
-                  </Button>
-                </div>
-              </>
-            </P2>
-          </div>
-        </div>
-      )}
+                  </button>
+                </motion.p>
+              </P2>
+            </>
+          )}
+        </motion.div>
+      </div>
 
-      {/* Bleed the card grid 80px wider than the page column on each side so
-          cards feel roomier without reflowing the surrounding content. */}
-      <div className="-mx-20 w-[calc(100%+160px)]">
-        <div className="grid grid-cols-3 gap-4 py-2">
+      {/* Stacked rows at the same width as Bridge's card — no bleed. Extra
+          top clearance (pt-4, not py-2) so the lead row's badge, riding its
+          top border, has room and isn't crowded by the heading block above. */}
+      <div className="w-full">
+        <div className="space-y-3 pt-4 pb-2">
           {output.loading ? (
             SKELETON_KEYS.map((key) => <MatchCardSkeleton key={key} />)
           ) : (
@@ -462,94 +566,134 @@ export function MatchCarousel({
                   />
                 );
               })}
+
+              {expanded ? (
+                <>
+                  {remaining.map((item, i) => (
+                    <MatchCard
+                      key={item.id}
+                      item={item}
+                      index={alts.length + i + 1}
+                      onOpenDetail={
+                        onOpenDetail ? () => onOpenDetail(item) : undefined
+                      }
+                    />
+                  ))}
+
+                  {/* AI escalation — the end of the line for browsing here. */}
+                  <div className="flex flex-col items-center gap-3 rounded-xl bg-muted/40 px-4 py-6 text-center">
+                    <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                      <AiMark size={16} gradientId="gb-ai-mark" aria-hidden />
+                      Not finding what you&apos;re looking for?
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onNotFindingClick}
+                      >
+                        <MessageCircle className="size-4" aria-hidden />
+                        Let&apos;s chat
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCatalogOpen(true)}
+                      >
+                        <Store className="size-4" aria-hidden />
+                        Pull up Catalog
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="w-full rounded-xl border border-dashed bg-muted/40 py-2.5 text-center text-sm text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                  onClick={() => setExpanded(true)}
+                >
+                  Show {remaining.length} more
+                </button>
+              )}
             </>
           )}
         </div>
       </div>
 
-      {!output.loading && (
-        <>
-          {/* AI disclosure — once below the grid of equal-height cards. */}
-          <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Info className="size-3.5 shrink-0" aria-hidden />
-            The output is AI generated. Please review.
-          </p>
+      <p className="flex items-center gap-1.5 px-1 pt-3 text-xs text-muted-foreground">
+        <Info className="size-3.5 shrink-0" aria-hidden />
+        The output is AI generated. Please review.
+      </p>
 
-          <div className="mt-3 flex items-center justify-between gap-2">
-            {/* Browse more (lateral, ghost) sits at the start. */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onSeeAll ?? (() => void navigate({ to: "/catalog" }))}
-            >
-              See all {output.totalCount} in catalog
-            </Button>
-            <div className="flex items-center gap-2">
-              {/* Ask chip — sits right of the cart-gated Review button. */}
-              <Button
-                type="button"
-                variant="ai-outline"
-                size="sm"
-                className="h-auto rounded-full px-3 py-1 text-xs"
-              >
-                ✦ Ask
-              </Button>
-              {/* The primary transitions in once the cart has items (like the top bar). */}
-              <AnimatePresence>
-                {cartCount > 0 && (
-                  <motion.div
-                    key="review"
-                    initial={
-                      reduceMotion ? false : { opacity: 0, x: 8, scale: 0.9 }
-                    }
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={
-                      reduceMotion
-                        ? { opacity: 0 }
-                        : { opacity: 0, x: 8, scale: 0.9 }
-                    }
-                    transition={{ duration: 0.28, ease: EASE }}
-                  >
-                    <Button
-                      size="sm"
-                      onClick={() => void navigate({ to: "/review" })}
-                    >
-                      Review &amp; submit · {cartCount} item
-                      {cartCount === 1 ? "" : "s"} ·{" "}
-                      {formatPrice(cartTotal, "USD")}
-                    </Button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+      <Dialog open={catalogOpen} onOpenChange={setCatalogOpen}>
+        <DialogContent
+          fullscreen
+          showCloseButton={false}
+          className="top-8 right-8 bottom-0 left-8 rounded-t-xl border border-b-0 p-0 shadow-2xl"
+        >
+          <DialogTitle className="sr-only">Catalog</DialogTitle>
+          {/* Floats outside Selection's own content — top-4/right-4 sat right
+              on top of its Cart button, since Selection owns that corner too. */}
+          <DialogClose className="absolute -top-3 -right-3 z-50 flex size-9 items-center justify-center rounded-full border bg-background shadow-lg outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+            <X className="size-4" aria-hidden />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+          <div className="h-full overflow-hidden rounded-t-xl">
+            <Selection cold />
           </div>
-        </>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-/** "Review & submit" affordance shown after an in-chat add-to-cart. */
+/** "Review & submit" affordance shown after an in-chat add-to-cart — registers
+ * into the shared FlowFooter (Back + primary), renders nothing itself. */
 export function ReviewCta() {
   const navigate = useNavigate();
-  return (
-    <Button size="sm" onClick={() => void navigate({ to: "/review" })}>
-      Review &amp; submit
-    </Button>
-  );
+  const { stepBack } = useConversation();
+  useFlowFooter({
+    left: (
+      <Button variant="secondary" size="sm" onClick={stepBack}>
+        <ArrowLeft className="size-4" aria-hidden />
+        Back
+      </Button>
+    ),
+    right: (
+      <Button
+        size="sm"
+        onClick={() =>
+          // biome-ignore lint/suspicious/noExplicitAny: `from` isn't a
+          // registered history-state key (see Selection.tsx's reviewSubmit).
+          void navigate({ to: "/review", state: { from: "buy" } as any })
+        }
+      >
+        Review &amp; submit
+      </Button>
+    ),
+  });
+  return null;
 }
 
 /** "View in Workbench" affordance after an off-catalog handoff (buyer's seat). */
 export function WorkbenchCta() {
   const navigate = useNavigate();
+  const { stepBack } = useConversation();
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => void navigate({ to: "/workbench" })}
-    >
-      View in Workbench
-      <ArrowRight className="size-4" aria-hidden />
-    </Button>
+    <div className="flex items-center justify-between gap-3">
+      {/* Back lives here now, not the header. */}
+      <Button variant="secondary" size="sm" onClick={stepBack}>
+        <ArrowLeft className="size-4" aria-hidden />
+        Back
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => void navigate({ to: "/workbench" })}
+      >
+        View in Workbench
+        <ArrowRight className="size-4" aria-hidden />
+      </Button>
+    </div>
   );
 }
