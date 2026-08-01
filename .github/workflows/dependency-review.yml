@@ -51,44 +51,12 @@ jobs:
       - name: Post or update PR comment
         if: github.event.pull_request.head.repo.fork == false
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          REPORT_PATH: ${{ runner.temp }}/license-report.md
         with:
           script: |
-            const fs = require('fs');
-            const reportPath = '${{ runner.temp }}/license-report.md';
-            const marker = '<!-- dependency-license-review -->';
-
-            let report;
-            try {
-              report = fs.readFileSync(reportPath, 'utf8');
-            } catch {
-              report = '# Dependency License Review\n\n:x: License check script failed before generating a report. Check the workflow logs.';
-            }
-
-            const body = `${marker}\n${report}`;
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const existing = comments.find(c => c.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+            const { licenseReviewComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/dependency-review-comment.mjs`);
+            await licenseReviewComment({ github, context });
 
       - name: Fail if license violations found
         if: steps.check.outcome == 'failure'
