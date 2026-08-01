@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.12.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.12.1...@uipath/apollo-react@6.12.2) (2026-08-01)
+
+### Bug Fixes
+
+* **apollo-react:** bump sanitize-html to 2.17.6 for XSS fixes ([58aae18](https://github.com/UiPath/apollo-ui/commit/58aae1858d85abbefbd59f2b9aac2a5e4568d48f)), closes [#5501](https://github.com/UiPath/apollo-ui/issues/5501) [#5432](https://github.com/UiPath/apollo-ui/issues/5432)
+
 ## [@uipath/apollo-react-v6.12.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.12.0...@uipath/apollo-react@6.12.1) (2026-07-31)
 
 ### Bug Fixes
