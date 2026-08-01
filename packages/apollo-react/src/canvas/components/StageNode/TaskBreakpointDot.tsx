@@ -24,12 +24,20 @@ export interface TaskBreakpointDotProps {
 const DOT = 'absolute -top-1.5 -left-1.5 z-10 h-3.5 w-3.5 rounded-full bg-(--canvas-error-icon)';
 
 /**
+ * Ring that pulses out of the marker while the run is stopped on it, the way an executing node's
+ * border pulses (`getStatusBorder`). apollo-wind's `animate-glow` is the canvas-wide utility for
+ * this, so it comes with `prefers-reduced-motion: reduce` handling — it falls back to a static
+ * ring rather than dropping the cue. `--glow-strength` is the design's 55%.
+ */
+const PAUSED_GLOW = 'animate-glow [--glow-color:var(--canvas-error-icon)] [--glow-strength:55%]';
+
+/**
  * Breakpoint marker for a stage task, at the top-left corner of the task card.
  *
  * Mirrors the Flow/BPMN canvas breakpoint (`ExecutionBreakpoint`): a 14px solid circle filled
  * with the canvas error-icon color, no border or shadow; an unset one ghosts in at 0.5 opacity
  * while the row is hovered, and a click toggles it. While the run is stopped on it, a ring pulses
- * out of it (`.task-breakpoint-paused`, see StageNode.styles).
+ * out of it (see `PAUSED_GLOW`).
  *
  * Without `onToggle` it renders nothing until a breakpoint is set and never intercepts pointer
  * events — the display-only marker used at design time.
@@ -47,7 +55,7 @@ function TaskBreakpointDotInner({ active, taskId, paused, onToggle }: TaskBreakp
   );
 
   const stopPointerDown = useCallback((e: React.PointerEvent) => e.stopPropagation(), []);
-  const pulse = active && paused ? 'task-breakpoint-paused ' : '';
+  const pulse = active && paused ? `${PAUSED_GLOW} ` : '';
 
   if (!onToggle) {
     return active ? (
