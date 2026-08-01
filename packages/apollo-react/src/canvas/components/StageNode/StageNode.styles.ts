@@ -1,34 +1,7 @@
-import { css, keyframes } from '@emotion/react';
+import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Padding, Spacing } from '@uipath/apollo-core';
 import type { StageStatus } from './StageNode.types';
-
-/**
- * Ring that travels out of the breakpoint marker on the task the run is paused at (design
- * treatment 2b). The marker itself draws the eye, so the card around it stays static and a stage
- * full of tasks has exactly one thing moving.
- *
- * Geometry and timing are the design's (3px -> 11px, 55% -> 0 alpha, 1.8s ease-out); the colors are
- * tokens instead of its hardcoded hex. The inner 2px of canvas background rides along at every step
- * so the red never touches the dot and the dot keeps a crisp edge against the card.
- */
-const breakpointPausedPulse = keyframes`
-  0% {
-    box-shadow:
-      0 0 0 2px var(--canvas-background),
-      0 0 0 3px color-mix(in srgb, var(--canvas-error-icon) 55%, transparent);
-  }
-  70% {
-    box-shadow:
-      0 0 0 2px var(--canvas-background),
-      0 0 0 11px color-mix(in srgb, var(--canvas-error-icon) 0%, transparent);
-  }
-  100% {
-    box-shadow:
-      0 0 0 2px var(--canvas-background),
-      0 0 0 3px color-mix(in srgb, var(--canvas-error-icon) 0%, transparent);
-  }
-`;
 
 export const INDENTATION_WIDTH = 26;
 export const STAGE_CONTENT_PADDING_X = 14;
@@ -196,10 +169,6 @@ export const StageTask = styled.div<{
   .task-breakpoint-add {
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
-  }
-
-  .task-breakpoint-paused {
-    animation: ${breakpointPausedPulse} 1.8s ease-out infinite;
   }
 
   &:hover .task-breakpoint-add,
