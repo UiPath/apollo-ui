@@ -8,6 +8,11 @@ export interface TaskBreakpointDotProps {
   /** Task id, used for a stable test id. */
   taskId: string;
   /**
+   * Whether the run is currently stopped on this breakpoint. A set breakpoint is a static dot;
+   * the one execution is paused at pulses, so it can be found without reading the whole stage.
+   */
+  paused?: boolean;
+  /**
    * Adds or removes this task's breakpoint. Supplied only in the Debug view: there the marker
    * becomes a button, and an empty gutter offers a ghosted dot on hover. Omit it and the marker
    * stays display-only, as it is at design time — where a red dot on every hover would be noise
@@ -23,12 +28,13 @@ const DOT = 'absolute -top-1.5 -left-1.5 z-10 h-3.5 w-3.5 rounded-full bg-(--can
  *
  * Mirrors the Flow/BPMN canvas breakpoint (`ExecutionBreakpoint`): a 14px solid circle filled
  * with the canvas error-icon color, no border or shadow; an unset one ghosts in at 0.5 opacity
- * while the row is hovered, and a click toggles it.
+ * while the row is hovered, and a click toggles it. While the run is stopped on it, a ring pulses
+ * out of it (`.task-breakpoint-paused`, see StageNode.styles).
  *
  * Without `onToggle` it renders nothing until a breakpoint is set and never intercepts pointer
  * events — the display-only marker used at design time.
  */
-function TaskBreakpointDotInner({ active, taskId, onToggle }: TaskBreakpointDotProps) {
+function TaskBreakpointDotInner({ active, taskId, paused, onToggle }: TaskBreakpointDotProps) {
   const { _ } = useSafeLingui();
 
   const handleClick = useCallback(
@@ -41,12 +47,13 @@ function TaskBreakpointDotInner({ active, taskId, onToggle }: TaskBreakpointDotP
   );
 
   const stopPointerDown = useCallback((e: React.PointerEvent) => e.stopPropagation(), []);
+  const pulse = active && paused ? 'task-breakpoint-paused ' : '';
 
   if (!onToggle) {
     return active ? (
       <span
         data-testid={`stage-task-breakpoint-${taskId}`}
-        className={`pointer-events-none ${DOT}`}
+        className={`${pulse}pointer-events-none ${DOT}`}
       />
     ) : null;
   }
@@ -63,7 +70,7 @@ function TaskBreakpointDotInner({ active, taskId, onToggle }: TaskBreakpointDotP
           active ? `stage-task-breakpoint-${taskId}` : `stage-task-add-breakpoint-${taskId}`
         }
         aria-label={label}
-        className={active ? DOT : `task-breakpoint-add ${DOT}`}
+        className={active ? `${pulse}${DOT}` : `task-breakpoint-add ${DOT}`}
         onClick={handleClick}
         onPointerDown={stopPointerDown}
       />

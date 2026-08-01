@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '../../utils/testing';
 import type { ListItem } from '../Toolbox';
 import { StageNode } from './StageNode';
-import type { StageNodeProps, StageTaskItem } from './StageNode.types';
+import type { StageNodeProps, StageTaskItem, StageTaskStatus } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
 
 // Mock DndContext and related components
@@ -1387,5 +1387,41 @@ describe('StageNode - Breakpoints on adhoc and event-driven tasks', () => {
     });
 
     expect(screen.queryByTestId('stage-task-breakpoint-adhoc-1')).not.toBeInTheDocument();
+  });
+});
+
+// The marker only pulses on the breakpoint the run is stopped at, and only the marker moves —
+// asserted on the ad hoc path, which renders the real TaskBreakpointDot and StageTask.
+describe('StageNode - pulse on the paused breakpoint', () => {
+  const renderArmedAdhocTask = (status: StageTaskStatus) =>
+    renderStageNode({
+      stageDetails: {
+        label: 'Test Stage',
+        isReadOnly: true,
+        tasks: [[{ id: 'adhoc-1', label: 'Adhoc Task', isAdhoc: true }]],
+      },
+      execution: { stageStatus: {}, taskStatus: { 'adhoc-1': { status, breakpoint: true } } },
+    });
+
+  it('pulses the marker the run is paused on, so it can be found at a glance', () => {
+    renderArmedAdhocTask('Paused');
+
+    expect(getComputedStyle(screen.getByTestId('stage-task-breakpoint-adhoc-1')).animation).toMatch(
+      /1.8s ease-out infinite/
+    );
+  });
+
+  it('leaves a merely armed breakpoint static', () => {
+    renderArmedAdhocTask('InProgress');
+
+    expect(getComputedStyle(screen.getByTestId('stage-task-breakpoint-adhoc-1')).animation).toBe(
+      ''
+    );
+  });
+
+  it('never animates the task card — only the marker moves', () => {
+    renderArmedAdhocTask('Paused');
+
+    expect(getComputedStyle(screen.getByTestId('stage-task-adhoc-1')).animation).toBe('');
   });
 });

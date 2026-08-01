@@ -32,10 +32,36 @@ describe('TaskBreakpointDot', () => {
       expect(screen.queryByTestId('stage-task-add-breakpoint-t1')).not.toBeInTheDocument();
     });
 
-    it('is static: the marker never animates (matches Flow, which does not pulse)', () => {
-      const { container } = render(<TaskBreakpointDot taskId="t1" active={true} />);
+    it('is static while the breakpoint is only armed', () => {
+      render(<TaskBreakpointDot taskId="t1" active={true} />);
 
-      expect(container.querySelector('[class*="animate-"]')).not.toBeInTheDocument();
+      expect(screen.getByTestId('stage-task-breakpoint-t1')).not.toHaveClass(
+        'task-breakpoint-paused'
+      );
+    });
+  });
+
+  // The run stopping on a breakpoint is what makes its marker pulse — see the
+  // `.task-breakpoint-paused` keyframes in StageNode.styles.
+  describe('when the run is paused on it', () => {
+    it('pulses the marker', () => {
+      render(<TaskBreakpointDot taskId="t1" active={true} paused={true} />);
+
+      expect(screen.getByTestId('stage-task-breakpoint-t1')).toHaveClass('task-breakpoint-paused');
+    });
+
+    it('pulses the marker in the Debug view too, where it is a button', () => {
+      render(<TaskBreakpointDot taskId="t1" active={true} paused={true} onToggle={vi.fn()} />);
+
+      expect(screen.getByTestId('stage-task-breakpoint-t1')).toHaveClass('task-breakpoint-paused');
+    });
+
+    it('does not pulse the ghosted add affordance when no breakpoint is set', () => {
+      render(<TaskBreakpointDot taskId="t1" active={false} paused={true} onToggle={vi.fn()} />);
+
+      expect(screen.getByTestId('stage-task-add-breakpoint-t1')).not.toHaveClass(
+        'task-breakpoint-paused'
+      );
     });
   });
 
