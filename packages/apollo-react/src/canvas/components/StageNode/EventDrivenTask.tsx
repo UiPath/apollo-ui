@@ -58,6 +58,7 @@ const EventDrivenTaskItemComponent = ({
       <TaskBreakpointDot
         taskId={task.id}
         active={!!taskExecution?.breakpoint}
+        paused={taskExecution?.status === 'Paused'}
         onToggle={onToggleBreakpoint}
       />
       <TaskContent task={task} taskExecution={taskExecution} />

@@ -27,10 +27,12 @@ import type {
 //
 // A task carries a breakpoint when its `execution.taskStatus[id].breakpoint` is
 // true. The marker is a solid red dot at the top-left corner of the task card
-// (debugger-gutter style) and is display-only. Adding and removing breakpoints is
-// done through the task's right-click / task menu, whose items the consumer
+// (debugger-gutter style); it is static while armed and pulses a ring once the run
+// is stopped on it (`status: 'Paused'`). Adding and removing breakpoints is done
+// through the task's right-click / task menu, whose items the consumer
 // (PO.frontend) supplies via `getTaskContextMenuItems`; these stories wire that up
-// the same way.
+// the same way. In the read-only Debug view the dot is the control itself, via
+// `onTaskBreakpointToggle`.
 // ============================================================================
 
 const ProcessIcon = () => (
@@ -212,8 +214,8 @@ const BreakpointPlaygroundStory = ({
 
 // The full breakpoint lifecycle in one stage:
 // - "Classify Request": completed with a breakpoint -> solid dot (passed).
-// - "Review and Decide": the run is paused here on its breakpoint -> solid dot
-//   plus the card's amber Paused border and pause icon (the dot itself is static).
+// - "Review and Decide": the run is paused here on its breakpoint -> the dot pulses a ring, and
+//   the card carries the amber Paused border and pause icon. Only the dot moves.
 // - "Notify Outcome": no breakpoint.
 // Right-click any task to add / remove its breakpoint.
 export const Interactive: Story = {
