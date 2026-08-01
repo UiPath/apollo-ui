@@ -41,6 +41,7 @@ jobs:
           sparse-checkout: |
             packages
             web-packages
+            .github
           sparse-checkout-cone-mode: true
           fetch-depth: 1
           persist-credentials: false
@@ -115,77 +116,16 @@ jobs:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
         with:
           script: |
-            const marker = '<!-- support-branch-scope-check -->';
-            const pkg = process.env.PACKAGE;
-            const pkgDir = process.env.PKG_DIR;
-            const status = process.env.SCOPE_STATUS;
-            const outOfScope = (process.env.OUT_OF_SCOPE_FILES || '').trim();
-            const baseRef = process.env.BASE_REF;
-
-            let body = `${marker}\n`;
-            body += `## Support Branch Scope — \`${baseRef}\`\n\n`;
-            body += `> [!CAUTION]\n`;
-            body += `> This PR modifies files outside \`${pkgDir}/\`. Support branches should only contain changes scoped to their package.\n\n`;
-            body += `**Out-of-scope files:**\n`;
-            for (const f of outOfScope.split('\n').filter(Boolean)) {
-              body += `- \`${f}\`\n`;
-            }
-            body += `\n---\n\n`;
-
-            body += `### Need to update a workspace dependency (e.g. \`apollo-core\`)?\n\n`;
-            body += `This branch locks workspace deps to exact versions (e.g. \`5.9.0\` instead of \`workspace:*\`) `;
-            body += `and resolves them from the registry. `;
-            body += `Bumping the version in \`${pkgDir}/package.json\` and running \`pnpm install\` will fetch the new version.\n\n`;
-            body += `If your fix requires changes in a sibling package (e.g. \`apollo-core\`):\n\n`;
-            body += `1. **If the dependency is still on the same major on \`main\`** — land the fix on \`main\`, `;
-            body += `let it publish a new version, then bump the version in this branch's `;
-            body += `\`${pkgDir}/package.json\` and run \`pnpm install\` to update the lockfile.\n`;
-            body += `2. **If the dependency needs a support branch too** — cut a support branch for that package `;
-            body += `(e.g. \`support/apollo-core@5.x\`), publish the fix from there, then update the dependency version here.\n`;
-
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const existing = comments.find(c => c.body?.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+            const { postScopeComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/support-branch-scope-comment.mjs`);
+            await postScopeComment({ github, context });
 
       - name: Remove comment if scope is clean
         if: steps.scope.outputs.status != 'fail'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
-            const marker = '<!-- support-branch-scope-check -->';
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const existing = comments.find(c => c.body?.includes(marker));
-            if (existing) {
-              await github.rest.issues.deleteComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-              });
-            }
+            const { removeScopeComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/support-branch-scope-comment.mjs`);
+            await removeScopeComment({ github, context });
 
       - name: Fail if out of scope
         if: steps.scope.outputs.status == 'fail'

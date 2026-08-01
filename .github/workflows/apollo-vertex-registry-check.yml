@@ -61,19 +61,7 @@ jobs:
       - name: Generate matrix batches
         id: matrix
         run: |
-          MATRIX=$(node -e '
-            const registry = JSON.parse(require("fs").readFileSync("apps/apollo-vertex/registry.json", "utf-8"));
-            const names = registry.items.map(i => i.name);
-            const batchSize = 10;
-            const batches = [];
-            for (let i = 0; i < names.length; i += batchSize) {
-              batches.push({
-                batch_index: Math.floor(i / batchSize),
-                components: names.slice(i, i + batchSize).join(",")
-              });
-            }
-            console.log(JSON.stringify(batches));
-          ')
+          MATRIX=$(node .github/scripts/test-registry/generate-matrix-batches.mjs)
           echo "result=${MATRIX}" >> "${GITHUB_OUTPUT}"
 
       - name: Create base shadcn app

@@ -28,60 +28,19 @@ jobs:
       pull-requests: write
 
     steps:
+      # Comment scripts live in the repo, not inline (see .github/scripts/).
+      - name: Checkout scripts
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
       - name: Initialize PR comment
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
-            const identifier = '<!-- apollo-coded-app-preview-comment -->';
-            const timestamp = new Date().toLocaleString('en-US', {
-              timeZone: 'America/Los_Angeles',
-              year: 'numeric',
-              month: 'short',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-              hour12: true
-            });
-            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const deployingLink = `[Deploying...](${runUrl})`;
-            const logsLink = `[Logs](${runUrl})`;
-            const projects = ['apollo-design', 'apollo-docs', 'apollo-landing', 'apollo-vertex'];
-            const body = [
-              identifier,
-              'Apollo Coded App preview deployments are running.',
-              '',
-              '| Project | Status | Preview | Updated (PT) |',
-              '|---------|--------|---------|--------------|',
-              ...projects.map(project => `| ${project} | ${deployingLink} | ${logsLink} | ${timestamp} |`)
-            ].join('\n');
-
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              per_page: 100,
-            });
-            const existing = comments.find(comment =>
-              comment.body?.includes(identifier) &&
-              comment.user?.type === 'Bot' &&
-              ['github-actions[bot]', 'github-actions'].includes(comment.user?.login)
-            );
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+            const { initComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/preview-deploy/preview-comment.mjs`);
+            await initComment({ github, context });
 
   deploy:
     name: Deploy ${{ matrix.label }}
@@ -168,24 +127,7 @@ jobs:
           UIP_GO="${uip_go_prefix}/node_modules/.bin/uip-go"
 
           derive_app_url() {
-            APP_NAME="$1" node <<'NODE'
-          const baseUrl = process.env.UIPATH_BASE_URL || '';
-          const orgName = process.env.UIPATH_ORG_NAME || '';
-          const appName = process.env.APP_NAME || '';
-
-          let environment = '';
-          try {
-            const hostname = new URL(baseUrl).hostname;
-            let inferred = hostname.replace(/\.uipath\.com$/, '');
-            inferred = inferred.replace(/^api\./, '').replace(/\.api$/, '');
-            environment = inferred && inferred !== 'api' && inferred !== 'cloud' ? inferred : '';
-          } catch {
-            environment = '';
-          }
-
-          const suffix = environment ? `.${environment}` : '';
-          console.log(`https://${orgName}${suffix}.uipath.host/${appName}`);
-          NODE
+            APP_NAME="$1" node .github/scripts/preview-deploy/derive-app-url.mjs
           }
 
           # The platform-auth app (vertex) carries its client id in the recipe
@@ -281,6 +223,13 @@ jobs:
       pull-requests: write
 
     steps:
+      # Comment scripts live in the repo, not inline (see .github/scripts/).
+      - name: Checkout scripts
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
       - name: Download deploy results
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -293,83 +242,8 @@ jobs:
           RESULTS_DIR: ${{ runner.temp }}/results
         with:
           script: |
-            const fs = require('fs');
-            const path = require('path');
-
-            const identifier = '<!-- apollo-coded-app-preview-comment -->';
-            const projects = ['apollo-design', 'apollo-docs', 'apollo-landing', 'apollo-vertex'];
-            const resultsDir = process.env.RESULTS_DIR;
-            const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
-            const timestamp = new Date().toLocaleString('en-US', {
-              timeZone: 'America/Los_Angeles',
-              year: 'numeric',
-              month: 'short',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-              hour12: true
-            });
-
-            const readResult = (project) => {
-              const dir = path.join(resultsDir, `deploy-result-${project}`);
-              const read = (name) => {
-                try {
-                  return fs.readFileSync(path.join(dir, name), 'utf8').trim();
-                } catch {
-                  return '';
-                }
-              };
-              return { url: read('url'), outcome: read('outcome') || 'skipped' };
-            };
-
-            let anyFailed = false;
-            const rows = projects.map(project => {
-              const { url, outcome } = readResult(project);
-              const ready = outcome === 'success' && Boolean(url);
-              if (outcome === 'failure') anyFailed = true;
-              const status = ready ? 'Ready' : outcome === 'failure' ? 'Failed' : 'Skipped';
-              const preview = ready ? `[Preview](${url}) · ${logsLink}` : logsLink;
-              return `| ${project} | ${status} | ${preview} | ${timestamp} |`;
-            });
-
-            const body = [
-              identifier,
-              anyFailed
-                ? 'Apollo Coded App preview deployments finished with failures.'
-                : 'Apollo Coded App preview deployments are ready.',
-              '',
-              '| Project | Status | Preview | Updated (PT) |',
-              '|---------|--------|---------|--------------|',
-              ...rows
-            ].join('\n');
-
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              per_page: 100,
-            });
-            const existing = comments.find(comment =>
-              comment.body?.includes(identifier) &&
-              comment.user?.type === 'Bot' &&
-              ['github-actions[bot]', 'github-actions'].includes(comment.user?.login)
-            );
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+            const { updateComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/preview-deploy/preview-comment.mjs`);
+            await updateComment({ github, context });
 
   visual-diff:
     name: Storybook Visual Diff
@@ -422,25 +296,7 @@ jobs:
           fi
 
           # Same URL derivation as the deploy job, for the stable main app.
-          baseline_url="$(APP_NAME=apollo-design node <<'NODE'
-          const baseUrl = process.env.UIPATH_BASE_URL || '';
-          const orgName = process.env.UIPATH_ORG_NAME || '';
-          const appName = process.env.APP_NAME || '';
-
-          let environment = '';
-          try {
-            const hostname = new URL(baseUrl).hostname;
-            let inferred = hostname.replace(/\.uipath\.com$/, '');
-            inferred = inferred.replace(/^api\./, '').replace(/\.api$/, '');
-            environment = inferred && inferred !== 'api' && inferred !== 'cloud' ? inferred : '';
-          } catch {
-            environment = '';
-          }
-
-          const suffix = environment ? `.${environment}` : '';
-          console.log(`https://${orgName}${suffix}.uipath.host/${appName}`);
-          NODE
-          )"
+          baseline_url="$(APP_NAME=apollo-design node .github/scripts/preview-deploy/derive-app-url.mjs)"
 
           {
             echo "ready=true"
@@ -530,23 +386,7 @@ jobs:
             exit 1
           fi
           echo "report_dir=${report_dir}" >> "$GITHUB_OUTPUT"
-          # Single-quoted on purpose: the ${...} below are JS template
-          # literals, not shell expansions.
-          # shellcheck disable=SC2016
-          node -e '
-          const fs = require("fs");
-          const c = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).counts;
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, [
-            `total=${c.total}`,
-            `changed=${c.changed}`,
-            `added=${c.new}`,
-            `removed=${c.removed}`,
-            `errors=${c.error}`,
-            `passed=${c.pass}`,
-            `has_diffs=${c.diffs > 0}`,
-            "",
-          ].join("\n"));
-          ' "${report_dir}/summary.json"
+          node .github/scripts/preview-deploy/visual-diff-counts.mjs "${report_dir}/summary.json"
 
       - name: Deploy visual diff report
         if: steps.sbdiff.outputs.has_diffs == 'true'
@@ -617,71 +457,8 @@ jobs:
           REPORT_URL: ${{ steps.report.outputs.url }}
         with:
           script: |
-            const identifier = '<!-- apollo-visual-diff-comment -->';
-            const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
-            const timestamp = new Date().toLocaleString('en-US', {
-              timeZone: 'America/Los_Angeles',
-              year: 'numeric',
-              month: 'short',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-              hour12: true
-            });
-
-            const n = (v) => Number(v) || 0;
-            const lines = [identifier, '### Storybook visual diff', ''];
-            if (process.env.READY !== 'true') {
-              lines.push(`⏭️ Skipped: the apollo-design preview deployment did not succeed, so no comparison ran. ${logsLink}`);
-            } else if (process.env.SBDIFF_OUTCOME !== 'success') {
-              lines.push(`❌ The visual diff run failed before producing a result. ${logsLink}`);
-            } else if (process.env.NO_STORIES === 'true') {
-              lines.push(`✅ No stories are affected by this PR's changes; nothing to compare. ${logsLink}`);
-            } else if (process.env.HAS_DIFFS !== 'true') {
-              lines.push(`✅ No visual changes. ${n(process.env.TOTAL)} stories affected by this PR were compared against the deployed main Storybook. ${logsLink}`);
-            } else {
-              const parts = [];
-              if (n(process.env.CHANGED)) parts.push(`${n(process.env.CHANGED)} changed`);
-              if (n(process.env.ADDED)) parts.push(`${n(process.env.ADDED)} added`);
-              if (n(process.env.REMOVED)) parts.push(`${n(process.env.REMOVED)} removed`);
-              if (n(process.env.ERRORS)) parts.push(`${n(process.env.ERRORS)} errored`);
-              const report = process.env.REPORT_OUTCOME === 'success' && process.env.REPORT_URL
-                ? `[View report](${process.env.REPORT_URL})`
-                : `report deployment failed, see ${logsLink}`;
-              lines.push(`⚠️ Visual changes detected: ${parts.join(', ')} (of ${n(process.env.TOTAL)} compared, ${n(process.env.PASSED)} unchanged). ${report}`);
-              lines.push('');
-              lines.push(`Baseline is the deployed main Storybook, so changes merged to main after this branch was last updated can also appear here. ${logsLink}`);
-            }
-            lines.push('', `_Updated (PT): ${timestamp}_`);
-            const body = lines.join('\n');
-
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              per_page: 100,
-            });
-            const existing = comments.find(comment =>
-              comment.body?.includes(identifier) &&
-              comment.user?.type === 'Bot' &&
-              ['github-actions[bot]', 'github-actions'].includes(comment.user?.login)
-            );
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+            const { visualDiffComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/preview-deploy/visual-diff-comment.mjs`);
+            await visualDiffComment({ github, context });
 
   cleanup-previews:
     name: Cleanup Apollo Coded App Previews
