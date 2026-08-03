@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.32.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.0...@uipath/apollo-wind@2.32.1) (2026-08-03)
+
+### Bug Fixes
+
+* **apollo-wind:** include Sonner styles in CSS bundles ([db645d4](https://github.com/UiPath/apollo-ui/commit/db645d47bac03955a63647c9dd59c28f48df6e56))
+
 ## [@uipath/apollo-wind-v2.32.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.31.1...@uipath/apollo-wind@2.32.0) (2026-07-28)
 
 ### Features
