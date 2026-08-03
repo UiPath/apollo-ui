@@ -36,8 +36,8 @@ const PAUSED_GLOW = 'animate-glow [--glow-color:var(--canvas-error-icon)] [--glo
  *
  * Mirrors the Flow/BPMN canvas breakpoint (`ExecutionBreakpoint`): a 14px solid circle filled
  * with the canvas error-icon color, no border or shadow; an unset one ghosts in at 0.5 opacity
- * while the row is hovered, and a click toggles it. While the run is stopped on it, a ring pulses
- * out of it (see `PAUSED_GLOW`).
+ * while the row is hovered, and a click toggles it — with a pointer cursor, since it is the
+ * add/remove control. While the run is stopped on it, a ring pulses out of it (see `PAUSED_GLOW`).
  *
  * Without `onToggle` it renders nothing until a breakpoint is set and never intercepts pointer
  * events — the display-only marker used at design time.
@@ -78,7 +78,9 @@ function TaskBreakpointDotInner({ active, taskId, paused, onToggle }: TaskBreakp
           active ? `stage-task-breakpoint-${taskId}` : `stage-task-add-breakpoint-${taskId}`
         }
         aria-label={label}
-        className={active ? `${pulse}${DOT}` : `task-breakpoint-add ${DOT}`}
+        // `cursor-pointer` on both states: in the Debug view the marker is the add/remove control,
+        // and it sits on a card that otherwise shows the canvas grab cursor.
+        className={`${active ? pulse : 'task-breakpoint-add '}cursor-pointer ${DOT}`}
         onClick={handleClick}
         onPointerDown={stopPointerDown}
       />
