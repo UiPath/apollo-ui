@@ -106,7 +106,8 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
 
   const run = runs.find((r) => r.Id === runId);
   const test = run && tests.find((x) => x.Id === run.SolutionTestId);
-  const subjectId = test?.SubjectId ?? run?.SolutionTestId ?? "";
+  const subjectLabel =
+    test?.TestName ?? test?.SubjectId ?? run?.SolutionTestId ?? "";
 
   const { results, isLoading } = useRunResults(runId);
   const { jobs: baselines } = useBaselineJobs(run?.SolutionTestId ?? "");
@@ -194,7 +195,7 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
 
   return (
     <RunDetailsView
-      subjectId={subjectId}
+      subjectLabel={subjectLabel}
       run={run}
       results={results}
       isLoading={isLoading}

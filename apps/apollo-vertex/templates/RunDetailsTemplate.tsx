@@ -36,7 +36,7 @@ function RunDetailsTemplateContent() {
 
   const results = db.results.filter((res) => res.SolutionTestRunId === run.Id);
   const test = db.tests.find((tst) => tst.Id === run.SolutionTestId);
-  const subjectId = test?.SubjectId ?? run.SolutionTestId;
+  const subjectLabel = test?.TestName ?? test?.SubjectId ?? run.SolutionTestId;
 
   const baselineJobMap: BaselineJobMap = new Map(
     db.jobs
@@ -76,7 +76,7 @@ function RunDetailsTemplateContent() {
       >
         <div className="h-full">
           <RunDetailsView
-            subjectId={subjectId}
+            subjectLabel={subjectLabel}
             run={run}
             results={results}
             isLoading={false}

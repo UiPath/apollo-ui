@@ -47,7 +47,7 @@ export type BaselineJobMap = Map<
 >;
 
 export interface RunDetailsViewProps {
-  subjectId: string;
+  subjectLabel: string;
   run: SolutionTestRun;
   results: SolutionTestRunResult[];
   isLoading: boolean;
@@ -65,7 +65,7 @@ export interface RunDetailsViewProps {
 }
 
 export const RunDetailsView = ({
-  subjectId,
+  subjectLabel,
   run,
   results,
   isLoading,
@@ -83,9 +83,9 @@ export const RunDetailsView = ({
 }: RunDetailsViewProps) => {
   const { t } = useTranslation();
 
-  // subjectId carries the test's display label (e.g. "Loan LOAN-…"), so the
-  // title reads "Loan LOAN-… Run Results".
-  const title = t("subject_run_results", { subject: subjectId });
+  // subjectLabel is the test's display name (falling back to its subject id),
+  // so the title reads e.g. "Acme Term Loan Run Results".
+  const title = t("subject_run_results", { subject: subjectLabel });
 
   const selectedResult = results.find((r) => r.Id === selectedResultId);
 
