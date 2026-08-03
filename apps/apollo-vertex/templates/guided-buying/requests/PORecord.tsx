@@ -3,12 +3,20 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getPoDetail } from "./data";
+import { getPoDetail, getRequestRow } from "./data";
+
+// The only PO seeded so far belongs to REQ-2052 — a real lookup once more
+// than one PO exists, rather than a hardcoded id.
+const PO_TO_REQUEST: Record<string, string> = {
+  "PO-88421": "REQ-2052",
+};
 
 export function PORecord() {
   const { id } = useParams({ from: "/po/$id" });
   const navigate = useNavigate();
   const detail = getPoDetail(id);
+  const requestId = PO_TO_REQUEST[id];
+  const requestRow = requestId != null ? getRequestRow(requestId) : undefined;
 
   if (!detail) {
     return (
@@ -39,19 +47,26 @@ export function PORecord() {
         >
           {/* ── Breadcrumb ────────────────────────────────────────────── */}
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                void navigate({ to: "/close/$id", params: { id: "REQ-2052" } })
-              }
-              className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <ArrowLeft className="size-3.5" aria-hidden />
-              Delivery
-            </button>
-            <span className="text-muted-foreground/40" aria-hidden>
-              /
-            </span>
+            {requestId != null && (
+              <button
+                type="button"
+                onClick={() =>
+                  void navigate({
+                    to: "/requests/$id",
+                    params: { id: requestId },
+                  })
+                }
+                className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ArrowLeft className="size-3.5" aria-hidden />
+                {requestRow?.request ?? requestId}
+              </button>
+            )}
+            {requestId != null && (
+              <span className="text-muted-foreground/40" aria-hidden>
+                /
+              </span>
+            )}
             <h1 className="text-sm font-semibold text-foreground">
               {detail.poNumber}
             </h1>

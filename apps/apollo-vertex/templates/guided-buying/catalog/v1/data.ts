@@ -16,6 +16,12 @@ export const SAMPLE_REQUEST: BuyRequest = {
   agentNote: "Found 12 catalog matches · applied EPP pricing · in-stock only.",
 };
 
+/** The catalog fork's starter chip — also the default scenario used to seed
+ * a deep-linked Bridge/Selection/Review/Done phase directly, since none of
+ * those routes have a real backend to recover a specific in-progress
+ * request from. */
+export const CATALOG_STARTER = "15 laptops for Fusion Event contractors";
+
 /** Quantity inferred from the request ("15 laptops for Fusion Event contractors"). */
 export const INFERRED_REQUEST_QUANTITY = 15;
 

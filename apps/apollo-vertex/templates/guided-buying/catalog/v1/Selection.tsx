@@ -177,11 +177,10 @@ export function Selection({
   );
 
   // Show (and auto-dismiss) the cart confirmation; hovering pauses the timer.
+  // Same fixed-EPP reasoning as the cart pill/drawer above — this states
+  // what was actually just added to the cart, not a browse-time comparison.
   const notifyAdded = (item: CatalogItem, qty: number) => {
-    const amount = formatPrice(
-      activePrice(item, filters.priceBasis) * qty,
-      item.currency,
-    );
+    const amount = formatPrice(activePrice(item, "epp") * qty, item.currency);
     setAdded({ name: item.name, qty, amount });
     if (addedTimer.current) clearTimeout(addedTimer.current);
     addedTimer.current = setTimeout(() => setAdded(null), 3000);
@@ -289,9 +288,12 @@ export function Selection({
     filters.priceBasis,
   );
 
+  // Fixed EPP, not filters.priceBasis: that's the grid's own list/EPP
+  // comparison toggle for browsing, not what the cart actually charges (see
+  // CartDrawer's own fix for the same bug) — otherwise this pill shows a
+  // different total than the drawer it opens.
   const subtotal = CATALOG_ITEMS.reduce(
-    (sum, item) =>
-      sum + activePrice(item, filters.priceBasis) * (quantities[item.id] ?? 0),
+    (sum, item) => sum + activePrice(item, "epp") * (quantities[item.id] ?? 0),
     0,
   );
   const compareItems = CATALOG_ITEMS.filter((item) =>

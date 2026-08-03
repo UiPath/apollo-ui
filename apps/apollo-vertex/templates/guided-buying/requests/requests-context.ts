@@ -11,6 +11,15 @@ export interface RequestNote {
   time: string;
 }
 
+/** The requester's confirmation that goods arrived, by request id. */
+export interface ReceiptRecord {
+  qtyOrdered: number;
+  qtyReceived: number;
+  damaged: boolean;
+  note?: string;
+  confirmedAt: string;
+}
+
 export interface RequestsContextValue {
   /** Which request detail to open on landing in My Requests (deep-link). */
   openRequestId: string | null;
@@ -25,6 +34,12 @@ export interface RequestsContextValue {
   /** Requests submitted during this session (e.g. via the catalog flow). */
   submittedRows: RequestRow[];
   submitRequest: (row: RequestRow) => void;
+  /** Delivery receipts confirmed during this session, by request id. */
+  receipts: Record<string, ReceiptRecord>;
+  confirmReceipt: (
+    requestId: string,
+    record: Omit<ReceiptRecord, "confirmedAt">,
+  ) => void;
 }
 
 export const RequestsContext = createContext<RequestsContextValue | null>(null);

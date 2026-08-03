@@ -2,11 +2,12 @@
 
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Info, Pencil } from "lucide-react";
+import { Info, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { AddItemsDrawer } from "./AddItemsDrawer";
 import { useAssistantThread } from "./assistant-thread-context";
 import { BuyScaffold } from "./BuyScaffold";
 import { CartLine } from "./CartLine";
@@ -17,8 +18,11 @@ import {
   APPROVAL_LIMIT,
   activePrice,
   activeSavings,
+  CATALOG_ITEMS,
+  defaultQuantityFor,
   displayRequestTitle,
   formatPrice,
+  RECOMMENDATION,
 } from "./data";
 import { FlowFooterBar } from "./FlowFooter";
 import { CATALOG_PHASES, FlowPhaseBar } from "./FlowPhaseBar";
@@ -61,11 +65,34 @@ function fadeUpVariants(reduceMotion: boolean | null) {
 export function Review() {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
-  const { items, quantities, setOpen } = useCart();
-  const { requestTitle, requestDetails, hasResolved } = useConversation();
+  const { items, quantities, setQuantity, remove } = useCart();
+  const {
+    requestTitle,
+    requestDetails,
+    hasResolved,
+    seedPhase,
+    setRequestDetails,
+  } = useConversation();
   const [shelfDockOpen, setShelfDockOpen] = useState(false);
+  const [addItemsOpen, setAddItemsOpen] = useState(false);
   const { ref: contentRef, overflowing } = useContentOverflow<HTMLDivElement>();
   const { addStepEntry } = useAssistantThread();
+
+  // /review has no route of its own to recover an in-progress request from —
+  // an empty cart means this was reached directly (a deep link or a reload),
+  // not by walking the flow. Seed the canonical catalog scenario so the page
+  // still shows something real instead of an empty order summary.
+  useEffect(() => {
+    if (items.length > 0) return;
+    const item = CATALOG_ITEMS.find((i) => i.id === RECOMMENDATION.itemId);
+    if (item) setQuantity(item, defaultQuantityFor(item));
+    seedPhase("selection");
+    setRequestDetails({
+      approver: DEFAULT_APPROVER,
+      costCenter: DEFAULT_COST_CENTER,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // reload-only seed — never re-fires as the user empties the cart
 
   const approver = requestDetails?.approver ?? DEFAULT_APPROVER;
   const costCenter = requestDetails?.costCenter ?? DEFAULT_COST_CENTER;
@@ -100,11 +127,6 @@ export function Review() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.length, needsApproval, savings, approver]);
 
-  const editCart = () => {
-    setOpen(true);
-    void navigate({ to: "/catalog" });
-  };
-
   // Review is reached from two different shelves — the guided /buy flow's
   // matches, or the standalone /catalog page's cart drawer. Back returns to
   // whichever one it actually was, not a hardcoded destination. `from` isn't
@@ -117,20 +139,6 @@ export function Review() {
     cameFromCatalog
       ? void navigate({ to: "/catalog" })
       : void navigate({ to: "/buy", state: { fromReview: true } });
-
-  if (items.length === 0) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-        <p className="text-sm text-muted-foreground">Your cart is empty.</p>
-        <Button
-          variant="outline"
-          onClick={() => void navigate({ to: "/catalog" })}
-        >
-          Back to catalog
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <motion.div
@@ -196,36 +204,65 @@ export function Review() {
                   variants={fadeUpVariants(reduceMotion)}
                   className={cn(...GLASS_CLASSES, "p-4")}
                 >
-                  <div className="mb-1 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-foreground">
-                      Order summary
-                    </h2>
-                    <Button variant="ghost" size="sm" onClick={editCart}>
-                      <Pencil className="size-4" />
-                      Edit cart
-                    </Button>
-                  </div>
-                  <div>
-                    {items.map((item) => (
-                      <CartLine
-                        key={item.id}
-                        item={item}
-                        quantity={quantities[item.id] ?? 1}
-                        basis={BASIS}
-                        readOnly
-                      />
-                    ))}
-                  </div>
-                  <div className="mt-4 border-t pt-4">
-                    <CartSummary
-                      items={items}
-                      quantities={quantities}
-                      basis={BASIS}
-                      totalLabel="Total"
-                      showItemCount={false}
-                      showSubtotal
-                    />
-                  </div>
+                  <h2 className="mb-1 text-sm font-semibold text-foreground">
+                    Order summary
+                  </h2>
+                  {items.length > 0 ? (
+                    <>
+                      <div>
+                        {items.map((item) => (
+                          <CartLine
+                            key={item.id}
+                            item={item}
+                            quantity={quantities[item.id] ?? 1}
+                            basis={BASIS}
+                            onQtyChange={(quantity) =>
+                              setQuantity(item, quantity)
+                            }
+                            onRemove={() => remove(item)}
+                          />
+                        ))}
+                      </div>
+                      <div className="mt-3">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 text-primary hover:bg-transparent hover:text-primary"
+                          onClick={() => setAddItemsOpen(true)}
+                        >
+                          <Plus className="size-3.5" aria-hidden />
+                          Add items from the catalog
+                        </Button>
+                      </div>
+                      <div className="mt-4 border-t pt-4">
+                        <CartSummary
+                          items={items}
+                          quantities={quantities}
+                          basis={BASIS}
+                          totalLabel="Total"
+                          showItemCount={false}
+                          showSubtotal
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    // Emptying the cart stays on this page — no bounce to a
+                    // different empty-state screen. Submit disables below;
+                    // the add link is the one way forward from here.
+                    <div className="space-y-3 py-2 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        No items in this request.
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setAddItemsOpen(true)}
+                      >
+                        <Plus className="size-3.5" aria-hidden />
+                        Add items from the catalog
+                      </Button>
+                    </div>
+                  )}
                 </motion.section>
 
                 {/* Delivery + approval — same card treatment as Order summary. */}
@@ -233,16 +270,18 @@ export function Review() {
                   variants={fadeUpVariants(reduceMotion)}
                   className={cn(...GLASS_CLASSES, "space-y-3 p-4 text-sm")}
                 >
-                  <div>
-                    <p className="text-xs text-muted-foreground">Delivery</p>
-                    <p className="text-foreground">
-                      {items[0].source},{" "}
-                      {items[0].inStock
-                        ? "ships in 2 to 3 business days"
-                        : "backordered, 3 to 4 weeks"}
-                      . EPP validated today.
-                    </p>
-                  </div>
+                  {items.length > 0 && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Delivery</p>
+                      <p className="text-foreground">
+                        {items[0].source},{" "}
+                        {items[0].inStock
+                          ? "ships in 2 to 3 business days"
+                          : "backordered, 3 to 4 weeks"}
+                        . EPP validated today.
+                      </p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-xs text-muted-foreground">Approval</p>
                     <p className="text-foreground">
@@ -269,13 +308,18 @@ export function Review() {
               </Button>
             }
             right={
-              <Button onClick={() => void navigate({ to: "/track" })}>
+              <Button
+                disabled={items.length === 0}
+                onClick={() => void navigate({ to: "/track" })}
+              >
                 Submit request
               </Button>
             }
           />
         </div>
       </div>
+
+      <AddItemsDrawer open={addItemsOpen} onOpenChange={setAddItemsOpen} />
     </motion.div>
   );
 }

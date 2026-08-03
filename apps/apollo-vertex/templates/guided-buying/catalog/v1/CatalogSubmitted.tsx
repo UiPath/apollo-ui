@@ -1,17 +1,13 @@
 "use client";
 
 import { useNavigate } from "@tanstack/react-router";
-import {
-  AnimatePresence,
-  motion,
-  useAnimation,
-  useReducedMotion,
-} from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Clock, Info } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { ConfirmCheck } from "../../ConfirmCheck";
 import { JourneyBar } from "../../JourneyBar";
 import { formatDateDisplay, getRequestDetail } from "../../requests/data";
 import { useRequests } from "../../requests/requests-context";
@@ -22,8 +18,11 @@ import { useConversation } from "./conversation-context";
 import {
   activePrice,
   activeSavings,
+  CATALOG_ITEMS,
+  defaultQuantityFor,
   displayRequestTitle,
   formatPrice,
+  RECOMMENDATION,
 } from "./data";
 import { FlowFooterBar } from "./FlowFooter";
 import { CATALOG_PHASES, FlowPhaseBar } from "./FlowPhaseBar";
@@ -63,69 +62,6 @@ function fadeUpVariants(reduceMotion: boolean | null) {
 }
 
 /**
- * The success cue: a ring pulses out from the circle as it scales in with a
- * slight overshoot, then the check mark draws in (stroke-dashoffset via
- * `pathLength`, not a fade). Runs once via imperative controls in a
- * mount-only effect — re-renders (tier toggle, cart updates) never replay it.
- */
-function ConfirmCheck({ reduceMotion }: { reduceMotion: boolean | null }) {
-  const ring = useAnimation();
-  const circle = useAnimation();
-  const check = useAnimation();
-
-  useEffect(() => {
-    if (reduceMotion) {
-      ring.set({ opacity: 0 });
-      circle.set({ scale: 1 });
-      check.set({ pathLength: 1 });
-      return;
-    }
-    ring.start({
-      scale: [1, 1.7],
-      opacity: [0.55, 0],
-      transition: { duration: 0.6, delay: 0.1, ease: "easeOut" },
-    });
-    circle.start({
-      scale: [0, 1.15, 1],
-      transition: { duration: 0.5, ease: EASE },
-    });
-    check.start({
-      pathLength: 1,
-      transition: { duration: 0.4, delay: 0.26, ease: EASE },
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // play once, on mount only — not on re-render
-
-  return (
-    <div className="relative mx-auto flex size-10 items-center justify-center">
-      <motion.span
-        className="absolute inset-0 rounded-full bg-(--primary)"
-        initial={{ opacity: 0 }}
-        animate={ring}
-        aria-hidden
-      />
-      <motion.span
-        className="relative flex size-10 items-center justify-center rounded-full bg-(--primary) text-white"
-        initial={{ scale: 0 }}
-        animate={circle}
-      >
-        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" aria-hidden>
-          <motion.path
-            d="M20 6 9 17l-5-5"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            initial={{ pathLength: 0 }}
-            animate={check}
-          />
-        </svg>
-      </motion.span>
-    </div>
-  );
-}
-
-/**
  * The catalog submission finish line (the `/track` destination). Twin of the
  * Configure success screen: an outcome headline, an agent line naming where the
  * request went and what's next, a quiet recap (from the cart + Bridge envelope),
@@ -135,9 +71,16 @@ function ConfirmCheck({ reduceMotion }: { reduceMotion: boolean | null }) {
 export function CatalogSubmitted() {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
-  const { items, quantities, clear } = useCart();
-  const { requestText, requestTitle, requestDetails, hasResolved, startFresh } =
-    useConversation();
+  const { items, quantities, clear, setQuantity } = useCart();
+  const {
+    requestText,
+    requestTitle,
+    requestDetails,
+    hasResolved,
+    startFresh,
+    seedPhase,
+    setRequestDetails,
+  } = useConversation();
   const { submitRequest } = useRequests();
   const { addStepEntry } = useAssistantThread();
   const { ref: contentRef, overflowing } = useContentOverflow<HTMLDivElement>();
@@ -155,6 +98,23 @@ export function CatalogSubmitted() {
     (sum, i) => sum + activeSavings(i, BASIS) * (quantities[i.id] ?? 0),
     0,
   );
+
+  // /track has no route of its own to recover an in-progress request from —
+  // an empty cart means this was reached directly (a deep link or a
+  // reload), not by submitting through the flow. Seed the canonical catalog
+  // scenario so the page still shows a real recap instead of an empty one;
+  // the submission effect below picks it up once the cart update lands.
+  useEffect(() => {
+    if (items.length > 0) return;
+    const item = CATALOG_ITEMS.find((i) => i.id === RECOMMENDATION.itemId);
+    if (item) setQuantity(item, defaultQuantityFor(item));
+    seedPhase("selection");
+    setRequestDetails({
+      approver: DEFAULT_APPROVER,
+      costCenter: DEFAULT_COST_CENTER,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // reload-only seed — never re-fires as the cart empties on exit
 
   // Register this submission in the shared requests log (idempotent via provider).
   const hasSubmitted = useRef(false);
@@ -191,7 +151,7 @@ export function CatalogSubmitted() {
       "You'll be notified when it's decided.",
     ]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // fire once on mount
+  }, [items.length]); // re-checked once the seed effect's cart update lands
 
   // The request is submitted — leaving empties the cart for the next one.
   const backToBuy = () => {
