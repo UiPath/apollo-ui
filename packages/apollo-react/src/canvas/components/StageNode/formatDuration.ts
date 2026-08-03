@@ -15,10 +15,20 @@ const UNITS = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'
  * locale. (Formatting first and trimming the string back does not: "2 hr, 59 min" and
  * "2 Std., 59 Min." share no unit spelling.) The conversion and wording are luxon's.
  *
+ * `unitDisplay` defaults to `narrow` ("1h, 2m, 3s"). A canvas node has no width to spend on
+ * "1 hr, 2 min, 3 sec", and narrow is the wording these surfaces have always shipped. Pass `short`
+ * or `long` for a roomier surface. Note that luxon's narrow forms collide for months and minutes —
+ * both render as "m" — which is inherent to the locale data, not something this can disambiguate.
+ *
  * Returns `''` for a non-positive, non-finite, or sub-second duration — callers skip rendering
  * rather than show "0 sec".
  */
-export function formatDurationMs(ms: number, locale = 'en', maxUnits = 3): string {
+export function formatDurationMs(
+  ms: number,
+  locale = 'en',
+  maxUnits = 3,
+  unitDisplay: 'narrow' | 'short' | 'long' = 'narrow'
+): string {
   if (!Number.isFinite(ms) || ms <= 0 || maxUnits < 1) {
     return '';
   }
@@ -29,9 +39,9 @@ export function formatDurationMs(ms: number, locale = 'en', maxUnits = 3): strin
   const largest: Record<string, number> = {};
 
   for (const unit of UNITS) {
-    // Seconds come back fractional; a partial unit is never worth a decimal here.
-    const value = Math.floor(parts[unit] ?? 0);
-    if (value <= 0) {
+    const value = parts[unit] ?? 0;
+    // Below one whole unit does not earn a part of its own at this size.
+    if (value < 1) {
       continue;
     }
     largest[unit] = value;
@@ -40,9 +50,20 @@ export function formatDurationMs(ms: number, locale = 'en', maxUnits = 3): strin
     }
   }
 
-  if (Object.keys(largest).length === 0) {
+  const kept = Object.keys(largest);
+  if (kept.length === 0) {
     return '';
   }
 
-  return Duration.fromObject(largest).reconfigure({ locale }).toHuman({ unitDisplay: 'short' });
+  // `shiftTo` leaves a fraction on the smallest unit only, and that is exactly the unit truncation
+  // keeps last — so round it rather than floor it. 12.669s reads as "13s", which is what these
+  // surfaces rendered before this helper existed; flooring silently shortened every duration with
+  // a fractional tail. The larger units are already whole.
+  const smallest = kept[kept.length - 1] as string;
+  largest[smallest] = Math.round(largest[smallest] as number);
+  for (const unit of kept.slice(0, -1)) {
+    largest[unit] = Math.floor(largest[unit] as number);
+  }
+
+  return Duration.fromObject(largest).reconfigure({ locale }).toHuman({ unitDisplay });
 }

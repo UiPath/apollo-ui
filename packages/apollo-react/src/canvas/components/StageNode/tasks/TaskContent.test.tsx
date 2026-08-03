@@ -254,8 +254,9 @@ describe('TaskContent - duration tooltip', () => {
       },
     });
 
-    expect(screen.getByText('2 days, 3 hr, 4 min')).toBeInTheDocument();
-    expect(screen.queryByText(/sec/)).not.toBeInTheDocument();
+    expect(screen.getByText('2d, 3h, 4m')).toBeInTheDocument();
+    // Narrow renders seconds as "s", so assert the dropped value itself rather than "sec".
+    expect(screen.queryByText(/5s/)).not.toBeInTheDocument();
   });
 
   it('renders a legacy pre-formatted duration verbatim', () => {

@@ -87,6 +87,12 @@ export interface StageNodeBaseProps {
       /** How long the stage has run, in milliseconds. Rendered as its 3 largest units. */
       durationMs?: number;
       /**
+       * Optional localised label rendered in front of the duration, e.g. `"Duration:"` giving
+       * `"Duration: 1h, 2m"`. Supply it already translated and carrying its own punctuation —
+       * Apollo only places it, since the wording belongs to the consumer's catalogues.
+       */
+      durationLabel?: string;
+      /**
        * @deprecated Pass `durationMs` instead and let Apollo format it. A pre-formatted string
        * is rendered verbatim, so it cannot be shortened to the largest units in a way that
        * holds across locales.
