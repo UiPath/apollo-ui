@@ -5,11 +5,9 @@ import { memo } from 'react';
 import { ChecklistIcon } from '../../../icons';
 import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
 import { CanvasIcon } from '../../utils/icon-registry';
-import { useSafeLingui } from '../../../i18n';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { getExecutionStatusColor } from '../ExecutionStatusIcon/ExecutionStatusIcon';
-import { formatDurationMs } from './formatDuration';
 import { StageChip, StageHeader } from './StageNode.styles';
 import type { StageNodeProps, StageSlaIcon, StageStatus } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
@@ -129,7 +127,6 @@ const StageNodeHeaderInner = ({
   handleTaskAddClick: (event: React.MouseEvent) => void;
 }) => {
   const labels = useStageNodeLabels();
-  const { locale } = useSafeLingui();
   const getStatusName = useExecutionStatusLabel();
   const {
     id,
@@ -146,13 +143,7 @@ const StageNodeHeaderInner = ({
 
   const icon = stageDetails?.icon;
   const statusLabel = execution?.stageStatus?.label;
-  // `durationMs` wins: only the number can be shortened to its largest units. A legacy
-  // pre-formatted string is rendered as the consumer supplied it.
-  const stageDurationMs = execution?.stageStatus?.durationMs;
-  const stageDuration =
-    stageDurationMs !== undefined
-      ? formatDurationMs(stageDurationMs, locale)
-      : execution?.stageStatus?.duration;
+  const stageDuration = execution?.stageStatus?.duration;
   const slaText = execution?.stageStatus?.slaText;
   const slaIcon = execution?.stageStatus?.slaIcon;
   const slaIndicator = slaIcon ? SLA_ICON_CONFIG[slaIcon] : undefined;

@@ -84,12 +84,10 @@ export interface StageNodeBaseProps {
     stageStatus: {
       status?: StageStatus;
       label?: string;
-      /** How long the stage has run, in milliseconds. Rendered as its 3 largest units. */
-      durationMs?: number;
       /**
-       * @deprecated Pass `durationMs` instead and let Apollo format it. A pre-formatted string
-       * is rendered verbatim, so it cannot be shortened to the largest units in a way that
-       * holds across locales.
+       * How long the stage has run, pre-formatted by the consumer and rendered verbatim (e.g.
+       * `"Duration: 1h, 2m"`). Formatting stays with the consumer: the wording, unit style and any
+       * surrounding label are app copy that has to come from the app's own translations.
        */
       duration?: string;
       slaText?: string;
@@ -146,12 +144,9 @@ export interface StageTaskExecution {
   status?: StageTaskStatus;
   message?: string;
   label?: string;
-  /** How long the task has run, in milliseconds. Rendered as its 3 largest units. */
-  durationMs?: number;
   /**
-   * @deprecated Pass `durationMs` instead and let Apollo format it. A pre-formatted string is
-   * rendered verbatim, so it cannot be shortened to the largest units in a way that holds
-   * across locales.
+   * How long the task has run, pre-formatted by the consumer and rendered verbatim (e.g. `"13s"`).
+   * Formatting stays with the consumer — see `stageStatus.duration`.
    */
   duration?: string;
   /** Tooltip text shown on hover over the duration text (e.g. a wait-for-timer countdown). */

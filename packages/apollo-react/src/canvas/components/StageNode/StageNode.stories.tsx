@@ -900,9 +900,11 @@ export const ExecutionModeWithSla: Story = {
   },
 };
 
-/** 6 months, 2 weeks, 2 days, 2 hours, 59 minutes, 36 seconds. */
-const LONG_RUN_MS =
-  6 * 30 * 86400000 + 2 * 7 * 86400000 + 2 * 86400000 + 2 * 3600000 + 59 * 60000 + 36000;
+/**
+ * 6 months, 2 weeks, 2 days, 2 hours, 59 minutes, 36 seconds — already trimmed to its 3 largest
+ * units and formatted, the way a consumer supplies it. Apollo renders the string as given.
+ */
+const LONG_RUN = '6m, 2w, 2d';
 
 export const MaximumTaskAdornments: Story = {
   name: 'Execution Mode - Maximum Task Adornments',
@@ -933,14 +935,13 @@ export const MaximumTaskAdornments: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              // Half a year down to the second — only the 3 largest units are rendered.
-              durationMs: LONG_RUN_MS,
+              duration: LONG_RUN,
             },
             taskStatus: {
               'long-running-task': {
                 status: 'InProgress',
                 breakpoint: true,
-                durationMs: LONG_RUN_MS,
+                duration: LONG_RUN,
                 durationTooltip: 'Started just over 6 months ago',
                 retryCount: 98,
                 retryDuration: '5m, 4w, 3d, 2h, 1m',
