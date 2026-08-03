@@ -47,6 +47,19 @@ describe('formatDurationMs', () => {
     expect(formatDurationMs(10 * DAY)).toBe('1w, 3d');
   });
 
+  it('rounds the smallest kept unit instead of flooring it', () => {
+    // The unit truncation keeps last is the one carrying the fraction, so it has to round:
+    // flooring silently shortened every duration with a fractional tail.
+    expect(formatDurationMs(12_669)).toBe('13s');
+  });
+
+  it('rounds that unit in place, so a rounded-up value does not carry', () => {
+    // 59.6s becomes "60s" rather than "1m". Deliberate: this matches what consumers have always
+    // rendered, and rounding the total instead would carry across units and change durations that
+    // are not ambiguous at all (2h 59m 36s would collapse from "2h, 59m" to "3h").
+    expect(formatDurationMs(2 * HOUR + 59.6 * SECOND)).toBe('2h, 60s');
+  });
+
   it('drops sub-second precision instead of rendering a zero', () => {
     expect(formatDurationMs(1 * MINUTE + 30 * SECOND + 400)).toBe('1m, 30s');
     expect(formatDurationMs(400)).toBe('');
