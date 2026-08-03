@@ -11,22 +11,22 @@ describe('formatDurationMs', () => {
     // 2 days, 3 hr, 4 min, 5 sec -> the seconds are dropped.
     const ms = 2 * DAY + 3 * HOUR + 4 * MINUTE + 5 * SECOND;
 
-    expect(formatDurationMs(ms)).toBe('2 days, 3 hr, 4 min');
+    expect(formatDurationMs(ms)).toBe('2d, 3h, 4m');
   });
 
   it('leaves durations with fewer than three units alone', () => {
-    expect(formatDurationMs(2 * HOUR + 15 * MINUTE)).toBe('2 hr, 15 min');
+    expect(formatDurationMs(2 * HOUR + 15 * MINUTE)).toBe('2h, 15m');
   });
 
   it('skips units that are zero rather than padding to three', () => {
     // No hours between the days and the minutes.
-    expect(formatDurationMs(2 * DAY + 4 * MINUTE)).toBe('2 days, 4 min');
+    expect(formatDurationMs(2 * DAY + 4 * MINUTE)).toBe('2d, 4m');
   });
 
   it('honours a custom unit count', () => {
     const ms = 2 * DAY + 3 * HOUR + 4 * MINUTE;
 
-    expect(formatDurationMs(ms, 'en', 1)).toBe('2 days');
+    expect(formatDurationMs(ms, 'en', 1)).toBe('2d');
   });
 
   it('keeps the cap in other locales (de, ja)', () => {
@@ -34,19 +34,21 @@ describe('formatDurationMs', () => {
     // spellings that happened to look like "2h 3m".
     const ms = 2 * DAY + 3 * HOUR + 4 * MINUTE + 5 * SECOND;
 
-    expect(formatDurationMs(ms, 'de')).toBe('2 Tg., 3 Std. und 4 Min.');
-    expect(formatDurationMs(ms, 'ja')).toBe('2 日、3 時間、4 分');
+    expect(formatDurationMs(ms, 'de')).toBe('2 T, 3h und 4 Min.');
+    // Narrow keeps Latin abbreviations in ja and only localises the separator. That is CLDR's
+    // narrow data, not a bug here — but it is thinner than the "2時間 1分" a consumer can hand-roll,
+    // so pass `short` for surfaces where ja readability matters more than width.
+    expect(formatDurationMs(ms, 'ja')).toBe('2d、3h、4m');
+    expect(formatDurationMs(ms, 'ja', 3, 'short')).toBe('2 日、3 時間、4 分');
   });
 
   it('caps long durations that would otherwise run to six units', () => {
-    expect(formatDurationMs(196 * DAY + 2 * HOUR + 59 * MINUTE + 36 * SECOND)).toBe(
-      '7 mths, 2 hr, 59 min'
-    );
-    expect(formatDurationMs(10 * DAY)).toBe('1 wk, 3 days');
+    expect(formatDurationMs(196 * DAY + 2 * HOUR + 59 * MINUTE + 36 * SECOND)).toBe('7m, 2h, 59m');
+    expect(formatDurationMs(10 * DAY)).toBe('1w, 3d');
   });
 
   it('drops sub-second precision instead of rendering a zero', () => {
-    expect(formatDurationMs(1 * MINUTE + 30 * SECOND + 400)).toBe('1 min, 30 sec');
+    expect(formatDurationMs(1 * MINUTE + 30 * SECOND + 400)).toBe('1m, 30s');
     expect(formatDurationMs(400)).toBe('');
   });
 

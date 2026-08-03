@@ -149,10 +149,17 @@ const StageNodeHeaderInner = ({
   // `durationMs` wins: only the number can be shortened to its largest units. A legacy
   // pre-formatted string is rendered as the consumer supplied it.
   const stageDurationMs = execution?.stageStatus?.durationMs;
-  const stageDuration =
+  const formattedStageDuration =
     stageDurationMs !== undefined
       ? formatDurationMs(stageDurationMs, locale)
       : execution?.stageStatus?.duration;
+  // The label is the consumer's word, already localised — Apollo only decides that it sits in front
+  // of the value. Joined with a plain space so the label carries its own punctuation ("Duration:").
+  const stageDurationLabel = execution?.stageStatus?.durationLabel;
+  const stageDuration =
+    formattedStageDuration && stageDurationLabel
+      ? `${stageDurationLabel} ${formattedStageDuration}`
+      : formattedStageDuration;
   const slaText = execution?.stageStatus?.slaText;
   const slaIcon = execution?.stageStatus?.slaIcon;
   const slaIndicator = slaIcon ? SLA_ICON_CONFIG[slaIcon] : undefined;

@@ -855,7 +855,26 @@ describe('StageNode - SLA Indicator', () => {
       },
     });
 
-    expect(screen.getByTestId('stage-duration-stage-1')).toHaveTextContent('2 days, 3 hr, 4 min');
+    expect(screen.getByTestId('stage-duration-stage-1')).toHaveTextContent('2d, 3h, 4m');
+  });
+
+  it('puts the consumer-supplied label in front of the duration', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { durationMs: 2 * 3600000 + 4 * 60000, durationLabel: 'Duration:' },
+        taskStatus: {},
+      },
+    });
+
+    expect(screen.getByTestId('stage-duration-stage-1')).toHaveTextContent('Duration: 2h, 4m');
+  });
+
+  it('renders the duration bare when no label is supplied', () => {
+    renderStageNode({
+      execution: { stageStatus: { durationMs: 2 * 3600000 + 4 * 60000 }, taskStatus: {} },
+    });
+
+    expect(screen.getByTestId('stage-duration-stage-1')).toHaveTextContent('2h, 4m');
   });
 
   it('renders a legacy pre-formatted stage duration verbatim', () => {
