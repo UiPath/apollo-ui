@@ -900,9 +900,14 @@ export const ExecutionModeWithSla: Story = {
   },
 };
 
-/** 6 months, 2 weeks, 2 days, 2 hours, 59 minutes, 36 seconds. */
-const LONG_RUN_MS =
+/**
+ * Stage and task durations are independent values, formatted independently — the stage rolls up
+ * every task's runs while a task row shows only its own — so they are deliberately different here.
+ * (Months approximated as 30 days; this is a story, not a calendar.)
+ */
+const STAGE_RUN_MS =
   6 * 30 * 86400000 + 2 * 7 * 86400000 + 2 * 86400000 + 2 * 3600000 + 59 * 60000 + 36000;
+const TASK_RUN_MS = 3 * 7 * 86400000 + 4 * 86400000 + 5 * 3600000 + 12 * 60000 + 8000;
 
 export const MaximumTaskAdornments: Story = {
   name: 'Execution Mode - Maximum Task Adornments',
@@ -934,7 +939,7 @@ export const MaximumTaskAdornments: Story = {
               status: 'InProgress',
               label: 'In progress',
               // Half a year down to the second — only the 3 largest units are rendered.
-              durationMs: LONG_RUN_MS,
+              durationMs: STAGE_RUN_MS,
               // Consumer-supplied, already localised. Task rows have no label; the header does.
               durationLabel: 'Duration:',
             },
@@ -942,7 +947,7 @@ export const MaximumTaskAdornments: Story = {
               'long-running-task': {
                 status: 'InProgress',
                 breakpoint: true,
-                durationMs: LONG_RUN_MS,
+                durationMs: TASK_RUN_MS,
                 durationTooltip: 'Started just over 6 months ago',
                 retryCount: 98,
                 retryDuration: '5m, 4w, 3d, 2h, 1m',
