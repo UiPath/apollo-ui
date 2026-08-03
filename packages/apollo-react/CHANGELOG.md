@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.12.2...@uipath/apollo-react@6.13.0) (2026-08-03)
+
+### Features
+
+* **apollo-react:** pulse the breakpoint on the task the run is paused at ([551278c](https://github.com/UiPath/apollo-ui/commit/551278c100076962e2ee63a81f24bfe7f6c20dca)), closes [#989](https://github.com/UiPath/apollo-ui/issues/989)
+
+### Bug Fixes
+
+* **apollo-react:** show a pointer cursor on the breakpoint add/remove marker ([a47efb6](https://github.com/UiPath/apollo-ui/commit/a47efb6dcd046affb88fd611ba604a812238f055))
+
 ## [@uipath/apollo-react-v6.12.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.12.1...@uipath/apollo-react@6.12.2) (2026-08-01)
 
 ### Bug Fixes
