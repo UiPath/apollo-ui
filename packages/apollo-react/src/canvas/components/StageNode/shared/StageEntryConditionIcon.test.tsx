@@ -48,11 +48,11 @@ describe('StageEntryConditionIcon', () => {
     expect(svg).toHaveAttribute('height', '20');
   });
 
-  it('renders a 16px diamond when small', () => {
+  it('renders a tight diamond when small', () => {
     const { container } = render(<StageEntryConditionIcon small />);
 
     const svg = container.querySelector('svg');
-    expect(svg).toHaveAttribute('width', '16');
-    expect(svg).toHaveAttribute('height', '16');
+    expect(svg).toHaveAttribute('width', '13');
+    expect(svg).toHaveAttribute('height', '15');
   });
 });
