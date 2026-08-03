@@ -22,7 +22,11 @@ export const StageEntryConditionIcon = ({
           transform: small ? 'translateX(1px)' : 'translateX(0.5px)',
         }}
       >
-        <EntryConditionIcon w={small ? 16 : 20} h={small ? 16 : 20} />
+        <EntryConditionIcon
+          w={small ? 13 : 20}
+          h={small ? 15 : 20}
+          tight={small ? true : undefined}
+        />
       </span>
     </CanvasTooltip>
   );
