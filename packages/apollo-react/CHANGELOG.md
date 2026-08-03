@@ -1,3 +1,19 @@
+## [@uipath/apollo-react-v6.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.13.0...@uipath/apollo-react@6.14.0) (2026-08-03)
+
+### Features
+
+* **apollo-react:** ability to add stages rules to stage node, collapsible sections ([331efb3](https://github.com/UiPath/apollo-ui/commit/331efb36d2a02c30d8e18a0d07cb3c31184fa536))
+* **apollo-react:** updated tests ([2948016](https://github.com/UiPath/apollo-ui/commit/2948016a30c5b4b2504560ba2f3aa3fc6c70b87f))
+
+### Bug Fixes
+
+* **apollo-react:** another test fix ([fcb2a40](https://github.com/UiPath/apollo-ui/commit/fcb2a409d0832091ef73a437ebef75a6e80b9b61))
+* **apollo-react:** another test fix again ([7986746](https://github.com/UiPath/apollo-ui/commit/79867465b42348c047fe30378a27ec14bd48f591))
+* **apollo-react:** failing test ([2a53767](https://github.com/UiPath/apollo-ui/commit/2a5376733573f1f4a00d3db061ca07da1a33e444))
+* **apollo-react:** feedback from copilot ([71e00ab](https://github.com/UiPath/apollo-ui/commit/71e00ab27e56d2c4f43c414ab38510567a89e010))
+* **apollo-react:** lint fix ([9af230e](https://github.com/UiPath/apollo-ui/commit/9af230e6ae1f1cb91fc512b3586de35e48107600))
+* **apollo-react:** undo unneeded file change ([0fc0001](https://github.com/UiPath/apollo-ui/commit/0fc0001060c5d47567d08b831b95c65f6a443447))
+
 ## [@uipath/apollo-react-v6.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.12.2...@uipath/apollo-react@6.13.0) (2026-08-03)
 
 ### Features
