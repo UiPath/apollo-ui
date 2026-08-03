@@ -935,6 +935,8 @@ export const MaximumTaskAdornments: Story = {
               label: 'In progress',
               // Half a year down to the second — only the 3 largest units are rendered.
               durationMs: LONG_RUN_MS,
+              // Consumer-supplied, already localised. Task rows have no label; the header does.
+              durationLabel: 'Duration:',
             },
             taskStatus: {
               'long-running-task': {
