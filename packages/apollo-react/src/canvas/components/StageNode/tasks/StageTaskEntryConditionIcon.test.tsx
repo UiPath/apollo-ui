@@ -34,23 +34,13 @@ describe('StageTaskEntryConditionIcon', () => {
     expect(screen.getByTestId('task-entry-condition-icon-task-1')).toBeInTheDocument();
   });
 
-  it('renders a 20px diamond by default', () => {
+  it('renders a tight diamond when default', () => {
     const { container } = render(
       <StageTaskEntryConditionIcon task={createTask({ hasEntryCondition: true })} />
     );
 
     const svg = container.querySelector('svg');
-    expect(svg).toHaveAttribute('width', '20');
-    expect(svg).toHaveAttribute('height', '20');
-  });
-
-  it('renders a 16px diamond when small', () => {
-    const { container } = render(
-      <StageTaskEntryConditionIcon task={createTask({ hasEntryCondition: true })} small />
-    );
-
-    const svg = container.querySelector('svg');
-    expect(svg).toHaveAttribute('width', '16');
-    expect(svg).toHaveAttribute('height', '16');
+    expect(svg).toHaveAttribute('width', '13');
+    expect(svg).toHaveAttribute('height', '15');
   });
 });
