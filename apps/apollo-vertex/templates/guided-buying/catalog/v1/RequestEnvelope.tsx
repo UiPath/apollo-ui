@@ -86,14 +86,17 @@ const FIELDS: EnvelopeField[] = [
     source: "Team default",
     options: [
       {
-        value: "Amsterdam office · Herengracht 124",
+        value: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
         reason: "Your team's default",
       },
       {
-        value: "Denver office · 1801 California St",
+        value: "Denver office · 1801 California St, Denver, CO 80202",
         reason: "Your home office",
       },
-      { value: "Berlin office · Torstraße 100", reason: "EU design hub" },
+      {
+        value: "Berlin office · Torstraße 100, 10119 Berlin",
+        reason: "EU design hub",
+      },
     ],
   },
   {
@@ -380,29 +383,24 @@ export function RequestEnvelope() {
                     {requestText}
                   </p>
                 </div>
-                {/* Same trailing-slot gap (gap-1) as the field rows below, so
-                    this text's right edge lines up with theirs instead of
-                    sitting a few px further left under the row's own gap-3. */}
-                <div className="flex shrink-0 items-center gap-1">
-                  <span className="whitespace-nowrap text-right text-xs text-muted-foreground">
-                    From you
-                  </span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label="Revise"
-                        disabled={continued}
-                        onClick={reviseRequest}
-                        className="text-muted-foreground"
-                      >
-                        <MessageSquareText className="size-3.5" aria-hidden />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Revise</TooltipContent>
-                  </Tooltip>
-                </div>
+                <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                  From you
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Revise"
+                      disabled={continued}
+                      onClick={reviseRequest}
+                      className="shrink-0 text-muted-foreground"
+                    >
+                      <MessageSquareText className="size-3.5" aria-hidden />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Revise</TooltipContent>
+                </Tooltip>
               </div>
             </motion.div>
           )}
@@ -498,7 +496,7 @@ export function RequestEnvelope() {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        {editingKey === field.key ? "Done" : "Edit"}
+                        {editingKey === field.key ? "Done" : "Change selection"}
                       </TooltipContent>
                     </Tooltip>
                   </div>

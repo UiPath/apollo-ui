@@ -92,6 +92,13 @@ export interface ConversationContextValue {
   setEnvelopeOverride: (key: string, value: string) => void;
   /** Clear a Bridge envelope field's override (e.g. reverted to the default). */
   clearEnvelopeOverride: (key: string) => void;
+  /** Deep-link support: instantly seeds the equivalent end-state for a Buy
+   * sub-phase, skipping the scripted stream/skeleton delays — used when
+   * /buy is reached directly with a phase already in the URL, or when
+   * browser back/forward lands on a phase with no local state to match it.
+   * Always seeds the canonical catalog scenario (no backend to recover a
+   * specific in-progress request from). */
+  seedPhase: (phase: "bridge" | "selection") => void;
 }
 
 export const ConversationContext =

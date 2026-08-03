@@ -13,18 +13,24 @@ import { CartLine } from "./CartLine";
 import { CartSummary } from "./CartSummary";
 import { useCart } from "./cart-context";
 import { APPROVAL_LIMIT, activePrice } from "./data";
-import { usePriceBasis } from "./price-basis-context";
 
 interface CartDrawerProps {
   /** Advances to the Review step (Selection navigates the router). */
   onReviewSubmit: () => void;
 }
 
+// Fixed, not read from usePriceBasis(): that context is a browse-time
+// list/EPP comparison toggle for the grid, not what the cart actually
+// charges. Letting the drawer inherit it meant the same 15 units could
+// price at list here and EPP on Review ($32,985 vs $27,735) depending on
+// which page you opened the drawer from — the cart always charges EPP,
+// same as Review, regardless of how the grid is currently sorted/filtered.
+const basis = "epp" as const;
+
 /** Standard right-edge cart peek drawer (built on Sheet, fed by cart context). */
 export function CartDrawer({ onReviewSubmit }: CartDrawerProps) {
   const { open, setOpen, items, quantities, count, setQuantity, remove } =
     useCart();
-  const basis = usePriceBasis();
   const subtotal = items.reduce(
     (sum, i) => sum + activePrice(i, basis) * (quantities[i.id] ?? 0),
     0,

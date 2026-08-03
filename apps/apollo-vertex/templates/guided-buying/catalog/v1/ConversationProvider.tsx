@@ -15,6 +15,7 @@ import {
 import {
   APPROVAL_LIMIT,
   CATALOG_ITEMS,
+  CATALOG_STARTER,
   effectivePrice,
   formatPrice,
   RECOMMENDATION,
@@ -205,6 +206,55 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
         ]);
       }, SKELETON_MS),
     );
+  };
+
+  // Deep-link support — the instant, un-scripted equivalent of
+  // sendCatalogRequest (+ continueToSelection for "selection"): same final
+  // messages, no word-by-word stream or skeleton delay, always the
+  // canonical catalog scenario. Used on a fresh /buy?phase=... load and to
+  // resync state when browser back/forward changes the URL's phase without
+  // a matching local phase to show for it.
+  const seedPhase = (phase: "bridge" | "selection") => {
+    clearTimers();
+    const text = CATALOG_STARTER;
+    setRequestText(text);
+    setRequestTitle(generateTitle(text));
+    setHasResolved(true);
+    setStatus("ready");
+    const assistantId = nextId();
+    const bridgeMessages: UIMessage[] = [
+      textMessage(nextId(), "user", text),
+      {
+        id: assistantId,
+        role: "assistant",
+        parts: [
+          { type: "text", content: INTRO },
+          toolPart(`${assistantId}-envelope`, ENVELOPE_TOOL, {
+            kind: "envelope",
+          }),
+        ],
+      },
+    ];
+    if (phase === "bridge") {
+      setPhase("bridge");
+      selectionStartedRef.current = false;
+      setMessages(bridgeMessages);
+      return;
+    }
+    selectionStartedRef.current = true;
+    const selectionAssistantId = nextId();
+    setPhase("selection");
+    setMessages([
+      ...bridgeMessages,
+      {
+        id: selectionAssistantId,
+        role: "assistant",
+        parts: [
+          { type: "text", content: SOURCING_SUMMARY },
+          matchesPart(selectionAssistantId, false),
+        ],
+      },
+    ]);
   };
 
   const resolveDefault = () => {
@@ -428,6 +478,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     envelopeOverrides,
     setEnvelopeOverride,
     clearEnvelopeOverride,
+    seedPhase,
   };
 
   return (

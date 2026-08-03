@@ -15,6 +15,7 @@ import { useCart } from "./cart-context";
 import { type BuyPhase, useConversation } from "./conversation-context";
 import {
   CATALOG_ITEMS,
+  CATALOG_STARTER,
   defaultQuantityFor,
   displayRequestTitle,
   RECOMMENDATION,
@@ -42,7 +43,6 @@ type Leaving = null | "configure";
 // The three demo launch points — one per use case. Catalog = requester
 // self-serving; quote = generic handoff to a seeded Workbench item; contract =
 // the Configure-with-agent wizard.
-const CATALOG_STARTER = "15 laptops for Fusion Event contractors";
 const SOURCING_STARTER = "Hire 2 contract designers for the Q3 rebrand";
 const CONTRACT_STARTER = "Add 12 mobile lines for the Denver team";
 const STARTERS = [CATALOG_STARTER, SOURCING_STARTER, CONTRACT_STARTER];
@@ -108,6 +108,7 @@ export function BuyFlow() {
     stepBack,
     pendingRevisionText,
     clearPendingRevision,
+    seedPhase,
   } = useConversation();
 
   const navigate = useNavigate();
@@ -173,12 +174,66 @@ export function BuyFlow() {
   // guard, that stray re-render sees a changed locationKey and wipes the
   // conversation (requestText, hasResolved) right before those screens read it.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // The catalog fork's Bridge/Selection phases addressed via /buy?phase=... —
+  // read with useRouterState (this file's own established pattern) rather
+  // than useSearch, since the route tree here isn't registered for
+  // useSearch's typed `from` lookup.
+  const searchPhase = useRouterState({
+    select: (s) => {
+      const raw = (s.location.search as { phase?: unknown }).phase;
+      return raw === "bridge" || raw === "selection" ? raw : undefined;
+    },
+  });
   useEffect(() => {
     if (pathname !== "/buy") return;
     if ((fromConfigure && !resetChat) || fromReview) return;
+    // A phase deep-link handles its own seeding below — a plain reset here
+    // would fight it.
+    if (searchPhase != null) return;
     startFresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locationKey]); // intentional: deps read fresh on each navigation
+
+  // URL -> state: seed (or resync) whenever the URL's phase doesn't match
+  // what's already in the conversation — a fresh /buy?phase=... load, or
+  // browser back/forward changing the URL beneath an existing session.
+  // Same "stray re-render" guard as the effect above: router state (and
+  // this component's re-render) updates a tick before BuyFlow actually
+  // unmounts on its way to /review or /track. Without the pathname check,
+  // that stray render sees searchPhase drop to undefined (the destination
+  // route has no phase param) and was wiping the conversation via
+  // startFresh() right then — invisible until Back later remounted BuyFlow
+  // onto the already-reset state.
+  useEffect(() => {
+    if (pathname !== "/buy") return;
+    if (searchPhase === "bridge" || searchPhase === "selection") {
+      if (phase !== searchPhase) seedPhase(searchPhase);
+    } else if (phase === "bridge" || phase === "selection") {
+      // Same exception as the effect above: returning from Review (its
+      // Back button lands here with no phase param, by design) or from
+      // Configure mid-flow intentionally keeps the conversation as-is —
+      // this isn't a stray URL, so don't reset it out from under them.
+      if ((fromConfigure && !resetChat) || fromReview) return;
+      startFresh();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchPhase]);
+
+  // state -> URL: keep /buy's phase param in sync so Bridge/Selection are
+  // real, back-button-able history entries instead of silent internal
+  // transitions. Only these two are addressable this pass (see the routing
+  // report) — service/sourcing/offcatalog stay click-through only.
+  useEffect(() => {
+    if (pathname !== "/buy") return;
+    const target =
+      phase === "bridge" || phase === "selection" ? phase : undefined;
+    if (searchPhase === target) return;
+    void navigate({
+      to: "/buy",
+      search: target ? { phase: target } : {},
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   const handleSuggestion = (suggestion: string) => {
     if (suggestion === CONTRACT_STARTER) {

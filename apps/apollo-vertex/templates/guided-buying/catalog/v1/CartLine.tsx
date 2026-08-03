@@ -43,10 +43,17 @@ export function CartLine({
             </span>
           ) : (
             <>
-              <QuantityStepper
-                value={quantity}
-                onChange={(value) => onQtyChange?.(value)}
-              />
+              <div className="flex items-center gap-2">
+                <QuantityStepper
+                  value={quantity}
+                  onChange={(value) => onQtyChange?.(value)}
+                />
+                {/* Unit price alongside the stepper — the visible cause for
+                    why the line total below changes with quantity. */}
+                <span className="text-xs text-muted-foreground">
+                  {formatPrice(unit, item.currency)} each
+                </span>
+              </div>
               <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-foreground">
                   {formatPrice(lineTotal, item.currency)}

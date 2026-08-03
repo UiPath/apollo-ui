@@ -32,7 +32,6 @@ import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { P2 } from "../P2";
 import {
-  getCloseDetail,
   REQUEST_DETAILS,
   REQUEST_ROWS,
   type RequestStatus,
@@ -323,7 +322,7 @@ export function MyRequestsList() {
                 // Only a real PO record has somewhere to go — most requests
                 // haven't reached one yet, so the menu item just doesn't
                 // render rather than linking to a page with nothing on it.
-                const poChip = getCloseDetail(row.id)?.recordChips.find((c) =>
+                const poChip = REQUEST_DETAILS[row.id]?.recordChips?.find((c) =>
                   c.startsWith("PO-"),
                 );
                 return (
@@ -381,7 +380,7 @@ export function MyRequestsList() {
                             size="sm"
                             onClick={() =>
                               void navigate({
-                                to: "/close/$id",
+                                to: "/requests/$id",
                                 params: { id: row.id },
                               })
                             }

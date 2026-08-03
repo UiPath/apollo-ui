@@ -3,6 +3,7 @@
 import { type ReactNode, useState } from "react";
 import type { RequestRow } from "./data";
 import {
+  type ReceiptRecord,
   type RequestNote,
   RequestsContext,
   type RequestsContextValue,
@@ -19,6 +20,7 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
   const [threads, setThreads] = useState<Record<string, RequestNote[]>>({});
   const [urgent, setUrgent] = useState<Record<string, boolean>>({});
   const [submittedRows, setSubmittedRows] = useState<RequestRow[]>([]);
+  const [receipts, setReceipts] = useState<Record<string, ReceiptRecord>>({});
 
   const openRequest = (id: string) => setOpenRequestId(id);
   const clearOpenRequest = () => setOpenRequestId(null);
@@ -47,6 +49,16 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const confirmReceipt = (
+    requestId: string,
+    record: Omit<ReceiptRecord, "confirmedAt">,
+  ) => {
+    setReceipts((prev) => ({
+      ...prev,
+      [requestId]: { ...record, confirmedAt: "Just now" },
+    }));
+  };
+
   const value: RequestsContextValue = {
     openRequestId,
     openRequest,
@@ -57,6 +69,8 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     markUrgent,
     submittedRows,
     submitRequest,
+    receipts,
+    confirmReceipt,
   };
 
   return (

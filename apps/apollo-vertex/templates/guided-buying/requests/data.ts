@@ -27,7 +27,7 @@ export interface RequestRow {
   /** Annual-equivalent value (drives the Total Value metric). */
   amountValue: number;
   status: RequestStatus;
-  /** DD MMM YYYY, e.g. "28 May 2026". */
+  /** "MMM D, YYYY", e.g. "May 28, 2026". */
   submitted: string;
   updated: string;
 }
@@ -61,8 +61,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$3,698.00",
     amountValue: 3698,
     status: "ordered",
-    submitted: "28 May 2026",
-    updated: "01 Jun 2026",
+    submitted: "May 28, 2026",
+    updated: "Jun 1, 2026",
   },
   {
     id: "REQ-2051",
@@ -73,8 +73,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$660.00/mo",
     amountValue: 7920,
     status: "pending-approval",
-    submitted: "03 Jun 2026",
-    updated: "08 Jun 2026",
+    submitted: "Jun 3, 2026",
+    updated: "Jun 8, 2026",
   },
   {
     id: "REQ-2053",
@@ -85,8 +85,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "~$58,000.00",
     amountValue: 58000,
     status: "sourcing",
-    submitted: "05 Jun 2026",
-    updated: "09 Jun 2026",
+    submitted: "Jun 5, 2026",
+    updated: "Jun 9, 2026",
   },
   {
     id: "REQ-2039",
@@ -97,8 +97,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$4,800.00",
     amountValue: 4800,
     status: "approved",
-    submitted: "20 May 2026",
-    updated: "22 May 2026",
+    submitted: "May 20, 2026",
+    updated: "May 22, 2026",
   },
   {
     id: "REQ-2031",
@@ -109,8 +109,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$980.00",
     amountValue: 980,
     status: "delivered",
-    submitted: "24 May 2026",
-    updated: "27 May 2026",
+    submitted: "May 24, 2026",
+    updated: "May 27, 2026",
   },
   {
     id: "REQ-2025",
@@ -121,8 +121,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$2,400.00",
     amountValue: 2400,
     status: "pending-approval",
-    submitted: "07 Jun 2026",
-    updated: "07 Jun 2026",
+    submitted: "Jun 7, 2026",
+    updated: "Jun 7, 2026",
   },
   // J1-09 / J1-11 — the catalog submission the Buy flow produces
   {
@@ -134,8 +134,8 @@ export const REQUEST_ROWS: RequestRow[] = [
     amount: "$27,735.00",
     amountValue: 27735,
     status: "pending-approval",
-    submitted: "21 Jul 2026",
-    updated: "23 Jul 2026",
+    submitted: "Jul 21, 2026",
+    updated: "Jul 23, 2026",
   },
 ];
 
@@ -154,6 +154,13 @@ export type JourneyStepState =
 export interface JourneyStep {
   label: string;
   state: JourneyStepState;
+  /** Second-line date on the Request Window's stage track: the actual date
+   * once done, an expected/projected date otherwise. Omit rather than
+   * derive a placeholder when there's nothing to base it on. */
+  date?: string;
+  /** Days since `date` passed without this stage completing (active-warning
+   * only) — renders as "· N day(s) ago" next to the date. */
+  overdueDays?: number;
 }
 
 export interface RequestDetail {
@@ -191,6 +198,14 @@ export interface RequestDetail {
     needBy?: string;
     /** Savings vs. list price, called out in the status card's lead sentence. */
     savings?: string;
+    /** Days relative to `needBy`, signed: positive = days remaining,
+     * negative = days overdue. Drives the header's proximity chip — only
+     * set this when the date is close enough to warrant one. */
+    needByDaysLeft?: number;
+    /** Ordered quantity — drives the delivery-receipt modal's stepper
+     * default and line-item row. Only set for scenarios that reach the
+     * Received stage. */
+    qty?: number;
   };
   /** Approver name for the "Full details" expand. */
   approver?: string;
@@ -204,12 +219,14 @@ export interface RequestDetail {
   threadSeedMessage?: string;
   /** P2 nudge capsule — system event shown in the thread. No leading emoji — icon added by caller. */
   nudgeText?: string;
-  /** Prototype nav — if true, the last journey stage links to /close/{id}. */
-  hasClose?: boolean;
   /** Approver sent it back for changes — the header's other owed-action
    * state ("Respond"). No seed scenario sets this yet; implemented
    * generically so the branch exists once one does. */
   sentBack?: boolean;
+  /** Sidebar "Linked records" chips (PR/PO references). The first chip
+   * renders in the tinted "link" treatment, any others plain — same
+   * visual split as the hand-authored chips this replaces. */
+  recordChips?: string[];
 }
 
 // Deep details exist only for requests that came through the flow.
@@ -228,11 +245,14 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       { label: "Ordered", desc: "EPP pricing applied", state: "done" },
     ],
     journeyStages: [
-      { label: "Submitted", state: "done" },
-      { label: "Approved", state: "done" },
-      { label: "Ordered", state: "done" },
+      { label: "Submitted", state: "done", date: "May 28, 2026" },
+      // Same-day approval — a small, pre-approved catalog buy.
+      { label: "Approved", state: "done", date: "May 29, 2026" },
+      { label: "Ordered", state: "done", date: "Jun 1, 2026" },
     ],
     summary: { items: "2 × X1 Carbon", total: "$3,698" },
+    // Matches the "Approved" timeline step's own `desc` above.
+    approver: "Alex Chen · Design Director",
   },
   "REQ-2031": {
     id: "REQ-2031",
@@ -248,13 +268,19 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       { label: "Delivered", desc: "4 units received", state: "done" },
     ],
     journeyStages: [
-      { label: "Submitted", state: "done" },
-      { label: "Approved", state: "done" },
-      { label: "Ordered", state: "done" },
-      { label: "Received · 27 May", state: "done" },
+      { label: "Submitted", state: "done", date: "May 24, 2026" },
+      // Same-day approval — a small, low-value purchase.
+      { label: "Approved", state: "done", date: "May 24, 2026" },
+      { label: "Ordered", state: "done", date: "May 25, 2026" },
+      { label: "Received", state: "done", date: "May 27, 2026" },
     ],
-    summary: { items: "4 × Ergotron converter", total: "$980" },
-    hasClose: true,
+    summary: { items: "4 × Ergotron converter", total: "$980", qty: 4 },
+    // "delivered to the Denver office" per the request's own department
+    // (IT : Denver) — no separate street address was ever seeded for this
+    // scenario, so this stays a location name rather than a fabricated one.
+    shipTo: "Denver office",
+    // No PO line-item data seeded for this scenario — PR only, no PO chip.
+    recordChips: ["PR-2031"],
   },
   "REQ-2051": {
     id: "REQ-2051",
@@ -323,10 +349,24 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       { label: "With Alex Chen, awaiting approval", state: "current" },
     ],
     journeyStages: [
-      { label: "Submitted · Jul 21", state: "done" },
-      { label: "Approval · 2 days with Alex", state: "active-warning" },
-      { label: "PO sent", state: "upcoming" },
-      { label: "Received", state: "upcoming" },
+      { label: "Submitted", state: "done", date: "Jul 21, 2026" },
+      // 21 Jul submitted + Alex's "a day" turnaround — already past, hence
+      // active-warning (the date text goes amber; the node does not).
+      // "Today" in this scenario is ~23 Jul (see Ordered/Received below),
+      // so 22 Jul was 1 day ago.
+      {
+        label: "Approved",
+        state: "active-warning",
+        date: "Jul 22, 2026",
+        overdueDays: 1,
+      },
+      // Chained off the *previous* stage's date, not off needBy: Approved
+      // (22 Jul) + ~1 business day PO dispatch time.
+      { label: "Ordered", state: "upcoming", date: "Jul 23, 2026" },
+      // Ordered (23 Jul) + Lenovo's ~5 business day (7 calendar day)
+      // shipping window. Comfortably inside the 28 Aug need-by — that date
+      // is a deadline with slack, not a target to derive from.
+      { label: "Received", state: "upcoming", date: "Jul 30, 2026" },
     ],
     journeyOwnerNote:
       "Waiting on Alex Chen · Design Director. Usually decides within a day.",
@@ -335,20 +375,26 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
     summary: {
       items: "15 × X1 Carbon",
       total: "$27,735",
-      needBy: "Aug 28",
+      needBy: "Aug 28, 2026",
       // $2,138 list vs. $1,849 EPP unit price (see PO_DETAILS), × 15.
       savings: "$4,335",
+      // "Today" in this scenario is ~23 Jul (2 days after the 21 Jul
+      // submission, per the "Approval · 2 days with Alex" story). 23 Jul →
+      // 31 Jul is 8 days, + all of August's 28 days to the 28th = 36.
+      // Comfortably past the 3-day threshold, so no header chip renders —
+      // that's correct: this date isn't close enough to warrant one.
+      needByDaysLeft: 36,
     },
     approver: "Alex Chen · Design Director",
     costCenter: "Design Operations · CC-4421",
     // Same canonical value the Bridge's envelope infers for this scenario.
-    shipTo: "Amsterdam office · Herengracht 124",
+    shipTo: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
     statusLabel: "Pending · 2 days",
     threadSeedMessage:
-      "Hi Alex — these are for the Fusion contractors starting Aug 3. Happy to answer anything.",
+      "Hi Alex, these are for the Fusion contractors starting Aug 3. Happy to answer anything.",
     nudgeText:
-      "Pending 2 days — a reminder went to Alex this morning. You won't need to chase.",
-    hasClose: true,
+      "Pending 2 days. A reminder went to Alex this morning. You won't need to chase.",
+    recordChips: ["PR-2052", "PO · created on approval"],
   },
 };
 
@@ -380,23 +426,41 @@ export interface DecisionPacket {
 export interface DecisionDetail {
   id: string;
   request: string;
-  /** "Requester · Department · Supplier · needed by Date" */
-  meta: string;
-  /** Short date for the breadcrumb, e.g. "Jul 21". */
-  submittedDate: string;
+  requester: string;
+  /** "Name · Title" — folded into the header band, not a separate identity line. */
+  approver: string;
+  supplier: string;
+  /** "Department · Cost centre code". */
+  costCenter: string;
+  /** "Location · Street, postcode city". */
+  shipTo: string;
+  needBy: string;
   lineItems: DecisionLineItem[];
   total: string;
-  noteAuthor: string;
+  /** The requester's note on the request, shown as a Communication entry. */
   note: string;
   packet: DecisionPacket;
+  /** The PO this approval triggers — matches PO_DETAILS below. Only
+   * surfaced once approved; pre-decision the sidebar's PO chip stays a
+   * plain "created on approval" placeholder instead. */
+  poNumber: string;
+  /** Projected delivery once the PO ships — same value as this request's
+   * own RequestDetail.journeyStages "Received" date (see requests/data.ts),
+   * kept in sync by hand since the two model the same request from two
+   * different seats. */
+  expectedDelivery: string;
 }
 
 export const DECISION_DETAILS: Record<string, DecisionDetail> = {
   "REQ-2052": {
     id: "REQ-2052",
     request: "15 laptops for Fusion Event contractors",
-    meta: "Marcus Webb · Design Operations · Lenovo · needed by Aug 28",
-    submittedDate: "Jul 21",
+    requester: "Marcus Webb",
+    approver: "Alex Chen · Design Director",
+    supplier: "Lenovo",
+    costCenter: "Design Operations · CC-4421",
+    shipTo: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
+    needBy: "Aug 28, 2026",
     lineItems: [
       {
         description: "ThinkPad X1 Carbon Gen 12 × 15 · EPP price $1,849",
@@ -404,8 +468,7 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
       },
     ],
     total: "$27,735",
-    noteAuthor: "Marcus",
-    note: "Hi Alex — these are for the Fusion contractors starting Aug 3. Happy to answer anything.",
+    note: "Hi Alex, these are for the Fusion contractors starting Aug 3. Happy to answer anything.",
     packet: {
       budget: {
         label: "Hardware budget · Design Operations FY27",
@@ -415,76 +478,16 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
       itReview: {
         title: "Device management · Ready",
         detail:
-          "Enrollment pre-queued for 15 units — standard contractor image · IT Ops, today 09:14",
+          "Enrollment pre-queued for 15 units. Standard contractor image · IT Ops, today 09:14.",
       },
     },
+    poNumber: "PO-88421",
+    expectedDelivery: "Jul 30, 2026",
   },
 };
 
 export function getDecisionDetail(id: string): DecisionDetail | undefined {
   return DECISION_DETAILS[id];
-}
-
-// ── Close Window ──────────────────────────────────────────────────────────────
-
-export interface CloseDetail {
-  id: string;
-  request: string;
-  /** Short date for the breadcrumb, e.g. "Aug 3". */
-  receivedDate: string;
-  stages: JourneyStep[];
-  /** Record chip labels rendered below the journey bar. */
-  recordChips: string[];
-  summary: { heading: string; detail: string };
-  action: string;
-  banner: string;
-}
-
-export const CLOSE_DETAILS: Record<string, CloseDetail> = {
-  "REQ-2052": {
-    id: "REQ-2052",
-    request: "15 laptops for Fusion Event contractors",
-    receivedDate: "Aug 3",
-    stages: [
-      { label: "Submitted · Jul 21", state: "done" },
-      { label: "Approved", state: "done" },
-      { label: "PO sent", state: "done" },
-      { label: "Received · Aug 3", state: "done" },
-    ],
-    recordChips: ["PO-88421", "PR-2052"],
-    summary: {
-      heading: "Delivery complete · 15 units received Aug 3",
-      detail:
-        "15 × ThinkPad X1 Carbon Gen 12 · device enrollment confirmed · handed off to Fusion Event contractors · Lenovo",
-    },
-    action: "Confirm receipt",
-    banner:
-      "Request complete — 15 ThinkPads received, enrolled, and in contractors' hands.",
-  },
-  "REQ-2031": {
-    id: "REQ-2031",
-    request: "Standing desk converters ×4",
-    receivedDate: "27 May",
-    stages: [
-      { label: "Submitted", state: "done" },
-      { label: "Approved", state: "done" },
-      { label: "Ordered", state: "done" },
-      { label: "Received · 27 May", state: "done" },
-    ],
-    // No PO line-item data seeded for this scenario — PR only, no PO chip.
-    recordChips: ["PR-2031"],
-    summary: {
-      heading: "Delivery complete · 4 units received May 27",
-      detail:
-        "4 × Ergotron standing desk converters · delivered to the Denver office.",
-    },
-    action: "Confirm receipt",
-    banner: "Request complete — 4 converters received and in place.",
-  },
-};
-
-export function getCloseDetail(id: string): CloseDetail | undefined {
-  return CLOSE_DETAILS[id];
 }
 
 // ─── PO Record ────────────────────────────────────────────────────────────────
@@ -548,11 +551,10 @@ const MONTHS_SHORT = [
   "Dec",
 ];
 
-/** Format a Date as "DD MMM YYYY", e.g. "13 Jul 2026". */
+/** Format a Date as "MMM D, YYYY", e.g. "Jul 13, 2026". */
 export function formatDateDisplay(date: Date): string {
-  const dd = String(date.getDate()).padStart(2, "0");
   const mmm = MONTHS_SHORT[date.getMonth()];
-  return `${dd} ${mmm} ${date.getFullYear()}`;
+  return `${mmm} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
 // Stat-card counts derived from the rows. Awaiting + approved reconcile to total:

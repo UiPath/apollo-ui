@@ -2,12 +2,13 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
-  createMemoryHistory,
+  createBrowserHistory,
   createRootRoute,
   createRoute,
   createRouter,
   Outlet,
   RouterProvider,
+  redirect,
   useNavigate,
   useRouterState,
 } from "@tanstack/react-router";
@@ -23,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import { Toaster } from "@/components/ui/sonner";
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
 import { AutopilotChatProvider } from "./AutopilotChatProvider";
 import { AutopilotFab } from "./AutopilotFab";
@@ -34,7 +36,6 @@ import { CatalogSubmitted } from "./catalog/v1/CatalogSubmitted";
 import { ConfigureFlow } from "./catalog/v1/ConfigureFlow";
 import { ConversationProvider } from "./catalog/v1/ConversationProvider";
 import { Review } from "./catalog/v1/Review";
-import { CloseWindow } from "./requests/CloseWindow";
 import { DecisionWindow } from "./requests/DecisionWindow";
 import { MyRequests } from "./requests/MyRequests";
 import { PORecord } from "./requests/PORecord";
@@ -175,16 +176,25 @@ function GuidedBuyingLayout() {
       </div>
       {/* One Autopilot home — the orb FAB, same corner on every surface. */}
       <AutopilotFab />
+      {/* One toast host for the whole prototype — top-center, per the
+          in-product notification guidelines. */}
+      <Toaster />
     </ApolloShell>
   );
 }
 
 const rootRoute = createRootRoute({ component: GuidedBuyingLayout });
 
+// The prototype's front door is Buy — bare /guided-buying redirects there,
+// same landing behavior memory history used to get for free via
+// initialEntries. beforeLoad (not a component redirect) so browser back
+// from /buy doesn't bounce forward through "/" again.
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  component: () => <EmptyPage title="Dashboard" />,
+  beforeLoad: () => {
+    throw redirect({ to: "/buy" });
+  },
 });
 
 const dashboardRoute = createRoute({
@@ -193,9 +203,21 @@ const dashboardRoute = createRoute({
   component: () => <EmptyPage title="Dashboard" />,
 });
 
+// The catalog fork's two pre-Review phases (Details/Choose) are addressable
+// via this search param — Bridge and Selection each get a real, reloadable
+// URL (/buy?phase=bridge, /buy?phase=selection) without needing distinct
+// routes of their own. Intake has none (the default, un-parameterized /buy).
+// The other conversational forks (service/sourcing/offcatalog) aren't wired
+// to the URL this pass — see the routing report.
 const buyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/buy",
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { phase?: "bridge" | "selection" } =>
+    search.phase === "bridge" || search.phase === "selection"
+      ? { phase: search.phase }
+      : {},
   component: BuyFlow,
 });
 
@@ -232,14 +254,8 @@ const requestDetailRoute = createRoute({
   component: RequestWindow,
 });
 
-// Close Window — delivery receipt after goods arrive.
-const closeRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/close/$id",
-  component: CloseWindow,
-});
-
-// PO Record — purchase order detail, reachable from the Close screen chip only.
+// PO Record — purchase order detail, reachable from the request detail
+// sidebar's Linked records chip.
 const poRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/po/$id",
@@ -276,7 +292,6 @@ const routeTree = rootRoute.addChildren([
   workbenchRoute,
   requestsRoute,
   requestDetailRoute,
-  closeRoute,
   poRoute,
   decisionRoute,
   reviewRoute,
@@ -285,13 +300,24 @@ const routeTree = rootRoute.addChildren([
 
 const queryClient = new QueryClient();
 
+// A Coded App build serves from a sub-path (see next.config.mjs's basePath) —
+// the router's basepath has to include that prefix too, or browser-history
+// navigation would resolve against the wrong root. Plain deployments (this
+// app's own Vercel preview) leave it unset, so basepath is just the mount path.
+const codedAppPath = process.env.NEXT_PUBLIC_APOLLO_CODED_APP_PATH;
+const routerBasepath = codedAppPath
+  ? `/${codedAppPath}/guided-buying`
+  : "/guided-buying";
+
 export function GuidedBuyingShell() {
   const [router] = useState(() =>
     createRouter({
       routeTree,
-      // The prototype lands on /buy — the Intake front door. The /catalog link
-      // jumps straight to the resolved workspace (Catalog seeds the thread).
-      history: createMemoryHistory({ initialEntries: ["/buy"] }),
+      basepath: routerBasepath,
+      // Real URLs: reloading or sharing a link to any route below resolves
+      // through the Next catch-all (app/guided-buying/[[...slug]]) and this
+      // router picks up wherever window.location already points.
+      history: createBrowserHistory(),
     }),
   );
 

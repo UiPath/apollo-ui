@@ -336,7 +336,7 @@ export function MatchCarousel({
   /** Opens the shelf dock scoped to the given item. */
   onWhyNotThisClick?: (item: CatalogItem) => void;
   /** Opens the shelf dock generically, from the "not finding what you're
-   * looking for?" prompt at the end of the expanded list. */
+   * looking for?" prompt below the match list. */
   onNotFindingClick?: () => void;
   onYogaShowAnyway?: () => void;
   /** Opens the ProductDetail overlay for a given catalog item. */
@@ -347,15 +347,11 @@ export function MatchCarousel({
   const { stepBack } = useConversation();
   const { addStepEntry } = useAssistantThread();
   const { items: cartItems, quantities, count: cartCount } = useCart();
-  const [expanded, setExpanded] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const lead = CATALOG_ITEMS.find((item) => item.id === output.leadId);
   const alts = output.altIds
     .map((id) => CATALOG_ITEMS.find((item) => item.id === id))
     .filter((item): item is CatalogItem => item != null);
-  // The rest of the catalog, revealed by "See all N in catalog".
-  const shown = new Set([output.leadId, ...output.altIds]);
-  const remaining = CATALOG_ITEMS.filter((item) => !shown.has(item.id));
 
   // The narrowing, derived from the catalog: how many laptops matched, how
   // many cleared the 32GB minimum, and the one picked.
@@ -567,54 +563,32 @@ export function MatchCarousel({
                 );
               })}
 
-              {expanded ? (
-                <>
-                  {remaining.map((item, i) => (
-                    <MatchCard
-                      key={item.id}
-                      item={item}
-                      index={alts.length + i + 1}
-                      onOpenDetail={
-                        onOpenDetail ? () => onOpenDetail(item) : undefined
-                      }
-                    />
-                  ))}
-
-                  {/* AI escalation — the end of the line for browsing here. */}
-                  <div className="flex flex-col items-center gap-3 rounded-xl bg-muted/40 px-4 py-6 text-center">
-                    <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                      <AiMark size={16} gradientId="gb-ai-mark" aria-hidden />
-                      Not finding what you&apos;re looking for?
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onNotFindingClick}
-                      >
-                        <MessageCircle className="size-4" aria-hidden />
-                        Let&apos;s chat
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCatalogOpen(true)}
-                      >
-                        <Store className="size-4" aria-hidden />
-                        Pull up Catalog
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  className="w-full rounded-xl border border-dashed bg-muted/40 py-2.5 text-center text-sm text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-                  onClick={() => setExpanded(true)}
-                >
-                  Show {remaining.length} more
-                </button>
-              )}
+              {/* AI escalation — offered directly instead of paging through
+                  the rest of the catalog. */}
+              <div className="flex items-center justify-between gap-4 rounded-xl bg-muted/40 px-4 py-4">
+                <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                  <AiMark size={16} gradientId="gb-ai-mark" aria-hidden />
+                  Not finding what you&apos;re looking for?
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onNotFindingClick}
+                  >
+                    <MessageCircle className="size-4" aria-hidden />
+                    Ask AI
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCatalogOpen(true)}
+                  >
+                    <Store className="size-4" aria-hidden />
+                    Pull up Catalog
+                  </Button>
+                </div>
+              </div>
             </>
           )}
         </div>
