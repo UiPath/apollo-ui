@@ -62,9 +62,8 @@
   ],
   "scripts": {
     "dev": "rslib build --watch",
-    "build": "rslib build && npm run build:css && npm run verify:css",
+    "build": "rslib build && npm run build:css",
     "build:css": "npx @tailwindcss/cli -i ./src/styles/tailwind.css -o ./dist/styles.css",
-    "verify:css": "node ./scripts/verify-sonner-css.mjs",
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",

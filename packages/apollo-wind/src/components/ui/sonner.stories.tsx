@@ -1,10 +1,7 @@
 import type { Meta } from '@storybook/react-vite';
-import { useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { Toaster as SonnerToaster } from 'sonner';
-import apolloWindCss from '@/styles/tailwind.css?inline';
+import { toast, Toaster as SonnerToaster } from 'sonner';
 import { Button } from './button';
-import { toast, Toaster } from './sonner';
+import { Toaster } from './sonner';
 
 const meta: Meta<typeof Toaster> = {
   title: 'Components/Feedback/Toast (Sonner)',
@@ -13,83 +10,6 @@ const meta: Meta<typeof Toaster> = {
 };
 
 export default meta;
-
-const SHADOW_TOASTER_ID = 'apollo-wind-sonner-shadow-story';
-const DARK_THEMES = new Set(['dark', 'dark-hc', 'future-dark']);
-
-function ShadowDomToastDemo({ theme }: { theme: string }) {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null);
-
-  useLayoutEffect(() => {
-    const host = hostRef.current;
-    if (!host) return;
-    setShadowRoot(host.shadowRoot ?? host.attachShadow({ mode: 'open' }));
-  }, []);
-
-  const options = { toasterId: SHADOW_TOASTER_ID };
-
-  return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Toast controls and the toaster below are rendered inside an open Shadow Root.
-      </p>
-      <div ref={hostRef} className="min-h-48 rounded-lg border" />
-      {shadowRoot &&
-        createPortal(
-          <>
-            <style>{apolloWindCss}</style>
-            <div className={`${theme} min-h-48 p-4`}>
-              <Toaster
-                id={SHADOW_TOASTER_ID}
-                theme={DARK_THEMES.has(theme) ? 'dark' : 'light'}
-                position="top-right"
-                closeButton
-                richColors
-                visibleToasts={3}
-              />
-              <div className="flex flex-wrap gap-2">
-                <Button size="sm" onClick={() => toast.success('Saved', options)}>
-                  Success
-                </Button>
-                <Button size="sm" onClick={() => toast.info('Information', options)}>
-                  Info
-                </Button>
-                <Button size="sm" onClick={() => toast.warning('Warning', options)}>
-                  Warning
-                </Button>
-                <Button size="sm" onClick={() => toast.error('Failed', options)}>
-                  Error
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    for (let index = 1; index <= 5; index += 1) {
-                      toast.error(`Burst ${index}`, options);
-                    }
-                  }}
-                >
-                  Burst 5
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    toast.warning('Persistent', {
-                      ...options,
-                      duration: Number.POSITIVE_INFINITY,
-                    })
-                  }
-                >
-                  Persistent
-                </Button>
-              </div>
-            </div>
-          </>,
-          shadowRoot
-        )}
-    </div>
-  );
-}
 
 // ============================================================================
 // Basic Toast Types
@@ -603,16 +523,5 @@ export const UserActions = {
         </Button>
       </div>
     </>
-  ),
-};
-
-// ============================================================================
-// Shadow DOM
-// ============================================================================
-
-export const ShadowDom = {
-  name: 'Shadow DOM',
-  render: (_args: unknown, { globals }: { globals: { theme?: string } }) => (
-    <ShadowDomToastDemo theme={globals.theme ?? 'future-dark'} />
   ),
 };
