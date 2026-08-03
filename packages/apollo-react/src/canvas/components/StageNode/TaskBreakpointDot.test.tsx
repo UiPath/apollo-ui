@@ -23,7 +23,10 @@ describe('TaskBreakpointDot', () => {
       // The marker must let clicks/drags on the card corner pass through to the task.
       render(<TaskBreakpointDot taskId="t1" active={true} />);
 
-      expect(screen.getByTestId('stage-task-breakpoint-t1')).toHaveClass('pointer-events-none');
+      const marker = screen.getByTestId('stage-task-breakpoint-t1');
+      expect(marker).toHaveClass('pointer-events-none');
+      // ...so it must not claim to be clickable either.
+      expect(marker).not.toHaveClass('cursor-pointer');
     });
 
     it('offers no add affordance', () => {
@@ -81,6 +84,19 @@ describe('TaskBreakpointDot', () => {
       await user.click(screen.getByTestId('stage-task-add-breakpoint-t1'));
 
       expect(onToggle).toHaveBeenCalledWith('t1');
+    });
+
+    // The marker sits on a card that shows the canvas grab cursor, so it has to say it is clickable.
+    it('shows a pointer cursor on the marker that removes the breakpoint', () => {
+      render(<TaskBreakpointDot taskId="t1" active={true} onToggle={vi.fn()} />);
+
+      expect(screen.getByTestId('stage-task-breakpoint-t1')).toHaveClass('cursor-pointer');
+    });
+
+    it('shows a pointer cursor on the affordance that adds one', () => {
+      render(<TaskBreakpointDot taskId="t1" active={false} onToggle={vi.fn()} />);
+
+      expect(screen.getByTestId('stage-task-add-breakpoint-t1')).toHaveClass('cursor-pointer');
     });
 
     it('keeps the add affordance out of the way until the row is hovered', () => {
