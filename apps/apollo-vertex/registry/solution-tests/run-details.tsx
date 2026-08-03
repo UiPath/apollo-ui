@@ -26,7 +26,6 @@ import {
 import type { ExpandedRowData } from "./result-expanded-content";
 import { RunDetailsView, type BaselineJobMap } from "./run-details-view";
 import { RunResultStatus, type SolutionTestRunResult } from "./types";
-import { isRunDone } from "./utils";
 
 type ResultAttachments = Omit<ExpandedRowData, "loading">;
 
@@ -95,9 +94,10 @@ interface RunDetailsProps {
 
 /** Smart wrapper: resolves the run from the route id, loads its live results +
  *  baseline jobs, fetches the selected-agent attachments, and drives the
- *  full-page run-details view. A route id that doesn't resolve to a completed
- *  run (stale/shared link, or a still-running run) renders an empty state with a
- *  Back button rather than auto-navigating. */
+ *  full-page run-details view. A route id that resolves to no run at all
+ *  (stale or shared deep-link) renders an empty state with a Back button rather
+ *  than auto-navigating. In-progress runs render normally; agents that haven't
+ *  finished fall back to a per-agent placeholder. */
 export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
   const { t } = useTranslation();
   const { showDebug, track } = useSolutionTestsConfig();
@@ -171,10 +171,10 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
     }
   }, [results, selectedResultId]);
 
-  // A route id that isn't a completed run has nothing to show (a stale or shared
-  // deep-link). Wait for the runs collection to resolve so a valid link isn't
-  // judged early, then render an empty state — never navigate away on the user.
-  if (!run || !isRunDone(run.Status)) {
+  // A route id that resolves to no run at all has nothing to show (a stale or
+  // shared deep-link). Wait for the runs collection to resolve so a valid link
+  // isn't judged early, then render an empty state — never navigate away.
+  if (!run) {
     if (runsLoading) return null;
     return (
       <Empty className="h-full min-h-[600px]">

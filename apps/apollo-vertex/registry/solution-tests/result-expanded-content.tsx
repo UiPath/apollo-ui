@@ -76,6 +76,12 @@ export const ResultExpandedContent = ({
     <div className="flex flex-col gap-4 p-4">
       <UserMessagesView messages={result.UserMessages} />
 
+      {status === RunResultStatus.Pending && (
+        <Empty>
+          <EmptyDescription>{t("agent_still_running")}</EmptyDescription>
+        </Empty>
+      )}
+
       {isPassedOrFailed &&
         !isAutoPass &&
         (hasEvaluatorResults ? (
