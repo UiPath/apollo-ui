@@ -61,7 +61,7 @@ function SolutionTestsTemplateContent() {
   // Run-details page (runs expansion → full-page agent detail view).
   const [detailsRun, setDetailsRun] = useState<{
     run: SolutionTestRun;
-    subjectId: string;
+    subjectLabel: string;
   } | null>(null);
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
 
@@ -178,7 +178,8 @@ function SolutionTestsTemplateContent() {
             setSelectedResultId(null);
             setDetailsRun({
               run,
-              subjectId: test?.SubjectId ?? run.SolutionTestId,
+              subjectLabel:
+                test?.TestName ?? test?.SubjectId ?? run.SolutionTestId,
             });
           }}
           onForceStop={noop}
@@ -208,7 +209,7 @@ function SolutionTestsTemplateContent() {
 
   function renderDetailsPage(target: {
     run: SolutionTestRun;
-    subjectId: string;
+    subjectLabel: string;
   }) {
     const results = db.results.filter(
       (r) => r.SolutionTestRunId === target.run.Id,
@@ -242,7 +243,7 @@ function SolutionTestsTemplateContent() {
 
     return (
       <RunDetailsView
-        subjectId={target.subjectId}
+        subjectLabel={target.subjectLabel}
         run={target.run}
         results={results}
         isLoading={false}
