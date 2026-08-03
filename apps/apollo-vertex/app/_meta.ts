@@ -9,6 +9,9 @@ export default {
   "data-querying": "Data Querying",
   localization: "Localization",
   mcp: "MCP Server",
+  "invoice-review": {
+    display: "hidden",
+  },
   auth_callback: {
     display: "hidden",
   },

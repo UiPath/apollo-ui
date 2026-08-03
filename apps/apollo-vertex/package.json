@@ -6,6 +6,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "pnpm generate:theme && next --turbopack",
+    "demo": "slack/node_modules/.bin/concurrently --names APP,SLACK --prefix-colors cyan,magenta \"pnpm dev\" \"cd slack && npm start\"",
+    "demo:reset": "cd slack && npm run reset-demo",
     "build": "pnpm generate:theme && pnpm registry:build && next build",
     "start": "next start",
     "generate:theme": "node --experimental-strip-types scripts/generate-theme-css.ts",
@@ -13,7 +15,7 @@
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "format": "biome format --write",
     "format:check": "biome format",
-    "lint": "oxlint --type-aware",
+    "lint": "oxlint --type-aware && node scripts/check-type-drift.mjs",
     "lint:fix": "oxlint --fix --type-aware",
     "lint:deps": "depcruise registry --config .dependency-cruiser.js",
     "typecheck": "tsc --noEmit"

@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "./shell-auth-provider";
 import { LANGUAGE_CHANGED_EVENT, LOCALE_OPTIONS } from "./shell-constants";
 import type { LanguageChangedEvent } from "./shell-constants";
+import { useShellProfileExtras } from "./shell-profile-extras";
 import { Text } from "./shell-text";
 import { useTheme } from "./shell-theme-provider";
 
@@ -20,6 +21,7 @@ export const UserProfileMenuItems = () => {
   const { logout } = useAuth();
   const { setTheme } = useTheme();
   const language = i18n.language;
+  const extras = useShellProfileExtras();
 
   function setLanguage(code: SupportedLocale) {
     document.dispatchEvent(
@@ -69,6 +71,7 @@ export const UserProfileMenuItems = () => {
           ))}
         </DropdownMenuSubContent>
       </DropdownMenuSub>
+      {extras}
       <DropdownMenuSeparator />
       <DropdownMenuItem onClick={logout}>
         <LogOut className="w-4 h-4" />
