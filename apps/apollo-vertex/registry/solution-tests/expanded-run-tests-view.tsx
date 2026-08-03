@@ -61,14 +61,8 @@ export const ExpandedRunTestsView = ({
               return (
                 <TableRow
                   key={run.Id}
-                  className={
-                    done
-                      ? "cursor-pointer hover:bg-muted/50"
-                      : "cursor-not-allowed opacity-60"
-                  }
-                  onClick={() => {
-                    if (done) onOpenDetails(run);
-                  }}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => onOpenDetails(run)}
                 >
                   <TableCell className="px-3 py-2">
                     {test?.TestName ?? subjectId}
