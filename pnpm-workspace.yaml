@@ -23,7 +23,6 @@ minimumReleaseAgeExclude:
   - '@esbuild/*'                  # 0.28.1 — platform binaries co-published with esbuild in the same OIDC release, vetted 2026-06-16
   - 'next@16.2.11'                # 16.2.11 — security release (GHSA-m99w-x7hq-7vfj, GHSA-6gpp-xcg3-4w24, GHSA-p9j2-gv94-2wf4, GHSA-89xv-2m56-2m9x + 5 moderate), vetted 2026-07-24: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
   - '@next/*'                     # 16.2.11 — swc platform binaries + env co-published with next in the same OIDC release
-  - 'fast-uri@3.1.4'              # 3.1.4 — GHSA-v2hh-gcrm-f6hx, vetted 2026-07-24: publisher (mcollina) ✓, release tag ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
   - '@hono/node-server@2.0.10 || 2.0.11' # 2.0.11 — GHSA-9mqv-5hh9-4cgg (2.0.10 + 2.0.11 vetted 2026-07-24): provenance ✓, publisher (OIDC, approver yusukebe) ✓, tag+diff ✓, integrity ✓
   - 'js-yaml@5.2.2'               # 5.2.2 — GHSA-pm4m-ph32-ghv5 (high, flow-collection parsing DoS), vetted 2026-07-28: publisher (vitaly) ✓, tag+diff ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
   - 'brace-expansion@5.0.8'       # 5.0.8 — GHSA-mh99-v99m-4gvg / CVE-2026-14257 (high, unbounded expansion OOM), vetted 2026-07-28: publisher (juliangruber) ✓, tag+diff ✓, no dep changes ✓, integrity ✓ (no provenance, historically none)
