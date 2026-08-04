@@ -1,5 +1,7 @@
 export { CanvasEdge } from './CanvasEdge';
 export * from './SequenceEdge';
+export type { EdgePolyline } from './shared/crossings';
+export { computeLineJumps, EdgeCrossingsProvider } from './shared/crossings';
 export type {
   EdgeRouter,
   RouteAnchor,
@@ -18,6 +20,7 @@ export type {
   CanvasEdgeProps,
   EdgeRouting,
   EdgeStrokeStyle,
+  PathJump,
   Point,
   Segment,
   SegmentOrientation,

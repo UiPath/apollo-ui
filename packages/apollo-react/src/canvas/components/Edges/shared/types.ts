@@ -16,6 +16,16 @@ export type PathVertex = Point & {
   waypointIndex: number;
 };
 
+/**
+ * A crossing on a rendered path where the line hops over another edge with a
+ * small arc. `segmentIndex` indexes the polyline segment the jump sits on:
+ * segment `i` runs from `points[i]` to `points[i + 1]`.
+ */
+export type PathJump = {
+  segmentIndex: number;
+  point: Point;
+};
+
 export type SegmentOrientation = 'horizontal' | 'vertical';
 
 export type Segment = {
@@ -71,6 +81,18 @@ export type CanvasEdgeData = {
   enableEditing?: boolean;
   enableExecution?: boolean;
   enableToolbar?: boolean;
+
+  /**
+   * Draw a small arc where this edge crosses another edge, so criss-crossing
+   * lines read as passing over rather than joining. Waypoint routing only.
+   *
+   * Only edges that opt in take part, both as the line that hops and as the
+   * line hopped over, and at each crossing it is the horizontal segment that
+   * arcs. Set it uniformly across a graph (via `defaultEdgeOptions` or the edge
+   * factory) for a consistent result: with a mixed config, a crossing between an
+   * opted-in edge and an opted-out one is drawn flat.
+   */
+  enableLineJumps?: boolean;
 
   // Data the editing behavior operates on
   waypoints?: Waypoint[];

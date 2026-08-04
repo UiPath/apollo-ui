@@ -30,6 +30,7 @@ import type { CanvasEdgeProps } from './shared/types';
  * - `enableEditing`   — drag/insert/remove waypoints (waypoint routing only)
  * - `enableExecution` — subscribe to execution + validation status
  * - `enableToolbar`   — render add-node toolbar
+ * - `enableLineJumps` — arc over crossing edges (waypoint routing only)
  */
 export const CanvasEdge = memo(function CanvasEdge({
   id,
@@ -113,6 +114,7 @@ export const CanvasEdge = memo(function CanvasEdge({
 
   const geometry = useEdgeGeometry({
     routing,
+    edgeId: id,
     sourceNodeId: source,
     targetNodeId: target,
     sourceHandleId,
@@ -128,6 +130,7 @@ export const CanvasEdge = memo(function CanvasEdge({
     autoRouted: waypoints.length === 0,
     enableSegments: editingEnabled,
     hideArrowHead,
+    enableLineJumps: !!data?.enableLineJumps,
   });
 
   const editor = useWaypointEditor({

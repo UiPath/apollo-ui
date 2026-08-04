@@ -729,3 +729,115 @@ export const ExecutionStates: Story = {
     },
   },
 };
+
+/**
+ * Line jumps. Three horizontal edges run under two vertical ones, and each
+ * crossing draws a small arc on the horizontal line so the paths read as
+ * passing over rather than joining.
+ *
+ * Toggle the flag to compare against flat crossings, and drag any node to see
+ * the notches track the crossings live.
+ */
+function LineJumpsStory() {
+  const initialNodes = useMemo(() => {
+    // Rows are node y positions; lanes are node x positions. Each vertical
+    // edge runs through its lane node's center, crossing all three rows.
+    const rows = [160, 280, 400];
+    const lanes = [336, 696];
+    return [
+      ...rows.flatMap((y, i) => [
+        createNode({
+          id: `h${i}-src`,
+          label: `Row ${i + 1}`,
+          x: 40,
+          y,
+          sourcePositions: [Position.Right],
+        }),
+        createNode({
+          id: `h${i}-tgt`,
+          label: 'Target',
+          x: 1080,
+          y,
+          targetPositions: [Position.Left],
+        }),
+      ]),
+      ...lanes.flatMap((x, i) => [
+        createNode({
+          id: `v${i}-src`,
+          label: `Lane ${i + 1}`,
+          x,
+          y: 20,
+          sourcePositions: [Position.Bottom],
+        }),
+        createNode({
+          id: `v${i}-tgt`,
+          label: 'Target',
+          x,
+          y: 560,
+          targetPositions: [Position.Top],
+        }),
+      ]),
+    ];
+  }, []);
+
+  const initialEdges: Edge<CanvasEdgeData>[] = useMemo(
+    () => [
+      ...[0, 1, 2].map((i) => ({
+        id: `h${i}`,
+        source: `h${i}-src`,
+        target: `h${i}-tgt`,
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'canvas-edge',
+        data: { enableLineJumps: true, enableEditing: true },
+      })),
+      ...[0, 1].map((i) => ({
+        id: `v${i}`,
+        source: `v${i}-src`,
+        target: `v${i}-tgt`,
+        sourceHandle: `out-${Position.Bottom}`,
+        targetHandle: `in-${Position.Top}`,
+        type: 'canvas-edge',
+        data: { enableLineJumps: true, enableEditing: true },
+      })),
+    ],
+    []
+  );
+
+  const { canvasProps, setEdges } = useCanvasStory({ initialNodes, initialEdges });
+  const [enabled, setEnabled] = useState(true);
+
+  const toggle = useCallback(() => {
+    const next = !enabled;
+    setEnabled(next);
+    setEdges((eds) =>
+      eds.map((edge) => ({ ...edge, data: { ...edge.data, enableLineJumps: next } }))
+    );
+  }, [enabled, setEdges]);
+
+  return (
+    <>
+      <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design" />
+      <StoryInfoPanel
+        title="Line jumps"
+        description={enabled ? 'Crossings arc over' : 'Crossings drawn flat'}
+      >
+        <button type="button" onClick={toggle} style={{ display: 'block', marginTop: 8 }}>
+          {enabled ? 'Disable line jumps' : 'Enable line jumps'}
+        </button>
+      </StoryInfoPanel>
+    </>
+  );
+}
+
+export const LineJumps: Story = {
+  render: () => <LineJumpsStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Edges with `enableLineJumps: true` hop over the edges they cross, so criss-crossing lines stay readable. At each crossing the horizontal segment is the one that arcs, which keeps the pattern stable while nodes move. Only edges that opt in take part, both as the line that hops and the line hopped over, so set the flag uniformly across a graph. Waypoint routing only: handle-routed edges produce a path string with no vertices to intersect. Jumps sitting inside a rounded corner, or closer together than one arc width, are dropped so the line never turns scalloped.',
+      },
+    },
+  },
+};
