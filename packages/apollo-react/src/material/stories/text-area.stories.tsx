@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { ApTextArea } from '../components';
+import { ApTextArea, ApTextField } from '../components';
 import { materialParameters, Section } from './storybook-helpers';
 
 /**
@@ -147,6 +147,47 @@ function StatesDemo() {
     </>
   );
 }
+
+function LabelAlignmentDemo() {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [required, setRequired] = useState('');
+  return (
+    <>
+      <Labeled label="Stacked in a form — labels should be indistinguishable">
+        <ApTextField label="Name" value={name} onChange={setName} placeholder="Enter a name..." />
+        <ApTextArea
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Describe something..."
+          minRows={3}
+        />
+      </Labeled>
+      <Labeled label="Required — asterisk styling should also match">
+        <ApTextField label="Name" value={name} onChange={setName} required />
+        <ApTextArea
+          label="Description"
+          value={required}
+          onChange={(e) => setRequired(e.target.value)}
+          required
+          minRows={3}
+        />
+      </Labeled>
+    </>
+  );
+}
+
+export const LabelAlignment: Story = {
+  render: () => (
+    <Section
+      title="Label alignment with ApTextField"
+      description="ApTextArea's label comes from the theme's MuiInputLabel override, the same as ApTextField's, so the two read identically when stacked in a form."
+    >
+      <LabelAlignmentDemo />
+    </Section>
+  ),
+};
 
 export const Basic: Story = {
   render: () => (

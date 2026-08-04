@@ -1,7 +1,7 @@
-import { Box, TextareaAutosize } from '@mui/material';
+import { Box, InputLabel, TextareaAutosize } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useId, useRef, useState } from 'react';
 
 import { ApTypography } from '../ap-typography';
 import type { ApTextAreaProps } from './ApTextArea.types';
@@ -134,33 +134,27 @@ export const ApTextArea = React.forwardRef<HTMLTextAreaElement, ApTextAreaProps>
       [ref]
     );
 
-    const labelId = label ? `textarea-label-${dataTestid || 'default'}` : undefined;
-    const helperId =
-      helperText || errorMessage ? `textarea-helper-${dataTestid || 'default'}` : undefined;
+    // Per-instance: deriving these from `dataTestid` gave every instance without one the same
+    // `-default` id, so two text areas on a page cross-wired their accessible names.
+    const instanceId = useId();
+    const labelId = label ? `textarea-label-${instanceId}` : undefined;
+    const helperId = helperText || errorMessage ? `textarea-helper-${instanceId}` : undefined;
 
     return (
       <Box sx={{ width: width || '100%' }}>
+        {/*
+          Rendered with MUI's InputLabel rather than a hand-rolled ApTypography so the label picks
+          up the theme's `MuiInputLabel` override — the same weight, size, colour and margins
+          ApTextField gets. The previous body-text label (weight 400, primary foreground, 4px
+          bottom margin) did not match sibling field labels in a form.
+
+          Not wrapped in a MUI FormControl on purpose: the `MuiFormControl` override restyles any
+          descendant `textarea`'s border and padding, which would override the styling above.
+        */}
         {label && (
-          <Box sx={{ marginBottom: token.Spacing.SpacingMicro }}>
-            <ApTypography
-              variant={FontVariantToken.fontSizeM}
-              id={labelId}
-              style={{ color: 'var(--color-foreground)' }}
-            >
-              {label}
-              {required && (
-                <Box
-                  component="span"
-                  sx={{
-                    color: 'var(--color-error-text)',
-                    marginLeft: token.Spacing.SpacingMicro,
-                  }}
-                >
-                  *
-                </Box>
-              )}
-            </ApTypography>
-          </Box>
+          <InputLabel id={labelId} required={required}>
+            {label}
+          </InputLabel>
         )}
 
         <StyledTextareaAutosize
