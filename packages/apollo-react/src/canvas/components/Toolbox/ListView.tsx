@@ -394,7 +394,8 @@ const ListViewRow = memo(
       <div className="flex flex-col gap-0.5">
         {showName && <span className="text-sm">{item.name}</span>}
         {showDescription && (
-          <span className="text-xs text-foreground-muted">{item.description}</span>
+          // De-emphasize on the tooltip's inverse surface - the regular muted token has no contrast there.
+          <span className="text-xs text-foreground-inverse/70">{item.description}</span>
         )}
         {item.detail && <span className="text-xs">{item.detail}</span>}
       </div>
