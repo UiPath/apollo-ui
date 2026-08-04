@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v6.16.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.15.1...@uipath/apollo-react@6.16.0) (2026-08-04)
+
+### Features
+
+* **apollo-react:** officially support early exit status for stages ([6890d1b](https://github.com/UiPath/apollo-ui/commit/6890d1bfd23cabbf3617abf66abaefd06d3d6f07))
+
+### Bug Fixes
+
+* **apollo-react:** add missing execution status label string ([73e1346](https://github.com/UiPath/apollo-ui/commit/73e13463703f4ea8427b3b1c3793bae1a710a43e))
+* **apollo-react:** added test ([4bbf045](https://github.com/UiPath/apollo-ui/commit/4bbf045839d26f4269c2c911dbe0049d6043019d))
+
 ## [@uipath/apollo-react-v6.15.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.15.0...@uipath/apollo-react@6.15.1) (2026-08-04)
 
 ### Bug Fixes
