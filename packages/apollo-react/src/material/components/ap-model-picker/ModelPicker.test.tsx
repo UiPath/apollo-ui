@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ModelPicker } from './ModelPicker';
 import type { DiscoveryModel } from './types';
 import { platformNavigation } from './usePlatformAccess';
+import { isTextGenerationModel } from './utils';
 
 /**
  * Render helper. No I18nProvider on purpose: the picker resolves its
@@ -513,26 +514,45 @@ describe('<ModelPicker>', () => {
 });
 
 describe('<ModelPicker> catalog scoping', () => {
-  it('never renders embeddings or realtime models', async () => {
+  const NON_CHAT_MODELS: DiscoveryModel[] = [
+    ...MODELS,
+    {
+      modelId: 'text-embedding-3-large',
+      modelName: 'text-embedding-3-large',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'UiPathOwned',
+      apiFlavor: 'OpenAiEmbeddings',
+    },
+    {
+      modelId: 'gpt-realtime',
+      modelName: 'gpt-realtime',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'UiPathOwned',
+      modelType: 'Realtime',
+    },
+  ];
+
+  // Which modalities a product offers is the product's call: an indexing or
+  // context-grounding surface picks embeddings from the same catalog.
+  it('renders embeddings and realtime models when the host does not filter them', async () => {
     const user = userEvent.setup();
-    const models: DiscoveryModel[] = [
-      ...MODELS,
-      {
-        modelId: 'text-embedding-3-large',
-        modelName: 'text-embedding-3-large',
-        vendor: 'OpenAi',
-        modelSubscriptionType: 'UiPathOwned',
-        apiFlavor: 'OpenAiEmbeddings',
-      },
-      {
-        modelId: 'gpt-realtime',
-        modelName: 'gpt-realtime',
-        vendor: 'OpenAi',
-        modelSubscriptionType: 'UiPathOwned',
-        modelType: 'Realtime',
-      },
-    ];
-    renderPicker(<ModelPicker models={models} value={null} onChange={() => {}} />);
+    renderPicker(<ModelPicker models={NON_CHAT_MODELS} value={null} onChange={() => {}} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const listbox = await screen.findByRole('listbox');
+    expect(within(listbox).getByText('text-embedding-3-large')).toBeInTheDocument();
+    expect(within(listbox).getByText('gpt-realtime')).toBeInTheDocument();
+  });
+
+  it('drops them when the host opts into isTextGenerationModel', async () => {
+    const user = userEvent.setup();
+    renderPicker(
+      <ModelPicker
+        models={NON_CHAT_MODELS}
+        value={null}
+        onChange={() => {}}
+        filter={isTextGenerationModel}
+      />
+    );
     await user.click(screen.getByRole('button', { expanded: false }));
     const listbox = await screen.findByRole('listbox');
     expect(within(listbox).queryByText('text-embedding-3-large')).toBeNull();
@@ -575,7 +595,9 @@ describe('<ModelPicker> catalog scoping', () => {
         routingDetails: { geography: 'JA' },
       },
     ];
-    renderPicker(<ModelPicker models={models} value={null} onChange={() => {}} homeRegion="Japan" />);
+    renderPicker(
+      <ModelPicker models={models} value={null} onChange={() => {}} homeRegion="Japan" />
+    );
     await user.click(screen.getByRole('button', { expanded: false }));
     const listbox = await screen.findByRole('listbox');
     // homeRegion "Japan" resolves to JA: the US-routed model is out of

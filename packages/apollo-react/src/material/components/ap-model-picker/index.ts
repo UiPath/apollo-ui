@@ -86,4 +86,5 @@ export {
   filterModels,
   getSubstitutionTarget,
   groupModels,
+  isTextGenerationModel,
 } from './utils';

@@ -71,10 +71,14 @@ const isByoModel = (m: DiscoveryModel) =>
   !!m.byoConnectionLabel;
 
 /**
- * The picker exists for text-generation flows: embeddings and realtime
- * models can't serve them, so they never render — same policy as
- * `isBlockedByPolicy`. Embeddings are recognized by their API flavor
- * (`OpenAiEmbeddings`, `GeminiEmbeddings`), realtime by `modelType`.
+ * Ready-made `filter` predicate for products that only offer text-generation
+ * models: drops embeddings (by API flavor — `OpenAiEmbeddings`,
+ * `GeminiEmbeddings`) and realtime (by `modelType`).
+ *
+ * The picker does NOT apply this itself: which modalities to offer is a
+ * per-product decision — an indexing or context-grounding surface picks
+ * embeddings from the same catalog. Opt in with
+ * `filter={isTextGenerationModel}`.
  */
 export function isTextGenerationModel(m: DiscoveryModel): boolean {
   if (m.modelType === 'Realtime') return false;

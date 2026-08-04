@@ -33,7 +33,7 @@ import {
   useUserFolders,
 } from './usePlatformAccess';
 import type { DeriveModelTagsContext, GroupStrategy } from './utils';
-import { isTextGenerationModel, resolveHomeGeography } from './utils';
+import { resolveHomeGeography } from './utils';
 
 const EMPTY_MODELS: DiscoveryModel[] = [];
 
@@ -455,12 +455,12 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
 
     // BYO rows without a host-supplied `byoConnectionLabel` get their
     // Integration Service connection name resolved by the picker itself.
-    // Policy-blocked models are never rendered (same as the platform BFFs),
-    // nor are embeddings/realtime models — the picker serves text-generation
-    // flows only.
+    // Policy-blocked models are never rendered (same as the platform BFFs).
+    // Which modalities a product offers is the product's call — pass `filter`
+    // (see `isTextGenerationModel` for the common chat-only case).
     const connectionNames = useByoConnectionNames(catalog, requestContext ?? null);
     const effectiveModels = React.useMemo(() => {
-      const allowed = catalog.filter((m) => !m.isBlockedByPolicy && isTextGenerationModel(m));
+      const allowed = catalog.filter((m) => !m.isBlockedByPolicy);
       if (connectionNames.size === 0) return allowed;
       return allowed.map((m) => {
         if (m.byoConnectionLabel) return m;

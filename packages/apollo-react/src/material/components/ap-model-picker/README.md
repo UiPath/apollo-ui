@@ -43,7 +43,7 @@ The picker is one shared visual + behavioral contract. Everything below is a pro
 
 ### 1. Filter the visible catalog
 
-When your product should only show a subset of what Discovery returns (specific operation codes, current-user permissions, region constraints), pass a `filter`:
+When your product should only show a subset of what Discovery returns (specific modalities, operation codes, current-user permissions, region constraints), pass a `filter`:
 
 ```tsx
 <ModelPicker
@@ -62,6 +62,16 @@ When your product should only show a subset of what Discovery returns (specific 
 - `filter` runs **before** grouping and search. Empty groups disappear cleanly.
 - A `value` whose id is filtered out still resolves — the trigger renders normally, no spurious "unknown model" error.
 - Pass a **stable function reference** if `models` is large; the hook re-derives groups whenever `filter` changes identity.
+
+**Modality is a product decision.** The picker renders whatever Discovery serves — it does not assume text generation. Products that only offer chat models opt in with the exported helper, which drops embeddings (by `apiFlavor`) and realtime (by `modelType`):
+
+```tsx
+import { isTextGenerationModel } from '@uipath/apollo-react/material/components';
+
+<ModelPicker filter={isTextGenerationModel} … />
+```
+
+An indexing or context-grounding surface picks embeddings from the same catalog, so excluding them centrally would break it. The one thing the picker *does* drop unconditionally is `isBlockedByPolicy` — that's an org-wide governance verdict, not a product preference.
 
 ### 2. Friendly names
 
