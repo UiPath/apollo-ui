@@ -1,3 +1,12 @@
+## [@uipath/apollo-react-v6.15.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.15.0...@uipath/apollo-react@6.15.1) (2026-08-04)
+
+### Bug Fixes
+
+* **apollo-react:** keep ApTextArea required asterisk red [MST-13121] ([0636f46](https://github.com/UiPath/apollo-ui/commit/0636f4685c932e3bc6bfce2d1beed03c95d89f00))
+* **apollo-react:** link the ApTextArea label to its textarea with htmlFor [MST-13121] ([edb1747](https://github.com/UiPath/apollo-ui/commit/edb174769c1562d493f3ac71083bffa660051639))
+* **apollo-react:** match ApTextArea label styling to ApTextField [MST-13121] ([913d739](https://github.com/UiPath/apollo-ui/commit/913d73945aebdceb78eae8c8ec80c6b22962d95e))
+* **apollo-react:** use the themed asterisk colour for ApTextArea [MST-13121] ([d23029b](https://github.com/UiPath/apollo-ui/commit/d23029bb38955115273c1beb9465250667115b3c))
+
 ## [@uipath/apollo-react-v6.15.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.14.0...@uipath/apollo-react@6.15.0) (2026-08-04)
 
 ### Features
