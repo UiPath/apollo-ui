@@ -41,6 +41,13 @@ describe('ExecutionStatusIcon', () => {
     expect(icon).toHaveAttribute('data-color', 'var(--color-info-icon)');
     expect(icon).toHaveAttribute('data-size', '20');
   });
+
+  it('renders EarlyExit with the early exit glyph and success color', () => {
+    render(<ExecutionStatusIcon status="EarlyExit" size={20} />);
+
+    const icon = screen.getByTestId('early-exit-status-icon');
+    expect(icon).toBeInTheDocument();
+  });
 });
 
 describe('getExecutionStatusColor', () => {

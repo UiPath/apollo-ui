@@ -6,6 +6,7 @@ export const EarlyExitStatusIcon = () => {
         top: '20px',
         right: '20px',
       }}
+      data-testid="early-exit-status-icon"
     >
       <svg
         width="20"
