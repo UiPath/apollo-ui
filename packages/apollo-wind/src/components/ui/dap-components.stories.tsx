@@ -1640,9 +1640,6 @@ const meta = {
   title: 'Patterns/DAP components',
   component: DapComponentsPage,
   tags: ['!autodocs'],
-  globals: {
-    theme: 'light',
-  },
   parameters: {
     layout: 'fullscreen',
   },
