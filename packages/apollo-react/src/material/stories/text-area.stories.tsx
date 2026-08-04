@@ -154,7 +154,7 @@ function LabelAlignmentDemo() {
   const [required, setRequired] = useState('');
   return (
     <>
-      <Labeled label="Stacked in a form — labels should be indistinguishable">
+      <Labeled label="Stacked in a form: labels should be indistinguishable">
         <ApTextField label="Name" value={name} onChange={setName} placeholder="Enter a name..." />
         <ApTextArea
           label="Description"
@@ -164,7 +164,7 @@ function LabelAlignmentDemo() {
           minRows={3}
         />
       </Labeled>
-      <Labeled label="Required — asterisk styling should also match">
+      <Labeled label="Required: asterisk styling should also match">
         <ApTextField label="Name" value={name} onChange={setName} required />
         <ApTextArea
           label="Description"

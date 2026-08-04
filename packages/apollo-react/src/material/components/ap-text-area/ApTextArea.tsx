@@ -78,6 +78,7 @@ export const ApTextArea = React.forwardRef<HTMLTextAreaElement, ApTextAreaProps>
       resize = 'vertical',
       dataTestid,
       onChange,
+      id,
       ...restProps
     },
     ref
@@ -139,6 +140,8 @@ export const ApTextArea = React.forwardRef<HTMLTextAreaElement, ApTextAreaProps>
     const instanceId = useId();
     const labelId = label ? `textarea-label-${instanceId}` : undefined;
     const helperId = helperText || errorMessage ? `textarea-helper-${instanceId}` : undefined;
+    // Needed for the label's `htmlFor`, so clicking the label focuses the textarea.
+    const textareaId = id ?? `textarea-${instanceId}`;
 
     return (
       <Box sx={{ width: width || '100%' }}>
@@ -152,13 +155,14 @@ export const ApTextArea = React.forwardRef<HTMLTextAreaElement, ApTextAreaProps>
           descendant `textarea`'s border and padding, which would override the styling above.
         */}
         {label && (
-          <InputLabel id={labelId} required={required}>
+          <InputLabel id={labelId} htmlFor={textareaId} required={required}>
             {label}
           </InputLabel>
         )}
 
         <StyledTextareaAutosize
           ref={combinedRef}
+          id={textareaId}
           value={stringValue}
           placeholder={placeholder}
           readOnly={readOnly}
