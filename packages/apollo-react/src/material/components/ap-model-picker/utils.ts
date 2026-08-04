@@ -125,12 +125,16 @@ const GEOGRAPHY_CODES = new Set([
  * case-insensitive, separators ignored) so hosts pass
  * `organization.region` straight through instead of each maintaining a
  * mapping. Unknown values resolve to `undefined` — no out-of-region chips.
+ * So does `'GLOBAL'`: it is a model routing target, not a place an org
+ * lives, and taking it as one would flag every regional model.
  */
 export function resolveHomeGeography(homeRegion: string | undefined): string | undefined {
-  if (!homeRegion) return undefined;
-  const upper = homeRegion.toUpperCase();
+  const raw = homeRegion?.trim();
+  if (!raw) return undefined;
+  const upper = raw.toUpperCase();
+  if (upper === 'GLOBAL') return undefined;
   if (GEOGRAPHY_CODES.has(upper)) return upper;
-  return OMS_REGION_TO_GEOGRAPHY[homeRegion.toLowerCase().replace(/[\s_-]/g, '')];
+  return OMS_REGION_TO_GEOGRAPHY[raw.toLowerCase().replace(/[\s_-]/g, '')];
 }
 
 export function deriveModelTags(
@@ -249,7 +253,8 @@ export function deriveModelTags(
 
   if (!isByo) {
     const geo = model.routingDetails?.geography;
-    if (geo && context.homeRegion && geo !== 'GLOBAL' && geo !== context.homeRegion) {
+    const home = context.homeRegion === 'GLOBAL' ? undefined : context.homeRegion;
+    if (geo && home && geo !== 'GLOBAL' && geo !== home) {
       tags.push({
         kind: 'out-of-region',
         label: context.i18n
@@ -263,9 +268,9 @@ export function deriveModelTags(
           ? context.i18n._({
               id: 'modelPicker.tag.outOfRegion.tooltip',
               message: 'Routes traffic outside {homeRegion}',
-              values: { homeRegion: context.homeRegion },
+              values: { homeRegion: home },
             })
-          : `Routes traffic outside ${context.homeRegion}`,
+          : `Routes traffic outside ${home}`,
       });
     }
   }

@@ -215,6 +215,12 @@ describe('deriveModelTags', () => {
       homeRegion: 'EU',
     });
     expect(globalForEuUser.find((t) => t.kind === 'out-of-region')).toBeFalsy();
+
+    // A GLOBAL home region is not a place — it must not flag every regional model.
+    const euHostedForGlobalUser = deriveModelTags(model({ routingDetails: { geography: 'EU' } }), {
+      homeRegion: 'GLOBAL',
+    });
+    expect(euHostedForGlobalUser.find((t) => t.kind === 'out-of-region')).toBeFalsy();
   });
 
   it('emits Substituted chip (not Deprecating) when effectiveModel routes elsewhere', () => {
@@ -441,7 +447,17 @@ describe('resolveHomeGeography', () => {
   it('passes geography codes through, case-insensitively', () => {
     expect(resolveHomeGeography('EU')).toBe('EU');
     expect(resolveHomeGeography('ja')).toBe('JA');
-    expect(resolveHomeGeography('Global')).toBe('GLOBAL');
+  });
+
+  it('tolerates surrounding whitespace', () => {
+    expect(resolveHomeGeography('  EU ')).toBe('EU');
+    expect(resolveHomeGeography(' United States ')).toBe('US');
+    expect(resolveHomeGeography('   ')).toBeUndefined();
+  });
+
+  it('treats GLOBAL as no home region', () => {
+    expect(resolveHomeGeography('GLOBAL')).toBeUndefined();
+    expect(resolveHomeGeography('Global')).toBeUndefined();
   });
 
   it('maps OMS region names to Discovery geography codes', () => {
