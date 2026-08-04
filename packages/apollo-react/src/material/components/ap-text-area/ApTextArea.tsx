@@ -152,7 +152,14 @@ export const ApTextArea = React.forwardRef<HTMLTextAreaElement, ApTextAreaProps>
           descendant `textarea`'s border and padding, which would override the styling above.
         */}
         {label && (
-          <InputLabel id={labelId} required={required}>
+          <InputLabel
+            id={labelId}
+            required={required}
+            // The theme's `asterisk: { color: 'inherit' }` would render a de-emphasized asterisk.
+            // ApTextArea has always shown a red one, so keep that rather than change existing
+            // behaviour while fixing the label typography.
+            sx={{ '& .MuiInputLabel-asterisk': { color: 'var(--color-error-text)' } }}
+          >
             {label}
           </InputLabel>
         )}
