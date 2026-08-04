@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.15.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.14.0...@uipath/apollo-react@6.15.0) (2026-08-04)
+
+### Features
+
+* **apollo-react:** format stage durations narrow, and take a duration label ([5b37139](https://github.com/UiPath/apollo-ui/commit/5b37139c924256b090869d7bf9445f14f53650c3))
+
 ## [@uipath/apollo-react-v6.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.13.0...@uipath/apollo-react@6.14.0) (2026-08-03)
 
 ### Features
