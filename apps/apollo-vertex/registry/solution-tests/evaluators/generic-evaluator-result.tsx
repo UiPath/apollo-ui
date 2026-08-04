@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
+import { EMPTY_VALUE } from "../constants";
 import { useSolutionTestsConfig } from "../context";
 import { JsonPanel } from "./output-panels";
 import type { EvaluatorResultProps } from "./registry";
@@ -35,7 +36,7 @@ export const GenericEvaluatorResult = ({
   const { passThreshold } = useSolutionTestsConfig();
   const displayLabel = label ?? evaluatorId;
   const justification = evaluatorDetails.justification;
-  const scoreStr = score == null ? "—" : `${Math.round(score * 100)}%`;
+  const scoreStr = score == null ? EMPTY_VALUE : `${Math.round(score * 100)}%`;
 
   return (
     <div className="flex flex-col gap-4">

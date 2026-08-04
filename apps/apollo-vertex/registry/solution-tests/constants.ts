@@ -3,6 +3,9 @@
 
 import { RunResultStatus, RunStatus, SolutionTestStatus } from "./types";
 
+/** Placeholder rendered where a value is absent (missing baseline, no score). */
+export const EMPTY_VALUE = "—";
+
 /** Well-known Solution Test collection names on `solution.api.collections.solutionTests`. */
 export const ENTITY = {
   tests: "UiPathSTTests",
