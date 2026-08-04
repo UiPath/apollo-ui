@@ -1788,7 +1788,7 @@
       "title": "Data Table",
       "description": "A data table component built on TanStack Table with sorting, filtering, pagination, row selection, and column reordering.",
       "dependencies": [
-        "@tanstack/react-table",
+        "@tanstack/react-table@^8.21.0",
         "@dnd-kit/core",
         "@dnd-kit/sortable",
         "@dnd-kit/utilities",
@@ -1947,7 +1947,7 @@
       "type": "registry:ui",
       "title": "Filter Dropdown",
       "description": "A versatile filter dropdown with multi-select, single-select, search, and optional TanStack Table column integration.",
-      "dependencies": ["@tanstack/react-table", "lucide-react"],
+      "dependencies": ["@tanstack/react-table@^8.21.0", "lucide-react"],
       "registryDependencies": [
         "@uipath/button",
         "@uipath/checkbox",
@@ -2396,7 +2396,10 @@
       "type": "registry:hook",
       "title": "useDataTable",
       "description": "A generic data table hook that manages sorting, filtering, pagination, column visibility, and column order with localStorage persistence.",
-      "dependencies": ["@tanstack/react-table", "@mantine/hooks@^9.0.0"],
+      "dependencies": [
+        "@tanstack/react-table@^8.21.0",
+        "@mantine/hooks@^9.0.0"
+      ],
       "files": [
         {
           "path": "registry/use-data-table/types.ts",
@@ -2435,7 +2438,7 @@
       "title": "useEntityDataTable",
       "description": "A data table hook for VSS entities that fetches live data from collections and builds column definitions from entity metadata.",
       "dependencies": [
-        "@tanstack/react-table",
+        "@tanstack/react-table@^8.21.0",
         "@tanstack/react-db",
         "@uipath/vs-core@^1.2.2"
       ],
@@ -2964,7 +2967,7 @@
       "dependencies": [
         "@tanstack/react-db@^0.1.86",
         "@tanstack/react-query@^5.90.0",
-        "@tanstack/react-table",
+        "@tanstack/react-table@^8.21.0",
         "@tanstack/react-router",
         "@uipath/vs-core@^2.0.6",
         "@uipath/uipath-typescript@^1.5.4",
