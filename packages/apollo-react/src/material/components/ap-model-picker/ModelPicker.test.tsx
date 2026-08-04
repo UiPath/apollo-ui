@@ -511,3 +511,76 @@ describe('<ModelPicker>', () => {
     }
   });
 });
+
+describe('<ModelPicker> catalog scoping', () => {
+  it('never renders embeddings or realtime models', async () => {
+    const user = userEvent.setup();
+    const models: DiscoveryModel[] = [
+      ...MODELS,
+      {
+        modelId: 'text-embedding-3-large',
+        modelName: 'text-embedding-3-large',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'UiPathOwned',
+        apiFlavor: 'OpenAiEmbeddings',
+      },
+      {
+        modelId: 'gpt-realtime',
+        modelName: 'gpt-realtime',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'UiPathOwned',
+        modelType: 'Realtime',
+      },
+    ];
+    renderPicker(<ModelPicker models={models} value={null} onChange={() => {}} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const listbox = await screen.findByRole('listbox');
+    expect(within(listbox).queryByText('text-embedding-3-large')).toBeNull();
+    expect(within(listbox).queryByText('gpt-realtime')).toBeNull();
+    expect(within(listbox).getByText('anthropic.claude-sonnet-4-6')).toBeInTheDocument();
+  });
+
+  it('resolves the selection by modelName when it differs from modelId', () => {
+    const models: DiscoveryModel[] = [
+      {
+        modelId: 'byo-row-guid',
+        modelName: 'my-custom-gpt',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'BYOMAdded',
+      },
+    ];
+    renderPicker(<ModelPicker models={models} value="my-custom-gpt" onChange={() => {}} />);
+    expect(screen.getByText('my-custom-gpt')).toBeInTheDocument();
+    expect(screen.getByRole('button', { expanded: false })).not.toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
+  });
+
+  it('accepts a raw OMS region name as homeRegion for out-of-region chips', async () => {
+    const user = userEvent.setup();
+    const models: DiscoveryModel[] = [
+      {
+        modelId: 'us-hosted',
+        modelName: 'us-hosted',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'UiPathOwned',
+        routingDetails: { geography: 'US' },
+      },
+      {
+        modelId: 'ja-hosted',
+        modelName: 'ja-hosted',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'UiPathOwned',
+        routingDetails: { geography: 'JA' },
+      },
+    ];
+    renderPicker(<ModelPicker models={models} value={null} onChange={() => {}} homeRegion="Japan" />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const listbox = await screen.findByRole('listbox');
+    // homeRegion "Japan" resolves to JA: the US-routed model is out of
+    // region, the JA-routed one is home.
+    expect(within(listbox).getByText(/out of region \(US\)/i)).toBeInTheDocument();
+    expect(within(listbox).queryByText(/out of region \(JA\)/i)).toBeNull();
+  });
+});

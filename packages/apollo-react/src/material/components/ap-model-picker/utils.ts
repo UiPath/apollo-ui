@@ -70,6 +70,65 @@ const isByoModel = (m: DiscoveryModel) =>
   !!m.byomDetails ||
   !!m.byoConnectionLabel;
 
+/**
+ * The picker exists for text-generation flows: embeddings and realtime
+ * models can't serve them, so they never render — same policy as
+ * `isBlockedByPolicy`. Embeddings are recognized by their API flavor
+ * (`OpenAiEmbeddings`, `GeminiEmbeddings`), realtime by `modelType`.
+ */
+export function isTextGenerationModel(m: DiscoveryModel): boolean {
+  if (m.modelType === 'Realtime') return false;
+  return !(m.apiFlavor ?? '').includes('Embeddings');
+}
+
+/**
+ * OMS organization region → Discovery geography short code. Mirrors the
+ * gateway's `GeographyRegionMappings` (UiPath.LLMGateway.Domain) — OMS is
+ * the source of truth and serves exactly one canonical value per region.
+ */
+const OMS_REGION_TO_GEOGRAPHY: Record<string, string> = {
+  europe: 'EU',
+  unitedstates: 'US',
+  japan: 'JA',
+  canada: 'CA',
+  australia: 'AU',
+  india: 'IN',
+  unitedkingdom: 'UK',
+  singapore: 'SI',
+  switzerland: 'CH',
+  unitedarabemirates: 'UAE',
+  southkorea: 'SK',
+};
+
+const GEOGRAPHY_CODES = new Set([
+  'EU',
+  'CA',
+  'US',
+  'SI',
+  'JA',
+  'AU',
+  'IN',
+  'UK',
+  'CH',
+  'UAE',
+  'SK',
+  'GLOBAL',
+]);
+
+/**
+ * Resolves the `homeRegion` prop to a Discovery geography code. Accepts a
+ * geography code (`'EU'`) or a raw OMS region name (`'UnitedStates'`,
+ * case-insensitive, separators ignored) so hosts pass
+ * `organization.region` straight through instead of each maintaining a
+ * mapping. Unknown values resolve to `undefined` — no out-of-region chips.
+ */
+export function resolveHomeGeography(homeRegion: string | undefined): string | undefined {
+  if (!homeRegion) return undefined;
+  const upper = homeRegion.toUpperCase();
+  if (GEOGRAPHY_CODES.has(upper)) return upper;
+  return OMS_REGION_TO_GEOGRAPHY[homeRegion.toLowerCase().replace(/[\s_-]/g, '')];
+}
+
 export function deriveModelTags(
   model: DiscoveryModel,
   context: DeriveModelTagsContext = {}

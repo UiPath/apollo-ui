@@ -8,6 +8,8 @@ import {
   filterModels,
   getSubstitutionTarget,
   groupModels,
+  isTextGenerationModel,
+  resolveHomeGeography,
 } from './utils';
 
 // Helper: minimal Discovery model. Tests override fields as needed.
@@ -432,5 +434,56 @@ describe('i18n resolution', () => {
       recommendedModelIds: ['a'],
     });
     expect(tags.find((t) => t.kind === 'recommended')?.label).toBe('Recommended');
+  });
+});
+
+describe('resolveHomeGeography', () => {
+  it('passes geography codes through, case-insensitively', () => {
+    expect(resolveHomeGeography('EU')).toBe('EU');
+    expect(resolveHomeGeography('ja')).toBe('JA');
+    expect(resolveHomeGeography('Global')).toBe('GLOBAL');
+  });
+
+  it('maps OMS region names to Discovery geography codes', () => {
+    expect(resolveHomeGeography('UnitedStates')).toBe('US');
+    expect(resolveHomeGeography('Japan')).toBe('JA');
+    expect(resolveHomeGeography('Singapore')).toBe('SI');
+    expect(resolveHomeGeography('SouthKorea')).toBe('SK');
+    expect(resolveHomeGeography('UnitedArabEmirates')).toBe('UAE');
+  });
+
+  it('ignores case and separators in OMS names', () => {
+    expect(resolveHomeGeography('unitedkingdom')).toBe('UK');
+    expect(resolveHomeGeography('united-states')).toBe('US');
+    expect(resolveHomeGeography('UNITED_ARAB_EMIRATES')).toBe('UAE');
+  });
+
+  it('resolves unknown or missing values to undefined', () => {
+    expect(resolveHomeGeography(undefined)).toBeUndefined();
+    expect(resolveHomeGeography('')).toBeUndefined();
+    expect(resolveHomeGeography('Atlantis')).toBeUndefined();
+  });
+});
+
+describe('isTextGenerationModel', () => {
+  it('keeps request-response models', () => {
+    expect(isTextGenerationModel(model({ modelId: 'a' }))).toBe(true);
+    expect(isTextGenerationModel(model({ modelId: 'a', modelType: 'RequestResponse' }))).toBe(true);
+    expect(
+      isTextGenerationModel(model({ modelId: 'a', apiFlavor: 'OpenAiChatCompletions' }))
+    ).toBe(true);
+  });
+
+  it('drops realtime models', () => {
+    expect(isTextGenerationModel(model({ modelId: 'a', modelType: 'Realtime' }))).toBe(false);
+  });
+
+  it('drops embeddings flavors', () => {
+    expect(isTextGenerationModel(model({ modelId: 'a', apiFlavor: 'OpenAiEmbeddings' }))).toBe(
+      false
+    );
+    expect(isTextGenerationModel(model({ modelId: 'a', apiFlavor: 'GeminiEmbeddings' }))).toBe(
+      false
+    );
   });
 });

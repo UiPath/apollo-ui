@@ -33,6 +33,7 @@ import {
   useUserFolders,
 } from './usePlatformAccess';
 import type { DeriveModelTagsContext, GroupStrategy } from './utils';
+import { isTextGenerationModel, resolveHomeGeography } from './utils';
 
 const EMPTY_MODELS: DiscoveryModel[] = [];
 
@@ -171,7 +172,13 @@ export interface ModelPickerProps {
    * toolbar. Default: `true`.
    */
   allowGroupingChange?: boolean;
-  /** User's home region (e.g. `'EU'`). Used to flag out-of-region models. */
+  /**
+   * User's home region — used to flag out-of-region models. Accepts a
+   * Discovery geography code (`'EU'`) or the raw OMS organization region
+   * exactly as PortalShell serves it (`'UnitedStates'`, `'Japan'`, …);
+   * the picker owns the OMS→geography mapping so hosts don't each
+   * maintain one. Unknown values disable out-of-region chips.
+   */
   homeRegion?: string;
   /**
    * Test/storybook override for the Recommended signal. In production
@@ -448,10 +455,12 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
 
     // BYO rows without a host-supplied `byoConnectionLabel` get their
     // Integration Service connection name resolved by the picker itself.
-    // Policy-blocked models are never rendered (same as the platform BFFs).
+    // Policy-blocked models are never rendered (same as the platform BFFs),
+    // nor are embeddings/realtime models — the picker serves text-generation
+    // flows only.
     const connectionNames = useByoConnectionNames(catalog, requestContext ?? null);
     const effectiveModels = React.useMemo(() => {
-      const allowed = catalog.filter((m) => !m.isBlockedByPolicy);
+      const allowed = catalog.filter((m) => !m.isBlockedByPolicy && isTextGenerationModel(m));
       if (connectionNames.size === 0) return allowed;
       return allowed.map((m) => {
         if (m.byoConnectionLabel) return m;
@@ -590,17 +599,20 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
 
     // Single tagContext value passed to both trigger + option rows so
     // chip derivation stays consistent. Carries the active i18n instance
-    // so tag labels + tooltips render in the host's locale.
+    // so tag labels + tooltips render in the host's locale. `homeRegion`
+    // is normalized here — hosts may pass a geography code or the raw
+    // OMS region name.
+    const homeGeography = resolveHomeGeography(homeRegion);
     const tagContext = React.useMemo<DeriveModelTagsContext>(
       () => ({
         i18n,
-        homeRegion,
+        homeRegion: homeGeography,
         recommendedModelIds,
         previewModelIds,
         badgesFor,
         customTagsFor,
       }),
-      [i18n, homeRegion, recommendedModelIds, previewModelIds, badgesFor, customTagsFor]
+      [i18n, homeGeography, recommendedModelIds, previewModelIds, badgesFor, customTagsFor]
     );
 
     // In Category view the section header *is* the Recommended/Preview
