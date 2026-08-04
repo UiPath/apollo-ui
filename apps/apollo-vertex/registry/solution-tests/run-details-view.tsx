@@ -14,11 +14,6 @@ import {
   PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
 import {
   defaultRunResultStatusLabels,
@@ -39,7 +34,8 @@ import {
   type SolutionTestRun,
   type SolutionTestRunResult,
 } from "./types";
-import { compareVersions } from "./utils";
+import { versionDelta } from "./utils";
+import { VersionDeltaGlyph } from "./version-delta-glyph";
 
 export type BaselineJobMap = Map<
   string,
@@ -189,25 +185,15 @@ const RunDetailsPane = ({
 }: RunDetailsPaneProps) => {
   const { t } = useTranslation();
   const status = result.Status;
-  const versionChanged =
-    result.BaselineProcessVersion &&
-    result.ProcessVersion &&
-    result.BaselineProcessVersion !== result.ProcessVersion;
-
   const showBaselineVersion = status !== RunResultStatus.NoBaseline;
   const showActualVersion = status !== RunResultStatus.Missing;
   const showScore =
     status === RunResultStatus.Passed || status === RunResultStatus.Failed;
 
-  // Directional triangle indicating the tested version moved up or down from
-  // the baseline (not a warning — just a signal that it changed). Versions that
-  // are numerically equal ("1.0" vs "1.0.0") or non-numeric get no glyph.
-  const versionComparison = compareVersions(
-    result.ProcessVersion ?? "",
-    result.BaselineProcessVersion ?? "",
+  const { direction: versionDirection } = versionDelta(
+    result.BaselineProcessVersion,
+    result.ProcessVersion,
   );
-  const versionGlyph =
-    versionComparison < 0 ? "▼" : versionComparison > 0 ? "▲" : null;
 
   const baselineInfo = baselineJobMap.get(result.ProcessName);
   const inBaseline = !!baselineInfo;
@@ -245,22 +231,11 @@ const RunDetailsPane = ({
             <span className="inline-flex items-center gap-1">
               {`${t("tested_agent_version")}: `}
               {showActualVersion ? (result.ProcessVersion ?? "-") : "—"}
-              {showActualVersion && versionChanged && versionGlyph && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span
-                      tabIndex={0}
-                      role="img"
-                      aria-label={t("version_differs_from_baseline")}
-                      className="text-foreground"
-                    >
-                      {versionGlyph}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {`${t("version_differs_from_baseline")} (${result.BaselineProcessVersion})`}
-                  </TooltipContent>
-                </Tooltip>
+              {showActualVersion && (
+                <VersionDeltaGlyph
+                  direction={versionDirection}
+                  baseline={result.BaselineProcessVersion}
+                />
               )}
             </span>
             <span>

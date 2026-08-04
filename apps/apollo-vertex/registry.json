@@ -3177,6 +3177,11 @@
           "target": "components/ui/solution-tests/run-details-view.tsx"
         },
         {
+          "path": "registry/solution-tests/version-delta-glyph.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/version-delta-glyph.tsx"
+        },
+        {
           "path": "registry/solution-tests/run-details-agent-list.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/run-details-agent-list.tsx"
