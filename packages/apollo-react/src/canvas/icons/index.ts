@@ -22,6 +22,7 @@ export { DataTransformGroupIcon } from './DataTransformGroupIcon';
 export { DataTransformIcon } from './DataTransformIcon';
 export { DataTransformMapIcon } from './DataTransformMapIcon';
 export { DecisionIcon } from './DecisionIcon';
+export { EarlyExitStatusIcon } from './EarlyExitStatusIcon';
 export { EntryConditionIcon } from './EntryConditionIcon';
 export { ExitConditionIcon } from './ExitConditionIcon';
 export { FlaskRunIcon } from './FlaskRunIcon';

@@ -557,6 +557,30 @@ export const ExecutionStatus: Story = {
           },
         },
       },
+      {
+        id: '5',
+        type: 'stage',
+        position: { x: 1456, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'Exited',
+            isException: true,
+            isReadOnly: true,
+            tasks: [
+              [{ id: '7', label: 'Task One', icon: <ProcessIcon /> }],
+              [{ id: '8', label: 'Task Two', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'EarlyExit',
+              label: 'Early exit',
+            },
+            taskStatus: {},
+          },
+        },
+      },
     ],
     edges: [
       {

@@ -1,6 +1,7 @@
 import { Spinner } from '@uipath/apollo-wind';
 import { type CSSProperties, useMemo } from 'react';
 import { useSafeLingui } from '../../../i18n';
+import { EarlyExitStatusIcon } from '../../icons';
 import { CanvasIcon } from '../../utils/icon-registry';
 
 export function getExecutionStatusColor(status: string | undefined): string {
@@ -10,6 +11,7 @@ export function getExecutionStatusColor(status: string | undefined): string {
     case 'InProgress':
       return 'var(--color-primary)';
     case 'Completed':
+    case 'EarlyExit':
       return 'var(--color-success-icon)';
     case 'ActionNeeded':
     case 'Paused':
@@ -59,6 +61,7 @@ export function ExecutionStatusIcon({
     | 'NotExecuted'
     | 'Terminated'
     | 'Warning'
+    | 'EarlyExit'
     | string;
   size?: number;
 }) {
@@ -101,6 +104,8 @@ export function ExecutionStatusIcon({
         return <CanvasIcon icon="circle-stop" size={size} color={color} />;
       case 'NotExecuted':
         return <CanvasIcon icon="circle-dashed" size={size} color={color} />;
+      case 'EarlyExit':
+        return <EarlyExitStatusIcon />;
       default:
         return null;
     }
