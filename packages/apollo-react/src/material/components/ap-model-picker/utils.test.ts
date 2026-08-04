@@ -469,9 +469,9 @@ describe('isTextGenerationModel', () => {
   it('keeps request-response models', () => {
     expect(isTextGenerationModel(model({ modelId: 'a' }))).toBe(true);
     expect(isTextGenerationModel(model({ modelId: 'a', modelType: 'RequestResponse' }))).toBe(true);
-    expect(
-      isTextGenerationModel(model({ modelId: 'a', apiFlavor: 'OpenAiChatCompletions' }))
-    ).toBe(true);
+    expect(isTextGenerationModel(model({ modelId: 'a', apiFlavor: 'OpenAiChatCompletions' }))).toBe(
+      true
+    );
   });
 
   it('drops realtime models', () => {
