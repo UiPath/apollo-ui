@@ -32,6 +32,8 @@ export function useExecutionStatusLabel() {
           return _({ id: 'stage-node.status.not-executed', message: 'Not started' });
         case 'Warning':
           return _({ id: 'stage-node.status.warning', message: 'Warning' });
+        case 'EarlyExit':
+          return _({ id: 'stage-node.status.early-exit', message: 'Early exit' });
         default:
           return '';
       }
