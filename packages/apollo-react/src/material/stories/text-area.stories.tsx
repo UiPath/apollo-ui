@@ -164,7 +164,7 @@ function LabelAlignmentDemo() {
           minRows={3}
         />
       </Labeled>
-      <Labeled label="Required — ApTextArea keeps its red asterisk, ApTextField's stays de-emphasized">
+      <Labeled label="Required — asterisk styling should also match">
         <ApTextField label="Name" value={name} onChange={setName} required />
         <ApTextArea
           label="Description"
