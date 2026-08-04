@@ -16,6 +16,7 @@ describe('useExecutionStatusLabel', () => {
     expect(getLabel('Terminated')).toBe('Terminated');
     expect(getLabel('NotExecuted')).toBe('Not started');
     expect(getLabel('Warning')).toBe('Warning');
+    expect(getLabel('EarlyExit')).toBe('Early exit');
   });
 
   it('returns an empty string for undefined or unknown statuses', () => {
