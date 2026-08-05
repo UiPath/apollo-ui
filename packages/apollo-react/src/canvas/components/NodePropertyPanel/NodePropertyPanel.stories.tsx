@@ -20,7 +20,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { FormSchema, LockableFieldType, LockableValueFieldMode } from '@uipath/apollo-wind';
+import type {
+  FormSchema,
+  LockableFieldType,
+  LockableValueFieldMode,
+  VariablePickerItem,
+} from '@uipath/apollo-wind';
 import {
   Accordion,
   AccordionContent,
@@ -50,11 +55,11 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  RadioGroup,
+  RadioGroupItem,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-  RadioGroup,
-  RadioGroupItem,
   ScrollableTabsList,
   Select,
   SelectContent,
@@ -68,6 +73,7 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
+  Toaster,
   ToggleGroup,
   ToggleGroupItem,
   Tooltip,
@@ -75,7 +81,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
   toast,
-  Toaster,
+  VariablePicker,
 } from '@uipath/apollo-wind';
 import {
   apolloCoreDarkHCMonaco,
@@ -107,14 +113,15 @@ import {
   Pencil,
   Play,
   Plus,
+  RefreshCw,
   ScanText,
   Search,
-  RefreshCw,
   Sparkles,
   Trash2,
   TriangleAlert,
   Upload,
   UserRoundCheck,
+  WrapText,
   X,
   Zap,
 } from 'lucide-react';
@@ -133,6 +140,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { NodeOutputModeSelect } from '../../controls';
+import { CanvasTooltip } from '../CanvasTooltip';
 import type {
   DeriveTypeIcon,
   JsonCodeEditorRenderProps,
@@ -148,7 +156,6 @@ import type {
 } from '../JsonTree';
 import { isJsonObject } from '../JsonTree';
 import { NodeIOView, type NodeIOViewTab } from '../NodeIOView';
-import { CanvasTooltip } from '../CanvasTooltip';
 import { NodePropertyPanel } from './NodePropertyPanel';
 import { PanelField, PanelFieldLabel } from './PanelField';
 
@@ -546,12 +553,70 @@ export const NoParametersTab: Story = {
 
 function FullEditorStory() {
   const monacoTheme = useMonacoTheme();
+  const editorRef = useRef<Parameters<NonNullable<EditorProps['onMount']>>[0] | null>(null);
   const [label, setLabel] = useState('Script');
   const [category, setCategory] = useState('HTTP Request');
   const [editingLabel, setEditingLabel] = useState(false);
   const [editingCategory, setEditingCategory] = useState(false);
   const labelRef = useRef<HTMLInputElement>(null);
   const categoryRef = useRef<HTMLInputElement>(null);
+  const variables = useMemo<VariablePickerItem[]>(
+    () => [
+      {
+        id: 'vars',
+        label: '$vars',
+        type: 'object',
+        children: [
+          {
+            id: 'manual-trigger',
+            label: 'manualTrigger1',
+            type: 'object',
+            children: [
+              {
+                id: 'customer-name',
+                label: 'customerName',
+                value: '$vars.manualTrigger1.customerName',
+                type: 'string',
+              },
+              {
+                id: 'invoice-id',
+                label: 'invoiceId',
+                value: '$vars.manualTrigger1.invoiceId',
+                type: 'string',
+              },
+              {
+                id: 'document-url',
+                label: 'documentUrl',
+                value: '$vars.manualTrigger1.documentUrl',
+                type: 'string',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'metadata',
+        label: '$metadata',
+        type: 'object',
+        children: [
+          { id: 'run-id', label: 'runId', value: '$metadata.runId', type: 'string' },
+          { id: 'started-at', label: 'startedAt', value: '$metadata.startedAt', type: 'string' },
+        ],
+      },
+    ],
+    []
+  );
+
+  const insertVariable = useCallback((item: VariablePickerItem) => {
+    const editor = editorRef.current;
+    const selection = editor?.getSelection();
+    if (!editor || !selection || !item.value) return;
+
+    editor.executeEdits('insert-variable', [
+      { range: selection, text: item.value, forceMoveMarkers: true },
+    ]);
+    editor.focus();
+  }, []);
 
   return (
     <PanelFrame>
@@ -651,16 +716,7 @@ function FullEditorStory() {
                   >
                     <Sparkles size={12} />
                   </button>
-                  <button
-                    type="button"
-                    aria-label="Insert variable"
-                    title="Insert variable"
-                    className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                  >
-                    <span className="font-mono text-[10px]">{'{x}'}</span>
-                    <span>Insert</span>
-                    <ChevronDown size={9} />
-                  </button>
+                  <VariablePicker items={variables} onSelect={insertVariable} />
                 </div>
               </div>
               <div className="flex min-h-0 flex-1 flex-col pb-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
@@ -673,6 +729,9 @@ function FullEditorStory() {
                     }
                     theme={monacoTheme}
                     beforeMount={registerMonacoThemes}
+                    onMount={(editor) => {
+                      editorRef.current = editor;
+                    }}
                     options={{
                       fontSize: 13,
                       lineHeight: 20,
@@ -790,6 +849,22 @@ const INLINE_EDITOR_OPTIONS = {
   automaticLayout: true,
 } as const;
 
+const INSERT_SNIPPETS = [
+  { label: 'Input data', code: 'context.input' },
+  { label: 'Item ID', code: 'item.id' },
+  { label: 'Item name', code: 'item.name' },
+  { label: 'Current index', code: 'index' },
+  { label: 'Timestamp', code: 'Date.now()' },
+  { label: 'True', code: 'true' },
+  { label: 'False', code: 'false' },
+  { label: 'Null', code: 'null' },
+];
+
+const LOCKABLE_VARIABLES = INSERT_SNIPPETS.map((snippet) => ({
+  label: snippet.label,
+  value: snippet.code,
+}));
+
 function CasePanel({
   caseTitle,
   onTitleChange,
@@ -812,7 +887,18 @@ function CasePanel({
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [editingTitle, setEditingTitle] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<Parameters<NonNullable<EditorProps['onMount']>>[0] | null>(null);
   const hasError = Boolean(errorMessage);
+
+  const insertVariable = useCallback((item: VariablePickerItem) => {
+    const editor = editorRef.current;
+    const selection = editor?.getSelection();
+    if (!editor || !selection || !item.value) return;
+    editor.executeEdits('insert-variable', [
+      { range: selection, text: item.value, forceMoveMarkers: true },
+    ]);
+    editor.focus();
+  }, []);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle">
@@ -890,16 +976,22 @@ function CasePanel({
               >
                 <Sparkles size={12} />
               </button>
-              <button
-                type="button"
-                aria-label="Insert variable"
-                title="Insert variable"
-                className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-              >
-                <span className="font-mono text-[10px]">{'{x}'}</span>
-                <span>Insert</span>
-                <ChevronDown size={9} />
-              </button>
+              <VariablePicker
+                items={[
+                  {
+                    id: 'vars',
+                    label: '$vars',
+                    type: 'object',
+                    children: INSERT_SNIPPETS.map((snippet) => ({
+                      id: snippet.code,
+                      label: snippet.label,
+                      value: snippet.code,
+                      type: 'string',
+                    })),
+                  },
+                ]}
+                onSelect={insertVariable}
+              />
             </div>
           </div>
           <div className="px-3 pb-3">
@@ -916,6 +1008,9 @@ function CasePanel({
                 defaultValue={defaultValue}
                 theme={monacoTheme}
                 beforeMount={registerMonacoThemes}
+                onMount={(editor) => {
+                  editorRef.current = editor;
+                }}
                 options={COMPACT_EDITOR_OPTIONS}
               />
             </div>
@@ -1207,17 +1302,6 @@ export const CompactEditor: Story = {
 // Inline expression inputs — one per case, no code editor panel.
 // ============================================================================
 
-const INSERT_SNIPPETS = [
-  { label: 'Input data', code: 'context.input' },
-  { label: 'Item ID', code: 'item.id' },
-  { label: 'Item name', code: 'item.name' },
-  { label: 'Current index', code: 'index' },
-  { label: 'Timestamp', code: 'Date.now()' },
-  { label: 'True', code: 'true' },
-  { label: 'False', code: 'false' },
-  { label: 'Null', code: 'null' },
-];
-
 function InlineCaseRow({
   caseTitle,
   onTitleChange,
@@ -1272,10 +1356,7 @@ function InlineCaseRow({
       mode={mode}
       onModeChange={setMode}
       fieldType="string"
-      variables={INSERT_SNIPPETS.map((snippet) => ({
-        label: snippet.label,
-        value: snippet.code,
-      }))}
+      variables={LOCKABLE_VARIABLES}
       controlsVisibility="visible"
     />
   );
@@ -1724,6 +1805,7 @@ function Concept2PanelStory({
     )
   );
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const [wrappedPaths, setWrappedPaths] = useState<Set<string>>(() => new Set());
   const [searchOpen, setSearchOpen] = useState(false);
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<
@@ -1800,14 +1882,30 @@ function Concept2PanelStory({
     setEditingPath(null);
   };
 
-  const copyExpr = (path: string) => {
+  const copyValue = (node: OutputNode) => {
+    const value = editedValues[node.path] ?? node.value;
     navigator.clipboard
-      ?.writeText(`{{${path}}}`)
+      ?.writeText(typeof value === 'string' ? value : JSON.stringify(value))
       ?.then(() => {
-        setCopiedPath(path);
+        setCopiedPath(node.path);
         setTimeout(() => setCopiedPath(null), 1500);
       })
       ?.catch(() => {});
+  };
+
+  const toggleWrapped = (path: string) => {
+    setWrappedPaths((current) => {
+      const next = new Set(current);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  };
+
+  const addVariable = (node: OutputNode) => {
+    toast.success(`Added ${node.key} as a variable`, {
+      description: `{{${node.path}}}`,
+    });
   };
 
   return (
@@ -2113,7 +2211,10 @@ function Concept2PanelStory({
                               type="button"
                               onClick={() => node.type !== 'null' && setEditingPath(node.path)}
                               className={cn(
-                                'max-w-[55%] shrink-0 truncate font-mono text-xs',
+                                'max-w-[55%] shrink-0 font-mono text-xs',
+                                wrappedPaths.has(node.path)
+                                  ? 'whitespace-normal break-words text-left'
+                                  : 'truncate',
                                 node.type !== 'null' ? 'cursor-text' : 'cursor-default',
                                 outputValueColorClass(
                                   node.type,
@@ -2131,21 +2232,59 @@ function Concept2PanelStory({
                               )}
                             </button>
                             <div className="flex-1" />
-                            <Button
-                              variant="ghost"
-                              size="4xs"
-                              icon
-                              onClick={() => copyExpr(node.path)}
-                              title={`Copy {{${node.path}}}`}
-                              aria-label={`Copy expression for ${node.path}`}
-                              className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
-                            >
-                              {copiedPath === node.path ? (
-                                <CircleCheck size={11} className="text-brand" />
-                              ) : (
-                                <Copy size={11} />
-                              )}
-                            </Button>
+                            {node.type === 'string' && (
+                              <CanvasTooltip
+                                content={
+                                  wrappedPaths.has(node.path) ? 'Unwrap value' : 'Wrap value'
+                                }
+                                placement="top"
+                                delay
+                              >
+                                <Button
+                                  variant="ghost"
+                                  size="4xs"
+                                  icon
+                                  onClick={() => toggleWrapped(node.path)}
+                                  aria-label={`${
+                                    wrappedPaths.has(node.path) ? 'Unwrap' : 'Wrap'
+                                  } value of ${node.key}`}
+                                  className={cn(
+                                    'shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100',
+                                    wrappedPaths.has(node.path) && 'text-brand opacity-100'
+                                  )}
+                                >
+                                  <WrapText size={11} />
+                                </Button>
+                              </CanvasTooltip>
+                            )}
+                            <CanvasTooltip content="Copy value" placement="top" delay>
+                              <Button
+                                variant="ghost"
+                                size="4xs"
+                                icon
+                                onClick={() => copyValue(node)}
+                                aria-label={`Copy value of ${node.key}`}
+                                className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+                              >
+                                {copiedPath === node.path ? (
+                                  <CircleCheck size={11} className="text-brand" />
+                                ) : (
+                                  <Copy size={11} />
+                                )}
+                              </Button>
+                            </CanvasTooltip>
+                            <CanvasTooltip content="Add variable" placement="top" delay>
+                              <Button
+                                variant="ghost"
+                                size="4xs"
+                                icon
+                                onClick={() => addVariable(node)}
+                                aria-label={`Add ${node.key} as a variable`}
+                                className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+                              >
+                                <Plus size={11} />
+                              </Button>
+                            </CanvasTooltip>
                           </>
                         )}
                       </div>
@@ -2218,6 +2357,7 @@ function InputOutputStory() {
           <Concept2PanelStory mode="output" context={context} />
         </div>
       </div>
+      <Toaster />
     </div>
   );
 }
@@ -2439,6 +2579,7 @@ function LockableCaseRow({
           onFieldTypeChange={onFieldTypeChange}
           required={required}
           onRequiredChange={onRequiredChange}
+          variables={LOCKABLE_VARIABLES}
           compact={compact}
           controlsVisibility={controlsVisibility}
         />
@@ -2683,6 +2824,7 @@ function LockableValueFieldShowcase({
           onFieldTypeChange={handleShowcaseFieldTypeChange}
           required={showcaseRequired}
           onRequiredChange={setShowcaseRequired}
+          variables={LOCKABLE_VARIABLES}
           controlsVisibility={controlsVisibility}
         />
       </div>
@@ -2725,6 +2867,7 @@ function LockableValueFieldShowcase({
             onFieldTypeChange={handleShowcaseFieldTypeChange}
             required={showcaseRequired}
             onRequiredChange={setShowcaseRequired}
+            variables={LOCKABLE_VARIABLES}
             controlsVisibility={controlsVisibility}
           />
         </div>
@@ -4102,6 +4245,7 @@ function PanelUIInventoryStory() {
                       onFieldTypeChange={updateCompositionFieldType}
                       required={compositionRequired}
                       onRequiredChange={setCompositionRequired}
+                      variables={LOCKABLE_VARIABLES}
                       controlsVisibility="visible"
                     />
                   </section>
@@ -4198,6 +4342,7 @@ different widths (truncation, action-button visibility).
           <OutputPanel showExtractionTab={args.showExtractionTab} readOnly={args.readOnly} />
         </ResizablePanel>
       </ResizablePanelGroup>
+      <Toaster />
     </div>
   ),
 };
@@ -4417,8 +4562,19 @@ function useFileNodeActions(): {
   const [preview, setPreview] = useState<PreviewedFile | null>(null);
 
   const nodeActions = useCallback<NodeActionsResolver>((node, ctx) => {
-    if (node.schema?.format !== 'file') return undefined;
-    if (ctx.readOnly) return [];
+    const addVariableAction: NodeAction = {
+      id: 'add-variable',
+      icon: <Plus />,
+      label: `Add ${node.key} as a variable`,
+      tooltip: 'Add variable',
+      onSelect: () =>
+        toast.success(`Added ${node.key} as a variable`, {
+          description: `$vars.${node.path}`,
+        }),
+    };
+
+    if (node.schema?.format !== 'file') return [...ctx.defaultActions, addVariableAction];
+    if (ctx.readOnly) return [addVariableAction];
 
     const file = isJsonObject(node.value) ? node.value : undefined;
     const actions: NodeAction[] = [
@@ -4461,7 +4617,7 @@ function useFileNodeActions(): {
       });
     }
 
-    return actions;
+    return [...actions, addVariableAction];
   }, []);
 
   return { nodeActions, preview, clearPreview: () => setPreview(null) };
