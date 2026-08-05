@@ -1,7 +1,7 @@
 "use client";
 
 import { useNavigate } from "@tanstack/react-router";
-import { MoreHorizontal, SearchIcon } from "lucide-react";
+import { MoreHorizontal, Plus, SearchIcon } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { FilterDropdown } from "@/components/ui/filter-dropdown";
 import { Input } from "@/components/ui/input";
 import {
   PageHeader,
+  PageHeaderActions,
   PageHeaderNav,
   PageHeaderTitle,
 } from "@/components/ui/page-header";
@@ -30,6 +31,8 @@ import {
 import { cn } from "@/lib/utils";
 import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
+import { useCart } from "../catalog/v1/cart-context";
+import { useConversation } from "../catalog/v1/conversation-context";
 import { P2 } from "../P2";
 import {
   REQUEST_DETAILS,
@@ -97,8 +100,18 @@ function StatCard({
 /** Requests landing — stat cards + the requester's queue table (Workbench twin). */
 export function MyRequestsList() {
   const navigate = useNavigate();
+  const { clear } = useCart();
+  const { startFresh } = useConversation();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
+
+  // Same reset as the header's own "New request" (see CatalogSubmitted),
+  // reused rather than a second, differently-behaved entry point into /buy.
+  const startNewRequest = () => {
+    clear();
+    startFresh();
+    void navigate({ to: "/buy" });
+  };
 
   const { submittedRows } = useRequests();
   // Deduplicate: submittedRows wins over the static seed for the same id.
@@ -162,6 +175,17 @@ export function MyRequestsList() {
             Updated just now
           </span>
         </PageHeaderNav>
+        <PageHeaderActions>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={startNewRequest}
+            className="text-muted-foreground"
+          >
+            <Plus className="size-4" aria-hidden />
+            New request
+          </Button>
+        </PageHeaderActions>
       </PageHeader>
 
       <div className="px-4 pb-8 sm:px-6 lg:px-8">
