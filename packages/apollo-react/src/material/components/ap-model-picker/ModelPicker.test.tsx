@@ -283,6 +283,151 @@ describe('<ModelPicker>', () => {
     expect(onDeleteModel.mock.calls[0][0]).toMatchObject({ modelSubscriptionType: 'BYOMAdded' });
   });
 
+  it('deletes the BYO configuration itself when no onDeleteModel is supplied', async () => {
+    const user = userEvent.setup();
+    const onModelDeleted = vi.fn();
+    // Discovery on mount, then the DELETE, then the post-delete refetch.
+    const fetchMock = vi.fn().mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'DELETE'
+        ? Promise.resolve({ ok: true, json: async () => ({}) })
+        : Promise.resolve({
+            ok: true,
+            json: async () => [
+              {
+                modelId: 'byo-acme-gpt-4o',
+                modelName: 'gpt-4o',
+                vendor: 'OpenAi',
+                modelSubscriptionType: 'BYOMAdded',
+                byomDetails: { byoConfigurationId: 'cfg-9' },
+              },
+            ],
+          })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          onModelDeleted={onModelDeleted}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+      await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+
+      const deleteCall = fetchMock.mock.calls.find(([, init]) => init?.method === 'DELETE');
+      expect(deleteCall?.[0]).toBe(
+        'https://cloud.local/org-guid/tenant-guid/llmgateway_/api/byo/product/llm-configurations/cfg-9'
+      );
+      expect(deleteCall?.[1]).toMatchObject({
+        headers: expect.objectContaining({ Authorization: 'Bearer t' }),
+      });
+      expect(onModelDeleted).toHaveBeenCalledTimes(1);
+      expect(onModelDeleted.mock.calls[0][0]).toMatchObject({ modelId: 'byo-acme-gpt-4o' });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('surfaces a failed delete and does not report it as deleted', async () => {
+    const user = userEvent.setup();
+    const onModelDeleted = vi.fn();
+    const fetchMock = vi.fn().mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'DELETE'
+        ? Promise.resolve({
+            ok: false,
+            status: 409,
+            json: async () => ({ Message: 'Configuration is in use.' }),
+          })
+        : Promise.resolve({
+            ok: true,
+            json: async () => [
+              {
+                modelId: 'byo-acme-gpt-4o',
+                modelName: 'gpt-4o',
+                vendor: 'OpenAi',
+                modelSubscriptionType: 'BYOMAdded',
+                byomDetails: { byoConfigurationId: 'cfg-9' },
+              },
+            ],
+          })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          onModelDeleted={onModelDeleted}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+      await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+
+      // The gateway's own message reaches the user, and the host is not told
+      // a model went away when it did not.
+      expect(await screen.findByText(/configuration is in use/i)).toBeInTheDocument();
+      expect(onModelDeleted).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('offers no delete action on a BYO row with no configuration id to target', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          modelId: 'byo-acme-gpt-4o',
+          modelName: 'gpt-4o',
+          vendor: 'OpenAi',
+          modelSubscriptionType: 'BYOMAdded',
+        },
+      ],
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await screen.findByText('gpt-4o');
+      expect(screen.queryByRole('button', { name: /delete configuration/i })).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('deep-links the edit form when the DTO carries byomDetails.byoConfigurationId', async () => {
     const user = userEvent.setup();
     const assign = vi.spyOn(platformNavigation, 'openInNewTab').mockImplementation(() => {});

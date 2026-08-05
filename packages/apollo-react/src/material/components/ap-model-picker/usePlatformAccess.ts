@@ -22,6 +22,30 @@ export type PlatformToken = string | (() => string | Promise<string>);
 const resolveToken = async (token: PlatformToken): Promise<string> =>
   typeof token === 'function' ? token() : token;
 
+/**
+ * Builds an LLM Gateway URL for `path` (e.g. `'api/discovery'`).
+ *
+ * Prefers the canonical GUID route — the form the platform's own LLM pages
+ * use. `baseUrl` carries the org *name* path, so it is stripped to the
+ * origin first. Falls back to the name-based route when GUIDs are absent.
+ *
+ * Shared by every gateway call the picker makes so they cannot drift on
+ * this (non-obvious) route resolution.
+ */
+const buildGatewayUrl = (ctx: PlatformRequestContext, path: string): string => {
+  const base = (ctx.baseUrl ?? '').replace(/\/$/, '');
+  if (ctx.organizationId && ctx.tenantId) {
+    let origin = '';
+    try {
+      origin = base ? new URL(base).origin : '';
+    } catch {
+      origin = '';
+    }
+    return `${origin}/${ctx.organizationId}/${ctx.tenantId}/llmgateway_/${path}`;
+  }
+  return `${base}/${ctx.tenantName}/llmgateway_/${path}`;
+};
+
 export interface PlatformRequestContext {
   /** Bearer token (no `Bearer ` prefix), or a getter resolved per request. */
   token: PlatformToken;
@@ -251,22 +275,7 @@ export function usePlatformDiscoveryModels(
     setLoading(true);
     setError(null);
 
-    const base = (ctx.baseUrl ?? '').replace(/\/$/, '');
-    // Prefer the canonical GUID route (the form the platform's own LLM
-    // pages use); `baseUrl` carries the org *name* path, so strip to the
-    // origin. Fall back to the name-based route when GUIDs are absent.
-    let url: string;
-    if (ctx.organizationId && ctx.tenantId) {
-      let origin = '';
-      try {
-        origin = base ? new URL(base).origin : '';
-      } catch {
-        origin = '';
-      }
-      url = `${origin}/${ctx.organizationId}/${ctx.tenantId}/llmgateway_/api/discovery`;
-    } else {
-      url = `${base}/${ctx.tenantName}/llmgateway_/api/discovery`;
-    }
+    const url = buildGatewayUrl(ctx, 'api/discovery');
 
     try {
       const bearer = await resolveToken(ctx.token);
@@ -314,6 +323,64 @@ export function usePlatformDiscoveryModels(
   }, [ctx, fetchModels]);
 
   return { models, loading, error, refetch: fetchModels };
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * BYO configuration deletion
+ * ─────────────────────────────────────────────────────────────────── */
+
+export interface UseDeleteByoConfigurationResult {
+  /** Rejects with the gateway's message when the delete fails. */
+  deleteConfiguration: (configurationId: string) => Promise<void>;
+}
+
+/**
+ * Deletes a BYO product LLM configuration:
+ *
+ *   DELETE {gateway}/api/byo/product/llm-configurations/{configurationId}
+ *
+ * The same platform route every product used to call for itself. It needs
+ * exactly the credentials and org/tenant path the picker already holds for
+ * Discovery, so the picker owns the call and hosts react to the result
+ * instead of re-implementing the request (and its failure handling) each
+ * time.
+ */
+export function useDeleteByoConfiguration(
+  ctx: PlatformRequestContext | null
+): UseDeleteByoConfigurationResult {
+  const deleteConfiguration = useCallback(
+    async (configurationId: string) => {
+      if (!ctx) throw new Error('Cannot delete a BYO configuration without a request context.');
+      const bearer = await resolveToken(ctx.token);
+      const res = await fetch(
+        buildGatewayUrl(
+          ctx,
+          `api/byo/product/llm-configurations/${encodeURIComponent(configurationId)}`
+        ),
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${bearer}`, Accept: 'application/json' },
+        }
+      );
+      if (!res.ok) {
+        // The gateway sends `{ Message }` on failure; fall back to the status.
+        let message = '';
+        try {
+          const body: unknown = await res.json();
+          if (body && typeof body === 'object' && 'Message' in body) {
+            const raw = (body as { Message?: unknown }).Message;
+            if (typeof raw === 'string') message = raw;
+          }
+        } catch {
+          message = '';
+        }
+        throw new Error(message || `Failed to delete the custom model (HTTP ${res.status}).`);
+      }
+    },
+    [ctx]
+  );
+
+  return { deleteConfiguration };
 }
 
 /* ──────────────────────────────────────────────────────────────────────

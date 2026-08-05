@@ -12,8 +12,8 @@ import Typography from '@mui/material/Typography';
 import { Colors, FontFamily } from '@uipath/apollo-core';
 import React from 'react';
 import { useSafeLingui } from '../../../i18n';
-import { DELETE_CONFIRM } from './i18n';
 import type { ModelBadgeKind } from './badges';
+import { DELETE_CONFIRM } from './i18n';
 import { FolderSwitcher, type FolderSwitcherFolder } from './primitives/FolderSwitcher';
 import { defaultRowActions } from './primitives/ModelOptionRow';
 import { GroupedOptionList, optionDomId, VirtualOptionList } from './primitives/OptionList';
@@ -29,6 +29,7 @@ import {
   platformNavigation,
   useByoConnectionNames,
   useCanManageByo,
+  useDeleteByoConfiguration,
   usePlatformDiscoveryModels,
   useUserFolders,
 } from './usePlatformAccess';
@@ -319,14 +320,28 @@ export interface ModelPickerProps {
    */
   disablePortal?: boolean;
   /**
-   * Delete handler for a BYO model. When provided (and BYO management is
-   * enabled), the picker renders a delete row action next to edit on BYO rows.
-   * Omit to keep the default (no delete action — removal via the configurations
-   * page). The host performs the delete; with a host-owned `models` it also
-   * refreshes the catalog, while in self-fetch mode the picker refetches
-   * Discovery itself once the returned promise resolves.
+   * Opt out of picker-owned deletion and perform the DELETE yourself.
+   *
+   * Rarely needed: in self-fetch mode the picker already deletes the BYO
+   * configuration through the platform route it has credentials for, so
+   * hosts only need `onModelDeleted`. Pass this when a product must route
+   * the call somewhere else — the picker then confirms, calls this, and
+   * refetches, but issues no request of its own.
+   *
+   * With a host-owned `models` list there is no request context to delete
+   * with, so this is the only way to surface a delete action at all.
    */
   onDeleteModel?: (model: DiscoveryModel) => void | Promise<void>;
+  /**
+   * Fired after a BYO model is successfully deleted, whether the picker or
+   * `onDeleteModel` performed it. The catalog has already been refetched.
+   *
+   * Use it to reconcile host state the picker cannot know about — most
+   * importantly, to pick a replacement when the deleted model was the
+   * current selection (the picker does not choose one for you, since what
+   * to fall back to is a product decision).
+   */
+  onModelDeleted?: (model: DiscoveryModel) => void | Promise<void>;
   /** Extensibility slots. See `ModelPickerSlots`. */
   slots?: ModelPickerSlots;
   /** Rendered as `data-testid` on the picker's root element. */
@@ -384,6 +399,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       popupContainer,
       disablePortal,
       onDeleteModel,
+      onModelDeleted,
       slots,
       testId,
     },
@@ -434,24 +450,54 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     } = usePlatformDiscoveryModels(selfFetchCtx, folder ?? null);
     const catalog = models ?? fetchedModels ?? EMPTY_MODELS;
     const effectiveLoading = (loading ?? false) || discoveryLoading;
-    const effectiveError = error ?? discoveryError;
 
-    // In self-fetch mode a BYO delete refetches the catalog once the
-    // host's handler resolves; with host-owned models the host refreshes.
-    // Deleting a configuration affects every consumer in the tenant, so the
-    // picker always confirms before invoking the host's handler.
+    // Deleting a BYO configuration removes it for every consumer in the
+    // tenant, so the picker always confirms first. In self-fetch mode it
+    // then issues the DELETE itself — it already holds the credentials and
+    // org/tenant path that route needs — and refetches. `onDeleteModel`
+    // overrides that for hosts who must own the request.
+    const { deleteConfiguration } = useDeleteByoConfiguration(selfFetchCtx);
     const [pendingDelete, setPendingDelete] = React.useState<DiscoveryModel | null>(null);
+    const [deleteError, setDeleteError] = React.useState<Error | null>(null);
+    const canSelfDelete = !onDeleteModel && !!selfFetchCtx;
     const handleDeleteModel = React.useMemo(() => {
-      if (!onDeleteModel) return undefined;
-      return (m: DiscoveryModel) => setPendingDelete(m);
-    }, [onDeleteModel]);
+      if (!onDeleteModel && !canSelfDelete) return undefined;
+      return (m: DiscoveryModel) => {
+        setDeleteError(null);
+        setPendingDelete(m);
+      };
+    }, [onDeleteModel, canSelfDelete]);
     const confirmPendingDelete = React.useCallback(async () => {
       const model = pendingDelete;
       setPendingDelete(null);
       if (!model) return;
-      await onDeleteModel?.(model);
+      try {
+        if (onDeleteModel) {
+          await onDeleteModel(model);
+        } else {
+          const configurationId = model.byomDetails?.byoConfigurationId;
+          // Rows without a configuration id never render the action, so this
+          // is unreachable in practice — but deleting "nothing" must not look
+          // like success to the host.
+          if (!configurationId)
+            throw new Error('This custom model has no configuration to delete.');
+          await deleteConfiguration(configurationId);
+        }
+      } catch (err) {
+        setDeleteError(err instanceof Error ? err : new Error(String(err)));
+        return;
+      }
       if (selfFetchCtx) refetchDiscovery();
-    }, [pendingDelete, onDeleteModel, selfFetchCtx, refetchDiscovery]);
+      await onModelDeleted?.(model);
+    }, [
+      pendingDelete,
+      onDeleteModel,
+      onModelDeleted,
+      deleteConfiguration,
+      selfFetchCtx,
+      refetchDiscovery,
+    ]);
+    const effectiveError = error ?? deleteError ?? discoveryError;
 
     // BYO rows without a host-supplied `byoConnectionLabel` get their
     // Integration Service connection name resolved by the picker itself.
@@ -644,13 +690,24 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
             })
         : undefined;
       if (!onEdit && !handleDeleteModel) return () => null;
-      return (m: DiscoveryModel) =>
-        defaultRowActions(m, { i18n, onEdit, onDelete: handleDeleteModel });
+      return (m: DiscoveryModel) => {
+        // When the picker owns the DELETE it needs a configuration id to
+        // target, so rows lacking one get edit only. A host-supplied
+        // handler may know another way, so it always gets the action.
+        const deletable =
+          handleDeleteModel && (onDeleteModel || !!m.byomDetails?.byoConfigurationId);
+        return defaultRowActions(m, {
+          i18n,
+          onEdit,
+          onDelete: deletable ? handleDeleteModel : undefined,
+        });
+      };
     }, [
       slots?.optionActions,
       effectiveCanManageByo,
       navigateToLlmConfigurations,
       handleDeleteModel,
+      onDeleteModel,
       i18n,
     ]);
 

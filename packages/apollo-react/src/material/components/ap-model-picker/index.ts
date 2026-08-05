@@ -66,11 +66,13 @@ export type {
   PlatformRequestContext,
   PlatformToken,
   UseCanManageByoResult,
+  UseDeleteByoConfigurationResult,
   UseUserFoldersResult,
 } from './usePlatformAccess';
 export {
   useByoConnectionNames,
   useCanManageByo,
+  useDeleteByoConfiguration,
   usePlatformDiscoveryModels,
   useUserFolders,
 } from './usePlatformAccess';

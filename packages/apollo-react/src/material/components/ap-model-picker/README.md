@@ -195,7 +195,28 @@ Under the hood: `GET {baseUrl}/portal_/api/organization/UserOrganizationInfo` �
 
 - The **"Use custom model" footer** opens the *add configuration* form, deep-linked to `/{tenantId}/{folderId}/add` and pre-populated via `?product=&feature=` from `requestingProduct`/`requestingFeature`. The folder id is the switcher's current selection, or — when none is selected ("All folders") — the first available folder, matching the configurations page's own default. Only when no folders exist does it fall back to the configurations list.
 - The **edit row action** (BYO rows only) opens the configuration's *edit* form when the model carries `byomDetails.byoConfigurationId` (served by Discovery on UiPath/Arima#2659); when absent it lands on the configurations list scoped to the tenant + folder.
-- The **delete row action** (BYO rows only) is opt-in: pass `onDeleteModel` and the picker renders a delete icon next to edit. The picker always asks for confirmation first (a built-in dialog naming the configuration), then calls your handler; in self-fetch mode it refetches Discovery once your handler resolves. Omit it to keep removal on the configurations page only.
+- The **delete row action** (BYO rows only) is owned by the picker in self-fetch mode. It renders a delete icon next to edit on BYO rows that carry a `byoConfigurationId`, confirms first (a built-in dialog naming the configuration), then issues the platform call itself:
+
+  ```
+  DELETE {gateway}/api/byo/product/llm-configurations/{byoConfigurationId}
+  ```
+
+  It reuses the credentials and org/tenant path it already holds for Discovery, refetches the catalog, and reports failures in its own error surface (the gateway's message, verbatim). Products do **not** implement this request.
+
+  Pass `onModelDeleted` to react afterwards. Its one real job is reconciling state the picker cannot see — above all, choosing a replacement when the deleted model was the current selection. The picker deliberately does not choose one for you:
+
+  ```tsx
+  <ModelPicker
+    requestContext={ctx}
+    value={selected}
+    onChange={setSelected}
+    onModelDeleted={(model) => {
+      if (model.modelName === selected) setSelected(nextDefault());
+    }}
+  />
+  ```
+
+  `onDeleteModel` remains as an opt-out for hosts that must route the call elsewhere — the picker then confirms, calls it, and refetches, but issues no request of its own. With a host-owned `models` list there is no request context to delete with, so `onDeleteModel` is the only way to surface a delete action at all.
 
 These navigations always open the AI Trust Layer pages in a new browser tab - the picker is embedded in a product surface, and navigating it away would unload the user's in-progress work. `onUseCustomModel` overrides the footer's default navigation (e.g. an in-app wizard), and `slots.optionActions` overrides the row actions. Products with their own authorization model can pass `canManageByo` (`true`/`false`); when set, no admin check request is made.
 
