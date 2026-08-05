@@ -12,8 +12,14 @@ import {
   useNavigate,
   useRouterState,
 } from "@tanstack/react-router";
+// Type-only: RoutePaths isn't re-exported from @tanstack/react-router's own
+// entrypoint, but it's the utility that derives the actual union of
+// registered paths from a route tree, which is the whole point here — see
+// the step 2 report on why a hand-written union wouldn't do the same job.
+import type { RoutePaths } from "@tanstack/router-core";
 import {
   Check,
+  ClipboardCheck,
   ClipboardList,
   Home as HomeIcon,
   ShoppingCart,
@@ -38,53 +44,82 @@ import { ConfigureFlow } from "./catalog/v1/ConfigureFlow";
 import { ConversationProvider } from "./catalog/v1/ConversationProvider";
 import { Review } from "./catalog/v1/Review";
 import { Home } from "./home/Home";
+import { Approvals } from "./requests/Approvals";
 import { DecisionWindow } from "./requests/DecisionWindow";
+import { getDecisionDetail } from "./requests/data";
 import { MyRequests } from "./requests/MyRequests";
-import { PORecord } from "./requests/PORecord";
+import { PORecordPage } from "./requests/PORecord";
 import { RequestsProvider } from "./requests/RequestsProvider";
 import { RequestWindow } from "./requests/RequestWindow";
 import { TierProvider, useTier } from "./tier-context";
 import { Workbench } from "./workbench/Workbench";
 
-// Home is the default landing, above Buy and Catalog (the shared front
-// doors). The queue nav item is seat-dependent: the requester (Marcus Webb)
-// gets My Requests (their own queue); the buyer (procurement) gets the
-// Workbench, where requests that needed judgment land.
-const baseNavItems: ShellNavItem[] = [
+// Home, Buy, and Catalog are requester surfaces. Home is the composer +
+// "Your requests"; Buy creates a request; Catalog (Selection.tsx under the
+// hood) has its own add-to-cart affordances writing into the same unscoped
+// cart/conversation state Buy uses (see the step 2 report on Catalog) — none
+// of the three has a notion of whose request it is, so none of them are
+// safe to also expose to the buyer or approver nav. Each of those gets only
+// its own queue.
+const requesterNavItems: ShellNavItem[] = [
   { path: "/home", label: "home", icon: HomeIcon },
   { path: "/buy", label: "buy", icon: ShoppingCart },
   { path: "/catalog", label: "catalog", icon: Store },
-];
-
-const requesterNavItems: ShellNavItem[] = [
-  ...baseNavItems,
   { path: "/requests", label: "requests", icon: ClipboardList },
 ];
 
 const buyerNavItems: ShellNavItem[] = [
-  ...baseNavItems,
   { path: "/workbench", label: "workbench", icon: Wrench },
 ];
 
-type Seat = "requester" | "buyer";
+const approverNavItems: ShellNavItem[] = [
+  { path: "/approvals", label: "approvals", icon: ClipboardCheck },
+];
 
-// Where each seat lands when the identity chip swaps it — its own queue.
-const SEAT_HOME: Record<Seat, "/requests" | "/workbench"> = {
-  requester: "/requests",
-  buyer: "/workbench",
-};
+type PersonaId = "requester" | "buyer" | "approver";
 
-const SEATS: Record<
-  Seat,
-  { user: { name: string; email: string }; navItems: ShellNavItem[] }
-> = {
+interface Persona {
+  id: PersonaId;
+  name: string;
+  /** The word the popover's persona list uses for "{name} · {role}". See
+   * the step 1 report: "Buyer" and "Approver" are new words, not present
+   * in today's seed data. */
+  role: string;
+  /** The identity chip's subtitle, authored directly rather than derived —
+   * the three legacy strings (role+location, department, job title) don't
+   * share a composition rule. See the step 2 report. */
+  chipSubtitle: string;
+  /** Validated against the actual route tree below (RoutePaths), not a
+   * hand-written union — see the step 2 report on why a plain `string`
+   * let an unregistered route through undetected. */
+  homeRoute: RoutePaths<typeof routeTree>;
+  navItems: ShellNavItem[];
+}
+
+const PERSONAS: Record<PersonaId, Persona> = {
   requester: {
-    user: { name: "Marcus Webb", email: "Requester · Denver team" },
+    id: "requester",
+    name: "Marcus Webb",
+    role: "Requester",
+    chipSubtitle: "Requester · Denver team",
+    homeRoute: "/requests",
     navItems: requesterNavItems,
   },
   buyer: {
-    user: { name: "Sam Rivera", email: "Procurement" },
+    id: "buyer",
+    name: "Sam Rivera",
+    role: "Buyer",
+    chipSubtitle: "Procurement",
+    homeRoute: "/workbench",
     navItems: buyerNavItems,
+  },
+  approver: {
+    id: "approver",
+    name: "Alex Chen",
+    role: "Approver",
+    chipSubtitle: "Design Director",
+    homeRoute: "/approvals",
+    navItems: approverNavItems,
   },
 };
 
@@ -133,30 +168,85 @@ function EmptyPage({ title }: { title: string }) {
   );
 }
 
+// Menu order — Requester, Buyer, Approver, per the spec.
+const PERSONA_MENU_ORDER: PersonaId[] = ["requester", "buyer", "approver"];
+
+// Same section-label and checked-state treatment as TierMenuSection, no
+// colored dots — personas have no color semantics and inventing three would
+// read as meaningful when it isn't.
+function PersonaMenuSection({
+  personaId,
+  onSelect,
+}: {
+  personaId: PersonaId;
+  onSelect: (id: PersonaId) => void;
+}) {
+  return (
+    <>
+      <DropdownMenuLabel className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Prototype persona
+      </DropdownMenuLabel>
+      {PERSONA_MENU_ORDER.map((id) => {
+        const persona = PERSONAS[id];
+        return (
+          <DropdownMenuItem
+            key={id}
+            onClick={() => onSelect(id)}
+            className="justify-between"
+          >
+            <span>
+              {persona.name} · {persona.role}
+            </span>
+            {personaId === id && (
+              <Check className="size-3.5 shrink-0 text-primary" />
+            )}
+          </DropdownMenuItem>
+        );
+      })}
+    </>
+  );
+}
+
 function GuidedBuyingLayout() {
-  const [seat, setSeat] = useState<Seat>("requester");
-  const { location } = useRouterState();
-  const { navItems } = SEATS[seat];
+  const [personaId, setPersonaId] = useState<PersonaId>("requester");
   const navigate = useNavigate();
   const { tier } = useTier();
+  // Selector-scoped, not a bare useRouterState() destructure — this file's
+  // own established pattern (see BuyFlow.tsx) to avoid re-rendering the
+  // root layout on every router-internal state change, not just pathname.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const avatarClassName =
     tier === "p1"
       ? "bg-primary/15 text-primary"
       : "bg-(--insight-600)/15 text-(--insight-600)";
 
-  // Decision route belongs to Alex Chen — reflect that in the shell identity chip
-  // rather than showing Marcus while the page header says Alex.
-  const isDecisionRoute = location.pathname.startsWith("/decision/");
-  const user = isDecisionRoute
-    ? { name: "Alex Chen", email: "Design Director" }
-    : SEATS[seat].user;
+  // Persona state is the single authority over the identity chip now — no
+  // route-derived override.
+  const persona = PERSONAS[personaId];
+  const user = { name: persona.name, email: persona.chipSubtitle };
 
-  // Switching seats swaps the nav and lands on that seat's own queue: the buyer
-  // (procurement) drops into the Workbench; the requester into My Requests.
-  const switchSeat = () => {
-    const next: Seat = seat === "requester" ? "buyer" : "requester";
-    setSeat(next);
-    void navigate({ to: SEAT_HOME[next] });
+  // The only context-preserving switch in scope: from a request's own detail
+  // page, switching to the approver lands on that same request's decision
+  // instead of a fresh queue — this is what replaces the deleted "Approver
+  // view (demo)" affordance. Guarded on getDecisionDetail actually having
+  // that id, so any request other than REQ-2052 falls back to the approver's
+  // own queue rather than a "Decision request not found" dead end. The
+  // buyer has no equivalent — there's no /workbench/$id to land on (see the
+  // step 2 report) — so switching to Sam Rivera always goes to /workbench.
+  const switchPersona = (target: PersonaId) => {
+    if (target === personaId) return;
+
+    if (target === "approver") {
+      const requestId = pathname.match(/^\/requests\/([^/]+)$/)?.[1];
+      if (requestId && getDecisionDetail(requestId)) {
+        setPersonaId(target);
+        void navigate({ to: "/decision/$id", params: { id: requestId } });
+        return;
+      }
+    }
+
+    setPersonaId(target);
+    void navigate({ to: PERSONAS[target].homeRoute });
   };
 
   return (
@@ -168,10 +258,14 @@ function GuidedBuyingLayout() {
         darkUrl: "/UiPath_dark.svg",
         alt: "UiPath logo",
       }}
-      navItems={navItems}
+      navItems={persona.navItems}
       user={user}
-      onUserClick={switchSeat}
-      userMenuAdditionalItems={<TierMenuSection />}
+      userMenuAdditionalItems={
+        <>
+          <PersonaMenuSection personaId={personaId} onSelect={switchPersona} />
+          <TierMenuSection />
+        </>
+      }
       avatarClassName={avatarClassName}
     >
       {/* Clips the Buy↔Configure horizontal slide so it can't flash a scrollbar. */}
@@ -271,7 +365,7 @@ const requestDetailRoute = createRoute({
 const poRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/po/$id",
-  component: PORecord,
+  component: PORecordPage,
 });
 
 // Decision Window — approver's view of a pending-approval request.
@@ -279,6 +373,14 @@ const decisionRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/decision/$id",
   component: DecisionWindow,
+});
+
+// Approvals — the approver's own queue, mirroring My Requests' role for the
+// requester. List rows read straight from DECISION_DETAILS.
+const approvalsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/approvals",
+  component: Approvals,
 });
 
 // Review & submit (reached from the cart's "Review & submit").
@@ -307,6 +409,7 @@ const routeTree = rootRoute.addChildren([
   requestDetailRoute,
   poRoute,
   decisionRoute,
+  approvalsRoute,
   reviewRoute,
   trackRoute,
 ]);

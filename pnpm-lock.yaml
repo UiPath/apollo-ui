@@ -289,6 +289,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@tanstack/router-core':
+        specifier: 1.171.15
+        version: 1.171.15
       '@ts-rest/core':
         specifier: ^3.53.0-rc.1
         version: 3.53.0-rc.1(@types/node@24.10.1)
