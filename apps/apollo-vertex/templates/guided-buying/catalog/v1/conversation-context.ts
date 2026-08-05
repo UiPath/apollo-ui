@@ -19,6 +19,10 @@ export interface RequestDetails {
   approver: string;
   /** Cost center (e.g. "Design Operations · CC-4421"). */
   costCenter: string;
+  /** Full ship-to address (e.g. "Amsterdam office · Herengracht 124, 1015 BS Amsterdam"). */
+  shipTo: string;
+  /** Delivery timing (e.g. "Standard delivery" or "By Jun 22"). */
+  needBy: string;
 }
 
 export interface ConversationContextValue {

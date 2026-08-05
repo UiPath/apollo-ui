@@ -14,7 +14,7 @@ const aiGlowVariants = cva("pointer-events-none absolute", {
   variants: {
     variant: {
       // Soft oblong blob behind a single card.
-      card: "-inset-x-4 -inset-y-3 opacity-70 blur-xl dark:opacity-60",
+      card: "-inset-x-4 -inset-y-3 opacity-55 blur-xl dark:opacity-45",
       // Wider amorphous wash behind a group of cards; bleeds past the edges.
       group: "-inset-y-14 -left-40 -right-44",
     },

@@ -42,7 +42,17 @@ export interface ThreadQaEntry {
   answer: string;
 }
 
-export type ThreadEntry = ThreadStepEntry | ThreadQaEntry;
+/** A standalone assistant statement — no question, never condensed. Used for
+ * memory writes (e.g. "remembered" preference changes) so they're visible in
+ * the thread instead of applying silently. */
+export interface ThreadNoteEntry {
+  id: string;
+  kind: "note";
+  time: string;
+  text: string;
+}
+
+export type ThreadEntry = ThreadStepEntry | ThreadQaEntry | ThreadNoteEntry;
 
 interface AssistantThreadContextValue {
   /** Chronological — step entries and Q&A interleaved as they happened. */
@@ -63,6 +73,8 @@ interface AssistantThreadContextValue {
   ) => void;
   /** Appends a question/answer pair at the end of the thread. */
   addQaEntry: (question: string, answer: string) => void;
+  /** Appends a standalone assistant note (e.g. a remembered preference change). */
+  addNoteEntry: (text: string) => void;
 }
 
 const AssistantThreadContext =
@@ -133,9 +145,20 @@ export function AssistantThreadProvider({ children }: { children: ReactNode }) {
     setEntries((prev) => [...prev, entry]);
   }, []);
 
+  const addNoteEntry = useCallback((text: string) => {
+    counter.current += 1;
+    const entry: ThreadNoteEntry = {
+      id: `note-${counter.current}`,
+      kind: "note",
+      time: timeNow(),
+      text,
+    };
+    setEntries((prev) => [...prev, entry]);
+  }, []);
+
   return (
     <AssistantThreadContext.Provider
-      value={{ entries, currentStep, addStepEntry, addQaEntry }}
+      value={{ entries, currentStep, addStepEntry, addQaEntry, addNoteEntry }}
     >
       {children}
     </AssistantThreadContext.Provider>

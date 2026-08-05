@@ -2,8 +2,9 @@
 
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Info, Plus } from "lucide-react";
+import { Info, Plus, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,8 @@ const BASIS = "epp" as const;
 // (e.g. the catalog path); the Bridge overrides these when it confirms.
 const DEFAULT_APPROVER = "Alex Chen · Design Director";
 const DEFAULT_COST_CENTER = "Design Operations · CC-4421";
+const DEFAULT_SHIP_TO = "Amsterdam office · Herengracht 124, 1015 BS Amsterdam";
+const DEFAULT_NEED_BY = "Standard delivery";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -90,12 +93,16 @@ export function Review() {
     setRequestDetails({
       approver: DEFAULT_APPROVER,
       costCenter: DEFAULT_COST_CENTER,
+      shipTo: DEFAULT_SHIP_TO,
+      needBy: DEFAULT_NEED_BY,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // reload-only seed — never re-fires as the user empties the cart
 
   const approver = requestDetails?.approver ?? DEFAULT_APPROVER;
   const costCenter = requestDetails?.costCenter ?? DEFAULT_COST_CENTER;
+  const shipTo = requestDetails?.shipTo ?? DEFAULT_SHIP_TO;
+  const needBy = requestDetails?.needBy ?? DEFAULT_NEED_BY;
   // First name only in the subhead sentence — the full "Name · Title" reads
   // oddly inline; the title still shows in the routing strip below.
   const approverName = approver.split(" · ")[0];
@@ -194,8 +201,8 @@ export function Review() {
                     Ready for {approverName}&apos;s approval
                   </h1>
                   <p className="text-sm text-muted-foreground">
-                    Within your {formatPrice(APPROVAL_LIMIT, "USD")} limit, so
-                    no procurement review is needed.
+                    No procurement review needed, routing straight to{" "}
+                    {approverName}.
                   </p>
                 </motion.header>
 
@@ -265,7 +272,8 @@ export function Review() {
                   )}
                 </motion.section>
 
-                {/* Delivery + approval — same card treatment as Order summary. */}
+                {/* Delivery + ship to + need by + approval — same card
+                    treatment as Order summary. */}
                 <motion.section
                   variants={fadeUpVariants(reduceMotion)}
                   className={cn(...GLASS_CLASSES, "space-y-3 p-4 text-sm")}
@@ -274,14 +282,22 @@ export function Review() {
                     <div>
                       <p className="text-xs text-muted-foreground">Delivery</p>
                       <p className="text-foreground">
-                        {items[0].source},{" "}
+                        {items[0].source}.{" "}
                         {items[0].inStock
-                          ? "ships in 2 to 3 business days"
-                          : "backordered, 3 to 4 weeks"}
-                        . EPP validated today.
+                          ? "In stock, ships in 2 to 3 business days."
+                          : "Backordered, ships in 3 to 4 weeks."}{" "}
+                        EPP validated today.
                       </p>
                     </div>
                   )}
+                  <div>
+                    <p className="text-xs text-muted-foreground">Ship to</p>
+                    <p className="text-foreground">{shipTo}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Need by</p>
+                    <p className="text-foreground">{needBy}</p>
+                  </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Approval</p>
                     <p className="text-foreground">
@@ -289,6 +305,20 @@ export function Review() {
                     </p>
                   </div>
                 </motion.section>
+
+                {/* Green ready-to-submit state — every policy check passed,
+                    naming the limit it cleared. Sits above the caveat. */}
+                {!needsApproval && (
+                  <motion.div variants={fadeUpVariants(reduceMotion)}>
+                    <Alert status="success" visual="tinted">
+                      <ShieldCheck aria-hidden />
+                      <AlertDescription className="text-foreground">
+                        All policy checks passed — within your{" "}
+                        {formatPrice(APPROVAL_LIMIT, "USD")} approval limit.
+                      </AlertDescription>
+                    </Alert>
+                  </motion.div>
+                )}
 
                 {/* Caveat sits below everything it discloses, just above the
                     action bar. */}
