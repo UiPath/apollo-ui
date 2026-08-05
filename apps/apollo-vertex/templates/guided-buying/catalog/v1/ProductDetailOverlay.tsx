@@ -43,30 +43,32 @@ export function ProductDetailOverlay({
 
   return (
     <div className="absolute inset-0 z-30">
-      {/* Dimmed catalog behind — click to close. */}
+      {/* Blurred catalog behind — click to close. */}
       <motion.button
         type="button"
         aria-label="Close details"
         tabIndex={-1}
         onClick={onClose}
-        className="absolute inset-0 bg-foreground/20"
+        className="absolute inset-0 bg-foreground/30 backdrop-blur-xl"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, transition: reveal }}
         exit={{ opacity: 0, transition: close }}
       />
-      {/* Sliding detail panel — fills the main column, leaving a dim gutter. */}
-      <motion.div
-        ref={focusTrapRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Product details"
-        className="absolute inset-y-0 right-0 flex w-full max-w-[768px] flex-col overflow-y-auto bg-background shadow-xl"
-        initial={{ x: "100%" }}
-        animate={{ x: 0, transition: reveal }}
-        exit={{ x: "100%", transition: close }}
-      >
-        {children}
-      </motion.div>
+      {/* Centered detail dialog. */}
+      <div className="absolute inset-0 flex items-center justify-center p-6">
+        <motion.div
+          ref={focusTrapRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Product details"
+          className="flex max-h-[85vh] w-full max-w-4xl flex-col overflow-y-auto rounded-2xl bg-background shadow-2xl"
+          initial={{ opacity: 0, scale: 0.96, y: 12 }}
+          animate={{ opacity: 1, scale: 1, y: 0, transition: reveal }}
+          exit={{ opacity: 0, scale: 0.96, y: 12, transition: close }}
+        >
+          {children}
+        </motion.div>
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   CalendarClock,
   Check,
   Info,
+  Lock,
   type LucideIcon,
   MapPin,
   MessageSquareText,
@@ -16,9 +17,15 @@ import {
   RotateCcw,
   UserRound,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
@@ -26,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import {
   type DetailField,
   useAssistantThread,
@@ -52,6 +60,33 @@ interface FieldOption {
   assumed?: boolean;
 }
 
+// Backs the "Where this came from" popover — see ProvenancePopover below.
+// Actions are descriptors, not bound handlers: the render loop resolves each
+// kind to a real onClick (it needs setEditingKey/stubToast, which live on
+// RequestEnvelope, not on this module-level data).
+type ProvenanceActionKind =
+  | "changeForRequest"
+  | "changeDefault"
+  | "requestException";
+
+interface ProvenanceActionSpec {
+  label: string;
+  variant: "primary" | "secondary";
+  kind: ProvenanceActionKind;
+}
+
+interface FieldProvenance {
+  /** Zone 2 — the provenance statement itself. */
+  source: string;
+  /** Zone 3 — supporting detail. Omitted for Need by, which is filled in at
+   * render time from the live requestText instead of a static string. */
+  context?: string;
+  /** Zone 4 lock chip label. Only set when the value can't be changed. */
+  lockReason?: string;
+  /** Zone 4 actions, in display order (right-aligned). */
+  actions: ProvenanceActionSpec[];
+}
+
 interface EnvelopeField {
   key: FieldKey;
   icon: LucideIcon;
@@ -60,6 +95,8 @@ interface EnvelopeField {
   source: string;
   /** What the agent already reasoned about: current value first, then known alternatives. */
   options: FieldOption[];
+  /** Backs the "Where this came from" popover — see FieldProvenance. */
+  provenance: FieldProvenance;
 }
 
 // Inferred from the established request: "2 ThinkPad X1 laptops for our new
@@ -78,6 +115,23 @@ const FIELDS: EnvelopeField[] = [
       { value: "Brand · CC-3380", reason: "Brand team's cost center" },
       { value: "Product Design · CC-4410", reason: "Product Design org" },
     ],
+    provenance: {
+      source: "Pulled from your saved profile default.",
+      context:
+        "Used on 4 of your last 5 requests. Alternates: Brand · CC-3380, Product Design · CC-4410.",
+      actions: [
+        {
+          label: "Change my default",
+          variant: "secondary",
+          kind: "changeDefault",
+        },
+        {
+          label: "Change for this request",
+          variant: "primary",
+          kind: "changeForRequest",
+        },
+      ],
+    },
   },
   {
     key: "ship",
@@ -98,6 +152,19 @@ const FIELDS: EnvelopeField[] = [
         reason: "EU design hub",
       },
     ],
+    provenance: {
+      source: "Set by Dana Kim as your team's default.",
+      context:
+        "Used on every team request this quarter. Alternates: your home office, Berlin hub.",
+      lockReason: "Only Dana Kim can change",
+      actions: [
+        {
+          label: "Request an exception",
+          variant: "secondary",
+          kind: "requestException",
+        },
+      ],
+    },
   },
   {
     key: "need",
@@ -114,6 +181,18 @@ const FIELDS: EnvelopeField[] = [
       { value: "By Jul 1", reason: "Start of Q3" },
       { value: "Rush · 2 business days", reason: "Fastest, added cost" },
     ],
+    provenance: {
+      source: "Inferred from your request, which named no date.",
+      // No static context — built at render time from the live requestText
+      // (the quoted phrase needs its own italic span), see the render loop.
+      actions: [
+        {
+          label: "Change for this request",
+          variant: "secondary",
+          kind: "changeForRequest",
+        },
+      ],
+    },
   },
   {
     key: "approver",
@@ -134,6 +213,18 @@ const FIELDS: EnvelopeField[] = [
         reason: "Owns Product Design approvals",
       },
     ],
+    provenance: {
+      source: "Policy: catalog orders over $5,000 route to a Design Director.",
+      context: "This request totals $27,735, so it routes to Alex Chen.",
+      lockReason: "Fixed policy rule",
+      actions: [
+        {
+          label: "Request an exception",
+          variant: "secondary",
+          kind: "requestException",
+        },
+      ],
+    },
   },
 ];
 
@@ -177,6 +268,135 @@ function seedEnvelope(overrides: Record<string, string>): {
     if (derived) values.approver = derived;
   }
   return { values, overridden };
+}
+
+// Stubs for the two actions that don't have a real flow yet — surfaced as an
+// info Sonner toast (per the in-product notification guidelines: task-
+// generated, tied to this click, no action required) so it still gives
+// feedback instead of doing nothing. See the RequestEnvelope doc comment for
+// what each would need to actually ship.
+function stubToast(title: string, description: string) {
+  toast.info(title, { description });
+}
+
+interface ProvenancePopoverAction {
+  label: string;
+  variant: "primary" | "secondary";
+  onClick: () => void;
+}
+
+interface ProvenancePopoverProps {
+  /** Zone 1, right side — the only echo of the triggering row. Never the value. */
+  field: string;
+  /** Zone 2 — the provenance statement, the card's visual anchor. */
+  source: string;
+  /** Zone 3 — supporting detail: usage, alternates, or the inferred phrase. */
+  context?: ReactNode;
+  /** Zone 4 lock chip label. Presence alone switches the footer to the
+   * locked layout (chip left, actions right) instead of actions-only. */
+  lockReason?: string;
+  /** Zone 4 — right-aligned, in display order (secondary before primary). */
+  actions: ProvenancePopoverAction[];
+}
+
+function provenanceButtonVariant(action: ProvenancePopoverAction) {
+  return action.variant === "primary" ? "default" : "secondary";
+}
+
+/**
+ * "Where this came from" popover: a fixed four-zone skeleton reused by every
+ * field (Approver, Ship to, Cost center, Need by) so the popover itself never
+ * varies, only the data. Zones, always in this order:
+ * 1. Header — icon + title, field name right-aligned, hairline border below.
+ * 2. Source — the answer to "where did this come from," sized up as the
+ *    card's visual anchor.
+ * 3. Context — usage/alternates, or (Need by) the inferred phrase.
+ * 4. Actions — hairline border above. Three shapes, by what's locked/how many:
+ *    - Locked: a lock chip on the left, the (single) action pinned right —
+ *      `ml-auto` on the action rather than `justify-between` on the row, so
+ *      the action stays right-aligned even if it wraps under a long chip.
+ *    - Unlocked, one action: right-aligned alone.
+ *    - Unlocked, multiple actions: the two labels don't fit on one line at
+ *      this width, so they stack full-width instead of wrapping mid-word;
+ *      later entries in `actions` render on top (primary is listed last).
+ * Callers own the copy and the action list; this component owns the layout.
+ */
+function ProvenancePopover({
+  field,
+  source,
+  context,
+  lockReason,
+  actions,
+}: ProvenancePopoverProps) {
+  const stacked = !lockReason && actions.length > 1;
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3 border-b pb-2.5">
+        <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+          <Info
+            className="size-[15px] shrink-0 text-muted-foreground"
+            aria-hidden
+          />
+          Where this came from
+        </span>
+        <span className="shrink-0 text-[11px] text-muted-foreground">
+          {field}
+        </span>
+      </div>
+
+      <p className="mt-3 text-[15px] font-medium text-foreground">{source}</p>
+
+      {context && (
+        <p className="mt-2 text-[13px] text-muted-foreground">{context}</p>
+      )}
+
+      <div className="mt-4 border-t pt-4">
+        {lockReason ? (
+          // The chip takes the remaining width and wraps its own text (rather
+          // than the row wrapping the action to a new line), so a long chip
+          // and the action stay on one row, vertically centered against
+          // however many lines the chip note takes.
+          <div className="flex items-center gap-2">
+            <span className="flex min-w-0 flex-1 items-start gap-1 text-[11px] text-muted-foreground">
+              <Lock className="mt-0.5 size-[11px] shrink-0" aria-hidden />
+              <span>{lockReason}</span>
+            </span>
+            <div className="flex shrink-0 gap-2">
+              {actions.map((action) => (
+                <Button
+                  key={action.label}
+                  size="sm"
+                  variant={provenanceButtonVariant(action)}
+                  onClick={action.onClick}
+                >
+                  {action.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "flex gap-2",
+              stacked ? "flex-col-reverse" : "justify-end",
+            )}
+          >
+            {actions.map((action) => (
+              <Button
+                key={action.label}
+                size="sm"
+                variant={provenanceButtonVariant(action)}
+                className={stacked ? "w-full" : undefined}
+                onClick={action.onClick}
+              >
+                {action.label}
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -225,6 +445,10 @@ export function RequestEnvelope() {
   // approver when the cascade updates it so the connection is visible. The
   // Request row itself has no picker — see Revise below.
   const [editingKey, setEditingKey] = useState<FieldKey | null>(null);
+  // Which field's "Where this came from" popover is open (one at a time,
+  // independent of editingKey — opening one closes the other implicitly
+  // since only one can render at a spot in the row at a time).
+  const [provenanceKey, setProvenanceKey] = useState<FieldKey | null>(null);
   const [approverFlash, setApproverFlash] = useState(false);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
@@ -326,8 +550,13 @@ export function RequestEnvelope() {
     if (continued) return;
     setEditingKey(null);
     setContinued(true);
-    // Carry the confirmed routing + cost center to Review.
-    setRequestDetails({ approver: values.approver, costCenter: values.cost });
+    // Carry the confirmed routing, cost center, ship-to, and need-by to Review.
+    setRequestDetails({
+      approver: values.approver,
+      costCenter: values.cost,
+      shipTo: values.ship,
+      needBy: values.need,
+    });
     continueToSelection();
   };
 
@@ -358,238 +587,317 @@ export function RequestEnvelope() {
   return (
     <TooltipProvider>
       <div className="w-full space-y-3">
-        <div
-          className={cn(GLASS_CLASSES, "divide-y overflow-hidden rounded-xl")}
-        >
-          {/* What the user actually asked for — the anchor the inferences hang
+        <div className="relative">
+          <AiGlow variant="card" />
+          <div
+            className={cn(
+              GLASS_CLASSES,
+              // AI-toolkit guideline (same fix as the lead match card): a
+              // glass card paired with a glow needs the higher-opacity
+              // ai-glass surface, or the glow bleeds straight through it —
+              // GLASS_CLASSES' own default (bg-white/55, dark:bg-white/5.5%)
+              // is tuned for a plain card with no glow behind it.
+              "relative divide-y overflow-hidden rounded-xl bg-[var(--ai-glass)] dark:bg-[var(--ai-glass)]",
+            )}
+          >
+            {/* What the user actually asked for — the anchor the inferences hang
             off, and the only row without a field picker: it's prose, not a
             governed value, so "editing" it means restating it as a new turn
             (Revise) rather than patching text in place. */}
-          {requestText && (
-            <motion.div
-              className="px-4 py-2.5"
-              initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: EASE }}
-            >
-              <div className="flex items-center gap-3">
-                <Quote
-                  className="size-4 shrink-0 text-muted-foreground"
-                  aria-hidden
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground">Request</p>
-                  <p className="text-sm font-medium text-foreground">
-                    {requestText}
-                  </p>
-                </div>
-                <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                  From you
-                </span>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label="Revise"
-                      disabled={continued}
-                      onClick={reviseRequest}
-                      className="shrink-0 text-muted-foreground"
-                    >
-                      <MessageSquareText className="size-3.5" aria-hidden />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Revise</TooltipContent>
-                </Tooltip>
-              </div>
-            </motion.div>
-          )}
-          {FIELDS.map((field, i) => {
-            const Icon = field.icon;
-            const isApprover = field.key === "approver";
-            return (
+            {requestText && (
               <motion.div
-                key={field.label}
-                className={cn(
-                  "px-4 py-2.5 transition-colors duration-700",
-                  isApprover && approverFlash && "bg-(--primary)/10",
-                )}
+                className="px-4 py-2.5"
                 initial={reduceMotion ? false : { opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.3,
-                  ease: EASE,
-                  delay: reduceMotion ? 0 : i * STAGGER,
-                }}
+                transition={{ duration: 0.3, ease: EASE }}
               >
                 <div className="flex items-center gap-3">
-                  <Icon
+                  <Quote
                     className="size-4 shrink-0 text-muted-foreground"
                     aria-hidden
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-muted-foreground">
-                      {field.label}
-                    </p>
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {values[field.key]}
+                    <p className="text-xs text-muted-foreground">Request</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {requestText}
                     </p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1">
-                    {/* Fixed-width slot regardless of whether this row is
+                  <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                    From you
+                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Revise"
+                        disabled={continued}
+                        onClick={reviseRequest}
+                        className="shrink-0 text-muted-foreground"
+                      >
+                        <MessageSquareText className="size-3.5" aria-hidden />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Revise</TooltipContent>
+                  </Tooltip>
+                </div>
+              </motion.div>
+            )}
+            {FIELDS.map((field, i) => {
+              const Icon = field.icon;
+              const isApprover = field.key === "approver";
+              return (
+                <motion.div
+                  key={field.label}
+                  className={cn(
+                    "px-4 py-2.5 transition-colors duration-700",
+                    isApprover && approverFlash && "bg-(--primary)/10",
+                  )}
+                  initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    ease: EASE,
+                    delay: reduceMotion ? 0 : i * STAGGER,
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon
+                      className="size-4 shrink-0 text-muted-foreground"
+                      aria-hidden
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">
+                        {field.label}
+                      </p>
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {values[field.key]}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      {/* Fixed-width slot regardless of whether this row is
                       overridden, so the provenance label's right edge — and
                       the pencil's x — hold constant across every row. */}
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={`Restore recommended ${field.label.toLowerCase()}`}
-                      aria-hidden={!overridden[field.key]}
-                      tabIndex={overridden[field.key] ? 0 : -1}
-                      disabled={continued || !overridden[field.key]}
-                      onClick={() => revert(field.key)}
-                      className={cn(
-                        "text-muted-foreground",
-                        !overridden[field.key] && "invisible",
-                      )}
-                    >
-                      <RotateCcw className="size-3.5" aria-hidden />
-                    </Button>
-                    <motion.span
-                      className={cn(
-                        "whitespace-nowrap text-right text-xs",
-                        overridden[field.key]
-                          ? "italic text-(--primary)"
-                          : "text-muted-foreground",
-                      )}
-                      initial={reduceMotion ? false : { opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{
-                        duration: 0.25,
-                        delay: reduceMotion ? 0 : i * STAGGER + 0.18,
-                      }}
-                    >
-                      {overridden[field.key] ? "Changed by you" : field.source}
-                    </motion.span>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={
-                            editingKey === field.key
-                              ? `Done editing ${field.label.toLowerCase()}`
-                              : `Edit ${field.label.toLowerCase()}`
-                          }
-                          disabled={continued}
-                          onClick={() =>
-                            setEditingKey((k) =>
-                              k === field.key ? null : field.key,
-                            )
-                          }
-                          className="text-muted-foreground"
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`Restore recommended ${field.label.toLowerCase()}`}
+                        aria-hidden={!overridden[field.key]}
+                        tabIndex={overridden[field.key] ? 0 : -1}
+                        disabled={continued || !overridden[field.key]}
+                        onClick={() => revert(field.key)}
+                        className={cn(
+                          "text-muted-foreground",
+                          !overridden[field.key] && "invisible",
+                        )}
+                      >
+                        <RotateCcw className="size-3.5" aria-hidden />
+                      </Button>
+                      {overridden[field.key] ? (
+                        <motion.span
+                          className="whitespace-nowrap text-right text-xs italic text-(--primary)"
+                          initial={reduceMotion ? false : { opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{
+                            duration: 0.25,
+                            delay: reduceMotion ? 0 : i * STAGGER + 0.18,
+                          }}
                         >
-                          {editingKey === field.key ? (
-                            <Check className="size-3.5" aria-hidden />
-                          ) : (
-                            <Pencil className="size-3.5" aria-hidden />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {editingKey === field.key ? "Done" : "Change selection"}
-                      </TooltipContent>
-                    </Tooltip>
+                          Changed by you
+                        </motion.span>
+                      ) : (
+                        <Popover
+                          open={provenanceKey === field.key}
+                          onOpenChange={(open) =>
+                            setProvenanceKey(open ? field.key : null)
+                          }
+                        >
+                          <PopoverTrigger asChild>
+                            <motion.button
+                              type="button"
+                              disabled={continued}
+                              className="whitespace-nowrap text-right text-xs text-muted-foreground underline decoration-dotted underline-offset-2 hover:text-foreground"
+                              initial={reduceMotion ? false : { opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{
+                                duration: 0.25,
+                                delay: reduceMotion ? 0 : i * STAGGER + 0.18,
+                              }}
+                            >
+                              {field.source}
+                            </motion.button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="end"
+                            className="w-80 text-left data-[state=open]:animate-none data-[state=closed]:animate-none"
+                          >
+                            <ProvenancePopover
+                              field={field.label}
+                              source={field.provenance.source}
+                              context={
+                                field.key === "need" ? (
+                                  <>
+                                    Source:{" "}
+                                    <span className="italic">
+                                      &ldquo;{requestText ?? ""}&rdquo;
+                                    </span>
+                                  </>
+                                ) : (
+                                  field.provenance.context
+                                )
+                              }
+                              lockReason={field.provenance.lockReason}
+                              actions={field.provenance.actions.map(
+                                (action) => ({
+                                  label: action.label,
+                                  variant: action.variant,
+                                  onClick: () => {
+                                    if (action.kind === "changeForRequest") {
+                                      setProvenanceKey(null);
+                                      setEditingKey(field.key);
+                                    } else if (
+                                      action.kind === "changeDefault"
+                                    ) {
+                                      stubToast(
+                                        "Default not changed",
+                                        "Updating your saved profile default isn't available yet.",
+                                      );
+                                    } else {
+                                      stubToast(
+                                        "Exception not sent",
+                                        "Sending a policy exception request isn't available yet.",
+                                      );
+                                    }
+                                  },
+                                }),
+                              )}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label={
+                              editingKey === field.key
+                                ? `Done editing ${field.label.toLowerCase()}`
+                                : `Edit ${field.label.toLowerCase()}`
+                            }
+                            disabled={continued}
+                            onClick={() =>
+                              setEditingKey((k) =>
+                                k === field.key ? null : field.key,
+                              )
+                            }
+                            className="text-muted-foreground"
+                          >
+                            {editingKey === field.key ? (
+                              <Check className="size-3.5" aria-hidden />
+                            ) : (
+                              <Pencil className="size-3.5" aria-hidden />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {editingKey === field.key
+                            ? "Done"
+                            : "Change selection"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                   </div>
-                </div>
 
-                {/* Low-confidence guess: invite a change, quietly. */}
-                {field.key === "need" &&
-                  needByAssumed &&
-                  editingKey !== "need" && (
-                    <p className="mt-1 pl-7 text-xs italic text-muted-foreground/80">
-                      {
-                        "I assumed standard delivery since you didn't give a date, change it if you need it sooner."
-                      }
-                    </p>
-                  )}
+                  {/* Low-confidence guess: invite a change, quietly. */}
+                  {field.key === "need" &&
+                    needByAssumed &&
+                    editingKey !== "need" && (
+                      <p className="mt-1 pl-7 text-xs italic text-muted-foreground/80">
+                        {
+                          "I assumed standard delivery since you didn't give a date, change it if you need it sooner."
+                        }
+                      </p>
+                    )}
 
-                {/* Routing consequence — the catalog/standard fork, right under
+                  {/* Routing consequence — the catalog/standard fork, right under
                   the approver it's about. The name is already in the row
                   above. Once a direct override moves it, "Changed by you"
                   already explains it — no note needed. If the cascade moved
                   it instead, this names the consequence: which cost center
                   routed it away from the original approver. */}
-                {isApprover &&
-                  editingKey !== "approver" &&
-                  !overridden.approver && (
-                    <p className="mt-1 pl-7 text-xs italic text-muted-foreground/80">
-                      {approverCascaded
-                        ? `${shortName(values.cost)} routes to ${shortName(values.approver)} rather than ${shortName(INITIAL_VALUES.approver)}.`
-                        : "Standard catalog config, so this skips procurement review."}
-                    </p>
-                  )}
+                  {isApprover &&
+                    editingKey !== "approver" &&
+                    !overridden.approver && (
+                      <p className="mt-1 pl-7 text-xs italic text-muted-foreground/80">
+                        {approverCascaded
+                          ? `${shortName(values.cost)} routes to ${shortName(values.approver)} rather than ${shortName(INITIAL_VALUES.approver)}.`
+                          : "Standard catalog config, so this skips procurement review."}
+                      </p>
+                    )}
 
-                {/* Agent picker: current value + alternatives it already knows.
+                  {/* Agent picker: current value + alternatives it already knows.
                   Closes with the reverse of the open, a touch quicker. */}
-                <AnimatePresence>
-                  {editingKey === field.key && (
-                    <motion.div
-                      className="mt-2 space-y-1 pl-7"
-                      initial={reduceMotion ? false : { opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={
-                        reduceMotion
-                          ? { opacity: 0 }
-                          : {
-                              opacity: 0,
-                              y: -4,
-                              transition: { duration: 0.14, ease: EASE },
-                            }
-                      }
-                      transition={{ duration: 0.2, ease: EASE }}
-                    >
-                      {field.options.map((opt) => {
-                        const selected = values[field.key] === opt.value;
-                        return (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            onClick={() => choose(field.key, opt.value)}
-                            className={cn(
-                              "flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors",
-                              selected
-                                ? "border-(--primary) bg-(--primary)/5"
-                                : "border-transparent hover:bg-muted",
-                            )}
-                          >
-                            <span
+                  <AnimatePresence>
+                    {editingKey === field.key && (
+                      <motion.div
+                        className="mt-2 space-y-1 pl-7"
+                        initial={reduceMotion ? false : { opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={
+                          reduceMotion
+                            ? { opacity: 0 }
+                            : {
+                                opacity: 0,
+                                y: -4,
+                                transition: { duration: 0.14, ease: EASE },
+                              }
+                        }
+                        transition={{ duration: 0.2, ease: EASE }}
+                      >
+                        {field.options.map((opt) => {
+                          const selected = values[field.key] === opt.value;
+                          return (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => choose(field.key, opt.value)}
                               className={cn(
-                                "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
+                                "flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors",
                                 selected
-                                  ? "border-(--primary) bg-(--primary) text-white"
-                                  : "border-muted-foreground/40",
+                                  ? "border-(--primary) bg-(--primary)/5"
+                                  : "border-transparent hover:bg-muted",
                               )}
-                              aria-hidden
                             >
-                              {selected && <Check className="size-2.5" />}
-                            </span>
-                            <span className="min-w-0">
-                              <span className="block text-sm font-medium text-foreground">
-                                {opt.value}
+                              <span
+                                className={cn(
+                                  "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
+                                  selected
+                                    ? "border-(--primary) bg-(--primary) text-white"
+                                    : "border-muted-foreground/40",
+                                )}
+                                aria-hidden
+                              >
+                                {selected && <Check className="size-2.5" />}
                               </span>
-                              <span className="block text-xs text-muted-foreground">
-                                {opt.reason}
+                              <span className="min-w-0">
+                                <span className="block text-sm font-medium text-foreground">
+                                  {opt.value}
+                                </span>
+                                <span className="block text-xs text-muted-foreground">
+                                  {opt.reason}
+                                </span>
                               </span>
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
+                            </button>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
         <p className="flex items-center gap-1.5 px-1 text-xs text-muted-foreground">

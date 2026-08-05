@@ -40,6 +40,8 @@ const REQUEST_ID = "REQ-2052";
 // Bridge defaults — used if Review is reached without a resolved Bridge.
 const DEFAULT_APPROVER = "Alex Chen · Design Director";
 const DEFAULT_COST_CENTER = "Design Operations · CC-4421";
+const DEFAULT_SHIP_TO = "Amsterdam office · Herengracht 124, 1015 BS Amsterdam";
+const DEFAULT_NEED_BY = "Standard delivery";
 
 // Headline, subhead, and the two cards stagger in ~110ms apart, starting once
 // the confirmation check has had its moment (see ConfirmCheck below).
@@ -112,6 +114,8 @@ export function CatalogSubmitted() {
     setRequestDetails({
       approver: DEFAULT_APPROVER,
       costCenter: DEFAULT_COST_CENTER,
+      shipTo: DEFAULT_SHIP_TO,
+      needBy: DEFAULT_NEED_BY,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // reload-only seed — never re-fires as the cart empties on exit
