@@ -7,13 +7,21 @@ export const MuiIconButton = (palette: Palette): ComponentsOverrides['MuiIconBut
     padding: token.Padding.PadL,
     '&&:hover': { backgroundColor: palette.semantic.colorIconButtonHover },
     '&&:focus-visible': { boxShadow: `inset 0 0 0 1px ${palette.semantic.colorBackground}` },
-    '&.MuiIconButton-colorPrimary:not(.Mui-disabled)': { color: palette.semantic.colorPrimary },
+    '&.MuiIconButton-colorPrimary:not(.Mui-disabled)': {
+      color: palette.semantic.colorPrimary,
+      '&&:hover': { backgroundColor: palette.semantic.colorIconButtonHover },
+      '&&:focus-visible': {
+        backgroundColor: palette.semantic.colorIconButtonHover,
+        outline: `2px solid ${palette.semantic.colorFocusIndicator} !important`,
+      },
+      '&&:active': { backgroundColor: palette.semantic.colorIconButtonPressed },
+    },
     '&.MuiIconButton-colorSecondary:not(.Mui-disabled)': {
       color: palette.semantic.colorIconDefault,
       '&&:hover': { backgroundColor: palette.semantic.colorIconButtonHover },
       '&&:focus-visible': {
         backgroundColor: palette.semantic.colorIconButtonHover,
-        outline: `${palette.semantic.colorFocusIndicator} solid 2px !important`,
+        outline: `2px solid ${palette.semantic.colorFocusIndicator} !important`,
       },
       '&&:active': { backgroundColor: palette.semantic.colorIconButtonPressed },
     },
