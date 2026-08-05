@@ -64,7 +64,25 @@ describe('computeAlignmentSnapDelta', () => {
     const result = computeAlignmentResult(dragged, existing, 8);
 
     expect(result.delta.dx).toBe(-5);
-    expect(result.guides.find(({ orientation }) => orientation === 'vertical')?.position).toBe(350);
+    expect(
+      result.guides.some(
+        ({ orientation, position }) => orientation === 'vertical' && position === 350
+      )
+    ).toBe(true);
+  });
+
+  it('shows left, center, and right guides when equal-size nodes align', () => {
+    const existing = [bounds('existing', 300, 100)];
+    const dragged = bounds('dragged', 305, 300);
+
+    const result = computeAlignmentResult(dragged, existing, 8);
+
+    expect(result.delta.dx).toBe(-5);
+    expect(
+      result.guides
+        .filter(({ orientation }) => orientation === 'vertical')
+        .map(({ position }) => position)
+    ).toEqual([300, 350, 400]);
   });
 
   it('applies one rigid delta to every node in a multi-selection', () => {

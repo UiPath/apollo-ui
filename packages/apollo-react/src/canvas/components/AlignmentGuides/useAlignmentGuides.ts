@@ -92,38 +92,47 @@ function resolveAxisCandidate(
     )[0];
 }
 
-function buildGuide(
-  candidate: AxisCandidate,
+function buildAlignedGuides(
   dragged: NodeBounds,
   others: NodeBounds[],
   orientation: 'vertical' | 'horizontal'
-): AlignmentGuideLine {
-  const matchingOthers = others.filter((other) => {
-    const anchors = getAxisAnchors(other, orientation);
-    const candidateAnchors = candidate.kind === 'center' ? [anchors[1]] : [anchors[0], anchors[2]];
-    return candidateAnchors.some((anchor) => Math.abs(anchor - candidate.position) < 0.5);
-  });
-  const ranges = [dragged, ...matchingOthers].map((bounds) =>
-    orientation === 'vertical'
-      ? ([bounds.y1, bounds.y2] as const)
-      : ([bounds.x1, bounds.x2] as const)
-  );
+): AlignmentGuideLine[] {
+  const draggedAnchors = getAxisAnchors(dragged, orientation);
 
-  return {
-    id: `${orientation}-${candidate.position}`,
-    orientation,
-    position: candidate.position,
-    start: Math.min(...ranges.map(([rangeStart]) => rangeStart)),
-    end: Math.max(...ranges.map(([, rangeEnd]) => rangeEnd)),
-    kind: candidate.kind,
-    matchedNodeIds: matchingOthers.map(({ id }) => id),
-  };
+  return draggedAnchors.flatMap((position, draggedIndex) => {
+    const matchingOthers = others.filter((other) => {
+      const anchors = getAxisAnchors(other, orientation);
+      const comparableAnchors = draggedIndex === 1 ? [anchors[1]] : [anchors[0], anchors[2]];
+      return comparableAnchors.some((anchor) => Math.abs(anchor - position) < 0.5);
+    });
+
+    if (matchingOthers.length === 0) return [];
+
+    const ranges = [dragged, ...matchingOthers].map((bounds) =>
+      orientation === 'vertical'
+        ? ([bounds.y1, bounds.y2] as const)
+        : ([bounds.x1, bounds.x2] as const)
+    );
+
+    return [
+      {
+        id: `${orientation}-${position}`,
+        orientation,
+        position,
+        start: Math.min(...ranges.map(([rangeStart]) => rangeStart)),
+        end: Math.max(...ranges.map(([, rangeEnd]) => rangeEnd)),
+        kind: draggedIndex === 1 ? 'center' : 'edge',
+        matchedNodeIds: matchingOthers.map(({ id }) => id),
+      },
+    ];
+  });
 }
 
 /**
- * Resolves the single winning alignment candidate on each axis. The returned
- * guide lines and snap delta come from the same candidates, so the visual cue
- * can never disagree with the position applied by a consumer.
+ * Resolves the single winning snap candidate on each axis, then renders every
+ * exact edge/center match at that snapped position. This keeps placement
+ * deterministic while showing the full left/center/right alignment hint for
+ * equal-size nodes.
  */
 export function computeAlignmentResult(
   dragged: NodeBounds,
@@ -143,8 +152,8 @@ export function computeAlignmentResult(
     cy: dragged.cy + delta.dy,
   };
   const guides = [
-    ...(vertical ? [buildGuide(vertical, snapped, others, 'vertical')] : []),
-    ...(horizontal ? [buildGuide(horizontal, snapped, others, 'horizontal')] : []),
+    ...(vertical ? buildAlignedGuides(snapped, others, 'vertical') : []),
+    ...(horizontal ? buildAlignedGuides(snapped, others, 'horizontal') : []),
   ];
 
   return { guides, delta };
