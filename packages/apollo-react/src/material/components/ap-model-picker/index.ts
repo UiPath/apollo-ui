@@ -7,6 +7,12 @@ export { MODEL_BADGES } from './badges';
 
 // i18n contract
 export type { PickerTranslator } from './i18n';
+// i18n catalogs (merge into the host's Lingui instance)
+export {
+  loadModelPickerMessages,
+  MODEL_PICKER_LOCALES,
+  resolveModelPickerLocale,
+} from './loadMessages';
 export type {
   ModelPickerChangeHandler,
   ModelPickerProps,

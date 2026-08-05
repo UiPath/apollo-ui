@@ -370,6 +370,27 @@ Every user-visible string is keyed under the `modelPicker.*` namespace:
 
 The component has its own catalog entry in `packages/apollo-react/lingui.config.ts` (`ap-model-picker/locales/{locale}`). Extract keys with `pnpm i18n:extract` from `packages/apollo-react`; catalogs compile automatically before `build` and `test`.
 
+### Loading the catalogs in a host
+
+The picker's translations live in its own catalogs, so a host that already runs Lingui has to merge them into its instance. Use the exported loader:
+
+```ts
+import { loadModelPickerMessages } from '@uipath/apollo-react/material/components';
+
+const pickerMessages = await loadModelPickerMessages(locale);
+// Host keys last: an app key always wins a collision.
+i18n.loadAndActivate({ locale, messages: { ...pickerMessages, ...appMessages } });
+```
+
+That is the whole integration. Notes:
+
+- **Do not hand-roll the per-locale imports.** A template-literal dynamic import (`` import(`.../locales/${locale}`) ``) cannot be resolved by a consumer's bundler through the package `exports` map, so it fails at build or serves nothing at runtime — and the symptom is raw `modelPicker.*` keys on screen, which reads like a translation bug rather than a bundling one. The loader keeps the literal import map on this side.
+- **Locale matching is forgiving**, because hosts source locales from very different places (PortalShell, `navigator.language`, a preferences API). Tags match case-insensitively across both separators (`pt_BR`, `pt-br`), and an unshipped regional variant falls back to its base language (`fr-CA` → `fr`). `MODEL_PICKER_LOCALES` lists what ships; `resolveModelPickerLocale` exposes the matching if a host needs to pre-check.
+- **It never rejects.** An unknown locale or a failed chunk falls back to English, then to `{}` — a host's i18n bootstrap is the wrong place to throw. Missing messages degrade to the picker's English source strings via `useSafeLingui`.
+- **A host with no Lingui at all needs none of this**: the picker renders its English source strings unaided.
+
+> **Duplicate Lingui breaks translations.** `@lingui/react` is currently a regular *dependency* of `apollo-react`, not a peer. If your app resolves a copy outside apollo's range, you get two `@lingui/react` instances — two React contexts — and the picker cannot see your `I18nProvider`, so it renders raw keys no matter how correctly you load the catalogs. Until that is a peer dependency, hosts should dedupe it (e.g. a pnpm `overrides` entry pinning one version). The same applies to `@emotion/styled`, where a second copy forks `@mui/material` into two peer-variants and your ThemeProvider stops reaching the picker.
+
 ---
 
 ## Performance
