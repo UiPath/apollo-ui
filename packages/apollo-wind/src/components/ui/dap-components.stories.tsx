@@ -53,7 +53,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
 import { Textarea } from './textarea';
 import { Toggle } from './toggle';
-import { ToggleGroup, ToggleGroupItem } from './toggle-group';
 
 interface PropertyRow {
   id: string;
@@ -1173,8 +1172,6 @@ const allSections = [
 
 function DapComponentsPage() {
   const [expandedSections, setExpandedSections] = useState(allSections);
-  const [viewMode, setViewMode] = useState<'default' | 'flow-dense'>('default');
-  const isFlowDense = viewMode === 'flow-dense';
 
   return (
     <main className="min-h-screen bg-muted/30 px-5 py-10 text-foreground sm:px-8 sm:py-14">
@@ -1190,21 +1187,7 @@ function DapComponentsPage() {
 
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">{allSections.length} component layouts</p>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <ToggleGroup
-              aria-label="Component preview density"
-              onValueChange={(value) => {
-                if (value) setViewMode(value as 'default' | 'flow-dense');
-              }}
-              size="sm"
-              type="single"
-              value={viewMode}
-              variant="outline"
-            >
-              <ToggleGroupItem value="default">Default view</ToggleGroupItem>
-              <ToggleGroupItem value="flow-dense">Flow dense view</ToggleGroupItem>
-            </ToggleGroup>
-            <span aria-hidden="true" className="mx-1 h-5 w-px bg-border" />
+          <div className="flex items-center gap-1">
             <Button
               disabled={expandedSections.length === allSections.length}
               onClick={() => setExpandedSections(allSections)}
@@ -1225,11 +1208,7 @@ function DapComponentsPage() {
         </div>
 
         <Accordion
-          className={`flex flex-col ${
-            isFlowDense
-              ? 'mx-auto w-full max-w-[680px] gap-2 [&>div]:!rounded-lg [&>div]:!px-4 [&>div>h3>button]:!py-3 [&>div>h3>button>span]:!gap-2 [&>div>h3>button>span>span:first-child]:!size-7 [&>div>h3>button>span>span:last-child>span:first-child]:!text-base [&>div>h3>button>span>span:last-child>span:first-child]:!leading-5 [&>div>h3>button>span>span:last-child>span:last-child]:!text-xs [&>div>h3>button>span>span:last-child>span:last-child]:!leading-4 [&>div>div>div]:!gap-3 [&>div>div>div]:!pb-4 [&>div>div>div>aside]:!px-3 [&>div>div>div>aside]:!py-2.5 [&>div>div>div>div:first-child]:!rounded-md [&>div>div>div>div:first-child]:!p-4 [&>div>div>div>div:first-child]:!shadow-none [&>div>div>div>div:first-child>div]:!min-h-0 [&>div>div>div_.flex-1]:!p-4 [&>div>div>div_button]:!min-h-8 [&>div>div>div_input]:!h-8 [&>div>div>div_label]:!text-xs [&>div>div>div_table]:!text-xs [&>div>div>div_textarea]:!min-h-20'
-              : 'gap-4'
-          }`}
+          className="flex flex-col gap-4"
           onValueChange={setExpandedSections}
           type="multiple"
           value={expandedSections}
