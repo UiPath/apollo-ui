@@ -1438,8 +1438,8 @@ describe('StageNode - pulse on the paused breakpoint', () => {
     renderArmedAdhocTask('Paused');
 
     // Emotion injects its styles at runtime, so a card animation would show up here.
-    expect(getComputedStyle(screen.getByTestId('stage-task-adhoc-1')).animation).toBe('');
-    expect(screen.getByTestId('stage-task-adhoc-1')).not.toHaveClass('animate-glow');
+    expect(getComputedStyle(screen.getByTestId('stage-task-card-adhoc-1')).animation).toBe('');
+    expect(screen.getByTestId('stage-task-card-adhoc-1')).not.toHaveClass('animate-glow');
   });
 });
 

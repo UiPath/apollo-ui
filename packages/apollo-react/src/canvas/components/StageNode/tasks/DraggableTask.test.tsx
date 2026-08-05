@@ -57,6 +57,29 @@ const defaultProps: DraggableTaskProps = {
 };
 
 describe('DraggableTask', () => {
+  it('exposes exactly one element under the stage-task-card- prefix with every part rendered', () => {
+    const { container } = render(
+      <DraggableTask
+        {...defaultProps}
+        task={{ ...defaultProps.task, isRequired: true }}
+        taskExecution={{
+          status: 'Completed',
+          retryCount: 2,
+          retryDuration: '5s',
+          durationMs: 1234,
+        }}
+        getContextMenuItems={() => createMenuItems(vi.fn())}
+        onToggleBreakpoint={vi.fn()}
+      />
+    );
+
+    const matches = container.querySelectorAll('[data-testid^="stage-task-card-"]');
+
+    expect(Array.from(matches, (match) => match.getAttribute('data-testid'))).toEqual([
+      'stage-task-card-task-1',
+    ]);
+  });
+
   describe('Menu Button Rendering', () => {
     it('renders menu button with correct testid when getContextMenuItems is provided', () => {
       const onRemove = vi.fn();
@@ -152,7 +175,7 @@ describe('DraggableTask', () => {
 
       render(<DraggableTask {...defaultProps} isReadOnly getContextMenuItems={() => menuItems} />);
 
-      fireEvent.contextMenu(screen.getByTestId('stage-task-task-1'));
+      fireEvent.contextMenu(screen.getByTestId('stage-task-card-task-1'));
 
       await waitFor(() => {
         expect(screen.getByText('Move Up')).toBeInTheDocument();
@@ -276,7 +299,7 @@ describe('DraggableTask', () => {
 
       render(<DraggableTask {...defaultProps} onTaskClick={onTaskClick} />);
 
-      const task = screen.getByTestId('stage-task-task-1');
+      const task = screen.getByTestId('stage-task-card-task-1');
       await user.click(task);
 
       expect(onTaskClick).toHaveBeenCalledTimes(1);
@@ -314,7 +337,7 @@ describe('DraggableTask', () => {
       });
 
       // Now task click should work
-      const task = screen.getByTestId('stage-task-task-1');
+      const task = screen.getByTestId('stage-task-card-task-1');
       await user.click(task);
 
       expect(onTaskClick).toHaveBeenCalledWith(expect.any(Object), 'task-1');
@@ -386,7 +409,7 @@ describe('DraggableTask', () => {
         />
       );
 
-      const task = screen.getByTestId('stage-task-task-1');
+      const task = screen.getByTestId('stage-task-card-task-1');
       await user.pointer({ keys: '[MouseRight]', target: task });
 
       expect(screen.queryByText('Move Up')).not.toBeInTheDocument();
@@ -403,19 +426,19 @@ describe('DraggableTask', () => {
     it('renders with selected state', () => {
       const { container } = render(<DraggableTask {...defaultProps} isSelected={true} />);
 
-      const task = screen.getByTestId('stage-task-task-1');
+      const task = screen.getByTestId('stage-task-card-task-1');
       expect(task).toBeInTheDocument();
       // The task should be rendered (selected state is applied via styled-components)
-      expect(container.querySelector('[data-testid="stage-task-task-1"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-testid="stage-task-card-task-1"]')).toBeInTheDocument();
     });
 
     it('renders with parallel state', () => {
       const { container } = render(<DraggableTask {...defaultProps} isParallel={true} />);
 
-      const task = screen.getByTestId('stage-task-task-1');
+      const task = screen.getByTestId('stage-task-card-task-1');
       expect(task).toBeInTheDocument();
       // The task should be rendered (parallel state is applied via styled-components)
-      expect(container.querySelector('[data-testid="stage-task-task-1"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-testid="stage-task-card-task-1"]')).toBeInTheDocument();
     });
   });
 

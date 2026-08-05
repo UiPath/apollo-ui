@@ -85,7 +85,7 @@ const DraggableTaskComponent = ({
   const taskElement = (
     <StageItemPill
       ref={taskRef}
-      data-testid={`stage-task-${task.id}`}
+      data-testid={`stage-task-card-${task.id}`}
       selected={isSelected}
       status={taskExecution?.status}
       isParallel={isParallel}
