@@ -128,7 +128,8 @@ export interface UseUserFoldersResult {
   folders: FolderSwitcherFolder[];
   loading: boolean;
   error: Error | null;
-  refetch: () => void;
+  /** Resolves once the refetch settles; reports failures through `error`. */
+  refetch: () => Promise<void>;
 }
 
 // Enough for the switcher's flat menu; catalogs with more folders than
@@ -240,7 +241,12 @@ export interface UsePlatformDiscoveryModelsResult {
   models: DiscoveryModel[] | undefined;
   loading: boolean;
   error: Error | null;
-  refetch: () => void;
+  /**
+   * Resolves once the refetch settles (it reports failures through `error`
+   * rather than rejecting), so callers that must act on a fresh catalog can
+   * await it. Safe to ignore the promise.
+   */
+  refetch: () => Promise<void>;
 }
 
 /**

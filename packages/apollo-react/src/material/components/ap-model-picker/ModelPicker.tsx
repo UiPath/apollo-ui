@@ -487,8 +487,17 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         setDeleteError(err instanceof Error ? err : new Error(String(err)));
         return;
       }
-      if (selfFetchCtx) refetchDiscovery();
-      await onModelDeleted?.(model);
+      try {
+        // Awaited so the host reacts to a refreshed catalog, not the one that
+        // still lists the model it just deleted.
+        if (selfFetchCtx) await refetchDiscovery();
+        await onModelDeleted?.(model);
+      } catch (err) {
+        // The delete itself succeeded, but this runs from an onClick whose
+        // promise nobody holds — a throwing host callback would otherwise be
+        // an unhandled rejection with no trace of why nothing happened.
+        setDeleteError(err instanceof Error ? err : new Error(String(err)));
+      }
     }, [
       pendingDelete,
       onDeleteModel,
@@ -568,7 +577,14 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       [forwardedRef, triggerRef]
     );
 
-    const closePopup = React.useCallback(() => setOpen(false), [setOpen]);
+    // Closing the popup also drops a failed-delete message. The failure
+    // happens while the popup is shut (the confirm dialog closed it), so the
+    // message waits for the next open — but it is a transient action failure,
+    // not a state of the field, and must not outlive being read.
+    const closePopup = React.useCallback(() => {
+      setOpen(false);
+      setDeleteError(null);
+    }, [setOpen]);
     const slotCtx = React.useMemo<ModelPickerSlotContext>(
       () => ({ selected, close: closePopup }),
       [selected, closePopup]

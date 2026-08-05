@@ -391,6 +391,55 @@ describe('<ModelPicker>', () => {
     }
   });
 
+  it('surfaces a throwing onModelDeleted instead of swallowing it', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'DELETE'
+        ? Promise.resolve({ ok: true, json: async () => ({}) })
+        : Promise.resolve({
+            ok: true,
+            json: async () => [
+              {
+                modelId: 'byo-acme-gpt-4o',
+                modelName: 'gpt-4o',
+                vendor: 'OpenAi',
+                modelSubscriptionType: 'BYOMAdded',
+                byomDetails: { byoConfigurationId: 'cfg-9' },
+              },
+            ],
+          })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          onModelDeleted={() => {
+            throw new Error('host reconciliation blew up');
+          }}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+      await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+
+      // The click handler's promise is floating, so without this the host's
+      // throw would vanish as an unhandled rejection.
+      expect(await screen.findByText(/host reconciliation blew up/i)).toBeInTheDocument();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('offers no delete action on a BYO row with no configuration id to target', async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn().mockResolvedValue({
