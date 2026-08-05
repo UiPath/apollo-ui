@@ -1,19 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DocumentSection } from "../../../ixp/shared/document-section";
 import {
   IxpDocStatus,
   IxpVerdict,
@@ -105,52 +99,39 @@ export const DocumentRow = ({ doc }: { doc: IxpDocument }) => {
     doc.status === IxpDocStatus.Compared &&
     different === 0 &&
     semanticallySame === 0;
-  const [open, setOpen] = useState(!isClean);
   const groups = groupFields(doc.fields);
 
   return (
-    <Collapsible
-      open={open}
-      onOpenChange={setOpen}
-      className="rounded-md border"
-    >
-      <CollapsibleTrigger className="flex w-full items-center gap-2 p-3 text-left hover:bg-muted/30">
-        <ChevronRight
-          className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`}
-          aria-hidden="true"
-        />
-        <div className="flex flex-1 items-center gap-2 truncate">
-          <span className="truncate text-sm font-medium">{doc.document}</span>
-          {doc.previous_document ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge
-                  status="warning"
-                  variant="secondary"
-                  className="shrink-0"
-                >
-                  {t("ixp_doc_reclassified")}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                {t("ixp_doc_reclassified_tooltip", {
-                  previous: doc.previous_document,
-                })}
-              </TooltipContent>
-            </Tooltip>
-          ) : null}
-        </div>
+    <DocumentSection
+      title={doc.document}
+      titleAccessory={
+        doc.previous_document ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge status="warning" variant="secondary" className="shrink-0">
+                {t("ixp_doc_reclassified")}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t("ixp_doc_reclassified_tooltip", {
+                previous: doc.previous_document,
+              })}
+            </TooltipContent>
+          </Tooltip>
+        ) : null
+      }
+      summary={
         <DocumentSummary
           doc={doc}
           different={different}
           semanticallySame={semanticallySame}
         />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="border-t p-3">
-        {groups.map(([group, fields]) => (
-          <FieldGroup key={group} group={group} fields={fields} />
-        ))}
-      </CollapsibleContent>
-    </Collapsible>
+      }
+      defaultOpen={!isClean}
+    >
+      {groups.map(([group, fields]) => (
+        <FieldGroup key={group} group={group} fields={fields} />
+      ))}
+    </DocumentSection>
   );
 };
