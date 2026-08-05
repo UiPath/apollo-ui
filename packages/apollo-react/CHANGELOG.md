@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.16.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.0...@uipath/apollo-react@6.16.1) (2026-08-05)
+
+### Bug Fixes
+
+* **apollo-react:** improve tooltip text contrast ([ec77922](https://github.com/UiPath/apollo-ui/commit/ec7792260a0747588c9e52573f1b7200f259b4df))
+
 ## [@uipath/apollo-react-v6.16.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.15.1...@uipath/apollo-react@6.16.0) (2026-08-04)
 
 ### Features
