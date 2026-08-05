@@ -352,21 +352,18 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       { label: "Submitted", state: "done", date: "Jul 21, 2026" },
       // 21 Jul submitted + Alex's "a day" turnaround — already past, hence
       // active-warning (the date text goes amber; the node does not).
-      // "Today" in this scenario is ~23 Jul (see Ordered/Received below),
-      // so 22 Jul was 1 day ago.
+      // "Today" in this scenario is ~23 Jul, so 22 Jul was 1 day ago.
       {
         label: "Approved",
         state: "active-warning",
         date: "Jul 22, 2026",
         overdueDays: 1,
       },
-      // Chained off the *previous* stage's date, not off needBy: Approved
-      // (22 Jul) + ~1 business day PO dispatch time.
-      { label: "Ordered", state: "upcoming", date: "Jul 23, 2026" },
-      // Ordered (23 Jul) + Lenovo's ~5 business day (7 calendar day)
-      // shipping window. Comfortably inside the 28 Aug need-by — that date
-      // is a deadline with slack, not a target to derive from.
-      { label: "Received", state: "upcoming", date: "Jul 30, 2026" },
+      // No date on Ordered or Received — there's no real basis to project
+      // when either will happen, and a chained-off-the-previous-stage guess
+      // is exactly the kind of unfounded projection this scenario dropped.
+      { label: "Ordered", state: "upcoming" },
+      { label: "Received", state: "upcoming" },
     ],
     journeyOwnerNote:
       "Waiting on Alex Chen · Design Director. Usually decides within a day.",
@@ -375,15 +372,17 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
     summary: {
       items: "15 × X1 Carbon",
       total: "$27,735",
-      needBy: "Aug 28, 2026",
+      // Contractors start Aug 3 (see threadSeedMessage) — Aug 1 has the
+      // laptops in hand before then, not the 28 Aug date that used to leave
+      // 25 days of dead time after the start date.
+      needBy: "Aug 1, 2026",
       // $2,138 list vs. $1,849 EPP unit price (see PO_DETAILS), × 15.
       savings: "$4,335",
       // "Today" in this scenario is ~23 Jul (2 days after the 21 Jul
       // submission, per the "Approval · 2 days with Alex" story). 23 Jul →
-      // 31 Jul is 8 days, + all of August's 28 days to the 28th = 36.
-      // Comfortably past the 3-day threshold, so no header chip renders —
-      // that's correct: this date isn't close enough to warrant one.
-      needByDaysLeft: 36,
+      // 31 Jul is 8 days, + 1 to reach 1 Aug = 9. Still comfortably past the
+      // 3-day threshold, so no header chip renders.
+      needByDaysLeft: 9,
     },
     approver: "Alex Chen · Design Director",
     costCenter: "Design Operations · CC-4421",
@@ -397,6 +396,13 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
     recordChips: ["PR-2052", "PO · created on approval"],
   },
 };
+
+// The date Alex actually approved REQ-2052 — a real record, not the pending
+// stage bar's own expected date (Jul 22), which is a projection of when a
+// decision was due, not what happened. RequestWindow's stage bar and
+// DecisionWindow's own header/body both read this one value once approved,
+// rather than each keeping its own copy.
+export const REQ_2052_APPROVED_DATE = "Jul 23, 2026";
 
 export function getRequestDetail(id: string): RequestDetail | undefined {
   return REQUEST_DETAILS[id];
@@ -444,10 +450,9 @@ export interface DecisionDetail {
    * surfaced once approved; pre-decision the sidebar's PO chip stays a
    * plain "created on approval" placeholder instead. */
   poNumber: string;
-  /** Projected delivery once the PO ships — same value as this request's
-   * own RequestDetail.journeyStages "Received" date (see requests/data.ts),
-   * kept in sync by hand since the two model the same request from two
-   * different seats. */
+  /** Projected delivery once the PO ships. The requester's own journey
+   * stages carry no equivalent date (see REQUEST_DETAILS above) since there
+   * is no real basis to project one, this field has the same gap. */
   expectedDelivery: string;
 }
 
@@ -460,7 +465,9 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     supplier: "Lenovo",
     costCenter: "Design Operations · CC-4421",
     shipTo: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
-    needBy: "Aug 28, 2026",
+    // Contractors start Aug 3 (see note below) — matches RequestDetail's
+    // own summary.needBy in REQUEST_DETAILS above.
+    needBy: "Aug 1, 2026",
     lineItems: [
       {
         description: "ThinkPad X1 Carbon Gen 12 × 15 · EPP price $1,849",

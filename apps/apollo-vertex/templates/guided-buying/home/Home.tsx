@@ -21,6 +21,7 @@ import { BuyScaffold } from "../catalog/v1/BuyScaffold";
 import { useConversation } from "../catalog/v1/conversation-context";
 import { CATALOG_STARTER, STARTER_SUGGESTIONS } from "../catalog/v1/data";
 import { TeamsResumeCard } from "../catalog/v1/TeamsResumeCard";
+import { P1 } from "../P1";
 import { P2 } from "../P2";
 import {
   REQUEST_DETAILS,
@@ -85,7 +86,22 @@ const HOME_ROW_COPY: Record<string, { status: string; note: string }> = {
   },
 };
 
-function homeRowCopy(row: RequestRow, detail: RequestDetail | undefined) {
+// Written by DecisionWindow's Approve action, read here in place of the
+// row's own static copy — P2 additionally appends the order-placed line
+// (see the <P2> wrap at the call site), it never replaces this one. Keyed
+// to REQ-2052 specifically, not to "approved" alone — this is the one
+// scenario with an approval write today, not a general status model.
+function homeRowCopy(
+  row: RequestRow,
+  detail: RequestDetail | undefined,
+  approved: boolean,
+) {
+  if (row.id === "REQ-2052" && approved) {
+    return {
+      status: "Approved by Alex Chen. Ready to order.",
+      note: "I placed the order after Alex Chen approved.",
+    };
+  }
   return (
     HOME_ROW_COPY[row.id] ?? {
       status: STATUS_LABEL[row.status],
@@ -113,6 +129,7 @@ function updatedTime(dateStr: string): number {
  * entirely by the caller when there are no requests at all. */
 function RequestsSection({ rows }: { rows: RequestRow[] }) {
   const navigate = useNavigate();
+  const { requestStatusOverrides } = useRequests();
   const sorted = [...rows].sort((a, b) => {
     const aOwed = ownedAction(a, REQUEST_DETAILS[a.id]) != null;
     const bOwed = ownedAction(b, REQUEST_DETAILS[b.id]) != null;
@@ -138,8 +155,12 @@ function RequestsSection({ rows }: { rows: RequestRow[] }) {
         {visible.map((row) => {
           const detail = REQUEST_DETAILS[row.id];
           const action = ownedAction(row, detail);
-          const copy = homeRowCopy(row, detail);
-          const Icon = STAGE_ICON[row.status];
+          const approved = requestStatusOverrides[row.id] === "approved";
+          const copy = homeRowCopy(row, detail, approved);
+          // Two renderings of the same icon, gated not branched — same
+          // pattern as the stage bar on the request detail page.
+          const IconApproved = STAGE_ICON[approved ? "approved" : row.status];
+          const IconOrdered = STAGE_ICON[approved ? "ordered" : row.status];
           // A <div> row, not a <button> — it holds the inline action as a
           // real nested <button> when one applies, and HTML can't nest
           // interactive controls. tabIndex/onKeyDown keep the whole row
@@ -158,7 +179,18 @@ function RequestsSection({ rows }: { rows: RequestRow[] }) {
               className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50"
             >
               <span className="flex size-9 shrink-0 items-center justify-center">
-                <Icon className="size-4 text-muted-foreground" aria-hidden />
+                <P1>
+                  <IconApproved
+                    className="size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                </P1>
+                <P2>
+                  <IconOrdered
+                    className="size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                </P2>
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

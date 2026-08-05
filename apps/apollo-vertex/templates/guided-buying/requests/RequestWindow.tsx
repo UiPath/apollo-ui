@@ -6,10 +6,10 @@ import { useReducedMotion } from "framer-motion";
 import {
   Bell,
   Check,
-  ChevronDown,
   History,
   Info,
   Link as LinkIcon,
+  MoreVertical,
   TriangleAlert,
 } from "lucide-react";
 import { useRef, useState } from "react";
@@ -43,11 +43,80 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { ConfirmCheck } from "../ConfirmCheck";
+import { CATALOG_ITEMS, leadTime } from "../catalog/v1/data";
+import { P1 } from "../P1";
+import { P2 } from "../P2";
 import { type ActivityStage, ActivityTrack } from "./ActivityTrack";
-import { getRequestDetail, getRequestRow } from "./data";
+import {
+  getRequestDetail,
+  getRequestRow,
+  REQ_2052_APPROVED_DATE,
+} from "./data";
 import { ReceiptModal } from "./ReceiptModal";
 import { RecordEntry } from "./RecordEntry";
 import { useRequests } from "./requests-context";
+
+/** Marks every stage up to and including `throughLabel` done, and the one
+ * right after it active — the same vocabulary the seed data itself uses for
+ * a stage in progress (see REQ-2051/REQ-2053's own "active" stages), not a
+ * new state. */
+function advanceStagesThrough(
+  stages: ActivityStage[],
+  throughLabel: string,
+): ActivityStage[] {
+  const throughIndex = stages.findIndex((s) => s.label === throughLabel);
+  if (throughIndex === -1) return stages;
+  return stages.map((stage, i) => {
+    if (i <= throughIndex) return { ...stage, state: "done" as const };
+    if (i === throughIndex + 1) return { ...stage, state: "active" as const };
+    return stage;
+  });
+}
+
+// Verb form per stage state: past tense with the actual date once done,
+// present tense with the expected date while active, base verb with no date
+// while upcoming. "Submitted" needs none of this — it's always done, and
+// already past tense — so it's absent here and passes through unchanged.
+const STAGE_VERB_FORMS: Record<
+  string,
+  { done: string; active: string; upcoming: string }
+> = {
+  Approved: {
+    done: "Approved",
+    active: "Waiting for approval",
+    upcoming: "Approve",
+  },
+  Ordered: { done: "Ordered", active: "Ordering", upcoming: "Order" },
+  Received: { done: "Received", active: "Receiving", upcoming: "Receive" },
+};
+
+// Ordered and Received never carry a date, in any state — there's no real
+// basis to project when either will happen, and showing one would just be
+// the same unfounded projection this scenario dropped.
+const STAGES_WITH_NO_DATE = new Set(["Ordered", "Received"]);
+
+/** Applies the verb-form and date rules above for display, without touching
+ * the canonical labels the rest of this file matches stages by (advanceStagesThrough,
+ * attribution, the receipt-flag patch) — this only ever runs as the last
+ * step, right before handing stages to ActivityTrack. */
+function toDisplayStages(stages: ActivityStage[]): ActivityStage[] {
+  return stages.map((stage) => {
+    const forms = STAGE_VERB_FORMS[stage.label];
+    const label = forms
+      ? forms[
+          stage.state === "done"
+            ? "done"
+            : stage.state === "upcoming"
+              ? "upcoming"
+              : "active"
+        ]
+      : stage.label;
+    if (!STAGES_WITH_NO_DATE.has(stage.label)) {
+      return { ...stage, label };
+    }
+    return { ...stage, label, date: undefined, overdueDays: undefined };
+  });
+}
 
 // ─── Activity record — chronological entries ──────────────────────────────────
 
@@ -124,6 +193,7 @@ export function RequestWindow() {
     submittedRows,
     receipts,
     confirmReceipt,
+    requestStatusOverrides,
   } = useRequests();
   const reduceMotion = useReducedMotion();
 
@@ -149,6 +219,10 @@ export function RequestWindow() {
 
   const notes = threads[id] ?? [];
   const isUrgent = urgent[id] === true;
+  // Written by DecisionWindow's Approve action. P1 and P2 both read it —
+  // P2 additionally treats it as "ordered" at render time, in the P2-gated
+  // blocks below, never by writing a second status value.
+  const isApproved = requestStatusOverrides[id] === "approved";
   // The verbatim prompt for the sidebar's "Your request" field — a live
   // submission's captured text first, then a hand-seeded scenario's own
   // recorded prompt, falling back to the generated title when neither exists.
@@ -311,25 +385,39 @@ export function RequestWindow() {
             }
           : null;
 
-  // Slack between the projected delivery and the need-by date, derived from
-  // the track's own "Received" projection — not just the delay, so a wait
-  // that still lands early doesn't read as more urgent than it is.
+  // Only used once a request actually reaches "delivered" (see the receipt
+  // modal below) — REQ-2052 never sets a Received-stage date (no real basis
+  // to project one), so this stays undefined for it.
   const expectedReceivedDate = detail.journeyStages?.find(
     (s) => s.label === "Received",
   )?.date;
-  const needByDate = detail.summary?.needBy;
-  const deliverySlackDays =
-    expectedReceivedDate != null && needByDate != null
-      ? Math.round(
-          (new Date(needByDate).getTime() -
-            new Date(expectedReceivedDate).getTime()) /
-            86_400_000,
-        )
+  // The one supplier fact this scenario actually has a basis for — the
+  // catalog record's own stocking lead time, not a projected calendar date.
+  const suppliedItem = CATALOG_ITEMS.find((i) => i.id === "lnv-x1c-g12");
+  const supplierLeadTimeSentence =
+    suppliedItem != null
+      ? (() => {
+          const text = leadTime(suppliedItem);
+          return `Once approved, ${suppliedItem.source} ${text.charAt(0).toLowerCase()}${text.slice(1)}.`;
+        })()
       : null;
 
   let summaryText: React.ReactNode;
 
-  if (cardState === "sent-back") {
+  if (isApproved) {
+    // Checked ahead of cardState, which stays "pending" for this scenario —
+    // cardState isn't the source of truth for approval, isApproved is (see
+    // report). One accent phrase per the AI toolkit's own rule (limit the
+    // glow to one best match per view), so the P2 addition stays plain
+    // rather than carrying a second highlight.
+    summaryText = (
+      <>
+        {approverFullName ?? "Your approver"} <Highlight>approved</Highlight>{" "}
+        this request.
+        <P2> I placed the order with {supplierName ?? "the supplier"}.</P2>
+      </>
+    );
+  } else if (cardState === "sent-back") {
     summaryText = (
       <>
         {approverFullName ?? "Your approver"}{" "}
@@ -419,16 +507,10 @@ export function RequestWindow() {
         {detail.nudgeText != null
           ? ", so I sent a reminder this morning."
           : "."}
-        {/* The delay is already reported above — this is the slack, so the
-            wait doesn't read as more urgent than the dates actually say. */}
-        {deliverySlackDays != null && deliverySlackDays > 0 && (
-          <>
-            {" "}
-            Even with the wait, delivery is still projected for{" "}
-            {expectedReceivedDate}, {deliverySlackDays} days ahead of the{" "}
-            {needByDate} need-by.
-          </>
-        )}
+        {/* What happens next, from the supplier's own stocking lead time —
+            not a projected calendar date derived from stage-to-stage
+            guesses. */}
+        {supplierLeadTimeSentence != null && <> {supplierLeadTimeSentence}</>}
       </>
     );
   }
@@ -471,12 +553,32 @@ export function RequestWindow() {
       };
     }
   }
+  // Once actually approved, the Approved stage's date becomes the real
+  // record (the same value DecisionWindow shows), not the pending seed
+  // date, which was only ever an expected-by projection.
+  const stagesWithApprovalDate = isApproved
+    ? trackStages.map((stage) =>
+        stage.label === "Approved"
+          ? { ...stage, date: REQ_2052_APPROVED_DATE, overdueDays: undefined }
+          : stage,
+      )
+    : trackStages;
+  // Two renderings of the same track, gated not branched: P1 shows it
+  // advanced past Approval, P2 shows it advanced past Ordering. Only one of
+  // the two ever mounts, since only one tier is active at a time.
+  const trackStagesApproved = isApproved
+    ? advanceStagesThrough(stagesWithApprovalDate, "Approved")
+    : trackStages;
+  const trackStagesOrdered = isApproved
+    ? advanceStagesThrough(stagesWithApprovalDate, "Ordered")
+    : trackStages;
 
   // Messages and messages sent on the requester's behalf, in the order they
   // happened — not status changes, those live on the track above, not here.
   type LogEntry =
     | { kind: "agent"; text: string; timestamp?: string }
-    | { kind: "user"; text: string; timestamp: string };
+    | { kind: "user"; text: string; timestamp: string }
+    | { kind: "approver"; text: string; timestamp?: string };
   const activityLog: LogEntry[] = [];
   // No opening "I configured X and sent it..." entry — that's what the AI
   // Summary headline above already says, in its own words.
@@ -514,6 +616,15 @@ export function RequestWindow() {
       kind: "user",
       text: parts.join(" "),
       timestamp: receipt.confirmedAt,
+    });
+  }
+  // Stays in the record in both tiers — P2 appends a second entry beneath
+  // it (see the P2-gated entry below the map), it never replaces this one.
+  if (isApproved) {
+    activityLog.push({
+      kind: "approver",
+      text: `${approverFullName ?? "Your approver"} approved this request.`,
+      timestamp: "Just now",
     });
   }
   // The record always closes on the live state — who it's with, and
@@ -624,30 +735,31 @@ export function RequestWindow() {
               exactly the states they used to only appear in the overflow
               for, so they're never shown in both places at once. */}
           <ButtonGroup>
-            <Button onClick={headerPrimaryAction.onClick}>
+            <Button
+              variant={
+                headerPrimaryKind === "copy-link" ? "secondary" : "default"
+              }
+              onClick={headerPrimaryAction.onClick}
+            >
               {headerPrimaryAction.label}
             </Button>
-            <ButtonGroupSeparator className="bg-primary-600" />
+            <ButtonGroupSeparator
+              className={
+                headerPrimaryKind === "copy-link" ? undefined : "bg-primary-600"
+              }
+            />
             <Popover open={menuOpen} onOpenChange={setMenuOpen}>
               <PopoverTrigger asChild>
-                <Button aria-label="More actions">
-                  <ChevronDown className="size-4" />
+                <Button
+                  variant={
+                    headerPrimaryKind === "copy-link" ? "secondary" : "default"
+                  }
+                  aria-label="More actions"
+                >
+                  <MoreVertical className="size-4" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-56 p-1">
-                {detail.inFlight && detail.approver != null && (
-                  <button
-                    type="button"
-                    className="flex w-full items-center gap-1 rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      void navigate({ to: "/decision/$id", params: { id } });
-                    }}
-                  >
-                    Approver view
-                    <span className="text-muted-foreground">(demo)</span>
-                  </button>
-                )}
                 {headerPrimaryKind !== "copy-link" && (
                   <button
                     type="button"
@@ -722,7 +834,20 @@ export function RequestWindow() {
               </p>
 
               {detail.journeyStages != null && (
-                <ActivityTrack stages={trackStages} className="mt-5" />
+                <>
+                  <P1>
+                    <ActivityTrack
+                      stages={toDisplayStages(trackStagesApproved)}
+                      className="mt-5"
+                    />
+                  </P1>
+                  <P2>
+                    <ActivityTrack
+                      stages={toDisplayStages(trackStagesOrdered)}
+                      className="mt-5"
+                    />
+                  </P2>
+                </>
               )}
 
               {/* Secondary actions — Nudge and Mark urgent live only here,
@@ -738,7 +863,7 @@ export function RequestWindow() {
                   composer already visible on the page below. */}
               <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
                 <div className="flex items-center gap-2">
-                  {cardState === "pending" && (
+                  {cardState === "pending" && !isApproved && (
                     <>
                       {alreadyNudged ? (
                         // Spent — a record of what happened, not an offer to
@@ -815,18 +940,38 @@ export function RequestWindow() {
                 {activityLog.map((entry, i) => (
                   <RecordEntry
                     key={i}
-                    isPerson={entry.kind === "user"}
-                    initials={requesterInitials}
+                    isPerson={entry.kind !== "agent"}
+                    initials={
+                      entry.kind === "approver"
+                        ? approverInitials
+                        : requesterInitials
+                    }
                     name={
                       entry.kind === "user"
                         ? (row?.requester ?? "You")
-                        : "AI Assistant"
+                        : entry.kind === "approver"
+                          ? (approverFullName ?? "Your approver")
+                          : "AI Assistant"
                     }
                     timestamp={entry.timestamp}
                     text={entry.text}
                   />
                 ))}
-                <WaitingBanner text={waitingLine} />
+                {/* P2-only — the P1 entry above stays, this appends beneath
+                    it rather than replacing it. */}
+                <P2>
+                  {isApproved && (
+                    <RecordEntry
+                      isPerson={false}
+                      name="AI Assistant"
+                      timestamp="Just now"
+                      text={`I placed the order with ${supplierName ?? "the supplier"} after ${approverFullName ?? "your approver"} approved.`}
+                    />
+                  )}
+                </P2>
+                {/* Not rendered once approved — there's no one left to be
+                    waiting on, so no replacement text either. */}
+                {!isApproved && <WaitingBanner text={waitingLine} />}
               </div>
 
               {/* Composer — inFlight only; terminal-state actions live in the
