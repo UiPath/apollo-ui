@@ -26,13 +26,15 @@ export interface DeriveModelTagsContext {
    * production the signal arrives ON the DTO (`model.isRecommended`),
    * merged into the Discovery response from Model_hub configs in
    * `gitops-centralized-cluster` — products should not set this.
-   * When provided (even as an empty array), only listed ids get the
-   * chip.
+   * When provided (even as an empty array), only listed models get the
+   * chip. Entries match `modelId` OR `modelName`, so a list authored
+   * from Model Hub config (which carries names) works as-is.
    */
   recommendedModelIds?: readonly string[];
   /**
    * Test/storybook override for the `preview` signal. Production
-   * sources it from the DTO's `isPreview`.
+   * sources it from the DTO's `isPreview`. Matches by `modelId` or
+   * `modelName`, same as `recommendedModelIds`.
    */
   previewModelIds?: readonly string[];
   /**
@@ -137,6 +139,17 @@ export function resolveHomeGeography(homeRegion: string | undefined): string | u
   return OMS_REGION_TO_GEOGRAPHY[raw.toLowerCase().replace(/[\s_-]/g, '')];
 }
 
+/**
+ * Whether a host-supplied id list names this model. Matches `modelId` OR
+ * `modelName`, mirroring how `value` resolves — Discovery serves the two
+ * equal today, and hosts author these lists from Model Hub config, which
+ * carries model *names*. Matching ids only made a correct list silently
+ * chip nothing the moment the two fields diverge.
+ */
+function listMatchesModel(ids: readonly string[], model: DiscoveryModel): boolean {
+  return ids.includes(model.modelId) || ids.includes(model.modelName);
+}
+
 export function deriveModelTags(
   model: DiscoveryModel,
   context: DeriveModelTagsContext = {}
@@ -167,7 +180,7 @@ export function deriveModelTags(
   // legacy heuristic (for backends that haven't rolled the field out).
   const isRecommended =
     context.recommendedModelIds !== undefined
-      ? context.recommendedModelIds.includes(model.modelId)
+      ? listMatchesModel(context.recommendedModelIds, model)
       : (model.isRecommended ??
         (model.modelSubscriptionType === RECOMMENDED_SUBSCRIPTION &&
           !model.isPreview &&
@@ -184,7 +197,7 @@ export function deriveModelTags(
   // list, DTO `isPreview` otherwise.
   const isPreview =
     context.previewModelIds !== undefined
-      ? context.previewModelIds.includes(model.modelId)
+      ? listMatchesModel(context.previewModelIds, model)
       : !!model.isPreview;
   if (!isByo && isPreview) {
     tags.push({ kind: 'preview', label: localize(TAG_LABELS.preview) });
@@ -427,13 +440,13 @@ function buildSubscriptionMatchers(ctx: GroupModelsContext): Array<{
   // (Model_hub merged into Discovery server-side) → legacy heuristic.
   const isRecommended = (m: DiscoveryModel): boolean =>
     ctx.recommendedModelIds !== undefined
-      ? ctx.recommendedModelIds.includes(m.modelId)
+      ? listMatchesModel(ctx.recommendedModelIds, m)
       : (m.isRecommended ??
         (m.modelSubscriptionType === RECOMMENDED_SUBSCRIPTION &&
           !m.isPreview &&
           !m.deprecationDetails?.usageEndDate));
   const isPreview = (m: DiscoveryModel): boolean =>
-    ctx.previewModelIds !== undefined ? ctx.previewModelIds.includes(m.modelId) : !!m.isPreview;
+    ctx.previewModelIds !== undefined ? listMatchesModel(ctx.previewModelIds, m) : !!m.isPreview;
   const localize = (desc: { id: string; message?: string }): string => {
     if (ctx.i18n) return tr(ctx.i18n, desc);
     return desc.message ?? desc.id;

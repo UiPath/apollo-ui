@@ -163,6 +163,30 @@ describe('deriveModelTags', () => {
     expect(tags.find((t) => t.kind === 'recommended')).toBeTruthy();
   });
 
+  it('matches override lists by modelName too, not just modelId', () => {
+    // Hosts author these lists from Model Hub config, which carries model
+    // *names*. Discovery serves modelId === modelName today, but a list of
+    // names must keep working if the two ever diverge.
+    const byName = model({ modelId: 'deployment-guid', modelName: 'gpt-5.6-terra' });
+
+    const rec = deriveModelTags(byName, { recommendedModelIds: ['gpt-5.6-terra'] });
+    expect(rec.find((t) => t.kind === 'recommended')).toBeTruthy();
+
+    const prev = deriveModelTags(byName, { previewModelIds: ['gpt-5.6-terra'] });
+    expect(prev.find((t) => t.kind === 'preview')).toBeTruthy();
+
+    // Grouping must agree with chip derivation, or a model chips Recommended
+    // while sitting in the More models group.
+    const groups = groupModels([byName], 'subscription', {
+      recommendedModelIds: ['gpt-5.6-terra'],
+    });
+    expect(groups.find((g) => g.key === 'recommended')?.models).toHaveLength(1);
+
+    // A list naming neither field still matches nothing.
+    const miss = deriveModelTags(byName, { recommendedModelIds: ['something-else'] });
+    expect(miss.find((t) => t.kind === 'recommended')).toBeFalsy();
+  });
+
   it('emits Preview chip for hosted preview models, never for BYO', () => {
     const hostedPreview = deriveModelTags(model({ modelId: 'a', isPreview: true }));
     expect(hostedPreview.find((t) => t.kind === 'preview')).toBeTruthy();
