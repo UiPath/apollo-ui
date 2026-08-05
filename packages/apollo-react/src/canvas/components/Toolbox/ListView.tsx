@@ -340,7 +340,9 @@ const ListViewRow = memo(
           style={item.contentColor ? { color: item.contentColor } : undefined}
           data-testid="list-item-icon"
         >
-          {item.icon?.url && <img src={item.icon?.url} alt={item.name} className="w-5 h-5" />}
+          {item.icon?.url && (
+            <img src={item.icon?.url} alt={item.name} draggable={false} className="w-5 h-5" />
+          )}
           {item.icon?.name && <CanvasIcon icon={item.icon.name} size={20} />}
           {item.icon?.Component && <item.icon.Component />}
           {!item.icon?.url && !item.icon?.name && !item.icon?.Component && (

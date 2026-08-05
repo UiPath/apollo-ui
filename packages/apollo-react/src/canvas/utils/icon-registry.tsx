@@ -86,6 +86,7 @@ export function getIcon(iconId?: string): IconComponent {
       <img
         src={iconId}
         alt="icon"
+        draggable={false}
         style={{
           width: w,
           height: h,

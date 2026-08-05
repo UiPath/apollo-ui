@@ -33,6 +33,7 @@ describe('getIcon', () => {
     const img = container.querySelector('img');
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute('src', 'https://example.com/icon.svg');
+    expect(img).toHaveAttribute('draggable', 'false');
   });
 
   it('returns the CaseManagementProject icon for the registered case-management id', () => {
