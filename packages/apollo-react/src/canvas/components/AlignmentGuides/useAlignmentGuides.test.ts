@@ -85,6 +85,16 @@ describe('computeAlignmentSnapDelta', () => {
     ).toEqual([300, 350, 400]);
   });
 
+  it('uses unique guide IDs when zero-size bounds share every anchor', () => {
+    const existing = [bounds('existing', 300, 100, 0, 0)];
+    const dragged = bounds('dragged', 300, 100, 0, 0);
+
+    const { guides } = computeAlignmentResult(dragged, existing, 8);
+
+    expect(guides).toHaveLength(6);
+    expect(new Set(guides.map(({ id }) => id)).size).toBe(guides.length);
+  });
+
   it('applies one rigid delta to every node in a multi-selection', () => {
     const selected = [
       { id: 'first', position: { x: 100, y: 200 } },
