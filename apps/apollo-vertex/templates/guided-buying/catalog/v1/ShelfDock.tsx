@@ -103,9 +103,9 @@ function msg(
 }
 
 interface ShelfDockProps {
-  /** The catalog item whose "Why not this?" was triggered — drives the defense
-   * copy. Null when opened generically: the activity summary + an open
-   * thread, no scripted defense. */
+  /** The catalog item whose "Compare with my pick" was triggered — drives the
+   * defense copy. Null when opened generically: the activity summary + an
+   * open thread, no scripted defense. */
   subject: CatalogItem | null;
   /** Which step the panel was opened from — drives the generic mode's
    * step-aware starter prompts. Ignored when `subject` is set. */
