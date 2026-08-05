@@ -6,7 +6,6 @@ import {
   History,
   Info,
   Link as LinkIcon,
-  MoreHorizontal,
   Server,
 } from "lucide-react";
 import { useState } from "react";
@@ -44,6 +43,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { getDecisionDetail } from "./data";
 import { RecordEntry } from "./RecordEntry";
@@ -169,8 +169,8 @@ export function DecisionWindow() {
   ];
 
   return (
-    <div className="h-full overflow-y-auto">
-      <PageHeader bordered className="@3xl:!grid-cols-[auto_1fr_auto]">
+    <div className="flex h-full flex-col">
+      <PageHeader bordered className="shrink-0 @3xl:!grid-cols-[auto_1fr_auto]">
         <PageHeaderNav>
           <PageHeaderBackButton
             onClick={() => void navigate({ to: "/requests" })}
@@ -230,16 +230,49 @@ export function DecisionWindow() {
         </PageHeaderContent>
 
         <PageHeaderActions className="@3xl:ml-6">
+          {/* Always a ButtonGroup: one exposed action, the rest one click
+              away — before a decision that's Approve; once decided,
+              there's nothing left to approve, so View order (the one
+              thing left to do) takes its place instead of leaving a bare
+              overflow trigger with nothing exposed. */}
           <TooltipProvider>
-            {(() => {
-              const copyLink = () => {
-                void navigator.clipboard.writeText(window.location.href);
-                setMenuOpen(false);
-              };
-
-              // Shared between both trigger shapes below — only one ever
-              // mounts, so reusing the same element is safe.
-              const overflowContent = (
+            <ButtonGroup>
+              <Button
+                onClick={
+                  approved
+                    ? () =>
+                        void navigate({
+                          to: "/po/$id",
+                          params: { id: detail.poNumber },
+                        })
+                    : () => {
+                        setApproved(true);
+                        // Whatever's still sitting in the composer becomes
+                        // the note left with the decision (see the
+                        // Communication entry below) rather than being
+                        // silently discarded.
+                        setApprovalNote(draft.trim() || null);
+                        setDraft("");
+                        // Confirms a completed action tied directly to this
+                        // click, nothing further needed from Alex — a Sonner
+                        // toast per the in-product notification guidelines,
+                        // not a persistent banner. The Status field in the
+                        // header carries the lasting record of the change.
+                        toast.success("Approved", {
+                          description: "The system will dispatch the order.",
+                        });
+                      }
+                }
+              >
+                {approved ? "View order" : "Approve"}
+              </Button>
+              <ButtonGroupSeparator className="bg-primary-600" />
+              <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+                <PopoverTrigger asChild>
+                  <Button aria-label="More actions">
+                    <ChevronDown className="size-4" />
+                  </Button>
+                </PopoverTrigger>
                 <PopoverContent align="end" className="w-48 p-1">
                   {!approved && (
                     <>
@@ -281,70 +314,31 @@ export function DecisionWindow() {
                   <button
                     type="button"
                     className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    onClick={copyLink}
+                    onClick={() => {
+                      void navigator.clipboard.writeText(window.location.href);
+                      setMenuOpen(false);
+                    }}
                   >
                     Copy link
                   </button>
                 </PopoverContent>
-              );
-
-              if (!approved) {
-                return (
-                  <ButtonGroup>
-                    <Button
-                      onClick={() => {
-                        setApproved(true);
-                        // Whatever's still sitting in the composer becomes
-                        // the note left with the decision (see the
-                        // Communication entry below) rather than being
-                        // silently discarded.
-                        setApprovalNote(draft.trim() || null);
-                        setDraft("");
-                        // Confirms a completed action tied directly to this
-                        // click, nothing further needed from Alex — a Sonner
-                        // toast per the in-product notification guidelines,
-                        // not a persistent banner. The Status field in the
-                        // header carries the lasting record of the change.
-                        toast.success("Approved", {
-                          description: "The system will dispatch the order.",
-                        });
-                      }}
-                    >
-                      Approve
-                    </Button>
-                    <ButtonGroupSeparator className="bg-primary-600" />
-                    <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-                      <PopoverTrigger asChild>
-                        <Button aria-label="More actions">
-                          <ChevronDown className="size-4" />
-                        </Button>
-                      </PopoverTrigger>
-                      {overflowContent}
-                    </Popover>
-                  </ButtonGroup>
-                );
-              }
-
-              return (
-                <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      aria-label="More actions"
-                    >
-                      <MoreHorizontal className="size-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  {overflowContent}
-                </Popover>
-              );
-            })()}
+              </Popover>
+            </ButtonGroup>
           </TooltipProvider>
         </PageHeaderActions>
       </PageHeader>
 
-      <div className="grid grid-cols-1 gap-4 px-4 pt-8 pb-8 sm:px-6 lg:grid-cols-[1fr_260px] lg:gap-8 lg:px-8">
+      {/* Header is a shrink-0 sibling now (was scrolling away with the
+          content), and the mask fades the top 24px as content scrolls
+          under it — same fixed-header/shared-scroll treatment as the
+          requester's Request Window. */}
+      <div
+        className={cn(
+          "grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 pt-8 pb-16 sm:px-6",
+          "[mask-image:linear-gradient(to_bottom,transparent,black_24px)]",
+          "lg:grid-cols-[1fr_260px] lg:gap-8 lg:px-8",
+        )}
+      >
         {/* ── Main column — the reading path, top to bottom ────────────── */}
         <div className="min-w-0 space-y-5">
           {/* AI summary — answers the approver's question, not the
@@ -485,34 +479,24 @@ export function DecisionWindow() {
 
           {/* Approve/Send back/Reject live in the header's action slot — a
               ButtonGroup with Approve leading, Send back and Reject in the
-              overflow. Once decided there's nothing left to approve, so
-              this replaces the whole group: a plain confirmation of what
-              happened and the one thing left to do (look at the order),
-              not a repeat of the toast that already fired once. */}
+              overflow. Once decided, View order takes over that same
+              header slot (see above), so this is just the plain record of
+              what happened, not a second place to take the action. */}
           {approved && (
-            <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
+            <div className="rounded-lg border border-border px-4 py-3">
               <p className="text-sm text-foreground">
                 You approved this on {APPROVAL_DATE}.
               </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  void navigate({
-                    to: "/po/$id",
-                    params: { id: detail.poNumber },
-                  })
-                }
-              >
-                View order
-              </Button>
             </div>
           )}
         </div>
 
         {/* ── Reference column — same unstyled labelled-list treatment as
-            the requester page: no card, no border, just what's in it. */}
-        <div className="w-full space-y-4 pt-5 lg:max-w-[260px]">
+            the requester page: no card, no border, just what's in it.
+            Sticky (lg: only, self-start so it doesn't stretch to the grid
+            row's full height) rather than scrolling away with the main
+            column, same as the requester's Request Window. */}
+        <div className="w-full space-y-4 pt-5 lg:max-w-[260px] lg:self-start lg:sticky lg:top-0">
           <p className="text-base font-bold tracking-tighter text-foreground">
             Request details
           </p>

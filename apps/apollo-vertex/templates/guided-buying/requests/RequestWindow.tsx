@@ -10,7 +10,6 @@ import {
   History,
   Info,
   Link as LinkIcon,
-  MoreHorizontal,
   TriangleAlert,
 } from "lucide-react";
 import { useRef, useState } from "react";
@@ -226,22 +225,42 @@ export function RequestWindow() {
     composerRef.current?.focus();
   };
 
-  // The header's primary is only ever an owed action — everything else
-  // (View order, Reorder) is a navigational convenience, not an
-  // obligation, so it moves to the overflow menu instead. "Confirm receipt"
-  // is owed as soon as goods arrive, until the requester confirms it —
-  // once confirmed there's nothing further owed, so the header goes quiet.
-  const headerPrimaryAction =
+  // The header always exposes exactly one action, so it's never just a
+  // bare overflow trigger — an owed action (Respond, Confirm receipt) when
+  // one exists, otherwise the single most relevant convenience for this
+  // state; everything else stays one click away in the overflow.
+  const headerPrimaryKind =
     cardState === "sent-back"
-      ? { label: "Respond", onClick: focusComposer }
+      ? "respond"
       : cardState === "delivered" && receipt == null
-        ? { label: "Confirm receipt", onClick: () => setReceiptModalOpen(true) }
-        : null;
+        ? "confirm-receipt"
+        : cardState === "approved" || cardState === "po-sent"
+          ? "view-order"
+          : cardState === "ordered"
+            ? "reorder"
+            : "copy-link";
 
   const copyLink = () => {
     clipboard.copy(window.location.href);
     setMenuOpen(false);
   };
+
+  const headerPrimaryAction =
+    headerPrimaryKind === "respond"
+      ? { label: "Respond", onClick: focusComposer }
+      : headerPrimaryKind === "confirm-receipt"
+        ? { label: "Confirm receipt", onClick: () => setReceiptModalOpen(true) }
+        : headerPrimaryKind === "view-order"
+          ? {
+              label: "View order",
+              onClick: () => void navigate({ to: "/catalog" }),
+            }
+          : headerPrimaryKind === "reorder"
+            ? { label: "Reorder", onClick: () => void navigate({ to: "/buy" }) }
+            : {
+                label: clipboard.copied ? "Copied!" : "Copy link",
+                onClick: copyLink,
+              };
 
   const approverInitials =
     detail.approver
@@ -599,38 +618,23 @@ export function RequestWindow() {
         </PageHeaderContent>
 
         <PageHeaderActions className="@3xl:ml-6">
-          {/* Overflow content is shared between the two trigger shapes below
-              — only one of them ever mounts, so reusing the same element is
-              safe. View order/Reorder live here now: they're navigational
-              conveniences, not owed actions, so they don't belong in the
-              header's primary slot. */}
-          {(() => {
-            const overflowContent = (
+          {/* Always a ButtonGroup: one exposed action (never a bare overflow
+              trigger with nothing to say), the rest one click away. View
+              order/Reorder/Copy link are each the exposed action for
+              exactly the states they used to only appear in the overflow
+              for, so they're never shown in both places at once. */}
+          <ButtonGroup>
+            <Button onClick={headerPrimaryAction.onClick}>
+              {headerPrimaryAction.label}
+            </Button>
+            <ButtonGroupSeparator className="bg-primary-600" />
+            <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+              <PopoverTrigger asChild>
+                <Button aria-label="More actions">
+                  <ChevronDown className="size-4" />
+                </Button>
+              </PopoverTrigger>
               <PopoverContent align="end" className="w-56 p-1">
-                {(cardState === "approved" || cardState === "po-sent") && (
-                  <button
-                    type="button"
-                    className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      void navigate({ to: "/catalog" });
-                    }}
-                  >
-                    View order
-                  </button>
-                )}
-                {cardState === "ordered" && (
-                  <button
-                    type="button"
-                    className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      void navigate({ to: "/buy" });
-                    }}
-                  >
-                    Reorder
-                  </button>
-                )}
                 {detail.inFlight && detail.approver != null && (
                   <button
                     type="button"
@@ -644,13 +648,15 @@ export function RequestWindow() {
                     <span className="text-muted-foreground">(demo)</span>
                   </button>
                 )}
-                <button
-                  type="button"
-                  className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  onClick={copyLink}
-                >
-                  {clipboard.copied ? "Copied!" : "Copy link"}
-                </button>
+                {headerPrimaryKind !== "copy-link" && (
+                  <button
+                    type="button"
+                    className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    onClick={copyLink}
+                  >
+                    {clipboard.copied ? "Copied!" : "Copy link"}
+                  </button>
+                )}
                 <div className="my-1 h-px bg-border" />
                 {/* No cancellation flow exists in the data model yet (no
                     "cancelled" status, no runtime action) — see report. */}
@@ -662,62 +668,28 @@ export function RequestWindow() {
                   Cancel request
                 </button>
               </PopoverContent>
-            );
-
-            if (headerPrimaryAction != null) {
-              return (
-                <ButtonGroup>
-                  <Button onClick={headerPrimaryAction.onClick}>
-                    {headerPrimaryAction.label}
-                  </Button>
-                  <ButtonGroupSeparator className="bg-primary-600" />
-                  <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-                    <PopoverTrigger asChild>
-                      <Button aria-label="More actions">
-                        <ChevronDown className="size-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    {overflowContent}
-                  </Popover>
-                </ButtonGroup>
-              );
-            }
-
-            return (
-              <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    aria-label="More actions"
-                  >
-                    <MoreHorizontal className="size-4" />
-                  </Button>
-                </PopoverTrigger>
-                {overflowContent}
-              </Popover>
-            );
-          })()}
+            </Popover>
+          </ButtonGroup>
         </PageHeaderActions>
       </PageHeader>
 
-      {/* Two columns: the narrative (agent line, journey, conversation) grows;
-          the record — everything you'd look up rather than read — sits in a
-          fixed sidebar. Stacks (one shared scroll) on narrow viewports; at
-          lg: each column scrolls on its own, so the sidebar doesn't stretch
-          page height just to keep up with a long conversation. The mask
-          fades the top 24px of whichever region is scrolling — mobile's
-          single shared one below, or each lg: column individually — so
-          content passing that boundary fades out instead of clipping hard. */}
+      {/* Two columns, one shared scroll: the previous per-column
+          overflow-y-auto was clipping the glass card's glow on its right
+          edge, since setting overflow-y alone forces the browser to clip
+          overflow-x too (the CSS spec resolves a 'visible' x-axis to
+          'auto' whenever y isn't 'visible'), and the card's glow bleeds a
+          few px past its own box into that column's own edge. The whole
+          page scrolling together avoids that entirely, with the sidebar
+          pinned via sticky instead of running its own independent scroll. */}
       <div
         className={cn(
-          "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pt-8 pb-8 sm:px-6",
+          "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pt-8 pb-16 sm:px-6",
           "[mask-image:linear-gradient(to_bottom,transparent,black_24px)]",
-          "lg:flex-row lg:gap-8 lg:overflow-hidden lg:px-0 lg:pt-0 lg:pb-0 lg:[mask-image:none]",
+          "lg:flex-row lg:gap-8 lg:px-8",
         )}
       >
         {/* ── Main column ──────────────────────────────────────────────── */}
-        <div className="min-w-0 space-y-5 lg:flex-1 lg:overflow-y-auto lg:pl-8 lg:pt-8 lg:pb-8 lg:[mask-image:linear-gradient(to_bottom,transparent,black_24px)]">
+        <div className="min-w-0 space-y-5 lg:flex-1">
           {/* Status card — an AI moment: mark + label, one summary sentence
               with the notable fact highlighted, activity track, then
               actions. Merges what used to be three tellings of the same
@@ -921,16 +893,15 @@ export function RequestWindow() {
             that it reads as reference material, not a competing column.
             pt-5 lines its first label up with the lead card's first content
             line (20px below its own top edge), not the card's outer edge —
-            at lg:, that's pt-[52px] instead: the 32px the shared wrapper
-            used to contribute (now zeroed there, moved here since this
-            column carries its own padding once it scrolls independently)
-            plus the original 20px. space-y-4 (16px) is the field-to-field
+            the wrapper's own pt-8 already accounts for the rest, uniformly
+            for both columns now. space-y-4 (16px) is the field-to-field
             rhythm; the divider before linked records rides the same rhythm
-            for 16px on both sides. Independent scroll (lg: only — mobile
-            stays one shared scroll with the main column) so a long
-            conversation in the main column doesn't stretch this list past
-            the viewport, and vice versa. */}
-        <div className="w-full space-y-4 pt-5 lg:w-[260px] lg:shrink-0 lg:overflow-y-auto lg:pr-8 lg:pt-[52px] lg:pb-8 lg:[mask-image:linear-gradient(to_bottom,transparent,black_24px)]">
+            for 16px on both sides. Sticky (lg: only — mobile stays one
+            plain stacked column) rather than its own independent scroll,
+            so it stays in view as the page scrolls without stretching to
+            match the main column's height (self-start is what lets it be
+            shorter than its flex sibling in the first place). */}
+        <div className="w-full space-y-4 pt-5 lg:w-[260px] lg:shrink-0 lg:self-start lg:sticky lg:top-0">
           <p className="text-base font-bold tracking-tighter text-foreground">
             Request details
           </p>
