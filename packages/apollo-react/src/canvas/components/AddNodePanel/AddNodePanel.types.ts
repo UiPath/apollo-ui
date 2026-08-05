@@ -19,6 +19,10 @@ export interface AddNodePanelProps {
   /**
    * The options to show in the panel.
    * When left undefined, the panel will generate options from the NodeTypeRegistry.
+   *
+   * Passed straight through to the Toolbox, so it carries the same requirement:
+   * memoize it and keep the same reference while the content is unchanged. A fresh
+   * array every render resets the list and re-runs any active search.
    */
   items?: ListItem[];
   loading?: boolean;

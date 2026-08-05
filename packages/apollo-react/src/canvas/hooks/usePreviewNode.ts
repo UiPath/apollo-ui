@@ -6,7 +6,6 @@ import {
   useStore,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
-import { shallow } from 'zustand/shallow';
 import { PREVIEW_NODE_ID } from '../constants';
 import { useOptionalNodeTypeRegistry } from '../core';
 import type { HandleManifest, NodeManifest } from '../schema/node-definition';
@@ -34,22 +33,38 @@ export interface PreviewNodeConnectionInfo {
 }
 
 // Optimized selector - return boolean to prevent re-renders on position changes
-const previewNodeSelectedSelector = (state: ReactFlowState) => {
-  const node = state.nodes.find((n) => n.id === PREVIEW_NODE_ID);
-  return node?.selected ?? false;
+const previewNodeSelectedSelector = (state: ReactFlowState) =>
+  state.nodeLookup.get(PREVIEW_NODE_ID)?.selected ?? false;
+
+/**
+ * One key per preview connection, built from the same values `connectionInfo` derives below,
+ * so the subscription invalidates exactly when the computed output would change. Notably the
+ * handles are defaulted here the same way, and the node type is included because both manifest
+ * lookups hang off it.
+ *
+ * Order is deliberately preserved by the caller: consumers treat the first connection as the
+ * primary one, so a reordering has to produce a new array rather than reuse the old order.
+ */
+const previewConnectionKey = (edge: Edge, state: ReactFlowState): string => {
+  const sourceIsPreviewNode = edge.source === PREVIEW_NODE_ID;
+  const existingNodeId = sourceIsPreviewNode ? edge.target : edge.source;
+  const existingHandleId = sourceIsPreviewNode
+    ? edge.targetHandle || 'input'
+    : edge.sourceHandle || 'output';
+  const existingNodeType = state.nodeLookup.get(existingNodeId)?.type ?? '';
+
+  return `${edge.id},${existingNodeId},${existingHandleId},${existingNodeType},${sourceIsPreviewNode}`;
 };
 
-// Selector to track edges connected to preview node
-// Returns minimal edge data to avoid unnecessary re-renders
-const edgesConnectedToPreviewSelector = (state: ReactFlowState): Edge[] => {
-  return state.edges.filter(isPreviewEdge).map((edge) => ({
-    id: edge.id,
-    source: edge.source,
-    target: edge.target,
-    sourceHandle: edge.sourceHandle,
-    targetHandle: edge.targetHandle,
-  }));
-};
+// Selector to track edges connected to the preview node.
+// Returns a primitive signature rather than edge objects, so the subscription stays
+// memoized even when a caller hands React Flow equivalent but newly allocated edges.
+// Returning objects here (even copies) would compare unequal on every store update.
+const previewEdgeSignatureSelector = (state: ReactFlowState): string =>
+  state.edges
+    .filter(isPreviewEdge)
+    .map((edge) => previewConnectionKey(edge, state))
+    .join('|');
 
 interface UsePreviewNodeResult {
   /** The currently selected preview node, or null if no preview node is selected. */
@@ -68,15 +83,17 @@ interface UsePreviewNodeResult {
  * about all connected edges and pre-computes handle manifests for efficient
  * constraint validation in the Add Node Panel.
  *
- * Performance optimization: Uses boolean selector for node selection and tracks
- * edges separately to prevent re-renders when only the preview node position changes.
+ * Performance optimization: both store selectors return primitives, so the hook only
+ * re-renders when the preview node's selection state or its connections change, not on
+ * position changes or unrelated store updates. `previewNode` is therefore a snapshot from
+ * the last such change; read the live node via `getNode` when up-to-date data is needed.
  *
  * @returns Object containing the preview node and its connection information.
  */
 export const usePreviewNode = (): UsePreviewNodeResult => {
   const reactFlowInstance = useReactFlow();
   const isPreviewNodeSelected = useStore(previewNodeSelectedSelector);
-  const previewEdges = useStore(edgesConnectedToPreviewSelector, shallow);
+  const previewEdgeSignature = useStore(previewEdgeSignatureSelector);
   const registry = useOptionalNodeTypeRegistry();
 
   // Get the actual node object for the return value (doesn't affect memoization)
@@ -85,12 +102,18 @@ export const usePreviewNode = (): UsePreviewNodeResult => {
     : null;
 
   // Extract connection info when preview node is selected.
-  // This now only recalculates when selection state or edges change, not on position changes.
+  // This only recalculates when the selection state or the preview connections change,
+  // not on position changes or any other unrelated React Flow store update.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: previewEdgeSignature is the cache key for the edges read via getEdges().
   const connectionInfo: Array<PreviewNodeConnectionInfo> | null = useMemo(() => {
     if (!isPreviewNodeSelected) {
       // Preview node was deselected - clear connection info.
       return null;
     }
+
+    // Read the edges on demand, keyed by the signature above, so the subscription
+    // doesn't have to hold on to edge objects.
+    const previewEdges = reactFlowInstance.getEdges().filter(isPreviewEdge);
 
     // Build connection info with cached handle manifests.
     const connections = previewEdges.map((previewEdge) => {
@@ -132,7 +155,7 @@ export const usePreviewNode = (): UsePreviewNodeResult => {
       };
     });
     return connections;
-  }, [isPreviewNodeSelected, previewEdges, reactFlowInstance, registry]);
+  }, [isPreviewNodeSelected, previewEdgeSignature, reactFlowInstance, registry]);
 
   return { previewNode, previewNodeConnectionInfo: connectionInfo };
 };

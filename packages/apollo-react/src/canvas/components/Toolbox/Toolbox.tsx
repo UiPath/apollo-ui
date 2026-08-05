@@ -71,6 +71,13 @@ export type ToolboxSearchHandler<T = any> = (
 
 export interface ToolboxProps<T> {
   title: string;
+  /**
+   * The root-level items. A new array reference is treated as a content change:
+   * it replaces the current items, rebuilds the navigation stack, and re-runs any
+   * active search (including an async `onSearch`). Memoize it and pass the same
+   * reference while the content is unchanged, or a caller that rebuilds the array
+   * every render will reset the list underneath the user.
+   */
   initialItems: ListItem<T>[];
   loading?: boolean;
   fullWidth?: boolean; // If true, the toolbox will be full width of the container.
