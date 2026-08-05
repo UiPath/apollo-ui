@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { activePrice, formatPrice } from "./data";
+import { activePrice, formatPrice, showsListStrike } from "./data";
 import { QuantityStepper } from "./QuantityStepper";
 import { BrandMark } from "./ScanRow";
 import type { CatalogItem, PriceBasis } from "./types";
@@ -26,6 +26,7 @@ export function CartLine({
 }: CartLineProps) {
   const unit = activePrice(item, basis);
   const lineTotal = unit * quantity;
+  const showStrike = showsListStrike(item, basis);
   return (
     <div className="flex gap-3 border-b py-4 last:border-b-0">
       <BrandMark item={item} />
@@ -48,16 +49,6 @@ export function CartLine({
                   value={quantity}
                   onChange={(value) => onQtyChange?.(value)}
                 />
-                {/* Unit price alongside the stepper — the visible cause for
-                    why the line total below changes with quantity. */}
-                <span className="text-xs text-muted-foreground">
-                  {formatPrice(unit, item.currency)} each
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-medium text-foreground">
-                  {formatPrice(lineTotal, item.currency)}
-                </span>
                 {onRemove && (
                   <Button
                     variant="ghost"
@@ -68,6 +59,25 @@ export function CartLine({
                     <Trash2 className="size-4" />
                   </Button>
                 )}
+                {/* Unit price alongside the stepper — the visible cause for
+                    why the line total below changes with quantity. The
+                    struck list price gives the list-price total below its
+                    own visible derivation, same order as the shelf cards
+                    and the product detail dialog. */}
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  {showStrike && (
+                    <span className="line-through">
+                      {formatPrice(item.listPrice, item.currency)}
+                    </span>
+                  )}
+                  {formatPrice(unit, item.currency)} each
+                  {showStrike && ", EPP"}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-foreground">
+                  {formatPrice(lineTotal, item.currency)}
+                </span>
               </div>
             </>
           )}
