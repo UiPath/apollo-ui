@@ -96,7 +96,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
       {
         label: "Connectivity",
         rows: [
-          { label: "Ports", value: "2× Thunderbolt 4 · 2× USB-A · HDMI 2.1" },
+          { label: "Ports", value: "2× Thunderbolt 4, 2× USB-A, HDMI 2.1" },
           { label: "Wireless", value: "Wi-Fi 6E · Bluetooth 5.3" },
         ],
       },
@@ -109,7 +109,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
       },
       {
         label: "Warranty/support",
-        rows: [{ label: "Coverage", value: "3-year onsite · Premier Support" }],
+        rows: [{ label: "Coverage", value: "3-year onsite, Premier Support" }],
       },
     ],
   },
@@ -148,7 +148,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
       {
         label: "Connectivity",
         rows: [
-          { label: "Ports", value: "2× Thunderbolt 4 · 2× USB-A · HDMI" },
+          { label: "Ports", value: "2× Thunderbolt 4, 2× USB-A, HDMI" },
           { label: "Wireless", value: "Wi-Fi 6E · Bluetooth 5.3" },
         ],
       },
@@ -161,7 +161,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
       },
       {
         label: "Warranty/support",
-        rows: [{ label: "Coverage", value: "3-year onsite · Premier Support" }],
+        rows: [{ label: "Coverage", value: "3-year onsite, Premier Support" }],
       },
     ],
   },
@@ -258,7 +258,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
       {
         label: "Connectivity",
         rows: [
-          { label: "Ports", value: "3× Thunderbolt 5 · HDMI · SDXC · MagSafe" },
+          { label: "Ports", value: "3× Thunderbolt 5, HDMI, SDXC, MagSafe" },
           { label: "Wireless", value: "Wi-Fi 6E · Bluetooth 5.3" },
         ],
       },
@@ -271,9 +271,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
       },
       {
         label: "Warranty/support",
-        rows: [
-          { label: "Coverage", value: "AppleCare+ for Business · 3-year" },
-        ],
+        rows: [{ label: "Coverage", value: "AppleCare+ for Business, 3-year" }],
       },
     ],
   },
@@ -314,7 +312,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
       {
         label: "Connectivity",
         rows: [
-          { label: "Ports", value: "3× Thunderbolt 5 · HDMI · SDXC · MagSafe" },
+          { label: "Ports", value: "3× Thunderbolt 5, HDMI, SDXC, MagSafe" },
           { label: "Wireless", value: "Wi-Fi 6E · Bluetooth 5.3" },
         ],
       },
@@ -327,9 +325,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
       },
       {
         label: "Warranty/support",
-        rows: [
-          { label: "Coverage", value: "AppleCare+ for Business · 3-year" },
-        ],
+        rows: [{ label: "Coverage", value: "AppleCare+ for Business, 3-year" }],
       },
     ],
   },

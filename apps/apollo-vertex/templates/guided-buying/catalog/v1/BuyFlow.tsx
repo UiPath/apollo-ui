@@ -14,11 +14,9 @@ import { BuyScaffold } from "./BuyScaffold";
 import { useCart } from "./cart-context";
 import { type BuyPhase, useConversation } from "./conversation-context";
 import {
-  CATALOG_ITEMS,
   CONTRACT_STARTER,
   defaultQuantityFor,
   displayRequestTitle,
-  RECOMMENDATION,
   SOURCING_STARTER,
   STARTER_SUGGESTIONS,
 } from "./data";
@@ -423,18 +421,9 @@ export function BuyFlow() {
                   cartQuantity={quantities[shelfDetailItem.id] ?? 0}
                   inCart={inCart(shelfDetailItem.id)}
                   comparing={false}
-                  isPicked={shelfDetailItem.id === RECOMMENDATION.itemId}
-                  recommendationNote={
-                    shelfDetailItem.id === RECOMMENDATION.itemId
-                      ? (CATALOG_ITEMS.find(
-                          (i) => i.id === RECOMMENDATION.itemId,
-                        )?.name ?? "")
-                      : ""
-                  }
                   onAddToCart={(qty) => setQuantity(shelfDetailItem, qty)}
                   onToggleCompare={() => {}}
                   onAskAgent={() => {}}
-                  onClose={closeShelfDetail}
                 />
               </PriceBasisProvider>
             </ProductDetailOverlay>
