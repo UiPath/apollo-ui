@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v6.16.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.4...@uipath/apollo-react@6.16.5) (2026-08-05)
+
+### Bug Fixes
+
+* **apollo-react:** give primary icon buttons a visible focus ring ([9ac3e0f](https://github.com/UiPath/apollo-ui/commit/9ac3e0fcc45187eb4589c664d8216b945d08176b))
+* **apollo-react:** give the stage task card its own test id prefix ([02d8cc1](https://github.com/UiPath/apollo-ui/commit/02d8cc19670c45a221797dfc1a8634ea50ea4b6b))
+* **apollo-react:** restore compact MuiSwitch geometry ([0545d2b](https://github.com/UiPath/apollo-ui/commit/0545d2b2e39971b96a74c1311db4f385a17a0a2f)), closes [apollo-design-system#5354](https://github.com/UiPath/apollo-design-system/issues/5354)
+
 ## [@uipath/apollo-react-v6.16.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.3...@uipath/apollo-react@6.16.4) (2026-08-05)
 
 ### Bug Fixes
