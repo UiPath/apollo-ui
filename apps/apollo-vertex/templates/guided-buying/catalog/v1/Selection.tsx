@@ -795,13 +795,10 @@ export function Selection({
                   cartQuantity={quantities[detailItem.id] ?? 0}
                   inCart={inCart(detailItem.id)}
                   comparing={compareIds.includes(detailItem.id)}
-                  isPicked={detailItem.id === RECOMMENDATION.itemId}
-                  recommendationNote={recommendationNote}
                   imageMode={imageMode}
                   onAddToCart={(quantity) => addToCart(detailItem, quantity)}
                   onToggleCompare={() => toggleCompare(detailItem)}
                   onAskAgent={askAgent}
-                  onClose={closeDetail}
                 />
               </ProductDetailOverlay>
             )}

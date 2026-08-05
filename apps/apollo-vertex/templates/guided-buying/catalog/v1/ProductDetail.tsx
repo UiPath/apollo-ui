@@ -1,7 +1,7 @@
-import { ArrowLeft, Check, Columns3, Plus } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import { Fragment, type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { AiMark } from "@/registry/ai-mark/ai-mark";
+import { DialogClose, DialogTitle } from "@/components/ui/dialog";
 import {
   activePrice,
   activeSavings,
@@ -24,13 +24,10 @@ interface ProductDetailProps {
   cartQuantity: number;
   inCart: boolean;
   comparing: boolean;
-  isPicked: boolean;
-  recommendationNote: string;
   imageMode?: "photo" | "logo";
   onAddToCart: (quantity: number) => void;
   onToggleCompare: () => void;
   onAskAgent: () => void;
-  onClose: () => void;
 }
 
 export function ProductDetail({
@@ -39,13 +36,10 @@ export function ProductDetail({
   cartQuantity,
   inCart,
   comparing,
-  isPicked,
-  recommendationNote,
   imageMode = "photo",
   onAddToCart,
   onToggleCompare,
   onAskAgent,
-  onClose,
 }: ProductDetailProps) {
   // Pending qty applies before the item is in the cart; once in the cart, the
   // stepper reads and edits the cart quantity directly (single source of truth).
@@ -59,31 +53,30 @@ export function ProductDetail({
 
   return (
     <>
-      <header className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background/95 px-6 py-3 backdrop-blur">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={onClose}
-          aria-label="Back to catalog"
-        >
-          <ArrowLeft className="size-4" />
-        </Button>
-        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
-          <button
-            type="button"
-            onClick={onClose}
-            className="hover:text-foreground"
+      {/* Header — supplier identity, not page navigation. The close X is
+          the dialog's only added dismiss; Esc and scrim click already work
+          through the primitive. */}
+      <header className="flex items-center gap-2 border-b px-6 py-4">
+        <DialogTitle className="sr-only">{item.name}</DialogTitle>
+        <BrandMark item={item} />
+        <span className="text-sm font-medium text-foreground">
+          {item.vendor}
+        </span>
+        <DialogClose asChild>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="ml-auto"
+            aria-label="Close"
           >
-            Catalog
-          </button>
-          <span className="px-1.5">/</span>
-          <span className="text-foreground">{item.name}</span>
-        </nav>
+            <X className="size-4" aria-hidden />
+          </Button>
+        </DialogClose>
       </header>
 
-      <div className="w-full space-y-8 px-6 py-6">
-        {/* Top: image + identity/price */}
-        <div className="grid gap-6 lg:grid-cols-2">
+      <div className="w-full space-y-6 px-6 py-6">
+        {/* Two columns: a fixed-width image, then identity/price/actions. */}
+        <div className="grid grid-cols-[260px_1fr] gap-6">
           <ProductImage
             src={item.image}
             alt={item.name}
@@ -94,12 +87,6 @@ export function ProductDetail({
           />
 
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <BrandMark item={item} />
-              <span className="text-sm text-muted-foreground">
-                {item.vendor}
-              </span>
-            </div>
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold text-foreground">
                 {item.name}
@@ -127,18 +114,7 @@ export function ProductDetail({
               )}
             </div>
 
-            {isPicked && (
-              <div className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3">
-                <AiMark
-                  size={16}
-                  className="mt-0.5 shrink-0"
-                  gradientId="gb-ai-mark"
-                  aria-hidden
-                />
-                <p className="text-sm text-foreground">{recommendationNote}</p>
-              </div>
-            )}
-
+            {/* One row: stepper, then the primary action. */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <QuantityStepper value={quantity} onChange={onQtyChange} />
               <Button
@@ -154,36 +130,40 @@ export function ProductDetail({
                 ) : (
                   <>
                     <Plus className="size-4" />
-                    Add to cart
+                    Add {quantity}
                   </>
                 )}
               </Button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+            {/* Quiet text actions, not full buttons — secondary to the row above. */}
+            <div className="flex flex-wrap items-center gap-4 text-sm">
+              <button
+                type="button"
                 onClick={onToggleCompare}
                 aria-pressed={comparing}
+                className="text-muted-foreground hover:text-foreground"
               >
-                <Columns3 className="size-4" />
                 {comparing ? "In compare" : "Add to compare"}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={onAskAgent}>
-                <AiMark size={14} gradientId="gb-ai-mark" aria-hidden />
-                Ask the agent about this
-              </Button>
+              </button>
+              <button
+                type="button"
+                onClick={onAskAgent}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Ask about this
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Source-of-truth panel */}
-        <section className="rounded-xl border p-4">
-          <h2 className="mb-3 text-sm font-semibold text-foreground">
+        {/* Source-of-truth strip — reference content, not a card. A hairline
+            above does the separating instead of border/rounded/padding chrome. */}
+        <section className="border-t pt-6">
+          <h2 className="mb-3 text-base font-medium text-foreground">
             Source &amp; availability
           </h2>
-          <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+          <dl className="grid grid-cols-4 gap-x-6 gap-y-3">
             <SourceRow label="Source" value={item.source} />
             <SourceRow
               label="Availability"
@@ -202,20 +182,21 @@ export function ProductDetail({
         </section>
 
         {/* Full spec breakdown */}
-        <section className="space-y-5">
-          <h2 className="text-sm font-semibold text-foreground">
+        <section>
+          <h2 className="mb-3 text-base font-medium text-foreground">
             Specifications
           </h2>
           {item.specGroups ? (
-            <div className="grid gap-x-12 gap-y-7 sm:grid-cols-2">
+            <div className="grid gap-x-12 gap-y-4 sm:grid-cols-2">
               {item.specGroups.map((group) => (
                 <div key={group.label}>
-                  <h3 className="mb-3 text-xs font-semibold text-muted-foreground">
+                  <h3 className="mb-1.5 text-xs font-normal text-muted-foreground">
                     {group.label}
                   </h3>
-                  {/* Label/value pairs as aligned columns — close together and
-                      left-aligned so the eye scans straight down. */}
-                  <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm leading-6">
+                  {/* Fixed label column so every value starts at the same
+                      x-position across groups, not wherever the longest
+                      label in that one group happens to end. */}
+                  <dl className="grid grid-cols-[74px_1fr] gap-x-6 gap-y-1 text-sm leading-6">
                     {group.rows.map((row) => (
                       <Fragment key={row.label}>
                         <dt className="text-muted-foreground">{row.label}</dt>
@@ -247,8 +228,8 @@ export function ProductDetail({
 function SourceRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-medium text-foreground">{value}</dd>
+      <dt className="text-xs font-normal text-muted-foreground">{label}</dt>
+      <dd className="text-sm text-foreground">{value}</dd>
     </div>
   );
 }
