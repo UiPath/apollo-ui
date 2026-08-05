@@ -40,7 +40,7 @@ export const ProcessResultsViewerDialog = ({
     >
       <DialogContent
         className="max-h-[90vh] overflow-hidden"
-        style={{ maxWidth: "75vw", width: "fit-content", minWidth: "30vw" }}
+        style={{ width: "56rem", maxWidth: "90vw" }}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
