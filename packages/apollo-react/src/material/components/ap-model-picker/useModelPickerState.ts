@@ -188,10 +188,16 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
   // the catalog would silently blank the field for legitimate,
   // recently-removed-from-view selections. `unknownValue` stays
   // reserved for ids missing from the catalog entirely.
+  // Matches `modelId` or `modelName`: Discovery serves them equal today,
+  // but hosts persist model *names*, so name matching keeps stored
+  // selections resolving if the two ever diverge.
+  const matchesValue = useCallback(
+    (m: DiscoveryModel) => m.modelId === value || m.modelName === value,
+    [value]
+  );
   const selected = useMemo<DiscoveryModel | null>(
-    () =>
-      annotated.find((m) => m.modelId === value) ?? models.find((m) => m.modelId === value) ?? null,
-    [annotated, models, value]
+    () => annotated.find(matchesValue) ?? models.find(matchesValue) ?? null,
+    [annotated, models, matchesValue]
   );
 
   const unknownValue = useMemo<string | null>(() => {
@@ -222,7 +228,7 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs on open/close only — re-running on `filtered`/`value` would reset the keyboard highlight on every keystroke
   useEffect(() => {
     if (open) {
-      const sel = filtered.findIndex((m) => m.modelId === value);
+      const sel = filtered.findIndex(matchesValue);
       setActiveIndex(sel >= 0 ? sel : 0);
       requestAnimationFrame(() => searchRef.current?.focus());
     } else {

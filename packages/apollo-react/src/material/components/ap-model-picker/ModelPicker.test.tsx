@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ModelPicker } from './ModelPicker';
 import type { DiscoveryModel } from './types';
 import { platformNavigation } from './usePlatformAccess';
+import { isTextGenerationModel } from './utils';
 
 /**
  * Render helper. No I18nProvider on purpose: the picker resolves its
@@ -282,6 +283,200 @@ describe('<ModelPicker>', () => {
     expect(onDeleteModel.mock.calls[0][0]).toMatchObject({ modelSubscriptionType: 'BYOMAdded' });
   });
 
+  it('deletes the BYO configuration itself when no onDeleteModel is supplied', async () => {
+    const user = userEvent.setup();
+    const onModelDeleted = vi.fn();
+    // Discovery on mount, then the DELETE, then the post-delete refetch.
+    const fetchMock = vi.fn().mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'DELETE'
+        ? Promise.resolve({ ok: true, json: async () => ({}) })
+        : Promise.resolve({
+            ok: true,
+            json: async () => [
+              {
+                modelId: 'byo-acme-gpt-4o',
+                modelName: 'gpt-4o',
+                vendor: 'OpenAi',
+                modelSubscriptionType: 'BYOMAdded',
+                byomDetails: { byoConfigurationId: 'cfg-9' },
+              },
+            ],
+          })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          onModelDeleted={onModelDeleted}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+      await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+
+      const deleteCall = fetchMock.mock.calls.find(([, init]) => init?.method === 'DELETE');
+      expect(deleteCall?.[0]).toBe(
+        'https://cloud.local/org-guid/tenant-guid/llmgateway_/api/byo/product/llm-configurations/cfg-9'
+      );
+      expect(deleteCall?.[1]).toMatchObject({
+        headers: expect.objectContaining({ Authorization: 'Bearer t' }),
+      });
+      expect(onModelDeleted).toHaveBeenCalledTimes(1);
+      expect(onModelDeleted.mock.calls[0][0]).toMatchObject({ modelId: 'byo-acme-gpt-4o' });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('surfaces a failed delete and does not report it as deleted', async () => {
+    const user = userEvent.setup();
+    const onModelDeleted = vi.fn();
+    const fetchMock = vi.fn().mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'DELETE'
+        ? Promise.resolve({
+            ok: false,
+            status: 409,
+            json: async () => ({ Message: 'Configuration is in use.' }),
+          })
+        : Promise.resolve({
+            ok: true,
+            json: async () => [
+              {
+                modelId: 'byo-acme-gpt-4o',
+                modelName: 'gpt-4o',
+                vendor: 'OpenAi',
+                modelSubscriptionType: 'BYOMAdded',
+                byomDetails: { byoConfigurationId: 'cfg-9' },
+              },
+            ],
+          })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          onModelDeleted={onModelDeleted}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+      await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+
+      // The gateway's own message reaches the user, and the host is not told
+      // a model went away when it did not.
+      expect(await screen.findByText(/configuration is in use/i)).toBeInTheDocument();
+      expect(onModelDeleted).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('surfaces a throwing onModelDeleted instead of swallowing it', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'DELETE'
+        ? Promise.resolve({ ok: true, json: async () => ({}) })
+        : Promise.resolve({
+            ok: true,
+            json: async () => [
+              {
+                modelId: 'byo-acme-gpt-4o',
+                modelName: 'gpt-4o',
+                vendor: 'OpenAi',
+                modelSubscriptionType: 'BYOMAdded',
+                byomDetails: { byoConfigurationId: 'cfg-9' },
+              },
+            ],
+          })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          onModelDeleted={() => {
+            throw new Error('host reconciliation blew up');
+          }}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+      await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+
+      // The click handler's promise is floating, so without this the host's
+      // throw would vanish as an unhandled rejection.
+      expect(await screen.findByText(/host reconciliation blew up/i)).toBeInTheDocument();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('offers no delete action on a BYO row with no configuration id to target', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          modelId: 'byo-acme-gpt-4o',
+          modelName: 'gpt-4o',
+          vendor: 'OpenAi',
+          modelSubscriptionType: 'BYOMAdded',
+        },
+      ],
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await screen.findByText('gpt-4o');
+      expect(screen.queryByRole('button', { name: /delete configuration/i })).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('deep-links the edit form when the DTO carries byomDetails.byoConfigurationId', async () => {
     const user = userEvent.setup();
     const assign = vi.spyOn(platformNavigation, 'openInNewTab').mockImplementation(() => {});
@@ -509,5 +704,99 @@ describe('<ModelPicker>', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+});
+
+describe('<ModelPicker> catalog scoping', () => {
+  const NON_CHAT_MODELS: DiscoveryModel[] = [
+    ...MODELS,
+    {
+      modelId: 'text-embedding-3-large',
+      modelName: 'text-embedding-3-large',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'UiPathOwned',
+      apiFlavor: 'OpenAiEmbeddings',
+    },
+    {
+      modelId: 'gpt-realtime',
+      modelName: 'gpt-realtime',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'UiPathOwned',
+      modelType: 'Realtime',
+    },
+  ];
+
+  // Which modalities a product offers is the product's call: an indexing or
+  // context-grounding surface picks embeddings from the same catalog.
+  it('renders embeddings and realtime models when the host does not filter them', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker models={NON_CHAT_MODELS} value={null} onChange={() => {}} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const listbox = await screen.findByRole('listbox');
+    expect(within(listbox).getByText('text-embedding-3-large')).toBeInTheDocument();
+    expect(within(listbox).getByText('gpt-realtime')).toBeInTheDocument();
+  });
+
+  it('drops them when the host opts into isTextGenerationModel', async () => {
+    const user = userEvent.setup();
+    renderPicker(
+      <ModelPicker
+        models={NON_CHAT_MODELS}
+        value={null}
+        onChange={() => {}}
+        filter={isTextGenerationModel}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const listbox = await screen.findByRole('listbox');
+    expect(within(listbox).queryByText('text-embedding-3-large')).toBeNull();
+    expect(within(listbox).queryByText('gpt-realtime')).toBeNull();
+    expect(within(listbox).getByText('anthropic.claude-sonnet-4-6')).toBeInTheDocument();
+  });
+
+  it('resolves the selection by modelName when it differs from modelId', () => {
+    const models: DiscoveryModel[] = [
+      {
+        modelId: 'byo-row-guid',
+        modelName: 'my-custom-gpt',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'BYOMAdded',
+      },
+    ];
+    renderPicker(<ModelPicker models={models} value="my-custom-gpt" onChange={() => {}} />);
+    expect(screen.getByText('my-custom-gpt')).toBeInTheDocument();
+    expect(screen.getByRole('button', { expanded: false })).not.toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
+  });
+
+  it('accepts a raw OMS region name as homeRegion for out-of-region chips', async () => {
+    const user = userEvent.setup();
+    const models: DiscoveryModel[] = [
+      {
+        modelId: 'us-hosted',
+        modelName: 'us-hosted',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'UiPathOwned',
+        routingDetails: { geography: 'US' },
+      },
+      {
+        modelId: 'ja-hosted',
+        modelName: 'ja-hosted',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'UiPathOwned',
+        routingDetails: { geography: 'JA' },
+      },
+    ];
+    renderPicker(
+      <ModelPicker models={models} value={null} onChange={() => {}} homeRegion="Japan" />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const listbox = await screen.findByRole('listbox');
+    // homeRegion "Japan" resolves to JA: the US-routed model is out of
+    // region, the JA-routed one is home.
+    expect(within(listbox).getByText(/out of region \(US\)/i)).toBeInTheDocument();
+    expect(within(listbox).queryByText(/out of region \(JA\)/i)).toBeNull();
   });
 });

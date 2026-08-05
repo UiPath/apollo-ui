@@ -8,6 +8,8 @@ import {
   filterModels,
   getSubstitutionTarget,
   groupModels,
+  isTextGenerationModel,
+  resolveHomeGeography,
 } from './utils';
 
 // Helper: minimal Discovery model. Tests override fields as needed.
@@ -161,6 +163,30 @@ describe('deriveModelTags', () => {
     expect(tags.find((t) => t.kind === 'recommended')).toBeTruthy();
   });
 
+  it('matches override lists by modelName too, not just modelId', () => {
+    // Hosts author these lists from Model Hub config, which carries model
+    // *names*. Discovery serves modelId === modelName today, but a list of
+    // names must keep working if the two ever diverge.
+    const byName = model({ modelId: 'deployment-guid', modelName: 'gpt-5.6-terra' });
+
+    const rec = deriveModelTags(byName, { recommendedModelIds: ['gpt-5.6-terra'] });
+    expect(rec.find((t) => t.kind === 'recommended')).toBeTruthy();
+
+    const prev = deriveModelTags(byName, { previewModelIds: ['gpt-5.6-terra'] });
+    expect(prev.find((t) => t.kind === 'preview')).toBeTruthy();
+
+    // Grouping must agree with chip derivation, or a model chips Recommended
+    // while sitting in the More models group.
+    const groups = groupModels([byName], 'subscription', {
+      recommendedModelIds: ['gpt-5.6-terra'],
+    });
+    expect(groups.find((g) => g.key === 'recommended')?.models).toHaveLength(1);
+
+    // A list naming neither field still matches nothing.
+    const miss = deriveModelTags(byName, { recommendedModelIds: ['something-else'] });
+    expect(miss.find((t) => t.kind === 'recommended')).toBeFalsy();
+  });
+
   it('emits Preview chip for hosted preview models, never for BYO', () => {
     const hostedPreview = deriveModelTags(model({ modelId: 'a', isPreview: true }));
     expect(hostedPreview.find((t) => t.kind === 'preview')).toBeTruthy();
@@ -213,6 +239,12 @@ describe('deriveModelTags', () => {
       homeRegion: 'EU',
     });
     expect(globalForEuUser.find((t) => t.kind === 'out-of-region')).toBeFalsy();
+
+    // A GLOBAL home region is not a place — it must not flag every regional model.
+    const euHostedForGlobalUser = deriveModelTags(model({ routingDetails: { geography: 'EU' } }), {
+      homeRegion: 'GLOBAL',
+    });
+    expect(euHostedForGlobalUser.find((t) => t.kind === 'out-of-region')).toBeFalsy();
   });
 
   it('emits Substituted chip (not Deprecating) when effectiveModel routes elsewhere', () => {
@@ -432,5 +464,66 @@ describe('i18n resolution', () => {
       recommendedModelIds: ['a'],
     });
     expect(tags.find((t) => t.kind === 'recommended')?.label).toBe('Recommended');
+  });
+});
+
+describe('resolveHomeGeography', () => {
+  it('passes geography codes through, case-insensitively', () => {
+    expect(resolveHomeGeography('EU')).toBe('EU');
+    expect(resolveHomeGeography('ja')).toBe('JA');
+  });
+
+  it('tolerates surrounding whitespace', () => {
+    expect(resolveHomeGeography('  EU ')).toBe('EU');
+    expect(resolveHomeGeography(' United States ')).toBe('US');
+    expect(resolveHomeGeography('   ')).toBeUndefined();
+  });
+
+  it('treats GLOBAL as no home region', () => {
+    expect(resolveHomeGeography('GLOBAL')).toBeUndefined();
+    expect(resolveHomeGeography('Global')).toBeUndefined();
+  });
+
+  it('maps OMS region names to Discovery geography codes', () => {
+    expect(resolveHomeGeography('UnitedStates')).toBe('US');
+    expect(resolveHomeGeography('Japan')).toBe('JA');
+    expect(resolveHomeGeography('Singapore')).toBe('SI');
+    expect(resolveHomeGeography('SouthKorea')).toBe('SK');
+    expect(resolveHomeGeography('UnitedArabEmirates')).toBe('UAE');
+  });
+
+  it('ignores case and separators in OMS names', () => {
+    expect(resolveHomeGeography('unitedkingdom')).toBe('UK');
+    expect(resolveHomeGeography('united-states')).toBe('US');
+    expect(resolveHomeGeography('UNITED_ARAB_EMIRATES')).toBe('UAE');
+  });
+
+  it('resolves unknown or missing values to undefined', () => {
+    expect(resolveHomeGeography(undefined)).toBeUndefined();
+    expect(resolveHomeGeography('')).toBeUndefined();
+    expect(resolveHomeGeography('Atlantis')).toBeUndefined();
+  });
+});
+
+describe('isTextGenerationModel', () => {
+  it('keeps request-response models', () => {
+    expect(isTextGenerationModel(model({ modelId: 'a' }))).toBe(true);
+    expect(isTextGenerationModel(model({ modelId: 'a', modelType: 'RequestResponse' }))).toBe(true);
+    expect(isTextGenerationModel(model({ modelId: 'a', apiFlavor: 'OpenAiChatCompletions' }))).toBe(
+      true
+    );
+  });
+
+  it('drops realtime models', () => {
+    expect(isTextGenerationModel(model({ modelId: 'a', modelType: 'Realtime' }))).toBe(false);
+  });
+
+  it('drops embeddings flavors', () => {
+    expect(isTextGenerationModel(model({ modelId: 'a', apiFlavor: 'OpenAiEmbeddings' }))).toBe(
+      false
+    );
+    expect(isTextGenerationModel(model({ modelId: 'a', apiFlavor: 'GeminiEmbeddings' }))).toBe(
+      false
+    );
   });
 });

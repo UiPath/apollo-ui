@@ -37,6 +37,8 @@ export type ModelGeography =
   | 'GLOBAL'
   | string;
 
+export type ModelType = 'RequestResponse' | 'Realtime' | string;
+
 export interface DeprecationDetails {
   usageEndDate?: string;
   replacedBy?: string;
@@ -126,6 +128,12 @@ export interface DiscoveryModel {
    */
   isBlockedByPolicy?: boolean;
   isPreview?: boolean;
+  /**
+   * Interaction shape of the model (`RequestResponse` | `Realtime`).
+   * The picker renders text-generation (`RequestResponse`) models only —
+   * realtime models never show, same policy as `isBlockedByPolicy`.
+   */
+  modelType?: ModelType;
   deprecationDetails?: DeprecationDetails | null;
   byomDetails?: ByomDetails | null;
   modelDetails?: ModelDetails;
