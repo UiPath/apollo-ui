@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.16.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.2...@uipath/apollo-react@6.16.3) (2026-08-05)
+
+### Bug Fixes
+
+* **apollo-react:** recompute preview connections only when they change ([575064d](https://github.com/UiPath/apollo-ui/commit/575064d25ee688a79232a61fef099d91db244f79))
+
 ## [@uipath/apollo-react-v6.16.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.1...@uipath/apollo-react@6.16.2) (2026-08-05)
 
 ### Bug Fixes
