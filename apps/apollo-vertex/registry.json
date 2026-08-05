@@ -3215,6 +3215,31 @@
           "target": "components/ui/solution-tests/outputs/process-output-view.tsx"
         },
         {
+          "path": "registry/solution-tests/outputs/ixp-extraction/schema.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/outputs/ixp-extraction/schema.ts"
+        },
+        {
+          "path": "registry/solution-tests/outputs/ixp-extraction/ixp-output-result.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/outputs/ixp-extraction/ixp-output-result.tsx"
+        },
+        {
+          "path": "registry/solution-tests/ixp/shared/format-values.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/ixp/shared/format-values.ts"
+        },
+        {
+          "path": "registry/solution-tests/ixp/shared/field-table.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/ixp/shared/field-table.tsx"
+        },
+        {
+          "path": "registry/solution-tests/ixp/shared/document-section.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/ixp/shared/document-section.tsx"
+        },
+        {
           "path": "registry/solution-tests/evaluators/output-panels.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/output-panels.tsx"

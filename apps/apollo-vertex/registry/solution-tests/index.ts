@@ -62,6 +62,17 @@ export type {
 } from "./outputs/registry";
 export { ProcessOutputView } from "./outputs/process-output-view";
 export {
+  IxpOutputResult,
+  IXP_OUTPUT_RENDERER,
+} from "./outputs/ixp-extraction/ixp-output-result";
+export { IxpOutputSchema } from "./outputs/ixp-extraction/schema";
+export type {
+  IxpOutput,
+  IxpDocumentExtraction,
+  IxpExtractionGroup,
+  IxpFieldValue,
+} from "./outputs/ixp-extraction/schema";
+export {
   useSolutionTests,
   useSolutionTestBatchRuns,
   useSolutionTestRuns,
