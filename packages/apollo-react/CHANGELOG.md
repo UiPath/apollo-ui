@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.16.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.3...@uipath/apollo-react@6.16.4) (2026-08-05)
+
+### Bug Fixes
+
+* **apollo-react:** prevent native image drag on URL-based icons ([d5119f8](https://github.com/UiPath/apollo-ui/commit/d5119f88c909d1584a46a5bba4f8e5473691445c))
+
 ## [@uipath/apollo-react-v6.16.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.2...@uipath/apollo-react@6.16.3) (2026-08-05)
 
 ### Bug Fixes
