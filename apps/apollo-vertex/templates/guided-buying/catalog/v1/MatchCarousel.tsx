@@ -9,7 +9,6 @@ import {
   Check,
   Clock,
   Info,
-  MessageCircle,
   Plus,
   Store,
   X,
@@ -419,7 +418,7 @@ function MatchCard({
                     className="not-italic underline hover:text-foreground"
                     onClick={onWhyNotThisClick}
                   >
-                    Why not this?
+                    Compare with my pick
                   </button>
                 </>
               )}
@@ -1434,7 +1433,6 @@ export function MatchCarousel({
                   the rest of the catalog. */}
               <div className="flex items-center justify-between gap-4 rounded-xl bg-muted/40 px-4 py-4">
                 <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                  <AiMark size={16} gradientId="gb-ai-mark" aria-hidden />
                   Not finding what you&apos;re looking for?
                 </p>
                 <div className="flex items-center gap-2">
@@ -1443,7 +1441,7 @@ export function MatchCarousel({
                     size="sm"
                     onClick={onNotFindingClick}
                   >
-                    <MessageCircle className="size-4" aria-hidden />
+                    <AiMark size={16} gradientId="gb-ai-mark" aria-hidden />
                     Ask AI
                   </Button>
                   <Button
