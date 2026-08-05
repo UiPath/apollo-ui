@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v6.16.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.1...@uipath/apollo-react@6.16.2) (2026-08-05)
+
+### Bug Fixes
+
+* **apollo-react:** ensure alignment guide ids are unique ([634807f](https://github.com/UiPath/apollo-ui/commit/634807ff0d7c969da8bb2592389d149b67f118af))
+* **apollo-react:** preserve shift-click canvas selection ([ef08b20](https://github.com/UiPath/apollo-ui/commit/ef08b20338b5f69c67abb20419d6fae1c516c17b))
+* **apollo-react:** restore three-line alignment hinting ([83ef2fa](https://github.com/UiPath/apollo-ui/commit/83ef2fa8d981ea8995624ff3164dc98748df4e42))
+
 ## [@uipath/apollo-react-v6.16.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.0...@uipath/apollo-react@6.16.1) (2026-08-05)
 
 ### Bug Fixes
