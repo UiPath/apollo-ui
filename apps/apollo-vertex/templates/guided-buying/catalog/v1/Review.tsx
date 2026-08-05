@@ -230,17 +230,9 @@ export function Review() {
                           />
                         ))}
                       </div>
-                      <div className="mt-3">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 text-primary hover:bg-transparent hover:text-primary"
-                          onClick={() => setAddItemsOpen(true)}
-                        >
-                          <Plus className="size-3.5" aria-hidden />
-                          Add items from the catalog
-                        </Button>
-                      </div>
+                      {/* Hidden for now, not removed — setAddItemsOpen and
+                          AddItemsDrawer below stay wired through the
+                          empty-cart state's own trigger. */}
                       <div className="mt-4 border-t pt-4">
                         <CartSummary
                           items={items}
@@ -248,7 +240,8 @@ export function Review() {
                           basis={BASIS}
                           totalLabel="Total"
                           showItemCount={false}
-                          showSubtotal
+                          showSavingsRow={false}
+                          showSavingsCaption
                         />
                       </div>
                     </>
