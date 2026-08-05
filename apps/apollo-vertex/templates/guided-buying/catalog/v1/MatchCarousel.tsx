@@ -501,16 +501,23 @@ function MatchCard({
       className="relative"
       initial={reduceMotion ? false : { opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18 }}
+      exit={
+        reduceMotion
+          ? { opacity: 0 }
+          : {
+              opacity: 0,
+              y: 18,
+              transition: {
+                duration: 0.3,
+                ease: CARD_EASE,
+                delay: index * CARD_STAGGER,
+              },
+            }
+      }
       transition={{
         duration: reduceMotion ? 0 : 0.34,
         ease: CARD_EASE,
         delay: reduceMotion ? 0 : index * CARD_STAGGER,
-        exit: {
-          duration: reduceMotion ? 0 : 0.3,
-          ease: CARD_EASE,
-          delay: reduceMotion ? 0 : index * CARD_STAGGER,
-        },
       }}
     >
       {/* AiGlow sits behind the glass row; only the AI pick gets one. It
