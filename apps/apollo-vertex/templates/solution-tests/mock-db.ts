@@ -14,6 +14,7 @@ import {
   type SolutionTestRun,
   type SolutionTestRunResult,
 } from "@/registry/solution-tests/types";
+import { IXP_EVALUATOR_FIXTURE, IXP_OUTPUT_FIXTURE } from "./ixp-fixtures";
 
 export interface MockDb {
   tests: SolutionTest[];
@@ -45,10 +46,12 @@ const errorMessages = JSON.stringify([
   },
 ]);
 
+export const IXP_DEMO_AGENT_NAME = "IXP Document Extraction";
+
 const AGENTS = [
   "Income Verification Agent",
   "Risk Scoring Agent",
-  "Document Classifier Agent",
+  IXP_DEMO_AGENT_NAME,
 ];
 
 export function createMockDb(): MockDb {
@@ -113,10 +116,9 @@ export function createMockDb(): MockDb {
         ProcessVersion: "1.4.0",
         SourceRunResultId: `${testId}-r0-res-${i}`,
       });
-      // Document Classifier (i === 2) has no expected output
       jobOutputs[id] =
         i === 2
-          ? null
+          ? IXP_OUTPUT_FIXTURE
           : {
               decision: i === 0 ? "verified" : "low-risk",
               confidence: 0.93,
@@ -216,29 +218,44 @@ export function createMockDb(): MockDb {
           result.UserMessages = warningMessages;
         }
         results.push(result);
+        const isIxp = i === 2;
         resultAttachments[resId] = {
-          ExpectedOutput: { decision: "verified", confidence: 0.93 },
-          ActualOutput: {
-            decision: status === RunResultStatus.Failed ? "review" : "verified",
-            confidence: status === RunResultStatus.Failed ? 0.55 : 0.97,
-          },
+          ExpectedOutput: isIxp
+            ? IXP_OUTPUT_FIXTURE
+            : { decision: "verified", confidence: 0.93 },
+          ActualOutput: isIxp
+            ? IXP_OUTPUT_FIXTURE
+            : {
+                decision:
+                  status === RunResultStatus.Failed ? "review" : "verified",
+                confidence: status === RunResultStatus.Failed ? 0.55 : 0.97,
+              },
           ExpectedInput: { applicantId: test.SubjectId },
           ActualInput: { applicantId: test.SubjectId },
-          EvaluatorResults: {
-            "uipath-json-similarity": {
-              score: status === RunResultStatus.Failed ? 0.55 : 0.97,
-              details: {
-                justification:
-                  status === RunResultStatus.Failed
-                    ? "Output diverged from baseline on the decision field."
-                    : "Output matched the baseline within tolerance.",
+          EvaluatorResults: isIxp
+            ? {
+                "uipath-ixp-document-extraction": {
+                  score: 0.82,
+                  details: IXP_EVALUATOR_FIXTURE,
+                },
+              }
+            : {
+                "uipath-json-similarity": {
+                  score: status === RunResultStatus.Failed ? 0.55 : 0.97,
+                  details: {
+                    justification:
+                      status === RunResultStatus.Failed
+                        ? "Output diverged from baseline on the decision field."
+                        : "Output matched the baseline within tolerance.",
+                  },
+                },
+                "uipath-llm-judge-output-semantic-similarity": {
+                  score: status === RunResultStatus.Failed ? 0.6 : 0.95,
+                  details: {
+                    justification: "Semantic intent largely preserved.",
+                  },
+                },
               },
-            },
-            "uipath-llm-judge-output-semantic-similarity": {
-              score: status === RunResultStatus.Failed ? 0.6 : 0.95,
-              details: { justification: "Semantic intent largely preserved." },
-            },
-          },
         };
       });
     });
