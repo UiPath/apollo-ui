@@ -1,3 +1,4 @@
+import type { ComponentType, ReactElement } from "react";
 import type en from "../locales/en.json";
 
 type ValidKeys = keyof typeof en;
@@ -26,6 +27,16 @@ type TranslationFn = <TKey extends ValidKeys>(
 
 declare module "react-i18next" {
   export type ParseKeys = ValidKeys;
+  // react-i18next's native <Trans> is generic over ParseKeys and expands each
+  // key into a per-key interpolation-values union; across the full key set that
+  // overflows TS's representable-union limit (TS2590). Declaring a simplified
+  // Trans here keeps compile-time key validation (i18nKey: ParseKeys) without
+  // instantiating that generic. Extend these props if a call site needs more.
+  export const Trans: ComponentType<{
+    i18nKey?: ParseKeys;
+    values?: Record<string, string | number | string[]>;
+    components?: Record<string, ReactElement>;
+  }>;
   export function useTranslation(): {
     t: TranslationFn;
     i18n: {
