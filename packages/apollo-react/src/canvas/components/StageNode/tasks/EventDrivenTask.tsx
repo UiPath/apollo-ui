@@ -48,7 +48,7 @@ const EventDrivenTaskItemComponent = ({
   return (
     <StageItemPill
       ref={taskRef}
-      data-testid={`stage-task-${task.id}`}
+      data-testid={`stage-task-card-${task.id}`}
       selected={isSelected}
       status={taskExecution?.status}
       isPlaceholder={task.isPlaceholder}

@@ -39,7 +39,30 @@ describe('AdhocTaskItem', () => {
     it('renders task with correct testid', () => {
       render(<AdhocTaskItem {...defaultProps} />);
 
-      expect(screen.getByTestId('stage-task-adhoc-1')).toBeInTheDocument();
+      expect(screen.getByTestId('stage-task-card-adhoc-1')).toBeInTheDocument();
+    });
+
+    it('exposes exactly one element under the stage-task-card- prefix with every part rendered', () => {
+      const { container } = render(
+        <AdhocTaskItem
+          {...defaultProps}
+          taskExecution={{
+            status: 'Completed',
+            retryCount: 2,
+            retryDuration: '5s',
+            durationMs: 1234,
+          }}
+          getContextMenuItems={() => createMenuItems(vi.fn())}
+          onTaskPlay={vi.fn().mockResolvedValue(undefined)}
+          onToggleBreakpoint={vi.fn()}
+        />
+      );
+
+      const matches = container.querySelectorAll('[data-testid^="stage-task-card-"]');
+
+      expect(Array.from(matches, (match) => match.getAttribute('data-testid'))).toEqual([
+        'stage-task-card-adhoc-1',
+      ]);
     });
 
     it('renders task label', () => {
@@ -51,7 +74,7 @@ describe('AdhocTaskItem', () => {
     it('renders with selected state', () => {
       render(<AdhocTaskItem {...defaultProps} isSelected={true} />);
 
-      expect(screen.getByTestId('stage-task-adhoc-1')).toBeInTheDocument();
+      expect(screen.getByTestId('stage-task-card-adhoc-1')).toBeInTheDocument();
     });
   });
 
@@ -62,7 +85,7 @@ describe('AdhocTaskItem', () => {
 
       render(<AdhocTaskItem {...defaultProps} onTaskClick={onTaskClick} />);
 
-      const task = screen.getByTestId('stage-task-adhoc-1');
+      const task = screen.getByTestId('stage-task-card-adhoc-1');
       await user.click(task);
 
       expect(onTaskClick).toHaveBeenCalledTimes(1);
@@ -100,7 +123,7 @@ describe('AdhocTaskItem', () => {
       });
 
       // Now task click should work
-      const task = screen.getByTestId('stage-task-adhoc-1');
+      const task = screen.getByTestId('stage-task-card-adhoc-1');
       await user.click(task);
 
       expect(onTaskClick).toHaveBeenCalledWith(expect.any(Object), 'adhoc-1');
@@ -330,7 +353,7 @@ describe('AdhocTaskItem', () => {
         />
       );
 
-      const task = screen.getByTestId('stage-task-adhoc-1');
+      const task = screen.getByTestId('stage-task-card-adhoc-1');
       await user.pointer({ keys: '[MouseRight]', target: task });
 
       expect(screen.queryByText('Replace task')).not.toBeInTheDocument();
