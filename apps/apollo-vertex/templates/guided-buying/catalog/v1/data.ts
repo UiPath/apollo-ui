@@ -22,6 +22,21 @@ export const SAMPLE_REQUEST: BuyRequest = {
  * request from. */
 export const CATALOG_STARTER = "15 laptops for Fusion Event contractors";
 
+// The other two demo launch points — sourcing (generic quote handoff) and
+// contract (the Configure-with-agent wizard). Shared with CATALOG_STARTER
+// between /buy's own starter chips and /home's, below.
+export const SOURCING_STARTER = "Hire 2 contract designers for the Q3 rebrand";
+export const CONTRACT_STARTER = "Add 12 mobile lines for the Denver team";
+
+/** Starter chips shown on both /buy's Intake and /home: an abbreviated,
+ * history-style label (what a past request list would call it), submitting
+ * the same full sentence either page already knows how to route. */
+export const STARTER_SUGGESTIONS = [
+  { label: "15 laptops · Fusion Event", value: CATALOG_STARTER },
+  { label: "Q3 rebrand · 2 contract designers", value: SOURCING_STARTER },
+  { label: "12 mobile lines · Denver team", value: CONTRACT_STARTER },
+];
+
 /** Quantity inferred from the request ("15 laptops for Fusion Event contractors"). */
 export const INFERRED_REQUEST_QUANTITY = 15;
 

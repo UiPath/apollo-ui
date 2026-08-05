@@ -15,10 +15,12 @@ import { useCart } from "./cart-context";
 import { type BuyPhase, useConversation } from "./conversation-context";
 import {
   CATALOG_ITEMS,
-  CATALOG_STARTER,
+  CONTRACT_STARTER,
   defaultQuantityFor,
   displayRequestTitle,
   RECOMMENDATION,
+  SOURCING_STARTER,
+  STARTER_SUGGESTIONS,
 } from "./data";
 import { FlowFooterProvider } from "./FlowFooter";
 import {
@@ -39,13 +41,6 @@ const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 // Where the surface is heading as it animates out — drives the exit direction.
 type Leaving = null | "configure";
-
-// The three demo launch points — one per use case. Catalog = requester
-// self-serving; quote = generic handoff to a seeded Workbench item; contract =
-// the Configure-with-agent wizard.
-const SOURCING_STARTER = "Hire 2 contract designers for the Q3 rebrand";
-const CONTRACT_STARTER = "Add 12 mobile lines for the Denver team";
-const STARTERS = [CATALOG_STARTER, SOURCING_STARTER, CONTRACT_STARTER];
 
 // Intake-only greeting, above the headline — time-of-day read at render.
 function timeOfDayGreeting() {
@@ -389,7 +384,7 @@ export function BuyFlow() {
                       </div>
                     </div>
                     <AiChatEmptySuggestions
-                      suggestions={STARTERS}
+                      suggestions={STARTER_SUGGESTIONS}
                       onSelect={handleSuggestion}
                     />
                     <P2>
