@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SidebarHoverPrefetch } from "./_components/sidebar-hover-prefetch";
+import { SuppressKnownWarnings } from "./_components/suppress-known-warnings";
 import { ThemeSwitcher } from "./_components/theme-switcher";
 import { ThemeWrapper } from "./_components/theme-wrapper";
 
@@ -94,6 +95,7 @@ export default async function RootLayout({
       </Head>
       <body>
         <Analytics />
+        <SuppressKnownWarnings />
         <SidebarHoverPrefetch />
         <ThemeWrapper>
           <Layout
