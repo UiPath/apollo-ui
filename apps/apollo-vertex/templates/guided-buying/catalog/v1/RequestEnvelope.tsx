@@ -182,7 +182,7 @@ const FIELDS: EnvelopeField[] = [
       { value: "Rush · 2 business days", reason: "Fastest, added cost" },
     ],
     provenance: {
-      source: "Inferred from your request, which named no date.",
+      source: "Inferred from your request, which named the Fusion Event.",
       // No static context — built at render time from the live requestText
       // (the quoted phrase needs its own italic span), see the render loop.
       actions: [
@@ -214,8 +214,12 @@ const FIELDS: EnvelopeField[] = [
       },
     ],
     provenance: {
-      source: "Policy: catalog orders over $5,000 route to a Design Director.",
-      context: "This request totals $27,735, so it routes to Alex Chen.",
+      // Invariant — names no role, since the mapped title varies by cost
+      // center (Design Director, Brand Director, Product Design Lead) and
+      // this string never recomputes. The routed-to name and title live in
+      // the derived context below instead (see the render loop).
+      source:
+        "Policy: catalog orders over $5,000 route to the owner of the cost center it bills to.",
       lockReason: "Fixed policy rule",
       actions: [
         {
@@ -463,6 +467,13 @@ export function RequestEnvelope() {
   // only true while it's still policy-driven, not a direct user pick.
   const approverCascaded =
     !overridden.approver && values.approver !== INITIAL_VALUES.approver;
+  // Cost center's own provenance popover (both zones 2 and 3) is content
+  // derived from live state, not the static FIELDS entry — see the render
+  // loop below. Alternates come from the map's own keys, never authored,
+  // so they can't drift out of sync with what's actually selectable.
+  const costAlternates = Object.keys(COST_TO_APPROVER)
+    .filter((c) => c !== values.cost)
+    .join(", ");
 
   // Thread entry: live, not gated on Continue, so the panel already has this
   // step's detail the moment Bridge is on screen. Splits records from guesses
@@ -693,7 +704,98 @@ export function RequestEnvelope() {
                       >
                         <RotateCcw className="size-3.5" aria-hidden />
                       </Button>
-                      {overridden[field.key] ? (
+                      {field.key === "cost" ? (
+                        // Cost center always opens a popover, changed or
+                        // not — an overridden field elsewhere in this row
+                        // falls back to a plain, non-interactive "Changed
+                        // by you" span (see the branch below), but that's
+                        // exactly the state this field has the most to say
+                        // in, so it keeps the trigger instead of losing it.
+                        <Popover
+                          open={provenanceKey === field.key}
+                          onOpenChange={(open) =>
+                            setProvenanceKey(open ? field.key : null)
+                          }
+                        >
+                          <PopoverTrigger asChild>
+                            <motion.button
+                              type="button"
+                              disabled={continued}
+                              className={cn(
+                                "whitespace-nowrap text-right text-xs underline decoration-dotted underline-offset-2 hover:text-foreground",
+                                overridden.cost
+                                  ? "italic text-(--primary)"
+                                  : "text-muted-foreground",
+                              )}
+                              initial={reduceMotion ? false : { opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{
+                                duration: 0.25,
+                                delay: reduceMotion ? 0 : i * STAGGER + 0.18,
+                              }}
+                            >
+                              {overridden.cost
+                                ? "Changed by you"
+                                : field.source}
+                            </motion.button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="end"
+                            className="w-80 text-left data-[state=open]:animate-none data-[state=closed]:animate-none"
+                          >
+                            <ProvenancePopover
+                              field={field.label}
+                              source={
+                                overridden.cost
+                                  ? "Changed by you, this request only."
+                                  : "Pulled from your saved profile default."
+                              }
+                              context={
+                                overridden.cost
+                                  ? `Your default is ${INITIAL_VALUES.cost}. Alternates: ${costAlternates}.`
+                                  : `Used on 4 of your last 5 requests. Alternates: ${costAlternates}.`
+                              }
+                              actions={
+                                overridden.cost
+                                  ? [
+                                      {
+                                        label: "Revert",
+                                        variant: "primary",
+                                        onClick: () => {
+                                          setProvenanceKey(null);
+                                          revert("cost");
+                                        },
+                                      },
+                                    ]
+                                  : field.provenance.actions.map((action) => ({
+                                      label: action.label,
+                                      variant: action.variant,
+                                      onClick: () => {
+                                        if (
+                                          action.kind === "changeForRequest"
+                                        ) {
+                                          setProvenanceKey(null);
+                                          setEditingKey(field.key);
+                                        } else if (
+                                          action.kind === "changeDefault"
+                                        ) {
+                                          stubToast(
+                                            "Default not changed",
+                                            "Updating your saved profile default isn't available yet.",
+                                          );
+                                        } else {
+                                          stubToast(
+                                            "Exception not sent",
+                                            "Sending a policy exception request isn't available yet.",
+                                          );
+                                        }
+                                      },
+                                    }))
+                              }
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      ) : overridden[field.key] ? (
                         <motion.span
                           className="whitespace-nowrap text-right text-xs italic text-(--primary)"
                           initial={reduceMotion ? false : { opacity: 0 }}
@@ -741,7 +843,11 @@ export function RequestEnvelope() {
                                     <span className="italic">
                                       &ldquo;{requestText ?? ""}&rdquo;
                                     </span>
+                                    . Contractors start Aug 3, so the need-by is
+                                    set to Aug 1.
                                   </>
+                                ) : field.key === "approver" ? (
+                                  `This request totals $27,735 and bills to ${shortName(values.cost)}, so it routes to ${values.approver}.`
                                 ) : (
                                   field.provenance.context
                                 )
