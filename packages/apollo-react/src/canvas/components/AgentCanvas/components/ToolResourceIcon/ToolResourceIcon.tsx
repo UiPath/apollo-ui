@@ -26,6 +26,7 @@ export const ToolResourceIcon = ({ size = 24, tool }: ToolResourceIconProps) => 
       <img
         src={tool.iconUrl}
         alt={tool.name}
+        draggable={false}
         style={{ width: size, height: size, objectFit: 'contain' }}
         onError={() => setImgError(true)}
       />
