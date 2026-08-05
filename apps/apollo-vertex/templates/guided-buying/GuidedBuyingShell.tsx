@@ -15,6 +15,7 @@ import {
 import {
   Check,
   ClipboardList,
+  Home as HomeIcon,
   ShoppingCart,
   Store,
   Wrench,
@@ -36,6 +37,7 @@ import { CatalogSubmitted } from "./catalog/v1/CatalogSubmitted";
 import { ConfigureFlow } from "./catalog/v1/ConfigureFlow";
 import { ConversationProvider } from "./catalog/v1/ConversationProvider";
 import { Review } from "./catalog/v1/Review";
+import { Home } from "./home/Home";
 import { DecisionWindow } from "./requests/DecisionWindow";
 import { MyRequests } from "./requests/MyRequests";
 import { PORecord } from "./requests/PORecord";
@@ -44,10 +46,12 @@ import { RequestWindow } from "./requests/RequestWindow";
 import { TierProvider, useTier } from "./tier-context";
 import { Workbench } from "./workbench/Workbench";
 
-// Buy and Catalog are shared front doors. The queue nav item is seat-dependent:
-// the requester (Marcus Webb) gets My Requests (their own queue); the buyer
-// (procurement) gets the Workbench, where requests that needed judgment land.
+// Home is the default landing, above Buy and Catalog (the shared front
+// doors). The queue nav item is seat-dependent: the requester (Marcus Webb)
+// gets My Requests (their own queue); the buyer (procurement) gets the
+// Workbench, where requests that needed judgment land.
 const baseNavItems: ShellNavItem[] = [
+  { path: "/home", label: "home", icon: HomeIcon },
   { path: "/buy", label: "buy", icon: ShoppingCart },
   { path: "/catalog", label: "catalog", icon: Store },
 ];
@@ -185,15 +189,15 @@ function GuidedBuyingLayout() {
 
 const rootRoute = createRootRoute({ component: GuidedBuyingLayout });
 
-// The prototype's front door is Buy — bare /guided-buying redirects there,
+// The prototype's front door is Home — bare /guided-buying redirects there,
 // same landing behavior memory history used to get for free via
 // initialEntries. beforeLoad (not a component redirect) so browser back
-// from /buy doesn't bounce forward through "/" again.
+// from /home doesn't bounce forward through "/" again.
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   beforeLoad: () => {
-    throw redirect({ to: "/buy" });
+    throw redirect({ to: "/home" });
   },
 });
 
@@ -201,6 +205,14 @@ const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard",
   component: () => <EmptyPage title="Dashboard" />,
+});
+
+// The requester landing — not part of the Buy flow's phase machine (see
+// Home.tsx's own doc comment), so it's a plain, unparameterized route.
+const homeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/home",
+  component: Home,
 });
 
 // The catalog fork's two pre-Review phases (Details/Choose) are addressable
@@ -286,6 +298,7 @@ const trackRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   dashboardRoute,
+  homeRoute,
   buyRoute,
   catalogRoute,
   configureRoute,

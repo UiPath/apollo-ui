@@ -21,6 +21,7 @@ export default function GuidedBuyingCatchAllPage() {
 // this same bundle for an unmatched path. See the routing report for detail.
 export function generateStaticParams() {
   return [
+    { slug: ["home"] },
     { slug: ["buy"] },
     { slug: ["catalog"] },
     { slug: ["configure"] },
