@@ -43,7 +43,7 @@ The picker is one shared visual + behavioral contract. Everything below is a pro
 
 ### 1. Filter the visible catalog
 
-When your product should only show a subset of what Discovery returns (specific operation codes, current-user permissions, region constraints), pass a `filter`:
+When your product should only show a subset of what Discovery returns (specific modalities, operation codes, current-user permissions, region constraints), pass a `filter`:
 
 ```tsx
 <ModelPicker
@@ -62,6 +62,16 @@ When your product should only show a subset of what Discovery returns (specific 
 - `filter` runs **before** grouping and search. Empty groups disappear cleanly.
 - A `value` whose id is filtered out still resolves — the trigger renders normally, no spurious "unknown model" error.
 - Pass a **stable function reference** if `models` is large; the hook re-derives groups whenever `filter` changes identity.
+
+**Modality is a product decision.** The picker renders whatever Discovery serves — it does not assume text generation. Products that only offer chat models opt in with the exported helper, which drops embeddings (by `apiFlavor`) and realtime (by `modelType`):
+
+```tsx
+import { isTextGenerationModel } from '@uipath/apollo-react/material/components';
+
+<ModelPicker filter={isTextGenerationModel} … />
+```
+
+An indexing or context-grounding surface picks embeddings from the same catalog, so excluding them centrally would break it. The one thing the picker *does* drop unconditionally is `isBlockedByPolicy` — that's an org-wide governance verdict, not a product preference.
 
 ### 2. Friendly names
 
@@ -185,7 +195,28 @@ Under the hood: `GET {baseUrl}/portal_/api/organization/UserOrganizationInfo` �
 
 - The **"Use custom model" footer** opens the *add configuration* form, deep-linked to `/{tenantId}/{folderId}/add` and pre-populated via `?product=&feature=` from `requestingProduct`/`requestingFeature`. The folder id is the switcher's current selection, or — when none is selected ("All folders") — the first available folder, matching the configurations page's own default. Only when no folders exist does it fall back to the configurations list.
 - The **edit row action** (BYO rows only) opens the configuration's *edit* form when the model carries `byomDetails.byoConfigurationId` (served by Discovery on UiPath/Arima#2659); when absent it lands on the configurations list scoped to the tenant + folder.
-- The **delete row action** (BYO rows only) is opt-in: pass `onDeleteModel` and the picker renders a delete icon next to edit. The picker always asks for confirmation first (a built-in dialog naming the configuration), then calls your handler; in self-fetch mode it refetches Discovery once your handler resolves. Omit it to keep removal on the configurations page only.
+- The **delete row action** (BYO rows only) is owned by the picker in self-fetch mode. It renders a delete icon next to edit on BYO rows that carry a `byoConfigurationId`, confirms first (a built-in dialog naming the configuration), then issues the platform call itself:
+
+  ```
+  DELETE {gateway}/api/byo/product/llm-configurations/{byoConfigurationId}
+  ```
+
+  It reuses the credentials and org/tenant path it already holds for Discovery, refetches the catalog, and reports failures in its own error surface (the gateway's message, verbatim). Products do **not** implement this request.
+
+  Pass `onModelDeleted` to react afterwards. Its one real job is reconciling state the picker cannot see — above all, choosing a replacement when the deleted model was the current selection. The picker deliberately does not choose one for you:
+
+  ```tsx
+  <ModelPicker
+    requestContext={ctx}
+    value={selected}
+    onChange={setSelected}
+    onModelDeleted={(model) => {
+      if (model.modelName === selected) setSelected(nextDefault());
+    }}
+  />
+  ```
+
+  `onDeleteModel` remains as an opt-out for hosts that must route the call elsewhere — the picker then confirms, calls it, and refetches, but issues no request of its own. With a host-owned `models` list there is no request context to delete with, so `onDeleteModel` is the only way to surface a delete action at all.
 
 These navigations always open the AI Trust Layer pages in a new browser tab - the picker is embedded in a product surface, and navigating it away would unload the user's in-progress work. `onUseCustomModel` overrides the footer's default navigation (e.g. an in-app wizard), and `slots.optionActions` overrides the row actions. Products with their own authorization model can pass `canManageByo` (`true`/`false`); when set, no admin check request is made.
 
@@ -274,7 +305,7 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `variant`             | `'searchable' \| 'virtualized'`                       | Default `'searchable'`; auto-switches to the virtualized renderer above 120 visible options. Pass `'virtualized'` to force it. |
 | `groupBy`             | `'subscription' \| 'vendor' \| 'flat'`                 | Initial view. Default `'subscription'`.                                                                              |
 | `allowGroupingChange` | `boolean`                                             | Show the Category ⇆ Provider toggle. Default `true`.                                                                  |
-| `homeRegion`          | `string`                                              | User's home region (`'EU'`, `'US'`, …). Triggers the Out-of-region chip when a model's `routingDetails.geography` differs. |
+| `homeRegion`          | `string`                                              | User's home region — a geography code (`'EU'`) or the raw OMS organization region (`'UnitedStates'`, `'Japan'`, …); the picker owns the OMS→geography mapping. Triggers the Out-of-region chip when a model's `routingDetails.geography` differs. |
 | `recommendedModelIds` | `readonly string[]`                                   | Test/storybook override for the Recommended set. Production reads `model.isRecommended` from the Discovery DTO.      |
 | `previewModelIds`     | `readonly string[]`                                   | Same, for Preview (production: DTO `isPreview`).                                                                     |
 | `filter`              | `(m) => boolean`                                      | Per-product filter applied before grouping and search.                                                               |
@@ -338,6 +369,27 @@ Every user-visible string is keyed under the `modelPicker.*` namespace:
 - Data-driven labels (group names, tag labels) are defined once in `i18n.ts` as `msg()` descriptors and resolved via `i18n._(descriptor)` at render time.
 
 The component has its own catalog entry in `packages/apollo-react/lingui.config.ts` (`ap-model-picker/locales/{locale}`). Extract keys with `pnpm i18n:extract` from `packages/apollo-react`; catalogs compile automatically before `build` and `test`.
+
+### Loading the catalogs in a host
+
+The picker's translations live in its own catalogs, so a host that already runs Lingui has to merge them into its instance. Use the exported loader:
+
+```ts
+import { loadModelPickerMessages } from '@uipath/apollo-react/material/components';
+
+const pickerMessages = await loadModelPickerMessages(locale);
+// Host keys last: an app key always wins a collision.
+i18n.loadAndActivate({ locale, messages: { ...pickerMessages, ...appMessages } });
+```
+
+That is the whole integration. Notes:
+
+- **Do not hand-roll the per-locale imports.** A template-literal dynamic import (`` import(`.../locales/${locale}`) ``) cannot be resolved by a consumer's bundler through the package `exports` map, so it fails at build or serves nothing at runtime — and the symptom is raw `modelPicker.*` keys on screen, which reads like a translation bug rather than a bundling one. The loader keeps the literal import map on this side.
+- **Locale matching is forgiving**, because hosts source locales from very different places (PortalShell, `navigator.language`, a preferences API). Tags match case-insensitively across both separators (`pt_BR`, `pt-br`), and an unshipped regional variant falls back to its base language (`fr-CA` → `fr`). `MODEL_PICKER_LOCALES` lists what ships; `resolveModelPickerLocale` exposes the matching if a host needs to pre-check.
+- **It never rejects.** An unknown locale or a failed chunk falls back to English, then to `{}` — a host's i18n bootstrap is the wrong place to throw. Missing messages degrade to the picker's English source strings via `useSafeLingui`.
+- **A host with no Lingui at all needs none of this**: the picker renders its English source strings unaided.
+
+> **Duplicate Lingui breaks translations.** `@lingui/react` is currently a regular *dependency* of `apollo-react`, not a peer. If your app resolves a copy outside apollo's range, you get two `@lingui/react` instances — two React contexts — and the picker cannot see your `I18nProvider`, so it renders raw keys no matter how correctly you load the catalogs. Until that is a peer dependency, hosts should dedupe it (e.g. a pnpm `overrides` entry pinning one version). The same applies to `@emotion/styled`, where a second copy forks `@mui/material` into two peer-variants and your ThemeProvider stops reaching the picker.
 
 ---
 

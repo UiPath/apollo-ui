@@ -26,13 +26,15 @@ export interface DeriveModelTagsContext {
    * production the signal arrives ON the DTO (`model.isRecommended`),
    * merged into the Discovery response from Model_hub configs in
    * `gitops-centralized-cluster` — products should not set this.
-   * When provided (even as an empty array), only listed ids get the
-   * chip.
+   * When provided (even as an empty array), only listed models get the
+   * chip. Entries match `modelId` OR `modelName`, so a list authored
+   * from Model Hub config (which carries names) works as-is.
    */
   recommendedModelIds?: readonly string[];
   /**
    * Test/storybook override for the `preview` signal. Production
-   * sources it from the DTO's `isPreview`.
+   * sources it from the DTO's `isPreview`. Matches by `modelId` or
+   * `modelName`, same as `recommendedModelIds`.
    */
   previewModelIds?: readonly string[];
   /**
@@ -70,6 +72,84 @@ const isByoModel = (m: DiscoveryModel) =>
   !!m.byomDetails ||
   !!m.byoConnectionLabel;
 
+/**
+ * Ready-made `filter` predicate for products that only offer text-generation
+ * models: drops embeddings (by API flavor — `OpenAiEmbeddings`,
+ * `GeminiEmbeddings`) and realtime (by `modelType`).
+ *
+ * The picker does NOT apply this itself: which modalities to offer is a
+ * per-product decision — an indexing or context-grounding surface picks
+ * embeddings from the same catalog. Opt in with
+ * `filter={isTextGenerationModel}`.
+ */
+export function isTextGenerationModel(m: DiscoveryModel): boolean {
+  if (m.modelType === 'Realtime') return false;
+  return !(m.apiFlavor ?? '').includes('Embeddings');
+}
+
+/**
+ * OMS organization region → Discovery geography short code. Mirrors the
+ * gateway's `GeographyRegionMappings` (UiPath.LLMGateway.Domain) — OMS is
+ * the source of truth and serves exactly one canonical value per region.
+ */
+const OMS_REGION_TO_GEOGRAPHY: Record<string, string> = {
+  europe: 'EU',
+  unitedstates: 'US',
+  japan: 'JA',
+  canada: 'CA',
+  australia: 'AU',
+  india: 'IN',
+  unitedkingdom: 'UK',
+  singapore: 'SI',
+  switzerland: 'CH',
+  unitedarabemirates: 'UAE',
+  southkorea: 'SK',
+};
+
+const GEOGRAPHY_CODES = new Set([
+  'EU',
+  'CA',
+  'US',
+  'SI',
+  'JA',
+  'AU',
+  'IN',
+  'UK',
+  'CH',
+  'UAE',
+  'SK',
+  'GLOBAL',
+]);
+
+/**
+ * Resolves the `homeRegion` prop to a Discovery geography code. Accepts a
+ * geography code (`'EU'`) or a raw OMS region name (`'UnitedStates'`,
+ * case-insensitive, separators ignored) so hosts pass
+ * `organization.region` straight through instead of each maintaining a
+ * mapping. Unknown values resolve to `undefined` — no out-of-region chips.
+ * So does `'GLOBAL'`: it is a model routing target, not a place an org
+ * lives, and taking it as one would flag every regional model.
+ */
+export function resolveHomeGeography(homeRegion: string | undefined): string | undefined {
+  const raw = homeRegion?.trim();
+  if (!raw) return undefined;
+  const upper = raw.toUpperCase();
+  if (upper === 'GLOBAL') return undefined;
+  if (GEOGRAPHY_CODES.has(upper)) return upper;
+  return OMS_REGION_TO_GEOGRAPHY[raw.toLowerCase().replace(/[\s_-]/g, '')];
+}
+
+/**
+ * Whether a host-supplied id list names this model. Matches `modelId` OR
+ * `modelName`, mirroring how `value` resolves — Discovery serves the two
+ * equal today, and hosts author these lists from Model Hub config, which
+ * carries model *names*. Matching ids only made a correct list silently
+ * chip nothing the moment the two fields diverge.
+ */
+function listMatchesModel(ids: readonly string[], model: DiscoveryModel): boolean {
+  return ids.includes(model.modelId) || ids.includes(model.modelName);
+}
+
 export function deriveModelTags(
   model: DiscoveryModel,
   context: DeriveModelTagsContext = {}
@@ -100,7 +180,7 @@ export function deriveModelTags(
   // legacy heuristic (for backends that haven't rolled the field out).
   const isRecommended =
     context.recommendedModelIds !== undefined
-      ? context.recommendedModelIds.includes(model.modelId)
+      ? listMatchesModel(context.recommendedModelIds, model)
       : (model.isRecommended ??
         (model.modelSubscriptionType === RECOMMENDED_SUBSCRIPTION &&
           !model.isPreview &&
@@ -117,7 +197,7 @@ export function deriveModelTags(
   // list, DTO `isPreview` otherwise.
   const isPreview =
     context.previewModelIds !== undefined
-      ? context.previewModelIds.includes(model.modelId)
+      ? listMatchesModel(context.previewModelIds, model)
       : !!model.isPreview;
   if (!isByo && isPreview) {
     tags.push({ kind: 'preview', label: localize(TAG_LABELS.preview) });
@@ -186,7 +266,8 @@ export function deriveModelTags(
 
   if (!isByo) {
     const geo = model.routingDetails?.geography;
-    if (geo && context.homeRegion && geo !== 'GLOBAL' && geo !== context.homeRegion) {
+    const home = context.homeRegion === 'GLOBAL' ? undefined : context.homeRegion;
+    if (geo && home && geo !== 'GLOBAL' && geo !== home) {
       tags.push({
         kind: 'out-of-region',
         label: context.i18n
@@ -200,9 +281,9 @@ export function deriveModelTags(
           ? context.i18n._({
               id: 'modelPicker.tag.outOfRegion.tooltip',
               message: 'Routes traffic outside {homeRegion}',
-              values: { homeRegion: context.homeRegion },
+              values: { homeRegion: home },
             })
-          : `Routes traffic outside ${context.homeRegion}`,
+          : `Routes traffic outside ${home}`,
       });
     }
   }
@@ -359,13 +440,13 @@ function buildSubscriptionMatchers(ctx: GroupModelsContext): Array<{
   // (Model_hub merged into Discovery server-side) → legacy heuristic.
   const isRecommended = (m: DiscoveryModel): boolean =>
     ctx.recommendedModelIds !== undefined
-      ? ctx.recommendedModelIds.includes(m.modelId)
+      ? listMatchesModel(ctx.recommendedModelIds, m)
       : (m.isRecommended ??
         (m.modelSubscriptionType === RECOMMENDED_SUBSCRIPTION &&
           !m.isPreview &&
           !m.deprecationDetails?.usageEndDate));
   const isPreview = (m: DiscoveryModel): boolean =>
-    ctx.previewModelIds !== undefined ? ctx.previewModelIds.includes(m.modelId) : !!m.isPreview;
+    ctx.previewModelIds !== undefined ? listMatchesModel(ctx.previewModelIds, m) : !!m.isPreview;
   const localize = (desc: { id: string; message?: string }): string => {
     if (ctx.i18n) return tr(ctx.i18n, desc);
     return desc.message ?? desc.id;
