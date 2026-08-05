@@ -116,7 +116,7 @@ function buildAlignedGuides(
 
     return [
       {
-        id: `${orientation}-${position}`,
+        id: `${orientation}-${draggedIndex}-${position}`,
         orientation,
         position,
         start: Math.min(...ranges.map(([rangeStart]) => rangeStart)),
