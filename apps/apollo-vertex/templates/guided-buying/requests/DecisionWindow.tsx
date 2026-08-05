@@ -2,10 +2,10 @@
 
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
-  ChevronDown,
   History,
   Info,
   Link as LinkIcon,
+  MoreVertical,
   Server,
 } from "lucide-react";
 import { useState } from "react";
@@ -36,6 +36,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
@@ -45,8 +52,10 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
-import { getDecisionDetail } from "./data";
+import { getDecisionDetail, REQ_2052_APPROVED_DATE } from "./data";
+import { PORecord } from "./PORecord";
 import { RecordEntry } from "./RecordEntry";
+import { useRequests } from "./requests-context";
 
 /** Same soft-highlight treatment as the requester page's AI Summary — one
  * accent phrase, no evaluative language, the sentence still reads correctly
@@ -75,12 +84,6 @@ function initialsOf(name: string): string {
     .toUpperCase();
 }
 
-// This scenario's fixed "today" — REQ-2052 was submitted Jul 21, 2026 and is
-// already "2 days pending" as of this date elsewhere (RequestWindow/data.ts).
-// Approving here keeps that same narrative clock rather than reading real
-// wall-clock time, which would contradict the rest of the scenario.
-const APPROVAL_DATE = "Jul 23, 2026";
-
 /**
  * Approver decision view — /decision/$id. Chrome (header band, card
  * treatment, spacing, Communication entries) matches the requester's
@@ -93,8 +96,12 @@ const APPROVAL_DATE = "Jul 23, 2026";
 export function DecisionWindow() {
   const { id } = useParams({ from: "/decision/$id" });
   const navigate = useNavigate();
-  const [approved, setApproved] = useState(false);
+  const { requestStatusOverrides, approveRequest } = useRequests();
+  const approved = requestStatusOverrides[id] === "approved";
   const [menuOpen, setMenuOpen] = useState(false);
+  // Surfaces the PO in place rather than navigating to /po/$id — that route
+  // stays registered for the sidebar's own Linked records chip elsewhere.
+  const [poOpen, setPoOpen] = useState(false);
   const [draft, setDraft] = useState("");
   // Captured from the composer at the moment Approve is clicked — the note
   // "left with the decision" (see the Communication entry below), not a
@@ -173,7 +180,7 @@ export function DecisionWindow() {
       <PageHeader bordered className="shrink-0 @3xl:!grid-cols-[auto_1fr_auto]">
         <PageHeaderNav>
           <PageHeaderBackButton
-            onClick={() => void navigate({ to: "/requests" })}
+            onClick={() => void navigate({ to: "/approvals" })}
           />
           <PageHeaderTitleGroup>
             <PageHeaderTitle>{id}</PageHeaderTitle>
@@ -199,7 +206,9 @@ export function DecisionWindow() {
           {approved && (
             <PageHeaderField>
               <PageHeaderFieldLabel>Approved</PageHeaderFieldLabel>
-              <PageHeaderFieldValue>{APPROVAL_DATE}</PageHeaderFieldValue>
+              <PageHeaderFieldValue>
+                {REQ_2052_APPROVED_DATE}
+              </PageHeaderFieldValue>
             </PageHeaderField>
           )}
           <PageHeaderField>
@@ -240,13 +249,9 @@ export function DecisionWindow() {
               <Button
                 onClick={
                   approved
-                    ? () =>
-                        void navigate({
-                          to: "/po/$id",
-                          params: { id: detail.poNumber },
-                        })
+                    ? () => setPoOpen(true)
                     : () => {
-                        setApproved(true);
+                        approveRequest(id);
                         // Whatever's still sitting in the composer becomes
                         // the note left with the decision (see the
                         // Communication entry below) rather than being
@@ -258,9 +263,9 @@ export function DecisionWindow() {
                         // toast per the in-product notification guidelines,
                         // not a persistent banner. The Status field in the
                         // header carries the lasting record of the change.
-                        toast.success("Approved", {
-                          description: "The system will dispatch the order.",
-                        });
+                        // States only what just happened, not what happens
+                        // next — P1 and P2 disagree on who places the order.
+                        toast.success("Approved");
                       }
                 }
               >
@@ -270,7 +275,7 @@ export function DecisionWindow() {
               <Popover open={menuOpen} onOpenChange={setMenuOpen}>
                 <PopoverTrigger asChild>
                   <Button aria-label="More actions">
-                    <ChevronDown className="size-4" />
+                    <MoreVertical className="size-4" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-48 p-1">
@@ -485,7 +490,7 @@ export function DecisionWindow() {
           {approved && (
             <div className="rounded-lg border border-border px-4 py-3">
               <p className="text-sm text-foreground">
-                You approved this on {APPROVAL_DATE}.
+                You approved this on {REQ_2052_APPROVED_DATE}.
               </p>
             </div>
           )}
@@ -551,12 +556,7 @@ export function DecisionWindow() {
               {approved ? (
                 <button
                   type="button"
-                  onClick={() =>
-                    void navigate({
-                      to: "/po/$id",
-                      params: { id: detail.poNumber },
-                    })
-                  }
+                  onClick={() => setPoOpen(true)}
                   className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/8 px-2.5 py-0.5 text-[10.5px] font-semibold text-primary"
                 >
                   <LinkIcon className="size-3 shrink-0" aria-hidden />
@@ -571,6 +571,20 @@ export function DecisionWindow() {
           </div>
         </div>
       </div>
+
+      {/* Surfaces the PO without leaving the decision context — View order
+          and the Linked records chip above both just open this. */}
+      <Sheet open={poOpen} onOpenChange={setPoOpen}>
+        <SheetContent className="w-full gap-0 p-0 sm:max-w-2xl">
+          <SheetHeader className="border-b">
+            <SheetTitle>{detail.poNumber}</SheetTitle>
+            <SheetDescription className="sr-only">
+              Purchase order for {detail.request}
+            </SheetDescription>
+          </SheetHeader>
+          <PORecord id={detail.poNumber} embedded />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

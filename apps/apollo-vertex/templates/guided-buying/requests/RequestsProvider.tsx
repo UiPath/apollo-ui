@@ -21,6 +21,9 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
   const [urgent, setUrgent] = useState<Record<string, boolean>>({});
   const [submittedRows, setSubmittedRows] = useState<RequestRow[]>([]);
   const [receipts, setReceipts] = useState<Record<string, ReceiptRecord>>({});
+  const [requestStatusOverrides, setRequestStatusOverrides] = useState<
+    Record<string, "approved">
+  >({});
 
   const openRequest = (id: string) => setOpenRequestId(id);
   const clearOpenRequest = () => setOpenRequestId(null);
@@ -59,6 +62,10 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const approveRequest = (requestId: string) => {
+    setRequestStatusOverrides((prev) => ({ ...prev, [requestId]: "approved" }));
+  };
+
   const value: RequestsContextValue = {
     openRequestId,
     openRequest,
@@ -71,6 +78,8 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     submitRequest,
     receipts,
     confirmReceipt,
+    requestStatusOverrides,
+    approveRequest,
   };
 
   return (
