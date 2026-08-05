@@ -103,6 +103,12 @@ export { Combobox } from './components/ui/combobox';
 export { MultiSelect } from './components/ui/multi-select';
 export type { MultiSelectProps } from './components/ui/multi-select';
 
+export { VariablePicker } from './components/ui/variable-picker';
+export type {
+  VariablePickerItem,
+  VariablePickerProps,
+} from './components/ui/variable-picker';
+
 export { Search, SearchWithSuggestions } from './components/ui/search';
 export type {
   SearchProps,
