@@ -380,6 +380,26 @@ export function ShelfDock({
                       </div>
                     );
                   }
+                  if (entry.kind === "note") {
+                    // Memory write, made visible — same receipt-chip treatment
+                    // as the dock's own P2 correction save.
+                    return (
+                      <AiChatMessage
+                        key={entry.id}
+                        message={msg(entry.id, "assistant", entry.text)}
+                        hideActions
+                        assistantMarkdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
+                      >
+                        <div className="flex items-center gap-1.5 rounded-lg border bg-muted px-3 py-1.5 text-xs font-medium text-foreground">
+                          <Bookmark
+                            className="size-3.5 shrink-0 text-primary"
+                            aria-hidden
+                          />
+                          Saved to Design Contractor spec · preferences updated
+                        </div>
+                      </AiChatMessage>
+                    );
+                  }
                   const isCurrent = entry.step === currentStep;
                   const isOpen = isCurrent || manuallyExpanded.has(entry.id);
                   return (
