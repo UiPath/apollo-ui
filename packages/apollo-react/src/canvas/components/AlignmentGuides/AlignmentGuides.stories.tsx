@@ -3,6 +3,7 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BackgroundVariant, Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   type Dispatch,
+  type MouseEvent,
   type ReactNode,
   type SetStateAction,
   useCallback,
@@ -336,6 +337,18 @@ function MultiSelectDemo() {
   const { guides, draggedBounds, onNodeDrag, onNodeDragStop } = useAlignmentGuides(nodes, {
     onSnap,
   });
+  const onNodeClick = useCallback(
+    (event: MouseEvent, clickedNode: Node) => {
+      if (!event.shiftKey) return;
+
+      const selectedIds = new Set(nodes.filter(({ selected }) => selected).map(({ id }) => id));
+      selectedIds.add(clickedNode.id);
+      setNodes((currentNodes) =>
+        currentNodes.map((node) => ({ ...node, selected: selectedIds.has(node.id) }))
+      );
+    },
+    [nodes, setNodes]
+  );
 
   return (
     <BaseCanvas
@@ -344,6 +357,8 @@ function MultiSelectDemo() {
       multiSelectionKeyCode="Shift"
       selectionKeyCode={null}
       selectionOnDrag
+      selectNodesOnDrag={false}
+      onNodeClick={onNodeClick}
       onNodeDrag={onNodeDrag}
       onNodeDragStop={onNodeDragStop}
     >
