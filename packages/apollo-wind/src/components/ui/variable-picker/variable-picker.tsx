@@ -60,10 +60,10 @@ export interface VariablePickerProps {
 
 function matchesItem(item: VariablePickerItem, query: string): boolean {
   if (!query) return true;
-  const normalizedQuery = query.toLocaleLowerCase();
+  const normalizedQuery = query.toLowerCase();
   return (
-    item.label.toLocaleLowerCase().includes(normalizedQuery) ||
-    item.value?.toLocaleLowerCase().includes(normalizedQuery) === true ||
+    item.label.toLowerCase().includes(normalizedQuery) ||
+    item.value?.toLowerCase().includes(normalizedQuery) === true ||
     item.children?.some((child) => matchesItem(child, query)) === true
   );
 }
@@ -95,7 +95,7 @@ function VariableRows({
             value={`${item.label} ${item.value ?? ''}`}
             disabled={item.disabled}
             onSelect={() => (hasChildren ? onToggle(item.id) : onSelect(item))}
-            aria-expanded={hasChildren ? expanded : undefined}
+            data-expanded={hasChildren ? expanded : undefined}
             className="group min-h-0 gap-2 rounded-none py-1 pr-3.5 text-xs hover:bg-surface-overlay data-[selected=true]:bg-surface-overlay data-[selected=true]:text-foreground"
             style={{ paddingLeft: `${8 + depth * 16}px` }}
           >
@@ -161,6 +161,9 @@ export function VariablePicker({
 
   const setOpen = (nextOpen: boolean) => {
     if (controlledOpen === undefined) setUncontrolledOpen(nextOpen);
+    if (nextOpen) {
+      setExpandedIds(new Set(items.slice(0, 1).map((item) => item.id)));
+    }
     if (!nextOpen) setQuery('');
     onOpenChange?.(nextOpen);
   };

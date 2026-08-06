@@ -53,4 +53,14 @@ describe('VariablePicker', () => {
 
     expect(screen.getByText('No variables found.')).toBeInTheDocument();
   });
+
+  it('expands the latest first group when items load before opening', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<VariablePicker items={[]} onSelect={vi.fn()} />);
+
+    rerender(<VariablePicker items={items} onSelect={vi.fn()} />);
+    await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+
+    expect(screen.getByRole('option', { name: 'Customer name' })).toBeInTheDocument();
+  });
 });
