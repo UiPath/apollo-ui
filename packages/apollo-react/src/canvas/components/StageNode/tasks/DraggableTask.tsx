@@ -13,6 +13,7 @@ import type { DraggableTaskProps } from './DraggableTask.types';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
+import { TaskMockedChip } from './TaskMockedChip';
 
 const DraggableTaskComponent = ({
   task,
@@ -100,6 +101,7 @@ const DraggableTaskComponent = ({
         paused={taskExecution?.status === 'Paused'}
         onToggle={onToggleBreakpoint}
       />
+      <TaskMockedChip taskId={task.id} mocked={!!task.isMocked} />
       <TaskContent
         task={task}
         taskExecution={taskExecution}
