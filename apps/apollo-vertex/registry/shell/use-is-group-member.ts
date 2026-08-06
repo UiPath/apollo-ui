@@ -1,4 +1,4 @@
-import { useLiveQuery } from "@tanstack/react-db";
+import { inArray, useLiveQuery } from "@tanstack/react-db";
 import { type GroupMember, useSolution } from "@uipath/vs-core";
 import { useAuth } from "./shell-auth-provider";
 
@@ -18,7 +18,9 @@ export const useIsGroupMember = ({
   const solution = useSolution();
 
   const { data, isLoading } = useLiveQuery<GroupMember>((q) =>
-    q.from({ members: solution?.api.collections.identity.groupMembers }),
+    q
+      .from({ members: solution?.api.collections.identity.groupMembers })
+      .where(({ members }) => inArray(members.groupId, groupIds)),
   );
 
   if (!user) {
@@ -27,9 +29,7 @@ export const useIsGroupMember = ({
 
   const userEmail = user.email.toLowerCase();
   const isMember = (data ?? []).some(
-    (member) =>
-      groupIds.includes(member.groupId) &&
-      member.email.toLowerCase() === userEmail,
+    (member) => member.email.toLowerCase() === userEmail,
   );
 
   return { isMember, isLoading };
