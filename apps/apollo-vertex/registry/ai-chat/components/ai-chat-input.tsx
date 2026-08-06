@@ -48,6 +48,10 @@ interface AiChatInputProps {
   acceptedFileTypes?: string;
   quotedText?: string | null;
   onClearQuote?: () => void;
+  /** Drops the outer top/side padding so the form's border aligns flush with
+   * an ancestor that already provides its own edge-to-edge chrome (e.g. the
+   * Teams resume band on Intake). The form itself is untouched. */
+  embedded?: boolean;
   ref?: Ref<AiChatInputHandle>;
 }
 
@@ -68,6 +72,7 @@ export function AiChatInput({
   acceptedFileTypes,
   quotedText,
   onClearQuote,
+  embedded = false,
   ref,
 }: AiChatInputProps) {
   const { t } = useTranslation();
@@ -122,7 +127,10 @@ export function AiChatInput({
   };
 
   const submitMessage = async () => {
-    if (!value.trim() && pendingFiles.length === 0) return;
+    if (!value.trim() && pendingFiles.length === 0) {
+      textareaRef.current?.focus();
+      return;
+    }
     const filesSnapshot = pendingFiles;
     setPreviewUrl(null);
     clearFiles();
@@ -238,8 +246,8 @@ export function AiChatInput({
           variant="ghost"
           size="icon"
           disabled={(!value.trim() && pendingFiles.length === 0) || disabled}
-          className="flex-shrink-0 text-white hover:text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ background: "var(--ai-gradient-strong)" }}
+          className="flex-shrink-0 text-white hover:text-white hover:bg-transparent disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ backgroundImage: "var(--ai-gradient-strong)" }}
           aria-label={t("send")}
         >
           <ArrowUp className="size-5" aria-hidden="true" />
@@ -250,7 +258,7 @@ export function AiChatInput({
   );
 
   return (
-    <div className="relative z-10 mt-auto pt-3 px-4">
+    <div className={cn("relative z-10 mt-auto", !embedded && "pt-3 px-4")}>
       {attachmentsEnabled && (
         <>
           <input
@@ -280,7 +288,12 @@ export function AiChatInput({
           <form {...formProps}>
             {quoteChip}
             {pendingFilesChips}
-            <div className="flex items-end gap-2 pl-[8px] pr-[8px] pt-[4px] pb-[8px]">
+            <div
+              className={cn(
+                "flex items-end gap-2 pr-[8px] pt-[4px] pb-[8px]",
+                plusMenu ? "pl-[8px]" : "pl-[16px]",
+              )}
+            >
               {plusMenu}
               <textarea
                 ref={textareaRef}
