@@ -1836,6 +1836,7 @@ function Concept2PanelStory({
   );
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
   const [wrappedPaths, setWrappedPaths] = useState<Set<string>>(() => new Set());
+  const [openActionsPath, setOpenActionsPath] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<
@@ -2286,7 +2287,10 @@ function Concept2PanelStory({
                             </button>
                             <div className="flex-1" />
                             {hasOverflowActions(node) ? (
-                              <DropdownMenu>
+                              <DropdownMenu
+                                open={openActionsPath === node.path}
+                                onOpenChange={(open) => setOpenActionsPath(open ? node.path : null)}
+                              >
                                 <CanvasTooltip content="More actions" placement="top" delay>
                                   <DropdownMenuTrigger asChild>
                                     <Button
@@ -2294,7 +2298,10 @@ function Concept2PanelStory({
                                       size="4xs"
                                       icon
                                       aria-label={`More actions for ${node.key}`}
-                                      className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+                                      className={cn(
+                                        'shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100',
+                                        openActionsPath === node.path && 'opacity-100'
+                                      )}
                                     >
                                       <MoreHorizontal size={11} />
                                     </Button>
