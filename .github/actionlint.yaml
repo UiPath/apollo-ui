@@ -1,0 +1,14 @@
+# Self-hosted runner labels for the UiPath centralized managed GitHub pool.
+# actionlint only knows the GitHub-hosted labels, so the uipath- prefixed
+# images have to be declared here or every `runs-on` fails [runner-label].
+self-hosted-runner:
+  labels:
+    - uipath-ubuntu-latest
+    - uipath-ubuntu-slim
+    - uipath-ubuntu-24.04
+    - uipath-ubuntu-24.04-arm
+    - uipath-ubuntu-22.04
+    - uipath-ubuntu-22.04-arm
+    - uipath-ubuntu-20.04
+    - uipath-ubuntu-18.04
+    - uipath-windows-latest

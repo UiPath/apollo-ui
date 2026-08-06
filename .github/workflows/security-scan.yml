@@ -20,7 +20,7 @@ permissions: {}
 jobs:
   zizmor:
     name: Zizmor Security Scan
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       security-events: write
@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           persist-credentials: false
 
@@ -44,7 +44,7 @@ jobs:
 
   actionlint:
     name: Actionlint Workflow Syntax Check
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     # github-pr-check reporter only surfaces results in PR context; skip on push.
     if: github.event_name == 'pull_request'
     permissions:
@@ -53,7 +53,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           persist-credentials: false
 

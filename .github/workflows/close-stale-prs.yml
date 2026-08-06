@@ -20,7 +20,7 @@ permissions: {}
 jobs:
   close-stale:
     name: Close stale PRs
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
