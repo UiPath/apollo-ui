@@ -136,6 +136,16 @@ describe('buildPathVertices', () => {
     expect(isOrthogonal(result)).toBe(true);
   });
 
+  it('keeps a slight endpoint displacement orthogonal instead of falling back to a diagonal', () => {
+    const result = buildPathVertices(0, 0, Position.Right, 200, 8, Position.Left, []);
+    expect(isOrthogonal(result)).toBe(true);
+  });
+
+  it.each([8, 15, 16])('keeps an offset of %ipx orthogonal', (offset) => {
+    const result = buildPathVertices(0, 0, Position.Right, 200, offset, Position.Left, []);
+    expect(isOrthogonal(result)).toBe(true);
+  });
+
   it('always draws through a single off-line waypoint (regression)', () => {
     const result = buildPathVertices(0, 0, Position.Right, 200, 0, Position.Left, [
       wp('a', 100, 50),
