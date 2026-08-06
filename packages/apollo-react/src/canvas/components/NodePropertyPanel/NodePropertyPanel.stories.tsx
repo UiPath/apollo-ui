@@ -1609,6 +1609,23 @@ function flattenOutputTree(
   return rows;
 }
 
+function appendOutputTreeChild(
+  nodes: OutputNode[],
+  parentPath: string,
+  child: OutputNode
+): OutputNode[] {
+  return nodes.map((node) => {
+    if (node.path === parentPath) {
+      return { ...node, children: [...(node.children ?? []), child] };
+    }
+    if (!node.children) return node;
+    const children = appendOutputTreeChild(node.children, parentPath, child);
+    return children.some((next, index) => next !== node.children?.[index])
+      ? { ...node, children }
+      : node;
+  });
+}
+
 const PANEL_NODE_ID = 'httpRequest1';
 const PANEL_NODE_LABEL = 'HTTP Request';
 
@@ -1795,6 +1812,10 @@ function Concept2PanelStory({
   context?: 'studio' | 'flow';
 }) {
   const monacoTheme = useMonacoTheme();
+  const [treeData, setTreeData] = useState<OutputNode[]>(() =>
+    mode === 'output' ? OUTPUT_TREE_DATA : INPUT_TREE_DATA
+  );
+  const nextFieldNumber = useRef(2);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'default' | 'referenced' | 'all'>('default');
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
@@ -1843,7 +1864,7 @@ function Concept2PanelStory({
   const CurrentModeIcon = currentNodeMode.icon;
 
   const isOutput = mode === 'output';
-  const currentTreeData = isOutput ? OUTPUT_TREE_DATA : INPUT_TREE_DATA;
+  const currentTreeData = treeData;
   const currentReferenced = isOutput ? REFERENCED_OUTPUTS : REFERENCED_INPUTS;
   const currentJson = isOutput ? OUTPUT_JSON : INPUT_JSON;
   const referencedKeys = new Set(currentReferenced.map((r) => r.name));
@@ -1903,9 +1924,16 @@ function Concept2PanelStory({
   };
 
   const addVariable = (node: OutputNode) => {
-    toast.success(`Added ${node.key} as a variable`, {
-      description: `{{${node.path}}}`,
-    });
+    const parentPath = node.path.slice(0, node.path.lastIndexOf('.'));
+    const fieldName = `field${nextFieldNumber.current++}`;
+    const path = `${parentPath}.${fieldName}`;
+    const field: OutputNode = { key: fieldName, type: 'string', value: '', path };
+
+    setTreeData((current) => appendOutputTreeChild(current, parentPath, field));
+    setCollapsed((current) => ({ ...current, [parentPath]: false }));
+    setFilter('all');
+    setSearch('');
+    setEditingPath(path);
   };
 
   return (
@@ -2185,6 +2213,8 @@ function Concept2PanelStory({
                           <input
                             autoFocus
                             type="text"
+                            aria-label={`Edit value for ${node.key}`}
+                            placeholder="value"
                             defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
                             onBlur={(e) => {
                               if (!escapeRef.current) saveEdit(node, e.target.value);
