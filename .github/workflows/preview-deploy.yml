@@ -23,20 +23,20 @@ jobs:
   initialize-comment:
     name: Initialize Apollo Coded App Preview Comment
     if: github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       pull-requests: write
 
     steps:
       # Comment scripts live in the repo, not inline (see .github/scripts/).
       - name: Checkout scripts
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           sparse-checkout: .github/scripts
           persist-credentials: false
 
       - name: Initialize PR comment
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         with:
           script: |
             const { initComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/preview-deploy/preview-comment.mjs`);
@@ -46,7 +46,7 @@ jobs:
     name: Deploy ${{ matrix.label }}
     needs: initialize-comment
     if: ${{ !cancelled() && github.event.action != 'closed' && needs.initialize-comment.result == 'success' && github.event.pull_request.head.repo.fork == false }}
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       packages: read
@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -76,7 +76,7 @@ jobs:
         uses: ./.github/actions/install-node-deps
 
       - name: Restore Turborepo cache
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: .turbo
           # Per-app key so parallel legs don't race to save one shared cache
@@ -177,7 +177,7 @@ jobs:
 
       - name: Save Turborepo cache
         if: always()
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: .turbo
           key: ${{ runner.os }}-turbo-${{ matrix.label }}-${{ github.ref_name }}-${{ github.sha }}
@@ -208,7 +208,7 @@ jobs:
 
       - name: Upload deploy result
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: deploy-result-${{ matrix.label }}
           path: ${{ runner.temp }}/deploy-result/
@@ -218,26 +218,26 @@ jobs:
     name: Update Apollo Coded App Preview Comment
     needs: [initialize-comment, deploy]
     if: ${{ always() && github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false && needs.initialize-comment.result != 'skipped' }}
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       pull-requests: write
 
     steps:
       # Comment scripts live in the repo, not inline (see .github/scripts/).
       - name: Checkout scripts
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           sparse-checkout: .github/scripts
           persist-credentials: false
 
       - name: Download deploy results
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
         with:
           pattern: deploy-result-*
           path: ${{ runner.temp }}/results
 
       - name: Update PR comment
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         env:
           RESULTS_DIR: ${{ runner.temp }}/results
         with:
@@ -255,7 +255,7 @@ jobs:
     # tracks main). The apollo-design leg's outcome is read from its result
     # artifact so a failure in another matrix leg doesn't skip this job.
     if: ${{ !cancelled() && github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false && github.event.pull_request.base.ref == 'main' && needs.deploy.result != 'skipped' }}
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       packages: read
@@ -265,7 +265,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           # Full history: sbdiff scopes captured stories via
           # git diff origin/main...HEAD plus a transitive import graph.
@@ -273,7 +273,7 @@ jobs:
           persist-credentials: false
 
       - name: Download apollo-design deploy result
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
         with:
           name: deploy-result-apollo-design
           path: ${{ runner.temp }}/apollo-design-result
@@ -306,14 +306,14 @@ jobs:
 
       - name: Set up Node 24
         if: steps.urls.outputs.ready == 'true'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           # sbdiff runs its TypeScript entry directly (requires Node >= 23.6).
           node-version: 24
 
       - name: Cache Playwright browsers
         if: steps.urls.outputs.ready == 'true'
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-sbdiff-${{ env.SBDIFF_VERSION }}
@@ -441,7 +441,7 @@ jobs:
 
       - name: Post visual diff comment
         if: ${{ !cancelled() }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         env:
           READY: ${{ steps.urls.outputs.ready }}
           SBDIFF_OUTCOME: ${{ steps.sbdiff.outcome }}
@@ -463,14 +463,14 @@ jobs:
   cleanup-previews:
     name: Cleanup Apollo Coded App Previews
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.fork == false
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       packages: read
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           fetch-depth: 1
           persist-credentials: false
