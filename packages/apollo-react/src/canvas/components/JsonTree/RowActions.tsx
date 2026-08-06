@@ -81,7 +81,7 @@ export function RowActions({ node, actions, maxInline }: RowActionsProps) {
       ))}
       {overflow.length > 0 && (
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-          <CanvasTooltip content={moreLabel} placement="top" delay>
+          <CanvasTooltip content={moreLabel} placement="top" delay hide={menuOpen}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -94,7 +94,7 @@ export function RowActions({ node, actions, maxInline }: RowActionsProps) {
               </Button>
             </DropdownMenuTrigger>
           </CanvasTooltip>
-          <DropdownMenuContent align="end" className="min-w-40">
+          <DropdownMenuContent side="left" align="start" sideOffset={-12} className="min-w-40">
             {overflow.map((action) => (
               <DropdownMenuItem
                 key={action.id}

@@ -2291,7 +2291,12 @@ function Concept2PanelStory({
                                 open={openActionsPath === node.path}
                                 onOpenChange={(open) => setOpenActionsPath(open ? node.path : null)}
                               >
-                                <CanvasTooltip content="More actions" placement="top" delay>
+                                <CanvasTooltip
+                                  content="More actions"
+                                  placement="top"
+                                  delay
+                                  hide={openActionsPath === node.path}
+                                >
                                   <DropdownMenuTrigger asChild>
                                     <Button
                                       variant="ghost"
@@ -2307,7 +2312,12 @@ function Concept2PanelStory({
                                     </Button>
                                   </DropdownMenuTrigger>
                                 </CanvasTooltip>
-                                <DropdownMenuContent align="end" className="min-w-40">
+                                <DropdownMenuContent
+                                  side="left"
+                                  align="start"
+                                  sideOffset={-12}
+                                  className="min-w-40"
+                                >
                                   <DropdownMenuItem
                                     onClick={() => toggleWrapped(node.path)}
                                     className={cn(
