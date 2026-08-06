@@ -22,7 +22,7 @@ concurrency:
 jobs:
   detect-changes:
     name: Detect Changed Packages
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       issues: read
@@ -36,7 +36,7 @@ jobs:
       previous_matrix: ${{ steps.previous-matrix.outputs.matrix }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -155,7 +155,7 @@ jobs:
     name: Cleanup ${{ matrix.package_version }}
     needs: detect-changes
     if: needs.detect-changes.outputs.has_previous == 'true' && github.event.pull_request.head.repo.fork == false
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -165,7 +165,7 @@ jobs:
         package_version: ${{ fromJSON(needs.detect-changes.outputs.previous_matrix) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           persist-credentials: false
 
@@ -192,13 +192,13 @@ jobs:
     name: Update Comment - Publishing
     needs: [detect-changes, cleanup]
     if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true' && github.event.pull_request.head.repo.fork == false
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           persist-credentials: false
 
@@ -219,7 +219,7 @@ jobs:
     name: Publish ${{ matrix.package }}
     needs: [detect-changes, cleanup, update-comment-publishing]
     if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true' && github.event.pull_request.head.repo.fork == false
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -230,7 +230,7 @@ jobs:
         package: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           persist-credentials: false
 
@@ -304,7 +304,7 @@ jobs:
     name: Update Comment - Cleanup Only
     needs: [detect-changes, cleanup]
     if: always() && needs.detect-changes.outputs.has_previous == 'true' && needs.detect-changes.outputs.has_label == 'false' && github.event.pull_request.head.repo.fork == false
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       pull-requests: write

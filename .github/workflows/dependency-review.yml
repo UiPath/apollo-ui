@@ -7,7 +7,7 @@ permissions: {}
 jobs:
   vulnerability-review:
     name: Vulnerability & advisory review
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
@@ -15,20 +15,20 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           persist-credentials: false
 
       - name: Dependency Review
         # Scans added/changed deps against GitHub Advisory Database. Fails on high+ severity by default.
-        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294  # v5.0.0
         with:
           fail-on-severity: high
           comment-summary-in-pr: on-failure
 
   dependency-review:
     name: Dependencies license check
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     if: github.event.pull_request.head.repo.fork == false
     permissions:
       contents: read
@@ -36,7 +36,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           persist-credentials: false
 
@@ -50,7 +50,7 @@ jobs:
 
       - name: Post or update PR comment
         if: github.event.pull_request.head.repo.fork == false
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         env:
           REPORT_PATH: ${{ runner.temp }}/license-report.md
         with:

@@ -20,20 +20,20 @@ permissions:
 jobs:
   sync-label-definitions:
     name: Sync PR size label definitions
-    runs-on: ubuntu-24.04
+    runs-on: uipath-ubuntu-24.04
     permissions:
       contents: read
       issues: write
       pull-requests: write
     steps:
       - name: Checkout scripts
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           sparse-checkout: .github/scripts
           persist-credentials: false
 
       - name: Ensure PR size labels exist
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         with:
           script: |
             const { ensureLabels } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/pr-size-labels.mjs`);
@@ -42,7 +42,7 @@ jobs:
   label:
     name: Label PR size
     needs: sync-label-definitions
-    runs-on: ubuntu-24.04
+    runs-on: uipath-ubuntu-24.04
     permissions:
       contents: read
       issues: write
@@ -52,13 +52,13 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout scripts
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           sparse-checkout: .github/scripts
           persist-credentials: false
 
       - name: Sync PR size label
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         with:
           script: |
             const { syncLabel } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/pr-size-labels.mjs`);
