@@ -15,19 +15,39 @@ declare module "@tanstack/react-db" {
     // collection's own mutators).
     readonly utils: { refetch(): Promise<void> };
   }
+  // Opaque boolean predicate produced by the filter operators (`inArray`, …)
+  // and consumed by `.where()`.
+  interface Expression {
+    readonly __expression?: true;
+  }
   interface QueryResult<T = unknown> {
     readonly __row?: T;
+    // `.where()` receives the `from()` aliases as row refs keyed by alias, so
+    // `({ members }) => inArray(members.groupId, ids)` type-checks.
+    where(predicate: (refs: Record<string, T>) => Expression): QueryResult<T>;
   }
   // Result of a source the stub can't type (e.g. the generic entity
   // collections). It carries no row type, so the row type is supplied by an
   // explicit `useLiveQuery` type argument instead.
   interface UntypedQueryResult {
     readonly __untyped?: true;
+    where(
+      predicate: (refs: Record<string, Record<string, unknown>>) => Expression,
+    ): UntypedQueryResult;
   }
   interface QueryBuilder {
     from<T>(source: Record<string, Collection<T>>): QueryResult<T>;
     from(source: Record<string, unknown>): UntypedQueryResult;
   }
+
+  // Filter operator: matches rows whose `field` equals `value`.
+  export function eq(field: unknown, value: unknown): Expression;
+
+  // Filter operator: matches rows whose `field` value is one of `values`.
+  export function inArray(
+    field: unknown,
+    values: readonly unknown[],
+  ): Expression;
 
   export function useLiveQuery<T>(
     queryFn: (

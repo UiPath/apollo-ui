@@ -1,4 +1,4 @@
-import { useLiveQuery } from "@tanstack/react-db";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { type GroupMember, useSolution } from "@uipath/vs-core";
 
 export interface UseGroupMembersOptions {
@@ -16,9 +16,10 @@ export const useGroupMembers = ({
   const solution = useSolution();
 
   const { data, isLoading } = useLiveQuery<GroupMember>((q) =>
-    q.from({ members: solution?.api.collections.identity.groupMembers }),
+    q
+      .from({ members: solution?.api.collections.identity.groupMembers })
+      .where(({ members }) => eq(members.groupId, groupId)),
   );
 
-  const users = (data ?? []).filter((member) => member.groupId === groupId);
-  return { users, isLoading };
+  return { users: data ?? [], isLoading };
 };
