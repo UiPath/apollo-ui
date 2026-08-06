@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Braces } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '../button';
-import { VariablePicker, type VariablePickerItem } from './variable-picker';
+import { VariablePicker, VariablePickerContent, type VariablePickerItem } from './variable-picker';
 
 const variables: VariablePickerItem[] = [
   {
@@ -70,13 +70,17 @@ const meta = {
         component: `
 A searchable, hierarchical picker for inserting one variable into a consumer-owned value.
 
-This is a single-action picker, not a multi-select. Branch rows expand and collapse; choosing a leaf calls \`onSelect(item)\` and closes the popover. The consumer owns the editor state and decides whether to insert \`item.value\`, replace a value, or perform another action.
+This is a single-action picker, not a multi-select. Branch rows expand and collapse; choosing a selectable item calls \`onSelect(item)\` and closes the convenience popover. The consumer owns the editor state and decides whether to insert \`item.value\`, replace a value, or perform another action.
 
 ## Consumer guidance
 
 - Provide stable, unique \`id\` values and nest variables with \`children\`.
-- Give selectable leaves a \`value\`; use \`type\` to show the standard variable badge.
+- Give selectable items a \`value\`, including object branches that can be inserted whole. Set \`selectable\` explicitly when value presence should not determine selection.
 - Handle insertion in \`onSelect\` so cursor and editor behavior remain owned by the consuming surface.
+- Use \`VariablePickerContent\` when the consumer already owns a popover, dialog, or caret-anchored surface.
+- Use \`initialQuery\` for seeded search, or \`query\` and \`onQueryChange\` for controlled search.
+- Use \`defaultExpandedIds\` to establish scope-specific expansion conventions.
+- Consumer-defined \`type\` values and \`trailingAdornment\` support domain-specific types and status chips.
 - Use \`open\` and \`onOpenChange\` when the surrounding experience needs controlled popover state.
 - Pass a child trigger to match an existing toolbar; omit it for the standard **Insert** trigger.
 - Search matches both labels and values and automatically reveals matching descendants.
@@ -91,6 +95,10 @@ This is a single-action picker, not a multi-select. Branch rows expand and colla
     },
     open: { description: 'Controlled open state.' },
     onOpenChange: { description: 'Called whenever the popover requests an open-state change.' },
+    initialQuery: { description: 'Initial search text for an uncontrolled picker.' },
+    query: { description: 'Controlled search text.' },
+    onQueryChange: { description: 'Called whenever the search text changes.' },
+    defaultExpandedIds: { description: 'Item ids expanded when the content mounts.' },
     children: { control: false, description: 'Optional custom trigger element.' },
   },
 } satisfies Meta<typeof VariablePicker>;
@@ -162,4 +170,21 @@ export const Disabled: Story = {
 
 export const Empty: Story = {
   args: { items: [], onSelect: () => undefined, emptyText: 'No variables are available.' },
+};
+
+export const EmbeddedContent: Story = {
+  args: { items: variables, onSelect: () => undefined },
+  render: (args) => (
+    <div className="w-[280px] overflow-hidden rounded-md border border-border bg-surface shadow-md">
+      <VariablePickerContent {...args} initialQuery="customer" />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Surface-less picker content for consumers that own popover positioning, focus management, or caret anchoring.',
+      },
+    },
+  },
 };

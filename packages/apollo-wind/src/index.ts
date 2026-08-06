@@ -103,8 +103,9 @@ export { Combobox } from './components/ui/combobox';
 export { MultiSelect } from './components/ui/multi-select';
 export type { MultiSelectProps } from './components/ui/multi-select';
 
-export { VariablePicker } from './components/ui/variable-picker';
+export { VariablePicker, VariablePickerContent } from './components/ui/variable-picker';
 export type {
+  VariablePickerContentProps,
   VariablePickerItem,
   VariablePickerProps,
 } from './components/ui/variable-picker';
