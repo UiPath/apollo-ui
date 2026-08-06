@@ -475,7 +475,7 @@ const TAB_TRIGGER_CLASS =
   'inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm';
 
 // ============================================================================
-// Stories — NodePropertyPanel
+// Stories: NodePropertyPanel
 // ============================================================================
 
 export const PanelUIInventory: Story = {
@@ -547,7 +547,7 @@ export const NoParametersTab: Story = {
 };
 
 // ============================================================================
-// Stories — Expression Field (editor mockups)
+// Stories: Expression Field (editor mockups)
 // Full-height panel with all expression editor chrome: toolbar, mode switcher,
 // undo/redo, AI assist, expand, and Insert variable affordance.
 // ============================================================================
@@ -776,7 +776,7 @@ export const FullEditor: Story = {
 };
 
 // ============================================================================
-// Compact Editor — Switch/Case node with accordion case panels.
+// Compact Editor: Switch/Case node with accordion case panels.
 // ============================================================================
 
 const COMPACT_EDITOR_OPTIONS = {
@@ -1252,7 +1252,7 @@ function CompactEditorStory() {
                 <span className="text-xs font-medium leading-4 text-foreground">Cases</span>
               </div>
 
-              {/* Case accordion panels — inset cards with gap */}
+              {/* Case accordion panels: inset cards with gap */}
               <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
                 {cases.map((c, i) => (
                   <CasePanel
@@ -1300,7 +1300,7 @@ export const CompactEditor: Story = {
 
 // ============================================================================
 // Input Editor
-// Inline expression inputs — one per case, no code editor panel.
+// Inline expression inputs: one per case, no code editor panel.
 // ============================================================================
 
 function InlineCaseRow({
@@ -1809,7 +1809,7 @@ const INPUT_JSON = HTTP_REQUEST_JSON;
 const OUTPUT_JSON = HTTP_REQUEST_JSON;
 
 // ============================================================================
-// Concept 2 — Expression Reference Panel
+// Concept 2: Expression Reference Panel
 // Flat list of all leaf output paths as copyable expression references.
 // ============================================================================
 
@@ -1969,7 +1969,7 @@ function Concept2PanelStory({
         className="h-[640px]"
       >
         <div className="flex h-full min-h-0 flex-col">
-          {/* Node identity bar — hidden in Studio context */}
+          {/* Node identity bar: hidden in Studio context */}
           {context === 'flow' && (
             <div className="shrink-0 flex items-center justify-between gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-3 pt-4">
               <div className="flex min-w-0 items-center gap-2">
@@ -2018,7 +2018,7 @@ function Concept2PanelStory({
           )}
 
           <Tabs defaultValue="schema" className="flex min-h-0 flex-1 flex-col">
-            {/* Tab strip — status badge moves here in Studio context */}
+            {/* Tab strip: status badge moves here in Studio context */}
             <div
               className={cn(
                 'shrink-0 flex items-center gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1.5',
@@ -2490,7 +2490,7 @@ function InputOutputStory() {
 }
 
 // ============================================================================
-// Prototype — LockableValueField
+// Prototype: LockableValueField
 // ============================================================================
 
 interface LockableCase {
@@ -4675,10 +4675,10 @@ interface PreviewedFile {
 
 /**
  * Surfaces file affordances as per-node row actions:
- *   • Upload — always offered on a file row (mock population, no real FS).
- *   • Preview / Delete — only once a file is present.
- * Non-file rows return `undefined` (keep their built-in actions); read-only
- * file rows return `[]`, demonstrating omitting actions for a node.
+ *   • Upload: offered on editable file rows (mock population, no real FS).
+ *   • Preview / Delete: offered on editable file rows once a file is present.
+ *   • Add variable: offered on every row, including read-only file rows.
+ * Non-file rows compose Add variable with their built-in actions.
  */
 function useFileNodeActions(): {
   nodeActions: NodeActionsResolver;
@@ -4789,7 +4789,7 @@ const FILE_TYPE_SCHEMA: JsonSchema = {
 };
 
 // ── Input: upstream execution data available to the node. Keyed by source node
-// id, with each node's fields nested under `output` — matching how the canvas
+// id, with each node's fields nested under `output`, matching how the canvas
 // exposes upstream data (`$vars.<nodeId>.output.<field>`).
 const INPUT_SCHEMA: JsonSchema = {
   type: 'object',
@@ -4940,7 +4940,7 @@ const OUTPUT_NODE_VALUE: JsonValue = {
 };
 
 // Output is wrapped under the node id (title = node label), mirroring
-// flow-workbench's buildWrappedOutputSchema — so it renders nested beneath a
+// flow-workbench's buildWrappedOutputSchema, so it renders nested beneath a
 // node header, same as the Input source groups.
 const OUTPUT_SCHEMA: JsonSchema = {
   type: 'object',
@@ -4957,7 +4957,7 @@ const OUTPUT_VALUE: JsonContainer = {
   [NODE_ID]: { output: OUTPUT_NODE_VALUE },
 };
 
-// Node-style header decorations for the top-level source/self group rows —
+// Node-style header decorations for the top-level source/self group rows.
 // mirrors the flow-workbench Input/Output panels: the source label replaces the
 // raw key, the node id shows as a sublabel, and the node icon replaces the type
 // badge. Keyed by the top-level path (source node id).
