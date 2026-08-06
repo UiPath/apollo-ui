@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@uipath/apollo-wind';
 import { MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { CanvasTooltip } from '../CanvasTooltip';
 import type { JsonTreeNode, NodeAction, NodeDecorationTone } from './JsonTree.types';
@@ -37,6 +38,7 @@ export interface RowActionsProps {
  */
 export function RowActions({ node, actions, maxInline }: RowActionsProps) {
   const { _ } = useSafeLingui();
+  const [menuOpen, setMenuOpen] = useState(false);
   if (actions.length === 0) return null;
 
   const overflowing = actions.length > maxInline;
@@ -78,7 +80,7 @@ export function RowActions({ node, actions, maxInline }: RowActionsProps) {
         </CanvasTooltip>
       ))}
       {overflow.length > 0 && (
-        <DropdownMenu>
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <CanvasTooltip content={moreLabel} placement="top" delay>
             <DropdownMenuTrigger asChild>
               <Button
@@ -86,7 +88,7 @@ export function RowActions({ node, actions, maxInline }: RowActionsProps) {
                 size="4xs"
                 icon
                 aria-label={moreLabel}
-                className={cn(ACTION_BUTTON_CLASS, '[&_svg]:size-2.75')}
+                className={cn(ACTION_BUTTON_CLASS, '[&_svg]:size-2.75', menuOpen && 'opacity-100')}
               >
                 <MoreHorizontal />
               </Button>
