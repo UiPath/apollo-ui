@@ -37,6 +37,15 @@ export const MuiIconButton = (palette: Palette): ComponentsOverrides['MuiIconBut
       width: token.Spacing.SpacingXxl,
       height: token.Spacing.SpacingXxl,
     },
+    // Icon buttons inside a field's adornments (autocomplete popup/clear
+    // indicators, datepicker calendar) share the field's box; the fixed
+    // per-size box misaligns them and shifts the field's edge, so they keep
+    // MUI's natural, padding-driven geometry.
+    '&.MuiAutocomplete-popupIndicator, &.MuiAutocomplete-clearIndicator, .MuiInputAdornment-root &':
+      {
+        width: 'auto',
+        height: 'auto',
+      },
     '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
   },
 });
