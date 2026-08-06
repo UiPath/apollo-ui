@@ -843,7 +843,9 @@ describe('NodeIOView', () => {
     // Cap is 3: all four actions move under one "More actions" menu.
     expect(screen.queryByRole('button', { name: 'Action 1' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Action 4' })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'More actions' }));
+    const moreActions = screen.getByRole('button', { name: 'More actions' });
+    await userEvent.click(moreActions);
+    expect(moreActions).toHaveClass('opacity-100');
     expect(screen.getByRole('menuitem', { name: 'Action 1' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Action 4' })).toBeInTheDocument();
   });
