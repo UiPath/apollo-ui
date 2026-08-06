@@ -110,6 +110,7 @@ import {
   GripVertical,
   HardDrive,
   Info,
+  MoreHorizontal,
   Pencil,
   Play,
   Plus,
@@ -1626,6 +1627,14 @@ function appendOutputTreeChild(
   });
 }
 
+function removeOutputTreeNode(nodes: OutputNode[], path: string): OutputNode[] {
+  return nodes
+    .filter((node) => node.path !== path)
+    .map((node) =>
+      node.children ? { ...node, children: removeOutputTreeNode(node.children, path) } : node
+    );
+}
+
 const PANEL_NODE_ID = 'httpRequest1';
 const PANEL_NODE_LABEL = 'HTTP Request';
 
@@ -1935,6 +1944,20 @@ function Concept2PanelStory({
     setSearch('');
     setEditingPath(path);
   };
+
+  const deleteVariable = (node: OutputNode) => {
+    setTreeData((current) => removeOutputTreeNode(current, node.path));
+    setEditedValues((current) => {
+      const next = { ...current };
+      delete next[node.path];
+      return next;
+    });
+    if (editingPath === node.path) setEditingPath(null);
+  };
+
+  const hasOverflowActions = (node: OutputNode) =>
+    node.type === 'string' &&
+    (node.key === 'requestId' || node.key === 'token' || node.key.startsWith('field'));
 
   return (
     <PanelFrame>
@@ -2262,59 +2285,116 @@ function Concept2PanelStory({
                               )}
                             </button>
                             <div className="flex-1" />
-                            {node.type === 'string' && (
-                              <CanvasTooltip
-                                content={
-                                  wrappedPaths.has(node.path) ? 'Unwrap value' : 'Wrap value'
-                                }
-                                placement="top"
-                                delay
-                              >
-                                <Button
-                                  variant="ghost"
-                                  size="4xs"
-                                  icon
-                                  onClick={() => toggleWrapped(node.path)}
-                                  aria-label={`${
-                                    wrappedPaths.has(node.path) ? 'Unwrap' : 'Wrap'
-                                  } value of ${node.key}`}
-                                  className={cn(
-                                    'shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100',
-                                    wrappedPaths.has(node.path) && 'text-brand opacity-100'
-                                  )}
-                                >
-                                  <WrapText size={11} />
-                                </Button>
-                              </CanvasTooltip>
-                            )}
-                            <CanvasTooltip content="Copy value" placement="top" delay>
-                              <Button
-                                variant="ghost"
-                                size="4xs"
-                                icon
-                                onClick={() => copyValue(node)}
-                                aria-label={`Copy value of ${node.key}`}
-                                className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
-                              >
-                                {copiedPath === node.path ? (
-                                  <CircleCheck size={11} className="text-brand" />
-                                ) : (
-                                  <Copy size={11} />
+                            {hasOverflowActions(node) ? (
+                              <DropdownMenu>
+                                <CanvasTooltip content="More actions" placement="top" delay>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="4xs"
+                                      icon
+                                      aria-label={`More actions for ${node.key}`}
+                                      className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+                                    >
+                                      <MoreHorizontal size={11} />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                </CanvasTooltip>
+                                <DropdownMenuContent align="end" className="min-w-40">
+                                  <DropdownMenuItem
+                                    onClick={() => toggleWrapped(node.path)}
+                                    className={cn(
+                                      'gap-2 text-xs',
+                                      wrappedPaths.has(node.path) && 'text-brand'
+                                    )}
+                                  >
+                                    <WrapText size={14} />
+                                    {wrappedPaths.has(node.path) ? 'Unwrap value' : 'Wrap value'}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => copyValue(node)}
+                                    className="gap-2 text-xs"
+                                  >
+                                    {copiedPath === node.path ? (
+                                      <CircleCheck size={14} className="text-brand" />
+                                    ) : (
+                                      <Copy size={14} />
+                                    )}
+                                    Copy value
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => addVariable(node)}
+                                    className="gap-2 text-xs"
+                                  >
+                                    <Plus size={14} />
+                                    Add variable
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => deleteVariable(node)}
+                                    className="gap-2 text-xs text-error focus:text-error"
+                                  >
+                                    <Trash2 size={14} />
+                                    Delete variable
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            ) : (
+                              <>
+                                {node.type === 'string' && (
+                                  <CanvasTooltip
+                                    content={
+                                      wrappedPaths.has(node.path) ? 'Unwrap value' : 'Wrap value'
+                                    }
+                                    placement="top"
+                                    delay
+                                  >
+                                    <Button
+                                      variant="ghost"
+                                      size="4xs"
+                                      icon
+                                      onClick={() => toggleWrapped(node.path)}
+                                      aria-label={`${
+                                        wrappedPaths.has(node.path) ? 'Unwrap' : 'Wrap'
+                                      } value of ${node.key}`}
+                                      className={cn(
+                                        'shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100',
+                                        wrappedPaths.has(node.path) && 'text-brand opacity-100'
+                                      )}
+                                    >
+                                      <WrapText size={11} />
+                                    </Button>
+                                  </CanvasTooltip>
                                 )}
-                              </Button>
-                            </CanvasTooltip>
-                            <CanvasTooltip content="Add variable" placement="top" delay>
-                              <Button
-                                variant="ghost"
-                                size="4xs"
-                                icon
-                                onClick={() => addVariable(node)}
-                                aria-label={`Add ${node.key} as a variable`}
-                                className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
-                              >
-                                <Plus size={11} />
-                              </Button>
-                            </CanvasTooltip>
+                                <CanvasTooltip content="Copy value" placement="top" delay>
+                                  <Button
+                                    variant="ghost"
+                                    size="4xs"
+                                    icon
+                                    onClick={() => copyValue(node)}
+                                    aria-label={`Copy value of ${node.key}`}
+                                    className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+                                  >
+                                    {copiedPath === node.path ? (
+                                      <CircleCheck size={11} className="text-brand" />
+                                    ) : (
+                                      <Copy size={11} />
+                                    )}
+                                  </Button>
+                                </CanvasTooltip>
+                                <CanvasTooltip content="Add variable" placement="top" delay>
+                                  <Button
+                                    variant="ghost"
+                                    size="4xs"
+                                    icon
+                                    onClick={() => addVariable(node)}
+                                    aria-label={`Add ${node.key} as a variable`}
+                                    className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+                                  >
+                                    <Plus size={11} />
+                                  </Button>
+                                </CanvasTooltip>
+                              </>
+                            )}
                           </>
                         )}
                       </div>
