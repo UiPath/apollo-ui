@@ -34,6 +34,7 @@
   "stage-node.status.early-exit": "Early exit",
   "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} other {Ran # times}}",
   "stage-node.task-badge.running-again": "Running again",
+  "stage-node.task-mocked": "This task's outputs are mocked",
   "stage-node.ungroup-parallel-tasks": "Ungroup parallel tasks",
   "stage-node.untitled-stage": "Untitled stage",
   "sticky-note.formatting.bold": "Bold ({boldShortcut})",

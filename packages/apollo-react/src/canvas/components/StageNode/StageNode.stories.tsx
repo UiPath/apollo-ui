@@ -953,6 +953,7 @@ export const MaximumTaskAdornments: Story = {
                   label: 'Longest running required task',
                   icon: <VerificationIcon />,
                   isRequired: true,
+                  isMocked: true,
                   hasEntryCondition: true,
                 },
               ],
