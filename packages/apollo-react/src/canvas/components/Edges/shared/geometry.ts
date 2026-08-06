@@ -30,6 +30,29 @@ export function isHorizontalPosition(position: Position): boolean {
   return getDirection(position).dx !== 0;
 }
 
+/** The axis a source/target pair already shares, when both faces exit along it
+ * and the cross-axis offset is within {@link EDGE_CONSTANTS.COLLINEAR_TOLERANCE}.
+ * `null` when they are offset enough to need a mid-axis jog, or when the faces
+ * exit on different axes (an L-shape, which never needs one). */
+function getCollinearAxis(
+  sourceX: number,
+  sourceY: number,
+  sourcePosition: Position,
+  targetX: number,
+  targetY: number,
+  targetPosition: Position
+): 'horizontal' | 'vertical' | null {
+  if (isHorizontalPosition(sourcePosition) && isHorizontalPosition(targetPosition)) {
+    return Math.abs(sourceY - targetY) <= TOL ? 'horizontal' : null;
+  }
+
+  if (!isHorizontalPosition(sourcePosition) && !isHorizontalPosition(targetPosition)) {
+    return Math.abs(sourceX - targetX) <= TOL ? 'vertical' : null;
+  }
+
+  return null;
+}
+
 /**
  * Auto-route a path between source and target with orthogonal segments
  * when no manual waypoints are provided.
@@ -52,18 +75,26 @@ export function calculateAutoWaypoints(
 
   const isSourceHorizontal = isHorizontalPosition(sourcePosition);
   const isTargetHorizontal = isHorizontalPosition(targetPosition);
+  const collinearAxis = getCollinearAxis(
+    startX,
+    startY,
+    sourcePosition,
+    endX,
+    endY,
+    targetPosition
+  );
 
   const waypoints: Point[] = [];
 
   if (isSourceHorizontal && isTargetHorizontal) {
     const midX = snapToGrid((startX + endX) / 2);
-    if (Math.abs(startY - endY) > MIN_SEGMENT_LENGTH / 2) {
+    if (collinearAxis !== 'horizontal') {
       waypoints.push({ x: midX, y: startY });
       waypoints.push({ x: midX, y: endY });
     }
   } else if (!isSourceHorizontal && !isTargetHorizontal) {
     const midY = snapToGrid((startY + endY) / 2);
-    if (Math.abs(startX - endX) > MIN_SEGMENT_LENGTH / 2) {
+    if (collinearAxis !== 'vertical') {
       waypoints.push({ x: startX, y: midY });
       waypoints.push({ x: endX, y: midY });
     }
