@@ -28,6 +28,7 @@ export interface StageTaskItem {
   isRequired?: boolean;
   isAdhoc?: boolean;
   isPlaceholder?: boolean;
+  isMocked?: boolean;
   taskGroupType?: 'sequential' | 'event-driven' | 'adhoc';
   hasEntryCondition?: boolean;
 }

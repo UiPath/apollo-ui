@@ -5,6 +5,7 @@ import type { StageTaskExecution, StageTaskItem } from '../StageNode.types';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
+import { TaskMockedChip } from './TaskMockedChip';
 
 interface AdhocTaskItemProps {
   task: StageTaskItem;
@@ -63,6 +64,7 @@ const AdhocTaskItemComponent = ({
         paused={taskExecution?.status === 'Paused'}
         onToggle={onToggleBreakpoint}
       />
+      <TaskMockedChip taskId={task.id} mocked={!!task.isMocked} />
       <TaskContent task={task} taskExecution={taskExecution} onTaskPlay={onTaskPlay} />
       {getContextMenuItems && (
         <TaskMenu
