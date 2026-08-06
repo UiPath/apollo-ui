@@ -14,12 +14,7 @@ export const MuiInputLabel = (palette: Palette): ComponentsOverrides['MuiInputLa
     },
     '& + .MuiInputBase-root > .MuiOutlinedInput-notchedOutline': { top: '-5px !important' },
     '&.Mui-focused': { color: palette.semantic.colorForegroundDeEmp },
-    '&.Mui-error': { color: palette.semantic.colorForegroundDeEmp },
+    '&.Mui-error': { color: palette.semantic.colorErrorText },
     '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
-  },
-  asterisk: {
-    color: 'inherit',
-    '&.Mui-disabled': { color: 'inherit' },
-    '&.Mui-error': { color: 'inherit' },
   },
 });
