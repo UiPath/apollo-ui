@@ -196,7 +196,7 @@ export function VariablePicker({
       </PopoverTrigger>
       <PopoverContent
         align={align}
-        className={cn('w-[350px] max-w-[calc(100vw-1rem)] overflow-hidden p-0', className)}
+        className={cn('w-[280px] max-w-[calc(100vw-1rem)] overflow-hidden p-0', className)}
       >
         <Command shouldFilter={false}>
           <CommandInput
