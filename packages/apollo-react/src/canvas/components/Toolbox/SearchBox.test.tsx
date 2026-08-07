@@ -15,8 +15,8 @@ describe('SearchBox clear button accessible name', () => {
     expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument();
   });
 
-  it('uses the provided clearButtonLabel as the accessible name', () => {
-    render(<SearchBox {...baseProps} clearButtonLabel="Clear search nodes" />);
+  it('uses the provided clearButtonAriaLabel as the accessible name', () => {
+    render(<SearchBox {...baseProps} clearButtonAriaLabel="Clear search nodes" />);
 
     expect(screen.getByRole('button', { name: 'Clear search nodes' })).toBeInTheDocument();
   });
