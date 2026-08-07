@@ -404,6 +404,19 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
 // rather than each keeping its own copy.
 export const REQ_2052_APPROVED_DATE = "Jul 23, 2026";
 
+// This scenario's fixed "today" — REQ-2052 submitted Jul 21 is already "2
+// days pending" as of this date, matching REQ_2052_APPROVED_DATE and the
+// rest of the narrative clock. The Approvals queue's day-count math reads
+// from this instead of the real wall clock, which would drift out of sync
+// with every other seeded date in this scenario.
+export const APPROVALS_TODAY = "Jul 23, 2026";
+
+/** Whole days from `date` (e.g. "Jul 21, 2026") to APPROVALS_TODAY. */
+export function daysSince(date: string): number {
+  const ms = new Date(APPROVALS_TODAY).getTime() - new Date(date).getTime();
+  return Math.round(ms / 86_400_000);
+}
+
 export function getRequestDetail(id: string): RequestDetail | undefined {
   return REQUEST_DETAILS[id];
 }
@@ -441,8 +454,13 @@ export interface DecisionDetail {
   /** "Location · Street, postcode city". */
   shipTo: string;
   needBy: string;
+  /** "MMM D, YYYY" — drives the queue's pending-days and longest-waiting math. */
+  submitted: string;
   lineItems: DecisionLineItem[];
   total: string;
+  /** Numeric total, parallel to RequestRow's amountValue — drives the
+   * queue's "Awaiting your decision" sum without parsing the display string. */
+  totalValue: number;
   /** The requester's note on the request, shown as a Communication entry. */
   note: string;
   packet: DecisionPacket;
@@ -456,6 +474,10 @@ export interface DecisionDetail {
   expectedDelivery: string;
 }
 
+// Every entry bills to Design Operations · CC-4421 and exceeds $5,000 —
+// COST_TO_APPROVER routes that cost center to Alex Chen, and the Approver
+// provenance popover states the $5,000 policy threshold. A row here that
+// violated either would contradict a rule the app itself displays.
 export const DECISION_DETAILS: Record<string, DecisionDetail> = {
   "REQ-2052": {
     id: "REQ-2052",
@@ -468,6 +490,7 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     // Contractors start Aug 3 (see note below) — matches RequestDetail's
     // own summary.needBy in REQUEST_DETAILS above.
     needBy: "Aug 1, 2026",
+    submitted: "Jul 21, 2026",
     lineItems: [
       {
         description: "ThinkPad X1 Carbon Gen 12 × 15 · EPP price $1,849",
@@ -475,6 +498,7 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
       },
     ],
     total: "$27,735",
+    totalValue: 27735,
     note: "Hi Alex, these are for the Fusion contractors starting Aug 3. Happy to answer anything.",
     packet: {
       budget: {
@@ -490,6 +514,100 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     },
     poNumber: "PO-88421",
     expectedDelivery: "Jul 30, 2026",
+  },
+  // Light record — populates the queue row and its inline Approve/Deny
+  // actions only. No detail page reads this one (see Approvals.tsx), so it
+  // carries no line-item breakdown or policy analysis beyond what the row
+  // itself shows.
+  "REQ-2054": {
+    id: "REQ-2054",
+    request: "Adobe Creative Cloud, 12 seats",
+    requester: "Lena Fischer",
+    approver: "Alex Chen · Design Director",
+    supplier: "Adobe",
+    costCenter: "Design Operations · CC-4421",
+    shipTo: "Berlin office · Torstraße 100, 10119 Berlin",
+    needBy: "Aug 15, 2026",
+    submitted: "Jul 22, 2026",
+    lineItems: [
+      { description: "Adobe Creative Cloud · 12 seats", amount: "$8,940" },
+    ],
+    total: "$8,940",
+    totalValue: 8940,
+    note: "12 seats for the design team's Creative Cloud renewal.",
+    packet: {
+      budget: {
+        label: "Software budget · Design Operations FY27",
+        pct: "18%",
+        detail: "$8,940 of $50,000 remaining this quarter",
+      },
+      itReview: {
+        title: "License provisioning · Ready",
+        detail: "12 seats queued for the design team roster.",
+      },
+    },
+    poNumber: "PO-88422",
+    expectedDelivery: "Aug 10, 2026",
+  },
+  "REQ-2055": {
+    id: "REQ-2055",
+    request: "Dell UltraSharp monitors ×8",
+    requester: "Tom Alvarez",
+    approver: "Alex Chen · Design Director",
+    supplier: "Dell",
+    costCenter: "Design Operations · CC-4421",
+    shipTo: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
+    needBy: "Aug 20, 2026",
+    submitted: "Jul 22, 2026",
+    lineItems: [
+      { description: "Dell UltraSharp U2723QE × 8", amount: "$6,392" },
+    ],
+    total: "$6,392",
+    totalValue: 6392,
+    note: "8 monitors to replace units flagged in the equipment audit.",
+    packet: {
+      budget: {
+        label: "Hardware budget · Design Operations FY27",
+        pct: "7%",
+        detail: "$6,392 of $89,000 remaining this quarter",
+      },
+      itReview: {
+        title: "Device management · Ready",
+        detail: "Standard imaging queued for 8 units.",
+      },
+    },
+    poNumber: "PO-88423",
+    expectedDelivery: "Aug 15, 2026",
+  },
+  "REQ-2056": {
+    id: "REQ-2056",
+    request: "Figma Organization, 25 seats",
+    requester: "Will Chen",
+    approver: "Alex Chen · Design Director",
+    supplier: "Figma",
+    costCenter: "Design Operations · CC-4421",
+    shipTo: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
+    needBy: "Sep 1, 2026",
+    submitted: "Jul 23, 2026",
+    lineItems: [
+      { description: "Figma Organization · 25 seats", amount: "$11,250" },
+    ],
+    total: "$11,250",
+    totalValue: 11250,
+    note: "25 seats for the design and product teams.",
+    packet: {
+      budget: {
+        label: "Software budget · Design Operations FY27",
+        pct: "23%",
+        detail: "$11,250 of $50,000 remaining this quarter",
+      },
+      itReview: {
+        title: "License provisioning · Ready",
+        detail: "25 seats queued across design and product.",
+      },
+    },
+    poNumber: "PO-88424",
+    expectedDelivery: "Aug 25, 2026",
   },
 };
 

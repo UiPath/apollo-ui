@@ -22,7 +22,7 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
   const [submittedRows, setSubmittedRows] = useState<RequestRow[]>([]);
   const [receipts, setReceipts] = useState<Record<string, ReceiptRecord>>({});
   const [requestStatusOverrides, setRequestStatusOverrides] = useState<
-    Record<string, "approved">
+    Record<string, "approved" | "denied">
   >({});
 
   const openRequest = (id: string) => setOpenRequestId(id);
@@ -66,6 +66,10 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     setRequestStatusOverrides((prev) => ({ ...prev, [requestId]: "approved" }));
   };
 
+  const denyRequest = (requestId: string) => {
+    setRequestStatusOverrides((prev) => ({ ...prev, [requestId]: "denied" }));
+  };
+
   const value: RequestsContextValue = {
     openRequestId,
     openRequest,
@@ -80,6 +84,7 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     confirmReceipt,
     requestStatusOverrides,
     approveRequest,
+    denyRequest,
   };
 
   return (

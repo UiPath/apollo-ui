@@ -43,8 +43,9 @@ export interface RequestsContextValue {
   /** Status written by an approval decision, by request id. Surfaces that
    * show request status read this first and fall back to the static seed
    * value when a request has no entry here. */
-  requestStatusOverrides: Record<string, "approved">;
+  requestStatusOverrides: Record<string, "approved" | "denied">;
   approveRequest: (requestId: string) => void;
+  denyRequest: (requestId: string) => void;
 }
 
 export const RequestsContext = createContext<RequestsContextValue | null>(null);
