@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.17.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.17.0...@uipath/apollo-react@6.17.1) (2026-08-07)
+
+### Bug Fixes
+
+* **apollo-react:** clear all pnpm audit findings across prod and dev deps ([cefd8df](https://github.com/UiPath/apollo-ui/commit/cefd8df5eecdf9b5425fed6de37c43b5a5aad413))
+
 ## [@uipath/apollo-react-v6.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.5...@uipath/apollo-react@6.17.0) (2026-08-07)
 
 ### Features
