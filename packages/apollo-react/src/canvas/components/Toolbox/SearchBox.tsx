@@ -9,7 +9,7 @@ interface SearchBoxProps {
   onChange: (value: string) => void;
   clear: () => void;
   placeholder?: string;
-  clearButtonLabel?: string;
+  clearButtonAriaLabel?: string;
   inputRef?: React.RefObject<HTMLInputElement | null>;
   clearButtonRef?: React.RefObject<HTMLButtonElement | null>;
   onNavigationKeyDown?: (e: React.KeyboardEvent) => void;
@@ -22,7 +22,7 @@ export const SearchBox = memo(function SearchBox({
   onChange,
   clear,
   placeholder = 'Search...',
-  clearButtonLabel = 'Clear search',
+  clearButtonAriaLabel = 'Clear search',
   inputRef: externalInputRef,
   clearButtonRef,
   onNavigationKeyDown,
@@ -76,7 +76,7 @@ export const SearchBox = memo(function SearchBox({
             ref={clearButtonRef}
             type="button"
             className="searchbox-clear"
-            aria-label={clearButtonLabel}
+            aria-label={clearButtonAriaLabel}
             onClick={clear}
             onKeyDown={handleClearButtonKeyDown}
           >

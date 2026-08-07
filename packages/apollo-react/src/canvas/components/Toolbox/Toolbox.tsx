@@ -681,7 +681,7 @@ export function Toolbox<T>({
           onChange={handleSearch}
           clear={clearSearch}
           placeholder={searchPlaceholder}
-          clearButtonLabel={clearSearchLabel}
+          clearButtonAriaLabel={clearSearchLabel}
           inputRef={searchInputRef}
           clearButtonRef={clearButtonRef}
           onNavigationKeyDown={handleNavigationKeyDown}
