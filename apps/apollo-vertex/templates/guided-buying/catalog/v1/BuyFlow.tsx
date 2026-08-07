@@ -3,7 +3,7 @@
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { AiChatEmptySuggestions } from "@/registry/ai-chat/components/ai-chat-empty-suggestions";
 import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
@@ -187,6 +187,18 @@ export function BuyFlow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locationKey]); // intentional: deps read fresh on each navigation
 
+  // Set right before a URL -> state seed and consumed by the state -> URL
+  // effect below, on a cold /buy?phase=bridge (or ?phase=selection) load:
+  // phase starts at its default ("intake") for one render before the seed
+  // below lands, so the state -> URL effect would otherwise see that stale
+  // phase, conclude the URL shouldn't carry one, and strip it — which flips
+  // searchPhase, re-fires the seed, and repeats forever (a same-commit
+  // ping-pong between the two effects that only a fresh mount can trigger,
+  // since it needs phase and the URL to disagree from the very first
+  // render — hence a cold load or reload crashing here while in-app
+  // navigation, which never starts from that disagreement, does not).
+  const seededFromUrlRef = useRef(false);
+
   // URL -> state: seed (or resync) whenever the URL's phase doesn't match
   // what's already in the conversation — a fresh /buy?phase=... load, or
   // browser back/forward changing the URL beneath an existing session.
@@ -200,7 +212,10 @@ export function BuyFlow() {
   useEffect(() => {
     if (pathname !== "/buy") return;
     if (searchPhase === "bridge" || searchPhase === "selection") {
-      if (phase !== searchPhase) seedPhase(searchPhase);
+      if (phase !== searchPhase) {
+        seededFromUrlRef.current = true;
+        seedPhase(searchPhase);
+      }
     } else if (phase === "bridge" || phase === "selection") {
       // Same exception as the effect above: returning from Review (its
       // Back button lands here with no phase param, by design) or from
@@ -218,6 +233,14 @@ export function BuyFlow() {
   // report) — service/sourcing/offcatalog stay click-through only.
   useEffect(() => {
     if (pathname !== "/buy") return;
+    // This phase change is the URL -> state effect's own seed landing, one
+    // render after it ran — the URL already carries this phase, so there's
+    // nothing to sync back. See seededFromUrlRef above for why skipping
+    // this matters.
+    if (seededFromUrlRef.current) {
+      seededFromUrlRef.current = false;
+      return;
+    }
     const target =
       phase === "bridge" || phase === "selection" ? phase : undefined;
     if (searchPhase === target) return;
