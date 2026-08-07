@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v6.17.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.17.2...@uipath/apollo-react@6.17.3) (2026-08-07)
+
+### Bug Fixes
+
+* **apollo-react:** exempt field-adornment icon buttons from fixed boxes ([ecec936](https://github.com/UiPath/apollo-ui/commit/ecec9365c1b203f9afe7bad8ab2ca1bbf494626d))
+* **apollo-react:** restore apollo-mui5 error colour on form and input labels ([341b64b](https://github.com/UiPath/apollo-ui/commit/341b64b906469a15d9287fbc1bffef896b5b5a93))
+
 ## [@uipath/apollo-react-v6.17.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.17.1...@uipath/apollo-react@6.17.2) (2026-08-07)
 
 ### Bug Fixes
