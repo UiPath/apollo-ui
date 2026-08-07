@@ -1,4 +1,4 @@
-import { Empty, EmptyDescription, EmptyTitle } from '@/registry/empty/empty'
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from '@/registry/empty/empty'
 import { Button } from '@/registry/button/button'
 import { Inbox, FileText, Search } from 'lucide-react'
 
@@ -8,11 +8,15 @@ An empty state component for when there is no data to display.
 
 <div className="p-4 border rounded-lg mt-4 space-y-8">
   <Empty>
-    <Inbox className="h-10 w-10 text-muted-foreground" />
-    <EmptyTitle>No messages</EmptyTitle>
-    <EmptyDescription>
-      You don't have any messages yet. Start a conversation!
-    </EmptyDescription>
+    <EmptyHeader>
+      <EmptyMedia variant="icon">
+        <Inbox />
+      </EmptyMedia>
+      <EmptyTitle>No messages</EmptyTitle>
+      <EmptyDescription>
+        You don't have any messages yet. Start a conversation!
+      </EmptyDescription>
+    </EmptyHeader>
   </Empty>
 </div>
 
@@ -20,12 +24,18 @@ An empty state component for when there is no data to display.
 
 <div className="p-4 border rounded-lg mt-4">
   <Empty>
-    <FileText className="h-10 w-10 text-muted-foreground" />
-    <EmptyTitle>No files uploaded</EmptyTitle>
-    <EmptyDescription>
-      Upload your first file to get started.
-    </EmptyDescription>
-    <Button className="mt-4">Upload File</Button>
+    <EmptyHeader>
+      <EmptyMedia variant="icon">
+        <FileText />
+      </EmptyMedia>
+      <EmptyTitle>No files uploaded</EmptyTitle>
+      <EmptyDescription>
+        Upload your first file to get started.
+      </EmptyDescription>
+    </EmptyHeader>
+    <EmptyContent>
+      <Button>Upload File</Button>
+    </EmptyContent>
   </Empty>
 </div>
 
@@ -33,11 +43,15 @@ An empty state component for when there is no data to display.
 
 <div className="p-4 border rounded-lg mt-4">
   <Empty>
-    <Search className="h-10 w-10 text-muted-foreground" />
-    <EmptyTitle>No results found</EmptyTitle>
-    <EmptyDescription>
-      Try adjusting your search or filter to find what you're looking for.
-    </EmptyDescription>
+    <EmptyHeader>
+      <EmptyMedia variant="icon">
+        <Search />
+      </EmptyMedia>
+      <EmptyTitle>No results found</EmptyTitle>
+      <EmptyDescription>
+        Try adjusting your search or filter to find what you're looking for.
+      </EmptyDescription>
+    </EmptyHeader>
   </Empty>
 </div>
 
@@ -52,7 +66,27 @@ npx shadcn@latest add @uipath/empty
 ```tsx
 import {
   Empty,
-  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
 } from "@/components/ui/empty"
+```
+
+```tsx
+<Empty>
+  <EmptyHeader>
+    <EmptyMedia variant="icon">
+      <Inbox />
+    </EmptyMedia>
+    <EmptyTitle>No messages</EmptyTitle>
+    <EmptyDescription>
+      You don't have any messages yet.
+    </EmptyDescription>
+  </EmptyHeader>
+  <EmptyContent>
+    <Button>Get started</Button>
+  </EmptyContent>
+</Empty>
 ```
