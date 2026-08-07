@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.5...@uipath/apollo-react@6.17.0) (2026-08-07)
+
+### Features
+
+* **apollo-react:** ModelPicker owns region mapping, BYO delete, and its i18n catalogs ([0538d5f](https://github.com/UiPath/apollo-ui/commit/0538d5f715abc17a56642af7e15b6fcf2930f245)), closes [UiPath/Agents#5858](https://github.com/UiPath/Agents/issues/5858)
+
 ## [@uipath/apollo-react-v6.16.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.16.4...@uipath/apollo-react@6.16.5) (2026-08-05)
 
 ### Bug Fixes
