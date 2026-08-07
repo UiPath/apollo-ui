@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.17.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.17.1...@uipath/apollo-react@6.17.2) (2026-08-07)
+
+### Bug Fixes
+
+* **apollo-react:** keep auto-routed canvas edges orthogonal [MST-13255] ([46f2771](https://github.com/UiPath/apollo-ui/commit/46f27713654614106e8ece36bd45ebb0ebcf4528))
+
 ## [@uipath/apollo-react-v6.17.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.17.0...@uipath/apollo-react@6.17.1) (2026-08-07)
 
 ### Bug Fixes
