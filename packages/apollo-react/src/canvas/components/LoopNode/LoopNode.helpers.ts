@@ -13,6 +13,7 @@ import {
 } from '../../utils/container';
 import type { PreviewEndpoint, PreviewGraphOverrides } from '../../utils/createPreviewGraph';
 import { getOppositePosition } from '../../utils/createPreviewNode';
+import { calculateGridAlignedHandlePositions } from '../../utils/handle-positioning';
 import type { ResolutionContext, ResolvedHandleGroup } from '../../utils/manifest-resolver';
 import { resolveHandles } from '../../utils/manifest-resolver';
 import { snapToGrid } from '../../utils/NodeUtils';
@@ -22,6 +23,33 @@ export type ContainerHandleGroup = ResolvedHandleGroup & {
   boundary: ContainerHandleBoundary;
   connectionPosition: Position;
 };
+
+/** A user-dragged handle position: which wall it sits on and how far along it (px). */
+export interface HandleWallOffset {
+  position: 'left' | 'right' | 'top' | 'bottom';
+  offset: number;
+}
+
+/** Per-node dragged handle positions, keyed by handle id. Stored in `data.handleOffsets`. */
+export type HandleOffsets = Record<string, HandleWallOffset>;
+
+/** Grid step dragged handles snap to. */
+export const HANDLE_DRAG_GRID_PX = 16;
+/** Minimum distance a dragged handle keeps from any container corner. */
+export const HANDLE_DRAG_CORNER_MARGIN_PX = 48;
+/**
+ * Fallback minimum distance from the container top for handles on the side
+ * walls when the header cannot be measured. When the caller passes the
+ * measured header bottom (`contentTopPx`), the top clamp is derived from it
+ * instead: the bottom clearance minus one grid step.
+ */
+export const HANDLE_DRAG_TOP_MARGIN_PX = 112;
+/**
+ * Minimum center-to-center distance between two handles on the same wall.
+ * Sized so the pills themselves never overlap, including on the top/bottom
+ * walls where they sit side by side along their (wider) horizontal axis.
+ */
+export const HANDLE_DRAG_MIN_SPACING_PX = 64;
 
 export interface ContainerPreviewConnectionHandles {
   sourceHandleId: string;
@@ -261,4 +289,180 @@ export function getInnerHandleContainerId({
   });
 
   return clickedHandle?.boundary === 'inner' ? sourceNode.id : undefined;
+}
+
+/**
+ * Re-buckets resolved handle groups according to user-dragged offsets: a handle
+ * with an entry in `offsets` leaves its manifest group and renders in a
+ * synthetic single-handle group on the dragged wall, carrying an explicit
+ * `offsetPx` so it bypasses the slot distribution. Handles without offsets stay
+ * in their manifest group and keep the default layout.
+ */
+export function applyHandleOffsets(
+  groups: ResolvedHandleGroup[],
+  offsets: HandleOffsets | undefined
+): ResolvedHandleGroup[] {
+  if (!offsets || Object.keys(offsets).length === 0) {
+    return groups;
+  }
+
+  const result: ResolvedHandleGroup[] = [];
+
+  for (const group of groups) {
+    const staying = group.handles.filter((handle) => !offsets[handle.id]);
+    const moved = group.handles.filter((handle) => offsets[handle.id]);
+
+    if (staying.length > 0) {
+      result.push(staying.length === group.handles.length ? group : { ...group, handles: staying });
+    }
+
+    for (const handle of moved) {
+      const target = offsets[handle.id];
+      if (!target) continue;
+      result.push({
+        ...group,
+        position: target.position,
+        slotCount: undefined,
+        customPositionAndOffsets: undefined,
+        handles: [{ ...handle, offsetPx: target.offset } as (typeof group.handles)[number]],
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Collects the wall offsets (px along each wall) currently occupied by the
+ * inner handles of a container, so a drag can keep the moving pill clear of
+ * its siblings. Handles the caller excludes (the dragged pill and its outer
+ * mirror) are skipped. Handles carrying an explicit `offsetPx` (already
+ * dragged) report it directly; the rest report the default slot position the
+ * renderer would give them (same count-based distribution as ButtonHandles).
+ */
+export function collectOccupiedWallOffsets(
+  groups: ReadonlyArray<ResolvedHandleGroup>,
+  options: {
+    nodeWidth: number;
+    nodeHeight: number;
+    excludeHandleIds: ReadonlyArray<string>;
+  }
+): Partial<Record<HandleWallOffset['position'], number[]>> {
+  const { nodeWidth, nodeHeight, excludeHandleIds } = options;
+  const excluded = new Set(excludeHandleIds);
+  const occupied: Partial<Record<HandleWallOffset['position'], number[]>> = {};
+
+  for (const group of groups) {
+    if ((group.boundary ?? 'outer') !== 'inner') continue;
+    const wall = group.position as HandleWallOffset['position'];
+    const wallLength = wall === 'left' || wall === 'right' ? nodeHeight : nodeWidth;
+    if (wallLength <= 0) continue;
+
+    const visibleHandles = group.handles.filter((handle) => handle.visible ?? true);
+    const layoutSlotCount =
+      group.slotCount && group.slotCount >= visibleHandles.length
+        ? group.slotCount
+        : visibleHandles.length;
+    const slotPositions = calculateGridAlignedHandlePositions(wallLength, layoutSlotCount);
+
+    visibleHandles.forEach((handle, index) => {
+      if (excluded.has(handle.id)) return;
+      const explicitOffset = (handle as { offsetPx?: number }).offsetPx;
+      const offset = explicitOffset ?? slotPositions[index] ?? wallLength / 2;
+      (occupied[wall] ??= []).push(offset);
+    });
+  }
+
+  return occupied;
+}
+
+/**
+ * Projects a pointer position (in node-local px) onto the nearest allowed wall,
+ * snapped to the drag grid and clamped away from the corners (and away from the
+ * header on the side walls). When `occupiedOffsets` is provided, the result
+ * also keeps HANDLE_DRAG_MIN_SPACING_PX from every other handle on the chosen
+ * wall, settling on the nearest free grid slot. Returns null when no valid
+ * slot exists (the caller keeps the previous position).
+ */
+export function resolveHandleWallDrag(options: {
+  localX: number;
+  localY: number;
+  nodeWidth: number;
+  nodeHeight: number;
+  allowedWalls: ReadonlyArray<HandleWallOffset['position']>;
+  /**
+   * Node-local y of the dashed body frame's top edge (the measured header
+   * bottom). When provided, the side-wall top clamp derives from it: the
+   * bottom clearance (HANDLE_DRAG_CORNER_MARGIN_PX from the node edge) minus
+   * one grid step. Falls back to HANDLE_DRAG_TOP_MARGIN_PX when absent.
+   */
+  contentTopPx?: number;
+  /** Offsets already taken by other handles, per wall (from collectOccupiedWallOffsets). */
+  occupiedOffsets?: Partial<Record<HandleWallOffset['position'], ReadonlyArray<number>>>;
+}): HandleWallOffset | null {
+  const { localX, localY, nodeWidth, nodeHeight, allowedWalls, contentTopPx, occupiedOffsets } =
+    options;
+  if (allowedWalls.length === 0 || nodeWidth <= 0 || nodeHeight <= 0) return null;
+
+  const distances: Record<HandleWallOffset['position'], number> = {
+    left: localX,
+    right: nodeWidth - localX,
+    top: localY,
+    bottom: nodeHeight - localY,
+  };
+
+  let wall: HandleWallOffset['position'] | null = null;
+  for (const candidate of allowedWalls) {
+    if (wall === null || distances[candidate] < distances[wall]) {
+      wall = candidate;
+    }
+  }
+  if (wall === null) return null;
+
+  const isSideWall = wall === 'left' || wall === 'right';
+  const wallLength = isSideWall ? nodeHeight : nodeWidth;
+  const raw = isSideWall ? localY : localX;
+
+  // Side walls start below the header. With a measured header bottom the top
+  // clamp derives from the dashed frame's top edge (frame top = header bottom):
+  // the bottom clearance minus one grid step, letting the pill sit one slot
+  // closer to the frame top than the corner margin allows at the bottom.
+  const startMargin = isSideWall
+    ? contentTopPx != null
+      ? contentTopPx + HANDLE_DRAG_CORNER_MARGIN_PX - CONTAINER_FRAME_INSET_PX - HANDLE_DRAG_GRID_PX
+      : HANDLE_DRAG_TOP_MARGIN_PX
+    : HANDLE_DRAG_CORNER_MARGIN_PX;
+  // Grid-aligned clamp bounds so snapping never lands inside a corner margin.
+  const lo = Math.ceil(startMargin / HANDLE_DRAG_GRID_PX) * HANDLE_DRAG_GRID_PX;
+  const hi =
+    Math.floor((wallLength - HANDLE_DRAG_CORNER_MARGIN_PX) / HANDLE_DRAG_GRID_PX) *
+    HANDLE_DRAG_GRID_PX;
+  if (hi < lo) return null;
+
+  const snapped = Math.round(raw / HANDLE_DRAG_GRID_PX) * HANDLE_DRAG_GRID_PX;
+  const clamped = Math.min(hi, Math.max(lo, snapped));
+
+  const occupied = occupiedOffsets?.[wall] ?? [];
+  const isFree = (value: number) =>
+    occupied.every((other) => Math.abs(value - other) >= HANDLE_DRAG_MIN_SPACING_PX);
+
+  if (isFree(clamped)) {
+    return { position: wall, offset: clamped };
+  }
+
+  // Occupied: walk outward in grid steps to the nearest free slot. On ties,
+  // follow the side the pointer leans toward.
+  for (let step = HANDLE_DRAG_GRID_PX; ; step += HANDLE_DRAG_GRID_PX) {
+    const below = clamped - step;
+    const above = clamped + step;
+    const belowValid = below >= lo && isFree(below);
+    const aboveValid = above <= hi && isFree(above);
+
+    if (belowValid && aboveValid) {
+      return { position: wall, offset: raw < clamped ? below : above };
+    }
+    if (belowValid) return { position: wall, offset: below };
+    if (aboveValid) return { position: wall, offset: above };
+    if (below < lo && above > hi) return null;
+  }
 }

@@ -3,10 +3,12 @@ import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import type {
   HandleConfigurationSpecificPosition,
   HandleLabelVisibility,
+  HandleVariant,
 } from '../../schema/node-definition/handle';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { cx } from '../../utils/CssUtil';
 import { calculateGridAlignedHandlePositions } from '../../utils/handle-positioning';
+import { CanvasIcon } from '../../utils/icon-registry';
 import {
   getHandleActionPortal,
   getInwardHandleLayout,
@@ -63,6 +65,14 @@ type ButtonHandleProps = {
   nodeWidth?: number;
   nodeHeight?: number;
   portalAction?: boolean;
+  /** Explicit pixel position along the wall. Bypasses the slot distribution (e.g. a user-dragged handle). */
+  offsetPx?: number;
+  /** When set, the inward label pill becomes a drag grip and fires this on pointer down. */
+  onLabelPointerDown?: (event: React.PointerEvent) => void;
+  /** Visual variant: `marker` renders a circular icon badge instead of the notch. */
+  variant?: HandleVariant;
+  /** Canvas icon name shown inside a `marker` variant handle. */
+  icon?: string;
 };
 
 const ButtonHandleBase = ({
@@ -90,10 +100,15 @@ const ButtonHandleBase = ({
   nodeWidth,
   nodeHeight,
   portalAction = false,
+  offsetPx,
+  onLabelPointerDown,
+  variant = 'default',
+  icon,
 }: ButtonHandleProps) => {
   const handleRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const isVertical = position === Position.Top || position === Position.Bottom;
+  const isMarker = variant === 'marker';
 
   const dispatchMouseEvent = useCallback(
     (
@@ -128,6 +143,12 @@ const ButtonHandleBase = ({
     // Determine which dimension to use based on handle position
     const relevantSize = isVertical ? nodeWidth : nodeHeight;
 
+    // An explicit pixel offset (e.g. a user-dragged lifecycle handle) bypasses
+    // the slot distribution entirely.
+    if (offsetPx != null && relevantSize && relevantSize > 0) {
+      return pixelToPercent(Math.min(Math.max(offsetPx, 0), relevantSize), relevantSize);
+    }
+
     // If node size is available, use grid-aligned positioning
     if (relevantSize && relevantSize > 0) {
       const gridPositions = calculateGridAlignedHandlePositions(relevantSize, total);
@@ -137,7 +158,7 @@ const ButtonHandleBase = ({
 
     // Fallback to percentage-based positioning
     return ((index + 1) / (total + 1)) * 100;
-  }, [index, total, isVertical, nodeWidth, nodeHeight]);
+  }, [index, total, isVertical, nodeWidth, nodeHeight, offsetPx]);
 
   const handleButtonClick = useCallback(
     (event: React.MouseEvent) => {
@@ -168,7 +189,8 @@ const ButtonHandleBase = ({
 
   const markAsHovered = useCallback(() => setIsHovered(true), []);
   const unmarkAsHovered = useCallback(() => setIsHovered(false), []);
-  const showActionButton = !!onAction && type === 'source';
+  // Marker handles are semantic badges; they never grow an inline add button.
+  const showActionButton = !isMarker && !!onAction && type === 'source';
 
   // Label visibility defaults to the handle's own visibility (current behavior).
   const resolvedLabelVisible = labelVisible ?? visible;
@@ -222,6 +244,7 @@ const ButtonHandleBase = ({
           labelBackgroundColor={labelBackgroundColor}
           labelVisible={resolvedLabelVisible}
           layout={layout}
+          onLabelPointerDown={onLabelPointerDown}
         />
         <Handle
           ref={handleRef}
@@ -292,13 +315,26 @@ const ButtonHandleBase = ({
         transform,
       }}
     >
-      <HandleNotch
-        handleType={handleType}
-        isVertical={isVertical}
-        selected={selected}
-        hovered={isHovered}
-        showNotch={showNotches}
-      />
+      {isMarker ? (
+        <span
+          aria-hidden
+          data-testid={`marker-handle-${id}`}
+          className={cx(
+            'pointer-events-none flex h-6 w-6 shrink-0 items-center justify-center',
+            'rounded-full border border-border bg-surface text-foreground shadow-sm'
+          )}
+        >
+          <CanvasIcon icon={icon ?? 'zap'} size={12} />
+        </span>
+      ) : (
+        <HandleNotch
+          handleType={handleType}
+          isVertical={isVertical}
+          selected={selected}
+          hovered={isHovered}
+          showNotch={showNotches}
+        />
+      )}
       {showActionButton ? (
         <HandleButton
           visible={showButton}
@@ -342,6 +378,7 @@ function InwardHandleContent({
   labelBackgroundColor,
   labelVisible = true,
   layout,
+  onLabelPointerDown,
 }: {
   handleType: HandleType;
   isVertical: boolean;
@@ -353,16 +390,24 @@ function InwardHandleContent({
   labelBackgroundColor?: string;
   labelVisible?: boolean;
   layout: InwardHandleLayout;
+  onLabelPointerDown?: (event: React.PointerEvent) => void;
 }) {
+  const isDraggableGrip = !!onLabelPointerDown;
   const labelElement = label ? (
     <div
       aria-hidden={labelVisible ? undefined : true}
       className={cx(
-        'pointer-events-none flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-surface px-2 py-0.5',
+        'flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-surface px-2 py-0.5',
         'text-xs font-medium leading-4 text-foreground-muted transition-opacity duration-250',
-        labelVisible ? 'opacity-100' : 'opacity-0'
+        labelVisible ? 'opacity-100' : 'opacity-0',
+        // The pill doubles as the drag grip for movable handles. nodrag/nopan
+        // keep React Flow from starting a node drag or canvas pan underneath.
+        isDraggableGrip && labelVisible
+          ? 'nodrag nopan pointer-events-auto cursor-grab select-none active:cursor-grabbing'
+          : 'pointer-events-none'
       )}
       style={labelBackgroundColor ? { backgroundColor: labelBackgroundColor } : undefined}
+      onPointerDown={isDraggableGrip && labelVisible ? onLabelPointerDown : undefined}
     >
       {labelIcon}
       <span>{label}</span>
@@ -407,6 +452,14 @@ export interface ButtonHandleConfig {
   onMouseEnter?: (event: HandleMouseEvent) => void;
   onMouseLeave?: (event: HandleMouseEvent) => void;
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
+  /** Explicit pixel position along the wall. Bypasses the slot distribution. */
+  offsetPx?: number;
+  /** When set, the inward label pill becomes a drag grip and fires this on pointer down. */
+  onLabelPointerDown?: (event: React.PointerEvent) => void;
+  /** Visual variant: `marker` renders a circular icon badge instead of the notch. */
+  variant?: HandleVariant;
+  /** Canvas icon name shown inside a `marker` variant handle. */
+  icon?: string;
 }
 
 const ButtonHandlesBase = ({
@@ -425,6 +478,7 @@ const ButtonHandlesBase = ({
   nodeWidth,
   nodeHeight,
   portalActions = false,
+  slotCount,
 }: {
   nodeId: string;
   handles: ButtonHandleConfig[];
@@ -440,6 +494,13 @@ const ButtonHandlesBase = ({
   nodeHeight?: number;
   /** Render source handle affordances (button and label) in the node overlay layer. */
   portalActions?: boolean;
+
+  /**
+   * Lay the group out as if it had this many handle slots (>= the visible
+   * handle count; ignored otherwise). Handles fill slots from the first, so a
+   * group with fewer handles can align with a fuller group on the opposite wall.
+   */
+  slotCount?: number;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -465,6 +526,9 @@ const ButtonHandlesBase = ({
   // Handles with visible: false are excluded from the DOM entirely —
   // group-level visibility (hover/selection state) is handled via opacity.
   const visibleHandles = handles.filter((h) => h.visible ?? true);
+
+  const layoutSlotCount =
+    slotCount && slotCount >= visibleHandles.length ? slotCount : visibleHandles.length;
 
   // Show the hover bridge when any source handle in this group has an onAction callback.
   const hasSourceButtons = visibleHandles.some((h) => h.type === 'source' && h.onAction);
@@ -496,7 +560,7 @@ const ButtonHandlesBase = ({
             labelBackgroundColor={handle.labelBackgroundColor}
             labelVisibility={handle.labelVisibility}
             index={index}
-            total={visibleHandles.length}
+            total={layoutSlotCount}
             selected={selected}
             visible={handleVisible}
             labelVisible={labelVisible}
@@ -509,6 +573,10 @@ const ButtonHandlesBase = ({
             nodeWidth={nodeWidth}
             nodeHeight={nodeHeight}
             portalAction={portalActions && handle.type === 'source'}
+            offsetPx={handle.offsetPx}
+            onLabelPointerDown={handle.onLabelPointerDown}
+            variant={handle.variant}
+            icon={handle.icon}
           />
         );
       })}

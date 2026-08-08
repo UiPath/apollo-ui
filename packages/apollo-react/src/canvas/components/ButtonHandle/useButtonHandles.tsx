@@ -69,7 +69,10 @@ export const useButtonHandles = ({
     const resolvedHandles = resolveHandles(handleConfigurations, node?.data ?? {});
 
     const elements = resolvedHandles.map((config, i) => {
-      const groupVisible = shouldShowHandles && (config.visible ?? true);
+      // alwaysVisible groups (e.g. marker handles) render regardless of the
+      // hover / selection state, matching the LoopNode container behavior.
+      const groupVisible =
+        (shouldShowHandles || config.alwaysVisible === true) && (config.visible ?? true);
 
       const enhancedHandles = config.handles.map((handle) => ({
         ...handle,
