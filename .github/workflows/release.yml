@@ -20,7 +20,7 @@ jobs:
   release:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     name: Release and Publish
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     timeout-minutes: 30
     outputs:
       changed: ${{ steps.bump.outputs.changed }}
@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -46,7 +46,7 @@ jobs:
           ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
 
       - name: Cache Turborepo
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: .turbo
           key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
@@ -149,7 +149,7 @@ jobs:
 
       - name: Upload version-bump patch
         if: steps.bump.outputs.changed == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: version-bump-patch
           path: ${{ runner.temp }}/version-bump.patch
@@ -165,35 +165,35 @@ jobs:
 
       - name: Attest SBOM — apollo-core
         if: steps.bump.outputs.changed == 'true'
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e  # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-core.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-core.cyclonedx.json
 
       - name: Attest SBOM — apollo-react
         if: steps.bump.outputs.changed == 'true'
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e  # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-react.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-react.cyclonedx.json
 
       - name: Attest SBOM — apollo-wind
         if: steps.bump.outputs.changed == 'true'
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e  # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-wind.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-wind.cyclonedx.json
 
       - name: Attest SBOM — ap-chat
         if: steps.bump.outputs.changed == 'true'
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e  # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-ap-chat.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-ap-chat.cyclonedx.json
 
       - name: Upload SBOMs and dist tarballs as release artifact
         if: steps.bump.outputs.changed == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: release-${{ github.sha }}
           path: |
@@ -205,25 +205,25 @@ jobs:
       # Verify: gh attestation verify dist-<pkg>.tar.gz --owner UiPath
       - name: Attest build provenance — apollo-core
         if: steps.bump.outputs.changed == 'true'
-        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373  # v4.1.1
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-core.tar.gz
 
       - name: Attest build provenance — apollo-react
         if: steps.bump.outputs.changed == 'true'
-        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373  # v4.1.1
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-react.tar.gz
 
       - name: Attest build provenance — apollo-wind
         if: steps.bump.outputs.changed == 'true'
-        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373  # v4.1.1
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-wind.tar.gz
 
       - name: Attest build provenance — ap-chat
         if: steps.bump.outputs.changed == 'true'
-        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373  # v4.1.1
         with:
           subject-path: ${{ runner.temp }}/dist-ap-chat.tar.gz
 
@@ -242,7 +242,7 @@ jobs:
 
       - name: Upload package sizes baseline
         continue-on-error: true
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: package-sizes
           path: pkg-sizes.json
@@ -255,19 +255,19 @@ jobs:
     name: Commit version bump
     needs: release
     if: needs.release.outputs.changed == 'true'
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: read
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           persist-credentials: false
 
       - name: Download version-bump patch
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
         with:
           name: version-bump-patch
           path: ${{ runner.temp }}
@@ -283,7 +283,7 @@ jobs:
         run: node .github/scripts/validate-package-json-mutations.mjs "$RUNNER_TEMP/version-bump.patch"
 
       - name: Generate GitHub App token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
         id: app-token
         with:
           client-id: ${{ vars.RELEASER_APP_CLIENT_ID }}
