@@ -250,6 +250,22 @@ export const HandleConfigs = {
     },
   ],
 
+  /** Input and output handles (top/bottom, for vertical/top-down flows) */
+  topBottom: [
+    {
+      position: Position.Top,
+      handles: [
+        { id: 'input', type: 'target' as const, handleType: 'input' as const, label: 'Input' },
+      ],
+    },
+    {
+      position: Position.Bottom,
+      handles: [
+        { id: 'output', type: 'source' as const, handleType: 'output' as const, label: 'Output' },
+      ],
+    },
+  ],
+
   /** Multiple bottom handles for artifacts */
   bottomArtifacts: (labels: string[]) => [
     {
