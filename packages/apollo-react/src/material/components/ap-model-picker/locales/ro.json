@@ -42,5 +42,9 @@
   "modelPicker.useCustomModel.title": "Folosește modelul personalizat",
   "modelPicker.tag.deprecating.tooltip": "Va fi înlocuit cu {replacement}",
   "modelPicker.empty.noMatch": "Niciun model nu se potrivește cu „{query}”.",
-  "modelPicker.empty.noModels": "Nu există modele disponibile."
+  "modelPicker.empty.noModels": "Nu există modele disponibile.",
+  "modelPicker.deleteConfirm.title": "Ștergeți modelul personalizat",
+  "modelPicker.deleteConfirm.message": "Aceasta șterge definitiv configurația „{name}” pentru toată lumea din acest tenant. Această acțiune nu poate fi anulată.",
+  "modelPicker.deleteConfirm.cancel": "Anulați",
+  "modelPicker.deleteConfirm.confirm": "Ștergeți"
 }

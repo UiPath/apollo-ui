@@ -42,5 +42,9 @@
   "modelPicker.useCustomModel.title": "Use un modelo personalizado",
   "modelPicker.tag.deprecating.tooltip": "Será reemplazado por {replacement}",
   "modelPicker.empty.noMatch": "No hay modelos que coincidan con \"{query}\".",
-  "modelPicker.empty.noModels": "No hay modelos disponibles."
+  "modelPicker.empty.noModels": "No hay modelos disponibles.",
+  "modelPicker.deleteConfirm.title": "Eliminar modelo personalizado",
+  "modelPicker.deleteConfirm.message": "Se eliminará de forma permanente la configuración \"{name}\" para todos en este inquilino. Esta acción no se puede deshacer.",
+  "modelPicker.deleteConfirm.cancel": "Cancelar",
+  "modelPicker.deleteConfirm.confirm": "Eliminar"
 }

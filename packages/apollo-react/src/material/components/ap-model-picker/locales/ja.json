@@ -42,5 +42,9 @@
   "modelPicker.useCustomModel.title": "カスタム モデルを使用",
   "modelPicker.tag.deprecating.tooltip": "{replacement} で置換予定",
   "modelPicker.empty.noMatch": "「{query}」に一致するモデルはありません。",
-  "modelPicker.empty.noModels": "利用可能なモデルはありません。"
+  "modelPicker.empty.noModels": "利用可能なモデルはありません。",
+  "modelPicker.deleteConfirm.title": "カスタム モデルを削除",
+  "modelPicker.deleteConfirm.message": "これにより、このテナント内のすべてのユーザーの「{name}」の設定が完全に削除されます。この操作は元に戻せません。",
+  "modelPicker.deleteConfirm.cancel": "キャンセル",
+  "modelPicker.deleteConfirm.confirm": "削除"
 }

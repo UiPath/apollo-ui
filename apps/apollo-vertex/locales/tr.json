@@ -214,6 +214,8 @@
   "run_results": "Çalıştırma sonuçları",
   "run_results_description": "Bu test çalıştırması için agent düzeyindeki sonuçlar",
   "run_selected": "Seçileni çalıştır ({{count}})",
+  "run_unavailable": "Çalıştırılamıyor",
+  "run_unavailable_description": "Bu çalışma yok veya çalışması tamamlanmadı.",
   "runs_in_progress": "Devam eden çalıştırmalar",
   "russian": "Rusça",
   "save_and_rerun": "Kaydet ve yeniden çalıştır",

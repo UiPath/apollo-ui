@@ -214,6 +214,8 @@
   "run_results": "実行結果",
   "run_results_description": "このテスト実行のエージェント レベルの結果です。",
   "run_selected": "選択した項目を実行 ({{count}})",
+  "run_unavailable": "実行は利用できません。",
+  "run_unavailable_description": "この実行は存在しないか、実行が完了していません。",
   "runs_in_progress": "進行中の実行",
   "russian": "ロシア語",
   "save_and_rerun": "保存して再実行",

@@ -214,6 +214,8 @@
   "run_results": "Rezultatele rulării",
   "run_results_description": "Rezultate la nivel de agent pentru această rulare de test",
   "run_selected": "Run selectat ({{count}})",
+  "run_unavailable": "Run indisponibil",
+  "run_unavailable_description": "Această execuție nu există sau nu a terminat execuția.",
   "runs_in_progress": "Rulări în curs",
   "russian": "Rusă",
   "save_and_rerun": "Salvați și rulați din nou",

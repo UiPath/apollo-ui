@@ -42,5 +42,9 @@
   "modelPicker.useCustomModel.title": "Benutzerdefiniertes Modell verwenden",
   "modelPicker.tag.deprecating.tooltip": "Wird durch {replacement} ersetzt",
   "modelPicker.empty.noMatch": "Keine Modelle entsprechen „{query}“",
-  "modelPicker.empty.noModels": "Keine Modelle verfügbar."
+  "modelPicker.empty.noModels": "Keine Modelle verfügbar.",
+  "modelPicker.deleteConfirm.title": "Benutzerdefiniertes Modell löschen",
+  "modelPicker.deleteConfirm.message": "Dadurch wird die Konfiguration „{name}“ für Everyone in diesem Mandanten endgültig gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "modelPicker.deleteConfirm.cancel": "Abbrechen",
+  "modelPicker.deleteConfirm.confirm": "Löschen"
 }

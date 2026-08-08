@@ -42,5 +42,9 @@
   "modelPicker.useCustomModel.title": "Usar modelo personalizado",
   "modelPicker.tag.deprecating.tooltip": "Será substituído por {replacement}",
   "modelPicker.empty.noMatch": "Nenhum modelo corresponde a \"{query}\".",
-  "modelPicker.empty.noModels": "Nenhum modelo disponível."
+  "modelPicker.empty.noModels": "Nenhum modelo disponível.",
+  "modelPicker.deleteConfirm.title": "Excluir modelo personalizado",
+  "modelPicker.deleteConfirm.message": "Exclui permanentemente a configuração \"{name}\" para todos neste tenant. Esta ação não poderá ser desfeita.",
+  "modelPicker.deleteConfirm.cancel": "Cancelar",
+  "modelPicker.deleteConfirm.confirm": "Excluir"
 }
