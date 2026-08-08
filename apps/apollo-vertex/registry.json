@@ -1770,6 +1770,55 @@
       ]
     },
     {
+      "name": "confidence-signal",
+      "type": "registry:ui",
+      "title": "Confidence Signal",
+      "description": "A signal-bar chip that communicates AI confidence (high/medium/low/unknown) without a raw score, with an optional popover for factor breakdowns and required next steps.",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": ["button", "popover", "tooltip"],
+      "cssVars": {
+        "theme": {
+          "color-success": "var(--success)",
+          "color-warning": "var(--warning)",
+          "color-warning-foreground": "var(--warning-foreground)",
+          "color-destructive": "var(--destructive)",
+          "color-muted-foreground": "var(--muted-foreground)"
+        }
+      },
+      "files": [
+        {
+          "path": "registry/confidence-signal/confidence-signal.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal.tsx"
+        },
+        {
+          "path": "registry/confidence-signal/confidence-signal-levels.ts",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal-levels.ts"
+        },
+        {
+          "path": "registry/confidence-signal/confidence-signal-bars.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal-bars.tsx"
+        },
+        {
+          "path": "registry/confidence-signal/confidence-signal-chip.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal-chip.tsx"
+        },
+        {
+          "path": "registry/confidence-signal/confidence-signal-factors.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal-factors.tsx"
+        },
+        {
+          "path": "registry/confidence-signal/confidence-signal-cta.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal-cta.tsx"
+        }
+      ]
+    },
+    {
       "name": "context-menu",
       "type": "registry:ui",
       "title": "Context Menu",
