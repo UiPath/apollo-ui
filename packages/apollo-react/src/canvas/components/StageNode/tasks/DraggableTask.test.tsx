@@ -461,4 +461,26 @@ describe('DraggableTask', () => {
       expect(screen.getByTestId('stage-task-breakpoint-task-1')).toHaveClass('pointer-events-none');
     });
   });
+
+  describe('Mocked marker', () => {
+    it('renders the mocked marker on the task card when the task is mocked', () => {
+      render(<DraggableTask {...defaultProps} task={{ ...defaultProps.task, isMocked: true }} />);
+
+      const chip = screen.getByTestId('stage-task-mocked-task-1');
+      expect(screen.getByTestId('stage-task-card-task-1')).toContainElement(chip);
+    });
+
+    it('keeps the mocked marker out of the trailing actions group', () => {
+      render(<DraggableTask {...defaultProps} task={{ ...defaultProps.task, isMocked: true }} />);
+
+      const chip = screen.getByTestId('stage-task-mocked-task-1');
+      expect(screen.getByTestId('stage-task-actions-task-1')).not.toContainElement(chip);
+    });
+
+    it('does not render the mocked marker when the task is not mocked', () => {
+      render(<DraggableTask {...defaultProps} />);
+
+      expect(screen.queryByTestId('stage-task-mocked-task-1')).not.toBeInTheDocument();
+    });
+  });
 });
