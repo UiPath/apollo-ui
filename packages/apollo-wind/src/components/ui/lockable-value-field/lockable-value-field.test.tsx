@@ -493,7 +493,7 @@ describe('LockableValueField', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Insert variable' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Item ID' }));
+    await user.click(screen.getByRole('option', { name: 'Item ID' }));
 
     expect(handleValueChange).toHaveBeenCalledWith('hello item.id');
   });

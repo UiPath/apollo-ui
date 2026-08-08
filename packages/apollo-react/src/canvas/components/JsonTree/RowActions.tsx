@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@uipath/apollo-wind';
 import { MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { CanvasTooltip } from '../CanvasTooltip';
 import type { JsonTreeNode, NodeAction, NodeDecorationTone } from './JsonTree.types';
@@ -25,23 +26,24 @@ export interface RowActionsProps {
   node: JsonTreeNode;
   /** Resolved actions for the row, in display order. */
   actions: NodeAction[];
-  /** Actions past this count collapse into an overflow menu. */
+  /** When the action count exceeds this cap, all actions collapse into one menu. */
   maxInline: number;
 }
 
 /**
  * The trailing icon-button group for a row. Renders `actions` uniformly (icon,
- * tooltip, aria, tone, active highlight); when there are more than `maxInline`,
- * keeps the first `maxInline - 1` inline and rolls the rest into a menu so a
- * consumer adding actions can never blow out a narrow panel.
+ * tooltip, aria, tone, active highlight). Up to `maxInline` actions render
+ * inline; when the count exceeds that cap, every action moves into one menu so
+ * the row has a single, predictable overflow state.
  */
 export function RowActions({ node, actions, maxInline }: RowActionsProps) {
   const { _ } = useSafeLingui();
+  const [menuOpen, setMenuOpen] = useState(false);
   if (actions.length === 0) return null;
 
   const overflowing = actions.length > maxInline;
-  const inline = overflowing ? actions.slice(0, maxInline - 1) : actions;
-  const overflow = overflowing ? actions.slice(maxInline - 1) : [];
+  const inline = overflowing ? [] : actions;
+  const overflow = overflowing ? actions : [];
   const moreLabel = _({
     id: 'canvas.json_value_panel.more_actions',
     message: 'More actions',
@@ -78,21 +80,21 @@ export function RowActions({ node, actions, maxInline }: RowActionsProps) {
         </CanvasTooltip>
       ))}
       {overflow.length > 0 && (
-        <DropdownMenu>
-          <CanvasTooltip content={moreLabel} placement="top" delay>
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+          <CanvasTooltip content={moreLabel} placement="top" delay hide={menuOpen}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="4xs"
                 icon
                 aria-label={moreLabel}
-                className={cn(ACTION_BUTTON_CLASS, '[&_svg]:size-2.75')}
+                className={cn(ACTION_BUTTON_CLASS, '[&_svg]:size-2.75', menuOpen && 'opacity-100')}
               >
                 <MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
           </CanvasTooltip>
-          <DropdownMenuContent align="end" className="min-w-40">
+          <DropdownMenuContent side="left" align="start" sideOffset={-12} className="min-w-40">
             {overflow.map((action) => (
               <DropdownMenuItem
                 key={action.id}

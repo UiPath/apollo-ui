@@ -20,7 +20,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { FormSchema, LockableFieldType, LockableValueFieldMode } from '@uipath/apollo-wind';
+import type {
+  FormSchema,
+  LockableFieldType,
+  LockableValueFieldMode,
+  VariablePickerItem,
+} from '@uipath/apollo-wind';
 import {
   Accordion,
   AccordionContent,
@@ -50,11 +55,11 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  RadioGroup,
+  RadioGroupItem,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-  RadioGroup,
-  RadioGroupItem,
   ScrollableTabsList,
   Select,
   SelectContent,
@@ -68,6 +73,7 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
+  Toaster,
   ToggleGroup,
   ToggleGroupItem,
   Tooltip,
@@ -75,7 +81,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
   toast,
-  Toaster,
+  VariablePicker,
 } from '@uipath/apollo-wind';
 import {
   apolloCoreDarkHCMonaco,
@@ -104,17 +110,19 @@ import {
   GripVertical,
   HardDrive,
   Info,
+  MoreHorizontal,
   Pencil,
   Play,
   Plus,
+  RefreshCw,
   ScanText,
   Search,
-  RefreshCw,
   Sparkles,
   Trash2,
   TriangleAlert,
   Upload,
   UserRoundCheck,
+  WrapText,
   X,
   Zap,
 } from 'lucide-react';
@@ -133,6 +141,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { NodeOutputModeSelect } from '../../controls';
+import { CanvasTooltip } from '../CanvasTooltip';
 import type {
   DeriveTypeIcon,
   JsonCodeEditorRenderProps,
@@ -148,7 +157,6 @@ import type {
 } from '../JsonTree';
 import { isJsonObject } from '../JsonTree';
 import { NodeIOView, type NodeIOViewTab } from '../NodeIOView';
-import { CanvasTooltip } from '../CanvasTooltip';
 import { NodePropertyPanel } from './NodePropertyPanel';
 import { PanelField, PanelFieldLabel } from './PanelField';
 
@@ -467,7 +475,7 @@ const TAB_TRIGGER_CLASS =
   'inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm';
 
 // ============================================================================
-// Stories — NodePropertyPanel
+// Stories: NodePropertyPanel
 // ============================================================================
 
 export const PanelUIInventory: Story = {
@@ -539,19 +547,77 @@ export const NoParametersTab: Story = {
 };
 
 // ============================================================================
-// Stories — Expression Field (editor mockups)
+// Stories: Expression Field (editor mockups)
 // Full-height panel with all expression editor chrome: toolbar, mode switcher,
 // undo/redo, AI assist, expand, and Insert variable affordance.
 // ============================================================================
 
 function FullEditorStory() {
   const monacoTheme = useMonacoTheme();
+  const editorRef = useRef<Parameters<NonNullable<EditorProps['onMount']>>[0] | null>(null);
   const [label, setLabel] = useState('Script');
   const [category, setCategory] = useState('HTTP Request');
   const [editingLabel, setEditingLabel] = useState(false);
   const [editingCategory, setEditingCategory] = useState(false);
   const labelRef = useRef<HTMLInputElement>(null);
   const categoryRef = useRef<HTMLInputElement>(null);
+  const variables = useMemo<VariablePickerItem[]>(
+    () => [
+      {
+        id: 'vars',
+        label: '$vars',
+        type: 'object',
+        children: [
+          {
+            id: 'manual-trigger',
+            label: 'manualTrigger1',
+            type: 'object',
+            children: [
+              {
+                id: 'customer-name',
+                label: 'customerName',
+                value: '$vars.manualTrigger1.customerName',
+                type: 'string',
+              },
+              {
+                id: 'invoice-id',
+                label: 'invoiceId',
+                value: '$vars.manualTrigger1.invoiceId',
+                type: 'string',
+              },
+              {
+                id: 'document-url',
+                label: 'documentUrl',
+                value: '$vars.manualTrigger1.documentUrl',
+                type: 'string',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'metadata',
+        label: '$metadata',
+        type: 'object',
+        children: [
+          { id: 'run-id', label: 'runId', value: '$metadata.runId', type: 'string' },
+          { id: 'started-at', label: 'startedAt', value: '$metadata.startedAt', type: 'string' },
+        ],
+      },
+    ],
+    []
+  );
+
+  const insertVariable = useCallback((item: VariablePickerItem) => {
+    const editor = editorRef.current;
+    const selection = editor?.getSelection();
+    if (!editor || !selection || !item.value) return;
+
+    editor.executeEdits('insert-variable', [
+      { range: selection, text: item.value, forceMoveMarkers: true },
+    ]);
+    editor.focus();
+  }, []);
 
   return (
     <PanelFrame>
@@ -651,16 +717,7 @@ function FullEditorStory() {
                   >
                     <Sparkles size={12} />
                   </button>
-                  <button
-                    type="button"
-                    aria-label="Insert variable"
-                    title="Insert variable"
-                    className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                  >
-                    <span className="font-mono text-[10px]">{'{x}'}</span>
-                    <span>Insert</span>
-                    <ChevronDown size={9} />
-                  </button>
+                  <VariablePicker items={variables} onSelect={insertVariable} />
                 </div>
               </div>
               <div className="flex min-h-0 flex-1 flex-col pb-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
@@ -673,6 +730,9 @@ function FullEditorStory() {
                     }
                     theme={monacoTheme}
                     beforeMount={registerMonacoThemes}
+                    onMount={(editor) => {
+                      editorRef.current = editor;
+                    }}
                     options={{
                       fontSize: 13,
                       lineHeight: 20,
@@ -716,7 +776,7 @@ export const FullEditor: Story = {
 };
 
 // ============================================================================
-// Compact Editor — Switch/Case node with accordion case panels.
+// Compact Editor: Switch/Case node with accordion case panels.
 // ============================================================================
 
 const COMPACT_EDITOR_OPTIONS = {
@@ -790,6 +850,22 @@ const INLINE_EDITOR_OPTIONS = {
   automaticLayout: true,
 } as const;
 
+const INSERT_SNIPPETS = [
+  { label: 'Input data', code: 'context.input' },
+  { label: 'Item ID', code: 'item.id' },
+  { label: 'Item name', code: 'item.name' },
+  { label: 'Current index', code: 'index' },
+  { label: 'Timestamp', code: 'Date.now()' },
+  { label: 'True', code: 'true' },
+  { label: 'False', code: 'false' },
+  { label: 'Null', code: 'null' },
+];
+
+const LOCKABLE_VARIABLES = INSERT_SNIPPETS.map((snippet) => ({
+  label: snippet.label,
+  value: snippet.code,
+}));
+
 function CasePanel({
   caseTitle,
   onTitleChange,
@@ -812,7 +888,18 @@ function CasePanel({
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [editingTitle, setEditingTitle] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<Parameters<NonNullable<EditorProps['onMount']>>[0] | null>(null);
   const hasError = Boolean(errorMessage);
+
+  const insertVariable = useCallback((item: VariablePickerItem) => {
+    const editor = editorRef.current;
+    const selection = editor?.getSelection();
+    if (!editor || !selection || !item.value) return;
+    editor.executeEdits('insert-variable', [
+      { range: selection, text: item.value, forceMoveMarkers: true },
+    ]);
+    editor.focus();
+  }, []);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle">
@@ -890,16 +977,22 @@ function CasePanel({
               >
                 <Sparkles size={12} />
               </button>
-              <button
-                type="button"
-                aria-label="Insert variable"
-                title="Insert variable"
-                className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-              >
-                <span className="font-mono text-[10px]">{'{x}'}</span>
-                <span>Insert</span>
-                <ChevronDown size={9} />
-              </button>
+              <VariablePicker
+                items={[
+                  {
+                    id: 'vars',
+                    label: '$vars',
+                    type: 'object',
+                    children: INSERT_SNIPPETS.map((snippet) => ({
+                      id: snippet.code,
+                      label: snippet.label,
+                      value: snippet.code,
+                      type: 'string',
+                    })),
+                  },
+                ]}
+                onSelect={insertVariable}
+              />
             </div>
           </div>
           <div className="px-3 pb-3">
@@ -916,6 +1009,9 @@ function CasePanel({
                 defaultValue={defaultValue}
                 theme={monacoTheme}
                 beforeMount={registerMonacoThemes}
+                onMount={(editor) => {
+                  editorRef.current = editor;
+                }}
                 options={COMPACT_EDITOR_OPTIONS}
               />
             </div>
@@ -1156,7 +1252,7 @@ function CompactEditorStory() {
                 <span className="text-xs font-medium leading-4 text-foreground">Cases</span>
               </div>
 
-              {/* Case accordion panels — inset cards with gap */}
+              {/* Case accordion panels: inset cards with gap */}
               <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
                 {cases.map((c, i) => (
                   <CasePanel
@@ -1204,19 +1300,8 @@ export const CompactEditor: Story = {
 
 // ============================================================================
 // Input Editor
-// Inline expression inputs — one per case, no code editor panel.
+// Inline expression inputs: one per case, no code editor panel.
 // ============================================================================
-
-const INSERT_SNIPPETS = [
-  { label: 'Input data', code: 'context.input' },
-  { label: 'Item ID', code: 'item.id' },
-  { label: 'Item name', code: 'item.name' },
-  { label: 'Current index', code: 'index' },
-  { label: 'Timestamp', code: 'Date.now()' },
-  { label: 'True', code: 'true' },
-  { label: 'False', code: 'false' },
-  { label: 'Null', code: 'null' },
-];
 
 function InlineCaseRow({
   caseTitle,
@@ -1272,10 +1357,7 @@ function InlineCaseRow({
       mode={mode}
       onModeChange={setMode}
       fieldType="string"
-      variables={INSERT_SNIPPETS.map((snippet) => ({
-        label: snippet.label,
-        value: snippet.code,
-      }))}
+      variables={LOCKABLE_VARIABLES}
       controlsVisibility="visible"
     />
   );
@@ -1528,6 +1610,31 @@ function flattenOutputTree(
   return rows;
 }
 
+function appendOutputTreeChild(
+  nodes: OutputNode[],
+  parentPath: string,
+  child: OutputNode
+): OutputNode[] {
+  return nodes.map((node) => {
+    if (node.path === parentPath) {
+      return { ...node, children: [...(node.children ?? []), child] };
+    }
+    if (!node.children) return node;
+    const children = appendOutputTreeChild(node.children, parentPath, child);
+    return children.some((next, index) => next !== node.children?.[index])
+      ? { ...node, children }
+      : node;
+  });
+}
+
+function removeOutputTreeNode(nodes: OutputNode[], path: string): OutputNode[] {
+  return nodes
+    .filter((node) => node.path !== path)
+    .map((node) =>
+      node.children ? { ...node, children: removeOutputTreeNode(node.children, path) } : node
+    );
+}
+
 const PANEL_NODE_ID = 'httpRequest1';
 const PANEL_NODE_LABEL = 'HTTP Request';
 
@@ -1702,7 +1809,7 @@ const INPUT_JSON = HTTP_REQUEST_JSON;
 const OUTPUT_JSON = HTTP_REQUEST_JSON;
 
 // ============================================================================
-// Concept 2 — Expression Reference Panel
+// Concept 2: Expression Reference Panel
 // Flat list of all leaf output paths as copyable expression references.
 // ============================================================================
 
@@ -1714,6 +1821,10 @@ function Concept2PanelStory({
   context?: 'studio' | 'flow';
 }) {
   const monacoTheme = useMonacoTheme();
+  const [treeData, setTreeData] = useState<OutputNode[]>(() =>
+    mode === 'output' ? OUTPUT_TREE_DATA : INPUT_TREE_DATA
+  );
+  const nextFieldNumber = useRef(2);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'default' | 'referenced' | 'all'>('default');
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
@@ -1724,6 +1835,8 @@ function Concept2PanelStory({
     )
   );
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const [wrappedPaths, setWrappedPaths] = useState<Set<string>>(() => new Set());
+  const [openActionsPath, setOpenActionsPath] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<
@@ -1761,7 +1874,7 @@ function Concept2PanelStory({
   const CurrentModeIcon = currentNodeMode.icon;
 
   const isOutput = mode === 'output';
-  const currentTreeData = isOutput ? OUTPUT_TREE_DATA : INPUT_TREE_DATA;
+  const currentTreeData = treeData;
   const currentReferenced = isOutput ? REFERENCED_OUTPUTS : REFERENCED_INPUTS;
   const currentJson = isOutput ? OUTPUT_JSON : INPUT_JSON;
   const referencedKeys = new Set(currentReferenced.map((r) => r.name));
@@ -1800,15 +1913,52 @@ function Concept2PanelStory({
     setEditingPath(null);
   };
 
-  const copyExpr = (path: string) => {
+  const copyValue = (node: OutputNode) => {
+    const value = editedValues[node.path] ?? node.value;
     navigator.clipboard
-      ?.writeText(`{{${path}}}`)
+      ?.writeText(typeof value === 'string' ? value : JSON.stringify(value))
       ?.then(() => {
-        setCopiedPath(path);
+        setCopiedPath(node.path);
         setTimeout(() => setCopiedPath(null), 1500);
       })
       ?.catch(() => {});
   };
+
+  const toggleWrapped = (path: string) => {
+    setWrappedPaths((current) => {
+      const next = new Set(current);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  };
+
+  const addVariable = (node: OutputNode) => {
+    const parentPath = node.path.slice(0, node.path.lastIndexOf('.'));
+    const fieldName = `field${nextFieldNumber.current++}`;
+    const path = `${parentPath}.${fieldName}`;
+    const field: OutputNode = { key: fieldName, type: 'string', value: '', path };
+
+    setTreeData((current) => appendOutputTreeChild(current, parentPath, field));
+    setCollapsed((current) => ({ ...current, [parentPath]: false }));
+    setFilter('all');
+    setSearch('');
+    setEditingPath(path);
+  };
+
+  const deleteVariable = (node: OutputNode) => {
+    setTreeData((current) => removeOutputTreeNode(current, node.path));
+    setEditedValues((current) => {
+      const next = { ...current };
+      delete next[node.path];
+      return next;
+    });
+    if (editingPath === node.path) setEditingPath(null);
+  };
+
+  const hasOverflowActions = (node: OutputNode) =>
+    node.type === 'string' &&
+    (node.key === 'requestId' || node.key === 'token' || node.key.startsWith('field'));
 
   return (
     <PanelFrame>
@@ -1819,7 +1969,7 @@ function Concept2PanelStory({
         className="h-[640px]"
       >
         <div className="flex h-full min-h-0 flex-col">
-          {/* Node identity bar — hidden in Studio context */}
+          {/* Node identity bar: hidden in Studio context */}
           {context === 'flow' && (
             <div className="shrink-0 flex items-center justify-between gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-3 pt-4">
               <div className="flex min-w-0 items-center gap-2">
@@ -1868,7 +2018,7 @@ function Concept2PanelStory({
           )}
 
           <Tabs defaultValue="schema" className="flex min-h-0 flex-1 flex-col">
-            {/* Tab strip — status badge moves here in Studio context */}
+            {/* Tab strip: status badge moves here in Studio context */}
             <div
               className={cn(
                 'shrink-0 flex items-center gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1.5',
@@ -2087,6 +2237,8 @@ function Concept2PanelStory({
                           <input
                             autoFocus
                             type="text"
+                            aria-label={`Edit value for ${node.key}`}
+                            placeholder="value"
                             defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
                             onBlur={(e) => {
                               if (!escapeRef.current) saveEdit(node, e.target.value);
@@ -2113,7 +2265,10 @@ function Concept2PanelStory({
                               type="button"
                               onClick={() => node.type !== 'null' && setEditingPath(node.path)}
                               className={cn(
-                                'max-w-[55%] shrink-0 truncate font-mono text-xs',
+                                'max-w-[55%] shrink-0 font-mono text-xs',
+                                wrappedPaths.has(node.path)
+                                  ? 'whitespace-normal break-words text-left'
+                                  : 'truncate',
                                 node.type !== 'null' ? 'cursor-text' : 'cursor-default',
                                 outputValueColorClass(
                                   node.type,
@@ -2131,21 +2286,132 @@ function Concept2PanelStory({
                               )}
                             </button>
                             <div className="flex-1" />
-                            <Button
-                              variant="ghost"
-                              size="4xs"
-                              icon
-                              onClick={() => copyExpr(node.path)}
-                              title={`Copy {{${node.path}}}`}
-                              aria-label={`Copy expression for ${node.path}`}
-                              className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
-                            >
-                              {copiedPath === node.path ? (
-                                <CircleCheck size={11} className="text-brand" />
-                              ) : (
-                                <Copy size={11} />
-                              )}
-                            </Button>
+                            {hasOverflowActions(node) ? (
+                              <DropdownMenu
+                                open={openActionsPath === node.path}
+                                onOpenChange={(open) => setOpenActionsPath(open ? node.path : null)}
+                              >
+                                <CanvasTooltip
+                                  content="More actions"
+                                  placement="top"
+                                  delay
+                                  hide={openActionsPath === node.path}
+                                >
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="4xs"
+                                      icon
+                                      aria-label={`More actions for ${node.key}`}
+                                      className={cn(
+                                        'shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100',
+                                        openActionsPath === node.path && 'opacity-100'
+                                      )}
+                                    >
+                                      <MoreHorizontal size={11} />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                </CanvasTooltip>
+                                <DropdownMenuContent
+                                  side="left"
+                                  align="start"
+                                  sideOffset={-12}
+                                  className="min-w-40"
+                                >
+                                  <DropdownMenuItem
+                                    onClick={() => toggleWrapped(node.path)}
+                                    className={cn(
+                                      'gap-2 text-xs',
+                                      wrappedPaths.has(node.path) && 'text-brand'
+                                    )}
+                                  >
+                                    <WrapText size={14} />
+                                    {wrappedPaths.has(node.path) ? 'Unwrap value' : 'Wrap value'}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => copyValue(node)}
+                                    className="gap-2 text-xs"
+                                  >
+                                    {copiedPath === node.path ? (
+                                      <CircleCheck size={14} className="text-brand" />
+                                    ) : (
+                                      <Copy size={14} />
+                                    )}
+                                    Copy value
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => addVariable(node)}
+                                    className="gap-2 text-xs"
+                                  >
+                                    <Plus size={14} />
+                                    Add variable
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => deleteVariable(node)}
+                                    className="gap-2 text-xs text-error focus:text-error"
+                                  >
+                                    <Trash2 size={14} />
+                                    Delete variable
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            ) : (
+                              <>
+                                {node.type === 'string' && (
+                                  <CanvasTooltip
+                                    content={
+                                      wrappedPaths.has(node.path) ? 'Unwrap value' : 'Wrap value'
+                                    }
+                                    placement="top"
+                                    delay
+                                  >
+                                    <Button
+                                      variant="ghost"
+                                      size="4xs"
+                                      icon
+                                      onClick={() => toggleWrapped(node.path)}
+                                      aria-label={`${
+                                        wrappedPaths.has(node.path) ? 'Unwrap' : 'Wrap'
+                                      } value of ${node.key}`}
+                                      className={cn(
+                                        'shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100',
+                                        wrappedPaths.has(node.path) && 'text-brand opacity-100'
+                                      )}
+                                    >
+                                      <WrapText size={11} />
+                                    </Button>
+                                  </CanvasTooltip>
+                                )}
+                                <CanvasTooltip content="Copy value" placement="top" delay>
+                                  <Button
+                                    variant="ghost"
+                                    size="4xs"
+                                    icon
+                                    onClick={() => copyValue(node)}
+                                    aria-label={`Copy value of ${node.key}`}
+                                    className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+                                  >
+                                    {copiedPath === node.path ? (
+                                      <CircleCheck size={11} className="text-brand" />
+                                    ) : (
+                                      <Copy size={11} />
+                                    )}
+                                  </Button>
+                                </CanvasTooltip>
+                                <CanvasTooltip content="Add variable" placement="top" delay>
+                                  <Button
+                                    variant="ghost"
+                                    size="4xs"
+                                    icon
+                                    onClick={() => addVariable(node)}
+                                    aria-label={`Add ${node.key} as a variable`}
+                                    className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+                                  >
+                                    <Plus size={11} />
+                                  </Button>
+                                </CanvasTooltip>
+                              </>
+                            )}
                           </>
                         )}
                       </div>
@@ -2218,12 +2484,13 @@ function InputOutputStory() {
           <Concept2PanelStory mode="output" context={context} />
         </div>
       </div>
+      <Toaster />
     </div>
   );
 }
 
 // ============================================================================
-// Prototype — LockableValueField
+// Prototype: LockableValueField
 // ============================================================================
 
 interface LockableCase {
@@ -2439,6 +2706,7 @@ function LockableCaseRow({
           onFieldTypeChange={onFieldTypeChange}
           required={required}
           onRequiredChange={onRequiredChange}
+          variables={LOCKABLE_VARIABLES}
           compact={compact}
           controlsVisibility={controlsVisibility}
         />
@@ -2683,6 +2951,7 @@ function LockableValueFieldShowcase({
           onFieldTypeChange={handleShowcaseFieldTypeChange}
           required={showcaseRequired}
           onRequiredChange={setShowcaseRequired}
+          variables={LOCKABLE_VARIABLES}
           controlsVisibility={controlsVisibility}
         />
       </div>
@@ -2725,6 +2994,7 @@ function LockableValueFieldShowcase({
             onFieldTypeChange={handleShowcaseFieldTypeChange}
             required={showcaseRequired}
             onRequiredChange={setShowcaseRequired}
+            variables={LOCKABLE_VARIABLES}
             controlsVisibility={controlsVisibility}
           />
         </div>
@@ -4102,6 +4372,7 @@ function PanelUIInventoryStory() {
                       onFieldTypeChange={updateCompositionFieldType}
                       required={compositionRequired}
                       onRequiredChange={setCompositionRequired}
+                      variables={LOCKABLE_VARIABLES}
                       controlsVisibility="visible"
                     />
                   </section>
@@ -4198,6 +4469,7 @@ different widths (truncation, action-button visibility).
           <OutputPanel showExtractionTab={args.showExtractionTab} readOnly={args.readOnly} />
         </ResizablePanel>
       </ResizablePanelGroup>
+      <Toaster />
     </div>
   ),
 };
@@ -4403,10 +4675,10 @@ interface PreviewedFile {
 
 /**
  * Surfaces file affordances as per-node row actions:
- *   • Upload — always offered on a file row (mock population, no real FS).
- *   • Preview / Delete — only once a file is present.
- * Non-file rows return `undefined` (keep their built-in actions); read-only
- * file rows return `[]`, demonstrating omitting actions for a node.
+ *   • Upload: offered on editable file rows (mock population, no real FS).
+ *   • Preview / Delete: offered on editable file rows once a file is present.
+ *   • Add variable: offered on every row, including read-only file rows.
+ * Non-file rows compose Add variable with their built-in actions.
  */
 function useFileNodeActions(): {
   nodeActions: NodeActionsResolver;
@@ -4417,8 +4689,19 @@ function useFileNodeActions(): {
   const [preview, setPreview] = useState<PreviewedFile | null>(null);
 
   const nodeActions = useCallback<NodeActionsResolver>((node, ctx) => {
-    if (node.schema?.format !== 'file') return undefined;
-    if (ctx.readOnly) return [];
+    const addVariableAction: NodeAction = {
+      id: 'add-variable',
+      icon: <Plus />,
+      label: `Add ${node.key} as a variable`,
+      tooltip: 'Add variable',
+      onSelect: () =>
+        toast.success(`Added ${node.key} as a variable`, {
+          description: `$vars.${node.path}`,
+        }),
+    };
+
+    if (node.schema?.format !== 'file') return [...ctx.defaultActions, addVariableAction];
+    if (ctx.readOnly) return [addVariableAction];
 
     const file = isJsonObject(node.value) ? node.value : undefined;
     const actions: NodeAction[] = [
@@ -4461,7 +4744,7 @@ function useFileNodeActions(): {
       });
     }
 
-    return actions;
+    return [...actions, addVariableAction];
   }, []);
 
   return { nodeActions, preview, clearPreview: () => setPreview(null) };
@@ -4506,7 +4789,7 @@ const FILE_TYPE_SCHEMA: JsonSchema = {
 };
 
 // ── Input: upstream execution data available to the node. Keyed by source node
-// id, with each node's fields nested under `output` — matching how the canvas
+// id, with each node's fields nested under `output`, matching how the canvas
 // exposes upstream data (`$vars.<nodeId>.output.<field>`).
 const INPUT_SCHEMA: JsonSchema = {
   type: 'object',
@@ -4657,7 +4940,7 @@ const OUTPUT_NODE_VALUE: JsonValue = {
 };
 
 // Output is wrapped under the node id (title = node label), mirroring
-// flow-workbench's buildWrappedOutputSchema — so it renders nested beneath a
+// flow-workbench's buildWrappedOutputSchema, so it renders nested beneath a
 // node header, same as the Input source groups.
 const OUTPUT_SCHEMA: JsonSchema = {
   type: 'object',
@@ -4674,7 +4957,7 @@ const OUTPUT_VALUE: JsonContainer = {
   [NODE_ID]: { output: OUTPUT_NODE_VALUE },
 };
 
-// Node-style header decorations for the top-level source/self group rows —
+// Node-style header decorations for the top-level source/self group rows.
 // mirrors the flow-workbench Input/Output panels: the source label replaces the
 // raw key, the node id shows as a sublabel, and the node icon replaces the type
 // badge. Keyed by the top-level path (source node id).

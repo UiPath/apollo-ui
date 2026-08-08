@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { VariablePicker } from '@/components/ui/variable-picker';
 import { cn } from '@/lib';
 import type { LockableFieldType, LockableValueFieldOption } from '../types';
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from '../types';
@@ -214,40 +215,41 @@ export function FieldHeader({
                     </Button>
                   </PopoverContent>
                 </Popover>
-                <DropdownMenu>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          aria-label="Insert variable"
-                          disabled={variables.length === 0 || !onValueChange}
-                          className={cn(
-                            'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50',
-                            collapsedPaddingClass
-                          )}
-                        >
-                          <Braces size={12} />
-                          <span className={collapsedTextClass}>Insert</span>
-                          <ChevronDown size={9} className={collapsedTextClass} />
-                        </button>
-                      </DropdownMenuTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Insert variable</TooltipContent>
-                  </Tooltip>
-                  <DropdownMenuContent align="end" className="w-48">
-                    {variables.map((variable) => (
-                      <DropdownMenuItem
-                        key={variable.value}
-                        onClick={() =>
-                          onValueChange?.(value ? `${value} ${variable.value}` : variable.value)
-                        }
-                      >
-                        {variable.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <VariablePicker
+                  disabled={variables.length === 0 || !onValueChange}
+                  items={[
+                    {
+                      id: 'vars',
+                      label: '$vars',
+                      type: 'object',
+                      children: variables.map((variable) => ({
+                        id: variable.value,
+                        label: variable.label,
+                        value: variable.value,
+                        type: 'string',
+                      })),
+                    },
+                  ]}
+                  onSelect={(variable) => {
+                    if (!variable.value) return;
+                    onValueChange?.(value ? `${value} ${variable.value}` : variable.value);
+                  }}
+                >
+                  <button
+                    type="button"
+                    aria-label="Insert variable"
+                    title="Insert variable"
+                    disabled={variables.length === 0 || !onValueChange}
+                    className={cn(
+                      'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50',
+                      collapsedPaddingClass
+                    )}
+                  >
+                    <Braces size={12} />
+                    <span className={collapsedTextClass}>Insert</span>
+                    <ChevronDown size={9} className={collapsedTextClass} />
+                  </button>
+                </VariablePicker>
               </>
             )}
           </div>

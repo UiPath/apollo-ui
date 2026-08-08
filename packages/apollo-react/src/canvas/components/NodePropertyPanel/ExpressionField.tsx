@@ -1,4 +1,5 @@
-import { ChevronDown, Maximize2, Redo2, Sparkles, Undo2 } from 'lucide-react';
+import { VariablePicker, type VariablePickerItem } from '@uipath/apollo-wind';
+import { Maximize2, Redo2, Sparkles, Undo2 } from 'lucide-react';
 
 export type ExpressionMode = 'expr' | 'json';
 
@@ -13,6 +14,10 @@ export interface ExpressionFieldProps {
   description?: string;
   /** Called when the user switches between expr and json modes. */
   onModeChange?: (mode: ExpressionMode) => void;
+  /** Variables available from the Insert action. */
+  variables?: VariablePickerItem[];
+  /** Called when a variable is selected for insertion. */
+  onInsertVariable?: (variable: VariablePickerItem) => void;
 }
 
 /**
@@ -30,6 +35,8 @@ export function ExpressionField({
   mode = 'expr',
   description,
   onModeChange,
+  variables = [],
+  onInsertVariable,
 }: ExpressionFieldProps) {
   const expression = value ?? '';
   const activeMode = mode;
@@ -49,16 +56,11 @@ export function ExpressionField({
             >
               <Sparkles size={12} />
             </button>
-            <button
-              type="button"
-              title="Insert variable"
-              aria-label="Insert variable"
-              className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-            >
-              <span className="font-mono text-[10px]">{'{x}'}</span>
-              <span>Insert</span>
-              <ChevronDown size={9} />
-            </button>
+            <VariablePicker
+              items={variables}
+              onSelect={(variable) => onInsertVariable?.(variable)}
+              disabled={variables.length === 0 || !onInsertVariable}
+            />
           </div>
         </div>
       )}
