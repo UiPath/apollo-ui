@@ -214,6 +214,8 @@
   "run_results": "실행 결과",
   "run_results_description": "이 테스트 실행의 에이전트 수준 결과",
   "run_selected": "선택한 항목 실행({{count}})",
+  "run_unavailable": "실행 불가",
+  "run_unavailable_description": "존재하지 않거나 실행이 완료되지 않았습니다.",
   "runs_in_progress": "실행 진행 중",
   "russian": "러시아어",
   "save_and_rerun": "저장 및 다시 실행",

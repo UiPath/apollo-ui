@@ -214,6 +214,8 @@
   "run_results": "运行结果",
   "run_results_description": "此测试运行的智能体级结果",
   "run_selected": "运行选定项 ( {{count}} )",
+  "run_unavailable": "运行不可用",
+  "run_unavailable_description": "此运行不存在或尚未完成运行。",
   "runs_in_progress": "正在进行的运行",
   "russian": "俄语",
   "save_and_rerun": "保存并重新运行",

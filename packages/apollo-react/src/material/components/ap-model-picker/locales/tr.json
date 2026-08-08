@@ -42,5 +42,9 @@
   "modelPicker.useCustomModel.title": "Özel model kullan",
   "modelPicker.tag.deprecating.tooltip": "{replacement} ile değiştirilecek",
   "modelPicker.empty.noMatch": "\"{query}\" ile eşleşen model yok",
-  "modelPicker.empty.noModels": "Model yok."
+  "modelPicker.empty.noModels": "Model yok.",
+  "modelPicker.deleteConfirm.title": "Özel modeli sil",
+  "modelPicker.deleteConfirm.message": "Bu işlem, \"{name}\" Bu kiracıdaki herkes için yapılandırma. Bu eylem geri alınamaz.",
+  "modelPicker.deleteConfirm.cancel": "İptal",
+  "modelPicker.deleteConfirm.confirm": "Sil"
 }

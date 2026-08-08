@@ -214,6 +214,8 @@
   "run_results": "Résultats d’exécution",
   "run_results_description": "Résultats au niveau de l’agent pour cette exécution de test",
   "run_selected": "Exécuter la sélection ({{count}})",
+  "run_unavailable": "Exécution non disponible",
+  "run_unavailable_description": "Cette exécution n’existe pas ou est toujours en cours.",
   "runs_in_progress": "Exécutions en cours",
   "russian": "Russe",
   "save_and_rerun": "Enregistrer et exécuter une nouvelle fois",

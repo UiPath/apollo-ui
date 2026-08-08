@@ -214,6 +214,8 @@
   "run_results": "Ausführungsergebnisse",
   "run_results_description": "Ergebnisse auf Agent-Ebene für diese Testausführung",
   "run_selected": "Ausgewählte ausführen ({{count}})",
+  "run_unavailable": "Ausführung nicht verfügbar",
+  "run_unavailable_description": "Diese Ausführung ist nicht vorhanden oder wurde nicht fertiggestellt.",
   "runs_in_progress": "Laufende Ausführungen",
   "russian": "Russisch",
   "save_and_rerun": "Speichern und erneut ausführen",

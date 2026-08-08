@@ -42,5 +42,9 @@
   "modelPicker.useCustomModel.title": "使用自訂模型",
   "modelPicker.tag.deprecating.tooltip": "將取代為 {replacement}",
   "modelPicker.empty.noMatch": "沒有與「{query}」相符的模型。",
-  "modelPicker.empty.noModels": "沒有可用的模型。"
+  "modelPicker.empty.noModels": "沒有可用的模型。",
+  "modelPicker.deleteConfirm.title": "刪除自訂模型",
+  "modelPicker.deleteConfirm.message": "這會永久刪除 “{name}”為此租用戶中的每一個人配置。此動作無法復原。",
+  "modelPicker.deleteConfirm.cancel": "取消",
+  "modelPicker.deleteConfirm.confirm": "刪除"
 }
