@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.17.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.17.3...@uipath/apollo-react@6.17.4) (2026-08-08)
+
+### Bug Fixes
+
+* **apollo-react:** add accessible name to toolbox search clear button ([6d544c6](https://github.com/UiPath/apollo-ui/commit/6d544c6eec48a33c0caa66a54f25a9a82aeed864))
+
 ## [@uipath/apollo-react-v6.17.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.17.2...@uipath/apollo-react@6.17.3) (2026-08-07)
 
 ### Bug Fixes
