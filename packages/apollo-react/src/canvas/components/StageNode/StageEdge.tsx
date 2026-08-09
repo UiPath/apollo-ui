@@ -160,6 +160,8 @@ function StageEdgeComponent({
   arrowSize,
   ...rest
 }: Props) {
+  // React Flow supplies live coordinates for the registered source and target handles.
+  // Memoize their container for StageEdgeInnerMemo without reconstructing fixed node-side geometry.
   const geometry = useMemo(
     () => ({ sourceX, sourceY, targetX, targetY }),
     [sourceX, sourceY, targetX, targetY]
