@@ -30,17 +30,12 @@ export function StageConnectionEdge({
     return null;
   }
 
-  const sourceX = fromX;
-  const sourceY = fromY;
-  const targetX = toX;
-  const targetY = toY;
-
   const [pathData] = getBezierPath({
-    sourceX,
-    sourceY,
+    sourceX: fromX,
+    sourceY: fromY,
     sourcePosition: fromPosition,
-    targetX,
-    targetY,
+    targetX: toX,
+    targetY: toY,
     targetPosition: toPosition,
   });
 
