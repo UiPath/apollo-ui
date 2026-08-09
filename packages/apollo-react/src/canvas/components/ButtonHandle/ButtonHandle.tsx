@@ -278,9 +278,7 @@ const ButtonHandleBase = ({
       onMouseDown={unmarkAsHovered}
       className={cx(
         'flex! items-center! justify-center! border-0! rounded-none! bg-transparent!',
-        visible
-          ? 'cursor-crosshair! pointer-events-auto! opacity-100'
-          : 'cursor-default! pointer-events-none! opacity-0'
+        visible ? 'opacity-100' : 'pointer-events-none! opacity-0'
       )}
       style={{
         width: handleWidth,

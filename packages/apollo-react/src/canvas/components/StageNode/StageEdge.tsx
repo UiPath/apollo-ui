@@ -1,10 +1,6 @@
 import styled from '@emotion/styled';
-import type { EdgeProps, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
-import {
-  EdgeLabelRenderer,
-  getSmoothStepPath,
-  useStore,
-} from '@uipath/apollo-react/canvas/xyflow/react';
+import type { EdgeProps } from '@uipath/apollo-react/canvas/xyflow/react';
+import { EdgeLabelRenderer, getSmoothStepPath } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useMemo } from 'react';
 
 export const StageEdgeLabel = styled.div`
@@ -40,15 +36,6 @@ interface StageEdgeGeometry {
 
 interface StageEdgeInnerProps extends Omit<Props, 'sourceX' | 'sourceY' | 'targetX' | 'targetY'> {
   geometry: StageEdgeGeometry;
-}
-
-function stageEdgeGeometryEquality(previous: StageEdgeGeometry, next: StageEdgeGeometry): boolean {
-  return (
-    previous.sourceX === next.sourceX &&
-    previous.sourceY === next.sourceY &&
-    previous.targetX === next.targetX &&
-    previous.targetY === next.targetY
-  );
 }
 
 function getArrowFromBezier(path: string, arrowSize: number) {
@@ -173,17 +160,10 @@ function StageEdgeComponent({
   arrowSize,
   ...rest
 }: Props) {
-  const geometry = useStore((state: ReactFlowState): StageEdgeGeometry => {
-    const sourceNode = state.nodeLookup.get(rest.source);
-    const targetNode = state.nodeLookup.get(rest.target);
-
-    return {
-      sourceX: sourceNode ? sourceNode.position.x + (sourceNode.measured?.width ?? 0) : sourceX,
-      sourceY: sourceNode ? sourceNode.position.y + 32 : sourceY,
-      targetX: targetNode?.position.x ?? targetX,
-      targetY: targetNode ? targetNode.position.y + 32 : targetY,
-    };
-  }, stageEdgeGeometryEquality);
+  const geometry = useMemo(
+    () => ({ sourceX, sourceY, targetX, targetY }),
+    [sourceX, sourceY, targetX, targetY]
+  );
 
   return (
     <StageEdgeInnerMemo

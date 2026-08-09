@@ -1,7 +1,9 @@
 import { Position, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useMemo } from 'react';
 import type { HandleGroupManifest } from '../../schema/node-definition';
+import { selectIsConnecting } from '../../utils/NodeUtils';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
+import { HANDLE_CROSS_AXIS_SIZE_PX } from '../ButtonHandle/ButtonHandleStyleUtils';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 
 const StageNodeHandlesInner = ({
@@ -17,7 +19,7 @@ const StageNodeHandlesInner = ({
   isHovered: boolean;
   isException?: boolean;
 }) => {
-  const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
+  const isConnecting = useStore(selectIsConnecting);
   const connectedHandleIds = useConnectedHandles(id);
   const hasConnections = connectedHandleIds.size > 0;
   const shouldShowHandles = useMemo(() => {
@@ -69,6 +71,9 @@ const StageNodeHandlesInner = ({
                 },
               ],
               visible: selected || isHovered || isConnecting,
+              customPositionAndOffsets: {
+                width: HANDLE_CROSS_AXIS_SIZE_PX,
+              },
             },
             {
               position: Position.Bottom,

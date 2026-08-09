@@ -184,6 +184,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
     useStore: (selector: (state: Record<string, unknown>) => unknown) => {
       const mockState = {
         transform: [0, 0, 1],
+        connection: { inProgress: false },
         connectionClickStartHandle: null,
       };
       return selector(mockState);
