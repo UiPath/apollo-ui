@@ -169,6 +169,7 @@ describe('ButtonHandles', () => {
 
     const handle = screen.getByTestId('handle');
     expect(handle).toHaveClass('opacity-100');
+    expect(handle).not.toHaveClass('pointer-events-auto!');
 
     rerender(
       <ButtonHandles
@@ -179,7 +180,7 @@ describe('ButtonHandles', () => {
       />
     );
 
-    expect(handle).toHaveClass('opacity-0');
+    expect(handle).toHaveClass('pointer-events-none!', 'opacity-0');
   });
 
   it('positions handles correctly for different positions', () => {

@@ -49,6 +49,11 @@
   z-index: 1002 !important;
 }
 
+/* Keep the temporary drag-to-connect edge visible as it crosses stage nodes. */
+svg.react-flow__connectionline {
+  z-index: 1003 !important;
+}
+
 /**
  * Keep the edge currently under the pointer visually continuous at crossings.
  * React Flow elevates selected edges to 1000; hover takes temporary precedence

@@ -24,19 +24,16 @@ export function StageConnectionEdge({
   toY,
   fromPosition,
   toPosition,
-  fromNode,
-  toNode,
 }: ConnectionLineComponentProps) {
   // Check if we have valid coordinates
   if (fromX === undefined || fromY === undefined || toX === undefined || toY === undefined) {
     return null;
   }
 
-  const sourceX = fromNode ? fromNode.position.x + (fromNode.measured?.width ?? 0) : fromX;
-  const sourceY = fromNode?.position.y ? fromNode.position.y + 32 : fromY;
-
-  const targetX = toNode ? toNode.position.x : toX;
-  const targetY = toNode ? toNode.position.y + 32 : toY;
+  const sourceX = fromX;
+  const sourceY = fromY;
+  const targetX = toX;
+  const targetY = toY;
 
   const [pathData] = getBezierPath({
     sourceX,
