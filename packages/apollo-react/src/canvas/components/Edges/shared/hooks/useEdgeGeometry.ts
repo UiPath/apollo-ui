@@ -2,6 +2,7 @@ import type { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
 import { useEdgePath } from '../../../../hooks';
 import { ARROW_ANGLE_MAP, ARROW_OFFSETS, EDGE_CONSTANTS } from '../constants';
+import { useEdgeLineJumps } from '../crossings';
 import {
   buildPathVertices,
   createRoundedPath,
@@ -15,6 +16,8 @@ const EMPTY_SEGMENTS: Segment[] = [];
 
 export type UseEdgeGeometryArgs = {
   routing: EdgeRouting;
+  /** Edge id — the key this edge's polyline is published under for line jumps. */
+  edgeId: string;
   /** Source node id — used by handle routing for loop detection. */
   sourceNodeId: string;
   /** Target node id — used by handle routing for loop detection. */
@@ -50,6 +53,12 @@ export type UseEdgeGeometryArgs = {
    * arrow polygon would have filled.
    */
   hideArrowHead?: boolean;
+  /**
+   * When true, this edge shares its polyline with the other opted-in edges and
+   * hops over the ones it crosses. Waypoint routing only — handle-routed edges
+   * produce a path string with no vertices to intersect.
+   */
+  enableLineJumps?: boolean;
 };
 
 export type EdgeGeometry = {
@@ -79,6 +88,7 @@ export type EdgeGeometry = {
 export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
   const {
     routing,
+    edgeId,
     sourceNodeId,
     targetNodeId,
     sourceHandleId,
@@ -93,6 +103,7 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
     autoRouted = false,
     enableSegments = true,
     hideArrowHead = false,
+    enableLineJumps = false,
   } = args;
 
   const arrowOffset = ARROW_OFFSETS[targetPosition];
@@ -131,9 +142,14 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
     [enableSegments, pathPoints]
   );
 
+  // Publishing the vertices and reading back the crossings happens between the
+  // two halves of the waypoint pipeline: jumps are derived from `pathPoints` and
+  // only ever change the path string, so this can't feed back into itself.
+  const jumps = useEdgeLineJumps(edgeId, pathPoints, isWaypoint && enableLineJumps);
+
   const waypointPath = useMemo(
-    () => createRoundedPath(pathPoints, EDGE_CONSTANTS.BORDER_RADIUS),
-    [pathPoints]
+    () => createRoundedPath(pathPoints, EDGE_CONSTANTS.BORDER_RADIUS, jumps),
+    [pathPoints, jumps]
   );
 
   const handle = useEdgePath({

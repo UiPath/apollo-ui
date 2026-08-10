@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { type CSSProperties, memo } from 'react';
 import { EDGE_COLORS, EDGE_CONSTANTS, EDGE_DASHARRAY, EDGE_PATH_TRANSITION } from '../constants';
 import type { EdgeStrokeStyle } from '../types';
 
@@ -38,8 +38,12 @@ export type EdgePathProps = {
  *   1. Invisible thick stroke for hit testing
  *   2. Wide soft outline when selected
  *   3. The visible path itself
+ *
+ * Memoized: an edge re-renders for reasons that leave the stroke alone (toolbar
+ * state, a line jump forming elsewhere on the canvas), and reconciling three
+ * `path` elements for an unchanged `d` is the most expensive part of that.
  */
-export function EdgePath(props: EdgePathProps) {
+export const EdgePath = memo(function EdgePath(props: EdgePathProps) {
   const {
     d,
     color,
@@ -98,4 +102,4 @@ export function EdgePath(props: EdgePathProps) {
       />
     </>
   );
-}
+});

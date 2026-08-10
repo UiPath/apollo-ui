@@ -1,5 +1,5 @@
 import { Position, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/react';
-import { type MouseEvent, memo, useCallback, useRef, useState } from 'react';
+import { type MouseEvent, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { EdgeToolbar, useEdgeToolbarState } from '../Toolbar';
@@ -30,6 +30,7 @@ import type { CanvasEdgeProps } from './shared/types';
  * - `enableEditing`   — drag/insert/remove waypoints (waypoint routing only)
  * - `enableExecution` — subscribe to execution + validation status
  * - `enableToolbar`   — render add-node toolbar
+ * - `enableLineJumps` — arc over crossing edges (waypoint routing only)
  */
 export const CanvasEdge = memo(function CanvasEdge({
   id,
@@ -113,6 +114,7 @@ export const CanvasEdge = memo(function CanvasEdge({
 
   const geometry = useEdgeGeometry({
     routing,
+    edgeId: id,
     sourceNodeId: source,
     targetNodeId: target,
     sourceHandleId,
@@ -128,6 +130,7 @@ export const CanvasEdge = memo(function CanvasEdge({
     autoRouted: waypoints.length === 0,
     enableSegments: editingEnabled,
     hideArrowHead,
+    enableLineJumps: !!data?.enableLineJumps,
   });
 
   const editor = useWaypointEditor({
@@ -171,6 +174,10 @@ export const CanvasEdge = memo(function CanvasEdge({
 
   const showEditingChrome = editingEnabled && (isHovered || selected || editor.isDragging);
   const opacity = (style?.opacity as number | undefined) ?? 1;
+
+  // Held stable so the memoized arrow survives re-renders that move nothing but
+  // the stroke, such as a line jump forming somewhere along the path.
+  const arrowTarget = useMemo(() => ({ x: targetX, y: targetY }), [targetX, targetY]);
 
   return (
     <>
@@ -219,7 +226,7 @@ export const CanvasEdge = memo(function CanvasEdge({
 
         {!hideArrowHead && (
           <EdgeArrow
-            target={{ x: targetX, y: targetY }}
+            target={arrowTarget}
             angle={geometry.arrow.angle}
             offset={geometry.arrow.offset}
             color={color}

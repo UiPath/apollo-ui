@@ -3,6 +3,7 @@ import { TooltipProvider } from '@uipath/apollo-wind/components/ui/tooltip';
 import type { ReactNode } from 'react';
 import { ApI18nProvider } from '../../../i18n';
 import { CanvasTooltipProviderMarker } from '../CanvasTooltip';
+import { EdgeCrossingsProvider } from '../Edges/shared/crossings';
 import { StickyNoteCanvasOptionsProvider } from '../StickyNoteNode/StickyNoteCanvasOptionsContext';
 import type { StickyNoteCanvasOptions } from '../StickyNoteNode/StickyNoteNode.types';
 import type { BaseCanvasProps } from './BaseCanvas.types';
@@ -42,11 +43,13 @@ export function CanvasProviders({
         <TooltipProvider delayDuration={200} skipDelayDuration={100}>
           <CanvasTooltipProviderMarker>
             <ConnectedHandlesProvider edges={edges}>
-              <BaseCanvasModeProvider mode={mode}>
-                <StickyNoteCanvasOptionsProvider options={stickyNoteOptions}>
-                  <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
-                </StickyNoteCanvasOptionsProvider>
-              </BaseCanvasModeProvider>
+              <EdgeCrossingsProvider>
+                <BaseCanvasModeProvider mode={mode}>
+                  <StickyNoteCanvasOptionsProvider options={stickyNoteOptions}>
+                    <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
+                  </StickyNoteCanvasOptionsProvider>
+                </BaseCanvasModeProvider>
+              </EdgeCrossingsProvider>
             </ConnectedHandlesProvider>
           </CanvasTooltipProviderMarker>
         </TooltipProvider>

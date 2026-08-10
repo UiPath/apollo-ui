@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { EDGE_CONSTANTS } from '../constants';
 import type { Point } from '../types';
 
@@ -15,7 +16,18 @@ export type EdgeArrowProps = {
   opacity?: number;
 };
 
-export function EdgeArrow({ target, angle, offset, color, opacity = 1 }: EdgeArrowProps) {
+/**
+ * Memoized: the arrow is pinned to the target anchor, so it survives every
+ * re-render driven by the rest of the path. `target` must therefore be a stable
+ * reference (`angle` and `offset` already resolve to module constants).
+ */
+export const EdgeArrow = memo(function EdgeArrow({
+  target,
+  angle,
+  offset,
+  color,
+  opacity = 1,
+}: EdgeArrowProps) {
   const tipX = target.x;
   const tipY = target.y;
   const leftX = tipX - ARROW_SIZE * Math.cos(angle - ARROW_HALF_ANGLE);
@@ -35,4 +47,4 @@ export function EdgeArrow({ target, angle, offset, color, opacity = 1 }: EdgeArr
       }}
     />
   );
-}
+});

@@ -34,6 +34,12 @@ export const EDGE_CONSTANTS = {
   /** Distance the arrow sits inset from the target node edge */
   ARROW_OFFSET: 8,
   /**
+   * Radius of the arc drawn where an edge hops over a crossing edge. Also sets
+   * the minimum clearance a jump needs from a corner, and half the minimum
+   * spacing between two jumps on the same straight run.
+   */
+  LINE_JUMP_RADIUS: 5,
+  /**
    * Minimum distance the path travels perpendicular to a node face before it
    * is allowed to turn. Keeps the connector from folding back across the node
    * when the adjacent waypoint sits behind the exit direction.
