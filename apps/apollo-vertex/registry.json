@@ -1783,6 +1783,12 @@
           "color-warning-foreground": "var(--warning-foreground)",
           "color-destructive": "var(--destructive)",
           "color-muted-foreground": "var(--muted-foreground)"
+        },
+        "light": {
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
+        },
+        "dark": {
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
         }
       },
       "files": [
