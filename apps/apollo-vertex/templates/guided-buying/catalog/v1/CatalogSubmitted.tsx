@@ -2,7 +2,7 @@
 
 import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Clock, Info } from "lucide-react";
+import { Clock } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
@@ -91,6 +91,9 @@ export function CatalogSubmitted() {
   const approver = requestDetails?.approver ?? DEFAULT_APPROVER;
   const costCenter = requestDetails?.costCenter ?? DEFAULT_COST_CENTER;
   const approverName = approver.split(" · ")[0];
+  // The request's own generated title, e.g. "15 laptops for Fusion Event
+  // contractors" — the purpose line under the product name, never authored.
+  const requestPurpose = getRequestDetail(REQUEST_ID)?.request;
 
   const total = items.reduce(
     (sum, i) => sum + activePrice(i, BASIS) * (quantities[i.id] ?? 0),
@@ -157,14 +160,9 @@ export function CatalogSubmitted() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.length]); // re-checked once the seed effect's cart update lands
 
-  // The request is submitted — leaving empties the cart for the next one.
-  const backToBuy = () => {
-    clear();
-    void navigate({ to: "/buy" });
-  };
-
-  // Header's "New request" — same destination as Back to Buy; the reset
-  // itself happens once BuyFlow mounts fresh at /buy.
+  // Shared by the header's "New request" control and the footer's
+  // secondary button — the reset itself happens once BuyFlow mounts fresh
+  // at /buy.
   const startNewRequest = () => {
     clear();
     startFresh();
@@ -226,12 +224,12 @@ export function CatalogSubmitted() {
                   variants={fadeUpVariants(reduceMotion)}
                   className="mt-1.5 text-center text-sm text-muted-foreground"
                 >
-                  {`It's with ${approverName} for approval. You'll be notified when it's decided.`}
+                  You&apos;ll be notified when it&apos;s decided.
                 </motion.p>
 
-                {/* Recap as a receipt: reference number, item + thumbnail, the
-                    total as the card's largest element, then the two routing
-                    fields quietly below a divider. */}
+                {/* One card, one object (the request): reference number, the
+                    product as the hero, the stage track, then cost and
+                    routing as quiet metadata below a divider. */}
                 {items.length > 0 && (
                   <motion.section
                     variants={fadeUpVariants(reduceMotion)}
@@ -242,103 +240,101 @@ export function CatalogSubmitted() {
                     </p>
 
                     <div className="mt-3 flex items-center gap-3">
-                      <BrandMark item={items[0]} />
-                      <div className="min-w-0 flex-1 space-y-0.5">
+                      <BrandMark item={items[0]} size="lg" />
+                      <div className="min-w-0 flex-1">
                         {items.map((item) => (
                           <p
                             key={item.id}
-                            className="truncate font-medium text-foreground"
+                            className="truncate text-xl font-semibold tracking-tight text-foreground"
                           >
                             {quantities[item.id] ?? 0} × {item.name}
                           </p>
                         ))}
+                        {requestPurpose != null && (
+                          <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                            {requestPurpose}
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <div className="mt-4">
-                      <p className="text-2xl font-semibold tracking-tight text-foreground">
-                        {formatPrice(total, "USD")}
-                      </p>
-                      {savings > 0 && (
-                        <p className="mt-0.5 text-sm font-medium text-success">
-                          EPP savings {formatPrice(savings, "USD")} applied
-                        </p>
-                      )}
+                    <div className="mt-4 border-t pt-4">
+                      <JourneyBar
+                        stages={[
+                          { label: "Submitted · Jul 21", state: "done" },
+                          { label: "Approval · Alex Chen", state: "active" },
+                          { label: "PO sent", state: "upcoming" },
+                          { label: "Received", state: "upcoming" },
+                        ]}
+                        ownerNote={
+                          <span className="inline-flex items-center gap-1.5">
+                            <Clock className="size-3 shrink-0" aria-hidden />
+                            {getRequestDetail(REQUEST_ID)?.journeyOwnerNote}
+                          </span>
+                        }
+                      />
                     </div>
 
-                    <div className="mt-4 grid grid-cols-2 gap-4 border-t pt-4">
+                    <div className="mt-4 grid grid-cols-3 gap-4 border-t pt-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Total</p>
+                        <p className="font-medium text-foreground">
+                          {formatPrice(total, "USD")}
+                        </p>
+                        {savings > 0 && (
+                          <p className="mt-0.5 text-xs text-success">
+                            EPP savings {formatPrice(savings, "USD")}
+                          </p>
+                        )}
+                      </div>
                       <div>
                         <p className="text-xs text-muted-foreground">
                           Charged to
                         </p>
-                        <p className="text-foreground">{costCenter}</p>
+                        <p className="font-medium text-foreground">
+                          {costCenter}
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">
-                          Routed to
+                          Delivery
                         </p>
-                        <p className="text-foreground">{approver}</p>
+                        {/* PLACEHOLDER [Delivery date/location] — the
+                            requester-side request model has no delivery
+                            field (see data.ts); bracketed until one exists. */}
+                        <p className="font-medium text-foreground">
+                          [Delivery date] · [Delivery location]
+                        </p>
                       </div>
                     </div>
                   </motion.section>
                 )}
-
-                {/* Approval chain — what happens next after submission. Same
-                    card treatment as the recap above. */}
-                <motion.section
-                  variants={fadeUpVariants(reduceMotion)}
-                  className={cn(...GLASS_CLASSES, "mt-6 px-4 py-3.5")}
-                >
-                  <p className="mb-3 text-xs font-semibold text-muted-foreground">
-                    What happens next
-                  </p>
-                  <JourneyBar
-                    stages={[
-                      { label: "Submitted · Jul 21", state: "done" },
-                      { label: "Approval · Alex Chen", state: "active" },
-                      { label: "PO sent", state: "upcoming" },
-                      { label: "Received", state: "upcoming" },
-                    ]}
-                    ownerNote={
-                      <span className="inline-flex items-center gap-1.5">
-                        <Clock className="size-3 shrink-0" aria-hidden />
-                        {getRequestDetail(REQUEST_ID)?.journeyOwnerNote}
-                      </span>
-                    }
-                  />
-                </motion.section>
-
-                {/* Caveat sits just above the action bar — this screen predicts
-                    a decision timeline, same disclosure as the other AI surfaces. */}
-                <p className="mt-6 flex items-center gap-1.5 px-1 text-xs text-muted-foreground">
-                  <Info className="size-3.5 shrink-0" aria-hidden />
-                  The output is AI generated. Please review.
-                </p>
               </motion.div>
             </BuyScaffold>
           </div>
 
-          {/* Track this request is primary — it's the natural next step;
-              Back to Buy is secondary. The request also lives on in My Requests. */}
+          {/* Both actions on the right, adjacent — Track request is the
+              natural next step and stays primary; Start new request is
+              secondary, to its left. No left-side action on this step. */}
           <FlowFooterBar
             bordered={overflowing}
-            left={
-              <Button variant="outline" onClick={backToBuy}>
-                Back to Buy
-              </Button>
-            }
             right={
-              <Button
-                onClick={() => {
-                  clear();
-                  void navigate({
-                    to: "/requests/$id",
-                    params: { id: REQUEST_ID },
-                  });
-                }}
-              >
-                Track this request
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={startNewRequest}>
+                  Start new request
+                </Button>
+                <Button
+                  onClick={() => {
+                    clear();
+                    void navigate({
+                      to: "/requests/$id",
+                      params: { id: REQUEST_ID },
+                    });
+                  }}
+                >
+                  Track request
+                </Button>
+              </div>
             }
           />
         </div>
