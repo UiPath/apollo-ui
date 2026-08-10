@@ -47,6 +47,7 @@ import { CATALOG_ITEMS, leadTime } from "../catalog/v1/data";
 import { P1 } from "../P1";
 import { P2 } from "../P2";
 import { type ActivityStage, ActivityTrack } from "./ActivityTrack";
+import { avatarColorFor } from "./avatar-color";
 import {
   getRequestDetail,
   getRequestRow,
@@ -54,7 +55,7 @@ import {
 } from "./data";
 import { ReceiptModal } from "./ReceiptModal";
 import { RecordEntry } from "./RecordEntry";
-import { useRequests } from "./requests-context";
+import { noteProvenance, useRequests } from "./requests-context";
 
 /** Marks every stage up to and including `throughLabel` done, and the one
  * right after it active — the same vocabulary the seed data itself uses for
@@ -522,10 +523,22 @@ export function RequestWindow() {
   const trackStages: ActivityStage[] = (detail.journeyStages ?? []).map(
     (stage) => {
       if (stage.label === "Submitted" || stage.label === "Received") {
-        return { ...stage, person: { initials: requesterInitials } };
+        return {
+          ...stage,
+          person: {
+            initials: requesterInitials,
+            name: row?.requester ?? "Requester",
+          },
+        };
       }
       if (stage.label === "Approved" && detail.approver != null) {
-        return { ...stage, person: { initials: approverInitials } };
+        return {
+          ...stage,
+          person: {
+            initials: approverInitials,
+            name: approverFullName ?? "Your approver",
+          },
+        };
       }
       return stage;
     },
@@ -577,7 +590,15 @@ export function RequestWindow() {
   // happened — not status changes, those live on the track above, not here.
   type LogEntry =
     | { kind: "agent"; text: string; timestamp?: string }
-    | { kind: "user"; text: string; timestamp: string }
+    | {
+        kind: "user";
+        text: string;
+        timestamp: string;
+        provenance?: string;
+        /** Who actually wrote it — a thread note can come from anyone in
+         * the conversation, not only the requester this page belongs to. */
+        author?: string;
+      }
     | { kind: "approver"; text: string; timestamp?: string };
   const activityLog: LogEntry[] = [];
   // No opening "I configured X and sent it..." entry — that's what the AI
@@ -604,6 +625,11 @@ export function RequestWindow() {
       kind: "user",
       text: note.text,
       timestamp: `${note.author} · ${note.time}`,
+      provenance: noteProvenance(
+        note,
+        detail.teamsChannel ?? "[Teams channel name]",
+      ),
+      author: note.author,
     });
   }
   // The confirmation itself is a record entry too — quantity received and
@@ -705,7 +731,13 @@ export function RequestWindow() {
               <PageHeaderFieldLabel>Requester</PageHeaderFieldLabel>
               <PageHeaderFieldValue className="flex items-center gap-1.5">
                 <Avatar className="size-[18px] shrink-0">
-                  <AvatarFallback className="bg-muted text-[8px] font-semibold text-muted-foreground">
+                  <AvatarFallback
+                    className={cn(
+                      "text-[8px] font-semibold",
+                      avatarColorFor(row.requester).bg,
+                      avatarColorFor(row.requester).fg,
+                    )}
+                  >
                     {requesterInitials}
                   </AvatarFallback>
                 </Avatar>
@@ -718,11 +750,17 @@ export function RequestWindow() {
               <PageHeaderFieldLabel>Approver</PageHeaderFieldLabel>
               <PageHeaderFieldValue className="flex items-center gap-1.5">
                 <Avatar className="size-[18px] shrink-0">
-                  <AvatarFallback className="bg-primary/20 text-[8px] font-semibold text-primary">
+                  <AvatarFallback
+                    className={cn(
+                      "text-[8px] font-semibold",
+                      avatarColorFor(approverFullName ?? "Your approver").bg,
+                      avatarColorFor(approverFullName ?? "Your approver").fg,
+                    )}
+                  >
                     {approverInitials}
                   </AvatarFallback>
                 </Avatar>
-                {detail.approver.split(" · ")[0]}
+                {approverFullName}
               </PageHeaderFieldValue>
             </PageHeaderField>
           )}
@@ -944,17 +982,27 @@ export function RequestWindow() {
                     initials={
                       entry.kind === "approver"
                         ? approverInitials
-                        : requesterInitials
+                        : entry.kind === "user" && entry.author != null
+                          ? entry.author
+                              .split(" ")
+                              .map((w) => w[0])
+                              .join("")
+                              .slice(0, 2)
+                              .toUpperCase()
+                          : requesterInitials
                     }
                     name={
                       entry.kind === "user"
-                        ? (row?.requester ?? "You")
+                        ? (entry.author ?? row?.requester ?? "You")
                         : entry.kind === "approver"
                           ? (approverFullName ?? "Your approver")
                           : "AI Assistant"
                     }
                     timestamp={entry.timestamp}
                     text={entry.text}
+                    provenance={
+                      entry.kind === "user" ? entry.provenance : undefined
+                    }
                   />
                 ))}
                 {/* P2-only — the P1 entry above stays, this appends beneath

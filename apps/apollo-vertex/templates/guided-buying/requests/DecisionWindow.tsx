@@ -1,14 +1,8 @@
 "use client";
 
 import { useNavigate, useParams } from "@tanstack/react-router";
-import {
-  History,
-  Info,
-  Link as LinkIcon,
-  MoreVertical,
-  Server,
-} from "lucide-react";
-import { useState } from "react";
+import { Info } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +11,14 @@ import {
   ButtonGroup,
   ButtonGroupSeparator,
 } from "@/components/ui/button-group";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import {
   PageHeader,
   PageHeaderActions,
+  PageHeaderActionsOverflow,
   PageHeaderBackButton,
   PageHeaderContent,
   PageHeaderDescription,
@@ -32,48 +30,40 @@ import {
   PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
-import { getDecisionDetail, REQ_2052_APPROVED_DATE } from "./data";
+import { avatarColorFor } from "./avatar-color";
+import { CommunicationRail } from "./CommunicationRail";
+import {
+  ACTION_LABEL,
+  type ActionKey,
+  DecisionActionGroup,
+  resolveActionOrder,
+  splitActionOrder,
+} from "./DecisionActionGroup";
+import { DecisionChecks } from "./DecisionChecks";
+import {
+  buildChecks,
+  DECISION_STATUS_META,
+  type DecisionStatus,
+  getDecisionDetail,
+  type RailFieldKey,
+  type SummaryMark,
+} from "./data";
 import { PORecord } from "./PORecord";
-import { RecordEntry } from "./RecordEntry";
+import {
+  RequestRecordRail,
+  type RequestRecordRailHandle,
+} from "./RequestRecordRail";
 import { useRequests } from "./requests-context";
-
-/** Same soft-highlight treatment as the requester page's AI Summary — one
- * accent phrase, no evaluative language, the sentence still reads correctly
- * without the color. */
-function Highlight({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      className="rounded-sm px-1 text-insight-900 dark:text-insight-50"
-      style={{
-        backgroundImage: "var(--ai-gradient)",
-        boxDecorationBreak: "clone",
-        WebkitBoxDecorationBreak: "clone",
-      }}
-    >
-      {children}
-    </span>
-  );
-}
+import { SendBackDialog } from "./SendBackDialog";
 
 function initialsOf(name: string): string {
   return name
@@ -84,29 +74,82 @@ function initialsOf(name: string): string {
     .toUpperCase();
 }
 
+// PLACEHOLDER [Card title] — mocks used "AI review"; "AI Summary" is the
+// current fallback, unresolved either way. Same string on every request, so
+// it lives here as a constant rather than on DecisionDetail.
+const CARD_TITLE = "AI Summary";
+
+/** A run of the AI summary sentence. Plain text renders as-is; a run with a
+ * `targetField` also gets the accent treatment and becomes interactive —
+ * hover flashes the referenced rail field, click/keyboard scrolls to it
+ * first. Same span either way — Prompt B only needs to supply new marks
+ * with `targetField` set, not new rendering code. */
+function SummaryMarkSpan({
+  mark,
+  onHighlight,
+}: {
+  mark: SummaryMark;
+  onHighlight?: (key: RailFieldKey, options?: { scroll?: boolean }) => void;
+}) {
+  const interactive = mark.targetField != null;
+  return (
+    <span
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onMouseEnter={
+        interactive ? () => onHighlight?.(mark.targetField!) : undefined
+      }
+      onClick={
+        interactive
+          ? () => onHighlight?.(mark.targetField!, { scroll: true })
+          : undefined
+      }
+      onKeyDown={
+        interactive
+          ? (e) => {
+              if (e.key !== "Enter" && e.key !== " ") return;
+              e.preventDefault();
+              onHighlight?.(mark.targetField!, { scroll: true });
+            }
+          : undefined
+      }
+      className={cn(
+        "rounded-sm px-1 text-insight-900 dark:text-insight-50",
+        interactive && "cursor-pointer",
+      )}
+      style={{
+        backgroundImage: "var(--ai-gradient)",
+        boxDecorationBreak: "clone",
+        WebkitBoxDecorationBreak: "clone",
+      }}
+    >
+      {mark.text}
+    </span>
+  );
+}
+
 /**
- * Approver decision view — /decision/$id. Chrome (header band, card
- * treatment, spacing, Communication entries) matches the requester's
- * Request Window; the shape doesn't. Alex isn't monitoring this over days
- * the way Marcus is — no stage track, no projected dates, no nudge/urgent,
- * no "where this stands" framing. This is a single reading path — summary,
- * what's in it, what the agent checked, what the requester said — ending
- * in one decision.
+ * Approver decision view — /decision/$id. Four columns: nav (unchanged,
+ * owned by the shell), the decision column (AI summary, checks, caveat),
+ * the request rail, and the communication rail. Header spans the three
+ * content columns. The action group renders in two places (header,
+ * compact; card, full size) from one ordered list and one set of
+ * handlers — never duplicated.
  */
 export function DecisionWindow() {
   const { id } = useParams({ from: "/decision/$id" });
   const navigate = useNavigate();
-  const { requestStatusOverrides, approveRequest } = useRequests();
-  const approved = requestStatusOverrides[id] === "approved";
-  const [menuOpen, setMenuOpen] = useState(false);
-  // Surfaces the PO in place rather than navigating to /po/$id — that route
-  // stays registered for the sidebar's own Linked records chip elsewhere.
+  const {
+    requestStatusOverrides,
+    approveRequest,
+    denyRequest,
+    sendBackRequest,
+    addNote,
+  } = useRequests();
   const [poOpen, setPoOpen] = useState(false);
-  const [draft, setDraft] = useState("");
-  // Captured from the composer at the moment Approve is clicked — the note
-  // "left with the decision" (see the Communication entry below), not a
-  // separate input of its own.
-  const [approvalNote, setApprovalNote] = useState<string | null>(null);
+  const [sendBackOpen, setSendBackOpen] = useState(false);
+
+  const railRef = useRef<RequestRecordRailHandle>(null);
 
   const detail = getDecisionDetail(id);
 
@@ -118,62 +161,79 @@ export function DecisionWindow() {
     );
   }
 
+  const status = (requestStatusOverrides[id] ?? "pending") as DecisionStatus;
+  const approved = status === "approved";
+  const { label: statusLabel, status: badgeStatus } =
+    DECISION_STATUS_META[status];
+
   const requesterInitials = initialsOf(detail.requester);
+  const requesterAvatarColor = avatarColorFor(detail.requester);
   const approverFirstName = detail.approver.split(" · ")[0]!;
   const approverInitials = initialsOf(approverFirstName);
-  const [shipLocation, shipAddress] = detail.shipTo.split(" · ");
-  const [department, costCode] = detail.costCenter.split(" · ");
+  const approverAvatarColor = avatarColorFor(approverFirstName);
 
-  // What the agent checked before routing this, and whether anything needs
-  // attention — derived from the packet, not asserted. "Ready" here comes
-  // straight from the itReview title, not a separate evaluative claim.
-  const deviceStatus =
-    detail.packet.itReview.title.split(" · ")[1]?.toLowerCase() ?? "reviewed";
+  // The same checks DecisionChecks renders below — the summary sentence
+  // reads from this array too, so it can't assert something the list
+  // contradicts.
+  const checks = buildChecks(detail);
+  const deviceCheck = checks.find((c) => c.key === "deviceManagement")!;
+  const deviceStatusWord = deviceCheck.status === "pass" ? "ready" : "flagged";
+  const hasException = checks.some((c) => c.status === "exception");
 
-  // Budget and device management restate in present tense once approved —
-  // "after approval" was a projection; the request itself hasn't changed,
-  // only whether it's still pending or already committed/enrolled.
-  const budgetPctLabel = approved
-    ? `${detail.packet.budget.pct} committed`
-    : `${detail.packet.budget.pct} after approval`;
-  const budgetDetail = approved
-    ? detail.packet.budget.detail.replace("remaining", "committed")
-    : detail.packet.budget.detail;
-  const enrolledMatch = detail.packet.itReview.detail.match(/for (\d+ units)/);
-  const deviceTitle = approved
-    ? detail.packet.itReview.title.replace(/Ready$/, "Enrolled")
-    : detail.packet.itReview.title;
-  const deviceDetail =
-    approved && enrolledMatch
-      ? detail.packet.itReview.detail.replace(
-          /^Enrollment pre-queued for \d+ units\./,
-          `${enrolledMatch[1]} enrolled.`,
-        )
-      : detail.packet.itReview.detail;
+  // The budget's own name, not a hardcoded "hardware budget" — REQ-2052's
+  // is a hardware budget, but the label already carries that; deriving it
+  // is what lets this sentence stay correct for a software-budget request.
+  const budgetName = detail.packet.budget.label.split(" · ")[0]!.toLowerCase();
+  const budgetMark: SummaryMark = {
+    text: `${detail.packet.budget.pct} of the ${budgetName}`,
+    targetField: "budget",
+  };
+  const deliveryMark: SummaryMark = { text: detail.expectedDelivery };
+  // Same template, different slot — an exception means the sentence can't
+  // claim nothing else needs attention, so this clause changes instead of
+  // being a second authored sentence.
+  const trailingClause = hasException
+    ? "so review what's flagged below before deciding"
+    : "so nothing else needs your attention";
 
-  const communicationEntries = [
-    {
-      isPerson: true,
-      name: detail.requester,
-      initials: requesterInitials,
-      timestamp: "2:14 PM",
-      text: detail.note,
-    },
-    ...(approved
-      ? [
-          {
-            isPerson: true,
-            name: approverFirstName,
-            initials: approverInitials,
-            timestamp: "Just now",
-            text:
-              approvalNote != null
-                ? `Approved. ${approvalNote}`
-                : "Approved this request.",
-          },
-        ]
-      : []),
-  ];
+  const handleHighlight = (key: RailFieldKey, options?: { scroll?: boolean }) =>
+    railRef.current?.highlightField(key, options);
+
+  const order = resolveActionOrder(detail.recommendation);
+  const { row, overflow } =
+    status === "pending"
+      ? splitActionOrder(order)
+      : { row: [] as ActionKey[], overflow: [] as ActionKey[] };
+  // The header exposes only the single top-ranked action — same ordered
+  // list as the card, a narrower capacity. Everything else, including the
+  // card's second row action, is one click away behind the overflow.
+  const { row: headerRow, overflow: headerOverflow } =
+    status === "pending"
+      ? splitActionOrder(order, 1)
+      : { row: [] as ActionKey[], overflow: [] as ActionKey[] };
+
+  const handleAction = (action: ActionKey) => {
+    if (action === "approve") {
+      approveRequest(id);
+      toast.success("Approved");
+    } else if (action === "reject") {
+      denyRequest(id);
+      toast.success("Rejected");
+    } else {
+      setSendBackOpen(true);
+    }
+  };
+
+  const handleSendBackSubmit = (reason: string, note: string) => {
+    addNote(id, `${reason}. ${note}`, approverFirstName);
+    sendBackRequest(id);
+    setSendBackOpen(false);
+    toast.success("Sent back");
+  };
+
+  const handleCopyLink = () => {
+    void navigator.clipboard.writeText(window.location.href);
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -189,31 +249,11 @@ export function DecisionWindow() {
         </PageHeaderNav>
 
         <PageHeaderContent className="@3xl:justify-between @3xl:pl-6">
-          {/* Status — the one piece of state that changes on this page;
-              lives in the header so it's visible without scrolling, since
-              the confirmation itself is now a transient toast, not a
-              persistent banner in the body. */}
           <PageHeaderField>
             <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
             <PageHeaderFieldValue>
-              <Badge status={approved ? "success" : "warning"}>
-                {approved ? "Approved" : "Pending decision"}
-              </Badge>
+              <Badge status={badgeStatus}>{statusLabel}</Badge>
             </PageHeaderFieldValue>
-          </PageHeaderField>
-          {/* Shows when the status changed — Status alone said what
-              happened but not when. */}
-          {approved && (
-            <PageHeaderField>
-              <PageHeaderFieldLabel>Approved</PageHeaderFieldLabel>
-              <PageHeaderFieldValue>
-                {REQ_2052_APPROVED_DATE}
-              </PageHeaderFieldValue>
-            </PageHeaderField>
-          )}
-          <PageHeaderField>
-            <PageHeaderFieldLabel>Total</PageHeaderFieldLabel>
-            <PageHeaderFieldValue>{detail.total}</PageHeaderFieldValue>
           </PageHeaderField>
           <PageHeaderField>
             <PageHeaderFieldLabel>Need by</PageHeaderFieldLabel>
@@ -223,357 +263,160 @@ export function DecisionWindow() {
             <PageHeaderFieldLabel>Requester</PageHeaderFieldLabel>
             <PageHeaderFieldValue className="flex items-center gap-1.5">
               <Avatar className="size-[18px] shrink-0">
-                <AvatarFallback className="bg-muted text-[8px] font-semibold text-muted-foreground">
+                <AvatarFallback
+                  className={cn(
+                    "text-[8px] font-semibold",
+                    requesterAvatarColor.bg,
+                    requesterAvatarColor.fg,
+                  )}
+                >
                   {requesterInitials}
                 </AvatarFallback>
               </Avatar>
               {detail.requester}
             </PageHeaderFieldValue>
           </PageHeaderField>
-          {/* Charged to, not Approver — Alex doesn't need to be told he's
-              the approver on his own decision view. */}
           <PageHeaderField>
-            <PageHeaderFieldLabel>Charged to</PageHeaderFieldLabel>
-            <PageHeaderFieldValue>{department}</PageHeaderFieldValue>
+            <PageHeaderFieldLabel>Approver</PageHeaderFieldLabel>
+            <PageHeaderFieldValue className="flex items-center gap-1.5">
+              <Avatar className="size-[18px] shrink-0">
+                <AvatarFallback
+                  className={cn(
+                    "text-[8px] font-semibold",
+                    approverAvatarColor.bg,
+                    approverAvatarColor.fg,
+                  )}
+                >
+                  {approverInitials}
+                </AvatarFallback>
+              </Avatar>
+              {approverFirstName}
+            </PageHeaderFieldValue>
           </PageHeaderField>
         </PageHeaderContent>
 
         <PageHeaderActions className="@3xl:ml-6">
-          {/* Always a ButtonGroup: one exposed action, the rest one click
-              away — before a decision that's Approve; once decided,
-              there's nothing left to approve, so View order (the one
-              thing left to do) takes its place instead of leaving a bare
-              overflow trigger with nothing exposed. */}
-          <TooltipProvider>
-            <ButtonGroup>
+          {/* One exposed action, joined visually to the overflow trigger —
+              everything else the card offers (the second row action, Reject,
+              Copy link) is one click away, never duplicated as a second
+              button here. Same order/handlers as the card, narrower
+              capacity (see headerRow above). */}
+          <ButtonGroup>
+            {headerRow.length > 0 && (
               <Button
-                onClick={
-                  approved
-                    ? () => setPoOpen(true)
-                    : () => {
-                        approveRequest(id);
-                        // Whatever's still sitting in the composer becomes
-                        // the note left with the decision (see the
-                        // Communication entry below) rather than being
-                        // silently discarded.
-                        setApprovalNote(draft.trim() || null);
-                        setDraft("");
-                        // Confirms a completed action tied directly to this
-                        // click, nothing further needed from Alex — a Sonner
-                        // toast per the in-product notification guidelines,
-                        // not a persistent banner. The Status field in the
-                        // header carries the lasting record of the change.
-                        // States only what just happened, not what happens
-                        // next — P1 and P2 disagree on who places the order.
-                        toast.success("Approved");
-                      }
-                }
+                size="sm"
+                variant="secondary"
+                onClick={() => handleAction(headerRow[0]!)}
               >
-                {approved ? "View order" : "Approve"}
+                {ACTION_LABEL[headerRow[0]!]}
               </Button>
-              <ButtonGroupSeparator className="bg-primary-600" />
-              <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-                <PopoverTrigger asChild>
-                  <Button aria-label="More actions">
-                    <MoreVertical className="size-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-48 p-1">
-                  {!approved && (
-                    <>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="flex cursor-not-allowed">
-                            <button
-                              type="button"
-                              disabled
-                              className="pointer-events-none flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium text-muted-foreground/60"
-                            >
-                              Send back
-                            </button>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">
-                          <p>Not wired in this pass.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="flex cursor-not-allowed">
-                            <button
-                              type="button"
-                              disabled
-                              className="pointer-events-none flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium text-destructive/60"
-                            >
-                              Reject
-                            </button>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">
-                          <p>Not wired in this pass.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <div className="my-1 h-px bg-border" />
-                    </>
-                  )}
-                  <button
-                    type="button"
-                    className="flex w-full items-center rounded-sm px-3 py-2 text-left text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    onClick={() => {
-                      void navigator.clipboard.writeText(window.location.href);
-                      setMenuOpen(false);
-                    }}
-                  >
-                    Copy link
-                  </button>
-                </PopoverContent>
-              </Popover>
-            </ButtonGroup>
-          </TooltipProvider>
+            )}
+            <ButtonGroupSeparator />
+            <PageHeaderActionsOverflow variant="secondary" size="icon-sm">
+              {headerOverflow.map((action) => (
+                <DropdownMenuItem
+                  key={action}
+                  variant={action === "reject" ? "destructive" : "default"}
+                  onSelect={() => handleAction(action)}
+                >
+                  {ACTION_LABEL[action]}
+                </DropdownMenuItem>
+              ))}
+              {headerOverflow.length > 0 && <DropdownMenuSeparator />}
+              <DropdownMenuItem onSelect={handleCopyLink}>
+                Copy link
+              </DropdownMenuItem>
+            </PageHeaderActionsOverflow>
+          </ButtonGroup>
         </PageHeaderActions>
       </PageHeader>
 
-      {/* Header is a shrink-0 sibling now (was scrolling away with the
-          content), and the mask fades the top 24px as content scrolls
-          under it — same fixed-header/shared-scroll treatment as the
-          requester's Request Window. */}
-      <div
-        className={cn(
-          "grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 pt-8 pb-16 sm:px-6",
-          "[mask-image:linear-gradient(to_bottom,transparent,black_24px)]",
-          "lg:grid-cols-[1fr_260px] lg:gap-8 lg:px-8",
-        )}
-      >
-        {/* ── Main column — the reading path, top to bottom ────────────── */}
-        <div className="min-w-0 space-y-5">
-          {/* AI summary — answers the approver's question, not the
-              requester's: what was checked, what (if anything) needs
-              attention. One sentence, one accent phrase. */}
-          <Card variant="glass" className="py-0">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-1.5 text-base font-bold tracking-tighter text-foreground">
-                <AiMark size={14} gradientId="gb-ai-mark" aria-hidden />
-                AI Summary
-              </div>
-              <p className="mt-5 max-w-[640px] text-[23px] font-semibold leading-snug text-foreground">
-                {approved ? (
-                  <>
-                    Now that you've approved it, I sent the purchase order to{" "}
-                    {detail.supplier}, arriving by{" "}
-                    <Highlight>{detail.expectedDelivery}</Highlight>.
-                  </>
-                ) : (
-                  <>
-                    Before this reached you, I confirmed device management is{" "}
-                    {deviceStatus} and it lands at{" "}
-                    <Highlight>
-                      {detail.packet.budget.pct} of the hardware budget
-                    </Highlight>{" "}
-                    after approval, so nothing else needs your attention.
-                  </>
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        {/* Decision column — one elevation level, no card. The glow is the
+            only marker of "this is the AI region"; it's clipped to this
+            column by the outer overflow-hidden and sits outside the
+            scrolling wrapper so it doesn't travel with scroll. */}
+        <div className="relative min-w-0 flex-1 overflow-hidden">
+          <AiGlow
+            variant="group"
+            className="top-auto -bottom-[120px] left-1/2 h-[280px] w-[36rem] opacity-60 blur-2xl dark:opacity-25"
+            style={{
+              backgroundImage: "var(--ai-gradient)",
+              transform: "translateX(-50%) rotate(-14deg)",
+            }}
+          />
+          <div className="relative h-full overflow-y-auto [mask-image:linear-gradient(to_bottom,transparent,black_16px)]">
+            <div className="max-w-[640px] space-y-5 px-4 pt-5 pb-16 sm:px-6 lg:px-8">
+              <div className="space-y-5">
+                <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+                  <AiMark size={14} gradientId="gb-ai-mark" aria-hidden />
+                  {CARD_TITLE}
+                </div>
+
+                <p className="max-w-[640px] text-[23px] font-semibold leading-snug text-foreground">
+                  {approved ? (
+                    <>
+                      Now that you've approved it, I sent the purchase order to{" "}
+                      {detail.supplier}, arriving by{" "}
+                      <SummaryMarkSpan mark={deliveryMark} />.
+                    </>
+                  ) : (
+                    <>
+                      Before this reached you, I confirmed device management is{" "}
+                      {deviceStatusWord} and it lands at{" "}
+                      <SummaryMarkSpan
+                        mark={budgetMark}
+                        onHighlight={handleHighlight}
+                      />{" "}
+                      after approval, {trailingClause}.
+                    </>
+                  )}
+                </p>
+
+                <DecisionChecks checks={checks} />
+
+                {row.length > 0 && (
+                  <div className="pt-2">
+                    <DecisionActionGroup row={row} onAction={handleAction} />
+                  </div>
                 )}
+              </div>
+
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Info className="size-3.5 shrink-0" aria-hidden />
+                The output is AI generated. Please review.
               </p>
-            </CardContent>
-          </Card>
-
-          {/* Line items */}
-          <Card variant="glass" className="py-0">
-            <CardContent className="space-y-1.5 p-5">
-              {detail.lineItems.map((item) => (
-                <div
-                  key={item.description}
-                  className="flex justify-between text-sm"
-                >
-                  <span className="text-muted-foreground">
-                    {item.description}
-                  </span>
-                  <span className="tabular-nums">{item.amount}</span>
-                </div>
-              ))}
-              <div className="flex justify-between border-t border-border pt-2 text-sm font-semibold">
-                <span>Total</span>
-                <span className="tabular-nums">{detail.total}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Decision packet — budget and device management now share the
-              same card treatment as line items, instead of two different
-              tinted blocks that matched neither. */}
-          <Card variant="glass" className="py-0">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between text-sm font-semibold text-foreground">
-                <span>{detail.packet.budget.label}</span>
-                <span>{budgetPctLabel}</span>
-              </div>
-              <div className="my-2 h-1.5 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: detail.packet.budget.pct }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">{budgetDetail}</p>
-            </CardContent>
-          </Card>
-
-          <Card variant="glass" className="py-0">
-            <CardContent className="flex items-start gap-3 p-5">
-              <Server
-                className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                aria-hidden
-              />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-foreground">
-                  {deviceTitle}
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {deviceDetail}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Caveat — below all the AI-generated content above (summary,
-              budget, device management), above everything else. */}
-          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Info className="size-3.5 shrink-0" aria-hidden />
-            The output is AI generated. Please review.
-          </p>
-
-          {/* Communication — the requester's page's entry pattern (avatar,
-              name, timestamp, message beneath), not a quoted card. A
-              composer so Alex can ask before deciding, sitting below the
-              record and visibly secondary (outline, not primary) to the
-              decision group beneath it. */}
-          <Card variant="glass" className="py-0">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-1.5 text-base font-bold tracking-tighter text-foreground">
-                <History size={14} aria-hidden />
-                Communication
-                <span className="font-normal text-muted-foreground">
-                  · {communicationEntries.length}
-                </span>
-              </div>
-              <div className="mt-4 space-y-4">
-                {communicationEntries.map((entry, i) => (
-                  <RecordEntry
-                    key={i}
-                    isPerson={entry.isPerson}
-                    name={entry.name}
-                    initials={entry.initials}
-                    timestamp={entry.timestamp}
-                    text={entry.text}
-                  />
-                ))}
-              </div>
-              <div className="mt-5 space-y-2 border-t border-border pt-5">
-                <Textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  placeholder={`Ask ${detail.requester.split(" ")[0]} a question before deciding`}
-                  className="min-h-[64px] resize-none text-sm"
-                />
-                <div className="flex items-center justify-end">
-                  <Button size="sm" variant="outline" disabled={!draft.trim()}>
-                    Send
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Approve/Send back/Reject live in the header's action slot — a
-              ButtonGroup with Approve leading, Send back and Reject in the
-              overflow. Once decided, View order takes over that same
-              header slot (see above), so this is just the plain record of
-              what happened, not a second place to take the action. */}
-          {approved && (
-            <div className="rounded-lg border border-border px-4 py-3">
-              <p className="text-sm text-foreground">
-                You approved this on {REQ_2052_APPROVED_DATE}.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* ── Reference column — same unstyled labelled-list treatment as
-            the requester page: no card, no border, just what's in it.
-            Sticky (lg: only, self-start so it doesn't stretch to the grid
-            row's full height) rather than scrolling away with the main
-            column, same as the requester's Request Window. */}
-        <div className="w-full space-y-4 pt-5 lg:max-w-[260px] lg:self-start lg:sticky lg:top-0">
-          <p className="text-base font-bold tracking-tighter text-foreground">
-            Request details
-          </p>
-          <div>
-            <p className="text-sm text-muted-foreground">Items</p>
-            <p className="mt-1 text-sm font-semibold text-foreground">
-              {detail.lineItems.map((i) => i.description).join(", ")}
-              <span className="font-normal text-muted-foreground">
-                {" "}
-                · {detail.total}
-              </span>
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Supplier</p>
-            <p className="mt-1 text-sm font-semibold text-foreground">
-              {detail.supplier}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Ship to</p>
-            <p className="mt-1 text-sm font-semibold text-foreground">
-              {shipLocation}
-            </p>
-            {shipAddress != null && (
-              <p className="text-sm font-semibold text-foreground">
-                {shipAddress}
-              </p>
-            )}
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Charged to</p>
-            <p className="mt-1 text-sm font-semibold text-foreground">
-              {department}
-            </p>
-            {costCode != null && (
-              <p className="text-sm font-semibold text-foreground">
-                {costCode}
-              </p>
-            )}
-          </div>
-          <div className="h-px bg-border" />
-          <div>
-            <p className="text-sm text-muted-foreground">Linked records</p>
-            <div className="mt-1 flex flex-wrap gap-1.5">
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/8 px-2.5 py-0.5 text-[10.5px] font-semibold text-primary">
-                <LinkIcon className="size-3 shrink-0" aria-hidden />
-                PR-2052
-              </span>
-              {/* The PO doesn't exist until approval creates it — plain and
-                  unlinked until then, a real linked record once it does. */}
-              {approved ? (
-                <button
-                  type="button"
-                  onClick={() => setPoOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/8 px-2.5 py-0.5 text-[10.5px] font-semibold text-primary"
-                >
-                  <LinkIcon className="size-3 shrink-0" aria-hidden />
-                  {detail.poNumber}
-                </button>
-              ) : (
-                <span className="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-[10.5px] text-muted-foreground">
-                  PO · created on approval
-                </span>
-              )}
             </div>
           </div>
         </div>
+
+        <div className="relative w-[280px] shrink-0 overflow-y-auto px-6">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-0 w-px bg-border [mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)]"
+          />
+          <RequestRecordRail
+            ref={railRef}
+            detail={detail}
+            status={status}
+            onOpenPo={() => setPoOpen(true)}
+          />
+        </div>
+
+        <CommunicationRail
+          detail={detail}
+          approverFirstName={approverFirstName}
+        />
       </div>
 
-      {/* Surfaces the PO without leaving the decision context — View order
-          and the Linked records chip above both just open this. */}
+      <SendBackDialog
+        open={sendBackOpen}
+        onOpenChange={setSendBackOpen}
+        onSubmit={handleSendBackSubmit}
+      />
+
+      {/* Surfaces the PO without leaving the decision context — the rail's
+          Linked records chip opens this once approved. */}
       <Sheet open={poOpen} onOpenChange={setPoOpen}>
         <SheetContent className="w-full gap-0 p-0 sm:max-w-2xl">
           <SheetHeader className="border-b">

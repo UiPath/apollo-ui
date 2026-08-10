@@ -9,6 +9,30 @@ export interface RequestNote {
   author: string;
   text: string;
   time: string;
+  /** Where the message originated. Teams and the app are two windows onto
+   * the same thread, not two threads — this is how a rendered message
+   * shows which window it came through. */
+  source: "teams" | "app";
+  /** Only meaningful when `source` is "teams". */
+  channelName?: string;
+}
+
+/**
+ * Derived provenance for a thread entry — `undefined` for app-composed
+ * notes (the app is the surface you're already looking at, so it needs no
+ * marker), the channel name for Teams-sourced ones. `RecordEntry` renders
+ * this as an inline byline marker (icon + "Teams"), not a standalone line —
+ * this function only decides *whether* a note is Teams-sourced and which
+ * channel, not how that's displayed. One function, read by both the
+ * approver's Communication rail and the requester's Request Window, so the
+ * rule can't drift between the two surfaces.
+ */
+export function noteProvenance(
+  note: RequestNote,
+  fallbackChannel: string,
+): string | undefined {
+  if (note.source !== "teams") return undefined;
+  return note.channelName ?? fallbackChannel;
 }
 
 /** The requester's confirmation that goods arrived, by request id. */
@@ -27,7 +51,17 @@ export interface RequestsContextValue {
   clearOpenRequest: () => void;
   /** Requester → buyer: notes posted from a request's detail, by request id. */
   threads: Record<string, RequestNote[]>;
-  addNote: (requestId: string, text: string) => void;
+  /** Author defaults to the requester ("Marcus Webb") — the approver side
+   * (Decision Window's composer, Send back) passes its own name so a note
+   * left there attributes correctly in this same shared thread. `source`
+   * defaults to "app" — every existing call site is unaffected. */
+  addNote: (
+    requestId: string,
+    text: string,
+    author?: string,
+    source?: "teams" | "app",
+    channelName?: string,
+  ) => void;
   /** Requester → buyer: requests the requester flagged urgent, by request id. */
   urgent: Record<string, boolean>;
   markUrgent: (requestId: string) => void;
@@ -43,9 +77,10 @@ export interface RequestsContextValue {
   /** Status written by an approval decision, by request id. Surfaces that
    * show request status read this first and fall back to the static seed
    * value when a request has no entry here. */
-  requestStatusOverrides: Record<string, "approved" | "denied">;
+  requestStatusOverrides: Record<string, "approved" | "denied" | "sent-back">;
   approveRequest: (requestId: string) => void;
   denyRequest: (requestId: string) => void;
+  sendBackRequest: (requestId: string) => void;
 }
 
 export const RequestsContext = createContext<RequestsContextValue | null>(null);
