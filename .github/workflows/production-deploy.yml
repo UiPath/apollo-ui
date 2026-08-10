@@ -25,6 +25,10 @@ jobs:
     permissions:
       contents: read
       packages: read
+    env:
+      # uipath-ubuntu-* runners have less RAM than ubuntu-latest, so Node
+      # auto-sizes its heap to ~2 GB and the Storybook build OOMs (exit 134).
+      NODE_OPTIONS: --max-old-space-size=6144
 
     steps:
       - name: Checkout code
