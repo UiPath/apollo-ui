@@ -1,7 +1,7 @@
 import type { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { snapToGrid } from '../../../utils/NodeUtils';
 import { ARROW_OFFSETS, EDGE_CONSTANTS } from './constants';
-import type { PathVertex, Point, Segment, SegmentOrientation, Waypoint } from './types';
+import type { PathJump, PathVertex, Point, Segment, SegmentOrientation, Waypoint } from './types';
 
 const { BORDER_RADIUS, MIN_SEGMENT_LENGTH, COLLINEAR_TOLERANCE: TOL } = EDGE_CONSTANTS;
 
@@ -448,51 +448,132 @@ export function extractSegments(pathPoints: PathVertex[]): Segment[] {
   return segments;
 }
 
+/** Where a rounded corner starts and ends on the two segments it joins. */
+type Corner = {
+  start: Point;
+  end: Point;
+  /** False when the adjoining segments are too short to fit a curve. */
+  rounded: boolean;
+};
+
 /**
  * Build an SVG path string. Each interior point becomes a quadratic curve
  * with radius clamped to half the shorter adjoining segment.
+ *
+ * `jumps` optionally marks crossings where the line hops over another edge:
+ * each one replaces a stretch of the straight run with a semicircular arc (see
+ * {@link appendRun}). Passing none reproduces the plain rounded path exactly.
  */
-export function createRoundedPath(points: Point[], borderRadius: number = BORDER_RADIUS): string {
+export function createRoundedPath(
+  points: Point[],
+  borderRadius: number = BORDER_RADIUS,
+  jumps: readonly PathJump[] = []
+): string {
   if (points.length < 2) return '';
 
   const firstPoint = points[0]!;
+  const lastPoint = points[points.length - 1]!;
   const path: string[] = [`M ${firstPoint.x} ${firstPoint.y}`];
 
-  if (points.length === 2) {
-    const secondPoint = points[1]!;
-    path.push(`L ${secondPoint.x} ${secondPoint.y}`);
-    return path.join(' ');
-  }
-
+  // Corner `i` belongs to interior vertex `points[i]`, so it bounds the end of
+  // segment `i - 1` and the start of segment `i`.
+  const corners: (Corner | undefined)[] = [];
   for (let i = 1; i < points.length - 1; i++) {
-    const prev = points[i - 1]!;
-    const curr = points[i]!;
-    const next = points[i + 1]!;
-
-    const v1 = { x: curr.x - prev.x, y: curr.y - prev.y };
-    const v2 = { x: next.x - curr.x, y: next.y - curr.y };
-    const len1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
-    const len2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
-
-    const radius = Math.min(borderRadius, Math.min(len1, len2) / 2);
-
-    if (radius < 1) {
-      path.push(`L ${curr.x} ${curr.y}`);
-      continue;
-    }
-
-    const n1 = { x: v1.x / len1, y: v1.y / len1 };
-    const n2 = { x: v2.x / len2, y: v2.y / len2 };
-    const cornerStart = { x: curr.x - n1.x * radius, y: curr.y - n1.y * radius };
-    const cornerEnd = { x: curr.x + n2.x * radius, y: curr.y + n2.y * radius };
-
-    path.push(`L ${cornerStart.x} ${cornerStart.y}`);
-    path.push(`Q ${curr.x} ${curr.y} ${cornerEnd.x} ${cornerEnd.y}`);
+    corners[i] = buildCorner(points[i - 1]!, points[i]!, points[i + 1]!, borderRadius);
   }
 
-  const lastPoint = points[points.length - 1]!;
-  path.push(`L ${lastPoint.x} ${lastPoint.y}`);
+  const jumpsBySegment = groupJumpsBySegment(jumps);
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const from = i === 0 ? firstPoint : corners[i]!.end;
+    const to = i === points.length - 2 ? lastPoint : corners[i + 1]!.start;
+
+    appendRun(path, from, to, jumpsBySegment?.get(i));
+
+    const corner = corners[i + 1];
+    if (corner?.rounded) {
+      const vertex = points[i + 1]!;
+      path.push(`Q ${vertex.x} ${vertex.y} ${corner.end.x} ${corner.end.y}`);
+    }
+  }
+
   return path.join(' ');
+}
+
+function buildCorner(prev: Point, curr: Point, next: Point, borderRadius: number): Corner {
+  const v1 = { x: curr.x - prev.x, y: curr.y - prev.y };
+  const v2 = { x: next.x - curr.x, y: next.y - curr.y };
+  const len1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+  const len2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+
+  const radius = Math.min(borderRadius, Math.min(len1, len2) / 2);
+  if (radius < 1) return { start: curr, end: curr, rounded: false };
+
+  return {
+    start: { x: curr.x - (v1.x / len1) * radius, y: curr.y - (v1.y / len1) * radius },
+    end: { x: curr.x + (v2.x / len2) * radius, y: curr.y + (v2.y / len2) * radius },
+    rounded: true,
+  };
+}
+
+function groupJumpsBySegment(jumps: readonly PathJump[]): Map<number, PathJump[]> | null {
+  if (jumps.length === 0) return null;
+
+  const bySegment = new Map<number, PathJump[]>();
+  for (const jump of jumps) {
+    const existing = bySegment.get(jump.segmentIndex);
+    if (existing) existing.push(jump);
+    else bySegment.set(jump.segmentIndex, [jump]);
+  }
+  return bySegment;
+}
+
+/**
+ * Draw one straight run, hopping over any crossings on it.
+ *
+ * A jump becomes `L` up to the arc's entry, then a half-circle of
+ * {@link EDGE_CONSTANTS.LINE_JUMP_RADIUS} to its exit. The sweep flag is picked
+ * from the direction of travel so every arc bulges to the same side, whichever
+ * way the line runs.
+ *
+ * Two guards keep the arcs from fighting the rest of the path: a jump within a
+ * radius of either end of the run would eat into the adjoining corner curve, and
+ * a jump within a diameter of the previous one would scallop the line rather
+ * than notch it. Both are dropped, so densely crossed stretches degrade to fewer
+ * notches instead of a mess.
+ */
+function appendRun(path: string[], from: Point, to: Point, jumps?: PathJump[]): void {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+
+  const radius = EDGE_CONSTANTS.LINE_JUMP_RADIUS;
+  if (jumps && jumps.length > 0 && length > radius * 2) {
+    const ux = dx / length;
+    const uy = dy / length;
+    const horizontal = Math.abs(dx) >= Math.abs(dy);
+    const sweep = (horizontal ? dx : dy) > 0 ? 1 : 0;
+
+    // Sort into travel order: a run may go right-to-left or bottom-to-top.
+    const distances = jumps
+      .map((jump) => (jump.point.x - from.x) * ux + (jump.point.y - from.y) * uy)
+      .filter((distance) => distance >= radius && distance <= length - radius)
+      .sort((a, b) => a - b);
+
+    let previous = Number.NEGATIVE_INFINITY;
+    for (const distance of distances) {
+      if (distance - previous < radius * 2) continue;
+      previous = distance;
+
+      const entry = { x: from.x + ux * (distance - radius), y: from.y + uy * (distance - radius) };
+      const exit = { x: from.x + ux * (distance + radius), y: from.y + uy * (distance + radius) };
+
+      path.push(`L ${entry.x} ${entry.y}`);
+      path.push(`A ${radius} ${radius} 0 0 ${sweep} ${exit.x} ${exit.y}`);
+    }
+  }
+
+  path.push(`L ${to.x} ${to.y}`);
 }
 
 export function getSegmentMidpoint(segment: Segment): Point {

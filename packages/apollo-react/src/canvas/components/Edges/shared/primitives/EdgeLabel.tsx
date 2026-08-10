@@ -1,6 +1,5 @@
 import { EdgeLabelRenderer } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { MouseEventHandler } from 'react';
-import { useMemo } from 'react';
+import { type MouseEventHandler, memo, useMemo } from 'react';
 import { CanvasTooltip } from '../../../CanvasTooltip';
 
 export type EdgeLabelProps = {
@@ -30,8 +29,12 @@ export const EDGE_LABEL_DEFAULT_BORDER_COLOR = 'var(--canvas-border,var(--color-
  * `foreignObject` inside the edge's own `<g>` (the old approach) left it
  * competing in the same per-edge z-index/DOM-order stack as every other edge's
  * stroke, so a crossing unselected edge could paint over the label.
+ *
+ * Memoized: the label sits at the path's arc midpoint, which is unaffected by
+ * the re-renders that only restyle or reshape the stroke, and it carries a
+ * tooltip subtree that is not worth reconciling for those.
  */
-export function EdgeLabel({
+export const EdgeLabel = memo(function EdgeLabel({
   x,
   y,
   text,
@@ -57,4 +60,4 @@ export function EdgeLabel({
       </CanvasTooltip>
     </EdgeLabelRenderer>
   );
-}
+});

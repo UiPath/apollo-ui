@@ -16,7 +16,16 @@ import {
   allCategoryManifests,
   allNodeManifests,
   createNode,
+  StoryCard,
+  StoryCode,
+  StoryCodeBlock,
+  StoryCollapsibleSection,
   StoryInfoPanel,
+  StoryPage,
+  StoryPreview,
+  StorySection,
+  type StorySpecColumn,
+  StorySpecTable,
   useCanvasStory,
   withCanvasProviders,
 } from '../../storybook-utils';
@@ -345,7 +354,7 @@ const shapeRows = [
     shape: 'square',
     value: "'square'",
     example: 'uipath.blank-node',
-    use: 'Standard actions — the default for most task nodes',
+    use: 'Standard actions, the default for most task nodes',
   },
   {
     shape: 'rectangle',
@@ -355,168 +364,60 @@ const shapeRows = [
   },
 ] as const;
 
-function CanvasPreviewButton({
-  expanded,
-  onExpand,
-  onClose,
-}: {
-  expanded: boolean;
-  onExpand: () => void;
-  onClose: () => void;
-}) {
-  return expanded ? (
-    <button
-      type="button"
-      onClick={onClose}
-      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:bg-surface-hover hover:text-foreground"
-    >
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path
-          d="M7.5 4.5l-6 6M10.5 1.5l-6 6M1.5 1.5l4 4M10.5 10.5l-4-4"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      Close
-    </button>
-  ) : (
-    <button
-      type="button"
-      onClick={onExpand}
-      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:bg-surface-hover hover:text-foreground"
-    >
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path
-          d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 4.5V1.5H7.5M1.5 7.5v3h3"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      Expand
-    </button>
-  );
-}
+const shapeColumns: readonly StorySpecColumn<(typeof shapeRows)[number]>[] = [
+  { key: 'shape', header: 'Shape', variant: 'strong' },
+  { key: 'value', header: <code className="text-xs">display.shape</code>, variant: 'code' },
+  { key: 'example', header: 'Example node type', variant: 'code-muted' },
+  { key: 'use', header: 'Typical use' },
+];
 
 function ShapesPage({ globalTheme }: { globalTheme: string }) {
-  const [expanded, setExpanded] = useState(false);
-
   return (
-    <div className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}>
-      {/* ── Header ── */}
-      <div className="mx-auto max-w-4xl px-8 pt-8">
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Shapes</h2>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+    <StoryPage
+      theme={globalTheme}
+      title="Shapes"
+      description={
+        <>
           BaseNode supports three shapes: <strong className="text-foreground">circle</strong>,{' '}
           <strong className="text-foreground">square</strong>, and{' '}
           <strong className="text-foreground">rectangle</strong>. Shape is set via{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">display.shape</code>{' '}
-          in the node data and controls both the rendered outline and the icon crop. Use the shape
-          that best communicates the node's role to the user.
-        </p>
-        <div className="mb-8 h-px bg-border" />
-      </div>
+          <StoryCode>display.shape</StoryCode> in the node data and controls both the rendered
+          outline and the icon crop. Use the shape that best communicates the node's role to the
+          user.
+        </>
+      }
+    >
+      <StoryPreview description="The three shapes rendered side by side in their default (NotExecuted) state.">
+        <ShapesCanvas />
+      </StoryPreview>
 
-      {/* ── Preview ── */}
-      <div className="pb-8">
-        <div className="mx-auto max-w-4xl px-8 mb-4">
-          <h2 className="mb-1 text-2xl font-bold tracking-tight text-foreground">Preview</h2>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            The three shapes rendered side by side in their default (NotExecuted) state.
-          </p>
-        </div>
-        <div className="flex justify-center">
-          <div className="relative w-[90vw] h-[560px] overflow-hidden rounded-xl border border-border">
-            {!expanded && <ShapesCanvas />}
-            <CanvasPreviewButton
-              expanded={false}
-              onExpand={() => setExpanded(true)}
-              onClose={() => setExpanded(false)}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Expanded overlay — single canvas instance, inline unmounted while open */}
-      {expanded && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-          onClick={() => setExpanded(false)}
-        >
-          <div
-            className="relative overflow-hidden rounded-xl border border-border"
-            style={{ width: '90vw', height: '90vh' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ShapesCanvas />
-            <CanvasPreviewButton
-              expanded={true}
-              onExpand={() => setExpanded(true)}
-              onClose={() => setExpanded(false)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* ── Anatomy + How to use ── */}
-      <div className="mx-auto max-w-4xl px-8 pb-8">
-        <div className="mb-8 h-px bg-border" />
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Anatomy</h2>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-          Each shape communicates a distinct role in the flow. Choose the shape that best maps to
-          the node's function — not just its appearance.
-        </p>
-
-        {/* Shape gallery */}
+      <StorySection
+        title="Anatomy"
+        description="Each shape communicates a distinct role in the flow. Choose the shape that best maps to the node's function, not just its appearance."
+      >
         <div className="mb-8 grid grid-cols-3 gap-4">
-          {/* Circle */}
-          <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
-            <div className="flex h-24 items-center justify-center">
+          <StoryCard
+            preview={
               <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-border bg-surface-raised">
                 <div className="h-7 w-7 rounded-full bg-muted" />
               </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-base font-semibold text-foreground">Circle</span>
-                <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-                  'circle'
-                </code>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Triggers and entry/exit points. Signals a boundary event — where a flow begins or
-                ends.
-              </p>
-            </div>
-          </div>
-
-          {/* Square */}
-          <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
-            <div className="flex h-24 items-center justify-center">
+            }
+            title="Circle"
+            code="'circle'"
+            description="Triggers and entry/exit points. Signals a boundary event, where a flow begins or ends."
+          />
+          <StoryCard
+            preview={
               <div className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-border bg-surface-raised">
                 <div className="h-7 w-7 rounded bg-muted" />
               </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-base font-semibold text-foreground">Square</span>
-                <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-                  'square'
-                </code>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Standard actions — the default for most task nodes. Use when no other shape more
-                specifically communicates the node's role.
-              </p>
-            </div>
-          </div>
-
-          {/* Rectangle */}
-          <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
-            <div className="flex h-24 items-center justify-center">
+            }
+            title="Square"
+            code="'square'"
+            description="Standard actions, the default for most task nodes. Use when no other shape more specifically communicates the node's role."
+          />
+          <StoryCard
+            preview={
               <div className="flex h-12 w-40 items-center gap-3 rounded-lg border-2 border-border bg-surface-raised px-3">
                 <div className="h-6 w-6 flex-shrink-0 rounded bg-muted" />
                 <div className="flex flex-col gap-1.5">
@@ -524,68 +425,26 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
                   <div className="h-1.5 w-10 rounded-full bg-muted opacity-50" />
                 </div>
               </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-base font-semibold text-foreground">Rectangle</span>
-                <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-                  'rectangle'
-                </code>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Agents and complex nodes that need more horizontal space for labels or internal
-                layout.
-              </p>
-            </div>
-          </div>
+            }
+            title="Rectangle"
+            code="'rectangle'"
+            description="Agents and complex nodes that need more horizontal space for labels or internal layout."
+          />
         </div>
 
-        {/* Spec table */}
-        <div className="overflow-hidden rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted">
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Shape</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
-                  <code className="text-xs">display.shape</code>
-                </th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
-                  Example node type
-                </th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
-                  Typical use
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {shapeRows.map((row) => (
-                <tr key={row.shape} className="border-b border-border last:border-b-0">
-                  <td className="px-4 py-3 font-medium text-foreground">{row.shape}</td>
-                  <td className="px-4 py-3">
-                    <code className="text-xs text-primary">{row.value}</code>
-                  </td>
-                  <td className="px-4 py-3">
-                    <code className="text-xs text-muted-foreground">{row.example}</code>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{row.use}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <StorySpecTable columns={shapeColumns} rows={shapeRows} />
+      </StorySection>
 
-        <div className="my-10 h-px bg-border" />
-
-        {/* ── How to use ── */}
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">How to use</h2>
-        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-          Set{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">display.shape</code>{' '}
-          when creating node data. If omitted, the registry manifest's{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">display.shape</code>{' '}
-          is used as the fallback.
-        </p>
-        <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
+      <StorySection
+        title="How to use"
+        description={
+          <>
+            Set <StoryCode>display.shape</StoryCode> when creating node data. If omitted, the
+            registry manifest's <StoryCode>display.shape</StoryCode> is used as the fallback.
+          </>
+        }
+      >
+        <StoryCodeBlock>
           {`createNode({
   id: 'my-node',
   type: 'uipath.blank-node',
@@ -599,9 +458,9 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
     },
   },
 })`}
-        </pre>
-      </div>
-    </div>
+        </StoryCodeBlock>
+      </StorySection>
+    </StoryPage>
   );
 }
 
@@ -668,52 +527,6 @@ function ExecutionStatesCanvas({ onActionNeeded }: { onActionNeeded?: (nodeId: s
         </Panel>
       </BaseCanvas>
     </BaseNodeOverrideConfigProvider>
-  );
-}
-
-function ExecutionStatesPreviewButton({
-  isExpanded,
-  onExpand,
-  onClose,
-}: {
-  isExpanded: boolean;
-  onExpand: () => void;
-  onClose: () => void;
-}) {
-  return isExpanded ? (
-    <button
-      type="button"
-      onClick={onClose}
-      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:bg-surface-hover hover:text-foreground"
-    >
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path
-          d="M7.5 4.5l-6 6M10.5 1.5l-6 6M1.5 1.5l4 4M10.5 10.5l-4-4"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      Close
-    </button>
-  ) : (
-    <button
-      type="button"
-      onClick={onExpand}
-      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:bg-surface-hover hover:text-foreground"
-    >
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path
-          d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 4.5V1.5H7.5M1.5 7.5v3h3"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      Expand
-    </button>
   );
 }
 
@@ -811,38 +624,17 @@ const executionStateRows = [
   {
     state: 'ActionNeeded',
     trigger: "status: 'ActionNeeded'",
-    meaning: 'Process blocked — waiting for human input before continuing',
+    meaning: 'Process blocked, waiting for human input before continuing',
   },
 ] as const;
 
-function CollapsibleSection({
-  title,
-  open,
-  onToggle,
-  children,
-}: {
-  title: string;
-  open: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="border-t border-border">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center justify-between py-5 text-left transition-colors hover:text-foreground"
-      >
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">{title}</h2>
-        <CanvasIcon icon={open ? 'chevron-up' : 'chevron-down'} size={16} />
-      </button>
-      {open && <div className="pb-8">{children}</div>}
-    </div>
-  );
-}
+const executionStateColumns: readonly StorySpecColumn<(typeof executionStateRows)[number]>[] = [
+  { key: 'state', header: 'State', variant: 'strong' },
+  { key: 'trigger', header: 'How it is set', variant: 'code' },
+  { key: 'meaning', header: 'Meaning' },
+];
 
 function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
-  const [expanded, setExpanded] = useState(false);
   const [anatomyOpen, setAnatomyOpen] = useState(false);
   const [howToUseOpen, setHowToUseOpen] = useState(false);
   const [takeActionOpen, setTakeActionOpen] = useState(false);
@@ -856,281 +648,173 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
   };
 
   return (
-    <div className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}>
-      {/* ── Header ── */}
-      <div className="mx-auto max-w-4xl px-8 pt-8">
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Execution States</h2>
+    <StoryPage
+      theme={globalTheme}
+      title="Execution States"
+      description={
+        <>
+          Execution states reflect a node's runtime status: where it is in the current run. They are
+          applied externally via the <StoryCode>executionState</StoryCode> provider, not stored in
+          the node's own data. When no state is provided a node renders in its default{' '}
+          <StoryCode>NotExecuted</StoryCode> appearance.
+        </>
+      }
+    >
+      <StoryPreview
+        description={
+          <>
+            <p>All execution states across every shape. Rows are states, columns are shapes.</p>
+            <p>
+              <strong className="font-medium text-foreground">Note:</strong> This grid shows{' '}
+              <StoryCode>Failed</StoryCode> and <StoryCode>ActionNeeded</StoryCode> side by side for
+              documentation purposes only. In a real execution these states are mutually exclusive:
+              a node cannot be in both at the same time.
+            </p>
+          </>
+        }
+      >
+        <ExecutionStatesCanvas onActionNeeded={setActionNodeId} />
+      </StoryPreview>
+
+      <div className="mx-auto flex max-w-4xl justify-end px-8 pb-2">
+        <button
+          type="button"
+          onClick={toggleAll}
+          className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          {allOpen ? 'Collapse all' : 'Expand all'}
+        </button>
+      </div>
+
+      <StoryCollapsibleSection
+        title="Anatomy"
+        open={anatomyOpen}
+        onToggle={() => setAnatomyOpen((o) => !o)}
+      >
         <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-          Execution states reflect a node's runtime status — where it is in the current run. They
-          are applied externally via the{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            executionState
-          </code>{' '}
-          provider, not stored in the node's own data. When no state is provided a node renders in
-          its default{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">NotExecuted</code>{' '}
-          appearance.
+          Each state communicates a distinct moment in the execution lifecycle. The visual treatment
+          (border color, overlay icon) updates automatically when the provider returns a new state.
         </p>
-        <div className="mb-8 h-px bg-border" />
-      </div>
 
-      {/* ── Preview — 90vw centered ── */}
-      <div className="pb-8">
-        <div className="mx-auto max-w-4xl px-8 mb-4">
-          <h2 className="mb-1 text-2xl font-bold tracking-tight text-foreground">Preview</h2>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            All execution states across every shape — rows are states, columns are shapes.
-          </p>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            <strong className="font-medium text-foreground">Note:</strong> This grid shows{' '}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">Failed</code> and{' '}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">ActionNeeded</code>{' '}
-            side by side for documentation purposes only. In a real execution these states are
-            mutually exclusive — a node cannot be in both at the same time.
-          </p>
-        </div>
-        <div className="flex justify-center">
-          <div className="relative w-[90vw] h-[560px] overflow-hidden rounded-xl border border-border">
-            {!expanded && <ExecutionStatesCanvas onActionNeeded={setActionNodeId} />}
-            <ExecutionStatesPreviewButton
-              isExpanded={false}
-              onExpand={() => setExpanded(true)}
-              onClose={() => setExpanded(false)}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Expanded overlay */}
-      {expanded && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-          onClick={() => setExpanded(false)}
-        >
-          <div
-            className="relative overflow-hidden rounded-xl border border-border"
-            style={{ width: '90vw', height: '90vh' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ExecutionStatesCanvas onActionNeeded={setActionNodeId} />
-            <ExecutionStatesPreviewButton
-              isExpanded={true}
-              onExpand={() => setExpanded(true)}
-              onClose={() => setExpanded(false)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* ── Collapsible sections ── */}
-      <div className="mx-auto max-w-4xl px-8 pb-8">
-        {/* Expand / Collapse all */}
-        <div className="flex justify-end pb-2">
-          <button
-            type="button"
-            onClick={toggleAll}
-            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            {allOpen ? 'Collapse all' : 'Expand all'}
-          </button>
-        </div>
-
-        <CollapsibleSection
-          title="Anatomy"
-          open={anatomyOpen}
-          onToggle={() => setAnatomyOpen((o) => !o)}
-        >
-          <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-            Each state communicates a distinct moment in the execution lifecycle. The visual
-            treatment (border color, overlay icon) updates automatically when the provider returns a
-            new state.
-          </p>
-
-          <div className="mb-8 grid grid-cols-3 gap-4">
-            {executionStateCards.map((card) => (
-              <div
-                key={card.state}
-                className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6"
-              >
-                <div className="flex h-24 items-center justify-center">
-                  <div
-                    className={cn(
-                      'flex h-16 w-16 items-center justify-center rounded-lg border-2',
-                      card.borderClass,
-                      card.bgClass
-                    )}
-                  >
-                    <div className={cn('h-7 w-7 rounded bg-opacity-80', card.iconClass)} />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-base font-semibold text-foreground">{card.state}</span>
-                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-                      {card.value}
-                    </code>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{card.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Spec table */}
-          <div className="overflow-hidden rounded-lg border border-border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted">
-                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">State</th>
-                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
-                    How it is set
-                  </th>
-                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
-                    Meaning
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {executionStateRows.map((row) => (
-                  <tr key={row.state} className="border-b border-border last:border-b-0">
-                    <td className="px-4 py-3 font-medium text-foreground">{row.state}</td>
-                    <td className="px-4 py-3">
-                      <code className="text-xs text-primary">{row.trigger}</code>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">{row.meaning}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CollapsibleSection>
-
-        <CollapsibleSection
-          title="Action needed"
-          open={takeActionOpen}
-          onToggle={() => setTakeActionOpen((o) => !o)}
-        >
-          <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-            When a node is in the{' '}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-              ActionNeeded
-            </code>{' '}
-            state, an "Action needed" pill is surfaced at the top-right of the node to prompt the
-            user to unblock execution.{' '}
-            <strong className="font-medium text-foreground">
-              This pill is only present on flows that are in an executing state
-            </strong>{' '}
-            — it will not appear during design-time or when no run is active.
-          </p>
-
-          <div className="mb-8 grid grid-cols-3 gap-8">
-            {/* Always visible */}
-            <div className="flex flex-col gap-3">
-              <div className="flex h-16 items-center">
-                <button
-                  type="button"
-                  onClick={() => setActionNodeId('state-1-preview')}
-                  className="flex items-center gap-1.5 rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300"
+        <div className="mb-8 grid grid-cols-3 gap-4">
+          {executionStateCards.map((card) => (
+            <StoryCard
+              key={card.state}
+              preview={
+                <div
+                  className={cn(
+                    'flex h-16 w-16 items-center justify-center rounded-lg border-2',
+                    card.borderClass,
+                    card.bgClass
+                  )}
                 >
-                  <CanvasIcon icon="flag" size={12} />
-                  Action needed
-                </button>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-semibold text-foreground">Always visible</span>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  Solid amber pill with flag icon and label, always rendered at the top-right when
-                  the node is in{' '}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                    ActionNeeded
-                  </code>{' '}
-                  state. Clicking it triggers the{' '}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                    onActionNeeded
-                  </code>{' '}
-                  callback wired through{' '}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                    BaseNodeOverrideConfigProvider
-                  </code>
-                  .
-                </p>
-              </div>
-            </div>
+                  <div className={cn('h-7 w-7 rounded bg-opacity-80', card.iconClass)} />
+                </div>
+              }
+              title={card.state}
+              code={card.value}
+              description={card.description}
+            />
+          ))}
+        </div>
 
-            {/* TBD: Action response */}
-            <div className="flex flex-col gap-3">
-              <div className="flex h-16 items-center">
-                <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                  Upcoming
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-semibold text-foreground">
-                  Action response — not yet defined
-                </span>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  Clicking the pill fires{' '}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                    onActionNeeded(nodeId)
-                  </code>{' '}
-                  — what the app renders in response is a consumer responsibility. The surface
-                  (modal, side panel, or inline) and its content model have not yet been specified.
-                </p>
-              </div>
-            </div>
+        <StorySpecTable columns={executionStateColumns} rows={executionStateRows} />
+      </StoryCollapsibleSection>
 
-            {/* TBD: Execution count impact */}
-            <div className="flex flex-col gap-3">
-              <div className="flex h-16 items-center">
-                <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                  Upcoming
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-semibold text-foreground">
-                  Execution count display — not yet defined
-                </span>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  It has not yet been specified how{' '}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                    ActionNeeded
-                  </code>{' '}
-                  interacts with the execution count badge (
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                    IterationNavigatorPill
-                  </code>
-                  ). Does the count freeze while blocked? Increment on resolution? Show a distinct
-                  state when a count is also present?
-                </p>
-              </div>
+      <StoryCollapsibleSection
+        title="Action needed"
+        open={takeActionOpen}
+        onToggle={() => setTakeActionOpen((o) => !o)}
+      >
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          When a node is in the <StoryCode>ActionNeeded</StoryCode> state, an "Action needed" pill
+          is surfaced at the top-right of the node to prompt the user to unblock execution.{' '}
+          <strong className="font-medium text-foreground">
+            This pill is only present on flows that are in an executing state
+          </strong>
+          . It will not appear during design-time or when no run is active.
+        </p>
+
+        <div className="mb-8 grid grid-cols-3 gap-8">
+          {/* Always visible */}
+          <div className="flex flex-col gap-3">
+            <div className="flex h-16 items-center">
+              <button
+                type="button"
+                onClick={() => setActionNodeId('state-1-preview')}
+                className="flex items-center gap-1.5 rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300"
+              >
+                <CanvasIcon icon="flag" size={12} />
+                Action needed
+              </button>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-foreground">Always visible</span>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Solid amber pill with flag icon and label, always rendered at the top-right when the
+                node is in <StoryCode>ActionNeeded</StoryCode> state. Clicking it triggers the{' '}
+                <StoryCode>onActionNeeded</StoryCode> callback wired through{' '}
+                <StoryCode>BaseNodeOverrideConfigProvider</StoryCode>.
+              </p>
             </div>
           </div>
-        </CollapsibleSection>
 
-        <CollapsibleSection
-          title="How to use"
-          open={howToUseOpen}
-          onToggle={() => setHowToUseOpen((o) => !o)}
-        >
-          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-            Wire up the{' '}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-              executionState
-            </code>{' '}
-            option on{' '}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-              withCanvasProviders
-            </code>{' '}
-            to drive state from outside the node. In stories you can also set{' '}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-              data.executionStatus
-            </code>{' '}
-            directly as a shorthand.
-          </p>
+          {/* TBD: Action response */}
+          <div className="flex flex-col gap-3">
+            <div className="flex h-16 items-center">
+              <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                Upcoming
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-foreground">
+                Action response, not yet defined
+              </span>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Clicking the pill fires <StoryCode>onActionNeeded(nodeId)</StoryCode>. What the app
+                renders in response is a consumer responsibility. The surface (modal, side panel, or
+                inline) and its content model have not yet been specified.
+              </p>
+            </div>
+          </div>
 
-          <div className="flex flex-col gap-4">
-            <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
-              {`// Via executionState provider (production pattern)
+          {/* TBD: Execution count impact */}
+          <div className="flex flex-col gap-3">
+            <div className="flex h-16 items-center">
+              <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                Upcoming
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-foreground">
+                Execution count display, not yet defined
+              </span>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                It has not yet been specified how <StoryCode>ActionNeeded</StoryCode> interacts with
+                the execution count badge (<StoryCode>IterationNavigatorPill</StoryCode>). Does the
+                count freeze while blocked? Increment on resolution? Show a distinct state when a
+                count is also present?
+              </p>
+            </div>
+          </div>
+        </div>
+      </StoryCollapsibleSection>
+
+      <StoryCollapsibleSection
+        title="How to use"
+        open={howToUseOpen}
+        onToggle={() => setHowToUseOpen((o) => !o)}
+      >
+        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+          Wire up the <StoryCode>executionState</StoryCode> option on{' '}
+          <StoryCode>withCanvasProviders</StoryCode> to drive state from outside the node. In
+          stories you can also set <StoryCode>data.executionStatus</StoryCode> directly as a
+          shorthand.
+        </p>
+
+        <div className="flex flex-col gap-4">
+          <StoryCodeBlock>
+            {`// Via executionState provider (production pattern)
 withCanvasProviders({
   executionState: {
     getNodeExecutionState: (nodeId) => {
@@ -1142,9 +826,9 @@ withCanvasProviders({
     getEdgeExecutionState: () => undefined,
   },
 })`}
-            </pre>
-            <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
-              {`// Via node data (story / testing shorthand)
+          </StoryCodeBlock>
+          <StoryCodeBlock>
+            {`// Via node data (story / testing shorthand)
 createNode({
   id: 'my-node',
   type: 'uipath.blank-node',
@@ -1156,14 +840,14 @@ createNode({
     display: { label: 'My Node', shape: 'square' },
   },
 })`}
-            </pre>
-          </div>
-        </CollapsibleSection>
-      </div>
+          </StoryCodeBlock>
+        </div>
+      </StoryCollapsibleSection>
+
       {actionNodeId && (
         <TakeActionModal nodeId={actionNodeId} onClose={() => setActionNodeId(null)} />
       )}
-    </div>
+    </StoryPage>
   );
 }
 

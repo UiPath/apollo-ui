@@ -370,6 +370,114 @@ describe('createRoundedPath', () => {
     expect(d.startsWith('M 0 0')).toBe(true);
     expect(d).toContain('Q');
   });
+
+  describe('line jumps', () => {
+    const r = EDGE_CONSTANTS.LINE_JUMP_RADIUS;
+    const straight: Point[] = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+    ];
+
+    it('leaves the path untouched when no jumps are given', () => {
+      const corners: Point[] = [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 100, y: 100 },
+      ];
+      expect(createRoundedPath(corners, EDGE_CONSTANTS.BORDER_RADIUS, [])).toBe(
+        createRoundedPath(corners)
+      );
+    });
+
+    it('hops over a crossing with an arc of the jump radius', () => {
+      const d = createRoundedPath(straight, EDGE_CONSTANTS.BORDER_RADIUS, [
+        { segmentIndex: 0, point: { x: 50, y: 0 } },
+      ]);
+
+      // Straight up to the arc's entry, half-circle across, then on to the end.
+      expect(d).toBe(`M 0 0 L ${50 - r} 0 A ${r} ${r} 0 0 1 ${50 + r} 0 L 100 0`);
+    });
+
+    it('flips the sweep flag so the arc bulges the same way on a reversed line', () => {
+      const rightward = createRoundedPath(straight, EDGE_CONSTANTS.BORDER_RADIUS, [
+        { segmentIndex: 0, point: { x: 50, y: 0 } },
+      ]);
+      const leftward = createRoundedPath(
+        [
+          { x: 100, y: 0 },
+          { x: 0, y: 0 },
+        ],
+        EDGE_CONSTANTS.BORDER_RADIUS,
+        [{ segmentIndex: 0, point: { x: 50, y: 0 } }]
+      );
+
+      expect(rightward).toContain(`A ${r} ${r} 0 0 1`);
+      expect(leftward).toContain(`A ${r} ${r} 0 0 0`);
+    });
+
+    it('walks the jumps in travel order on a right-to-left line', () => {
+      const d = createRoundedPath(
+        [
+          { x: 100, y: 0 },
+          { x: 0, y: 0 },
+        ],
+        EDGE_CONSTANTS.BORDER_RADIUS,
+        [
+          { segmentIndex: 0, point: { x: 30, y: 0 } },
+          { segmentIndex: 0, point: { x: 70, y: 0 } },
+        ]
+      );
+
+      expect(d.indexOf(`L ${70 + r} 0`)).toBeLessThan(d.indexOf(`L ${30 + r} 0`));
+    });
+
+    it('places a jump on the segment it belongs to', () => {
+      const d = createRoundedPath(
+        [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 100, y: 100 },
+        ],
+        EDGE_CONSTANTS.BORDER_RADIUS,
+        [{ segmentIndex: 1, point: { x: 100, y: 50 } }]
+      );
+
+      expect(d).toContain(`A ${r} ${r} 0 0 1 100 ${50 + r}`);
+    });
+
+    it('drops a jump that would eat into an adjoining corner curve', () => {
+      const d = createRoundedPath(
+        [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 100, y: 100 },
+        ],
+        EDGE_CONSTANTS.BORDER_RADIUS,
+        // Sits inside the rounded corner at (100, 0), so the run has no room.
+        [{ segmentIndex: 0, point: { x: 100 - EDGE_CONSTANTS.BORDER_RADIUS, y: 0 } }]
+      );
+
+      expect(d).not.toContain('A ');
+    });
+
+    it('collapses jumps spaced closer than a diameter into one arc', () => {
+      const d = createRoundedPath(straight, EDGE_CONSTANTS.BORDER_RADIUS, [
+        { segmentIndex: 0, point: { x: 50, y: 0 } },
+        { segmentIndex: 0, point: { x: 50 + r, y: 0 } },
+      ]);
+
+      expect(d.match(/A /g)).toHaveLength(1);
+    });
+
+    it('keeps jumps spaced beyond a diameter apart as separate arcs', () => {
+      const d = createRoundedPath(straight, EDGE_CONSTANTS.BORDER_RADIUS, [
+        { segmentIndex: 0, point: { x: 30, y: 0 } },
+        { segmentIndex: 0, point: { x: 70, y: 0 } },
+      ]);
+
+      expect(d.match(/A /g)).toHaveLength(2);
+    });
+  });
 });
 
 describe('snapPointToGrid', () => {
