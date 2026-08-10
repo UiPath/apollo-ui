@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.17.4...@uipath/apollo-react@6.18.0) (2026-08-10)
+
+### Features
+
+* **apollo-react:** add line jumps to crossing canvas edges ([1e553a2](https://github.com/UiPath/apollo-ui/commit/1e553a23d37c8177f7adad4748788dd8b4997e51))
+
 ## [@uipath/apollo-react-v6.17.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.17.3...@uipath/apollo-react@6.17.4) (2026-08-08)
 
 ### Bug Fixes
