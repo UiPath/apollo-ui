@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import type { JourneyStage, JourneyStageState } from "../JourneyBar";
+import { avatarColorFor } from "./avatar-color";
 
 export interface ActivityStage extends JourneyStage {
   /** Second-line date — the actual date once done, an expected/projected
@@ -21,8 +22,11 @@ export interface ActivityStage extends JourneyStage {
    * currently waiting on — rendered as their avatar in place of the agent's
    * ✦ mark, in whatever chrome that stage's state already uses (dotted
    * ring, pulsing ring, or plain for done). Omit for agent/system stages
-   * (e.g. placing the order), which keep the ✦ mark. */
-  person?: { initials: string };
+   * (e.g. placing the order), which keep the ✦ mark. `name` is the stable
+   * identifier the shared avatar color function hashes on — the same
+   * person must resolve to the same color here as everywhere else they
+   * appear, so this can't be initials alone. */
+  person?: { initials: string; name: string };
 }
 
 interface ActivityTrackProps {
@@ -73,7 +77,11 @@ function dateText(stage: ActivityStage): string | null {
 /** The ✦ mark or, when this stage is a specific person's, their initials —
  * same size/position either way, so swapping one for the other doesn't
  * disturb the surrounding ring/border chrome. */
-function StageGlyph({ person }: { person?: { initials: string } }) {
+function StageGlyph({
+  person,
+}: {
+  person?: { initials: string; name: string };
+}) {
   if (person != null) {
     return <span className="text-[10px] font-semibold">{person.initials}</span>;
   }
@@ -101,7 +109,7 @@ function StageMarker({
   person,
 }: {
   state: JourneyStageState;
-  person?: { initials: string };
+  person?: { initials: string; name: string };
 }) {
   if (state === "upcoming") {
     return (
@@ -126,9 +134,12 @@ function StageMarker({
 
   // done, completed by a named person — an avatar carries it, no checkmark.
   if (person != null) {
+    const color = avatarColorFor(person.name);
     return (
       <Avatar className="size-7">
-        <AvatarFallback className="bg-muted text-[11px] font-medium text-muted-foreground">
+        <AvatarFallback
+          className={cn("text-[11px] font-medium", color.bg, color.fg)}
+        >
           {person.initials}
         </AvatarFallback>
       </Avatar>

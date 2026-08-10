@@ -32,6 +32,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
 import { AutopilotChatProvider } from "./AutopilotChatProvider";
 import { AutopilotFab } from "./AutopilotFab";
@@ -45,6 +46,7 @@ import { ConversationProvider } from "./catalog/v1/ConversationProvider";
 import { Review } from "./catalog/v1/Review";
 import { Home } from "./home/Home";
 import { Approvals } from "./requests/Approvals";
+import { avatarColorFor } from "./requests/avatar-color";
 import { DecisionWindow } from "./requests/DecisionWindow";
 import { getDecisionDetail } from "./requests/data";
 import { MyRequests } from "./requests/MyRequests";
@@ -210,20 +212,19 @@ function PersonaMenuSection({
 function GuidedBuyingLayout() {
   const [personaId, setPersonaId] = useState<PersonaId>("requester");
   const navigate = useNavigate();
-  const { tier } = useTier();
   // Selector-scoped, not a bare useRouterState() destructure — this file's
   // own established pattern (see BuyFlow.tsx) to avoid re-rendering the
   // root layout on every router-internal state change, not just pathname.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const avatarClassName =
-    tier === "p1"
-      ? "bg-primary/15 text-primary"
-      : "bg-(--insight-600)/15 text-(--insight-600)";
 
   // Persona state is the single authority over the identity chip now — no
   // route-derived override.
   const persona = PERSONAS[personaId];
   const user = { name: persona.name, email: persona.chipSubtitle };
+  // Same person, same avatar color everywhere they appear — the identity
+  // chip is no longer tier-tinted, since tier isn't who this is.
+  const personaAvatarColor = avatarColorFor(persona.name);
+  const avatarClassName = cn(personaAvatarColor.bg, personaAvatarColor.fg);
 
   // The only context-preserving switch in scope: from a request's own detail
   // page, switching to the approver lands on that same request's decision

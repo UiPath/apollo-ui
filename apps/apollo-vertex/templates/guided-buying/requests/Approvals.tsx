@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { DECISION_DETAILS, daysSince } from "./data";
+import { DECISION_DETAILS, DECISION_STATUS_META, daysSince } from "./data";
 import { useRequests } from "./requests-context";
 
 const COLUMNS = [
@@ -32,19 +32,14 @@ const COLUMNS = [
   "",
 ];
 
-// Only REQ-2052 carries a full decision packet with detail-page content
-// (budget line, IT review, PO). The other three are light queue records with
+// REQ-2052 and REQ-2054 carry full decision packets with detail-page
+// content (budget line, checks, PO) — REQ-2054 is the exception scenario
+// (its cost center check). The other two are light queue records with
 // nothing further to show, so their rows skip the click-through affordance
 // entirely instead of looking clickable and doing nothing.
-const HAS_DETAIL_PAGE: Record<string, boolean> = { "REQ-2052": true };
-
-const STATUS_META: Record<
-  "pending" | "approved" | "denied",
-  { label: string; status: "warning" | "success" | "error" }
-> = {
-  pending: { label: "Pending", status: "warning" },
-  approved: { label: "Approved", status: "success" },
-  denied: { label: "Denied", status: "error" },
+const HAS_DETAIL_PAGE: Record<string, boolean> = {
+  "REQ-2052": true,
+  "REQ-2054": true,
 };
 
 interface StatCardProps {
@@ -151,8 +146,12 @@ export function Approvals() {
               <TableBody>
                 {rows.map((row) => {
                   const decision = (requestStatusOverrides[row.id] ??
-                    "pending") as "approved" | "denied" | "pending";
-                  const meta = STATUS_META[decision];
+                    "pending") as
+                    | "approved"
+                    | "denied"
+                    | "sent-back"
+                    | "pending";
+                  const meta = DECISION_STATUS_META[decision];
                   const hasDetail = HAS_DETAIL_PAGE[row.id] === true;
 
                   return (

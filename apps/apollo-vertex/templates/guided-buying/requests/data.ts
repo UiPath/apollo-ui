@@ -215,8 +215,15 @@ export interface RequestDetail {
   shipTo?: string;
   /** Header badge label override (e.g. "Pending · 2 days" instead of status). */
   statusLabel?: string;
-  /** Pre-seeded first message shown in the thread bubble. */
+  /** Pre-seeded first message shown in the thread bubble. Omit once the
+   * same message is folded into `threads` (see RequestsProvider) instead —
+   * REQ-2052 does this; requests without a decision-side counterpart still
+   * use this field. */
   threadSeedMessage?: string;
+  // PLACEHOLDER [Teams channel name] — same bracket as DecisionDetail's,
+  // reused rather than duplicated. Only set where a Teams provenance demo
+  // needs it.
+  teamsChannel?: string;
   /** P2 nudge capsule — system event shown in the thread. No leading emoji — icon added by caller. */
   nudgeText?: string;
   /** Approver sent it back for changes — the header's other owed-action
@@ -389,8 +396,10 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
     // Same canonical value the Bridge's envelope infers for this scenario.
     shipTo: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
     statusLabel: "Pending · 2 days",
-    threadSeedMessage:
-      "Hi Alex, these are for the Fusion contractors starting Aug 3. Happy to answer anything.",
+    // No threadSeedMessage here — that same message is now a real entry in
+    // threads["REQ-2052"] (see RequestsProvider), read by both this page
+    // and the approver's Decision Window instead of being authored twice.
+    teamsChannel: "[Teams channel name]",
     nudgeText:
       "Pending 2 days. A reminder went to Alex this morning. You won't need to chase.",
     recordChips: ["PR-2052", "PO · created on approval"],
@@ -429,8 +438,56 @@ export function getRequestRow(id: string): RequestRow | undefined {
 
 export interface DecisionLineItem {
   description: string;
+  quantity: number;
+  unitPrice: string;
   amount: string;
 }
+
+/** Keys for the request rail's fields — shared with the AI summary's marks
+ * so a mark can reference the exact field it's about. */
+export type RailFieldKey =
+  | "items"
+  | "total"
+  | "supplier"
+  | "shipTo"
+  | "chargedTo"
+  | "budget"
+  | "linkedRecords";
+
+/** One run of the AI summary sentence. Plain text when `targetField` is
+ * absent; when present, the run becomes an interactive reference to that
+ * request rail field (hover/click highlights it). */
+export interface SummaryMark {
+  text: string;
+  targetField?: RailFieldKey;
+}
+
+/** The three decision outcomes, in the order the AI's own recommendation
+ * ranks them. `null`/absent means no recommendation — the action group
+ * falls back to a fixed default order. */
+export type RecommendationValue = "approve" | "send-back" | "reject";
+
+/** Every status a decision can carry, pending included. Shared by the
+ * Approvals queue and the decision page so the label/badge pairing for
+ * each status is defined once. */
+export type DecisionStatus = "pending" | "approved" | "denied" | "sent-back";
+
+// PLACEHOLDER [Status label] — "Needs info" is the working title used
+// throughout this spec, not a confirmed label. Gabriel Chitic owns the
+// final copy; keeping it unbracketed in the rendered badge (fallback value
+// below) but tagged here so it still surfaces in a grep for open questions.
+export const DECISION_STATUS_META: Record<
+  DecisionStatus,
+  { label: string; status: "warning" | "success" | "error" | "info" }
+> = {
+  pending: { label: "Pending", status: "warning" },
+  approved: { label: "Approved", status: "success" },
+  denied: { label: "Denied", status: "error" },
+  "sent-back": { label: "Needs info", status: "info" },
+};
+
+/** A single check's outcome — `pass` or `exception`, never a third state. */
+export type CheckStatus = "pass" | "exception";
 
 export interface DecisionPacket {
   budget: {
@@ -439,8 +496,33 @@ export interface DecisionPacket {
     pct: string;
     detail: string;
   };
-  itReview: { title: string; detail: string };
+  /** Feeds the device management check's detail line — structured so
+   * "today" can be computed from `checkedAt` rather than stored as a word. */
+  itReview: {
+    status: CheckStatus;
+    qty: number;
+    imageName: string;
+    source: string;
+    /** Parseable date+time, e.g. "Jul 23, 2026 09:14". */
+    checkedAt: string;
+  };
 }
+
+/** One row in the decision card's checks list. `label` isn't stored here —
+ * it's a fixed authored constant per `key` (see CHECK_LABEL), since it
+ * never varies by request; `detail` is always derived. */
+export interface DecisionCheck {
+  key: "deviceManagement" | "supplier" | "costCenter" | "approvalRouting";
+  status: CheckStatus;
+  detail: string;
+}
+
+export const CHECK_LABEL: Record<DecisionCheck["key"], string> = {
+  deviceManagement: "Device management",
+  supplier: "Supplier",
+  costCenter: "Cost center",
+  approvalRouting: "Approval routing",
+};
 
 export interface DecisionDetail {
   id: string;
@@ -461,8 +543,6 @@ export interface DecisionDetail {
   /** Numeric total, parallel to RequestRow's amountValue — drives the
    * queue's "Awaiting your decision" sum without parsing the display string. */
   totalValue: number;
-  /** The requester's note on the request, shown as a Communication entry. */
-  note: string;
   packet: DecisionPacket;
   /** The PO this approval triggers — matches PO_DETAILS below. Only
    * surfaced once approved; pre-decision the sidebar's PO chip stays a
@@ -472,6 +552,92 @@ export interface DecisionDetail {
    * stages carry no equivalent date (see REQUEST_DETAILS above) since there
    * is no real basis to project one, this field has the same gap. */
   expectedDelivery: string;
+  /** The AI's recommended outcome, when it has one. Absent/null for every
+   * seed record today — the action group's default order applies. */
+  recommendation?: RecommendationValue | null;
+  /** Feeds the supplier check. Not every request has an established
+   * program — REQ-2052's "EPP" is real (matches its requester-side
+   * pricingNote); absent elsewhere rather than guessed. */
+  pricingProgram?: string;
+  // PLACEHOLDER [Contract end date] — invented, no real contract data
+  // exists for any seed record. Always this bracket text.
+  contractEnd: string;
+  /** Feeds the cost center check's pass sentence. Real for REQ-2052 (see
+   * your own worked example); absent elsewhere rather than guessed. */
+  spendCategory?: string;
+  /** Present only when the cost center check should report `exception`
+   * instead of deriving its usual pass sentence — the one branch in
+   * `buildChecks`, driven by data rather than a request id. */
+  costCenterException?: { code: string; detail: string };
+  // PLACEHOLDER [Teams channel name] — invented, drives the destination
+  // line and the open-in-Teams affordance. Always this bracket text.
+  teamsChannel: string;
+}
+
+/** Names to notify on a decision, derived from the request's own requester
+ * and approver fields rather than authored — "Alex Chen · Design Director"
+ * becomes "Alex Chen", matching how the header already shortens it. */
+export function notificationRecipients(detail: DecisionDetail): string[] {
+  const approverName = detail.approver.split(" · ")[0]!;
+  return [detail.requester, approverName];
+}
+
+/** "today {HH:MM}" when `checkedAt` falls on the narrative clock's current
+ * date, a dated fallback otherwise — "today" is computed, never stored. */
+export function formatCheckTimestamp(checkedAt: string): string {
+  const date = new Date(checkedAt);
+  const time = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const isToday =
+    date.toDateString() === new Date(APPROVALS_TODAY).toDateString();
+  return isToday ? `today ${time}` : `${formatDateDisplay(date)} ${time}`;
+}
+
+/**
+ * The four checks, always in this order, derived from the decision's own
+ * data. Device management, supplier, and approval routing always derive
+ * normally; cost center is the one check that can report `exception`, and
+ * only when `costCenterException` is set — the same function handles both
+ * the all-pass case and the exception case, no per-request branch.
+ */
+export function buildChecks(detail: DecisionDetail): DecisionCheck[] {
+  const [department, code] = detail.costCenter.split(" · ");
+  const { itReview } = detail.packet;
+
+  const deviceManagement: DecisionCheck = {
+    key: "deviceManagement",
+    status: itReview.status,
+    detail: `Enrollment pre-queued for ${itReview.qty} units. ${itReview.imageName}. ${itReview.source}, ${formatCheckTimestamp(itReview.checkedAt)}`,
+  };
+
+  const supplier: DecisionCheck = {
+    key: "supplier",
+    status: "pass",
+    detail: `${detail.supplier} ${detail.pricingProgram ?? "[Pricing program]"} pricing applied. Contract current through ${detail.contractEnd}`,
+  };
+
+  const costCenter: DecisionCheck = detail.costCenterException
+    ? {
+        key: "costCenter",
+        status: "exception",
+        detail: detail.costCenterException.detail,
+      }
+    : {
+        key: "costCenter",
+        status: "pass",
+        detail: `${code} covers ${detail.spendCategory ?? "[Spend category]"} for ${department}`,
+      };
+
+  const approvalRouting: DecisionCheck = {
+    key: "approvalRouting",
+    status: "pass",
+    detail: `${department} sits within your authority. No further approval needed`,
+  };
+
+  return [deviceManagement, supplier, costCenter, approvalRouting];
 }
 
 // Every entry bills to Design Operations · CC-4421 and exceeds $5,000 —
@@ -493,13 +659,14 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     submitted: "Jul 21, 2026",
     lineItems: [
       {
-        description: "ThinkPad X1 Carbon Gen 12 × 15 · EPP price $1,849",
+        description: "ThinkPad X1 Carbon Gen 12",
+        quantity: 15,
+        unitPrice: "$1,849",
         amount: "$27,735",
       },
     ],
     total: "$27,735",
     totalValue: 27735,
-    note: "Hi Alex, these are for the Fusion contractors starting Aug 3. Happy to answer anything.",
     packet: {
       budget: {
         label: "Hardware budget · Design Operations FY27",
@@ -507,18 +674,29 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
         detail: "$27,735 of $89,000 remaining this quarter",
       },
       itReview: {
-        title: "Device management · Ready",
-        detail:
-          "Enrollment pre-queued for 15 units. Standard contractor image · IT Ops, today 09:14.",
+        status: "pass",
+        qty: 15,
+        imageName: "Standard contractor image",
+        source: "IT Ops",
+        checkedAt: "Jul 23, 2026 09:14",
       },
     },
     poNumber: "PO-88421",
     expectedDelivery: "Jul 30, 2026",
+    // All four checks pass — null would read as "no view," not "cleared."
+    // A clean record recommends approve rather than saying nothing.
+    recommendation: "approve",
+    // Matches the requester-side pricingNote for this same request — real,
+    // not invented.
+    pricingProgram: "EPP",
+    contractEnd: "[Contract end date]",
+    spendCategory: "contractor hardware",
+    teamsChannel: "[Teams channel name]",
   },
-  // Light record — populates the queue row and its inline Approve/Deny
-  // actions only. No detail page reads this one (see Approvals.tsx), so it
-  // carries no line-item breakdown or policy analysis beyond what the row
-  // itself shows.
+  // Full packet — the exception scenario. Its cost center check reports
+  // `exception` (costCenterException below) rather than the usual pass
+  // sentence, recommendation is "send-back", and the action group/band/
+  // border all follow from that data, not a special case for this id.
   "REQ-2054": {
     id: "REQ-2054",
     request: "Adobe Creative Cloud, 12 seats",
@@ -530,11 +708,15 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     needBy: "Aug 15, 2026",
     submitted: "Jul 22, 2026",
     lineItems: [
-      { description: "Adobe Creative Cloud · 12 seats", amount: "$8,940" },
+      {
+        description: "Adobe Creative Cloud",
+        quantity: 12,
+        unitPrice: "$745",
+        amount: "$8,940",
+      },
     ],
     total: "$8,940",
     totalValue: 8940,
-    note: "12 seats for the design team's Creative Cloud renewal.",
     packet: {
       budget: {
         label: "Software budget · Design Operations FY27",
@@ -542,12 +724,25 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
         detail: "$8,940 of $50,000 remaining this quarter",
       },
       itReview: {
-        title: "License provisioning · Ready",
-        detail: "12 seats queued for the design team roster.",
+        status: "pass",
+        qty: 12,
+        imageName: "Standard seat provisioning",
+        source: "IT Ops",
+        checkedAt: "Jul 24, 2026 10:02",
       },
     },
     poNumber: "PO-88422",
     expectedDelivery: "Aug 10, 2026",
+    recommendation: "send-back",
+    contractEnd: "[Contract end date]",
+    // PLACEHOLDER — the exception itself. Both fields are invented: a real
+    // scenario would name the actual mismatch and the code it should have
+    // billed to instead.
+    costCenterException: {
+      code: "[Cost center code]",
+      detail: "[Cost center exception detail]",
+    },
+    teamsChannel: "[Teams channel name]",
   },
   "REQ-2055": {
     id: "REQ-2055",
@@ -560,11 +755,15 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     needBy: "Aug 20, 2026",
     submitted: "Jul 22, 2026",
     lineItems: [
-      { description: "Dell UltraSharp U2723QE × 8", amount: "$6,392" },
+      {
+        description: "Dell UltraSharp U2723QE",
+        quantity: 8,
+        unitPrice: "$799",
+        amount: "$6,392",
+      },
     ],
     total: "$6,392",
     totalValue: 6392,
-    note: "8 monitors to replace units flagged in the equipment audit.",
     packet: {
       budget: {
         label: "Hardware budget · Design Operations FY27",
@@ -572,12 +771,19 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
         detail: "$6,392 of $89,000 remaining this quarter",
       },
       itReview: {
-        title: "Device management · Ready",
-        detail: "Standard imaging queued for 8 units.",
+        status: "pass",
+        qty: 8,
+        imageName: "Standard imaging",
+        source: "IT Ops",
+        checkedAt: "Jul 24, 2026 11:30",
       },
     },
     poNumber: "PO-88423",
     expectedDelivery: "Aug 15, 2026",
+    // All four checks pass — see the same note on REQ-2052.
+    recommendation: "approve",
+    contractEnd: "[Contract end date]",
+    teamsChannel: "[Teams channel name]",
   },
   "REQ-2056": {
     id: "REQ-2056",
@@ -590,11 +796,15 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     needBy: "Sep 1, 2026",
     submitted: "Jul 23, 2026",
     lineItems: [
-      { description: "Figma Organization · 25 seats", amount: "$11,250" },
+      {
+        description: "Figma Organization",
+        quantity: 25,
+        unitPrice: "$450",
+        amount: "$11,250",
+      },
     ],
     total: "$11,250",
     totalValue: 11250,
-    note: "25 seats for the design and product teams.",
     packet: {
       budget: {
         label: "Software budget · Design Operations FY27",
@@ -602,12 +812,19 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
         detail: "$11,250 of $50,000 remaining this quarter",
       },
       itReview: {
-        title: "License provisioning · Ready",
-        detail: "25 seats queued across design and product.",
+        status: "pass",
+        qty: 25,
+        imageName: "Standard seat provisioning",
+        source: "IT Ops",
+        checkedAt: "Jul 25, 2026 08:45",
       },
     },
     poNumber: "PO-88424",
     expectedDelivery: "Aug 25, 2026",
+    // All four checks pass — see the same note on REQ-2052.
+    recommendation: "approve",
+    contractEnd: "[Contract end date]",
+    teamsChannel: "[Teams channel name]",
   },
 };
 
