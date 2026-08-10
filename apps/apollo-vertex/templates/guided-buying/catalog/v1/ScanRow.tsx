@@ -33,12 +33,27 @@ interface ScanRowProps {
   onOpenDetail: (item: CatalogItem) => void;
 }
 
-/** Small brand mark — logo when available, vendor initials on missing/broken. */
-export function BrandMark({ item }: { item: CatalogItem }) {
+/** Small brand mark — logo when available, vendor initials on missing/broken.
+ * `size` defaults to the original fixed 36px tile every existing caller
+ * relies on; `"lg"` is a 48px variant for contexts where the mark itself is
+ * the hero, e.g. the submission recap. */
+export function BrandMark({
+  item,
+  size = "sm",
+}: {
+  item: CatalogItem;
+  size?: "sm" | "lg";
+}) {
   const logo = vendorLogoUrl(item.vendor);
   const [failed, setFailed] = useState(false);
+  const large = size === "lg";
   return (
-    <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white",
+        large ? "size-12" : "size-9",
+      )}
+    >
       {logo && !failed ? (
         // oxlint-disable-next-line next/no-img-element
         <img
@@ -46,10 +61,15 @@ export function BrandMark({ item }: { item: CatalogItem }) {
           alt={`${item.vendor} logo`}
           loading="lazy"
           onError={() => setFailed(true)}
-          className="size-5 object-contain"
+          className={cn("object-contain", large ? "size-7" : "size-5")}
         />
       ) : (
-        <span className="text-[10px] font-semibold text-muted-foreground">
+        <span
+          className={cn(
+            "font-semibold text-muted-foreground",
+            large ? "text-xs" : "text-[10px]",
+          )}
+        >
           {item.vendor.slice(0, 3).toUpperCase()}
         </span>
       )}
