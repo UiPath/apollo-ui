@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.18.0...@uipath/apollo-react@6.19.0) (2026-08-10)
+
+### Features
+
+* **apollo-react:** add mocked chip to stage node tasks ([501e3f0](https://github.com/UiPath/apollo-ui/commit/501e3f01e83b012b5ef857d3c7d4bde2b9736477))
+
 ## [@uipath/apollo-react-v6.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.17.4...@uipath/apollo-react@6.18.0) (2026-08-10)
 
 ### Features
