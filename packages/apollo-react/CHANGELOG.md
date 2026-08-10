@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.19.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.19.0...@uipath/apollo-react@6.19.1) (2026-08-10)
+
+### Bug Fixes
+
+* **apollo-react:** improve stage return-edge snapping ([88c6bca](https://github.com/UiPath/apollo-ui/commit/88c6bca69787f55db206f5adff0acd3cbec2c52f))
+
 ## [@uipath/apollo-react-v6.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.18.0...@uipath/apollo-react@6.19.0) (2026-08-10)
 
 ### Features
