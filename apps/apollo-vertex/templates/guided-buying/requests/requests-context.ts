@@ -95,6 +95,10 @@ export interface RequestsContextValue {
    * show request status read this first and fall back to the static seed
    * value when a request has no entry here. */
   requestStatusOverrides: Record<string, "approved" | "denied" | "sent-back">;
+  /** Real timestamp (ms since epoch) of the moment a request was approved
+   * this session — the seed data has no such field, so this is the only
+   * source for "which approval is most recent" and how long ago it was. */
+  approvedAt: Record<string, number>;
   approveRequest: (requestId: string) => void;
   denyRequest: (requestId: string) => void;
   sendBackRequest: (requestId: string) => void;

@@ -45,19 +45,44 @@ const HAS_DETAIL_PAGE: Record<string, boolean> = {
 interface StatCardProps {
   label: string;
   value: string;
-  hint: string;
+  /** Omitted entirely (not rendered) rather than shown empty — same
+   * suppress-on-nothing-to-report rule the findings block uses. */
+  hint?: string;
+  /** Only ever the success token, only ever for a hint that reports a
+   * real recent change (see the third card below) — the label stays
+   * uncolored regardless, so the card itself never outranks the two
+   * actionable ones next to it. */
+  hintClassName?: string;
 }
 
-function StatCard({ label, value, hint }: StatCardProps) {
+function StatCard({ label, value, hint, hintClassName }: StatCardProps) {
   return (
-    <Card variant="glass">
-      <CardContent className="px-5 pt-4 pb-4">
+    <Card variant="glass" className="py-0">
+      <CardContent className="p-5">
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className="mt-1 text-3xl font-medium text-foreground">{value}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+        {hint != null && (
+          <p
+            className={cn("mt-1 text-xs text-muted-foreground", hintClassName)}
+          >
+            {hint}
+          </p>
+        )}
       </CardContent>
     </Card>
   );
+}
+
+/** Real elapsed time since a live approval this session — deliberately not
+ * the seeded narrative calendar the rest of this file's dates use
+ * (APPROVALS_TODAY etc.), since this is a genuine "just happened while you
+ * were looking" interaction moment, not a scenario fact. */
+function formatElapsed(approvedAtMs: number): string {
+  const minutes = Math.floor((Date.now() - approvedAtMs) / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours} hour${hours === 1 ? "" : "s"} ago`;
 }
 
 /**
@@ -68,7 +93,8 @@ function StatCard({ label, value, hint }: StatCardProps) {
  */
 export function Approvals() {
   const navigate = useNavigate();
-  const { requestStatusOverrides, approveRequest, denyRequest } = useRequests();
+  const { requestStatusOverrides, approvedAt, approveRequest, denyRequest } =
+    useRequests();
   const rows = Object.values(DECISION_DETAILS);
   const pendingRows = rows.filter(
     (row) => requestStatusOverrides[row.id] == null,
@@ -88,6 +114,30 @@ export function Approvals() {
   const longestWaitDays =
     oldestPending != null ? daysSince(oldestPending.submitted) : 0;
 
+  // Spend under management: the total value of every request this approver
+  // has actually approved, live-derived from requestStatusOverrides — no
+  // seeded baseline (see report: a fresh session starts this at $0, which
+  // reads small for a KPI headline, but embedding an invented starting
+  // figure isn't a call this file gets to make).
+  const approvedRows = rows.filter(
+    (row) => requestStatusOverrides[row.id] === "approved",
+  );
+  const spendUnderManagement = approvedRows.reduce(
+    (sum, row) => sum + row.totalValue,
+    0,
+  );
+  // Most recent contribution: whichever approved row has the latest real
+  // approvedAt timestamp — absent (not just old) for anything approved
+  // before this session, since nothing is pre-seeded as approved.
+  const mostRecentApproval = approvedRows.reduce<
+    (typeof approvedRows)[number] | null
+  >((latest, row) => {
+    const t = approvedAt[row.id];
+    if (t == null) return latest;
+    if (latest == null || t > (approvedAt[latest.id] ?? 0)) return row;
+    return latest;
+  }, null);
+
   return (
     <div className="h-full overflow-y-auto">
       <PageHeader>
@@ -97,7 +147,7 @@ export function Approvals() {
       </PageHeader>
 
       <div className="px-4 pb-8 sm:px-6 lg:px-8">
-        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <StatCard
             label="Awaiting your decision"
             value={`$${awaitingTotal.toLocaleString("en-US")}`}
@@ -114,6 +164,18 @@ export function Approvals() {
               oldestPending != null
                 ? `${oldestPending.id} · ${oldestPending.submitted}`
                 : "Nothing pending"
+            }
+          />
+          <StatCard
+            label="Spend under management"
+            value={`$${spendUnderManagement.toLocaleString("en-US")}`}
+            hint={
+              mostRecentApproval != null
+                ? `${mostRecentApproval.id} · ${formatElapsed(approvedAt[mostRecentApproval.id] ?? Date.now())}`
+                : undefined
+            }
+            hintClassName={
+              mostRecentApproval != null ? "text-success" : undefined
             }
           />
         </div>
