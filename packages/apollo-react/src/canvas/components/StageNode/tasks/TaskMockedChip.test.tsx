@@ -41,7 +41,7 @@ describe('TaskMockedChip', () => {
   it('sits at the top-right corner of the task card, mirroring the breakpoint dot', () => {
     render(<TaskMockedChip taskId="t1" mocked={true} />);
 
-    expect(screen.getByTestId('stage-task-mocked-t1')).toHaveClass(
+    expect(screen.getByTestId('stage-task-mocked-t1').parentElement).toHaveClass(
       'absolute',
       '-top-1.5',
       '-right-1.5'

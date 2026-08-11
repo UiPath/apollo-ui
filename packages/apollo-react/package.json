@@ -128,7 +128,9 @@
   },
   "sideEffects": [
     "**/*.css",
-    "dist/**/*.css"
+    "dist/**/*.css",
+    "dist/canvas/index.js",
+    "dist/canvas/index.cjs"
   ],
   "files": [
     "dist"
