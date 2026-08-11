@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.19.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.19.1...@uipath/apollo-react@6.19.2) (2026-08-11)
+
+### Bug Fixes
+
+* **apollo-react:** anchor task mocked chip tooltip on a ref-forwarding trigger ([31d420d](https://github.com/UiPath/apollo-ui/commit/31d420dedae42888aee945dfd0357ac6f7100dd2))
+
 ## [@uipath/apollo-react-v6.19.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.19.0...@uipath/apollo-react@6.19.1) (2026-08-10)
 
 ### Bug Fixes
