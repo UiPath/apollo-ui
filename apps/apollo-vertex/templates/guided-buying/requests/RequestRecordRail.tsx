@@ -9,9 +9,11 @@ import {
   useRef,
   useState,
 } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import type { DecisionDetail, DecisionStatus, RailFieldKey } from "./data";
+import { useRequests } from "./requests-context";
 
 export interface RequestRecordRailHandle {
   /** Flashes the field. Hovering a mark calls this with no `scroll` — the
@@ -170,6 +172,11 @@ export const RequestRecordRail = forwardRef<
   const [department, costCode] = detail.costCenter.split(" · ");
   const approved = status === "approved";
 
+  const { fieldExceptions } = useRequests();
+  const shipException = (fieldExceptions[detail.id] ?? []).find(
+    (e) => e.field === "Ship to",
+  );
+
   return (
     <div className="w-full space-y-4 overflow-y-auto py-5">
       <p className="text-sm font-bold text-foreground">Request details</p>
@@ -224,6 +231,24 @@ export const RequestRecordRail = forwardRef<
               <p className="mt-0.5 text-xs font-normal text-muted-foreground">
                 {shipAddress}
               </p>
+            )}
+            {shipException && (
+              <p className="mt-0.5 text-xs font-normal text-muted-foreground">
+                Ships here if the exception is declined.
+              </p>
+            )}
+            {shipException && (
+              <div className="mt-2 space-y-1.5 rounded-none border-l-2 border-warning py-1 pl-3 font-normal">
+                <Badge variant="secondary" status="warning">
+                  Exception requested
+                </Badge>
+                <p className="text-xs font-medium text-foreground">
+                  {shipException.requestedValue}
+                </p>
+                <p className="text-xs font-normal text-muted-foreground">
+                  {`${shipException.ownerName} decides. Visible to ${detail.approver.split(" · ")[0]} and procurement.`}
+                </p>
+              </div>
             )}
           </FieldRow>
 

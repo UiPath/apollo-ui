@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
 import {
@@ -34,11 +35,13 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { AiGlow } from "@/registry/ai-glow/ai-glow";
+import { P2 } from "../../P2";
 import {
   type DetailField,
   useAssistantThread,
 } from "./assistant-thread-context";
 import { useConversation } from "./conversation-context";
+import { ExceptionModal } from "./ExceptionModal";
 import { useFlowFooter } from "./FlowFooter";
 
 // Soft ease-out, matched to the rest of the flow.
@@ -52,7 +55,7 @@ const NEED_BY_ASSUMED = "Standard delivery";
 
 type FieldKey = "cost" | "ship" | "need" | "approver";
 
-interface FieldOption {
+export interface FieldOption {
   value: string;
   /** One-line reason — the provenance tag, extended into a choice. */
   reason: string;
@@ -75,7 +78,7 @@ interface ProvenanceActionSpec {
   kind: ProvenanceActionKind;
 }
 
-interface FieldProvenance {
+export interface FieldProvenance {
   /** Zone 2 — the provenance statement itself. */
   source: string;
   /** Zone 3 — supporting detail. Omitted for Need by, which is filled in at
@@ -83,11 +86,17 @@ interface FieldProvenance {
   context?: string;
   /** Zone 4 lock chip label. Only set when the value can't be changed. */
   lockReason?: string;
+  /** The person who owns this field's default, when the lock is a person's
+   * (not a policy's — Approver's lock is "Fixed policy rule", no owner).
+   * Additive: `source`/`lockReason` above keep their own prose untouched;
+   * this is the one structured place the exception modal reads the same
+   * name from, so the two surfaces can't drift apart. */
+  ownerName?: string;
   /** Zone 4 actions, in display order (right-aligned). */
   actions: ProvenanceActionSpec[];
 }
 
-interface EnvelopeField {
+export interface EnvelopeField {
   key: FieldKey;
   icon: LucideIcon;
   label: string;
@@ -157,6 +166,7 @@ const FIELDS: EnvelopeField[] = [
       context:
         "Used on every team request this quarter. Alternates: your home office, Berlin hub.",
       lockReason: "Only Dana Kim can change",
+      ownerName: "Dana Kim",
       actions: [
         {
           label: "Request an exception",
@@ -287,6 +297,9 @@ interface ProvenancePopoverAction {
   label: string;
   variant: "primary" | "secondary";
   onClick: () => void;
+  /** Threaded through from the data-level action spec so the footer can
+   * gate the exception action specifically, by kind rather than by label. */
+  kind: ProvenanceActionKind;
 }
 
 interface ProvenancePopoverProps {
@@ -366,16 +379,28 @@ function ProvenancePopover({
               <span>{lockReason}</span>
             </span>
             <div className="flex shrink-0 gap-2">
-              {actions.map((action) => (
-                <Button
-                  key={action.label}
-                  size="sm"
-                  variant={provenanceButtonVariant(action)}
-                  onClick={action.onClick}
-                >
-                  {action.label}
-                </Button>
-              ))}
+              {actions.map((action) =>
+                action.kind === "requestException" ? (
+                  <P2 key={action.label}>
+                    <Button
+                      size="sm"
+                      variant={provenanceButtonVariant(action)}
+                      onClick={action.onClick}
+                    >
+                      {action.label}
+                    </Button>
+                  </P2>
+                ) : (
+                  <Button
+                    key={action.label}
+                    size="sm"
+                    variant={provenanceButtonVariant(action)}
+                    onClick={action.onClick}
+                  >
+                    {action.label}
+                  </Button>
+                ),
+              )}
             </div>
           </div>
         ) : (
@@ -426,8 +451,12 @@ export function RequestEnvelope() {
     envelopeOverrides,
     setEnvelopeOverride,
     clearEnvelopeOverride,
+    shipToException,
+    setShipToException,
+    clearShipToException,
   } = useConversation();
   const [continued, setContinued] = useState(false);
+  const [exceptionModalOpen, setExceptionModalOpen] = useState(false);
   // Seeded from envelopeOverrides so a Revise re-derives the card without
   // discarding what the user already chose; a first-time Bridge just gets
   // the raw recommendation (overrides start empty).
@@ -474,6 +503,8 @@ export function RequestEnvelope() {
   const costAlternates = Object.keys(COST_TO_APPROVER)
     .filter((c) => c !== values.cost)
     .join(", ");
+  // Non-null: "ship" is a fixed entry in the module-level FIELDS array.
+  const shipField = FIELDS.find((f) => f.key === "ship") as EnvelopeField;
 
   // Thread entry: live, not gated on Continue, so the panel already has this
   // step's detail the moment Bridge is on screen. Splits records from guesses
@@ -657,6 +688,10 @@ export function RequestEnvelope() {
             {FIELDS.map((field, i) => {
               const Icon = field.icon;
               const isApprover = field.key === "approver";
+              // Independent of which allowed value is committed — a pending
+              // exception and the picker are two separate axes, not one.
+              const shipExceptionPending =
+                field.key === "ship" && shipToException != null;
               return (
                 <motion.div
                   key={field.label}
@@ -684,6 +719,11 @@ export function RequestEnvelope() {
                       <p className="truncate text-sm font-medium text-foreground">
                         {values[field.key]}
                       </p>
+                      {shipExceptionPending && (
+                        <p className="text-xs text-muted-foreground">
+                          Ships here if the exception is declined.
+                        </p>
+                      )}
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
                       {/* Fixed-width slot regardless of whether this row is
@@ -760,7 +800,8 @@ export function RequestEnvelope() {
                                   ? [
                                       {
                                         label: "Revert",
-                                        variant: "primary",
+                                        variant: "primary" as const,
+                                        kind: "changeForRequest" as const,
                                         onClick: () => {
                                           setProvenanceKey(null);
                                           revert("cost");
@@ -770,6 +811,7 @@ export function RequestEnvelope() {
                                   : field.provenance.actions.map((action) => ({
                                       label: action.label,
                                       variant: action.variant,
+                                      kind: action.kind,
                                       onClick: () => {
                                         if (
                                           action.kind === "changeForRequest"
@@ -789,6 +831,91 @@ export function RequestEnvelope() {
                                             "Sending a policy exception request isn't available yet.",
                                           );
                                         }
+                                      },
+                                    }))
+                              }
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      ) : field.key === "ship" ? (
+                        // Ship to also always opens a popover — an allowed
+                        // pick (Denver, Berlin) needs no lock, but filing an
+                        // exception is a separate axis from which allowed
+                        // value is committed, so the trigger can't disappear
+                        // the way it does for other overridden fields below.
+                        <Popover
+                          open={provenanceKey === field.key}
+                          onOpenChange={(open) =>
+                            setProvenanceKey(open ? field.key : null)
+                          }
+                        >
+                          <PopoverTrigger asChild>
+                            <motion.button
+                              type="button"
+                              disabled={continued}
+                              className={cn(
+                                "whitespace-nowrap text-right text-xs underline decoration-dotted underline-offset-2 hover:text-foreground",
+                                overridden.ship
+                                  ? "italic text-(--primary)"
+                                  : "text-muted-foreground",
+                              )}
+                              initial={reduceMotion ? false : { opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{
+                                duration: 0.25,
+                                delay: reduceMotion ? 0 : i * STAGGER + 0.18,
+                              }}
+                            >
+                              {overridden.ship
+                                ? "Changed by you"
+                                : field.source}
+                            </motion.button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="end"
+                            className="w-80 text-left data-[state=open]:animate-none data-[state=closed]:animate-none"
+                          >
+                            <ProvenancePopover
+                              field={field.label}
+                              source={
+                                overridden.ship
+                                  ? "Changed by you, this request only."
+                                  : field.provenance.source
+                              }
+                              lockReason={
+                                overridden.ship
+                                  ? undefined
+                                  : field.provenance.lockReason
+                              }
+                              actions={
+                                overridden.ship
+                                  ? [
+                                      {
+                                        label: "Request an exception",
+                                        variant: "secondary" as const,
+                                        kind: "requestException" as const,
+                                        onClick: () => {
+                                          setProvenanceKey(null);
+                                          setExceptionModalOpen(true);
+                                        },
+                                      },
+                                      {
+                                        label: "Revert",
+                                        variant: "primary" as const,
+                                        kind: "changeForRequest" as const,
+                                        onClick: () => {
+                                          setProvenanceKey(null);
+                                          revert("ship");
+                                        },
+                                      },
+                                    ]
+                                  : field.provenance.actions.map((action) => ({
+                                      label: action.label,
+                                      variant: action.variant,
+                                      kind: action.kind,
+                                      onClick: () => {
+                                        setProvenanceKey(null);
+                                        setExceptionModalOpen(true);
                                       },
                                     }))
                               }
@@ -857,6 +984,7 @@ export function RequestEnvelope() {
                                 (action) => ({
                                   label: action.label,
                                   variant: action.variant,
+                                  kind: action.kind,
                                   onClick: () => {
                                     if (action.kind === "changeForRequest") {
                                       setProvenanceKey(null);
@@ -869,6 +997,10 @@ export function RequestEnvelope() {
                                         "Updating your saved profile default isn't available yet.",
                                       );
                                     } else {
+                                      // Approver's own requestException action
+                                      // (a policy exception, not an owner
+                                      // override) — Ship to has its own
+                                      // branch above and never reaches here.
                                       stubToast(
                                         "Exception not sent",
                                         "Sending a policy exception request isn't available yet.",
@@ -914,6 +1046,31 @@ export function RequestEnvelope() {
                       </Tooltip>
                     </div>
                   </div>
+
+                  {/* Pending exception: subordinate to the row above, which
+                  keeps showing what the field actually holds. A rounded
+                  border on only one side doesn't render cleanly, hence
+                  rounded-none on the block itself. */}
+                  {shipExceptionPending && shipToException && (
+                    <div className="mt-2 ml-7 space-y-1.5 rounded-none border-l-2 border-warning py-1 pl-3">
+                      <Badge variant="secondary" status="warning">
+                        Exception requested
+                      </Badge>
+                      <p className="text-xs font-medium text-foreground">
+                        {shipToException.requestedValue}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {`${shipToException.ownerName} decides. Visible to ${shortName(values.approver)} and procurement.`}
+                      </p>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={clearShipToException}
+                      >
+                        Withdraw exception
+                      </Button>
+                    </div>
+                  )}
 
                   {/* Low-confidence guess: invite a change, quietly. */}
                   {field.key === "need" &&
@@ -997,6 +1154,37 @@ export function RequestEnvelope() {
                             </button>
                           );
                         })}
+
+                        {/* Second entry point to the same exception modal —
+                        the popover catches "why can't I change this,"
+                        this catches "I'm already looking for a different
+                        value." Deliberately not option-styled (no radio,
+                        no border) so it can't be mistaken for a
+                        selectable choice — a full-width rule is the only
+                        separation, and only the link phrase is
+                        interactive. P2 only; an insert after the last
+                        option, never a replacement for it. */}
+                        <P2>
+                          {field.provenance.ownerName != null &&
+                            !shipExceptionPending && (
+                              <div className="mt-3 space-y-2">
+                                <div className="h-px w-full bg-border" />
+                                <p className="text-xs text-muted-foreground">
+                                  {`Need a different ${field.label}?`}{" "}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingKey(null);
+                                      setExceptionModalOpen(true);
+                                    }}
+                                    className="text-(--primary) underline decoration-dotted underline-offset-2 hover:text-foreground"
+                                  >
+                                    Request an exception
+                                  </button>
+                                </p>
+                              </div>
+                            )}
+                        </P2>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -1011,6 +1199,21 @@ export function RequestEnvelope() {
           The output is AI generated. Please review.
         </p>
       </div>
+
+      <ExceptionModal
+        field={shipField}
+        currentValue={values.ship}
+        approverName={shortName(values.approver)}
+        open={exceptionModalOpen}
+        onOpenChange={setExceptionModalOpen}
+        onSubmit={(requestedValue, reason) =>
+          setShipToException({
+            requestedValue,
+            reason,
+            ownerName: shipField.provenance.ownerName ?? "",
+          })
+        }
+      />
     </TooltipProvider>
   );
 }

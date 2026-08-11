@@ -82,8 +82,9 @@ export function CatalogSubmitted() {
     startFresh,
     seedPhase,
     setRequestDetails,
+    shipToException,
   } = useConversation();
-  const { submitRequest } = useRequests();
+  const { submitRequest, addFieldException } = useRequests();
   const { addStepEntry } = useAssistantThread();
   const { ref: contentRef, overflowing } = useContentOverflow<HTMLDivElement>();
   const [shelfDockOpen, setShelfDockOpen] = useState(false);
@@ -152,6 +153,17 @@ export function CatalogSubmitted() {
       submitted: today,
       updated: today,
     });
+    if (shipToException) {
+      addFieldException(REQUEST_ID, {
+        field: "Ship to",
+        currentValue: requestDetails?.shipTo ?? DEFAULT_SHIP_TO,
+        requestedValue: shipToException.requestedValue,
+        reason: shipToException.reason,
+        requester: "Marcus Webb",
+        timestamp: today,
+        ownerName: shipToException.ownerName,
+      });
+    }
     addStepEntry("done", `Submitted. With ${approverName} for approval.`, [
       `Request ${REQUEST_ID} submitted.`,
       `With ${approver} for approval.`,

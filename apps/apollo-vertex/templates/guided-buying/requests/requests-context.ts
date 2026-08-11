@@ -35,6 +35,23 @@ export function noteProvenance(
   return note.channelName ?? fallbackChannel;
 }
 
+/** A requester's exception request against a locked field's owner-set
+ * default — the default itself is never overwritten; this is a parallel
+ * record both the approver and (where a surface exists) the buyer can read. */
+export interface FieldException {
+  id: string;
+  field: string;
+  currentValue: string;
+  requestedValue: string;
+  reason: string;
+  requester: string;
+  timestamp: string;
+  /** Who owns the field's default and decides this ask — derived from the
+   * field's own provenance record at the point the exception was requested,
+   * not re-looked-up here (this layer has no access to that data). */
+  ownerName: string;
+}
+
 /** The requester's confirmation that goods arrived, by request id. */
 export interface ReceiptRecord {
   qtyOrdered: number;
@@ -81,6 +98,12 @@ export interface RequestsContextValue {
   approveRequest: (requestId: string) => void;
   denyRequest: (requestId: string) => void;
   sendBackRequest: (requestId: string) => void;
+  /** Field exceptions requested during this session, by request id. */
+  fieldExceptions: Record<string, FieldException[]>;
+  addFieldException: (
+    requestId: string,
+    exception: Omit<FieldException, "id">,
+  ) => void;
 }
 
 export const RequestsContext = createContext<RequestsContextValue | null>(null);

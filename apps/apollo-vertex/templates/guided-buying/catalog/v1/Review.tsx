@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Info, Plus, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -75,6 +76,8 @@ export function Review() {
     hasResolved,
     seedPhase,
     setRequestDetails,
+    shipToException,
+    clearShipToException,
   } = useConversation();
   const [shelfDockOpen, setShelfDockOpen] = useState(false);
   const [addItemsOpen, setAddItemsOpen] = useState(false);
@@ -286,6 +289,31 @@ export function Review() {
                   <div>
                     <p className="text-xs text-muted-foreground">Ship to</p>
                     <p className="text-foreground">{shipTo}</p>
+                    {shipToException && (
+                      <p className="text-xs text-muted-foreground">
+                        Ships here if the exception is declined.
+                      </p>
+                    )}
+                    {shipToException && (
+                      <div className="mt-2 space-y-1.5 rounded-none border-l-2 border-warning py-1 pl-3">
+                        <Badge variant="secondary" status="warning">
+                          Exception requested
+                        </Badge>
+                        <p className="text-xs font-medium text-foreground">
+                          {shipToException.requestedValue}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {`${shipToException.ownerName} decides. Visible to ${approverName} and procurement.`}
+                        </p>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={clearShipToException}
+                        >
+                          Withdraw exception
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Need by</p>
