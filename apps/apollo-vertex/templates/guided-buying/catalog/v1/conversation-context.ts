@@ -96,6 +96,22 @@ export interface ConversationContextValue {
   setEnvelopeOverride: (key: string, value: string) => void;
   /** Clear a Bridge envelope field's override (e.g. reverted to the default). */
   clearEnvelopeOverride: (key: string) => void;
+  /** A pending exception request against Ship to's owner-set default — distinct
+   * from `envelopeOverrides`: the default itself is never replaced, this is
+   * layered alongside it (see the Ship to row's "Exception requested" state). */
+  shipToException: {
+    requestedValue: string;
+    reason: string;
+    ownerName: string;
+  } | null;
+  /** Record a new Ship to exception request (replaces any prior one). */
+  setShipToException: (exception: {
+    requestedValue: string;
+    reason: string;
+    ownerName: string;
+  }) => void;
+  /** Clear a pending Ship to exception request. */
+  clearShipToException: () => void;
   /** Deep-link support: instantly seeds the equivalent end-state for a Buy
    * sub-phase, skipping the scripted stream/skeleton delays — used when
    * /buy is reached directly with a phase already in the URL, or when

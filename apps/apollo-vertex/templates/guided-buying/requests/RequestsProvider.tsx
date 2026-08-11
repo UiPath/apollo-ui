@@ -3,6 +3,7 @@
 import { type ReactNode, useState } from "react";
 import type { RequestRow } from "./data";
 import {
+  type FieldException,
   type ReceiptRecord,
   type RequestNote,
   RequestsContext,
@@ -61,6 +62,9 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
   const [receipts, setReceipts] = useState<Record<string, ReceiptRecord>>({});
   const [requestStatusOverrides, setRequestStatusOverrides] = useState<
     Record<string, "approved" | "denied" | "sent-back">
+  >({});
+  const [fieldExceptions, setFieldExceptions] = useState<
+    Record<string, FieldException[]>
   >({});
 
   const openRequest = (id: string) => setOpenRequestId(id);
@@ -123,6 +127,20 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const addFieldException = (
+    requestId: string,
+    exception: Omit<FieldException, "id">,
+  ) => {
+    setFieldExceptions((prev) => {
+      const existing = prev[requestId] ?? [];
+      const record: FieldException = {
+        id: `${requestId}-x${existing.length}`,
+        ...exception,
+      };
+      return { ...prev, [requestId]: [...existing, record] };
+    });
+  };
+
   const value: RequestsContextValue = {
     openRequestId,
     openRequest,
@@ -139,6 +157,8 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     approveRequest,
     denyRequest,
     sendBackRequest,
+    fieldExceptions,
+    addFieldException,
   };
 
   return (

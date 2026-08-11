@@ -105,6 +105,11 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   const [envelopeOverrides, setEnvelopeOverrides] = useState<
     Record<string, string>
   >({});
+  const [shipToException, setShipToExceptionState] = useState<{
+    requestedValue: string;
+    reason: string;
+    ownerName: string;
+  } | null>(null);
 
   const idRef = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -398,6 +403,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setPendingRevisionText(null);
     setRevisedFrom(null);
     setEnvelopeOverrides({});
+    setShipToExceptionState(null);
   };
 
   // Returns to Intake with the current request staged in the composer — a new
@@ -447,6 +453,13 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setStatus("ready");
   };
 
+  const setShipToException = (exception: {
+    requestedValue: string;
+    reason: string;
+    ownerName: string;
+  }) => setShipToExceptionState(exception);
+  const clearShipToException = () => setShipToExceptionState(null);
+
   const value: ConversationContextValue = {
     messages,
     status,
@@ -478,6 +491,9 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     envelopeOverrides,
     setEnvelopeOverride,
     clearEnvelopeOverride,
+    shipToException,
+    setShipToException,
+    clearShipToException,
     seedPhase,
   };
 
