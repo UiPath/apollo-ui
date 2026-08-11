@@ -26,6 +26,12 @@ export interface ActivityStage extends JourneyStage {
 interface ActivityTrackProps {
   stages: ActivityStage[];
   className?: string;
+  /** `"horizontal"` (default) — the requester's own tracker, unchanged.
+   * `"vertical"` — a narrow-column stepper for the approver's decision
+   * card. Same node treatment, same viewer-relative labels, same
+   * current/final-only sub-label rule where the caller applies it — only
+   * the axis changes. */
+  orientation?: "horizontal" | "vertical";
 }
 
 // Secondary, not muted — an upcoming step is still owed, not disabled, so
@@ -89,31 +95,49 @@ function dateText(stage: ActivityStage): string | null {
  *
  * No avatars — the label beneath each node already names whoever it
  * belongs to.
+ *
+ * `size` defaults to 28px, the horizontal track's own node size — the
+ * requester's tracker never passes it, so it's unaffected. The vertical
+ * stepper passes a smaller value, since the timeline is secondary content
+ * on that screen, not the dominant element.
  */
 function StageMarker({
   state,
   isAgent,
+  size = 28,
 }: {
   state: JourneyStageState;
   isAgent?: boolean;
+  size?: number;
 }) {
+  const dim = { width: size, height: size };
+  const isCompact = size < 28;
+  const checkSize = isCompact ? 9 : 14;
+  const markSize = isCompact ? 8 : 13;
+
   if (state === "upcoming") {
     return (
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        {isAgent && <AiMark size={13} gradientId="gb-ai-mark" />}
+      <span
+        style={dim}
+        className="flex shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"
+      >
+        {isAgent && <AiMark size={markSize} gradientId="gb-ai-mark" />}
       </span>
     );
   }
 
   if (state === "active" || state === "active-warning") {
     return (
-      <span className="relative flex size-7 shrink-0 items-center justify-center rounded-full bg-background text-primary">
+      <span
+        style={dim}
+        className="relative flex shrink-0 items-center justify-center rounded-full bg-background text-primary"
+      >
         <span
           aria-hidden
           style={{ animationDuration: "2.6s" }}
           className="absolute inset-0 animate-pulse rounded-full border-2 border-primary motion-reduce:animate-none"
         />
-        {isAgent && <AiMark size={13} gradientId="gb-ai-mark" />}
+        {isAgent && <AiMark size={markSize} gradientId="gb-ai-mark" />}
       </span>
     );
   }
@@ -123,10 +147,10 @@ function StageMarker({
   if (isAgent) {
     return (
       <span
-        className="flex size-7 shrink-0 items-center justify-center rounded-full text-white"
-        style={{ background: "var(--ai-gradient-strong)" }}
+        style={{ ...dim, background: "var(--ai-gradient-strong)" }}
+        className="flex shrink-0 items-center justify-center rounded-full text-white"
       >
-        <Check className="size-3.5" strokeWidth={3} aria-hidden />
+        <Check size={checkSize} strokeWidth={3} aria-hidden />
       </span>
     );
   }
@@ -135,9 +159,98 @@ function StageMarker({
   // already uses elsewhere in this app, just at this component's larger
   // node size.
   return (
-    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-      <Check className="size-3.5" strokeWidth={3} aria-hidden />
+    <span
+      style={dim}
+      className="flex shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+    >
+      <Check size={checkSize} strokeWidth={3} aria-hidden />
     </span>
+  );
+}
+
+/**
+ * Vertical stepper — the same nodes, viewer-relative labels, and
+ * suppress-to-current-and-final sub-label rule as the horizontal track,
+ * reflowed for a narrow column. Node and connector are still flex siblings
+ * (a `flex flex-col items-center` per stage, marker then a `flex-1`
+ * connector), so the connector still terminates at the node's own box
+ * rather than rendering behind it — the same structural rule the
+ * horizontal layout uses, just rotated. Apollo Vertex has a `Stepper`
+ * primitive with a vertical orientation (registry/stepper), but its
+ * indicator is a differently-sized (32px vs this track's 28px) filled
+ * "active" state and a hollow "inactive" state — both conflict with this
+ * app's own established rules (current is a ring, never filled; future is
+ * a solid muted fill, never hollow) — so this reuses `StageMarker` and the
+ * label logic below directly instead of that primitive's own defaults.
+ */
+// Track nodes, not the column's dominant element — substantially smaller
+// than the horizontal track's 28px, since the timeline is secondary content
+// on the approver's screen.
+const VERTICAL_MARKER_SIZE = 18;
+
+function VerticalActivityTrack({ stages, className }: ActivityTrackProps) {
+  return (
+    <ol
+      className={cn("flex flex-col", className)}
+      aria-label="Request progress"
+    >
+      {stages.map((stage, i) => {
+        const isLast = i === stages.length - 1;
+        const date = dateText(stage);
+        return (
+          <li key={stage.label} className="flex gap-3">
+            <div className="flex flex-col items-center" aria-hidden>
+              <StageMarker
+                state={stage.state}
+                isAgent={stage.isAgent}
+                size={VERTICAL_MARKER_SIZE}
+              />
+              {!isLast && (
+                <div
+                  className={cn(
+                    "w-px flex-1",
+                    stage.state === "done" ? "bg-primary" : "bg-border",
+                  )}
+                />
+              )}
+            </div>
+            {/* pb-7: with a smaller marker, the stack needs more room to
+                breathe than the marker's own size would suggest — this is
+                also what gives the connector above real height instead of
+                a barely-visible sliver. */}
+            <div
+              className={cn("flex flex-col pb-7", isLast && "pb-0")}
+              role="listitem"
+            >
+              <span
+                className={cn(
+                  "whitespace-nowrap text-[11.5px] leading-tight",
+                  nameClass(stage.state),
+                )}
+              >
+                {stage.label}
+              </span>
+              {date != null && (
+                <span
+                  className={cn(
+                    "mt-0.5 flex items-start gap-1 text-[10.5px] leading-tight",
+                    dateClass(stage.state),
+                  )}
+                >
+                  {stage.state === "active-warning" && (
+                    <TriangleAlert
+                      className="mt-px size-3 shrink-0"
+                      aria-hidden
+                    />
+                  )}
+                  <span>{date}</span>
+                </span>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -147,7 +260,15 @@ function StageMarker({
  * in the Activity record below, not pinned above the track — a timestamp
  * has no meaningful position on a stage node.
  */
-export function ActivityTrack({ stages, className }: ActivityTrackProps) {
+export function ActivityTrack({
+  stages,
+  className,
+  orientation = "horizontal",
+}: ActivityTrackProps) {
+  if (orientation === "vertical") {
+    return <VerticalActivityTrack stages={stages} className={className} />;
+  }
+
   return (
     <div className={cn("flex flex-col", className)}>
       {/* Nodes + connector as flex siblings — each segment fills the gap
