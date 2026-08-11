@@ -128,11 +128,13 @@ function ItemsSummary({ items }: { items: DecisionDetail["lineItems"] }) {
 }
 
 /**
- * The request rail — items, total, supplier, ship to, charged to, hardware
- * budget, linked records, in that order. Each field carries a ref so the AI
- * summary's marks can highlight it (see `highlightField`), and the budget
- * field renders as a plain labelled row with the registry Progress bar, not
- * a nested card, matching every other field here.
+ * The request rail — items, total (with the budget callout beneath it),
+ * supplier, ship to, charged to, linked records, in that order. Each field
+ * carries a ref so the AI summary's marks can highlight it (see
+ * `highlightField`). No width/scroll/sticky classes on the root — the
+ * caller supplies those (matching the requester's own rail, a plain div in
+ * RequestWindow.tsx, so both share one scroll container instead of each
+ * rail running its own).
  */
 export const RequestRecordRail = forwardRef<
   RequestRecordRailHandle,
@@ -178,15 +180,18 @@ export const RequestRecordRail = forwardRef<
   );
 
   return (
-    <div className="w-full space-y-4 overflow-y-auto py-5">
-      <p className="text-sm font-bold text-foreground">Request details</p>
+    <div className="space-y-4">
+      <p className="text-base font-bold tracking-tighter text-foreground">
+        Request details
+      </p>
 
-      {/* Four groups, separated by a hairline: (1) items/total, (2) the
-          supplier/logistics trio, (3) the budget, (4) linked records. Group
-          gaps (space-y-5) read as noticeably larger than the field gaps
-          inside each group (space-y-4), which in turn read as larger than
-          a field's own label-to-value gap (mt-1 on FieldRow) — three
-          spacing levels, all `--spacing`-token multiples. */}
+      {/* Three groups, separated by a hairline: (1) items/total (budget
+          now lives inside total, see below), (2) the supplier/logistics
+          trio, (3) linked records. Group gaps (space-y-5) read as
+          noticeably larger than the field gaps inside each group
+          (space-y-4), which in turn read as larger than a field's own
+          label-to-value gap (mt-1 on FieldRow) — three spacing levels, all
+          `--spacing`-token multiples. */}
       <div className="space-y-5">
         <div className="space-y-4">
           <FieldRow
@@ -205,6 +210,36 @@ export const RequestRecordRail = forwardRef<
             registerRef={registerRef}
           >
             {detail.total}
+            {/* Budget as a callout on the total, not its own rail section —
+                the percentage is meaningless without the price it's a
+                percentage of, so it sits directly beneath the value it
+                modifies rather than as a separate field the approver has
+                to reconcile against this one. Its own ref/highlight, since
+                the AI summary's budget mark targets this specifically, not
+                the total as a whole. Accent role at any value — no
+                threshold-based coloring exists yet. */}
+            <div
+              ref={(el) => registerRef("budget", el)}
+              className={cn(
+                "mt-2 space-y-2 rounded-lg border border-border bg-muted/30 p-3 font-normal transition-colors duration-500",
+                highlighted === "budget" && "bg-primary/10",
+              )}
+            >
+              <p className="text-xs font-medium text-foreground">
+                {detail.packet.budget.label}
+              </p>
+              <p className="text-xs text-foreground">
+                {detail.packet.budget.pct}{" "}
+                {approved ? "committed" : "after approval"}
+              </p>
+              <Progress
+                value={Number.parseFloat(detail.packet.budget.pct)}
+                className="h-1.5"
+              />
+              <p className="text-xs text-muted-foreground">
+                {detail.packet.budget.detail}
+              </p>
+            </div>
           </FieldRow>
         </div>
 
@@ -264,31 +299,6 @@ export const RequestRecordRail = forwardRef<
                 {costCode}
               </p>
             )}
-          </FieldRow>
-        </div>
-
-        <div className="h-px bg-border" />
-
-        <div className="space-y-4">
-          <FieldRow
-            fieldKey="budget"
-            label={detail.packet.budget.label}
-            highlighted={highlighted === "budget"}
-            registerRef={registerRef}
-          >
-            <div className="flex items-center justify-between">
-              <span>
-                {detail.packet.budget.pct}{" "}
-                {approved ? "committed" : "after approval"}
-              </span>
-            </div>
-            <Progress
-              value={Number.parseFloat(detail.packet.budget.pct)}
-              className="my-2 h-1.5"
-            />
-            <p className="text-xs font-normal text-muted-foreground">
-              {detail.packet.budget.detail}
-            </p>
           </FieldRow>
         </div>
 

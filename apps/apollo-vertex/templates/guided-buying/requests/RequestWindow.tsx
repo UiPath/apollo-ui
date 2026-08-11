@@ -22,13 +22,11 @@ import {
   ButtonGroup,
   ButtonGroupSeparator,
 } from "@/components/ui/button-group";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   PageHeader,
   PageHeaderActions,
   PageHeaderBackButton,
   PageHeaderContent,
-  PageHeaderDescription,
   PageHeaderField,
   PageHeaderFieldLabel,
   PageHeaderFieldValue,
@@ -42,13 +40,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { ConfirmCheck } from "../ConfirmCheck";
 import { CATALOG_ITEMS, leadTime } from "../catalog/v1/data";
 import { P1 } from "../P1";
 import { P2 } from "../P2";
-import { type ActivityStage, ActivityTrack } from "./ActivityTrack";
+import { ActivityTrack } from "./ActivityTrack";
 import { avatarColorFor } from "./avatar-color";
+import { CommunicationCard } from "./CommunicationCard";
 import {
   buildChecks,
   DECISION_DETAILS,
@@ -59,118 +57,16 @@ import {
   REQ_2052_APPROVED_DATE,
 } from "./data";
 import { ReceiptModal } from "./ReceiptModal";
+import { RecordCard } from "./RecordCard";
 import { RecordEntry } from "./RecordEntry";
 import { noteProvenance, useRequests } from "./requests-context";
-
-/** Marks every stage up to and including `throughLabel` done, and the one
- * right after it active — the same vocabulary the seed data itself uses for
- * a stage in progress (see REQ-2051/REQ-2053's own "active" stages), not a
- * new state. */
-function advanceStagesThrough(
-  stages: ActivityStage[],
-  throughLabel: string,
-): ActivityStage[] {
-  const throughIndex = stages.findIndex((s) => s.label === throughLabel);
-  if (throughIndex === -1) return stages;
-  return stages.map((stage, i) => {
-    if (i <= throughIndex) return { ...stage, state: "done" as const };
-    if (i === throughIndex + 1) return { ...stage, state: "active" as const };
-    return stage;
-  });
-}
-
-// Verb form per stage state: past tense with the actual date once done,
-// present tense with the expected date while active, base verb with no date
-// while upcoming. "Submitted" needs none of this — it's always done, and
-// already past tense — so it's absent here and passes through unchanged.
-const STAGE_VERB_FORMS: Record<
-  string,
-  { done: string; active: string; upcoming: string }
-> = {
-  Approved: {
-    // Fallback only — toDisplayStages names the approver directly whenever
-    // one is known, since the current stage should say who it's waiting on,
-    // not just that it's waiting.
-    done: "Approved",
-    active: "Waiting for approval",
-    upcoming: "Approve",
-  },
-  Ordered: { done: "Ordered", active: "Ordering", upcoming: "Order" },
-  Received: { done: "Received", active: "Receiving", upcoming: "Receive" },
-};
-
-// Ordered and Received never carry a projected calendar date — there's no
-// real basis for one. An upcoming stage can still state a duration fact
-// (the supplier's own stocking lead time) or the requester's own deadline
-// instead of a blank line — see toDisplayStages' `context` param.
-const STAGES_WITH_NO_DATE = new Set(["Ordered", "Received"]);
-
-/** Applies the verb-form rule above and layers in the two data-derived
- * sub-labels (current stage names who it waits on; Ordered/Received's
- * otherwise-blank date carries the supplier lead time / need-by date
- * instead), without touching the canonical labels the rest of this file
- * matches stages by (advanceStagesThrough, attribution, the receipt-flag
- * patch) — this only ever runs as the last step, right before handing
- * stages to ActivityTrack. */
-function toDisplayStages(
-  stages: ActivityStage[],
-  context: {
-    approverFullName?: string;
-    shippingEstimate?: string;
-    needBy?: string;
-  },
-): ActivityStage[] {
-  return stages.map((stage) => {
-    const forms = STAGE_VERB_FORMS[stage.label];
-    const verbKey =
-      stage.state === "done"
-        ? "done"
-        : stage.state === "upcoming"
-          ? "upcoming"
-          : "active";
-    const isCurrent = verbKey === "active";
-    const label =
-      stage.label === "Approved" && isCurrent && context.approverFullName
-        ? `Waiting on ${context.approverFullName}`
-        : forms
-          ? forms[verbKey]
-          : stage.label;
-
-    if (!STAGES_WITH_NO_DATE.has(stage.label)) {
-      // The elapsed-days clause is dropped here — the tracker states when a
-      // decision was expected, not how overdue it is; that count now lives
-      // once, in the header status pill. State stays untouched, so the
-      // warning color on this date text (ActivityTrack's own dateClass)
-      // still applies.
-      return { ...stage, label, overdueDays: undefined };
-    }
-    if (
-      stage.label === "Ordered" &&
-      stage.state === "upcoming" &&
-      context.shippingEstimate
-    ) {
-      return {
-        ...stage,
-        label,
-        date: context.shippingEstimate,
-        overdueDays: undefined,
-      };
-    }
-    if (
-      stage.label === "Received" &&
-      stage.state === "upcoming" &&
-      context.needBy
-    ) {
-      return {
-        ...stage,
-        label,
-        date: `By ${context.needBy}`,
-        overdueDays: undefined,
-      };
-    }
-    return { ...stage, label, date: undefined, overdueDays: undefined };
-  });
-}
+import {
+  advanceStagesThrough,
+  applyReceiptFlags,
+  buildTrackStages,
+  toDisplayStages,
+} from "./stage-display";
+import { TruncatedSubtitle } from "./TruncatedSubtitle";
 
 // ESCALATE: wording. States the relationship between stages that the
 // tracker's two label rows can't on their own — who holds the request now,
@@ -440,46 +336,10 @@ export function RequestWindow() {
   const shippingEstimate =
     suppliedItem != null ? leadTime(suppliedItem) : undefined;
 
-  // Which stages are a genuine agent/system action (placing the order) vs a
-  // person's — the label beneath each node already names the person
-  // directly, so the node itself no longer needs to know who; it only
-  // needs to know whether to keep the agent's ✦ mark. Submitted/Received
-  // are the requester's actions, Approved is the approver's call — every
-  // other stage keeps the mark.
-  const trackStages: ActivityStage[] = (detail.journeyStages ?? []).map(
-    (stage) => {
-      if (stage.label === "Submitted" || stage.label === "Received") {
-        return { ...stage };
-      }
-      if (stage.label === "Approved" && detail.approver != null) {
-        return { ...stage };
-      }
-      return { ...stage, isAgent: true };
-    },
-  );
-  // A partial or damaged receipt means the request isn't fully closed even
-  // though the goods physically arrived — say so right on the Received
-  // stage's own date line rather than only in the summary sentence above.
-  if (receiptIsPartialOrDamaged) {
-    const receivedIndex = trackStages.findIndex((s) =>
-      /received/i.test(s.label),
-    );
-    if (receivedIndex !== -1) {
-      const stage = trackStages[receivedIndex]!;
-      const flags: string[] = [];
-      if (receipt.qtyReceived < receipt.qtyOrdered) {
-        flags.push(`${receipt.qtyReceived} of ${receipt.qtyOrdered} received`);
-      }
-      if (receipt.damaged) flags.push("issue opened");
-      trackStages[receivedIndex] = {
-        ...stage,
-        date:
-          stage.date != null
-            ? `${stage.date} · ${flags.join(" · ")}`
-            : flags.join(" · "),
-      };
-    }
-  }
+  // Same derivation the approver's own decision card tracker uses (see
+  // stage-display.ts) — one function, so the isAgent/receipt-flag rules
+  // can't drift between the two screens.
+  const trackStages = applyReceiptFlags(buildTrackStages(detail), receipt);
   // Once actually approved, the Approved stage's date becomes the real
   // record (the same value DecisionWindow shows), not the pending seed
   // date, which was only ever an expected-by projection.
@@ -626,6 +486,14 @@ export function RequestWindow() {
             ? "Approved"
             : "In review";
 
+  // Same value the Submitted stage's own date on the tracker shows — row's
+  // own field first (matches what My Requests already lists for this
+  // request), the journey stage as a fallback for a live submission that
+  // has a detail record but no seed row yet.
+  const dateRequested =
+    row?.submitted ??
+    detail.journeyStages?.find((s) => s.label === "Submitted")?.date;
+
   // Messages and messages sent on the requester's behalf, in the order they
   // happened — not status changes, those live on the track above, not here.
   type LogEntry =
@@ -653,7 +521,7 @@ export function RequestWindow() {
       kind: "user",
       text: note.text,
       // Time only — RecordEntry already renders `author` as the name
-      // above this line, matching CommunicationRail's own treatment
+      // above this line, matching the approver's own Communication card
       // (`timestamp={note.time}`). Repeating the name here duplicated it.
       timestamp: note.time,
       provenance: noteProvenance(
@@ -736,58 +604,110 @@ export function RequestWindow() {
   // agentLine.includes("Alex") string-match, using the approver's name
   // already derived above instead of sniffing prose for it.
   const composerPlaceholder = `Message ${approverFirst ?? "your approver"} about this request`;
-  // ESCALATE: posting-destination wording — mirrors CommunicationRail's own
-  // line exactly, same bracketed-placeholder convention this file already
-  // uses for teamsChannel elsewhere.
+  // ESCALATE: posting-destination wording — mirrors the approver's own
+  // Communication card line exactly, same bracketed-placeholder convention
+  // this file already uses for teamsChannel elsewhere.
   const postingDestinationLine = `Posts to ${detail.teamsChannel ?? "[Teams channel name]"} · ${id}`;
 
   return (
     <div className="flex h-full flex-col">
-      {/* auto_1fr_auto: nav and actions size to their own content instead of
-          a fixed fr-share, so the title never loses space to the fields or
-          the split button (see report — this is the invoice header's own
-          fix for the same problem). shrink-0: a normal-flow sibling of the
-          scrolling region below, not an overlay — nothing can scroll behind
-          it, so there's no risk of it covering a focus ring or a
+      {/* Three regions — title/nav and actions each auto-width (their own
+          content, never growing or shrinking), the metadata region between
+          them takes the rest (1fr). `!` on the @3xl grid-cols override
+          because the registry component's own `has-[[data-slot=
+          page-header-content]]:grid-cols-[3fr_6fr_3fr]` rule is a more
+          specific selector than a plain override at the same breakpoint —
+          same fix this app already uses on the decision view's header for
+          the identical problem (a fixed fr-share stealing width from the
+          title). px-10: 40px, exactly Tailwind's own spacing-scale step 10
+          (2.5rem), not an arbitrary value. This does NOT match the page
+          content's own horizontal padding below the header — that's
+          responsive (px-4/sm:px-6/lg:px-8 → 16/24/32px) and out of scope
+          here (see report). @3xl:gap-0: the grid's own uniform gap is
+          replaced by asymmetric margins on Nav/Actions below, since a
+          single gap value can't give the title boundary (48px) and the
+          actions boundary (32px) two different sizes. Below @3xl, none of
+          this applies — that's the registry component's own existing
+          wrapped fallback, untouched. shrink-0: a normal-flow sibling of
+          the scrolling region below, not an overlay — nothing can scroll
+          behind it, so there's no risk of it covering a focus ring or a
           scroll-into-view target the way a position:sticky header could. */}
-      <PageHeader bordered className="shrink-0">
-        {/* Three columns via PageHeaderContent (3fr/6fr/3fr): nav keeps just
-            back+title, the metadata fields spread across the wide middle
-            column (its own justify-evenly), actions stay right. Status,
-            Approver, Need by — one reading order across the whole header,
-            not clustered against the title. */}
-        <PageHeaderNav>
+      <PageHeader
+        bordered
+        className="shrink-0 px-10 sm:px-10 lg:px-10 @3xl:!grid-cols-[auto_1fr_auto] @3xl:gap-0"
+      >
+        {/* mr-12 (48px): the title-to-metadata boundary. A grid item's
+            margin is included when an `auto` track sizes itself, so this
+            pushes the metadata region's own start 48px past the title's
+            actual content — not a gap that could grow, a fixed boundary. */}
+        <PageHeaderNav className="@3xl:mr-12">
           <PageHeaderBackButton
             onClick={() => void navigate({ to: "/requests" })}
           />
-          <PageHeaderTitleGroup>
+          {/* max-w-[320px]: starting value, not confirmed — see report.
+              Caps the subtitle's own growth; the id above never reaches
+              this width in practice, so it never truncates. */}
+          <PageHeaderTitleGroup className="max-w-[320px]">
             <PageHeaderTitle>{id}</PageHeaderTitle>
-            {/* PageHeaderDescription sets the native `title` attribute for
-                string children, so a truncated line still shows the full
-                text on hover — no separate tooltip needed. */}
-            <PageHeaderDescription>{displayTitle}</PageHeaderDescription>
+            <TruncatedSubtitle text={displayTitle} />
           </PageHeaderTitleGroup>
         </PageHeaderNav>
 
-        <PageHeaderContent>
+        {/* Natural width per attribute, equal gaps between them — a grid's
+            equal-width columns were leaving slack around a small pill
+            (Status) and clipping a wide one (Need by, whose overdue chip
+            is wider than an equal share). justify-between distributes
+            whatever space is left, after gap-8's 32px minimum, equally
+            into those same gaps — the space always goes between the
+            attributes, never piles up as one dead gap before the actions.
+            Status, Approver, Need by — one reading order across the whole
+            header, not clustered against the title. */}
+        <PageHeaderContent className="@3xl:justify-between @3xl:gap-8">
+          {dateRequested != null && (
+            <PageHeaderField className="shrink-0">
+              <PageHeaderFieldLabel>Date requested</PageHeaderFieldLabel>
+              <PageHeaderFieldValue className="overflow-visible">
+                {dateRequested}
+              </PageHeaderFieldValue>
+            </PageHeaderField>
+          )}
           <PageHeaderField className="shrink-0">
             <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
-            <PageHeaderFieldValue>{statusLabel}</PageHeaderFieldValue>
+            <PageHeaderFieldValue className="overflow-visible">
+              <Badge variant="secondary" status="info">
+                {statusLabel}
+              </Badge>
+            </PageHeaderFieldValue>
           </PageHeaderField>
           <PageHeaderField className="shrink-0">
             <PageHeaderFieldLabel>Approver</PageHeaderFieldLabel>
-            <PageHeaderFieldValue>
+            <PageHeaderFieldValue className="flex items-center gap-1.5 overflow-visible">
+              <Avatar className="size-[18px] shrink-0">
+                <AvatarFallback
+                  className={cn(
+                    "text-[8px] font-semibold",
+                    avatarColorFor(approverFullName ?? "Your approver").bg,
+                    avatarColorFor(approverFullName ?? "Your approver").fg,
+                  )}
+                >
+                  {approverInitials}
+                </AvatarFallback>
+              </Avatar>
               {approverFullName ?? "Unassigned"}
             </PageHeaderFieldValue>
           </PageHeaderField>
           {/* Approver-lateness (overdueLabel) takes priority over the plain
               proximity chip (needByBadge) since it's the more specific,
               more urgent fact; the two never both apply here, since
-              need-by-proximity hasn't also tripped for this request. */}
+              need-by-proximity hasn't also tripped for this request. The
+              chip is the widest, right-most element in this field — the
+              32px actions clearance (see PageHeaderActions below) is
+              measured from its edge, not the date's, simply because
+              nothing here clips or shrinks it out of that position. */}
           {detail.summary?.needBy != null && (
             <PageHeaderField className="shrink-0">
               <PageHeaderFieldLabel>Need by</PageHeaderFieldLabel>
-              <PageHeaderFieldValue className="flex items-center gap-1.5">
+              <PageHeaderFieldValue className="flex items-center gap-1.5 overflow-visible">
                 {detail.summary.needBy}
                 {overdueLabel != null ? (
                   <Badge status="warning" variant="secondary">
@@ -805,7 +725,9 @@ export function RequestWindow() {
           )}
         </PageHeaderContent>
 
-        <PageHeaderActions>
+        {/* ml-8 (32px): the metadata-to-actions boundary, same fixed-margin
+            technique as PageHeaderNav's mr-12 above. */}
+        <PageHeaderActions className="@3xl:ml-8">
           {/* Always a ButtonGroup: one exposed action (never a bare overflow
               trigger with nothing to say), the rest one click away. View
               order/Reorder/Copy link are each the exposed action for
@@ -898,27 +820,16 @@ export function RequestWindow() {
 
           {/* Tracker — the primary surface. Two label rows per stage (see
               toDisplayStages): who it's currently waiting on, and what that
-              means for when the requester actually gets the goods. The
-              attention row beneath is the only place this page still
-              speaks in the AI's own voice, and only when something is
-              genuinely off path. */}
-          <Card variant="glass" className="py-0">
-            <CardContent className="p-0">
-              {/* Zone one — Progress. Card label + tracker. Every other
-                  region on this screen (Communication, People, Request
-                  details, Linked records) is labeled; this matches
-                  Communication's own heading treatment exactly so the card
-                  reads as a region, not a floating object. No count: a
-                  thread has a length, a tracker doesn't. */}
-              <div className="px-5 pb-5 pt-6">
-                <div className="text-base font-bold tracking-tighter text-foreground">
-                  Progress
-                </div>
-
-                {/* Plain-language relationship between stages — not a
-                    restatement of the four dates above/below it, and not AI
-                    output: no ✦ mark, not covered by the AI caveat lower in
-                    this card. */}
+              means for when the requester actually gets the goods. The AI
+              zone beneath is the only place this page still speaks in the
+              AI's own voice, and only when something is genuinely off
+              path. Shared card template — see RecordCard.tsx; the approver's
+              decision card is the same component, persona content only. */}
+          <RecordCard
+            label="Progress"
+            caveatPlacement="footer"
+            description={
+              <>
                 <P1>
                   {progressDescriptionApproved != null && (
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -933,119 +844,81 @@ export function RequestWindow() {
                     </p>
                   )}
                 </P2>
-
-                {detail.journeyStages != null && (
-                  <div className="mt-6">
-                    <P1>
-                      <ActivityTrack stages={displayStagesApproved} />
-                    </P1>
-                    <P2>
-                      <ActivityTrack stages={displayStagesOrdered} />
-                    </P2>
-                  </div>
-                )}
-              </div>
-
-              {isOffPath && (
+              </>
+            }
+            primaryContent={
+              detail.journeyStages != null ? (
                 <>
-                  {/* Zone two — AI findings. Doesn't render at all when no
-                      finding survives suppression — the card is then just
-                      zone one and zone three, with a single rule between
-                      them. Mirrors DecisionChecks' own "What I checked"
-                      band (icon + one line per finding, neutral icon color,
-                      since none of these are pass/exception checks the way
-                      the approver's own four are). The caveat closes this
-                      zone rather than following the actions below — it's a
-                      correctness fix, not just a layout one: the caveat is
-                      about these AI-derived findings, not about the
-                      buttons in zone three. */}
-                  {findings.length > 0 && (
-                    <>
-                      <div className="border-t border-border" />
-                      <div className="p-5">
-                        <div className="flex items-center gap-1.5 text-sm">
-                          <AiMark
-                            size={14}
-                            gradientId="gb-ai-mark"
-                            aria-hidden
-                          />
-                          <span className="font-medium text-foreground">
-                            What I found out
-                          </span>
-                        </div>
-                        {/* No icon here — the AiMark on the heading above
-                            already marks this whole zone as AI-derived, so
-                            a second icon on the caveat was redundant. Sits
-                            directly under the heading, ahead of the
-                            findings it's disclaiming, flush left at the
-                            same edge the heading's own text starts from. */}
-                        <p className="mt-1 text-left text-xs text-muted-foreground">
-                          The output is AI generated. Please review.
-                        </p>
-                        <div className="mt-3 space-y-3">
-                          {findings.map((finding) => {
-                            const Icon = finding.icon;
-                            return (
-                              <div
-                                key={finding.text}
-                                className="flex items-center gap-2.5"
-                              >
-                                <Icon
-                                  className="size-4 shrink-0 text-muted-foreground"
-                                  aria-hidden
-                                />
-                                <p className="text-left text-xs text-foreground">
-                                  {finding.text}
-                                </p>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Zone three — Actions. Request-level actions prompted
-                      by the findings, not part of them, so they get their
-                      own zone at the card's foot rather than sharing
-                      zone two's padding. */}
-                  <div className="border-t border-border" />
-                  <div className="flex items-center gap-2 p-5">
-                    {detail.nudgeText != null && (
-                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <Check className="size-3.5" aria-hidden />
-                        Nudged today
-                      </span>
-                    )}
-                    <Button size="sm" variant="outline" onClick={focusComposer}>
-                      <MessageSquareText className="size-3.5" aria-hidden />
-                      Ask {approverFirst ?? "your approver"}
-                    </Button>
-                    {isUrgent ? (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        disabled
-                        className="disabled:opacity-100"
-                      >
-                        <Check className="size-3.5" aria-hidden />
-                        Marked urgent today
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => markUrgent(id)}
-                      >
-                        <TriangleAlert className="size-3.5" aria-hidden />
-                        Mark urgent
-                      </Button>
-                    )}
-                  </div>
+                  <P1>
+                    <ActivityTrack stages={displayStagesApproved} />
+                  </P1>
+                  <P2>
+                    <ActivityTrack stages={displayStagesOrdered} />
+                  </P2>
                 </>
-              )}
-            </CardContent>
-          </Card>
+              ) : undefined
+            }
+            aiHeading="What I found out"
+            aiContent={
+              isOffPath && findings.length > 0 ? (
+                <div className="space-y-3">
+                  {findings.map((finding) => {
+                    const Icon = finding.icon;
+                    return (
+                      <div
+                        key={finding.text}
+                        className="flex items-center gap-2.5"
+                      >
+                        <Icon
+                          className="size-4 shrink-0 text-muted-foreground"
+                          aria-hidden
+                        />
+                        <p className="text-left text-xs text-foreground">
+                          {finding.text}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : undefined
+            }
+            actions={
+              isOffPath ? (
+                <>
+                  {detail.nudgeText != null && (
+                    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Check className="size-3.5" aria-hidden />
+                      Nudged today
+                    </span>
+                  )}
+                  <Button size="sm" variant="outline" onClick={focusComposer}>
+                    <MessageSquareText className="size-3.5" aria-hidden />
+                    Ask {approverFirst ?? "your approver"}
+                  </Button>
+                  {isUrgent ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled
+                      className="disabled:opacity-100"
+                    >
+                      <Check className="size-3.5" aria-hidden />
+                      Marked urgent today
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => markUrgent(id)}
+                    >
+                      <TriangleAlert className="size-3.5" aria-hidden />
+                      Mark urgent
+                    </Button>
+                  )}
+                </>
+              ) : undefined
+            }
+          />
 
           {/* Communication — messages and messages sent on the requester's
               behalf, closing on the live waiting state. Status changes live
@@ -1054,14 +927,12 @@ export function RequestWindow() {
               to a filled column height (that produced an empty box on a
               short thread, which is most of this demo, and sizing to
               content also keeps the long-thread scroll question moot for
-              the glass card's own documented glow-clipping constraint). */}
-          <Card variant="glass" className="py-0">
-            <CardContent className="p-5">
-              <div className="text-base font-bold tracking-tighter text-foreground">
-                Communication
-              </div>
-
-              <div className="mt-4 space-y-4">
+              the glass card's own documented glow-clipping constraint).
+              Shared shell — see CommunicationCard.tsx; the approver's
+              Communication card is the same component. */}
+          <CommunicationCard
+            entries={
+              <>
                 {activityLog.map((entry, i) => (
                   <RecordEntry
                     key={i}
@@ -1107,15 +978,13 @@ export function RequestWindow() {
                 {/* Not rendered once approved — there's no one left to be
                     waiting on, so no replacement text either. */}
                 {!isApproved && <WaitingBanner text={waitingLine} />}
-              </div>
-
-              {/* Composer — inFlight only; terminal-state actions live in
-                  the sidebar. Matches CommunicationRail's own treatment
-                  (border + focus ring, hairline divider, footer row,
-                  posting-destination caption) so the two surfaces stay
-                  consistent. */}
-              {detail.inFlight && (
-                <div className="mt-5 space-y-3 border-t border-border pt-5">
+              </>
+            }
+            composer={
+              // Composer — inFlight only; terminal-state actions live in
+              // the sidebar.
+              detail.inFlight ? (
+                <>
                   {isUrgent && (
                     <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-sm">
                       <TriangleAlert
@@ -1195,10 +1064,10 @@ export function RequestWindow() {
                       {postingDestinationLine}
                     </p>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                </>
+              ) : undefined
+            }
+          />
         </div>
 
         {/* ── Reference column — what's in it, rarely visited. Plain list on
