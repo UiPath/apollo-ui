@@ -20,7 +20,7 @@ import {
 } from '../CanvasModeToolbar/CanvasModeToolbar';
 import { CanvasZoomControls } from '../CanvasZoomControls';
 import { ToolbarButton } from '../ToolbarButton';
-import { CanvasBottomPanel } from './CanvasBottomPanel';
+import { CanvasBottomPanel, CanvasBottomPanelActions } from './CanvasBottomPanel';
 import type { CanvasBottomPanelTab } from './CanvasBottomPanel.types';
 
 const meta: Meta<typeof CanvasBottomPanel> = {
@@ -154,6 +154,49 @@ export const Collapsed: Story = {
 
 export const Expanded: Story = {
   render: () => <PanelExample />,
+};
+
+function ConsumerContractStory() {
+  const [activeTabId, setActiveTabId] = useState('execution');
+  const tabs: CanvasBottomPanelTab[] = [
+    {
+      id: 'execution',
+      label: 'Executions',
+      group: 'debug',
+      content: <DebugContent />,
+    },
+    { id: 'datasets', label: 'Datasets', group: 'evaluation', content: null },
+    { id: 'evaluators', label: 'Evaluators', group: 'evaluation', content: null },
+    { id: 'runs', label: 'Runs', group: 'evaluation', content: null },
+  ];
+
+  return (
+    <div className="h-[380px] bg-surface p-4">
+      <CanvasBottomPanel
+        variant="docked"
+        className="h-full border border-border-subtle"
+        tabs={tabs}
+        activeTabId={activeTabId}
+        onTabChange={setActiveTabId}
+        overlay={{
+          tabIds: ['datasets', 'evaluators', 'runs'],
+          content: (
+            <>
+              <CanvasBottomPanelActions>
+                <Button size="xs">Run evaluation</Button>
+              </CanvasBottomPanelActions>
+              <EvaluateContent />
+            </>
+          ),
+        }}
+      />
+    </div>
+  );
+}
+
+export const ConsumerContract: Story = {
+  name: 'Flow Workbench Consumer Contract',
+  render: () => <ConsumerContractStory />,
 };
 
 function CanvasCompositionStory() {

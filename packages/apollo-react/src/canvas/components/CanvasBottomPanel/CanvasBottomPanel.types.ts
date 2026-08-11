@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 export interface CanvasBottomPanelTab {
   /** Stable identifier used for controlled selection and ARIA relationships. */
@@ -7,7 +7,19 @@ export interface CanvasBottomPanelTab {
   label: ReactNode;
   /** Accessible label when the visible label is not plain text. */
   ariaLabel?: string;
+  /** Optional visual group. A separator is rendered when adjacent groups differ. */
+  group?: string;
   /** Content remains mounted while inactive or collapsed so consumer state is preserved. */
+  content: ReactNode;
+}
+
+export interface CanvasBottomPanelOverlay {
+  /** Tabs that display the shared content. */
+  tabIds: string[];
+  /**
+   * Content mounted once and shared by every listed tab. Use this for expensive,
+   * stateful views that must survive switching between related tabs.
+   */
   content: ReactNode;
 }
 
@@ -15,10 +27,19 @@ export interface CanvasBottomPanelProps {
   tabs: CanvasBottomPanelTab[];
   activeTabId: string;
   onTabChange: (tabId: string) => void;
-  isCollapsed: boolean;
-  onCollapsedChange: (isCollapsed: boolean) => void;
+  isCollapsed?: boolean;
+  /** Called with false when a collapsed panel is expanded by selecting a tab. */
+  onCollapsedChange?: (isCollapsed: boolean) => void;
+  /** Convenience callback for hosts that expose an expand action rather than a setter. */
+  onExpand?: () => void;
   /** Consumer-owned controls rendered at the end of the panel header. */
   headerActions?: ReactNode;
+  /** Persistent content shared by multiple tabs without remounting. */
+  overlay?: CanvasBottomPanelOverlay;
+  /** Visual treatment for floating canvas panels or docked application panels. */
+  variant?: 'floating' | 'docked';
+  /** Height applied while collapsed. Set by hosts with different panel-strip dimensions. */
+  collapsedHeight?: CSSProperties['height'];
   /** Unique prefix for tab and panel IDs when multiple instances share a page. */
   idPrefix?: string;
   className?: string;
