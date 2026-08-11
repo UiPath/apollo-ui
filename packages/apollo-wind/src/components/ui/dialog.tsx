@@ -4,6 +4,10 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { XIcon } from 'lucide-react';
 import * as React from 'react';
 
+import {
+  type PortalContainerOverride,
+  useResolvedPortalContainer,
+} from '@/components/ui/portal-container';
 import { cn } from '@/lib/index';
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -49,10 +53,15 @@ const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     showCloseButton?: boolean;
+    container?: PortalContainerOverride;
   }
->(function DialogContent({ className, children, showCloseButton = true, ...props }, ref) {
+>(function DialogContent(
+  { className, children, showCloseButton = true, container, ...props },
+  ref
+) {
+  const resolvedContainer = useResolvedPortalContainer(container);
   return (
-    <DialogPortal data-slot="dialog-portal">
+    <DialogPortal data-slot="dialog-portal" container={resolvedContainer}>
       <DialogOverlay>
         <DialogPrimitive.Content
           data-slot="dialog-content"
