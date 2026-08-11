@@ -22,15 +22,18 @@ function TaskMockedChipInner({ mocked, taskId }: TaskMockedChipProps) {
 
   return (
     <CanvasTooltip content={label} placement="top">
-      <Badge
-        variant="outline"
-        role="img"
-        aria-label={label}
-        className="absolute -top-1.5 -right-1.5 z-10 h-3.5 w-3.5 justify-center rounded-full border-0 bg-primary p-0 text-primary-foreground [&>svg]:size-2.5"
-        data-testid={`stage-task-mocked-${taskId}`}
-      >
-        <FlaskConical aria-hidden />
-      </Badge>
+      {/* The positioned wrapper is the tooltip trigger: the tooltip needs a ref-forwarding anchor element. */}
+      <div className="absolute -top-1.5 -right-1.5 z-10 flex">
+        <Badge
+          variant="outline"
+          role="img"
+          aria-label={label}
+          className="h-3.5 w-3.5 justify-center rounded-full border-0 bg-primary p-0 text-primary-foreground [&>svg]:size-2.5"
+          data-testid={`stage-task-mocked-${taskId}`}
+        >
+          <FlaskConical aria-hidden />
+        </Badge>
+      </div>
     </CanvasTooltip>
   );
 }
