@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { Column } from './Stack';
 
@@ -136,5 +137,18 @@ describe('Column', () => {
       margin: '16px',
       gap: '1rem',
     });
+  });
+
+  // Columns are used as Radix `asChild` triggers and as measurement targets, and
+  // React 18 consumers drop refs handed to plain function components.
+  it('forwards its ref to the rendered element', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(
+      <Column ref={ref}>
+        <div>Child</div>
+      </Column>
+    );
+
+    expect(ref.current).toBe(screen.getByText('Child').parentElement);
   });
 });

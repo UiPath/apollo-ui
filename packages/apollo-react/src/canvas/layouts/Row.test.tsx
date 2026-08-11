@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { Row } from './Stack';
 
@@ -136,5 +137,19 @@ describe('Row', () => {
       margin: '16px',
       gap: '1rem',
     });
+  });
+
+  // Rows are used as Radix `asChild` triggers and as measurement targets (e.g.
+  // truncation detection). React 18 consumers drop refs handed to plain function
+  // components, so the ref has to reach the rendered element.
+  it('forwards its ref to the rendered element', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(
+      <Row ref={ref}>
+        <div>Child</div>
+      </Row>
+    );
+
+    expect(ref.current).toBe(screen.getByText('Child').parentElement);
   });
 });
