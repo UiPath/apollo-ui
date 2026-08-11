@@ -162,6 +162,23 @@ function TierMenuSection() {
   );
 }
 
+// Which persona owns a given route prefix — used once, at mount, to pick
+// the identity chip that matches the surface actually being viewed. Landing
+// straight on an approver or buyer route (a link from elsewhere, a shared
+// URL, a fresh load) previously always started on the requester's identity
+// regardless of the route, since persona state had no route-derived value
+// at all. This doesn't reintroduce a route-derived override on every
+// navigation — it only seeds the initial value, so the switcher stays the
+// single authority once mounted, per this file's own comment on
+// `switchPersona`.
+function personaForPath(pathname: string): PersonaId {
+  if (pathname.startsWith("/decision") || pathname.startsWith("/approvals")) {
+    return "approver";
+  }
+  if (pathname.startsWith("/workbench")) return "buyer";
+  return "requester";
+}
+
 function EmptyPage({ title }: { title: string }) {
   return (
     <div className="flex h-full items-center justify-center">
@@ -210,15 +227,21 @@ function PersonaMenuSection({
 }
 
 function GuidedBuyingLayout() {
-  const [personaId, setPersonaId] = useState<PersonaId>("requester");
   const navigate = useNavigate();
   // Selector-scoped, not a bare useRouterState() destructure — this file's
   // own established pattern (see BuyFlow.tsx) to avoid re-rendering the
   // root layout on every router-internal state change, not just pathname.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // Seeded from the entry route (see personaForPath) so a direct load onto
+  // an approver/buyer surface doesn't show the requester's identity — see
+  // that function's own comment for why this isn't a route-derived
+  // override on every navigation, just the initial value.
+  const [personaId, setPersonaId] = useState<PersonaId>(() =>
+    personaForPath(pathname),
+  );
 
   // Persona state is the single authority over the identity chip now — no
-  // route-derived override.
+  // route-derived override past the initial value above.
   const persona = PERSONAS[personaId];
   const user = { name: persona.name, email: persona.chipSubtitle };
   // Same person, same avatar color everywhere they appear — the identity
