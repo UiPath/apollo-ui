@@ -31,7 +31,7 @@ function TaskMockedChipInner({ mocked, taskId }: TaskMockedChipProps) {
           className="h-3.5 w-3.5 justify-center rounded-full border-0 bg-primary p-0 text-primary-foreground [&>svg]:size-2.5"
           data-testid={`stage-task-mocked-${taskId}`}
         >
-          <FlaskConical aria-hidden />
+          <FlaskConical size={10} aria-hidden />
         </Badge>
       </div>
     </CanvasTooltip>
