@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DAY, HOUR, MINUTE, SECOND, WEEK } from '../../../../test/durations';
 import { render, screen } from '../../../utils/testing';
 import type { StageTaskExecution, StageTaskItem } from '../StageNode.types';
 import { TaskContent } from './TaskContent';
@@ -250,7 +251,7 @@ describe('TaskContent - duration tooltip', () => {
     renderTaskContent({
       taskExecution: {
         status: 'Completed',
-        durationMs: 2 * 604800000 + 19 * 3600000 + 8 * 60000 + 42000,
+        durationMs: 2 * WEEK + 19 * HOUR + 8 * MINUTE + 42 * SECOND,
       },
     });
 
@@ -272,7 +273,7 @@ describe('TaskContent - duration tooltip', () => {
     renderTaskContent({
       taskExecution: {
         status: 'InProgress',
-        durationMs: 2 * 604800000 + 19 * 3600000 + 8 * 60000 + 42000,
+        durationMs: 2 * WEEK + 19 * HOUR + 8 * MINUTE + 42 * SECOND,
         durationTooltip: '4s remaining',
       },
     });
@@ -296,7 +297,7 @@ describe('TaskContent - duration tooltip', () => {
     renderTaskContent({
       taskExecution: {
         status: 'InProgress',
-        durationMs: 2 * 86400000 + 3 * 3600000 + 4 * 60000 + 5000,
+        durationMs: 2 * DAY + 3 * HOUR + 4 * MINUTE + 5 * SECOND,
       },
     });
 

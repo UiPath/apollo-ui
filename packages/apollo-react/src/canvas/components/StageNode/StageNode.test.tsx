@@ -2,6 +2,7 @@ import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DAY, HOUR, MINUTE, SECOND } from '../../../test/durations';
 import { render, screen, waitFor } from '../../utils/testing';
 import type { ListItem } from '../Toolbox';
 import { StageNode } from './StageNode';
@@ -851,7 +852,7 @@ describe('StageNode - SLA Indicator', () => {
     // 2 days, 3 hr, 4 min, 5 sec — the seconds are dropped.
     renderStageNode({
       execution: {
-        stageStatus: { durationMs: 2 * 86400000 + 3 * 3600000 + 4 * 60000 + 5000 },
+        stageStatus: { durationMs: 2 * DAY + 3 * HOUR + 4 * MINUTE + 5 * SECOND },
         taskStatus: {},
       },
     });
@@ -862,7 +863,7 @@ describe('StageNode - SLA Indicator', () => {
   it('puts the consumer-supplied label in front of the duration', () => {
     renderStageNode({
       execution: {
-        stageStatus: { durationMs: 2 * 3600000 + 4 * 60000, durationLabel: 'Duration:' },
+        stageStatus: { durationMs: 2 * HOUR + 4 * MINUTE, durationLabel: 'Duration:' },
         taskStatus: {},
       },
     });
@@ -872,7 +873,7 @@ describe('StageNode - SLA Indicator', () => {
 
   it('renders the duration bare when no label is supplied', () => {
     renderStageNode({
-      execution: { stageStatus: { durationMs: 2 * 3600000 + 4 * 60000 }, taskStatus: {} },
+      execution: { stageStatus: { durationMs: 2 * HOUR + 4 * MINUTE }, taskStatus: {} },
     });
 
     expect(screen.getByTestId('stage-duration-stage-1')).toHaveTextContent('2h, 4m');
