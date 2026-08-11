@@ -154,6 +154,25 @@ describe('CanvasBottomPanel', () => {
     expect(hostAfter).toHaveAttribute('aria-labelledby', 'canvas-bottom-panel-tab-evaluate');
   });
 
+  it('keeps a hidden shared overlay labelled by its first valid tab', () => {
+    renderPanel({
+      tabs: [
+        { id: 'debug', label: 'Debug', content: <div>Debug view</div> },
+        { id: 'datasets', label: 'Datasets', content: null },
+        { id: 'runs', label: 'Runs', content: null },
+      ],
+      overlay: {
+        tabIds: ['datasets', 'runs'],
+        content: <div>Shared evaluation view</div>,
+      },
+    });
+
+    expect(screen.getByTestId('canvas-bottom-panel-overlay')).toHaveAttribute(
+      'aria-labelledby',
+      'canvas-bottom-panel-tab-datasets'
+    );
+  });
+
   it('associates each tab with its panel and applies roving tab index', () => {
     renderPanel();
 
