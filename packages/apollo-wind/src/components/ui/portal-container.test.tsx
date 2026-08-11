@@ -1,8 +1,11 @@
 import { render, renderHook, screen, waitFor } from '@testing-library/react';
 import * as React from 'react';
 import { describe, expect, it } from 'vitest';
+import { AlertDialog, AlertDialogContent, AlertDialogTitle } from './alert-dialog';
+import { Dialog, DialogContent, DialogTitle } from './dialog';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { PortalContainerProvider, useResolvedPortalContainer } from './portal-container';
+import { Sheet, SheetContent, SheetTitle } from './sheet';
 
 describe('useResolvedPortalContainer', () => {
   const provided = document.createElement('div');
@@ -37,7 +40,9 @@ describe('useResolvedPortalContainer', () => {
 
 /**
  * Popover is the vehicle here, but the resolution is shared by Select and
- * DropdownMenu, so these cases cover all three overlays.
+ * DropdownMenu, so these cases cover all three overlays. Dialog, Sheet and
+ * AlertDialog resolve the same way — covered separately below, since they own
+ * their portal rather than exposing it as a sibling.
  */
 describe('PortalContainerProvider', () => {
   it('portals overlay content into the in-tree boundary by default', async () => {
@@ -132,6 +137,76 @@ describe('PortalContainerProvider', () => {
     await waitFor(() => {
       const content = screen.getByText('Menu');
       expect(screen.getByTestId('host').contains(content)).toBe(true);
+    });
+  });
+});
+
+/**
+ * Dialog, Sheet and AlertDialog render their own portal inside `*Content`, so a
+ * consumer cannot reach it — the ambient provider is the only way to move them,
+ * which is what a shadow-DOM host needs (its stylesheet cannot reach body).
+ */
+describe.each([
+  ['Dialog', Dialog, DialogContent, DialogTitle],
+  ['Sheet', Sheet, SheetContent, SheetTitle],
+  ['AlertDialog', AlertDialog, AlertDialogContent, AlertDialogTitle],
+] as const)('%s portal container', (_name, Root, Content, Title) => {
+  const renderOverlay = (
+    props: { container?: HTMLElement | 'body' | null } = {},
+    provider = true
+  ) => {
+    const overlay = (
+      <Root open>
+        <Content {...props}>
+          <Title>Title</Title>
+        </Content>
+      </Root>
+    );
+    return render(
+      <div data-testid="host">
+        {provider ? <PortalContainerProvider>{overlay}</PortalContainerProvider> : overlay}
+      </div>
+    );
+  };
+
+  it('portals into the in-tree boundary of the ambient provider', async () => {
+    renderOverlay();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('host').contains(screen.getByText('Title'))).toBe(true);
+    });
+  });
+
+  it('portals to document.body when no provider is mounted', async () => {
+    renderOverlay({}, false);
+
+    await waitFor(() => {
+      const content = screen.getByText('Title');
+      expect(document.body.contains(content)).toBe(true);
+      expect(screen.getByTestId('host').contains(content)).toBe(false);
+    });
+  });
+
+  it('honors an explicit container override', async () => {
+    const target = document.createElement('div');
+    target.setAttribute('data-testid', 'custom');
+    document.body.appendChild(target);
+
+    renderOverlay({ container: target });
+
+    await waitFor(() => {
+      expect(target.contains(screen.getByText('Title'))).toBe(true);
+    });
+    target.remove();
+  });
+
+  it("forces document.body with container='body', even under a provider", async () => {
+    renderOverlay({ container: 'body' });
+
+    await waitFor(() => {
+      const content = screen.getByText('Title');
+      expect(document.body.contains(content)).toBe(true);
+      expect(screen.getByTestId('host').contains(content)).toBe(false);
     });
   });
 });
