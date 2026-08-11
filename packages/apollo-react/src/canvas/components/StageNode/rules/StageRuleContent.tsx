@@ -36,23 +36,13 @@ export const StageRuleContent = memo(({ rule, ruleType }: StageRuleContentProps)
       >
         <StageItemIcon data-testid={`stage-rule-icon-${rule.id}`}>{icon}</StageItemIcon>
         <CanvasTooltip content={rule.label} placement="top" smartTooltip>
-          <Row
-            gap={'2px'}
-            align="center"
-            style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
+          <span
+            data-testid={`stage-rule-label-${rule.id}`}
+            className="text-sm truncate"
+            style={{ minWidth: 0 }}
           >
-            <span
-              data-testid={`stage-rule-label-${rule.id}`}
-              className="text-sm truncate"
-              style={{ minWidth: 0 }}
-            >
-              {rule.label}
-            </span>
-          </Row>
+            {rule.label}
+          </span>
         </CanvasTooltip>
       </Row>
     </Row>

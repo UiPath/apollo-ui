@@ -155,20 +155,19 @@ export const TaskContent = memo(
               {task.icon ?? <ProcessCanvasIcon />}
             </StageItemIcon>
           </Row>
-          <CanvasTooltip
-            content={task.label}
-            placement="top"
-            smartTooltip
-            {...(isDragging && { isOpen: false })}
+          <Row
+            gap={'2px'}
+            align="center"
+            style={{
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+            }}
           >
-            <Row
-              gap={'2px'}
-              align="center"
-              style={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
+            <CanvasTooltip
+              content={task.label}
+              placement="top"
+              smartTooltip
+              {...(isDragging && { isOpen: false })}
             >
               <span
                 data-testid={`stage-task-label-${task.id}`}
@@ -177,17 +176,17 @@ export const TaskContent = memo(
               >
                 {task.label}
               </span>
-              {showRequiredMarker && (
-                <span
-                  data-testid={`stage-task-required-marker-${task.id}`}
-                  className="text-sm"
-                  style={{ flexShrink: 0 }}
-                >
-                  {'*'}
-                </span>
-              )}
-            </Row>
-          </CanvasTooltip>
+            </CanvasTooltip>
+            {showRequiredMarker && (
+              <span
+                data-testid={`stage-task-required-marker-${task.id}`}
+                className="text-sm"
+                style={{ flexShrink: 0 }}
+              >
+                {'*'}
+              </span>
+            )}
+          </Row>
         </Row>
         <Row
           align="center"

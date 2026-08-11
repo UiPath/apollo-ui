@@ -65,23 +65,13 @@ export const CollapsibleStageHeader = ({
           />
         </span>
         <CanvasTooltip content={label} placement="top" smartTooltip>
-          <Row
-            gap={'2px'}
-            align="center"
-            style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
+          <span
+            data-testid={`${testId}-label`}
+            className="text-sm truncate"
+            style={{ minWidth: 0 }}
           >
-            <span
-              data-testid={`${testId}-label`}
-              className="text-sm truncate"
-              style={{ minWidth: 0 }}
-            >
-              {label}
-            </span>
-          </Row>
+            {label}
+          </span>
         </CanvasTooltip>
       </StyledRow>
       <div
