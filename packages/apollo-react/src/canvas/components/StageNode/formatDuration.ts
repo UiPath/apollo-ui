@@ -67,3 +67,35 @@ export function formatDurationMs(
 
   return Duration.fromObject(largest).reconfigure({ locale }).toHuman({ unitDisplay });
 }
+
+/**
+ * Formats a duration uncapped, in luxon's `long` wording, e.g.
+ * `"2 weeks, 19 hours, 8 minutes, 42 seconds"`. For tooltips, where the hidden units fit.
+ */
+export function formatExactDurationMs(ms: number, locale = 'en'): string {
+  return formatDurationMs(ms, locale, UNITS.length, 'long');
+}
+
+/**
+ * Whether rendering `ms` with `maxUnits` hides any part, so callers can skip a tooltip that would
+ * just repeat the text under the cursor. Sub-second precision never counts as hidden: it rounds
+ * into the smallest unit shown either way.
+ */
+export function hasHiddenDurationParts(ms: number, maxUnits = 3): boolean {
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return false;
+  }
+
+  const parts = Duration.fromMillis(ms)
+    .shiftTo(...UNITS)
+    .toObject();
+  let wholeParts = 0;
+
+  for (const unit of UNITS) {
+    if ((parts[unit] ?? 0) >= 1) {
+      wholeParts++;
+    }
+  }
+
+  return wholeParts > maxUnits;
+}

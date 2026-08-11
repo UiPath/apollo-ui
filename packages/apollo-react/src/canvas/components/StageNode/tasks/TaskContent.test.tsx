@@ -245,6 +245,52 @@ describe('TaskContent - duration tooltip', () => {
     expect(tooltipWrapper).toBeNull();
   });
 
+  it('falls back to the exact duration when units were dropped to fit the row', () => {
+    // 2 weeks, 19 hr, 8 min, 42 sec -> the row shows the three largest, the tooltip all four.
+    renderTaskContent({
+      taskExecution: {
+        status: 'Completed',
+        durationMs: 2 * 604800000 + 19 * 3600000 + 8 * 60000 + 42000,
+      },
+    });
+
+    const durationText = screen.getByText('2w, 19h, 8m');
+    expect(durationText.closest('[data-testid="canvas-tooltip"]')).toHaveAttribute(
+      'data-tooltip-content',
+      '2 weeks, 19 hours, 8 minutes, 42 seconds'
+    );
+  });
+
+  it('adds no duration tooltip when the row already shows every unit', () => {
+    renderTaskContent({ taskExecution: { status: 'Completed', durationMs: 16000 } });
+
+    const durationText = screen.getByText('16s');
+    expect(durationText.closest('[data-testid="canvas-tooltip"]')).toBeNull();
+  });
+
+  it('keeps a consumer-supplied durationTooltip in front of the exact duration', () => {
+    renderTaskContent({
+      taskExecution: {
+        status: 'InProgress',
+        durationMs: 2 * 604800000 + 19 * 3600000 + 8 * 60000 + 42000,
+        durationTooltip: '4s remaining',
+      },
+    });
+
+    const durationText = screen.getByText('2w, 19h, 8m');
+    expect(durationText.closest('[data-testid="canvas-tooltip"]')).toHaveAttribute(
+      'data-tooltip-content',
+      '4s remaining'
+    );
+  });
+
+  it('adds no duration tooltip to a legacy pre-formatted duration', () => {
+    renderTaskContent({ taskExecution: { status: 'Completed', duration: '2w, 19h, 8m' } });
+
+    const durationText = screen.getByText('2w, 19h, 8m');
+    expect(durationText.closest('[data-testid="canvas-tooltip"]')).toBeNull();
+  });
+
   it('shows only the three largest duration units', () => {
     // 2 days, 3 hr, 4 min, 5 sec — the seconds are dropped.
     renderTaskContent({

@@ -2,14 +2,14 @@ import { Icon, Padding, Spacing } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Button } from '@uipath/apollo-wind';
 import { memo } from 'react';
+import { useSafeLingui } from '../../../i18n';
 import { ChecklistIcon } from '../../../icons';
 import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
 import { CanvasIcon } from '../../utils/icon-registry';
-import { useSafeLingui } from '../../../i18n';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { getExecutionStatusColor } from '../ExecutionStatusIcon/ExecutionStatusIcon';
-import { formatDurationMs } from './formatDuration';
+import { formatDurationMs, formatExactDurationMs, hasHiddenDurationParts } from './formatDuration';
 import { StageChip, StageHeader } from './StageNode.styles';
 import type { StageNodeProps, StageSlaIcon, StageStatus } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
@@ -160,6 +160,10 @@ const StageNodeHeaderInner = ({
     formattedStageDuration && stageDurationLabel
       ? `${stageDurationLabel} ${formattedStageDuration}`
       : formattedStageDuration;
+  const exactStageDuration =
+    stageDurationMs !== undefined && hasHiddenDurationParts(stageDurationMs)
+      ? formatExactDurationMs(stageDurationMs, locale)
+      : undefined;
   const slaText = execution?.stageStatus?.slaText;
   const slaIcon = execution?.stageStatus?.slaIcon;
   const slaIndicator = slaIcon ? SLA_ICON_CONFIG[slaIcon] : undefined;
@@ -286,12 +290,14 @@ const StageNodeHeaderInner = ({
         </div>
       )}
       {stageDuration && (
-        <span
-          className="flex min-h-8 items-center text-xs text-foreground-muted"
-          data-testid={`stage-duration-${id}`}
-        >
-          {stageDuration}
-        </span>
+        <CanvasTooltip content={exactStageDuration} placement="top">
+          <span
+            className="flex min-h-8 items-center text-xs text-foreground-muted"
+            data-testid={`stage-duration-${id}`}
+          >
+            {stageDuration}
+          </span>
+        </CanvasTooltip>
       )}
     </StageHeader>
   );

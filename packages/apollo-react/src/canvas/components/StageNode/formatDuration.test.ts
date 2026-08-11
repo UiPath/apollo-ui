@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { formatDurationMs } from './formatDuration';
+import { formatDurationMs, formatExactDurationMs, hasHiddenDurationParts } from './formatDuration';
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
+const WEEK = 7 * DAY;
 
 describe('formatDurationMs', () => {
   it('keeps only the three largest units', () => {
@@ -70,5 +71,60 @@ describe('formatDurationMs', () => {
     expect(formatDurationMs(-1)).toBe('');
     expect(formatDurationMs(Number.NaN)).toBe('');
     expect(formatDurationMs(HOUR, 'en', 0)).toBe('');
+  });
+});
+
+describe('formatExactDurationMs', () => {
+  it('keeps every unit the capped format drops, spelled out', () => {
+    const ms = 2 * WEEK + 19 * HOUR + 8 * MINUTE + 42 * SECOND;
+
+    expect(formatDurationMs(ms)).toBe('2w, 19h, 8m');
+    expect(formatExactDurationMs(ms)).toBe('2 weeks, 19 hours, 8 minutes, 42 seconds');
+  });
+
+  it('spells out a duration that was not capped at all', () => {
+    expect(formatExactDurationMs(16 * SECOND)).toBe('16 seconds');
+  });
+
+  it('still drops sub-second precision', () => {
+    expect(formatExactDurationMs(1 * MINUTE + 30 * SECOND + 400)).toBe('1 minute, 30 seconds');
+    expect(formatExactDurationMs(400)).toBe('');
+  });
+
+  it('uses the locale for the unit wording and list joining', () => {
+    // Luxon's locale data joins the last pair with "und", so the output is not a fixed
+    // comma-separated list.
+    expect(formatExactDurationMs(2 * HOUR + 5 * MINUTE, 'de')).toBe('2 Stunden und 5 Minuten');
+  });
+});
+
+describe('hasHiddenDurationParts', () => {
+  it('is true when a fourth unit is dropped', () => {
+    expect(hasHiddenDurationParts(2 * WEEK + 19 * HOUR + 8 * MINUTE + 42 * SECOND)).toBe(true);
+  });
+
+  it('is false when every whole unit is shown', () => {
+    expect(hasHiddenDurationParts(16 * SECOND)).toBe(false);
+    expect(hasHiddenDurationParts(2 * DAY + 3 * HOUR + 4 * MINUTE)).toBe(false);
+  });
+
+  it('does not count zero units towards the cap', () => {
+    // 2 days and 5 seconds is two whole parts, however far apart the units sit.
+    expect(hasHiddenDurationParts(2 * DAY + 5 * SECOND)).toBe(false);
+  });
+
+  it('does not treat sub-second precision as a hidden part', () => {
+    expect(hasHiddenDurationParts(2 * DAY + 3 * HOUR + 4 * MINUTE + 400)).toBe(false);
+  });
+
+  it('honours a custom unit count', () => {
+    expect(hasHiddenDurationParts(2 * DAY + 3 * HOUR, 1)).toBe(true);
+    expect(hasHiddenDurationParts(2 * DAY + 3 * HOUR, 2)).toBe(false);
+  });
+
+  it('is false for a non-positive or unusable duration', () => {
+    expect(hasHiddenDurationParts(0)).toBe(false);
+    expect(hasHiddenDurationParts(-1)).toBe(false);
+    expect(hasHiddenDurationParts(Number.NaN)).toBe(false);
   });
 });

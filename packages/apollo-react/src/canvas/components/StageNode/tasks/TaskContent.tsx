@@ -7,7 +7,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { useSafeLingui } from '../../../../i18n';
 import { CanvasTooltip } from '../../CanvasTooltip';
 import { ExecutionStatusIcon } from '../../ExecutionStatusIcon';
-import { formatDurationMs } from '../formatDuration';
+import { formatDurationMs, formatExactDurationMs, hasHiddenDurationParts } from '../formatDuration';
 import { StageItemIcon } from '../StageNode.styles';
 import type { StageTaskExecution, StageTaskItem } from '../StageNode.types';
 import { useExecutionStatusLabel } from '../useExecutionStatusLabel';
@@ -133,6 +133,11 @@ export const TaskContent = memo(
         {durationText}
       </span>
     ) : null;
+    const exactDuration =
+      taskExecution?.durationMs !== undefined && hasHiddenDurationParts(taskExecution.durationMs)
+        ? formatExactDurationMs(taskExecution.durationMs, locale)
+        : undefined;
+    const durationTooltip = taskExecution?.durationTooltip || exactDuration;
 
     return (
       <Row
@@ -195,12 +200,8 @@ export const TaskContent = memo(
           data-testid={`stage-task-actions-${task.id}`}
         >
           {durationLabel &&
-            (taskExecution?.durationTooltip ? (
-              <CanvasTooltip
-                content={taskExecution.durationTooltip}
-                placement="top"
-                hide={isDragging}
-              >
+            (durationTooltip ? (
+              <CanvasTooltip content={durationTooltip} placement="top" hide={isDragging}>
                 {durationLabel}
               </CanvasTooltip>
             ) : (
