@@ -33,6 +33,14 @@
       "require": "./dist/tokens/jss/palette.cjs",
       "types": "./dist/tokens/jss/palette.d.ts"
     },
+    "./tokens/scss/variables": "./dist/tokens/scss/_variables.scss",
+    "./tokens/scss/theme": "./dist/tokens/scss/theme.scss",
+    "./tokens/scss/theme-variables": "./dist/tokens/scss/theme-variables.scss",
+    "./tokens/scss/helpers": "./dist/tokens/scss/helpers.scss",
+    "./tokens/scss/mixins": "./dist/tokens/scss/mixins.scss",
+    "./tokens/scss/base-host": "./dist/tokens/scss/base-host.scss",
+    "./tokens/scss/css-variables": "./dist/tokens/scss/_css-variables.scss",
+    "./tokens/scss/scoped-theme-variables": "./dist/tokens/scss/_scoped-theme-variables.scss",
     "./tokens/*": "./dist/tokens/*"
   },
   "files": [
