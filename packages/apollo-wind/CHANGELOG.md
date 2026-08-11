@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.32.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.2...@uipath/apollo-wind@2.32.3) (2026-08-11)
+
+### Bug Fixes
+
+* **repo:** patch nanoid and DOMPurify vulnerabilities ([e610fa4](https://github.com/UiPath/apollo-ui/commit/e610fa427feb6b86e888e6de9c1501e92f5446e5))
+
 ## [@uipath/apollo-wind-v2.32.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.0...@uipath/apollo-wind@2.32.1) (2026-08-03)
 
 ### Bug Fixes
