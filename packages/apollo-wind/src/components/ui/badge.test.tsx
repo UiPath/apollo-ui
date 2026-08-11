@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
+import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { Badge } from './badge';
 
@@ -70,5 +71,15 @@ describe('Badge', () => {
   it('accepts custom className', () => {
     render(<Badge className="custom-badge">Custom</Badge>);
     expect(screen.getByText('Custom')).toHaveClass('custom-badge');
+  });
+
+  // Radix triggers (tooltip, popover, …) hand the badge a ref through `asChild`.
+  // A plain function component would drop it on React 18 consumers, leaving the
+  // popup without an anchor to position against, so it must be forwarded.
+  it('forwards its ref to the rendered element', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(<Badge ref={ref}>Anchored</Badge>);
+
+    expect(ref.current).toBe(screen.getByText('Anchored'));
   });
 });

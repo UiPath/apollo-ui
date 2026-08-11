@@ -32,8 +32,14 @@ export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
-}
+// forwardRef so the badge can be a Radix `asChild` trigger (tooltip, popover, …).
+// Without it React 18 consumers silently drop the ref, leaving the tooltip
+// without an anchor to position against, so it never becomes visible.
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
+  ({ className, variant, ...props }, ref) => (
+    <div ref={ref} className={cn(badgeVariants({ variant }), className)} {...props} />
+  )
+);
+Badge.displayName = 'Badge';
 
 export { Badge, badgeVariants };
