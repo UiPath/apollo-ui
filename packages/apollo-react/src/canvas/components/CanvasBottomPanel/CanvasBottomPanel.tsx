@@ -1,8 +1,61 @@
-import { Fragment, memo, useCallback, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import {
+  Fragment,
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@uipath/apollo-wind';
 import type { CanvasBottomPanelProps } from './CanvasBottomPanel.types';
 
 export const CANVAS_BOTTOM_PANEL_COLLAPSED_HEIGHT = 48;
+
+interface CanvasBottomPanelActionsContextValue {
+  container: HTMLElement | null;
+  active: boolean;
+}
+
+const CanvasBottomPanelActionsContext = createContext<CanvasBottomPanelActionsContextValue | null>(
+  null
+);
+
+/** Renders active-tab controls in the panel's right-aligned header action area. */
+export function CanvasBottomPanelActions({ children }: { children: ReactNode }) {
+  const slot = useContext(CanvasBottomPanelActionsContext);
+  if (!slot?.active || !slot.container) return null;
+  return createPortal(children, slot.container);
+}
+
+function ActionsScope({
+  active,
+  container,
+  children,
+}: {
+  active: boolean;
+  container: HTMLElement | null;
+  children: ReactNode;
+}) {
+  const value = useMemo(() => ({ active, container }), [active, container]);
+  return (
+    <CanvasBottomPanelActionsContext.Provider value={value}>
+      {children}
+    </CanvasBottomPanelActionsContext.Provider>
+  );
+}
+
+function shouldSeparateTabs(
+  previous: CanvasBottomPanelProps['tabs'][number] | undefined,
+  current: CanvasBottomPanelProps['tabs'][number]
+) {
+  if (!previous) return false;
+  if (!previous.group && !current.group) return false;
+  return previous.group !== current.group;
+}
 
 function clearNativeSelection() {
   if (typeof window === 'undefined' || typeof window.getSelection !== 'function') return;
@@ -15,10 +68,17 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
   onTabChange,
   isCollapsed,
   onCollapsedChange,
+  onExpand,
   headerActions,
+  overlay,
+  variant = 'floating',
+  collapsedHeight = CANVAS_BOTTOM_PANEL_COLLAPSED_HEIGHT,
   idPrefix = 'canvas-bottom-panel',
   className,
 }: CanvasBottomPanelProps) {
+  const [actionsContainer, setActionsContainer] = useState<HTMLDivElement | null>(null);
+  const [overlayHost, setOverlayHost] = useState<HTMLDivElement | null>(null);
+  const overlayActive = overlay?.tabIds.includes(activeTabId) ?? false;
   const focusTab = useCallback(
     (tabId: string) => {
       requestAnimationFrame(() => {
@@ -32,9 +92,12 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
     (tabId: string) => {
       clearNativeSelection();
       onTabChange(tabId);
-      if (isCollapsed) onCollapsedChange(false);
+      if (isCollapsed) {
+        onCollapsedChange?.(false);
+        onExpand?.();
+      }
     },
-    [isCollapsed, onCollapsedChange, onTabChange]
+    [isCollapsed, onCollapsedChange, onExpand, onTabChange]
   );
 
   const handleKeyDown = useCallback(
@@ -72,14 +135,15 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
     <section
       data-testid="canvas-bottom-panel"
       className={cn(
-        'flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-raised text-foreground shadow-lg',
+        'flex min-h-0 flex-col overflow-hidden bg-surface-raised text-foreground',
+        variant === 'floating' && 'rounded-2xl border border-border-subtle shadow-lg',
         className
       )}
-      style={isCollapsed ? { height: CANVAS_BOTTOM_PANEL_COLLAPSED_HEIGHT } : undefined}
+      style={isCollapsed ? { height: collapsedHeight } : undefined}
     >
       <header
         className="flex shrink-0 items-center justify-between gap-3 px-3"
-        style={{ height: CANVAS_BOTTOM_PANEL_COLLAPSED_HEIGHT }}
+        style={{ height: collapsedHeight }}
       >
         <div
           role="tablist"
@@ -88,15 +152,28 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
         >
           {tabs.map((tab, index) => {
             const isActive = tab.id === activeTabId;
+            const controlsOverlay = overlay?.tabIds.includes(tab.id) ?? false;
             return (
               <Fragment key={tab.id}>
+                {shouldSeparateTabs(tabs[index - 1], tab) && (
+                  <span
+                    role="presentation"
+                    aria-hidden="true"
+                    className="mx-1.5 h-4 w-px shrink-0 bg-border-subtle"
+                    data-testid="canvas-bottom-panel-tab-separator"
+                  />
+                )}
                 <button
                   id={`${idPrefix}-tab-${tab.id}`}
                   type="button"
                   role="tab"
                   aria-label={tab.ariaLabel}
                   aria-selected={isActive}
-                  aria-controls={`${idPrefix}-tabpanel-${tab.id}`}
+                  aria-controls={
+                    controlsOverlay
+                      ? `${idPrefix}-overlay-tabpanel`
+                      : `${idPrefix}-tabpanel-${tab.id}`
+                  }
                   tabIndex={isActive ? 0 : -1}
                   data-state={isActive ? 'active' : 'inactive'}
                   className="inline-flex h-7 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-xs font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground"
@@ -110,14 +187,18 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
           })}
         </div>
 
-        {headerActions && (
+        <div className="flex shrink-0 items-center gap-1">
           <div
-            className="flex shrink-0 items-center gap-1"
-            data-testid="canvas-bottom-panel-actions"
-          >
-            {headerActions}
-          </div>
-        )}
+            ref={setActionsContainer}
+            className="flex items-center gap-1 empty:hidden"
+            data-testid="canvas-bottom-panel-tab-actions"
+          />
+          {headerActions && (
+            <div className="flex items-center gap-1" data-testid="canvas-bottom-panel-actions">
+              {headerActions}
+            </div>
+          )}
+        </div>
       </header>
 
       <div
@@ -127,6 +208,7 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
       >
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
+          if (overlay?.tabIds.includes(tab.id)) return null;
           return (
             <div
               key={tab.id}
@@ -137,10 +219,32 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
               className="h-full w-full"
               style={{ display: isActive ? 'block' : 'none' }}
             >
-              {tab.content}
+              <ActionsScope active={!isCollapsed && isActive} container={actionsContainer}>
+                {tab.content}
+              </ActionsScope>
             </div>
           );
         })}
+        {overlay && (
+          <div
+            ref={setOverlayHost}
+            id={`${idPrefix}-overlay-tabpanel`}
+            role="tabpanel"
+            aria-labelledby={overlayActive ? `${idPrefix}-tab-${activeTabId}` : undefined}
+            hidden={!overlayActive}
+            className="h-full w-full"
+            style={{ display: overlayActive ? 'block' : 'none' }}
+            data-testid="canvas-bottom-panel-overlay"
+          />
+        )}
+        {overlay &&
+          overlayHost &&
+          createPortal(
+            <ActionsScope active={!isCollapsed && overlayActive} container={actionsContainer}>
+              {overlay.content}
+            </ActionsScope>,
+            overlayHost
+          )}
       </div>
     </section>
   );

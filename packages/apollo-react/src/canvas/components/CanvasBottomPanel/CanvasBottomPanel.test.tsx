@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { CanvasBottomPanel } from './CanvasBottomPanel';
+import { CanvasBottomPanel, CanvasBottomPanelActions } from './CanvasBottomPanel';
 import type { CanvasBottomPanelTab } from './CanvasBottomPanel.types';
 
 const tabs: CanvasBottomPanelTab[] = [
@@ -68,6 +68,90 @@ describe('CanvasBottomPanel', () => {
     renderPanel({ headerActions: <button type="button">Collapse panel</button> });
 
     expect(screen.getByRole('button', { name: 'Collapse panel' })).toBeInTheDocument();
+  });
+
+  it('renders a separator between adjacent tab groups', () => {
+    renderPanel({
+      tabs: [
+        { id: 'debug', label: 'Debug', group: 'debug', content: null },
+        { id: 'evaluate', label: 'Evaluate', group: 'evaluation', content: null },
+      ],
+    });
+
+    expect(screen.getByTestId('canvas-bottom-panel-tab-separator')).toBeInTheDocument();
+  });
+
+  it('supports a docked treatment and a consumer-defined collapsed height', () => {
+    renderPanel({ variant: 'docked', isCollapsed: true, collapsedHeight: 36 });
+
+    const panel = screen.getByTestId('canvas-bottom-panel');
+    const header = panel.querySelector('header');
+    expect(panel).toHaveStyle({ height: '36px' });
+    expect(header).toHaveStyle({ height: '36px' });
+    expect(panel).not.toHaveClass('rounded-2xl');
+    expect(panel).not.toHaveClass('shadow-lg');
+  });
+
+  it('supports an expand-only host callback', () => {
+    const onExpand = vi.fn();
+    renderPanel({ isCollapsed: true, onCollapsedChange: undefined, onExpand });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Evaluate' }));
+
+    expect(onExpand).toHaveBeenCalledOnce();
+  });
+
+  it('portals active tab actions into the header and hides inactive actions', () => {
+    renderPanel({
+      tabs: [
+        {
+          id: 'debug',
+          label: 'Debug',
+          content: (
+            <CanvasBottomPanelActions>
+              <button type="button">Clear debug results</button>
+            </CanvasBottomPanelActions>
+          ),
+        },
+        {
+          id: 'evaluate',
+          label: 'Evaluate',
+          content: (
+            <CanvasBottomPanelActions>
+              <button type="button">Run evaluation</button>
+            </CanvasBottomPanelActions>
+          ),
+        },
+      ],
+    });
+
+    const slot = screen.getByTestId('canvas-bottom-panel-tab-actions');
+    expect(slot).toContainElement(screen.getByRole('button', { name: 'Clear debug results' }));
+    expect(screen.queryByRole('button', { name: 'Run evaluation' })).not.toBeInTheDocument();
+  });
+
+  it('mounts shared overlay content once across related tab switches', () => {
+    const overlay = {
+      tabIds: ['debug', 'evaluate'],
+      content: <div data-testid="shared-evaluation-view">Shared view</div>,
+    };
+    const { rerender } = renderPanel({ overlay });
+    const hostBefore = screen.getByTestId('canvas-bottom-panel-overlay');
+    const contentBefore = screen.getByTestId('shared-evaluation-view');
+
+    rerender(
+      <CanvasBottomPanel
+        tabs={tabs}
+        activeTabId="evaluate"
+        onTabChange={vi.fn()}
+        overlay={overlay}
+      />
+    );
+
+    const hostAfter = screen.getByTestId('canvas-bottom-panel-overlay');
+    expect(hostAfter).toBe(hostBefore);
+    expect(screen.getByTestId('shared-evaluation-view')).toBe(contentBefore);
+    expect(hostAfter).toHaveAttribute('aria-labelledby', 'canvas-bottom-panel-tab-evaluate');
   });
 
   it('associates each tab with its panel and applies roving tab index', () => {
