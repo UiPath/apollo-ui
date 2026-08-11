@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.12.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.12.0...@uipath/apollo-core@5.12.1) (2026-08-11)
+
+### Bug Fixes
+
+* **apollo-core:** add exact export aliases for scss token entrypoints ([8e08439](https://github.com/UiPath/apollo-ui/commit/8e084396681dd4318f213412e042e993a2e4cdcf))
+
 ## [@uipath/apollo-core-v5.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.11.1...@uipath/apollo-core@5.12.0) (2026-07-28)
 
 ### Features
