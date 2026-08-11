@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { DAY, HOUR, MINUTE, SECOND, WEEK } from '../../../test/durations';
 import { formatDurationMs, formatExactDurationMs, hasHiddenDurationParts } from './formatDuration';
-
-const SECOND = 1000;
-const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
-const WEEK = 7 * DAY;
 
 describe('formatDurationMs', () => {
   it('keeps only the three largest units', () => {

@@ -1,5 +1,6 @@
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { DAY, HOUR, MINUTE, SECOND, WEEK } from '../../../test/durations';
 import { act, fireEvent, render, screen } from '../../utils/testing';
 import type { StageNodeProps } from './StageNode.types';
 import { StageNodeHeader } from './StageNodeHeader';
@@ -8,12 +9,6 @@ import { StageNodeHeader } from './StageNodeHeader';
 // opens only when the header dropped units. Radix does not portal in happy-dom, so assertions
 // use the trigger's `data-state`.
 vi.unmock('@uipath/apollo-wind/components/ui/tooltip');
-
-const SECOND = 1000;
-const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
-const WEEK = 7 * DAY;
 
 const renderHeader = (durationMs: number) => {
   const props = {
