@@ -20,12 +20,43 @@
  * borrows `primary-foreground` — its own lightness matches `primary`'s
  * almost exactly in dark mode (both 0.69) and sits in the same range in
  * light mode, so the same white/near-black split applies.
+ *
+ * `text`/`border` are the same four hues again, as plain text/outline
+ * classes rather than a solid fill — for surfaces that render a person as
+ * an outline or colored label instead of a filled avatar (e.g. an
+ * upcoming-stage tracker node, which is hollow/dotted by convention). Same
+ * palette, same hash, just a different rendering of the identical color.
  */
-const AVATAR_PALETTE: { bg: string; fg: string }[] = [
-  { bg: "bg-destructive", fg: "text-destructive-foreground" },
-  { bg: "bg-success", fg: "text-success-foreground" },
-  { bg: "bg-info", fg: "text-info-foreground" },
-  { bg: "bg-chart-1", fg: "text-primary-foreground" },
+const AVATAR_PALETTE: {
+  bg: string;
+  fg: string;
+  text: string;
+  border: string;
+}[] = [
+  {
+    bg: "bg-destructive",
+    fg: "text-destructive-foreground",
+    text: "text-destructive",
+    border: "border-destructive",
+  },
+  {
+    bg: "bg-success",
+    fg: "text-success-foreground",
+    text: "text-success",
+    border: "border-success",
+  },
+  {
+    bg: "bg-info",
+    fg: "text-info-foreground",
+    text: "text-info",
+    border: "border-info",
+  },
+  {
+    bg: "bg-chart-1",
+    fg: "text-primary-foreground",
+    text: "text-chart-1",
+    border: "border-chart-1",
+  },
 ];
 
 function hashString(value: string): number {
@@ -36,6 +67,11 @@ function hashString(value: string): number {
   return Math.abs(hash);
 }
 
-export function avatarColorFor(name: string): { bg: string; fg: string } {
+export function avatarColorFor(name: string): {
+  bg: string;
+  fg: string;
+  text: string;
+  border: string;
+} {
   return AVATAR_PALETTE[hashString(name) % AVATAR_PALETTE.length]!;
 }

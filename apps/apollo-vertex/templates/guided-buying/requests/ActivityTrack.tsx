@@ -2,11 +2,9 @@
 
 import { Check, TriangleAlert } from "lucide-react";
 import { Fragment } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import type { JourneyStage, JourneyStageState } from "../JourneyBar";
-import { avatarColorFor } from "./avatar-color";
 
 export interface ActivityStage extends JourneyStage {
   /** Second-line date — the actual date once done, an expected/projected
@@ -18,15 +16,11 @@ export interface ActivityStage extends JourneyStage {
    * lateness is a fact ("expected then, still hasn't happened") rather than
    * a loaded word like "overdue". Omit if it can't be derived. */
   overdueDays?: number;
-  /** The person this stage is about — whoever completed it, or whoever it's
-   * currently waiting on — rendered as their avatar in place of the agent's
-   * ✦ mark, in whatever chrome that stage's state already uses (dotted
-   * ring, pulsing ring, or plain for done). Omit for agent/system stages
-   * (e.g. placing the order), which keep the ✦ mark. `name` is the stable
-   * identifier the shared avatar color function hashes on — the same
-   * person must resolve to the same color here as everywhere else they
-   * appear, so this can't be initials alone. */
-  person?: { initials: string; name: string };
+  /** True only for a genuine agent/system stage (e.g. placing the order) —
+   * keeps the ✦ mark. Every other stage is a plain marker: the label
+   * beneath it already names whoever it belongs to, so the node itself no
+   * longer carries an avatar (removed — see report). */
+  isAgent?: boolean;
 }
 
 interface ActivityTrackProps {
@@ -34,8 +28,12 @@ interface ActivityTrackProps {
   className?: string;
 }
 
+// Secondary, not muted — an upcoming step is still owed, not disabled, so
+// it reads at a step down from the current/done tokens rather than fading
+// out. Sub-labels (dateClass, below) stay on the muted token; only the
+// stage name moves.
 function nameClass(state: JourneyStageState): string {
-  if (state === "upcoming") return "text-muted-foreground/50";
+  if (state === "upcoming") return "text-secondary-foreground";
   if (state === "active" || state === "active-warning")
     return "font-medium text-foreground";
   return "text-foreground";
@@ -74,85 +72,70 @@ function dateText(stage: ActivityStage): string | null {
   return stage.date;
 }
 
-/** The ✦ mark or, when this stage is a specific person's, their initials —
- * same size/position either way, so swapping one for the other doesn't
- * disturb the surrounding ring/border chrome. */
-function StageGlyph({
-  person,
-}: {
-  person?: { initials: string; name: string };
-}) {
-  if (person != null) {
-    return <span className="text-[10px] font-semibold">{person.initials}</span>;
-  }
-  return <AiMark size={13} gradientId="gb-ai-mark" />;
-}
-
 /**
- * Stage node. Vocabulary adapted from the invoice app's timeline (dotted
- * ring for queued, gradient fill for agent-completed, avatar for
- * person-completed) plus one addition: the current stage is waiting on a
- * person's decision, not the system processing something, so it gets a
- * slow-pulsing ring in the AI accent rather than a spinning indeterminate
- * arc — that stays reserved for genuine in-progress system work. Active and
- * active-warning render identically; the warning only ever colors the date
- * text below (see dateClass).
+ * Stage node. Three states, one rule each, applied identically whether the
+ * stage is a person's or the agent's — the AI stage differs only in
+ * carrying the ✦ mark, never in weight:
+ * - Future (`upcoming`): solid muted fill, visible at a glance rather than
+ *   a faint outline.
+ * - Current (`active`/`active-warning`): an accent ring, unfilled — the
+ *   ring alone signals "current," never a color change. Amber never
+ *   appears here regardless of active-warning; that stays confined to the
+ *   sub-label text below (see dateClass) so this component only has one
+ *   reserved use of the warning role, not two.
+ * - Done: filled accent + check for a person's stage; the AI gradient +
+ *   check for the agent's, since a completed agent action is a genuinely
+ *   distinct fact worth its own color, unlike a merely upcoming one.
  *
- * `person` swaps the ✦ mark for that person's initials in every state —
- * queued, waiting, or done — because the actor, not the stage's status,
- * decides whether it's a person's avatar or the agent's mark: Submitted and
- * Received are the requester's actions, Approved is the approver's call,
- * and only genuinely agent/system stages (placing the order) keep the mark.
+ * No avatars — the label beneath each node already names whoever it
+ * belongs to.
  */
 function StageMarker({
   state,
-  person,
+  isAgent,
 }: {
   state: JourneyStageState;
-  person?: { initials: string; name: string };
+  isAgent?: boolean;
 }) {
   if (state === "upcoming") {
     return (
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-dotted border-insight-300 bg-background text-insight-400">
-        <StageGlyph person={person} />
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        {isAgent && <AiMark size={13} gradientId="gb-ai-mark" />}
       </span>
     );
   }
 
   if (state === "active" || state === "active-warning") {
     return (
-      <span className="relative flex size-7 shrink-0 items-center justify-center rounded-full bg-insight-50 text-insight-600 dark:bg-insight-900">
+      <span className="relative flex size-7 shrink-0 items-center justify-center rounded-full bg-background text-primary">
         <span
           aria-hidden
           style={{ animationDuration: "2.6s" }}
-          className="absolute inset-0 animate-pulse rounded-full border-2 border-insight-400 motion-reduce:animate-none"
+          className="absolute inset-0 animate-pulse rounded-full border-2 border-primary motion-reduce:animate-none"
         />
-        <StageGlyph person={person} />
+        {isAgent && <AiMark size={13} gradientId="gb-ai-mark" />}
       </span>
-    );
-  }
-
-  // done, completed by a named person — an avatar carries it, no checkmark.
-  if (person != null) {
-    const color = avatarColorFor(person.name);
-    return (
-      <Avatar className="size-7">
-        <AvatarFallback
-          className={cn("text-[11px] font-medium", color.bg, color.fg)}
-        >
-          {person.initials}
-        </AvatarFallback>
-      </Avatar>
     );
   }
 
   // done, agent/system-completed — gradient-filled, same treatment as the
   // guide's "Complete (gradient)" marker.
+  if (isAgent) {
+    return (
+      <span
+        className="flex size-7 shrink-0 items-center justify-center rounded-full text-white"
+        style={{ background: "var(--ai-gradient-strong)" }}
+      >
+        <Check className="size-3.5" strokeWidth={3} aria-hidden />
+      </span>
+    );
+  }
+
+  // done, plain — same primary-fill vocabulary JourneyBar's own done-dot
+  // already uses elsewhere in this app, just at this component's larger
+  // node size.
   return (
-    <span
-      className="flex size-7 shrink-0 items-center justify-center rounded-full text-white"
-      style={{ background: "var(--ai-gradient-strong)" }}
-    >
+    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
       <Check className="size-3.5" strokeWidth={3} aria-hidden />
     </span>
   );
@@ -160,46 +143,32 @@ function StageMarker({
 
 /**
  * Horizontal stage track — bigger nodes than JourneyBar, a ring on the
- * current stage, and an avatar in place of the ✦ mark wherever a stage is a
- * specific person's (see StageMarker). Events belong in the Activity record
- * below, not pinned above the track — a timestamp has no meaningful
- * position on a stage node.
+ * current stage, plain markers otherwise (see StageMarker). Events belong
+ * in the Activity record below, not pinned above the track — a timestamp
+ * has no meaningful position on a stage node.
  */
 export function ActivityTrack({ stages, className }: ActivityTrackProps) {
   return (
     <div className={cn("flex flex-col", className)}>
-      {/* Nodes + connector — the line is a separate layer running behind the
-          nodes (inset by half a node's width, so it spans centre-to-centre
-          of the first and last node) rather than a flex sibling stopping at
-          each node's edge, so it visually passes underneath every marker
-          with no gap. */}
-      <div className="relative flex items-center">
-        <div
-          className="absolute inset-x-3.5 top-1/2 flex -translate-y-1/2"
-          aria-hidden
-        >
-          {stages.slice(0, -1).map((stage) => (
-            <div
-              key={stage.label}
-              className={cn(
-                "h-px flex-1",
-                stage.state === "done" ? "bg-primary" : "bg-border",
-              )}
-            />
-          ))}
-        </div>
-        <div
-          className="relative z-10 flex w-full items-center justify-between"
-          aria-hidden
-        >
-          {stages.map((stage) => (
-            <StageMarker
-              key={stage.label}
-              state={stage.state}
-              person={stage.person}
-            />
-          ))}
-        </div>
+      {/* Nodes + connector as flex siblings — each segment fills the gap
+          between two w-7 nodes and terminates at their edges, the same
+          fixed-column-plus-flex-1-spacer structure the label row below
+          uses, so node centers and label centers stay aligned at any
+          width without two layout algorithms to reconcile. */}
+      <div className="flex items-center" aria-hidden>
+        {stages.map((stage, i) => (
+          <Fragment key={stage.label}>
+            {i > 0 && (
+              <div
+                className={cn(
+                  "h-px flex-1",
+                  stages[i - 1].state === "done" ? "bg-primary" : "bg-border",
+                )}
+              />
+            )}
+            <StageMarker state={stage.state} isAgent={stage.isAgent} />
+          </Fragment>
+        ))}
       </div>
 
       {/* Labels — name + date, each anchored under its node. Fixed w-7
