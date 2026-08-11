@@ -1,10 +1,14 @@
 "use client";
 
 import { useNavigate } from "@tanstack/react-router";
+import { SearchIcon } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Empty, EmptyDescription } from "@/components/ui/empty";
+import { FilterDropdown } from "@/components/ui/filter-dropdown";
+import { Input } from "@/components/ui/input";
 import {
   PageHeader,
   PageHeaderNav,
@@ -19,7 +23,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { DECISION_DETAILS, DECISION_STATUS_META, daysSince } from "./data";
+import {
+  DECISION_DETAILS,
+  DECISION_STATUS_META,
+  type DecisionStatus,
+  daysSince,
+} from "./data";
 import { useRequests } from "./requests-context";
 
 const COLUMNS = [
@@ -31,6 +40,10 @@ const COLUMNS = [
   "Status",
   "",
 ];
+
+const STATUS_OPTIONS = Object.entries(DECISION_STATUS_META).map(
+  ([value, meta]) => ({ label: meta.label, value }),
+);
 
 // REQ-2052 and REQ-2054 carry full decision packets with detail-page
 // content (budget line, checks, PO) — REQ-2054 is the exception scenario
@@ -53,22 +66,36 @@ interface StatCardProps {
    * uncolored regardless, so the card itself never outranks the two
    * actionable ones next to it. */
   hintClassName?: string;
+  /** Whether this tile's filter is the one currently applied. */
+  active?: boolean;
+  onClick: () => void;
 }
 
-function StatCard({ label, value, hint, hintClassName }: StatCardProps) {
+/** A KPI tile that doubles as a quick filter — same selectable-card
+ * treatment as My Requests' own stat tiles (accent border + glow when
+ * active), so the two queues behave the same way. */
+function StatCard({
+  label,
+  value,
+  hint,
+  hintClassName,
+  active,
+  onClick,
+}: StatCardProps) {
   return (
-    <Card variant="glass" className="py-0">
-      <CardContent className="p-5">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="mt-1 text-3xl font-medium text-foreground">{value}</p>
-        {hint != null && (
-          <p
-            className={cn("mt-1 text-xs text-muted-foreground", hintClassName)}
-          >
-            {hint}
-          </p>
-        )}
-      </CardContent>
+    <Card
+      selectable="standard"
+      selected={active}
+      onClick={onClick}
+      aria-label={`Filter by ${label}`}
+    >
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 text-3xl font-medium text-foreground">{value}</p>
+      {hint != null && (
+        <p className={cn("mt-1 text-xs text-muted-foreground", hintClassName)}>
+          {hint}
+        </p>
+      )}
     </Card>
   );
 }
@@ -95,10 +122,19 @@ export function Approvals() {
   const navigate = useNavigate();
   const { requestStatusOverrides, approvedAt, approveRequest, denyRequest } =
     useRequests();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  // Longest waiting's own quick filter narrows to that one row rather than
+  // a status set — there's no decision status that means "has waited the
+  // longest," so it can't share statusFilter's mechanism. Mutually
+  // exclusive with it: selecting one clears the other.
+  const [oldestOnly, setOldestOnly] = useState(false);
+
   const rows = Object.values(DECISION_DETAILS);
-  const pendingRows = rows.filter(
-    (row) => requestStatusOverrides[row.id] == null,
-  );
+  const decisionOf = (id: string): DecisionStatus =>
+    (requestStatusOverrides[id] ?? "pending") as DecisionStatus;
+
+  const pendingRows = rows.filter((row) => decisionOf(row.id) === "pending");
 
   const awaitingTotal = pendingRows.reduce(
     (sum, row) => sum + row.totalValue,
@@ -119,9 +155,7 @@ export function Approvals() {
   // seeded baseline (see report: a fresh session starts this at $0, which
   // reads small for a KPI headline, but embedding an invented starting
   // figure isn't a call this file gets to make).
-  const approvedRows = rows.filter(
-    (row) => requestStatusOverrides[row.id] === "approved",
-  );
+  const approvedRows = rows.filter((row) => decisionOf(row.id) === "approved");
   const spendUnderManagement = approvedRows.reduce(
     (sum, row) => sum + row.totalValue,
     0,
@@ -138,11 +172,35 @@ export function Approvals() {
     return latest;
   }, null);
 
+  const isAwaitingActive =
+    !oldestOnly && statusFilter.length === 1 && statusFilter[0] === "pending";
+  const isOldestActive = oldestOnly;
+  const isApprovedActive =
+    !oldestOnly && statusFilter.length === 1 && statusFilter[0] === "approved";
+
+  const query = search.trim().toLowerCase();
+
+  const filteredRows = rows.filter((row) => {
+    if (oldestOnly) return oldestPending != null && row.id === oldestPending.id;
+    if (statusFilter.length > 0 && !statusFilter.includes(decisionOf(row.id)))
+      return false;
+    if (query) {
+      const hay = `${row.id} ${row.request} ${row.requester}`.toLowerCase();
+      if (!hay.includes(query)) return false;
+    }
+    return true;
+  });
+
+  const isFiltered = oldestOnly || statusFilter.length > 0 || query.length > 0;
+
   return (
     <div className="h-full overflow-y-auto">
       <PageHeader>
         <PageHeaderNav className="items-baseline">
           <PageHeaderTitle className="w-auto">Approvals</PageHeaderTitle>
+          <span className="whitespace-nowrap text-xs text-muted-foreground">
+            Updated just now
+          </span>
         </PageHeaderNav>
       </PageHeader>
 
@@ -152,6 +210,11 @@ export function Approvals() {
             label="Awaiting your decision"
             value={`$${awaitingTotal.toLocaleString("en-US")}`}
             hint={`Across ${pendingRows.length} request${pendingRows.length === 1 ? "" : "s"}`}
+            active={isAwaitingActive}
+            onClick={() => {
+              setOldestOnly(false);
+              setStatusFilter(isAwaitingActive ? [] : ["pending"]);
+            }}
           />
           <StatCard
             label="Longest waiting"
@@ -165,6 +228,12 @@ export function Approvals() {
                 ? `${oldestPending.id} · ${oldestPending.submitted}`
                 : "Nothing pending"
             }
+            active={isOldestActive}
+            onClick={() => {
+              if (oldestPending == null) return;
+              setStatusFilter([]);
+              setOldestOnly(!oldestOnly);
+            }}
           />
           <StatCard
             label="Spend under management"
@@ -177,14 +246,44 @@ export function Approvals() {
             hintClassName={
               mostRecentApproval != null ? "text-success" : undefined
             }
+            active={isApprovedActive}
+            onClick={() => {
+              setOldestOnly(false);
+              setStatusFilter(isApprovedActive ? [] : ["approved"]);
+            }}
+          />
+        </div>
+
+        {/* Search + filter — search left, filters right, same treatment as
+            My Requests' own row. */}
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="relative w-full sm:w-auto">
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search approvals…"
+              className="w-full pl-9 sm:w-80"
+            />
+          </div>
+          <FilterDropdown
+            title="Status"
+            options={STATUS_OPTIONS}
+            value={statusFilter}
+            onChange={(v) => {
+              setOldestOnly(false);
+              setStatusFilter(v as string[]);
+            }}
           />
         </div>
 
         <Card variant="glass" className="overflow-hidden">
-          {rows.length === 0 ? (
+          {filteredRows.length === 0 ? (
             <Empty>
               <EmptyDescription>
-                Nothing is waiting on your decision.
+                {isFiltered
+                  ? "No requests match your search."
+                  : "Nothing is waiting on your decision."}
               </EmptyDescription>
             </Empty>
           ) : (
@@ -206,13 +305,8 @@ export function Approvals() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((row) => {
-                  const decision = (requestStatusOverrides[row.id] ??
-                    "pending") as
-                    | "approved"
-                    | "denied"
-                    | "sent-back"
-                    | "pending";
+                {filteredRows.map((row) => {
+                  const decision = decisionOf(row.id);
                   const meta = DECISION_STATUS_META[decision];
                   const hasDetail = HAS_DETAIL_PAGE[row.id] === true;
 
