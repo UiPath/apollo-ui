@@ -24,6 +24,19 @@
 /* Variant active when the component is inside a Future Dark or Light theme */
 @custom-variant future (:is(.future-dark, .future-light) &);
 
+/* Apollo theming is class-driven (see apollo-core theme-variables.css), so
+   override Tailwind's default OS-media `dark` variant to match. Covers the
+   three apollo-core themes that are dark: .dark, .dark-hc, .future-dark.
+   The prototype-only .vertex / .canvas themes are deliberately left out;
+   they name a palette, not a mode, and are snapshots of the dark half of a
+   two-mode source, so they can't be assumed dark long-term.
+
+   The :not(.react-flow) exclusion mirrors the token selectors below, so a
+   ReactFlow wrapper's colorMode class can't flip `dark:` utilities while the
+   tokens around them stay on the host theme. Only .dark needs it, since
+   colorMode emits `light`/`dark` and never `dark-hc`/`future-dark`. */
+@custom-variant dark (&:is(.dark:not(.react-flow), .dark-hc, .future-dark, .dark:not(.react-flow) *, .dark-hc *, .future-dark *));
+
 /**
  * Theme definitions
  *
