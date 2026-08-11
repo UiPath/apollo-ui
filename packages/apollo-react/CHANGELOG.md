@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.19.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.19.2...@uipath/apollo-react@6.19.3) (2026-08-11)
+
+### Bug Fixes
+
+* **canvas:** pin TaskMockedChip flask icon size ([2bbd683](https://github.com/UiPath/apollo-ui/commit/2bbd683ab7ede41e58067bdfd1df6f74ff1a1cf3))
+
 ## [@uipath/apollo-react-v6.19.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.19.1...@uipath/apollo-react@6.19.2) (2026-08-11)
 
 ### Bug Fixes
