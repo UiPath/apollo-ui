@@ -63,6 +63,7 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
   const [requestStatusOverrides, setRequestStatusOverrides] = useState<
     Record<string, "approved" | "denied" | "sent-back">
   >({});
+  const [approvedAt, setApprovedAt] = useState<Record<string, number>>({});
   const [fieldExceptions, setFieldExceptions] = useState<
     Record<string, FieldException[]>
   >({});
@@ -114,6 +115,7 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
 
   const approveRequest = (requestId: string) => {
     setRequestStatusOverrides((prev) => ({ ...prev, [requestId]: "approved" }));
+    setApprovedAt((prev) => ({ ...prev, [requestId]: Date.now() }));
   };
 
   const denyRequest = (requestId: string) => {
@@ -154,6 +156,7 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     receipts,
     confirmReceipt,
     requestStatusOverrides,
+    approvedAt,
     approveRequest,
     denyRequest,
     sendBackRequest,
