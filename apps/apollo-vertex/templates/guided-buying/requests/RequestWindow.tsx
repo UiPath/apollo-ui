@@ -4,11 +4,13 @@ import { useClipboard } from "@mantine/hooks";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useReducedMotion } from "framer-motion";
 import {
-  Bell,
   Check,
-  History,
-  Info,
+  CheckCircle2,
+  Eye,
   Link as LinkIcon,
+  ListOrdered,
+  type LucideIcon,
+  MessageSquareText,
   MoreVertical,
   TriangleAlert,
 } from "lucide-react";
@@ -39,7 +41,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { ConfirmCheck } from "../ConfirmCheck";
@@ -49,6 +50,10 @@ import { P2 } from "../P2";
 import { type ActivityStage, ActivityTrack } from "./ActivityTrack";
 import { avatarColorFor } from "./avatar-color";
 import {
+  buildChecks,
+  DECISION_DETAILS,
+  daysSince,
+  getDecisionDetail,
   getRequestDetail,
   getRequestRow,
   REQ_2052_APPROVED_DATE,
@@ -83,6 +88,9 @@ const STAGE_VERB_FORMS: Record<
   { done: string; active: string; upcoming: string }
 > = {
   Approved: {
+    // Fallback only — toDisplayStages names the approver directly whenever
+    // one is known, since the current stage should say who it's waiting on,
+    // not just that it's waiting.
     done: "Approved",
     active: "Waiting for approval",
     upcoming: "Approve",
@@ -91,32 +99,110 @@ const STAGE_VERB_FORMS: Record<
   Received: { done: "Received", active: "Receiving", upcoming: "Receive" },
 };
 
-// Ordered and Received never carry a date, in any state — there's no real
-// basis to project when either will happen, and showing one would just be
-// the same unfounded projection this scenario dropped.
+// Ordered and Received never carry a projected calendar date — there's no
+// real basis for one. An upcoming stage can still state a duration fact
+// (the supplier's own stocking lead time) or the requester's own deadline
+// instead of a blank line — see toDisplayStages' `context` param.
 const STAGES_WITH_NO_DATE = new Set(["Ordered", "Received"]);
 
-/** Applies the verb-form and date rules above for display, without touching
- * the canonical labels the rest of this file matches stages by (advanceStagesThrough,
- * attribution, the receipt-flag patch) — this only ever runs as the last
- * step, right before handing stages to ActivityTrack. */
-function toDisplayStages(stages: ActivityStage[]): ActivityStage[] {
+/** Applies the verb-form rule above and layers in the two data-derived
+ * sub-labels (current stage names who it waits on; Ordered/Received's
+ * otherwise-blank date carries the supplier lead time / need-by date
+ * instead), without touching the canonical labels the rest of this file
+ * matches stages by (advanceStagesThrough, attribution, the receipt-flag
+ * patch) — this only ever runs as the last step, right before handing
+ * stages to ActivityTrack. */
+function toDisplayStages(
+  stages: ActivityStage[],
+  context: {
+    approverFullName?: string;
+    shippingEstimate?: string;
+    needBy?: string;
+  },
+): ActivityStage[] {
   return stages.map((stage) => {
     const forms = STAGE_VERB_FORMS[stage.label];
-    const label = forms
-      ? forms[
-          stage.state === "done"
-            ? "done"
-            : stage.state === "upcoming"
-              ? "upcoming"
-              : "active"
-        ]
-      : stage.label;
+    const verbKey =
+      stage.state === "done"
+        ? "done"
+        : stage.state === "upcoming"
+          ? "upcoming"
+          : "active";
+    const isCurrent = verbKey === "active";
+    const label =
+      stage.label === "Approved" && isCurrent && context.approverFullName
+        ? `Waiting on ${context.approverFullName}`
+        : forms
+          ? forms[verbKey]
+          : stage.label;
+
     if (!STAGES_WITH_NO_DATE.has(stage.label)) {
-      return { ...stage, label };
+      // The elapsed-days clause is dropped here — the tracker states when a
+      // decision was expected, not how overdue it is; that count now lives
+      // once, in the header status pill. State stays untouched, so the
+      // warning color on this date text (ActivityTrack's own dateClass)
+      // still applies.
+      return { ...stage, label, overdueDays: undefined };
+    }
+    if (
+      stage.label === "Ordered" &&
+      stage.state === "upcoming" &&
+      context.shippingEstimate
+    ) {
+      return {
+        ...stage,
+        label,
+        date: context.shippingEstimate,
+        overdueDays: undefined,
+      };
+    }
+    if (
+      stage.label === "Received" &&
+      stage.state === "upcoming" &&
+      context.needBy
+    ) {
+      return {
+        ...stage,
+        label,
+        date: `By ${context.needBy}`,
+        overdueDays: undefined,
+      };
     }
     return { ...stage, label, date: undefined, overdueDays: undefined };
   });
+}
+
+// ESCALATE: wording. States the relationship between stages that the
+// tracker's two label rows can't on their own — who holds the request now,
+// and what happens once they clear it — templated over the same fields
+// feeding the tracker itself, not authored narration. Three cases, one per
+// stage this app can ever show as current (see trackStagesApproved/
+// trackStagesOrdered — Submitted is always done, never current).
+function buildProgressDescription(
+  currentStageLabel: string | undefined,
+  context: {
+    approverFullName?: string;
+    shippingEstimate?: string;
+    needBy?: string;
+  },
+): string | null {
+  if (currentStageLabel === "Approved") {
+    const approver = context.approverFullName ?? "Your approver";
+    return context.shippingEstimate
+      ? `${approver} has it now. Once approved, we'll place the order (${context.shippingEstimate.toLowerCase()}).`
+      : `${approver} has it now. Once approved, we'll place the order.`;
+  }
+  if (currentStageLabel === "Ordered") {
+    return context.needBy
+      ? `We have it now. Once the order ships, it's on its way to you by ${context.needBy}.`
+      : `We have it now. Once the order ships, it's on its way to you.`;
+  }
+  if (currentStageLabel === "Received") {
+    return context.needBy
+      ? `It's on its way to you now, expected by ${context.needBy}. Once it arrives, you can confirm receipt to close this out.`
+      : `It's on its way to you now. Once it arrives, you can confirm receipt to close this out.`;
+  }
+  return null;
 }
 
 // ─── Activity record — chronological entries ──────────────────────────────────
@@ -137,51 +223,15 @@ function WaitingBanner({ text }: { text: string }) {
   );
 }
 
-// ─── Status card copy helpers ─────────────────────────────────────────────────
-
-const DAY_WORDS = [
-  "zero",
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-  "seven",
-  "eight",
-  "nine",
-];
-
-/** Spells out small day counts ("2" → "two") to match the summary's prose voice. */
-function spellDays(n: number): string {
-  return DAY_WORDS[n] ?? String(n);
-}
-
-/** The card's one notable-fact phrase — a soft AI-gradient wash behind the
- * text, emphasis only (the sentence must still read correctly without it).
- * Prefer a short phrase that can't wrap; box-decoration-break: clone is a
- * backstop so a highlight that does wrap across a line still paints as one
- * continuous shape per line instead of the default disconnected slices. */
-function Highlight({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      className="rounded-sm px-1 text-insight-900 dark:text-insight-50"
-      style={{
-        backgroundImage: "var(--ai-gradient)",
-        boxDecorationBreak: "clone",
-        WebkitBoxDecorationBreak: "clone",
-      }}
-    >
-      {children}
-    </span>
-  );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 /**
  * Full-page request detail at /requests/$id. Lifts all logic from PanelBody
  * (thread, urgent, send) — swaps Sheet chrome for a page header with back nav.
+ * Tracking-first, not decision support: the tracker is the primary surface,
+ * with an attention row that only appears when the request is genuinely off
+ * its expected path — nothing here narrates what the tracker and
+ * Communication already show.
  */
 export function RequestWindow() {
   const { id } = useParams({ from: "/requests/$id" });
@@ -195,12 +245,12 @@ export function RequestWindow() {
     receipts,
     confirmReceipt,
     requestStatusOverrides,
+    fieldExceptions,
   } = useRequests();
   const reduceMotion = useReducedMotion();
 
   const [draft, setDraft] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-  const [nudged, setNudged] = useState(false);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const clipboard = useClipboard({ timeout: 1500 });
   const composerRef = useRef<HTMLTextAreaElement>(null);
@@ -220,6 +270,12 @@ export function RequestWindow() {
 
   const notes = threads[id] ?? [];
   const isUrgent = urgent[id] === true;
+  // Same record RequestRecordRail reads on the approver's side — this
+  // surface and that one are separate components (no shared persona prop),
+  // so the same lookup is duplicated here rather than shared.
+  const shipException = (fieldExceptions[id] ?? []).find(
+    (e) => e.field === "Ship to",
+  );
   // Written by DecisionWindow's Approve action. P1 and P2 both read it —
   // P2 additionally treats it as "ordered" at render time, in the P2-gated
   // blocks below, never by writing a second status value.
@@ -287,11 +343,6 @@ export function RequestWindow() {
   const approverFirstName =
     detail.approver?.split(" · ")[0]?.split(" ")[0] ?? "procurement";
 
-  // A nudge already went out today whenever the data says so (the summary
-  // sentence and thread capsule already describe it) — the button reflects
-  // that from the first render, not only after a fresh in-session click.
-  const alreadyNudged = nudged || detail.nudgeText != null;
-
   const focusComposer = () => {
     composerRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -354,19 +405,9 @@ export function RequestWindow() {
       .slice(0, 2)
       .toUpperCase() ?? "?";
 
-  // ── Status card — state-aware AI-summary sentence ─────────────────────────
-  // One flowing sentence per state; every figure comes from `detail`/`row`,
-  // with just the one notable fact highlighted. Only "pending" (REQ-2052,
-  // REQ-2051, REQ-2053) and "ordered" (REQ-2042) have a live data example —
-  // "approved", "po-sent" and "delivered" run generically but are unverified
-  // visually. See report.
   const approverFullName = detail.approver?.split(" · ")[0];
   const approverFirst = approverFullName?.split(" ")[0];
   const supplierName = row?.supplier;
-  const savings = detail.summary?.savings;
-  const items = detail.summary?.items ?? displayTitle;
-  const turnaround = detail.turnaround;
-  const daysWaiting = detail.statusLabel?.match(/(\d+)\s+day/)?.[1];
 
   // Need-by proximity chip — only surfaced once it's close enough to matter,
   // either side of the date. Comfortably-ahead dates get no chip at all.
@@ -393,154 +434,27 @@ export function RequestWindow() {
     (s) => s.label === "Received",
   )?.date;
   // The one supplier fact this scenario actually has a basis for — the
-  // catalog record's own stocking lead time, not a projected calendar date.
+  // catalog record's own stocking lead time, a duration fact rather than a
+  // projected calendar date. Feeds the Ordered stage's sub-label below.
   const suppliedItem = CATALOG_ITEMS.find((i) => i.id === "lnv-x1c-g12");
-  const supplierLeadTimeSentence =
-    suppliedItem != null
-      ? (() => {
-          const text = leadTime(suppliedItem);
-          return `Once approved, ${suppliedItem.source} ${text.charAt(0).toLowerCase()}${text.slice(1)}.`;
-        })()
-      : null;
+  const shippingEstimate =
+    suppliedItem != null ? leadTime(suppliedItem) : undefined;
 
-  let summaryText: React.ReactNode;
-
-  if (isApproved) {
-    // Checked ahead of cardState, which stays "pending" for this scenario —
-    // cardState isn't the source of truth for approval, isApproved is (see
-    // report). One accent phrase per the AI toolkit's own rule (limit the
-    // glow to one best match per view), so the P2 addition stays plain
-    // rather than carrying a second highlight.
-    summaryText = (
-      <>
-        {approverFullName ?? "Your approver"} <Highlight>approved</Highlight>{" "}
-        this request.
-        <P2> I placed the order with {supplierName ?? "the supplier"}.</P2>
-      </>
-    );
-  } else if (cardState === "sent-back") {
-    summaryText = (
-      <>
-        {approverFullName ?? "Your approver"}{" "}
-        <Highlight>sent this back</Highlight> for changes. Take a look and reply
-        when it's ready to go again.
-      </>
-    );
-  } else if (cardState === "delivered") {
-    const shipToShort = detail.shipTo?.split(" · ")[0];
-    if (receipt == null) {
-      // Arrived per the carrier, but the requester hasn't confirmed it yet
-      // — no claim about enrollment or handoff until they do.
-      summaryText = (
-        <>
-          {items} <Highlight>arrived</Highlight>
-          {shipToShort != null && <> at {shipToShort}</>}
-          {savings != null && <>, saving {savings}</>}. Confirm receipt to close
-          out the request.
-        </>
-      );
-    } else if (!receiptIsPartialOrDamaged) {
-      summaryText = (
-        <>
-          {items} arrived{shipToShort != null && <> at {shipToShort}</>}
-          {savings != null && <>, saving {savings}</>}, and{" "}
-          <Highlight>receipt is confirmed</Highlight>. Nothing further to do.
-        </>
-      );
-    } else {
-      const outstanding = receipt.qtyOrdered - receipt.qtyReceived;
-      summaryText = (
-        <>
-          <Highlight>
-            {receipt.qtyReceived} of {receipt.qtyOrdered}
-          </Highlight>{" "}
-          {items} arrived{shipToShort != null && <> at {shipToShort}</>}.
-          {outstanding > 0 && (
-            <>
-              {" "}
-              {outstanding} unit{outstanding === 1 ? "" : "s"} still
-              outstanding.
-            </>
-          )}
-          {receipt.damaged && (
-            <> A supplier issue was opened for damaged or incorrect items.</>
-          )}
-        </>
-      );
-    }
-  } else if (cardState === "po-sent") {
-    summaryText = (
-      <>
-        I placed the order for {items}
-        {savings != null && <>, saving {savings}</>}, and{" "}
-        <Highlight>sent the PO</Highlight> to {supplierName ?? "the vendor"}.
-        Expect delivery by {detail.summary?.needBy ?? "the requested date"}.
-      </>
-    );
-  } else if (cardState === "approved") {
-    summaryText = (
-      <>
-        I configured {items}
-        {savings != null && <>, saving {savings}</>}, and sent it to{" "}
-        {approverFullName ?? "your approver"} for approval.{" "}
-        <Highlight>Approved</Highlight> — the purchase order should follow
-        {turnaround != null && <> within {turnaround}</>}.
-      </>
-    );
-  } else if (cardState === "ordered") {
-    summaryText = (
-      <>
-        {items} ({detail.summary?.total ?? "—"}) is{" "}
-        <Highlight>ordered</Highlight> and complete
-        {savings != null && <>, saving {savings}</>}. Nothing further to do.
-      </>
-    );
-  } else {
-    summaryText = (
-      <>
-        {approverFirst ?? "Your approver"} has had this{" "}
-        <Highlight>
-          {daysWaiting != null
-            ? `${spellDays(Number(daysWaiting))} days`
-            : "a bit"}
-        </Highlight>
-        {turnaround != null && <> and usually decides within {turnaround}</>}
-        {detail.nudgeText != null
-          ? ", so I sent a reminder this morning."
-          : "."}
-        {/* What happens next, from the supplier's own stocking lead time —
-            not a projected calendar date derived from stage-to-stage
-            guesses. */}
-        {supplierLeadTimeSentence != null && <> {supplierLeadTimeSentence}</>}
-      </>
-    );
-  }
-
-  // Attribute stages to whoever actually acts on them — completed or not:
-  // the requester submits and confirms receipt, the named approver approves
-  // (or is currently the one being waited on). Anything else (placing the
-  // order) has no person to credit, so it keeps the agent's ✦ mark.
+  // Which stages are a genuine agent/system action (placing the order) vs a
+  // person's — the label beneath each node already names the person
+  // directly, so the node itself no longer needs to know who; it only
+  // needs to know whether to keep the agent's ✦ mark. Submitted/Received
+  // are the requester's actions, Approved is the approver's call — every
+  // other stage keeps the mark.
   const trackStages: ActivityStage[] = (detail.journeyStages ?? []).map(
     (stage) => {
       if (stage.label === "Submitted" || stage.label === "Received") {
-        return {
-          ...stage,
-          person: {
-            initials: requesterInitials,
-            name: row?.requester ?? "Requester",
-          },
-        };
+        return { ...stage };
       }
       if (stage.label === "Approved" && detail.approver != null) {
-        return {
-          ...stage,
-          person: {
-            initials: approverInitials,
-            name: approverFullName ?? "Your approver",
-          },
-        };
+        return { ...stage };
       }
-      return stage;
+      return { ...stage, isAgent: true };
     },
   );
   // A partial or damaged receipt means the request isn't fully closed even
@@ -585,6 +499,132 @@ export function RequestWindow() {
   const trackStagesOrdered = isApproved
     ? advanceStagesThrough(stagesWithApprovalDate, "Ordered")
     : trackStages;
+  const displayStageContext = {
+    approverFullName,
+    shippingEstimate,
+    needBy: detail.summary?.needBy,
+  };
+  // Hoisted so the same transformed arrays feed both the tracker and the
+  // progress description below, instead of recomputing per consumer.
+  const displayStagesApproved = toDisplayStages(
+    trackStagesApproved,
+    displayStageContext,
+  );
+  const displayStagesOrdered = toDisplayStages(
+    trackStagesOrdered,
+    displayStageContext,
+  );
+  const progressDescriptionApproved = buildProgressDescription(
+    trackStagesApproved.find(
+      (s) => s.state === "active" || s.state === "active-warning",
+    )?.label,
+    displayStageContext,
+  );
+  const progressDescriptionOrdered = buildProgressDescription(
+    trackStagesOrdered.find(
+      (s) => s.state === "active" || s.state === "active-warning",
+    )?.label,
+    displayStageContext,
+  );
+
+  // Off path: the same signal that already colors a stage's date text amber
+  // (see ActivityTrack's dateClass), so the attention row's own visibility
+  // is derived from the identical data driving the sub-labels above, not a
+  // second judgment call. Reads trackStagesApproved specifically, not
+  // stagesWithApprovalDate — advanceStagesThrough is what actually flips
+  // Approved to "done" once isApproved, clearing active-warning; the
+  // un-advanced array keeps that state regardless of approval. P1/P2 agree
+  // on whether Approved itself is done (they only differ on how far past
+  // it "done" extends), so either tier's array gives the same answer here.
+  const lateStage = trackStagesApproved.find(
+    (s) => s.state === "active-warning",
+  );
+  const isOffPath = lateStage != null;
+  const overdueDays = lateStage?.overdueDays ?? 0;
+
+  // The approver's own decision packet — same record DecisionWindow/
+  // Approvals read, so the findings below and the approver's own "What I
+  // checked" can't disagree. Absent for any request that never reached
+  // procurement's decision queue (see report — only REQ-2052/2054/2055/2056
+  // have one today).
+  const decisionDetail = getDecisionDetail(id);
+  const checks = decisionDetail != null ? buildChecks(decisionDetail) : null;
+  const clearedCount = checks?.filter((c) => c.status === "pass").length;
+  // Signal, not silence: how many of the same approver's OTHER decisions,
+  // submitted after this one, have already been decided — the actual cause
+  // when nothing about the queue or the request itself is holding this up.
+  // Same sources as before (DECISION_DETAILS, requestStatusOverrides,
+  // submitted date via daysSince), no new fields.
+  const decidedAfterCount =
+    decisionDetail != null
+      ? Object.values(DECISION_DETAILS).filter(
+          (d) =>
+            d.id !== decisionDetail.id &&
+            d.approver === decisionDetail.approver &&
+            requestStatusOverrides[d.id] != null &&
+            daysSince(d.submitted) < daysSince(decisionDetail.submitted),
+        ).length
+      : null;
+
+  // ESCALATE: wording for all three, and the section header ("What I found
+  // out"). A finding whose value is zero, empty, or unavailable is omitted
+  // outright rather than rendered as a negative statement — the one
+  // exception is finding 1's bracketed gap, which stays (just tightened),
+  // since "not tracked" is itself the honest answer, not a null result to
+  // hide. The block itself renders nothing below the tracker when the
+  // filtered list comes up empty — see the render below.
+  const findings: { icon: LucideIcon; text: string }[] = [
+    isOffPath
+      ? {
+          icon: Eye,
+          // GAP: no last-viewed/last-seen timestamp exists anywhere in the
+          // data model, keyed to an approver or otherwise (see report) —
+          // bracketed to the missing datum only, not the whole clause.
+          // "No decision has followed" is derived (isOffPath is exactly
+          // that fact), not part of the gap.
+          text: `${approverFullName ?? "Your approver"} last viewed this request [not tracked]. No decision has followed yet.`,
+        }
+      : null,
+    decidedAfterCount != null && decidedAfterCount > 0
+      ? {
+          icon: ListOrdered,
+          text: `${approverFullName ?? "Your approver"} has decided ${decidedAfterCount} request${decidedAfterCount === 1 ? "" : "s"} that arrived after this one.`,
+        }
+      : null,
+    // Suppresses only when the source itself is empty (no decision record,
+    // or somehow no checks on one) — not because "nothing blocking" reads
+    // as a negative sentence. "4 of 4 cleared" is a real derived count,
+    // same one the approver's own "What I checked" reports, and stays
+    // exactly that regardless of how many of the four actually cleared.
+    checks != null && checks.length > 0
+      ? {
+          icon: CheckCircle2,
+          text: `Nothing in the request itself is blocking. ${clearedCount} of ${checks.length} checks cleared.`,
+        }
+      : null,
+  ].filter((f): f is { icon: LucideIcon; text: string } => f != null);
+
+  // Overdue chip — sits next to the Need by date now, since it's the
+  // approver's lateness against that deadline, not a general status word.
+  const overdueLabel = isOffPath
+    ? `${overdueDays} day${overdueDays === 1 ? "" : "s"} overdue`
+    : null;
+
+  // Header Status field — the general state of the request, derived from
+  // the same stage state driving the tracker. "In review" replaces the old
+  // "Pending" wording: the approver is actively looking at it, not waiting
+  // in an untouched queue.
+  const statusLabel = isApproved
+    ? "Approved"
+    : cardState === "sent-back"
+      ? "Sent back"
+      : cardState === "delivered"
+        ? "Delivered"
+        : cardState === "po-sent" || cardState === "ordered"
+          ? "Ordered"
+          : cardState === "approved"
+            ? "Approved"
+            : "In review";
 
   // Messages and messages sent on the requester's behalf, in the order they
   // happened — not status changes, those live on the track above, not here.
@@ -601,8 +641,6 @@ export function RequestWindow() {
       }
     | { kind: "approver"; text: string; timestamp?: string };
   const activityLog: LogEntry[] = [];
-  // No opening "I configured X and sent it..." entry — that's what the AI
-  // Summary headline above already says, in its own words.
   if (detail.threadSeedMessage != null) {
     activityLog.push({
       kind: "user",
@@ -610,26 +648,34 @@ export function RequestWindow() {
       timestamp: `2:14 PM · ${approverFirstName} was notified`,
     });
   }
-  if (detail.nudgeText != null) {
-    // Plain fact, not the "Pending N days..." framing that used to also
-    // appear in the summary headline and the "Nudged today" button — this
-    // is just the one thing that happened, not a retelling of why.
-    activityLog.push({
-      kind: "agent",
-      text: `I sent ${approverFirst ?? "them"} a reminder`,
-      timestamp: "This morning",
-    });
-  }
   for (const note of notes) {
     activityLog.push({
       kind: "user",
       text: note.text,
-      timestamp: `${note.author} · ${note.time}`,
+      // Time only — RecordEntry already renders `author` as the name
+      // above this line, matching CommunicationRail's own treatment
+      // (`timestamp={note.time}`). Repeating the name here duplicated it.
+      timestamp: note.time,
       provenance: noteProvenance(
         note,
         detail.teamsChannel ?? "[Teams channel name]",
       ),
       author: note.author,
+    });
+  }
+  if (detail.nudgeText != null) {
+    // Pushed after the thread notes, not before — chronologically this is
+    // the most recent thing that happened (a reminder sent because the
+    // conversation above stalled with no decision following it), so it
+    // belongs at the bottom of the log, nearest the live "waiting" state,
+    // not ahead of the exchange it's reacting to. Plain fact, not the
+    // "Pending N days..." framing that used to also appear in the old
+    // summary headline and the "Nudged today" button — this is just the
+    // one thing that happened, not a retelling of why.
+    activityLog.push({
+      kind: "agent",
+      text: `I sent ${approverFirst ?? "them"} a reminder`,
+      timestamp: "This morning",
     });
   }
   // The confirmation itself is a record entry too — quantity received and
@@ -646,6 +692,9 @@ export function RequestWindow() {
   }
   // Stays in the record in both tiers — P2 appends a second entry beneath
   // it (see the P2-gated entry below the map), it never replaces this one.
+  // This is also the one fact the old AI-summary sentence's own P2 fragment
+  // duplicated ("I placed the order with {supplier}") — deleting that
+  // sentence loses nothing, since this entry already says it.
   if (isApproved) {
     activityLog.push({
       kind: "approver",
@@ -683,6 +732,15 @@ export function RequestWindow() {
           "Happy to hop on a call.",
         ];
 
+  // ESCALATE: placeholder wording — direct substitute for the previous
+  // agentLine.includes("Alex") string-match, using the approver's name
+  // already derived above instead of sniffing prose for it.
+  const composerPlaceholder = `Message ${approverFirst ?? "your approver"} about this request`;
+  // ESCALATE: posting-destination wording — mirrors CommunicationRail's own
+  // line exactly, same bracketed-placeholder convention this file already
+  // uses for teamsChannel elsewhere.
+  const postingDestinationLine = `Posts to ${detail.teamsChannel ?? "[Teams channel name]"} · ${id}`;
+
   return (
     <div className="flex h-full flex-col">
       {/* auto_1fr_auto: nav and actions size to their own content instead of
@@ -692,7 +750,12 @@ export function RequestWindow() {
           scrolling region below, not an overlay — nothing can scroll behind
           it, so there's no risk of it covering a focus ring or a
           scroll-into-view target the way a position:sticky header could. */}
-      <PageHeader bordered className="shrink-0 @3xl:!grid-cols-[auto_1fr_auto]">
+      <PageHeader bordered className="shrink-0">
+        {/* Three columns via PageHeaderContent (3fr/6fr/3fr): nav keeps just
+            back+title, the metadata fields spread across the wide middle
+            column (its own justify-evenly), actions stay right. Status,
+            Approver, Need by — one reading order across the whole header,
+            not clustered against the title. */}
         <PageHeaderNav>
           <PageHeaderBackButton
             onClick={() => void navigate({ to: "/requests" })}
@@ -706,67 +769,43 @@ export function RequestWindow() {
           </PageHeaderTitleGroup>
         </PageHeaderNav>
 
-        <PageHeaderContent className="@3xl:justify-between @3xl:pl-6">
-          <PageHeaderField>
-            <PageHeaderFieldLabel>Total</PageHeaderFieldLabel>
+        <PageHeaderContent>
+          <PageHeaderField className="shrink-0">
+            <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
+            <PageHeaderFieldValue>{statusLabel}</PageHeaderFieldValue>
+          </PageHeaderField>
+          <PageHeaderField className="shrink-0">
+            <PageHeaderFieldLabel>Approver</PageHeaderFieldLabel>
             <PageHeaderFieldValue>
-              {detail.summary?.total ?? "—"}
+              {approverFullName ?? "Unassigned"}
             </PageHeaderFieldValue>
           </PageHeaderField>
+          {/* Approver-lateness (overdueLabel) takes priority over the plain
+              proximity chip (needByBadge) since it's the more specific,
+              more urgent fact; the two never both apply here, since
+              need-by-proximity hasn't also tripped for this request. */}
           {detail.summary?.needBy != null && (
-            <PageHeaderField>
+            <PageHeaderField className="shrink-0">
               <PageHeaderFieldLabel>Need by</PageHeaderFieldLabel>
               <PageHeaderFieldValue className="flex items-center gap-1.5">
                 {detail.summary.needBy}
-                {needByBadge != null && (
-                  <Badge status={needByBadge.status} variant="secondary">
-                    {needByBadge.label}
+                {overdueLabel != null ? (
+                  <Badge status="warning" variant="secondary">
+                    {overdueLabel}
                   </Badge>
+                ) : (
+                  needByBadge != null && (
+                    <Badge status={needByBadge.status} variant="secondary">
+                      {needByBadge.label}
+                    </Badge>
+                  )
                 )}
-              </PageHeaderFieldValue>
-            </PageHeaderField>
-          )}
-          {row?.requester != null && (
-            <PageHeaderField>
-              <PageHeaderFieldLabel>Requester</PageHeaderFieldLabel>
-              <PageHeaderFieldValue className="flex items-center gap-1.5">
-                <Avatar className="size-[18px] shrink-0">
-                  <AvatarFallback
-                    className={cn(
-                      "text-[8px] font-semibold",
-                      avatarColorFor(row.requester).bg,
-                      avatarColorFor(row.requester).fg,
-                    )}
-                  >
-                    {requesterInitials}
-                  </AvatarFallback>
-                </Avatar>
-                {row.requester}
-              </PageHeaderFieldValue>
-            </PageHeaderField>
-          )}
-          {detail.approver != null && (
-            <PageHeaderField>
-              <PageHeaderFieldLabel>Approver</PageHeaderFieldLabel>
-              <PageHeaderFieldValue className="flex items-center gap-1.5">
-                <Avatar className="size-[18px] shrink-0">
-                  <AvatarFallback
-                    className={cn(
-                      "text-[8px] font-semibold",
-                      avatarColorFor(approverFullName ?? "Your approver").bg,
-                      avatarColorFor(approverFullName ?? "Your approver").fg,
-                    )}
-                  >
-                    {approverInitials}
-                  </AvatarFallback>
-                </Avatar>
-                {approverFullName}
               </PageHeaderFieldValue>
             </PageHeaderField>
           )}
         </PageHeaderContent>
 
-        <PageHeaderActions className="@3xl:ml-6">
+        <PageHeaderActions>
           {/* Always a ButtonGroup: one exposed action (never a bare overflow
               trigger with nothing to say), the rest one click away. View
               order/Reorder/Copy link are each the exposed action for
@@ -840,138 +879,186 @@ export function RequestWindow() {
       >
         {/* ── Main column ──────────────────────────────────────────────── */}
         <div className="min-w-0 space-y-5 lg:flex-1">
-          {/* Status card — an AI moment: mark + label, one summary sentence
-              with the notable fact highlighted, activity track, then
-              actions. Merges what used to be three tellings of the same
-              story (summary line, stage-bar waiting note, thread nudge
-              line) into one. */}
-          <Card variant="glass" className="py-0">
-            <CardContent className="p-5">
-              {/* The confirmation moment — reuses the Done screen's check
-                  animation once, the instant `receipt` first appears (a
-                  fresh mount, since this branch wasn't rendered before).
-                  Stays in this state afterward: there's nothing further to
-                  summarize as an "AI" moment once the requester themself
-                  has confirmed the outcome. */}
-              {receipt != null ? (
-                <div className="flex flex-col items-center text-center">
-                  <ConfirmCheck reduceMotion={reduceMotion} />
-                  <p className="mt-3 text-base font-bold tracking-tighter text-foreground">
-                    Receipt confirmed
-                  </p>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 text-base font-bold tracking-tighter text-foreground">
-                  <AiMark size={14} gradientId="gb-ai-mark" aria-hidden />
-                  AI Summary
-                </div>
-              )}
-
-              <p className="mt-5 max-w-[640px] text-[23px] font-semibold leading-snug text-foreground">
-                {summaryText}
+          {/* The confirmation moment — reuses the Done screen's check
+              animation once, the instant `receipt` first appears. Stays in
+              this state afterward: there's nothing further to summarize as
+              an "AI" moment once the requester themself has confirmed the
+              outcome. Sits above the tracker rather than inside a card of
+              its own — the tracker/attention row have nothing left to say
+              once a receipt exists, so this is the whole page's one thing
+              to lead with in that state. */}
+          {receipt != null && (
+            <div className="flex flex-col items-center text-center">
+              <ConfirmCheck reduceMotion={reduceMotion} />
+              <p className="mt-3 text-base font-bold tracking-tighter text-foreground">
+                Receipt confirmed
               </p>
+            </div>
+          )}
 
-              {detail.journeyStages != null && (
+          {/* Tracker — the primary surface. Two label rows per stage (see
+              toDisplayStages): who it's currently waiting on, and what that
+              means for when the requester actually gets the goods. The
+              attention row beneath is the only place this page still
+              speaks in the AI's own voice, and only when something is
+              genuinely off path. */}
+          <Card variant="glass" className="py-0">
+            <CardContent className="p-0">
+              {/* Zone one — Progress. Card label + tracker. Every other
+                  region on this screen (Communication, People, Request
+                  details, Linked records) is labeled; this matches
+                  Communication's own heading treatment exactly so the card
+                  reads as a region, not a floating object. No count: a
+                  thread has a length, a tracker doesn't. */}
+              <div className="px-5 pb-5 pt-6">
+                <div className="text-base font-bold tracking-tighter text-foreground">
+                  Progress
+                </div>
+
+                {/* Plain-language relationship between stages — not a
+                    restatement of the four dates above/below it, and not AI
+                    output: no ✦ mark, not covered by the AI caveat lower in
+                    this card. */}
+                <P1>
+                  {progressDescriptionApproved != null && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {progressDescriptionApproved}
+                    </p>
+                  )}
+                </P1>
+                <P2>
+                  {progressDescriptionOrdered != null && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {progressDescriptionOrdered}
+                    </p>
+                  )}
+                </P2>
+
+                {detail.journeyStages != null && (
+                  <div className="mt-6">
+                    <P1>
+                      <ActivityTrack stages={displayStagesApproved} />
+                    </P1>
+                    <P2>
+                      <ActivityTrack stages={displayStagesOrdered} />
+                    </P2>
+                  </div>
+                )}
+              </div>
+
+              {isOffPath && (
                 <>
-                  <P1>
-                    <ActivityTrack
-                      stages={toDisplayStages(trackStagesApproved)}
-                      className="mt-5"
-                    />
-                  </P1>
-                  <P2>
-                    <ActivityTrack
-                      stages={toDisplayStages(trackStagesOrdered)}
-                      className="mt-5"
-                    />
-                  </P2>
-                </>
-              )}
-
-              {/* Secondary actions — Nudge and Mark urgent live only here,
-                  directly beneath the stage track whose current-stage label
-                  already carries the elapsed-time context that makes
-                  nudging a reasonable judgement call. Neither is owed, so
-                  neither belongs in the header. Real button chrome, not
-                  text: a completed action keeps its button shape (filled
-                  muted, check icon, past tense) instead of turning to text.
-                  Copy link lives in the header overflow only now — this row
-                  is for actions specific to the request's current state.
-                  "Message {approver}" was cut too: it only scrolled to the
-                  composer already visible on the page below. */}
-              <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-                <div className="flex items-center gap-2">
-                  {cardState === "pending" && !isApproved && (
+                  {/* Zone two — AI findings. Doesn't render at all when no
+                      finding survives suppression — the card is then just
+                      zone one and zone three, with a single rule between
+                      them. Mirrors DecisionChecks' own "What I checked"
+                      band (icon + one line per finding, neutral icon color,
+                      since none of these are pass/exception checks the way
+                      the approver's own four are). The caveat closes this
+                      zone rather than following the actions below — it's a
+                      correctness fix, not just a layout one: the caveat is
+                      about these AI-derived findings, not about the
+                      buttons in zone three. */}
+                  {findings.length > 0 && (
                     <>
-                      {alreadyNudged ? (
-                        // Spent — a record of what happened, not an offer to
-                        // delegate to the agent, so no AI treatment here.
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          disabled
-                          className="disabled:opacity-100"
-                        >
-                          <Check className="size-3.5" aria-hidden />
-                          Nudged today
-                        </Button>
-                      ) : (
-                        // Live — delegating the nudge to the agent, same
-                        // category as the toolkit's "Ask AI" example.
-                        <Button
-                          size="sm"
-                          variant="ai-soft"
-                          onClick={() => setNudged(true)}
-                        >
-                          <Bell className="size-3.5" aria-hidden />
-                          Nudge {approverFirstName}
-                        </Button>
-                      )}
-                      {isUrgent ? (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          disabled
-                          className="disabled:opacity-100"
-                        >
-                          <Check className="size-3.5" aria-hidden />
-                          Marked urgent today
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => markUrgent(id)}
-                        >
-                          <TriangleAlert className="size-3.5" aria-hidden />
-                          Mark urgent
-                        </Button>
-                      )}
+                      <div className="border-t border-border" />
+                      <div className="p-5">
+                        <div className="flex items-center gap-1.5 text-sm">
+                          <AiMark
+                            size={14}
+                            gradientId="gb-ai-mark"
+                            aria-hidden
+                          />
+                          <span className="font-medium text-foreground">
+                            What I found out
+                          </span>
+                        </div>
+                        {/* No icon here — the AiMark on the heading above
+                            already marks this whole zone as AI-derived, so
+                            a second icon on the caveat was redundant. Sits
+                            directly under the heading, ahead of the
+                            findings it's disclaiming, flush left at the
+                            same edge the heading's own text starts from. */}
+                        <p className="mt-1 text-left text-xs text-muted-foreground">
+                          The output is AI generated. Please review.
+                        </p>
+                        <div className="mt-3 space-y-3">
+                          {findings.map((finding) => {
+                            const Icon = finding.icon;
+                            return (
+                              <div
+                                key={finding.text}
+                                className="flex items-center gap-2.5"
+                              >
+                                <Icon
+                                  className="size-4 shrink-0 text-muted-foreground"
+                                  aria-hidden
+                                />
+                                <p className="text-left text-xs text-foreground">
+                                  {finding.text}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </>
                   )}
-                </div>
-                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Info className="size-3.5 shrink-0" aria-hidden />
-                  The output is AI generated. Please review.
-                </p>
-              </div>
+
+                  {/* Zone three — Actions. Request-level actions prompted
+                      by the findings, not part of them, so they get their
+                      own zone at the card's foot rather than sharing
+                      zone two's padding. */}
+                  <div className="border-t border-border" />
+                  <div className="flex items-center gap-2 p-5">
+                    {detail.nudgeText != null && (
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Check className="size-3.5" aria-hidden />
+                        Nudged today
+                      </span>
+                    )}
+                    <Button size="sm" variant="outline" onClick={focusComposer}>
+                      <MessageSquareText className="size-3.5" aria-hidden />
+                      Ask {approverFirst ?? "your approver"}
+                    </Button>
+                    {isUrgent ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled
+                        className="disabled:opacity-100"
+                      >
+                        <Check className="size-3.5" aria-hidden />
+                        Marked urgent today
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => markUrgent(id)}
+                      >
+                        <TriangleAlert className="size-3.5" aria-hidden />
+                        Mark urgent
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
           {/* Communication — messages and messages sent on the requester's
               behalf, closing on the live waiting state. Status changes live
-              on the track above, not here. Same caveat position and no
-              terminal actions regardless of state (see sidebar). Entry gap
-              (16px) and the divider before the composer (20px) both draw
-              from the same 16/20 rhythm the summary card itself uses. */}
+              on the track above, not here. Sizes to its own content — the
+              composer sits directly beneath the last message, not pinned
+              to a filled column height (that produced an empty box on a
+              short thread, which is most of this demo, and sizing to
+              content also keeps the long-thread scroll question moot for
+              the glass card's own documented glow-clipping constraint). */}
           <Card variant="glass" className="py-0">
             <CardContent className="p-5">
-              <div className="flex items-center gap-1.5 text-base font-bold tracking-tighter text-foreground">
-                <History size={14} aria-hidden />
+              <div className="text-base font-bold tracking-tighter text-foreground">
                 Communication
-                <span className="font-normal text-muted-foreground">
-                  · {activityLog.length}
-                </span>
               </div>
 
               <div className="mt-4 space-y-4">
@@ -1022,9 +1109,11 @@ export function RequestWindow() {
                 {!isApproved && <WaitingBanner text={waitingLine} />}
               </div>
 
-              {/* Composer — inFlight only; terminal-state actions live in the
-                  sidebar now, not here. The AI-disclaimer caveat now lives
-                  once, in the status card above, instead of duplicated here. */}
+              {/* Composer — inFlight only; terminal-state actions live in
+                  the sidebar. Matches CommunicationRail's own treatment
+                  (border + focus ring, hairline divider, footer row,
+                  posting-destination caption) so the two surfaces stay
+                  consistent. */}
               {detail.inFlight && (
                 <div className="mt-5 space-y-3 border-t border-border pt-5">
                   {isUrgent && (
@@ -1058,22 +1147,53 @@ export function RequestWindow() {
                   </div>
 
                   <div className="space-y-2">
-                    <Textarea
-                      ref={composerRef}
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
-                          send();
-                      }}
-                      placeholder={`Message ${detail.agentLine.includes("Alex") ? "Alex" : "procurement"} about this request…`}
-                      className="min-h-[72px] resize-none text-sm"
-                    />
-                    <div className="flex items-center justify-end gap-2">
-                      <Button size="sm" disabled={!draft.trim()} onClick={send}>
-                        Send
-                      </Button>
+                    <div
+                      className={cn(
+                        "rounded-lg border border-border transition-shadow motion-safe:duration-150",
+                        "focus-within:border-primary focus-within:shadow-[0_0_0_1px_var(--primary),0_0_12px_2px_color-mix(in_oklab,var(--primary)_35%,transparent)]",
+                      )}
+                    >
+                      <textarea
+                        ref={composerRef}
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
+                            send();
+                        }}
+                        placeholder={composerPlaceholder}
+                        rows={2}
+                        className="block min-h-[72px] w-full resize-none rounded-t-lg bg-background px-3 py-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground dark:bg-input/30"
+                      />
+                      <div className="h-px bg-border" />
+                      <div className="flex items-center justify-between gap-2 rounded-b-lg bg-background p-2 dark:bg-input/30">
+                        <Avatar className="size-6 shrink-0">
+                          <AvatarFallback
+                            className={cn(
+                              "text-[9px] font-semibold",
+                              avatarColorFor(
+                                approverFullName ?? "Your approver",
+                              ).bg,
+                              avatarColorFor(
+                                approverFullName ?? "Your approver",
+                              ).fg,
+                            )}
+                          >
+                            {approverInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <Button
+                          size="sm"
+                          disabled={!draft.trim()}
+                          onClick={send}
+                        >
+                          Send
+                        </Button>
+                      </div>
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      {postingDestinationLine}
+                    </p>
                   </div>
                 </div>
               )}
@@ -1137,6 +1257,24 @@ export function RequestWindow() {
                     <p className="text-sm font-semibold text-foreground">
                       {shipAddress}
                     </p>
+                  )}
+                  {shipException && (
+                    <p className="text-xs text-muted-foreground">
+                      Ships here if the exception is declined.
+                    </p>
+                  )}
+                  {shipException && (
+                    <div className="mt-2 space-y-1.5 rounded-none border-l-2 border-warning py-1 pl-3">
+                      <Badge variant="secondary" status="warning">
+                        Exception requested
+                      </Badge>
+                      <p className="text-xs font-medium text-foreground">
+                        {shipException.requestedValue}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {`${shipException.ownerName} decides. Visible to ${approverFullName ?? "your approver"} and procurement.`}
+                      </p>
+                    </div>
                   )}
                 </div>
               );

@@ -93,7 +93,9 @@ export function RecordEntry({
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
           <span className="flex shrink-0 items-baseline gap-1.5">
-            <span className="text-sm font-medium text-foreground">{name}</span>
+            <span className="text-[11px] font-medium text-foreground">
+              {name}
+            </span>
             {provenance != null && <TeamsMarker />}
           </span>
           {timestamp != null && (
