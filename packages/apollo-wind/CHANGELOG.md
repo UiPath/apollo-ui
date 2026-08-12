@@ -1,3 +1,14 @@
+## [@uipath/apollo-wind-v2.33.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.4...@uipath/apollo-wind@2.33.0) (2026-08-12)
+
+### Features
+
+* **apollo-wind:** add reusable variable picker ([c970c66](https://github.com/UiPath/apollo-ui/commit/c970c668c8dad6f78040ff2b2beefcb99fb29b3e))
+
+### Bug Fixes
+
+* **apollo-wind:** address variable picker review ([a89cb2a](https://github.com/UiPath/apollo-ui/commit/a89cb2a02b40e46f81fd47ea78082daf137f81e4))
+* **apollo-wind:** compact variable picker width ([8ac76f0](https://github.com/UiPath/apollo-ui/commit/8ac76f069bd3e0eacf7fcb8b3211a255f8121e5b))
+
 ## [@uipath/apollo-wind-v2.32.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.3...@uipath/apollo-wind@2.32.4) (2026-08-12)
 
 ### Bug Fixes

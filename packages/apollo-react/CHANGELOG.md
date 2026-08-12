@@ -1,3 +1,17 @@
+## [@uipath/apollo-react-v6.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.19.3...@uipath/apollo-react@6.20.0) (2026-08-12)
+
+### Features
+
+* **apollo-react:** add variables from output tree ([9054375](https://github.com/UiPath/apollo-ui/commit/90543758246d9593defcb0078fb9382551eb067e))
+* **apollo-react:** collapse excess tree actions ([b0fb374](https://github.com/UiPath/apollo-ui/commit/b0fb374c69e2859f12e8a283fe27160bf488df67))
+* **apollo-wind:** add reusable variable picker ([c970c66](https://github.com/UiPath/apollo-ui/commit/c970c668c8dad6f78040ff2b2beefcb99fb29b3e))
+
+### Bug Fixes
+
+* **apollo-react:** align tree menu with trigger ([0219961](https://github.com/UiPath/apollo-ui/commit/02199615e9c2c919321099ba4a84ff58429389a3))
+* **apollo-react:** keep open tree action visible ([4b49919](https://github.com/UiPath/apollo-ui/commit/4b4991937d97d58d214262df5eb8cb942849b9e3))
+* **apollo-wind:** address variable picker review ([a89cb2a](https://github.com/UiPath/apollo-ui/commit/a89cb2a02b40e46f81fd47ea78082daf137f81e4))
+
 ## [@uipath/apollo-react-v6.19.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.19.2...@uipath/apollo-react@6.19.3) (2026-08-11)
 
 ### Bug Fixes
