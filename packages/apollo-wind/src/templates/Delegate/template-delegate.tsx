@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Canvas } from '@/components/custom/canvas';
 import type { DelegatePanelProps, NavChildItem, NavItem } from '@/components/custom/panel-delegate';
 import { DelegatePanel } from '@/components/custom/panel-delegate';
 import { useViewportAtOrAbove, ViewportGuard } from '@/components/custom/viewport-guard';
@@ -29,7 +28,7 @@ export interface DelegateTemplateProps {
   selectedChildId?: string;
   /** Callback when a nav child is selected */
   onChildSelect?: (childId: string) => void;
-  /** Main content to render in the Canvas */
+  /** Main content */
   children?: React.ReactNode;
 }
 
@@ -38,10 +37,7 @@ export interface DelegateTemplateProps {
 // ============================================================================
 
 /**
- * Full-page Delegate template composed of a DelegatePanel and Canvas.
- *
- * This is a convenience wrapper — for more control you can use
- * `DelegatePanel` and `Canvas` directly.
+ * Full-page Delegate template composed of a DelegatePanel and main content area.
  */
 export function DelegateTemplate({
   className,
@@ -72,7 +68,7 @@ export function DelegateTemplate({
         selectedChildId={selectedChildId}
         onChildSelect={onChildSelect}
       />
-      <Canvas>{children}</Canvas>
+      <div className="flex flex-1 flex-col overflow-auto bg-surface">{children}</div>
     </div>
   );
 

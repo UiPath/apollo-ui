@@ -439,10 +439,6 @@ const components = [
   { category: 'Custom Apollo', name: 'PanelDelegate', description: 'Delegate-style nav panel' },
   { category: 'Custom Apollo', name: 'PanelFlow', description: 'Flow editor nav rail' },
   { category: 'Custom Apollo', name: 'PanelMaestro', description: 'Maestro dashboard panel' },
-  { category: 'Custom Apollo', name: 'ToolbarCanvas', description: 'Canvas floating toolbar' },
-  { category: 'Custom Apollo', name: 'ToolbarView', description: 'View mode toolbar' },
-  { category: 'Custom Apollo', name: 'FlowNode', description: 'Workflow canvas node' },
-  { category: 'Custom Apollo', name: 'FlowProperties', description: 'Node properties panel' },
   { category: 'Custom Apollo', name: 'GridMaestro', description: 'Maestro-style data grid' },
   {
     category: 'Custom Apollo',
@@ -460,7 +456,6 @@ const components = [
     name: 'ChatPromptSuggestions',
     description: 'Suggested prompt chips',
   },
-  { category: 'Custom Apollo', name: 'Canvas', description: 'Pannable, zoomable canvas area' },
 ] as const;
 
 function ComponentsTab() {

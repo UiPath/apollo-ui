@@ -57,9 +57,6 @@ import {
   PopoverTrigger,
   RadioGroup,
   RadioGroupItem,
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
   ScrollableTabsList,
   Select,
   SelectContent,
@@ -158,6 +155,7 @@ import type {
 import { isJsonObject } from '../JsonTree';
 import { NodeIOView, type NodeIOViewTab } from '../NodeIOView';
 import { NodePropertyPanel } from './NodePropertyPanel';
+import { NodePropertyPanelLayout } from './NodePropertyPanelLayout';
 import { PanelField, PanelFieldLabel } from './PanelField';
 
 // @monaco-editor/react uses a CJS build without an `exports` field, which
@@ -4446,29 +4444,18 @@ different widths (truncation, action-button visibility).
   },
   render: (args) => (
     <div className="h-180 w-full max-w-350">
-      {/* Split-pane docked panels: drag a handle to grow one panel and shrink
-            its neighbor in tandem, exercising the width-sensitive tree layout. */}
-      <ResizablePanelGroup
-        orientation="horizontal"
-        className="overflow-hidden rounded-2xl border border-border-subtle shadow-lg"
-      >
-        <ResizablePanel defaultSize="33%" minSize="15%">
-          {/* Keyed so switching the data variant remounts with fresh edit state. */}
+      <NodePropertyPanelLayout
+        className="h-full"
+        input={
           <InputPanel
             key={args.inputData}
             readOnly={args.readOnly}
             {...INPUT_DATA[args.inputData]}
           />
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize="34%" minSize="15%">
-          <PropertiesPanel />
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize="33%" minSize="15%">
-          <OutputPanel showExtractionTab={args.showExtractionTab} readOnly={args.readOnly} />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+        }
+        properties={<PropertiesPanel />}
+        output={<OutputPanel showExtractionTab={args.showExtractionTab} readOnly={args.readOnly} />}
+      />
       <Toaster />
     </div>
   ),

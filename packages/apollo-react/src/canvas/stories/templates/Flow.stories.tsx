@@ -1,19 +1,24 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { type FormSchema, Separator } from '@uipath/apollo-wind';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-// These resolve via Vite aliases in apps/storybook/.storybook/main.ts, not TS paths.
-// @ts-expect-error -- Vite alias: @uipath/apollo-wind/* → packages/apollo-wind/src/*
-import type { FlowPanelChatMessage } from '@uipath/apollo-wind/components/custom/panel-flow';
-// @ts-expect-error -- Vite alias
-import type {
-  PropertiesSimpleField,
-  PropertiesSimpleSection,
-} from '@uipath/apollo-wind/templates/Flow/template-flow';
 // @ts-expect-error -- Vite alias
 import { FlowTemplate } from '@uipath/apollo-wind/templates/Flow/template-flow';
+import { Globe, Play, Plus, Redo2, StickyNote, Undo2 } from 'lucide-react';
+import type { ComponentProps } from 'react';
 import { useMemo } from 'react';
 import { createNode, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import type { BaseNodeData } from '../../components/BaseNode/BaseNode.types';
 import { BaseCanvas } from '../../components/BaseCanvas';
+import {
+  CanvasModeToolbar,
+  CountBadge,
+  TOOLBAR_ICON_BUTTON_CLASS,
+} from '../../components/CanvasModeToolbar';
+import { CanvasZoomControls } from '../../components/CanvasZoomControls';
+import { NodeIOView } from '../../components/NodeIOView';
+import { NodePropertyPanel, NodePropertyPanelLayout } from '../../components/NodePropertyPanel';
+import { ToolbarButton } from '../../components/ToolbarButton';
+import { NodePropertyTrigger } from '../../controls/NodePropertyTrigger';
 
 // ============================================================================
 // Meta Configuration
@@ -108,161 +113,201 @@ function FlowCanvas() {
   return <BaseCanvas {...canvasProps} mode="design" />;
 }
 
+function UpdatedFlowTemplate({ children, ...props }: ComponentProps<typeof FlowTemplate>) {
+  return (
+    <FlowTemplate
+      {...props}
+      hideLeftPanel
+      topRightControl={
+        <NodePropertyTrigger
+          panels={[
+            { id: 'button-1', label: 'Button 1', enabled: false },
+            { id: 'button-2', label: 'Button 2', enabled: false },
+            { id: 'button-3', label: 'Button 3', enabled: false },
+          ]}
+          behaviorOptions={[
+            { value: 'auto-hide', label: 'Button 1' },
+            { value: 'always-persist', label: 'Button 2' },
+          ]}
+          layoutOptions={[
+            { value: 'right', label: 'Button 1' },
+            { value: 'bottom', label: 'Button 2' },
+            { value: 'split', label: 'Button 3' },
+          ]}
+        />
+      }
+      bottomCenterControl={
+        <CanvasModeToolbar>
+          <ToolbarButton label="Undo (⌘Z)" className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}>
+            <Undo2 />
+            <CountBadge count={3} />
+          </ToolbarButton>
+          <ToolbarButton label="Redo (⌘⇧Z)" className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}>
+            <Redo2 />
+            <CountBadge count={1} />
+          </ToolbarButton>
+          <Separator orientation="vertical" className="h-5" />
+          <ToolbarButton label="Run debug" className={TOOLBAR_ICON_BUTTON_CLASS}>
+            <Play />
+          </ToolbarButton>
+          <Separator orientation="vertical" className="h-5" />
+          <ToolbarButton label="Add node" className={TOOLBAR_ICON_BUTTON_CLASS}>
+            <Plus />
+          </ToolbarButton>
+          <ToolbarButton label="Add note" className={TOOLBAR_ICON_BUTTON_CLASS}>
+            <StickyNote />
+          </ToolbarButton>
+        </CanvasModeToolbar>
+      }
+      bottomRightControl={<CanvasZoomControls orientation="vertical" />}
+    >
+      {children}
+    </FlowTemplate>
+  );
+}
+
 // ============================================================================
 // Stories
 // ============================================================================
 
-export const Blank: Story = {
-  name: 'Blank',
+const httpRequestForm: FormSchema = {
+  id: 'http-request',
+  title: 'HTTP Request',
+  mode: 'onChange',
+  steps: [
+    {
+      id: 'parameters',
+      title: 'Parameters',
+      sections: [
+        {
+          id: 'main',
+          fields: [
+            {
+              type: 'text',
+              name: 'endpoint',
+              label: 'Endpoint',
+              defaultValue: 'https://finance.internal/api/invoices',
+            },
+            {
+              type: 'select',
+              name: 'method',
+              label: 'Method',
+              defaultValue: 'GET',
+              dataSource: {
+                type: 'static',
+                options: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((value) => ({
+                  label: value,
+                  value,
+                })),
+              },
+            },
+          ],
+        },
+      ],
+    },
+    { id: 'error-handling', title: 'Error handling', sections: [] },
+    { id: 'advanced', title: 'Advanced', sections: [] },
+  ],
+};
+
+function PropertiesPanel({ className }: { className?: string }) {
+  return (
+    <NodePropertyPanel
+      panelTitle="Properties"
+      nodeIcon={<Globe />}
+      nodeLabel="Fetch invoice details"
+      nodeCategory="HTTP Request"
+      action={
+        <button
+          type="button"
+          className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent"
+        >
+          <Play size={14} />
+          Run
+        </button>
+      }
+      schema={httpRequestForm}
+      contentInset="0.875rem"
+      onClose={() => {}}
+      className={className}
+    />
+  );
+}
+
+function BottomPanels() {
+  return (
+    <NodePropertyPanelLayout
+      className="h-full"
+      input={
+        <NodePropertyPanel panelTitle="Input" contentInset="0.875rem" className="h-full">
+          <div className="flex h-full flex-col p-6 pt-4">
+            <NodeIOView
+              className="min-h-0 flex-1"
+              title="HTTP Request"
+              titleBadge="httpRequest1"
+              value={{ endpoint: 'https://finance.internal/api/invoices', method: 'GET' }}
+              readOnly
+              searchPlaceholder="Search inputs..."
+              pathForCopy={(path) => `$vars.${path}`}
+            />
+          </div>
+        </NodePropertyPanel>
+      }
+      properties={<PropertiesPanel className="h-full" />}
+      output={
+        <NodePropertyPanel panelTitle="Output" contentInset="0.875rem" className="h-full">
+          <div className="flex h-full flex-col p-6 pt-4">
+            <NodeIOView
+              className="min-h-0 flex-1"
+              title="HTTP Request"
+              titleBadge="httpRequest1"
+              value={{ statusCode: 200, body: { invoiceId: 'INV-2024-001', valid: true } }}
+              readOnly
+              searchPlaceholder="Search output..."
+              pathForCopy={(path) => `$vars.${path}`}
+            />
+          </div>
+        </NodePropertyPanel>
+      }
+    />
+  );
+}
+
+export const Default: Story = {
+  name: 'Default',
   render: (_, { globals }) => (
-    <FlowTemplate theme={globals.theme || 'future-dark'} blank>
+    <UpdatedFlowTemplate theme={globals.theme || 'future-dark'} blank>
       <FlowCanvas />
-    </FlowTemplate>
+    </UpdatedFlowTemplate>
   ),
 };
 
-export const LeftPanelCollapsed: Story = {
-  name: 'Left panel collapsed',
+export const PropertiesRight: Story = {
+  name: 'Properties — Right',
   render: (_, { globals }) => (
-    <FlowTemplate theme={globals.theme || 'future-dark'}>
-      <FlowCanvas />
-    </FlowTemplate>
-  ),
-};
-
-const chatMessages: FlowPanelChatMessage[] = [
-  {
-    id: '1',
-    role: 'user',
-    content:
-      "Open the Excel file I uploaded yesterday, analyze the sales numbers, and generate a short summary of monthly performance. Send the summary to me on Slack once you're done.",
-  },
-  {
-    id: '2',
-    role: 'assistant',
-    content: 'Created an action plan',
-  },
-];
-
-export const LeftPanelExpanded: Story = {
-  name: 'Left panel open',
-  render: (_, { globals }) => (
-    <FlowTemplate
+    <UpdatedFlowTemplate
       theme={globals.theme || 'future-dark'}
-      defaultPanelOpen
-      chatMessages={chatMessages}
+      blank
+      rightPanel={
+        <div className="h-full w-[380px] overflow-hidden rounded-2xl border border-border-subtle shadow-lg">
+          <PropertiesPanel className="h-full" />
+        </div>
+      }
     >
       <FlowCanvas />
-    </FlowTemplate>
+    </UpdatedFlowTemplate>
   ),
 };
 
-// ── Properties Simple panel data ──────────────────────────────────────────
-
-const simpleFields: PropertiesSimpleField[] = [
-  {
-    label: 'Method',
-    required: true,
-    value: 'POST',
-    type: 'select',
-    options: [
-      { value: 'GET', label: 'GET' },
-      { value: 'POST', label: 'POST' },
-      { value: 'PUT', label: 'PUT' },
-      { value: 'PATCH', label: 'PATCH' },
-      { value: 'DELETE', label: 'DELETE' },
-      { value: 'HEAD', label: 'HEAD' },
-      { value: 'OPTIONS', label: 'OPTIONS' },
-    ],
-  },
-  {
-    label: 'API Definition',
-    placeholder: 'Insert API definition URL',
-    type: 'url',
-  },
-  {
-    label: 'URL',
-    value: 'loremipsum.com/lorem.htm',
-    type: 'select',
-    filled: true,
-    showGraphControl: true,
-    options: [
-      { value: 'loremipsum.com/lorem.htm', label: 'loremipsum.com/lorem.htm' },
-      { value: 'api.example.com/v1/data', label: 'api.example.com/v1/data' },
-      { value: 'httpbin.org/post', label: 'httpbin.org/post' },
-    ],
-  },
-];
-
-const simpleSections: PropertiesSimpleSection[] = [
-  {
-    label: 'Authentication',
-    defaultExpanded: true,
-    fields: [
-      {
-        label: 'Authentication type',
-        required: true,
-        value: 'connection',
-        type: 'select',
-        options: [
-          { value: 'connection', label: 'Connection' },
-          { value: 'bearer', label: 'Bearer Token' },
-          { value: 'basic', label: 'Basic Auth' },
-          { value: 'api-key', label: 'API Key' },
-          { value: 'oauth2', label: 'OAuth 2.0' },
-          { value: 'none', label: 'No Auth' },
-        ],
-      },
-      {
-        label: 'Authentication',
-        required: true,
-        placeholder: 'Select an application',
-        type: 'select',
-        options: [
-          { value: 'salesforce', label: 'Salesforce' },
-          { value: 'google-workspace', label: 'Google Workspace' },
-          { value: 'microsoft-365', label: 'Microsoft 365' },
-          { value: 'slack', label: 'Slack' },
-          { value: 'jira', label: 'Jira' },
-        ],
-      },
-      {
-        label: 'Connection',
-        placeholder: 'Select a connection',
-        type: 'select',
-        options: [
-          { value: 'prod-connection', label: 'Production API' },
-          { value: 'staging-connection', label: 'Staging API' },
-          { value: 'dev-connection', label: 'Development API' },
-        ],
-      },
-    ],
-  },
-  { label: 'Headers' },
-  { label: 'Query Parameters' },
-  { label: 'Body' },
-];
-
-export const PropertiesSimple: Story = {
-  name: 'Properties Simple',
+export const PropertiesBottom: Story = {
+  name: 'Properties — Bottom',
   render: (_, { globals }) => (
-    <FlowTemplate
+    <UpdatedFlowTemplate
       theme={globals.theme || 'future-dark'}
-      defaultPropertiesSimple
-      propertiesSimpleTitle="HTTP Request"
-      propertiesSimpleFields={simpleFields}
-      propertiesSimpleSections={simpleSections}
+      blank
+      bottomPanel={<BottomPanels />}
     >
       <FlowCanvas />
-    </FlowTemplate>
-  ),
-};
-
-export const Properties: Story = {
-  name: 'Properties Advanced',
-  render: (_, { globals }) => (
-    <FlowTemplate theme={globals.theme || 'future-dark'} defaultPropertiesExpanded>
-      <FlowCanvas />
-    </FlowTemplate>
+    </UpdatedFlowTemplate>
   ),
 };

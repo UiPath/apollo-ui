@@ -45,7 +45,7 @@ export const NODE_HEIGHT_FOOTER_DOUBLE = GRID_SPACING * 11; // 176px
 
 /**
  * Inner-shape geometry, expressed as ratios of the outer container.
- * Reference: FlowNode 96×96 design — container radius 32px, inner shape 80px,
+ * Reference: BaseNode 96×96 design — container radius 32px, inner shape 80px,
  * icon 40px, inner radius 24px.
  */
 export const NODE_CONTAINER_RADIUS_RATIO = 32 / DEFAULT_NODE_SIZE;
