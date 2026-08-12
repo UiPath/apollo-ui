@@ -2,8 +2,8 @@ import { ToggleGroup, ToggleGroupItem } from '@uipath/apollo-wind';
 import { memo } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { CanvasIcon } from '../../utils/icon-registry';
-import type { CanvasView } from '../../utils/sequential/sequential.types';
 import type { ViewSwitcherProps } from './SequentialCanvas.types';
+import { isCanvasView } from './useCanvasViewMode';
 
 /**
  * Segmented flow/sequential control (D11). It is a controlled component: the
@@ -24,7 +24,7 @@ function ViewSwitcherComponent({ value, onChange }: ViewSwitcherProps) {
         onValueChange={(next) => {
           // Radix emits '' when the active item is re-pressed; keep the current
           // view rather than clearing it (a segmented control is never empty).
-          if (next === 'flow' || next === 'sequential') onChange(next as CanvasView);
+          if (isCanvasView(next)) onChange(next);
         }}
         aria-label={_({ id: 'sequential-canvas.view.label', message: 'Canvas view' })}
       >
