@@ -131,6 +131,14 @@ export interface ModelPickerProps {
   /** Selected `modelId`, or `null`/`undefined` for no selection. */
   value?: string | null;
   /**
+   * Connection id of the selected BYO model. Two BYO configurations can
+   * serve the same model name under different connections; `value` alone
+   * matches the first, so the wrong row highlights. When provided,
+   * selection also requires `byomDetails.integrationServiceConnectionId`
+   * to match. Omit for non-BYO selections.
+   */
+  valueConnectionId?: string | null;
+  /**
    * Selection callback — receives the picked `DiscoveryModel`. See
    * `ModelPickerChangeHandler` above for the migration note from the
    * legacy `(modelId, model)` shape.
@@ -368,6 +376,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     {
       models,
       value,
+      valueConnectionId,
       onChange,
       label,
       required,
@@ -528,6 +537,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     const state = useModelPickerState({
       models: effectiveModels,
       value,
+      valueConnectionId,
       onChange,
       groupBy,
       recommendedModelIds,
@@ -978,7 +988,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                 options={filtered}
                 activeIndex={activeIndex}
                 setActiveIndex={setActiveIndex}
-                selectedId={value ?? null}
+                selectedId={selected?.modelId ?? value ?? null}
                 onSelect={choose}
                 tagContext={tagContext}
                 tagVariants={customTagVariants}

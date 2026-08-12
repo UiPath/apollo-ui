@@ -9,6 +9,15 @@ export interface UseModelPickerStateOptions {
   models: DiscoveryModel[];
   value?: string | null;
   /**
+   * Connection id of the selected BYO model, when the host persists one.
+   * Disambiguates two BYO configurations that serve the same model name
+   * under different connections: `value` alone matches the first row,
+   * so the wrong one highlights. When provided, `matchesValue` also
+   * requires `byomDetails.integrationServiceConnectionId` to equal this.
+   * Omit for non-BYO selections.
+   */
+  valueConnectionId?: string | null;
+  /**
    * Selection callback. New shape: `(model)`. Legacy `(modelId, model)`
    * callers can wrap at the call site — see `ModelPickerChangeHandler`
    * in ModelPicker.tsx for the migration note.
@@ -119,6 +128,7 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
   const {
     models,
     value,
+    valueConnectionId,
     onChange,
     groupBy: initialGroupBy = 'subscription',
     recommendedModelIds,
@@ -192,8 +202,14 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
   // but hosts persist model *names*, so name matching keeps stored
   // selections resolving if the two ever diverge.
   const matchesValue = useCallback(
-    (m: DiscoveryModel) => m.modelId === value || m.modelName === value,
-    [value]
+    (m: DiscoveryModel) => {
+      if (valueConnectionId) {
+        const connId = m.byomDetails?.integrationServiceConnectionId;
+        if (connId !== valueConnectionId) return false;
+      }
+      return m.modelId === value || m.modelName === value;
+    },
+    [value, valueConnectionId]
   );
   const selected = useMemo<DiscoveryModel | null>(
     () => annotated.find(matchesValue) ?? models.find(matchesValue) ?? null,
