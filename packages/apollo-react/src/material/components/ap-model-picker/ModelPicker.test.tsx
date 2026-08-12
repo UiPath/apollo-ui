@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -47,6 +47,49 @@ describe('<ModelPicker>', () => {
       <ModelPicker models={MODELS} value="anthropic.claude-sonnet-4-6" onChange={() => {}} />
     );
     expect(screen.getByText('anthropic.claude-sonnet-4-6')).toBeInTheDocument();
+  });
+
+  it('disambiguates two BYO rows with the same model name by valueConnectionId', async () => {
+    const user = userEvent.setup();
+    const models: DiscoveryModel[] = [
+      {
+        modelId: 'byo-gpt-4o-acme',
+        modelName: 'gpt-4o',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'BYOMAdded',
+        byomDetails: { integrationServiceConnectionId: 'conn-acme' },
+        byoConnectionLabel: 'Acme Azure',
+      },
+      {
+        modelId: 'byo-gpt-4o-cigna',
+        modelName: 'gpt-4o',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'BYOMAdded',
+        byomDetails: { integrationServiceConnectionId: 'conn-cigna' },
+        byoConnectionLabel: 'Cigna Sandbox',
+      },
+    ];
+
+    // Without valueConnectionId, `value="gpt-4o"` matches the first row (Acme).
+    renderPicker(<ModelPicker models={models} value="gpt-4o" onChange={() => {}} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const acmeRow = await screen.findByRole('option', { name: /Acme Azure/i });
+    expect(acmeRow).toHaveAttribute('aria-selected', 'true');
+
+    cleanup();
+
+    // With valueConnectionId="conn-cigna", the Cigna row is selected instead.
+    renderPicker(
+      <ModelPicker
+        models={models}
+        value="gpt-4o"
+        valueConnectionId="conn-cigna"
+        onChange={() => {}}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const cignaRow = await screen.findByRole('option', { name: /Cigna Sandbox/i });
+    expect(cignaRow).toHaveAttribute('aria-selected', 'true');
   });
 
   it('renders the Discovery displayName as the friendly label', () => {
