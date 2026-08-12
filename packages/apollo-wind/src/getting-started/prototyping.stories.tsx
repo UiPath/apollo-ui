@@ -771,7 +771,7 @@ function UseCasesContent() {
           persona="Designer"
           icon="🎨"
           scenario="A developer is building complex automation workflows and needs to understand how the platform handles scale. They want a Flow demo showing how the system manages 100+ workflow steps with branching logic."
-          solution="Start from the Flow template with the Properties Simple panel. Use FlowNode components to populate the canvas, the FlowCanvasToolbar for mode switching, and the FlowPanel for the left navigation rail. Leverage the Flow Properties panel (expanded) for detailed node configuration."
+          solution="Start from the Flow template with Apollo React BaseNode components on the canvas. Supply Apollo React canvas controls and NodePropertyPanel through the template control and panel slots."
           outcome="A high-fidelity flow editor prototype that demonstrates scale and interaction patterns. Feed the AI context file to Cursor or Claude and iterate on the layout in real time — every component is already themed and accessible."
         />
 
@@ -1315,8 +1315,8 @@ function WhatNotInScopeContent() {
                 </span>
                 <br />
                 Both tools use their own shadcn/ui setup. Import paths, custom Apollo components
-                (like <InlineCode>ChatComposer</InlineCode>, <InlineCode>FlowNode</InlineCode>), and
-                our custom design tokens won't exist in their generated code.
+                (like <InlineCode>ChatComposer</InlineCode>), and our custom design tokens won't
+                exist in their generated code.
               </li>
               <li>
                 <span className="font-medium text-foreground">No theme CSS.</span>

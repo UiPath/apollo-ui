@@ -331,12 +331,7 @@ All imported from `@/components/ui/<component-name>`.
 | Component | Import | Purpose |
 |-----------|--------|---------|
 | ViewportGuard | `viewport-guard` | Min-width gate for templates |
-| Canvas | `canvas` | Main content area for templates |
 | MaestroHeader | `global-header` | Global app header with menu, search, avatar |
-| FlowNode | `flow-node` | Flow editor node element |
-| FlowCanvasToolbar | `toolbar-canvas` | Bottom canvas mode toolbar |
-| FlowViewToolbar | `toolbar-view` | Bottom zoom/view toolbar |
-| FlowProperties | `flow-properties` | Flow properties panel (`expanded` prop) |
 | PropertiesSimple | `flow-properties-simple` | Compact properties with JSON drawer |
 | FlowPanel | `panel-flow` | Left icon rail + expandable chat |
 | DelegatePanel | `panel-delegate` | Delegate navigation panel |
@@ -449,17 +444,17 @@ import {
 
 ### FlowTemplate
 
-Flow/workflow editor with left chat panel, canvas, properties bar, and toolbars.
+Flow/workflow editor with optional navigation, a full-bleed canvas, control slots, and panel slots.
 
 ```tsx
 import { FlowTemplate } from '@/templates/Flow/template-flow';
 
-<FlowTemplate theme="dark" defaultPanelOpen={true} flowName="My Workflow">
+<FlowTemplate theme="dark" defaultPanelOpen={true}>
   {/* Canvas content */}
 </FlowTemplate>
 ```
 
-**Props:** `theme`, `defaultPanelOpen` (boolean), `flowName`, `flowType`, `children` (canvas content).
+**Props:** `theme`, `defaultPanelOpen` (boolean), control slots, panel slots, and `children` (canvas content).
 
 ### DelegateTemplate
 

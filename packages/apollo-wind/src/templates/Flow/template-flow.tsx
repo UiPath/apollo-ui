@@ -1,6 +1,4 @@
 import * as React from 'react';
-import { Canvas } from '@/components/custom/canvas';
-import { FlowProperties } from '@/components/custom/flow-properties';
 import type {
   PropertiesSimpleField,
   PropertiesSimpleSection,
@@ -12,8 +10,6 @@ import {
   type FlowPanelChatMessage,
   type FlowPanelNavItem,
 } from '@/components/custom/panel-flow';
-import { FlowCanvasToolbar } from '@/components/custom/toolbar-canvas';
-import { FlowViewToolbar } from '@/components/custom/toolbar-view';
 import { useViewportAtOrAbove, ViewportGuard } from '@/components/custom/viewport-guard';
 import type { Theme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
@@ -27,10 +23,8 @@ const PANEL_EXPAND_BREAKPOINT = 1280;
  * right-side properties panel is open.
  *
  * Calculation: left expanded (480) + right panel width + min usable canvas (400).
- *   - Properties Expanded: 480 + 946 + 400 = 1826
  *   - Properties Simple:   480 + 376 + 400 = 1256
  */
-const MIN_VP_WITH_PROPS_EXPANDED = 1826;
 const MIN_VP_WITH_PROPS_SIMPLE = 1256;
 
 // Re-export types for convenience
@@ -57,16 +51,6 @@ export interface FlowTemplateProps {
   chatMessages?: FlowPanelChatMessage[];
   /** Custom content for the expanded panel (overrides default chat) */
   expandedContent?: React.ReactNode;
-  /** Flow name displayed in the properties bar */
-  flowName?: string;
-  /** Flow type label (e.g. "Workflow") */
-  flowType?: string;
-  /** Whether the properties panel starts expanded */
-  defaultPropertiesExpanded?: boolean;
-  /** Node name for the expanded properties panel */
-  propertiesNodeName?: string;
-  /** Node type for the expanded properties panel */
-  propertiesNodeType?: string;
   /** Whether to show the simple properties panel (right side) */
   defaultPropertiesSimple?: boolean;
   /** Title for the simple properties panel header */
@@ -79,6 +63,18 @@ export interface FlowTemplateProps {
   propertiesSimpleSections?: PropertiesSimpleSection[];
   /** Canvas content */
   children?: React.ReactNode;
+  /** Hide the left navigation rail and expanded assistant panel. */
+  hideLeftPanel?: boolean;
+  /** Control rendered at the top right of the canvas. */
+  topRightControl?: React.ReactNode;
+  /** Control rendered at the bottom center of the canvas. */
+  bottomCenterControl?: React.ReactNode;
+  /** Control rendered at the bottom right of the canvas. */
+  bottomRightControl?: React.ReactNode;
+  /** Custom docked panel rendered to the right of the canvas. */
+  rightPanel?: React.ReactNode;
+  /** Custom docked panel rendered across the bottom of the workspace. */
+  bottomPanel?: React.ReactNode;
   /**
    * When true, renders only the left sidebar (icon rail) and the canvas —
    * no properties bar, no toolbars, no right-side panels.
@@ -95,11 +91,9 @@ export interface FlowTemplateProps {
  *
  * Composed of:
  * - **FlowPanel** — 60px icon rail + optional 420px expanded chat panel
- * - **Canvas** — main content area (reuses Delegate Canvas)
- * - **FlowProperties** (collapsed) — bar top-right of canvas (default)
- * - **FlowProperties** (expanded) — full properties panel on the right (when expanded)
- * - **FlowCanvasToolbar** — bottom-center of canvas
- * - **FlowViewToolbar** — bottom-right of canvas
+ * - Full-bleed canvas content area
+ * - Consumer-supplied controls at top-right, bottom-center, and bottom-right
+ * - Consumer-supplied docked panels at right or bottom
  */
 export function FlowTemplate({
   className,
@@ -108,11 +102,6 @@ export function FlowTemplate({
   defaultPanelOpen = false,
   chatMessages = [],
   expandedContent,
-  flowName = 'Invoice processing',
-  flowType = 'Workflow',
-  defaultPropertiesExpanded = false,
-  propertiesNodeName = 'Validate invoice',
-  propertiesNodeType = 'AI Agent',
   defaultPropertiesSimple = false,
   propertiesSimpleTitle,
   propertiesSimpleIcon,
@@ -120,10 +109,15 @@ export function FlowTemplate({
   propertiesSimpleSections,
   children,
   blank = false,
+  hideLeftPanel = false,
+  topRightControl,
+  bottomCenterControl,
+  bottomRightControl,
+  rightPanel,
+  bottomPanel,
 }: FlowTemplateProps) {
   const isLargeViewport = useViewportAtOrAbove(PANEL_EXPAND_BREAKPOINT);
   const [panelOpen, setPanelOpen] = React.useState(defaultPanelOpen);
-  const [propsExpanded, setPropsExpanded] = React.useState(defaultPropertiesExpanded);
   const [propsSimpleOpen, setPropsSimpleOpen] = React.useState(defaultPropertiesSimple);
 
   // Sync the active theme class on document.body so Radix portals
@@ -139,36 +133,17 @@ export function FlowTemplate({
   // Auto-expand / collapse left panel when viewport crosses the breakpoint,
   // but only when no right-side panel is open (avoid fighting user intent).
   React.useEffect(() => {
-    if (!propsExpanded && !propsSimpleOpen) {
+    if (!propsSimpleOpen) {
       setPanelOpen(isLargeViewport);
     }
-  }, [isLargeViewport, propsExpanded, propsSimpleOpen]);
+  }, [isLargeViewport, propsSimpleOpen]);
 
   // When a right-side panel is open, collapse the left panel if viewport is too narrow
   React.useEffect(() => {
-    if (propsExpanded && panelOpen && window.innerWidth < MIN_VP_WITH_PROPS_EXPANDED) {
-      setPanelOpen(false);
-    }
     if (propsSimpleOpen && panelOpen && window.innerWidth < MIN_VP_WITH_PROPS_SIMPLE) {
       setPanelOpen(false);
     }
-  }, [propsExpanded, propsSimpleOpen, panelOpen]);
-
-  // Open the expanded properties panel, auto-collapsing the left panel if needed
-  const openPropsExpanded = React.useCallback(() => {
-    if (panelOpen && window.innerWidth < MIN_VP_WITH_PROPS_EXPANDED) {
-      setPanelOpen(false);
-    }
-    setPropsExpanded(true);
-  }, [panelOpen]);
-
-  // Open the simple properties panel, auto-collapsing the left panel if needed
-  const openPropsSimple = React.useCallback(() => {
-    if (panelOpen && window.innerWidth < MIN_VP_WITH_PROPS_SIMPLE) {
-      setPanelOpen(false);
-    }
-    setPropsSimpleOpen(true);
-  }, [panelOpen]);
+  }, [propsSimpleOpen, panelOpen]);
 
   return (
     <ViewportGuard
@@ -180,81 +155,81 @@ export function FlowTemplate({
         style={{ fontFamily: fontFamily.base }}
       >
         {/* Left panel: icon rail + optional expanded panel */}
-        <FlowPanel
-          navItems={navItems}
-          open={panelOpen}
-          onOpenChange={setPanelOpen}
-          chatMessages={chatMessages}
-          expandedContent={expandedContent}
-        />
-
-        {/* Canvas area — relative for toolbar positioning */}
-        <Canvas className="relative">
-          {/* Properties: collapsed bar (default) — hidden when expanded or simple panel is shown */}
-          {!blank && !propsExpanded && !propsSimpleOpen && (
-            <div className="absolute right-4 top-4 z-10 w-[680px] max-w-[calc(100%-32px)]">
-              <FlowProperties
-                expanded={false}
-                flowName={flowName}
-                flowType={flowType}
-                onExpand={openPropsExpanded}
-              />
-            </div>
-          )}
-
-          {/* Canvas content */}
-          {children}
-
-          {/* Canvas toolbar — bottom center */}
-          {!blank && (
-            <div className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2">
-              <FlowCanvasToolbar
-                activeMode={propsSimpleOpen ? 'evaluate' : 'build'}
-                onModeChange={(mode) => {
-                  if (mode === 'evaluate') {
-                    openPropsSimple();
-                  } else {
-                    setPropsSimpleOpen(false);
-                  }
-                }}
-              />
-            </div>
-          )}
-
-          {/* View toolbar — bottom right */}
-          {!blank && (
-            <div className="absolute bottom-5 right-4 z-10">
-              <FlowViewToolbar />
-            </div>
-          )}
-        </Canvas>
-
-        {/* Properties expanded panel — right side */}
-        {!blank && propsExpanded && (
-          <div className="shrink-0 p-4 pl-0">
-            <FlowProperties
-              className="h-full"
-              expanded
-              nodeName={propertiesNodeName}
-              nodeType={propertiesNodeType}
-              onClose={() => setPropsExpanded(false)}
-            />
-          </div>
+        {!hideLeftPanel && (
+          <FlowPanel
+            navItems={navItems}
+            open={panelOpen}
+            onOpenChange={setPanelOpen}
+            chatMessages={chatMessages}
+            expandedContent={expandedContent}
+          />
         )}
 
-        {/* Properties simple panel — right side */}
-        {!blank && propsSimpleOpen && !propsExpanded && (
-          <div className="shrink-0 p-4 pl-0">
-            <PropertiesSimple
-              className="h-full"
-              title={propertiesSimpleTitle}
-              icon={propertiesSimpleIcon}
-              fields={propertiesSimpleFields}
-              sections={propertiesSimpleSections}
-              onClose={() => setPropsSimpleOpen(false)}
-            />
+        <div className="relative flex min-w-0 flex-1">
+          <div className="flex min-h-0 min-w-0 flex-1">
+            {/* Canvas area — relative for toolbar positioning */}
+            <div className="relative flex min-w-0 flex-1 flex-col overflow-auto bg-surface">
+              {topRightControl && (
+                <div className="absolute top-4 z-10" style={{ right: rightPanel ? 412 : 16 }}>
+                  {topRightControl}
+                </div>
+              )}
+
+              {/* Canvas content */}
+              {children}
+
+              {/* Canvas toolbar — bottom center */}
+              {bottomCenterControl && (
+                <div
+                  className="absolute left-1/2 z-10 -translate-x-1/2"
+                  style={{
+                    bottom: bottomPanel ? 'calc(clamp(320px, 40vh, 720px) + 20px)' : 20,
+                  }}
+                >
+                  {bottomCenterControl}
+                </div>
+              )}
+
+              {/* View toolbar — bottom right */}
+              {bottomRightControl && (
+                <div
+                  className="absolute z-10"
+                  style={{
+                    right: rightPanel ? 412 : 16,
+                    bottom: bottomPanel ? 'calc(clamp(320px, 40vh, 720px) + 20px)' : 20,
+                  }}
+                >
+                  {bottomRightControl}
+                </div>
+              )}
+            </div>
+
+            {rightPanel ? (
+              <div className="absolute inset-y-0 right-0 z-20 p-4 pl-0">{rightPanel}</div>
+            ) : (
+              <>
+                {/* Properties simple panel — right side */}
+                {!blank && propsSimpleOpen && (
+                  <div className="shrink-0 p-4 pl-0">
+                    <PropertiesSimple
+                      className="h-full"
+                      title={propertiesSimpleTitle}
+                      icon={propertiesSimpleIcon}
+                      fields={propertiesSimpleFields}
+                      sections={propertiesSimpleSections}
+                      onClose={() => setPropsSimpleOpen(false)}
+                    />
+                  </div>
+                )}
+              </>
+            )}
           </div>
-        )}
+          {bottomPanel && (
+            <div className="absolute inset-x-0 bottom-0 z-20 h-[clamp(320px,40vh,720px)] p-4 pt-0">
+              {bottomPanel}
+            </div>
+          )}
+        </div>
       </div>
     </ViewportGuard>
   );
