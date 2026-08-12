@@ -489,8 +489,24 @@ export function applyGraphChangeSet(
 ): GraphFixture {
   const removedNodeIds = new Set(changeSet.removeNodeIds);
   const removedEdgeIds = new Set(changeSet.removeEdgeIds);
+  // A node that is both removed and re-added is a MOVE, and production forwards
+  // it as a single `replace` (graphChangeSetToNodeChanges), which React Flow
+  // applies in place. Appending it instead would push a container behind its own
+  // children in the array, an order React Flow rejects — so this helper has to
+  // replace in place too, or the move tests validate a shape production never
+  // emits and stay blind to ordering regressions.
+  const replacements = new Map(
+    changeSet.addNodes.filter((node) => removedNodeIds.has(node.id)).map((node) => [node.id, node])
+  );
+  const appended = changeSet.addNodes.filter((node) => !removedNodeIds.has(node.id));
+  const nodes: Node[] = [];
+  for (const node of fixture.nodes) {
+    const replacement = replacements.get(node.id);
+    if (replacement) nodes.push(replacement);
+    else if (!removedNodeIds.has(node.id)) nodes.push(node);
+  }
   return {
-    nodes: [...fixture.nodes.filter((node) => !removedNodeIds.has(node.id)), ...changeSet.addNodes],
+    nodes: [...nodes, ...appended],
     edges: [...fixture.edges.filter((edge) => !removedEdgeIds.has(edge.id)), ...changeSet.addEdges],
   };
 }

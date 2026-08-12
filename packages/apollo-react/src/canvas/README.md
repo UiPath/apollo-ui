@@ -228,6 +228,7 @@ import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/
 import {
   prepareCanvasViewTransition,
   SequentialCanvas,
+  useCanvasNodeLayout,
   useCanvasViewMode,
   ViewSwitcher,
 } from '@uipath/apollo-react/canvas';
@@ -237,9 +238,14 @@ function MyFlow({ initialNodes, initialEdges }) {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
   const [report, setReport] = useState(undefined);
+  // Derives containment from the node manifest; see "Containers" below.
+  const { isContainerNode } = useCanvasNodeLayout();
 
   const changeView = (nextView) => {
-    const transition = prepareCanvasViewTransition(nextView, nodes, edges);
+    const transition = prepareCanvasViewTransition(nextView, nodes, edges, {
+      // Required whenever the graph can hold containers.
+      isContainerNode,
+    });
     setNodes(transition.nodes);
     // Only populated when entering sequential. Recompute it whenever the graph
     // changes while sequential is on screen, or the advice below goes stale.
@@ -267,6 +273,24 @@ function MyFlow({ initialNodes, initialEdges }) {
 ```
 
 `SequentialCanvas` supplies its own `ReactFlowProvider` and keeps one `BaseCanvas` mounted while `view` changes. For a worked example, including per-view pan save/restore and a live compatibility banner, see `SequentialCanvasStoryHarness` and the `Wireframe` story. Note that pan is saved per view but zoom is not: it carries across the toggle from the view being left, so switching views reframes the graph without changing how far the user is zoomed in.
+
+### Containers
+
+`prepareCanvasViewTransition` needs to be told which nodes are structural containers, via `isContainerNode`. Pass it whenever the graph can hold a for-each, a scope, or any other node with a body. Take the predicate from `useCanvasNodeLayout()` rather than writing it by hand: it derives containment from the node manifest, which is the same source of truth the rest of the canvas uses.
+
+The flow layout can otherwise only infer containment from "has at least one child in the nodes array", so a container whose body is **empty** is laid out as an ordinary node. It is never given container dimensions, and it contributes only a leaf-sized footprint to its own parent's required size. One container nested inside another is where that surfaces: the inner one is measured as a leaf but renders as a container, so it does not fit the box the layout built around it.
+
+The result reads as broken containment rather than as bad sizing, because inserted nodes carry `extent: 'parent'` and xyflow re-clamps such a node into its parent's measured bounds on every measurement pass. A child larger than its parent is pulled to a position outside the parent's own origin, so the inner container appears to escape the outer one even though its `parentId` is correct throughout.
+
+Containers are sized by the layout, not by xyflow: `expandParent` is deliberately never set, so a container's footprint comes from `prepareCanvasViewTransition` alone and there is one authority over it (D4).
+
+#### Parent ordering
+
+xyflow requires every parent to appear **before** its children in the `nodes` array. When it doesn't, xyflow logs `Parent node <id> not found. Please make sure that parent nodes are in front of their child nodes in the nodes array.` and then leaves the child unparented for that pass: no `parentLookup` entry, and the child's relative `position` is used as an absolute one.
+
+That reads as broken containment even though `parentId` is correct throughout. The container reports zero children, so it renders an empty body with the "+ Add step" affordance; dragging it leaves its children behind; and the children sit at coordinates unrelated to the box they belong to.
+
+Neither the projection nor the flow layout notices, because both bucket by `parentId` and are order-independent, so a mis-ordered graph projects and lays out perfectly and only misrenders. `prepareCanvasViewTransition` therefore repairs the order when entering flow view (`orderNodesParentsFirst`), and moves are forwarded as a single `replace` so React Flow applies them in place instead of appending a container behind its own children.
 
 ### Degraded graphs
 

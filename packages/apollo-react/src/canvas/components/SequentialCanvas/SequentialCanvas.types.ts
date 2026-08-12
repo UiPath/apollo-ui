@@ -54,8 +54,21 @@ export interface SequentialCanvasProps<N extends Node = Node, E extends Edge = E
   onCollapsedStepIdsChange?: (ids: string[]) => void;
   /** Primary keyboard action invoked by Enter on the selected step. */
   onPrimaryAction?: (nodeId: string) => void;
-  /** "Add trigger" button on the start bar. */
+  /**
+   * "Add trigger" button on the start bar. Sequential-only: the start bar is a
+   * synthetic row of the projection and has no counterpart in flow view.
+   */
   onAddTrigger?: () => void;
+  /**
+   * Options for the built-in Add Node panel.
+   *
+   * SEQUENTIAL-ONLY, and only in `mode="design"`. This canvas mounts
+   * `AddNodeManager` itself for `view="sequential"` because the insert
+   * affordances (connector ⊕, lane and terminal placeholders) are projection
+   * concepts that need a panel wired to a slot. In `view="flow"` no panel is
+   * mounted and these options are ignored: flow-view add-node UX belongs to the
+   * host, which can render its own `AddNodeManager` through `children`.
+   */
   addNodeManagerProps?: Partial<AddNodeManagerProps>;
   canvasRef?: Ref<BaseCanvasRef<N, E>>;
 }

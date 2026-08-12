@@ -92,7 +92,14 @@ export function insertAtSlot(
   slot: InsertionSlot,
   newNode: Node
 ): GraphChangeSet {
-  const node = slot.containerId ? { ...newNode, parentId: slot.containerId } : newNode;
+  // `extent: 'parent'` travels with `parentId`, matching the other two places
+  // containment is written: `sequentialOnBeforeNodeAdded` (the Add Node panel's
+  // runtime path) and `reparentNode` (moves). `insertParity.test.ts` uses this op
+  // as the stand-in for that pipeline, so a divergence here makes the parity and
+  // round-trip guarantees assert a shape production never emits.
+  const node = slot.containerId
+    ? { ...newNode, parentId: slot.containerId, extent: 'parent' as const }
+    : newNode;
   const addEdges: Edge[] = [];
 
   if (slot.graphEdgeId && slot.source && slot.target) {

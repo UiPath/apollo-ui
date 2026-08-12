@@ -109,6 +109,12 @@ function firstStepSlot(fixture: GraphFixture): InsertionSlot {
 
 describe('mutations', () => {
   describe('insertAtSlot', () => {
+    /** A terminal slot after the last step, so outside every container. */
+    const appendSlot: InsertionSlot = {
+      id: 'append',
+      source: { nodeId: 'send-message', handleId: 'output' },
+    };
+
     it('splits the slot edge into two around the new node', () => {
       const fixture = makeWireframeFixture();
       const slot = firstStepSlot(fixture); // http -> javascript
@@ -147,24 +153,36 @@ describe('mutations', () => {
       }
     });
 
-    it('stamps the container id as parentId when the slot is inside a container', () => {
+    it('stamps the container id as parentId AND extent when the slot is inside a container', () => {
       const fixture = makeWireframeFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const branchSlot = projection.connectors.find((c) => c.kind === 'branch-entry')?.slot;
       expect(branchSlot?.containerId).toBe(WIREFRAME_NODE_IDS.forEach);
       const changeSet = insertAtSlot(projection, branchSlot!, makeNode('inserted'));
       expect(changeSet.addNodes[0]?.parentId).toBe(WIREFRAME_NODE_IDS.forEach);
+      // `extent` travels with `parentId`, matching the other two places
+      // containment is written (`sequentialOnBeforeNodeAdded`, `reparentNode`).
+      expect(changeSet.addNodes[0]?.extent).toBe('parent');
+    });
+
+    it('leaves parentId and extent off entirely for a top-level slot', () => {
+      const fixture = makeWireframeFixture();
+      const changeSet = insertAtSlot(
+        projectSequence(fixture.nodes, fixture.edges),
+        appendSlot,
+        makeNode('inserted')
+      );
+      // A node outside any container must not inherit `extent: 'parent'`, which
+      // would constrain it to a parent it does not have.
+      expect(changeSet.addNodes[0]?.parentId).toBeUndefined();
+      expect(changeSet.addNodes[0]?.extent).toBeUndefined();
     });
 
     it('appends with a single edge when the slot has no target', () => {
       const fixture = makeWireframeFixture();
-      const slot: InsertionSlot = {
-        id: 'append',
-        source: { nodeId: 'send-message', handleId: 'output' },
-      };
       const changeSet = insertAtSlot(
         projectSequence(fixture.nodes, fixture.edges),
-        slot,
+        appendSlot,
         makeNode('tail')
       );
       expect(changeSet.removeEdgeIds).toEqual([]);
