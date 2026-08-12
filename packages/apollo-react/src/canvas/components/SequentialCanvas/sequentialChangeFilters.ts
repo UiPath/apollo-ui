@@ -66,7 +66,16 @@ export function forwardSequentialNodeChanges<N extends Node>(
         out.push({
           type: 'replace',
           id: change.id,
-          item: { ...canonical, data: change.item.data, selected: change.item.selected },
+          item: {
+            ...canonical,
+            data: change.item.data,
+            // A `replace` is a DATA edit (an inline rename via updateNodeData);
+            // selection travels as a `select` change. Falling back to canonical
+            // means a replace built without `selected` (an xyflow internal, a
+            // host-authored change) can only ever set selection, never clear it
+            // by omission and silently deselect the node being renamed.
+            selected: change.item.selected ?? canonical.selected,
+          },
         });
         break;
       }

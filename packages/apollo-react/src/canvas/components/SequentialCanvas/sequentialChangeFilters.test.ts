@@ -86,6 +86,35 @@ describe('forwardSequentialNodeChanges', () => {
     expect((item.data as { display: { label: string } }).display.label).toBe('renamed');
   });
 
+  describe('a replace carries data, never a selection clear', () => {
+    // A `replace` is the channel for a DATA edit (an inline rename via
+    // updateNodeData); selection travels as a `select` change. So a replace may
+    // pass selection along, but must never CLEAR it by omission: that would make
+    // renaming a step silently deselect it.
+    const selectedCanonical = new Map([['a', { ...canonical('a'), selected: true }]]);
+
+    function replaceWith(item: Partial<Node>): Node {
+      const [out] = forwardSequentialNodeChanges(
+        [{ type: 'replace', id: 'a', item: { ...canonical('a'), ...item } as Node }],
+        SYNTHETIC,
+        selectedCanonical
+      );
+      return (out as { item: Node }).item;
+    }
+
+    it('keeps the canonical selection when the incoming item omits `selected`', () => {
+      expect(replaceWith({ data: { display: { label: 'renamed' } } }).selected).toBe(true);
+    });
+
+    it('still honours an explicit deselect', () => {
+      // `?? canonical` must not swallow a deliberate `false`, or a replace could
+      // never turn selection off. The `true` direction is already covered by the
+      // rename test above, and `??` can only misbehave on a present-but-falsy
+      // value, so `false` is the case worth pinning.
+      expect(replaceWith({ selected: false }).selected).toBe(false);
+    });
+  });
+
   it('forwards an inserted node add, drops non-inserted adds', () => {
     const insertedItem: Node = {
       id: 'new',
@@ -219,6 +248,11 @@ describe('graphChangeSetToNodeChanges (move operations)', () => {
       removeEdgeIds: [],
     };
     const changes = graphChangeSetToNodeChanges(changeSet);
+    // `replace` and not add+remove, because React Flow applies a replace IN PLACE
+    // while an add is appended. Appending would push a moved container behind its
+    // own children in the nodes array, and React Flow then drops the parent link
+    // with only a console warning: the container renders an empty body and stops
+    // carrying its children when dragged.
     expect(changes).toEqual([{ type: 'replace', id: 'a', item: movedNode }]);
     // The parentId rewrite -- the whole point of the move -- survives.
     expect((changes[0] as { item: Node }).item.parentId).toBe('new-container');

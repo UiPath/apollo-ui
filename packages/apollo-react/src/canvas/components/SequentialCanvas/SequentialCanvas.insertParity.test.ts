@@ -282,6 +282,9 @@ describe('sequential insert: production pipeline vs the pure insertAtSlot op', (
         const pureInserted = pure.graph.nodes.find((node) => node.id === pure.insertedId);
         expect(productionInserted?.parentId).toBe(pureInserted?.parentId);
         expect(productionInserted?.parentId).toBe(slot?.containerId);
+        // `extent` travels with `parentId`; comparing only the latter is what let
+        // the two paths drift apart in the first place.
+        expect(productionInserted?.extent).toBe(pureInserted?.extent);
       });
 
       it('restores the slot canonical handles on the existing endpoints', () => {
