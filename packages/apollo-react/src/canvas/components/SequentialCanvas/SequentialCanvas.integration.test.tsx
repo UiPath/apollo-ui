@@ -3,6 +3,7 @@ import type {
   Edge,
   Node,
   NodeChange,
+  NodeTypes,
   OnEdgesChange,
   OnNodesChange,
 } from '@uipath/apollo-react/canvas/xyflow/react';
@@ -169,6 +170,8 @@ interface HarnessProps {
    * from "not in design mode" for anything that reports whether it acted.
    */
   wireChangeHandlers?: boolean;
+  /** Models a host that owns the flow view's node renderers outright. */
+  flowNodeTypes?: NodeTypes;
 }
 
 /**
@@ -184,6 +187,7 @@ function ControlledHarness({
   view,
   mode = 'design',
   wireChangeHandlers = true,
+  flowNodeTypes,
 }: HarnessProps) {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
@@ -208,6 +212,7 @@ function ControlledHarness({
       onNodesChange={wireChangeHandlers ? onNodesChange : undefined}
       onEdgesChange={wireChangeHandlers ? onEdgesChange : undefined}
       onToolbarAction={hostToolbarAction}
+      flowNodeTypes={flowNodeTypes}
     />
   );
 }
@@ -425,6 +430,47 @@ describe('SequentialCanvas view toggle (seam 1, D4)', () => {
 
     rerenderWith({ view: 'flow' });
     expect(capturedFlowProps.current.nodesConnectable).toBe(true);
+  });
+
+  // A host can render its own AddNodeManager through `children` in flow view, and
+  // xyflow drops a node whose type is unregistered, so `preview` must resolve in
+  // both views. The two registrations must also DIFFER: the square flow ghost
+  // reads as an empty slab at the bar's 16:1 aspect ratio.
+  it("registers a `preview` node type in BOTH views, with each view's own ghost", () => {
+    const { nodes, edges } = makeWireframeFixture();
+    const { rerenderWith } = renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'sequential',
+    });
+    const sequentialPreview = capturedFlowProps.current.nodeTypes.preview;
+    expect(sequentialPreview).toBeDefined();
+
+    rerenderWith({ view: 'flow' });
+    const flowPreview = capturedFlowProps.current.nodeTypes.preview;
+    expect(flowPreview).toBeDefined();
+    expect(flowPreview).not.toBe(sequentialPreview);
+  });
+
+  it('registers `preview` even when the host owns flowNodeTypes, without displacing it', () => {
+    // The host that supplies its own renderers is the one most likely to also
+    // render its own panel, so the registration has to survive that path rather
+    // than only the derived one. Anything the host put under `preview` wins.
+    const { nodes, edges } = makeWireframeFixture();
+    const HostNode = () => null;
+
+    const { rerenderWith } = renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'flow',
+      flowNodeTypes: { task: HostNode },
+    });
+
+    expect(capturedFlowProps.current.nodeTypes.task).toBe(HostNode);
+    expect(capturedFlowProps.current.nodeTypes.preview).toBeDefined();
+
+    rerenderWith({ flowNodeTypes: { task: HostNode, preview: HostNode } });
+    expect(capturedFlowProps.current.nodeTypes.preview).toBe(HostNode);
   });
 });
 
