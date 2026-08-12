@@ -30,6 +30,7 @@ import { SEQ_LANE_PLACEHOLDER_PREFIX } from '../../utils/sequential/graph-helper
 import { removeStep } from '../../utils/sequential/mutations';
 import type { InsertionSlot } from '../../utils/sequential/sequential.types';
 import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
+import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
 import { BaseCanvas } from '../BaseCanvas/BaseCanvas';
 import { BaseNode } from '../BaseNode/BaseNode';
 import { SequentialConnectorEdge } from './edges/SequentialConnectorEdge';
@@ -528,14 +529,22 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     return types;
   }, [nodeTypeKey]);
   const resolvedFlowNodeTypes = useMemo<NodeTypes>(() => {
-    if (flowNodeTypes) return flowNodeTypes;
-    const types: NodeTypes = {};
-    for (const key of nodeTypeKey.split('|')) {
-      if (key) {
-        types[key] = resolveFlowNodeComponent(registry?.getManifest(key));
+    const types: NodeTypes = { ...flowNodeTypes };
+    if (!flowNodeTypes) {
+      for (const key of nodeTypeKey.split('|')) {
+        if (key) {
+          types[key] = resolveFlowNodeComponent(registry?.getManifest(key));
+        }
       }
+      types.default ??= BaseNode;
     }
-    types.default ??= BaseNode;
+    // Mirror the sequential branch, with the flow canvas's own square ghost (the
+    // same component HierarchicalCanvas registers) rather than the sequential
+    // bar. A host may render its own AddNodeManager through `children` in flow
+    // view, and xyflow drops a node whose type is unregistered. Applied to a
+    // host-supplied `flowNodeTypes` too, since that host is the one most likely
+    // to need it; anything the host registered under `preview` still wins.
+    types.preview ??= AddNodePreview;
     return types;
   }, [flowNodeTypes, nodeTypeKey, registry]);
   const nodeTypes = view === 'sequential' ? sequentialNodeTypes : resolvedFlowNodeTypes;
