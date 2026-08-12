@@ -274,20 +274,27 @@ describe('deriveModelTags', () => {
     expect(customIdx).toBeGreaterThan(recIdx);
   });
 
-  it('stamps the cost-tier pool badge by default when the DTO carries cost data', () => {
-    const tags = deriveModelTags(
+  it('does not stamp cost badges unless the product opts in via badgesFor', () => {
+    expect(
+      deriveModelTags(
+        model({
+          modelId: 'a',
+          modelDetails: { costDetails: { flatCosts: { inputTokenCost: 600 } } },
+        })
+      ).find((t) => t.kind.startsWith('cost-'))
+    ).toBeFalsy();
+
+    const opted = deriveModelTags(
       model({
         modelId: 'a',
         modelDetails: { costDetails: { flatCosts: { inputTokenCost: 600 } } },
-      })
+      }),
+      { badgesFor: (m) => (defaultCostTier(m) ? [`cost-${defaultCostTier(m)}` as const] : []) }
     );
-    expect(tags.find((t) => t.kind === 'cost-premium')).toBeTruthy();
+    expect(opted.find((t) => t.kind === 'cost-premium')).toBeTruthy();
   });
 
-  it('does not stamp cost badges without cost data, and badgesFor([]) suppresses them', () => {
-    expect(
-      deriveModelTags(model({ modelId: 'a' })).find((t) => t.kind.startsWith('cost-'))
-    ).toBeFalsy();
+  it('badgesFor([]) suppresses cost badges', () => {
     const suppressed = deriveModelTags(
       model({
         modelId: 'a',

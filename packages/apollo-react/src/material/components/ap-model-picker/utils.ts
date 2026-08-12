@@ -291,18 +291,9 @@ export function deriveModelTags(
   // Product chips come last — the picker's canonical signals
   // (Recommended / Preview / lifecycle) should always read first so
   // users see the design-system semantics before any tenant noise.
-  // Pool badges first (sanctioned, centrally defined), then any
-  // free-form `customTagsFor` extras (escape hatch).
-  // Default: stamp the model's cost tier from the pool whenever the DTO
-  // carries cost data — every product gets cost badges with no wiring.
-  // A host-supplied `badgesFor` takes over entirely (return [] to
-  // suppress badges).
-  const poolBadges =
-    context.badgesFor?.(model) ??
-    (() => {
-      const tier = defaultCostTier(model);
-      return tier ? ([`cost-${tier}`] as const) : [];
-    })();
+  // Pool badges (sanctioned, centrally defined), then any free-form
+  // `customTagsFor` extras (escape hatch).
+  const poolBadges = context.badgesFor?.(model) ?? [];
   for (const kind of poolBadges) {
     const def = MODEL_BADGES[kind];
     if (!def) continue;
@@ -322,21 +313,21 @@ export function deriveModelTags(
 }
 
 /**
- * EXAMPLE cost-tier classifier — the picker does NOT stamp cost chips
- * itself. Products that want cost badges (agents does) map a model to
- * one of the pool's cost kinds via `badgesFor`:
+ * Cost-tier classifier. A product decision the picker does not make for
+ * you: what counts as expensive is a product call, not a design-system
+ * one, so the thresholds live in your code, not here. This is the
+ * example classifier the picker used to ship; copy it and tune it, or
+ * classify on something else entirely — the pool badge kinds are the
+ * shared contract, the classifier is yours.
  *
  *   badgesFor={(m) => {
  *     const tier = defaultCostTier(m);
  *     return tier ? [`cost-${tier}` as const] : [];
  *   }}
  *
- * Bins Discovery's `costDetails.flatCosts.inputTokenCost` (cents per million input tokens) at
- * $1 / $5. Copy it and change the thresholds, or classify on something
- * else entirely — the pool badge kinds are the shared contract, the
- * classifier is yours.
+ * Bins Discovery's `costDetails.flatCosts.inputTokenCost` (cents per
+ * million input tokens) at $1 / $5.
  */
-// Cents per million input tokens: $1/M and $5/M.
 const DEFAULT_BASIC_THRESHOLD = 100;
 const DEFAULT_PREMIUM_THRESHOLD = 500;
 export function defaultCostTier(model: DiscoveryModel): CostTier | null {
