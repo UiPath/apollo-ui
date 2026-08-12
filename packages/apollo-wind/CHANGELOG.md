@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.33.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.0...@uipath/apollo-wind@2.33.1) (2026-08-12)
+
+### Bug Fixes
+
+* **apollo-wind:** gate the dark: variant on classes, not OS media ([d7230fb](https://github.com/UiPath/apollo-ui/commit/d7230fb49648c28cafedaeea5e00795febd502ea))
+
 ## [@uipath/apollo-wind-v2.33.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.4...@uipath/apollo-wind@2.33.0) (2026-08-12)
 
 ### Features
