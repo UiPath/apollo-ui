@@ -6,12 +6,7 @@
     "build": {
       "dependsOn": ["^build"],
       "env": ["APOLLO_CODED_APP", "APOLLO_CODED_APP_PATH", "UIP_GO_PLATFORM_AUTH_*", "UIP_GO_AICHAT_*"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "!src/**/*.stories.*",
-        "!src/**/*.test.*",
-        "!src/**/*.spec.*"
-      ],
+      "inputs": ["$TURBO_DEFAULT$", "!src/**/*.test.*", "!src/**/*.spec.*"],
       "outputs": ["dist/**", ".next/**", "build/**", "storybook-static/**"]
     },
     "dev": {
