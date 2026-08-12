@@ -71,7 +71,7 @@
     "cmdk": "^1.1.1",
     "embla-carousel-react": "^8.6.0",
     "eventsource-parser": "^3.0.6",
-    "framer-motion": "^12.26.2",
+    "framer-motion": "^13.1.0",
     "highlight.js": "^11.11.1",
     "i18next": "^25.8.1",
     "input-otp": "^1.4.2",

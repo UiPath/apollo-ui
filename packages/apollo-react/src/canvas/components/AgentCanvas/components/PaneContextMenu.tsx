@@ -2,7 +2,9 @@ import styled from '@emotion/styled';
 import { AnimatePresence, motion } from 'motion/react';
 import { memo, useCallback, useEffect, useRef } from 'react';
 
-const MenuContainer = styled(motion.div)<{ $x: number; $y: number }>`
+const MenuContainer = styled(motion.div, {
+  shouldForwardProp: (propName) => propName !== '$x' && propName !== '$y',
+})<{ $x: number; $y: number }>`
   position: fixed;
   left: ${(props) => props.$x}px;
   top: ${(props) => props.$y}px;

@@ -225,7 +225,7 @@
     "lucide-react": "^0.577.0",
     "luxon": "^3.7.1",
     "mermaid": "^11.16.1",
-    "motion": "^12.23.12",
+    "motion": "^13.1.0",
     "react-dropzone": "^14.3.8",
     "react-focus-lock": "^2.13.7",
     "react-markdown": "^10.1.0",
