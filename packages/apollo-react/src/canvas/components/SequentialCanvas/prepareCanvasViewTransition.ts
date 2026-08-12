@@ -1,4 +1,5 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { orderNodesParentsFirst } from '../../utils/NodeUtils';
 import {
   type AnalyzeSequentialCompatibilityOptions,
   analyzeSequentialCompatibility,
@@ -13,6 +14,26 @@ import {
 import { synthesizePositionsForFlow } from './synthesizePositionsForFlow';
 
 export interface PrepareCanvasViewTransitionOptions {
+  /**
+   * Identifies structural container nodes (a for-each body, a scope) for BOTH
+   * halves of the transition. Supply this whenever the graph can hold containers:
+   * `layoutWorkflowLeftToRight` otherwise infers containment from "has at least
+   * one child in the nodes array", so an EMPTY container is sized as an ordinary
+   * node, and a container nested in one does not fit the box the layout built for
+   * it. See "Containers" in `canvas/README.md` for why that reads as broken
+   * parenting rather than as bad sizing.
+   *
+   * Hosts should take it from {@link useCanvasNodeLayout}, which derives it from
+   * the node manifest and is what the rest of the canvas uses:
+   *
+   * ```ts
+   * const { isContainerNode } = useCanvasNodeLayout();
+   * ```
+   *
+   * `flowLayout.isContainerNode` / `sequential.isContainerNode` still win when set,
+   * so a caller that needs the two halves to disagree can still say so.
+   */
+  isContainerNode?: (node: Node) => boolean;
   flowLayout?: WorkflowLayoutOptions;
   sequential?: AnalyzeSequentialCompatibilityOptions;
 }
@@ -48,6 +69,7 @@ export function prepareCanvasViewTransition<N extends Node = Node>(
       sequentialCompatibility: analyzeSequentialCompatibility(nodes, edges, {
         ...options.sequential,
         isSequenceNode: options.sequential?.isSequenceNode ?? isWorkflowNode,
+        isContainerNode: options.sequential?.isContainerNode ?? options.isContainerNode,
       }),
     };
   }
@@ -55,10 +77,18 @@ export function prepareCanvasViewTransition<N extends Node = Node>(
   // Clear sequential-insert markers before laying out the entire flow. The
   // synthesized coordinates are deliberately superseded by the deterministic
   // layout, but marker cleanup still restores normal draggable behavior.
-  const normalizedNodes = synthesizePositionsForFlow(nodes, edges) as N[];
+  //
+  // Ordering is repaired here as well, because flow view is where it matters:
+  // containment in sequential view is read from `parentId` directly and is
+  // order-independent, while React Flow drops a parent link whose child comes
+  // first in the array (see `orderNodesParentsFirst`). The layout below shares
+  // sequential's indifference — it buckets by `parentId` — so a mis-ordered
+  // graph lays out perfectly and still renders as broken containment.
+  const normalizedNodes = orderNodesParentsFirst(synthesizePositionsForFlow(nodes, edges) as N[]);
   const flowLayout = layoutWorkflowLeftToRight(normalizedNodes, edges, {
     ...options.flowLayout,
     isLayoutNode: options.flowLayout?.isLayoutNode ?? isWorkflowNode,
+    isContainerNode: options.flowLayout?.isContainerNode ?? options.isContainerNode,
   });
   let changed = normalizedNodes !== nodes;
   const nextNodes = normalizedNodes.map((node) => {
