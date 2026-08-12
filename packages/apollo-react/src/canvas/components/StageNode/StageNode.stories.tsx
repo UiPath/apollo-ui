@@ -993,6 +993,59 @@ export const MaximumTaskAdornments: Story = {
   },
 };
 
+/**
+ * A duration shows only its 3 largest units. Hover to read the exact value in full.
+ *
+ * - "Ran for weeks" hides 2 units, so it gets a tooltip.
+ * - "Ran for seconds" shows everything, so it gets none.
+ * - "Has its own tooltip" supplies `durationTooltip`, which wins.
+ * - The stage header behaves like a task row.
+ */
+export const DurationTooltips: Story = {
+  name: 'Execution Mode - Duration Tooltips',
+  parameters: {
+    nodes: [
+      {
+        id: 'duration-tooltips',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: DEFAULT_STAGE_WIDTH,
+        data: {
+          stageDetails: {
+            label: 'Durations',
+            isReadOnly: true,
+            tasks: [
+              [{ id: 'weeks', label: 'Ran for weeks', icon: <ProcessIcon /> }],
+              [{ id: 'seconds', label: 'Ran for seconds', icon: <ProcessIcon /> }],
+              [{ id: 'own-tooltip', label: 'Has its own tooltip', icon: <VerificationIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'Completed',
+              label: 'Completed',
+              durationMs: STAGE_RUN_MS,
+              durationLabel: 'Duration:',
+            },
+            taskStatus: {
+              // 3 weeks, 4 days, 5 hours, 12 minutes, 8 seconds: the row shows the first 3.
+              weeks: { status: 'Completed', durationMs: TASK_RUN_MS },
+              // Nothing is hidden at this size, so no tooltip is added.
+              seconds: { status: 'Completed', durationMs: 16000 },
+              // A consumer-supplied tooltip takes precedence over the exact duration.
+              'own-tooltip': {
+                status: 'InProgress',
+                durationMs: TASK_RUN_MS,
+                durationTooltip: 'Waiting on the timer, 4s remaining',
+              },
+            },
+          },
+        },
+      },
+    ],
+  },
+};
+
 export const LoanProcessingWorkflow: Story = {
   name: 'Loan Processing Workflow',
   parameters: {
