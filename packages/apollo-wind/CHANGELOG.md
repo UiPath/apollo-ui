@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.32.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.3...@uipath/apollo-wind@2.32.4) (2026-08-12)
+
+### Bug Fixes
+
+* **apollo-wind:** mark alert-dialog as a client component ([98ef85b](https://github.com/UiPath/apollo-ui/commit/98ef85b66f2017a3ec37bf2afd4d19929f0f3ff2))
+* **apollo-wind:** resolve the portal container in Dialog, Sheet and AlertDialog ([5af53b6](https://github.com/UiPath/apollo-ui/commit/5af53b60f87616bff16d49f3eb68df082a6e0f5a)), closes [UiPath/flow-workbench#2956](https://github.com/UiPath/flow-workbench/issues/2956) [UiPath/StudioWeb#20491](https://github.com/UiPath/StudioWeb/issues/20491)
+
 ## [@uipath/apollo-wind-v2.32.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.2...@uipath/apollo-wind@2.32.3) (2026-08-11)
 
 ### Bug Fixes
