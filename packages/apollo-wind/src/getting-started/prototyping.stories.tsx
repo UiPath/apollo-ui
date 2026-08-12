@@ -772,7 +772,7 @@ function UseCasesContent() {
           icon="🎨"
           scenario="A developer is building complex automation workflows and needs to understand how the platform handles scale. They want a Flow demo showing how the system manages 100+ workflow steps with branching logic."
           solution="Start from the Flow template with Apollo React BaseNode components on the canvas. Supply Apollo React canvas controls and NodePropertyPanel through the template control and panel slots."
-          outcome="A high-fidelity flow editor prototype that demonstrates scale and interaction patterns. Feed the AI context file to Cursor or Claude and iterate on the layout in real time — every component is already themed and accessible."
+          outcome="A high-fidelity flow editor prototype that demonstrates scale and interaction patterns. Feed the AI context file to Cursor or Claude and iterate on the layout in real time. Every component is already themed and accessible."
         />
 
         <PersonaCard
