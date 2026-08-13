@@ -1,22 +1,17 @@
 import {
+  type ConnectionMode,
   type Edge,
-  type Node,
-  Position,
   type ReactFlowState,
   useReactFlow,
   useStore,
+  useStoreApi,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useEffect } from 'react';
 import { getNodeDimensions } from '../../../../utils/container';
 import type { CanvasEdgeData } from '../types';
 import { waypointsPositionallyEqual } from '../waypoints';
-import type {
-  EdgeRouter,
-  RoutedEdge,
-  RouteEdgeRequest,
-  RouteNodeRequest,
-  RouteRequest,
-} from './types';
+import { type RouteNodeLookup, resolveRouteAnchors, toRouteNode } from './anchors';
+import type { EdgeRouter, RoutedEdge, RouteEdgeRequest, RouteRequest } from './types';
 
 /**
  * An edge is router-controlled only while it explicitly declares
@@ -66,15 +61,18 @@ export function defaultIsRoutable(edge: Edge): boolean {
  * Both `router` and `isRoutable` must be referentially stable (module
  * constants or memoized) — new identities re-run routing every render.
  *
- * Handle positions are approximated as the right edge of the source node
- * and the left edge of the target node. Routers needing precise handle
- * locations can introspect React Flow's handle bounds directly.
+ * Anchors and node boxes are absolute canvas coordinates resolved from React
+ * Flow's measured handle bounds (see {@link resolveRouteAnchors}), so nested
+ * graphs and multi-handle nodes are routed from the same points the renderer
+ * draws from. Before handles are measured, anchors fall back to the node-box
+ * faces of a left-to-right flow.
  */
 export function useGraphRouter(
   router: EdgeRouter,
   isRoutable: (edge: Edge) => boolean = defaultIsRoutable
 ): void {
-  const { getNodes, getEdges, setEdges } = useReactFlow();
+  const { getEdges, setEdges } = useReactFlow();
+  const store = useStoreApi();
   const signature = useStore(
     useCallback((state: ReactFlowState) => routeSignature(state, isRoutable), [isRoutable])
   );
@@ -118,7 +116,8 @@ export function useGraphRouter(
       return;
     }
 
-    const request = buildRequest(getNodes(), edges, isRoutable);
+    const { nodeLookup, connectionMode } = store.getState();
+    const request = buildRequest(nodeLookup, edges, isRoutable, connectionMode);
     if (request.edges.length === 0) {
       // Routable edges exist but none could be resolved (dangling endpoints).
       apply([]);
@@ -139,7 +138,7 @@ export function useGraphRouter(
     return () => {
       cancelled = true;
     };
-  }, [signature, router, isRoutable, getNodes, getEdges, setEdges]);
+  }, [signature, router, isRoutable, store, getEdges, setEdges]);
 }
 
 /**
@@ -177,12 +176,21 @@ function reconcileEdge(
  * edge `data` — except each edge's routability, so the transition to/from
  * manual waypoints triggers a reconcile (routing or cleanup) — and notably
  * excludes `routedWaypoints`, so the router's own output never re-triggers it.
+ *
+ * Node boxes are absolute, and each node carries its handle counts, so the first
+ * measurement — and any port added or removed afterwards — re-routes even when
+ * no node box changed. Resolving each edge's anchors here instead would be the
+ * exact input, but it roughly triples the cost of a selector that runs on every
+ * store update; anything that moves a handle without changing the handle set
+ * moves the node box too.
  */
 function routeSignature(state: ReactFlowState, isRoutable: (edge: Edge) => boolean): string {
   let sig = '';
-  for (const node of state.nodes) {
+  for (const node of state.nodeLookup.values()) {
     const { width, height } = getNodeDimensions(node);
-    sig += `${node.id}:${node.position.x},${node.position.y},${width},${height}|`;
+    const { x, y } = node.internals.positionAbsolute;
+    const bounds = node.internals.handleBounds;
+    sig += `${node.id}:${x},${y},${width},${height},${bounds?.source?.length ?? -1},${bounds?.target?.length ?? -1}|`;
   }
   for (const edge of state.edges) {
     sig += `${edge.id}:${edge.source}/${edge.sourceHandle ?? ''}>${edge.target}/${edge.targetHandle ?? ''}:${isRoutable(edge) ? 'r' : 'm'}|`;
@@ -191,39 +199,23 @@ function routeSignature(state: ReactFlowState, isRoutable: (edge: Edge) => boole
 }
 
 function buildRequest(
-  nodes: Node[],
+  nodeLookup: RouteNodeLookup,
   edges: Edge[],
-  isRoutable: (edge: Edge) => boolean
+  isRoutable: (edge: Edge) => boolean,
+  connectionMode: ConnectionMode
 ): RouteRequest {
-  const routeNodes: RouteNodeRequest[] = nodes.map((n) => {
-    const { width, height } = getNodeDimensions(n);
-    return { id: n.id, x: n.position.x, y: n.position.y, width, height };
-  });
-  const nodeMap = new Map(routeNodes.map((n) => [n.id, n]));
+  const routeNodes = Array.from(nodeLookup.values(), toRouteNode);
 
   const routeEdges: RouteEdgeRequest[] = [];
   for (const edge of edges) {
     if (!isRoutable(edge)) continue;
-    const source = nodeMap.get(edge.source);
-    const target = nodeMap.get(edge.target);
-    if (!source || !target) continue;
+    const anchors = resolveRouteAnchors(nodeLookup, edge, connectionMode);
+    if (!anchors) continue;
 
     routeEdges.push({
       edgeId: edge.id,
-      source: {
-        nodeId: edge.source,
-        handleId: edge.sourceHandle ?? null,
-        x: source.x + source.width,
-        y: source.y + source.height / 2,
-        position: Position.Right,
-      },
-      target: {
-        nodeId: edge.target,
-        handleId: edge.targetHandle ?? null,
-        x: target.x,
-        y: target.y + target.height / 2,
-        position: Position.Left,
-      },
+      source: anchors.source,
+      target: anchors.target,
     });
   }
 
