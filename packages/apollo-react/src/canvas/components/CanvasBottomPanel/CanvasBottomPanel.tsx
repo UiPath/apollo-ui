@@ -4,7 +4,9 @@ import {
   memo,
   useCallback,
   useContext,
+  useId,
   useMemo,
+  useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
@@ -69,35 +71,36 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
   isCollapsed,
   onCollapsedChange,
   onExpand,
+  tabsTrailingSlot,
   headerActions,
   overlay,
   variant = 'floating',
   collapsedHeight = CANVAS_BOTTOM_PANEL_COLLAPSED_HEIGHT,
-  idPrefix = 'canvas-bottom-panel',
+  idPrefix,
   className,
 }: CanvasBottomPanelProps) {
+  const generatedId = useId();
+  const resolvedIdPrefix = idPrefix ?? `canvas-bottom-panel-${generatedId}`;
+  const tabRefs = useRef(new Map<string, HTMLButtonElement>());
   const [actionsContainer, setActionsContainer] = useState<HTMLDivElement | null>(null);
   const [overlayHost, setOverlayHost] = useState<HTMLDivElement | null>(null);
   const overlayActive = overlay?.tabIds.includes(activeTabId) ?? false;
   const overlayLabelTabId = overlayActive
     ? activeTabId
     : tabs.find((tab) => overlay?.tabIds.includes(tab.id))?.id;
-  const focusTab = useCallback(
-    (tabId: string) => {
-      requestAnimationFrame(() => {
-        document.getElementById(`${idPrefix}-tab-${tabId}`)?.focus();
-      });
-    },
-    [idPrefix]
-  );
+  const focusTab = useCallback((tabId: string) => {
+    requestAnimationFrame(() => {
+      tabRefs.current.get(tabId)?.focus();
+    });
+  }, []);
 
   const activateTab = useCallback(
     (tabId: string) => {
       clearNativeSelection();
       onTabChange(tabId);
       if (isCollapsed) {
-        onCollapsedChange?.(false);
-        onExpand?.();
+        if (onCollapsedChange) onCollapsedChange(false);
+        else onExpand?.();
       }
     },
     [isCollapsed, onCollapsedChange, onExpand, onTabChange]
@@ -148,46 +151,58 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
         className="flex shrink-0 items-center justify-between gap-3 px-3"
         style={{ height: collapsedHeight }}
       >
-        <div
-          role="tablist"
-          aria-orientation="horizontal"
-          className="flex min-w-0 items-center gap-1 overflow-x-auto"
-        >
-          {tabs.map((tab, index) => {
-            const isActive = tab.id === activeTabId;
-            const controlsOverlay = overlay?.tabIds.includes(tab.id) ?? false;
-            return (
-              <Fragment key={tab.id}>
-                {shouldSeparateTabs(tabs[index - 1], tab) && (
-                  <span
-                    role="presentation"
-                    aria-hidden="true"
-                    className="mx-1.5 h-4 w-px shrink-0 bg-border-subtle"
-                    data-testid="canvas-bottom-panel-tab-separator"
-                  />
-                )}
-                <button
-                  id={`${idPrefix}-tab-${tab.id}`}
-                  type="button"
-                  role="tab"
-                  aria-label={tab.ariaLabel}
-                  aria-selected={isActive}
-                  aria-controls={
-                    controlsOverlay
-                      ? `${idPrefix}-overlay-tabpanel`
-                      : `${idPrefix}-tabpanel-${tab.id}`
-                  }
-                  tabIndex={isActive ? 0 : -1}
-                  data-state={isActive ? 'active' : 'inactive'}
-                  className="inline-flex h-7 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-xs font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground"
-                  onClick={() => activateTab(tab.id)}
-                  onKeyDown={(event) => handleKeyDown(event, index)}
-                >
-                  {tab.label}
-                </button>
-              </Fragment>
-            );
-          })}
+        <div className="flex min-w-0 items-center gap-2">
+          <div
+            role="tablist"
+            aria-orientation="horizontal"
+            className="flex min-w-0 items-center gap-1 overflow-x-auto"
+          >
+            {tabs.map((tab, index) => {
+              const isActive = tab.id === activeTabId;
+              const isSelected = !isCollapsed && isActive;
+              const controlsOverlay = overlay?.tabIds.includes(tab.id) ?? false;
+              return (
+                <Fragment key={tab.id}>
+                  {shouldSeparateTabs(tabs[index - 1], tab) && (
+                    <span
+                      role="presentation"
+                      aria-hidden="true"
+                      className="mx-1.5 h-4 w-px shrink-0 bg-border-subtle"
+                      data-testid="canvas-bottom-panel-tab-separator"
+                    />
+                  )}
+                  <button
+                    ref={(node) => {
+                      if (node) tabRefs.current.set(tab.id, node);
+                      else tabRefs.current.delete(tab.id);
+                    }}
+                    id={`${resolvedIdPrefix}-tab-${tab.id}`}
+                    type="button"
+                    role="tab"
+                    aria-label={tab.ariaLabel}
+                    aria-selected={isSelected}
+                    aria-controls={
+                      controlsOverlay
+                        ? `${resolvedIdPrefix}-overlay-tabpanel`
+                        : `${resolvedIdPrefix}-tabpanel-${tab.id}`
+                    }
+                    tabIndex={isActive ? 0 : -1}
+                    data-state={isSelected ? 'active' : 'inactive'}
+                    className="inline-flex h-7 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-xs font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground"
+                    onClick={() => activateTab(tab.id)}
+                    onKeyDown={(event) => handleKeyDown(event, index)}
+                  >
+                    {tab.label}
+                  </button>
+                </Fragment>
+              );
+            })}
+          </div>
+          {tabsTrailingSlot && (
+            <div className="shrink-0" data-testid="canvas-bottom-panel-tabs-trailing-slot">
+              {tabsTrailingSlot}
+            </div>
+          )}
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
@@ -215,9 +230,9 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
           return (
             <div
               key={tab.id}
-              id={`${idPrefix}-tabpanel-${tab.id}`}
+              id={`${resolvedIdPrefix}-tabpanel-${tab.id}`}
               role="tabpanel"
-              aria-labelledby={`${idPrefix}-tab-${tab.id}`}
+              aria-labelledby={`${resolvedIdPrefix}-tab-${tab.id}`}
               hidden={!isActive}
               className="h-full w-full"
               style={{ display: isActive ? 'block' : 'none' }}
@@ -231,9 +246,11 @@ export const CanvasBottomPanel = memo(function CanvasBottomPanel({
         {overlay && (
           <div
             ref={setOverlayHost}
-            id={`${idPrefix}-overlay-tabpanel`}
+            id={`${resolvedIdPrefix}-overlay-tabpanel`}
             role="tabpanel"
-            aria-labelledby={overlayLabelTabId ? `${idPrefix}-tab-${overlayLabelTabId}` : undefined}
+            aria-labelledby={
+              overlayLabelTabId ? `${resolvedIdPrefix}-tab-${overlayLabelTabId}` : undefined
+            }
             hidden={!overlayActive}
             className="h-full w-full"
             style={{ display: overlayActive ? 'block' : 'none' }}

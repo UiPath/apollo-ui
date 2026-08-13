@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { CanvasBottomPanel, CanvasBottomPanelActions } from './CanvasBottomPanel';
@@ -20,6 +20,7 @@ function renderPanel(overrides: Partial<ComponentProps<typeof CanvasBottomPanel>
     onTabChange: vi.fn(),
     isCollapsed: false,
     onCollapsedChange: vi.fn(),
+    idPrefix: 'canvas-bottom-panel',
     ...overrides,
   };
   return { ...render(<CanvasBottomPanel {...props} />), props };
@@ -51,6 +52,8 @@ describe('CanvasBottomPanel', () => {
     renderPanel({ isCollapsed: true });
 
     expect(screen.getByTestId('canvas-bottom-panel-content')).toHaveStyle({ display: 'none' });
+    expect(screen.getByRole('tab', { name: 'Debug' })).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getByRole('tab', { name: 'Debug' })).toHaveAttribute('tabindex', '0');
     expect(screen.getByTestId('debug-content')).toBeInTheDocument();
     expect(screen.getByTestId('evaluate-content')).toBeInTheDocument();
   });
@@ -101,6 +104,27 @@ describe('CanvasBottomPanel', () => {
     expect(onExpand).toHaveBeenCalledOnce();
   });
 
+  it('prefers the collapsed-state setter when both expansion callbacks are provided', () => {
+    const onCollapsedChange = vi.fn();
+    const onExpand = vi.fn();
+    renderPanel({ isCollapsed: true, onCollapsedChange, onExpand });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Evaluate' }));
+
+    expect(onCollapsedChange).toHaveBeenCalledWith(false);
+    expect(onExpand).not.toHaveBeenCalled();
+  });
+
+  it('renders consumer content after the tab list', () => {
+    renderPanel({ tabsTrailingSlot: <span>Preview</span> });
+
+    const tablist = screen.getByRole('tablist');
+    const slot = screen.getByTestId('canvas-bottom-panel-tabs-trailing-slot');
+    expect(slot).toHaveTextContent('Preview');
+    expect(tablist).not.toContainElement(slot);
+    expect(tablist.nextElementSibling).toBe(slot);
+  });
+
   it('portals active tab actions into the header and hides inactive actions', () => {
     renderPanel({
       tabs: [
@@ -149,9 +173,10 @@ describe('CanvasBottomPanel', () => {
     );
 
     const hostAfter = screen.getByTestId('canvas-bottom-panel-overlay');
+    const evaluateTab = screen.getByRole('tab', { name: 'Evaluate' });
     expect(hostAfter).toBe(hostBefore);
     expect(screen.getByTestId('shared-evaluation-view')).toBe(contentBefore);
-    expect(hostAfter).toHaveAttribute('aria-labelledby', 'canvas-bottom-panel-tab-evaluate');
+    expect(hostAfter).toHaveAttribute('aria-labelledby', evaluateTab.id);
   });
 
   it('keeps a hidden shared overlay labelled by its first valid tab', () => {
@@ -183,6 +208,27 @@ describe('CanvasBottomPanel', () => {
     expect(debugTab).toHaveAttribute('tabindex', '0');
     expect(evaluateTab).toHaveAttribute('tabindex', '-1');
     expect(debugPanel).toHaveAttribute('aria-labelledby', debugTab.id);
+  });
+
+  it('generates unique IDs and keeps keyboard focus within each panel instance', async () => {
+    render(
+      <>
+        <CanvasBottomPanel tabs={tabs} activeTabId="debug" onTabChange={vi.fn()} />
+        <CanvasBottomPanel tabs={tabs} activeTabId="debug" onTabChange={vi.fn()} />
+      </>
+    );
+
+    const debugTabs = screen.getAllByRole('tab', { name: 'Debug' });
+    const evaluateTabs = screen.getAllByRole('tab', { name: 'Evaluate' });
+    expect(debugTabs[0].id).not.toBe(debugTabs[1].id);
+    expect(debugTabs[0].getAttribute('aria-controls')).not.toBe(
+      debugTabs[1].getAttribute('aria-controls')
+    );
+
+    fireEvent.keyDown(debugTabs[1], { key: 'ArrowRight' });
+
+    await waitFor(() => expect(evaluateTabs[1]).toHaveFocus());
+    expect(evaluateTabs[0]).not.toHaveFocus();
   });
 
   it.each([
