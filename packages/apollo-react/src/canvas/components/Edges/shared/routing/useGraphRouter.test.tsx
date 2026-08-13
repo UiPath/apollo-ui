@@ -50,12 +50,12 @@ function Probe({ router, latestEdges }: { router: EdgeRouter; latestEdges: { cur
   return null;
 }
 
-function renderRouter(initialEdges: Edge[], router: EdgeRouter) {
+function renderRouter(initialEdges: Edge[], router: EdgeRouter, graphNodes: Node[] = nodes) {
   const latestEdges = { current: initialEdges };
   render(
     // defaultNodes/defaultEdges (not initial*) make the store own the elements,
     // so the hook's setEdges writes land instead of no-opping as "controlled".
-    <ReactFlowProvider defaultNodes={nodes} defaultEdges={initialEdges}>
+    <ReactFlowProvider defaultNodes={graphNodes} defaultEdges={initialEdges}>
       <Probe router={router} latestEdges={latestEdges} />
     </ReactFlowProvider>
   );
@@ -129,6 +129,38 @@ describe('useGraphRouter', () => {
       expect((edge?.data as CanvasEdgeData).routedWaypoints).toBeDefined();
     });
     expect(requests.length).toBe(1);
+  });
+
+  it('requests nested nodes in absolute coordinates, not parent-relative ones', async () => {
+    const { router, requests } = makeRecordingRouter();
+    renderRouter(
+      [{ id: 'nested', source: 'child', target: 'b', data: { routing: 'waypoint' } }],
+      router,
+      [
+        { id: 'container', position: { x: 500, y: 300 }, width: 400, height: 200, data: {} },
+        {
+          id: 'child',
+          parentId: 'container',
+          // Parent-relative, as React Flow stores it for a child node.
+          position: { x: 40, y: 20 },
+          width: 100,
+          height: 40,
+          data: {},
+        },
+        { id: 'b', position: { x: 1000, y: 320 }, width: 100, height: 40, data: {} },
+      ]
+    );
+
+    await waitFor(() => expect(requests.length).toBeGreaterThan(0));
+
+    const child = requests[0]!.nodes.find((node) => node.id === 'child');
+    expect(child).toMatchObject({ x: 540, y: 320 });
+
+    // Anchors sit on the child's absolute box, so the route is planned in the
+    // same coordinate frame the edge is drawn in.
+    const routed = requests[0]!.edges[0]!;
+    expect(routed.source).toMatchObject({ x: 640, y: 340 });
+    expect(routed.target).toMatchObject({ x: 1000, y: 340 });
   });
 
   it('never invokes the router when no edge is routable and nothing is stale', async () => {

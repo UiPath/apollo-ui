@@ -1,3 +1,5 @@
+export type { RouteAnchorPair, RouteNodeLookup } from './anchors';
+export { resolveRouteAnchors, toRouteNode } from './anchors';
 export { defaultEdgeRouter } from './defaultEdgeRouter';
 export type {
   EdgeRouter,
