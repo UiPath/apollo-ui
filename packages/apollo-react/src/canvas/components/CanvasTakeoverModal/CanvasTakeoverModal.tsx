@@ -1,6 +1,7 @@
 import { cn } from '@uipath/apollo-wind';
 import { Maximize2, Minimize2, X } from 'lucide-react';
-import { type MouseEvent, type ReactNode, useEffect, useId, useState } from 'react';
+import { type MouseEvent, type ReactNode, useEffect, useId, useRef, useState } from 'react';
+import FocusLock from 'react-focus-lock';
 
 export interface CanvasTakeoverModalProps {
   /** Whether the takeover is visible. */
@@ -48,18 +49,29 @@ export function CanvasTakeoverModal({
   closeOnBackdropClick = true,
 }: CanvasTakeoverModalProps) {
   const titleId = useId();
+  const expandButtonRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
   const [uncontrolledExpanded, setUncontrolledExpanded] = useState(defaultExpanded);
   const expanded = controlledExpanded ?? uncontrolledExpanded;
 
   useEffect(() => {
     if (!open) return;
 
+    previouslyFocusedElementRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const animationFrame = requestAnimationFrame(() => expandButtonRef.current?.focus());
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onOpenChange?.(false);
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      document.removeEventListener('keydown', handleKeyDown);
+      previouslyFocusedElementRef.current?.focus();
+      previouslyFocusedElementRef.current = null;
+    };
   }, [onOpenChange, open]);
 
   if (!open) return null;
@@ -82,61 +94,64 @@ export function CanvasTakeoverModal({
       onMouseDown={handleBackdropClick}
       data-testid="canvas-takeover-backdrop"
     >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        data-expanded={expanded}
-        className={cn(
-          'flex min-h-0 flex-col overflow-hidden border border-border-subtle bg-surface-raised text-foreground shadow-xl transition-[width,height,border-radius] duration-200',
-          expanded ? 'h-full w-full rounded-none' : 'h-[95%] w-[95%] rounded-2xl',
-          className
-        )}
-      >
-        <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle px-4">
-          <h2 id={titleId} className="min-w-0 flex-1 truncate text-sm font-semibold">
-            {title}
-          </h2>
-          {headerActions}
-          <div className="-mr-1 flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setExpanded(!expanded)}
-              className="grid size-8 place-items-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
-              aria-label={expanded ? 'Collapse modal' : 'Expand modal'}
-              title={expanded ? 'Collapse modal' : 'Expand modal'}
-            >
-              {expanded ? (
-                <Minimize2 size={16} strokeWidth={1.75} />
-              ) : (
-                <Maximize2 size={16} strokeWidth={1.75} />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => onOpenChange?.(false)}
-              className="grid size-8 place-items-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
-              aria-label="Close modal"
-              title="Close modal"
-            >
-              <X size={16} strokeWidth={1.75} />
-            </button>
-          </div>
-        </header>
-        <div className="flex min-h-0 flex-1">
-          {sidebar !== undefined && (
-            <aside
-              className={cn(
-                'w-64 shrink-0 overflow-auto border-r border-border-subtle',
-                sidebarClassName
-              )}
-            >
-              {sidebar}
-            </aside>
+      <FocusLock autoFocus={false} className="contents">
+        <section
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          data-expanded={expanded}
+          className={cn(
+            'flex min-h-0 flex-col overflow-hidden border border-border-subtle bg-surface-raised text-foreground shadow-xl transition-[width,height,border-radius] duration-200',
+            expanded ? 'h-full w-full rounded-none' : 'h-[95%] w-[95%] rounded-2xl',
+            className
           )}
-          <main className="min-w-0 flex-1 overflow-auto">{children}</main>
-        </div>
-      </section>
+        >
+          <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle px-4">
+            <h2 id={titleId} className="min-w-0 flex-1 truncate text-sm font-semibold">
+              {title}
+            </h2>
+            {headerActions}
+            <div className="-mr-1 flex shrink-0 items-center gap-1">
+              <button
+                ref={expandButtonRef}
+                type="button"
+                onClick={() => setExpanded(!expanded)}
+                className="grid size-8 place-items-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+                aria-label={expanded ? 'Collapse modal' : 'Expand modal'}
+                title={expanded ? 'Collapse modal' : 'Expand modal'}
+              >
+                {expanded ? (
+                  <Minimize2 size={16} strokeWidth={1.75} />
+                ) : (
+                  <Maximize2 size={16} strokeWidth={1.75} />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenChange?.(false)}
+                className="grid size-8 place-items-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+                aria-label="Close modal"
+                title="Close modal"
+              >
+                <X size={16} strokeWidth={1.75} />
+              </button>
+            </div>
+          </header>
+          <div className="flex min-h-0 flex-1">
+            {sidebar != null && (
+              <aside
+                className={cn(
+                  'w-64 shrink-0 overflow-auto border-r border-border-subtle',
+                  sidebarClassName
+                )}
+              >
+                {sidebar}
+              </aside>
+            )}
+            <main className="min-w-0 flex-1 overflow-auto">{children}</main>
+          </div>
+        </section>
+      </FocusLock>
     </div>
   );
 }
