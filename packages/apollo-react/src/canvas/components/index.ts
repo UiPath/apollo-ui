@@ -5,6 +5,7 @@ export * from './BaseCanvas';
 export * from './BaseNode';
 export * from './ButtonHandle';
 export * from './CanvasBottomPanel';
+export * from './CanvasLeftSidebar';
 export * from './CanvasModeToolbar';
 export * from './CanvasPositionControls';
 export * from './CanvasZoomControls';
