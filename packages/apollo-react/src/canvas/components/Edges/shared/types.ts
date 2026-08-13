@@ -98,12 +98,44 @@ export type CanvasEdgeData = {
   waypoints?: Waypoint[];
 
   /**
-   * Pre-computed waypoints from a graph router (see `EdgeRouter`). Used as
-   * the path geometry when no manual `waypoints` are present. Manual edits
-   * always take priority — the moment the user drags a routed segment, the
-   * routed points materialize into `waypoints` and the edge becomes manual.
+   * Pre-computed waypoints from a graph router (see `EdgeRouter`) or a host's
+   * own layout engine. Used as the path geometry when no manual `waypoints` are
+   * present. Manual edits always take priority — the moment the user drags a
+   * routed segment, the routed points materialize into `waypoints` and the edge
+   * becomes manual.
+   *
+   * Routes supplied here are treated as auto-routed (see {@link autoRouted}),
+   * which is what a layout engine wants: bends get node-face clearance, so an
+   * edge leaving a multi-handle node face does not kink at the handle.
+   *
+   * A host with its own layout engine should match the renderer's fallback
+   * convention for the no-route case, or every laid-out edge visibly jumps the
+   * first time its node is dragged. For nodes in adjacent layers the fallback
+   * (`calculateAutoWaypoints`) puts the turn at the **midpoint between the two
+   * handles**, i.e. at half the layer gap.
    */
   routedWaypoints?: Waypoint[];
+
+  /**
+   * Whether this edge's route came from a router/layout engine rather than from
+   * the user. Auto-routed bends get node-face clearance applied at render time;
+   * manual bends are drawn exactly where they were placed.
+   *
+   * Defaults to `waypoints.length === 0`, i.e. a route arriving in
+   * `routedWaypoints` is auto-routed and one in `waypoints` is manual. Set it
+   * explicitly when that inference is wrong for your graph — for instance when a
+   * host persists both fields and needs the distinction to survive a round trip
+   * independently of which key the route landed in.
+   *
+   * Setting it makes the edge's provenance yours to maintain. The default
+   * inference self-corrects when the user drags a routed segment (the points
+   * materialize into `waypoints`, so the edge reads as manual from then on); an
+   * explicit `true` does not, and in controlled mode — where
+   * `onWaypointsChange` is supplied — the editor never touches `data`, so
+   * nothing but the host can clear it. Reset it there, or the user's own bends
+   * keep getting face clearance applied to them.
+   */
+  autoRouted?: boolean;
 
   /**
    * Controlled-mutation callback. When present, the editor calls this instead

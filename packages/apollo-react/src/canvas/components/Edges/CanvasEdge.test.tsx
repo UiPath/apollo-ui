@@ -5,15 +5,21 @@ import { BaseCanvasModeProvider } from '../BaseCanvas/BaseCanvasModeProvider';
 import { CanvasEdge } from './CanvasEdge';
 import type { CanvasEdgeProps } from './shared/types';
 
-const { addSelectedEdges, edgeLookup, getState, setState, unselectNodesAndEdges } = vi.hoisted(
-  () => ({
+const { addSelectedEdges, edgeLookup, getState, setState, unselectNodesAndEdges, useEdgeGeometry } =
+  vi.hoisted(() => ({
     addSelectedEdges: vi.fn(),
     edgeLookup: new Map(),
     getState: vi.fn(),
     setState: vi.fn(),
     unselectNodesAndEdges: vi.fn(),
-  })
-);
+    useEdgeGeometry: vi.fn((_args: { autoRouted: boolean }) => ({
+      arrow: { angle: 0, offset: 0 },
+      edgePath: 'M 0 0 L 100 0',
+      labelPoint: { x: 50, y: 0 },
+      pathPoints: [],
+      segments: [],
+    })),
+  }));
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
   const actual = await vi.importActual('@uipath/apollo-react/canvas/xyflow/react');
@@ -21,13 +27,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
 });
 
 vi.mock('./shared/hooks', () => ({
-  useEdgeGeometry: () => ({
-    arrow: { angle: 0, offset: 0 },
-    edgePath: 'M 0 0 L 100 0',
-    labelPoint: { x: 50, y: 0 },
-    pathPoints: [],
-    segments: [],
-  }),
+  useEdgeGeometry,
   useExecutionEdge: () => ({ animation: null, statusColor: undefined }),
   useNodeDragRebalance: ({ waypoints }: { waypoints: unknown[] }) => waypoints,
   useWaypointEditor: () => ({
@@ -69,7 +69,8 @@ const baseProps = {
 
 function renderEdge(
   mode: 'design' | 'readonly' = 'design',
-  edge: { selected?: boolean; selectable?: boolean } = {}
+  edge: { selected?: boolean; selectable?: boolean } = {},
+  data: CanvasEdgeProps['data'] = baseProps.data
 ) {
   edgeLookup.set('e1', { id: 'e1', ...edge });
   getState.mockReturnValue({
@@ -83,7 +84,7 @@ function renderEdge(
   render(
     <BaseCanvasModeProvider mode={mode}>
       <svg>
-        <CanvasEdge {...baseProps} selected={edge.selected ?? false} />
+        <CanvasEdge {...baseProps} data={data} selected={edge.selected ?? false} />
       </svg>
     </BaseCanvasModeProvider>
   );
@@ -138,5 +139,43 @@ describe('CanvasEdge label selection', () => {
 
     expect(addSelectedEdges).not.toHaveBeenCalled();
     expect(setState).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * `autoRouted` is what applies node-face clearance, so a host that persists both
+ * route fields needs it to be a declared input rather than something inferred
+ * from which key the route happened to land in.
+ */
+describe('CanvasEdge autoRouted', () => {
+  const lastAutoRouted = () => useEdgeGeometry.mock.lastCall?.[0].autoRouted;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    edgeLookup.clear();
+  });
+
+  it('treats a route arriving in routedWaypoints as auto-routed', () => {
+    renderEdge('design', {}, { routedWaypoints: [{ id: 'r0', x: 50, y: 20 }] });
+
+    expect(lastAutoRouted()).toBe(true);
+  });
+
+  it('treats manual waypoints as not auto-routed', () => {
+    renderEdge('design', {}, { waypoints: [{ id: 'w1', x: 50, y: 20 }] });
+
+    expect(lastAutoRouted()).toBe(false);
+  });
+
+  it('honours an explicit flag over the field the route arrived in', () => {
+    renderEdge('design', {}, { waypoints: [{ id: 'w1', x: 50, y: 20 }], autoRouted: true });
+
+    expect(lastAutoRouted()).toBe(true);
+  });
+
+  it('honours an explicit false for a route stored in routedWaypoints', () => {
+    renderEdge('design', {}, { routedWaypoints: [{ id: 'r0', x: 50, y: 20 }], autoRouted: false });
+
+    expect(lastAutoRouted()).toBe(false);
   });
 });
