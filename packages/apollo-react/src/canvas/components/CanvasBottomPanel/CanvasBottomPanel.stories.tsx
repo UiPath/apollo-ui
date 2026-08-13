@@ -178,6 +178,11 @@ function ConsumerContractStory() {
         tabs={tabs}
         activeTabId={activeTabId}
         onTabChange={setActiveTabId}
+        tabsTrailingSlot={
+          <span className="rounded-full bg-surface-overlay px-2 py-0.5 text-[10px] font-medium">
+            Preview
+          </span>
+        }
         overlay={{
           tabIds: ['datasets', 'evaluators', 'runs'],
           content: (
