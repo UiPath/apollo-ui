@@ -147,14 +147,20 @@ export const CanvasLeftSidebar = memo(function CanvasLeftSidebar({
         className="flex h-full shrink-0 select-none flex-col items-center border-r border-border-subtle py-3"
         style={{ width: CANVAS_LEFT_SIDEBAR_RAIL_WIDTH }}
       >
-        <ToolbarButton
-          label="Home"
-          tooltipSide="right"
-          onClick={onLogoClick}
-          className="mb-2 size-9 shrink-0 overflow-hidden rounded-lg p-0 transition-transform hover:opacity-90 active:scale-95 [&_svg]:!size-9"
-        >
-          {logo ?? <UiPathLogo />}
-        </ToolbarButton>
+        {onLogoClick ? (
+          <ToolbarButton
+            label="Home"
+            tooltipSide="right"
+            onClick={onLogoClick}
+            className="mb-2 size-9 shrink-0 overflow-hidden rounded-lg p-0 transition-transform hover:opacity-90 active:scale-95 [&_svg]:!size-9"
+          >
+            {logo ?? <UiPathLogo />}
+          </ToolbarButton>
+        ) : (
+          <div className="mb-2 size-9 shrink-0 overflow-hidden rounded-lg [&_svg]:!size-9">
+            {logo ?? <UiPathLogo />}
+          </div>
+        )}
 
         <div className="flex flex-1 flex-col items-center gap-1 pt-2">
           {primaryItems.map((item) => (
