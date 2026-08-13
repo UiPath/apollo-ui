@@ -53,7 +53,7 @@ describe('CanvasLeftSidebar', () => {
   it('renders persistent primary and utility rail actions', () => {
     render(<CanvasLeftSidebar title="Variables" isExpanded={false} onExpandedChange={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Home' })).not.toBeInTheDocument();
     for (const label of [
       'Coding agent',
       'Files',
@@ -65,6 +65,21 @@ describe('CanvasLeftSidebar', () => {
     ]) {
       expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
     }
+  });
+
+  it('makes the logo actionable only when a click handler is provided', async () => {
+    const onLogoClick = vi.fn();
+    render(
+      <CanvasLeftSidebar
+        title="Variables"
+        isExpanded={false}
+        onExpandedChange={vi.fn()}
+        onLogoClick={onLogoClick}
+      />
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Home' }));
+    expect(onLogoClick).toHaveBeenCalledOnce();
   });
 
   it('supports consumer-defined navigation and exposes the active item', () => {
