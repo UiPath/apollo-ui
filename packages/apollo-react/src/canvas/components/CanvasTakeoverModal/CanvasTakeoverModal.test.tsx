@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { CanvasTakeoverModal } from './CanvasTakeoverModal';
 
@@ -49,5 +49,50 @@ describe('CanvasTakeoverModal', () => {
     );
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('does not reserve sidebar space when sidebar is null', () => {
+    render(
+      <CanvasTakeoverModal open title="Modal" sidebar={null}>
+        Content
+      </CanvasTakeoverModal>
+    );
+
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+  });
+
+  it('moves focus into the modal and restores it after closing', async () => {
+    const { rerender } = render(
+      <>
+        <button type="button">Open modal</button>
+        <CanvasTakeoverModal open={false} title="Modal">
+          Content
+        </CanvasTakeoverModal>
+      </>
+    );
+    const trigger = screen.getByRole('button', { name: 'Open modal' });
+    trigger.focus();
+
+    rerender(
+      <>
+        <button type="button">Open modal</button>
+        <CanvasTakeoverModal open title="Modal">
+          Content
+        </CanvasTakeoverModal>
+      </>
+    );
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Expand modal' })).toHaveFocus());
+
+    rerender(
+      <>
+        <button type="button">Open modal</button>
+        <CanvasTakeoverModal open={false} title="Modal">
+          Content
+        </CanvasTakeoverModal>
+      </>
+    );
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Open modal' })).toHaveFocus());
   });
 });

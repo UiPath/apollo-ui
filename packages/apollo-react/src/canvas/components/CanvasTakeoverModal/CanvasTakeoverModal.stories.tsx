@@ -27,7 +27,7 @@ function StoryCanvas({ withSidebar }: { withSidebar: boolean }) {
         <span className="text-sm font-semibold">Title</span>
         <button
           type="button"
-          className="grid size-7 place-items-center rounded-md text-foreground-muted hover:bg-surface-hover hover:text-foreground"
+          className="grid size-7 place-items-center rounded-md text-foreground-muted hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
           aria-label="Add"
         >
           <Plus size={15} />
