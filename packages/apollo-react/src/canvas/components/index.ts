@@ -7,6 +7,7 @@ export * from './ButtonHandle';
 export * from './CanvasBottomPanel';
 export * from './CanvasModeToolbar';
 export * from './CanvasPositionControls';
+export * from './CanvasTakeoverModal';
 export * from './CanvasZoomControls';
 export * from './CaseFlow';
 export * from './CodedAgent';
