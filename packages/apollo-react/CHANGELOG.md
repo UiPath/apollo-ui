@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.21.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.20.1...@uipath/apollo-react@6.21.0) (2026-08-13)
+
+### Features
+
+* **apollo-react:** persist edge routing ([ce1101d](https://github.com/UiPath/apollo-ui/commit/ce1101dc5217d58c00c259a3706c43ab4c734e28))
+
+### Bug Fixes
+
+* **apollo-react:** route edges from real handle anchors ([1c00b99](https://github.com/UiPath/apollo-ui/commit/1c00b99935bff1490c6a3ae1bb12baff68154fe5))
+
 ## [@uipath/apollo-react-v6.20.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.20.0...@uipath/apollo-react@6.20.1) (2026-08-13)
 
 ### Bug Fixes
