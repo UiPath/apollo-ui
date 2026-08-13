@@ -27,6 +27,9 @@ import type { CanvasEdgeProps } from './shared/types';
  * on `data`:
  *
  * - `routing: 'waypoint' | 'handle'` (default `'waypoint'`)
+ * - `autoRouted`      — route came from a router/layout engine, so its bends get
+ *                       node-face clearance (default: inferred from whether the
+ *                       route arrived in `waypoints` or `routedWaypoints`)
  * - `enableEditing`   — drag/insert/remove waypoints (waypoint routing only)
  * - `enableExecution` — subscribe to execution + validation status
  * - `enableToolbar`   — render add-node toolbar
@@ -126,8 +129,7 @@ export const CanvasEdge = memo(function CanvasEdge({
     targetY,
     targetPosition,
     waypoints: effectiveWaypoints,
-    // Face-clearance applies to router waypoints only; manual ones render as-is.
-    autoRouted: waypoints.length === 0,
+    autoRouted: data?.autoRouted ?? waypoints.length === 0,
     enableSegments: editingEnabled,
     hideArrowHead,
     enableLineJumps: !!data?.enableLineJumps,

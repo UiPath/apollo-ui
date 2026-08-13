@@ -7,7 +7,7 @@ export type {
 } from './base';
 // Re-export schemas
 export { displayConfigSchema, idSchema, typeVersionKeySchema, versionSchema } from './base';
-export type { EdgeInstance } from './edge';
-export { edgeSchema } from './edge';
+export type { EdgeInstance, EdgeInstanceUiConfig, WaypointInstance } from './edge';
+export { edgeSchema, edgeUiSchema, waypointSchema } from './edge';
 export type { InstanceUiConfig, NodeInstance } from './node';
 export { nodeSchema, uiSchema } from './node';

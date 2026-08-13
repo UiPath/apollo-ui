@@ -56,6 +56,18 @@ function getCollinearAxis(
 /**
  * Auto-route a path between source and target with orthogonal segments
  * when no manual waypoints are provided.
+ *
+ * The turn convention is load-bearing for anyone generating routes externally,
+ * because this is what the user sees the instant a stored route is dropped or a
+ * node is dragged. When both faces exit on the same axis, the jog sits at the
+ * **midpoint between the two (offset) anchors** on that axis, snapped to the
+ * grid; for adjacent layers that is exactly half the layer gap. When the faces
+ * exit on different axes, a single elbow forms the L.
+ *
+ * A host layout engine that puts its turns anywhere else will produce edges that
+ * visibly jump the first time a node moves, with no obstacle to justify the new
+ * path. Call this function in a test to assert agreement rather than checking by
+ * eye.
  */
 export function calculateAutoWaypoints(
   sourceX: number,
