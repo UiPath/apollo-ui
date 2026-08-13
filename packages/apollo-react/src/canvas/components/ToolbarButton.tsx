@@ -1,5 +1,5 @@
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@uipath/apollo-wind';
-import type { MouseEventHandler, ReactNode } from 'react';
+import type { AriaAttributes, MouseEventHandler, ReactNode } from 'react';
 import { forwardRef } from 'react';
 
 interface ToolbarButtonProps {
@@ -8,7 +8,7 @@ interface ToolbarButtonProps {
   testId?: string;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;
-  ariaPressed?: boolean;
+  ariaPressed?: AriaAttributes['aria-pressed'];
   className?: string;
   tooltipSide?: 'top' | 'right' | 'bottom' | 'left';
   children: ReactNode;
