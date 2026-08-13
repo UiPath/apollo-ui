@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.20.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.20.0...@uipath/apollo-react@6.20.1) (2026-08-13)
+
+### Bug Fixes
+
+* **apollo-react:** disambiguate BYO selections by connection id ([66ac354](https://github.com/UiPath/apollo-ui/commit/66ac354159bbb75e78f7a1d683d3c52b04422c91))
+
 ## [@uipath/apollo-react-v6.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.19.3...@uipath/apollo-react@6.20.0) (2026-08-12)
 
 ### Features
