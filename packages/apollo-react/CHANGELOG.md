@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v6.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.21.0...@uipath/apollo-react@6.22.0) (2026-08-13)
+
+### Features
+
+* **apollo-react:** add canvas bottom panel ([f448209](https://github.com/UiPath/apollo-ui/commit/f448209d7804f1d0ce7e1bf548755471a598c8ee))
+* **apollo-react:** align canvas bottom panel consumers ([3744d0f](https://github.com/UiPath/apollo-ui/commit/3744d0f2ecf606b9a2ad9b48d2fe4c3dbf87a630))
+
+### Bug Fixes
+
+* **apollo-react:** address bottom panel review ([4c6338f](https://github.com/UiPath/apollo-ui/commit/4c6338fca712cae35bdab703595d96e095367081))
+* **apollo-react:** label hidden canvas panel overlay ([338ddc8](https://github.com/UiPath/apollo-ui/commit/338ddc848a337eb32ee30ff859ac16ce94b2b6a5))
+
 ## [@uipath/apollo-react-v6.21.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.20.1...@uipath/apollo-react@6.21.0) (2026-08-13)
 
 ### Features
