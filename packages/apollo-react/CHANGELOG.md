@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v6.22.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.22.0...@uipath/apollo-react@6.22.1) (2026-08-14)
+
+### Bug Fixes
+
+* **apollo-react:** restore the stage task name and run chip tooltips ([da9ab6d](https://github.com/UiPath/apollo-ui/commit/da9ab6d36cfcfbbcd28d6cdc6306abbc809cb04f))
+* **apollo-react:** show the exact duration on hover over a stage duration ([9aea219](https://github.com/UiPath/apollo-ui/commit/9aea219e0cb5a6d76d597210857ccebf55e80825))
+
 ## [@uipath/apollo-react-v6.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.21.0...@uipath/apollo-react@6.22.0) (2026-08-13)
 
 ### Features

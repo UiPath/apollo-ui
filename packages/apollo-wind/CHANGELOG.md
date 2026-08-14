@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.33.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.1...@uipath/apollo-wind@2.33.2) (2026-08-14)
+
+### Bug Fixes
+
+* **apollo-wind:** forward the badge ref so it can anchor Radix popups ([04dedf4](https://github.com/UiPath/apollo-ui/commit/04dedf48df783c3eabb6b102f8bc0a259b30baf4))
+
 ## [@uipath/apollo-wind-v2.33.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.0...@uipath/apollo-wind@2.33.1) (2026-08-12)
 
 ### Bug Fixes
