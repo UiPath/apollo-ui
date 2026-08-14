@@ -1,6 +1,6 @@
 import type { DragEndEvent, DragMoveEvent } from '@dnd-kit/core';
 import { useStoreApi } from '@xyflow/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef } from 'react';
 import type { StageTaskItem } from '../StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from '../StageNode.utils';
 
@@ -13,13 +13,13 @@ export const useStageTaskDragHandler = ({
 }) => {
   const storeApi = useStoreApi();
 
-  // Horizontal travel is the only live drag state still needed: the projection it feeds is
-  // resolved once on drop, so nothing re-renders mid-drag to preview the landing depth.
-  const [offsetLeft, setOffsetLeft] = useState(0);
+  // Horizontal travel decides the landing depth, but nothing renders from it mid-drag any more —
+  // so it lives in a ref. In state it would re-render the whole section on every pointer move.
+  const offsetLeft = useRef(0);
 
   const handleDragMove = useCallback(
     (event: DragMoveEvent) => {
-      setOffsetLeft(event.delta.x / storeApi.getState().transform[2]);
+      offsetLeft.current = event.delta.x / storeApi.getState().transform[2];
     },
     [storeApi]
   );
@@ -27,8 +27,8 @@ export const useStageTaskDragHandler = ({
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
-      const currentOffsetLeft = offsetLeft;
-      setOffsetLeft(0);
+      const currentOffsetLeft = offsetLeft.current;
+      offsetLeft.current = 0;
 
       if (!over) {
         return;
@@ -61,10 +61,12 @@ export const useStageTaskDragHandler = ({
       );
       onTaskReorder(newTasks);
     },
-    [sequentialTaskGroups, onTaskReorder, offsetLeft]
+    [sequentialTaskGroups, onTaskReorder]
   );
 
-  const handleDragCancel = useCallback(() => setOffsetLeft(0), []);
+  const handleDragCancel = useCallback(() => {
+    offsetLeft.current = 0;
+  }, []);
 
   return { handleDragMove, handleDragEnd, handleDragCancel };
 };
