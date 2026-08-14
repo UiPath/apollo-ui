@@ -9,20 +9,22 @@ import { StageTaskWrapper } from '../StageNode.styles';
  * their own row components and this supplies only the sortable wrapper and the drag transform.
  *
  * Rendered only when the section is reorderable: `useSortable` belongs under a `DndContext` +
- * `SortableContext`, and a read-only section mounts neither, so it renders its rows bare and
- * produces the same markup it did before reordering existed.
+ * `SortableContext`, and a read-only section mounts neither, so its rows render bare and produce
+ * the same markup they did before reordering existed. Used by all three sections.
  */
 const SortableTaskRowComponent = ({
   taskId,
+  isParallel,
   children,
 }: {
   taskId: string;
+  isParallel?: boolean;
   children: React.ReactNode;
 }) => {
   const { attributes, listeners, setNodeRef, transition, transform } = useSortable({ id: taskId });
 
   // Zoom only matters while a drag transform exists; idle rows resolve a constant so canvas
-  // zoom changes don't re-render every task. Mirrors DraggableTask.
+  // zoom changes don't re-render every task.
   const zoom = useStore((s) => (transform ? s.transform[2] : 1));
 
   const style = useMemo<React.CSSProperties>(
@@ -36,7 +38,13 @@ const SortableTaskRowComponent = ({
   );
 
   return (
-    <StageTaskWrapper ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <StageTaskWrapper
+      ref={setNodeRef}
+      style={style}
+      isParallel={isParallel}
+      {...attributes}
+      {...listeners}
+    >
       {children}
     </StageTaskWrapper>
   );

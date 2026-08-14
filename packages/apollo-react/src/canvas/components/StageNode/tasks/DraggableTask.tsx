@@ -1,9 +1,7 @@
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, useCallback, useMemo, useRef } from 'react';
-import { StageItemPill, StageTaskWrapper } from '../StageNode.styles';
+import { memo, useCallback, useRef } from 'react';
+import { StageItemPill } from '../StageNode.styles';
 import type { DraggableTaskProps } from './DraggableTask.types';
+import { SortableTaskRow } from './SortableTaskRow';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
@@ -34,26 +32,6 @@ const DraggableTaskComponent = ({
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     menuRef.current?.handleContextMenu(e);
   }, []);
-
-  const { attributes, listeners, setNodeRef, transition, transform } = useSortable({
-    id: task.id,
-    disabled: isDragDisabled,
-  });
-
-  // Zoom is only needed to scale an active drag transform. The selector resolves
-  // a constant while idle, so canvas zoom changes don't re-render every task —
-  // but an active drag still tracks zoom reactively (e.g. pinch mid-drag).
-  const zoom = useStore((s) => (transform ? s.transform[2] : 1));
-
-  const style = useMemo<React.CSSProperties>(
-    () => ({
-      transition,
-      transform: CSS.Transform.toString(
-        transform ? { ...transform, x: transform.x / zoom, y: transform.y / zoom } : null
-      ),
-    }),
-    [transform, zoom, transition]
-  );
 
   const taskElement = (
     <StageItemPill
@@ -97,15 +75,9 @@ const DraggableTaskComponent = ({
   }
 
   return (
-    <StageTaskWrapper
-      ref={setNodeRef}
-      style={style}
-      isParallel={isParallel}
-      {...attributes}
-      {...listeners}
-    >
+    <SortableTaskRow taskId={task.id} isParallel={isParallel}>
       {taskElement}
-    </StageTaskWrapper>
+    </SortableTaskRow>
   );
 };
 

@@ -70,6 +70,7 @@ export const StageNodeSequentialTaskGroups = ({
     getTaskContextMenuItems,
   } = props;
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
+  const isDragDisabled = !onTaskReorder || isReadOnly;
   const labels = useStageNodeLabels();
 
   const sequentialTaskIds = useMemo(
@@ -184,6 +185,57 @@ export const StageNodeSequentialTaskGroups = ({
     })
   );
 
+  // Only reorderable rows swallow the canvas drag/pan; with reordering off the list is
+  // ordinary card surface the node can be dragged by.
+  const taskList = (
+    <StageItemsList data-testid={`sequential-tasks-list-${id}`} className="nodrag nopan">
+      {sequentialTaskGroups.map((taskGroup, groupIndex) => {
+        const isParallel = taskGroup.length > 1;
+        return (
+          <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
+            {isParallel && <StageParallelBracket />}
+            <StageTaskGroupContainer isParallel={isParallel}>
+              {isParallel && (
+                <StageParallelLabel>
+                  <span className="text-xs">{labels.parallel}</span>
+                </StageParallelLabel>
+              )}
+              {taskGroup.map((task) => {
+                const taskExecution = execution?.taskStatus?.[task.id];
+                // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug
+                // view; only the built-in edit actions are gated on !isReadOnly. When
+                // built-in actions already guarantee a menu we skip the eager consumer
+                // call; otherwise we ask the consumer whether it contributes any items.
+                const hasMenu =
+                  (!isReadOnly && hasBuiltInTaskActions) ||
+                  (getTaskContextMenuItems?.({
+                    task,
+                    taskGroupType: 'sequential',
+                    isParallel,
+                  })?.length ?? 0) > 0;
+                return (
+                  <DraggableTask
+                    key={task.id}
+                    task={task}
+                    taskExecution={taskExecution}
+                    isSelected={selectedTaskId === task.id}
+                    isParallel={isParallel}
+                    onTaskClick={handleTaskClick}
+                    isDragDisabled={isDragDisabled}
+                    isTaskLoading={loadingTaskIds?.has(task.id)}
+                    isReadOnly={isReadOnly}
+                    onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
+                    getContextMenuItems={hasMenu ? buildContextMenuItems : undefined}
+                  />
+                );
+              })}
+            </StageTaskGroupContainer>
+          </Row>
+        );
+      })}
+    </StageItemsList>
+  );
+
   if (sequentialTaskGroups.length === 0) {
     return null;
   }
@@ -193,63 +245,21 @@ export const StageNodeSequentialTaskGroups = ({
         title={labels.sequentialTasks}
         testId={`sequential-tasks-header-${id}`}
       />
-      <DndContext
-        collisionDetection={closestCenter}
-        sensors={sensors}
-        onDragMove={handleDragMove}
-        onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
-      >
-        <SortableContext items={sequentialTaskIds} strategy={verticalListSortingStrategy}>
-          {/* Disable dragging and panning the canvas when dragging a task */}
-          <StageItemsList data-testid={`sequential-tasks-list-${id}`} className="nodrag nopan">
-            {sequentialTaskGroups.map((taskGroup, groupIndex) => {
-              const isParallel = taskGroup.length > 1;
-              return (
-                <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
-                  {isParallel && <StageParallelBracket />}
-                  <StageTaskGroupContainer isParallel={isParallel}>
-                    {isParallel && (
-                      <StageParallelLabel>
-                        <span className="text-xs">{labels.parallel}</span>
-                      </StageParallelLabel>
-                    )}
-                    {taskGroup.map((task) => {
-                      const taskExecution = execution?.taskStatus?.[task.id];
-                      // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug
-                      // view; only the built-in edit actions are gated on !isReadOnly. When
-                      // built-in actions already guarantee a menu we skip the eager consumer
-                      // call; otherwise we ask the consumer whether it contributes any items.
-                      const hasMenu =
-                        (!isReadOnly && hasBuiltInTaskActions) ||
-                        (getTaskContextMenuItems?.({
-                          task,
-                          taskGroupType: 'sequential',
-                          isParallel,
-                        })?.length ?? 0) > 0;
-                      return (
-                        <DraggableTask
-                          key={task.id}
-                          task={task}
-                          taskExecution={taskExecution}
-                          isSelected={selectedTaskId === task.id}
-                          isParallel={isParallel}
-                          onTaskClick={handleTaskClick}
-                          isDragDisabled={!onTaskReorder || isReadOnly}
-                          isTaskLoading={loadingTaskIds?.has(task.id)}
-                          isReadOnly={isReadOnly}
-                          onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
-                          getContextMenuItems={hasMenu ? buildContextMenuItems : undefined}
-                        />
-                      );
-                    })}
-                  </StageTaskGroupContainer>
-                </Row>
-              );
-            })}
-          </StageItemsList>
-        </SortableContext>
-      </DndContext>
+      {isDragDisabled ? (
+        taskList
+      ) : (
+        <DndContext
+          collisionDetection={closestCenter}
+          sensors={sensors}
+          onDragMove={handleDragMove}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <SortableContext items={sequentialTaskIds} strategy={verticalListSortingStrategy}>
+            {taskList}
+          </SortableContext>
+        </DndContext>
+      )}
     </StageItemsSection>
   );
 };
