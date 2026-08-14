@@ -878,6 +878,32 @@ describe('StageNode - Flat section reordering', () => {
     expect(onTaskReorder).toHaveBeenCalled();
   });
 
+  it('moves a task within its own group rather than greying the option out', async () => {
+    const user = userEvent.setup();
+    const onTaskReorder = vi.fn();
+    // One event-triggered group holding two tasks. These render as two plain rows, so the second
+    // one must be movable up past the first — matching what a drag between them does.
+    const grouped: StageTaskItem[][] = [
+      [
+        { id: 'evt-a', label: 'Event A', taskGroupType: 'event-driven' },
+        { id: 'evt-b', label: 'Event B', taskGroupType: 'event-driven' },
+      ],
+    ];
+
+    renderStageNode({
+      onTaskGroupModification: vi.fn(),
+      onTaskReorder,
+      stageDetails: { ...defaultProps.stageDetails, tasks: grouped },
+    });
+
+    await user.click(screen.getByTestId('stage-task-menu-evt-b'));
+    await user.click(await screen.findByText('Move up'));
+
+    expect(onTaskReorder).toHaveBeenCalledWith([
+      [expect.objectContaining({ id: 'evt-b' }), expect.objectContaining({ id: 'evt-a' })],
+    ]);
+  });
+
   it('omits the move options entirely when reordering is not available', async () => {
     const user = userEvent.setup();
     renderStageNode({

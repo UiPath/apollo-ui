@@ -92,18 +92,37 @@ export const useStageFlatSectionReorder = ({
         return [];
       }
       const { groupIndex, taskIndex } = position;
+      const group = taskGroups[groupIndex] ?? [];
+      // Same rule as handleDragEnd: a task with a neighbour inside its own group moves within
+      // that group, otherwise the whole group moves. Disabling on groupIndex alone would grey
+      // out a row the user can still drag past its group-mate.
+      const moveWithinGroup = (targetIndex: number) =>
+        taskGroups.map((candidate, index) =>
+          index === groupIndex ? moveItem(candidate, taskIndex, targetIndex) : candidate
+        );
+
       return [
         getMenuItem(
           'move-up',
           labels.contextMenu.moveUp,
-          () => onReorder(moveGroupUp(taskGroups, groupIndex, taskIndex)),
-          groupIndex === 0
+          () =>
+            onReorder(
+              taskIndex > 0
+                ? moveWithinGroup(taskIndex - 1)
+                : moveGroupUp(taskGroups, groupIndex, taskIndex)
+            ),
+          groupIndex === 0 && taskIndex === 0
         ),
         getMenuItem(
           'move-down',
           labels.contextMenu.moveDown,
-          () => onReorder(moveGroupDown(taskGroups, groupIndex, taskIndex)),
-          groupIndex === taskGroups.length - 1
+          () =>
+            onReorder(
+              taskIndex < group.length - 1
+                ? moveWithinGroup(taskIndex + 1)
+                : moveGroupDown(taskGroups, groupIndex, taskIndex)
+            ),
+          groupIndex === taskGroups.length - 1 && taskIndex === group.length - 1
         ),
       ];
     },
