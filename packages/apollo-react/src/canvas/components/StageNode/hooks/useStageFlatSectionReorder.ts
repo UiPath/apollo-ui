@@ -5,19 +5,13 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useCallback, useMemo } from 'react';
 import { moveGroupDown, moveGroupUp } from '../../../utils/GroupModificationUtils';
 import type { NodeMenuItem } from '../../NodeContextMenu';
 import type { StageTaskGroup, StageTaskItem } from '../StageNode.types';
 import { getMenuItem } from '../tasks/StageNodeTaskUtilities';
 import { useStageNodeLabels } from '../useStageNodeLabels';
-
-const moveItem = <T>(items: T[], from: number, to: number): T[] => {
-  const next = [...items];
-  next.splice(to, 0, ...next.splice(from, 1));
-  return next;
-};
 
 /**
  * Reordering for the stage's flat sections — event-triggered and manually triggered. Neither
@@ -72,9 +66,9 @@ export const useStageFlatSectionReorder = ({
       onReorder(
         from.groupIndex === to.groupIndex
           ? taskGroups.map((group, index) =>
-              index === from.groupIndex ? moveItem(group, from.taskIndex, to.taskIndex) : group
+              index === from.groupIndex ? arrayMove(group, from.taskIndex, to.taskIndex) : group
             )
-          : moveItem(taskGroups, from.groupIndex, to.groupIndex)
+          : arrayMove(taskGroups, from.groupIndex, to.groupIndex)
       );
     },
     [taskGroups, findPosition, onReorder]
@@ -98,7 +92,7 @@ export const useStageFlatSectionReorder = ({
       // out a row the user can still drag past its group-mate.
       const moveWithinGroup = (targetIndex: number) =>
         taskGroups.map((candidate, index) =>
-          index === groupIndex ? moveItem(candidate, taskIndex, targetIndex) : candidate
+          index === groupIndex ? arrayMove(candidate, taskIndex, targetIndex) : candidate
         );
 
       return [
