@@ -24,7 +24,9 @@ vi.mock('@dnd-kit/core', () => ({
   useSensors: vi.fn(() => []),
 }));
 
-vi.mock('@dnd-kit/sortable', () => ({
+vi.mock('@dnd-kit/sortable', async () => ({
+  // Keep the real utilities (arrayMove) — only the context/hook are stubbed.
+  ...(await vi.importActual<typeof import('@dnd-kit/sortable')>('@dnd-kit/sortable')),
   useSortable: () => ({
     attributes: {},
     listeners: {},
