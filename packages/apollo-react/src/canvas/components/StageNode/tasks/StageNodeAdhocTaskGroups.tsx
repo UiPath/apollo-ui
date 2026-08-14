@@ -1,25 +1,34 @@
+import { closestCenter, DndContext } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { memo, useCallback } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
+import { useStageFlatSectionReorder } from '../hooks/useStageFlatSectionReorder';
 import { StageItemsList, StageItemsSection } from '../StageNode.styles';
 import type { StageNodeProps, StageTaskGroup, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { AdhocTaskItem } from './AdhocTask';
+import { SortableTaskRow } from './SortableTaskRow';
+import { getDivider } from './StageNodeTaskUtilities';
 
 const StageNodeAdhocTaskGroupsInner = ({
   props,
+  adhocTaskGroups,
   adhocTasks,
   isReadOnly,
   selectedTaskId,
   handleTaskClick,
+  handleReorderAdhocTasks,
   generateReplaceTaskMenuItemForTask,
   generateDeleteTaskMenuItemForTask,
 }: {
   props: StageNodeProps;
+  adhocTaskGroups: StageTaskItem[][];
   adhocTasks: StageTaskGroup[];
   isReadOnly: boolean;
   selectedTaskId?: string;
   handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
+  handleReorderAdhocTasks: (newTasks: StageTaskItem[][]) => void;
   generateReplaceTaskMenuItemForTask: (
     taskId: string,
     isParallel: boolean
@@ -31,6 +40,7 @@ const StageNodeAdhocTaskGroupsInner = ({
     execution,
     onTaskGroupModification,
     onReplaceTaskFromToolbox,
+    onTaskReorder,
     onTaskPlay,
     loadingTaskIds,
     onTaskBreakpointToggle,
@@ -38,6 +48,14 @@ const StageNodeAdhocTaskGroupsInner = ({
   } = props;
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
   const labels = useStageNodeLabels();
+  const isDragDisabled = !onTaskReorder || isReadOnly;
+
+  const { taskIds, sensors, handleDragEnd, getMoveMenuItems } = useStageFlatSectionReorder({
+    taskGroups: adhocTaskGroups,
+    tasks: adhocTasks,
+    isDragDisabled,
+    onReorder: handleReorderAdhocTasks,
+  });
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
@@ -54,14 +72,30 @@ const StageNodeAdhocTaskGroupsInner = ({
         getTaskContextMenuItems?.({ task, taskGroupType: 'adhoc', isParallel: false }) ?? [];
       items.push(...additionalMenuItems);
 
+      const moveMenuItems = getMoveMenuItems(task);
+      if (moveMenuItems.length) {
+        if (items.length) {
+          items.push(getDivider());
+        }
+        items.push(...moveMenuItems);
+      }
+
       const deleteTaskMenuItem = generateDeleteTaskMenuItemForTask(task.id);
       if (deleteTaskMenuItem) {
+        if (items.length) {
+          items.push(getDivider());
+        }
         items.push(deleteTaskMenuItem);
       }
 
       return items;
     },
-    [generateReplaceTaskMenuItemForTask, getTaskContextMenuItems, generateDeleteTaskMenuItemForTask]
+    [
+      generateReplaceTaskMenuItemForTask,
+      getTaskContextMenuItems,
+      generateDeleteTaskMenuItemForTask,
+      getMoveMenuItems,
+    ]
   );
 
   if (adhocTasks.length === 0) {
@@ -70,33 +104,44 @@ const StageNodeAdhocTaskGroupsInner = ({
   return (
     <StageItemsSection>
       <StageItemsHeaderTitle title={labels.adhocTasks} testId={`adhoc-tasks-header-${id}`} />
-      <StageItemsList data-testid={`adhoc-tasks-list-${id}`}>
-        {adhocTasks.map(({ task }) => {
-          const taskExecution = execution?.taskStatus?.[task.id];
-          // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;
-          // only the built-in edit actions are gated on !isReadOnly. When built-in actions
-          // already guarantee a menu we skip the eager consumer call; otherwise we ask the
-          // consumer whether it contributes any items.
-          const hasMenu =
-            (!isReadOnly && hasBuiltInTaskActions) ||
-            (getTaskContextMenuItems?.({ task, taskGroupType: 'adhoc', isParallel: false })
-              ?.length ?? 0) > 0;
-          return (
-            <AdhocTaskItem
-              key={task.id}
-              task={task}
-              taskExecution={taskExecution}
-              isSelected={selectedTaskId === task.id}
-              onTaskClick={handleTaskClick}
-              onTaskPlay={onTaskPlay}
-              isTaskLoading={loadingTaskIds?.has(task.id)}
-              isReadOnly={isReadOnly}
-              onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
-              getContextMenuItems={hasMenu ? getAdhocContextMenuItems : undefined}
-            />
-          );
-        })}
-      </StageItemsList>
+      <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
+        <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+          {/* While these rows are drag handles they must swallow the canvas drag/pan, or a press
+              would move the stage node instead — which reads as the task itself moving. With
+              reordering off they stay ordinary card surface the node can be dragged by. */}
+          <StageItemsList
+            data-testid={`adhoc-tasks-list-${id}`}
+            className={isDragDisabled ? undefined : 'nodrag nopan'}
+          >
+            {adhocTasks.map(({ task }) => {
+              const taskExecution = execution?.taskStatus?.[task.id];
+              // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;
+              // only the built-in edit actions are gated on !isReadOnly. When built-in actions
+              // already guarantee a menu we skip the eager consumer call; otherwise we ask the
+              // consumer whether it contributes any items.
+              const hasMenu =
+                (!isReadOnly && hasBuiltInTaskActions) ||
+                (getTaskContextMenuItems?.({ task, taskGroupType: 'adhoc', isParallel: false })
+                  ?.length ?? 0) > 0;
+              return (
+                <SortableTaskRow key={task.id} taskId={task.id} disabled={isDragDisabled}>
+                  <AdhocTaskItem
+                    task={task}
+                    taskExecution={taskExecution}
+                    isSelected={selectedTaskId === task.id}
+                    onTaskClick={handleTaskClick}
+                    onTaskPlay={onTaskPlay}
+                    isTaskLoading={loadingTaskIds?.has(task.id)}
+                    isReadOnly={isReadOnly}
+                    onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
+                    getContextMenuItems={hasMenu ? getAdhocContextMenuItems : undefined}
+                  />
+                </SortableTaskRow>
+              );
+            })}
+          </StageItemsList>
+        </SortableContext>
+      </DndContext>
     </StageItemsSection>
   );
 };

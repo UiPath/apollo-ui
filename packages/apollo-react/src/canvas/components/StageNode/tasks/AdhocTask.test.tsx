@@ -157,6 +157,21 @@ describe('AdhocTaskItem', () => {
       expect(onTaskPlay).toHaveBeenCalledWith('adhoc-1');
     });
 
+    it('keeps pointer-down off the row, so pressing play cannot start a drag', () => {
+      const onTaskPlay = vi.fn().mockResolvedValue(undefined);
+      const onRowPointerDown = vi.fn();
+
+      render(
+        <div onPointerDown={onRowPointerDown}>
+          <AdhocTaskItem {...defaultProps} onTaskPlay={onTaskPlay} />
+        </div>
+      );
+
+      fireEvent.pointerDown(screen.getByTestId('stage-task-play-adhoc-1'));
+
+      expect(onRowPointerDown).not.toHaveBeenCalled();
+    });
+
     it('does not trigger task click when play button is clicked', async () => {
       const user = userEvent.setup();
       const onTaskClick = vi.fn();

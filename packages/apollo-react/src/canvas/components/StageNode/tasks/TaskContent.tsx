@@ -63,6 +63,11 @@ const TaskPlayButton = memo(
           size="icon"
           data-testid={`stage-task-play-${taskId}`}
           onClick={handlePlayClick}
+          // The ad hoc rows this button sits on are drag handles now, and dnd-kit's PointerSensor
+          // activates on pointerdown — which fires before mousedown, so stopping that alone would
+          // let a small twitch on "Trigger task" start a drag instead. Same guard the breakpoint
+          // dot and the ⋮ trigger already carry.
+          onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
           onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
           onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
           aria-label={triggerTaskLabel}

@@ -2,13 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useMemo, useRef } from 'react';
-import {
-  INDENTATION_WIDTH,
-  StageItemPill,
-  StageTaskDragPlaceholder,
-  StageTaskDragPlaceholderWrapper,
-  StageTaskWrapper,
-} from '../StageNode.styles';
+import { StageItemPill, StageTaskWrapper } from '../StageNode.styles';
 import type { DraggableTaskProps } from './DraggableTask.types';
 import { TaskBreakpointDot } from './TaskBreakpointDot';
 import { TaskContent } from './TaskContent';
@@ -23,7 +17,6 @@ const DraggableTaskComponent = ({
   getContextMenuItems,
   onTaskClick,
   isDragDisabled,
-  projectedDepth,
   isTaskLoading,
   isReadOnly,
   onToggleBreakpoint,
@@ -42,7 +35,7 @@ const DraggableTaskComponent = ({
     menuRef.current?.handleContextMenu(e);
   }, []);
 
-  const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({
+  const { attributes, listeners, setNodeRef, transition, transform } = useSortable({
     id: task.id,
     disabled: isDragDisabled,
   });
@@ -52,36 +45,15 @@ const DraggableTaskComponent = ({
   // but an active drag still tracks zoom reactively (e.g. pinch mid-drag).
   const zoom = useStore((s) => (transform ? s.transform[2] : 1));
 
-  const style = useMemo<React.CSSProperties>(() => {
-    const scaledTransform = transform
-      ? {
-          ...transform,
-          x: transform.x / zoom,
-          y: transform.y / zoom,
-        }
-      : null;
-
-    let marginLeft: string | undefined;
-    if (isDragging && projectedDepth !== undefined) {
-      if (projectedDepth === 1 && !isParallel) marginLeft = `${INDENTATION_WIDTH}px`;
-      else if (projectedDepth === 0 && isParallel) marginLeft = `-${INDENTATION_WIDTH}px`;
-    }
-
-    return {
+  const style = useMemo<React.CSSProperties>(
+    () => ({
       transition,
-      transform: CSS.Transform.toString(scaledTransform),
-      marginLeft,
-    };
-  }, [transform, zoom, transition, isDragging, projectedDepth, isParallel]);
-
-  if (isDragging) {
-    const isTargetParallel = projectedDepth === 1;
-    return (
-      <StageTaskDragPlaceholderWrapper ref={setNodeRef} style={style}>
-        <StageTaskDragPlaceholder isTargetParallel={isTargetParallel} />
-      </StageTaskDragPlaceholderWrapper>
-    );
-  }
+      transform: CSS.Transform.toString(
+        transform ? { ...transform, x: transform.x / zoom, y: transform.y / zoom } : null
+      ),
+    }),
+    [transform, zoom, transition]
+  );
 
   const taskElement = (
     <StageItemPill

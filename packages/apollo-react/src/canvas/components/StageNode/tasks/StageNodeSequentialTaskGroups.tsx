@@ -13,7 +13,7 @@ import {
 } from '@dnd-kit/sortable';
 import { Spacing } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { type CSSProperties, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   GroupModificationType,
   moveGroupDown,
@@ -33,7 +33,6 @@ import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { DraggableTask } from './DraggableTask';
 import { getContextMenuItems, getDivider } from './StageNodeTaskUtilities';
-import { StageTaskDragOverlay } from './StageTaskDragOverlay';
 
 export const StageNodeSequentialTaskGroups = ({
   props,
@@ -42,7 +41,6 @@ export const StageNodeSequentialTaskGroups = ({
   allTasks,
   isReadOnly,
   selectedTaskId,
-  taskWidthStyle,
   handleTaskClick,
   handleReorderSequentialTasks,
   generateReplaceTaskMenuItemForTask,
@@ -53,7 +51,6 @@ export const StageNodeSequentialTaskGroups = ({
   allTasks: StageTaskItem[][];
   isReadOnly: boolean;
   selectedTaskId?: string;
-  taskWidthStyle?: CSSProperties;
   handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
   handleReorderSequentialTasks: (newTasks: StageTaskItem[][]) => void;
   generateReplaceTaskMenuItemForTask: (
@@ -80,19 +77,8 @@ export const StageNodeSequentialTaskGroups = ({
     [sequentialTasks]
   );
 
-  const {
-    activeDragId,
-    activeSequentialTask,
-    isActiveTaskParallel,
-    projected,
-    handleDragStart,
-    handleDragMove,
-    handleDragOver,
-    handleDragEnd,
-    handleDragCancel,
-  } = useStageTaskDragHandler({
+  const { handleDragMove, handleDragEnd, handleDragCancel } = useStageTaskDragHandler({
     sequentialTaskGroups,
-    sequentialTasks,
     onTaskReorder: handleReorderSequentialTasks,
   });
 
@@ -210,9 +196,7 @@ export const StageNodeSequentialTaskGroups = ({
       <DndContext
         collisionDetection={closestCenter}
         sensors={sensors}
-        onDragStart={handleDragStart}
         onDragMove={handleDragMove}
-        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
@@ -251,9 +235,6 @@ export const StageNodeSequentialTaskGroups = ({
                           isSelected={selectedTaskId === task.id}
                           isParallel={isParallel}
                           onTaskClick={handleTaskClick}
-                          projectedDepth={
-                            task.id === activeDragId && projected ? projected.depth : undefined
-                          }
                           isDragDisabled={!onTaskReorder || isReadOnly}
                           isTaskLoading={loadingTaskIds?.has(task.id)}
                           isReadOnly={isReadOnly}
@@ -268,11 +249,6 @@ export const StageNodeSequentialTaskGroups = ({
             })}
           </StageItemsList>
         </SortableContext>
-        <StageTaskDragOverlay
-          activeTask={activeSequentialTask?.task}
-          isActiveTaskParallel={isActiveTaskParallel}
-          taskWidthStyle={taskWidthStyle}
-        />
       </DndContext>
     </StageItemsSection>
   );

@@ -793,6 +793,90 @@ describe('StageNode - hideParallelOptions', () => {
   });
 });
 
+// These two sections render their real task components (only DraggableTask is mocked), so these
+// go through the real context menu rather than the mock's stand-in buttons.
+describe('StageNode - Flat section reordering', () => {
+  const tasks: StageTaskItem[][] = [
+    [createTask('seq-1', 'Sequential 1')],
+    [{ id: 'evt-1', label: 'Event 1', taskGroupType: 'event-driven' }],
+    [{ id: 'evt-2', label: 'Event 2', taskGroupType: 'event-driven' }],
+    [{ id: 'adhoc-1', label: 'Adhoc 1', taskGroupType: 'adhoc' }],
+    [{ id: 'adhoc-2', label: 'Adhoc 2', taskGroupType: 'adhoc' }],
+  ];
+
+  const renderWithReorder = (onTaskReorder: (t: StageTaskItem[][]) => void) =>
+    renderStageNode({
+      onTaskGroupModification: vi.fn(),
+      onTaskReorder,
+      stageDetails: { ...defaultProps.stageDetails, tasks },
+    });
+
+  it('moves an event-triggered group and passes the other sections through untouched', async () => {
+    const user = userEvent.setup();
+    const onTaskReorder = vi.fn();
+    renderWithReorder(onTaskReorder);
+
+    await user.click(screen.getByTestId('stage-task-menu-evt-1'));
+    await user.click(await screen.findByText('Move down'));
+
+    expect(onTaskReorder).toHaveBeenCalledWith([
+      [expect.objectContaining({ id: 'seq-1' })],
+      [expect.objectContaining({ id: 'evt-2' })],
+      [expect.objectContaining({ id: 'evt-1' })],
+      [expect.objectContaining({ id: 'adhoc-1' })],
+      [expect.objectContaining({ id: 'adhoc-2' })],
+    ]);
+  });
+
+  it('moves a manually-triggered group and passes the other sections through untouched', async () => {
+    const user = userEvent.setup();
+    const onTaskReorder = vi.fn();
+    renderWithReorder(onTaskReorder);
+
+    await user.click(screen.getByTestId('stage-task-menu-adhoc-2'));
+    await user.click(await screen.findByText('Move up'));
+
+    expect(onTaskReorder).toHaveBeenCalledWith([
+      [expect.objectContaining({ id: 'seq-1' })],
+      [expect.objectContaining({ id: 'evt-1' })],
+      [expect.objectContaining({ id: 'evt-2' })],
+      [expect.objectContaining({ id: 'adhoc-2' })],
+      [expect.objectContaining({ id: 'adhoc-1' })],
+    ]);
+  });
+
+  it('disables the move option at the end of a section instead of dropping it', async () => {
+    const user = userEvent.setup();
+    renderWithReorder(vi.fn());
+
+    await user.click(screen.getByTestId('stage-task-menu-evt-1'));
+
+    expect(await screen.findByRole('menuitem', { name: 'Move up' })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
+    expect(screen.getByRole('menuitem', { name: 'Move down' })).not.toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
+  });
+
+  it('omits the move options entirely when reordering is not available', async () => {
+    const user = userEvent.setup();
+    renderStageNode({
+      onTaskGroupModification: vi.fn(),
+      onTaskReorder: undefined,
+      stageDetails: { ...defaultProps.stageDetails, tasks },
+    });
+
+    await user.click(screen.getByTestId('stage-task-menu-evt-1'));
+
+    expect(await screen.findByText('Delete task')).toBeInTheDocument();
+    expect(screen.queryByText('Move up')).not.toBeInTheDocument();
+    expect(screen.queryByText('Move down')).not.toBeInTheDocument();
+  });
+});
+
 describe('StageNode - ReadOnly Mode', () => {
   beforeEach(() => {
     vi.clearAllMocks();

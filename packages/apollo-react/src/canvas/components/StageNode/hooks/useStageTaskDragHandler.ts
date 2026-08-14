@@ -1,49 +1,21 @@
-import type { DragEndEvent, DragMoveEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragMoveEvent } from '@dnd-kit/core';
 import { useStoreApi } from '@xyflow/react';
-import { useCallback, useMemo, useState } from 'react';
-import type { StageTaskGroup, StageTaskItem } from '../StageNode.types';
+import { useCallback, useState } from 'react';
+import type { StageTaskItem } from '../StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from '../StageNode.utils';
 
 export const useStageTaskDragHandler = ({
   sequentialTaskGroups,
-  sequentialTasks,
   onTaskReorder,
 }: {
   sequentialTaskGroups: StageTaskItem[][];
-  sequentialTasks: StageTaskGroup[];
   onTaskReorder: (newTasks: StageTaskItem[][]) => void;
 }) => {
   const storeApi = useStoreApi();
 
-  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  // Horizontal travel is the only live drag state still needed: the projection it feeds is
+  // resolved once on drop, so nothing re-renders mid-drag to preview the landing depth.
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [overId, setOverId] = useState<string | null>(null);
-  const activeSequentialTask = useMemo(
-    () => sequentialTasks.find(({ task }) => task.id === activeDragId),
-    [sequentialTasks, activeDragId]
-  );
-  const isActiveTaskParallel = useMemo(() => {
-    if (!activeDragId) {
-      return false;
-    }
-    const group = sequentialTaskGroups.find((g) => g.some((t) => t.id === activeDragId));
-    return group ? group.length > 1 : false;
-  }, [sequentialTaskGroups, activeDragId]);
-
-  const projected = useMemo(() => {
-    if (!activeDragId || !overId) return null;
-    return getProjection(sequentialTaskGroups, activeDragId, overId, offsetLeft);
-  }, [sequentialTaskGroups, activeDragId, overId, offsetLeft]);
-
-  const resetState = useCallback(() => {
-    setActiveDragId(null);
-    setOffsetLeft(0);
-    setOverId(null);
-  }, []);
-
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveDragId(event.active.id as string);
-  }, []);
 
   const handleDragMove = useCallback(
     (event: DragMoveEvent) => {
@@ -52,15 +24,11 @@ export const useStageTaskDragHandler = ({
     [storeApi]
   );
 
-  const handleDragOver = useCallback((event: DragOverEvent) => {
-    setOverId((event.over?.id as string) ?? null);
-  }, []);
-
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
       const currentOffsetLeft = offsetLeft;
-      resetState();
+      setOffsetLeft(0);
 
       if (!over) {
         return;
@@ -93,22 +61,10 @@ export const useStageTaskDragHandler = ({
       );
       onTaskReorder(newTasks);
     },
-    [sequentialTaskGroups, onTaskReorder, offsetLeft, resetState]
+    [sequentialTaskGroups, onTaskReorder, offsetLeft]
   );
 
-  const handleDragCancel = useCallback(() => {
-    resetState();
-  }, [resetState]);
+  const handleDragCancel = useCallback(() => setOffsetLeft(0), []);
 
-  return {
-    activeDragId,
-    activeSequentialTask,
-    isActiveTaskParallel,
-    projected,
-    handleDragMove,
-    handleDragOver,
-    handleDragStart,
-    handleDragEnd,
-    handleDragCancel,
-  };
+  return { handleDragMove, handleDragEnd, handleDragCancel };
 };

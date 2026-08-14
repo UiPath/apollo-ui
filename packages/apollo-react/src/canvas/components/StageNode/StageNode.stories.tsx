@@ -1224,6 +1224,24 @@ const initialTasks: StageTaskItem[][] = [
   ],
   [{ id: 'task-8', label: 'Ad hoc - Exception Handling', icon: <ProcessIcon />, isAdhoc: true }],
   [{ id: 'task-5', label: 'Final Approval', icon: <ProcessIcon /> }],
+  // The flat sections reorder within themselves: their order is visual only, and a drag can
+  // never carry a task out of its section or into another group.
+  [
+    {
+      id: 'task-9',
+      label: 'Wait for payment confirmation',
+      icon: <ProcessIcon />,
+      taskGroupType: 'event-driven',
+    },
+  ],
+  [
+    {
+      id: 'task-10',
+      label: 'Wait for underwriting signal',
+      icon: <DocumentIcon />,
+      taskGroupType: 'event-driven',
+    },
+  ],
 ];
 
 const DraggableTaskReorderingStory = () => {
