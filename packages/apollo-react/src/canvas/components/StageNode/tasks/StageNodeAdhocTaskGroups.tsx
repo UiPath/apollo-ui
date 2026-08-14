@@ -58,7 +58,6 @@ const StageNodeAdhocTaskGroupsInner = ({
 
   const { taskIds, sensors, handleDragEnd, getMoveMenuItems } = useStageFlatSectionReorder({
     taskGroups: adhocTaskGroups,
-    tasks: adhocTasks,
     isDragDisabled,
     onReorder: handleReorderAdhocTasks,
   });
