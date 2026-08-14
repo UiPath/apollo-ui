@@ -919,10 +919,15 @@ describe('StageNode - Flat section reordering', () => {
       },
     });
 
-    expect(screen.getByTestId('event-driven-tasks-list-stage-1')).toBeInTheDocument();
-    expect(screen.getByTestId('adhoc-tasks-list-stage-1')).toBeInTheDocument();
+    const eventList = screen.getByTestId('event-driven-tasks-list-stage-1');
+    const adhocList = screen.getByTestId('adhoc-tasks-list-stage-1');
+
     expect(screen.queryByTestId('dnd-context')).not.toBeInTheDocument();
     expect(screen.queryByTestId('sortable-context')).not.toBeInTheDocument();
+    // No sortable wrapper either — the rows sit directly in the list, so `useSortable` is never
+    // called outside the provider it belongs to.
+    expect(screen.getByTestId('stage-task-card-evt-1').parentElement).toBe(eventList);
+    expect(screen.getByTestId('stage-task-card-adhoc-1').parentElement).toBe(adhocList);
   });
 
   it('omits the move options entirely when reordering is not available', async () => {

@@ -123,18 +123,27 @@ const StageNodeEventDrivenTaskGroupsInner = ({
             taskGroupType: 'event-driven',
             isParallel: false,
           })?.length ?? 0) > 0;
-        return (
-          <SortableTaskRow key={task.id} taskId={task.id} disabled={isDragDisabled}>
-            <EventDrivenTaskItem
-              task={task}
-              taskExecution={taskExecution}
-              isSelected={selectedTaskId === task.id}
-              onTaskClick={handleTaskClick}
-              isTaskLoading={loadingTaskIds?.has(task.id)}
-              isReadOnly={isReadOnly}
-              onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
-              getContextMenuItems={hasMenu ? getEventDrivenContextMenuItems : undefined}
-            />
+        const row = (
+          <EventDrivenTaskItem
+            key={task.id}
+            task={task}
+            taskExecution={taskExecution}
+            isSelected={selectedTaskId === task.id}
+            onTaskClick={handleTaskClick}
+            isTaskLoading={loadingTaskIds?.has(task.id)}
+            isReadOnly={isReadOnly}
+            onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
+            getContextMenuItems={hasMenu ? getEventDrivenContextMenuItems : undefined}
+          />
+        );
+
+        // Sortable only where the section mounts a DndContext — a read-only section
+        // renders the row bare so useSortable never runs outside its provider.
+        return isDragDisabled ? (
+          row
+        ) : (
+          <SortableTaskRow key={task.id} taskId={task.id}>
+            {row}
           </SortableTaskRow>
         );
       })}
