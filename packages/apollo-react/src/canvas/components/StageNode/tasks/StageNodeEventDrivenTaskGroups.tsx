@@ -57,7 +57,6 @@ const StageNodeEventDrivenTaskGroupsInner = ({
 
   const { taskIds, sensors, handleDragEnd, getMoveMenuItems } = useStageFlatSectionReorder({
     taskGroups: eventDrivenTaskGroups,
-    tasks: eventDrivenTasks,
     isDragDisabled,
     onReorder: handleReorderEventDrivenTasks,
   });

@@ -11,11 +11,8 @@ const dragEnd = (activeId: string, overId: string | null): DragEndEvent =>
 
 const setup = (taskGroups: StageTaskItem[][], isDragDisabled = false) => {
   const onReorder = vi.fn();
-  const tasks = taskGroups.flatMap((group, groupIndex) =>
-    group.map((t, taskIndex) => ({ task: t, groupIndex, taskIndex }))
-  );
   const { result } = renderHook(() =>
-    useStageFlatSectionReorder({ taskGroups, tasks, isDragDisabled, onReorder })
+    useStageFlatSectionReorder({ taskGroups, isDragDisabled, onReorder })
   );
   return { result, onReorder };
 };

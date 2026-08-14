@@ -9,7 +9,7 @@ import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useCallback, useMemo } from 'react';
 import { moveGroupDown, moveGroupUp } from '../../../utils/GroupModificationUtils';
 import type { NodeMenuItem } from '../../NodeContextMenu';
-import type { StageTaskGroup, StageTaskItem } from '../StageNode.types';
+import type { StageTaskItem } from '../StageNode.types';
 import { getMenuItem } from '../tasks/StageNodeTaskUtilities';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 
@@ -22,18 +22,21 @@ import { useStageNodeLabels } from '../useStageNodeLabels';
  */
 export const useStageFlatSectionReorder = ({
   taskGroups,
-  tasks,
   isDragDisabled,
   onReorder,
 }: {
   taskGroups: StageTaskItem[][];
-  tasks: StageTaskGroup[];
   isDragDisabled: boolean;
   onReorder: (newTasks: StageTaskItem[][]) => void;
 }) => {
   const labels = useStageNodeLabels();
 
-  const taskIds = useMemo(() => tasks.map(({ task }) => task.id), [tasks]);
+  // Derived from the same array the reorder logic mutates, so the sortable order and the
+  // move maths cannot drift apart.
+  const taskIds = useMemo(
+    () => taskGroups.flatMap((group) => group.map((t) => t.id)),
+    [taskGroups]
+  );
 
   /** Position of the group holding a task, plus that task's index inside it. */
   const findPosition = useCallback(
