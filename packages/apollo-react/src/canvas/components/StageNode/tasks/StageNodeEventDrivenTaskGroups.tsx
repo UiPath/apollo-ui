@@ -103,6 +103,44 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     ]
   );
 
+  // Only reorderable rows swallow the canvas drag/pan; with reordering off the list is
+  // ordinary card surface the node can be dragged by, exactly as before.
+  const taskList = (
+    <StageItemsList
+      data-testid={`event-driven-tasks-list-${id}`}
+      className={isDragDisabled ? undefined : 'nodrag nopan'}
+    >
+      {eventDrivenTasks.map(({ task }) => {
+        const taskExecution = execution?.taskStatus?.[task.id];
+        // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;
+        // only the built-in edit actions are gated on !isReadOnly. When built-in actions
+        // already guarantee a menu we skip the eager consumer call; otherwise we ask the
+        // consumer whether it contributes any items.
+        const hasMenu =
+          (!isReadOnly && hasBuiltInTaskActions) ||
+          (getTaskContextMenuItems?.({
+            task,
+            taskGroupType: 'event-driven',
+            isParallel: false,
+          })?.length ?? 0) > 0;
+        return (
+          <SortableTaskRow key={task.id} taskId={task.id} disabled={isDragDisabled}>
+            <EventDrivenTaskItem
+              task={task}
+              taskExecution={taskExecution}
+              isSelected={selectedTaskId === task.id}
+              onTaskClick={handleTaskClick}
+              isTaskLoading={loadingTaskIds?.has(task.id)}
+              isReadOnly={isReadOnly}
+              onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
+              getContextMenuItems={hasMenu ? getEventDrivenContextMenuItems : undefined}
+            />
+          </SortableTaskRow>
+        );
+      })}
+    </StageItemsList>
+  );
+
   if (eventDrivenTasks.length === 0) {
     return null;
   }
@@ -112,46 +150,15 @@ const StageNodeEventDrivenTaskGroupsInner = ({
         title={labels.eventDrivenTasks}
         testId={`event-driven-tasks-header-${id}`}
       />
-      <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
-        <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-          {/* While these rows are drag handles they must swallow the canvas drag/pan, or a press
-              would move the stage node instead. With reordering off they stay ordinary card
-              surface the node can be dragged by, exactly as before. */}
-          <StageItemsList
-            data-testid={`event-driven-tasks-list-${id}`}
-            className={isDragDisabled ? undefined : 'nodrag nopan'}
-          >
-            {eventDrivenTasks.map(({ task }) => {
-              const taskExecution = execution?.taskStatus?.[task.id];
-              // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;
-              // only the built-in edit actions are gated on !isReadOnly. When built-in actions
-              // already guarantee a menu we skip the eager consumer call; otherwise we ask the
-              // consumer whether it contributes any items.
-              const hasMenu =
-                (!isReadOnly && hasBuiltInTaskActions) ||
-                (getTaskContextMenuItems?.({
-                  task,
-                  taskGroupType: 'event-driven',
-                  isParallel: false,
-                })?.length ?? 0) > 0;
-              return (
-                <SortableTaskRow key={task.id} taskId={task.id} disabled={isDragDisabled}>
-                  <EventDrivenTaskItem
-                    task={task}
-                    taskExecution={taskExecution}
-                    isSelected={selectedTaskId === task.id}
-                    onTaskClick={handleTaskClick}
-                    isTaskLoading={loadingTaskIds?.has(task.id)}
-                    isReadOnly={isReadOnly}
-                    onToggleBreakpoint={isReadOnly ? onTaskBreakpointToggle : undefined}
-                    getContextMenuItems={hasMenu ? getEventDrivenContextMenuItems : undefined}
-                  />
-                </SortableTaskRow>
-              );
-            })}
-          </StageItemsList>
-        </SortableContext>
-      </DndContext>
+      {isDragDisabled ? (
+        taskList
+      ) : (
+        <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
+          <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+            {taskList}
+          </SortableContext>
+        </DndContext>
+      )}
     </StageItemsSection>
   );
 };

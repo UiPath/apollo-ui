@@ -904,6 +904,27 @@ describe('StageNode - Flat section reordering', () => {
     ]);
   });
 
+  it('mounts no drag machinery at all when the section cannot be reordered', () => {
+    // Only flat-section tasks, so the sequential section (which always wraps in a DndContext)
+    // renders nothing and cannot mask the assertion.
+    renderStageNode({
+      onTaskGroupModification: vi.fn(),
+      onTaskReorder: undefined,
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        tasks: [
+          [{ id: 'evt-1', label: 'Event 1', taskGroupType: 'event-driven' }],
+          [{ id: 'adhoc-1', label: 'Adhoc 1', taskGroupType: 'adhoc' }],
+        ],
+      },
+    });
+
+    expect(screen.getByTestId('event-driven-tasks-list-stage-1')).toBeInTheDocument();
+    expect(screen.getByTestId('adhoc-tasks-list-stage-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('dnd-context')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sortable-context')).not.toBeInTheDocument();
+  });
+
   it('omits the move options entirely when reordering is not available', async () => {
     const user = userEvent.setup();
     renderStageNode({

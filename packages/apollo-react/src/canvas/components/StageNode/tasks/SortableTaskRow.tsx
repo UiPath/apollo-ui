@@ -7,7 +7,8 @@ import { StageTaskWrapper } from '../StageNode.styles';
 /**
  * Makes an existing task row draggable without changing how it renders — the flat sections keep
  * their own row components and this supplies only the sortable wrapper and the drag transform.
- * With `disabled` it renders nothing of its own, so a read-only stage is byte-identical to before.
+ * With `disabled` it renders nothing of its own, and its section skips the DnD contexts too, so a
+ * read-only stage produces the same markup it did before reordering existed.
  */
 const SortableTaskRowComponent = ({
   taskId,
