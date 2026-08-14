@@ -3,6 +3,7 @@
 import { type ReactNode, useState } from "react";
 import type { RequestRow } from "./data";
 import {
+  type ExceptionOverride,
   type FieldException,
   type ReceiptRecord,
   type RequestNote,
@@ -17,9 +18,9 @@ import {
  * buyer side. Mocked: no backend, state lives for the session.
  */
 // The requester's opening note on each request, folded into the thread as
-// a real entry instead of a separate authored string rendered outside it —
+// a real entry instead of a separate authored string rendered outside it:
 // every message in the panel is now the same shape. Its origin (Teams vs.
-// the app) is unresolved — PLACEHOLDER [Seeded message origin] — so it
+// the app) is unresolved, PLACEHOLDER [Seeded message origin], so it
 // defaults to "app" (no marker) rather than asserting a channel that isn't
 // confirmed.
 const INITIAL_THREADS: Record<string, RequestNote[]> = {
@@ -31,7 +32,7 @@ const INITIAL_THREADS: Record<string, RequestNote[]> = {
       time: "2:14 PM",
       source: "app",
     },
-    // PLACEHOLDER [Teams-sourced demo message] — content invented, so it's
+    // PLACEHOLDER [Teams-sourced demo message]: content invented, so it's
     // bracketed; this is what proves the provenance rendering actually
     // fires somewhere in the running app.
     {
@@ -66,6 +67,9 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
   const [approvedAt, setApprovedAt] = useState<Record<string, number>>({});
   const [fieldExceptions, setFieldExceptions] = useState<
     Record<string, FieldException[]>
+  >({});
+  const [exceptionOverrides, setExceptionOverrides] = useState<
+    Record<string, Record<string, ExceptionOverride>>
   >({});
 
   const openRequest = (id: string) => setOpenRequestId(id);
@@ -143,6 +147,43 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const acceptException = (requestId: string, exceptionId: string) => {
+    setExceptionOverrides((prev) => ({
+      ...prev,
+      [requestId]: {
+        ...prev[requestId],
+        [exceptionId]: { status: "resolved" },
+      },
+    }));
+  };
+
+  const requestExceptionCorrection = (
+    requestId: string,
+    exceptionId: string,
+    waitingOn: string,
+  ) => {
+    setExceptionOverrides((prev) => ({
+      ...prev,
+      [requestId]: {
+        ...prev[requestId],
+        [exceptionId]: { status: "waiting", waitingOn },
+      },
+    }));
+  };
+
+  const resolveExceptionByDocument = (
+    requestId: string,
+    exceptionId: string,
+  ) => {
+    setExceptionOverrides((prev) => ({
+      ...prev,
+      [requestId]: {
+        ...prev[requestId],
+        [exceptionId]: { status: "resolved" },
+      },
+    }));
+  };
+
   const value: RequestsContextValue = {
     openRequestId,
     openRequest,
@@ -162,6 +203,10 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
     sendBackRequest,
     fieldExceptions,
     addFieldException,
+    exceptionOverrides,
+    acceptException,
+    requestExceptionCorrection,
+    resolveExceptionByDocument,
   };
 
   return (

@@ -3,6 +3,30 @@
 // The buyer's escalation queue: off-catalog Buy requests fork here for a human
 // to decide. Quote = amber, Contract = red. All scripted/mocked.
 
+import {
+  ANNUAL_VALUE,
+  DOCUMENTS,
+  type Exception,
+  getPerson,
+  IDENTITY,
+  ph,
+  QUANTITY,
+  REQ_10482_EXCEPTIONS,
+  TERM_YEARS,
+  TIMELINE,
+  type TimelineActor,
+  TOTAL_CONTRACT_VALUE,
+  UNIT_PRICE_PER_YEAR,
+} from "../data";
+
+function formatUSD(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export type ForkType = "quote" | "contract" | "sourcing";
 
 export type WorkbenchStatus =
@@ -80,7 +104,7 @@ export interface WorkbenchDetail {
   requester: string;
   value: string;
   needBy: string;
-  /** Header timing line — traces to what the flow set (need-by or activation). */
+  /** Header timing line, tracing to what the flow set (need-by or activation). */
   timing: string;
   type: ForkType;
   finding: {
@@ -89,7 +113,7 @@ export interface WorkbenchDetail {
     metrics: DetailMetric[];
     body: string;
   };
-  /** Decision buttons — primary is the agent's recommendation. Secondary optional. */
+  /** Decision buttons: primary is the agent's recommendation. Secondary optional. */
   actions: { primary: ActionSpec; secondary?: ActionSpec; reject: ActionSpec };
   /** First-person confirmation per decision (Activity + resolved card). */
   confirmations: Record<Decision, string>;
@@ -186,6 +210,17 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     dueGroup: "today",
   },
   {
+    id: "REQ-10482",
+    request: IDENTITY.shortTitle,
+    requester: getPerson(IDENTITY.requester).name,
+    value: `${formatUSD(ANNUAL_VALUE)}/yr`,
+    needBy: IDENTITY.neededFrom,
+    type: "contract",
+    status: "awaiting",
+    assignee: "You",
+    dueGroup: "today",
+  },
+  {
     id: "REQ-2039",
     request: "Standing desk converters ×8",
     requester: "Priya Nair",
@@ -244,13 +279,13 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
     type: "quote",
     finding: {
       tag: "Off-catalog · Quote",
-      headline: "Off-catalog request — vendor quote ready for review",
+      headline: "Off-catalog request, vendor quote ready for review",
       metrics: [
         { label: "Quoted total", value: "€2,450" },
         { label: "Budget", value: "€3,000" },
         { label: "Under budget", value: "€550", cls: "text-success" },
       ],
-      body: "These desks aren't in the catalog, so I sourced 3 vendors and selected the best quote. WorkSpace GmbH came in lowest at €490/unit — height-adjustable, 5-year warranty, delivered to Berlin in 10 business days. That's €550 under the team's €3,000 budget for this request.",
+      body: "These desks aren't in the catalog, so I sourced 3 vendors and selected the best quote. WorkSpace GmbH came in lowest at €490/unit: height-adjustable, 5-year warranty, delivered to Berlin in 10 business days. That's €550 under the team's €3,000 budget for this request.",
     },
     actions: {
       primary: { label: "Approve quote", decision: "approved" },
@@ -258,9 +293,9 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
       reject: { label: "Reject", decision: "rejected" },
     },
     confirmations: {
-      approved: "Approved — PO issued to WorkSpace GmbH.",
+      approved: "Approved. PO issued to WorkSpace GmbH.",
       countered: "Counter drafted and sent to WorkSpace GmbH.",
-      rejected: "Rejected — Lena has been notified.",
+      rejected: "Rejected. Lena has been notified.",
     },
     suggestions: ["Why this vendor?", "Negotiate with agent", "Budget check"],
     composerPlaceholder: "Ask about this quote…",
@@ -277,8 +312,8 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
       filename: "WorkSpace-GmbH-Quote-Q-4821.pdf",
       lines: [
         "Quote Q-4821",
-        "WorkSpace GmbH — Office Furniture",
-        "5× Height-adjustable desk, white — €490.00 / unit",
+        "WorkSpace GmbH, Office Furniture",
+        "5× Height-adjustable desk, white, €490.00 / unit",
         "Warranty: 5 years",
         "Delivery: Berlin, 10 business days",
         "Total: €2,450.00 (excl. VAT)",
@@ -291,7 +326,7 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
         id: "a1",
         label: "Escalated to you",
         time: "9:12 AM",
-        desc: "Off-catalog — needs buyer approval",
+        desc: "Off-catalog, needs buyer approval",
         indicator: "ai-warn",
       },
       {
@@ -337,13 +372,13 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
     type: "contract",
     finding: {
       tag: "Configured · Contract",
-      headline: "Configured under your T-Mobile MSA — ready to approve",
+      headline: "Configured under your T-Mobile MSA, ready to approve",
       metrics: [
         { label: "Per line", value: "$55/mo" },
         { label: "Monthly", value: "$660/mo" },
         { label: "Annual", value: "$7,920/yr" },
       ],
-      body: "Configured under your active T-Mobile MSA — 12 Business Pro lines for the Denver team at $55/line/mo (MSA tier 2), bring-your-own-device ($0, no subsidy). That's $660/mo, $7,920/yr. MDM, activation, and billing are set to recommended defaults — review and approve.",
+      body: "Configured under your active T-Mobile MSA: 12 Business Pro lines for the Denver team at $55/line/mo (MSA tier 2), bring-your-own-device ($0, no subsidy). That's $660/mo, $7,920/yr. MDM, activation, and billing are set to recommended defaults. Review and approve.",
     },
     actions: {
       primary: { label: "Approve", decision: "approved" },
@@ -351,9 +386,9 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
       reject: { label: "Reject", decision: "rejected" },
     },
     confirmations: {
-      approved: "Approved — provisioning 12 Business Pro lines with T-Mobile.",
+      approved: "Approved. Provisioning 12 Business Pro lines with T-Mobile.",
       countered: "Counter sent to T-Mobile.",
-      rejected: "Rejected — Marcus has been notified.",
+      rejected: "Rejected. Marcus has been notified.",
     },
     suggestions: [
       "Why Business Pro?",
@@ -387,7 +422,7 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
         id: "a1",
         label: "Escalated to you",
         time: "8:52 AM",
-        desc: "Configured — ready to approve",
+        desc: "Configured, ready to approve",
         indicator: "ai-warn",
       },
       {
@@ -554,7 +589,181 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
       { label: "Cost center", value: "Design Operations · CC-4421" },
     ],
   },
+
+  // REQ-10482. The exception detail, paging, and fix card are a later
+  // prompt's own screen; this is what the existing detail view renders
+  // today from the seed (see the report on what's derived versus a
+  // placeholder). Actions reuse REQ-2051's own contract-type wording
+  // verbatim, since it's the closest existing scenario, not new copy.
+  "REQ-10482": {
+    id: "REQ-10482",
+    request: IDENTITY.shortTitle,
+    requester: `${getPerson(IDENTITY.requester).name} · ${getPerson(IDENTITY.requester).org}`,
+    value: `${formatUSD(ANNUAL_VALUE)}/yr`,
+    needBy: IDENTITY.neededFrom,
+    timing: IDENTITY.neededFrom,
+    type: "contract",
+    finding: {
+      tag: ph("PH-27"),
+      headline: ph("PH-28"),
+      metrics: [
+        { label: "Annual value", value: `${formatUSD(ANNUAL_VALUE)}/yr` },
+        {
+          label: "Total contract value",
+          value: formatUSD(TOTAL_CONTRACT_VALUE),
+        },
+        { label: "Term", value: `${TERM_YEARS} years` },
+      ],
+      body: ph("PH-29"),
+    },
+    actions: {
+      primary: { label: "Approve", decision: "approved" },
+      secondary: { label: "Counter", decision: "countered" },
+      reject: { label: "Reject", decision: "rejected" },
+    },
+    confirmations: {
+      approved: ph("PH-30"),
+      countered: ph("PH-31"),
+      rejected: ph("PH-32"),
+    },
+    suggestions: [],
+    composerPlaceholder: "",
+    lines: [
+      {
+        description: IDENTITY.commodity,
+        qty: QUANTITY,
+        unitPrice: `${formatUSD(UNIT_PRICE_PER_YEAR)}/yr`,
+        amount: `${formatUSD(ANNUAL_VALUE)}/yr`,
+      },
+    ],
+    linesTotal: `${formatUSD(ANNUAL_VALUE)}/yr · ${formatUSD(TOTAL_CONTRACT_VALUE)} over ${TERM_YEARS} years`,
+    source: {
+      filename: req10482Document("v2").filename,
+      lines: [ph("PH-33")],
+    },
+    activity: TIMELINE.toReversed().map((event) => ({
+      id: event.id,
+      label: event.label,
+      time: timelineEntryTime(event.when),
+      indicator: timelineEntryIndicator(event.actor),
+    })),
+    details: [
+      { label: "Request ID", value: IDENTITY.id },
+      { label: "Buying entity", value: IDENTITY.buyingEntity },
+      { label: "Cost centre", value: IDENTITY.costCentre },
+      { label: "Currency", value: IDENTITY.currency },
+      { label: "Needed from", value: IDENTITY.neededFrom },
+      { label: "Agreement", value: IDENTITY.agreement },
+    ],
+  },
 };
+
+/** REQ-10482's own exceptions, keyed by request id, for the queue row's
+ * chip and overflow count. No other row has an entry, so no other row's
+ * rendering changes (see the report). */
+/**
+ * Overlays this session's live exception status changes (accept / request
+ * correction) onto the seed's own exceptions. Shared by the queue row's chip
+ * and the detail pane's exception surface so the two never compute the open
+ * count differently.
+ */
+export function applyExceptionOverrides(
+  exceptions: Exception[],
+  overrides: Record<
+    string,
+    { status: Exception["status"]; waitingOn?: string }
+  >,
+): Exception[] {
+  return exceptions.map((exception) => {
+    const override = overrides[exception.id];
+    if (!override) return exception;
+    return {
+      ...exception,
+      status: override.status,
+      waitingOn: override.waitingOn ?? exception.waitingOn,
+    };
+  });
+}
+
+export const WORKBENCH_EXCEPTIONS: Record<string, Exception[]> = {
+  "REQ-10482": REQ_10482_EXCEPTIONS,
+};
+
+function req10482Document(version: string) {
+  const doc = DOCUMENTS.find((d) => d.version === version);
+  if (!doc) throw new Error(`Unknown document version: ${version}`);
+  return doc;
+}
+
+function timelineEntryIndicator(
+  actor: TimelineActor,
+): TimelineEntry["indicator"] {
+  if (actor === "agent") return "ai-pass";
+  if (actor === "policy" || actor === "system" || actor === "DocuSign") {
+    return "event";
+  }
+  return "user";
+}
+
+export function timelineEntryTime(when: Date | string): string {
+  if (typeof when === "string") return when;
+  return when.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+// Baseline events already true by the time REQ-10482 reaches the buyer:
+// upload, cost centre correction, submission, benchmark. These are the
+// trail's starting point, before Sam has acted at all (see the report).
+const REQ_10482_BASELINE_TIMELINE_IDS = new Set([
+  "order-form-uploaded",
+  "cost-centre-corrected",
+  "submitted",
+  "benchmark-produced",
+]);
+
+/**
+ * REQ-10482's own activity trail, cut to what has actually happened rather
+ * than the whole seeded future. Which later events are visible derives
+ * from the exceptions' own live status, not a separate flag: accepting the
+ * price exception reveals its own event, sending the correction reveals
+ * its own, the reply resolving the terms exception by document reveals
+ * both the reply and the reprocessing, and full release reveals validation
+ * complete. Nothing after validation complete ever renders here, budget
+ * approval, contract execution, PO dispatch, and activation belong to a
+ * later chapter this screen doesn't tell (see the report).
+ */
+export function req10482VisibleActivity(
+  exceptions: Exception[],
+  autoReleased: boolean,
+): TimelineEntry[] {
+  const price = exceptions.find((e) => e.id === "price-above-benchmark");
+  const terms = exceptions.find((e) => e.id === "payment-terms-mismatch");
+  const priceAccepted = price?.status === "resolved";
+  const termsSent =
+    terms != null && terms.status !== "open" && terms.status !== "active";
+  const replyArrived =
+    terms?.status === "resolved" && terms.resolution?.resolvedBy === "document";
+
+  const visibleIds = new Set(REQ_10482_BASELINE_TIMELINE_IDS);
+  if (priceAccepted) visibleIds.add("price-accepted");
+  if (termsSent) visibleIds.add("terms-correction-sent");
+  if (replyArrived) {
+    visibleIds.add("order-form-v2-received");
+    visibleIds.add("revalidated");
+  }
+  if (autoReleased) visibleIds.add("procurement-validation-complete");
+
+  return TIMELINE.filter((event) => visibleIds.has(event.id))
+    .toReversed()
+    .map((event) => ({
+      id: event.id,
+      label: event.label,
+      time: timelineEntryTime(event.when),
+      indicator: timelineEntryIndicator(event.actor),
+    }));
+}
 
 // Stat-card counts derived from the seed rows.
 export function workbenchStats() {
