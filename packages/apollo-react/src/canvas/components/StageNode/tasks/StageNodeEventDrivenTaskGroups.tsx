@@ -45,7 +45,13 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     onTaskBreakpointToggle,
     getTaskContextMenuItems,
   } = props;
-  const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
+  // Reordering counts as a built-in action: the move items are the keyboard/menu route to it, so
+  // a consumer that supplies only `onTaskReorder` must still get a menu to reach them.
+  const hasBuiltInTaskActions = !!(
+    onReplaceTaskFromToolbox ||
+    onTaskGroupModification ||
+    onTaskReorder
+  );
   const labels = useStageNodeLabels();
   const isDragDisabled = !onTaskReorder || isReadOnly;
 

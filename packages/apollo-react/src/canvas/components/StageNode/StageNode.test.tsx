@@ -861,6 +861,23 @@ describe('StageNode - Flat section reordering', () => {
     );
   });
 
+  it('still opens a menu when reordering is the only action the consumer supplies', async () => {
+    const user = userEvent.setup();
+    const onTaskReorder = vi.fn();
+
+    // No onTaskGroupModification, no onReplaceTaskFromToolbox, no consumer items — the move
+    // entries would be unreachable if the menu were gated on those alone.
+    renderStageNode({
+      onTaskReorder,
+      stageDetails: { ...defaultProps.stageDetails, tasks },
+    });
+
+    await user.click(screen.getByTestId('stage-task-menu-evt-1'));
+    await user.click(await screen.findByText('Move down'));
+
+    expect(onTaskReorder).toHaveBeenCalled();
+  });
+
   it('omits the move options entirely when reordering is not available', async () => {
     const user = userEvent.setup();
     renderStageNode({
