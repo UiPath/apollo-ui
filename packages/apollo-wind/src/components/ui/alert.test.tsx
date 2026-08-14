@@ -54,7 +54,22 @@ describe('Alert', () => {
       </Alert>
     );
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('bg-background');
+    expect(alert).toHaveClass('border-border-subtle', 'bg-surface');
+  });
+
+  it.each([
+    ['info', 'border-info/30', 'bg-info-background/10'],
+    ['success', 'border-success/50', 'bg-success-background/25'],
+    ['warning', 'border-warning/50', 'bg-warning-background/25'],
+  ] as const)('applies %s variant classes', (variant, borderClass, backgroundClass) => {
+    render(
+      <Alert variant={variant}>
+        <AlertTitle>Title</AlertTitle>
+        <AlertDescription>Description</AlertDescription>
+      </Alert>
+    );
+
+    expect(screen.getByRole('alert')).toHaveClass(borderClass, backgroundClass);
   });
 
   it('applies destructive variant classes', () => {
@@ -65,7 +80,7 @@ describe('Alert', () => {
       </Alert>
     );
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('border-destructive/50');
+    expect(alert).toHaveClass('border-error/50', 'bg-error-background/25');
   });
 
   it('renders with icon', () => {

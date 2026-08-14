@@ -1,20 +1,21 @@
-import { useState } from 'react';
 import type { Meta } from '@storybook/react-vite';
 import {
   AlertCircle,
+  AlertTriangle,
   CheckCircle2,
+  ExternalLink,
   Info,
+  Rocket,
   ShieldAlert,
   Terminal,
-  Rocket,
-  X,
-  ExternalLink,
-  AlertTriangle,
   Wifi,
   WifiOff,
+  X,
 } from 'lucide-react';
+import { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from './alert';
 import { Button } from './button';
+import { Tabs, TabsList, TabsTrigger } from './tabs';
 
 const meta: Meta<typeof Alert> = {
   title: 'Components/Feedback/Alert',
@@ -33,16 +34,17 @@ export const BasicAlert = {
   render: () => (
     <div className="flex flex-col gap-4 max-w-xl">
       <Alert>
-        <AlertTitle>Default Alert</AlertTitle>
+        <AlertTitle>Neutral message</AlertTitle>
         <AlertDescription>
-          This is a default alert — use it for general information.
+          Use the default style for guidance that does not communicate a system state.
         </AlertDescription>
       </Alert>
 
-      <Alert variant="destructive">
-        <AlertTitle>Destructive Alert</AlertTitle>
+      <Alert variant="info">
+        <Info />
+        <AlertTitle>Information message</AlertTitle>
         <AlertDescription>
-          This is a destructive alert — use it for errors or critical warnings.
+          Use semantic variants when the message communicates a result or validation state.
         </AlertDescription>
       </Alert>
     </div>
@@ -57,13 +59,13 @@ export const AlertWithIcons = {
   name: 'Alert with Icons',
   render: () => (
     <div className="flex flex-col gap-4 max-w-xl">
-      <Alert>
+      <Alert variant="info">
         <Terminal className="h-4 w-4" />
         <AlertTitle>Terminal</AlertTitle>
         <AlertDescription>You can add components to your app using the CLI.</AlertDescription>
       </Alert>
 
-      <Alert>
+      <Alert variant="info">
         <Info className="h-4 w-4" />
         <AlertTitle>Information</AlertTitle>
         <AlertDescription>
@@ -71,13 +73,13 @@ export const AlertWithIcons = {
         </AlertDescription>
       </Alert>
 
-      <Alert>
+      <Alert variant="success">
         <CheckCircle2 className="h-4 w-4" />
         <AlertTitle>Success</AlertTitle>
         <AlertDescription>Your changes have been saved successfully.</AlertDescription>
       </Alert>
 
-      <Alert>
+      <Alert variant="warning">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Warning</AlertTitle>
         <AlertDescription>
@@ -90,6 +92,93 @@ export const AlertWithIcons = {
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>Your session has expired. Please log in again.</AlertDescription>
       </Alert>
+    </div>
+  ),
+};
+
+// ============================================================================
+// Patterns — Section Messages
+// ============================================================================
+
+export const SectionMessages = {
+  name: 'Pattern: Section Messages',
+  render: () => (
+    <div className="flex max-w-md flex-col gap-3">
+      <Alert variant="info">
+        <Info />
+        <AlertTitle>Configuration guidance</AlertTitle>
+        <AlertDescription>
+          <p>This node uses the connection selected for the current folder.</p>
+          <p>Change the folder context to use a different connection.</p>
+        </AlertDescription>
+      </Alert>
+
+      <Alert variant="success">
+        <CheckCircle2 />
+        <AlertTitle>Configuration is valid</AlertTitle>
+        <AlertDescription>
+          <p>All required fields have been completed.</p>
+          <p>This node is ready to run.</p>
+        </AlertDescription>
+      </Alert>
+
+      <Alert variant="warning">
+        <AlertTriangle />
+        <AlertTitle>Review recommended</AlertTitle>
+        <AlertDescription>
+          <p>The request timeout is higher than the recommended value.</p>
+          <p>Review the timeout before publishing this workflow.</p>
+        </AlertDescription>
+      </Alert>
+
+      <Alert variant="destructive">
+        <AlertCircle />
+        <AlertTitle>Connection required</AlertTitle>
+        <AlertDescription>
+          <p>No valid connection is configured for this node.</p>
+          <p>Select a connection before running this node.</p>
+        </AlertDescription>
+      </Alert>
+    </div>
+  ),
+};
+
+function ValidationCount({ count }: { count: number }) {
+  return (
+    <span
+      title={`${count} issue${count === 1 ? '' : 's'}`}
+      className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-foreground-on-accent"
+    >
+      <span aria-hidden="true">{count}</span>
+      <span className="sr-only">{`${count} issue${count === 1 ? '' : 's'}`}</span>
+    </span>
+  );
+}
+
+export const NavigationValidation = {
+  name: 'Pattern: Navigation Validation',
+  render: () => (
+    <div className="w-full max-w-md space-y-4">
+      <Alert variant="destructive">
+        <AlertCircle />
+        <AlertTitle>Resolve 3 issues before publishing</AlertTitle>
+        <AlertDescription>
+          Error counts identify the sections that need attention, including hidden content.
+        </AlertDescription>
+      </Alert>
+      <Tabs defaultValue="parameters">
+        <TabsList className="h-auto w-full justify-start gap-0.5 rounded-lg bg-transparent p-0.5">
+          <TabsTrigger value="parameters" className="h-7 gap-1.5 px-2.5 text-xs">
+            Parameters <ValidationCount count={1} />
+          </TabsTrigger>
+          <TabsTrigger value="error-handling" className="h-7 gap-1.5 px-2.5 text-xs">
+            Error handling <ValidationCount count={2} />
+          </TabsTrigger>
+          <TabsTrigger value="advanced" className="h-7 px-2.5 text-xs">
+            Advanced
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
     </div>
   ),
 };
