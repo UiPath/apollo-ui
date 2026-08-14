@@ -130,6 +130,14 @@ export const StageTaskWrapper = styled.div<{ isParallel?: boolean }>`
     isParallel ? 'var(--stage-task-width-parallel, 216px)' : 'var(--stage-task-width, 246px)'};
   border-radius: ${Spacing.SpacingXs};
   height: 36px;
+
+  /* Only reorderable rows are wrapped, so this is the one place the card's inherited pointer
+     cursor is overridden — it is what tells the user the row can be dragged at all. */
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
 `;
 
 export const StageItemPill = styled.div<{
@@ -250,11 +258,6 @@ export const StageTaskRetryDuration = styled.div<{ status?: 'warning' | 'info' |
     `}
 `;
 
-export const StageTaskDragPlaceholderWrapper = styled.div`
-  width: var(--stage-task-width, 246px);
-  height: 36px;
-`;
-
 export const StageHeaderChipsRow = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -296,17 +299,4 @@ export const StageItemsHeaderSection = styled.div`
   height: 36px;
   display: flex;
   align-items: center;
-`;
-
-export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: ${Spacing.SpacingXs};
-  padding: ${Padding.PadL} ${Padding.PadXxl};
-  background: transparent;
-  border: 2px dashed var(--canvas-selection-indicator);
-  border-radius: 6px;
-
-  height: 100%;
-  width: ${({ isTargetParallel }) => (isTargetParallel ? 'var(--stage-task-width-parallel, 216px)' : 'var(--stage-task-width, 246px)')};
 `;

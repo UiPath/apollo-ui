@@ -12,7 +12,6 @@ export interface DraggableTaskProps {
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
   isDragDisabled?: boolean;
-  projectedDepth?: number;
   isTaskLoading?: boolean;
   /** Read-only (Debug) view: the task's "⋮" button is dropped, right-click still opens the menu. */
   isReadOnly?: boolean;
