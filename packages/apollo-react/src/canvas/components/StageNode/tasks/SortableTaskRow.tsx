@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, useMemo } from 'react';
+import { type CSSProperties, memo, type ReactNode, useMemo } from 'react';
 import { StageTaskWrapper } from '../StageNode.styles';
 
 /**
@@ -19,7 +19,7 @@ const SortableTaskRowComponent = ({
 }: {
   taskId: string;
   isParallel?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 }) => {
   const { attributes, listeners, setNodeRef, transition, transform } = useSortable({ id: taskId });
 
@@ -27,7 +27,7 @@ const SortableTaskRowComponent = ({
   // zoom changes don't re-render every task.
   const zoom = useStore((s) => (transform ? s.transform[2] : 1));
 
-  const style = useMemo<React.CSSProperties>(
+  const style = useMemo<CSSProperties>(
     () => ({
       transition,
       transform: CSS.Transform.toString(

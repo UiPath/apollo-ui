@@ -10,15 +10,22 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
     selector({ transform: [0, 0, 1] }),
 }));
 
+// Routed through a spy so the tests can assert *whether* useSortable runs — it must not be
+// called when dragging is disabled, since the section skips its DndContext in that state.
+const { useSortableSpy } = vi.hoisted(() => ({ useSortableSpy: vi.fn() }));
+
 vi.mock('@dnd-kit/sortable', () => ({
-  useSortable: () => ({
-    attributes: {},
-    listeners: {},
-    setNodeRef: vi.fn(),
-    transition: undefined,
-    transform: null,
-    isDragging: false,
-  }),
+  useSortable: (args: unknown) => {
+    useSortableSpy(args);
+    return {
+      attributes: {},
+      listeners: {},
+      setNodeRef: vi.fn(),
+      transition: undefined,
+      transform: null,
+      isDragging: false,
+    };
+  },
 }));
 
 const createTask = (id: string, label?: string) => ({
@@ -57,6 +64,26 @@ const defaultProps: DraggableTaskProps = {
 };
 
 describe('DraggableTask', () => {
+  describe('Sortable wiring', () => {
+    it('does not call useSortable when dragging is disabled', () => {
+      useSortableSpy.mockClear();
+
+      render(<DraggableTask {...defaultProps} isDragDisabled />);
+
+      // The section drops its DndContext when reordering is off, so a useSortable call here
+      // would be running outside its provider.
+      expect(useSortableSpy).not.toHaveBeenCalled();
+    });
+
+    it('calls useSortable when the row is reorderable', () => {
+      useSortableSpy.mockClear();
+
+      render(<DraggableTask {...defaultProps} />);
+
+      expect(useSortableSpy).toHaveBeenCalledWith({ id: 'task-1' });
+    });
+  });
+
   it('exposes exactly one element under the stage-task-card- prefix with every part rendered', () => {
     const { container } = render(
       <DraggableTask
