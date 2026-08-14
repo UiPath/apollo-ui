@@ -7,22 +7,19 @@ import { StageTaskWrapper } from '../StageNode.styles';
 /**
  * Makes an existing task row draggable without changing how it renders — the flat sections keep
  * their own row components and this supplies only the sortable wrapper and the drag transform.
- * With `disabled` it renders nothing of its own, and its section skips the DnD contexts too, so a
- * read-only stage produces the same markup it did before reordering existed.
+ *
+ * Rendered only when the section is reorderable: `useSortable` belongs under a `DndContext` +
+ * `SortableContext`, and a read-only section mounts neither, so it renders its rows bare and
+ * produces the same markup it did before reordering existed.
  */
 const SortableTaskRowComponent = ({
   taskId,
-  disabled,
   children,
 }: {
   taskId: string;
-  disabled?: boolean;
   children: React.ReactNode;
 }) => {
-  const { attributes, listeners, setNodeRef, transition, transform } = useSortable({
-    id: taskId,
-    disabled,
-  });
+  const { attributes, listeners, setNodeRef, transition, transform } = useSortable({ id: taskId });
 
   // Zoom only matters while a drag transform exists; idle rows resolve a constant so canvas
   // zoom changes don't re-render every task. Mirrors DraggableTask.
@@ -37,10 +34,6 @@ const SortableTaskRowComponent = ({
     }),
     [transform, zoom, transition]
   );
-
-  if (disabled) {
-    return <>{children}</>;
-  }
 
   return (
     <StageTaskWrapper ref={setNodeRef} style={style} {...attributes} {...listeners}>
