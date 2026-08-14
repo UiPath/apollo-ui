@@ -1,3 +1,6 @@
+// oxlint-disable max-lines -- seed data + scripted detail content for My
+// Requests, the same size exemption workbench/data.ts already carries.
+
 // The requester's own queue (Marcus Webb) — the mirror image of the buyer's
 // Workbench, same list template. REQ-2051 and REQ-2053 are the same objects the
 // Workbench holds, shown here from the requester's side; the rest are
@@ -146,20 +149,24 @@ export interface RequestStep {
 }
 
 // Journey bar stages — horizontal tracker on the Request Window page.
-export type JourneyStepState =
+// Named TrackerStage (not JourneyStep) since it holds a specific request's
+// runtime state on a stage, not the journey model's own definition of which
+// steps exist and why (see data/journeys.ts's JourneyStep, a different type
+// that used to share this name).
+export type TrackerStageState =
   | "done"
   | "active"
   | "active-warning"
   | "upcoming";
-export interface JourneyStep {
+export interface TrackerStage {
   label: string;
-  state: JourneyStepState;
+  state: TrackerStageState;
   /** Second-line date on the Request Window's stage track: the actual date
    * once done, an expected/projected date otherwise. Omit rather than
    * derive a placeholder when there's nothing to base it on. */
   date?: string;
   /** Days since `date` passed without this stage completing (active-warning
-   * only) — renders as "· N day(s) ago" next to the date. */
+   * only): renders as "· N day(s) ago" next to the date. */
   overdueDays?: number;
 }
 
@@ -182,7 +189,7 @@ export interface RequestDetail {
   timeline: RequestStep[];
   // ── Request Window (full-page route) ─────────────────────────────────────
   /** Stages for the horizontal JourneyBar. */
-  journeyStages?: JourneyStep[];
+  journeyStages?: TrackerStage[];
   /** Context note below the journey label row (e.g. owner + ETA). No leading emoji — icon added by caller. */
   journeyOwnerNote?: string;
   /** Approver's usual decision turnaround, e.g. "a day" — the status card's
@@ -578,7 +585,7 @@ export interface DecisionDetail {
  * and approver fields rather than authored — "Alex Chen · Design Director"
  * becomes "Alex Chen", matching how the header already shortens it. */
 export function notificationRecipients(detail: DecisionDetail): string[] {
-  const approverName = detail.approver.split(" · ")[0]!;
+  const approverName = detail.approver.split(" · ")[0] ?? detail.approver;
   return [detail.requester, approverName];
 }
 

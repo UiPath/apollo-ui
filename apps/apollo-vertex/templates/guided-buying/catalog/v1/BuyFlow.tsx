@@ -21,11 +21,8 @@ import {
   STARTER_SUGGESTIONS,
 } from "./data";
 import { FlowFooterProvider } from "./FlowFooter";
-import {
-  CATALOG_PHASES,
-  FlowPhaseBar,
-  NON_CATALOG_PHASES,
-} from "./FlowPhaseBar";
+import { FlowPhaseBar } from "./FlowPhaseBar";
+import { CATALOG_PHASES, NON_CATALOG_PHASES } from "./flow-phases";
 import { GuidedBuy } from "./GuidedBuy";
 import { ProductDetail } from "./ProductDetail";
 import { ProductDetailOverlay } from "./ProductDetailOverlay";
@@ -39,6 +36,13 @@ const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 // Where the surface is heading as it animates out — drives the exit direction.
 type Leaving = null | "configure";
+
+// The catalog fork's own two URL phases, or nothing when the value is
+// neither (shared by the URL -> state read and the state -> URL write so
+// the two can't drift on what counts as a catalog phase).
+function catalogPhaseParam(value: unknown): "bridge" | "selection" | undefined {
+  if (value === "bridge" || value === "selection") return value;
+}
 
 // Intake-only greeting, above the headline — time-of-day read at render.
 function timeOfDayGreeting() {
@@ -172,10 +176,8 @@ export function BuyFlow() {
   // than useSearch, since the route tree here isn't registered for
   // useSearch's typed `from` lookup.
   const searchPhase = useRouterState({
-    select: (s) => {
-      const raw = (s.location.search as { phase?: unknown }).phase;
-      return raw === "bridge" || raw === "selection" ? raw : undefined;
-    },
+    select: (s) =>
+      catalogPhaseParam((s.location.search as { phase?: unknown }).phase),
   });
   useEffect(() => {
     if (pathname !== "/buy") return;
@@ -184,8 +186,9 @@ export function BuyFlow() {
     // would fight it.
     if (searchPhase != null) return;
     startFresh();
+    // intentional: deps read fresh on each navigation
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locationKey]); // intentional: deps read fresh on each navigation
+  }, [locationKey]);
 
   // Set right before a URL -> state seed and consumed by the state -> URL
   // effect below, on a cold /buy?phase=bridge (or ?phase=selection) load:
@@ -241,8 +244,7 @@ export function BuyFlow() {
       seededFromUrlRef.current = false;
       return;
     }
-    const target =
-      phase === "bridge" || phase === "selection" ? phase : undefined;
+    const target = catalogPhaseParam(phase);
     if (searchPhase === target) return;
     void navigate({
       to: "/buy",
@@ -307,18 +309,18 @@ export function BuyFlow() {
   const catalogPhaseIndex = phase === "selection" ? 1 : 0;
   const nonCatalogPhaseIndex = phase === "offcatalog" ? 1 : 0;
 
-  const phaseBar = isIntake ? undefined : isCatalogPath ? (
+  const phaseBar = isIntake ? null : isCatalogPath ? (
     <FlowPhaseBar
       phases={CATALOG_PHASES}
       currentIndex={catalogPhaseIndex}
-      onClickPhase={catalogPhaseIndex > 0 ? () => stepBack() : undefined}
+      {...(catalogPhaseIndex > 0 ? { onClickPhase: () => stepBack() } : {})}
     />
   ) : isNonCatalogPath ? (
     <FlowPhaseBar
       phases={NON_CATALOG_PHASES}
       currentIndex={nonCatalogPhaseIndex}
     />
-  ) : undefined;
+  ) : null;
 
   return (
     <motion.div
@@ -353,8 +355,8 @@ export function BuyFlow() {
                 contentRef={contentRef}
                 stepKey={phase}
                 title={header.title}
-                subtext={isIntake ? undefined : header.subtext}
-                eyebrow={isIntake ? intakeGreeting : undefined}
+                subtext={isIntake ? null : header.subtext}
+                eyebrow={isIntake ? intakeGreeting : null}
                 // The cart belongs once products are on screen (the Selection step).
                 showCart={phase === "selection"}
                 // Selection supplies its own hero — hide the shared anchor block.
@@ -445,8 +447,12 @@ export function BuyFlow() {
                   inCart={inCart(shelfDetailItem.id)}
                   comparing={false}
                   onAddToCart={(qty) => setQuantity(shelfDetailItem, qty)}
-                  onToggleCompare={() => {}}
-                  onAskAgent={() => {}}
+                  onToggleCompare={() => {
+                    // No compare tray from this overlay context yet.
+                  }}
+                  onAskAgent={() => {
+                    // No agent surface from this overlay context yet.
+                  }}
                 />
               </PriceBasisProvider>
             </ProductDetailOverlay>

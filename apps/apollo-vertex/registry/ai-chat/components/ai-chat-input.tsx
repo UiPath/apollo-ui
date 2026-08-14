@@ -10,6 +10,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
   type Ref,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState,
@@ -43,6 +44,14 @@ interface AiChatInputProps {
   onStop: () => void;
   isLoading: boolean;
   disabled?: boolean;
+  /** Gates the send action only, independent of `disabled`. The textarea
+   * (and attaching) stay usable while this is true, only the send button is
+   * blocked. For a flow that requires an attachment before sending but
+   * still needs typed text to be enterable, pair this with `disabled`
+   * left unset, rather than using `disabled` alone, which would block
+   * typing too. Additive: existing callers that only set `disabled` are
+   * unaffected, since this defaults to false. */
+  sendDisabled?: boolean;
   placeholder?: string;
   hasMessages?: boolean;
   acceptedFileTypes?: string;
@@ -52,6 +61,12 @@ interface AiChatInputProps {
    * an ancestor that already provides its own edge-to-edge chrome (e.g. the
    * Teams resume band on Intake). The form itself is untouched. */
   embedded?: boolean;
+  /** Fires with the current pending-file count whenever it changes (attach,
+   * remove, or clear on submit). Pending files otherwise stay entirely
+   * internal to this component; this is the one way a caller can react to
+   * attachment presence, e.g. to gate its own send affordance on a
+   * document-only flow, without owning file state itself. */
+  onPendingFilesChange?: (count: number) => void;
   ref?: Ref<AiChatInputHandle>;
 }
 
@@ -67,12 +82,14 @@ export function AiChatInput({
   onStop,
   isLoading,
   disabled = false,
+  sendDisabled = false,
   placeholder,
   hasMessages = false,
   acceptedFileTypes,
   quotedText,
   onClearQuote,
   embedded = false,
+  onPendingFilesChange,
   ref,
 }: AiChatInputProps) {
   const { t } = useTranslation();
@@ -90,6 +107,11 @@ export function AiChatInput({
     clear: clearFiles,
   } = usePendingFiles();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    onPendingFilesChange?.(pendingFiles.length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingFiles.length]);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -245,7 +267,11 @@ export function AiChatInput({
           type="submit"
           variant="ghost"
           size="icon"
-          disabled={(!value.trim() && pendingFiles.length === 0) || disabled}
+          disabled={
+            (!value.trim() && pendingFiles.length === 0) ||
+            disabled ||
+            sendDisabled
+          }
           className="flex-shrink-0 text-white hover:text-white hover:bg-transparent disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ backgroundImage: "var(--ai-gradient-strong)" }}
           aria-label={t("send")}

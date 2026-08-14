@@ -1,6 +1,10 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+// oxlint-disable max-lines -- the envelope card, its provenance popover, and
+// every field's own edit surface live together deliberately (see the report
+// on why a split wasn't attempted without more context on this file).
+
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -12,7 +16,6 @@ import {
   type LucideIcon,
   MapPin,
   MessageSquareText,
-  Pencil,
   Quote,
   RotateCcw,
   UserRound,
@@ -43,6 +46,7 @@ import {
 import { useConversation } from "./conversation-context";
 import { ExceptionModal } from "./ExceptionModal";
 import { useFlowFooter } from "./FlowFooter";
+import { FieldEditToggle, FieldOptionList } from "./InlineFieldEditor";
 
 // Soft ease-out, matched to the rest of the flow.
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -320,6 +324,16 @@ function provenanceButtonVariant(action: ProvenancePopoverAction) {
   return action.variant === "primary" ? "default" : "secondary";
 }
 
+/** The field's own lock reason, cleared once the requester has overridden
+ * the ship-to value (nothing locks a value they've just changed). */
+function currentLockReason(
+  shipOverridden: boolean | undefined,
+  seedLockReason?: string,
+): string | undefined {
+  if (shipOverridden) return;
+  return seedLockReason;
+}
+
 /**
  * "Where this came from" popover: a fixed four-zone skeleton reused by every
  * field (Approver, Ship to, Cost center, Need by) so the popover itself never
@@ -415,7 +429,7 @@ function ProvenancePopover({
                 key={action.label}
                 size="sm"
                 variant={provenanceButtonVariant(action)}
-                className={stacked ? "w-full" : undefined}
+                className={stacked ? "w-full" : ""}
                 onClick={action.onClick}
               >
                 {action.label}
@@ -514,7 +528,6 @@ export function RequestEnvelope() {
   // just overwrite this one, since entries upsert by step.
   const { addStepEntry } = useAssistantThread();
   useEffect(() => {
-    const changedCount = Object.values(overridden).filter(Boolean).length;
     const fields: DetailField[] = FIELDS.map((field) => {
       const assumed = field.key === "need" && needByAssumed;
       return {
@@ -562,10 +575,10 @@ export function RequestEnvelope() {
     });
     // Mirror into envelopeOverrides so a later Revise re-derives the card
     // without losing this pick.
-    if (value !== INITIAL_VALUES[key]) {
-      setEnvelopeOverride(key, value);
-    } else {
+    if (value === INITIAL_VALUES[key]) {
       clearEnvelopeOverride(key);
+    } else {
+      setEnvelopeOverride(key, value);
     }
     if (key === "cost") {
       // The approver is now cascade-derived, not a direct pick — drop any
@@ -882,11 +895,10 @@ export function RequestEnvelope() {
                                   ? "Changed by you, this request only."
                                   : field.provenance.source
                               }
-                              lockReason={
-                                overridden.ship
-                                  ? undefined
-                                  : field.provenance.lockReason
-                              }
+                              lockReason={currentLockReason(
+                                overridden.ship,
+                                field.provenance.lockReason,
+                              )}
                               actions={
                                 overridden.ship
                                   ? [
@@ -1013,37 +1025,16 @@ export function RequestEnvelope() {
                           </PopoverContent>
                         </Popover>
                       )}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-label={
-                              editingKey === field.key
-                                ? `Done editing ${field.label.toLowerCase()}`
-                                : `Edit ${field.label.toLowerCase()}`
-                            }
-                            disabled={continued}
-                            onClick={() =>
-                              setEditingKey((k) =>
-                                k === field.key ? null : field.key,
-                              )
-                            }
-                            className="text-muted-foreground"
-                          >
-                            {editingKey === field.key ? (
-                              <Check className="size-3.5" aria-hidden />
-                            ) : (
-                              <Pencil className="size-3.5" aria-hidden />
-                            )}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {editingKey === field.key
-                            ? "Done"
-                            : "Change selection"}
-                        </TooltipContent>
-                      </Tooltip>
+                      <FieldEditToggle
+                        label={field.label}
+                        editing={editingKey === field.key}
+                        disabled={continued}
+                        onToggle={() =>
+                          setEditingKey((k) =>
+                            k === field.key ? null : field.key,
+                          )
+                        }
+                      />
                     </div>
                   </div>
 
@@ -1101,93 +1092,42 @@ export function RequestEnvelope() {
 
                   {/* Agent picker: current value + alternatives it already knows.
                   Closes with the reverse of the open, a touch quicker. */}
-                  <AnimatePresence>
-                    {editingKey === field.key && (
-                      <motion.div
-                        className="mt-2 space-y-1 pl-7"
-                        initial={reduceMotion ? false : { opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={
-                          reduceMotion
-                            ? { opacity: 0 }
-                            : {
-                                opacity: 0,
-                                y: -4,
-                                transition: { duration: 0.14, ease: EASE },
-                              }
-                        }
-                        transition={{ duration: 0.2, ease: EASE }}
-                      >
-                        {field.options.map((opt) => {
-                          const selected = values[field.key] === opt.value;
-                          return (
-                            <button
-                              key={opt.value}
-                              type="button"
-                              onClick={() => choose(field.key, opt.value)}
-                              className={cn(
-                                "flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors",
-                                selected
-                                  ? "border-(--primary) bg-(--primary)/5"
-                                  : "border-transparent hover:bg-muted",
-                              )}
-                            >
-                              <span
-                                className={cn(
-                                  "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
-                                  selected
-                                    ? "border-(--primary) bg-(--primary) text-white"
-                                    : "border-muted-foreground/40",
-                                )}
-                                aria-hidden
+                  <FieldOptionList
+                    options={field.options}
+                    selectedValue={values[field.key]}
+                    open={editingKey === field.key}
+                    onSelect={(value) => choose(field.key, value)}
+                  >
+                    {/* Second entry point to the same exception modal —
+                    the popover catches "why can't I change this," this
+                    catches "I'm already looking for a different value."
+                    Deliberately not option-styled (no radio, no border)
+                    so it can't be mistaken for a selectable choice — a
+                    full-width rule is the only separation, and only the
+                    link phrase is interactive. P2 only; an insert after
+                    the last option, never a replacement for it. */}
+                    <P2>
+                      {field.provenance.ownerName != null &&
+                        !shipExceptionPending && (
+                          <div className="mt-3 space-y-2">
+                            <div className="h-px w-full bg-border" />
+                            <p className="text-xs text-muted-foreground">
+                              {`Need a different ${field.label}?`}{" "}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingKey(null);
+                                  setExceptionModalOpen(true);
+                                }}
+                                className="text-(--primary) underline decoration-dotted underline-offset-2 hover:text-foreground"
                               >
-                                {selected && <Check className="size-2.5" />}
-                              </span>
-                              <span className="min-w-0">
-                                <span className="block text-sm font-medium text-foreground">
-                                  {opt.value}
-                                </span>
-                                <span className="block text-xs text-muted-foreground">
-                                  {opt.reason}
-                                </span>
-                              </span>
-                            </button>
-                          );
-                        })}
-
-                        {/* Second entry point to the same exception modal —
-                        the popover catches "why can't I change this,"
-                        this catches "I'm already looking for a different
-                        value." Deliberately not option-styled (no radio,
-                        no border) so it can't be mistaken for a
-                        selectable choice — a full-width rule is the only
-                        separation, and only the link phrase is
-                        interactive. P2 only; an insert after the last
-                        option, never a replacement for it. */}
-                        <P2>
-                          {field.provenance.ownerName != null &&
-                            !shipExceptionPending && (
-                              <div className="mt-3 space-y-2">
-                                <div className="h-px w-full bg-border" />
-                                <p className="text-xs text-muted-foreground">
-                                  {`Need a different ${field.label}?`}{" "}
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setEditingKey(null);
-                                      setExceptionModalOpen(true);
-                                    }}
-                                    className="text-(--primary) underline decoration-dotted underline-offset-2 hover:text-foreground"
-                                  >
-                                    Request an exception
-                                  </button>
-                                </p>
-                              </div>
-                            )}
-                        </P2>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                                Request an exception
+                              </button>
+                            </p>
+                          </div>
+                        )}
+                    </P2>
+                  </FieldOptionList>
                 </motion.div>
               );
             })}

@@ -27,7 +27,8 @@ import {
   RECOMMENDATION,
 } from "./data";
 import { FlowFooterBar } from "./FlowFooter";
-import { CATALOG_PHASES, FlowPhaseBar } from "./FlowPhaseBar";
+import { FlowPhaseBar } from "./FlowPhaseBar";
+import { CATALOG_PHASES } from "./flow-phases";
 import { ShelfDock } from "./ShelfDock";
 import { useContentOverflow } from "./use-content-overflow";
 
@@ -99,8 +100,9 @@ export function Review() {
       shipTo: DEFAULT_SHIP_TO,
       needBy: DEFAULT_NEED_BY,
     });
+    // reload-only seed — never re-fires as the user empties the cart
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // reload-only seed — never re-fires as the user empties the cart
+  }, []);
 
   const approver = requestDetails?.approver ?? DEFAULT_APPROVER;
   const costCenter = requestDetails?.costCenter ?? DEFAULT_COST_CENTER;
@@ -143,12 +145,16 @@ export function Review() {
   // a registered history-state key (see Selection.tsx's reviewSubmit), hence the cast.
   const cameFromCatalog = useRouterState({
     // biome-ignore lint/suspicious/noExplicitAny: see comment above
+    // oxlint-disable-next-line no-explicit-any -- see comment above
     select: (s) => (s.location.state as any).from === "catalog",
   });
-  const goBack = () =>
-    cameFromCatalog
-      ? void navigate({ to: "/catalog" })
-      : void navigate({ to: "/buy", state: { fromReview: true } });
+  const goBack = () => {
+    if (cameFromCatalog) {
+      void navigate({ to: "/catalog" });
+    } else {
+      void navigate({ to: "/buy", state: { fromReview: true } });
+    }
+  };
 
   return (
     <motion.div
@@ -164,7 +170,9 @@ export function Review() {
             subject={null}
             context="review"
             onClose={() => setShelfDockOpen(false)}
-            onCorrectionMade={() => {}}
+            onCorrectionMade={() => {
+              // No correction surface wired for this review context yet.
+            }}
           />
         )}
       </AnimatePresence>
@@ -175,7 +183,7 @@ export function Review() {
               contentRef={contentRef}
               stepKey="review"
               title="Review & submit"
-              subtext={undefined}
+              subtext={null}
               hideBrand
               phaseBar={
                 <FlowPhaseBar

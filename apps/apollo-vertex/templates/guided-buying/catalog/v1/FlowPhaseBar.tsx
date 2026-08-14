@@ -1,8 +1,5 @@
 import { JourneyBar, type JourneyStage } from "../../JourneyBar";
 
-export const CATALOG_PHASES = ["Details", "Choose", "Review", "Done"] as const;
-export const NON_CATALOG_PHASES = ["Details", "Sent"] as const;
-
 interface FlowPhaseBarProps {
   phases: readonly string[];
   /** 0-based index of the currently active phase. */
@@ -24,8 +21,9 @@ export function FlowPhaseBar({
     label,
     state:
       i < currentIndex ? "done" : i === currentIndex ? "active" : "upcoming",
-    onClick:
-      i < currentIndex && onClickPhase ? () => onClickPhase(i) : undefined,
+    ...(i < currentIndex && onClickPhase
+      ? { onClick: () => onClickPhase(i) }
+      : {}),
   }));
 
   return <JourneyBar stages={stages} labelPosition="inline" />;

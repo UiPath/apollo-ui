@@ -6,12 +6,38 @@ import { ArrowLeft, Plus, ShoppingCart } from "lucide-react";
 import type { ReactNode, Ref } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { CartDrawer } from "./CartDrawer";
 import { useCart } from "./cart-context";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+// Marcus's own long-standing value, unchanged from before this prop
+// existed. His own phase bar (four phases, short labels) stays narrow at
+// every width this app is used at, so this was never the source of the
+// reported collision and needs no tightening on his account. Kept as the
+// default so a caller that doesn't pass headerTitleMaxWidth renders
+// exactly as it always has.
+const DEFAULT_HEADER_TITLE_MAX_WIDTH = "max-w-[320px]";
+
+/** Splits a filename at its final dot so the extension can stay fixed while
+ * only the leading portion truncates, the elision landing between the two
+ * rather than swallowing the extension's own meaning. No extension found
+ * (no dot, or a leading dot only) returns the whole string as the base. */
+function splitFilename(filename: string): { base: string; extension: string } {
+  const dotIndex = filename.lastIndexOf(".");
+  if (dotIndex <= 0) return { base: filename, extension: "" };
+  return {
+    base: filename.slice(0, dotIndex),
+    extension: filename.slice(dotIndex),
+  };
+}
 
 interface BuyScaffoldProps {
   /** The active step. Changing it animates the title/subtext out and in. */
@@ -35,6 +61,20 @@ interface BuyScaffoldProps {
    * exists) — the chrome band's left-slot thread title, in place of onBack.
    */
   headerTitle: string;
+  /** "end" (default): CSS ellipsis at the tail, how a typed ask has always
+   * truncated. "middle": splits headerTitle at its final dot and truncates
+   * only the leading portion, keeping the extension intact and adding a
+   * tooltip with the untruncated string, for a filename whose extension
+   * carries meaning. Additive: existing callers omit this and render
+   * exactly as before. */
+  headerTitleTruncate?: "end" | "middle";
+  /** Reserves the left slot's own width (a Tailwind arbitrary max-width
+   * class, e.g. "max-w-[320px]") so it always leaves a gutter before the
+   * centered phase bar. Defaults to Marcus's own value. A caller whose own
+   * phase bar is wider (more phases, longer labels) needs a tighter budget
+   * to keep a real gutter and should pass its own, computed against its
+   * own phase bar rather than this component guessing at it. */
+  headerTitleMaxWidth?: string;
   /** True while the assistant panel is open — hides the header's own trigger. */
   assistantOpen: boolean;
   /** Opens the assistant panel (the header's ✦ trigger, beside the title). */
@@ -66,6 +106,8 @@ export function BuyScaffold({
   phaseBar,
   hideBrand = false,
   headerTitle,
+  headerTitleTruncate = "end",
+  headerTitleMaxWidth = DEFAULT_HEADER_TITLE_MAX_WIDTH,
   assistantOpen,
   onOpenAssistant,
   contentRef,
@@ -185,12 +227,36 @@ export function BuyScaffold({
                       </Button>
                     </>
                   )}
-                  <span
-                    title={headerTitle}
-                    className="max-w-[320px] truncate text-xs font-semibold text-foreground"
-                  >
-                    {headerTitle}
-                  </span>
+                  {headerTitleTruncate === "middle" ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span
+                          className={cn(
+                            headerTitleMaxWidth,
+                            "flex min-w-0 items-center text-xs font-semibold text-foreground",
+                          )}
+                        >
+                          <span className="truncate">
+                            {splitFilename(headerTitle).base}
+                          </span>
+                          <span className="shrink-0">
+                            {splitFilename(headerTitle).extension}
+                          </span>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>{headerTitle}</TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <span
+                      title={headerTitle}
+                      className={cn(
+                        headerTitleMaxWidth,
+                        "truncate text-xs font-semibold text-foreground",
+                      )}
+                    >
+                      {headerTitle}
+                    </span>
+                  )}
                 </motion.div>
               )
             )}

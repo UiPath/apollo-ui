@@ -25,7 +25,8 @@ import {
   RECOMMENDATION,
 } from "./data";
 import { FlowFooterBar } from "./FlowFooter";
-import { CATALOG_PHASES, FlowPhaseBar } from "./FlowPhaseBar";
+import { FlowPhaseBar } from "./FlowPhaseBar";
+import { CATALOG_PHASES } from "./flow-phases";
 import { BrandMark } from "./ScanRow";
 import { ShelfDock } from "./ShelfDock";
 import { useContentOverflow } from "./use-content-overflow";
@@ -121,8 +122,9 @@ export function CatalogSubmitted() {
       shipTo: DEFAULT_SHIP_TO,
       needBy: DEFAULT_NEED_BY,
     });
+    // reload-only seed — never re-fires as the cart empties on exit
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // reload-only seed — never re-fires as the cart empties on exit
+  }, []);
 
   // Register this submission in the shared requests log (idempotent via provider).
   const hasSubmitted = useRef(false);
@@ -143,7 +145,7 @@ export function CatalogSubmitted() {
       request: requestTitle ?? cartDesc,
       // The verbatim prompt, preserved for the detail sidebar's "Your
       // request" field — never shown truncated.
-      prompt: requestText ?? undefined,
+      ...(requestText == null ? {} : { prompt: requestText }),
       requester: "Marcus Webb",
       supplier: items[0]?.vendor ?? "Lenovo",
       department: costCenter.split(" · ")[0],
@@ -169,8 +171,9 @@ export function CatalogSubmitted() {
       `With ${approver} for approval.`,
       "You'll be notified when it's decided.",
     ]);
+    // re-checked once the seed effect's cart update lands
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items.length]); // re-checked once the seed effect's cart update lands
+  }, [items.length]);
 
   // Shared by the header's "New request" control and the footer's
   // secondary button — the reset itself happens once BuyFlow mounts fresh
@@ -195,7 +198,9 @@ export function CatalogSubmitted() {
             subject={null}
             context="review"
             onClose={() => setShelfDockOpen(false)}
-            onCorrectionMade={() => {}}
+            onCorrectionMade={() => {
+              // No correction surface wired for this finish-line context yet.
+            }}
           />
         )}
       </AnimatePresence>
@@ -206,7 +211,7 @@ export function CatalogSubmitted() {
               contentRef={contentRef}
               stepKey="submitted"
               title="Request submitted"
-              subtext={undefined}
+              subtext={null}
               hideBrand
               phaseBar={
                 <FlowPhaseBar phases={CATALOG_PHASES} currentIndex={3} />

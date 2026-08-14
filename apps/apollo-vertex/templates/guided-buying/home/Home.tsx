@@ -1,5 +1,6 @@
 "use client";
 
+import type { ContentPart } from "@tanstack/ai";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   CheckCircle2,
@@ -9,7 +10,7 @@ import {
   Package,
   Search,
 } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
@@ -21,6 +22,7 @@ import { BuyScaffold } from "../catalog/v1/BuyScaffold";
 import { useConversation } from "../catalog/v1/conversation-context";
 import { CATALOG_STARTER, STARTER_SUGGESTIONS } from "../catalog/v1/data";
 import { TeamsResumeCard } from "../catalog/v1/TeamsResumeCard";
+import { shouldEnterJ3Intake } from "../intake/routing";
 import { P1 } from "../P1";
 import { P2 } from "../P2";
 import {
@@ -33,8 +35,9 @@ import {
 } from "../requests/data";
 import { useRequests } from "../requests/requests-context";
 import { useTier } from "../tier-context";
+import { useAttachmentGate } from "../use-attachment-gate";
 
-// Same 6-line helper as BuyFlow's own (module-private there too) — not
+// Same 6-line helper as BuyFlow's own (module-private there too), not
 // hoisted, since /buy stays untouched this pass. See the report.
 function timeOfDayGreeting() {
   const hour = new Date().getHours();
@@ -43,14 +46,14 @@ function timeOfDayGreeting() {
   return "Good evening";
 }
 
-// The composer fills with this on the laptops chip, then submits it — the
+// The composer fills with this on the laptops chip, then submits it, the
 // actual requestText that ends up on Details (the Request row, the Need by
 // popover's quoted phrase). Not the same string as the chip's own label or
 // STARTER_SUGGESTIONS' bare value: this one reads as something a person
 // typed, first person, since the audience watches it land before it submits.
 const LAPTOPS_CHIP_TEXT = "I need 15 laptops for Fusion Event contractors";
 
-/** What the requester owes, if anything — the row's inline action button.
+/** What the requester owes, if anything, the row's inline action button.
  * Awaiting approval and the agent still working are someone/something
  * else's turn; only these two states put the ball back in the requester's
  * court. */
@@ -64,7 +67,7 @@ function ownedAction(
 }
 
 // P1: factual status only, no first person. P2 (below): the same row's
-// agent-voice line, appended, not swapped in. Home-specific copy — distinct
+// agent-voice line, appended, not swapped in. Home-specific copy, distinct
 // from RequestWindow/MyRequestsList's own narrative fields, which serve a
 // different surface with different wording needs.
 const HOME_ROW_COPY: Record<string, { status: string; note: string }> = {
@@ -87,9 +90,9 @@ const HOME_ROW_COPY: Record<string, { status: string; note: string }> = {
 };
 
 // Written by DecisionWindow's Approve action, read here in place of the
-// row's own static copy — P2 additionally appends the order-placed line
+// row's own static copy, P2 additionally appends the order-placed line
 // (see the <P2> wrap at the call site), it never replaces this one. Keyed
-// to REQ-2052 specifically, not to "approved" alone — this is the one
+// to REQ-2052 specifically, not to "approved" alone, this is the one
 // scenario with an approval write today, not a general status model.
 function homeRowCopy(
   row: RequestRow,
@@ -110,7 +113,7 @@ function homeRowCopy(
   );
 }
 
-// One icon family (lucide, outline), one size, one color (text-muted) — the
+// One icon family (lucide, outline), one size, one color (text-muted), the
 // stage itself, never who or what supplier is holding it. That's named in
 // the row's own subtitle text now, not encoded here.
 const STAGE_ICON: Record<RequestStatus, typeof Package> = {
@@ -130,7 +133,7 @@ function updatedTime(dateStr: string): number {
 function RequestsSection({ rows }: { rows: RequestRow[] }) {
   const navigate = useNavigate();
   const { requestStatusOverrides } = useRequests();
-  const sorted = [...rows].sort((a, b) => {
+  const sorted = rows.toSorted((a, b) => {
     const aOwed = ownedAction(a, REQUEST_DETAILS[a.id]) != null;
     const bOwed = ownedAction(b, REQUEST_DETAILS[b.id]) != null;
     if (aOwed !== bOwed) return aOwed ? -1 : 1;
@@ -157,11 +160,11 @@ function RequestsSection({ rows }: { rows: RequestRow[] }) {
           const action = ownedAction(row, detail);
           const approved = requestStatusOverrides[row.id] === "approved";
           const copy = homeRowCopy(row, detail, approved);
-          // Two renderings of the same icon, gated not branched — same
+          // Two renderings of the same icon, gated not branched, same
           // pattern as the stage bar on the request detail page.
           const IconApproved = STAGE_ICON[approved ? "approved" : row.status];
           const IconOrdered = STAGE_ICON[approved ? "ordered" : row.status];
-          // A <div> row, not a <button> — it holds the inline action as a
+          // A <div> row, not a <button>, it holds the inline action as a
           // real nested <button> when one applies, and HTML can't nest
           // interactive controls. tabIndex/onKeyDown keep the whole row
           // keyboard-operable in its place.
@@ -197,7 +200,7 @@ function RequestsSection({ rows }: { rows: RequestRow[] }) {
                   <p className="truncate text-sm font-medium text-foreground">
                     {row.request}
                   </p>
-                  {/* The one stage that earns emphasis on this screen — never
+                  {/* The one stage that earns emphasis on this screen, never
                       carried by the icon's color. */}
                   {row.status === "delivered" && (
                     <Badge
@@ -212,7 +215,7 @@ function RequestsSection({ rows }: { rows: RequestRow[] }) {
                 <p className="truncate text-xs text-muted-foreground">
                   {copy.status}
                 </p>
-                {/* Appended, not swapped in — the P1 line above still renders
+                {/* Appended, not swapped in, the P1 line above still renders
                     in P2. */}
                 <P2>
                   <p className="truncate text-xs text-muted-foreground">
@@ -256,15 +259,51 @@ function RequestsSection({ rows }: { rows: RequestRow[] }) {
   );
 }
 
+export interface HomeProps {
+  /** Composer placeholder. Defaults to the catalog flow's own hardcoded
+   * text, itself unresolved copy rather than a derived value (see the
+   * report on Home's own defaults). */
+  placeholder?: string;
+  /** Starter suggestion chips below the composer. Empty renders no chip
+   * row at all, rather than an authored substitute. */
+  starterSuggestions?: { label: string; value: string }[];
+  /** Requests list rows. Omit to use the catalog flow's own submitted +
+   * seeded rows; pass an empty array for a persona with nothing to show
+   * yet rather than inventing content for it. */
+  requestRows?: RequestRow[];
+  /** Called with the composer's trimmed text on submit. Defaults to the
+   * catalog flow's own seed-and-navigate-to-Bridge behavior. */
+  onSubmit?: (text: string) => void;
+  /** Whether the P2 Teams-resume band can show. Off for a persona with no
+   * equivalent resume scenario. */
+  showResumeBand?: boolean;
+  /** When true, the composer's send stays disabled until an attachment is
+   * present, typed text alone does not enable it. Off (the default) leaves
+   * Marcus's own catalog flow unchanged, which accepts typed text alone. */
+  requireAttachment?: boolean;
+  /** Line beneath the composer (and chips, when present), the same position
+   * and treatment as /buy's own bare-intake footnote. Omitted by default,
+   * since Marcus's own /home carries none, only his bare flow route does. */
+  footnote?: ReactNode;
+}
+
 /**
- * The requester landing — a centered composer (identical to /buy's Intake)
- * plus, beneath it, up to 4 of the requester's own requests. Submitting
- * (free text, Enter, or the laptops chip) seeds the conversation and jumps
- * straight to /buy's Details (bridge) step, the same request text becoming
- * the single source for that step's Request row and Need by popover. The
- * other two chips don't have a built Details step yet — see the report.
+ * The requester landing, a centered composer (identical to /buy's Intake)
+ * plus, beneath it, up to 4 of the requester's own requests. Configuration
+ * only, no persona branching inside this component: every persona-specific
+ * difference (placeholder, chips, rows, what submitting does) comes in as a
+ * prop, with these defaults reproducing today's catalog-flow behavior
+ * exactly when omitted, so Marcus's own call site needs no changes.
  */
-export function Home() {
+export function Home({
+  placeholder = "Describe the item, quantity, and who it's for…",
+  starterSuggestions = STARTER_SUGGESTIONS,
+  requestRows,
+  onSubmit,
+  showResumeBand = true,
+  requireAttachment = false,
+  footnote,
+}: HomeProps = {}) {
   const navigate = useNavigate();
   const { user } = useUser();
   const { tier } = useTier();
@@ -272,40 +311,56 @@ export function Home() {
   const [resumeDismissed, setResumeDismissed] = useState(false);
   const { submittedRows } = useRequests();
   const { sendCatalogRequest } = useConversation();
+  const { hasAttachment, onPendingFilesChange } = useAttachmentGate();
   // Same band as /buy's own Intake: the Teams-resume card sits fused above
   // the composer, P2 only, until dismissed.
-  const showBand = tier === "p2" && !resumeDismissed;
+  const showBand = showResumeBand && tier === "p2" && !resumeDismissed;
 
   const seen = new Set<string>();
-  const allRows = [...submittedRows, ...REQUEST_ROWS].filter((r) => {
+  const defaultRows = [...submittedRows, ...REQUEST_ROWS].filter((r) => {
     if (seen.has(r.id)) return false;
     seen.add(r.id);
     return true;
   });
+  const allRows = requestRows ?? defaultRows;
 
   const greeting = `${timeOfDayGreeting()}, ${user?.first_name ?? "there"}.`;
 
   // Seeds the conversation with this exact text, then lands on the real,
-  // addressable Details URL rather than a bare /buy — /buy?phase=bridge is
+  // addressable Details URL rather than a bare /buy. /buy?phase=bridge is
   // what lets BuyFlow's own mount effect skip its reset-on-arrival and keep
   // what was just seeded instead of overwriting it with the canonical demo
-  // default (see the report).
+  // default (see the report). Marcus's own default onSubmit; not called at
+  // all for a caller that supplies its own.
   const submitToDetails = (text: string) => {
     sendCatalogRequest(text);
     void navigate({ to: "/buy", search: { phase: "bridge" } });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (parts?: ContentPart[]) => {
     const text = input.trim();
+    // Document-led personas (requireAttachment) gate on the attachment,
+    // not on typed text, reusing the one function that decides "was
+    // something attached" rather than a second check of its own. Typed
+    // text alone is not enough, but it isn't required either, an
+    // attachment with no text is a valid submit.
+    if (requireAttachment) {
+      if (!shouldEnterJ3Intake(parts)) return;
+      (onSubmit ?? submitToDetails)(text);
+      return;
+    }
     if (!text) return;
-    submitToDetails(text);
+    (onSubmit ?? submitToDetails)(text);
   };
 
+  // Only reachable when starterSuggestions is non-empty, so this stays the
+  // catalog flow's own logic unconditionally rather than needing its own
+  // configuration.
   const handleChipSelect = (value: string) => {
     if (value !== CATALOG_STARTER) {
       // Q3 rebrand and the mobile-lines contract don't have a built Details
-      // step in this prototype (they're separate, non-addressable phases) —
-      // routing them here would land on intake, not a bridge. See the report.
+      // step in this prototype (they're separate, non-addressable phases).
+      // Routing them here would land on intake, not a bridge. See the report.
       void navigate({ to: "/buy" });
       return;
     }
@@ -319,16 +374,18 @@ export function Home() {
       stepKey="home"
       eyebrow={greeting}
       title="What can I get for you?"
-      subtext={undefined}
+      subtext={null}
       headerTitle=""
       assistantOpen={false}
-      onOpenAssistant={() => {}}
+      onOpenAssistant={() => {
+        // No assistant surface wired for the home screen yet.
+      }}
     >
       <div className="mx-auto w-full">
         <P2>
-          {!resumeDismissed && (
+          {showResumeBand && !resumeDismissed && (
             <TeamsResumeCard
-              // Re-sends as a new request; does not load a persisted draft —
+              // Re-sends as a new request; does not load a persisted draft,
               // same behavior as /buy's own Intake band.
               onResume={() => submitToDetails(CATALOG_STARTER)}
               onDismiss={() => setResumeDismissed(true)}
@@ -336,27 +393,41 @@ export function Home() {
           )}
         </P2>
         {/* The band sits directly above, inset 8px narrower with its own
-            bottom shadow — a distinct layered piece, not fused to the
+            bottom shadow, a distinct layered piece, not fused to the
             composer's edges. */}
         <div className={cn(showBand && "relative z-10")}>
           <AiChatInput
             value={input}
             onChange={setInput}
             onSubmit={handleSubmit}
-            onStop={() => {}}
+            onStop={() => {
+              // Nothing to cancel: submissions here are synchronous.
+            }}
             isLoading={false}
-            placeholder="Describe the item, quantity, and who it's for…"
+            placeholder={placeholder}
             acceptedFileTypes="image/*,.pdf,.csv,.xlsx,.docx,.txt"
+            // Send, not typing, is what requires an attachment: the
+            // textarea stays usable either way (see the report on the
+            // AiChatInput registry change this depends on).
+            sendDisabled={requireAttachment && !hasAttachment}
+            {...(requireAttachment ? { onPendingFilesChange } : {})}
             // Flush with the requests card's edges below, rather than the
             // default inset meant for a composer that's the only thing on
             // screen (see the prop's own doc comment).
             embedded
           />
         </div>
-        <AiChatEmptySuggestions
-          suggestions={STARTER_SUGGESTIONS}
-          onSelect={handleChipSelect}
-        />
+        {starterSuggestions.length > 0 && (
+          <AiChatEmptySuggestions
+            suggestions={starterSuggestions}
+            onSelect={handleChipSelect}
+          />
+        )}
+        {footnote != null && (
+          <p className="flex items-center justify-center gap-1.5 pt-3 text-center text-xs text-muted-foreground">
+            {footnote}
+          </p>
+        )}
       </div>
 
       {allRows.length > 0 && <RequestsSection rows={allRows} />}
