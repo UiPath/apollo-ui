@@ -23,15 +23,15 @@ pnpm --filter @uipath/apollo-react test -- ConnectedHandlesContext.perf
 pnpm --filter @uipath/apollo-react bench
 ```
 
-## Baseline numbers
+## Current numbers (post-fix)
 
 Vitest bench, happy-dom, dev container (2026-08). Means, xyflow store hooks
 stubbed so numbers isolate our per-node code from xyflow internals.
 
 | Scenario | Mean |
 | --- | --- |
-| Mount 500 BaseNodes | ~372 ms |
-| Mount 1 BaseNode (per-node floor) | ~1.5 ms |
+| Mount 500 BaseNodes | ~412 ms |
+| Mount 1 BaseNode (per-node floor) | ~1.7 ms |
 | Position-only re-render sweep across 500 nodes (memo fast path) | ~2.7 ms |
 | Toggle selection of 1 node among 500 | ~3.9 ms |
 | `resolveHandles` static manifest x 500 | ~0.49 ms |
@@ -74,90 +74,86 @@ These are the load-bearing design decisions; the new tests exist to keep them.
 8. **Memoized leaf components**: `NodeLabel`, `BaseInnerShape`,
    `ExecutionStatusIndicator` are `memo`-wrapped.
 
-## Findings (ranked)
+## Findings (ranked) and fixes
 
-None of these block 500 nodes today; they are the places that will hurt first
-at or beyond this scale, with suggested fixes.
+All code findings from the audit are FIXED (2026-08); each fix is pinned by a
+regression test. F7 remains a consumer contract to be aware of.
 
-### F1. Handles are resolved twice per node (medium, wasted CPU)
+### F1. Handles were resolved twice per node — FIXED
 
-`BaseNode` resolves manifest handles (`BaseNode.tsx:189-223`, `resolveHandles`)
-and passes the resolved groups to `useButtonHandles`, which calls
-`resolveHandles` **again** on the already-resolved configuration
-(`ButtonHandle/useButtonHandles.tsx:69`), re-running template replacement
-(regex over every handle id/label) and re-allocating every group/handle object.
-At 500 nodes with repeat-expanded handles this is the single largest avoidable
-cost in the render path (~5ms per full sweep, twice). `useButtonHandles` also
-subscribes to node data via `useNodesData` even though `BaseNode` already
-receives `data` as a prop, adding a second per-node store subscription.
+`BaseNode` resolved manifest handles and passed the output to
+`useButtonHandles`, which called `resolveHandles` **again** on the
+already-resolved configuration, re-running template replacement (regex over
+every handle id/label) and re-allocating every group/handle object per node
+per invalidation.
 
-*Suggestion:* let `useButtonHandles` accept pre-resolved handles (skip
-re-resolution when the input is already resolved), or resolve once in
-`BaseNode` and share the result.
+*Fix:* `BaseNode` now resolves ONCE for every handle source (context override,
+data override, manifest default) and passes `preResolved` to
+`useButtonHandles`, which skips its internal resolution and its node-data memo
+dependency on that path. Other callers (TriggerNode, StageNodeHandles) keep the
+old behavior by default. Side benefit: override configs with `repeat`/template
+handles are now resolved before height computation, so dynamic handles from
+overrides count correctly toward the handle floor.
+*Guard:* "resolves handle configurations exactly once per node on mount".
 
-### F2. Connect-gesture invalidates all nodes AND their toolbar/adornment memos (medium, interaction hiccup)
+### F2. Connect gestures re-resolved toolbars/adornments on all nodes — FIXED
 
-`useStore(selectIsConnecting)` (`BaseNode.tsx:127`) re-renders every visible
-node when a connection drag starts/ends. Showing handles everywhere is
-intentional, but `isConnecting` is also folded into `statusContext`
-(`BaseNode.tsx:135-155`), whose identity change re-runs `resolveToolbar`
-(allocates fresh action objects, closures, and icon React elements per action
-per node, `utils/toolbar-resolver.tsx:159-209`) and `resolveAdornments` for all
-500 nodes, twice per gesture (start + end).
+`isConnecting`, `isSelected`, and `isDragging` were folded into
+`statusContext`, whose identity change re-ran `resolveToolbar` (fresh action
+objects, closures, and icon React elements per action per node) and
+`resolveAdornments` for all 500 nodes, twice per connect gesture. Neither
+resolver reads interaction state.
 
-*Suggestion:* drop `isConnecting` from `statusContext` (neither
-`resolveToolbar` nor `resolveAdornments` branches on it today) or split the
-memo so toolbar/adornment resolution only depends on the fields it reads.
+*Fix:* `statusContext` now carries only identity + status + mode
+(`BaseNode.tsx`, and the same pattern in `LoopNode.tsx`).
+Interaction-dependent toolbar behavior (offsets, visibility) already lived in
+`offsetToolbar` and the NodeToolbar props, which remain fully reactive.
+*Guard:* "starting a connect gesture does not re-resolve the toolbar config".
 
-### F3. Execution/validation status contexts re-render every node per update (medium, debug/run mode)
+### F3. Execution/validation hooks double-rendered per update — FIXED
 
-`useNodeExecutionState` / `useElementValidationStatus`
-(`hooks/ExecutionStatusContext.tsx`, `hooks/ValidationStatusContext.tsx`) read
-state in an effect keyed on context identity. To publish any node's execution
-update, the provider must swap the context value, which re-renders **all** N
-nodes (then a second render for nodes whose state actually changed, via
-`setState`). During an active run with frequent status updates this is N
-renders per tick. It also adds two `useState`+`useEffect` pairs per node.
+`useNodeExecutionState` / `useElementValidationStatus` read state via
+setState-in-effect: every published update cost a context render plus a second
+setState render, and the state was unavailable on the first render. Two
+`useState`+`useEffect` pairs per node besides.
 
-*Suggestion:* adopt the `ConnectedHandlesStore` pattern (per-node
-subscriptions over `useSyncExternalStore`) so a status update renders only the
-affected node. The regression test in `ConnectedHandlesContext.perf.test.tsx`
-shows the target behavior.
+*Fix:* the hooks now read the getter during render, memoized on context
+identity. Same provider contract (publish by swapping the context value), half
+the renders per update, state available on first render, no per-node effects.
+*Guard:* `hooks/ExecutionStatusContext.test.tsx`.
+*Still recommended (API change, not done):* a store+selector
+(`ConnectedHandlesStore` pattern) so an update renders only the affected node
+instead of all N; requires changing the provider contract consumers inject.
 
-### F4. Mount write burst: one store write + one internals update per node (low, one-time)
+### F4. Mount write burst — MITIGATED (seeding API added)
 
-On first mount each node writes its computed height (`updateNode`) and calls
-`updateNodeInternals` (`BaseNode.tsx:280-285`): 500 store writes + 500
-internals recalculations. Each `updateNode` triggers an O(n) nodes-array pass
-in the store, so the burst is O(n^2)-ish at mount. It converges (verified: max
-one write per node) but is avoidable.
+Each node writes its computed height (`updateNode`) + `updateNodeInternals`
+on first mount: 500 store writes for a fresh 500-node graph. The write-back is
+guarded, so a node whose `height` is already correct writes nothing.
 
-*Suggestion:* seed `height` when nodes are created
-(`NodeTypeRegistry.createDefaultData` knows the manifest and could compute it)
-so the guard `getNode(id)?.height !== computedHeight` skips the write. The
-"seeded nodes perform zero writes" test pins that fast path.
+*Fix:* the height rule is extracted to `computeBaseNodeHeight`
+(`utils/node-height.ts`, exported from canvas utils). Consumers can seed
+`node.height` at creation and skip the mount write entirely; BaseNode uses the
+same function, so the two can never drift.
+*Guard:* "performs zero height writes when node.height is already correct".
 
-### F5. Stale memo: `toolbarSideHandleAffordances` omits `useSmartHandles` (low, correctness)
+### F5. Stale memo: `toolbarSideHandleAffordances` omitted `useSmartHandles` — FIXED
 
-`BaseNode.tsx:451-467` reads `useSmartHandles` but only lists
-`[toolbarPosition, handleConfigurations]` as deps. Usually masked because
-`handleConfigurations` recomputes when `data` changes, but when handle configs
-come from the context override (`handleConfigurationsProp`) and
-`data.useSmartHandles` flips, the memo serves a stale affordance and the
-toolbar offset can be wrong. Add the dep.
+The memo read `useSmartHandles` without listing it, serving a stale toolbar
+offset when handle configs came from the context override and
+`data.useSmartHandles` flipped. The dependency is now listed.
 
-### F6. `handleConfigurations` memo depends on the whole `data` object (low)
+### F6. Any `data` change invalidated handle configs — FIXED
 
-`BaseNode.tsx:189-223`: any `data` change (e.g. a label rename) produces a new
-`handleConfigurations` array identity even when handles are unchanged, which
-re-triggers the height effect and `updateNodeInternals` (a DOM re-measure of
-the node), plus downstream handle-element memos. Fine for single-node edits;
-bulk data updates would measure every touched node.
+A label rename produced a new `handleConfigurations` identity even when no
+handle changed, re-triggering `updateNodeInternals` (a DOM re-measure) and
+handle-element rebuilds.
 
-*Suggestion:* if bulk `updateNodeData` sweeps become a use case, memoize on the
-narrow inputs `resolveHandles` actually reads (`data.handleConfigurations`,
-`data.inputs`, `data.isCollapsed`) or deep-compare the resolved output before
-adopting a new identity.
+*Fix:* resolution output is value-compared (`areResolvedHandleGroupsEqual`,
+shallow per group/handle, functions and nested objects by reference) and the
+previous identity is kept when nothing resolved differently. Conservative by
+construction: a false negative costs one old-style re-render, never staleness.
+*Guard:* "a label-only data edit keeps handle config identity".
 
 ### F7. Consumer contract: `data` must be reference-stable (informational)
 
@@ -165,6 +161,26 @@ All of the memoization relies on consumers not recreating `node.data` (or
 `BaseNodeOverrideConfig` values) on every parent render. A consumer that maps
 `nodes` to fresh `data` objects per render silently disables every guard above.
 The perf tests document the expected pattern (stable arrays, spread-per-change).
+
+## Measured improvements (before → after fixes)
+
+Counted invariants are exact and test-pinned; wall-clock rows are vitest bench
+means on an idle dev container (happy-dom), same machine, sequential runs.
+
+| Scenario (500 nodes) | Before | After |
+| --- | --- | --- |
+| `resolveHandles` passes on mount | 1,000 (2/node) | 500 (1/node) |
+| Toolbar + adornment resolver runs per connect gesture (start+end) | 2,000 | 0 |
+| Renders per node per execution/validation update | 2 | 1 |
+| Execution state available on first render | no (undefined until 2nd) | yes |
+| DOM re-measures (`updateNodeInternals`) after a label-only edit | 1 | 0 |
+| Height store writes on mount, heights seeded via `computeBaseNodeHeight` | no seeding API | 0 |
+| Stale toolbar offset when `useSmartHandles` flips under context override | possible | fixed |
+| Mount 500 BaseNodes (bench mean) | ~488 ms | ~412 ms (−15%) |
+| Mount 500 BaseNodes (bench min) | ~418 ms | ~365 ms (−13%) |
+
+Steady-state numbers that were already flat stayed flat (position-only sweep
+~2.6 ms, single-node selection ~3.4 ms, pure resolvers unchanged).
 
 ## Regression guards
 
@@ -176,6 +192,14 @@ The perf tests document the expected pattern (stable arrays, spread-per-change).
 - position-only prop sweeps (container drag frames) render zero node bodies
 - selecting / hovering / editing data on one node re-renders exactly that node
 - `updateNodeInternals` called exactly once per node on mount
+- `resolveHandles` runs exactly once per node on mount (no double resolution)
+- a connect gesture never re-resolves toolbar configs (identity-stable)
+- a label-only data edit triggers no re-measure and no height write
+
+`hooks/ExecutionStatusContext.test.tsx`:
+
+- execution/validation state is available on the FIRST render
+- each published update costs exactly one render per subscriber
 
 `ConnectedHandlesContext.perf.test.tsx` (N=500):
 

@@ -2,10 +2,12 @@ import { useNodesData } from '@xyflow/react';
 import type { Position } from '@xyflow/system';
 import { useMemo } from 'react';
 import type { HandleGroupManifest } from '../../schema/node-definition';
-import { resolveHandles } from '../../utils/manifest-resolver';
+import { type ResolvedHandleGroup, resolveHandles } from '../../utils/manifest-resolver';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import type { HandleActionEvent, HandleMouseEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
+
+const EMPTY_DATA: Record<string, unknown> = {};
 
 export const useButtonHandles = ({
   handleConfigurations,
@@ -22,6 +24,7 @@ export const useButtonHandles = ({
   nodeWidth,
   nodeHeight,
   portalActions,
+  preResolved,
 }: {
   handleConfigurations: HandleGroupManifest[];
   shouldShowHandles: boolean;
@@ -36,6 +39,14 @@ export const useButtonHandles = ({
   nodeWidth?: number;
   nodeHeight?: number;
   portalActions?: boolean;
+
+  /**
+   * Set when `handleConfigurations` is already the output of `resolveHandles`
+   * (templates replaced, repeats expanded, visibility booleans resolved).
+   * Skips the hook's internal resolution pass and its node-data dependency,
+   * so the same configuration is never resolved twice per render.
+   */
+  preResolved?: boolean;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -58,6 +69,10 @@ export const useButtonHandles = ({
   const connectedHandleIds = useConnectedHandles(nodeId);
   const node = useNodesData(nodeId);
 
+  // When the input is pre-resolved, node data is not read for resolution; a
+  // stable empty object keeps data changes from invalidating the memo below.
+  const dataForResolution = preResolved ? EMPTY_DATA : (node?.data ?? EMPTY_DATA);
+
   const handleElements = useMemo(() => {
     if (
       !handleConfigurations ||
@@ -66,7 +81,9 @@ export const useButtonHandles = ({
     )
       return <></>;
 
-    const resolvedHandles = resolveHandles(handleConfigurations, node?.data ?? {});
+    const resolvedHandles = preResolved
+      ? (handleConfigurations as unknown as ResolvedHandleGroup[])
+      : resolveHandles(handleConfigurations, dataForResolution);
 
     const elements = resolvedHandles.map((config, i) => {
       const groupVisible = shouldShowHandles && (config.visible ?? true);
@@ -120,7 +137,8 @@ export const useButtonHandles = ({
     nodeWidth,
     nodeHeight,
     portalActions,
-    node?.data,
+    dataForResolution,
+    preResolved,
   ]);
 
   return handleElements;

@@ -16,21 +16,34 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { rfNodeStore, rfState, mockUpdateNode, mockGetNode, mockUpdateNodeInternals, labelRenders } =
-  vi.hoisted(() => {
-    const rfNodeStore = new Map<string, { height?: number }>();
-    return {
-      rfNodeStore,
-      rfState: { current: { connection: { inProgress: false } } },
-      mockUpdateNode: vi.fn((id: string, patch: { height?: number }) => {
-        rfNodeStore.set(id, { ...rfNodeStore.get(id), ...patch });
-      }),
-      mockGetNode: vi.fn((id: string) => rfNodeStore.get(id)),
-      mockUpdateNodeInternals: vi.fn(),
-      /** Render counter per node label — bumped by the NodeLabel stub below. */
-      labelRenders: new Map<string, number>(),
-    };
-  });
+const {
+  rfNodeStore,
+  rfState,
+  mockUpdateNode,
+  mockGetNode,
+  mockUpdateNodeInternals,
+  labelRenders,
+  resolveHandlesSpy,
+  toolbarCalls,
+} = vi.hoisted(() => {
+  const rfNodeStore = new Map<string, { height?: number }>();
+  return {
+    rfNodeStore,
+    rfState: { current: { connection: { inProgress: false } } },
+    mockUpdateNode: vi.fn((id: string, patch: { height?: number }) => {
+      rfNodeStore.set(id, { ...rfNodeStore.get(id), ...patch });
+    }),
+    mockGetNode: vi.fn((id: string) => rfNodeStore.get(id)),
+    mockUpdateNodeInternals: vi.fn(),
+    /** Render counter per node label — bumped by the NodeLabel stub below. */
+    labelRenders: new Map<string, number>(),
+    /** Holds the spy wrapping the REAL resolveHandles (installed by the mock below). */
+    resolveHandlesSpy: { current: undefined as ReturnType<typeof vi.fn> | undefined },
+    /** Props captured from every NodeToolbar render. */
+    // biome-ignore lint/suspicious/noExplicitAny: captured toolbar props for assertions
+    toolbarCalls: [] as any[],
+  };
+});
 
 // Selector-aware xyflow mock: BaseNode reads `useStore(selectIsConnecting)` and
 // the store node via `getNode`/`updateNode`. The global canvas-mocks version is
@@ -71,9 +84,30 @@ vi.mock('./NodeLabel', () => ({
   },
 }));
 
+// Wrap the REAL resolveHandles with a counting spy so tests can assert how many
+// resolution passes a mount performs (guards against double resolution).
+vi.mock('../../utils/manifest-resolver', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../utils/manifest-resolver')>();
+  const spy = vi.fn(actual.resolveHandles);
+  resolveHandlesSpy.current = spy;
+  return { ...actual, resolveHandles: spy };
+});
+
+// Capture NodeToolbar props to assert toolbar-config identity stability.
+vi.mock('../Toolbar', () => ({
+  // biome-ignore lint/suspicious/noExplicitAny: captured toolbar props for assertions
+  NodeToolbar: (props: any) => {
+    toolbarCalls.push(props);
+    return null;
+  },
+}));
+
 import { makeNodeProps, makeNodes, NodeGrid, PERF_NODE_HEIGHT } from './BaseNode.perf-fixtures';
 
 const N = 500;
+
+// Reference-stable empty overrides: lets the manifest-default toolbar resolve.
+const EMPTY_OVERRIDES = {};
 
 const rendersOf = (i: number) => labelRenders.get(`Node ${i}`) ?? 0;
 const totalRenders = () => [...labelRenders.values()].reduce((a, b) => a + b, 0);
@@ -83,6 +117,8 @@ describe('BaseNode @ 500 nodes: render isolation regression guards', () => {
     labelRenders.clear();
     rfNodeStore.clear();
     rfState.current = { connection: { inProgress: false } };
+    toolbarCalls.length = 0;
+    resolveHandlesSpy.current?.mockClear();
   });
 
   afterEach(() => {
@@ -192,6 +228,57 @@ describe('BaseNode @ 500 nodes: render isolation regression guards', () => {
     });
     expect(rendersOf(11)).toBe(3);
     expect(totalRenders()).toBe(N + 2);
+  });
+
+  it('resolves handle configurations exactly once per node on mount (no double resolution)', () => {
+    render(<NodeGrid nodes={makeNodes(N)} />);
+
+    // One resolveHandles pass per node: BaseNode resolves and useButtonHandles
+    // consumes the pre-resolved output. 2N here means resolution regressed to
+    // running twice per node.
+    expect(resolveHandlesSpy.current).toHaveBeenCalledTimes(N);
+  });
+
+  it('starting a connect gesture does not re-resolve the toolbar config', () => {
+    // Manifest-default toolbar (design mode): pass empty overrides instead of
+    // the default toolbar-suppressing ones.
+    const nodes = [makeNodeProps(0, { selected: true })];
+    render(<NodeGrid nodes={nodes} overrides={EMPTY_OVERRIDES} />);
+
+    const configBefore = toolbarCalls.at(-1)?.config;
+    expect(configBefore).toBeTruthy();
+
+    // Connect gesture starts; the hover forces the node to re-render and read
+    // the new store state.
+    rfState.current = { connection: { inProgress: true } };
+    act(() => {
+      fireEvent.mouseEnter(screen.getByTestId('base-container').parentElement!);
+    });
+
+    expect(toolbarCalls.length).toBeGreaterThan(1);
+    // Same resolved config object: resolveToolbar must not re-run (it allocates
+    // fresh action objects and icon elements per node per call).
+    expect(toolbarCalls.at(-1)?.config).toBe(configBefore);
+  });
+
+  it('a label-only data edit keeps handle config identity: no re-measure, no height write', () => {
+    const nodes = makeNodes(N);
+    const { rerender } = render(<NodeGrid nodes={nodes} />);
+    mockUpdateNode.mockClear();
+    mockUpdateNodeInternals.mockClear();
+
+    const next = [...nodes];
+    next[3] = makeNodeProps(3, {
+      data: { nodeType: nodes[3]!.type, display: { label: 'Renamed' } },
+    });
+    rerender(<NodeGrid nodes={next} />);
+
+    // The node re-rendered with its new label...
+    expect(labelRenders.get('Renamed')).toBe(1);
+    // ...but resolution output was value-identical, so the stable-identity
+    // guard must prevent the DOM re-measure and any height write.
+    expect(mockUpdateNodeInternals).not.toHaveBeenCalled();
+    expect(mockUpdateNode).not.toHaveBeenCalled();
   });
 
   it('dragging one node re-renders only that node (dragging prop) and never loops', () => {

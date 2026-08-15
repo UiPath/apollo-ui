@@ -125,7 +125,8 @@ vi.mock('../../utils/icon-registry', () => ({
   getIcon: () => () => <div data-testid="node-icon">Icon</div>,
   CanvasIcon: ({ icon }: { icon: string }) => <span data-testid={`canvas-icon-${icon}`} />,
 }));
-vi.mock('../../utils/manifest-resolver', () => ({
+vi.mock('../../utils/manifest-resolver', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../utils/manifest-resolver')>()),
   resolveDisplay: (display: Record<string, unknown> | undefined) => ({
     label: 'Test Node',
     subLabel: 'Test SubLabel',
@@ -133,7 +134,14 @@ vi.mock('../../utils/manifest-resolver', () => ({
     icon: 'test-icon',
     ...display,
   }),
-  resolveHandles: () => [],
+  // Pass-through resolution: BaseNode now resolves every handle source
+  // (context override included), so the mock must preserve the input groups
+  // while normalizing `visible` to a boolean like the real resolver.
+  resolveHandles: (groups: HandleGroupManifest[]) =>
+    groups.map((group) => ({
+      ...group,
+      handles: group.handles.map((handle) => ({ ...handle, visible: handle.visible !== false })),
+    })),
 }));
 
 vi.mock('./NodeLabel', () => ({

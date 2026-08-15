@@ -75,11 +75,22 @@ export const makeNodeProps = (
 export const makeNodes = (count: number): PerfNodeProps[] =>
   Array.from({ length: count }, (_, i) => makeNodeProps(i));
 
-/** Renders the given nodes under the real provider stack. */
-export const NodeGrid = ({ nodes }: { nodes: PerfNodeProps[] }) => (
+/**
+ * Renders the given nodes under the real provider stack.
+ * Pass `overrides` to exercise other config paths (e.g. `{}` to let the
+ * manifest-default toolbar resolve); it must be reference-stable across
+ * rerenders, exactly like production provider values.
+ */
+export const NodeGrid = ({
+  nodes,
+  overrides = OVERRIDES,
+}: {
+  nodes: PerfNodeProps[];
+  overrides?: BaseNodeOverrideConfig;
+}) => (
   <NodeRegistryProvider manifest={MANIFEST_BUNDLE}>
     <BaseCanvasModeProvider mode="design">
-      <BaseNodeOverrideConfigProvider value={OVERRIDES}>
+      <BaseNodeOverrideConfigProvider value={overrides}>
         {nodes.map((p) => (
           <BaseNode key={p.id} {...p} />
         ))}
