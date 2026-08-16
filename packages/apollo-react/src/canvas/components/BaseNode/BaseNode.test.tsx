@@ -298,6 +298,60 @@ describe('BaseNode', () => {
     });
   });
 
+  // The manifest path strips resolved groups to a field whitelist before they
+  // reach the handle renderers: manifest-declared extras (customPositionAndOffsets,
+  // boundary) were never honored, and honoring them is a separate feature
+  // decision. Runtime override configs keep every field (onAction, offsets, ...).
+  describe('Manifest handle field whitelist', () => {
+    type CapturedOpts = { handleConfigurations?: Array<Record<string, unknown>> };
+    const capturedConfigs = () =>
+      (mockUseButtonHandles.mock.calls.at(-1)?.[0] as CapturedOpts).handleConfigurations;
+
+    it('manifest handle groups pass only whitelisted fields to renderers', () => {
+      mockManifest.current = {
+        ...DEFAULT_MANIFEST,
+        handleConfiguration: [
+          {
+            position: Position.Right,
+            customPositionAndOffsets: { top: 12 },
+            boundary: 'inner',
+            handles: [{ id: 'out', type: 'source', handleType: 'output', unlistedExtra: 'x' }],
+          },
+        ],
+      };
+      render(<BaseNode {...defaultProps} />);
+
+      const groups = capturedConfigs()!;
+      expect(groups).toHaveLength(1);
+      expect(groups[0]).not.toHaveProperty('customPositionAndOffsets');
+      expect(groups[0]).not.toHaveProperty('boundary');
+      expect((groups[0]!.handles as Array<Record<string, unknown>>)[0]).not.toHaveProperty(
+        'unlistedExtra'
+      );
+      expect((groups[0]!.handles as Array<Record<string, unknown>>)[0]).toMatchObject({
+        id: 'out',
+        type: 'source',
+        handleType: 'output',
+      });
+    });
+
+    it('override handle groups keep their runtime fields', () => {
+      const onAction = vi.fn();
+      mockHandleConfigs.current = [
+        {
+          position: Position.Right,
+          customPositionAndOffsets: { top: 12 },
+          handles: [{ id: 'out', type: 'source', handleType: 'output', onAction }],
+        },
+      ] as unknown as HandleGroupManifest[];
+      render(<BaseNode {...defaultProps} />);
+
+      const groups = capturedConfigs()!;
+      expect(groups[0]).toHaveProperty('customPositionAndOffsets', { top: 12 });
+      expect((groups[0]!.handles as Array<Record<string, unknown>>)[0]!.onAction).toBe(onAction);
+    });
+  });
+
   describe('Loading state', () => {
     it.each([
       { loading: true, expectSkeleton: true },

@@ -160,21 +160,42 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Resolve handles ONCE for every source (context override > data override >
   // manifest default). The resolved output is handed to useButtonHandles with
   // `preResolved`, so templates/repeat/visibility never resolve twice per render.
-  // resolveHandles spreads each handle, preserving runtime-only fields that
-  // override configs may carry (onAction, labelBackgroundColor, ...).
   const resolvedHandleConfigurations = useMemo((): ResolvedHandleGroup[] => {
     const dataHandleConfigs = (data as Record<string, unknown>)?.handleConfigurations as
       | HandleGroupManifest[]
       | undefined;
 
-    const source =
+    // Priority 1/2: runtime override configs. resolveHandles spreads each
+    // handle, preserving the runtime-only fields overrides may carry
+    // (onAction, labelBackgroundColor, customPositionAndOffsets, ...).
+    const override =
       (Array.isArray(handleConfigurationsProp) && handleConfigurationsProp) ||
-      (Array.isArray(dataHandleConfigs) && dataHandleConfigs) ||
-      manifest?.handleConfiguration;
+      (Array.isArray(dataHandleConfigs) && dataHandleConfigs);
+    if (override) {
+      // Pass nodeId and collapsed for collapse state lookup
+      return resolveHandles(override, { ...data, nodeId: id });
+    }
 
-    if (!source) return [];
-    // Pass nodeId and collapsed for collapse state lookup
-    return resolveHandles(source, { ...data, nodeId: id });
+    // Priority 3: manifest default. Only whitelisted fields reach the handle
+    // renderers — group-level extras (customPositionAndOffsets, boundary) from
+    // manifests were never honored here, and honoring them is a feature
+    // decision, not part of the single-resolution change.
+    if (!manifest) return [];
+    const resolved = resolveHandles(manifest.handleConfiguration, { ...data, nodeId: id });
+    return resolved.map((group) => ({
+      position: group.position,
+      visible: group.visible,
+      handles: group.handles.map((h) => ({
+        id: h.id,
+        type: h.type,
+        handleType: h.handleType,
+        label: h.label,
+        visible: h.visible,
+        showButton: h.showButton,
+        labelVisibility: h.labelVisibility,
+        constraints: h.constraints,
+      })),
+    }));
   }, [handleConfigurationsProp, manifest, data, id]);
 
   // Keep the previous array identity when resolution output is value-identical.

@@ -45,7 +45,8 @@ stubbed so numbers isolate our per-node code from xyflow internals.
 These are the load-bearing design decisions; the new tests exist to keep them.
 
 1. **Memoized node body with position-ignoring comparator**
-   (`BaseNode.tsx:740`, `utils/nodePropsEqual.ts`). XYFlow passes
+   (the `memo` export at the bottom of `BaseNode.tsx`, comparator in
+   `utils/nodePropsEqual.ts`). XYFlow passes
    `positionAbsoluteX/Y` to every node on every render; during a container drag
    every descendant gets new values at 60fps. The comparator swallows these, so
    drags re-render only the transform (applied by XYFlow's NodeWrapper), not
@@ -57,10 +58,11 @@ These are the load-bearing design decisions; the new tests exist to keep them.
    `multipleNodesSelected` is O(n) once per nodes-array change with an
    early-exit, and the context value only changes identity when the boolean
    flips, so it does not fan out re-renders.
-4. **CSS-variable geometry** (`BaseNode.tsx:323`, `nodeVars`). All geometry is
+4. **CSS-variable geometry** (`nodeVars` in `BaseNode.tsx`). All geometry is
    set once as custom properties on the wrapper; children use static Tailwind
    class strings, so React skips their DOM updates entirely.
-5. **Pure, convergent height** (`BaseNode.tsx:253-285`). `computedHeight` is a
+5. **Pure, convergent height** (`computedHeight` + the height-sync effect in
+   `BaseNode.tsx`, rule in `utils/node-height.ts`). `computedHeight` is a
    pure function of handle count/footer, never the measured height, and the
    write-back is guarded by `getNode(id)?.height !== computedHeight`. No
    measure-write oscillation. Verified at 500 nodes: exactly one write per node
@@ -89,12 +91,17 @@ per invalidation.
 
 *Fix:* `BaseNode` now resolves ONCE for every handle source (context override,
 data override, manifest default) and passes `preResolved` to
-`useButtonHandles`, which skips its internal resolution and its node-data memo
-dependency on that path. Other callers (TriggerNode, StageNodeHandles) keep the
-old behavior by default. Side benefit: override configs with `repeat`/template
-handles are now resolved before height computation, so dynamic handles from
-overrides count correctly toward the handle floor.
-*Guard:* "resolves handle configurations exactly once per node on mount".
+`useButtonHandles`, which skips its internal resolution and swaps its node-data
+subscription for an inert sentinel on that path (hook order unchanged, no live
+store subscription). Other callers (TriggerNode, StageNodeHandles) keep the old
+behavior by default. The manifest path keeps its pre-existing field whitelist,
+so manifest-declared extras (`customPositionAndOffsets`, `boundary`) still do
+not reach the handle renderers; override configs keep their runtime fields
+(`onAction`, ...) exactly as before. Side benefit: override configs with
+`repeat`/template handles are now resolved before height computation, so
+dynamic handles from overrides count correctly toward the handle floor.
+*Guard:* "resolves handle configurations exactly once per node on mount" and
+"manifest handle groups pass only whitelisted fields to renderers".
 
 ### F2. Connect gestures re-resolved toolbars/adornments on all nodes — FIXED
 
@@ -134,8 +141,11 @@ guarded, so a node whose `height` is already correct writes nothing.
 *Fix:* the height rule is extracted to `computeBaseNodeHeight`
 (`utils/node-height.ts`, exported from canvas utils). Consumers can seed
 `node.height` at creation and skip the mount write entirely; BaseNode uses the
-same function, so the two can never drift.
-*Guard:* "performs zero height writes when node.height is already correct".
+same function, so the two can never drift. When seeding from a raw manifest,
+pass `resolutionContext` (the node's data) so `repeat` and string-visibility
+handles resolve exactly as BaseNode resolves them.
+*Guard:* "performs zero height writes when node.height is already correct" and
+the parity cases in `utils/node-height.test.ts`.
 
 ### F5. Stale memo: `toolbarSideHandleAffordances` omitted `useSmartHandles` — FIXED
 

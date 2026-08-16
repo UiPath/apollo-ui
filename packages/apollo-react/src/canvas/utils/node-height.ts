@@ -9,6 +9,12 @@
  * Consumers creating nodes can call `computeBaseNodeHeight` up front to seed
  * `height` on the node object; a correctly seeded node skips the height
  * write-back entirely on mount (no store write, at any canvas size).
+ *
+ * IMPORTANT: when seeding from a manifest, pass `resolutionContext` (the
+ * node's data) so `repeat` handles and string-visibility expressions resolve
+ * exactly as BaseNode resolves them. Counting raw manifest groups would treat
+ * a repeat handle as one handle and a string `visible` as visible, producing
+ * a seed that disagrees with BaseNode's computed height.
  */
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { FooterVariant } from '../components/BaseNode/BaseNode.types';
@@ -20,6 +26,7 @@ import {
   NODE_HEIGHT_FOOTER_SINGLE,
 } from '../constants';
 import type { HandleGroupManifest } from '../schema/node-definition';
+import { type ResolutionContext, resolveHandles } from './manifest-resolver';
 
 /** Intrinsic height: the fixed footer height when a footer is present, else the default. */
 export const getIntrinsicNodeHeight = (
@@ -56,6 +63,13 @@ const countVisibleSideHandles = (
 export interface ComputeBaseNodeHeightOptions {
   hasFooter?: boolean;
   footerVariant?: FooterVariant;
+  /**
+   * Resolution context (typically the node's `data`) for UNRESOLVED manifest
+   * groups: `repeat` handles are expanded and string-visibility expressions
+   * evaluated against it before counting, matching BaseNode exactly. Omit only
+   * when `handleGroups` is already the output of `resolveHandles`.
+   */
+  resolutionContext?: ResolutionContext;
 }
 
 /**
@@ -65,10 +79,13 @@ export interface ComputeBaseNodeHeightOptions {
  */
 export function computeBaseNodeHeight(
   handleGroups: readonly HandleGroupManifest[],
-  { hasFooter = false, footerVariant }: ComputeBaseNodeHeightOptions = {}
+  { hasFooter = false, footerVariant, resolutionContext }: ComputeBaseNodeHeightOptions = {}
 ): number {
-  const leftHandles = countVisibleSideHandles(handleGroups, Position.Left);
-  const rightHandles = countVisibleSideHandles(handleGroups, Position.Right);
+  const groups = resolutionContext
+    ? resolveHandles(handleGroups as HandleGroupManifest[], resolutionContext)
+    : handleGroups;
+  const leftHandles = countVisibleSideHandles(groups, Position.Left);
+  const rightHandles = countVisibleSideHandles(groups, Position.Right);
   const leftRightHandles = Math.max(leftHandles, rightHandles);
 
   // Each handle gets a 2-grid-space lane (32px), plus 2-grid-space padding at top + bottom of node.

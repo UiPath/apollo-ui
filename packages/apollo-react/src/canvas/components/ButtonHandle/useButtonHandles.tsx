@@ -9,6 +9,12 @@ import { ButtonHandles } from '../ButtonHandle';
 
 const EMPTY_DATA: Record<string, unknown> = {};
 
+// Sentinel id for the pre-resolved path: hook order must not change, so
+// useNodesData is still called, but pointing it at a never-existing id makes
+// the subscription inert (a failed map lookup, a stable null result, and no
+// re-render on any node-data change).
+const NO_SUBSCRIPTION_NODE_ID = '__apollo_pre_resolved_no_subscription__';
+
 export const useButtonHandles = ({
   handleConfigurations,
   shouldShowHandles,
@@ -67,7 +73,9 @@ export const useButtonHandles = ({
   }) => boolean;
 }) => {
   const connectedHandleIds = useConnectedHandles(nodeId);
-  const node = useNodesData(nodeId);
+  // Node data is only needed to resolve raw configurations; the pre-resolved
+  // path swaps in the sentinel so it carries no live data subscription.
+  const node = useNodesData(preResolved ? NO_SUBSCRIPTION_NODE_ID : nodeId);
 
   // When the input is pre-resolved, node data is not read for resolution; a
   // stable empty object keeps data changes from invalidating the memo below.
