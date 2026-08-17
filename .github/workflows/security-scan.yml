@@ -59,7 +59,7 @@ jobs:
 
       - name: Run actionlint
         # Catches a different class of issues than zizmor (syntax, expression typos, shellcheck on run: blocks).
-        uses: reviewdog/action-actionlint@d63ba7532e0942965320cd8d73cbae4c7b3c5283 # v1.73.1
+        uses: reviewdog/action-actionlint@dbe5299849118fd6f099ba563d263d770955a64a # v1.73.2
         with:
           reporter: github-pr-check
           fail_on_error: true
