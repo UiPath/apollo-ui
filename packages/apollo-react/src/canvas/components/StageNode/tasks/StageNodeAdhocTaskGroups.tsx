@@ -1,10 +1,10 @@
 import { closestCenter, DndContext } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
 import { useStageFlatSectionReorder } from '../hooks/useStageFlatSectionReorder';
 import { StageItemsList, StageItemsSection } from '../StageNode.styles';
-import type { StageNodeProps, StageTaskGroup, StageTaskItem } from '../StageNode.types';
+import type { StageNodeProps, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { AdhocTaskItem } from './AdhocTask';
@@ -14,7 +14,6 @@ import { getDivider } from './StageNodeTaskUtilities';
 const StageNodeAdhocTaskGroupsInner = ({
   props,
   adhocTaskGroups,
-  adhocTasks,
   isReadOnly,
   selectedTaskId,
   handleTaskClick,
@@ -24,7 +23,6 @@ const StageNodeAdhocTaskGroupsInner = ({
 }: {
   props: StageNodeProps;
   adhocTaskGroups: StageTaskItem[][];
-  adhocTasks: StageTaskGroup[];
   isReadOnly: boolean;
   selectedTaskId?: string;
   handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
@@ -55,6 +53,8 @@ const StageNodeAdhocTaskGroupsInner = ({
   );
   const labels = useStageNodeLabels();
   const isDragDisabled = !onTaskReorder || isReadOnly;
+  // The section draws one row per task; grouping only matters to the reorder maths.
+  const rows = useMemo(() => adhocTaskGroups.flat(), [adhocTaskGroups]);
 
   const { taskIds, sensors, handleDragEnd, getMoveMenuItems } = useStageFlatSectionReorder({
     taskGroups: adhocTaskGroups,
@@ -110,7 +110,7 @@ const StageNodeAdhocTaskGroupsInner = ({
       data-testid={`adhoc-tasks-list-${id}`}
       className={isDragDisabled ? undefined : 'nodrag nopan'}
     >
-      {adhocTasks.map(({ task }) => {
+      {rows.map((task) => {
         const taskExecution = execution?.taskStatus?.[task.id];
         // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;
         // only the built-in edit actions are gated on !isReadOnly. When built-in actions
@@ -148,7 +148,7 @@ const StageNodeAdhocTaskGroupsInner = ({
     </StageItemsList>
   );
 
-  if (adhocTasks.length === 0) {
+  if (rows.length === 0) {
     return null;
   }
   return (

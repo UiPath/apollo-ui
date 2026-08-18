@@ -197,9 +197,3 @@ export interface TaskStateReference {
   groupIndex: number;
   taskIndex: number;
 }
-
-export interface StageTaskGroup {
-  task: StageTaskItem;
-  groupIndex: number;
-  taskIndex: number;
-}

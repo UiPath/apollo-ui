@@ -40,14 +40,8 @@ const StageNodeAllTaskGroupsInner = ({
   const allTasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
 
   // Split tasks into separate sections
-  const {
-    sequentialTaskGroups,
-    sequentialTasks,
-    adhocTaskGroups,
-    adhocTasks,
-    eventDrivenTaskGroups,
-    eventDrivenTasks,
-  } = useStageTasksByGroups(allTasks);
+  const { sequentialTaskGroups, adhocTaskGroups, eventDrivenTaskGroups } =
+    useStageTasksByGroups(allTasks);
 
   const selectedTaskId = stageDetails?.selectedTaskId;
   const defaultContent =
@@ -189,7 +183,6 @@ const StageNodeAllTaskGroupsInner = ({
           <StageNodeSequentialTaskGroups
             props={props}
             sequentialTaskGroups={sequentialTaskGroups}
-            sequentialTasks={sequentialTasks}
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
             handleTaskClick={handleTaskClick}
@@ -200,7 +193,6 @@ const StageNodeAllTaskGroupsInner = ({
           <StageNodeEventDrivenTaskGroups
             props={props}
             eventDrivenTaskGroups={eventDrivenTaskGroups}
-            eventDrivenTasks={eventDrivenTasks}
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
             handleTaskClick={handleTaskClick}
@@ -211,7 +203,6 @@ const StageNodeAllTaskGroupsInner = ({
           <StageNodeAdhocTaskGroups
             props={props}
             adhocTaskGroups={adhocTaskGroups}
-            adhocTasks={adhocTasks}
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
             handleTaskClick={handleTaskClick}
