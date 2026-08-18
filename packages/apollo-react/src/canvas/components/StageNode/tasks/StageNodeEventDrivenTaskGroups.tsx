@@ -1,8 +1,19 @@
-import { closestCenter, DndContext } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { type CSSProperties, memo, useCallback, useMemo } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
-import { useStageFlatSectionReorder } from '../hooks/useStageFlatSectionReorder';
+import { useStageTaskDragHandler } from '../hooks/useStageTaskDragHandler';
 import { StageItemsList, StageItemsSection } from '../StageNode.styles';
 import type { StageNodeProps, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
@@ -46,31 +57,25 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     onTaskBreakpointToggle,
     getTaskContextMenuItems,
   } = props;
-  // Reordering counts as a built-in action: the move items are the keyboard/menu route to it, so
-  // a consumer that supplies only `onTaskReorder` must still get a menu to reach them.
-  const hasBuiltInTaskActions = !!(
-    onReplaceTaskFromToolbox ||
-    onTaskGroupModification ||
-    onTaskReorder
-  );
+  const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
   const labels = useStageNodeLabels();
   const isDragDisabled = !onTaskReorder || isReadOnly;
   // The section draws one row per task; grouping only matters to the reorder maths.
   const rows = useMemo(() => eventDrivenTaskGroups.flat(), [eventDrivenTaskGroups]);
 
-  const {
-    taskIds,
-    sensors,
-    activeTask,
-    handleDragStart,
-    handleDragEnd,
-    handleDragCancel,
-    getMoveMenuItems,
-  } = useStageFlatSectionReorder({
+  const rowIds = useMemo(() => rows.map((task) => task.id), [rows]);
+
+  const { activeTask, handleDragStart, handleDragEnd, handleDragCancel } = useStageTaskDragHandler({
     taskGroups: eventDrivenTaskGroups,
-    isDragDisabled,
-    onReorder: handleReorderEventDrivenTasks,
+    onTaskReorder: handleReorderEventDrivenTasks,
+    // These rows never nest, so sideways travel must not create a parallel group.
+    allowRegrouping: false,
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
@@ -87,14 +92,6 @@ const StageNodeEventDrivenTaskGroupsInner = ({
         getTaskContextMenuItems?.({ task, taskGroupType: 'event-driven', isParallel: false }) ?? [];
       items.push(...additionalMenuItems);
 
-      const moveMenuItems = getMoveMenuItems(task);
-      if (moveMenuItems.length) {
-        if (items.length) {
-          items.push(getDivider());
-        }
-        items.push(...moveMenuItems);
-      }
-
       const deleteTaskMenuItem = generateDeleteTaskMenuItemForTask(task.id);
       if (deleteTaskMenuItem) {
         if (items.length) {
@@ -105,12 +102,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
 
       return items;
     },
-    [
-      generateReplaceTaskMenuItemForTask,
-      getTaskContextMenuItems,
-      generateDeleteTaskMenuItemForTask,
-      getMoveMenuItems,
-    ]
+    [generateReplaceTaskMenuItemForTask, getTaskContextMenuItems, generateDeleteTaskMenuItemForTask]
   );
 
   // Only reorderable rows swallow the canvas drag/pan; with reordering off the list is
@@ -179,7 +171,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
         >
-          <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+          <SortableContext items={rowIds} strategy={verticalListSortingStrategy}>
             {taskList}
           </SortableContext>
           {/* Neither flat section nests, so the dragged card never previews a parallel width. */}

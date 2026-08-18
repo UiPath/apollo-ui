@@ -87,7 +87,7 @@ export const StageNodeSequentialTaskGroups = ({
     handleDragEnd,
     handleDragCancel,
   } = useStageTaskDragHandler({
-    sequentialTaskGroups,
+    taskGroups: sequentialTaskGroups,
     onTaskReorder: handleReorderSequentialTasks,
   });
 
