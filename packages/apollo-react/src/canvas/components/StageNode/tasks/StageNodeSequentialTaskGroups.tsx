@@ -193,8 +193,7 @@ export const StageNodeSequentialTaskGroups = ({
     })
   );
 
-  // Only reorderable rows swallow the canvas drag/pan; with reordering off the list is
-  // ordinary card surface the node can be dragged by.
+  // Swallow the canvas drag/pan only while these rows are drag handles.
   const taskList = (
     <StageItemsList data-testid={`sequential-tasks-list-${id}`} className="nodrag nopan">
       {sequentialTaskGroups.map((taskGroup, groupIndex) => {

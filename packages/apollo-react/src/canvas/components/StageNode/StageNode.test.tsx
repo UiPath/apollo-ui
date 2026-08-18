@@ -25,7 +25,7 @@ vi.mock('@dnd-kit/core', () => ({
 }));
 
 vi.mock('@dnd-kit/sortable', async () => ({
-  // Keep the real utilities (arrayMove) — only the context/hook are stubbed.
+  // Real utilities (arrayMove); only the context/hook are stubbed.
   ...(await vi.importActual<typeof import('@dnd-kit/sortable')>('@dnd-kit/sortable')),
   useSortable: () => ({
     attributes: {},
@@ -788,11 +788,8 @@ describe('StageNode - hideParallelOptions', () => {
   });
 });
 
-// These two sections render their real task components (only DraggableTask is mocked), so these
-// go through the real context menu rather than the mock's stand-in buttons.
 describe('StageNode - Flat section reordering', () => {
   it('mounts no drag machinery at all when the section cannot be reordered', () => {
-    // All three sections present — none of them should mount drag machinery.
     renderStageNode({
       onTaskGroupModification: vi.fn(),
       onTaskReorder: undefined,
@@ -811,8 +808,7 @@ describe('StageNode - Flat section reordering', () => {
 
     expect(screen.queryByTestId('dnd-context')).not.toBeInTheDocument();
     expect(screen.queryByTestId('sortable-context')).not.toBeInTheDocument();
-    // No sortable wrapper either — the rows sit directly in the list, so `useSortable` is never
-    // called outside the provider it belongs to.
+    // Rows sit directly in the list, so useSortable never runs outside its provider.
     expect(screen.getByTestId('stage-task-card-evt-1').parentElement).toBe(eventList);
     expect(screen.getByTestId('stage-task-card-adhoc-1').parentElement).toBe(adhocList);
   });

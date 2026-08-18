@@ -34,7 +34,7 @@ describe('useStageTaskDragHandler', () => {
     it('never produces a parallel group, however far the drag travelled sideways', () => {
       const { result, onTaskReorder } = setup([[task('a')], [task('b')]], false);
 
-      // A large horizontal delta would project depth 1 in the sequential section.
+      // This delta would project depth 1 in the sequential section.
       result.current.handleDragMove({ delta: { x: 500, y: 0 } } as never);
       result.current.handleDragEnd(dragEnd('a', 'b'));
 
@@ -50,8 +50,6 @@ describe('useStageTaskDragHandler', () => {
       expect(onTaskReorder).not.toHaveBeenCalled();
     });
 
-    // The sequential section keeps allowRegrouping: true (the default) and is unchanged by this
-    // flag — its nesting behaviour stays covered by the StageNode suite.
     it('ignores a drop back onto the dragged row', () => {
       const { result, onTaskReorder } = setup([[task('a')], [task('b')]], false);
 

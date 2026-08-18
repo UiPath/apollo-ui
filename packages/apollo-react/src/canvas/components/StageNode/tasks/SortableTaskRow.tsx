@@ -8,14 +8,8 @@ import {
   StageTaskWrapper,
 } from '../StageNode.styles';
 
-/**
- * Makes an existing task row draggable without changing how it renders — the flat sections keep
- * their own row components and this supplies only the sortable wrapper and the drag transform.
- *
- * Rendered only when the section is reorderable: `useSortable` belongs under a `DndContext` +
- * `SortableContext`, and a read-only section mounts neither, so its rows render bare and produce
- * the same markup they did before reordering existed. Used by all three sections.
- */
+/** Wraps a task row in a sortable, leaving how it renders alone. Mounted only where the section
+ * has a DndContext, so `useSortable` never runs outside its provider. */
 const SortableTaskRowComponent = ({
   taskId,
   isParallel,
@@ -29,8 +23,7 @@ const SortableTaskRowComponent = ({
     id: taskId,
   });
 
-  // Zoom only matters while a drag transform exists; idle rows resolve a constant so canvas
-  // zoom changes don't re-render every task.
+  // Constant while idle, so canvas zoom doesn't re-render every row.
   const zoom = useStore((s) => (transform ? s.transform[2] : 1));
 
   const style = useMemo<CSSProperties>(
@@ -43,8 +36,7 @@ const SortableTaskRowComponent = ({
     [transform, zoom, transition]
   );
 
-  // While the row is being dragged the overlay carries the card, so its own slot shows a dashed
-  // outline of where it will land.
+  // The overlay carries the card; this slot shows where it lands.
   if (isDragging) {
     return (
       <StageTaskDragPlaceholderWrapper ref={setNodeRef} style={style}>
