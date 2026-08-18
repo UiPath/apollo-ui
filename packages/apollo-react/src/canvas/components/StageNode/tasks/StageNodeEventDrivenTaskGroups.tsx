@@ -60,7 +60,6 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
   const labels = useStageNodeLabels();
   const isDragDisabled = !onTaskReorder || isReadOnly;
-  // The section draws one row per task; grouping only matters to the reorder maths.
   const rows = useMemo(() => eventDrivenTaskGroups.flat(), [eventDrivenTaskGroups]);
 
   const rowIds = useMemo(() => rows.map((task) => task.id), [rows]);
@@ -105,8 +104,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     [generateReplaceTaskMenuItemForTask, getTaskContextMenuItems, generateDeleteTaskMenuItemForTask]
   );
 
-  // Only reorderable rows swallow the canvas drag/pan; with reordering off the list is
-  // ordinary card surface the node can be dragged by, exactly as before.
+  // Swallow the canvas drag/pan only while these rows are drag handles.
   const taskList = (
     <StageItemsList
       data-testid={`event-driven-tasks-list-${id}`}
@@ -139,8 +137,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
           />
         );
 
-        // Sortable only where the section mounts a DndContext — a read-only section
-        // renders the row bare so useSortable never runs outside its provider.
+        // Sortable only where the section mounts a DndContext.
         return isDragDisabled ? (
           row
         ) : (

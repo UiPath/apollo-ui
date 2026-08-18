@@ -11,23 +11,17 @@ export const useStageTaskDragHandler = ({
 }: {
   taskGroups: StageTaskItem[][];
   onTaskReorder: (newTasks: StageTaskItem[][]) => void;
-  /**
-   * Whether horizontal travel can change a task's nesting. True for the sequential section, where
-   * dragging sideways joins or leaves a parallel group. False for the event-triggered and ad hoc
-   * sections: their order is visual only and they have no parallel nesting, so every drop lands at
-   * depth 0 and the drag reduces to a plain vertical reorder.
-   */
+  /** Sideways travel can nest a task in a parallel group. Off for the flat sections, which
+   * have no nesting: every drop lands at depth 0. */
   allowRegrouping?: boolean;
 }) => {
   const storeApi = useStoreApi();
 
-  // Horizontal travel decides the landing depth, but nothing renders from it mid-drag — so it
-  // lives in a ref. In state it would re-render the whole section on every pointer move.
+  // In a ref, not state: nothing renders from it mid-drag.
   const offsetLeft = useRef(0);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
-  /** The row in flight, plus whether it sits in a parallel group — the overlay renders it at the
-   * matching width. */
+  /** The row in flight; the overlay renders it at the matching width. */
   const activeTask = useMemo(
     () => taskGroups.flat().find((task) => task.id === activeDragId),
     [taskGroups, activeDragId]
@@ -60,8 +54,7 @@ export const useStageTaskDragHandler = ({
         return;
       }
 
-      // Pinned to 0 when regrouping is off: the drop keeps the row at the top level, so sideways
-      // travel is ignored and the reorder is purely vertical.
+      // Pinned to 0 when regrouping is off, so sideways travel is ignored.
       let depth = 0;
       if (allowRegrouping) {
         const projection = getProjection(

@@ -59,10 +59,7 @@ const StageNodeAllTaskGroupsInner = ({
     [onTaskReorder, eventDrivenTaskGroups, adhocTaskGroups]
   );
 
-  // Neither flat section's order carries execution meaning — entry rules decide when
-  // event-triggered tasks run, and ad hoc ones are triggered by hand — so these are purely visual
-  // arrangements. Each passes the other two sections through untouched, which is what keeps a
-  // task inside the section it belongs to.
+  // Visual order only; passing the other sections through keeps tasks in their section.
   const handleReorderEventDrivenTasks = useCallback(
     (newTasks: StageTaskItem[][]) => {
       onTaskReorder?.([...sequentialTaskGroups, ...newTasks, ...adhocTaskGroups]);

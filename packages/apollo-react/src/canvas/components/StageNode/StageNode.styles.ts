@@ -131,8 +131,7 @@ export const StageTaskWrapper = styled.div<{ isParallel?: boolean }>`
   border-radius: ${Spacing.SpacingXs};
   height: 36px;
 
-  /* Only reorderable rows are wrapped, so this is the one place the card's inherited pointer
-     cursor is overridden — it is what tells the user the row can be dragged at all. */
+  /* Only reorderable rows are wrapped, so this is the drag affordance. */
   cursor: grab;
 
   &:active {
