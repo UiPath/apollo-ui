@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.22.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.22.1...@uipath/apollo-react@6.22.2) (2026-08-18)
+
+### Bug Fixes
+
+* **repo:** upgrade Motion dependencies to v13 ([5390fc4](https://github.com/UiPath/apollo-ui/commit/5390fc4926dbc46f2b19aa70d6ee6ac3f958e0ef))
+
 ## [@uipath/apollo-react-v6.22.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.22.0...@uipath/apollo-react@6.22.1) (2026-08-14)
 
 ### Bug Fixes

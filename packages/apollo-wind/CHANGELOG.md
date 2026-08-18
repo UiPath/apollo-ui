@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.33.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.2...@uipath/apollo-wind@2.33.3) (2026-08-18)
+
+### Bug Fixes
+
+* **repo:** upgrade Motion dependencies to v13 ([5390fc4](https://github.com/UiPath/apollo-ui/commit/5390fc4926dbc46f2b19aa70d6ee6ac3f958e0ef))
+
 ## [@uipath/apollo-wind-v2.33.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.1...@uipath/apollo-wind@2.33.2) (2026-08-14)
 
 ### Bug Fixes
