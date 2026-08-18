@@ -1,6 +1,6 @@
-import type { DragEndEvent, DragMoveEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragMoveEvent, DragStartEvent } from '@dnd-kit/core';
 import { useStoreApi } from '@xyflow/react';
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { StageTaskItem } from '../StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from '../StageNode.utils';
 
@@ -16,6 +16,25 @@ export const useStageTaskDragHandler = ({
   // Horizontal travel decides the landing depth, but nothing renders from it mid-drag any more —
   // so it lives in a ref. In state it would re-render the whole section on every pointer move.
   const offsetLeft = useRef(0);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  /** The row in flight, plus whether it belongs to a parallel group — the overlay renders it at
+   * the matching width. */
+  const activeTask = useMemo(
+    () => sequentialTaskGroups.flat().find((task) => task.id === activeDragId),
+    [sequentialTaskGroups, activeDragId]
+  );
+  const isActiveTaskParallel = useMemo(
+    () =>
+      (sequentialTaskGroups.find((group) => group.some((t) => t.id === activeDragId))?.length ??
+        0) > 1,
+    [sequentialTaskGroups, activeDragId]
+  );
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => setActiveDragId(String(event.active.id)),
+    []
+  );
 
   const handleDragMove = useCallback(
     (event: DragMoveEvent) => {
@@ -29,6 +48,7 @@ export const useStageTaskDragHandler = ({
       const { active, over } = event;
       const currentOffsetLeft = offsetLeft.current;
       offsetLeft.current = 0;
+      setActiveDragId(null);
 
       if (!over) {
         return;
@@ -66,7 +86,15 @@ export const useStageTaskDragHandler = ({
 
   const handleDragCancel = useCallback(() => {
     offsetLeft.current = 0;
+    setActiveDragId(null);
   }, []);
 
-  return { handleDragMove, handleDragEnd, handleDragCancel };
+  return {
+    activeTask,
+    isActiveTaskParallel,
+    handleDragStart,
+    handleDragMove,
+    handleDragEnd,
+    handleDragCancel,
+  };
 };

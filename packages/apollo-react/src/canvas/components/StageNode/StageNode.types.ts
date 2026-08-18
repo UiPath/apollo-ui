@@ -192,6 +192,12 @@ export interface StageTaskExecution {
   breakpoint?: boolean;
 }
 
+export interface StageTaskDragOverlayProps {
+  activeTask: StageTaskItem | undefined;
+  isActiveTaskParallel: boolean;
+  taskWidthStyle: React.CSSProperties | undefined;
+}
+
 export interface TaskStateReference {
   isParallel: boolean;
   groupIndex: number;
