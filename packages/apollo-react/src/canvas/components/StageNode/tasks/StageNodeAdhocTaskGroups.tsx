@@ -1,6 +1,6 @@
 import { closestCenter, DndContext } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { memo, useCallback, useMemo } from 'react';
+import { type CSSProperties, memo, useCallback, useMemo } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
 import { useStageFlatSectionReorder } from '../hooks/useStageFlatSectionReorder';
 import { StageItemsList, StageItemsSection } from '../StageNode.styles';
@@ -10,12 +10,14 @@ import { useStageNodeLabels } from '../useStageNodeLabels';
 import { AdhocTaskItem } from './AdhocTask';
 import { SortableTaskRow } from './SortableTaskRow';
 import { getDivider } from './StageNodeTaskUtilities';
+import { StageTaskDragOverlay } from './StageTaskDragOverlay';
 
 const StageNodeAdhocTaskGroupsInner = ({
   props,
   adhocTaskGroups,
   isReadOnly,
   selectedTaskId,
+  taskWidthStyle,
   handleTaskClick,
   handleReorderAdhocTasks,
   generateReplaceTaskMenuItemForTask,
@@ -25,6 +27,7 @@ const StageNodeAdhocTaskGroupsInner = ({
   adhocTaskGroups: StageTaskItem[][];
   isReadOnly: boolean;
   selectedTaskId?: string;
+  taskWidthStyle?: CSSProperties;
   handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
   handleReorderAdhocTasks: (newTasks: StageTaskItem[][]) => void;
   generateReplaceTaskMenuItemForTask: (
@@ -56,7 +59,15 @@ const StageNodeAdhocTaskGroupsInner = ({
   // The section draws one row per task; grouping only matters to the reorder maths.
   const rows = useMemo(() => adhocTaskGroups.flat(), [adhocTaskGroups]);
 
-  const { taskIds, sensors, handleDragEnd, getMoveMenuItems } = useStageFlatSectionReorder({
+  const {
+    taskIds,
+    sensors,
+    activeTask,
+    handleDragStart,
+    handleDragEnd,
+    handleDragCancel,
+    getMoveMenuItems,
+  } = useStageFlatSectionReorder({
     taskGroups: adhocTaskGroups,
     isDragDisabled,
     onReorder: handleReorderAdhocTasks,
@@ -157,10 +168,22 @@ const StageNodeAdhocTaskGroupsInner = ({
       {isDragDisabled ? (
         taskList
       ) : (
-        <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext
+          collisionDetection={closestCenter}
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
           <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
             {taskList}
           </SortableContext>
+          {/* Neither flat section nests, so the dragged card never previews a parallel width. */}
+          <StageTaskDragOverlay
+            activeTask={activeTask}
+            isActiveTaskParallel={false}
+            taskWidthStyle={taskWidthStyle}
+          />
         </DndContext>
       )}
     </StageItemsSection>

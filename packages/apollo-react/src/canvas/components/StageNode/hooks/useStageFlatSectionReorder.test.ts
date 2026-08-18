@@ -1,5 +1,5 @@
-import type { DragEndEvent } from '@dnd-kit/core';
-import { renderHook } from '@testing-library/react';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { StageTaskItem } from '../StageNode.types';
 import { useStageFlatSectionReorder } from './useStageFlatSectionReorder';
@@ -67,6 +67,32 @@ describe('useStageFlatSectionReorder', () => {
       result.current.handleDragEnd(dragEnd('a', 'from-another-section'));
 
       expect(onReorder).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('activeTask', () => {
+    const dragStart = (id: string) => ({ active: { id } }) as DragStartEvent;
+
+    it('exposes the row in flight so the section can render it under the cursor', () => {
+      const { result } = setup([[task('a')], [task('b')]]);
+
+      expect(result.current.activeTask).toBeUndefined();
+
+      act(() => result.current.handleDragStart(dragStart('b')));
+
+      expect(result.current.activeTask?.id).toBe('b');
+    });
+
+    it('clears the row in flight when the drag ends or is cancelled', () => {
+      const { result } = setup([[task('a')], [task('b')]]);
+
+      act(() => result.current.handleDragStart(dragStart('a')));
+      act(() => result.current.handleDragCancel());
+      expect(result.current.activeTask).toBeUndefined();
+
+      act(() => result.current.handleDragStart(dragStart('a')));
+      act(() => result.current.handleDragEnd(dragEnd('a', 'b')));
+      expect(result.current.activeTask).toBeUndefined();
     });
   });
 

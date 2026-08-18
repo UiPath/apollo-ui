@@ -289,6 +289,24 @@ export const StageChip = styled.button`
   }
 `;
 
+export const StageTaskDragPlaceholderWrapper = styled.div`
+  width: var(--stage-task-width, 246px);
+  height: 36px;
+`;
+
+export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${Spacing.SpacingXs};
+  padding: ${Padding.PadL} ${Padding.PadXxl};
+  background: transparent;
+  border: 2px dashed var(--canvas-selection-indicator);
+  border-radius: 6px;
+
+  height: 100%;
+  width: ${({ isTargetParallel }) => (isTargetParallel ? 'var(--stage-task-width-parallel, 216px)' : 'var(--stage-task-width, 246px)')};
+`;
+
 export const StageItemsSection = styled.div`
   display: flex;
   flex-direction: column;

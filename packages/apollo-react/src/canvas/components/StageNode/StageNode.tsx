@@ -165,6 +165,7 @@ const StageNodeInner = (props: StageNodeProps) => {
             <StageNodeAllTaskGroups
               props={props}
               isReadOnly={isReadOnly}
+              taskWidthStyle={taskWidthStyle}
               taskStateReference={taskStateReference}
               setSelectedNodeId={setSelectedNodeId}
               handleTaskAddClick={handleTaskAddClick}

@@ -2,7 +2,11 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { type CSSProperties, memo, type ReactNode, useMemo } from 'react';
-import { StageTaskWrapper } from '../StageNode.styles';
+import {
+  StageTaskDragPlaceholder,
+  StageTaskDragPlaceholderWrapper,
+  StageTaskWrapper,
+} from '../StageNode.styles';
 
 /**
  * Makes an existing task row draggable without changing how it renders — the flat sections keep
@@ -21,7 +25,9 @@ const SortableTaskRowComponent = ({
   isParallel?: boolean;
   children: ReactNode;
 }) => {
-  const { attributes, listeners, setNodeRef, transition, transform } = useSortable({ id: taskId });
+  const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({
+    id: taskId,
+  });
 
   // Zoom only matters while a drag transform exists; idle rows resolve a constant so canvas
   // zoom changes don't re-render every task.
@@ -36,6 +42,16 @@ const SortableTaskRowComponent = ({
     }),
     [transform, zoom, transition]
   );
+
+  // While the row is being dragged the overlay carries the card, so its own slot shows a dashed
+  // outline of where it will land.
+  if (isDragging) {
+    return (
+      <StageTaskDragPlaceholderWrapper ref={setNodeRef} style={style}>
+        <StageTaskDragPlaceholder isTargetParallel={isParallel} />
+      </StageTaskDragPlaceholderWrapper>
+    );
+  }
 
   return (
     <StageTaskWrapper

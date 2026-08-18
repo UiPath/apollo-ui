@@ -1,5 +1,5 @@
 import { Button } from '@uipath/apollo-wind';
-import { memo, type RefObject, useCallback, useMemo } from 'react';
+import { type CSSProperties, memo, type RefObject, useCallback, useMemo } from 'react';
 import { GroupModificationType } from '../../../utils';
 import { useStageTasksByGroups } from '../hooks/useStageTasksByGroups';
 import type { StageNodeProps, StageTaskItem, TaskStateReference } from '../StageNode.types';
@@ -13,6 +13,7 @@ import { getMenuItem } from './StageNodeTaskUtilities';
 const StageNodeAllTaskGroupsInner = ({
   props,
   isReadOnly,
+  taskWidthStyle,
   taskStateReference,
   setSelectedNodeId,
   handleTaskAddClick,
@@ -20,6 +21,7 @@ const StageNodeAllTaskGroupsInner = ({
 }: {
   props: StageNodeProps;
   isReadOnly: boolean;
+  taskWidthStyle?: CSSProperties;
   taskStateReference: RefObject<TaskStateReference>;
   setSelectedNodeId: (nodeId: string) => void;
   handleTaskAddClick: (event: React.MouseEvent) => void;
@@ -185,6 +187,7 @@ const StageNodeAllTaskGroupsInner = ({
             sequentialTaskGroups={sequentialTaskGroups}
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
+            taskWidthStyle={taskWidthStyle}
             handleTaskClick={handleTaskClick}
             handleReorderSequentialTasks={handleReorderSequentialTasks}
             allTasks={allTasks}
@@ -195,6 +198,7 @@ const StageNodeAllTaskGroupsInner = ({
             eventDrivenTaskGroups={eventDrivenTaskGroups}
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
+            taskWidthStyle={taskWidthStyle}
             handleTaskClick={handleTaskClick}
             handleReorderEventDrivenTasks={handleReorderEventDrivenTasks}
             generateReplaceTaskMenuItemForTask={generateReplaceTaskMenuItemForTask}
@@ -205,6 +209,7 @@ const StageNodeAllTaskGroupsInner = ({
             adhocTaskGroups={adhocTaskGroups}
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
+            taskWidthStyle={taskWidthStyle}
             handleTaskClick={handleTaskClick}
             handleReorderAdhocTasks={handleReorderAdhocTasks}
             generateReplaceTaskMenuItemForTask={generateReplaceTaskMenuItemForTask}

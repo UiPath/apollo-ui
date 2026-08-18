@@ -1,12 +1,13 @@
 import {
   type DragEndEvent,
+  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { moveGroupDown, moveGroupUp } from '../../../utils/GroupModificationUtils';
 import type { NodeMenuItem } from '../../NodeContextMenu';
 import type { StageTaskItem } from '../StageNode.types';
@@ -30,6 +31,20 @@ export const useStageFlatSectionReorder = ({
   onReorder: (newTasks: StageTaskItem[][]) => void;
 }) => {
   const labels = useStageNodeLabels();
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  /** The row currently in flight, so the section can render it under the cursor. */
+  const activeTask = useMemo(
+    () => taskGroups.flat().find((task) => task.id === activeDragId),
+    [taskGroups, activeDragId]
+  );
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => setActiveDragId(String(event.active.id)),
+    []
+  );
+
+  const handleDragCancel = useCallback(() => setActiveDragId(null), []);
 
   // Derived from the same array the reorder logic mutates, so the sortable order and the
   // move maths cannot drift apart.
@@ -55,6 +70,7 @@ export const useStageFlatSectionReorder = ({
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
+      setActiveDragId(null);
       if (!over || active.id === over.id) {
         return;
       }
@@ -138,5 +154,13 @@ export const useStageFlatSectionReorder = ({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  return { taskIds, sensors, handleDragEnd, getMoveMenuItems };
+  return {
+    taskIds,
+    sensors,
+    activeTask,
+    handleDragStart,
+    handleDragEnd,
+    handleDragCancel,
+    getMoveMenuItems,
+  };
 };
