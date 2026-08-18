@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.22.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.22.2...@uipath/apollo-react@6.22.3) (2026-08-18)
+
+### Bug Fixes
+
+* **apollo-react:** disable stage move options at list ends instead of hiding [MST-13609] ([2eaf1ce](https://github.com/UiPath/apollo-ui/commit/2eaf1ced832fa7f81ad23af805b965734a4798f7))
+
 ## [@uipath/apollo-react-v6.22.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.22.1...@uipath/apollo-react@6.22.2) (2026-08-18)
 
 ### Bug Fixes
