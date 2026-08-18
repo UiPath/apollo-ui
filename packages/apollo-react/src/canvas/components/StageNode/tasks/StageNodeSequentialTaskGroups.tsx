@@ -28,7 +28,7 @@ import {
   StageParallelLabel,
   StageTaskGroupContainer,
 } from '../StageNode.styles';
-import type { StageNodeProps, StageTaskGroup, StageTaskItem } from '../StageNode.types';
+import type { StageNodeProps, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { DraggableTask } from './DraggableTask';
@@ -37,7 +37,6 @@ import { getContextMenuItems, getDivider } from './StageNodeTaskUtilities';
 export const StageNodeSequentialTaskGroups = ({
   props,
   sequentialTaskGroups,
-  sequentialTasks,
   allTasks,
   isReadOnly,
   selectedTaskId,
@@ -47,7 +46,6 @@ export const StageNodeSequentialTaskGroups = ({
 }: {
   props: StageNodeProps;
   sequentialTaskGroups: StageTaskItem[][];
-  sequentialTasks: StageTaskGroup[];
   allTasks: StageTaskItem[][];
   isReadOnly: boolean;
   selectedTaskId?: string;
@@ -74,8 +72,8 @@ export const StageNodeSequentialTaskGroups = ({
   const labels = useStageNodeLabels();
 
   const sequentialTaskIds = useMemo(
-    () => sequentialTasks.map(({ task }) => task.id),
-    [sequentialTasks]
+    () => sequentialTaskGroups.flat().map((task) => task.id),
+    [sequentialTaskGroups]
   );
 
   const { handleDragMove, handleDragEnd, handleDragCancel } = useStageTaskDragHandler({

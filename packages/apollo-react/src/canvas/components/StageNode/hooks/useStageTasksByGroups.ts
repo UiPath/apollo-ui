@@ -17,14 +17,6 @@ export const useStageTasksByGroups = (allTasks: StageTaskItem[][]) => {
       ),
     [allTasks]
   );
-  const sequentialTasks = useMemo(
-    () =>
-      sequentialTaskGroups.flatMap((group, groupIndex) =>
-        group.map((task, taskIndex) => ({ task, groupIndex, taskIndex }))
-      ),
-    [sequentialTaskGroups]
-  );
-
   const adhocTaskGroups = useMemo(
     () =>
       allTasks.filter((group) =>
@@ -40,14 +32,6 @@ export const useStageTasksByGroups = (allTasks: StageTaskItem[][]) => {
       ),
     [allTasks]
   );
-  const adhocTasks = useMemo(
-    () =>
-      adhocTaskGroups.flatMap((group, groupIndex) =>
-        group.map((task, taskIndex) => ({ task, groupIndex, taskIndex }))
-      ),
-    [adhocTaskGroups]
-  );
-
   const eventDrivenTaskGroups = useMemo(
     () =>
       allTasks.filter((group) =>
@@ -60,20 +44,9 @@ export const useStageTasksByGroups = (allTasks: StageTaskItem[][]) => {
       ),
     [allTasks]
   );
-  const eventDrivenTasks = useMemo(
-    () =>
-      eventDrivenTaskGroups.flatMap((group, groupIndex) =>
-        group.map((task, taskIndex) => ({ task, groupIndex, taskIndex }))
-      ),
-    [eventDrivenTaskGroups]
-  );
-
   return {
     sequentialTaskGroups,
-    sequentialTasks,
     adhocTaskGroups,
-    adhocTasks,
     eventDrivenTaskGroups,
-    eventDrivenTasks,
   };
 };

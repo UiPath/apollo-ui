@@ -1,10 +1,10 @@
 import { closestCenter, DndContext } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import type { NodeMenuItem } from '../../NodeContextMenu';
 import { useStageFlatSectionReorder } from '../hooks/useStageFlatSectionReorder';
 import { StageItemsList, StageItemsSection } from '../StageNode.styles';
-import type { StageNodeProps, StageTaskGroup, StageTaskItem } from '../StageNode.types';
+import type { StageNodeProps, StageTaskItem } from '../StageNode.types';
 import { StageItemsHeaderTitle } from '../shared/StageItemsHeaderTitle';
 import { useStageNodeLabels } from '../useStageNodeLabels';
 import { EventDrivenTaskItem } from './EventDrivenTask';
@@ -14,7 +14,6 @@ import { getDivider } from './StageNodeTaskUtilities';
 const StageNodeEventDrivenTaskGroupsInner = ({
   props,
   eventDrivenTaskGroups,
-  eventDrivenTasks,
   isReadOnly,
   selectedTaskId,
   handleTaskClick,
@@ -24,7 +23,6 @@ const StageNodeEventDrivenTaskGroupsInner = ({
 }: {
   props: StageNodeProps;
   eventDrivenTaskGroups: StageTaskItem[][];
-  eventDrivenTasks: StageTaskGroup[];
   isReadOnly: boolean;
   selectedTaskId?: string;
   handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
@@ -54,6 +52,8 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   );
   const labels = useStageNodeLabels();
   const isDragDisabled = !onTaskReorder || isReadOnly;
+  // The section draws one row per task; grouping only matters to the reorder maths.
+  const rows = useMemo(() => eventDrivenTaskGroups.flat(), [eventDrivenTaskGroups]);
 
   const { taskIds, sensors, handleDragEnd, getMoveMenuItems } = useStageFlatSectionReorder({
     taskGroups: eventDrivenTaskGroups,
@@ -109,7 +109,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
       data-testid={`event-driven-tasks-list-${id}`}
       className={isDragDisabled ? undefined : 'nodrag nopan'}
     >
-      {eventDrivenTasks.map(({ task }) => {
+      {rows.map((task) => {
         const taskExecution = execution?.taskStatus?.[task.id];
         // Consumer items (e.g. breakpoints) are allowed even in read-only/Debug view;
         // only the built-in edit actions are gated on !isReadOnly. When built-in actions
@@ -149,7 +149,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
     </StageItemsList>
   );
 
-  if (eventDrivenTasks.length === 0) {
+  if (rows.length === 0) {
     return null;
   }
   return (
