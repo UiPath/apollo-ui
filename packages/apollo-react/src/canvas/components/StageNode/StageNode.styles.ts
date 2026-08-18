@@ -258,6 +258,11 @@ export const StageTaskRetryDuration = styled.div<{ status?: 'warning' | 'info' |
     `}
 `;
 
+export const StageTaskDragPlaceholderWrapper = styled.div`
+  width: var(--stage-task-width, 246px);
+  height: 36px;
+`;
+
 export const StageHeaderChipsRow = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -289,9 +294,16 @@ export const StageChip = styled.button`
   }
 `;
 
-export const StageTaskDragPlaceholderWrapper = styled.div`
-  width: var(--stage-task-width, 246px);
+export const StageItemsSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Spacing.SpacingS};
+`;
+
+export const StageItemsHeaderSection = styled.div`
   height: 36px;
+  display: flex;
+  align-items: center;
 `;
 
 export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean }>`
@@ -305,16 +317,4 @@ export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean 
 
   height: 100%;
   width: ${({ isTargetParallel }) => (isTargetParallel ? 'var(--stage-task-width-parallel, 216px)' : 'var(--stage-task-width, 246px)')};
-`;
-
-export const StageItemsSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${Spacing.SpacingS};
-`;
-
-export const StageItemsHeaderSection = styled.div`
-  height: 36px;
-  display: flex;
-  align-items: center;
 `;
