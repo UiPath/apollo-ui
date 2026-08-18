@@ -117,10 +117,10 @@ vi.mock('./tasks/DraggableTask', () => ({
     isDragDisabled?: boolean;
     getContextMenuItems?: (
       task: StageTaskItem
-    ) => Array<{ id?: string; label?: string; onClick?: () => void }>;
+    ) => Array<{ id?: string; label?: string; onClick?: () => void; disabled?: boolean }>;
   }) => {
     const [menuItems, setMenuItems] = React.useState<
-      Array<{ id?: string; label?: string; onClick?: () => void }>
+      Array<{ id?: string; label?: string; onClick?: () => void; disabled?: boolean }>
     >([]);
     return (
       <div
@@ -146,6 +146,7 @@ vi.mock('./tasks/DraggableTask', () => ({
                 key={item.id || index}
                 type="button"
                 data-testid={`menu-item-${task.id}-${item.id || index}`}
+                disabled={item.disabled}
                 onClick={item.onClick}
               >
                 {item.label}
@@ -766,7 +767,7 @@ describe('StageNode - hideParallelOptions', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should show only delete for a single task when hideParallelOptions is true', async () => {
+  it('should show delete plus disabled move options for a single task when hideParallelOptions is true', async () => {
     const user = userEvent.setup();
     const onTaskGroupModification = vi.fn();
     const tasks: StageTaskItem[][] = [[createTask('task-1', 'Task 1')]];
@@ -780,9 +781,15 @@ describe('StageNode - hideParallelOptions', () => {
     await user.click(screen.getByTestId('task-menu-button-task-1'));
 
     const menuItems = screen.getByTestId('task-menu-items-task-1');
-    const buttons = menuItems.querySelectorAll('button');
-    expect(buttons).toHaveLength(1);
-    expect(buttons[0]).toHaveTextContent('Delete task');
+    // The lone task has nowhere to move, but the options stay listed rather than disappearing.
+    expect(menuItems.querySelector('[data-testid="menu-item-task-1-move-up"]')).toBeDisabled();
+    expect(menuItems.querySelector('[data-testid="menu-item-task-1-move-down"]')).toBeDisabled();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-1-remove-task"]')
+    ).toHaveTextContent('Delete task');
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-1-group-with-up"]')
+    ).not.toBeInTheDocument();
   });
 });
 
