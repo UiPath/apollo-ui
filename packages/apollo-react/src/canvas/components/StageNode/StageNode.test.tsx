@@ -791,21 +791,6 @@ describe('StageNode - hideParallelOptions', () => {
 // These two sections render their real task components (only DraggableTask is mocked), so these
 // go through the real context menu rather than the mock's stand-in buttons.
 describe('StageNode - Flat section reordering', () => {
-  const tasks: StageTaskItem[][] = [
-    [createTask('seq-1', 'Sequential 1')],
-    [{ id: 'evt-1', label: 'Event 1', taskGroupType: 'event-driven' }],
-    [{ id: 'evt-2', label: 'Event 2', taskGroupType: 'event-driven' }],
-    [{ id: 'adhoc-1', label: 'Adhoc 1', taskGroupType: 'adhoc' }],
-    [{ id: 'adhoc-2', label: 'Adhoc 2', taskGroupType: 'adhoc' }],
-  ];
-
-  const renderWithReorder = (onTaskReorder: (t: StageTaskItem[][]) => void) =>
-    renderStageNode({
-      onTaskGroupModification: vi.fn(),
-      onTaskReorder,
-      stageDetails: { ...defaultProps.stageDetails, tasks },
-    });
-
   it('mounts no drag machinery at all when the section cannot be reordered', () => {
     // All three sections present — none of them should mount drag machinery.
     renderStageNode({
