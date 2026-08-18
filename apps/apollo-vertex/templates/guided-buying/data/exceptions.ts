@@ -14,11 +14,18 @@ export type ExceptionStatus = "open" | "active" | "resolved" | "waiting";
  * purpose, a finding compares two sources or three identically. `role` marks
  * which side governs and which deviates, only where the seed actually says
  * so; a side with no role (e.g. a third source that's merely consistent)
- * renders with neither marking. */
+ * renders with neither marking. `subLine` (prompt 38) is optional: only the
+ * price exception's sides currently have a composable explanation; the
+ * terms exception's sides render without one rather than an invented line.
+ * `unit` (prompt 40) is optional too: a smaller, secondary-coloured suffix
+ * rendered inline after `value` (e.g. "/licence/yr"). The terms exception's
+ * own values (payment terms) have no unit at all. */
 export interface FindingSide {
   label: string;
   value: string;
+  unit?: string;
   role?: "governing" | "deviating";
+  subLine?: string;
 }
 
 /** A set of values shown side by side. Two sides is a document-versus-record

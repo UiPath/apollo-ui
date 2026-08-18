@@ -38,11 +38,35 @@ export const PLACEHOLDERS = {
   "PH-33": "REQ-10482 Workbench detail source document preview lines",
   "PH-34":
     "REQ-10482 payment term exception request action, unwired no-op pending a ruling on its behaviour",
+  "PH-35":
+    "REQ-10482 flag for review action, unwired no-op pending a ruling on its behaviour",
+  "PH-36":
+    "REQ-10482 Workbench detail note composer placeholder, audience-naming copy pending",
+  "PH-37":
+    "Workbench header record level disposition (e.g. hold or reassign), unwired no-op pending a ruling on its content",
+  "PH-38":
+    "Workbench queue empty segment copy, pending a ruling on its wording",
+  "PH-39":
+    "REQ-10482 benchmark evidence detail link destination, unwired no-op pending a ruling on its behaviour",
+  "PH-40":
+    "REQ-10482 share feedback link destination, unwired no-op pending a ruling on its behaviour",
+  "PH-41":
+    "REQ-10482 Workbench detail agent card label, pending a ruling on its wording",
 } as const;
 
 export type PlaceholderId = keyof typeof PLACEHOLDERS;
 
-export const ph = (id: PlaceholderId): string => `[${id} ${PLACEHOLDERS[id]}]`;
+/**
+ * Renders a placeholder in place of the thing it stands for. With no label,
+ * this is the full ruling description from the register, for call sites
+ * that render it as its own block of explanatory text. With a `label`,
+ * this renders the id plus that short label instead, one line, for a
+ * placeholder occupying the position and shape of a label, a link, or an
+ * affordance (prompt 41): the register keeps the full description either
+ * way, this only changes what's shown on screen.
+ */
+export const ph = (id: PlaceholderId, label?: string): string =>
+  `[${id} ${label ?? PLACEHOLDERS[id]}]`;
 
 // ── Timeline anchoring ──────────────────────────────────────────────────────
 // Relative sequence across the J3 timeline (req-10482.ts) is fixed; the

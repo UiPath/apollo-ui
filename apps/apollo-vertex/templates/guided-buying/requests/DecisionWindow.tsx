@@ -1,5 +1,9 @@
 "use client";
 
+// oxlint-disable max-lines -- the approver decision view: one header, one
+// record card assembling shared zones, one communication card, and the
+// PO sheet, deliberately kept in one file (see the report).
+
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -36,13 +40,17 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { AiGlow } from "@/registry/ai-glow/ai-glow";
+import {
+  AgentSummary,
+  type SummaryMark,
+  SummaryMarkSpan,
+} from "../AgentSummary";
 import { ActivityTrack } from "./ActivityTrack";
 import { avatarColorFor } from "./avatar-color";
 import { CommunicationCard } from "./CommunicationCard";
 import {
   ACTION_LABEL,
   type ActionKey,
-  DecisionActionGroup,
   resolveActionOrder,
   splitActionOrder,
 } from "./DecisionActionGroup";
@@ -55,7 +63,6 @@ import {
   getRequestDetail,
   type RailFieldKey,
   REQ_2052_APPROVED_DATE,
-  type SummaryMark,
 } from "./data";
 import { PORecord } from "./PORecord";
 import { RecordCard } from "./RecordCard";
@@ -75,6 +82,10 @@ import {
 } from "./stage-display";
 import { TruncatedSubtitle } from "./TruncatedSubtitle";
 
+function handleCopyLink() {
+  void navigator.clipboard.writeText(window.location.href);
+}
+
 function initialsOf(name: string): string {
   return name
     .split(" ")
@@ -84,65 +95,16 @@ function initialsOf(name: string): string {
     .toUpperCase();
 }
 
-/** A run of the AI summary sentence. Plain text renders as-is; a run with a
- * `targetField` also gets the accent treatment and becomes interactive —
- * hover flashes the referenced rail field, click/keyboard scrolls to it
- * first. Same span either way — Prompt B only needs to supply new marks
- * with `targetField` set, not new rendering code. */
-function SummaryMarkSpan({
-  mark,
-  onHighlight,
-}: {
-  mark: SummaryMark;
-  onHighlight?: (key: RailFieldKey, options?: { scroll?: boolean }) => void;
-}) {
-  const interactive = mark.targetField != null;
-  return (
-    <span
-      role={interactive ? "button" : undefined}
-      tabIndex={interactive ? 0 : undefined}
-      onMouseEnter={
-        interactive ? () => onHighlight?.(mark.targetField!) : undefined
-      }
-      onClick={
-        interactive
-          ? () => onHighlight?.(mark.targetField!, { scroll: true })
-          : undefined
-      }
-      onKeyDown={
-        interactive
-          ? (e) => {
-              if (e.key !== "Enter" && e.key !== " ") return;
-              e.preventDefault();
-              onHighlight?.(mark.targetField!, { scroll: true });
-            }
-          : undefined
-      }
-      className={cn(
-        "rounded-sm px-1 text-insight-900 dark:text-insight-50",
-        interactive && "cursor-pointer",
-      )}
-      style={{
-        backgroundImage: "var(--ai-gradient)",
-        boxDecorationBreak: "clone",
-        WebkitBoxDecorationBreak: "clone",
-      }}
-    >
-      {mark.text}
-    </span>
-  );
-}
-
 const COMPOSER_MIN_HEIGHT = 72;
 
 /**
- * Approver decision view — /decision/$id. Same two-column template as the
+ * Approver decision view, /decision/$id. Same two-column template as the
  * requester's own request detail (RequestWindow.tsx): a main column (the
  * decision card, then Communication as a card) and a details rail. The
- * decision card is the shared RecordCard (see RecordCard.tsx) — persona
+ * decision card is the shared RecordCard (see RecordCard.tsx). Persona
  * content differs, the zone structure doesn't. The action group renders in
  * two places (header, compact; card, full size) from one ordered list and
- * one set of handlers — never duplicated.
+ * one set of handlers, never duplicated.
  */
 export function DecisionWindow() {
   const { id } = useParams({ from: "/decision/$id" });
@@ -178,51 +140,54 @@ export function DecisionWindow() {
   const { label: statusLabel, status: badgeStatus } =
     DECISION_STATUS_META[status];
 
-  const requesterFirstName = detail.requester.split(" ")[0]!;
+  const requesterFirstName = detail.requester.split(" ")[0] ?? detail.requester;
   const requesterAvatarColor = avatarColorFor(detail.requester);
-  const approverFirstName = detail.approver.split(" · ")[0]!;
+  const approverFirstName = detail.approver.split(" · ")[0] ?? detail.approver;
 
-  // The same checks the AI zone's summary sentence reads from — the list
+  // The same checks the AI zone's summary sentence reads from. The list
   // can't assert something the sentence contradicts.
   const checks = buildChecks(detail);
-  const deviceCheck = checks.find((c) => c.key === "deviceManagement")!;
-  const deviceStatusWord = deviceCheck.status === "pass" ? "ready" : "flagged";
+  const deviceStatus = checks.find((c) => c.key === "deviceManagement")?.status;
+  const deviceStatusWord = deviceStatus === "pass" ? "ready" : "flagged";
   const hasException = checks.some((c) => c.status === "exception");
 
-  // The budget's own name, not a hardcoded "hardware budget" — REQ-2052's
+  // The budget's own name, not a hardcoded "hardware budget". REQ-2052's
   // is a hardware budget, but the label already carries that; deriving it
   // is what lets this sentence stay correct for a software-budget request.
-  const budgetName = detail.packet.budget.label.split(" · ")[0]!.toLowerCase();
+  const budgetNameRaw = detail.packet.budget.label.split(" · ")[0];
+  const budgetName = (
+    budgetNameRaw ?? detail.packet.budget.label
+  ).toLowerCase();
   const budgetMark: SummaryMark = {
     text: `${detail.packet.budget.pct} of the ${budgetName}`,
     targetField: "budget",
   };
   const deliveryMark: SummaryMark = { text: detail.expectedDelivery };
-  // Same template, different slot — an exception means the sentence can't
+  // Same template, different slot. An exception means the sentence can't
   // claim nothing else needs attention, so this clause changes instead of
   // being a second authored sentence.
   const trailingClause = hasException
     ? "so review what's flagged below before deciding"
     : "so nothing else needs your attention";
 
-  const handleHighlight = (key: RailFieldKey, options?: { scroll?: boolean }) =>
-    railRef.current?.highlightField(key, options);
+  // `key` widens to a plain string at the shared SummaryMarkSpan boundary
+  // (see ../AgentSummary.tsx); every mark this screen builds still only
+  // ever sets a real RailFieldKey, so narrowing back here is safe.
+  const handleHighlight = (key: string, options?: { scroll?: boolean }) =>
+    railRef.current?.highlightField(key as RailFieldKey, options);
 
   const order = resolveActionOrder(detail.recommendation);
-  const { row, overflow } =
-    status === "pending"
-      ? splitActionOrder(order)
-      : { row: [] as ActionKey[], overflow: [] as ActionKey[] };
-  // The header exposes only the single top-ranked action — same ordered
-  // list as the card, a narrower capacity. Everything else, including the
-  // card's second row action, is one click away behind the overflow.
-  // FINDING: this duplicates the top action between the header and the
-  // card body (both show "Approve" first for a clean recommendation) —
-  // that duplication predates this port; not resolved here.
+  // The header exposes the single top-ranked action; everything else,
+  // including what used to be the card's own second row action, is one
+  // click away behind the overflow. RESOLVED (prompt 31): the card no
+  // longer renders its own action row at all, so "Approve" appears exactly
+  // once, in the header, not duplicated between the header and the card
+  // body as before.
   const { row: headerRow, overflow: headerOverflow } =
     status === "pending"
       ? splitActionOrder(order, 1)
       : { row: [] as ActionKey[], overflow: [] as ActionKey[] };
+  const [topHeaderAction] = headerRow;
 
   const handleAction = (action: ActionKey) => {
     if (action === "approve") {
@@ -243,49 +208,45 @@ export function DecisionWindow() {
     toast.success("Sent back");
   };
 
-  const handleCopyLink = () => {
-    void navigator.clipboard.writeText(window.location.href);
-  };
-
-  // GAP: the stage tracker reads RequestDetail.journeyStages — the same
-  // source the requester's own page reads, not a second copy — but only
+  // GAP: the stage tracker reads RequestDetail.journeyStages, the same
+  // source the requester's own page reads, not a second copy. But only
   // REQ-2052 has one today (REQ-2054/2055/2056 have a DecisionDetail with
   // no journeyStages counterpart). The primary-content zone simply doesn't
   // render for those, same "renders nothing when absent" rule this app
   // already follows elsewhere (see RequestWindow.tsx's own gaps).
   const requestDetail = getRequestDetail(id);
   const rawStages =
-    requestDetail?.journeyStages != null
-      ? applyReceiptFlags(buildTrackStages(requestDetail), receipts[id])
-      : undefined;
+    requestDetail?.journeyStages == null
+      ? requestDetail?.journeyStages
+      : applyReceiptFlags(buildTrackStages(requestDetail), receipts[id]);
   const stagesWithApprovalDate =
-    approved && rawStages != null
-      ? rawStages.map((stage) =>
-          stage.label === "Approved"
-            ? { ...stage, date: REQ_2052_APPROVED_DATE, overdueDays: undefined }
-            : stage,
-        )
-      : rawStages;
+    !approved || rawStages == null
+      ? rawStages
+      : rawStages.map((stage) => {
+          if (stage.label !== "Approved") return stage;
+          const { overdueDays: _overdueDays, ...stageWithoutOverdue } = stage;
+          return { ...stageWithoutOverdue, date: REQ_2052_APPROVED_DATE };
+        });
   const trackStages =
-    approved && stagesWithApprovalDate != null
-      ? advanceStagesThrough(stagesWithApprovalDate, "Approved")
-      : stagesWithApprovalDate;
+    !approved || stagesWithApprovalDate == null
+      ? stagesWithApprovalDate
+      : advanceStagesThrough(stagesWithApprovalDate, "Approved");
   // Sub-labels only where they're decision-relevant (current stage's own
-  // expectation, final stage's need-by) — the submitted date and the
+  // expectation, final stage's need-by). The submitted date and the
   // shipping estimate come out; neither changes what the approver decides.
   // The requester's own tracker never runs through simplifyApproverDates.
   const displayStages =
-    trackStages != null
-      ? simplifyApproverDates(
+    trackStages == null
+      ? trackStages
+      : simplifyApproverDates(
           toDisplayStages(
             trackStages,
             { needBy: requestDetail?.summary?.needBy ?? detail.needBy },
             "approver",
           ),
-        )
-      : undefined;
+        );
 
-  // ESCALATE: wording. Trimmed to its substance — the AI mark and the zone
+  // ESCALATE: wording. Trimmed to its substance: the AI mark and the zone
   // label already establish that the AI is speaking, so the old "Before
   // this reached you, I confirmed..." / "Now that you've approved it, I
   // sent..." lead-ins were a restatement of that, not new information.
@@ -319,9 +280,20 @@ export function DecisionWindow() {
           metadata region between them at natural-width attributes with
           equal gaps, not equal-width columns. 40px container padding,
           48px title boundary, 32px actions boundary and inter-attribute
-          minimum — all identical values, same tokens. The approver's
-          metadata names the other party (the requester) plus Need by —
-          each persona's header names the counterpart, not itself. */}
+          minimum, all identical values, same tokens.
+
+          Canonical item order, shared with the buyer's own header
+          (WorkbenchDetail.tsx): identity, Requested by, Date requested,
+          Need by, Status, trailing action (prompt 31). This surface has no
+          Value or Assigned to item, so it renders the rest, in this order,
+          and omits those two.
+
+          Header back control: this header carries one because it's the
+          only path back to the approvals list. The buyer's own header
+          doesn't, because his queue pane already carries one; the rule is
+          "a back control only where no sibling pane already provides it",
+          not a per-surface accident (see WorkbenchDetail.tsx's own header
+          comment). */}
       <PageHeader
         bordered
         className="shrink-0 px-10 sm:px-10 lg:px-10 @3xl:!grid-cols-[auto_1fr_auto] @3xl:gap-0"
@@ -337,20 +309,6 @@ export function DecisionWindow() {
         </PageHeaderNav>
 
         <PageHeaderContent className="@3xl:justify-between @3xl:gap-8">
-          <PageHeaderField className="shrink-0">
-            <PageHeaderFieldLabel>Date requested</PageHeaderFieldLabel>
-            <PageHeaderFieldValue className="overflow-visible">
-              {detail.submitted}
-            </PageHeaderFieldValue>
-          </PageHeaderField>
-          <PageHeaderField className="shrink-0">
-            <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
-            <PageHeaderFieldValue className="overflow-visible">
-              <Badge status={badgeStatus} variant="secondary">
-                {statusLabel}
-              </Badge>
-            </PageHeaderFieldValue>
-          </PageHeaderField>
           <PageHeaderField className="shrink-0">
             <PageHeaderFieldLabel>Requested by</PageHeaderFieldLabel>
             <PageHeaderFieldValue className="flex items-center gap-1.5 overflow-visible">
@@ -369,27 +327,41 @@ export function DecisionWindow() {
             </PageHeaderFieldValue>
           </PageHeaderField>
           <PageHeaderField className="shrink-0">
+            <PageHeaderFieldLabel>Date requested</PageHeaderFieldLabel>
+            <PageHeaderFieldValue className="overflow-visible">
+              {detail.submitted}
+            </PageHeaderFieldValue>
+          </PageHeaderField>
+          <PageHeaderField className="shrink-0">
             <PageHeaderFieldLabel>Need by</PageHeaderFieldLabel>
             <PageHeaderFieldValue className="overflow-visible">
               {detail.needBy}
+            </PageHeaderFieldValue>
+          </PageHeaderField>
+          <PageHeaderField className="shrink-0">
+            <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
+            <PageHeaderFieldValue className="overflow-visible">
+              <Badge status={badgeStatus} variant="secondary">
+                {statusLabel}
+              </Badge>
             </PageHeaderFieldValue>
           </PageHeaderField>
         </PageHeaderContent>
 
         <PageHeaderActions className="@3xl:ml-8">
           {status === "pending" ? (
-            // One exposed action, joined visually to the overflow trigger —
-            // everything else the card offers (the second row action,
+            // One exposed action, joined visually to the overflow trigger.
+            // Everything else the card offers (the second row action,
             // Reject, Copy link) is one click away, never duplicated as a
             // second button here. Same order/handlers as the card, narrower
             // capacity (see headerRow above).
             <ButtonGroup>
-              {headerRow.length > 0 && (
+              {topHeaderAction && (
                 <Button
                   variant="secondary"
-                  onClick={() => handleAction(headerRow[0]!)}
+                  onClick={() => handleAction(topHeaderAction)}
                 >
-                  {ACTION_LABEL[headerRow[0]!]}
+                  {ACTION_LABEL[topHeaderAction]}
                 </Button>
               )}
               <ButtonGroupSeparator />
@@ -411,7 +383,7 @@ export function DecisionWindow() {
             </ButtonGroup>
           ) : (
             // Once decided, there's nothing left to hide behind an
-            // overflow trigger — Copy link is the only action, so it's the
+            // overflow trigger. Copy link is the only action, so it's the
             // exposed button, not a one-item ellipsis menu. Default size
             // (no `size="sm"`), matching the requester's own header button.
             <Button variant="secondary" onClick={handleCopyLink}>
@@ -421,7 +393,7 @@ export function DecisionWindow() {
         </PageHeaderActions>
       </PageHeader>
 
-      {/* Two columns, one shared scroll — same wrapper as RequestWindow.tsx,
+      {/* Two columns, one shared scroll, same wrapper as RequestWindow.tsx,
           for the same reason (a per-column overflow-y-auto clips the glass
           card's glow on its right edge). */}
       <div
@@ -432,7 +404,7 @@ export function DecisionWindow() {
         )}
       >
         <div className="min-w-0 space-y-5 lg:flex-1">
-          {/* Glow behind the card, not inside it — AiGlow sits as the
+          {/* Glow behind the card, not inside it. AiGlow sits as the
               first child of this `relative` wrapper, the card layered
               above it in its own `relative` child (see ai-glow.tsx's own
               doc comment). The card itself is `surface="solid"`: glass's
@@ -448,26 +420,19 @@ export function DecisionWindow() {
                 caveatPlacement="footer"
                 label="Timeline"
                 primaryContent={
-                  displayStages != null ? (
+                  displayStages == null ? null : (
                     <ActivityTrack
                       stages={displayStages}
                       orientation="vertical"
                     />
-                  ) : undefined
+                  )
                 }
                 aiHeading="AI summary"
                 aiContent={
-                  <div className="space-y-4">
-                    <p className="max-w-[568px] text-[23px] font-semibold leading-snug text-foreground">
-                      {summarySentence}
-                    </p>
-                    <DecisionChecks checks={checks} />
-                  </div>
-                }
-                actions={
-                  row.length > 0 ? (
-                    <DecisionActionGroup row={row} onAction={handleAction} />
-                  ) : undefined
+                  <AgentSummary
+                    conclusion={summarySentence}
+                    evidence={<DecisionChecks checks={checks} />}
+                  />
                 }
               />
             </div>
@@ -540,7 +505,7 @@ export function DecisionWindow() {
           />
         </div>
 
-        {/* Rail — same wrapper classes as RequestWindow.tsx's own reference
+        {/* Rail, same wrapper classes as RequestWindow.tsx's own reference
             column (width, sticky, pt-5), so the two line up structurally
             even though this one's content differs. */}
         <div className="w-full space-y-4 pt-5 lg:w-[260px] lg:shrink-0 lg:self-start lg:sticky lg:top-0">
@@ -559,7 +524,7 @@ export function DecisionWindow() {
         onSubmit={handleSendBackSubmit}
       />
 
-      {/* Surfaces the PO without leaving the decision context — the rail's
+      {/* Surfaces the PO without leaving the decision context. The rail's
           Linked records chip opens this once approved. */}
       <Sheet open={poOpen} onOpenChange={setPoOpen}>
         <SheetContent className="w-full gap-0 p-0 sm:max-w-2xl">

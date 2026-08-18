@@ -604,8 +604,8 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
     timing: IDENTITY.neededFrom,
     type: "contract",
     finding: {
-      tag: ph("PH-27"),
-      headline: ph("PH-28"),
+      tag: ph("PH-27", "tag"),
+      headline: ph("PH-28", "headline"),
       metrics: [
         { label: "Annual value", value: `${formatUSD(ANNUAL_VALUE)}/yr` },
         {
@@ -614,7 +614,7 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
         },
         { label: "Term", value: `${TERM_YEARS} years` },
       ],
-      body: ph("PH-29"),
+      body: ph("PH-29", "finding body"),
     },
     actions: {
       primary: { label: "Approve", decision: "approved" },
@@ -622,9 +622,9 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
       reject: { label: "Reject", decision: "rejected" },
     },
     confirmations: {
-      approved: ph("PH-30"),
-      countered: ph("PH-31"),
-      rejected: ph("PH-32"),
+      approved: ph("PH-30", "approved confirmation"),
+      countered: ph("PH-31", "countered confirmation"),
+      rejected: ph("PH-32", "rejected confirmation"),
     },
     suggestions: [],
     composerPlaceholder: "",
@@ -639,7 +639,7 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
     linesTotal: `${formatUSD(ANNUAL_VALUE)}/yr · ${formatUSD(TOTAL_CONTRACT_VALUE)} over ${TERM_YEARS} years`,
     source: {
       filename: req10482Document("v2").filename,
-      lines: [ph("PH-33")],
+      lines: [ph("PH-33", "source preview")],
     },
     activity: TIMELINE.toReversed().map((event) => ({
       id: event.id,

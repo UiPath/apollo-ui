@@ -27,7 +27,7 @@ import {
 import { RailDock } from "./RailDock";
 import type { CatalogItem } from "./types";
 
-// Deck j1-06: XPS defense — bold numbered lines + price-priority closer.
+// Deck j1-06: XPS defense, bold numbered lines + price-priority closer.
 const XPS_DEFENSE = `**1. Price after EPP**: The X1 Carbon's employee discount brings it to $1,249. The XPS starts lower but its discount is smaller. After EPP, the Carbon wins by $38 per unit.
 
 **2. Spec match**: The Carbon ships 32 GB standard. The XPS is 16 GB; upgrading it to match adds $120 and 5–7 days to delivery.
@@ -36,7 +36,7 @@ const XPS_DEFENSE = `**1. Price after EPP**: The X1 Carbon's employee discount b
 
 If price is the priority, the XPS is the closer call. On spec, delivery, and total cost, the Carbon leads.`;
 
-// Deck j1-06: Yoga defense — touch premium + memory shortfall + form factor.
+// Deck j1-06: Yoga defense, touch premium + memory shortfall + form factor.
 const YOGA_DEFENSE = `**1. Price after EPP**: The X1 Yoga's touchscreen adds $150 to the base price. After EPP, it lands at $1,999, $150 more than the Carbon for hardware your contractors won't use in field work.
 
 **2. Spec shortfall**: The Yoga ships 16 GB. Your request calls for 32 GB; the Carbon meets it out of the box.
@@ -51,7 +51,7 @@ const DELL_XPS_ID = "dell-xps-14";
 const RESPONSE_MARKDOWN_CLASSNAME =
   "py-1 text-sm leading-relaxed bg-transparent text-foreground prose dark:prose-invert max-w-none";
 
-// Deck j1-06: P1 correction — scoped to request only, nothing saved.
+// Deck j1-06: P1 correction, scoped to request only, nothing saved.
 const P1_CORRECTION =
   "Got it, noted for this request. The X1 Carbon already meets 32 GB, so your picks stay the same. Nothing is saved; it applies to this request only.";
 
@@ -59,7 +59,7 @@ const P1_CORRECTION =
 const P2_CORRECTION = `Your 32 GB minimum is saved. The Yoga (16 GB) doesn't meet it. I've set it aside on the shelf with a "Show anyway" option.`;
 
 // Opened generically (header ✦, or the Shelf's "not finding what you're
-// looking for?") — no specific item to defend, just an open thread. The panel
+// looking for?"), no specific item to defend, just an open thread. The panel
 // never opens empty: this is what the agent has already done on this request.
 const GENERIC_ACK = "Got it, noted for this request.";
 
@@ -103,13 +103,19 @@ function msg(
 }
 
 interface ShelfDockProps {
-  /** The catalog item whose "Compare with my pick" was triggered — drives the
+  /** The catalog item whose "Compare with my pick" was triggered, drives the
    * defense copy. Null when opened generically: the activity summary + an
    * open thread, no scripted defense. */
   subject: CatalogItem | null;
-  /** Which step the panel was opened from — drives the generic mode's
+  /** Which step the panel was opened from, drives the generic mode's
    * step-aware starter prompts. Ignored when `subject` is set. */
   context?: GenericContext;
+  /** Overrides `context`'s own built-in starter prompts (prompt 33). Every
+   * built-in set is scoped to Marcus's own catalog journey; a surface with
+   * no starters of its own should pass an empty array here rather than
+   * showing his. Omit to keep the existing per-context behaviour
+   * unchanged. */
+  starterQuestions?: string[];
   onClose: () => void;
   onCorrectionMade: () => void;
 }
@@ -117,6 +123,7 @@ interface ShelfDockProps {
 export function ShelfDock({
   subject,
   context = "selection",
+  starterQuestions,
   onClose,
   onCorrectionMade,
 }: ShelfDockProps) {
@@ -131,7 +138,7 @@ export function ShelfDock({
   const [correctionInput, setCorrectionInput] = useState("");
   const [correctionText, setCorrectionText] = useState("");
   // A question waits here while the canned ack "thinks", then lands in the
-  // shared thread — so the delay reads the same as the rest of the app.
+  // shared thread, so the delay reads the same as the rest of the app.
   const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const [genericInput, setGenericInput] = useState("");
   // Earlier step entries condense by default; a user can reopen one.
@@ -204,13 +211,15 @@ export function ShelfDock({
   const showComposer = subject ? phase !== "corrected" : true;
   // Starter prompts step aside once the thread has any Q&A of its own.
   const hasQa = entries.some((e) => e.kind === "qa");
-  const showSuggestions = !subject && !hasQa && !pendingQuestion;
+  const starters = starterQuestions ?? SUGGESTED_QUESTIONS[context];
+  const showSuggestions =
+    !subject && !hasQa && !pendingQuestion && starters.length > 0;
 
   return (
     <RailDock open width="380px" onExpand={() => {}}>
       <div className="relative h-full w-[380px]">
         {/* Ambient glow, cropped and bleeding off the panel's top-left
-            corner — clipped by RailDock's own overflow-hidden <aside>.
+            corner, clipped by RailDock's own overflow-hidden <aside>.
             --ai-gradient (not the static -start/-end pair) has its own
             light/dark definitions, so it stays correctly tuned in dark mode
             instead of the same vivid hex values reading too hot on navy.
@@ -221,7 +230,7 @@ export function ShelfDock({
           style={{ backgroundImage: "var(--ai-gradient)" }}
         />
         <div className="relative flex h-full min-h-0 flex-col">
-          {/* Header — h-12 matches the page header so the borders line up.
+          {/* Header, h-12 matches the page header so the borders line up.
               Solid background so the glow behind it doesn't bleed through. */}
           <div className="flex h-12 shrink-0 items-center justify-between border-b bg-card px-6">
             <div className="flex items-center gap-2">
@@ -263,7 +272,7 @@ export function ShelfDock({
             </Button>
           </div>
 
-          {/* Body — scrolls independently so the composer stays pinned + visible.
+          {/* Body, scrolls independently so the composer stays pinned + visible.
             Bottom edge fades via mask instead of a hard border into the composer. */}
           <div
             ref={bodyRef}
@@ -381,7 +390,7 @@ export function ShelfDock({
                     );
                   }
                   if (entry.kind === "note") {
-                    // Memory write, made visible — same receipt-chip treatment
+                    // Memory write, made visible, same receipt-chip treatment
                     // as the dock's own P2 correction save.
                     return (
                       <AiChatMessage
@@ -538,7 +547,7 @@ export function ShelfDock({
             )}
           </div>
 
-          {/* Composer + caveat pinned to bottom — same 24px inset as the panel. */}
+          {/* Composer + caveat pinned to bottom, same 24px inset as the panel. */}
           {showComposer && (
             <div className="shrink-0 px-6 pt-4 pb-6">
               {showSuggestions && (
@@ -547,7 +556,7 @@ export function ShelfDock({
                     Try asking
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {SUGGESTED_QUESTIONS[context].map((question) => (
+                    {starters.map((question) => (
                       <button
                         key={question}
                         type="button"

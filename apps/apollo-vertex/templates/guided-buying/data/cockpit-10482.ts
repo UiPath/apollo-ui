@@ -1,3 +1,10 @@
+// oxlint-disable max-lines -- seed data (fixtures), same exemption
+// req-10482.ts already carries, for the same reason: the split kept this
+// module under the limit on its own for a while, but enough prompts have
+// since added legitimate derived content (prompt 38's metric units, sub
+// lines, and scale marker among them) that it now needs the same
+// allowance, not a trim of the reasoning already on these exports.
+
 // Seed for Sam Rivera's four Cockpit screens (buyer workbench), REQ-10482
 // specifically. Kept apart from req-10482.ts rather than added to it: that
 // module already carries an oxlint max-lines exemption acknowledging its
@@ -11,11 +18,14 @@ import type { JourneyStep, JourneyStepId } from "./journeys";
 import { getPerson, type PersonId } from "./people";
 import { ph } from "./placeholders";
 import {
+  ABOVE_BAND_ROUTE,
   ANNUAL_VALUE,
   BASE_TIER_REFERENCE_PRICE_PER_YEAR,
   BENCHMARK_EVIDENCE,
+  BUYER_DECISION_BAND_PCT,
   DOCUMENTS,
   IDENTITY,
+  isAboveDecisionBand,
   PAYMENT_TERMS_SOURCES,
   QUANTITY,
   REQUEST_JOURNEY,
@@ -127,14 +137,102 @@ export const BENCHMARK_ADDITIONS: BenchmarkAddition[] = [
 
 const deviationPct = Math.round(unitPriceDeviationPct());
 
-export const BENCHMARK_CONCLUSION_LINE = `The +${deviationPct}% premium is attributable to functionality outside the base benchmark.`;
+// The judgment the rationale leads with (prompt 29): fixed phrasing, no
+// figure baked into the string. The deviation-vs-band figure renders as its
+// own highlighted span in the component (see DEVIATION_PCT/
+// DEVIATION_BAND_PCT/DEVIATION_BAND_RELATION below), matching how the
+// approver's own summary highlights its decisive figure inline rather than
+// folding it into plain prose.
+export const BENCHMARK_CONCLUSION_LINE =
+  "The premium is attributable to functionality outside the base benchmark";
 
-// Agent benchmark rationale, composed as a template over seed values (see
-// the report): quantity, unit price, annual value, base reference,
-// deviation, the capabilities added, and the rate lock, in that order.
-// Reworded from source material that used em-dashes (PH-11, unconfirmed).
+// The reason, kept from the original rationale template (prompt 21):
+// capabilities added plus the rate lock, in that order. Reworded from
+// source material that used em-dashes (PH-11, unconfirmed).
 const [recording, sso, calendar, rateLock] = BENCHMARK_ADDITIONS;
-export const BENCHMARK_AGENT_RATIONALE = `Based on ${QUANTITY.toLocaleString("en-US")} seats at ${formatUSD(UNIT_PRICE_PER_YEAR)} per licence per year (${formatUSD(ANNUAL_VALUE)} annually), this sits ${deviationPct}% above the ${formatUSD(BASE_TIER_REFERENCE_PRICE_PER_YEAR)} base tier reference. The premium reflects ${recording.capability}, ${sso.capability}, and ${calendar.capability}, backed by the ${rateLock.capability}.`;
+export const BENCHMARK_REASON_LINE = `The premium reflects ${recording.capability}, ${sso.capability}, and ${calendar.capability}, backed by the ${rateLock.capability}.`;
+
+// The deviation against the buyer's own decision band, both read from
+// req-10482.ts rather than restated: how far the unit price sits above the
+// base tier reference, and the band that decides whether this resolves
+// inline or routes to category management.
+export const DEVIATION_PCT = deviationPct;
+export const DEVIATION_BAND_PCT = BUYER_DECISION_BAND_PCT;
+
+// Signed, so a positive deviation reads as a deviation, not a bare number.
+export const DEVIATION_PCT_SIGNED = `${deviationPct >= 0 ? "+" : ""}${deviationPct}%`;
+
+// The metric's own sub line: the band it sits within (prompt 38).
+export const DEVIATION_METRIC_SUB_LINE = `${isAboveDecisionBand() ? "above" : "within"} the ${BUYER_DECISION_BAND_PCT}% decision band`;
+
+// The band, named the way the deviation row states it inline (prompt 40):
+// the same phrase the scale's own end label already used, now a named
+// export so both read the identical derived string rather than two
+// separately typed templates of the same fact.
+export const DEVIATION_BAND_LABEL = `${BUYER_DECISION_BAND_PCT}% decision band`;
+
+// A one line verdict for group one (prompt 40): the same within/above check
+// that drives DEVIATION_BAND_RELATION (below), DEVIATION_ROUTING_NOTE, and
+// the deviation row's own role colour, so this doesn't add a new field to
+// the exception model, just a fourth reader of the same derived fact.
+export const DEVIATION_VERDICT = `${isAboveDecisionBand() ? "above" : "within"} the decision band`;
+
+// Unit price's value and unit, split (prompt 40, for the row layout's own
+// value/unit split) from the single combined string prompt 39 introduced.
+// "/licence/yr" is still that combination ("/licence" from this codebase's
+// own established suffix, e.g. intake's own ReviewStep.tsx; "/yr" from
+// UNIT_PRICE_PER_YEAR's own established one), just split into two exports
+// now rather than one. The sub line keeps its own simpler "/yr": it
+// multiplies by quantity, so the per unit reading is already unambiguous
+// there.
+export const UNIT_PRICE_VALUE = formatUSD(UNIT_PRICE_PER_YEAR);
+export const UNIT_PRICE_UNIT = "/licence/yr";
+export const UNIT_PRICE_SUB_LINE = `${QUANTITY.toLocaleString("en-US")} × ${formatUSD(UNIT_PRICE_PER_YEAR)}/yr = ${formatUSD(ANNUAL_VALUE)}/yr`;
+
+// Base tier reference's value and unit, split the same way (prompt 40). The
+// approximation marker stays on the value, not the unit (prompt 39: it's
+// part of the figure, not decoration). MARKET_REFERENCES_LINE above is
+// this value's own sub line.
+export const BASE_TIER_REFERENCE_VALUE = `~${formatUSD(BASE_TIER_REFERENCE_PRICE_PER_YEAR)}`;
+export const BASE_TIER_REFERENCE_UNIT = "/licence/yr";
+
+// The scale earns its place only when the deviation is close enough to the
+// band, or past it, that the number alone under-communicates the position
+// (prompt 39). The margin is a fifth of the band itself, not a hardcoded
+// point: proportional to whatever the band happens to be, rather than a
+// fixed percentage point value that would mean something different for a
+// wider or narrower band. See the report for why a fifth.
+export const DEVIATION_NEAR_BAND_MARGIN_PCT = BUYER_DECISION_BAND_PCT * 0.2;
+export const DEVIATION_SCALE_VISIBLE =
+  deviationPct >= BUYER_DECISION_BAND_PCT - DEVIATION_NEAR_BAND_MARGIN_PCT;
+
+// Whether the deviation sits within or above the band: the second half of
+// the judgment the rationale leads with. Same underlying check as
+// DEVIATION_ROUTING_NOTE below, named here rather than restated.
+export const DEVIATION_BAND_RELATION = isAboveDecisionBand()
+  ? "above"
+  : "within";
+
+// How far the deviation sits inside the band, 0 to 1, clamped: the scale's
+// own fill ratio. Purely derived, no authored content, see the report.
+export const DEVIATION_BAND_RATIO = Math.min(
+  1,
+  Math.max(0, deviationPct / BUYER_DECISION_BAND_PCT),
+);
+
+// Split into its condition and its consequence (prompt 42), not reworded:
+// the condition ("within"/"above the band") duplicated what the headline's
+// own verdict already states once the two joined (see DEVIATION_VERDICT
+// above), so only the consequence renders on the pane now. The consequence
+// clause is the same seed wording either way, just no longer prefixed by
+// the condition that made it read as a sentence on its own; capitalization
+// is the only change, since it now starts a sentence instead of continuing
+// one. `DEVIATION_ROUTING_CONDITION` is kept named, structurally, even
+// though nothing currently renders it (the headline covers that fact).
+export const DEVIATION_ROUTING_CONDITION = isAboveDecisionBand()
+  ? "Above the band."
+  : "Within the band.";
+export const DEVIATION_ROUTING_CONSEQUENCE = `Routes to ${ABOVE_BAND_ROUTE}.`;
 
 // ── 2. The supplier correction draft ─────────────────────────────────────────
 
@@ -198,12 +296,16 @@ const PRICE_EXCEPTION: Exception = {
     sides: [
       {
         label: "Unit price",
-        value: formatUSD(UNIT_PRICE_PER_YEAR),
+        value: UNIT_PRICE_VALUE,
+        unit: UNIT_PRICE_UNIT,
+        subLine: UNIT_PRICE_SUB_LINE,
         role: "deviating",
       },
       {
         label: "Base tier reference",
-        value: formatUSD(BASE_TIER_REFERENCE_PRICE_PER_YEAR),
+        value: BASE_TIER_REFERENCE_VALUE,
+        unit: BASE_TIER_REFERENCE_UNIT,
+        subLine: MARKET_REFERENCES_LINE,
         role: "governing",
       },
     ],
