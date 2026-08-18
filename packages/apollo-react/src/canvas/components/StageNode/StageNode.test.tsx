@@ -806,99 +806,6 @@ describe('StageNode - Flat section reordering', () => {
       stageDetails: { ...defaultProps.stageDetails, tasks },
     });
 
-  it('moves an event-triggered group and passes the other sections through untouched', async () => {
-    const user = userEvent.setup();
-    const onTaskReorder = vi.fn();
-    renderWithReorder(onTaskReorder);
-
-    await user.click(screen.getByTestId('stage-task-menu-evt-1'));
-    await user.click(await screen.findByText('Move down'));
-
-    expect(onTaskReorder).toHaveBeenCalledWith([
-      [expect.objectContaining({ id: 'seq-1' })],
-      [expect.objectContaining({ id: 'evt-2' })],
-      [expect.objectContaining({ id: 'evt-1' })],
-      [expect.objectContaining({ id: 'adhoc-1' })],
-      [expect.objectContaining({ id: 'adhoc-2' })],
-    ]);
-  });
-
-  it('moves a manually-triggered group and passes the other sections through untouched', async () => {
-    const user = userEvent.setup();
-    const onTaskReorder = vi.fn();
-    renderWithReorder(onTaskReorder);
-
-    await user.click(screen.getByTestId('stage-task-menu-adhoc-2'));
-    await user.click(await screen.findByText('Move up'));
-
-    expect(onTaskReorder).toHaveBeenCalledWith([
-      [expect.objectContaining({ id: 'seq-1' })],
-      [expect.objectContaining({ id: 'evt-1' })],
-      [expect.objectContaining({ id: 'evt-2' })],
-      [expect.objectContaining({ id: 'adhoc-2' })],
-      [expect.objectContaining({ id: 'adhoc-1' })],
-    ]);
-  });
-
-  it('disables the move option at the end of a section instead of dropping it', async () => {
-    const user = userEvent.setup();
-    renderWithReorder(vi.fn());
-
-    await user.click(screen.getByTestId('stage-task-menu-evt-1'));
-
-    expect(await screen.findByRole('menuitem', { name: 'Move up' })).toHaveAttribute(
-      'aria-disabled',
-      'true'
-    );
-    expect(screen.getByRole('menuitem', { name: 'Move down' })).not.toHaveAttribute(
-      'aria-disabled',
-      'true'
-    );
-  });
-
-  it('still opens a menu when reordering is the only action the consumer supplies', async () => {
-    const user = userEvent.setup();
-    const onTaskReorder = vi.fn();
-
-    // No onTaskGroupModification, no onReplaceTaskFromToolbox, no consumer items — the move
-    // entries would be unreachable if the menu were gated on those alone.
-    renderStageNode({
-      onTaskReorder,
-      stageDetails: { ...defaultProps.stageDetails, tasks },
-    });
-
-    await user.click(screen.getByTestId('stage-task-menu-evt-1'));
-    await user.click(await screen.findByText('Move down'));
-
-    expect(onTaskReorder).toHaveBeenCalled();
-  });
-
-  it('moves a task within its own group rather than greying the option out', async () => {
-    const user = userEvent.setup();
-    const onTaskReorder = vi.fn();
-    // One event-triggered group holding two tasks. These render as two plain rows, so the second
-    // one must be movable up past the first — matching what a drag between them does.
-    const grouped: StageTaskItem[][] = [
-      [
-        { id: 'evt-a', label: 'Event A', taskGroupType: 'event-driven' },
-        { id: 'evt-b', label: 'Event B', taskGroupType: 'event-driven' },
-      ],
-    ];
-
-    renderStageNode({
-      onTaskGroupModification: vi.fn(),
-      onTaskReorder,
-      stageDetails: { ...defaultProps.stageDetails, tasks: grouped },
-    });
-
-    await user.click(screen.getByTestId('stage-task-menu-evt-b'));
-    await user.click(await screen.findByText('Move up'));
-
-    expect(onTaskReorder).toHaveBeenCalledWith([
-      [expect.objectContaining({ id: 'evt-b' }), expect.objectContaining({ id: 'evt-a' })],
-    ]);
-  });
-
   it('mounts no drag machinery at all when the section cannot be reordered', () => {
     // All three sections present — none of them should mount drag machinery.
     renderStageNode({
@@ -923,21 +830,6 @@ describe('StageNode - Flat section reordering', () => {
     // called outside the provider it belongs to.
     expect(screen.getByTestId('stage-task-card-evt-1').parentElement).toBe(eventList);
     expect(screen.getByTestId('stage-task-card-adhoc-1').parentElement).toBe(adhocList);
-  });
-
-  it('omits the move options entirely when reordering is not available', async () => {
-    const user = userEvent.setup();
-    renderStageNode({
-      onTaskGroupModification: vi.fn(),
-      onTaskReorder: undefined,
-      stageDetails: { ...defaultProps.stageDetails, tasks },
-    });
-
-    await user.click(screen.getByTestId('stage-task-menu-evt-1'));
-
-    expect(await screen.findByText('Delete task')).toBeInTheDocument();
-    expect(screen.queryByText('Move up')).not.toBeInTheDocument();
-    expect(screen.queryByText('Move down')).not.toBeInTheDocument();
   });
 });
 

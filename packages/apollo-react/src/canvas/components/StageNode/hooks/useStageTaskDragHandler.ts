@@ -5,30 +5,36 @@ import type { StageTaskItem } from '../StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from '../StageNode.utils';
 
 export const useStageTaskDragHandler = ({
-  sequentialTaskGroups,
+  taskGroups,
   onTaskReorder,
+  allowRegrouping = true,
 }: {
-  sequentialTaskGroups: StageTaskItem[][];
+  taskGroups: StageTaskItem[][];
   onTaskReorder: (newTasks: StageTaskItem[][]) => void;
+  /**
+   * Whether horizontal travel can change a task's nesting. True for the sequential section, where
+   * dragging sideways joins or leaves a parallel group. False for the event-triggered and ad hoc
+   * sections: their order is visual only and they have no parallel nesting, so every drop lands at
+   * depth 0 and the drag reduces to a plain vertical reorder.
+   */
+  allowRegrouping?: boolean;
 }) => {
   const storeApi = useStoreApi();
 
-  // Horizontal travel decides the landing depth, but nothing renders from it mid-drag any more —
-  // so it lives in a ref. In state it would re-render the whole section on every pointer move.
+  // Horizontal travel decides the landing depth, but nothing renders from it mid-drag — so it
+  // lives in a ref. In state it would re-render the whole section on every pointer move.
   const offsetLeft = useRef(0);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
-  /** The row in flight, plus whether it belongs to a parallel group — the overlay renders it at
-   * the matching width. */
+  /** The row in flight, plus whether it sits in a parallel group — the overlay renders it at the
+   * matching width. */
   const activeTask = useMemo(
-    () => sequentialTaskGroups.flat().find((task) => task.id === activeDragId),
-    [sequentialTaskGroups, activeDragId]
+    () => taskGroups.flat().find((task) => task.id === activeDragId),
+    [taskGroups, activeDragId]
   );
   const isActiveTaskParallel = useMemo(
-    () =>
-      (sequentialTaskGroups.find((group) => group.some((t) => t.id === activeDragId))?.length ??
-        0) > 1,
-    [sequentialTaskGroups, activeDragId]
+    () => (taskGroups.find((group) => group.some((t) => t.id === activeDragId))?.length ?? 0) > 1,
+    [taskGroups, activeDragId]
   );
 
   const handleDragStart = useCallback(
@@ -54,34 +60,34 @@ export const useStageTaskDragHandler = ({
         return;
       }
 
-      const projection = getProjection(
-        sequentialTaskGroups,
-        active.id as string,
-        over.id as string,
-        currentOffsetLeft
-      );
-      if (!projection) {
-        return;
+      // Pinned to 0 when regrouping is off: the drop keeps the row at the top level, so sideways
+      // travel is ignored and the reorder is purely vertical.
+      let depth = 0;
+      if (allowRegrouping) {
+        const projection = getProjection(
+          taskGroups,
+          active.id as string,
+          over.id as string,
+          currentOffsetLeft
+        );
+        if (!projection) {
+          return;
+        }
+        depth = projection.depth;
       }
 
       // For in-place movement, skip if depth hasn't changed
       if (active.id === over.id) {
-        const flattened = flattenTasks(sequentialTaskGroups);
-        const activeTask = flattened.find((t) => t.id === active.id);
-        if (activeTask && activeTask.depth === projection.depth) {
+        const flattened = flattenTasks(taskGroups);
+        const draggedTask = flattened.find((t) => t.id === active.id);
+        if (draggedTask && draggedTask.depth === depth) {
           return;
         }
       }
 
-      const newTasks = reorderTasks(
-        sequentialTaskGroups,
-        active.id as string,
-        over.id as string,
-        projection.depth
-      );
-      onTaskReorder(newTasks);
+      onTaskReorder(reorderTasks(taskGroups, active.id as string, over.id as string, depth));
     },
-    [sequentialTaskGroups, onTaskReorder]
+    [taskGroups, onTaskReorder, allowRegrouping]
   );
 
   const handleDragCancel = useCallback(() => {
