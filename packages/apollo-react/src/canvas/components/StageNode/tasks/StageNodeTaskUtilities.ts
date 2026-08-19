@@ -43,19 +43,27 @@ export const getContextMenuItems = ({
   labels: StageContextMenuLabels;
 }): NodeMenuItem[] => {
   const CONTEXT_MENU_ITEMS = {
-    MOVE_UP: getMenuItem('move-up', labels.moveUp, () =>
-      reGroupTaskFunction(
-        GroupModificationType.TASK_GROUP_UP,
-        groupIndexInAllTasks,
-        taskIndexInAllTasks
-      )
+    MOVE_UP: getMenuItem(
+      'move-up',
+      labels.moveUp,
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.TASK_GROUP_UP,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        ),
+      groupIndex === 0
     ),
-    MOVE_DOWN: getMenuItem('move-down', labels.moveDown, () =>
-      reGroupTaskFunction(
-        GroupModificationType.TASK_GROUP_DOWN,
-        groupIndexInAllTasks,
-        taskIndexInAllTasks
-      )
+    MOVE_DOWN: getMenuItem(
+      'move-down',
+      labels.moveDown,
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.TASK_GROUP_DOWN,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        ),
+      groupIndex === tasksLength - 1
     ),
     UNGROUP_ALL: getMenuItem('ungroup', labels.ungroupParallelTasks, () =>
       reGroupTaskFunction(
@@ -130,10 +138,9 @@ export const getContextMenuItems = ({
 
   const items: NodeMenuItem[] = [];
 
-  if (groupIndex > 0) items.push(CONTEXT_MENU_ITEMS.MOVE_UP);
-  if (groupIndex < tasksLength - 1) items.push(CONTEXT_MENU_ITEMS.MOVE_DOWN);
-
-  if (items.length) items.push(CONTEXT_MENU_ITEMS.DIVIDER);
+  // Both moves are always listed, disabled at the ends of the list rather than dropped: a task
+  // that silently loses its reorder entries reads as "reordering is gone" (MST-13609).
+  items.push(CONTEXT_MENU_ITEMS.MOVE_UP, CONTEXT_MENU_ITEMS.MOVE_DOWN, CONTEXT_MENU_ITEMS.DIVIDER);
 
   if (isParallelGroup && !hideParallelOptions) {
     items.push(
@@ -144,6 +151,8 @@ export const getContextMenuItems = ({
       CONTEXT_MENU_ITEMS.REMOVE_TASK
     );
   } else if (!isParallelGroup && !hideParallelOptions) {
+    const parallelOptionsStart = items.length;
+
     if (groupIndex > 0) {
       items.push(
         isAboveParallel
@@ -160,7 +169,9 @@ export const getContextMenuItems = ({
       );
     }
 
-    if (items.length) items.push(CONTEXT_MENU_ITEMS.DIVIDER);
+    // Only when a parallel option was actually added — the move entries above already end in a
+    // divider, so an unconditional one would double up on a single-task stage.
+    if (items.length > parallelOptionsStart) items.push(CONTEXT_MENU_ITEMS.DIVIDER);
 
     items.push(CONTEXT_MENU_ITEMS.REMOVE_TASK);
   } else {
