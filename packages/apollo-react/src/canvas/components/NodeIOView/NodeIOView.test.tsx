@@ -243,7 +243,7 @@ describe('NodeIOView', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders wrapped multiline strings raw, with real line breaks', async () => {
+  it('renders a wrapped multiline string quoted, with real line breaks', async () => {
     render(
       <NodeIOView
         schema={SCHEMA}
@@ -255,8 +255,26 @@ describe('NodeIOView', () => {
     const display = screen.getByRole('button', {
       name: 'Edit value of errorMessage',
     });
-    // Raw string, matching the multiline editor: no quotes, no \n escapes.
-    expect(display.textContent).toBe('line one\nline two');
+    // Still quoted like the collapsed row, but the expanded block renders the
+    // line break itself instead of showing a \n escape.
+    expect(display.textContent).toBe('"line one\nline two"');
+  });
+
+  it('shows a wrapped string verbatim apart from the quotes', async () => {
+    render(
+      <NodeIOView
+        schema={SCHEMA}
+        value={{ errorMessage: String.raw`a\nb "quoted"` }}
+        onValueChange={vi.fn()}
+      />
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Wrap value of errorMessage' }));
+    const display = screen.getByRole('button', {
+      name: 'Edit value of errorMessage',
+    });
+    // Nothing is escaped: the two characters the user typed stay as they were
+    // rather than turning into a line break, and inner quotes pass through.
+    expect(display.textContent).toBe(String.raw`"a\nb "quoted""`);
   });
 
   it('offers no wrap action for booleans and enums', () => {

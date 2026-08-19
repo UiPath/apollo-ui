@@ -449,8 +449,14 @@ export function removeValueAtPath(
 }
 
 /** Formats a leaf value for display (`"text"`, `42`, `true`, `null`). */
-export function formatLeafValue(type: JsonTreeNodeType, value: JsonValue | undefined): string {
+export function formatLeafValue(
+  type: JsonTreeNodeType,
+  value: JsonValue | undefined,
+  options?: { preserveStringWhitespace?: boolean }
+): string {
   if (value === undefined || value === null) return 'null';
-  if (type === 'string') return JSON.stringify(value);
+  if (type === 'string') {
+    return options?.preserveStringWhitespace ? `"${value}"` : JSON.stringify(value);
+  }
   return String(value);
 }

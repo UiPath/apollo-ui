@@ -21,8 +21,10 @@ export function valueColorClass(type: JsonTreeNodeType, value: JsonValue | undef
 
 // Editable scalar value cell: the read-only footprint plus a rounded hover
 // background that signals the value is clickable. Callers add the cursor.
+// Sized to its text so the hover background and click target hug the value;
+// the row's value slot owns the width floor and the shrink order.
 const VALUE_CELL_CLASS =
-  'min-w-0 shrink-3 truncate rounded font-mono text-xs transition hover:bg-surface-raised';
+  'min-w-0 truncate rounded font-mono text-xs transition hover:bg-surface-raised';
 
 export interface ScalarValueCellProps {
   node: JsonTreeNode;
@@ -73,14 +75,10 @@ export function ScalarValueCell({
     );
   }
 
-  // The value shrinks before the key (shrink-[3]) and truncates, so the row
-  // actions stay pinned to the right edge without horizontal overflow.
+  // The enclosing slot shrinks before the key and truncates this cell, so the
+  // row actions stay pinned to the right edge without horizontal overflow.
   if (readOnly || !onEdit) {
-    return (
-      <span className={cn('min-w-0 shrink-3 truncate font-mono text-xs', colorClass)}>
-        {display}
-      </span>
-    );
+    return <span className={cn('min-w-0 truncate font-mono text-xs', colorClass)}>{display}</span>;
   }
 
   const editTitle = _({

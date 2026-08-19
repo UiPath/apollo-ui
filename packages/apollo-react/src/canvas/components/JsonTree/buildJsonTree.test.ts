@@ -369,6 +369,10 @@ describe('value path helpers', () => {
 describe('formatLeafValue', () => {
   it('quotes strings and passes scalars through', () => {
     expect(formatLeafValue('string', 'hi')).toBe('"hi"');
+    const s = `multi
+    line`;
+    expect(formatLeafValue('string', s)).toBe('"multi\\n    line"');
+    expect(formatLeafValue('string', s, { preserveStringWhitespace: true })).toBe(`"${s}"`);
     expect(formatLeafValue('number', 42)).toBe('42');
     expect(formatLeafValue('boolean', false)).toBe('false');
     expect(formatLeafValue('null', null)).toBe('null');
