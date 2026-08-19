@@ -1,7 +1,9 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
-import type { RequestRow } from "./data";
+import { getPerson } from "../data/people";
+import { IDENTITY } from "../data/req-10482";
+import { type RequestRow, submittedTime } from "./data";
 import {
   type ExceptionOverride,
   type FieldException,
@@ -49,6 +51,21 @@ const INITIAL_THREADS: Record<string, RequestNote[]> = {
       author: "Lena Fischer",
       text: "12 seats for the design team's Creative Cloud renewal.",
       time: "2:14 PM",
+      source: "app",
+    },
+  ],
+  // Chunk C1 cleanup (escalation 6): was empty, so the composer sat under
+  // a bare heading with nothing to demonstrate. One opening note, the same
+  // shape as REQ-2052's own first message above: author and time are real
+  // (the requester, the timeline's own "submitted" event), the text itself
+  // is a content ruling, bracketed the same way REQ-2052's own Teams
+  // message text above is.
+  "REQ-10482": [
+    {
+      id: "REQ-10482-n0",
+      author: getPerson(IDENTITY.requester).name,
+      text: "[Message text]",
+      time: submittedTime,
       source: "app",
     },
   ],

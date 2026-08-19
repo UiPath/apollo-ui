@@ -1,5 +1,10 @@
 "use client";
 
+// oxlint-disable max-lines -- the dock's scripted defense/correction flow,
+// the generic Q&A thread, and the step timeline all read the same
+// AssistantThreadProvider state and stayed together deliberately (see the
+// report); already over on its own before prompt 45's block rendering.
+
 import type { UIMessage } from "@tanstack/ai-client";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -10,7 +15,7 @@ import {
   PanelLeftClose,
   TriangleAlert,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
@@ -20,7 +25,9 @@ import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { P1 } from "../../P1";
 import { P2 } from "../../P2";
+import { StructuredTable } from "../../StructuredTable";
 import {
+  type MessageBlock,
   type ThreadStep,
   useAssistantThread,
 } from "./assistant-thread-context";
@@ -102,6 +109,61 @@ function msg(
   return { id, role, parts: [{ type: "text", content }] };
 }
 
+/** Renders an assistant message by walking its blocks in order (prompt 45):
+ * prose through `AiChatMessage` exactly as before, tables through the
+ * shared `StructuredTable`. `children` (the receipt-chip treatment for a
+ * memory write or a save) attaches to the last prose block, the same block
+ * it attached to before this message could carry more than one, so a
+ * single prose block message, the only kind that exists today, renders
+ * identically. An unknown block type renders nothing for that block rather
+ * than breaking the rest of the message. */
+function AssistantMessageBlocks({
+  idPrefix,
+  blocks,
+  markdownClassName,
+  children,
+}: {
+  idPrefix: string;
+  blocks: MessageBlock[];
+  markdownClassName?: string;
+  children?: ReactNode;
+}) {
+  const lastProseIndex = blocks.map((b) => b.type).lastIndexOf("prose");
+  return (
+    <div className="flex flex-col gap-2">
+      {blocks.map((block, i) => {
+        // A message's own blocks are fixed at creation and never reordered,
+        // inserted into, or removed from, so the index is a stable key here.
+        // oxlint-disable-next-line eslint-plugin-react/no-array-index-key
+        const key = `${idPrefix}-${i}`;
+        if (block.type === "prose") {
+          return (
+            <AiChatMessage
+              key={key}
+              message={msg(key, "assistant", block.text)}
+              hideActions
+              assistantMarkdownClassName={markdownClassName}
+            >
+              {i === lastProseIndex && children}
+            </AiChatMessage>
+          );
+        }
+        if (block.type === "table") {
+          return (
+            <StructuredTable
+              key={key}
+              caption={block.caption}
+              columns={block.columns}
+              rows={block.rows}
+            />
+          );
+        }
+        return null;
+      })}
+    </div>
+  );
+}
+
 interface ShelfDockProps {
   /** The catalog item whose "Compare with my pick" was triggered, drives the
    * defense copy. Null when opened generically: the activity summary + an
@@ -174,10 +236,39 @@ export function ShelfDock({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingQuestion]);
 
-  // Scroll to bottom as content grows.
+  // Tracks the last qa/note entry id already scrolled to, so a newly
+  // posted exchange (e.g. the evidence exchange, prompt 47) scrolls to its
+  // own top, landing on the question rather than the bottom of a tall
+  // answer with tables in it. Step entries are excluded here on purpose:
+  // Marcus's and Priya's Bridge/Choose/Review progression already reads
+  // correctly scrolled to the bottom (the current, expanded step is the
+  // last thing in the list), and this prompt's own fix is scoped to an
+  // exchange landing mid answer, not to that progression.
+  const lastScrolledEntryId = useRef<string | null>(null);
+
+  // Scroll on content change: to the newest qa/note entry's own top if one
+  // was just posted, otherwise to the bottom (thinking/typing indicators,
+  // Marcus's scripted phase/correction changes, and step entries, stay
+  // bottom anchored, exactly as before).
   useEffect(() => {
     const el = bodyRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (!el) return;
+    const lastEntry = entries.at(-1);
+    if (
+      lastEntry &&
+      lastEntry.kind !== "step" &&
+      lastEntry.id !== lastScrolledEntryId.current
+    ) {
+      lastScrolledEntryId.current = lastEntry.id;
+      const node = el.querySelector<HTMLElement>(
+        `[data-entry-id="${lastEntry.id}"]`,
+      );
+      if (node) {
+        node.scrollIntoView({ block: "start" });
+        return;
+      }
+    }
+    el.scrollTop = el.scrollHeight;
   }, [phase, correctionText, entries, pendingQuestion]);
 
   const handleCorrectionSubmit = () => {
@@ -293,10 +384,10 @@ export function ShelfDock({
 
                 {phase !== "thinking" && (
                   <>
-                    <AiChatMessage
-                      message={msg("shelf-a", "assistant", defense)}
-                      hideActions
-                      assistantMarkdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
+                    <AssistantMessageBlocks
+                      idPrefix="shelf-a"
+                      blocks={[{ type: "prose", text: defense }]}
+                      markdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
                     />
                     {/* Deck j1-06 follow-up chips */}
                     <div className="flex flex-wrap gap-1.5 pb-1">
@@ -332,17 +423,17 @@ export function ShelfDock({
                 {phase === "corrected" && (
                   <>
                     <P1>
-                      <AiChatMessage
-                        message={msg("corr-a-p1", "assistant", P1_CORRECTION)}
-                        hideActions
-                        assistantMarkdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
+                      <AssistantMessageBlocks
+                        idPrefix="corr-a-p1"
+                        blocks={[{ type: "prose", text: P1_CORRECTION }]}
+                        markdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
                       />
                     </P1>
                     <P2>
-                      <AiChatMessage
-                        message={msg("corr-a", "assistant", P2_CORRECTION)}
-                        hideActions
-                        assistantMarkdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
+                      <AssistantMessageBlocks
+                        idPrefix="corr-a"
+                        blocks={[{ type: "prose", text: P2_CORRECTION }]}
+                        markdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
                       >
                         <div className="flex items-center gap-1.5 rounded-lg border bg-muted px-3 py-1.5 text-xs font-medium text-foreground">
                           <Bookmark
@@ -351,7 +442,7 @@ export function ShelfDock({
                           />
                           Saved to Design Contractor spec · preferences updated
                         </div>
-                      </AiChatMessage>
+                      </AssistantMessageBlocks>
                     </P2>
                   </>
                 )}
@@ -370,21 +461,19 @@ export function ShelfDock({
                 {entries.map((entry) => {
                   if (entry.kind === "qa") {
                     return (
-                      <div key={entry.id} className="space-y-3">
+                      <div
+                        key={entry.id}
+                        data-entry-id={entry.id}
+                        className="space-y-3"
+                      >
                         <AiChatMessage
                           message={msg(`${entry.id}-q`, "user", entry.question)}
                           hideActions
                         />
-                        <AiChatMessage
-                          message={msg(
-                            `${entry.id}-a`,
-                            "assistant",
-                            entry.answer,
-                          )}
-                          hideActions
-                          assistantMarkdownClassName={
-                            RESPONSE_MARKDOWN_CLASSNAME
-                          }
+                        <AssistantMessageBlocks
+                          idPrefix={`${entry.id}-a`}
+                          blocks={entry.answer}
+                          markdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
                         />
                       </div>
                     );
@@ -393,20 +482,22 @@ export function ShelfDock({
                     // Memory write, made visible, same receipt-chip treatment
                     // as the dock's own P2 correction save.
                     return (
-                      <AiChatMessage
-                        key={entry.id}
-                        message={msg(entry.id, "assistant", entry.text)}
-                        hideActions
-                        assistantMarkdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
-                      >
-                        <div className="flex items-center gap-1.5 rounded-lg border bg-muted px-3 py-1.5 text-xs font-medium text-foreground">
-                          <Bookmark
-                            className="size-3.5 shrink-0 text-primary"
-                            aria-hidden
-                          />
-                          Saved to Design Contractor spec · preferences updated
-                        </div>
-                      </AiChatMessage>
+                      <div key={entry.id} data-entry-id={entry.id}>
+                        <AssistantMessageBlocks
+                          idPrefix={entry.id}
+                          blocks={entry.text}
+                          markdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
+                        >
+                          <div className="flex items-center gap-1.5 rounded-lg border bg-muted px-3 py-1.5 text-xs font-medium text-foreground">
+                            <Bookmark
+                              className="size-3.5 shrink-0 text-primary"
+                              aria-hidden
+                            />
+                            Saved to Design Contractor spec · preferences
+                            updated
+                          </div>
+                        </AssistantMessageBlocks>
+                      </div>
                     );
                   }
                   const isCurrent = entry.step === currentStep;

@@ -5,6 +5,7 @@
 // PO sheet, deliberately kept in one file (see the report).
 
 import { useNavigate, useParams } from "@tanstack/react-router";
+import { FileText } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -14,6 +15,14 @@ import {
   ButtonGroup,
   ButtonGroupSeparator,
 } from "@/components/ui/button-group";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -45,6 +54,11 @@ import {
   type SummaryMark,
   SummaryMarkSpan,
 } from "../AgentSummary";
+import type { Exception } from "../data/exceptions";
+import { ph } from "../data/placeholders";
+import { TERM_YEARS } from "../data/req-10482";
+import { ExceptionEvidence, exceptionHeadline } from "../ExceptionEvidence";
+import { P2 } from "../P2";
 import { ActivityTrack } from "./ActivityTrack";
 import { avatarColorFor } from "./avatar-color";
 import { CommunicationCard } from "./CommunicationCard";
@@ -56,8 +70,10 @@ import {
 } from "./DecisionActionGroup";
 import { DecisionChecks } from "./DecisionChecks";
 import {
+  ATTACHMENT_STATE_LABEL,
   buildChecks,
   DECISION_STATUS_META,
+  type DecisionDetail,
   type DecisionStatus,
   getDecisionDetail,
   getRequestDetail,
@@ -95,6 +111,89 @@ function initialsOf(name: string): string {
     .toUpperCase();
 }
 
+/** P2-only multi-year commitment (Chunk C2, replacing what section 6,
+ * module 1 rendered through the C1 cleanup: the same BudgetImpactCallout
+ * the rail already shows). That was the same card twice, once in the rail
+ * (P1) and once here — this rail card stays exactly as it is (untouched,
+ * see the report); this module now states a fact the rail can't: J3-18's
+ * own source covers the annual figure fitting the budget and what remains
+ * this year (both already in the rail, via BudgetImpactCallout), plus
+ * years 2 and 3, confirmed at renewal — the net-new fact, and the reason
+ * this module still earns a place next to the rail's own card instead of
+ * repeating it. No figure appears twice under two labels: this reads only
+ * the renewal horizon, nothing the rail already states.
+ *
+ * Every figure derives from `recurringCommitment`/`TERM_YEARS`; the
+ * sentence itself is a content ruling, bracketed (PH-56) the same way
+ * every other module's wording on this page already is. Same `<P2>` gate
+ * as before (see the call site), not a second one. Apollo Vertex has no
+ * surface component built for a multi-year commitment readout specifically
+ * (checked: no timeline/roadmap/milestone primitive in the registry) — the
+ * closest existing surface is the same `Card variant="glass"` shape every
+ * other module on this page already uses, not a new one. See the report. */
+function MultiYearCommitmentModule({
+  recurringCommitment,
+}: {
+  recurringCommitment: NonNullable<DecisionDetail["recurringCommitment"]>;
+}) {
+  const remainingYears = TERM_YEARS - 1;
+  return (
+    <Card variant="glass">
+      <CardContent>
+        <p className="text-xs text-muted-foreground">
+          {ph(
+            "PH-56",
+            `${remainingYears} more year${remainingYears === 1 ? "" : "s"} confirmed at renewal, ${recurringCommitment.total} total over the ${recurringCommitment.term} term`,
+          )}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** P2-only exceptions resolved (Chunk C1, section 6, module 2): the
+ * request's own exceptions.ts records (Chunk B), not re-authored here.
+ * Heading and evidence link label are both bracketed placeholders read
+ * from the record (escalations 4 and 5), not authored in this component. */
+function ExceptionsResolvedModule({
+  exceptions,
+  heading,
+  linkLabel,
+  onViewEvidence,
+}: {
+  exceptions: Exception[];
+  heading?: string;
+  linkLabel?: string;
+  /** Opens the evidence overlay for the clicked exception specifically
+   * (Chunk C2: previously one shared no-op for every row). */
+  onViewEvidence: (exception: Exception) => void;
+}) {
+  return (
+    <Card variant="glass">
+      <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground">{heading}</p>
+        <div className="divide-y divide-border">
+          {exceptions.map((exception) => (
+            <div
+              key={exception.id}
+              className="flex items-center justify-between gap-3 py-2 text-sm"
+            >
+              <span className="text-foreground">{exception.headline}</span>
+              <button
+                type="button"
+                onClick={() => onViewEvidence(exception)}
+                className="shrink-0 text-xs text-primary underline underline-offset-4"
+              >
+                {linkLabel}
+              </button>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 const COMPOSER_MIN_HEIGHT = 72;
 
 /**
@@ -120,6 +219,16 @@ export function DecisionWindow() {
   } = useRequests();
   const [poOpen, setPoOpen] = useState(false);
   const [sendBackOpen, setSendBackOpen] = useState(false);
+  // Evidence and preview overlays (Chunk C2): both reuse the Dialog
+  // pattern ReceiptModal.tsx/CorrectionDraftModal.tsx already establish,
+  // the same way poOpen above already reuses Sheet for the PO record.
+  // evidenceException holds which exception's evidence is open, not just
+  // whether one is (the exceptions module's own "view evidence" link is
+  // per row, not a single toggle).
+  const [evidenceException, setEvidenceException] = useState<Exception | null>(
+    null,
+  );
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const composerRef = useRef<HTMLTextAreaElement>(null);
 
@@ -162,7 +271,12 @@ export function DecisionWindow() {
     text: `${detail.packet.budget.pct} of the ${budgetName}`,
     targetField: "budget",
   };
-  const deliveryMark: SummaryMark = { text: detail.expectedDelivery };
+  // expectedDelivery is optional (Chunk C1 cleanup: absent for a request
+  // with no physical fulfilment), but this mark only ever renders in the
+  // default sentence below, which only renders when `summaryConclusion` is
+  // absent — true for every record that still has expectedDelivery. The
+  // fallback is unreachable in practice, not a real display value.
+  const deliveryMark: SummaryMark = { text: detail.expectedDelivery ?? "" };
   // Same template, different slot. An exception means the sentence can't
   // claim nothing else needs attention, so this clause changes instead of
   // being a second authored sentence.
@@ -250,7 +364,20 @@ export function DecisionWindow() {
   // label already establish that the AI is speaking, so the old "Before
   // this reached you, I confirmed..." / "Now that you've approved it, I
   // sent..." lead-ins were a restatement of that, not new information.
-  const summarySentence = approved ? (
+  //
+  // Chunk C1: this sentence is REQ-2052 shaped (a device management check,
+  // a shipped good) and doesn't generalize to every request type — a
+  // software renewal has neither. `detail.summaryConclusion`, when a
+  // record supplies one, overrides it entirely rather than adding a third
+  // branch here; REQ-2052 (and every other record without one) renders
+  // through this exact same code, unchanged.
+  const summarySentence = detail.summaryConclusion ? (
+    approved ? (
+      detail.summaryConclusion.approved
+    ) : (
+      detail.summaryConclusion.pending
+    )
+  ) : approved ? (
     <>
       Purchase order sent to {detail.supplier}, arriving by{" "}
       <SummaryMarkSpan mark={deliveryMark} />.
@@ -438,6 +565,27 @@ export function DecisionWindow() {
             </div>
           </div>
 
+          {/* P2 insert only (Chunk C1, section 6): both modules gated on
+              REQ-10482-specific fields (recurringCommitment, exceptions),
+              absent on every other record, so this renders nothing for
+              REQ-2052 in either tier and nothing at all in P1. Nothing
+              above or below this block moves or changes. */}
+          <P2>
+            {detail.recurringCommitment && (
+              <MultiYearCommitmentModule
+                recurringCommitment={detail.recurringCommitment}
+              />
+            )}
+            {detail.exceptions && detail.exceptions.length > 0 && (
+              <ExceptionsResolvedModule
+                exceptions={detail.exceptions}
+                heading={detail.exceptionsHeading}
+                linkLabel={detail.evidenceLinkLabel}
+                onViewEvidence={setEvidenceException}
+              />
+            )}
+          </P2>
+
           <CommunicationCard
             entries={
               <>
@@ -514,6 +662,7 @@ export function DecisionWindow() {
             detail={detail}
             status={status}
             onOpenPo={() => setPoOpen(true)}
+            onPreviewAttachment={() => setPreviewOpen(true)}
           />
         </div>
       </div>
@@ -525,18 +674,79 @@ export function DecisionWindow() {
       />
 
       {/* Surfaces the PO without leaving the decision context. The rail's
-          Linked records chip opens this once approved. */}
-      <Sheet open={poOpen} onOpenChange={setPoOpen}>
-        <SheetContent className="w-full gap-0 p-0 sm:max-w-2xl">
-          <SheetHeader className="border-b">
-            <SheetTitle>{detail.poNumber}</SheetTitle>
-            <SheetDescription className="sr-only">
-              Purchase order for {detail.request}
-            </SheetDescription>
-          </SheetHeader>
-          <PORecord id={detail.poNumber} embedded />
-        </SheetContent>
-      </Sheet>
+          Linked records chip opens this once approved. Only mounted when
+          poNumber exists (Chunk C1 cleanup: optional now, absent for a
+          request no PO will ever exist for) — the rail's own chip that
+          calls onOpenPo is already omitted for the same records, so poOpen
+          can't become true for them either; this mirrors that condition
+          rather than relying only on it never being triggered. */}
+      {detail.poNumber != null && (
+        <Sheet open={poOpen} onOpenChange={setPoOpen}>
+          <SheetContent className="w-full gap-0 p-0 sm:max-w-2xl">
+            <SheetHeader className="border-b">
+              <SheetTitle>{detail.poNumber}</SheetTitle>
+              <SheetDescription className="sr-only">
+                Purchase order for {detail.request}
+              </SheetDescription>
+            </SheetHeader>
+            <PORecord id={detail.poNumber} embedded />
+          </SheetContent>
+        </Sheet>
+      )}
+
+      {/* Evidence overlay (Chunk C2): the exceptions module's two "view
+          evidence" links open the same ExceptionEvidence the workbench
+          renders inline for Sam, in place here instead — same Dialog
+          pattern as ReceiptModal.tsx/CorrectionDraftModal.tsx, not a
+          route. Closes by clearing evidenceException rather than a
+          separate open flag, so there's one source of truth for both
+          "is it open" and "which exception." */}
+      <Dialog
+        open={evidenceException != null}
+        onOpenChange={(open) => !open && setEvidenceException(null)}
+      >
+        <DialogContent className="sm:max-w-lg">
+          {evidenceException && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-balance text-[20px] leading-[1.2]">
+                  {exceptionHeadline(evidenceException)}
+                </DialogTitle>
+                <DialogDescription className="sr-only">
+                  Evidence for {evidenceException.headline}
+                </DialogDescription>
+              </DialogHeader>
+              <ExceptionEvidence exception={evidenceException} />
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Order form preview (Chunk C2): a stub naming the document and its
+          state, not a document renderer — see the report. Same Dialog
+          pattern as the evidence overlay above. */}
+      {detail.attachment && (
+        <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-base">
+                <FileText
+                  className="size-4 shrink-0 text-muted-foreground"
+                  aria-hidden
+                />
+                {detail.attachment.filename}
+              </DialogTitle>
+              <DialogDescription>
+                {ATTACHMENT_STATE_LABEL[detail.attachment.state]}
+                {detail.contractReference && ` · ${detail.contractReference}`}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+              {ph("PH-57", "Preview content")}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

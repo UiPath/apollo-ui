@@ -6,6 +6,36 @@
 // Workbench holds, shown here from the requester's side; the rest are
 // requester-only texture. All scripted/mocked.
 
+import {
+  BASE_TIER_REFERENCE_VALUE,
+  DEVIATION_PCT_SIGNED,
+  REQ_10482_EXCEPTIONS,
+  UNIT_PRICE_UNIT,
+  UNIT_PRICE_VALUE,
+} from "../data/cockpit-10482";
+import type { Exception } from "../data/exceptions";
+import { getPerson } from "../data/people";
+import {
+  formatAnchoredDate,
+  formatAnchoredTime,
+  ph,
+} from "../data/placeholders";
+import {
+  ANNUAL_VALUE,
+  BUDGET_REMAINING_AFTER_APPROVAL,
+  DOCUMENTS,
+  type DocumentState,
+  DOWNSTREAM_RECORDS,
+  IDENTITY,
+  QUANTITY,
+  type RequestDocument,
+  TERM_YEARS,
+  TIMELINE,
+  TOTAL_CONTRACT_VALUE,
+  VENDOR_OPTIONS,
+} from "../data/req-10482";
+import type { PersonaId } from "../personas";
+
 export type RequestStatus =
   | "ordered"
   | "delivered"
@@ -243,6 +273,134 @@ export interface RequestDetail {
   recordChips?: string[];
 }
 
+const MONTHS_SHORT = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/** Format a Date as "MMM D, YYYY", e.g. "Jul 13, 2026". Moved above the
+ * REQ-10482 block below (Chunk C1), which calls this at module load time:
+ * as a `const`, MONTHS_SHORT has no hoisting past its own declaration the
+ * way a `function` does, so calling this before that line had run threw
+ * "Cannot access 'MONTHS_SHORT' before initialization" when this lived
+ * below DECISION_DETAILS instead. */
+export function formatDateDisplay(date: Date): string {
+  const mmm = MONTHS_SHORT[date.getMonth()];
+  return `${mmm} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+// ── REQ-10482 (Chunk C1): Dana Kim's own decision ───────────────────────────
+// A software licence renewal, not a one-time hardware purchase like every
+// other decision record here. shipTo/poNumber/expectedDelivery (Chunk C1
+// cleanup) are now optional on the shared interface and simply absent here,
+// rather than filled with a borrowed fact and rendered anyway — the
+// remaining gap is itReview, still a device-enrollment check with no branch
+// for a software validation scenario; its detail sentence is filled with
+// the closest real facts rather than forking buildChecks, and its label is
+// bracketed (PH-50) rather than left reading "Device management". See the
+// report. Shared between REQUEST_DETAILS' and DECISION_DETAILS' own
+// REQ-10482 entries below, computed once here rather than twice.
+
+const dana = getPerson("dana-kim");
+const samRivera = getPerson("sam-rivera");
+
+const orderFormV2 = DOCUMENTS.find((d) => d.version === "v2");
+if (!orderFormV2) {
+  throw new Error("REQ-10482 decision record: no v2 order form in DOCUMENTS");
+}
+
+// Chunk C2 fix: DOWNSTREAM_RECORDS (req-10482.ts) was never read by this
+// file until now, which is why the C1 cleanup assumed no PO existed for
+// this record at all and suppressed its Linked records chip entirely — a
+// real PO id was there the whole time, just created by PR conversion, not
+// by Dana's approval, so it has no PO_DETAILS entry to open. See
+// linkedPoId on the interface above and the report.
+const linkedPoRecord = DOWNSTREAM_RECORDS.find((r) => r.type === "po");
+if (!linkedPoRecord) {
+  throw new Error(
+    "REQ-10482 decision record: no po-type DOWNSTREAM_RECORDS entry",
+  );
+}
+
+const validationEvent = TIMELINE.find(
+  (e) => e.id === "procurement-validation-complete",
+);
+if (!validationEvent) {
+  throw new Error(
+    "REQ-10482 decision record: no procurement-validation-complete timeline event",
+  );
+}
+const validationInstant = new Date(validationEvent.when);
+// Chunk C2: both date and time now render through the shared
+// formatAnchoredDate/formatAnchoredTime pair (data/placeholders.ts) — "one
+// formatter, one zone" — rather than the date staying on local formatting
+// the way the C1 cleanup deliberately left it. See the report on why that
+// carve-out existed (APPROVALS_TODAY hadn't moved past D1 yet) and why
+// moving the anchor is what let this close instead of staying a tradeoff.
+const validationDate = formatAnchoredDate(validationInstant);
+const validationTime = formatAnchoredTime(validationInstant);
+
+const submittedEvent = TIMELINE.find((e) => e.id === "submitted");
+if (!submittedEvent) {
+  throw new Error("REQ-10482 decision record: no submitted timeline event");
+}
+const submittedInstant = new Date(submittedEvent.when);
+// Chunk C2: date now derived too (see validationDate above); exported for
+// RequestWindow/DecisionWindow's own "Date requested" and "Submitted"
+// header fields (escalation carried from C1) and for RequestsProvider.tsx's
+// seeded thread message (escalation 6), all reading the same instant
+// through the same one formatter rather than each deriving it separately.
+export const submittedDate = formatAnchoredDate(submittedInstant);
+export const submittedTime = formatAnchoredTime(submittedInstant);
+
+// Same "X of Y remaining" grammar REQ-2052's own budget callout uses,
+// scoped to this cost centre's software budget rather than a hardware one.
+// BUDGET_REMAINING_AFTER_APPROVAL (req-10482.ts) is what's left once this
+// commitment draws from the pool; the pool itself is that figure plus the
+// commitment, not a second invented total.
+const softwareBudgetPool = ANNUAL_VALUE + BUDGET_REMAINING_AFTER_APPROVAL;
+const softwareBudgetPct = Math.round((ANNUAL_VALUE / softwareBudgetPool) * 100);
+
+// This scenario's fixed "today" (Chunk C2: moved ahead of REQUEST_DETAILS,
+// which now derives some of its own seeded figures from it rather than
+// hardcoding them — see daysSince/daysUntil below and the report). Every
+// seeded record's own submitted date must fall strictly before this, or
+// a "days waiting"/"days pending" figure built from it reads zero or
+// negative — REQ-10482's own submitted date (req-10482.ts's D1, Jul 24)
+// is the latest of any seed record, so this sits one day after it. The
+// Approvals queue's day-count math reads from this instead of the real
+// wall clock, which would drift out of sync with every other seeded date
+// in this scenario. Provisional (PH-01: the absolute calendar J3's own
+// timeline lands on is itself unresolved) — moves again if that's ruled
+// on differently.
+export const APPROVALS_TODAY = "Jul 25, 2026";
+
+/** Whole days from `date` (e.g. "Jul 21, 2026") to APPROVALS_TODAY —
+ * positive means `date` is in the past, i.e. how long something has been
+ * pending/overdue. */
+export function daysSince(date: string): number {
+  const ms = new Date(APPROVALS_TODAY).getTime() - new Date(date).getTime();
+  return Math.round(ms / 86_400_000);
+}
+
+/** Whole days from APPROVALS_TODAY to `date` — positive means `date` is
+ * still ahead, i.e. how long is left until a deadline. The forward-looking
+ * complement to daysSince above, not a second derivation: same anchor,
+ * opposite sign. */
+export function daysUntil(date: string): number {
+  return -daysSince(date);
+}
+
 // Deep details exist only for requests that came through the flow.
 export const REQUEST_DETAILS: Record<string, RequestDetail> = {
   "REQ-2042": {
@@ -366,12 +524,14 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       { label: "Submitted", state: "done", date: "Jul 21, 2026" },
       // 21 Jul submitted + Alex's "a day" turnaround — already past, hence
       // active-warning (the date text goes amber; the node does not).
-      // "Today" in this scenario is ~23 Jul, so 22 Jul was 1 day ago.
+      // Derived from APPROVALS_TODAY (Chunk C2), not hardcoded: this used
+      // to read "1 day ago" as a literal, matching "today" of the time,
+      // and silently went stale the one time that moved.
       {
         label: "Approved",
         state: "active-warning",
         date: "Jul 22, 2026",
-        overdueDays: 1,
+        overdueDays: daysSince("Jul 22, 2026"),
       },
       // No date on Ordered or Received — there's no real basis to project
       // when either will happen, and a chained-off-the-previous-stage guess
@@ -392,24 +552,81 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       needBy: "Aug 1, 2026",
       // $2,138 list vs. $1,849 EPP unit price (see PO_DETAILS), × 15.
       savings: "$4,335",
-      // "Today" in this scenario is ~23 Jul (2 days after the 21 Jul
-      // submission, per the "Approval · 2 days with Alex" story). 23 Jul →
-      // 31 Jul is 8 days, + 1 to reach 1 Aug = 9. Still comfortably past the
-      // 3-day threshold, so no header chip renders.
-      needByDaysLeft: 9,
+      // Derived from APPROVALS_TODAY (Chunk C2), not hardcoded — still
+      // comfortably past the 3-day threshold either way, so no header
+      // chip renders, but the stored figure no longer goes stale if the
+      // anchor moves again.
+      needByDaysLeft: daysUntil("Aug 1, 2026"),
     },
     approver: "Alex Chen · Design Director",
     costCenter: "Design Operations · CC-4421",
     // Same canonical value the Bridge's envelope infers for this scenario.
     shipTo: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
-    statusLabel: "Pending · 2 days",
+    statusLabel: `Pending · ${daysSince("Jul 21, 2026")} days`,
     // No threadSeedMessage here — that same message is now a real entry in
     // threads["REQ-2052"] (see RequestsProvider), read by both this page
     // and the approver's Decision Window instead of being authored twice.
     teamsChannel: "[Teams channel name]",
-    nudgeText:
-      "Pending 2 days. A reminder went to Alex this morning. You won't need to chase.",
+    // Derived (Chunk C2): the day count used to be hardcoded here and on
+    // statusLabel above, independently, both matching the same submitted
+    // date only by construction. One derivation, read twice, can't drift
+    // the two apart the way two separate literals already had once.
+    nudgeText: `Pending ${daysSince("Jul 21, 2026")} days. A reminder went to Alex this morning. You won't need to chase.`,
     recordChips: ["PR-2052", "PO · created on approval"],
+  },
+  // Chunk C1: journeyStages reuses the canonical "Approved" label for the
+  // current, with-Dana stage rather than inventing a new one, so
+  // stage-display.ts's own existing "Waiting on {name}" / "With you now"
+  // derivation applies to it unchanged (see DecisionWindow's own context
+  // param). "Procurement validation" has no equivalent case in
+  // buildTrackStages, so it falls through to that function's own default
+  // (isAgent: true), correctly, since it's a system action, not a person's.
+  "REQ-10482": {
+    id: "REQ-10482",
+    request: IDENTITY.shortTitle,
+    meta: `Pending approval · ${QUANTITY.toLocaleString("en-US")} licences · ${TERM_YEARS}-year term`,
+    headline: "Pending approval",
+    agentLine: `Procurement completed validation and sent it to ${dana.name} for approval. You'll get an update here once it's decided.`,
+    inFlight: true,
+    timeline: [
+      { label: "Submitted", state: "done" },
+      { label: "Procurement validation completed", state: "done" },
+      { label: `With ${dana.name}, awaiting approval`, state: "current" },
+    ],
+    journeyStages: [
+      { label: "Submitted", state: "done", date: submittedDate },
+      {
+        label: "Procurement validation",
+        state: "done",
+        date: `${validationDate} · ${validationTime}`,
+      },
+      { label: "Approved", state: "active" },
+      // Chunk C2: a minimal downstream stub so Dana's decision doesn't
+      // read as the end of the track — REQ-2052's own tracker ends on
+      // future stages too (Ordered, Received), so stopping here would
+      // break that shared grammar for this record alone. Deliberately
+      // generic and bracketed (PH-52): the real downstream sequence
+      // includes a parallel legal and security review (J3-21), which is
+      // P2 and belongs to a later chunk — this label must not name or
+      // imply it, and doesn't. No date: there's no real basis yet for
+      // one, the same reason Ordered/Received carry none for REQ-2052
+      // until context supplies one. advanceStagesThrough's own generic
+      // logic (unchanged) promotes this to "active" once Dana approves,
+      // the same way it already does for any record's next stage.
+      { label: ph("PH-52", "Next step"), state: "upcoming" },
+    ],
+    summary: {
+      items: `${QUANTITY.toLocaleString("en-US")} × licence`,
+      total: `$${ANNUAL_VALUE.toLocaleString("en-US")}/yr`,
+      needBy: IDENTITY.neededFrom,
+    },
+    approver: `${dana.name} · ${dana.role}`,
+    costCenter: IDENTITY.costCentre,
+    // No shipTo (Chunk C1 cleanup): already optional here (see the
+    // interface above), a software licence has nowhere to ship, so this
+    // simply doesn't render rather than borrowing the buying entity as a
+    // stand-in address the way this used to on both sides of this record.
+    teamsChannel: "[Teams channel name]",
   },
 };
 
@@ -418,20 +635,16 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
 // decision was due, not what happened. RequestWindow's stage bar and
 // DecisionWindow's own header/body both read this one value once approved,
 // rather than each keeping its own copy.
-export const REQ_2052_APPROVED_DATE = "Jul 23, 2026";
-
-// This scenario's fixed "today" — REQ-2052 submitted Jul 21 is already "2
-// days pending" as of this date, matching REQ_2052_APPROVED_DATE and the
-// rest of the narrative clock. The Approvals queue's day-count math reads
-// from this instead of the real wall clock, which would drift out of sync
-// with every other seeded date in this scenario.
-export const APPROVALS_TODAY = "Jul 23, 2026";
-
-/** Whole days from `date` (e.g. "Jul 21, 2026") to APPROVALS_TODAY. */
-export function daysSince(date: string): number {
-  const ms = new Date(APPROVALS_TODAY).getTime() - new Date(date).getTime();
-  return Math.round(ms / 86_400_000);
-}
+// REQ-2052's own approval date, once it happens live in this session, is
+// "today" in this scenario's narrative clock — the same value as
+// APPROVALS_TODAY, not a second literal that can drift out of sync with
+// it (Chunk C2: this used to be independently authored). RequestWindow's
+// stage bar and DecisionWindow's own header/body both read this one value
+// once approved, rather than each keeping its own copy. The name is
+// REQ-2052's own, but the same generic post-approval code path in
+// DecisionWindow.tsx already applies it to any record, REQ-10482
+// included — a pre-existing shape this fix doesn't change, see the report.
+export const REQ_2052_APPROVED_DATE = APPROVALS_TODAY;
 
 export function getRequestDetail(id: string): RequestDetail | undefined {
   return REQUEST_DETAILS[id];
@@ -459,7 +672,12 @@ export type RailFieldKey =
   | "shipTo"
   | "chargedTo"
   | "budget"
-  | "linkedRecords";
+  | "linkedRecords"
+  // Chunk C1: a recurring line's own related group (annual commitment,
+  // total contract value, term), and the order form attachment, neither
+  // of which REQ-2052's one-time purchase has a field for.
+  | "commitment"
+  | "attachment";
 
 /** One run of the AI summary sentence. Plain text when `targetField` is
  * absent; when present, the run becomes an interactive reference to that
@@ -493,6 +711,15 @@ export const DECISION_STATUS_META: Record<
   "sent-back": { label: "Needs info", status: "info" },
 };
 
+// Sentence-cased display for RequestDocument's own state values (Chunk C1),
+// the same kind of enum-to-label mapping DECISION_STATUS_META does above.
+// Shared by RequestRecordRail (the rail's own attachment field) and
+// DecisionWindow (the Preview overlay naming the same document state).
+export const ATTACHMENT_STATE_LABEL: Record<DocumentState, string> = {
+  current: "Current",
+  superseded: "Superseded",
+};
+
 /** A single check's outcome — `pass` or `exception`, never a third state. */
 export type CheckStatus = "pass" | "exception";
 
@@ -504,8 +731,13 @@ export interface DecisionPacket {
     detail: string;
   };
   /** Feeds the device management check's detail line — structured so
-   * "today" can be computed from `checkedAt` rather than stored as a word. */
-  itReview: {
+   * "today" can be computed from `checkedAt` rather than stored as a word.
+   * Optional (Chunk C2): only read by buildChecks' own default 4-check
+   * hardware set, below. A record that supplies its own `checks` array
+   * (DecisionDetail.checks) never reads this, so it has no reason to carry
+   * a hardware-shaped it-review fact at all. Retires the C1 cleanup's
+   * narrower `checkLabel` override on this field — see the report. */
+  itReview?: {
     status: CheckStatus;
     qty: number;
     imageName: string;
@@ -519,7 +751,7 @@ export interface DecisionPacket {
  * it's a fixed authored constant per `key` (see CHECK_LABEL), since it
  * never varies by request; `detail` is always derived. */
 export interface DecisionCheck {
-  key: "deviceManagement" | "supplier" | "costCenter" | "approvalRouting";
+  key: string;
   status: CheckStatus;
   detail: string;
 }
@@ -529,6 +761,13 @@ export const CHECK_LABEL: Record<DecisionCheck["key"], string> = {
   supplier: "Supplier",
   costCenter: "Cost center",
   approvalRouting: "Approval routing",
+  // REQ-10482's own check set (Chunk C2): procurement validation facts, a
+  // different composition and length than the four above, not a fork of
+  // this map — new entries in the same one. Content ruling, bracketed
+  // short labels, the way PH-50 already worked before it was retired.
+  priceBenchmark: ph("PH-53", "Price benchmark"),
+  contractTerms: ph("PH-54", "Contract terms"),
+  exceptionsCleared: ph("PH-55", "Exceptions cleared"),
 };
 
 export interface DecisionDetail {
@@ -540,8 +779,11 @@ export interface DecisionDetail {
   supplier: string;
   /** "Department · Cost centre code". */
   costCenter: string;
-  /** "Location · Street, postcode city". */
-  shipTo: string;
+  /** "Location · Street, postcode city". Absent for a request with no
+   * physical fulfilment (Chunk C1 cleanup) — a software licence has
+   * nowhere to ship, so the rail's own "Ship to" field doesn't render
+   * rather than showing an invented or borrowed address. */
+  shipTo?: string;
   needBy: string;
   /** "MMM D, YYYY" — drives the queue's pending-days and longest-waiting math. */
   submitted: string;
@@ -551,14 +793,36 @@ export interface DecisionDetail {
    * queue's "Awaiting your decision" sum without parsing the display string. */
   totalValue: number;
   packet: DecisionPacket;
-  /** The PO this approval triggers — matches PO_DETAILS below. Only
-   * surfaced once approved; pre-decision the sidebar's PO chip stays a
-   * plain "created on approval" placeholder instead. */
-  poNumber: string;
+  /** The record's own check set (Chunk C2): length, order, and keys all
+   * come from here when present — `buildChecks` returns this directly
+   * rather than building the default 4. Absent, every record renders
+   * through that original hardware-shaped builder unchanged (REQ-2052
+   * through REQ-2056). `DecisionChecks` needed no change to accept
+   * whatever length this array happens to be; it never assumed four. */
+  checks?: DecisionCheck[];
+  /** The PO this approval triggers — matches PO_DETAILS below, which has
+   * full drill-down content for it. Only surfaced once approved;
+   * pre-decision the sidebar's PO chip stays a plain "created on approval"
+   * placeholder instead. Absent for a request whose PO (if any) isn't
+   * approval-triggered and has no PO_DETAILS entry to open — see
+   * `linkedPoId` below for that case, which the C1 cleanup conflated with
+   * this field before finding req-10482.ts's own DOWNSTREAM_RECORDS (Chunk
+   * C2 fix, see the report). */
+  poNumber?: string;
+  /** A linked PO this record already has, independent of this decision
+   * (Chunk C2): REQ-10482's own PO-90214 exists via PR conversion, not
+   * Dana's approval, and has no PO_DETAILS entry to open — decoupled from
+   * `poNumber` above so the rail's chip can state the real id without
+   * either promising an approval-triggered creation that already happened
+   * a different way, or opening a "not found" drill-down. Absent wherever
+   * `poNumber` is set; the two are never both present on the same record. */
+  linkedPoId?: string;
   /** Projected delivery once the PO ships. The requester's own journey
    * stages carry no equivalent date (see REQUEST_DETAILS above) since there
-   * is no real basis to project one, this field has the same gap. */
-  expectedDelivery: string;
+   * is no real basis to project one, this field has the same gap. Absent
+   * (Chunk C1 cleanup) alongside `poNumber` for the same no-fulfilment
+   * requests — nothing ships, so there's nothing to project a date for. */
+  expectedDelivery?: string;
   /** The AI's recommended outcome, when it has one. Absent/null for every
    * seed record today — the action group's default order applies. */
   recommendation?: RecommendationValue | null;
@@ -579,6 +843,69 @@ export interface DecisionDetail {
   // PLACEHOLDER [Teams channel name] — invented, drives the destination
   // line and the open-in-Teams affordance. Always this bracket text.
   teamsChannel: string;
+  /** Which approver seat this decision belongs to (Chunk C1): the
+   * Approvals list filters on this, not on `approver`'s own display
+   * string, so a persona's list can't drift out of sync with a
+   * free-text name match. Required, not optional: every decision record
+   * has exactly one approver seat, REQ-2052 through REQ-2056 all
+   * "approver" (Alex), REQ-10482 "budget-owner" (Dana). */
+  approverPersonaId: PersonaId;
+  /** A recurring line's own related figures (Chunk C1): REQ-2052's
+   * one-time purchase has no term or ongoing commitment, so this is
+   * absent there and the rail's existing Total field renders alone.
+   * Present, it renders as an added group beneath Total rather than a
+   * bespoke rail block, the same "related figures under the value they
+   * modify" grammar the existing budget callout already uses. */
+  recurringCommitment?: {
+    /** e.g. "$198,000/yr". */
+    annual: string;
+    /** e.g. "$594,000" — the term's own full value, not restated from
+     * annual × term at render time, so it can't drift from the seed's own
+     * derivation of it. */
+    total: string;
+    /** e.g. "3 year" — singular always, the rail appends " term" after it
+     * (Chunk C1 cleanup: "3 year term" is the correct compound-modifier
+     * grammar, the same reason "a 5-year plan" isn't "a 5-years plan";
+     * this isn't conditional on the number the way "1 unit"/"15 units"
+     * is, since the noun it modifies here is always singular before it). */
+    term: string;
+  };
+  /** The order form on file (Chunk C1), reusing req-10482.ts's own
+   * RequestDocument shape rather than a parallel one — REQ-2052 has no
+   * document in its rail, so this is absent there. */
+  attachment?: RequestDocument;
+  // PLACEHOLDER — escalation 7, registered as PH-48 rather than a plain
+  // bracket like contractEnd/teamsChannel above, since rule 6 names this
+  // one specifically. Extra context beyond RequestDocument's own `state`
+  // (e.g. "corrected and validated"), wording unresolved. Only set
+  // alongside `attachment`.
+  attachmentStateNote?: string;
+  /** The governing agreement this decision is under (Chunk C1), e.g.
+   * "MSA-VC-01". Absent where there's no standing agreement to cite. */
+  contractReference?: string;
+  /** Overrides the AI summary's own conclusion sentence (Chunk C1): the
+   * hardcoded two-branch sentence below this interface is REQ-2052
+   * shaped (device management, a delivery date) and doesn't generalize
+   * to every request type, e.g. a software renewal has no device
+   * management check and nothing to deliver. Absent, DecisionWindow
+   * falls back to that existing sentence exactly as before; present, its
+   * own pending/approved text renders instead. Plain strings, not marks,
+   * since only REQ-2052's own fields (budget, delivery) had marks wired
+   * to them; nothing here requires the same interactivity yet. */
+  summaryConclusion?: { pending: string; approved: string };
+  /** Exceptions procurement already found and resolved before this reached
+   * the approver (Chunk C1), reusing exceptions.ts's own Exception model
+   * (Chunk B) rather than re-authoring the content. Absent for every
+   * record with no such history; drives the P2-only exceptions-resolved
+   * module, not rendered anywhere in P1. */
+  exceptions?: Exception[];
+  // PLACEHOLDER [Exceptions module heading] — escalation 4, wording
+  // unresolved. Only set alongside `exceptions`.
+  exceptionsHeading?: string;
+  // PLACEHOLDER [Evidence drill-through link label] — escalation 5,
+  // wording unresolved, and there's no evidence view on this surface for
+  // it to link to yet (see the report). Only set alongside `exceptions`.
+  evidenceLinkLabel?: string;
 }
 
 /** Names to notify on a decision, derived from the request's own requester
@@ -604,15 +931,26 @@ export function formatCheckTimestamp(checkedAt: string): string {
 }
 
 /**
- * The four checks, always in this order, derived from the decision's own
- * data. Device management, supplier, and approval routing always derive
- * normally; cost center is the one check that can report `exception`, and
- * only when `costCenterException` is set — the same function handles both
- * the all-pass case and the exception case, no per-request branch.
+ * A record's own check set (Chunk C2), when it has one: `detail.checks`
+ * returns directly, unbuilt, so its length, order, and keys are entirely
+ * the record's own (see the interface and the report). REQ-2052..2056 have
+ * none, so they fall through to the four checks below, always in this
+ * order, derived from the decision's own data exactly as before — device
+ * management, supplier, and approval routing always derive normally; cost
+ * center is the one that can report `exception`, and only when
+ * `costCenterException` is set, the same function handling both the
+ * all-pass case and the exception case, no per-request branch.
  */
 export function buildChecks(detail: DecisionDetail): DecisionCheck[] {
+  if (detail.checks) return detail.checks;
+
   const [department, code] = detail.costCenter.split(" · ");
   const { itReview } = detail.packet;
+  if (!itReview) {
+    throw new Error(
+      `${detail.id}: buildChecks needs either detail.checks or packet.itReview`,
+    );
+  }
 
   const deviceManagement: DecisionCheck = {
     key: "deviceManagement",
@@ -647,16 +985,143 @@ export function buildChecks(detail: DecisionDetail): DecisionCheck[] {
   return [deviceManagement, supplier, costCenter, approvalRouting];
 }
 
-// Every entry bills to Design Operations · CC-4421 and exceeds $5,000 —
-// COST_TO_APPROVER routes that cost center to Alex Chen, and the Approver
-// provenance popover states the $5,000 policy threshold. A row here that
-// violated either would contradict a rule the app itself displays.
+const REQ_10482_DECISION_DETAIL: DecisionDetail = {
+  id: "REQ-10482",
+  request: IDENTITY.shortTitle,
+  requester: getPerson(IDENTITY.requester).name,
+  approver: `${dana.name} · ${dana.role}`,
+  approverPersonaId: "budget-owner",
+  supplier: VENDOR_OPTIONS[0].vendor,
+  costCenter: IDENTITY.costCentre,
+  // No shipTo (Chunk C1 cleanup): a software licence has no physical
+  // ship-to destination. shipTo is optional on the shared interface now
+  // (see there), so the rail's own "Ship to" field simply doesn't render
+  // for this record, rather than borrowing the buying entity as a
+  // stand-in address the way this used to.
+  needBy: IDENTITY.neededFrom,
+  submitted: submittedDate,
+  lineItems: [
+    {
+      description: `${VENDOR_OPTIONS[0].vendor} licence`,
+      quantity: QUANTITY,
+      unitPrice: `${UNIT_PRICE_VALUE}${UNIT_PRICE_UNIT}`,
+      amount: `$${ANNUAL_VALUE.toLocaleString("en-US")}`,
+    },
+  ],
+  total: `$${ANNUAL_VALUE.toLocaleString("en-US")}`,
+  totalValue: ANNUAL_VALUE,
+  packet: {
+    budget: {
+      label: `Software budget · ${IDENTITY.costCentre.split(" · ")[0]}`,
+      pct: `${softwareBudgetPct}%`,
+      // Bracketed (Chunk C1 cleanup, escalation): this "$X of $Y remaining"
+      // grammar is copied from REQ-2052's own budget callout, which reads
+      // as X being what remains rather than what this request draws down
+      // — true there too, but REQ-2052's own committed total ($27,735) is
+      // small next to its pool, where here the misread number ($198,000)
+      // is the one the reader is likeliest to act on. Not corrected here:
+      // it's the same literal grammar REQ-2052 uses, not a shared
+      // function, so silently rewriting it here without also rewriting
+      // REQ-2052's own line would leave the two inconsistent for no
+      // documented reason; ruling it once, for both, isn't this fix's
+      // call to make. See the report (PH-49).
+      detail: ph(
+        "PH-49",
+        `${ANNUAL_VALUE.toLocaleString("en-US")} committed, ${BUDGET_REMAINING_AFTER_APPROVAL.toLocaleString("en-US")} remaining`,
+      ),
+    },
+    // No itReview (Chunk C2): buildChecks' default 4-check hardware set
+    // (device enrollment, supplier, cost center, approval routing) doesn't
+    // fit a software procurement-validation scenario at all — escalation 8
+    // asked for a check label override on that set, but the actual fix is
+    // this record's own check set below, not a hardware fact it has no
+    // real value for. See the report.
+  },
+  // REQ-10482's own check set (Chunk C2), a different composition and
+  // length than the 4-check hardware default: a price benchmark, contract
+  // terms against the MSA, and the exceptions procurement already raised
+  // and cleared — the actual facts procurement validated for a software
+  // licence renewal, not a device-enrollment stand-in. Every detail
+  // sentence reads from data already established elsewhere (Chunk B's own
+  // cockpit-10482.ts, IDENTITY, REQ_10482_EXCEPTIONS); only the chip
+  // labels are bracketed (PH-53/54/55), the same content-ruling shape
+  // PH-50 used before this replaced it.
+  checks: [
+    {
+      key: "priceBenchmark",
+      status: "pass",
+      detail: `${VENDOR_OPTIONS[0].vendor} priced ${DEVIATION_PCT_SIGNED} above the ${BASE_TIER_REFERENCE_VALUE}${UNIT_PRICE_UNIT} base tier reference, accepted by ${samRivera.name}`,
+    },
+    {
+      key: "contractTerms",
+      status: "pass",
+      detail: `Payment terms corrected to match ${IDENTITY.agreement}, revalidated on the supplier's updated order form`,
+    },
+    {
+      key: "exceptionsCleared",
+      status: "pass",
+      detail: `${REQ_10482_EXCEPTIONS.length} exceptions raised and cleared before this reached you`,
+    },
+  ],
+  // No poNumber (Chunk C2 fix): its own real PO exists already, via PR
+  // conversion, not this approval, so it renders through linkedPoId
+  // instead (see the interface and the report), not the approval-gated
+  // poNumber chip REQ-2052's own hardware PO uses.
+  linkedPoId: linkedPoRecord.id,
+  // No expectedDelivery: a software licence renewal has nothing shipped,
+  // so there's no delivery date to quote. Optional on the shared
+  // interface (Chunk C1 cleanup); simply absent here.
+  recommendation: "approve",
+  contractEnd: "[Contract end date]",
+  teamsChannel: "[Teams channel name]",
+  recurringCommitment: {
+    annual: `$${ANNUAL_VALUE.toLocaleString("en-US")}/yr`,
+    total: `$${TOTAL_CONTRACT_VALUE.toLocaleString("en-US")}`,
+    // Singular "year", always — see the interface's own doc comment on
+    // why this isn't conditional on TERM_YEARS the way a plain count is.
+    term: `${TERM_YEARS} year`,
+  },
+  attachment: orderFormV2,
+  attachmentStateNote: ph("PH-48", "Status note"),
+  contractReference: IDENTITY.agreement,
+  summaryConclusion: {
+    // Bracketed (Chunk C1 cleanup, escalation): the wording itself is a
+    // content ruling — "cleared" and "closed by" describe the same act
+    // twice, the count reads as a bare numeral with no established
+    // spelled-out convention checked against, and the sentence is purely
+    // retrospective where Dana's equivalent should orient her toward the
+    // decision in front of her, not just recap the past. Not rewritten
+    // here; the derived facts it would need (actor, count, time) are kept
+    // reading from data inside the bracket rather than dropped. See the
+    // report (PH-51).
+    pending: ph(
+      "PH-51",
+      `${samRivera.name} · ${REQ_10482_EXCEPTIONS.length} exceptions cleared · ${validationTime}`,
+    ),
+    approved: `Approved. This now moves to the next step in the journey.`,
+  },
+  exceptions: REQ_10482_EXCEPTIONS,
+  exceptionsHeading: ph("PH-46", "Exceptions resolved"),
+  // Short label, not the bare id: this renders inside a `shrink-0` link
+  // button (see ExceptionsResolvedModule), so the full ruling description
+  // ph() renders with no label would overflow the card. Per ph()'s own
+  // doc comment, an affordance-shaped placeholder should pass a label.
+  evidenceLinkLabel: ph("PH-47", "View evidence"),
+};
+
+// Every REQ-2052..REQ-2056 entry bills to Design Operations · CC-4421 and
+// exceeds $5,000 — COST_TO_APPROVER routes that cost center to Alex Chen,
+// and the Approver provenance popover states the $5,000 policy threshold. A
+// row here that violated either would contradict a rule the app itself
+// displays. REQ-10482 bills to a different cost centre entirely, since it's
+// Dana's own seat, not Alex's — see approverPersonaId on each entry below.
 export const DECISION_DETAILS: Record<string, DecisionDetail> = {
   "REQ-2052": {
     id: "REQ-2052",
     request: "15 laptops for Fusion Event contractors",
     requester: "Marcus Webb",
     approver: "Alex Chen · Design Director",
+    approverPersonaId: "approver",
     supplier: "Lenovo",
     costCenter: "Design Operations · CC-4421",
     shipTo: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
@@ -709,6 +1174,7 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     request: "Adobe Creative Cloud, 12 seats",
     requester: "Lena Fischer",
     approver: "Alex Chen · Design Director",
+    approverPersonaId: "approver",
     supplier: "Adobe",
     costCenter: "Design Operations · CC-4421",
     shipTo: "Berlin office · Torstraße 100, 10119 Berlin",
@@ -756,6 +1222,7 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     request: "Dell UltraSharp monitors ×8",
     requester: "Tom Alvarez",
     approver: "Alex Chen · Design Director",
+    approverPersonaId: "approver",
     supplier: "Dell",
     costCenter: "Design Operations · CC-4421",
     shipTo: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
@@ -797,6 +1264,7 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     request: "Figma Organization, 25 seats",
     requester: "Will Chen",
     approver: "Alex Chen · Design Director",
+    approverPersonaId: "approver",
     supplier: "Figma",
     costCenter: "Design Operations · CC-4421",
     shipTo: "Amsterdam office · Herengracht 124, 1015 BS Amsterdam",
@@ -833,6 +1301,7 @@ export const DECISION_DETAILS: Record<string, DecisionDetail> = {
     contractEnd: "[Contract end date]",
     teamsChannel: "[Teams channel name]",
   },
+  "REQ-10482": REQ_10482_DECISION_DETAIL,
 };
 
 export function getDecisionDetail(id: string): DecisionDetail | undefined {
@@ -883,27 +1352,6 @@ export const PO_DETAILS: Record<string, PoDetail> = {
 
 export function getPoDetail(id: string): PoDetail | undefined {
   return PO_DETAILS[id];
-}
-
-const MONTHS_SHORT = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-/** Format a Date as "MMM D, YYYY", e.g. "Jul 13, 2026". */
-export function formatDateDisplay(date: Date): string {
-  const mmm = MONTHS_SHORT[date.getMonth()];
-  return `${mmm} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
 // Stat-card counts derived from the rows. Awaiting + approved reconcile to total:

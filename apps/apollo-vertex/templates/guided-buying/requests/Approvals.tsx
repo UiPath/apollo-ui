@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { usePersona } from "../persona-context";
 import {
   DECISION_DETAILS,
   DECISION_STATUS_META,
@@ -49,10 +50,12 @@ const STATUS_OPTIONS = Object.entries(DECISION_STATUS_META).map(
 // content (budget line, checks, PO) — REQ-2054 is the exception scenario
 // (its cost center check). The other two are light queue records with
 // nothing further to show, so their rows skip the click-through affordance
-// entirely instead of looking clickable and doing nothing.
+// entirely instead of looking clickable and doing nothing. REQ-10482
+// (Chunk C1) carries a full packet too, Dana's own decision.
 const HAS_DETAIL_PAGE: Record<string, boolean> = {
   "REQ-2052": true,
   "REQ-2054": true,
+  "REQ-10482": true,
 };
 
 interface StatCardProps {
@@ -120,6 +123,7 @@ function formatElapsed(approvedAtMs: number): string {
  */
 export function Approvals() {
   const navigate = useNavigate();
+  const { personaId } = usePersona();
   const { requestStatusOverrides, approvedAt, approveRequest, denyRequest } =
     useRequests();
   const [search, setSearch] = useState("");
@@ -130,7 +134,14 @@ export function Approvals() {
   // exclusive with it: selecting one clears the other.
   const [oldestOnly, setOldestOnly] = useState(false);
 
-  const rows = Object.values(DECISION_DETAILS);
+  // Scoped to the active approver seat (Chunk C1): each DecisionDetail
+  // names its own approverPersonaId, so this list, its KPI cards, and its
+  // header count all narrow to whoever's actually looking, the same list
+  // used to show every record regardless of who was viewing it, back when
+  // there was only ever one approver persona to view it.
+  const rows = Object.values(DECISION_DETAILS).filter(
+    (row) => row.approverPersonaId === personaId,
+  );
   const decisionOf = (id: string): DecisionStatus =>
     (requestStatusOverrides[id] ?? "pending") as DecisionStatus;
 

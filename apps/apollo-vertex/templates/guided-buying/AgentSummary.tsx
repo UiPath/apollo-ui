@@ -75,6 +75,11 @@ export interface EvidenceItem {
   label: string;
   status?: "pass" | "exception";
   detail?: string;
+  /** Called instead of expanding `detail` inline, for a chip whose
+   * destination is a dedicated view rather than a short inline expansion
+   * (prompt 43). Additive and optional: a chip with neither this nor
+   * `detail` doesn't respond to clicks, exactly as before. */
+  onSelect?: () => void;
 }
 
 /**
@@ -82,7 +87,8 @@ export interface EvidenceItem {
  * a wrapping chip row, ported from the approver decision view's own checks
  * list (see the report). Selecting a chip with a `detail` expands it beneath
  * the row; only one is expanded at a time, and none by default. A chip with
- * no `detail` doesn't respond to clicks at all.
+ * an `onSelect` calls it instead of expanding anything inline. A chip with
+ * neither doesn't respond to clicks at all.
  */
 export function EvidenceChips({
   heading,
@@ -103,6 +109,7 @@ export function EvidenceChips({
         {items.map((item) => {
           const isSelected = item.key === expandedKey;
           const hasDetail = item.detail != null;
+          const clickable = hasDetail || item.onSelect != null;
           const Icon =
             item.status === "pass"
               ? CheckCircle2
@@ -114,15 +121,19 @@ export function EvidenceChips({
               key={item.key}
               type="button"
               aria-expanded={isSelected}
-              disabled={!hasDetail}
-              onClick={() =>
-                hasDetail && setExpandedKey(isSelected ? null : item.key)
-              }
+              disabled={!clickable}
+              onClick={() => {
+                if (item.onSelect) {
+                  item.onSelect();
+                  return;
+                }
+                if (hasDetail) setExpandedKey(isSelected ? null : item.key);
+              }}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium text-foreground transition-colors",
                 isSelected ? "border-primary/40 bg-primary/8" : "border-border",
-                hasDetail && !isSelected && "hover:bg-accent",
-                !hasDetail && "cursor-default",
+                clickable && !isSelected && "hover:bg-accent",
+                !clickable && "cursor-default",
               )}
             >
               {Icon && (

@@ -101,11 +101,6 @@ export function Workbench() {
     setLeftPanel((prev) => ({ ...prev, open: false }));
   };
 
-  // The programmatic entry point (item 3): always opens to the assistant,
-  // never toggles it closed, unlike the rail's own click handler above.
-  const openAssistant = () =>
-    setLeftPanel({ open: true, content: "assistant" });
-
   const toggleRightPanel = () => setRightPanelOpen((prev) => !prev);
 
   if (openId) {
@@ -121,7 +116,6 @@ export function Workbench() {
         leftPanel={leftPanel}
         onLeftPanelRailClick={handleRailClick}
         onLeftPanelCollapse={handleLeftPanelCollapse}
-        onOpenAssistant={openAssistant}
         selectedQueueSegment={selectedQueueSegment}
         onSelectQueueSegment={setSelectedQueueSegment}
         rightPanelOpen={rightPanelOpen}

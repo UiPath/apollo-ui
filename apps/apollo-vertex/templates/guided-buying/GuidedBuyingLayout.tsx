@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { ApolloShell } from "@/registry/shell/shell";
 import { AutopilotFab } from "./AutopilotFab";
+import { PersonaProvider } from "./persona-context";
 import {
   PERSONA_MENU_ORDER,
   PERSONAS,
@@ -104,9 +105,23 @@ export function GuidedBuyingLayout() {
   // an approver/buyer surface doesn't show the requester's identity, see
   // that function's own comment for why this isn't a route-derived
   // override on every navigation, just the initial value.
-  const [personaId, setPersonaId] = useState<PersonaId>(() =>
-    personaForPath(pathname),
-  );
+  //
+  // Chunk C1 cleanup: personaForPath can't tell Alex's and Dana's shared
+  // /decision prefix apart (its own FINDING comment), so a cold load of
+  // /decision/$id resolves the seat from that request's own record instead,
+  // a more precise source than the path shape alone. This can't live inside
+  // personaForPath itself: requests/data.ts imports PersonaId from
+  // personas.ts, so personas.ts importing getDecisionDetail back would be
+  // circular. /approvals has no single request to resolve from (it's a
+  // queue over many), so it still falls back to personaForPath's own guess,
+  // unchanged.
+  const [personaId, setPersonaId] = useState<PersonaId>(() => {
+    const decisionId = pathname.match(/^\/decision\/([^/]+)$/)?.[1];
+    const recordApprover = decisionId
+      ? getDecisionDetail(decisionId)?.approverPersonaId
+      : null;
+    return recordApprover ?? personaForPath(pathname);
+  });
 
   // Persona state is the single authority over the identity chip now, no
   // route-derived override past the initial value above.
@@ -163,7 +178,9 @@ export function GuidedBuyingLayout() {
       {/* Clips the Buy↔Configure horizontal slide so it can't flash a
           scrollbar. */}
       <div className="relative h-full overflow-hidden">
-        <Outlet />
+        <PersonaProvider personaId={personaId} setPersonaId={setPersonaId}>
+          <Outlet />
+        </PersonaProvider>
       </div>
       {/* One Autopilot home, the orb FAB, same corner on every surface. */}
       <AutopilotFab />

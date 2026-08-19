@@ -162,6 +162,15 @@ export const DEVIATION_BAND_PCT = BUYER_DECISION_BAND_PCT;
 // Signed, so a positive deviation reads as a deviation, not a bare number.
 export const DEVIATION_PCT_SIGNED = `${deviationPct >= 0 ? "+" : ""}${deviationPct}%`;
 
+// The benchmark evidence view's own conclusion line (prompt 21's original
+// spec, prompt 43): the deviation interpolated into the same sentence
+// BENCHMARK_CONCLUSION_LINE above carries without it, since that export
+// dropped the figure in prompt 29 for the summary card's own highlighted
+// span instead. Distinct export, not a re-edit of BENCHMARK_CONCLUSION_LINE:
+// the two screens need the figure placed differently (inline text here,
+// a separate highlighted mark there).
+export const BENCHMARK_EVIDENCE_CONCLUSION_LINE = `The ${DEVIATION_PCT_SIGNED} premium is attributable to functionality outside the base benchmark.`;
+
 // The metric's own sub line: the band it sits within (prompt 38).
 export const DEVIATION_METRIC_SUB_LINE = `${isAboveDecisionBand() ? "above" : "within"} the ${BUYER_DECISION_BAND_PCT}% decision band`;
 

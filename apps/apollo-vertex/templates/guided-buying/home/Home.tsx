@@ -26,6 +26,7 @@ import { shouldEnterJ3Intake } from "../intake/routing";
 import { P1 } from "../P1";
 import { P2 } from "../P2";
 import {
+  daysSince,
   REQUEST_DETAILS,
   REQUEST_ROWS,
   type RequestDetail,
@@ -76,7 +77,10 @@ const HOME_ROW_COPY: Record<string, { status: string; note: string }> = {
     note: "I ordered all 4 from Ergotron after Alex Chen approved.",
   },
   "REQ-2052": {
-    status: "Pending with Alex Chen, 2 days.",
+    // Chunk C2: derived from APPROVALS_TODAY, not hardcoded — this read
+    // "2 days" as a literal matching the anchor of the time, and went
+    // stale the one time that moved without a matching edit here.
+    status: `Pending with Alex Chen, ${daysSince("Jul 21, 2026")} days.`,
     note: "I sent this to Alex Chen and reminded him this morning.",
   },
   "REQ-2053": {

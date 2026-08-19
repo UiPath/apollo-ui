@@ -48,7 +48,12 @@ const priyaNavItems: ShellNavItem[] = [
   { path: "/intake", label: "intake", icon: FileText },
 ];
 
-export type PersonaId = "requester" | "buyer" | "approver" | "priya";
+export type PersonaId =
+  | "requester"
+  | "buyer"
+  | "approver"
+  | "priya"
+  | "budget-owner";
 
 export interface Persona {
   id: PersonaId;
@@ -103,14 +108,32 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     homeRoute: "/start",
     navItems: priyaNavItems,
   },
+  // J3's second approver (Chunk C1): a distinct named identity from Alex,
+  // sharing the same prototype role and the same approver nav, since both
+  // seats do the same job in this prototype. "Approver" stays a literal
+  // here, matching Alex's own entry above, not PEOPLE["dana-kim"].role
+  // (her real job title, "Sr. Director, budget owner"): the two aren't the
+  // same value, the persona's own `role` is the prototype-level word every
+  // approver seat shares, not a per-person title. Name and chip subtitle
+  // still derive from her people.ts record rather than restating it.
+  "budget-owner": {
+    id: "budget-owner",
+    name: PEOPLE["dana-kim"].name,
+    role: "Approver",
+    chipSubtitle: `${PEOPLE["dana-kim"].role} · ${PEOPLE["dana-kim"].org}`,
+    homeRoute: "/approvals",
+    navItems: approverNavItems,
+  },
 };
 
-// Menu order: Requester, Buyer, Approver per the spec, Priya appended.
+// Menu order: Requester, Buyer, Approver per the spec, Priya appended,
+// Dana appended after her (Chunk C1's own second approver seat).
 export const PERSONA_MENU_ORDER: PersonaId[] = [
   "requester",
   "buyer",
   "approver",
   "priya",
+  "budget-owner",
 ];
 
 // Which persona owns a given route prefix, used once, at mount, to pick
@@ -122,6 +145,20 @@ export const PERSONA_MENU_ORDER: PersonaId[] = [
 // navigation, it only seeds the initial value, so the switcher stays the
 // single authority once mounted, per GuidedBuyingLayout's own comment on
 // `switchPersona`.
+//
+// FINDING (Chunk C1, partially resolved in the C1 cleanup): /decision and
+// /approvals now serve two approver seats, Alex and Dana, and this
+// function has no way to tell which one a bare URL belongs to (a request
+// id alone doesn't say whose queue it's in) — it still returns "approver"
+// unconditionally for both prefixes here. GuidedBuyingLayout.tsx's own
+// persona seed now resolves a /decision/$id load from that request's own
+// approverPersonaId first, falling back to this function's guess only when
+// there's no id to resolve from (can't live here: that lookup needs
+// requests/data.ts, which imports PersonaId from this module, so the
+// reverse import would be circular). /approvals still has no single
+// request to resolve from, so a bare load there keeps guessing "approver"
+// (Alex) regardless of who last used it — unresolved, the switcher itself
+// already reaches the right persona correctly (see PersonaMenuSection).
 export function personaForPath(pathname: string): PersonaId {
   if (pathname.startsWith("/decision") || pathname.startsWith("/approvals")) {
     return "approver";

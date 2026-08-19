@@ -4,24 +4,29 @@
 
 import {
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
   FileCheck,
   Info,
   MoreHorizontal,
-  PanelRightClose,
   PanelRightOpen,
   Plus,
   TriangleAlert,
   User,
 } from "lucide-react";
-import { type PointerEvent, useState } from "react";
+import { type ComponentProps, type PointerEvent, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,27 +56,22 @@ import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import {
   AgentSummary,
-  EvidenceChips,
-  type EvidenceItem,
   type SummaryMark,
   SummaryMarkSpan,
 } from "../AgentSummary";
+import { AssistantThreadProvider } from "../catalog/v1/assistant-thread-context";
 import { Caveat } from "../DecisionActionRow";
 import {
+  BASE_TIER_REFERENCE_UNIT,
+  BASE_TIER_REFERENCE_VALUE,
+  BENCHMARK_ADDITIONS,
   BENCHMARK_CONCLUSION_LINE,
   BENCHMARK_EVIDENCE,
   BENCHMARK_REASON_LINE,
   COMPARABLE_DEALS,
-  DETECTION_LINE,
-  DEVIATION_BAND_LABEL,
-  DEVIATION_BAND_RATIO,
   DEVIATION_BAND_RELATION,
-  DEVIATION_METRIC_SUB_LINE,
   DEVIATION_PCT,
-  DEVIATION_PCT_SIGNED,
   DEVIATION_ROUTING_CONSEQUENCE,
-  DEVIATION_SCALE_VISIBLE,
-  DEVIATION_VERDICT,
   type DraftMessage,
   type Exception,
   getExceptionSummary,
@@ -79,12 +79,20 @@ import {
   MARKET_REFERENCES_LINE,
   openExceptions,
   ph,
+  QUANTITY,
   RELEASE_RECORD,
   SUPPLIER_REPLY,
   type Suggestion,
+  UNIT_PRICE_VALUE,
 } from "../data";
+import {
+  ExceptionEvidence,
+  exceptionHeadline,
+  PRICE_EXCEPTION_ID,
+} from "../ExceptionEvidence";
 import { useRequests } from "../requests/requests-context";
 import { TruncatedSubtitle } from "../requests/TruncatedSubtitle";
+import { StructuredTable, type StructuredTableProps } from "../StructuredTable";
 import { CorrectionDraftModal } from "./CorrectionDraftModal";
 import {
   applyExceptionOverrides,
@@ -96,7 +104,6 @@ import {
   STATUS_BADGE,
   STATUS_LABEL,
   type TimelineEntry,
-  timelineEntryTime,
   WORKBENCH_DETAILS,
   WORKBENCH_EXCEPTIONS,
   WORKBENCH_ROWS,
@@ -122,214 +129,20 @@ const REVIEWER_INITIALS = "PV";
 // real work in `WorkbenchList.tsx`'s own Status column, scanning many rows
 // at once, unchanged.
 
-const PRICE_EXCEPTION_ID = "price-above-benchmark";
-
-/** A metric's own label, plus an info affordance carrying its provenance
- * (prompt 39): the sub lines used to render as their own visible line
- * under the value, but three of them stacked was most of the text on the
- * pane for content whose point is the number, not its provenance. Apollo's
- * own tooltip primitive (`@/components/ui/tooltip`, Radix underneath):
- * `TooltipTrigger` renders the trigger as whatever's passed via `asChild`
- * (a real `<button>` here, so it's a tab stop) and Radix wires the
- * open-on-hover-or-focus behaviour and the `aria-describedby` link to the
- * content itself, so this is keyboard reachable and exposed to assistive
- * technology without anything bespoke here. `info` is unchanged content
- * (the same string that used to render as the sub line), never shortened
- * to fit. */
-function MetricLabel({ label, info }: { label: string; info: string }) {
-  return (
-    <span className="flex items-center gap-1 whitespace-nowrap text-[10px] font-semibold leading-snug tracking-normal text-muted-foreground">
-      {label}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            aria-label={`About ${label}`}
-            className="text-muted-foreground/70 hover:text-foreground"
-          >
-            <Info className="size-2.5" aria-hidden />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>{info}</TooltipContent>
-      </Tooltip>
-    </span>
-  );
-}
-
-/** One metric column: label (with an optional info affordance) above a
- * large value, its unit inline after it in a smaller, secondary colour so
- * the figure stays the prominent thing and the unit stays legible rather
- * than competing with it. Column layout again, matching `Finding`'s own
- * metrics grid below (28px/semibold/tight) rather than the stacked rows
- * prompt 40 switched to when three unit-bearing values physically
- * overlapped at the pane's own narrower widths; verified live at this
- * pane's normal operating width instead (see the report). `valueClassName`
- * is the one role colour this pane uses (the deviation's `text-warning`);
- * every other column passes nothing and gets the plain foreground colour. */
-function MetricColumn({
-  label,
-  info,
-  value,
-  unit,
-  suffix,
-  valueClassName,
-}: {
-  label: string;
-  info?: string;
-  value: string;
-  unit?: string;
-  /** A trailing fact beneath the value: only the deviation column uses
-   * this, to state the band under its own figure. */
-  suffix?: string;
-  valueClassName?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5 px-6 py-[18px] first:pl-0">
-      {info == null ? (
-        <span className="whitespace-nowrap text-[10px] font-semibold leading-snug tracking-normal text-muted-foreground">
-          {label}
-        </span>
-      ) : (
-        <MetricLabel label={label} info={info} />
-      )}
-      <span className="whitespace-nowrap">
-        <span
-          className={cn(
-            "text-[28px] font-semibold leading-none tracking-tight",
-            valueClassName,
-          )}
-        >
-          {value}
-        </span>
-        {unit != null && (
-          <span className="ml-0.5 text-xs font-normal text-muted-foreground">
-            {unit}
-          </span>
-        )}
-      </span>
-      {suffix != null && (
-        <span className="text-xs font-normal text-muted-foreground">
-          {suffix}
-        </span>
-      )}
-    </div>
-  );
-}
-
-/** Proximity to the decision band's own limit, so the reader sees how close
- * the deviation sits rather than comparing two numbers by hand. Own end
- * labels: 0 is the scale's own origin, the band is `DEVIATION_BAND_LABEL`,
- * both derived, nothing authored.
- *
- * A position marker, not a fill-to-point (prompt 38): a filled bar read as
- * progress toward a limit, when this is a position within a range, one
- * side of which happens to be the request's own commercial decision band.
- * The marker sits at `DEVIATION_BAND_RATIO`, the same ratio the old fill
- * used, just rendered as a discrete point with its own label
- * (`DEVIATION_PCT_SIGNED`, the same signed value the metric row shows)
- * rather than a length.
- *
- * Conditional (prompt 39, `DEVIATION_SCALE_VISIBLE`, see cockpit-10482.ts):
- * a graphic restating what the deviation metric already states in words
- * only earns its place once the number alone under-communicates the
- * position, which this component doesn't decide for itself, the caller
- * does (see `ExceptionSurface` below). Lives in group one now, directly
- * beneath the deviation row (prompt 40), not as a separate block after the
- * whole metric row. */
-function DeviationScale() {
-  const markerPositionPct = DEVIATION_BAND_RATIO * 100;
-  return (
-    <div className="mt-3 w-full">
-      <div className="relative h-1.5 w-full rounded-full bg-muted">
-        <div
-          className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-warning bg-background"
-          style={{ left: `${markerPositionPct}%` }}
-        />
-      </div>
-      <div className="relative mt-1.5 h-4">
-        <span
-          className="absolute -translate-x-1/2 whitespace-nowrap text-xs font-medium text-warning"
-          style={{ left: `${markerPositionPct}%` }}
-        >
-          {DEVIATION_PCT_SIGNED}
-        </span>
-      </div>
-      <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-        <span>0%</span>
-        <span>{DEVIATION_BAND_LABEL}</span>
-      </div>
-    </div>
-  );
-}
-
-/** The comparison across sources, columns again (see the reference in the
- * report): `divide-x` between three equal columns, matching `Finding`'s own
- * metrics grid rather than the stacked `divide-y` rows prompt 40 switched
- * to. `role` marks the governing and deviating sides where the seed says
- * so; a side with no role (e.g. a third source that's merely consistent)
- * renders plain.
- *
- * One fill rule for the whole pane (prompt 36, carried forward through
- * prompt 37's colour-not-fill version): a role colour marks the value an
- * exception's own decision turns on, not merely a side that differs from
- * another. That's the deviation column alone, a derived figure that only
- * exists because something is open; the ordinary sides below carry no
- * colour regardless of `role`.
- *
- * `subLine` (prompt 38) is the tooltip on the label (prompt 39, see
- * `MetricLabel`), only when a side has one: currently just the price
- * exception's two sides (see cockpit-10482.ts). The terms exception's own
- * three sides have no composable sub line in the seed (see the report), so
- * they render a plain label with no info affordance. `unit` (prompt 40) is
- * likewise optional and absent for the terms exception's own plain payment
- * terms values. */
-function ExceptionFinding({ exception }: { exception: Exception }) {
-  return (
-    <div className="grid grid-cols-3 divide-x divide-border">
-      {exception.finding.sides.map((side) => (
-        <MetricColumn
-          key={side.label}
-          label={side.label}
-          info={side.subLine}
-          value={side.value}
-          unit={side.unit}
-        />
-      ))}
-      {exception.id === PRICE_EXCEPTION_ID && (
-        <MetricColumn
-          label="Deviation"
-          info={DEVIATION_METRIC_SUB_LINE}
-          value={DEVIATION_PCT_SIGNED}
-          suffix={DEVIATION_BAND_LABEL}
-          valueClassName="text-warning"
-        />
-      )}
-    </div>
-  );
-}
+// MetricLabel/MetricColumn/DeviationScale/ExceptionFinding/
+// PRICE_EXCEPTION_ID (Chunk C2): extracted to ../ExceptionEvidence.tsx, a
+// shared component REQ-10482's decision page now also consumes for its own
+// "view evidence" links (see the report) — imported above, not redefined
+// here. Same markup, same data, moved rather than duplicated.
 
 function suggestionLabel(suggestion: Suggestion): string {
   return suggestion.type === "accept" ? "Accept" : "Request correction";
 }
 
-// One line per comparable deal, joined rather than authored: descriptor,
-// seat count, and price per year, all read from COMPARABLE_DEALS.
-const COMPARABLE_DEALS_DETAIL = COMPARABLE_DEALS.map(
-  (deal) =>
-    `${deal.descriptor} · ${deal.seats.toLocaleString("en-US")} seats · $${deal.pricePerYear}/yr`,
-).join("; ");
-
 // Flagging for review: named by the prompt, unresolved in behaviour (see
 // PH-35). No-op until that's ruled on.
 function handleFlagForReview() {
   // Intentionally empty, see PH-35.
-}
-
-// The evidence link into the benchmark's own supporting detail (prompt 38):
-// no destination exists yet (see the report), so this stays a no-op behind
-// PH-39 rather than building the detail view this prompt explicitly excludes.
-function handleViewBenchmarkDetail() {
-  // Intentionally empty, see PH-39.
 }
 
 // Sharing feedback on the agent's benchmark finding: named by the reference
@@ -361,6 +174,91 @@ const DEVIATION_MARK: SummaryMark = {
   text: `${DEVIATION_PCT}% ${DEVIATION_BAND_RELATION} the band`,
 };
 
+// ── Evidence exchange (prompt 46) ───────────────────────────────────────────
+// Rendered inline in the card's own disclosure (prompt 48), replacing
+// prompt 46's assistant exchange: no question to invent an answer for, no
+// separate panel at the far edge of the screen from the deviation it
+// explains. EVIDENCE_QUESTION and its PH-43 placeholder are gone with it
+// (see the report); the register only ever names a gap that still exists.
+
+// The deals table's own row order (see the report): the three comparables
+// are already seeded in ascending price order, so this order's own row
+// (the highest of the four) sits last, continuing that same ascending
+// read rather than being pinned to the top or bottom by convention alone.
+// Its seat count and unit price come from the seed's own quantity and
+// unit price, the same figures the metric cards above already show, not
+// restated as a second literal. The descriptor was `IDENTITY.shortTitle`
+// (prompt 46), the seed's own short name for this request, deliberately
+// rather than an authored phrase matching the other rows' "Enterprise
+// SaaS, tier" pattern (prompt 50 confirms that reasoning). What still
+// changed here is only the label naming this row as the current order:
+// that's wording no seed value carries, so it's a content ruling behind
+// PH-44, not a name derived from the request the way the other three
+// rows' names come from COMPARABLE_DEALS.
+const DEALS_TABLE: StructuredTableProps = {
+  caption: "Comparable deals",
+  columns: [
+    { key: "descriptor", label: "Deal", align: "left" },
+    { key: "seats", label: "Seats", align: "right" },
+    { key: "price", label: "Price/licence/yr", align: "right" },
+  ],
+  rows: [
+    ...COMPARABLE_DEALS.map((deal) => ({
+      key: `${deal.descriptor}-${deal.seats}`,
+      cells: {
+        descriptor: deal.descriptor,
+        seats: deal.seats.toLocaleString("en-US"),
+        price: `$${deal.pricePerYear}`,
+      },
+    })),
+    {
+      key: "this-order",
+      cells: {
+        descriptor: ph("PH-44", "this order"),
+        seats: QUANTITY.toLocaleString("en-US"),
+        price: UNIT_PRICE_VALUE,
+      },
+      emphasized: true,
+    },
+  ],
+};
+
+// Name and note, neither a figure, both left aligned. `width` on the
+// capability column (prompt 50): measured live, "Recording and
+// transcription" (the longest value) needs 161px of text plus the cell's
+// own 16px of padding, about 177px; `table-layout: auto` on a `w-full`
+// table was handing it far more than that, stranding Note's own start
+// well away from it. 180px keeps a few px of breathing room without
+// giving back the width this was built to reclaim.
+const CAPABILITIES_TABLE: StructuredTableProps = {
+  caption: "What this order adds",
+  columns: [
+    {
+      key: "capability",
+      label: "Capability",
+      align: "left",
+      width: "w-[180px]",
+    },
+    { key: "note", label: "Note", align: "left" },
+  ],
+  rows: BENCHMARK_ADDITIONS.map((item) => ({
+    key: item.capability,
+    cells: { capability: item.capability, note: item.note },
+  })),
+};
+
+// The disclosure's own market references line: no restated conclusion
+// sentence ahead of it (prompt 48 lists three things, not four), since the
+// card's own summary directly above already carries that judgment; the
+// evidence beneath states what backs it, not the same sentence twice.
+const MARKET_REFERENCES_TEXT = `${MARKET_REFERENCES_LINE}: ${BASE_TIER_REFERENCE_VALUE}${BASE_TIER_REFERENCE_UNIT}`;
+
+// ── Terms comparison (prompt 51) ─────────────────────────────────────────────
+// TERMS_TABLE (Chunk C2): moved to ../ExceptionEvidence.tsx alongside
+// ExceptionFinding, since both are the same "finding" concept for the two
+// different exception shapes, and REQ-10482's decision page needed the
+// identical table for its own evidence overlay (see the report).
+
 /** The agent's rationale and its evidence, for the price exception only:
  * the only one with a rationale template and evidence counts built (prompt
  * 21). Leads with the judgment (the premium's attribution and where the
@@ -373,12 +271,12 @@ const DEVIATION_MARK: SummaryMark = {
  * comparable deals and market references counts as a single chip, and at
  * this pane's width (max-w-540px) one chip reading "N comparable deals, N
  * market references" fits on one line as easily as two separate chips did,
- * so there's no legibility reason to keep them apart. Its own detail
- * concatenates both existing lines rather than authoring a new one.
- *
- * The evidence link (prompt 38) sits beside the chip: no destination
- * exists for the benchmark's own supporting detail view (see the report),
- * so it's a no-op behind PH-39, not a build of that view.
+ * so there's no legibility reason to keep them apart. The chip itself now
+ * opens the benchmark evidence view (prompt 43, `onSelect` rather than an
+ * inline `detail` expansion) instead of expanding the comparables array
+ * concatenated into a run on sentence; the separate PH-39 link that used
+ * to sit beside it is gone too, since a chip and a link to the same
+ * destination were two affordances for one thing.
  *
  * This now leads the pane, directly under the headline (prompt 35), so its
  * own top margin comes entirely from the headline's bottom margin; no
@@ -417,12 +315,55 @@ const DEVIATION_MARK: SummaryMark = {
  *
  * Share feedback sits opposite the caveat, on the same row: named by the
  * reference card, a no-op behind PH-40 since no destination exists yet.
- * Plain muted text, not link styled, matching PH-39's own established
- * reasoning below: a no-op placeholder isn't a link to anything yet, so it
- * shouldn't look like one, even though the reference renders it as a link.
+ * Plain muted text, not link styled: a no-op placeholder isn't a link to
+ * anything yet, so it shouldn't look like one, even though the reference
+ * renders it as a link. */
+/** The evidence disclosure's own trigger: a badge (prompt 47), then a
+ * filled AI button (prompt 49), now a text link (prompt 52), each step
+ * quieter than the last as the reason for the affordance moved: a badge
+ * reads as status, a filled button competes with the primary action right
+ * beneath it, and by this point the card already marks itself as agent
+ * content twice over (the label's own mark, the summary's own framing), so
+ * a third mark here would be redundant, not reinforcing. `Button`'s own
+ * `link` variant (`text-primary`, no fill, no border, no background, see
+ * `app/components/button/page.mdx`) is the toolkit's existing primitive
+ * for exactly this, not something built by hand; `underline` is added
+ * explicitly since `link`'s own default only underlines on hover, and
+ * this needs to read as a link at rest, not only once touched. No hand
+ * added hover, pressed, or focus styling beyond that: `Button`'s own
+ * variant still carries all three.
  *
- * PH-39 (prompt 39) is plain muted text, not link styled: a no-op
- * placeholder isn't a link to anything yet, so it shouldn't look like one. */
+ * Nested inside `CollapsibleTrigger asChild` at the call site (prompt 48,
+ * unchanged here): Radix's own trigger clones its child, merging in
+ * `aria-expanded`, `aria-controls`, `data-state`, and its own click
+ * handling. `...props` below is where that merge lands; `Button` already
+ * forwards it to the real `button` element on its own (the same pattern
+ * it uses for its own `asChild`), so nothing extra is needed here to wire
+ * the disclosure up. That's the expanded state exposed to assistive
+ * technology; the chevron is the same state's visible echo, not a second
+ * source of truth for it. */
+function EvidenceDisclosureTrigger({
+  label,
+  expanded,
+  ...props
+}: {
+  label: string;
+  expanded: boolean;
+} & ComponentProps<"button">) {
+  return (
+    <Button variant="link" size="sm" className="h-auto p-0" {...props}>
+      <span className="underline underline-offset-4">{label}</span>
+      <ChevronDown
+        className={cn(
+          "size-3.5 shrink-0 transition-transform",
+          expanded && "rotate-180",
+        )}
+        aria-hidden
+      />
+    </Button>
+  );
+}
+
 function ExceptionAgentSummary({
   exception,
   onAccept,
@@ -432,13 +373,8 @@ function ExceptionAgentSummary({
   onAccept: (exceptionId: string) => void;
   onOpenDraft: (exceptionId: string, draft: DraftMessage) => void;
 }) {
-  const items: EvidenceItem[] = [
-    {
-      key: "benchmark-evidence",
-      label: `${COMPARABLE_DEALS.length} comparable deals, ${BENCHMARK_EVIDENCE.marketReferences} market references`,
-      detail: `${COMPARABLE_DEALS_DETAIL} · ${MARKET_REFERENCES_LINE}`,
-    },
-  ];
+  const [expanded, setExpanded] = useState(false);
+  const evidenceLabel = `${COMPARABLE_DEALS.length} comparable deals, ${BENCHMARK_EVIDENCE.marketReferences} market references`;
   return (
     <div className="relative mb-6">
       <AiGlow />
@@ -465,33 +401,55 @@ function ExceptionAgentSummary({
               {ph("PH-41", "card label")}
             </span>
           </div>
-          {/* 2. Body: the conclusion, its evidence, and the link into the
-              evidence's own detail. */}
-          <AgentSummary
-            conclusionClassName="mt-2 text-[14px] font-normal leading-[1.7] text-muted-foreground"
-            conclusion={
-              <>
-                {BENCHMARK_CONCLUSION_LINE},{" "}
-                <SummaryMarkSpan
-                  mark={DEVIATION_MARK}
-                  className="whitespace-nowrap"
-                />
-                <span className="-ml-1">.</span> {BENCHMARK_REASON_LINE}
-              </>
-            }
-            evidence={
-              <div className="flex flex-wrap items-start gap-3">
-                <EvidenceChips items={items} />
-                <button
-                  type="button"
-                  onClick={handleViewBenchmarkDetail}
-                  className="text-left text-xs text-muted-foreground hover:text-foreground"
-                >
-                  {ph("PH-39", "evidence detail")}
-                </button>
+          {/* 2. Body: the conclusion, and the disclosure that expands its
+              evidence in place (prompt 48), directly beneath the summary
+              it supports rather than at the opposite edge of the screen. */}
+          <Collapsible open={expanded} onOpenChange={setExpanded}>
+            <AgentSummary
+              conclusionClassName="mt-2 text-[14px] font-normal leading-[1.7] text-muted-foreground"
+              conclusion={
+                <>
+                  {BENCHMARK_CONCLUSION_LINE},{" "}
+                  <SummaryMarkSpan
+                    mark={DEVIATION_MARK}
+                    className="whitespace-nowrap"
+                  />
+                  <span className="-ml-1">.</span> {BENCHMARK_REASON_LINE}
+                </>
+              }
+              evidence={
+                <CollapsibleTrigger asChild>
+                  <EvidenceDisclosureTrigger
+                    label={evidenceLabel}
+                    expanded={expanded}
+                  />
+                </CollapsibleTrigger>
+              }
+            />
+            {/* Comparable deals (this order emphasised as its own row),
+                the market references line, then the capabilities and
+                their notes: exactly what prompt 46's assistant exchange
+                carried, minus its own restated conclusion line, since the
+                summary above already states that judgment once. Columns
+                at this card's own width (prompt 48, see the report); the
+                table component falls back to its stacked variant
+                (prompt 47) on its own if that width ever narrows.
+                Grouped with the market references line so the gap
+                binding it to the deals table above (space-y-1.5) is
+                tighter than the gap to the next section's own heading
+                below (space-y-6 on this element's own parent, prompt
+                50): the line is a caption on the deals table, not an
+                introduction to what follows it. */}
+            <CollapsibleContent className="mt-4 space-y-6 border-t border-border/60 pt-4">
+              <div className="space-y-1.5">
+                <StructuredTable {...DEALS_TABLE} />
+                <p className="text-[11px] text-muted-foreground">
+                  {MARKET_REFERENCES_TEXT}
+                </p>
               </div>
-            }
-          />
+              <StructuredTable {...CAPABILITIES_TABLE} />
+            </CollapsibleContent>
+          </Collapsible>
           {/* 3. Action row: primary, secondary, and (exception-dependent)
               an overflow, all inside `ExceptionActions` now (prompt 41). */}
           <div className="mt-4">
@@ -606,17 +564,10 @@ function ExceptionSurface({
   openList,
   onAccept,
   onOpenDraft,
-  onOpenAssistant: _onOpenAssistant,
 }: {
   openList: Exception[];
   onAccept: (exceptionId: string) => void;
   onOpenDraft: (exceptionId: string, draft: DraftMessage) => void;
-  /** The programmatic entry point (prompt 32): swaps the left panel to the
-   * assistant and marks the rail accordingly, from anywhere in this pane.
-   * Nothing here calls it yet, there's no action on this surface that needs
-   * it today; it's threaded through so a later one can, without adding a
-   * second way to open the assistant. */
-  onOpenAssistant: () => void;
 }) {
   const [cursor, setCursor] = useState(0);
   const activeIndex = Math.min(cursor, Math.max(openList.length - 1, 0));
@@ -670,23 +621,25 @@ function ExceptionSurface({
         {/* The headline now carries the verdict (prompt 42), one line,
             matching how the approver's own headlines read as a conclusion
             (e.g. "Configured under your T-Mobile MSA, ready to approve",
-            see `Finding`'s own seed rows). Composed at render time, not
-            concatenated into a literal: `active.headline` is the seed
-            string, `DEVIATION_VERDICT` is the same live derived value the
-            deviation metric and its role colour already read, so this
-            still flips if the deviation crosses the band. Price exception
-            only: the terms exception has no equivalent graduated check, so
-            its headline renders alone, no trailing comma or empty clause. */}
+            see `Finding`'s own seed rows). `exceptionHeadline` (Chunk C2,
+            extracted to ../ExceptionEvidence.tsx) composes this at render
+            time from the same live derived verdict, so it still flips if
+            the deviation crosses the band; the terms exception has no
+            equivalent graduated check, so its headline renders alone, no
+            trailing comma or empty clause. */}
         <h2 className="max-w-[26ch] text-balance text-[28px] font-bold leading-[1.2] tracking-tight text-foreground">
-          {active.headline}
-          {isPrice && `, ${DEVIATION_VERDICT}`}
+          {exceptionHeadline(active)}
         </h2>
 
+        {/* The finding itself: the price exception's own metrics grid and
+            deviation scale, or the terms exception's three-source table
+            (prompt 51). Extracted (Chunk C2) to ../ExceptionEvidence.tsx,
+            a shared component REQ-10482's decision page also renders for
+            its own "view evidence" links — same markup, same data, one
+            definition. */}
         <div className="mt-4">
-          <ExceptionFinding exception={active} />
+          <ExceptionEvidence exception={active} />
         </div>
-
-        {isPrice && DEVIATION_SCALE_VISIBLE && <DeviationScale />}
       </div>
 
       {/* Group two: what the agent found, and what to do about it. The
@@ -740,102 +693,120 @@ function ExceptionSurface({
   );
 }
 
-/** How a single exception resolved: a person's name, or a document's own
- * version, tagged rather than read out of a string, per the model's own
- * distinction (see the report). No control here resolves anything, this
- * only renders what already happened. */
-function ExceptionResolutionLine({ exception }: { exception: Exception }) {
+/** A resolved exception's own detail: a person's name, or a document's
+ * own version plus what happened to it, tagged rather than read out of a
+ * string, per the model's own distinction (see the report). Document
+ * resolution reads as an actual re-run, not just receipt of a corrected
+ * file: TIMELINE carries a distinct "revalidated" event ("Re-validated,
+ * checks re-run", actor "agent") separate from the document's own arrival
+ * ("order-form-v2-received"), so "cleared on re-validation" is what the
+ * runtime evidences, not an asserted action nothing backs. */
+function exceptionResolutionDetail(exception: Exception): string {
   const resolution = exception.resolution;
-  if (!resolution) return null;
-  const byPerson = resolution.resolvedBy === "person";
-  return (
-    <div className="flex items-center gap-2 text-sm">
-      {byPerson ? (
-        <User className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-      ) : (
-        <FileCheck
-          className="size-4 shrink-0 text-muted-foreground"
-          aria-hidden
-        />
-      )}
-      <span className="text-foreground">{exception.headline}</span>
-      <span className="text-muted-foreground">
-        resolved by{" "}
-        {byPerson ? getPerson(resolution.by).name : `document ${resolution.by}`}
-      </span>
-    </div>
-  );
+  if (!resolution) return "";
+  if (resolution.resolvedBy === "person") {
+    return `resolved by ${getPerson(resolution.by).name}`;
+  }
+  return `corrected document ${resolution.by}, cleared on re-validation`;
+}
+
+/** Initials for an avatar fallback: the same first-letter-per-word
+ * derivation `DecisionWindow.tsx` already uses for the identical purpose,
+ * not a shared export since this is the only place in this file that
+ * needs one. */
+function initialsOf(name: string): string {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }
 
 /**
  * The auto-release completion state: renders once every exception on the
  * request is resolved, none open, none waiting. Everything here is
  * RELEASE_RECORD (../data/cockpit-10482.ts) or the exceptions' own
- * resolution field, nothing authored. Success (green) throughout, since
- * nothing on this screen is an open exception any more. No approve, accept,
+ * resolution field, nothing authored beyond the document-resolution
+ * template above. Three beats, not the outcome restated four times over:
+ * the banner states it happened, the resolved rows state what backed it,
+ * and Next step states what's left, each said once. No approve, accept,
  * or confirm control appears here, this is a record of what already
  * happened automatically.
  */
 function AutoReleaseCompletion({ exceptions }: { exceptions: Exception[] }) {
   return (
     <div className="flex-1 overflow-y-auto px-4 pb-8 pt-8 sm:px-6 lg:px-8">
-      <Alert status="success" visual="tinted" className="max-w-[560px]">
-        <CheckCircle2 />
-        <AlertTitle>Validation completed automatically</AlertTitle>
-        <AlertDescription>
-          {timelineEntryTime(RELEASE_RECORD.when)}
-        </AlertDescription>
-      </Alert>
+      <div className="max-w-[560px] space-y-6">
+        {/* Block 1: outcome. */}
+        <Alert status="success" visual="tinted" className="py-2.5">
+          <CheckCircle2 />
+          <AlertTitle>Validation completed automatically</AlertTitle>
+          <AlertDescription>
+            Resolving the exceptions released it. No manual step was needed.
+          </AlertDescription>
+        </Alert>
 
-      {/* The system's own action, not a person's: the reprocessing that made
-          the automatic resolution possible. AiMark, the same distinct
-          marking TIMELINE's own agent-actor entries already carry. */}
-      <div className="mt-4 flex max-w-[560px] items-start gap-2 text-sm text-muted-foreground">
-        <AiMark size={14} className="mt-0.5 shrink-0" />
-        <span>{DETECTION_LINE.text}</span>
-      </div>
+        {/* Block 2: evidence, one row per resolved exception. */}
+        <div>
+          <p className="text-xs text-muted-foreground">
+            {exceptions.length} exception{exceptions.length === 1 ? "" : "s"}{" "}
+            resolved
+          </p>
+          <div className="mt-2 divide-y divide-border">
+            {exceptions.map((exception) => {
+              const byPerson = exception.resolution?.resolvedBy === "person";
+              return (
+                <div
+                  key={exception.id}
+                  className="flex items-start gap-2 py-2.5"
+                >
+                  {byPerson ? (
+                    <User
+                      className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                      aria-hidden
+                    />
+                  ) : (
+                    <FileCheck
+                      className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                      aria-hidden
+                    />
+                  )}
+                  <p className="text-sm leading-relaxed">
+                    <span className="text-foreground">
+                      {exception.headline}
+                    </span>{" "}
+                    <span className="text-xs text-muted-foreground">
+                      · {exceptionResolutionDetail(exception)}
+                    </span>
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
-      <div className="mt-5 max-w-[560px] space-y-2">
-        {exceptions.map((exception) => (
-          <ExceptionResolutionLine key={exception.id} exception={exception} />
-        ))}
-      </div>
-
-      <div className="mt-6 max-w-[560px] rounded-xl border border-border bg-muted/20 p-4">
-        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          Next step
-        </p>
-        <p className="mt-1.5 text-sm font-semibold text-foreground">
-          {RELEASE_RECORD.nextStep.label}
-        </p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          {RELEASE_RECORD.nextStepOwner.name} ·{" "}
-          {RELEASE_RECORD.nextStepOwner.role}
-        </p>
-      </div>
-
-      <div className="mt-6 max-w-[560px]">
-        <p className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          Timing
-        </p>
-        <div className="space-y-1.5">
-          {RELEASE_RECORD.timingTrail.map((event) => (
-            <div
-              key={event.id}
-              className="flex items-center justify-between gap-3 text-xs"
-            >
-              <span className="text-foreground">{event.label}</span>
-              <span className="shrink-0 text-muted-foreground">
-                {timelineEntryTime(event.when)}
-              </span>
+        {/* Block 3: next step, the one actionable item. */}
+        <div className="border-t border-border pt-5">
+          <p className="text-xs text-muted-foreground">Next step</p>
+          <div className="mt-2 flex items-center gap-3">
+            <Avatar className="size-9 shrink-0">
+              <AvatarFallback className="bg-accent text-sm font-medium text-accent-foreground">
+                {initialsOf(RELEASE_RECORD.nextStepOwner.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate text-base font-medium text-foreground">
+                {RELEASE_RECORD.nextStep.label}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {RELEASE_RECORD.nextStepOwner.name} ·{" "}
+                {RELEASE_RECORD.nextStepOwner.role}
+              </p>
             </div>
-          ))}
+          </div>
         </div>
       </div>
-
-      <p className="mt-6 max-w-[560px] text-sm text-muted-foreground">
-        {RELEASE_RECORD.closingStatement}
-      </p>
     </div>
   );
 }
@@ -1387,15 +1358,6 @@ function RightPanel({
             </button>
           ))}
         </div>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={onToggle}
-          aria-label="Close activity panel"
-          className="mx-1 shrink-0"
-        >
-          <PanelRightClose className="size-4" />
-        </Button>
       </div>
       <div className="flex flex-1 flex-col overflow-hidden">
         {tab === "activity" && (
@@ -1432,12 +1394,6 @@ interface WorkbenchDetailProps {
   leftPanel: LeftPanelState;
   onLeftPanelRailClick: (content: LeftPanelContent) => void;
   onLeftPanelCollapse: () => void;
-  /** The programmatic entry point (prompt 32, item 3): unconditionally
-   * opens the panel to the assistant, distinct from the rail's own toggle
-   * behaviour (`onLeftPanelRailClick`), which collapses when the target is
-   * already active. An action that needs the assistant wants it open, not
-   * toggled, even if it happened to already be open on the assistant. */
-  onOpenAssistant: () => void;
   selectedQueueSegment: WorkbenchStatus | "all";
   onSelectQueueSegment: (segment: WorkbenchStatus | "all") => void;
   /** The right activity rail's own collapse state (prompt 40), held in
@@ -1460,7 +1416,6 @@ export function WorkbenchDetail({
   leftPanel,
   onLeftPanelRailClick,
   onLeftPanelCollapse,
-  onOpenAssistant,
   selectedQueueSegment,
   onSelectQueueSegment,
   rightPanelOpen,
@@ -1572,22 +1527,30 @@ export function WorkbenchDetail({
   }
 
   return (
-    <div className="flex h-full min-h-0">
-      <WorkbenchLeftPanel
-        activeId={id}
-        onSelect={onSelect}
-        onBack={onBack}
-        panel={leftPanel}
-        onRailClick={onLeftPanelRailClick}
-        onCollapse={onLeftPanelCollapse}
-        selectedSegment={selectedQueueSegment}
-        onSelectSegment={onSelectQueueSegment}
-        decisions={decisions}
-        exceptionOverrides={exceptionOverrides}
-      />
+    // Mounted here, not inside `WorkbenchLeftPanel` (prompt 46, moved up
+    // from there): the evidence chip lives in the centre pane below, a
+    // sibling of the left panel, and posting into the same thread the
+    // panel renders means both need the same provider instance. Keyed to
+    // `id` for clarity, though `WorkbenchDetail` itself already remounts
+    // per request (`key={openId}`, one level up in Workbench.tsx), so a
+    // request change resets this regardless.
+    <AssistantThreadProvider key={id}>
+      <div className="flex h-full min-h-0">
+        <WorkbenchLeftPanel
+          activeId={id}
+          onSelect={onSelect}
+          onBack={onBack}
+          panel={leftPanel}
+          onRailClick={onLeftPanelRailClick}
+          onCollapse={onLeftPanelCollapse}
+          selectedSegment={selectedQueueSegment}
+          onSelectSegment={onSelectQueueSegment}
+          decisions={decisions}
+          exceptionOverrides={exceptionOverrides}
+        />
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {/* Header, the Apollo Vertex PageHeader (see the report): id primary,
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          {/* Header, the Apollo Vertex PageHeader (see the report): id primary,
             request title secondary, matching the approver's own header
             (DecisionWindow.tsx). Canonical item order (prompt 31): the
             fields this surface has, in the shared order, with "Requested
@@ -1602,69 +1565,69 @@ export function WorkbenchDetail({
             would duplicate it. The rule (see DecisionWindow.tsx's own
             header comment): a header gets a back control only when no
             sibling pane already provides that same path back. */}
-        <PageHeader
-          bordered
-          className="shrink-0 px-6 sm:px-6 lg:px-6 @3xl:!grid-cols-[auto_1fr_auto] @3xl:gap-1"
-        >
-          <PageHeaderNav>
-            <PageHeaderTitleGroup className="min-w-[160px] max-w-[160px]">
-              <PageHeaderTitle>{detail.id}</PageHeaderTitle>
-              <TruncatedSubtitle text={detail.request} />
-            </PageHeaderTitleGroup>
-          </PageHeaderNav>
+          <PageHeader
+            bordered
+            className="shrink-0 px-6 sm:px-6 lg:px-6 @3xl:!grid-cols-[auto_1fr_auto] @3xl:gap-1"
+          >
+            <PageHeaderNav>
+              <PageHeaderTitleGroup className="min-w-[160px] max-w-[160px]">
+                <PageHeaderTitle>{detail.id}</PageHeaderTitle>
+                <TruncatedSubtitle text={detail.request} />
+              </PageHeaderTitleGroup>
+            </PageHeaderNav>
 
-          <PageHeaderContent className="@3xl:justify-between @3xl:gap-0.5">
-            {isUrgent && (
-              <Badge
-                status="error"
-                variant="secondary"
-                className="shrink-0 gap-1 rounded-[4px]"
-              >
-                <TriangleAlert className="size-3" aria-hidden />
-                Urgent
-              </Badge>
-            )}
-            <PageHeaderField className="shrink-0">
-              {/* "Requested by", not "Requester": one label per field across
+            <PageHeaderContent className="@3xl:justify-between @3xl:gap-0.5">
+              {isUrgent && (
+                <Badge
+                  status="error"
+                  variant="secondary"
+                  className="shrink-0 gap-1 rounded-[4px]"
+                >
+                  <TriangleAlert className="size-3" aria-hidden />
+                  Urgent
+                </Badge>
+              )}
+              <PageHeaderField className="shrink-0">
+                {/* "Requested by", not "Requester": one label per field across
                   both surfaces (prompt 31), matching the approver's own
                   header (DecisionWindow.tsx), which already used this
                   label. */}
-              <PageHeaderFieldLabel>Requested by</PageHeaderFieldLabel>
-              <PageHeaderFieldValue className="overflow-visible">
-                {detail.requester}
-              </PageHeaderFieldValue>
-            </PageHeaderField>
-            <PageHeaderField className="shrink-0">
-              <PageHeaderFieldLabel>Value</PageHeaderFieldLabel>
-              <PageHeaderFieldValue className="overflow-visible">
-                {detail.value}
-              </PageHeaderFieldValue>
-            </PageHeaderField>
-            <PageHeaderField className="shrink-0">
-              <PageHeaderFieldLabel>Need by</PageHeaderFieldLabel>
-              <PageHeaderFieldValue className="overflow-visible">
-                {needByDate}
-              </PageHeaderFieldValue>
-              {needByDriver != null && (
-                <p className="truncate text-[11px] text-muted-foreground">
-                  {needByDriver}
-                </p>
-              )}
-            </PageHeaderField>
-            <PageHeaderField className="shrink-0">
-              {/* One form of the fact, not two (prompt 31): an avatar next
+                <PageHeaderFieldLabel>Requested by</PageHeaderFieldLabel>
+                <PageHeaderFieldValue className="overflow-visible">
+                  {detail.requester}
+                </PageHeaderFieldValue>
+              </PageHeaderField>
+              <PageHeaderField className="shrink-0">
+                <PageHeaderFieldLabel>Value</PageHeaderFieldLabel>
+                <PageHeaderFieldValue className="overflow-visible">
+                  {detail.value}
+                </PageHeaderFieldValue>
+              </PageHeaderField>
+              <PageHeaderField className="shrink-0">
+                <PageHeaderFieldLabel>Need by</PageHeaderFieldLabel>
+                <PageHeaderFieldValue className="overflow-visible">
+                  {needByDate}
+                </PageHeaderFieldValue>
+                {needByDriver != null && (
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {needByDriver}
+                  </p>
+                )}
+              </PageHeaderField>
+              <PageHeaderField className="shrink-0">
+                {/* One form of the fact, not two (prompt 31): an avatar next
                   to the literal word "You" said "assigned to the current
                   user" twice. Plain text instead, the same field
                   WorkbenchList.tsx's own Assignee column already renders
                   (`row.assignee`): "You" for a self-assigned row, a real
                   name (e.g. "Dana Lopez") otherwise, so this reads
                   correctly regardless of who the row belongs to. */}
-              <PageHeaderFieldLabel>Assigned to</PageHeaderFieldLabel>
-              <PageHeaderFieldValue className="overflow-visible">
-                {assigneeText}
-              </PageHeaderFieldValue>
-            </PageHeaderField>
-            {/* The last field in the row (prompt 34): unlike the others, this
+                <PageHeaderFieldLabel>Assigned to</PageHeaderFieldLabel>
+                <PageHeaderFieldValue className="overflow-visible">
+                  {assigneeText}
+                </PageHeaderFieldValue>
+              </PageHeaderField>
+              {/* The last field in the row (prompt 34): unlike the others, this
                 one is allowed to shrink and its badge to ellipsis internally
                 (min-w-0/shrink override the badge's own shrink-0), so a tight
                 container compresses this field instead of the row pushing
@@ -1675,24 +1638,24 @@ export function WorkbenchDetail({
                 action button. Nested truncate span for the same reason as
                 the PH-37 button below: text-overflow doesn't reliably apply
                 to a flex container's own direct text child. */}
-            <PageHeaderField className="min-w-0 shrink">
-              <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
-              <PageHeaderFieldValue>
-                <Badge
-                  status={STATUS_BADGE[status]}
-                  variant="secondary"
-                  className="min-w-0 max-w-full shrink"
-                >
-                  <span className="truncate">
-                    {(decision && detail.resolvedTitles?.[decision]) ??
-                      STATUS_LABEL[status]}
-                  </span>
-                </Badge>
-              </PageHeaderFieldValue>
-            </PageHeaderField>
-          </PageHeaderContent>
+              <PageHeaderField className="min-w-0 shrink">
+                <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
+                <PageHeaderFieldValue>
+                  <Badge
+                    status={STATUS_BADGE[status]}
+                    variant="secondary"
+                    className="min-w-0 max-w-full shrink"
+                  >
+                    <span className="truncate">
+                      {(decision && detail.resolvedTitles?.[decision]) ??
+                        STATUS_LABEL[status]}
+                    </span>
+                  </Badge>
+                </PageHeaderFieldValue>
+              </PageHeaderField>
+            </PageHeaderContent>
 
-          {/* Record level disposition (prompt 31): the header carries the
+            {/* Record level disposition (prompt 31): the header carries the
               action on the whole request, the pane carries the decision on
               whichever exception is active. Which disposition Sam has here
               (hold, reassign, or something else) is unresolved content, so
@@ -1708,154 +1671,154 @@ export function WorkbenchDetail({
               and the tooltip on it carries the full placeholder text
               without truncation, reusing the same affordance pattern
               section 2 established for the metrics. */}
-          <PageHeaderActions>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon-sm"
-                  aria-label="Record level disposition"
-                  onClick={handleRecordDisposition}
-                >
-                  <MoreHorizontal className="size-4" aria-hidden />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {ph("PH-37", "record disposition")}
-              </TooltipContent>
-            </Tooltip>
-          </PageHeaderActions>
-        </PageHeader>
+            <PageHeaderActions>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="icon-sm"
+                    aria-label="Record level disposition"
+                    onClick={handleRecordDisposition}
+                  >
+                    <MoreHorizontal className="size-4" aria-hidden />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {ph("PH-37", "record disposition")}
+                </TooltipContent>
+              </Tooltip>
+            </PageHeaderActions>
+          </PageHeader>
 
-        {/* Center / right split */}
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-            {/* Quote|Contract / Comms toggle */}
-            <div className="flex shrink-0 gap-1 border-b border-border px-4 pt-2">
-              {(["finding", "comms"] as const).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setCenterView(v)}
-                  className={cn(
-                    "px-3 py-2 text-xs font-medium transition-colors",
-                    centerView === v
-                      ? "-mb-px border-b-2 border-foreground text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {v === "finding" ? (
-                    FORK_LABEL[detail.type]
-                  ) : (
-                    <>
-                      Comms
-                      {notes.length > 0 && (
-                        <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">
-                          {notes.length}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </button>
-              ))}
-            </div>
+          {/* Center / right split */}
+          <div className="flex min-h-0 flex-1 overflow-hidden">
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+              {/* Quote|Contract / Comms toggle */}
+              <div className="flex shrink-0 gap-1 border-b border-border px-4 pt-2">
+                {(["finding", "comms"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setCenterView(v)}
+                    className={cn(
+                      "px-3 py-2 text-xs font-medium transition-colors",
+                      centerView === v
+                        ? "-mb-px border-b-2 border-foreground text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {v === "finding" ? (
+                      FORK_LABEL[detail.type]
+                    ) : (
+                      <>
+                        Comms
+                        {notes.length > 0 && (
+                          <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">
+                            {notes.length}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </button>
+                ))}
+              </div>
 
-            {centerView === "finding" ? (
-              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                {/* Independent of whichever exception is active below: a
+              {centerView === "finding" ? (
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  {/* Independent of whichever exception is active below: a
                     waiting exception surfaces here regardless of order (see
                     the report), and never shares space with the active
                     exception's own content. */}
-                {exceptionSummary.waitingCount > 0 && (
-                  <div className="mx-4 mt-4 flex shrink-0 flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground sm:mx-6 lg:mx-8">
-                    <Clock className="size-3.5 shrink-0" aria-hidden />
-                    Waiting on {exceptionSummary.waitingOn}
-                    {waitingException && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="ml-auto"
-                        onClick={handleSupplierReply}
-                      >
-                        Simulate supplier reply
-                      </Button>
-                    )}
-                  </div>
-                )}
-                {openExceptionList.length > 0 ? (
-                  <ExceptionSurface
-                    openList={openExceptionList}
-                    onAccept={handleAcceptException}
-                    onOpenDraft={handleOpenDraft}
-                    onOpenAssistant={onOpenAssistant}
-                  />
-                ) : autoReleased ? (
-                  <AutoReleaseCompletion exceptions={exceptions} />
-                ) : exceptionSummary.waitingCount === 0 ? (
-                  <Finding
-                    detail={detail}
-                    decision={decision}
-                    onResolve={(d) => onDecide(id, d)}
-                  />
-                ) : null}
-              </div>
-            ) : notes.length > 0 ? (
-              <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-6 py-6">
-                {notes.map((n) => {
-                  const requesterName = detail.requester.split(" · ")[0];
-                  const buyerName = getPerson("sam-rivera").name;
-                  const role =
-                    n.author === requesterName
-                      ? "requester"
-                      : n.author === buyerName
-                        ? "you"
-                        : "supplier";
-                  return (
-                    <div
-                      key={n.id}
-                      className="max-w-[80%] rounded-xl border bg-muted/40 px-3.5 py-2.5"
-                    >
-                      <p className="text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">
-                          {n.author}
-                        </span>{" "}
-                        · {role} · {n.time}
-                      </p>
-                      <p className="mt-1 text-sm text-foreground">{n.text}</p>
+                  {exceptionSummary.waitingCount > 0 && (
+                    <div className="mx-4 mt-4 flex shrink-0 flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground sm:mx-6 lg:mx-8">
+                      <Clock className="size-3.5 shrink-0" aria-hidden />
+                      Waiting on {exceptionSummary.waitingOn}
+                      {waitingException && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="ml-auto"
+                          onClick={handleSupplierReply}
+                        >
+                          Simulate supplier reply
+                        </Button>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="flex flex-1 flex-col items-center justify-center gap-2 px-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No messages yet.
-                </p>
-                <p className="max-w-xs text-xs text-muted-foreground">
-                  Start a thread with the requester or the vendor. Replies land
-                  here.
-                </p>
-              </div>
-            )}
+                  )}
+                  {openExceptionList.length > 0 ? (
+                    <ExceptionSurface
+                      openList={openExceptionList}
+                      onAccept={handleAcceptException}
+                      onOpenDraft={handleOpenDraft}
+                    />
+                  ) : autoReleased ? (
+                    <AutoReleaseCompletion exceptions={exceptions} />
+                  ) : exceptionSummary.waitingCount === 0 ? (
+                    <Finding
+                      detail={detail}
+                      decision={decision}
+                      onResolve={(d) => onDecide(id, d)}
+                    />
+                  ) : null}
+                </div>
+              ) : notes.length > 0 ? (
+                <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-6 py-6">
+                  {notes.map((n) => {
+                    const requesterName = detail.requester.split(" · ")[0];
+                    const buyerName = getPerson("sam-rivera").name;
+                    const role =
+                      n.author === requesterName
+                        ? "requester"
+                        : n.author === buyerName
+                          ? "you"
+                          : "supplier";
+                    return (
+                      <div
+                        key={n.id}
+                        className="max-w-[80%] rounded-xl border bg-muted/40 px-3.5 py-2.5"
+                      >
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-medium text-foreground">
+                            {n.author}
+                          </span>{" "}
+                          · {role} · {n.time}
+                        </p>
+                        <p className="mt-1 text-sm text-foreground">{n.text}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-1 flex-col items-center justify-center gap-2 px-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No messages yet.
+                  </p>
+                  <p className="max-w-xs text-xs text-muted-foreground">
+                    Start a thread with the requester or the vendor. Replies
+                    land here.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <RightPanel
+              detail={detail}
+              decision={decision}
+              activity={visibleActivity}
+              open={rightPanelOpen}
+              onToggle={onToggleRightPanel}
+            />
           </div>
-
-          <RightPanel
-            detail={detail}
-            decision={decision}
-            activity={visibleActivity}
-            open={rightPanelOpen}
-            onToggle={onToggleRightPanel}
-          />
         </div>
-      </div>
 
-      {draftFor && (
-        <CorrectionDraftModal
-          draft={draftFor.draft}
-          onSend={handleSendDraft}
-          onDiscard={() => setDraftFor(null)}
-        />
-      )}
-    </div>
+        {draftFor && (
+          <CorrectionDraftModal
+            draft={draftFor.draft}
+            onSend={handleSendDraft}
+            onDiscard={() => setDraftFor(null)}
+          />
+        )}
+      </div>
+    </AssistantThreadProvider>
   );
 }

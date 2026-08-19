@@ -7,6 +7,7 @@ import {
   ANNUAL_VALUE,
   DOCUMENTS,
   type Exception,
+  formatAnchoredTime,
   getPerson,
   IDENTITY,
   ph,
@@ -181,7 +182,7 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     request: "5 standing desks for the Berlin office",
     requester: "Lena Fischer",
     value: "€2,450",
-    needBy: "Jun 18",
+    needBy: "Jun 18, 2026",
     type: "quote",
     status: "awaiting",
     assignee: "You",
@@ -192,7 +193,7 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     request: "12 mobile lines for Denver",
     requester: "Marcus Webb",
     value: "$660/mo",
-    needBy: "Next cycle",
+    needBy: "Aug 1, 2026",
     type: "contract",
     status: "awaiting",
     assignee: "You",
@@ -203,7 +204,7 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     request: "Q3 rebrand · 2 contract designers",
     requester: "Marcus Webb",
     value: "~$58,000",
-    needBy: "Q3 start",
+    needBy: "Jul 1, 2026",
     type: "sourcing",
     status: "awaiting",
     assignee: "You",
@@ -214,7 +215,11 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     request: IDENTITY.shortTitle,
     requester: getPerson(IDENTITY.requester).name,
     value: `${formatUSD(ANNUAL_VALUE)}/yr`,
-    needBy: IDENTITY.neededFrom,
+    // Plain date for the list table's own column (Chunk C2 follow-up):
+    // IDENTITY.neededFrom carries the fuller "Sep 1 · legacy tool retires
+    // Oct 1" context, right for the decision header and intake steps,
+    // but this column holds a date only, matching every other row.
+    needBy: "Sep 1, 2026",
     type: "contract",
     status: "awaiting",
     assignee: "You",
@@ -225,7 +230,7 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     request: "Standing desk converters ×8",
     requester: "Priya Nair",
     value: "$1,920",
-    needBy: "Jun 19",
+    needBy: "Jun 19, 2026",
     type: "quote",
     status: "awaiting",
     assignee: "You",
@@ -236,7 +241,7 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     request: "Annual Figma Enterprise renewal",
     requester: "Tom Alvarez",
     value: "$54,000",
-    needBy: "Jun 30",
+    needBy: "Jun 30, 2026",
     type: "contract",
     status: "awaiting",
     assignee: "Dana Lopez",
@@ -247,7 +252,7 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     request: "Catering for the design offsite",
     requester: "Sofia Marin",
     value: "$2,100",
-    needBy: "Jun 17",
+    needBy: "Jun 17, 2026",
     type: "quote",
     status: "countered",
     assignee: "You",
@@ -258,7 +263,7 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     request: "Conference room AV upgrade",
     requester: "Will Chen",
     value: "$12,800",
-    needBy: "Jul 2",
+    needBy: "Jul 2, 2026",
     type: "quote",
     status: "approved",
     assignee: "You",
@@ -705,12 +710,13 @@ function timelineEntryIndicator(
   return "user";
 }
 
+// Chunk C2: shares the one anchored-time formatter every TIMELINE consumer
+// now reads through (see data/placeholders.ts) — this had the same
+// local-vs-UTC mismatch requests/data.ts's own validationTime did before
+// this chunk, independently, since the two files never shared a formatter.
 export function timelineEntryTime(when: Date | string): string {
   if (typeof when === "string") return when;
-  return when.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  return formatAnchoredTime(when);
 }
 
 // Baseline events already true by the time REQ-10482 reaches the buyer:

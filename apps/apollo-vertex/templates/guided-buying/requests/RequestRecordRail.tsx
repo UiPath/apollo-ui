@@ -1,19 +1,71 @@
 "use client";
 
-import { ChevronDown, Link as LinkIcon } from "lucide-react";
+// oxlint-disable max-lines -- the request rail: items/total/budget,
+// supplier/logistics, the order form attachment, and linked records, one
+// component so the highlight/ref plumbing (registerRef, highlightField)
+// stays in one place rather than split across files (Chunk C2 growth).
+
+import { ChevronDown, FileText, Link as LinkIcon } from "lucide-react";
 import {
   forwardRef,
   type ReactNode,
+  type Ref,
   useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import type { DecisionDetail, DecisionStatus, RailFieldKey } from "./data";
+import {
+  ATTACHMENT_STATE_LABEL,
+  type DecisionDetail,
+  type DecisionStatus,
+  type RailFieldKey,
+} from "./data";
 import { useRequests } from "./requests-context";
+import { TruncatedSubtitle } from "./TruncatedSubtitle";
+
+/**
+ * The budget-impact card: a label, a percentage against the "committed"/
+ * "after approval" split, a progress bar, and the remaining-pool detail
+ * line. Extracted from the rail's own "Total" field (Chunk C1) so a second
+ * caller (the P2-only budget impact module on REQ-10482's decision page,
+ * in the main column rather than the rail) can render the identical card
+ * instead of a second hand-built one. `className`/`ref` are the rail's own
+ * hook for its highlight-flash behaviour; the main-column caller passes
+ * neither.
+ */
+export function BudgetImpactCallout({
+  budget,
+  approved,
+  className,
+  ref,
+}: {
+  budget: DecisionDetail["packet"]["budget"];
+  approved: boolean;
+  className?: string;
+  ref?: Ref<HTMLDivElement>;
+}) {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "space-y-2 rounded-lg border border-border bg-muted/30 p-3 font-normal",
+        className,
+      )}
+    >
+      <p className="text-xs font-medium text-foreground">{budget.label}</p>
+      <p className="text-xs text-foreground">
+        {budget.pct} {approved ? "committed" : "after approval"}
+      </p>
+      <Progress value={Number.parseFloat(budget.pct)} className="h-1.5" />
+      <p className="text-xs text-muted-foreground">{budget.detail}</p>
+    </div>
+  );
+}
 
 export interface RequestRecordRailHandle {
   /** Flashes the field. Hovering a mark calls this with no `scroll` — the
@@ -26,6 +78,13 @@ interface RequestRecordRailProps {
   detail: DecisionDetail;
   status: DecisionStatus;
   onOpenPo: () => void;
+  /** Opens the order form preview overlay (Chunk C2: previously a no-op —
+   * the C1 cleanup investigated reusing WorkbenchDetail.tsx's own "Source"
+   * tab, but it's private to that file, coupled to its own local Detail
+   * type, and lives on the buyer's surface, not the approver's, with no
+   * deep link to reach it. DecisionWindow.tsx now owns a real preview
+   * overlay and passes this the same way it already passes onOpenPo). */
+  onPreviewAttachment: () => void;
 }
 
 function FieldRow({
@@ -36,6 +95,9 @@ function FieldRow({
   children,
 }: {
   fieldKey: RailFieldKey;
+  /** Chunk C2: an empty string renders no label at all — the "Total" slot
+   * when a recurring commitment replaces it with the budget callout alone
+   * (see the report). Every other caller still passes a real label. */
   label: string;
   highlighted: boolean;
   registerRef: (key: RailFieldKey, el: HTMLDivElement | null) => void;
@@ -49,8 +111,14 @@ function FieldRow({
         highlighted && "bg-primary/10",
       )}
     >
-      <p className="text-xs tracking-wide text-muted-foreground">{label}</p>
-      <div className="mt-1 text-sm font-medium text-foreground">{children}</div>
+      {label && (
+        <p className="text-xs tracking-wide text-muted-foreground">{label}</p>
+      )}
+      <div
+        className={cn("text-sm font-medium text-foreground", label && "mt-1")}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -139,7 +207,10 @@ function ItemsSummary({ items }: { items: DecisionDetail["lineItems"] }) {
 export const RequestRecordRail = forwardRef<
   RequestRecordRailHandle,
   RequestRecordRailProps
->(function RequestRecordRail({ detail, status, onOpenPo }, ref) {
+>(function RequestRecordRail(
+  { detail, status, onOpenPo, onPreviewAttachment },
+  ref,
+) {
   const fieldRefs = useRef<Partial<Record<RailFieldKey, HTMLDivElement>>>({});
   const [highlighted, setHighlighted] = useState<RailFieldKey | null>(null);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -170,7 +241,6 @@ export const RequestRecordRail = forwardRef<
     [],
   );
 
-  const [shipLocation, shipAddress] = detail.shipTo.split(" · ");
   const [department, costCode] = detail.costCenter.split(" · ");
   const approved = status === "approved";
 
@@ -205,11 +275,23 @@ export const RequestRecordRail = forwardRef<
 
           <FieldRow
             fieldKey="total"
-            label="Total"
+            // Chunk C1 cleanup suppressed the figure when a recurring
+            // commitment is present (the two fields were showing the
+            // identical amount a moment apart), but left this label
+            // pointing at nothing. Chunk C2: the label goes with its
+            // value — no "Total" text renders unless there's a total
+            // beneath it. `detail.total` itself stays on the interface
+            // unchanged (REQ-2052's one-time purchase still reads it
+            // here); only this rendering steps aside for a request whose
+            // real total is the recurring line below. The budget callout
+            // still renders in this same spot either way, unmoved and
+            // unrestyled — the rail card is P1 and out of scope for this
+            // chunk's own budget work (see the report).
+            label={detail.recurringCommitment ? "" : "Total"}
             highlighted={highlighted === "total"}
             registerRef={registerRef}
           >
-            {detail.total}
+            {!detail.recurringCommitment && detail.total}
             {/* Budget as a callout on the total, not its own rail section —
                 the percentage is meaningless without the price it's a
                 percentage of, so it sits directly beneath the value it
@@ -218,29 +300,37 @@ export const RequestRecordRail = forwardRef<
                 the AI summary's budget mark targets this specifically, not
                 the total as a whole. Accent role at any value — no
                 threshold-based coloring exists yet. */}
-            <div
+            <BudgetImpactCallout
               ref={(el) => registerRef("budget", el)}
+              budget={detail.packet.budget}
+              approved={approved}
               className={cn(
-                "mt-2 space-y-2 rounded-lg border border-border bg-muted/30 p-3 font-normal transition-colors duration-500",
+                "mt-2 transition-colors duration-500",
                 highlighted === "budget" && "bg-primary/10",
               )}
-            >
-              <p className="text-xs font-medium text-foreground">
-                {detail.packet.budget.label}
-              </p>
-              <p className="text-xs text-foreground">
-                {detail.packet.budget.pct}{" "}
-                {approved ? "committed" : "after approval"}
-              </p>
-              <Progress
-                value={Number.parseFloat(detail.packet.budget.pct)}
-                className="h-1.5"
-              />
-              <p className="text-xs text-muted-foreground">
-                {detail.packet.budget.detail}
-              </p>
-            </div>
+            />
           </FieldRow>
+
+          {/* A recurring line's own related figures (Chunk C1): annual
+              commitment, total contract value, term, grouped the same way
+              the budget callout groups its own related figures under the
+              value they modify, rather than three separate rail fields the
+              approver would have to mentally recombine. Absent for a
+              one-time purchase like REQ-2052's own laptops. */}
+          {detail.recurringCommitment && (
+            <FieldRow
+              fieldKey="commitment"
+              label="Recurring commitment"
+              highlighted={highlighted === "commitment"}
+              registerRef={registerRef}
+            >
+              {detail.recurringCommitment.annual}
+              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs font-normal text-muted-foreground">
+                <span>{detail.recurringCommitment.term} term</span>
+                <span>{detail.recurringCommitment.total} total</span>
+              </div>
+            </FieldRow>
+          )}
         </div>
 
         <div className="h-px bg-border" />
@@ -255,37 +345,48 @@ export const RequestRecordRail = forwardRef<
             {detail.supplier}
           </FieldRow>
 
-          <FieldRow
-            fieldKey="shipTo"
-            label="Ship to"
-            highlighted={highlighted === "shipTo"}
-            registerRef={registerRef}
-          >
-            {shipLocation}
-            {shipAddress != null && (
-              <p className="mt-0.5 text-xs font-normal text-muted-foreground">
-                {shipAddress}
-              </p>
-            )}
-            {shipException && (
-              <p className="mt-0.5 text-xs font-normal text-muted-foreground">
-                Ships here if the exception is declined.
-              </p>
-            )}
-            {shipException && (
-              <div className="mt-2 space-y-1.5 rounded-none border-l-2 border-warning py-1 pl-3 font-normal">
-                <Badge variant="secondary" status="warning">
-                  Exception requested
-                </Badge>
-                <p className="text-xs font-medium text-foreground">
-                  {shipException.requestedValue}
-                </p>
-                <p className="text-xs font-normal text-muted-foreground">
-                  {`${shipException.ownerName} decides. Visible to ${detail.approver.split(" · ")[0]} and procurement.`}
-                </p>
-              </div>
-            )}
-          </FieldRow>
+          {/* Absent for a request with no physical fulfilment (Chunk C1
+              cleanup) — shipTo is optional on DecisionDetail now, so this
+              field simply doesn't render rather than showing an invented
+              or borrowed address. Same conditional-render shape as
+              RequestWindow.tsx's own already-optional shipTo field. */}
+          {detail.shipTo != null &&
+            (() => {
+              const [shipLocation, shipAddress] = detail.shipTo.split(" · ");
+              return (
+                <FieldRow
+                  fieldKey="shipTo"
+                  label="Ship to"
+                  highlighted={highlighted === "shipTo"}
+                  registerRef={registerRef}
+                >
+                  {shipLocation}
+                  {shipAddress != null && (
+                    <p className="mt-0.5 text-xs font-normal text-muted-foreground">
+                      {shipAddress}
+                    </p>
+                  )}
+                  {shipException && (
+                    <p className="mt-0.5 text-xs font-normal text-muted-foreground">
+                      Ships here if the exception is declined.
+                    </p>
+                  )}
+                  {shipException && (
+                    <div className="mt-2 space-y-1.5 rounded-none border-l-2 border-warning py-1 pl-3 font-normal">
+                      <Badge variant="secondary" status="warning">
+                        Exception requested
+                      </Badge>
+                      <p className="text-xs font-medium text-foreground">
+                        {shipException.requestedValue}
+                      </p>
+                      <p className="text-xs font-normal text-muted-foreground">
+                        {`${shipException.ownerName} decides. Visible to ${detail.approver.split(" · ")[0]} and procurement.`}
+                      </p>
+                    </div>
+                  )}
+                </FieldRow>
+              );
+            })()}
 
           <FieldRow
             fieldKey="chargedTo"
@@ -300,6 +401,57 @@ export const RequestRecordRail = forwardRef<
               </p>
             )}
           </FieldRow>
+
+          {/* The order form on file (Chunk C1): filename, state, and the
+              governing agreement it's under, with a preview affordance.
+              REQ-2052 has no document in its rail, so this is absent
+              there. Preview is a no-op (see the report): no PDF viewer
+              exists on this surface to open it into. */}
+          {detail.attachment && (
+            <FieldRow
+              fieldKey="attachment"
+              label="Order form"
+              highlighted={highlighted === "attachment"}
+              registerRef={registerRef}
+            >
+              <div className="flex items-start gap-2">
+                <FileText
+                  className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                  aria-hidden
+                />
+                <div className="min-w-0">
+                  {/* TruncatedSubtitle (Chunk C1 cleanup), not a bare
+                      truncated <p>: the filename was clipping with no way
+                      to read the rest. className restores this field's own
+                      value weight instead of the header-subtitle styling
+                      TruncatedSubtitle defaults to. */}
+                  <TruncatedSubtitle
+                    text={detail.attachment.filename}
+                    className="text-sm font-medium text-foreground"
+                  />
+                  <p className="mt-0.5 text-xs font-normal text-muted-foreground">
+                    {ATTACHMENT_STATE_LABEL[detail.attachment.state]}
+                    {detail.contractReference &&
+                      ` · ${detail.contractReference}`}
+                  </p>
+                  {detail.attachmentStateNote && (
+                    <p className="mt-0.5 text-xs font-normal text-muted-foreground">
+                      {detail.attachmentStateNote}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2 font-normal"
+                onClick={onPreviewAttachment}
+              >
+                Preview
+              </Button>
+            </FieldRow>
+          )}
         </div>
 
         <div className="h-px bg-border" />
@@ -318,18 +470,32 @@ export const RequestRecordRail = forwardRef<
               </span>
               {/* The PO doesn't exist until approval creates it — plain and
                   unlinked until then, a real linked record once it does. */}
-              {approved ? (
-                <button
-                  type="button"
-                  onClick={onOpenPo}
-                  className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/8 px-2.5 py-0.5 text-[10.5px] font-semibold text-primary"
-                >
+              {detail.poNumber != null &&
+                (approved ? (
+                  <button
+                    type="button"
+                    onClick={onOpenPo}
+                    className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/8 px-2.5 py-0.5 text-[10.5px] font-semibold text-primary"
+                  >
+                    <LinkIcon className="size-3 shrink-0" aria-hidden />
+                    {detail.poNumber}
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-[10.5px] text-muted-foreground">
+                    PO · created on approval
+                  </span>
+                ))}
+              {/* Chunk C2: a record whose PO already exists independent of
+                  this decision (REQ-10482's own, created by PR conversion,
+                  not by Dana's approval — see linkedPoId's own doc comment)
+                  states the real id plainly, not gated on `approved` the
+                  way the future-tense badge above is, and not clickable:
+                  there's no PO_DETAILS entry for it to open, so a button
+                  here would only ever land on "Purchase order not found." */}
+              {detail.linkedPoId != null && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-0.5 text-[10.5px] text-muted-foreground">
                   <LinkIcon className="size-3 shrink-0" aria-hidden />
-                  {detail.poNumber}
-                </button>
-              ) : (
-                <span className="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-[10.5px] text-muted-foreground">
-                  PO · created on approval
+                  {detail.linkedPoId}
                 </span>
               )}
             </div>

@@ -46,12 +46,36 @@ export const PLACEHOLDERS = {
     "Workbench header record level disposition (e.g. hold or reassign), unwired no-op pending a ruling on its content",
   "PH-38":
     "Workbench queue empty segment copy, pending a ruling on its wording",
-  "PH-39":
-    "REQ-10482 benchmark evidence detail link destination, unwired no-op pending a ruling on its behaviour",
   "PH-40":
     "REQ-10482 share feedback link destination, unwired no-op pending a ruling on its behaviour",
   "PH-41":
     "REQ-10482 Workbench detail agent card label, pending a ruling on its wording",
+  "PH-44":
+    "REQ-10482 comparable deals row label naming it as the current order, wording pending a ruling",
+  "PH-45":
+    "REQ-10482 payment terms check column display label, one per typed check value (deviates, governing, consistent), pending a ruling on wording",
+  "PH-46":
+    "REQ-10482 decision page exceptions-resolved module heading, pending a ruling on its wording",
+  "PH-47":
+    "REQ-10482 decision page evidence drill-through link label, unwired no-op pending a ruling on its behaviour and destination",
+  "PH-48":
+    "REQ-10482 decision page order form attachment state note (e.g. corrected and validated), pending a ruling on its wording",
+  "PH-49":
+    "REQ-10482 budget-remaining detail line wording, shares REQ-2052's own \"$X of $Y remaining\" grammar, which reads as X being what remains rather than what this request draws down; not corrected here since fixing the shared phrasing would also change REQ-2052's own line, pending a ruling",
+  "PH-51":
+    "REQ-10482 decision page pending-state AI summary sentence wording, cleared/closed-by say the same thing twice, the exception count is a bare numeral, and the sentence is purely retrospective rather than orienting Dana toward the decision in front of her, pending a ruling",
+  "PH-52":
+    "REQ-10482 P1 downstream track stage label(s) after Dana's decision, must not name the parallel legal and security review (P2, a later chunk), pending a ruling on wording and count",
+  "PH-53":
+    "REQ-10482 check chip label for the price benchmark check, pending a ruling on wording",
+  "PH-54":
+    "REQ-10482 check chip label for the contract terms check, pending a ruling on wording",
+  "PH-55":
+    "REQ-10482 check chip label for the exceptions cleared check, pending a ruling on wording",
+  "PH-56":
+    "REQ-10482 decision page P2 multi-year commitment module wording, pending a ruling",
+  "PH-57":
+    "REQ-10482 decision page order form preview stub body content, not a real document render, pending a ruling on wording",
 } as const;
 
 export type PlaceholderId = keyof typeof PLACEHOLDERS;
@@ -93,6 +117,53 @@ export const D3_OFFSET_DAYS = 7;
 
 /** D3: the activation date, provisionally D1 + D3_OFFSET_DAYS. */
 export const D3 = new Date(D1.getTime() + D3_OFFSET_DAYS * DAY_MS);
+
+const ANCHORED_MONTHS_SHORT = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/** "MMM D, YYYY" for an anchor-based date (D1/D2/D3, or any TIMELINE
+ * event's own `when`), read in UTC rather than the runtime's local zone
+ * (Chunk C2, "one formatter in one zone"). Every one of these dates is
+ * built with `setUTCHours` (see `atTime` below), so a local-time read
+ * (`getMonth`/`getDate`/`getFullYear`) renders whatever calendar day that
+ * UTC instant happens to fall on wherever the code runs, not the day this
+ * module encodes — on a host west of UTC, D1 (2026-07-24T00:00Z) reads as
+ * Jul 23. This is the one formatter every anchor-based date should render
+ * through, not a local `Date` getter reimplemented per call site (the bug
+ * this chunk exists to fix). Distinct from `requests/data.ts`'s own
+ * `formatDateDisplay`, which stays local-time on purpose: it also formats
+ * a live `new Date()` "today" stamp in the running Buy flow, which must
+ * read as the viewer's own calendar day, not UTC's. */
+export function formatAnchoredDate(date: Date): string {
+  const mmm = ANCHORED_MONTHS_SHORT[date.getUTCMonth()];
+  return `${mmm} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+}
+
+/** "h:mm AM/PM" for an anchor-based time, UTC for the same reason
+ * `formatAnchoredDate` is. The pair of these two functions is the "one
+ * formatter, one zone" this chunk asks for, one home for both, so every
+ * consumer of an anchored date/time reads through the same code instead
+ * of each rebuilding its own (see the report on requests/data.ts and
+ * workbench/data.ts, which independently had the same bug before this). */
+export function formatAnchoredTime(date: Date): string {
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  });
+}
 
 /** An instant on `day` at a given 24h "HH:MM" wall time (UTC, matching
  * TIMELINE_ANCHOR). Used to place time-stamped timeline events on D1/D2

@@ -8,6 +8,10 @@ import {
   useRef,
   useState,
 } from "react";
+import type {
+  StructuredTableColumn,
+  StructuredTableRow,
+} from "../../StructuredTable";
 
 export type ThreadStep = "details" | "choose" | "review" | "done";
 
@@ -17,7 +21,7 @@ export interface DetailField {
   value: string;
   /** Where it came from, e.g. "From your profile" or "Changed by you". */
   source: string;
-  /** True for a low-confidence guess (e.g. Need by with no date given) —
+  /** True for a low-confidence guess (e.g. Need by with no date given),
    * rendered first, in its own warning-toned block instead of the records list. */
   assumed?: boolean;
 }
@@ -29,35 +33,62 @@ export interface ThreadStepEntry {
   time: string;
   summary: string;
   detail: string[];
-  /** Structured field breakdown — currently only the "details" step (Bridge)
+  /** Structured field breakdown, currently only the "details" step (Bridge)
    * provides this; other steps render the plain `detail` bullet list. */
   fields?: DetailField[];
 }
+
+/** Prose, what an assistant message carried before prompt 45: a run of text,
+ * including whatever inline emphasis it already supports. */
+export interface ProseBlock {
+  type: "prose";
+  text: string;
+}
+
+/** Tabular content (prompt 45): a caption, column definitions carrying
+ * their own alignment, and rows, so tabular content (comparable deals,
+ * source terms, stage breakdowns) doesn't render as a run on sentence.
+ * Same shape `StructuredTable` renders, defined once there and reused here
+ * rather than duplicated. */
+export interface TableBlock {
+  type: "table";
+  caption?: string;
+  columns: StructuredTableColumn[];
+  rows: StructuredTableRow[];
+}
+
+/** An assistant message's content: an ordered list of typed blocks rather
+ * than a single string, so a message can carry more than prose without
+ * changing what a message is (prompt 45). A union on `type` admits further
+ * block types later (e.g. a chart) without changing existing consumers,
+ * which only need to add one more case to whatever they switch on and
+ * leave their handling of the others untouched. */
+export type MessageBlock = ProseBlock | TableBlock;
 
 export interface ThreadQaEntry {
   id: string;
   kind: "qa";
   time: string;
   question: string;
-  answer: string;
+  answer: MessageBlock[];
 }
 
-/** A standalone assistant statement — no question, never condensed. Used for
+/** A standalone assistant statement, no question, never condensed. Used for
  * memory writes (e.g. "remembered" preference changes) so they're visible in
  * the thread instead of applying silently. */
 export interface ThreadNoteEntry {
   id: string;
   kind: "note";
   time: string;
-  text: string;
+  text: MessageBlock[];
 }
 
 export type ThreadEntry = ThreadStepEntry | ThreadQaEntry | ThreadNoteEntry;
 
 interface AssistantThreadContextValue {
-  /** Chronological — step entries and Q&A interleaved as they happened. */
+  /** Chronological, step entries and Q&A interleaved as they happened. */
   entries: ThreadEntry[];
-  /** The most recently touched step — its entry renders expanded; earlier
+  /** The most recently touched step, its entry renders expanded; earlier
    * step entries condense to one summary line. */
   currentStep: ThreadStep | null;
   /**
@@ -71,9 +102,13 @@ interface AssistantThreadContextValue {
     detail: string[],
     fields?: DetailField[],
   ) => void;
-  /** Appends a question/answer pair at the end of the thread. */
-  addQaEntry: (question: string, answer: string) => void;
-  /** Appends a standalone assistant note (e.g. a remembered preference change). */
+  /** Appends a question/answer pair at the end of the thread. The answer is
+   * a block list (prompt 46: the benchmark evidence exchange needs prose
+   * and tables, not just prose), or a plain string for callers whose
+   * answer is a single prose block, wrapped as one automatically. */
+  addQaEntry: (question: string, answer: string | MessageBlock[]) => void;
+  /** Appends a standalone assistant note (e.g. a remembered preference
+   * change). Plain text, wrapped as a single prose block. */
   addNoteEntry: (text: string) => void;
 }
 
@@ -133,17 +168,23 @@ export function AssistantThreadProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const addQaEntry = useCallback((question: string, answer: string) => {
-    counter.current += 1;
-    const entry: ThreadQaEntry = {
-      id: `qa-${counter.current}`,
-      kind: "qa",
-      time: timeNow(),
-      question,
-      answer,
-    };
-    setEntries((prev) => [...prev, entry]);
-  }, []);
+  const addQaEntry = useCallback(
+    (question: string, answer: string | MessageBlock[]) => {
+      counter.current += 1;
+      const entry: ThreadQaEntry = {
+        id: `qa-${counter.current}`,
+        kind: "qa",
+        time: timeNow(),
+        question,
+        answer:
+          typeof answer === "string"
+            ? [{ type: "prose", text: answer }]
+            : answer,
+      };
+      setEntries((prev) => [...prev, entry]);
+    },
+    [],
+  );
 
   const addNoteEntry = useCallback((text: string) => {
     counter.current += 1;
@@ -151,7 +192,7 @@ export function AssistantThreadProvider({ children }: { children: ReactNode }) {
       id: `note-${counter.current}`,
       kind: "note",
       time: timeNow(),
-      text,
+      text: [{ type: "prose", text }],
     };
     setEntries((prev) => [...prev, entry]);
   }, []);

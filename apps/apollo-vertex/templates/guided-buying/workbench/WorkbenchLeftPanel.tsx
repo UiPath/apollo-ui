@@ -13,10 +13,10 @@ import {
   PanelLeftClose,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { sidebarSpring } from "@/registry/shell/shell-animations";
-import { AssistantThreadProvider } from "../catalog/v1/assistant-thread-context";
 import { ShelfDock } from "../catalog/v1/ShelfDock";
 import { getExceptionSummary, ph } from "../data";
 import type { Exception } from "../data/exceptions";
@@ -110,17 +110,18 @@ function QueueItem({
       onClick={() => onSelect(id)}
       className="group w-full text-left"
     >
-      <div
+      <Card
+        variant="glass"
         className={cn(
-          "mx-4 rounded-md border bg-card px-3.5 py-3 transition-colors",
+          "mx-4 gap-0 px-3.5 py-3 transition-colors",
           isActive
-            ? "border-[1.5px] border-primary"
-            : "border-border group-hover:bg-muted/60",
+            ? "border-primary"
+            : "group-hover:bg-white/70 dark:group-hover:bg-white/[0.08]",
         )}
       >
-        <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-[13px] font-semibold text-foreground">
-            {row.requester}
+        <div className="flex items-center justify-between gap-6">
+          <span className="min-w-0 truncate text-[13px] font-semibold text-foreground">
+            {row.request}
           </span>
           <span className="shrink-0 text-xs font-semibold text-muted-foreground">
             {row.value}
@@ -142,7 +143,7 @@ function QueueItem({
             {row.id}
           </span>
         </div>
-      </div>
+      </Card>
     </button>
   );
 }
@@ -389,13 +390,12 @@ interface WorkbenchLeftPanelProps {
  * established chrome elsewhere in this app.
  *
  * The assistant's own thread is scoped to this request: `ShelfDock` reads
- * `useAssistantThread()` from the nearest provider, so mounting a fresh
- * `AssistantThreadProvider` keyed to `activeId` here (rather than reaching
- * for the shell's own session-wide instance) gives it a per-request thread
- * without touching either shared file (see the report). It's mounted
- * unconditionally (not just while the assistant is showing) so a thread
- * survives collapsing and reopening the panel within the same request; only
- * a request change (a new key) resets it.
+ * `useAssistantThread()` from `AssistantThreadProvider`, mounted in
+ * `WorkbenchDetail` (prompt 46, moved up from here) so the evidence chip
+ * in the centre pane, a sibling of this whole panel, can post into the
+ * same thread this panel renders. A thread survives collapsing and
+ * reopening the panel within the same request; only a request change
+ * (`WorkbenchDetail`'s own `key={openId}`, one level up) resets it.
  *
  * Both contents are mounted unconditionally too, visibility toggled by
  * `hidden` rather than by conditional rendering (prompt 33). `ShelfDock`
@@ -470,40 +470,43 @@ export function WorkbenchLeftPanel({
         </button>
       </div>
 
-      <AssistantThreadProvider key={activeId}>
-        {/* Same spring the shell sidebar collapses with. Animates to 0, not
-            an icon rail like RailDock.tsx: that rail is the separate,
-            always-visible column to the left. */}
-        <motion.div
-          initial={false}
-          animate={{ width: panel.open ? PANEL_WIDTH_PX : 0 }}
-          transition={sidebarSpring}
-          className="h-full shrink-0 overflow-hidden"
-        >
-          <div className={showQueue ? "h-full" : "hidden"}>
-            <QueueContent
-              activeId={activeId}
-              onSelect={onSelect}
-              onCollapse={onCollapse}
-              selectedSegment={selectedSegment}
-              onSelectSegment={onSelectSegment}
-              decisions={decisions}
-              exceptionOverrides={exceptionOverrides}
-            />
-          </div>
-          <div className={showAssistant ? "h-full" : "hidden"}>
-            <ShelfDock
-              subject={null}
-              context="selection"
-              starterQuestions={[]}
-              onClose={onCollapse}
-              onCorrectionMade={() => {
-                // No correction surface wired for this finish-line context yet.
-              }}
-            />
-          </div>
-        </motion.div>
-      </AssistantThreadProvider>
+      {/* Same spring the shell sidebar collapses with. Animates to 0, not
+          an icon rail like RailDock.tsx: that rail is the separate,
+          always-visible column to the left. `AssistantThreadProvider`
+          used to wrap just this motion.div (see the report), keyed to
+          `activeId`; prompt 46 lifted it to `WorkbenchDetail`'s own top
+          level, since the evidence chip (in the centre pane, a sibling of
+          this whole panel) now needs to post into the same thread this
+          panel renders. */}
+      <motion.div
+        initial={false}
+        animate={{ width: panel.open ? PANEL_WIDTH_PX : 0 }}
+        transition={sidebarSpring}
+        className="h-full shrink-0 overflow-hidden"
+      >
+        <div className={showQueue ? "h-full" : "hidden"}>
+          <QueueContent
+            activeId={activeId}
+            onSelect={onSelect}
+            onCollapse={onCollapse}
+            selectedSegment={selectedSegment}
+            onSelectSegment={onSelectSegment}
+            decisions={decisions}
+            exceptionOverrides={exceptionOverrides}
+          />
+        </div>
+        <div className={showAssistant ? "h-full" : "hidden"}>
+          <ShelfDock
+            subject={null}
+            context="selection"
+            starterQuestions={[]}
+            onClose={onCollapse}
+            onCorrectionMade={() => {
+              // No correction surface wired for this finish-line context yet.
+            }}
+          />
+        </div>
+      </motion.div>
     </div>
   );
 }
