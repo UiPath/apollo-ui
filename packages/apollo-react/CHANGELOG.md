@@ -1,3 +1,22 @@
+## [@uipath/apollo-react-v6.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.22.3...@uipath/apollo-react@6.23.0) (2026-08-19)
+
+### Features
+
+* **apollo-react:** reorder event-triggered and ad hoc stage tasks [MST-13609] ([42e8276](https://github.com/UiPath/apollo-ui/commit/42e827626a52bc342c230afdd3680fecd99b3a09))
+* **apollo-react:** show the drag overlay in all three stage sections [MST-13609] ([df48303](https://github.com/UiPath/apollo-ui/commit/df48303549a18724ce404981906202c365536c96))
+
+### Bug Fixes
+
+* **apollo-react:** align flat-section move menu with drag semantics [MST-13609] ([185d39f](https://github.com/UiPath/apollo-ui/commit/185d39f78e15c4d923aec8dc07936cbdb50d6fa1))
+* **apollo-react:** bucket stage tasks by their own type so none are lost [MST-13609] ([51a93b2](https://github.com/UiPath/apollo-ui/commit/51a93b28972243c5393f0bab75cd1dfa0d9f62c6))
+* **apollo-react:** keep useSortable inside its provider on read-only stages [MST-13609] ([99f2ddf](https://github.com/UiPath/apollo-ui/commit/99f2ddfbfdde1e1c2a732390b04d94a3e744aeb1))
+* **apollo-react:** let reorder-only consumers reach the stage task menu [MST-13609] ([f8aeea6](https://github.com/UiPath/apollo-ui/commit/f8aeea6603132f132d5a10b4a0c6f8be45869e0b))
+* **apollo-react:** skip DnD contexts when a stage section cannot reorder [MST-13609] ([dd36f05](https://github.com/UiPath/apollo-ui/commit/dd36f05f6edb8d0936e5a1851f001671e486df3e))
+
+### Performance Improvements
+
+* **apollo-react:** hold stage drag offset in a ref instead of state [MST-13609] ([2b2ed85](https://github.com/UiPath/apollo-ui/commit/2b2ed85770b53f3e0642f936664fc11eca906736))
+
 ## [@uipath/apollo-react-v6.22.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.22.2...@uipath/apollo-react@6.22.3) (2026-08-18)
 
 ### Bug Fixes
