@@ -24,11 +24,16 @@ export function NodeKey({ node, label, displayPath, onCopyPath, className }: Nod
   // The tooltip/aria surface the exact string that gets copied so it matches
   // consumer path transforms (e.g. a `$vars.` prefix), not the raw tree path.
   const copyPathText = displayPath ?? node.path;
-  // The key never shrinks (the value gives way first) but is capped so a
-  // pathologically long key truncates instead of pushing the actions out.
+  // The value gives way first (it shrinks harder), then the key truncates. Only
+  // once both are at their floors does the row overflow and push the trailing
+  // actions out of the tree's clipped viewport, so the actions survive far
+  // narrower panels than a key that refused to shrink at all. The floor is
+  // deliberately below the shortest keys in practice: `min-width` is also a
+  // size floor, so a larger one would pad every short key at every width.
+  // `max-w-[45%]` still caps a pathologically long key.
   // Display labels render in the UI font to set them apart from raw keys.
   const keyClass = cn(
-    'max-w-[45%] shrink-0 truncate text-xs text-foreground',
+    'min-w-4 max-w-[45%] truncate text-xs text-foreground',
     label != null ? 'font-medium' : 'font-mono',
     node.value === undefined && 'text-foreground-muted',
     className

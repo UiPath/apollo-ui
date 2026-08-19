@@ -18,22 +18,20 @@ export interface PanelTitleBarProps {
 export function PanelTitleBar({ icon, title, badge, trailing, className }: PanelTitleBarProps) {
   return (
     <div className={cn('flex items-center justify-between gap-2', className)}>
-      <div className="flex min-w-0 items-center gap-2">
-        {icon && (
-          <span className="shrink-0 text-foreground-subtle [&>svg]:size-[13px]">{icon}</span>
-        )}
-        <CanvasTooltip smartTooltip delay placement="bottom" content={title}>
-          <span className="truncate text-xs font-medium text-foreground">{title}</span>
+      <div className="flex min-w-16 flex-1 items-center gap-2">
+        {icon && <span className="shrink-0 text-foreground-subtle [&>svg]:size-3.25">{icon}</span>}
+        <CanvasTooltip smartTooltip delay content={title}>
+          <span className="min-w-2 truncate text-xs font-medium text-foreground">{title}</span>
         </CanvasTooltip>
         {badge && (
-          <CanvasTooltip smartTooltip delay placement="bottom" content={badge}>
-            <span className="min-w-0 truncate font-mono text-[10px] text-foreground-muted">
+          <CanvasTooltip smartTooltip delay content={badge}>
+            <span className="min-w-2 shrink-8 truncate font-mono text-[10px] text-foreground-muted">
               {badge}
             </span>
           </CanvasTooltip>
         )}
       </div>
-      {trailing && <div className="shrink-0">{trailing}</div>}
+      {trailing && <div className="flex min-w-12 items-center justify-end">{trailing}</div>}
     </div>
   );
 }

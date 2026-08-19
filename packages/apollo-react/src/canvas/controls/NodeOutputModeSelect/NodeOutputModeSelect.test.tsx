@@ -5,7 +5,7 @@ import { NodeOutputModeSelect } from './NodeOutputModeSelect';
 describe('NodeOutputModeSelect', () => {
   it('announces options as radio items with the selected mode checked', async () => {
     render(<NodeOutputModeSelect value="static" onChange={vi.fn()} />);
-    await userEvent.click(screen.getByRole('button', { name: 'Node mode' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Node output mode' }));
     const selected = screen.getByRole('menuitemradio', { name: /Static mock/ });
     expect(selected).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByRole('menuitemradio', { name: /Live/ })).toHaveAttribute(
@@ -17,7 +17,7 @@ describe('NodeOutputModeSelect', () => {
   it('reports the chosen mode through onChange', async () => {
     const onChange = vi.fn();
     render(<NodeOutputModeSelect value="live" onChange={onChange} />);
-    await userEvent.click(screen.getByRole('button', { name: 'Node mode' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Node output mode' }));
     await userEvent.click(screen.getByRole('menuitemradio', { name: /Simulated/ }));
     expect(onChange).toHaveBeenCalledWith('simulated');
   });
@@ -28,10 +28,10 @@ describe('NodeOutputModeSelect', () => {
       { value: 'Static', label: 'Static!' },
     ];
     render(<NodeOutputModeSelect value="nope" onChange={vi.fn()} options={options} />);
-    expect(screen.getByRole('button', { name: 'Node mode' })).toHaveTextContent('Live!');
+    expect(screen.getByRole('button', { name: 'Node output mode' })).toHaveTextContent('Live!');
     // The dropdown checks the same fallback option the trigger shows, so an
     // unknown value never leaves the radio group with nothing checked.
-    await userEvent.click(screen.getByRole('button', { name: 'Node mode' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Node output mode' }));
     expect(screen.getByRole('menuitemradio', { name: 'Live!' })).toHaveAttribute(
       'aria-checked',
       'true'
@@ -40,6 +40,6 @@ describe('NodeOutputModeSelect', () => {
 
   it('disables the trigger', () => {
     render(<NodeOutputModeSelect value="live" onChange={vi.fn()} disabled />);
-    expect(screen.getByRole('button', { name: 'Node mode' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Node output mode' })).toBeDisabled();
   });
 });

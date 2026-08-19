@@ -224,7 +224,7 @@ export function JsonTree({
               <JsonTreeRow key={node.path} node={node} depth={depth} />
             ))}
             {rows.length === 0 && (
-              <span className="py-4 text-center text-xs text-foreground-subtle">
+              <span className="p-4 text-center text-xs text-foreground-subtle">
                 {resolvedEmptyMessage}
               </span>
             )}

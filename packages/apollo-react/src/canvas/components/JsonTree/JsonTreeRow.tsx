@@ -29,11 +29,9 @@ import { ScalarValueCell, valueColorClass } from './ScalarValueCell';
 const ROW_CLASS =
   'group flex min-h-7 cursor-default items-center gap-1.5 py-1 pr-1 transition hover:bg-surface-overlay';
 
-// Wrapper for a consumer-supplied value cell. `flex-1 min-w-0` lets it fill
-// the space between the key and the row actions and collapse when squeezed;
-// `overflow-hidden` clips consumer content that doesn't truncate itself so it
-// can never paint over the trailing row actions.
-const CUSTOM_CELL_CLASS = 'flex min-w-0 flex-1 items-center overflow-hidden';
+// Wrapper for a value cell. `flex-1` lets it fill the space between the key
+// and the row actions, `min-w-8` keeps a sliver of it legible when squeezed.
+const VALUE_CELL_CLASS = 'flex min-w-8 flex-1 items-center';
 
 // Rows have no right padding of their own: the trailing icon buttons carry
 // enough internal padding to keep their glyphs off the edge.
@@ -368,7 +366,7 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
                     })}
               </span>
             )}
-            {customCell != null && <span className={CUSTOM_CELL_CLASS}>{customCell}</span>}
+            {customCell != null && <span className={VALUE_CELL_CLASS}>{customCell}</span>}
             <DecorationChip decoration={decoration} />
             <RowActions node={node} actions={actions} maxInline={maxInlineActions} />
           </>
@@ -376,19 +374,21 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
           <>
             {!wrapped &&
               (customCell != null ? (
-                <span className={CUSTOM_CELL_CLASS}>{customCell}</span>
+                <span className={VALUE_CELL_CLASS}>{customCell}</span>
               ) : (
                 !((readOnly && node.value === undefined) || isTemplate) && (
                   <>
                     <span className="shrink-0 font-mono text-xs text-foreground-subtle">=</span>
-                    <ScalarValueCell
-                      node={node}
-                      readOnly={readOnly}
-                      editing={editingPath === node.path}
-                      onStartEdit={(n) => setEditingPath(n.path)}
-                      onStopEdit={() => setEditingPath(null)}
-                      onEdit={canEdit ? commitEdit : undefined}
-                    />
+                    <span className={cn(VALUE_CELL_CLASS, 'shrink-3')}>
+                      <ScalarValueCell
+                        node={node}
+                        readOnly={readOnly}
+                        editing={editingPath === node.path}
+                        onStartEdit={(n) => setEditingPath(n.path)}
+                        onStopEdit={() => setEditingPath(null)}
+                        onEdit={canEdit ? commitEdit : undefined}
+                      />
+                    </span>
                   </>
                 )
               ))}
@@ -438,9 +438,9 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
                 valueColorClass(node.type, node.value)
               )}
             >
-              {/* Strings render raw (real line breaks, no quotes),
-                  matching what the multiline editor shows. */}
-              {typeof node.value === 'string' ? node.value : formatLeafValue(node.type, node.value)}
+              {/* Quoted like the collapsed row, but otherwise verbatim: real
+                  line breaks, no escape sequences. */}
+              {formatLeafValue(node.type, node.value, { preserveStringWhitespace: true })}
             </button>
           )}
         </div>

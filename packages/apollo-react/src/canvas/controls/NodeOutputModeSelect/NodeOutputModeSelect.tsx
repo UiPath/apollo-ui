@@ -1,4 +1,5 @@
 import {
+  Button,
   cn,
   DropdownMenu,
   DropdownMenuContent,
@@ -7,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@uipath/apollo-wind';
 import type { LucideIcon } from 'lucide-react';
-import { ChevronDown, CircleDot, CircleOff, FileBracesCorner, Sparkles } from 'lucide-react';
+import { ChevronDown, CircleDot, FileBracesCorner, Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
 import { useSafeLingui } from '../../../i18n';
 
@@ -49,15 +50,6 @@ const MODE_DEFS = [
       message: 'Generate a response dynamically using an LLM',
     },
   },
-  {
-    value: 'disabled',
-    icon: CircleOff,
-    label: { id: 'canvas.node_mode_select.disabled_label', message: 'Skip node' },
-    description: {
-      id: 'canvas.node_mode_select.disabled_description',
-      message: "Don't execute this node",
-    },
-  },
 ] as const;
 
 /**
@@ -97,7 +89,7 @@ export interface NodeOutputModeSelectProps {
   className?: string;
 }
 
-/** Pill-shaped dropdown for choosing how a node executes (live, mocked, simulated, skipped). */
+/** Pill-shaped dropdown for choosing how a node produces output (live, mocked, generated). */
 export function NodeOutputModeSelect({
   value,
   onChange,
@@ -118,24 +110,23 @@ export function NodeOutputModeSelect({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild disabled={disabled}>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="3xs"
           disabled={disabled}
           aria-label={_({
             id: 'canvas.node_mode_select.node_mode',
-            message: 'Node mode',
+            message: 'Node output mode',
           })}
           className={cn(
-            'flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground',
-            disabled &&
-              'cursor-default opacity-60 hover:bg-transparent hover:text-foreground-muted',
+            'min-w-12 gap-1.5 rounded-full border border-border px-2 text-[11px] font-medium text-foreground-muted hover:bg-surface-overlay hover:text-foreground [&_svg]:size-2.5',
             className
           )}
         >
-          {CurrentIcon && <CurrentIcon size={10} className="text-foreground-subtle" />}
-          <span>{current?.label}</span>
-          <ChevronDown size={10} className="text-foreground-subtle" />
-        </button>
+          {CurrentIcon && <CurrentIcon className="text-foreground-subtle" />}
+          <span className="min-w-0 flex-1 truncate shrink-0">{current?.label}</span>
+          <ChevronDown className="text-foreground-subtle" />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {/* Radio semantics so AT announces the selected mode (menuitemradio +
