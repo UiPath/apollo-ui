@@ -3,7 +3,7 @@
 import { Search } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   PageHeader,
@@ -25,8 +25,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { getExceptionSummary } from "../data";
+import { getExceptionSummary, openExceptions } from "../data";
 import { useRequests } from "../requests/requests-context";
 import {
   applyExceptionOverrides,
@@ -49,16 +54,35 @@ interface StatCardProps {
   hint: string;
   valueClass?: string;
   dim?: boolean;
+  /** Whether this tile's own filter combination is the one currently
+   * applied. */
+  active?: boolean;
+  onClick: () => void;
 }
 
-function StatCard({ label, value, hint, valueClass, dim }: StatCardProps) {
+/** A KPI tile that doubles as a quick filter — same selectable-card
+ * treatment (accent border + glow when active) Approvals.tsx's own stat
+ * tiles already use, so the two queues behave the same way. */
+function StatCard({
+  label,
+  value,
+  hint,
+  valueClass,
+  dim,
+  active,
+  onClick,
+}: StatCardProps) {
   return (
-    <Card variant="glass" className={cn("py-0", dim && "opacity-60")}>
-      <CardContent className="p-5">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className={cn("mt-1 text-3xl font-medium", valueClass)}>{value}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
-      </CardContent>
+    <Card
+      selectable="standard"
+      selected={active}
+      onClick={onClick}
+      className={cn(dim && "opacity-60")}
+      aria-label={`Filter by ${label}`}
+    >
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className={cn("mt-1 text-3xl font-medium", valueClass)}>{value}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
     </Card>
   );
 }
@@ -80,6 +104,17 @@ export function WorkbenchList({ onOpen, decisions }: WorkbenchListProps) {
 
   const stats = workbenchStats();
   const query = search.trim().toLowerCase();
+
+  // Each tile's own active state and click behaviour mirror exactly the
+  // filter combination workbenchStats() itself counts by, so what's
+  // highlighted and what's shown never disagree. Clicking the active tile
+  // clears back to "all" rather than staying stuck selected with no way
+  // to toggle off, the same behaviour Approvals.tsx's own stat tiles use.
+  const isAwaitingActive = typeFilter === "all" && statusFilter === "awaiting";
+  const isQuotesActive = typeFilter === "quote" && statusFilter === "awaiting";
+  const isContractsActive =
+    typeFilter === "contract" && statusFilter === "awaiting";
+  const isAutoClearedActive = statusFilter === "auto-cleared";
 
   const rows = WORKBENCH_ROWS.filter((r) => {
     if (typeFilter !== "all" && r.type !== typeFilter) return false;
@@ -113,18 +148,33 @@ export function WorkbenchList({ onOpen, decisions }: WorkbenchListProps) {
             value={stats.awaiting}
             hint="need a decision"
             valueClass="text-foreground"
+            active={isAwaitingActive}
+            onClick={() => {
+              setTypeFilter("all");
+              setStatusFilter(isAwaitingActive ? "all" : "awaiting");
+            }}
           />
           <StatCard
             label="Quotes to price"
             value={stats.quotes}
             hint="off-catalog"
             valueClass="text-warning"
+            active={isQuotesActive}
+            onClick={() => {
+              setTypeFilter(isQuotesActive ? "all" : "quote");
+              setStatusFilter(isQuotesActive ? "all" : "awaiting");
+            }}
           />
           <StatCard
             label="Contracts to counter"
             value={stats.contracts}
             hint="under an MSA"
             valueClass="text-destructive"
+            active={isContractsActive}
+            onClick={() => {
+              setTypeFilter(isContractsActive ? "all" : "contract");
+              setStatusFilter(isContractsActive ? "all" : "awaiting");
+            }}
           />
           <StatCard
             label="Auto-cleared"
@@ -132,6 +182,11 @@ export function WorkbenchList({ onOpen, decisions }: WorkbenchListProps) {
             hint="no action needed"
             valueClass="text-muted-foreground"
             dim
+            active={isAutoClearedActive}
+            onClick={() => {
+              setTypeFilter("all");
+              setStatusFilter(isAutoClearedActive ? "all" : "auto-cleared");
+            }}
           />
         </div>
 
@@ -193,25 +248,31 @@ export function WorkbenchList({ onOpen, decisions }: WorkbenchListProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="pl-4 text-xs font-semibold text-muted-foreground">
+                <TableHead className="pl-4 pr-4 text-xs font-semibold text-muted-foreground">
+                  REQ
+                </TableHead>
+                <TableHead className="px-3 text-xs font-semibold text-muted-foreground">
                   Request
                 </TableHead>
-                <TableHead className="text-xs font-semibold text-muted-foreground">
-                  Requester
-                </TableHead>
-                <TableHead className="text-xs font-semibold text-muted-foreground">
+                <TableHead className="px-3 pr-6 text-xs font-semibold text-muted-foreground">
                   Value
                 </TableHead>
-                <TableHead className="text-xs font-semibold text-muted-foreground">
+                <TableHead className="px-3 text-xs font-semibold text-muted-foreground">
                   Need by
                 </TableHead>
-                <TableHead className="text-xs font-semibold text-muted-foreground">
+                <TableHead className="px-3 text-xs font-semibold text-muted-foreground">
                   Type
                 </TableHead>
-                <TableHead className="text-xs font-semibold text-muted-foreground">
+                <TableHead className="px-3 text-xs font-semibold text-muted-foreground">
                   Status
                 </TableHead>
-                <TableHead className="pr-4 text-xs font-semibold text-muted-foreground">
+                <TableHead className="px-3 text-xs font-semibold text-muted-foreground">
+                  Exception
+                </TableHead>
+                <TableHead className="px-3 text-xs font-semibold text-muted-foreground">
+                  Requester
+                </TableHead>
+                <TableHead className="pl-4 pr-4 text-xs font-semibold text-muted-foreground">
                   Assignee
                 </TableHead>
               </TableRow>
@@ -223,14 +284,23 @@ export function WorkbenchList({ onOpen, decisions }: WorkbenchListProps) {
                 // other row's summary is undefined and renders exactly as
                 // it did before (see the report).
                 const seedExceptions = WORKBENCH_EXCEPTIONS[row.id];
-                const summary = seedExceptions
-                  ? getExceptionSummary(
-                      applyExceptionOverrides(
-                        seedExceptions,
-                        exceptionOverrides[row.id] ?? {},
-                      ),
+                const effectiveExceptions = seedExceptions
+                  ? applyExceptionOverrides(
+                      seedExceptions,
+                      exceptionOverrides[row.id] ?? {},
                     )
                   : null;
+                const summary = effectiveExceptions
+                  ? getExceptionSummary(effectiveExceptions)
+                  : null;
+                // The lead exception's own overflow badge names the rest
+                // on hover rather than just counting them — same open-
+                // exceptions read `getExceptionSummary` itself derives
+                // `extraCount` from, sliced past the lead so the tooltip
+                // and the count can never disagree.
+                const extraOpenExceptions = effectiveExceptions
+                  ? openExceptions(effectiveExceptions).slice(1)
+                  : [];
                 // A row that had exceptions and now has none open and none
                 // waiting has left the buyer's queue on its own: reflect
                 // that as "auto-cleared" rather than the seed's own
@@ -256,20 +326,19 @@ export function WorkbenchList({ onOpen, decisions }: WorkbenchListProps) {
                       openable && "cursor-pointer hover:bg-muted/50",
                     )}
                   >
-                    <TableCell className="pl-4 font-medium text-foreground">
+                    <TableCell className="pl-4 pr-4 text-muted-foreground">
+                      {row.id}
+                    </TableCell>
+                    <TableCell className="px-3 font-medium text-foreground">
                       {row.request}
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {row.id}
-                      </span>
                     </TableCell>
-                    <TableCell className="text-foreground">
-                      {row.requester}
+                    <TableCell className="px-3 pr-6 tabular-nums">
+                      {row.value}
                     </TableCell>
-                    <TableCell className="tabular-nums">{row.value}</TableCell>
-                    <TableCell className="text-foreground">
+                    <TableCell className="px-3 text-foreground">
                       {row.needBy}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-3">
                       <Badge
                         status={FORK_BADGE_STATUS[row.type]}
                         variant="secondary"
@@ -278,31 +347,50 @@ export function WorkbenchList({ onOpen, decisions }: WorkbenchListProps) {
                         {FORK_LABEL[row.type]}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge
-                          status={STATUS_BADGE[effectiveStatus]}
-                          variant="secondary"
-                        >
-                          {STATUS_LABEL[effectiveStatus]}
-                        </Badge>
-                        {/* The lead open exception, amber: a genuine
-                            request-level exception state. Neither the
-                            label nor the overflow count below is authored,
-                            both derive from getExceptionSummary. */}
-                        {summary?.lead && (
+                    <TableCell className="px-3">
+                      <Badge
+                        status={STATUS_BADGE[effectiveStatus]}
+                        variant="secondary"
+                      >
+                        {STATUS_LABEL[effectiveStatus]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-3">
+                      {/* The lead open exception, amber: a genuine
+                          request-level exception state. Neither the label
+                          nor the overflow count is authored, both derive
+                          from getExceptionSummary. flex-nowrap (not
+                          flex-wrap): the overflow count reads as part of
+                          the same badge line, never dropping to a second
+                          row. The count itself is a tooltip trigger,
+                          naming the other open exceptions on hover rather
+                          than leaving the reader to guess what "+1" is. */}
+                      {summary?.lead && (
+                        <div className="flex flex-nowrap items-center gap-1.5 whitespace-nowrap">
                           <Badge status="warning" variant="secondary">
                             {summary.lead.headline}
                           </Badge>
-                        )}
-                        {summary && summary.extraCount > 0 && (
-                          <span className="text-xs font-medium text-muted-foreground">
-                            {`+${summary.extraCount}`}
-                          </span>
-                        )}
-                      </div>
+                          {summary.extraCount > 0 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="cursor-default text-xs font-medium text-muted-foreground">
+                                  {`+${summary.extraCount}`}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {extraOpenExceptions
+                                  .map((exception) => exception.headline)
+                                  .join(", ")}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      )}
                     </TableCell>
-                    <TableCell className="pr-4 text-foreground">
+                    <TableCell className="px-3 text-foreground">
+                      {row.requester}
+                    </TableCell>
+                    <TableCell className="pl-4 pr-4 text-foreground">
                       {row.assignee}
                     </TableCell>
                   </TableRow>
