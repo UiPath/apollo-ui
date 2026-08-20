@@ -74,7 +74,8 @@ const GENERAL_INFO_SUBTEXT = "Prefilled from your profile. Editable.";
 export function IntakeFlow() {
   const navigate = useNavigate();
   const { ref: contentRef, overflowing } = useContentOverflow<HTMLDivElement>();
-  const { askText, setAskText, dataInfoValues } = useIntakeState();
+  const { askText, setAskText, dataInfoValues, vendorConfirmed } =
+    useIntakeState();
   const [shelfDockOpen, setShelfDockOpen] = useState(false);
 
   const phase = useRouterState({
@@ -263,7 +264,11 @@ export function IntakeFlow() {
                 </Button>
               }
               right={
-                <Button size="sm" onClick={() => goTo("data-info")}>
+                <Button
+                  size="sm"
+                  disabled={!vendorConfirmed}
+                  onClick={() => goTo("data-info")}
+                >
                   {`Continue to ${J3_INTAKE_PHASES[2]}`}
                   <ArrowRight className="size-4" aria-hidden />
                 </Button>

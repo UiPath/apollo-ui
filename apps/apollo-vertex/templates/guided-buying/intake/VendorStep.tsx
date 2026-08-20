@@ -96,7 +96,12 @@ function VendorRow({
             Details
           </Button>
           {selected ? (
-            <Button type="button" variant="secondary" size="sm" disabled>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={onSelect}
+            >
               <Check className="size-4" aria-hidden />
               Selected
             </Button>
@@ -153,7 +158,7 @@ interface VendorStepProps {
  * rather than inventing a variant, per the report.
  */
 export function VendorStep({ onOpenComparisonPanel }: VendorStepProps) {
-  const { selectedVendor, selectVendor } = useIntakeState();
+  const { selectedVendor, vendorConfirmed, selectVendor } = useIntakeState();
   const { addQaEntry } = useAssistantThread();
   const [lead, ...alts] = VENDOR_OPTIONS;
 
@@ -193,7 +198,7 @@ export function VendorStep({ onOpenComparisonPanel }: VendorStepProps) {
           <VendorRow
             vendor={lead}
             lead
-            selected={selectedVendor === lead.vendor}
+            selected={vendorConfirmed && selectedVendor === lead.vendor}
             onSelect={() => selectVendor(lead)}
           />
           {alts.map((vendor) => (
@@ -201,7 +206,7 @@ export function VendorStep({ onOpenComparisonPanel }: VendorStepProps) {
               key={vendor.vendor}
               vendor={vendor}
               lead={false}
-              selected={selectedVendor === vendor.vendor}
+              selected={vendorConfirmed && selectedVendor === vendor.vendor}
               onSelect={() => selectVendor(vendor)}
               onCompareClick={() => compareWithPick(vendor)}
             />

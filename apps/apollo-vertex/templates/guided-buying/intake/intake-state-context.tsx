@@ -67,6 +67,13 @@ export interface IntakeState {
    * null, so a screen reached without visiting Vendor still reflects the
    * recommended path instead of an unselected state. */
   selectedVendor: string;
+  /** Whether the Vendor step's own Select was actually clicked. Separate
+   * from selectedVendor itself: that field stays populated with the lead
+   * recommendation from the start (see above) for Review/Submitted's own
+   * sake, but the Vendor step's UI shouldn't show a row as "Selected"
+   * until the user did that, and clicking an already-selected row again
+   * un-confirms it rather than being a no-op disabled button. */
+  vendorConfirmed: boolean;
   /** Set when the selected vendor's own contract references the request's
    * registered agreement (IDENTITY.agreement), derived from the seed
    * rather than a hardcoded vendor name check. Null for a vendor whose

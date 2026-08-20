@@ -17,6 +17,7 @@ export function IntakeStateProvider({ children }: { children: ReactNode }) {
     const lead = initialVendor();
     return {
       selectedVendor: lead.vendor,
+      vendorConfirmed: false,
       linkedAgreement: linkedAgreementFor(lead),
       dataInfoValues: initialDataInfoValues(),
       costCentre: IDENTITY.costCentre,
@@ -25,11 +26,21 @@ export function IntakeStateProvider({ children }: { children: ReactNode }) {
   });
 
   const selectVendor = (vendor: VendorOption) => {
-    setState((s) => ({
-      ...s,
-      selectedVendor: vendor.vendor,
-      linkedAgreement: linkedAgreementFor(vendor),
-    }));
+    setState((s) => {
+      // Clicking the row that's already confirmed un-confirms it, rather
+      // than the button being disabled with nothing to click. selectedVendor/
+      // linkedAgreement stay put either way, so Review/Submitted still have
+      // the lead recommendation to fall back on (see the type's own comment).
+      if (s.vendorConfirmed && s.selectedVendor === vendor.vendor) {
+        return { ...s, vendorConfirmed: false };
+      }
+      return {
+        ...s,
+        selectedVendor: vendor.vendor,
+        vendorConfirmed: true,
+        linkedAgreement: linkedAgreementFor(vendor),
+      };
+    });
   };
 
   const setDataInfoValues = (values: DataInfoValues) => {
