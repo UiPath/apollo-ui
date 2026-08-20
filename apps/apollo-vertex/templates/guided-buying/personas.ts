@@ -2,7 +2,6 @@ import type { RoutePaths } from "@tanstack/router-core";
 import {
   ClipboardCheck,
   ClipboardList,
-  FileText,
   Home as HomeIcon,
   ShoppingCart,
   Store,
@@ -40,14 +39,6 @@ const approverNavItems: ShellNavItem[] = [
   { path: "/approvals", label: "approvals", icon: ClipboardCheck },
 ];
 
-// Same ShellNavItem shape and home/intake labels the requester's own nav
-// uses, pointing at Priya's own routes rather than Marcus's, so her sidebar
-// stays a real map of her product instead of a link to his.
-const priyaNavItems: ShellNavItem[] = [
-  { path: "/start", label: "home", icon: HomeIcon },
-  { path: "/intake", label: "intake", icon: FileText },
-];
-
 export type PersonaId =
   | "requester"
   | "buyer"
@@ -78,6 +69,10 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     id: "requester",
     name: "Marcus Webb",
     role: "Requester",
+    // Same "{role} · {org}" shape Priya's own chip already uses — the
+    // format was never actually inconsistent between the two, only the
+    // value was (cleanup report): his own org is "Denver team", hers is
+    // "IT, Denver", each keeps their own.
     chipSubtitle: "Requester · Denver team",
     homeRoute: "/requests",
     navItems: requesterNavItems,
@@ -105,8 +100,11 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     name: PEOPLE["priya-nair"].name,
     role: PEOPLE["priya-nair"].role,
     chipSubtitle: `${PEOPLE["priya-nair"].role} · ${PEOPLE["priya-nair"].org}`,
-    homeRoute: "/start",
-    navItems: priyaNavItems,
+    // Requester parity: one home route, one nav array, shared with
+    // Marcus. Disambiguated on a cold /home load via the ?as=priya
+    // search param (see personaForPath below), not by a distinct path.
+    homeRoute: "/home",
+    navItems: requesterNavItems,
   },
   // J3's second approver (Chunk C1): a distinct named identity from Alex,
   // sharing the same prototype role and the same approver nav, since both
@@ -159,13 +157,38 @@ export const PERSONA_MENU_ORDER: PersonaId[] = [
 // request to resolve from, so a bare load there keeps guessing "approver"
 // (Alex) regardless of who last used it — unresolved, the switcher itself
 // already reaches the right persona correctly (see PersonaMenuSection).
-export function personaForPath(pathname: string): PersonaId {
+//
+// Requester parity: Marcus and Priya now share every requesterNavItems
+// path (/home, /buy, /catalog, /requests), not just /home, so the path
+// alone can no longer tell them apart on any of those the way /start's
+// own distinct path used to. Unlike the approver ambiguity above, this
+// one has a real resolution source: switchPersona (see
+// GuidedBuyingLayout.tsx) stamps a ?as=priya search param onto the URL
+// whenever it navigates to Priya's home, and each of the shared routes'
+// own validateSearch carries it through (see route-tree.tsx), so a
+// reload of any of those exact URLs still resolves her correctly. No
+// search param present means Marcus, matching today's default.
+//
+// cleanup FINDING: this used to check `pathname === "/home"` only, so a
+// cold load of e.g. /requests?as=priya fell through to the "requester"
+// default below even though the shell's own identity (fed by this same
+// function) should have shown Priya — reusing requesterNavItems here
+// (rather than a second hardcoded path list) closes that gap for every
+// one of her shared surfaces at once.
+export function personaForPath(pathname: string, search?: unknown): PersonaId {
+  const isPriyaRequesterSurface =
+    requesterNavItems.some((item) => item.path === pathname) &&
+    search != null &&
+    typeof search === "object" &&
+    "as" in search &&
+    search.as === "priya";
+  if (isPriyaRequesterSurface) {
+    return "priya";
+  }
   if (pathname.startsWith("/decision") || pathname.startsWith("/approvals")) {
     return "approver";
   }
   if (pathname.startsWith("/workbench")) return "buyer";
-  if (pathname.startsWith("/intake") || pathname.startsWith("/start")) {
-    return "priya";
-  }
+  if (pathname.startsWith("/intake")) return "priya";
   return "requester";
 }

@@ -51,6 +51,10 @@ export interface RequestRow {
    * full in the detail sidebar's "Your request" field. Never truncated. */
   prompt?: string;
   requester: string;
+  /** Whose queue this row belongs to (requester parity): /requests and
+   * Home's own mini-list both scope to the active persona, the same
+   * pattern Approvals.tsx already uses for approverPersonaId. */
+  requesterPersonaId: PersonaId;
   /** Vendor / supplier the request is with. */
   supplier: string;
   /** Cost center, "Dept : Sub-department". */
@@ -89,6 +93,7 @@ export const REQUEST_ROWS: RequestRow[] = [
     id: "REQ-2042",
     request: "2 ThinkPad X1 laptops",
     requester: "Marcus Webb",
+    requesterPersonaId: "requester",
     supplier: "Lenovo",
     department: "Design : Brand Studio",
     amount: "$3,698.00",
@@ -101,6 +106,7 @@ export const REQUEST_ROWS: RequestRow[] = [
     id: "REQ-2051",
     request: "12 mobile lines · Denver team",
     requester: "Marcus Webb",
+    requesterPersonaId: "requester",
     supplier: "T-Mobile",
     department: "IT : Denver",
     amount: "$660.00/mo",
@@ -113,6 +119,7 @@ export const REQUEST_ROWS: RequestRow[] = [
     id: "REQ-2053",
     request: "Q3 rebrand · 2 contract designers",
     requester: "Marcus Webb",
+    requesterPersonaId: "requester",
     supplier: "Multiple (RFQ)",
     department: "Design : Brand Ops",
     amount: "~$58,000.00",
@@ -125,6 +132,7 @@ export const REQUEST_ROWS: RequestRow[] = [
     id: "REQ-2039",
     request: "Adobe CC team licenses",
     requester: "Marcus Webb",
+    requesterPersonaId: "requester",
     supplier: "Adobe",
     department: "Design : Brand Studio",
     amount: "$4,800.00",
@@ -137,6 +145,7 @@ export const REQUEST_ROWS: RequestRow[] = [
     id: "REQ-2031",
     request: "Standing desk converters ×4",
     requester: "Marcus Webb",
+    requesterPersonaId: "requester",
     supplier: "Ergotron",
     department: "IT : Denver",
     amount: "$980.00",
@@ -149,6 +158,7 @@ export const REQUEST_ROWS: RequestRow[] = [
     id: "REQ-2025",
     request: "Zoom Rooms renewal",
     requester: "Marcus Webb",
+    requesterPersonaId: "requester",
     supplier: "Zoom",
     department: "IT : Denver",
     amount: "$2,400.00",
@@ -162,6 +172,7 @@ export const REQUEST_ROWS: RequestRow[] = [
     id: "REQ-2052",
     request: "15 laptops for Fusion Event contractors",
     requester: "Marcus Webb",
+    requesterPersonaId: "requester",
     supplier: "Lenovo",
     department: "Design : Brand Studio",
     amount: "$27,735.00",
@@ -362,6 +373,76 @@ const submittedInstant = new Date(submittedEvent.when);
 // through the same one formatter rather than each deriving it separately.
 export const submittedDate = formatAnchoredDate(submittedInstant);
 export const submittedTime = formatAnchoredTime(submittedInstant);
+
+// Requester parity: Priya's own rows for /requests and Home's mini-list.
+// Pushed here rather than declared inline with Marcus's own rows above,
+// since every field below depends on constants (submittedDate,
+// validationDate) that aren't computed until this point in the module.
+//
+// REQ-10482 is entirely real, derived from the same constants its own
+// REQUEST_DETAILS/DECISION_DETAILS entries already use — no bracket:
+// requester/supplier/department/amount all come from req-10482.ts and
+// cockpit-10482.ts, and its status ("pending-approval") matches what
+// Dana's decision page currently shows (no requestStatusOverrides entry
+// for it this session, so it resolves to "pending" there too).
+REQUEST_ROWS.push({
+  id: "REQ-10482",
+  request: IDENTITY.shortTitle,
+  requester: getPerson(IDENTITY.requester).name,
+  requesterPersonaId: "priya",
+  supplier: VENDOR_OPTIONS[0].vendor,
+  department: IDENTITY.costCentre.split(" · ")[0],
+  amount: `$${ANNUAL_VALUE.toLocaleString("en-US")}`,
+  amountValue: ANNUAL_VALUE,
+  status: "pending-approval",
+  submitted: submittedDate,
+  updated: validationDate,
+});
+
+// Two further seeded rows, for list parity against Marcus's own count —
+// REQ-10482 alone would read as a one-row list. Unlike REQ-10482, these
+// two have no real underlying record: title, supplier, and amount are
+// genuinely invented, so each is bracketed (PH-58/PH-59) rather than
+// authored as if it were real. department is not bracketed: "IT : Denver"
+// is Priya's own real department (data/people.ts's org field for her,
+// in the same "Dept : Sub" shape Marcus's own rows already use), not
+// invented. amountValue is 0 for both: there's no bracket convention in
+// this codebase for a numeric field (every other bracketed value here is
+// a string), and 0 keeps the KPI "Total Value" sum honestly under-counted
+// rather than standing in a fabricated figure. Neither gets a
+// REQUEST_DETAILS entry (that would mean inventing a full timeline for a
+// fictional record) — MyRequestsList's own existing `openable` check
+// already omits the chevron for a row with no detail entry, and Home's
+// own mini-list is fed only the openable subset (see HomeRoute.tsx), so
+// neither row ever renders as a dead affordance.
+REQUEST_ROWS.push(
+  {
+    id: "REQ-10483",
+    request: ph("PH-58", "Request title"),
+    requester: "Priya Nair",
+    requesterPersonaId: "priya",
+    supplier: ph("PH-58", "Supplier"),
+    department: "IT : Denver",
+    amount: ph("PH-58", "Amount"),
+    amountValue: 0,
+    status: "sourcing",
+    submitted: "Jun 12, 2026",
+    updated: "Jun 16, 2026",
+  },
+  {
+    id: "REQ-10484",
+    request: ph("PH-59", "Request title"),
+    requester: "Priya Nair",
+    requesterPersonaId: "priya",
+    supplier: ph("PH-59", "Supplier"),
+    department: "IT : Denver",
+    amount: ph("PH-59", "Amount"),
+    amountValue: 0,
+    status: "delivered",
+    submitted: "May 30, 2026",
+    updated: "Jun 3, 2026",
+  },
+);
 
 // Same "X of Y remaining" grammar REQ-2052's own budget callout uses,
 // scoped to this cost centre's software budget rather than a hardware one.
@@ -584,7 +665,7 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
   "REQ-10482": {
     id: "REQ-10482",
     request: IDENTITY.shortTitle,
-    meta: `Pending approval · ${QUANTITY.toLocaleString("en-US")} licences · ${TERM_YEARS}-year term`,
+    meta: `Pending approval · ${QUANTITY.toLocaleString("en-US")} licenses · ${TERM_YEARS}-year term`,
     headline: "Pending approval",
     agentLine: `Procurement completed validation and sent it to ${dana.name} for approval. You'll get an update here once it's decided.`,
     inFlight: true,
@@ -616,7 +697,7 @@ export const REQUEST_DETAILS: Record<string, RequestDetail> = {
       { label: ph("PH-52", "Next step"), state: "upcoming" },
     ],
     summary: {
-      items: `${QUANTITY.toLocaleString("en-US")} × licence`,
+      items: `${QUANTITY.toLocaleString("en-US")} × license`,
       total: `$${ANNUAL_VALUE.toLocaleString("en-US")}/yr`,
       needBy: IDENTITY.neededFrom,
     },
@@ -1002,7 +1083,7 @@ const REQ_10482_DECISION_DETAIL: DecisionDetail = {
   submitted: submittedDate,
   lineItems: [
     {
-      description: `${VENDOR_OPTIONS[0].vendor} licence`,
+      description: `${VENDOR_OPTIONS[0].vendor} license`,
       quantity: QUANTITY,
       unitPrice: `${UNIT_PRICE_VALUE}${UNIT_PRICE_UNIT}`,
       amount: `$${ANNUAL_VALUE.toLocaleString("en-US")}`,

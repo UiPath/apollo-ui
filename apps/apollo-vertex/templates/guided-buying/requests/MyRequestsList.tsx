@@ -34,6 +34,7 @@ import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { useCart } from "../catalog/v1/cart-context";
 import { useConversation } from "../catalog/v1/conversation-context";
 import { P2 } from "../P2";
+import { usePersona } from "../persona-context";
 import {
   REQUEST_DETAILS,
   REQUEST_ROWS,
@@ -100,6 +101,7 @@ function StatCard({
 /** Requests landing — stat cards + the requester's queue table (Workbench twin). */
 export function MyRequestsList() {
   const navigate = useNavigate();
+  const { personaId } = usePersona();
   const { clear } = useCart();
   const { startFresh } = useConversation();
   const [search, setSearch] = useState("");
@@ -115,12 +117,18 @@ export function MyRequestsList() {
 
   const { submittedRows } = useRequests();
   // Deduplicate: submittedRows wins over the static seed for the same id.
+  // Scoped to the active requester seat (requester parity, mirroring
+  // Approvals.tsx's own Chunk-C1 filter on approverPersonaId): each row
+  // names its own requesterPersonaId, so this list, its KPI cards, and its
+  // header count all narrow to whoever's actually looking.
   const seen = new Set<string>();
-  const allRows = [...submittedRows, ...REQUEST_ROWS].filter((r) => {
-    if (seen.has(r.id)) return false;
-    seen.add(r.id);
-    return true;
-  });
+  const allRows = [...submittedRows, ...REQUEST_ROWS]
+    .filter((r) => {
+      if (seen.has(r.id)) return false;
+      seen.add(r.id);
+      return true;
+    })
+    .filter((r) => r.requesterPersonaId === personaId);
 
   const stats = requestStats(allRows);
 

@@ -289,6 +289,11 @@ export interface HomeProps {
    * and treatment as /buy's own bare-intake footnote. Omitted by default,
    * since Marcus's own /home carries none, only his bare flow route does. */
   footnote?: ReactNode;
+  /** When true, selecting a suggestion chip only fills the composer text;
+   * it does not auto-submit or navigate. Off (the default) preserves
+   * Marcus's own catalog-flow chip behavior unchanged, for a persona whose
+   * chips are quick links to draft a similar request, not to past ones. */
+  chipsFillComposerOnly?: boolean;
 }
 
 /**
@@ -307,6 +312,7 @@ export function Home({
   showResumeBand = true,
   requireAttachment = false,
   footnote,
+  chipsFillComposerOnly = false,
 }: HomeProps = {}) {
   const navigate = useNavigate();
   const { user } = useUser();
@@ -361,6 +367,10 @@ export function Home({
   // catalog flow's own logic unconditionally rather than needing its own
   // configuration.
   const handleChipSelect = (value: string) => {
+    if (chipsFillComposerOnly) {
+      setInput(value);
+      return;
+    }
     if (value !== CATALOG_STARTER) {
       // Q3 rebrand and the mobile-lines contract don't have a built Details
       // step in this prototype (they're separate, non-addressable phases).

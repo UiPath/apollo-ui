@@ -5,9 +5,8 @@ import { CatalogSubmitted } from "./catalog/v1/CatalogSubmitted";
 import { ConfigureFlow } from "./catalog/v1/ConfigureFlow";
 import { Review } from "./catalog/v1/Review";
 import { GuidedBuyingLayout } from "./GuidedBuyingLayout";
-import { Home } from "./home/Home";
+import { HomeRoute } from "./home/HomeRoute";
 import { IntakeFlow } from "./intake/IntakeFlow";
-import { PriyaHome } from "./intake/PriyaHome";
 import { Approvals } from "./requests/Approvals";
 import { DecisionWindow } from "./requests/DecisionWindow";
 import { MyRequests } from "./requests/MyRequests";
@@ -16,6 +15,15 @@ import { RequestWindow } from "./requests/RequestWindow";
 import { Workbench } from "./workbench/Workbench";
 
 const rootRoute = createRootRoute({ component: GuidedBuyingLayout });
+
+// Requester parity: any of Marcus's and Priya's shared nav paths (/home,
+// /buy, /catalog, /requests) can carry ?as=priya, so personaForPath
+// (personas.ts) can disambiguate a cold load on all of them, not just
+// /home. One small helper merged into each route's own validateSearch,
+// rather than the same ternary duplicated four times.
+function personaSearch(search: Record<string, unknown>): { as?: "priya" } {
+  return search.as === "priya" ? { as: "priya" } : {};
+}
 
 // The prototype's front door is Home, bare /guided-buying redirects there,
 // same landing behavior memory history used to get for free via
@@ -39,12 +47,15 @@ const dashboardRoute = createRoute({
   ),
 });
 
-// The requester landing, not part of the Buy flow's phase machine (see
-// Home.tsx's own doc comment), so it's a plain, unparameterized route.
+// The requester landing, shared by both requester personas (Marcus and
+// Priya, requester parity) — not part of the Buy flow's phase machine (see
+// Home.tsx's own doc comment). ?as=priya disambiguates a cold load between
+// them, since both personas now share this same path (see personaForPath).
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/home",
-  component: Home,
+  validateSearch: personaSearch,
+  component: HomeRoute,
 });
 
 // The catalog fork's two pre-Review phases (Details/Choose) are addressable
@@ -58,16 +69,19 @@ const buyRoute = createRoute({
   path: "/buy",
   validateSearch: (
     search: Record<string, unknown>,
-  ): { phase?: "bridge" | "selection" } =>
-    search.phase === "bridge" || search.phase === "selection"
+  ): { phase?: "bridge" | "selection"; as?: "priya" } => ({
+    ...(search.phase === "bridge" || search.phase === "selection"
       ? { phase: search.phase }
-      : {},
+      : {}),
+    ...personaSearch(search),
+  }),
   component: BuyFlow,
 });
 
 const catalogRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/catalog",
+  validateSearch: personaSearch,
   component: Catalog,
 });
 
@@ -112,20 +126,11 @@ const intakeRoute = createRoute({
   component: IntakeFlow,
 });
 
-// Priya's own landing, distinct from Marcus's /home for the same reason
-// every other persona already has its own homeRoute (/requests, /workbench,
-// /approvals all differ too). Named for what it is (a starting point), not
-// for her, since it shows up in the address bar during demos.
-const startRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/start",
-  component: PriyaHome,
-});
-
 // My Requests, the requester's durable queue of their own submitted requests.
 const requestsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/requests",
+  validateSearch: personaSearch,
   component: MyRequests,
 });
 
@@ -182,7 +187,6 @@ export const routeTree = rootRoute.addChildren([
   configureRoute,
   workbenchRoute,
   intakeRoute,
-  startRoute,
   requestsRoute,
   requestDetailRoute,
   poRoute,

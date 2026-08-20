@@ -101,6 +101,12 @@ export function GuidedBuyingLayout() {
   // own established pattern (see BuyFlow.tsx) to avoid re-rendering the
   // root layout on every router-internal state change, not just pathname.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // Requester parity: /home now serves both requester personas, so
+  // personaForPath also needs the URL's own search params (?as=priya) to
+  // disambiguate a cold load there — see that function's own comment.
+  const search = useRouterState({
+    select: (s): unknown => s.location.search,
+  });
   // Seeded from the entry route (see personaForPath) so a direct load onto
   // an approver/buyer surface doesn't show the requester's identity, see
   // that function's own comment for why this isn't a route-derived
@@ -120,7 +126,7 @@ export function GuidedBuyingLayout() {
     const recordApprover = decisionId
       ? getDecisionDetail(decisionId)?.approverPersonaId
       : null;
-    return recordApprover ?? personaForPath(pathname);
+    return recordApprover ?? personaForPath(pathname, search);
   });
 
   // Persona state is the single authority over the identity chip now, no
@@ -150,6 +156,16 @@ export function GuidedBuyingLayout() {
         void navigate({ to: "/decision/$id", params: { id: requestId } });
         return;
       }
+    }
+
+    // Requester parity: /home is shared with Marcus, so switching to
+    // Priya has to stamp ?as=priya onto the URL, not just navigate to the
+    // bare route, or a reload of the landing page would resolve back to
+    // Marcus (personaForPath's own default).
+    if (target === "priya") {
+      setPersonaId(target);
+      void navigate({ to: "/home", search: { as: "priya" } });
+      return;
     }
 
     setPersonaId(target);

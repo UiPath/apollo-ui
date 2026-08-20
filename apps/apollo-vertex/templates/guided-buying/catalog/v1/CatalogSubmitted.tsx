@@ -147,6 +147,7 @@ export function CatalogSubmitted() {
       // request" field — never shown truncated.
       ...(requestText == null ? {} : { prompt: requestText }),
       requester: "Marcus Webb",
+      requesterPersonaId: "requester",
       supplier: items[0]?.vendor ?? "Lenovo",
       department: costCenter.split(" · ")[0],
       amount: formatPrice(total, "USD"),
@@ -257,7 +258,7 @@ export function CatalogSubmitted() {
                     </p>
 
                     <div className="mt-3 flex items-center gap-3">
-                      <BrandMark item={items[0]} size="lg" />
+                      <BrandMark vendor={items[0].vendor} size="lg" />
                       <div className="min-w-0 flex-1">
                         {items.map((item) => (
                           <p

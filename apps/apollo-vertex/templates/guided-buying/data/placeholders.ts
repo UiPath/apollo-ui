@@ -18,8 +18,10 @@ export const PLACEHOLDERS = {
   "PH-14": "vendor step footer affordance copy",
   "PH-15a": "data and info step heading",
   "PH-15b": "data and info step sub-line",
-  "PH-19a": "review step heading",
-  "PH-19b": "review step routing sub-line",
+  "PH-19a":
+    "review step heading naming the approver and the procurement-then-approval routing (Priya's case: procurement review required before Dana Kim decides), pending Gabriel's wording ruling",
+  "PH-19b":
+    "review step sub-line stating the procurement-review requirement before the named approver decides, pending Gabriel's wording ruling",
   "PH-20": "review policy check banner content",
   "PH-21a": "submitted state heading",
   "PH-21b": "submitted state routing sub-line",
@@ -76,6 +78,18 @@ export const PLACEHOLDERS = {
     "REQ-10482 decision page P2 multi-year commitment module wording, pending a ruling",
   "PH-57":
     "REQ-10482 decision page order form preview stub body content, not a real document render, pending a ruling on wording",
+  "PH-58":
+    "Priya Nair seeded request row (requester parity, second row): title, supplier, and amount, pending a ruling",
+  "PH-59":
+    "Priya Nair seeded request row (requester parity, third row): title, supplier, and amount, pending a ruling",
+  "PH-60":
+    "Priya's review step identity row and extraction-provenance wording, pending a ruling",
+  "PH-61":
+    "Priya's review step second-card prose wording for vendor, contract, buying entity, cost center, and currency, pending a ruling",
+  "PH-62":
+    "Priya's submitted step: concurrent-group label marking Legal/Security/Privacy Review as running at the same time, pending a ruling",
+  "PH-63":
+    "Priya's submitted step: next-stage state line wording, pending whether it names the stage's own state or names who holds it next, mirroring or diverging from the decision timeline's 'with you now' holder-naming convention, pending a ruling",
 } as const;
 
 export type PlaceholderId = keyof typeof PLACEHOLDERS;
