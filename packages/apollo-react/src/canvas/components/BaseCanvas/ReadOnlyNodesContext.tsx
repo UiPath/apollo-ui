@@ -1,13 +1,7 @@
 import type React from 'react';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useSyncExternalStore,
-} from 'react';
+import { createContext, useCallback, useContext, useRef, useSyncExternalStore } from 'react';
 
+import { useIsomorphicLayoutEffect } from '../../hooks/useIsomorphicLayoutEffect';
 import { EMPTY_SET, setsEqual } from './set-utils';
 
 type Listener = () => void;
@@ -116,10 +110,11 @@ export const ReadOnlyNodesProvider: React.FC<
     storeRef.current = new ReadOnlyNodesStore(readOnlyNodeIds);
   }
 
-  // The constructor seeds the mount; the effect handles updates without
-  // notifying subscribers during render. Enforcement is applied to node and
-  // edge objects in the same render.
-  useEffect(() => {
+  // The constructor seeds the mount; this handles updates without notifying
+  // subscribers during render. Layout timing, not `useEffect`: a passive effect
+  // runs after paint, so subscribed nodes would paint once with the stale lock
+  // state before flipping.
+  useIsomorphicLayoutEffect(() => {
     storeRef.current?.update(readOnlyNodeIds ?? EMPTY_SET);
   }, [readOnlyNodeIds]);
 
