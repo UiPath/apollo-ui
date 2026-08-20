@@ -9,10 +9,10 @@ import {
   useSyncExternalStore,
 } from 'react';
 
+import { EMPTY_SET, setsEqual } from './set-utils';
+
 type ConnectedHandlesMap = Map<string, Set<string>>;
 type Listener = () => void;
-
-const EMPTY_SET: ReadonlySet<string> = Object.freeze(new Set()) as ReadonlySet<string>;
 
 /**
  * Store that manages connected handles with granular subscriptions.
@@ -97,21 +97,6 @@ class ConnectedHandlesStore {
       }
     }
   }
-}
-
-/**
- * Compare two Sets for equality.
- */
-function setsEqual(a?: Set<string>, b?: Set<string>): boolean {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  if (a.size !== b.size) return false;
-
-  for (const value of a) {
-    if (!b.has(value)) return false;
-  }
-
-  return true;
 }
 
 /**
