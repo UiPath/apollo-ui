@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v6.23.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.23.0...@uipath/apollo-react@6.23.1) (2026-08-20)
+
+### Bug Fixes
+
+* **apollo-core:** build bundleless so consumers stop panicking in rspack [PLT-109649] ([102da8b](https://github.com/UiPath/apollo-ui/commit/102da8bd78ea67ae3faff3a2fffa0cd2fb4c99ea))
+* **apollo-react:** improve truncation handling in node IO panel ([4870ff3](https://github.com/UiPath/apollo-ui/commit/4870ff3379c30dca8c97b2a367d18d2ab7d870db))
+
 ## [@uipath/apollo-react-v6.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.22.3...@uipath/apollo-react@6.23.0) (2026-08-19)
 
 ### Features

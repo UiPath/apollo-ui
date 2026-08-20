@@ -1,3 +1,13 @@
+## [@uipath/apollo-core-v5.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.12.1...@uipath/apollo-core@5.13.0) (2026-08-20)
+
+### Features
+
+* **apollo-ui-icons:** ship the Apollo icon set as its own package [PLT-109649] ([0681263](https://github.com/UiPath/apollo-ui/commit/06812635dfa5c98f6154d1019ef0c4b1e7892dc0))
+
+### Bug Fixes
+
+* **apollo-core:** build bundleless so consumers stop panicking in rspack [PLT-109649] ([102da8b](https://github.com/UiPath/apollo-ui/commit/102da8bd78ea67ae3faff3a2fffa0cd2fb4c99ea))
+
 ## [@uipath/apollo-core-v5.12.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.12.0...@uipath/apollo-core@5.12.1) (2026-08-11)
 
 ### Bug Fixes

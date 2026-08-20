@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.34.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.3...@uipath/apollo-wind@2.34.0) (2026-08-20)
+
+### Features
+
+* **apollo-ui-icons:** ship the Apollo icon set as its own package [PLT-109649] ([0681263](https://github.com/UiPath/apollo-ui/commit/06812635dfa5c98f6154d1019ef0c4b1e7892dc0))
+
 ## [@uipath/apollo-wind-v2.33.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.2...@uipath/apollo-wind@2.33.3) (2026-08-18)
 
 ### Bug Fixes
