@@ -91,7 +91,8 @@ Must be one of:
 
 **Required**. Must be one of the following package names:
 
-- `apollo-core` - Design tokens, icons, fonts
+- `apollo-core` - Design tokens, fonts
+- `apollo-ui-icons` - SVG icon set
 - `apollo-react` - React components
 - `apollo-wind` - Tailwind/shadcn components
 - `apollo-vertex` - Documentation site and component registry
@@ -415,6 +416,7 @@ When CI runs `pnpm release` on a maintenance branch, semantic-release executes f
 apollo-ui/
 ├── packages/              # Framework packages
 │   ├── apollo-core/       # Design tokens
+│   ├── apollo-ui-icons/   # SVG icon set
 │   ├── apollo-react/      # React components
 │   └── apollo-wind/       # Tailwind components
 ├── web-packages/          # Web components

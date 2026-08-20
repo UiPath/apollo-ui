@@ -7,7 +7,7 @@ Apollo v.4 is UiPath's open-source design system. Monorepo with Turborepo + pnpm
 ## Project Structure
 
 ```
-packages/        # apollo-core (tokens/icons), apollo-react (React+MUI), apollo-wind (Tailwind+shadcn) — REQUIRE TESTS
+packages/        # apollo-core (tokens), apollo-ui-icons (SVG icons), apollo-react (React+MUI), apollo-wind (Tailwind+shadcn) — REQUIRE TESTS
 web-packages/    # ap-chat (web component) — REQUIRE TESTS
 apps/            # storybook — NO TESTS NEEDED
 .github/         # workflows, actions, scripts
@@ -159,7 +159,7 @@ Every package publishes via `semantic-release` with the `conventionalcommits` pr
 - **Never add `!` or a `BREAKING CHANGE:` footer unless the change actually breaks the package's public contract:** a removed or renamed export/prop, a changed prop type or required-ness, a removed variant, or a documented default that existing consumers depend on.
 - A behavior tweak, bug fix, new optional prop, or internal refactor is **`fix:` or `feat:`, not breaking**, even when runtime behavior changes. "The button now opens a new tab" is `feat:`/`fix:`, not `feat!:`.
 - When unsure whether a change is breaking, default to `feat:`/`fix:` and flag the uncertainty to a maintainer in the PR. Do **not** reflexively mark a change breaking.
-- Prefer the package name as the commit scope (`apollo-react`, `apollo-wind`, `apollo-core`, `ap-chat`) for a readable changelog. Release attribution is by **file path**, not scope, so a non-package scope like `docs(repo)` / `ci` won't misroute a bump.
+- Prefer the package name as the commit scope (`apollo-react`, `apollo-wind`, `apollo-core`, `apollo-ui-icons`, `ap-chat`) for a readable changelog. Release attribution is by **file path**, not scope, so a non-package scope like `docs(repo)` / `ci` won't misroute a bump.
 - **Keep a single commit's changes within one package's folder.** `semantic-release-monorepo` routes each commit to a package by the files it touched, so a commit that edits two packages' files applies its bump level (including a `!` major) to *both*, regardless of scope. Split cross-package changes into separate commits.
 
 **In review, block any commit (including the squash-merge title) that marks a change breaking when it does not remove, rename, or retype a public export or prop.** Ask the author to reword it before merge. Once merged to `main` and released, a bad major bump cannot be reverted.

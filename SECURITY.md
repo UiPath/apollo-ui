@@ -10,7 +10,7 @@ Use GitHub's [Private Vulnerability Reporting](https://github.com/UiPath/apollo-
 
 ## Scope
 
-This repository hosts the Apollo design system: `@uipath/apollo-core`, `@uipath/apollo-react`, `@uipath/apollo-wind`, `@uipath/ap-chat`, and supporting tooling. Reports about these packages — including their build pipeline, published artifacts, and the public documentation deployments — are in scope.
+This repository hosts the Apollo design system: `@uipath/apollo-core`, `@uipath/apollo-ui-icons`, `@uipath/apollo-react`, `@uipath/apollo-wind`, `@uipath/ap-chat`, and supporting tooling. Reports about these packages — including their build pipeline, published artifacts, and the public documentation deployments — are in scope.
 
 Out of scope: vulnerabilities in third-party dependencies that have a published advisory; report those upstream.
 

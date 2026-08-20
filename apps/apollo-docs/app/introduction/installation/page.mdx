@@ -12,14 +12,14 @@ Apollo v.4 is UiPath's open-source design system for building consistent user ex
 
 Apollo is split into focused packages. Pick the one that matches what you're building.
 
-<LinkedTabs items={['apollo-core', 'apollo-wind', 'apollo-react']}>
+<LinkedTabs items={['apollo-core', 'apollo-ui-icons', 'apollo-wind', 'apollo-react']}>
 <div>
 
 ### `@uipath/apollo-core`
 
-The shared foundation — design tokens, icons, fonts, and CSS variables. Both Apollo Wind and Apollo React depend on this package. Install it directly only if you need tokens without a component library.
+The shared foundation — design tokens, fonts, and CSS variables. Both Apollo Wind and Apollo React depend on this package. Install it directly only if you need tokens without a component library.
 
-**Best for:** Custom builds that need design tokens, icons, or fonts without a full component library.
+**Best for:** Custom builds that need design tokens or fonts without a full component library.
 
 **Install**
 
@@ -31,6 +31,31 @@ npm install @uipath/apollo-core
 
 ```bash
 pnpm build
+```
+
+</div>
+<div>
+
+### `@uipath/apollo-ui-icons`
+
+The Apollo icon set — 1300+ SVG icons, importable as modules or as raw assets. Icon names and the `IconName` union are available from `@uipath/apollo-ui-icons/types` without pulling any SVG in.
+
+`@uipath/apollo-core/icons` still re-exports this package, but that path is deprecated and will be removed in the next major.
+
+**Best for:** Any project that needs Apollo icons without a full component library. React users get ready-made components from `@uipath/apollo-react` instead.
+
+**Install**
+
+```bash
+npm install @uipath/apollo-ui-icons
+```
+
+**Use**
+
+```ts
+import { Close, AddComment } from '@uipath/apollo-ui-icons';
+import closeSvg from '@uipath/apollo-ui-icons/svg/close.svg';
+import { type IconName, iconNames } from '@uipath/apollo-ui-icons/types';
 ```
 
 </div>
