@@ -198,11 +198,11 @@ function replaceColorsInSvg(content: string, filePath: string): { content: strin
 
 async function main() {
   // Validate script execution context to prevent directory traversal attacks
-  if (!__dirname.includes('/apollo-core/scripts') && !__dirname.includes('\\apollo-core\\scripts')) {
-    throw new Error('Invalid script execution context: must be run from apollo-core/scripts directory');
+  if (!__dirname.includes('/apollo-ui-icons/scripts') && !__dirname.includes('\\apollo-ui-icons\\scripts')) {
+    throw new Error('Invalid script execution context: must be run from apollo-ui-icons/scripts directory');
   }
 
-  const svgDir = resolve(__dirname, '../src/icons/svg');
+  const svgDir = resolve(__dirname, '../src/svg');
 
   // Validate paths contain no null bytes
   if (svgDir.includes('\0')) {
@@ -210,7 +210,7 @@ async function main() {
   }
 
   // Validate that the base directory itself is in the expected location
-  if (!svgDir.includes('apollo-core/src/icons/svg') && !svgDir.includes('apollo-core\\src\\icons\\svg')) {
+  if (!svgDir.includes('apollo-ui-icons/src/svg') && !svgDir.includes('apollo-ui-icons\\src\\svg')) {
     throw new Error(`Invalid base directory: ${svgDir}`);
   }
 

@@ -1,0 +1,56 @@
+{
+  "name": "@uipath/apollo-ui-icons",
+  "version": "0.0.0",
+  "description": "UiPath Apollo icon set - tree-shakeable SVG exports",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types.js",
+      "require": "./dist/types.cjs",
+      "types": "./dist/types.d.ts"
+    },
+    "./svg/*": "./dist/static/svg/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UiPath/apollo-ui.git",
+    "directory": "packages/apollo-ui-icons"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "scripts": {
+    "build": "pnpm run process:icons && pnpm run build:icons && rslib build",
+    "build:icons": "tsx scripts/generate-icons.ts",
+    "process:icons": "tsx scripts/process-icons.ts && tsx scripts/update-colors.ts",
+    "process:icons:dry-run": "tsx scripts/process-icons.ts --dry-run && tsx scripts/update-colors.ts --dry-run",
+    "dev": "rslib build --watch",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
+    "format": "biome format --write src",
+    "format:check": "biome format src",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@rslib/core": "^0.19.6",
+    "@vitest/coverage-v8": "^4.1.5",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.5"
+  }
+}

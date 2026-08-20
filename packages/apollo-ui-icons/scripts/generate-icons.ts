@@ -4,7 +4,7 @@
  * Generate Icon Exports and Types
  *
  * This script scans all SVG files and generates:
- * 1. src/icons/index.ts - Tree-shakeable exports for each icon
+ * 1. src/index.ts - Tree-shakeable exports for each icon
  * 2. TypeScript types for icon names
  */
 
@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const ICONS_DIR = path.join(__dirname, '../src/icons');
+const ICONS_DIR = path.join(__dirname, '../src');
 const SVG_DIR = path.join(ICONS_DIR, 'svg');
 const OUTPUT_FILE = path.join(ICONS_DIR, 'index.ts');
 
@@ -172,7 +172,7 @@ function generateIconExports(svgFiles: SvgFile[]): void {
 // Auto-generated exports for all SVG icons
 //
 // Usage:
-//   import AcademySvg from '@uipath/apollo-core/icons/svg/academy.svg';
+//   import AcademySvg from '@uipath/apollo-ui-icons/svg/academy.svg';
 //
 // All exports are tree-shakeable - only imported icons will be bundled.
 

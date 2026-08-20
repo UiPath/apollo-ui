@@ -5,7 +5,7 @@
  *
  * This script:
  * 1. Normalizes folder and file names from Figma (removes emojis, fixes casing, handles nested folders)
- * 2. Scans all SVG files in src/icons/svg/
+ * 2. Scans all SVG files in src/svg/
  * 3. Generates short, consistent names based on folder structure
  * 4. Renames SVG files to their short names
  * 5. Generates TypeScript exports
@@ -32,11 +32,11 @@ import {
 import { iconMappingConfig } from './icon-mappings.config.js';
 
 // Validate script execution context to prevent directory traversal attacks
-if (!__dirname.includes('/apollo-core/scripts') && !__dirname.includes('\\apollo-core\\scripts')) {
-  throw new Error('Invalid script execution context: must be run from apollo-core/scripts directory');
+if (!__dirname.includes('/apollo-ui-icons/scripts') && !__dirname.includes('\\apollo-ui-icons\\scripts')) {
+  throw new Error('Invalid script execution context: must be run from apollo-ui-icons/scripts directory');
 }
 
-const ICONS_DIR = resolve(__dirname, '../src/icons/svg');
+const ICONS_DIR = resolve(__dirname, '../src/svg');
 const MAX_DEPTH = 10; // Maximum directory nesting depth to prevent infinite recursion
 
 const DRY_RUN = process.argv.includes('--dry-run');
@@ -56,7 +56,7 @@ function validatePath(targetPath: string): boolean {
   const normalizedBase = resolve(ICONS_DIR);
 
   // Validate that the base directory itself is in the expected location
-  if (!normalizedBase.includes('apollo-core/src/icons/svg') && !normalizedBase.includes('apollo-core\\src\\icons\\svg')) {
+  if (!normalizedBase.includes('apollo-ui-icons/src/svg') && !normalizedBase.includes('apollo-ui-icons\\src\\svg')) {
     throw new Error(`Invalid base directory: ${normalizedBase}`);
   }
 

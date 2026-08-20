@@ -2,6 +2,10 @@
   - changed-files:
       - any-glob-to-any-file: "packages/apollo-core/**"
 
+"pkg:apollo-ui-icons":
+  - changed-files:
+      - any-glob-to-any-file: "packages/apollo-ui-icons/**"
+
 "pkg:apollo-react":
   - changed-files:
       - any-glob-to-any-file: "packages/apollo-react/**"

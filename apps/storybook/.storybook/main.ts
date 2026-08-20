@@ -66,7 +66,7 @@ const config: StorybookConfig = {
   staticDirs: [
     '../../../packages/apollo-wind/public',
     {
-      from: '../../../packages/apollo-core/src/icons/svg/third-party',
+      from: '../../../packages/apollo-ui-icons/src/svg/third-party',
       to: '/brand',
     },
   ],
