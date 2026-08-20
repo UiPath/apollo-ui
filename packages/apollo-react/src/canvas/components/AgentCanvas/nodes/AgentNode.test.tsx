@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { NodeRegistryProvider } from '../../../core/NodeRegistryProvider';
 import type { AgentNodeTranslations } from '../../../types';
 import { BaseCanvasModeProvider } from '../../BaseCanvas/BaseCanvasModeProvider';
+import { ReadOnlyNodesProvider } from '../../BaseCanvas/ReadOnlyNodesContext';
 import { agentFlowManifest } from '../agent-flow.manifest';
 import { AgentNodeElement } from './AgentNode';
 
@@ -117,10 +118,12 @@ const defaultNodeProps = {
 };
 
 // Test wrapper that provides required context
-const renderWithProviders = (ui: ReactElement) => {
+const renderWithProviders = (ui: ReactElement, readOnlyNodeIds?: ReadonlySet<string>) => {
   return render(
     <BaseCanvasModeProvider mode="design">
-      <NodeRegistryProvider manifest={agentFlowManifest}>{ui}</NodeRegistryProvider>
+      <ReadOnlyNodesProvider readOnlyNodeIds={readOnlyNodeIds}>
+        <NodeRegistryProvider manifest={agentFlowManifest}>{ui}</NodeRegistryProvider>
+      </ReadOnlyNodesProvider>
     </BaseCanvasModeProvider>
   );
 };
@@ -382,5 +385,25 @@ describe('AgentNode - Instructions Footer', () => {
     expect(screen.getByText('Instructions')).toBeInTheDocument();
     expect(screen.getByText(/System:/)).toBeInTheDocument();
     expect(screen.getByText(/User:/)).toBeInTheDocument();
+  });
+
+  it('uses a default cursor when instructions are locked', async () => {
+    renderWithProviders(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        enableInstructions
+        onAddInstructions={vi.fn()}
+        data={{
+          ...defaultNodeProps.data,
+          instructions: { system: 'You are a helpful assistant' },
+        }}
+      />,
+      new Set(['test-agent-node'])
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Instructions').parentElement).toHaveStyle({ cursor: 'default' });
+    });
   });
 });

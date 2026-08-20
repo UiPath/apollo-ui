@@ -32,7 +32,7 @@ export const InstructionsLabel = styled.div`
   line-height: 16px;
 `;
 
-export const InstructionsPreview = styled.div`
+export const InstructionsPreview = styled.div<{ $isInteractive: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -40,7 +40,7 @@ export const InstructionsPreview = styled.div`
   font-size: 9px;
   line-height: 13px;
   color: var(--canvas-foreground-de-emp);
-  cursor: pointer;
+  cursor: ${({ $isInteractive }) => ($isInteractive ? 'pointer' : 'default')};
 `;
 
 export const InstructionsLine = styled.div`

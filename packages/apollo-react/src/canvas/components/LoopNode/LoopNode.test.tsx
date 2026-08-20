@@ -4,23 +4,32 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ValidationErrorSeverity } from '../../types/validation';
 import type { LoopNodeData, LoopNodeExecutionCountState } from './LoopNode.types';
 
-const { mockExecutionState, mockGetContainerResizeMinimums, mockManifest, mockValidationState } =
-  vi.hoisted(() => ({
-    mockExecutionState: { current: undefined as unknown },
-    mockGetContainerResizeMinimums: vi.fn(() => ({
-      left: 410,
-      right: 420,
-      top: 230,
-      bottom: 240,
-    })),
-    mockManifest: {
-      current: {
-        display: { label: 'Loop', icon: 'repeat', shape: 'container' },
-        handleConfiguration: [],
-      } as Record<string, unknown>,
-    },
-    mockValidationState: { current: undefined as unknown },
-  }));
+const {
+  mockExecutionState,
+  mockGetContainerResizeMinimums,
+  mockManifest,
+  mockNodeToolbar,
+  mockReadOnlyNodeIds,
+  mockValidationState,
+} = vi.hoisted(() => ({
+  mockExecutionState: { current: undefined as unknown },
+  mockGetContainerResizeMinimums: vi.fn(() => ({
+    left: 410,
+    right: 420,
+    top: 230,
+    bottom: 240,
+  })),
+  mockManifest: {
+    current: {
+      display: { label: 'Loop', icon: 'repeat', shape: 'container' },
+      handleConfiguration: [],
+    } as Record<string, unknown>,
+  },
+  // biome-ignore lint/suspicious/noExplicitAny: captures the toolbar props for assertions
+  mockNodeToolbar: vi.fn() as any,
+  mockReadOnlyNodeIds: { current: new Set<string>() as ReadonlySet<string> },
+  mockValidationState: { current: undefined as unknown },
+}));
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
@@ -103,6 +112,18 @@ vi.mock('../BaseCanvas/SelectionStateContext', () => ({
   useSelectionState: () => ({ multipleNodesSelected: false }),
 }));
 
+vi.mock('../BaseCanvas/ReadOnlyNodesContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../BaseCanvas/ReadOnlyNodesContext')>()),
+  useIsNodeReadOnly: (nodeId: string) => mockReadOnlyNodeIds.current.has(nodeId),
+}));
+
+vi.mock('../Toolbar', () => ({
+  NodeToolbar: (props: Record<string, unknown>) => {
+    mockNodeToolbar(props);
+    return null;
+  },
+}));
+
 import { LoopNode } from './LoopNode';
 
 const defaultProps: NodeProps<Node<LoopNodeData>> = {
@@ -140,6 +161,8 @@ function getResizeIndicators() {
 beforeEach(() => {
   mockExecutionState.current = undefined;
   mockGetContainerResizeMinimums.mockClear();
+  mockNodeToolbar.mockClear();
+  mockReadOnlyNodeIds.current = new Set<string>();
   mockManifest.current = {
     display: { label: 'Loop', icon: 'repeat', shape: 'container' },
     handleConfiguration: [],
@@ -394,5 +417,54 @@ describe('LoopNode localized labels', () => {
     renderLoopNode({ onAddFirstChild: vi.fn() });
 
     expect(screen.getByRole('button', { name: 'Add node to loop' })).toBeTruthy();
+  });
+});
+
+// A loop listed in BaseCanvas `readOnlyNodeIds` keeps its toolbar mounted with
+// every action disabled, matching BaseNode. NodeToolbar is module-mocked above,
+// so the contract is asserted on the props it receives.
+describe('LoopNode toolbar when the loop is locked', () => {
+  const NODE_ID = defaultProps.id;
+
+  const TOP_TOOLBAR = {
+    actions: [
+      { id: 'edit', icon: 'edit', label: 'Edit', onAction: vi.fn() },
+      { id: 'separator' },
+      { id: 'delete', icon: 'trash', label: 'Delete', onAction: vi.fn() },
+    ],
+    overflowActions: [{ id: 'rename', icon: 'pencil', label: 'Rename', onAction: vi.fn() }],
+    position: 'top' as const,
+  };
+
+  const toolbarConfig = () => mockNodeToolbar.mock.calls.at(-1)?.[0]?.config;
+
+  it('keeps the toolbar mounted but disables every action when the loop is locked', () => {
+    mockReadOnlyNodeIds.current = new Set([NODE_ID]);
+
+    renderLoopNode({ selected: true, toolbarConfig: TOP_TOOLBAR });
+
+    const config = toolbarConfig();
+    expect(config.actions).toEqual([
+      expect.objectContaining({ id: 'edit', disabled: true }),
+      { id: 'separator' },
+      expect.objectContaining({ id: 'delete', disabled: true }),
+    ]);
+    expect(config.overflowActions).toEqual([
+      expect.objectContaining({ id: 'rename', disabled: true }),
+    ]);
+  });
+
+  it('leaves the toolbar config untouched when the loop is not locked', () => {
+    renderLoopNode({ selected: true, toolbarConfig: TOP_TOOLBAR });
+
+    expect(toolbarConfig()).toBe(TOP_TOOLBAR);
+  });
+
+  it('renders no toolbar when the loop has no config', () => {
+    mockReadOnlyNodeIds.current = new Set([NODE_ID]);
+
+    renderLoopNode({ selected: true });
+
+    expect(mockNodeToolbar).not.toHaveBeenCalled();
   });
 });
