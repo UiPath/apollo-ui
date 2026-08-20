@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.25.0...@uipath/apollo-react@6.26.0) (2026-08-20)
+
+### Features
+
+* **apollo-react:** enforce read-only BaseCanvas nodes ([ac4542f](https://github.com/UiPath/apollo-ui/commit/ac4542f91e0d0545320826168a891ac76ea589e9))
+
 ## [@uipath/apollo-react-v6.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.24.0...@uipath/apollo-react@6.25.0) (2026-08-20)
 
 ### Features
