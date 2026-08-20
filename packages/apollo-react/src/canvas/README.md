@@ -195,3 +195,114 @@ If you already use `@uipath/apollo-react/canvas/styles/variables.css` with shado
 **Cause:** The Tailwind base layer includes `* { border-color: var(--color-border-de-emp) }` and `body { background-color: var(--background) }`. These may conflict with existing component styles.
 
 **Fix:** These rules are in `@layer base`, so they lose to un-layered styles. If conflicts persist in Shadow DOM, override with more specific selectors in your injected CSS.
+
+---
+
+## Sequential view
+
+`SequentialCanvas` is an n8n/Zapier-style vertical projection of the same flow graph, built on the existing `BaseCanvas`. It reuses the same node manifests, icons, execution status, validation badges, and theming as the flow view; only the layout is different. A `ViewSwitcher` lets the host toggle a canvas between the free-form `flow` layout and the vertical `sequential` layout.
+
+### Projection model
+
+The consumer keeps one canonical `nodes`/`edges` array. `SequentialCanvas` derives vertical geometry from graph structure and never writes that geometry back. Entering Flow through `prepareCanvasViewTransition` computes a deterministic left-to-right layout and updates only canonical presentation fields (`position` and container dimensions); ids, data, containment, handles, and edges are unchanged. Nodes added in Sequential are normalized during the same transition.
+
+Sequential is not a symmetric conversion for every graph. `prepareCanvasViewTransition('sequential', ...)` returns a compatibility report with a `level` and an `editable` flag, and the guidance is three-way:
+
+1. **Editable.** `level: 'exact'`, and also `level: 'degraded'` when the only issues are `multiple-roots` or `orphan`. These graphs render correctly and are recoverable by ordinary editing, so keep them fully editable. Locking the view as soon as a user has two disconnected steps would lock them out of the only view that flags the problem.
+2. **Read-only.** A report containing a `cycle` or `unstructured-merge` issue. The slot-based mutation operations cannot express a safe splice across a `goto` connector, because a `goto` carries no insertion slot.
+3. **Not supported.** `level: 'unsupported'`, which means malformed containment (a duplicate node id, a missing parent, or a parent cycle).
+
+The component does not enforce any of this. The host reads `report.editable` and chooses the `mode` it passes to `SequentialCanvas`, which is what the example below does. Presentation-only nodes and edges can be excluded from the projection and preserved in the canonical graph.
+
+### Availability
+
+Everything ships from `@uipath/apollo-react/canvas`, the same entry point as the rest of the canvas. The component surface (`SequentialCanvas`, `SequentialCanvasProps`, `prepareCanvasViewTransition`, `ViewSwitcher`, `useCanvasViewMode`, `SequentialViewProvider`) and the pure projection engine (`analyzeSequentialCompatibility`, `projectSequence`, `layoutSequence`, the report types) are both re-exported from it, and both follow the package's normal semver.
+
+One caveat to plan around: the sequential view is pre-GA. Its documented v1 limitations (see "Degraded graphs" below, plus bare branch owners that cannot be moved and loop-close edges that are not relocated) mean the props are still likely to change, so pin the package version if you adopt it early and read the release notes before upgrading. If you only need to reason about a graph rather than render it, depend on the projection engine and skip the component entirely: it is pure, has no xyflow or registry dependency, and is the more settled half of the two.
+
+### Minimal usage
+
+```tsx
+import { useState } from 'react';
+import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  prepareCanvasViewTransition,
+  SequentialCanvas,
+  useCanvasNodeLayout,
+  useCanvasViewMode,
+  ViewSwitcher,
+} from '@uipath/apollo-react/canvas';
+
+function MyFlow({ initialNodes, initialEdges }) {
+  const [view, setView] = useCanvasViewMode('my-flow.view');
+  const [nodes, setNodes] = useState(initialNodes);
+  const [edges, setEdges] = useState(initialEdges);
+  const [report, setReport] = useState(undefined);
+  // Derives containment from the node manifest; see "Containers" below.
+  const { isContainerNode } = useCanvasNodeLayout();
+
+  const changeView = (nextView) => {
+    const transition = prepareCanvasViewTransition(nextView, nodes, edges, {
+      // Required whenever the graph can hold containers.
+      isContainerNode,
+    });
+    setNodes(transition.nodes);
+    // Only populated when entering sequential. Recompute it whenever the graph
+    // changes while sequential is on screen, or the advice below goes stale.
+    setReport(transition.sequentialCompatibility);
+    setView(nextView);
+  };
+
+  // The component never locks itself. The host decides, from `editable`.
+  const mode = view === 'sequential' && report && !report.editable ? 'readonly' : 'design';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <ViewSwitcher value={view} onChange={changeView} />
+      <SequentialCanvas
+        view={view}
+        mode={mode}
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={(changes) => setNodes((current) => applyNodeChanges(changes, current))}
+        onEdgesChange={(changes) => setEdges((current) => applyEdgeChanges(changes, current))}
+      />
+    </div>
+  );
+}
+```
+
+`SequentialCanvas` supplies its own `ReactFlowProvider` and keeps one `BaseCanvas` mounted while `view` changes. For a worked example, including per-view pan save/restore and a live compatibility banner, see `SequentialCanvasStoryHarness` and the `Wireframe` story. Note that pan is saved per view but zoom is not: it carries across the toggle from the view being left, so switching views reframes the graph without changing how far the user is zoomed in.
+
+### Containers
+
+`prepareCanvasViewTransition` needs to be told which nodes are structural containers, via `isContainerNode`. Pass it whenever the graph can hold a for-each, a scope, or any other node with a body. Take the predicate from `useCanvasNodeLayout()` rather than writing it by hand: it derives containment from the node manifest, which is the same source of truth the rest of the canvas uses.
+
+The flow layout can otherwise only infer containment from "has at least one child in the nodes array", so a container whose body is **empty** is laid out as an ordinary node. It is never given container dimensions, and it contributes only a leaf-sized footprint to its own parent's required size. One container nested inside another is where that surfaces: the inner one is measured as a leaf but renders as a container, so it does not fit the box the layout built around it.
+
+The result reads as broken containment rather than as bad sizing, because inserted nodes carry `extent: 'parent'` and xyflow re-clamps such a node into its parent's measured bounds on every measurement pass. A child larger than its parent is pulled to a position outside the parent's own origin, so the inner container appears to escape the outer one even though its `parentId` is correct throughout.
+
+Containers are sized by the layout, not by xyflow: `expandParent` is deliberately never set, so a container's footprint comes from `prepareCanvasViewTransition` alone and there is one authority over it (D4).
+
+#### Parent ordering
+
+xyflow requires every parent to appear **before** its children in the `nodes` array. When it doesn't, xyflow logs `Parent node <id> not found. Please make sure that parent nodes are in front of their child nodes in the nodes array.` and then leaves the child unparented for that pass: no `parentLookup` entry, and the child's relative `position` is used as an absolute one.
+
+That reads as broken containment even though `parentId` is correct throughout. The container reports zero children, so it renders an empty body with the "+ Add step" affordance; dragging it leaves its children behind; and the children sit at coordinates unrelated to the box they belong to.
+
+Neither the projection nor the flow layout notices, because both bucket by `parentId` and are order-independent, so a mis-ordered graph projects and lays out perfectly and only misrenders. `prepareCanvasViewTransition` therefore repairs the order when entering flow view (`orderNodesParentsFirst`), and moves are forwarded as a single `replace` so React Flow applies them in place instead of appending a container behind its own children.
+
+### Degraded graphs
+
+Not every graph is a clean, structured sequence. The projection degrades gracefully instead of failing:
+
+| Shape | Issue code | Rendering | Still editable? |
+|---|---|---|---|
+| Multiple roots or disconnected components | `multiple-roots` | Stacked lanes ordered by flow-view y | Yes |
+| Orphans (no sequence edges at all) | `orphan` | A de-emphasized trailing section after the terminal placeholder | Yes |
+| Unstructured merge (a node with more than one incoming edge) | `unstructured-merge` | Placed under its first incomer; the extra incoming edge draws a dashed goto connector | No |
+| Cycles other than a loop's `loopBack` handle | `cycle` | A dashed, arrowless goto connector closes the cycle | No |
+
+Every case renders something rather than crashing or dropping a node: the cycle guard prevents infinite recursion, and unreachable or disconnected nodes are always appended as trailing rows. The toggle is never blocked, and rendering is independent of editability. A read-only degraded graph is still worth showing, since seeing the dashed goto connector is how a user finds the structure to fix.
+
+Both CSS delivery patterns described earlier in this guide (PostCSS scanning and precompiled Shadow DOM injection) cover the sequential view's markup with no extra configuration, since it is built entirely from Tailwind utility classes scanned from this package's `dist/canvas`.
