@@ -76,6 +76,22 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
   mode?: 'design' | 'readonly' | 'view';
 
   /**
+   * Node ids whose content is read-only while the rest of the canvas remains editable.
+   * Custom node renderers can observe their state with `useIsNodeReadOnly`.
+   *
+   * Compared by content, so passing a fresh set with the same ids is a no-op.
+   * Do not mutate a set after passing it; pass a new set instead.
+   *
+   * A `Set` or an array; both are normalized to a set internally. Deliberately
+   * not `Iterable<string>`: a bare `string` satisfies that type and would be
+   * spread per character, and a single-use iterator would read as empty on
+   * every render after the first.
+   *
+   * @default undefined
+   */
+  readOnlyNodeIds?: ReadonlySet<string> | readonly string[];
+
+  /**
    * Canvas-wide sticky-note behavior. Individual StickyNoteNode props take precedence.
    * @example `{ enableMediaEmbedding: true, readOnly: false }`
    */

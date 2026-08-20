@@ -22,6 +22,7 @@ import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
 import { CanvasBackground } from './CanvasBackground';
 import { CanvasProviders } from './CanvasProviders';
 import { PanShortcutTeachingUI } from './PanShortcutTeachingUI';
+import { useStableNodeIdSet } from './ReadOnlyNodesContext';
 
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
   props: BaseCanvasProps<NodeType, EdgeType> & {
@@ -42,6 +43,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
     // Behavior
     mode = 'view',
+    readOnlyNodeIds,
 
     // Styling
     showBackground = true,
@@ -109,6 +111,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   // Derive interactivity from mode
   const isInteractive = mode !== 'readonly';
   const isDesignMode = mode === 'design';
+  const stableReadOnlyNodeIds = useStableNodeIdSet(readOnlyNodeIds);
 
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance<NodeType, EdgeType>>();
@@ -160,6 +163,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
       isDarkMode={isDarkMode}
       locale={locale}
       stickyNoteOptions={stickyNoteOptions}
+      readOnlyNodeIds={stableReadOnlyNodeIds}
     >
       <ReactFlow
         {...reactFlowProps}
