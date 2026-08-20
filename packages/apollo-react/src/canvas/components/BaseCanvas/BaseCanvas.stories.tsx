@@ -9,17 +9,21 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Button,
+  cn,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  cn,
 } from '@uipath/apollo-wind';
 import { useMemo, useRef, useState } from 'react';
 import {
   createNode,
+  StoryCode,
+  StoryCodeBlock,
   StoryInfoPanel,
+  StoryPage,
+  StorySection,
   useCanvasStory,
   withCanvasProviders,
 } from '../../storybook-utils';
@@ -1280,4 +1284,73 @@ export const WithNodeFocusControls: Story = {
 export const WithMaintainNodesInView: Story = {
   name: 'Maintain Nodes In View',
   render: () => <WithMaintainNodesInViewStory />,
+};
+
+// ============================================================================
+// Per-Node Read-Only
+// ============================================================================
+
+function PerNodeReadOnlyPage({ globalTheme }: { globalTheme: string }) {
+  return (
+    <StoryPage
+      theme={globalTheme}
+      title="Per-node read-only"
+      description={
+        <>
+          Keep a canvas in <StoryCode>design</StoryCode> mode while locking the content of selected
+          nodes. This is useful when part of a workflow is executing or when a host needs to protect
+          in-flight configuration without freezing the rest of the graph.
+        </>
+      }
+    >
+      <StorySection
+        title="State and API"
+        divider={false}
+        description={
+          <>
+            <p>
+              Pass the locked ids through <StoryCode>readOnlyNodeIds</StoryCode>. The canvas
+              compares sets by their contents, so a freshly allocated set with the same ids does not
+              notify node renderers again. Treat the set as immutable and pass a new one when
+              membership changes.
+            </p>
+            <p>
+              Custom renderers subscribe to their own id with{' '}
+              <StoryCode>useIsNodeReadOnly</StoryCode>. The hook returns{' '}
+              <StoryCode>false</StoryCode> outside a canvas provider, which lets the same renderer
+              work in isolated previews and tests.
+            </p>
+            <p>
+              This is a client-side interaction policy, not an authorization boundary. Enforce
+              permissions again when the host saves or executes the workflow.
+            </p>
+          </>
+        }
+      >
+        <StoryCodeBlock>
+          {`const readOnlyNodeIds = useMemo(
+  () => new Set(['agent-1', 'tool-1']),
+  []
+);
+
+<BaseCanvas
+  mode="design"
+  readOnlyNodeIds={readOnlyNodeIds}
+  nodes={nodes}
+  edges={edges}
+/>
+
+function CustomNode({ id }: NodeProps) {
+  const isReadOnly = useIsNodeReadOnly(id);
+  return <CustomEditor disabled={isReadOnly} />;
+}`}
+        </StoryCodeBlock>
+      </StorySection>
+    </StoryPage>
+  );
+}
+
+export const PerNodeReadOnly: Story = {
+  name: 'Per-Node Read-Only',
+  render: (_, { globals }) => <PerNodeReadOnlyPage globalTheme={globals.theme || 'future-dark'} />,
 };
