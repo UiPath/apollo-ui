@@ -62,6 +62,13 @@ export const nodeDisplayManifestSchema = z.object({
    * flush with the canvas (e.g. trigger entry points).
    */
   shadow: z.boolean().optional(),
+
+  /**
+   * Container/loop nodes only: whether to render the Sequential / Parallel
+   * iteration-mode pill in the header. Defaults to `true`. Set to `false` for
+   * container flavors where iteration mode is meaningless (e.g. case stages).
+   */
+  showModePill: z.boolean().optional(),
 });
 
 /**

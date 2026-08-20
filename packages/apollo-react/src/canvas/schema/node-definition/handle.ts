@@ -32,6 +32,16 @@ export const handleTypeDisplaySchema = z.enum(['artifact', 'input', 'output']);
  */
 export const handleLabelVisibilitySchema = z.enum(['always', 'hover']);
 
+/**
+ * Visual variant of a handle.
+ * - `default`: the standard notch connection handle.
+ * - `marker`: a small circular icon badge on the node boundary. Used for
+ *   semantic affordances that belong to the node itself (e.g. a case task's
+ *   event / manual trigger) rather than plain connection points. Marker
+ *   handles keep normal handle identity so edges and constraints still work.
+ */
+export const handleVariantSchema = z.enum(['default', 'marker']);
+
 export const handleConfigurationSpecificPositionSchema = z.object({
   /** The height of the area where the handles will be located in the node. Has no effect if no top or bottom is set. */
   height: z.number().optional(),
@@ -115,11 +125,31 @@ export const handleManifestSchema = z.object({
   /** When this handle's label is shown. Defaults to `always`. */
   labelVisibility: handleLabelVisibilitySchema.optional(),
 
+  /** Visual variant. Defaults to `default` (notch handle). */
+  variant: handleVariantSchema.optional(),
+
+  /** Canvas icon name rendered inside a `marker` variant handle (e.g. 'zap', 'play'). */
+  icon: z.string().optional(),
+
   /** Connection constraints for this handle */
   constraints: connectionConstraintSchema.optional(),
 
   /** Whether this handle is the default for its type. Helps determine how to connect when node is newly added. */
   isDefaultForType: z.boolean().optional(),
+
+  /**
+   * Container nodes only: walls this handle's label pill may be dragged along
+   * (grid-snapped, kept clear of corners). Omit to keep the handle fixed.
+   * The drag writes per-node offsets into `data.handleOffsets`.
+   */
+  draggableWalls: z.array(handlePositionSchema).optional(),
+
+  /**
+   * Container nodes only: id of a sibling handle (typically the outer
+   * counterpart of an inner lifecycle handle) that follows this handle's
+   * dragged wall + offset so the pair stays glued together.
+   */
+  dragMirrors: z.string().optional(),
 });
 
 /**
@@ -135,6 +165,24 @@ export const handleGroupManifestSchema = z.object({
    * Defaults to `outer` when omitted.
    */
   boundary: handleBoundarySchema.optional(),
+
+  /**
+   * When true, the group's handles (and their labels) render at all times
+   * instead of only on hover / selection / while connecting. Used by
+   * container-style nodes for permanently visible lifecycle handles (e.g. the
+   * case stage's inner Enter / Complete / Exit). Connected handles are always
+   * visible regardless of this flag.
+   */
+  alwaysVisible: z.boolean().optional(),
+
+  /**
+   * Lay the group out as if it had this many handle slots (must be >= the
+   * actual handle count; ignored otherwise). Handles fill slots from the
+   * first. Lets a group with fewer handles align with a sibling group on the
+   * opposite wall: e.g. the case stage's single Enter handle uses slotCount 2
+   * so it sits level with Complete, the first of the right wall's pair.
+   */
+  slotCount: z.number().int().positive().optional(),
 
   customPositionAndOffsets: handleConfigurationSpecificPositionSchema.optional(),
 
@@ -166,6 +214,7 @@ export type HandleBoundary = z.infer<typeof handleBoundarySchema>;
 export type HandleType = z.infer<typeof handleTypeSchema>;
 export type HandleCategory = z.infer<typeof handleTypeDisplaySchema>;
 export type HandleLabelVisibility = z.infer<typeof handleLabelVisibilitySchema>;
+export type HandleVariant = z.infer<typeof handleVariantSchema>;
 export type HandleManifest = z.infer<typeof handleManifestSchema>;
 export type HandleGroupManifest = z.infer<typeof handleGroupManifestSchema>;
 export type HandleGroupOverride = z.infer<typeof handleGroupOverrideSchema>;
