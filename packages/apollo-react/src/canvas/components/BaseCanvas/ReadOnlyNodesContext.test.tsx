@@ -1,8 +1,10 @@
 import { render, renderHook, screen } from '@testing-library/react';
 import { memo, type PropsWithChildren } from 'react';
+import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
   ReadOnlyNodesProvider,
+  useIsConnectionReadOnly,
   useIsNodeReadOnly,
   useStableNodeIdSet,
 } from './ReadOnlyNodesContext';
@@ -11,6 +13,10 @@ function wrapperWith(ids?: ReadonlySet<string>) {
   return ({ children }: PropsWithChildren) => (
     <ReadOnlyNodesProvider readOnlyNodeIds={ids}>{children}</ReadOnlyNodesProvider>
   );
+}
+
+function ConnectionProbe({ source, target }: { source: string; target: string }) {
+  return <span data-frozen={String(useIsConnectionReadOnly(source, target))} />;
 }
 
 describe('useIsNodeReadOnly', () => {
@@ -96,6 +102,16 @@ describe('ReadOnlyNodesProvider updates', () => {
     const readOnly = useIsNodeReadOnly(id);
     counts[id] = (counts[id] ?? 0) + 1;
     return <span data-testid={`probe-${id}`}>{String(readOnly)}</span>;
+  });
+
+  it('starts with a frozen connection when both endpoints are locked', () => {
+    const markup = renderToString(
+      <ReadOnlyNodesProvider readOnlyNodeIds={new Set(['a', 'b'])}>
+        <ConnectionProbe source="a" target="b" />
+      </ReadOnlyNodesProvider>
+    );
+
+    expect(markup).toContain('data-frozen="true"');
   });
 
   it('re-renders only the nodes whose lock state changed', () => {

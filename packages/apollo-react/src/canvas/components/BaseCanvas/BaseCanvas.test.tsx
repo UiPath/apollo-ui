@@ -21,6 +21,7 @@ vi.mock('./BaseCanvas.hooks', () => ({
   }),
   useMaintainNodesInView: vi.fn(),
   useReadOnlyBeforeDelete: () => undefined,
+  useReadOnlyEdgeIds: () => new Set<string>(),
 }));
 
 // Mock ReactFlow

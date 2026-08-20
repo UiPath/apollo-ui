@@ -20,6 +20,14 @@ export interface PreviewGraph {
   edges: Edge[];
 }
 
+export interface PreviewApplicationOptions {
+  /**
+   * Re-checks the live edge list just before the preview lands and drops it entirely if the edge the user
+   * targeted has since been deleted, rewired, or made read-only.
+   */
+  canApply?: (edges: Edge[]) => boolean;
+}
+
 /** Node/handle pair used for preview graph endpoints. */
 export interface PreviewEndpoint {
   nodeId: string;
@@ -202,10 +210,13 @@ export function createPreviewGraph(options: CreatePreviewGraphOptions): PreviewG
  * Returns the created preview graph when successful so callers can still
  * inspect the result if needed.
  */
-export function showPreviewGraph(options: CreatePreviewGraphOptions): PreviewGraph | null {
+export function showPreviewGraph(
+  options: CreatePreviewGraphOptions,
+  applicationOptions: PreviewApplicationOptions = {}
+): PreviewGraph | null {
   const preview = createPreviewGraph(options);
   if (preview) {
-    applyPreviewGraphToReactFlow(preview, options.reactFlowInstance);
+    applyPreviewGraphToReactFlow(preview, options.reactFlowInstance, applicationOptions);
   }
   return preview;
 }
@@ -217,21 +228,29 @@ export function showPreviewGraph(options: CreatePreviewGraphOptions): PreviewGra
  */
 export function applyPreviewGraphToReactFlow(
   preview: PreviewGraph,
-  reactFlowInstance: ReactFlowInstance
+  reactFlowInstance: ReactFlowInstance,
+  { canApply }: PreviewApplicationOptions = {}
 ): void {
   const originalEdge = preview.node.data?.originalEdge as Edge | undefined;
 
-  setTimeout(() => {
+  const applyNodes = () => {
     reactFlowInstance.setNodes((nodes) => [
       ...nodes
         .filter((node) => node.id !== PREVIEW_NODE_ID)
         .map((node) => ({ ...node, selected: false })),
       preview.node,
     ]);
+  };
 
-    reactFlowInstance.setEdges((edges) => [
-      ...edges.filter((edge) => !isPreviewEdge(edge) && edge.id !== originalEdge?.id),
-      ...preview.edges,
-    ]);
+  const applyEdges = (edges: Edge[]) => [
+    ...edges.filter((edge) => !isPreviewEdge(edge) && edge.id !== originalEdge?.id),
+    ...preview.edges,
+  ];
+
+  setTimeout(() => {
+    if (canApply?.(reactFlowInstance.getEdges()) === false) return;
+
+    applyNodes();
+    reactFlowInstance.setEdges(applyEdges);
   }, 0);
 }

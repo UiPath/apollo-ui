@@ -1,10 +1,16 @@
 import { renderHook } from '@testing-library/react';
 import type { Edge, Node, OnBeforeDelete } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
-import { useReadOnlyBeforeDelete } from './BaseCanvas.hooks';
+import { useReadOnlyBeforeDelete, useReadOnlyEdgeIds } from './BaseCanvas.hooks';
 
 const node = (id: string): Node => ({ id, position: { x: 0, y: 0 }, data: {} });
 const edge = (id: string, source: string, target: string): Edge => ({ id, source, target });
+
+// a -> b entirely inside the lockable region; b -> c reaches outside it.
+const makeEdges = (): Edge[] => [
+  { id: 'a-b', source: 'a', target: 'b' },
+  { id: 'b-c', source: 'b', target: 'c' },
+];
 
 const EMPTY: ReadonlySet<string> = new Set();
 
@@ -68,6 +74,20 @@ describe('useReadOnlyBeforeDelete', () => {
     await expect(run()).resolves.toEqual({ nodes: [], edges: [edge('a-c', 'a', 'c')] });
   });
 
+  // A frozen connection (both endpoints locked) is undeletable in its own right,
+  // not just as a side effect of its nodes being vetoed.
+  it('vetoes an explicitly selected frozen edge', async () => {
+    const { run } = guardWith(new Set(['a', 'b']), undefined, { edges: [edge('a-b', 'a', 'b')] });
+
+    await expect(run()).resolves.toEqual({ nodes: [], edges: [] });
+  });
+
+  it('leaves an edge with one locked endpoint deletable', async () => {
+    const { run } = guardWith(new Set(['a']), undefined, { edges: [edge('a-b', 'a', 'b')] });
+
+    await expect(run()).resolves.toEqual({ nodes: [], edges: [edge('a-b', 'a', 'b')] });
+  });
+
   it('honors a consumer veto of the whole deletion', async () => {
     const consumer = vi.fn().mockResolvedValue(false);
     const { run } = guardWith(new Set(['a']), consumer, { nodes: [node('a'), node('b')] });
@@ -91,5 +111,22 @@ describe('useReadOnlyBeforeDelete', () => {
     const first = result.current;
     rerender({ s: locked });
     expect(result.current).toBe(first);
+  });
+});
+
+describe('useReadOnlyEdgeIds', () => {
+  it('returns no frozen edges when no nodes are locked', () => {
+    const { result } = renderHook(() => useReadOnlyEdgeIds(makeEdges(), EMPTY));
+    expect(result.current.size).toBe(0);
+  });
+
+  it('freezes an edge when both connected nodes are locked', () => {
+    const { result } = renderHook(() => useReadOnlyEdgeIds(makeEdges(), new Set(['a', 'b'])));
+    expect([...result.current]).toEqual(['a-b']);
+  });
+
+  it('keeps an edge editable when either connected node is unlocked', () => {
+    const { result } = renderHook(() => useReadOnlyEdgeIds(makeEdges(), new Set(['a'])));
+    expect(result.current.size).toBe(0);
   });
 });

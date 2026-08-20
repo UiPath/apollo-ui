@@ -22,12 +22,14 @@ import {
   useEnsureNodesInView,
   useMaintainNodesInView,
   useReadOnlyBeforeDelete,
+  useReadOnlyEdgeIds,
 } from './BaseCanvas.hooks';
 import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
 import { CanvasBackground } from './CanvasBackground';
 import { CanvasProviders } from './CanvasProviders';
 import { PanShortcutTeachingUI } from './PanShortcutTeachingUI';
 import { useStableNodeIdSet } from './ReadOnlyNodesContext';
+import { useReadOnlyConnectionCallbacks } from './useReadOnlyConnectionCallbacks';
 
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
   props: BaseCanvasProps<NodeType, EdgeType> & {
@@ -73,8 +75,12 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     onNodesChange,
     onEdgesChange,
     onConnect,
+    onReconnect,
+    onReconnectStart,
+    onReconnectEnd,
     onConnectStart,
     onConnectEnd,
+    isValidConnection,
     onNodeClick,
     onNodeDragStart,
     onNodeDrag,
@@ -117,12 +123,18 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   // Derive interactivity from mode
   const isInteractive = mode !== 'readonly';
   const isDesignMode = mode === 'design';
+
+  // Per-node read-only: stabilize the set by content, then apply React Flow's
+  // flags. Only edges with both endpoints locked are frozen.
   const stableReadOnlyNodeIds = useStableNodeIdSet(readOnlyNodeIds);
+  const readOnlyEdgeIds = useReadOnlyEdgeIds(edges, stableReadOnlyNodeIds);
   const guardedBeforeDelete = useReadOnlyBeforeDelete(stableReadOnlyNodeIds, onBeforeDelete);
 
   // `onBeforeDelete` already covers every React Flow deletion path. This is the
-  // safety net for consumers that invoke the change handler directly. Layout
-  // changes pass through: position and size are layout, not content.
+  // safety net for a consumer calling the change handler directly. `replace`
+  // and layout changes pass through on purpose: React Flow emits `replace` for
+  // layout writes such as BaseNode's height sync, and position and size are
+  // layout rather than content.
   const handleNodesChange = useMemo(() => {
     if (!onNodesChange || stableReadOnlyNodeIds.size === 0) return onNodesChange;
     const guarded: typeof onNodesChange = (changes) => {
@@ -133,6 +145,26 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     };
     return guarded;
   }, [onNodesChange, stableReadOnlyNodeIds]);
+
+  const handleEdgesChange = useMemo(() => {
+    if (!onEdgesChange || readOnlyEdgeIds.size === 0) return onEdgesChange;
+    const guarded: typeof onEdgesChange = (changes) => {
+      const allowed = changes.filter((change) =>
+        change.type === 'remove' ? !readOnlyEdgeIds.has(change.id) : true
+      );
+      if (allowed.length > 0) onEdgesChange(allowed);
+    };
+    return guarded;
+  }, [onEdgesChange, readOnlyEdgeIds]);
+
+  const { guardedIsValidConnection, guardedOnConnect, guardedOnReconnect, guardedOnReconnectEnd } =
+    useReadOnlyConnectionCallbacks<EdgeType>({
+      readOnlyNodeIds: stableReadOnlyNodeIds,
+      isValidConnection,
+      onConnect,
+      onReconnect,
+      onReconnectEnd,
+    });
 
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance<NodeType, EdgeType>>();
@@ -192,6 +224,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         colorMode={'' as unknown as ColorMode}
         nodes={nodes}
         edges={edges}
+        isValidConnection={guardedIsValidConnection}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitViewOptions={fitViewOptions}
@@ -217,9 +250,12 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         panOnDrag={isInteractive ? PAN_ON_DRAG : false}
         onInit={handleInit}
         onNodesChange={isInteractive ? handleNodesChange : undefined}
-        onEdgesChange={isInteractive ? onEdgesChange : undefined}
+        onEdgesChange={isInteractive ? handleEdgesChange : undefined}
         onBeforeDelete={guardedBeforeDelete}
-        onConnect={isDesignMode ? onConnect : undefined}
+        onConnect={isDesignMode ? guardedOnConnect : undefined}
+        onReconnect={isDesignMode ? guardedOnReconnect : undefined}
+        onReconnectStart={isDesignMode ? onReconnectStart : undefined}
+        onReconnectEnd={isDesignMode ? guardedOnReconnectEnd : undefined}
         onConnectStart={isDesignMode ? onConnectStart : undefined}
         onConnectEnd={isDesignMode ? onConnectEnd : undefined}
         onNodeClick={isInteractive ? onNodeClick : undefined}

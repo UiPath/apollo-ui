@@ -9,6 +9,7 @@ import { createElement, type ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PREVIEW_NODE_ID } from '../../../constants';
 import { NodeRegistryContext, type NodeTypeRegistry } from '../../../core';
+import { ReadOnlyNodesProvider } from '../../BaseCanvas/ReadOnlyNodesContext';
 import type { EdgeToolbarPositionData } from './EdgeToolbar.types';
 import { useEdgeToolbarState } from './useEdgeToolbarState';
 
@@ -88,6 +89,17 @@ function createContainerRegistry(): NodeTypeRegistry {
           }
     ),
   } as unknown as NodeTypeRegistry;
+}
+
+// Reads the ids on every render so a test can lock nodes between renders.
+function createReadOnlyWrapper(getReadOnlyNodeIds: () => ReadonlySet<string>) {
+  return function ReadOnlyWrapper({ children }: { children: ReactNode }) {
+    return createElement(
+      ReadOnlyNodesProvider,
+      { readOnlyNodeIds: getReadOnlyNodeIds() },
+      children
+    );
+  };
 }
 
 function createRegistryWrapper(registry: NodeTypeRegistry) {
@@ -193,6 +205,19 @@ describe('useEdgeToolbarState', () => {
       expect(result.current.showToolbar).toBe(false);
     });
 
+    it('should not show toolbar for a frozen connection', () => {
+      const { result } = renderHook(
+        () =>
+          useEdgeToolbarState({
+            ...defaultProps,
+            isHovered: true,
+          }),
+        { wrapper: createReadOnlyWrapper(() => new Set(['node-1', 'node-2'])) }
+      );
+
+      expect(result.current.showToolbar).toBe(false);
+    });
+
     it('should not show toolbar when positionData is null', () => {
       vi.mocked(useEdgeToolbarPositioning).mockReturnValue({
         positionData: null,
@@ -276,6 +301,64 @@ describe('useEdgeToolbarState', () => {
   });
 
   describe('add node action', () => {
+    // The action and the preview it requests are checked at two different
+    // moments: `showPreviewGraph` defers the graph edit, so the hook also hands
+    // it a `canApply` guard that re-checks the edge just before it lands.
+    describe('read-only guards', () => {
+      const renderWithLocks = () => {
+        let readOnlyNodeIds: ReadonlySet<string> = new Set();
+        const view = renderHook(() => useEdgeToolbarState({ ...defaultProps, isHovered: true }), {
+          wrapper: createReadOnlyWrapper(() => readOnlyNodeIds),
+        });
+
+        return {
+          ...view,
+          lockEndpoints: () => {
+            readOnlyNodeIds = new Set(['node-1', 'node-2']);
+            view.rerender();
+          },
+        };
+      };
+
+      const addNode = (result: { current: ReturnType<typeof useEdgeToolbarState> }) => {
+        act(() => {
+          result.current.config.actions[0]?.onAction('edge-1', { x: 150, y: 100 });
+        });
+      };
+
+      const lastCanApply = () => vi.mocked(showPreviewGraph).mock.calls[0]?.[1]?.canApply;
+
+      it('blocks the action when both endpoints are locked before it runs', () => {
+        const { result, lockEndpoints } = renderWithLocks();
+
+        lockEndpoints();
+        addNode(result);
+
+        expect(showPreviewGraph).not.toHaveBeenCalled();
+      });
+
+      it('cancels the preview when both endpoints are locked before it opens', () => {
+        const { result, lockEndpoints } = renderWithLocks();
+
+        addNode(result);
+        lockEndpoints();
+
+        expect(lastCanApply()?.([originalEdge])).toBe(false);
+      });
+
+      it('cancels the preview when the edge is reconnected or removed before it opens', () => {
+        const { result } = renderWithLocks();
+
+        addNode(result);
+        const canApply = lastCanApply();
+
+        expect(canApply?.([originalEdge])).toBe(true);
+        expect(canApply?.([{ ...originalEdge, targetHandle: 'other-input' }])).toBe(false);
+        expect(canApply?.([{ ...originalEdge, target: 'node-3' }])).toBe(false);
+        expect(canApply?.([])).toBe(false);
+      });
+    });
+
     it('should create preview node at given position', () => {
       const { result } = renderHook(() =>
         useEdgeToolbarState({
@@ -290,25 +373,28 @@ describe('useEdgeToolbarState', () => {
         result.current.config.actions[0]?.onAction('edge-1', position);
       });
 
-      expect(showPreviewGraph).toHaveBeenCalledWith({
-        source: {
-          nodeId: 'node-1',
-          handleId: 'output',
+      expect(showPreviewGraph).toHaveBeenCalledWith(
+        {
+          source: {
+            nodeId: 'node-1',
+            handleId: 'output',
+          },
+          reactFlowInstance: mockReactFlowInstance,
+          position,
+          positionMode: 'drop',
+          data: {
+            originalEdge,
+          },
+          sourceHandleType: 'source',
+          handlePosition: Position.Right,
+          ignoredNodeTypes: [],
+          target: {
+            nodeId: 'node-2',
+            handleId: 'input',
+          },
         },
-        reactFlowInstance: mockReactFlowInstance,
-        position,
-        positionMode: 'drop',
-        data: {
-          originalEdge,
-        },
-        sourceHandleType: 'source',
-        handlePosition: Position.Right,
-        ignoredNodeTypes: [],
-        target: {
-          nodeId: 'node-2',
-          handleId: 'input',
-        },
-      });
+        { canApply: expect.any(Function) }
+      );
     });
 
     it('should not create a preview when the edge is no longer in the store', () => {
@@ -374,7 +460,8 @@ describe('useEdgeToolbarState', () => {
             nodeId: 'node-2',
             handleId: 'input',
           },
-        })
+        }),
+        { canApply: expect.any(Function) }
       );
       expect(vi.mocked(showPreviewGraph).mock.calls[0]?.[0]).not.toHaveProperty('containerId');
     });
@@ -504,11 +591,19 @@ describe('useEdgeToolbarState', () => {
         measured: { width: 80, height: 40 },
         data: {},
       };
+      const structuralEdge: Edge = {
+        ...originalEdge,
+        source: childNode.id,
+        sourceHandle: 'output',
+        target: containerNode.id,
+        targetHandle: 'continue',
+      };
       const nodes = [containerNode, childNode];
       mockReactFlowInstance.getNode.mockImplementation((id: string) =>
         nodes.find((node) => node.id === id)
       );
       mockReactFlowInstance.getNodes.mockReturnValue(nodes);
+      mockReactFlowInstance.getEdges.mockReturnValue([structuralEdge]);
 
       const { result } = renderHook(() =>
         useEdgeToolbarState({
@@ -536,7 +631,8 @@ describe('useEdgeToolbarState', () => {
             nodeId: 'loop-1',
             handleId: 'continue',
           },
-        })
+        }),
+        { canApply: expect.any(Function) }
       );
       expect(vi.mocked(showPreviewGraph).mock.calls[0]?.[0]).not.toHaveProperty('containerId');
     });
