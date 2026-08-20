@@ -59,6 +59,8 @@ import { ph } from "../data/placeholders";
 import { TERM_YEARS } from "../data/req-10482";
 import { ExceptionEvidence, exceptionHeadline } from "../ExceptionEvidence";
 import { P2 } from "../P2";
+import { usePersona } from "../persona-context";
+import { PERSONAS } from "../personas";
 import { ActivityTrack } from "./ActivityTrack";
 import { avatarColorFor } from "./avatar-color";
 import { CommunicationCard } from "./CommunicationCard";
@@ -233,6 +235,7 @@ export function DecisionWindow() {
   const composerRef = useRef<HTMLTextAreaElement>(null);
 
   const railRef = useRef<RequestRecordRailHandle>(null);
+  const { personaId } = usePersona();
 
   const detail = getDecisionDetail(id);
 
@@ -252,6 +255,13 @@ export function DecisionWindow() {
   const requesterFirstName = detail.requester.split(" ")[0] ?? detail.requester;
   const requesterAvatarColor = avatarColorFor(detail.requester);
   const approverFirstName = detail.approver.split(" · ")[0] ?? detail.approver;
+
+  // cleanup FIX: the composer's avatar used to reuse detail.requester too
+  // (the recipient), which is correct for the placeholder naming who's
+  // being asked but wrong for the avatar, which should be whoever is
+  // sending it — the active approver seat, not the requester.
+  const activePersonaName = PERSONAS[personaId].name;
+  const activePersonaAvatarColor = avatarColorFor(activePersonaName);
 
   // The same checks the AI zone's summary sentence reads from. The list
   // can't assert something the sentence contradicts.
@@ -629,11 +639,11 @@ export function DecisionWindow() {
                       <AvatarFallback
                         className={cn(
                           "text-[9px] font-semibold",
-                          requesterAvatarColor.bg,
-                          requesterAvatarColor.fg,
+                          activePersonaAvatarColor.bg,
+                          activePersonaAvatarColor.fg,
                         )}
                       >
-                        {initialsOf(detail.requester)}
+                        {initialsOf(activePersonaName)}
                       </AvatarFallback>
                     </Avatar>
                     <Button

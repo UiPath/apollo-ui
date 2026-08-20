@@ -44,6 +44,8 @@ import { ConfirmCheck } from "../ConfirmCheck";
 import { CATALOG_ITEMS, leadTime } from "../catalog/v1/data";
 import { P1 } from "../P1";
 import { P2 } from "../P2";
+import { usePersona } from "../persona-context";
+import { PERSONAS } from "../personas";
 import { ActivityTrack } from "./ActivityTrack";
 import { avatarColorFor } from "./avatar-color";
 import { CommunicationCard } from "./CommunicationCard";
@@ -144,6 +146,7 @@ export function RequestWindow() {
     fieldExceptions,
   } = useRequests();
   const reduceMotion = useReducedMotion();
+  const { personaId } = usePersona();
 
   const [draft, setDraft] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -304,6 +307,19 @@ export function RequestWindow() {
   const approverFullName = detail.approver?.split(" · ")[0];
   const approverFirst = approverFullName?.split(" ")[0];
   const supplierName = row?.supplier;
+
+  // cleanup FIX: the composer's avatar used to reuse approverFullName too
+  // (the recipient), which is correct for the placeholder naming who gets
+  // the message but wrong for the avatar, which should be whoever is
+  // sending it — the active persona, not the other party.
+  const activePersonaName = PERSONAS[personaId].name;
+  const activePersonaInitials =
+    activePersonaName
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ?? "?";
 
   // Need-by proximity chip — only surfaced once it's close enough to matter,
   // either side of the date. Comfortably-ahead dates get no chip at all.
@@ -1040,15 +1056,11 @@ export function RequestWindow() {
                           <AvatarFallback
                             className={cn(
                               "text-[9px] font-semibold",
-                              avatarColorFor(
-                                approverFullName ?? "Your approver",
-                              ).bg,
-                              avatarColorFor(
-                                approverFullName ?? "Your approver",
-                              ).fg,
+                              avatarColorFor(activePersonaName).bg,
+                              avatarColorFor(activePersonaName).fg,
                             )}
                           >
-                            {approverInitials}
+                            {activePersonaInitials}
                           </AvatarFallback>
                         </Avatar>
                         <Button
