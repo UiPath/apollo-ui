@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-ui-icons",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "UiPath Apollo icon set - tree-shakeable SVG exports",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
