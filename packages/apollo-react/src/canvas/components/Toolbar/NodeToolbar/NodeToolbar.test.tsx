@@ -137,6 +137,28 @@ describe('NodeToolbar', () => {
       expect(mockDisabledAction.onAction).not.toHaveBeenCalled();
     });
 
+    // A disabled button emits no pointer events, so its label tooltip only
+    // survives if the trigger sits on a wrapper around it. Tooltip content
+    // itself is unassertable here (the Radix tooltip is mocked out globally in
+    // src/test/canvas-mocks.ts), so this guards the hover target instead.
+    it('gives a disabled action a hover target so its tooltip still works', () => {
+      const configWithDisabled: NodeToolbarConfig = {
+        actions: [mockDisabledAction],
+        position: 'top',
+      };
+
+      render(<NodeToolbar {...defaultProps} config={configWithDisabled} />);
+
+      const hoverTarget = screen.getByTestId('toolbar-action-hover-target');
+      expect(hoverTarget).toContainElement(screen.getByLabelText('Locked'));
+    });
+
+    it('does not wrap an enabled action, which is hoverable on its own', () => {
+      render(<NodeToolbar {...defaultProps} />);
+
+      expect(screen.queryByTestId('toolbar-action-hover-target')).not.toBeInTheDocument();
+    });
+
     it('should call onAction with correct nodeId', async () => {
       const differentNodeId = 'different-node';
       render(<NodeToolbar {...defaultProps} nodeId={differentNodeId} />);

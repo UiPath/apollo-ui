@@ -2,8 +2,10 @@ import { vi } from 'vitest';
 import type { AgentFlowProps } from '../../types';
 import { render, screen } from '../../utils/testing';
 
-// Mock BaseCanvas hooks to avoid ReactFlow dependencies in tests
-vi.mock('../BaseCanvas/BaseCanvas.hooks', () => ({
+// Mock the BaseCanvas viewport hooks to avoid ReactFlow dependencies in tests.
+// The rest of the module is kept so newly added hooks don't break this mock.
+vi.mock('../BaseCanvas/BaseCanvas.hooks', async () => ({
+  ...(await vi.importActual('../BaseCanvas/BaseCanvas.hooks')),
   useAutoLayout: () => ({
     isReady: true,
   }),

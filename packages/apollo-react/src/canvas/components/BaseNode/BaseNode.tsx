@@ -36,11 +36,13 @@ import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
+import { useIsNodeReadOnly } from '../BaseCanvas/ReadOnlyNodesContext';
 import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import { SmartHandle, SmartHandleProvider } from '../ButtonHandle/SmartHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { InitialsBadge } from '../shared/InitialsBadge';
+import type { NodeToolbarConfig, ToolbarAction } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
 import type {
   BaseNodeData,
@@ -54,6 +56,16 @@ import { BaseContainer } from './BaseNodeContainer';
 import { BaseInnerShape } from './BaseNodeInnerShape';
 import { MissingManifestNode } from './BaseNodeMissingManifest';
 import { NodeLabel } from './NodeLabel';
+
+/** Stable predicate used to hard-disable add buttons on read-only nodes. */
+const NEVER_SHOW_ADD_BUTTON = () => false;
+
+/**
+ * Returns the actions with every item disabled, separators untouched. Used to
+ * lock a read-only node's toolbar instead of unmounting it.
+ */
+const disableToolbarActions = (actions: ToolbarAction[]): ToolbarAction[] =>
+  actions.map((action) => (action.id === 'separator' ? action : { ...action, disabled: true }));
 
 const getContainerWidth = (shape: NodeShape | undefined, width: number | undefined) => {
   const defaultWidth = shape === 'rectangle' ? DEFAULT_RECTANGLE_NODE_WIDTH : DEFAULT_NODE_SIZE;
@@ -120,6 +132,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const validationState = useElementValidationStatus(id);
   const nodeTypeRegistry = useNodeTypeRegistry();
   const { mode } = useBaseCanvasMode();
+  const isNodeReadOnly = useIsNodeReadOnly(id);
+  // Per-node read-only composes with canvas mode: a node is editable only in
+  // design mode AND when not individually locked via readOnlyNodeIds.
+  const canEdit = mode === 'design' && !isNodeReadOnly;
 
   // Use context for connected handles - O(1) lookup instead of O(edges) per node
   const connectedHandleIds = useConnectedHandles(id);
@@ -156,7 +172,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   // Callbacks: Use props only (no longer in data)
   const onHandleActionCallback = onHandleActionProp;
-  const shouldShowAddButtonFn = shouldShowAddButtonFnProp;
+  // A locked node drops the custom predicate: predicates commonly OR in their
+  // own conditions (`showAddButton || selected`), which would hand the button
+  // back on selection. Canvas-mode readonly still honors it, as before.
+  const shouldShowAddButtonFn = isNodeReadOnly ? NEVER_SHOW_ADD_BUTTON : shouldShowAddButtonFnProp;
   const shouldShowButtonHandleNotchesFn = shouldShowButtonHandleNotchesFnProp;
 
   // Use executionStatusOverride if provided, otherwise use hook value
@@ -235,6 +254,24 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     // Priority 2: Manifest default
     return manifest ? resolveToolbar(manifest, statusContext) : undefined;
   }, [toolbarConfigProp, manifest, statusContext]);
+
+  // A locked node keeps its toolbar and disables it rather than hiding it: the
+  // greyed-out actions (with their tooltips intact) say "read-only", where a
+  // missing toolbar just reads as a node with nothing to offer. Disabling is
+  // also real enforcement, since a consumer's `onAction` never reaches the
+  // canvas-level delete veto.
+  const effectiveToolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
+    if (!toolbarConfig || !isNodeReadOnly) {
+      return toolbarConfig;
+    }
+    return {
+      ...toolbarConfig,
+      actions: disableToolbarActions(toolbarConfig.actions),
+      ...(toolbarConfig.overflowActions && {
+        overflowActions: disableToolbarActions(toolbarConfig.overflowActions),
+      }),
+    };
+  }, [toolbarConfig, isNodeReadOnly]);
 
   // Adornments resolution: use default resolver, then override with props if provided
   const adornments: NodeAdornments = useMemo(() => {
@@ -479,9 +516,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     const isAddButtonShown = () => {
       // SmartHandle add buttons require selection (and ignore connect/drag state).
       if (useSmartHandles) {
-        return mode === 'design' && !!selected;
+        return canEdit && !!selected;
       }
-      const showAddButton = mode === 'design' && !isConnecting && !dragging;
+      const showAddButton = canEdit && !isConnecting && !dragging;
       if (shouldShowAddButtonFn) {
         return shouldShowAddButtonFn({ showAddButton, selected: !!selected });
       }
@@ -496,7 +533,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     return false;
   }, [
     toolbarSideHandleAffordances,
-    mode,
+    canEdit,
     multipleNodesSelected,
     useSmartHandles,
     selected,
@@ -517,7 +554,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     nodeId: id,
     selected: selected ?? false,
     hovered: isHovered,
-    showAddButton: mode === 'design' && !multipleNodesSelected && !isConnecting && !dragging,
+    showAddButton: canEdit && !multipleNodesSelected && !isConnecting && !dragging,
     showNotches,
     // Deterministic geometry (not the measured props) so handles are grid-aligned from first render.
     nodeWidth: containerWidth,
@@ -552,8 +589,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         const isVisible = hasConnection || (shouldShowHandles && configVisible);
 
         // Determine if add button should be shown (hide when multiple nodes selected)
-        const shouldShowButton =
-          mode === 'design' && selected && handle.showButton && !multipleNodesSelected;
+        const shouldShowButton = canEdit && selected && handle.showButton && !multipleNodesSelected;
 
         return (
           <SmartHandle
@@ -583,7 +619,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     shouldShowHandles,
     containerWidth,
     computedHeight,
-    mode,
+    canEdit,
     selected,
     showNotches,
     handleAction,
@@ -680,17 +716,18 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           hasBottomHandles={hasVisibleBottomHandles}
           selected={selected}
           dragging={dragging}
-          readonly={mode !== 'design'}
+          readonly={!canEdit}
+          discardDraftOnReadonly={isNodeReadOnly}
           onChange={handleLabelChange}
         />
         {displayFooter && (
           <div className="basis-full pt-0.5 min-w-0 overflow-hidden">{displayFooter}</div>
         )}
       </BaseContainer>
-      {toolbarConfig && (
+      {effectiveToolbarConfig && (
         <NodeToolbar
           nodeId={id}
-          config={toolbarConfig}
+          config={effectiveToolbarConfig}
           expanded={selected || isHovered}
           hidden={dragging || multipleNodesSelected}
           offsetToolbar={offsetToolbar}

@@ -185,12 +185,16 @@ const EditableLabel = forwardRef<HTMLTextAreaElement, EditableLabelProps>(
 EditableLabel.displayName = 'EditableLabel';
 
 interface EmptyLabelPlaceholderProps {
+  disabled?: boolean;
   onDoubleClick?: (e: React.MouseEvent) => void;
 }
 
-const EmptyLabelPlaceholder = ({ onDoubleClick }: EmptyLabelPlaceholderProps) => (
+// `disabled` keeps the placeholder out of the tab order when read-only, so it
+// can't be focused to announce an action it won't perform.
+const EmptyLabelPlaceholder = ({ disabled, onDoubleClick }: EmptyLabelPlaceholderProps) => (
   <button
     type="button"
+    disabled={disabled}
     onDoubleClick={onDoubleClick}
     className="nodrag nowheel text-sm leading-[18px] font-semibold text-foreground-muted bg-transparent border border-dashed border-border-de-emp rounded-sm cursor-pointer opacity-0 transition-opacity duration-200 min-w-5 min-h-5 hover:opacity-100"
     aria-label="Add node label"
@@ -209,6 +213,8 @@ export interface NodeLabelProps {
   dragging?: boolean;
   centerAdornment?: React.ReactNode;
   readonly?: boolean;
+  /** Discard rather than commit an in-progress edit when `readonly` turns on. */
+  discardDraftOnReadonly?: boolean;
   onChange?: (values: { label: string; subLabel: string }) => void;
 }
 
@@ -223,6 +229,7 @@ const NodeLabelInternal = ({
   dragging,
   centerAdornment,
   readonly,
+  discardDraftOnReadonly,
   onChange,
 }: NodeLabelProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -273,19 +280,24 @@ const NodeLabelInternal = ({
     }
   }, [isEditing, focusTarget]);
 
-  // Exit edit mode when node is deselected, dragged, or set to readonly
-  useEffect(() => {
-    if (isEditing && (!selected || dragging || readonly)) {
-      handleSave();
-    }
-  }, [selected, dragging, isEditing, readonly, handleSave]);
-
   const handleCancel = useCallback(() => {
     setIsEditing(false);
     setFocusTarget(null);
     setLocalLabel(label);
     setLocalSubLabel(subLabel);
   }, [label, subLabel]);
+
+  // Exit edit mode when deselected, dragged, or set to readonly. A per-node
+  // lock discards the draft: locking is often an execution lock and must not
+  // mutate data as a side effect. Every other exit commits.
+  useEffect(() => {
+    if (!isEditing) return;
+    if (readonly && discardDraftOnReadonly) {
+      handleCancel();
+    } else if (!selected || dragging || readonly) {
+      handleSave();
+    }
+  }, [selected, dragging, isEditing, readonly, discardDraftOnReadonly, handleSave, handleCancel]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -322,6 +334,7 @@ const NodeLabelInternal = ({
     return (
       <BaseTextContainer hasBottomHandles={hasBottomHandles} shape={shape}>
         <EmptyLabelPlaceholder
+          disabled={readonly}
           onDoubleClick={readonly ? undefined : handleDoubleClick(labelInputRef)}
         />
         {centerAdornment}

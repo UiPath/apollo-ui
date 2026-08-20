@@ -17,7 +17,12 @@ import {
 } from 'react';
 import { useToolbarActionStore } from '../../hooks/ToolbarActionContext';
 import { BASE_CANVAS_DEFAULTS, PAN_ON_DRAG } from './BaseCanvas.constants';
-import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from './BaseCanvas.hooks';
+import {
+  useAutoLayout,
+  useEnsureNodesInView,
+  useMaintainNodesInView,
+  useReadOnlyBeforeDelete,
+} from './BaseCanvas.hooks';
 import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
 import { CanvasBackground } from './CanvasBackground';
 import { CanvasProviders } from './CanvasProviders';
@@ -77,6 +82,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     onPaneClick,
     onInit,
     onSelectionChange,
+    onBeforeDelete,
 
     // Additional ReactFlow props
     proOptions = BASE_CANVAS_DEFAULTS.pro,
@@ -112,6 +118,21 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   const isInteractive = mode !== 'readonly';
   const isDesignMode = mode === 'design';
   const stableReadOnlyNodeIds = useStableNodeIdSet(readOnlyNodeIds);
+  const guardedBeforeDelete = useReadOnlyBeforeDelete(stableReadOnlyNodeIds, onBeforeDelete);
+
+  // `onBeforeDelete` already covers every React Flow deletion path. This is the
+  // safety net for consumers that invoke the change handler directly. Layout
+  // changes pass through: position and size are layout, not content.
+  const handleNodesChange = useMemo(() => {
+    if (!onNodesChange || stableReadOnlyNodeIds.size === 0) return onNodesChange;
+    const guarded: typeof onNodesChange = (changes) => {
+      const allowed = changes.filter(
+        (change) => !(change.type === 'remove' && stableReadOnlyNodeIds.has(change.id))
+      );
+      if (allowed.length > 0) onNodesChange(allowed);
+    };
+    return guarded;
+  }, [onNodesChange, stableReadOnlyNodeIds]);
 
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance<NodeType, EdgeType>>();
@@ -195,8 +216,9 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         zoomOnDoubleClick={isInteractive && zoomOnDoubleClick}
         panOnDrag={isInteractive ? PAN_ON_DRAG : false}
         onInit={handleInit}
-        onNodesChange={isInteractive ? onNodesChange : undefined}
+        onNodesChange={isInteractive ? handleNodesChange : undefined}
         onEdgesChange={isInteractive ? onEdgesChange : undefined}
+        onBeforeDelete={guardedBeforeDelete}
         onConnect={isDesignMode ? onConnect : undefined}
         onConnectStart={isDesignMode ? onConnectStart : undefined}
         onConnectEnd={isDesignMode ? onConnectEnd : undefined}
