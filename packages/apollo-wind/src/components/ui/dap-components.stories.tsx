@@ -1,7 +1,6 @@
 import MonacoEditor from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
-  AlignCenter,
   AtSign,
   Bold,
   Braces,
@@ -13,10 +12,7 @@ import {
   Folder,
   FolderCog,
   Info,
-  Italic,
   Lightbulb,
-  List,
-  ListOrdered,
   Maximize,
   MoreVertical,
   Paperclip,
@@ -24,12 +20,12 @@ import {
   SlidersHorizontal,
   Trash2,
   Type,
-  Underline,
   UserRound,
   WandSparkles,
   X,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import gmailIconUrl from '../../../../apollo-ui-icons/src/svg/third-party/google-gmail.svg?url';
 import { apolloFutureLightMonaco } from '../../editor-themes';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
 import { Alert, AlertDescription } from './alert';
@@ -47,12 +43,12 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './input-group';
 import { Label } from './label';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
+import { PromptEditor } from './prompt-editor';
+import type { PromptEditorAutoCompleteOption, PromptEditorToken } from './prompt-editor/types';
 import { RadioGroup, RadioGroupItem } from './radio-group';
 import { Search } from './search';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
-import { Textarea } from './textarea';
-import { Toggle } from './toggle';
 
 interface PropertyRow {
   id: string;
@@ -457,74 +453,27 @@ function AttachmentFieldsExample() {
 }
 
 function RichTextBodyExample() {
-  const [body, setBody] = useState('');
-  const [bold, setBold] = useState(false);
-  const [italic, setItalic] = useState(false);
-  const [underline, setUnderline] = useState(false);
-  const [centered, setCentered] = useState(false);
+  const [body, setBody] = useState<PromptEditorToken[]>([]);
+  const variables: PromptEditorAutoCompleteOption[] = [
+    { type: 'input', value: 'vars.recipientName' },
+    { type: 'input', value: 'vars.orderNumber' },
+    { type: 'resource', value: 'resource.supportEmail' },
+  ];
 
   return (
     <div className="rounded-xl border bg-background p-6 shadow-sm sm:p-10">
       <div className="flex flex-col gap-2">
-        <Label className="text-base font-semibold" htmlFor="dap-body-editor">
-          Body
-        </Label>
-        <div className="overflow-hidden rounded-md border future:rounded-lg">
-          <div className="flex min-h-12 items-stretch justify-between border-b bg-background">
-            <div className="flex flex-wrap items-center gap-1 px-2 py-1.5">
-              <Toggle aria-label="Bold" onPressedChange={setBold} pressed={bold} size="sm">
-                <Bold className="size-4" />
-              </Toggle>
-              <Toggle aria-label="Italic" onPressedChange={setItalic} pressed={italic} size="sm">
-                <Italic className="size-4" />
-              </Toggle>
-              <Toggle
-                aria-label="Underline"
-                onPressedChange={setUnderline}
-                pressed={underline}
-                size="sm"
-              >
-                <Underline className="size-4" />
-              </Toggle>
-              <Toggle
-                aria-label="Center align"
-                onPressedChange={setCentered}
-                pressed={centered}
-                size="sm"
-              >
-                <AlignCenter className="size-4" />
-              </Toggle>
-
-              <span aria-hidden="true" className="mx-1 h-6 w-px bg-border" />
-
-              <Button aria-label="Code" icon size="sm" variant="ghost">
-                <Code2 className="size-4" />
-              </Button>
-              <Button aria-label="Bulleted list" icon size="sm" variant="ghost">
-                <List className="size-4" />
-              </Button>
-              <Button aria-label="Numbered list" icon size="sm" variant="ghost">
-                <ListOrdered className="size-4" />
-              </Button>
-            </div>
-
-            <div className="flex shrink-0 items-stretch">
-              <ValueSourceMenu onClear={() => setBody('')} />
-            </div>
-          </div>
-
-          <Textarea
-            className={`min-h-32 resize-y rounded-none border-0 px-4 py-4 shadow-none focus-visible:ring-0 ${
-              bold ? 'font-bold' : ''
-            } ${italic ? 'italic' : ''} ${underline ? 'underline' : ''} ${
-              centered ? 'text-center' : ''
-            }`}
-            id="dap-body-editor"
-            onChange={(event) => setBody(event.target.value)}
-            placeholder="The body of the email"
-            value={body}
-          />
-        </div>
+        <Label className="text-base font-semibold">Body</Label>
+        <PromptEditor
+          ariaLabel="Body"
+          autoCompleteOptions={variables}
+          maxRows={10}
+          minRows={5}
+          onChange={setBody}
+          placeholder="The body of the email. Type $ to insert a variable."
+          showToolbar
+          value={body}
+        />
       </div>
     </div>
   );
@@ -577,18 +526,18 @@ function FolderPickerExample() {
 
 const users = [
   {
-    value: 'anurag-krishna',
-    label: 'Anurag Krishna - anurag.krishna@uipath.com - U058Z4EL2C',
+    value: 'avery-example',
+    label: 'Avery Example - avery@example.com - USER-001',
   },
   {
-    value: 'alexandru-statie',
-    label: 'Alexandru Statie - alexandru.statie@uipath.com - WLX92FTCL',
+    value: 'blake-example',
+    label: 'Blake Example - blake@example.com - USER-002',
   },
-  { value: 'andra-buica', label: 'Andra Buica - andra.buica@uipath.com - WLXP4TP9N' },
-  { value: 'andrei-bacanu', label: 'Andrei Băcanu - andrei.bacanu@uipath.com - WLZT84AQN' },
-  { value: 'ashim-gupta', label: 'Ashim Gupta - ashim.gupta@uipath.com - WLZTATYS2' },
-  { value: 'brandon-deer', label: 'Brandon Deer - brandon.deer@uipath.com - WHAP68X44' },
-  { value: 'cosmin-sandu', label: 'Cosmin Sandu - cosmin.sandu@uipath.com - WLX9F6A8L' },
+  { value: 'casey-example', label: 'Casey Example - casey@example.com - USER-003' },
+  { value: 'devon-example', label: 'Devon Example - devon@example.com - USER-004' },
+  { value: 'ellis-example', label: 'Ellis Example - ellis@example.com - USER-005' },
+  { value: 'frankie-example', label: 'Frankie Example - frankie@example.com - USER-006' },
+  { value: 'gray-example', label: 'Gray Example - gray@example.com - USER-007' },
 ];
 
 function UserComboboxExample() {
@@ -1032,24 +981,24 @@ function MessageConfigurationExample() {
 }
 
 const gmailConnections = [
-  { id: 'merohit', label: 'merohitsharma6@gmail.com', group: 'Defined resources' },
+  { id: 'personal', label: 'alex@example.com', group: 'Defined resources' },
   {
     id: 'workspace',
-    label: "rohit.sharma@uipath.com's workspace",
+    label: "automation@example.com's workspace",
     group: 'Platform resources',
     workspace: true,
   },
-  { id: 'platform-gmail', label: 'merohitsharma6@gmail.com', group: 'Platform resources' },
+  { id: 'platform-gmail', label: 'platform@example.com', group: 'Platform resources' },
 ];
 
 function GmailIcon() {
-  return <img alt="" aria-hidden="true" className="size-5" src="/brand/google-gmail.svg" />;
+  return <img alt="" aria-hidden="true" className="size-5 shrink-0" src={gmailIconUrl} />;
 }
 
 function GmailConnectionPickerExample() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [selectedConnection, setSelectedConnection] = useState('merohitsharma6@gmail.com');
+  const [selectedConnection, setSelectedConnection] = useState('alex@example.com');
 
   const filteredConnections = gmailConnections.filter((connection) =>
     connection.label.toLowerCase().includes(query.toLowerCase())
@@ -1058,7 +1007,7 @@ function GmailConnectionPickerExample() {
   return (
     <div className="rounded-xl border bg-background p-6 shadow-sm sm:p-10">
       <div className="mb-2 flex items-center justify-between gap-4">
-        <Label className="text-base font-semibold">
+        <Label className="text-base font-semibold" htmlFor="gmail-connection-picker">
           Gmail connection <span aria-hidden="true">*</span>
         </Label>
         <Button variant="link">Refresh schema</Button>
@@ -1067,10 +1016,12 @@ function GmailConnectionPickerExample() {
       <Popover onOpenChange={setOpen} open={open}>
         <div className="flex h-10 items-stretch rounded-md border future:rounded-xl">
           <PopoverTrigger asChild>
-            <button
+            <Button
               aria-expanded={open}
-              className="flex min-w-0 flex-1 items-center px-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              type="button"
+              aria-label="Select a Gmail connection"
+              className="h-full min-w-0 flex-1 justify-start rounded-none px-3 font-normal future:rounded-l-xl"
+              id="gmail-connection-picker"
+              variant="ghost"
             >
               {selectedConnection ? (
                 <span className="flex min-w-0 items-center gap-2 rounded bg-primary/15 px-2 py-1">
@@ -1080,7 +1031,7 @@ function GmailConnectionPickerExample() {
               ) : (
                 <span className="text-sm text-muted-foreground">Select a Gmail connection</span>
               )}
-            </button>
+            </Button>
           </PopoverTrigger>
           {selectedConnection && (
             <Button
@@ -1170,18 +1121,98 @@ const allSections = [
   'gmail-connection-picker',
 ];
 
-function DapComponentsPage() {
-  const [expandedSections, setExpandedSections] = useState(allSections);
+type AlignmentStatus = 'Align layout now' | 'Target-state decision' | 'Runtime integration gap';
+
+const reactDapDifferences: Array<{
+  area: string;
+  status: AlignmentStatus;
+  layoutAction: string;
+  remainingGap: string;
+}> = [
+  {
+    area: 'Manage properties',
+    status: 'Align layout now',
+    layoutAction:
+      'Keep the grouped rows, selection controls, search, and footer actions aligned with Flow Workbench’s Manage Properties dropdown.',
+    remainingGap: 'Validate final density and hierarchy against representative connector metadata.',
+  },
+  {
+    area: 'Value-source actions',
+    status: 'Target-state decision',
+    layoutAction:
+      'The current React path exposes Insert variable; the layouts page also explores runtime, type, and clear actions.',
+    remainingGap:
+      'Decide whether the page documents current behavior or the proposed broader menu.',
+  },
+  {
+    area: 'Expression and object editing',
+    status: 'Target-state decision',
+    layoutAction: 'Keep the Monaco object editor clearly presented as a proposed target layout.',
+    remainingGap:
+      'Flow Workbench does not yet wire the expression editor or test-expression context into React DAP.',
+  },
+  {
+    area: 'Rich-text editing',
+    status: 'Align layout now',
+    layoutAction:
+      'Aligned: this page now uses Apollo Wind Prompt Editor with its toolbar and variable autocomplete.',
+    remainingGap:
+      'Connector-specific validation and persistence remain owned by the Activity runtime.',
+  },
+  {
+    area: 'Folder and remote pickers',
+    status: 'Runtime integration gap',
+    layoutAction: 'The compact picker shell and hierarchical rows can remain aligned in Storybook.',
+    remainingGap: 'Live values and dependent options require the authenticated Activity runtime.',
+  },
+  {
+    area: 'User and lookup comboboxes',
+    status: 'Runtime integration gap',
+    layoutAction:
+      'The field chrome, search treatment, clear action, and result rows can align now.',
+    remainingGap: 'Available values still depend on connector metadata and live lookup results.',
+  },
+  {
+    area: 'Filter builder',
+    status: 'Runtime integration gap',
+    layoutAction: 'The nested AND/OR composition and field actions can align visually now.',
+    remainingGap: 'Validation, reordering, and serialization require the connector field model.',
+  },
+  {
+    area: 'Connection picker',
+    status: 'Runtime integration gap',
+    layoutAction: 'The trigger, grouped resources, search, and action placement can align now.',
+    remainingGap:
+      'Connection creation, refresh, bindings, and Orchestrator navigation require host integration.',
+  },
+  {
+    area: 'Supported activity types',
+    status: 'Runtime integration gap',
+    layoutAction: 'Keep these examples explicitly scoped to reusable API connector layouts.',
+    remainingGap:
+      'React DAP support for trigger, agent, and automation activities is not implemented.',
+  },
+];
+
+const alignmentStatusStyles: Record<AlignmentStatus, string> = {
+  'Align layout now': 'border-primary/30 bg-primary/10 text-primary',
+  'Target-state decision': 'border-warning/30 bg-warning/10 text-warning-foreground',
+  'Runtime integration gap': 'border-border bg-muted/50 text-muted-foreground',
+};
+
+function DapLayoutsPage() {
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   return (
     <main className="min-h-screen bg-muted/30 px-5 py-10 text-foreground sm:px-8 sm:py-14">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
         <header className="border-b pb-8">
           <p className="text-sm font-medium text-muted-foreground">Apollo Wind patterns</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">DAP components</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">DAP layouts</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Component layouts recreated with Apollo Wind primitives, with gaps called out where a
-            dedicated component is not yet available.
+            This is a temporary page for internal alignment between teams. It recreates DAP layouts
+            with Apollo Wind primitives and calls out where a dedicated component or production
+            behavior is not yet available.
           </p>
         </header>
 
@@ -1373,12 +1404,11 @@ function DapComponentsPage() {
               <aside className="flex gap-3 rounded-lg border border-dashed bg-muted/20 px-4 py-3.5">
                 <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                 <div className="text-sm leading-5">
-                  <p className="font-medium">Component gap: general-purpose rich-text editor</p>
+                  <p className="font-medium">Aligned component: Prompt Editor</p>
                   <p className="mt-0.5 text-muted-foreground">
-                    Apollo Wind has formatting primitives and a specialized Prompt Editor, but no
-                    reusable WYSIWYG component for email content. This prototype composes Toggle,
-                    Button, Textarea, and Dropdown Menu; production editing would still need a
-                    supported rich-text engine and document model.
+                    This layout now uses the same Apollo Wind Prompt Editor foundation selected by
+                    Flow Workbench’s React DAP path, including its formatting toolbar and variable
+                    autocomplete behavior.
                   </p>
                 </div>
               </aside>
@@ -1631,19 +1661,69 @@ function DapComponentsPage() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+
+        <section
+          className="flex flex-col gap-4 border-t pt-8"
+          aria-labelledby="react-dap-alignment"
+        >
+          <div className="max-w-2xl">
+            <p className="text-sm font-medium text-muted-foreground">Flow Workbench comparison</p>
+            <h2 id="react-dap-alignment" className="mt-1 text-2xl font-semibold tracking-tight">
+              React DAP alignment map
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Separates layout work we can do here from target-state decisions and behavior that
+              belongs to the React <code className="font-mono text-xs">&lt;Activity&gt;</code>{' '}
+              runtime.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border bg-background">
+            <Table className="min-w-[840px]">
+              <TableHeader>
+                <TableRow className="bg-muted/40 hover:bg-muted/40">
+                  <TableHead className="w-[18%]">Area</TableHead>
+                  <TableHead className="w-[20%]">Status</TableHead>
+                  <TableHead className="w-[31%]">Layout action</TableHead>
+                  <TableHead className="w-[31%]">Outside this page</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {reactDapDifferences.map((difference) => (
+                  <TableRow key={difference.area}>
+                    <TableCell className="align-top font-medium">{difference.area}</TableCell>
+                    <TableCell className="align-top">
+                      <span
+                        className={`inline-flex whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium ${alignmentStatusStyles[difference.status]}`}
+                      >
+                        {difference.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="align-top text-muted-foreground">
+                      {difference.layoutAction}
+                    </TableCell>
+                    <TableCell className="align-top text-muted-foreground">
+                      {difference.remainingGap}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </section>
       </div>
     </main>
   );
 }
 
 const meta = {
-  title: 'Patterns/DAP components',
-  component: DapComponentsPage,
+  title: 'Patterns/DAP layouts',
+  component: DapLayoutsPage,
   tags: ['!autodocs'],
   parameters: {
     layout: 'fullscreen',
   },
-} satisfies Meta<typeof DapComponentsPage>;
+} satisfies Meta<typeof DapLayoutsPage>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
