@@ -272,4 +272,130 @@ describe('createPreviewGraph', () => {
       }),
     ]);
   });
+
+  it('keeps the existing canvas unchanged when an add-node preview is cancelled before opening', () => {
+    vi.useFakeTimers();
+
+    const replacedEdge: Edge = {
+      id: 'edge-to-replace',
+      source: sourceNode.id,
+      sourceHandle: 'source-output',
+      target: targetNode.id,
+      targetHandle: 'target-input',
+    };
+    const originalNodes = [sourceNode, targetNode];
+    const reactFlowInstance = createReactFlowInstance({
+      nodes: originalNodes,
+      edges: [replacedEdge],
+    });
+    const preview = createPreviewGraph({
+      source: {
+        nodeId: sourceNode.id,
+        handleId: 'source-output',
+      },
+      reactFlowInstance,
+      position: { x: 200, y: 100 },
+      handlePosition: Position.Right,
+      data: { originalEdge: replacedEdge },
+      target: {
+        nodeId: targetNode.id,
+        handleId: 'target-input',
+      },
+    });
+
+    applyPreviewGraphToReactFlow(preview!, reactFlowInstance, {
+      canApply: () => false,
+    });
+    vi.runOnlyPendingTimers();
+
+    expect(reactFlowInstance.getNodes()).toEqual(originalNodes);
+    expect(reactFlowInstance.getEdges()).toEqual([replacedEdge]);
+  });
+
+  // `canApply` reads the store when the preview lands, not a snapshot from when
+  // it was created, so edits made in between are visible to the guard.
+  it('keeps a reconnected edge when reconnection occurs before an add-node preview opens', () => {
+    vi.useFakeTimers();
+
+    const replacedEdge: Edge = {
+      id: 'edge-to-replace',
+      source: sourceNode.id,
+      sourceHandle: 'source-output',
+      target: targetNode.id,
+      targetHandle: 'target-input',
+    };
+    const reconnectedEdge: Edge = {
+      ...replacedEdge,
+      target: 'new-target',
+      targetHandle: 'new-target-input',
+    };
+    const originalNodes = [sourceNode, targetNode];
+    const reactFlowInstance = createReactFlowInstance({
+      nodes: originalNodes,
+      edges: [replacedEdge],
+    });
+    const preview = createPreviewGraph({
+      source: {
+        nodeId: sourceNode.id,
+        handleId: 'source-output',
+      },
+      reactFlowInstance,
+      position: { x: 200, y: 100 },
+      handlePosition: Position.Right,
+      data: { originalEdge: replacedEdge },
+      target: {
+        nodeId: targetNode.id,
+        handleId: 'target-input',
+      },
+    });
+
+    applyPreviewGraphToReactFlow(preview!, reactFlowInstance, {
+      canApply: (edges) =>
+        edges.some(
+          (edge) =>
+            edge.id === replacedEdge.id &&
+            edge.target === replacedEdge.target &&
+            edge.targetHandle === replacedEdge.targetHandle
+        ),
+    });
+    reactFlowInstance.setEdges(() => [reconnectedEdge]);
+    vi.runOnlyPendingTimers();
+
+    expect(reactFlowInstance.getNodes()).toEqual(originalNodes);
+    expect(reactFlowInstance.getEdges()).toEqual([reconnectedEdge]);
+  });
+
+  it.each([
+    ['no guard', undefined],
+    ['a passing canApply guard', () => true],
+  ])('adds the preview node before the edges that point at it, with %s', (_label, canApply) => {
+    vi.useFakeTimers();
+
+    const reactFlowInstance = createReactFlowInstance({ nodes: [sourceNode, targetNode] });
+    const calls: string[] = [];
+    const setNodes: ReactFlowInstance['setNodes'] = (updater) => {
+      calls.push('setNodes');
+      reactFlowInstance.setNodes(updater);
+    };
+    const setEdges: ReactFlowInstance['setEdges'] = (updater) => {
+      calls.push('setEdges');
+      reactFlowInstance.setEdges(updater);
+    };
+    const instrumented = { ...reactFlowInstance, setNodes, setEdges } as ReactFlowInstance;
+
+    const preview = createPreviewGraph({
+      source: { nodeId: sourceNode.id, handleId: 'source-output' },
+      reactFlowInstance,
+      position: { x: 200, y: 100 },
+      handlePosition: Position.Right,
+      target: { nodeId: targetNode.id, handleId: 'target-input' },
+    });
+
+    applyPreviewGraphToReactFlow(preview!, instrumented, { canApply });
+    vi.runOnlyPendingTimers();
+
+    expect(calls).toEqual(['setNodes', 'setEdges']);
+    expect(reactFlowInstance.getNodes()).toContainEqual(preview!.node);
+    expect(reactFlowInstance.getEdges()).toEqual(preview!.edges);
+  });
 });

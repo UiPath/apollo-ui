@@ -16,8 +16,8 @@ class ReadOnlyNodesStore {
   private ids: ReadonlySet<string>;
   private listeners = new Map<string, Set<Listener>>();
 
-  constructor(initial: ReadonlySet<string> = EMPTY_SET) {
-    this.ids = initial.size === 0 ? EMPTY_SET : new Set(initial);
+  constructor(initialIds: ReadonlySet<string> = EMPTY_SET) {
+    this.ids = initialIds.size === 0 ? EMPTY_SET : new Set(initialIds);
   }
 
   /** Subscribe to changes for a specific node. */
@@ -40,6 +40,13 @@ class ReadOnlyNodesStore {
   /** Boolean snapshots let React bail out when a node's state is unchanged. */
   isReadOnly(nodeId: string): boolean {
     return this.ids.has(nodeId);
+  }
+
+  isConnectionReadOnly(
+    source: string | null | undefined,
+    target: string | null | undefined
+  ): boolean {
+    return isConnectionReadOnly(this.ids, source, target);
   }
 
   /**
@@ -99,8 +106,21 @@ export function useStableNodeIdSet(
 }
 
 /**
- * Distributes BaseCanvas `readOnlyNodeIds` to node renderers.
- * Mounted by CanvasProviders; not intended for direct use.
+ * True when both endpoints are read-only. Locking a node freezes the
+ * connections wholly inside the locked region, not every connection it touches.
+ */
+export function isConnectionReadOnly(
+  readOnlyNodeIds: ReadonlySet<string>,
+  source: string | null | undefined,
+  target: string | null | undefined
+): boolean {
+  if (readOnlyNodeIds.size === 0 || !source || !target) return false;
+  return readOnlyNodeIds.has(source) && readOnlyNodeIds.has(target);
+}
+
+/**
+ * Distributes per-node read-only state (from BaseCanvas `readOnlyNodeIds`) to
+ * node renderers. Mounted by CanvasProviders; not intended for direct use.
  */
 export const ReadOnlyNodesProvider: React.FC<
   React.PropsWithChildren<{ readOnlyNodeIds?: ReadonlySet<string> }>
@@ -140,4 +160,31 @@ export function useIsNodeReadOnly(nodeId: string): boolean {
   const getSnapshot = useCallback(() => store?.isReadOnly(nodeId) ?? false, [store, nodeId]);
 
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+}
+
+/**
+ * True when the connection between these two nodes is frozen, i.e. both
+ * endpoints are read-only. False outside a provider.
+ */
+export function useIsConnectionReadOnly(
+  source: string | null | undefined,
+  target: string | null | undefined
+): boolean {
+  const sourceReadOnly = useIsNodeReadOnly(source ?? '');
+  const targetReadOnly = useIsNodeReadOnly(target ?? '');
+  return !!source && !!target && sourceReadOnly && targetReadOnly;
+}
+
+/**
+ * Returns a stable call-time check for event handlers and deferred work. Unlike
+ * `useIsConnectionReadOnly`, this does not capture the value from a render.
+ */
+export function useReadOnlyConnectionCheck() {
+  const store = useContext(ReadOnlyNodesContext);
+
+  return useCallback(
+    (source: string | null | undefined, target: string | null | undefined) =>
+      store?.isConnectionReadOnly(source, target) ?? false,
+    [store]
+  );
 }

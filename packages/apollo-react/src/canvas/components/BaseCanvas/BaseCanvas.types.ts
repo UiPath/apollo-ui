@@ -76,25 +76,35 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
   mode?: 'design' | 'readonly' | 'view';
 
   /**
-   * Node ids whose content is read-only while the rest of the canvas remains editable.
-   * Locked nodes cannot be deleted or label-edited and hide their inline
-   * content-editing controls. Toolbars are the exception: they stay visible with
-   * every action disabled, so the lock is discoverable. Locked nodes remain
-   * selectable and draggable. Resizable nodes generally remain resizable, except
-   * StickyNoteNode, which hides its resize controls.
+   * Node ids to lock while the rest of the canvas stays interactive. A node is
+   * editable only when `mode === 'design' && !readOnlyNodeIds?.has(id)`.
    *
-   * Honored by nodes built on BaseNode, AgentNode, LoopNode, StageNode, and
-   * StickyNoteNode. Custom renderers can observe state with `useIsNodeReadOnly`.
+   * Locked nodes cannot be deleted or label-edited, and hide their inline
+   * content-editing controls such as handle add buttons. Toolbars are the
+   * exception: they stay visible with every action disabled, so the lock is
+   * discoverable. Locked nodes stay selectable and draggable, and resizable
+   * nodes generally stay resizable, except `StickyNoteNode`, which disables its
+   * resize controls. To freeze all layout interaction, use `mode="readonly"`.
    *
-   * Compared by content, so passing a fresh set with the same ids is a no-op.
-   * Do not mutate a set after passing it; pass a new set instead.
+   * Connections to and from a locked node are still allowed. Only connections
+   * with *both* endpoints locked are frozen: they cannot be created, deleted,
+   * reconnected, or split by the edge toolbar.
+   *
+   * Honored by nodes built on `BaseNode` (including `AgentNode` and `LoopNode`),
+   * by `StageNode`, and by `StickyNoteNode`. Custom node types opt in via
+   * `useIsNodeReadOnly`.
    *
    * A `Set` or an array; both are normalized to a set internally. Deliberately
    * not `Iterable<string>`: a bare `string` satisfies that type and would be
    * spread per character, and a single-use iterator would read as empty on
    * every render after the first.
    *
-   * @default undefined
+   * Compared by content, so a fresh set with the same ids changes nothing. Do
+   * not mutate a set after passing it; pass a new one. Any iterable is accepted
+   * (an array is fine) and is normalized to a set internally.
+   *
+   * @example new Set(['agent-1', 'tool-1', 'tool-2'])
+   * @default undefined (no nodes are individually read-only)
    */
   readOnlyNodeIds?: ReadonlySet<string> | readonly string[];
 

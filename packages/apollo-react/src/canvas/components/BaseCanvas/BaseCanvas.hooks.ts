@@ -3,6 +3,8 @@ import { useReactFlow, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/re
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BASE_CANVAS_DEFAULTS, FIT_VIEW_DELAY_MS } from './BaseCanvas.constants';
 import type { BaseCanvasFitViewOptions, EnsureNodesInViewOptions } from './BaseCanvas.types';
+import { isConnectionReadOnly } from './ReadOnlyNodesContext';
+import { EMPTY_SET } from './set-utils';
 
 const waitForNodeMeasurements = (getNodes: () => Node[]): Promise<void> => {
   return new Promise((resolve) => {
@@ -342,19 +344,29 @@ export const useMaintainNodesInView = (
 };
 
 /**
- * Composes an `onBeforeDelete` that vetoes deletion of locked nodes.
+ * Composes an `onBeforeDelete` that vetoes deletion of locked nodes and frozen
+ * connections.
  *
- * Chosen over stamping `deletable: false` onto the nodes handed to React Flow.
- * That clone round-trips out through `getNodes()` and `toObject()`, so a
- * consumer saving the graph persists our lock as their own data, and unlocking
- * the node could never undo it. A veto touches nothing the consumer owns and
- * covers keyboard delete, `deleteElements`, and toolbar actions in one place.
+ * Chosen over stamping `deletable: false` onto the elements handed to React
+ * Flow. That clone round-trips out through `getNodes()`, `getEdges()`, and
+ * `toObject()`, so a consumer saving the graph persists our lock as their own
+ * data and unlocking could never undo it. A veto touches nothing the consumer
+ * owns and covers keyboard delete, `deleteElements`, and toolbar actions in one
+ * place.
  *
- * Edges need the same care: React Flow gathers the edges of every node in the
- * delete set, so vetoing a node without pruning its edges would leave it
- * standing with its connections gone. An edge is dropped when it touches a
- * vetoed node and no node that is actually being deleted, which keeps
- * mixed selections from stranding a dangling edge.
+ * Cascading edges need care of their own: React Flow gathers the edges of every
+ * node in the delete set, so vetoing a node without pruning its edges would
+ * leave it standing with its connections gone. An edge is dropped when it
+ * touches a vetoed node and no node that is actually being deleted, which stops
+ * a mixed selection from stranding a dangling edge.
+ *
+ * Not enforced here, deliberately:
+ * - `connectable`: React Flow never consults it when validating a connection,
+ *   and connecting to a locked node is allowed anyway.
+ * - `draggable`: position is layout, not content. Freezing it would also strand
+ *   locked nodes when a mixed selection is dragged.
+ * - reconnection: guarded by `useReadOnlyConnectionCallbacks`, which rejects the
+ *   gesture with the lock set read at completion time.
  */
 export function useReadOnlyBeforeDelete<NodeType extends Node, EdgeType extends Edge>(
   readOnlyNodeIds: ReadonlySet<string>,
@@ -375,19 +387,45 @@ export function useReadOnlyBeforeDelete<NodeType extends Node, EdgeType extends 
       for (const node of candidate.nodes) {
         (readOnlyNodeIds.has(node.id) ? vetoedNodeIds : deletedNodeIds).add(node.id);
       }
-      if (vetoedNodeIds.size === 0) return candidate;
 
       const touchesVetoedNode = (edge: EdgeType) =>
         vetoedNodeIds.has(edge.source) || vetoedNodeIds.has(edge.target);
       const touchesDeletedNode = (edge: EdgeType) =>
         deletedNodeIds.has(edge.source) || deletedNodeIds.has(edge.target);
+      const isFrozen = (edge: EdgeType) =>
+        isConnectionReadOnly(readOnlyNodeIds, edge.source, edge.target);
+
+      const keptEdges = candidate.edges.filter(
+        (edge) => !isFrozen(edge) && (!touchesVetoedNode(edge) || touchesDeletedNode(edge))
+      );
+      if (vetoedNodeIds.size === 0 && keptEdges.length === candidate.edges.length) {
+        return candidate;
+      }
 
       return {
         nodes: candidate.nodes.filter((node) => !vetoedNodeIds.has(node.id)),
-        edges: candidate.edges.filter(
-          (edge) => !touchesVetoedNode(edge) || touchesDeletedNode(edge)
-        ),
+        edges: keptEdges,
       };
     };
   }, [readOnlyNodeIds, onBeforeDelete]);
+}
+
+/**
+ * Ids of the edges to freeze: those whose source and target are both locked.
+ * An edge with either end unlocked is left editable.
+ */
+export function useReadOnlyEdgeIds<EdgeType extends Edge>(
+  edges: EdgeType[],
+  readOnlyNodeIds: ReadonlySet<string>
+): ReadonlySet<string> {
+  return useMemo(() => {
+    if (readOnlyNodeIds.size === 0) return EMPTY_SET;
+    const frozen = new Set<string>();
+    for (const edge of edges) {
+      if (isConnectionReadOnly(readOnlyNodeIds, edge.source, edge.target)) {
+        frozen.add(edge.id);
+      }
+    }
+    return frozen.size === 0 ? EMPTY_SET : frozen;
+  }, [edges, readOnlyNodeIds]);
 }

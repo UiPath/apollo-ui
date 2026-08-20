@@ -1,26 +1,40 @@
 import { render } from '@testing-library/react';
-import type { Node, NodeChange } from '@uipath/apollo-react/canvas/xyflow/react';
+import type {
+  Connection,
+  Edge,
+  EdgeChange,
+  Node,
+  NodeChange,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseCanvas } from './BaseCanvas';
 import type { BaseCanvasProps } from './BaseCanvas.types';
 
-// Only the viewport hooks are stubbed, so the change guard is exercised for
-// real. This covers the direct-caller path: React Flow's own deletion paths go
+// Only the viewport hooks are stubbed, so the change guards are exercised for
+// real. They cover the direct-caller path: React Flow's own deletion paths go
 // through `onBeforeDelete` instead.
-vi.mock('./BaseCanvas.hooks', async () => ({
-  ...(await vi.importActual('./BaseCanvas.hooks')),
-  useAutoLayout: () => ({ isLayouting: false, isReady: true }),
-  useEnsureNodesInView: () => ({
-    ensureNodesInView: vi.fn(),
-    ensureAllNodesInView: vi.fn(),
-    centerNode: vi.fn(),
-  }),
-  useMaintainNodesInView: vi.fn(),
-}));
+vi.mock('./BaseCanvas.hooks', async () => {
+  const actual = await vi.importActual<typeof import('./BaseCanvas.hooks')>('./BaseCanvas.hooks');
+  return {
+    ...actual,
+    useAutoLayout: () => ({ isLayouting: false, isReady: true }),
+    useEnsureNodesInView: () => ({
+      ensureNodesInView: vi.fn(),
+      ensureAllNodesInView: vi.fn(),
+      centerNode: vi.fn(),
+    }),
+    useMaintainNodesInView: vi.fn(),
+  };
+});
 
+// Capture the change and connection handlers BaseCanvas hands to ReactFlow so
+// we can invoke them directly with synthetic interactions.
+let capturedOnEdgesChange: ((changes: EdgeChange[]) => void) | undefined;
 let capturedOnNodesChange: ((changes: NodeChange[]) => void) | undefined;
+let capturedIsValidConnection: BaseCanvasProps['isValidConnection'];
+let capturedOnConnect: BaseCanvasProps['onConnect'];
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
   const actual = await vi.importActual('@uipath/apollo-react/canvas/xyflow/react');
@@ -28,11 +42,20 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
     ...actual,
     ReactFlow: ({
       children,
+      isValidConnection,
+      onConnect,
+      onEdgesChange,
       onNodesChange,
     }: {
       children?: ReactNode;
+      isValidConnection?: BaseCanvasProps['isValidConnection'];
+      onConnect?: BaseCanvasProps['onConnect'];
+      onEdgesChange?: (changes: EdgeChange[]) => void;
       onNodesChange?: (changes: NodeChange[]) => void;
     }) => {
+      capturedIsValidConnection = isValidConnection;
+      capturedOnConnect = onConnect;
+      capturedOnEdgesChange = onEdgesChange;
       capturedOnNodesChange = onNodesChange;
       return <div data-testid="react-flow">{children}</div>;
     },
@@ -51,6 +74,15 @@ const nodes: Node[] = [
   { id: 'free', position: { x: 100, y: 0 }, data: {} },
 ];
 
+const edge: Edge = { id: 'locked-free', source: 'locked', target: 'free' };
+const editableEdge: Edge = { id: 'free-outside', source: 'free', target: 'outside' };
+const lockedToFreeConnection: Connection = {
+  source: 'locked',
+  target: 'free',
+  sourceHandle: null,
+  targetHandle: null,
+};
+
 const renderCanvas = (props: Partial<BaseCanvasProps>) =>
   render(
     <ReactFlowProvider>
@@ -60,6 +92,9 @@ const renderCanvas = (props: Partial<BaseCanvasProps>) =>
 
 describe('BaseCanvas node changes when nodes are locked', () => {
   beforeEach(() => {
+    capturedOnEdgesChange = undefined;
+    capturedIsValidConnection = undefined;
+    capturedOnConnect = undefined;
     capturedOnNodesChange = undefined;
   });
 
@@ -112,5 +147,49 @@ describe('BaseCanvas node changes when nodes are locked', () => {
     renderCanvas({ onNodesChange });
 
     expect(capturedOnNodesChange).toBe(onNodesChange);
+  });
+});
+
+describe('BaseCanvas edge changes when connected nodes are locked', () => {
+  beforeEach(() => {
+    capturedOnEdgesChange = undefined;
+  });
+
+  it('forwards only editable edge removals when an edge joins two locked nodes', () => {
+    const onEdgesChange = vi.fn();
+    renderCanvas({
+      edges: [edge, editableEdge],
+      onEdgesChange,
+      readOnlyNodeIds: new Set(['locked', 'free']),
+    });
+
+    capturedOnEdgesChange?.([
+      { type: 'remove', id: edge.id },
+      { type: 'remove', id: editableEdge.id },
+    ]);
+
+    expect(onEdgesChange).toHaveBeenCalledWith([{ type: 'remove', id: editableEdge.id }]);
+  });
+});
+
+// The guard semantics live in `useReadOnlyConnectionCallbacks.test.ts`; this
+// only proves the guarded callbacks are the ones handed to ReactFlow.
+describe('BaseCanvas connection callbacks when nodes are locked', () => {
+  it('gives ReactFlow the guarded connection callbacks', () => {
+    const consumerIsValidConnection = vi.fn(() => true);
+    const onConnect = vi.fn();
+    renderCanvas({
+      mode: 'design',
+      edges: [edge],
+      isValidConnection: consumerIsValidConnection,
+      onConnect,
+      readOnlyNodeIds: new Set(['locked', 'free']),
+    });
+
+    expect(capturedIsValidConnection?.(lockedToFreeConnection)).toBe(false);
+    capturedOnConnect?.(lockedToFreeConnection);
+
+    expect(consumerIsValidConnection).not.toHaveBeenCalled();
+    expect(onConnect).not.toHaveBeenCalled();
   });
 });
