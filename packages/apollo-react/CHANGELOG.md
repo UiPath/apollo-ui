@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.26.0...@uipath/apollo-react@6.27.0) (2026-08-20)
+
+### Features
+
+* **apollo-react:** lock specialized canvas node controls ([4e2e8d7](https://github.com/UiPath/apollo-ui/commit/4e2e8d77cf827550d5230536f2f124987190cdb6))
+
 ## [@uipath/apollo-react-v6.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.25.0...@uipath/apollo-react@6.26.0) (2026-08-20)
 
 ### Features
