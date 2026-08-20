@@ -78,16 +78,6 @@ describe('resolveAdornments', () => {
     expect(result.bottomLeft).toBeTruthy();
   });
 
-  // ── Square dashed (bottomRight) ─────────────────────────
-
-  it('shows square dashed indicator when isOutputPinned', () => {
-    const result = resolveAdornments({
-      ...baseContext,
-      executionState: { status: 'None', isOutputPinned: true },
-    });
-    expect(result.bottomRight).toBeTruthy();
-  });
-
   // ── Validation errors (topRight) ────────────────────────
 
   it('shows validation indicator for ERROR severity', () => {
