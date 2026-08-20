@@ -8,17 +8,9 @@ import {
   useSyncExternalStore,
 } from 'react';
 
+import { EMPTY_SET, setsEqual } from './set-utils';
+
 type Listener = () => void;
-
-const EMPTY_SET: ReadonlySet<string> = new Set();
-
-function setsEqual(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
-  if (a.size !== b.size) return false;
-  for (const id of a) {
-    if (!b.has(id)) return false;
-  }
-  return true;
-}
 
 /**
  * Store for per-node read-only state with granular subscriptions.
