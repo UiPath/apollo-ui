@@ -32,8 +32,8 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: '@uipath/apollo-core/icons/svg',
-        replacement: fileURLToPath(new URL('../apollo-core/src/icons/svg', import.meta.url)),
+        find: '@uipath/apollo-ui-icons/svg',
+        replacement: fileURLToPath(new URL('../apollo-ui-icons/src/svg', import.meta.url)),
       },
       {
         find: '@uipath/apollo-react/icons',

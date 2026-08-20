@@ -207,6 +207,7 @@
     "@tiptap/react": "^3.19.0",
     "@tiptap/suggestion": "^3.19.0",
     "@uipath/apollo-core": "workspace:*",
+    "@uipath/apollo-ui-icons": "workspace:*",
     "@uipath/apollo-wind": "workspace:*",
     "@xyflow/react": "12.8.2",
     "@xyflow/system": "0.0.66",
