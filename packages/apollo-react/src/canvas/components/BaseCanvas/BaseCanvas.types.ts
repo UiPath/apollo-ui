@@ -77,6 +77,9 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
 
   /**
    * Node ids whose content is read-only while the rest of the canvas remains editable.
+   * Locked nodes cannot be deleted or label-edited and hide BaseNode add buttons.
+   * Their toolbar stays visible with every action disabled, so the lock is
+   * discoverable. They remain selectable, draggable, and resizable.
    * Custom node renderers can observe their state with `useIsNodeReadOnly`.
    *
    * Compared by content, so passing a fresh set with the same ids is a no-op.

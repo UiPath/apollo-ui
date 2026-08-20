@@ -20,6 +20,7 @@ vi.mock('./BaseCanvas.hooks', () => ({
     centerNode: vi.fn(),
   }),
   useMaintainNodesInView: vi.fn(),
+  useReadOnlyBeforeDelete: () => undefined,
 }));
 
 // Mock ReactFlow

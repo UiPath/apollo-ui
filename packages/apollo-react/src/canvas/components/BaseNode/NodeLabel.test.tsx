@@ -121,6 +121,36 @@ describe('NodeLabel', () => {
       expect(screen.getByRole('textbox', { name: 'Edit node description' })).toBeInTheDocument();
     });
 
+    // Locking is often an execution lock, so it must not commit the draft as a
+    // side effect of taking hold.
+    it('discards the draft when the label becomes read-only while editing', async () => {
+      const onChange = vi.fn();
+      const { rerender } = render(<NodeLabel {...defaultProps} onChange={onChange} />);
+
+      await user.dblClick(screen.getByText('Test Node'));
+      await user.clear(screen.getByRole('textbox', { name: 'Edit node name' }));
+      await user.type(screen.getByRole('textbox', { name: 'Edit node name' }), 'Renamed');
+
+      rerender(<NodeLabel {...defaultProps} onChange={onChange} readonly discardDraftOnReadonly />);
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.queryByRole('textbox', { name: 'Edit node name' })).not.toBeInTheDocument();
+      expect(screen.getByText('Test Node')).toBeInTheDocument();
+    });
+
+    it('saves the draft when the node is deselected while editable', async () => {
+      const onChange = vi.fn();
+      const { rerender } = render(<NodeLabel {...defaultProps} onChange={onChange} />);
+
+      await user.dblClick(screen.getByText('Test Node'));
+      await user.clear(screen.getByRole('textbox', { name: 'Edit node name' }));
+      await user.type(screen.getByRole('textbox', { name: 'Edit node name' }), 'Renamed');
+
+      rerender(<NodeLabel {...defaultProps} onChange={onChange} selected={false} />);
+
+      expect(onChange).toHaveBeenCalledWith({ label: 'Renamed', subLabel: 'Test Description' });
+    });
+
     it('should enter edit mode when subLabel is double clicked', async () => {
       render(<NodeLabel {...defaultProps} />);
 
@@ -178,6 +208,14 @@ describe('NodeLabel', () => {
       await user.dblClick(screen.getByText('Test Node'));
 
       expect(screen.queryByRole('textbox', { name: 'Edit node name' })).not.toBeInTheDocument();
+    });
+
+    it('should disable the empty placeholder when readonly', () => {
+      render(<NodeLabel {...defaultProps} label="" subLabel="" readonly />);
+
+      // Disabled keeps it out of the tab order, so it can't be focused to
+      // announce an action a read-only node won't perform.
+      expect(screen.getByRole('button', { name: 'Add node label' })).toBeDisabled();
     });
 
     it('should allow editing label value', async () => {

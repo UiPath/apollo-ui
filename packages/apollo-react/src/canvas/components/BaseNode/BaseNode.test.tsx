@@ -22,6 +22,8 @@ const {
   mockMultipleNodesSelected,
   mockIsConnecting,
   mockNodeToolbar,
+  mockNodeLabel,
+  mockReadOnlyNodeIds,
 } = vi.hoisted(() => ({
   mockUpdateNode: vi.fn(),
   mockGetNode: vi.fn(),
@@ -42,6 +44,9 @@ const {
   mockIsConnecting: { current: false },
   // biome-ignore lint/suspicious/noExplicitAny: captures the toolbar props for assertions
   mockNodeToolbar: vi.fn() as any,
+  // biome-ignore lint/suspicious/noExplicitAny: captures the label props for assertions
+  mockNodeLabel: vi.fn() as any,
+  mockReadOnlyNodeIds: { current: new Set<string>() as ReadonlySet<string> },
 }));
 
 // getNode reflects whatever updateNode last wrote, so the height-sync effect converges
@@ -78,6 +83,10 @@ vi.mock('../../core', () => ({
 
 vi.mock('../BaseCanvas/BaseCanvasModeProvider', () => ({
   useBaseCanvasMode: () => ({ mode: mockMode.current }),
+}));
+vi.mock('../BaseCanvas/ReadOnlyNodesContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../BaseCanvas/ReadOnlyNodesContext')>()),
+  useIsNodeReadOnly: (nodeId: string) => mockReadOnlyNodeIds.current.has(nodeId),
 }));
 vi.mock('../BaseCanvas/ConnectedHandlesContext', () => ({ useConnectedHandles: () => new Set() }));
 vi.mock('../BaseCanvas/SelectionStateContext', () => ({
@@ -137,7 +146,10 @@ vi.mock('../../utils/manifest-resolver', () => ({
 }));
 
 vi.mock('./NodeLabel', () => ({
-  NodeLabel: ({ label }: { label?: string }) => <div data-testid="node-label">{label}</div>,
+  NodeLabel: (props: { label?: string }) => {
+    mockNodeLabel(props);
+    return <div data-testid="node-label">{props.label}</div>;
+  },
 }));
 
 import type { HandleGroupManifest } from '../../schema';
@@ -177,6 +189,8 @@ describe('BaseNode', () => {
     mockNodeState.current = { height: undefined };
     mockUseButtonHandles.mockClear();
     mockNodeToolbar.mockClear();
+    mockNodeLabel.mockClear();
+    mockReadOnlyNodeIds.current = new Set();
     mockHandleConfigs.current = undefined;
     mockManifest.current = { ...DEFAULT_MANIFEST };
     mockOverrideConfig.current = {};
@@ -425,7 +439,12 @@ describe('BaseNode', () => {
     type Handle = HandleGroupManifest['handles'][number];
 
     const TOP_TOOLBAR = {
-      actions: [{ id: 'edit', icon: 'edit', label: 'Edit', onAction: vi.fn() }],
+      actions: [
+        { id: 'edit', icon: 'edit', label: 'Edit', onAction: vi.fn() },
+        { id: 'separator' },
+        { id: 'delete', icon: 'trash', label: 'Delete', onAction: vi.fn() },
+      ],
+      overflowActions: [{ id: 'rename', icon: 'pencil', label: 'Rename', onAction: vi.fn() }],
       position: 'top',
     };
 
@@ -589,6 +608,83 @@ describe('BaseNode', () => {
       mockHandleConfigs.current = topHandles(buttonHandle);
       render(<BaseNode {...defaultProps} selected={true} />);
       expect(offset()).toBe('button');
+    });
+  });
+
+  // A node listed in BaseCanvas `readOnlyNodeIds` loses its editing affordances
+  // even while the canvas is in design mode: add buttons and label editing are
+  // hidden, and the toolbar stays mounted with every action disabled.
+  // NodeLabel and NodeToolbar are module-mocked above, so the label/toolbar
+  // contract is asserted on the props they receive.
+  describe('when individual nodes are locked', () => {
+    const NODE_ID = defaultProps.id;
+
+    const TOP_TOOLBAR = {
+      actions: [
+        { id: 'edit', icon: 'edit', label: 'Edit', onAction: vi.fn() },
+        { id: 'separator' },
+        { id: 'delete', icon: 'trash', label: 'Delete', onAction: vi.fn() },
+      ],
+      overflowActions: [{ id: 'rename', icon: 'pencil', label: 'Rename', onAction: vi.fn() }],
+      position: 'top',
+    };
+
+    const renderNode = (overrides: Partial<NodeProps<Node<BaseNodeData>>> = {}) => {
+      mockOverrideConfig.current = { toolbarConfig: TOP_TOOLBAR };
+      return render(<BaseNode {...defaultProps} {...overrides} />);
+    };
+
+    // The latest `readonly` value handed to NodeLabel.
+    const labelReadonly = () => mockNodeLabel.mock.calls.at(-1)?.[0]?.readonly;
+
+    // The latest config handed to NodeToolbar.
+    const toolbarConfig = () => mockNodeToolbar.mock.calls.at(-1)?.[0]?.config;
+
+    it('keeps the toolbar mounted but disables every action when the node is locked', () => {
+      mockReadOnlyNodeIds.current = new Set([NODE_ID]);
+      renderNode({ selected: true });
+      const config = toolbarConfig();
+      expect(config.actions).toEqual([
+        expect.objectContaining({ id: 'edit', disabled: true }),
+        { id: 'separator' },
+        expect.objectContaining({ id: 'delete', disabled: true }),
+      ]);
+      expect(config.overflowActions).toEqual([
+        expect.objectContaining({ id: 'rename', disabled: true }),
+      ]);
+    });
+
+    it('leaves the toolbar config untouched when the node is not locked', () => {
+      renderNode({ selected: true });
+      expect(toolbarConfig()).toBe(TOP_TOOLBAR);
+    });
+
+    it('keeps the toolbar visible in non-design modes unless the node is locked', () => {
+      mockMode.current = 'readonly';
+      renderNode({ selected: true });
+      expect(mockNodeToolbar).toHaveBeenCalled();
+    });
+
+    it('prevents label editing when the node is locked', () => {
+      mockMode.current = 'design';
+      mockReadOnlyNodeIds.current = new Set([NODE_ID]);
+      renderNode({ selected: true });
+      expect(labelReadonly()).toBe(true);
+    });
+
+    it('keeps an unlocked node editable', () => {
+      mockMode.current = 'design';
+      mockReadOnlyNodeIds.current = new Set(['some-other-node']);
+      renderNode({ selected: true });
+      expect(labelReadonly()).toBe(false);
+    });
+
+    it('hides connection add buttons when the node is locked', () => {
+      mockMode.current = 'design';
+      mockReadOnlyNodeIds.current = new Set([NODE_ID]);
+      renderNode({ selected: true });
+      const opts = mockUseButtonHandles.mock.calls.at(-1)?.[0] as { showAddButton?: boolean };
+      expect(opts.showAddButton).toBe(false);
     });
   });
 });
