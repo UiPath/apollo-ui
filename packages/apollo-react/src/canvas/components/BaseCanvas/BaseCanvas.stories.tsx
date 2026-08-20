@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
-import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, Node, NodeProps, NodeTypes } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   BackgroundVariant,
   Panel,
@@ -17,8 +17,10 @@ import {
   SelectValue,
 } from '@uipath/apollo-wind';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { NodeRegistryProvider } from '../../core';
 import {
   createNode,
+  StoryCard,
   StoryCode,
   StoryCodeBlock,
   StoryInfoPanel,
@@ -27,12 +29,24 @@ import {
   StorySection,
   type StorySpecColumn,
   StorySpecTable,
+  StoryTabs,
+  StoryWideContent,
   useCanvasStory,
   withCanvasProviders,
 } from '../../storybook-utils';
-import { DefaultCanvasTranslations } from '../../types';
+import type { AgentFlowProps } from '../../types';
+import { DefaultAgentNodeTranslations, DefaultCanvasTranslations } from '../../types';
+import { agentFlowManifest } from '../AgentCanvas/agent-flow.manifest';
+import type { AgentNodeData } from '../AgentCanvas/nodes/AgentNode';
+import { AgentNodeElement } from '../AgentCanvas/nodes/AgentNode';
+import { AgentFlowProvider } from '../AgentCanvas/store/agent-flow-store';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { LoopNode } from '../LoopNode';
+import { StageNodeWrapper } from '../StageNode/StageNode.stories.utils';
+import type { StageNodeBaseProps } from '../StageNode/StageNode.types';
+import { StickyNoteNode } from '../StickyNoteNode';
+import type { StickyNoteData } from '../StickyNoteNode/StickyNoteNode.types';
 import { BaseCanvas } from './BaseCanvas';
 import type { BaseCanvasRef } from './BaseCanvas.types';
 
@@ -1464,6 +1478,207 @@ const readOnlyBehaviorColumns: readonly StorySpecColumn<ReadOnlyBehaviorRow>[] =
   { key: 'detail', header: 'What happens' },
 ];
 
+type SpecializedNodeKind = 'agent' | 'loop' | 'stage' | 'sticky-note';
+
+const SPECIALIZED_COMPARISON_NODE_ID = 'specialized-comparison-node';
+const EMPTY_READ_ONLY_NODE_IDS = new Set<string>();
+const LOCKED_SPECIALIZED_NODE_IDS = new Set([SPECIALIZED_COMPARISON_NODE_ID]);
+const noop = () => {};
+
+const comparisonAgentFlowProps: AgentFlowProps = {
+  mode: 'design',
+  definition: { processKey: SPECIALIZED_COMPARISON_NODE_ID },
+  spans: [],
+  name: 'Expense assistant',
+  description: 'Reviews receipts and prepares reimbursement requests',
+  resources: [],
+};
+
+function ComparisonAgentNode(props: NodeProps<Node<AgentNodeData>>) {
+  return (
+    <AgentNodeElement
+      {...props}
+      mode="design"
+      enableInstructions
+      enableMemory
+      onAddResource={noop}
+      onAddInstructions={noop}
+      translations={DefaultAgentNodeTranslations}
+    />
+  );
+}
+
+function ComparisonLoopNode(props: Parameters<typeof LoopNode>[0]) {
+  return <LoopNode {...props} onAddFirstChild={noop} />;
+}
+
+const specializedComparisonNodeTypes: Record<SpecializedNodeKind, NodeTypes> = {
+  agent: { 'comparison-agent': ComparisonAgentNode },
+  loop: { 'uipath.control-flow.foreach': ComparisonLoopNode },
+  stage: { 'comparison-stage': StageNodeWrapper },
+  'sticky-note': { 'comparison-sticky-note': StickyNoteNode },
+};
+
+function createSpecializedComparisonNode(kind: SpecializedNodeKind): Node {
+  const base = {
+    id: SPECIALIZED_COMPARISON_NODE_ID,
+    position: { x: 0, y: 0 },
+    selected: true,
+  };
+
+  switch (kind) {
+    case 'agent':
+      return {
+        ...base,
+        type: 'comparison-agent',
+        data: {
+          name: comparisonAgentFlowProps.name,
+          description: comparisonAgentFlowProps.description,
+          definition: comparisonAgentFlowProps.definition,
+          instructions: {
+            system: 'Review the submitted receipt for policy compliance.',
+            user: 'Summarize exceptions before creating the expense report.',
+          },
+        } satisfies AgentNodeData,
+      };
+    case 'loop':
+      return {
+        ...base,
+        type: 'uipath.control-flow.foreach',
+        data: {
+          display: { label: 'For each receipt', shape: 'container' },
+        } satisfies BaseNodeData,
+        style: { width: 360, height: 220 },
+      };
+    case 'stage':
+      return {
+        ...base,
+        type: 'comparison-stage',
+        width: 336,
+        data: {
+          stageDetails: {
+            label: 'Expense review',
+            tasks: [
+              [{ id: 'validate-receipt', label: 'Validate receipt' }],
+              [{ id: 'approve-expense', label: 'Approve expense', isRequired: true }],
+            ],
+            entryRules: [{ id: 'receipt-attached', label: 'Receipt is attached', onClick: noop }],
+          },
+          onTaskAdd: noop,
+          onTaskClick: noop,
+          onStageTitleChange: noop,
+          onTaskReorder: noop,
+          getTaskContextMenuItems: () => [
+            { id: 'inspect-task', label: 'Inspect task details', onClick: noop },
+          ],
+        } satisfies StageNodeBaseProps,
+      };
+    case 'sticky-note':
+      return {
+        ...base,
+        type: 'comparison-sticky-note',
+        data: {
+          color: 'yellow',
+          content:
+            '## Review checklist\n\n- Confirm the receipt\n- Check the policy\n\n[Open policy](https://example.com)',
+        } satisfies StickyNoteData,
+        width: 260,
+        height: 190,
+      };
+  }
+}
+
+function SpecializedNodeSpecimen({ kind, locked }: { kind: SpecializedNodeKind; locked: boolean }) {
+  const initialNodes = useMemo(() => [createSpecializedComparisonNode(kind)], [kind]);
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    additionalNodeTypes: specializedComparisonNodeTypes[kind],
+  });
+
+  const canvas = (
+    <ReactFlowProvider>
+      <BaseCanvas
+        {...canvasProps}
+        id={`specialized-${kind}-${locked ? 'locked' : 'unlocked'}`}
+        mode="design"
+        readOnlyNodeIds={locked ? LOCKED_SPECIALIZED_NODE_IDS : EMPTY_READ_ONLY_NODE_IDS}
+        fitView
+        fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
+        minZoom={0.35}
+      />
+    </ReactFlowProvider>
+  );
+
+  return kind === 'agent' ? (
+    <NodeRegistryProvider manifest={agentFlowManifest}>
+      <AgentFlowProvider {...comparisonAgentFlowProps}>{canvas}</AgentFlowProvider>
+    </NodeRegistryProvider>
+  ) : (
+    canvas
+  );
+}
+
+const specializedNodeComparisons = [
+  {
+    value: 'agent',
+    label: 'AgentNode',
+    unlocked:
+      'Resource add buttons and instruction-editing affordances are shown alongside existing previews.',
+    locked:
+      'Resource add buttons and instruction editing are hidden; configured instructions remain visible.',
+  },
+  {
+    value: 'loop',
+    label: 'LoopNode',
+    unlocked: 'Structural controls are shown inside the loop.',
+    locked: 'Structural controls are hidden while the loop remains movable and resizable.',
+  },
+  {
+    value: 'stage',
+    label: 'StageNode',
+    unlocked: 'Title, task, rule, and add or replace affordances are shown on the stage.',
+    locked:
+      'Stage mutation affordances are hidden while tasks, rules, statuses, and host menu items stay visible.',
+  },
+  {
+    value: 'sticky-note',
+    label: 'StickyNoteNode',
+    unlocked: 'Markdown editing, formatting, and resize affordances are available.',
+    locked:
+      'Editing and resize affordances are hidden while rendered content and links remain usable.',
+  },
+] as const satisfies readonly {
+  value: SpecializedNodeKind;
+  label: string;
+  unlocked: string;
+  locked: string;
+}[];
+
+function SpecializedNodeComparison({
+  comparison,
+}: {
+  comparison: (typeof specializedNodeComparisons)[number];
+}) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <StoryCard
+        title="Unlocked"
+        code="editable"
+        description={comparison.unlocked}
+        preview={<SpecializedNodeSpecimen kind={comparison.value} locked={false} />}
+        previewClassName="h-[360px] w-full overflow-hidden rounded-lg border border-border bg-background"
+      />
+      <StoryCard
+        title="Locked"
+        code="read-only"
+        description={comparison.locked}
+        preview={<SpecializedNodeSpecimen kind={comparison.value} locked />}
+        previewClassName="h-[360px] w-full overflow-hidden rounded-lg border border-border bg-background"
+      />
+    </div>
+  );
+}
+
 function PerNodeReadOnlyPage({ globalTheme }: { globalTheme: string }) {
   return (
     <StoryPage
@@ -1543,6 +1758,39 @@ function CustomNode({ id }: NodeProps) {
         description="A lock protects BaseNode content without turning the node into a static object. Layout and navigation stay available so users can continue arranging and inspecting the graph. Actions that only appear on demand are disabled rather than removed, so the node still reports what it would otherwise offer. Specialized renderers can apply additional restrictions to their own controls."
       >
         <StorySpecTable columns={readOnlyBehaviorColumns} rows={baseNodeBehaviorRows} />
+      </StorySection>
+
+      <StorySection
+        title="Specialized node coverage"
+        description={
+          <>
+            The renderers below consume the same per-node state, then gate the controls specific to
+            their content. Other renderers, <StoryCode>GroupNode</StoryCode> among them, do not read
+            it yet. A custom renderer can follow this pattern with{' '}
+            <StoryCode>useIsNodeReadOnly</StoryCode>.
+          </>
+        }
+      >
+        <StoryWideContent>
+          <StoryTabs
+            label="Specialized node renderers"
+            tabs={specializedNodeComparisons.map((comparison) => ({
+              value: comparison.value,
+              label: comparison.label,
+              content: <SpecializedNodeComparison comparison={comparison} />,
+            }))}
+          />
+        </StoryWideContent>
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+          Stage task context menus remain host-controlled so inspection and debug actions can stay
+          available. When a stage is read-only, do not combine those menu items with task-mutation
+          callbacks.
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <StoryCode>AgentFlow</StoryCode> and <StoryCode>HierarchicalCanvas</StoryCode> forward the
+          same <StoryCode>readOnlyNodeIds</StoryCode> set to these renderers without adding a second
+          policy layer.
+        </p>
       </StorySection>
     </StoryPage>
   );
