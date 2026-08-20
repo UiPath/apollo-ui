@@ -3,7 +3,7 @@
 /**
  * Generate React Icon Components
  *
- * This script generates React components for each SVG icon from apollo-core
+ * This script generates React components for each SVG icon from apollo-ui-icons
  */
 
 import fs from 'fs';
@@ -13,9 +13,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Read icon names from apollo-core
-const APOLLO_CORE_PATH = path.join(__dirname, '../../apollo-core');
-const ICONS_SVG_DIR = path.join(APOLLO_CORE_PATH, 'src/icons/svg');
+// Read icon names from apollo-ui-icons
+const APOLLO_ICONS_PATH = path.join(__dirname, '../../apollo-ui-icons');
+const ICONS_SVG_DIR = path.join(APOLLO_ICONS_PATH, 'src/svg');
 const OUTPUT_DIR = path.join(__dirname, '../src/icons');
 
 // ============================================================================
