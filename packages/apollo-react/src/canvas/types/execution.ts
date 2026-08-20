@@ -22,6 +22,12 @@ export interface NodeExecutionStateWithDebug {
   count?: number;
   debug?: boolean;
   isExecutionStartPoint?: boolean;
+  /**
+   * @deprecated No longer read. The bottom-right adornment slot is owned by the
+   * consumer: supply `adornments.bottomRight` through `BaseNodeOverrideConfig`
+   * instead. Setting this has no effect and the field will be removed in the
+   * next major.
+   */
   isOutputPinned?: boolean;
 }
 
