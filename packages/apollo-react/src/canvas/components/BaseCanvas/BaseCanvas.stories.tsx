@@ -16,14 +16,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@uipath/apollo-wind';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   createNode,
   StoryCode,
   StoryCodeBlock,
   StoryInfoPanel,
   StoryPage,
+  StoryPreview,
   StorySection,
+  type StorySpecColumn,
+  StorySpecTable,
   useCanvasStory,
   withCanvasProviders,
 } from '../../storybook-utils';
@@ -1290,6 +1293,177 @@ export const WithMaintainNodesInView: Story = {
 // Per-Node Read-Only
 // ============================================================================
 
+// BaseCanvas disables the delete key by default; the story opts in so locking
+// is observable.
+const READ_ONLY_DELETE_KEY_CODES = ['Backspace', 'Delete'];
+
+const TIDY_COLUMN_GAP = 260;
+const TIDY_ROW_GAP = 170;
+
+/** Longest-path depth per node, used as the tidy column index. */
+function computeTidyDepths(nodes: Node[], edges: Edge[]): Map<string, number> {
+  const depths = new Map(nodes.map((node) => [node.id, 0]));
+  // Bounded relaxation: converges on a DAG, terminates on cycles.
+  for (let pass = 0; pass < nodes.length; pass++) {
+    let changed = false;
+    for (const edge of edges) {
+      const candidate = (depths.get(edge.source) ?? 0) + 1;
+      if (depths.has(edge.target) && candidate > (depths.get(edge.target) ?? 0)) {
+        depths.set(edge.target, candidate);
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+  return depths;
+}
+
+function PerNodeReadOnlyCanvas() {
+  const initialNodes = useMemo(() => createPipelineNodes(), []);
+  const { canvasProps, setNodes } = useCanvasStory({
+    initialNodes,
+    initialEdges: pipelineEdges,
+  });
+  const [lockedIds, setLockedIds] = useState<ReadonlySet<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Must be stable: React Flow re-fires onSelectionChange whenever the handler
+  // identity changes, so an inline arrow + setState is an infinite render loop.
+  const handleSelectionChange = useCallback(({ nodes }: { nodes: Node[] }) => {
+    const ids = nodes.map((node) => node.id);
+    setSelectedIds((previous) =>
+      previous.length === ids.length && previous.every((id, index) => id === ids[index])
+        ? previous
+        : ids
+    );
+  }, []);
+
+  // Lays out every node, locked included: position is layout, not content.
+  const handleTidy = useCallback(() => {
+    setNodes((current) => {
+      const depths = computeTidyDepths(current, pipelineEdges);
+      const rowByColumn = new Map<number, number>();
+      return current.map((node) => {
+        const column = depths.get(node.id) ?? 0;
+        const row = rowByColumn.get(column) ?? 0;
+        rowByColumn.set(column, row + 1);
+        return { ...node, position: { x: column * TIDY_COLUMN_GAP, y: row * TIDY_ROW_GAP } };
+      });
+    });
+  }, [setNodes]);
+
+  return (
+    <Column h="100%">
+      <Column
+        gap={8}
+        p={20}
+        style={{
+          color: 'var(--canvas-foreground)',
+          backgroundColor: 'var(--canvas-background-secondary)',
+        }}
+      >
+        <span className="text-lg font-bold">Choose what stays editable</span>
+        <span className="text-base">
+          Select one or more nodes, then lock or unlock their content without leaving design mode.
+        </span>
+        <Row gap={8} align="center">
+          <Button
+            size="sm"
+            disabled={selectedIds.length === 0}
+            onClick={() => setLockedIds(new Set([...lockedIds, ...selectedIds]))}
+          >
+            Lock selected ({selectedIds.length})
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={!selectedIds.some((id) => lockedIds.has(id))}
+            onClick={() =>
+              setLockedIds(new Set([...lockedIds].filter((id) => !selectedIds.includes(id))))
+            }
+          >
+            Unlock selected
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={lockedIds.size === 0}
+            onClick={() => setLockedIds(new Set())}
+          >
+            Unlock all ({lockedIds.size} locked)
+          </Button>
+        </Row>
+        <span className="text-sm">
+          Locked: {lockedIds.size > 0 ? [...lockedIds].join(', ') : 'none'}
+        </span>
+      </Column>
+      <div style={{ flex: 1, borderTop: '1px solid var(--canvas-border)' }}>
+        <BaseCanvas
+          {...canvasProps}
+          mode="design"
+          deleteKeyCode={READ_ONLY_DELETE_KEY_CODES}
+          readOnlyNodeIds={lockedIds}
+          onSelectionChange={handleSelectionChange}
+        >
+          <Panel position="bottom-right">
+            <CanvasPositionControls
+              translations={DefaultCanvasTranslations}
+              onOrganize={handleTidy}
+            />
+          </Panel>
+        </BaseCanvas>
+      </div>
+    </Column>
+  );
+}
+
+type ReadOnlyBehaviorRow = {
+  interaction: string;
+  lockedBehavior: string;
+  detail: string;
+};
+
+const baseNodeBehaviorRows: readonly ReadOnlyBehaviorRow[] = [
+  {
+    interaction: 'Delete',
+    lockedBehavior: 'Blocked',
+    detail: 'Delete and Backspace skip locked nodes, including within a mixed selection.',
+  },
+  {
+    interaction: 'Rename',
+    lockedBehavior: 'Blocked',
+    detail: 'Double-click does not edit the label; applying a lock discards an active draft.',
+  },
+  {
+    interaction: 'Toolbar',
+    lockedBehavior: 'Disabled',
+    detail:
+      'The toolbar still opens on hover or selection, with every action greyed out and inert. Labels keep working, so the lock explains itself.',
+  },
+  {
+    interaction: 'Add buttons',
+    lockedBehavior: 'Hidden',
+    detail:
+      'Handle add buttons sit inline in the layout, so they are removed rather than greyed out.',
+  },
+  {
+    interaction: 'Select and drag',
+    lockedBehavior: 'Available',
+    detail: 'Selection and position remain layout interactions, so both continue to work.',
+  },
+  {
+    interaction: 'Resize and organize',
+    lockedBehavior: 'Available',
+    detail: 'Layout tools can continue to reposition and resize locked nodes.',
+  },
+];
+
+const readOnlyBehaviorColumns: readonly StorySpecColumn<ReadOnlyBehaviorRow>[] = [
+  { key: 'interaction', header: 'Interaction', variant: 'strong' },
+  { key: 'lockedBehavior', header: 'While locked', variant: 'code' },
+  { key: 'detail', header: 'What happens' },
+];
+
 function PerNodeReadOnlyPage({ globalTheme }: { globalTheme: string }) {
   return (
     <StoryPage
@@ -1303,9 +1477,26 @@ function PerNodeReadOnlyPage({ globalTheme }: { globalTheme: string }) {
         </>
       }
     >
+      <StoryPreview
+        height={640}
+        description={
+          <>
+            <p>
+              Select nodes and lock them, then compare their controls with an unlocked neighbor.
+              Press Delete or Backspace on a mixed selection: only the unlocked nodes are removed.
+            </p>
+            <p>
+              Drag locked nodes or use Organize to confirm that layout stays available while node
+              content is protected.
+            </p>
+          </>
+        }
+      >
+        <PerNodeReadOnlyCanvas />
+      </StoryPreview>
+
       <StorySection
         title="State and API"
-        divider={false}
         description={
           <>
             <p>
@@ -1345,6 +1536,13 @@ function CustomNode({ id }: NodeProps) {
   return <CustomEditor disabled={isReadOnly} />;
 }`}
         </StoryCodeBlock>
+      </StorySection>
+
+      <StorySection
+        title="Base node behavior"
+        description="A lock protects BaseNode content without turning the node into a static object. Layout and navigation stay available so users can continue arranging and inspecting the graph. Actions that only appear on demand are disabled rather than removed, so the node still reports what it would otherwise offer. Specialized renderers can apply additional restrictions to their own controls."
+      >
+        <StorySpecTable columns={readOnlyBehaviorColumns} rows={baseNodeBehaviorRows} />
       </StorySection>
     </StoryPage>
   );
