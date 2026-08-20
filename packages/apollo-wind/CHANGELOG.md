@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v2.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.34.0...@uipath/apollo-wind@2.35.0) (2026-08-20)
+
+### Features
+
+* **apollo-wind:** update alert states and validation patterns ([c830e46](https://github.com/UiPath/apollo-ui/commit/c830e469bded26cd8c8b8376565cb9a4b3ea261b))
+
+### Bug Fixes
+
+* **repo:** refactor canvas panel templates ([82e8b26](https://github.com/UiPath/apollo-ui/commit/82e8b263b8f04abf77716972e2523e04498c18c5))
+
 ## [@uipath/apollo-wind-v2.34.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.3...@uipath/apollo-wind@2.34.0) (2026-08-20)
 
 ### Features

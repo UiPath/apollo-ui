@@ -1,3 +1,17 @@
+## [@uipath/apollo-react-v6.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.23.1...@uipath/apollo-react@6.24.0) (2026-08-20)
+
+### Features
+
+* **apollo-react:** add canvas left sidebar ([f4651de](https://github.com/UiPath/apollo-ui/commit/f4651defcf5131f0a45daccd6f037605e789bf45))
+* **apollo-react:** add canvas takeover modal ([b162f78](https://github.com/UiPath/apollo-ui/commit/b162f780748cd4a8449a0ec17c28d3ca56e3efba))
+
+### Bug Fixes
+
+* **apollo-react:** address takeover modal accessibility ([4b37aca](https://github.com/UiPath/apollo-ui/commit/4b37acabbbbecb49c1cfb98ad4983b0cd2693275))
+* **apollo-react:** avoid inert sidebar logo action ([a27c944](https://github.com/UiPath/apollo-ui/commit/a27c944e4bd097b691222bc124e85703db445e6b))
+* **apollo-react:** preserve aria pressed states ([88c4e5d](https://github.com/UiPath/apollo-ui/commit/88c4e5d1d27f52dd2bc4038a81259ded6ee35d79))
+* **repo:** refactor canvas panel templates ([82e8b26](https://github.com/UiPath/apollo-ui/commit/82e8b263b8f04abf77716972e2523e04498c18c5))
+
 ## [@uipath/apollo-react-v6.23.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.23.0...@uipath/apollo-react@6.23.1) (2026-08-20)
 
 ### Bug Fixes
