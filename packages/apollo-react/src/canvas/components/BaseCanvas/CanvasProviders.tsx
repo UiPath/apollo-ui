@@ -10,6 +10,7 @@ import type { BaseCanvasProps } from './BaseCanvas.types';
 import { BaseCanvasModeProvider } from './BaseCanvasModeProvider';
 import { CanvasThemeProvider } from './CanvasThemeContext';
 import { ConnectedHandlesProvider } from './ConnectedHandlesContext';
+import { ReadOnlyNodesProvider } from './ReadOnlyNodesContext';
 import { SelectionStateProvider } from './SelectionStateContext';
 
 interface CanvasProvidersProps {
@@ -20,6 +21,7 @@ interface CanvasProvidersProps {
   isDarkMode?: boolean;
   locale?: BaseCanvasProps['locale'];
   stickyNoteOptions?: StickyNoteCanvasOptions;
+  readOnlyNodeIds?: ReadonlySet<string>;
 }
 
 /**
@@ -35,6 +37,7 @@ export function CanvasProviders({
   isDarkMode,
   locale,
   stickyNoteOptions,
+  readOnlyNodeIds,
   children,
 }: CanvasProvidersProps) {
   return (
@@ -45,9 +48,11 @@ export function CanvasProviders({
             <ConnectedHandlesProvider edges={edges}>
               <EdgeCrossingsProvider>
                 <BaseCanvasModeProvider mode={mode}>
-                  <StickyNoteCanvasOptionsProvider options={stickyNoteOptions}>
-                    <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
-                  </StickyNoteCanvasOptionsProvider>
+                  <ReadOnlyNodesProvider readOnlyNodeIds={readOnlyNodeIds}>
+                    <StickyNoteCanvasOptionsProvider options={stickyNoteOptions}>
+                      <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
+                    </StickyNoteCanvasOptionsProvider>
+                  </ReadOnlyNodesProvider>
                 </BaseCanvasModeProvider>
               </EdgeCrossingsProvider>
             </ConnectedHandlesProvider>
