@@ -10,11 +10,12 @@ import {
   type SuggestionType,
 } from '../../../types';
 import { CanvasIcon } from '../../../utils/icon-registry';
+import { useIsNodeReadOnly } from '../../BaseCanvas/ReadOnlyNodesContext';
 import { BaseNode } from '../../BaseNode/BaseNode';
 import type { BaseNodeData } from '../../BaseNode/BaseNode.types';
 import {
-  BaseNodeOverrideConfigProvider,
   type BaseNodeOverrideConfig,
+  BaseNodeOverrideConfigProvider,
 } from '../../BaseNode/BaseNodeConfigContext';
 import type { ButtonHandleConfig, HandleActionEvent } from '../../ButtonHandle/ButtonHandle';
 import { FloatingCanvasPanel } from '../../FloatingCanvasPanel';
@@ -207,6 +208,11 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     return undefined;
   }, [hasError, hasSuccess, hasRunning]);
 
+  // Handle visibility still follows mode alone: a locked agent keeps showing
+  // the resources it has, it just cannot gain new ones.
+  const isNodeReadOnly = useIsNodeReadOnly(id);
+  const canEditNode = mode === 'design' && !isNodeReadOnly;
+
   const displayMemory =
     enableMemory === true && (mode === 'design' || (mode === 'view' && hasMemory));
   const displayContext = mode === 'design' || (mode === 'view' && hasContext);
@@ -232,7 +238,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         type: 'source',
         handleType: 'artifact',
         label: translations.memory,
-        showButton: mode === 'design' && !hasMemory,
+        showButton: canEditNode && !hasMemory,
         labelBackgroundColor: 'var(--canvas-background-secondary)',
         visible: displayMemory,
         onAction: (_e: HandleActionEvent) => {
@@ -247,7 +253,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         type: 'source',
         handleType: 'artifact',
         label: translations.escalations,
-        showButton: mode === 'design',
+        showButton: canEditNode,
         labelBackgroundColor: 'var(--canvas-background-secondary)',
         visible: displayEscalation,
         onAction: (_e: HandleActionEvent) => {
@@ -271,7 +277,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           type: 'source',
           handleType: 'artifact',
           label: translations.context,
-          showButton: mode === 'design',
+          showButton: canEditNode,
           labelBackgroundColor: 'var(--canvas-background-secondary)',
           visible: displayContext,
           onAction: (_e: HandleActionEvent) => {
@@ -283,7 +289,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           type: 'source',
           handleType: 'artifact',
           label: translations.tools,
-          showButton: mode === 'design',
+          showButton: canEditNode,
           labelBackgroundColor: 'var(--canvas-background-secondary)',
           visible: displayTool || displayMcp || displayA2a,
           onAction: (_e: HandleActionEvent) => {
@@ -307,7 +313,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
     return configs;
   }, [
-    mode,
+    canEditNode,
     displayContext,
     displayMemory,
     displayMcp,
@@ -374,10 +380,15 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       return {
         instructionsFooter: (
           <InstructionsPreview
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddInstructions?.();
-            }}
+            $isInteractive={canEditNode}
+            onClick={
+              canEditNode
+                ? (e) => {
+                    e.stopPropagation();
+                    onAddInstructions?.();
+                  }
+                : undefined
+            }
           >
             <InstructionsLabel>{translations.instructions}</InstructionsLabel>
             {system && (
@@ -396,8 +407,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       };
     }
 
-    // Show add button in design mode when no content
-    if (mode !== 'design' || !onAddInstructions) {
+    // Show add button in design mode when no content, unless this node is locked
+    if (!canEditNode || !onAddInstructions) {
       return { instructionsFooter: null, footerVariant: 'none' };
     }
     return {
@@ -415,7 +426,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       ),
       footerVariant: 'button',
     };
-  }, [enableInstructions, data.instructions, mode, onAddInstructions, translations]);
+  }, [enableInstructions, data.instructions, canEditNode, onAddInstructions, translations]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
     return opts.showAddButton || opts.selected;

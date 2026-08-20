@@ -30,6 +30,7 @@ import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
+import { useIsNodeReadOnly } from '../BaseCanvas/ReadOnlyNodesContext';
 import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import type { NodeAdornments, NodeStatusContext } from '../BaseNode/BaseNode.types';
 import { BaseBadgeSlot } from '../BaseNode/BaseNodeBadgeSlot';
@@ -39,6 +40,7 @@ import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { NodeToolbar } from '../Toolbar';
+import { lockToolbarConfig } from '../Toolbar/NodeToolbar/NodeToolbar.utils';
 import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
 import type { LoopNodeExecutionCountState, LoopNodeProps } from './LoopNode.types';
 import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
@@ -205,6 +207,8 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const manifest = useMemo(() => nodeTypeRegistry?.getManifest(type), [nodeTypeRegistry, type]);
   const { mode } = useBaseCanvasMode();
   const isDesignMode = mode === 'design';
+  const isNodeReadOnly = useIsNodeReadOnly(id);
+  const canEditNode = isDesignMode && !isNodeReadOnly;
   const connectedHandleIds = useConnectedHandles(id);
   const { multipleNodesSelected } = useSelectionState();
   const isConnecting = useStore(selectIsConnecting);
@@ -281,6 +285,13 @@ function LoopNodeComponent(props: LoopNodeProps) {
     return manifest ? resolveToolbar(manifest, statusContext, data) : undefined;
   }, [data, manifest, statusContext, toolbarConfigProp]);
 
+  // Matches BaseNode: a locked loop keeps its toolbar with every action
+  // disabled rather than hiding it. See `lockToolbarConfig` for why.
+  const effectiveToolbarConfig = useMemo(
+    () => (toolbarConfig && isNodeReadOnly ? lockToolbarConfig(toolbarConfig) : toolbarConfig),
+    [toolbarConfig, isNodeReadOnly]
+  );
+
   const adornments: NodeAdornments = useMemo(
     () => ({
       ...resolveAdornments(statusContext, { hideExecutionStatusAdornment: true }),
@@ -337,8 +348,10 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   const shouldShowHandles = (isConnecting || selected || isHovered) && !dragging;
 
-  const showHandleAddButtons = isDesignMode && !multipleNodesSelected && !isConnecting && !dragging;
-  const showEmptyStateButton = isDesignMode && !hasChildNodes && !!onAddFirstChild;
+  // Resize stays enabled when locked: size, like position, is layout rather
+  // than content. Only the structural controls are gated.
+  const showHandleAddButtons = canEditNode && !multipleNodesSelected && !isConnecting && !dragging;
+  const showEmptyStateButton = canEditNode && !hasChildNodes && !!onAddFirstChild;
 
   const interactionState = resolveInteractionState(dragging, selected, isHovered);
   const activeStatus = suggestionType ?? validationState?.validationStatus ?? executionStatus;
@@ -347,7 +360,6 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   if (!manifest) {
     return (
-      // biome-ignore lint/a11y/noStaticElementInteractions: canvas node hover state is mouse-driven
       <div
         className="relative"
         style={nodeSizeStyle}
@@ -365,7 +377,6 @@ function LoopNodeComponent(props: LoopNodeProps) {
   }
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: canvas node hover state is mouse-driven
     <div
       data-loop-container
       data-selected={selected ? 'true' : 'false'}
@@ -381,8 +392,8 @@ function LoopNodeComponent(props: LoopNodeProps) {
         statusBorder,
         isHovered && 'shadow-(--canvas-node-shadow-hover)',
         isHovered && !hasStatusBorder && 'border-border-hover',
-        selected && 'outline outline-2 outline-foreground-accent-muted',
-        isDropTarget && 'bg-surface-hover outline outline-2 outline-brand',
+        selected && 'outline-2 outline-foreground-accent-muted',
+        isDropTarget && 'bg-surface-hover outline-2 outline-brand',
         interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)'
       )}
       style={{
@@ -434,10 +445,10 @@ function LoopNodeComponent(props: LoopNodeProps) {
           <EmptyState label={addNodeToLoopLabel} onAddFirstChild={handleEmptyClick} />
         </div>
       ) : null}
-      {toolbarConfig && (
+      {effectiveToolbarConfig && (
         <NodeToolbar
           nodeId={id}
-          config={toolbarConfig}
+          config={effectiveToolbarConfig}
           expanded={selected || isHovered}
           hidden={dragging || multipleNodesSelected}
           portalToNodeOverlay

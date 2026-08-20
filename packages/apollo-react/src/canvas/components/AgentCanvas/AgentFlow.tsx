@@ -3,10 +3,11 @@ import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
 import { StickyNote as StickyNoteIcon } from 'lucide-react';
-import type { PropsWithChildren } from 'react';
 import type React from 'react';
+import type { PropsWithChildren } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { BaseCanvas } from '../../components/BaseCanvas';
+import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
 import {
   type AgentFlowCustomEdge,
   type AgentFlowCustomNode,
@@ -29,6 +30,7 @@ import {
 import { hasAgentRunning } from '../../utils/props-helpers';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { StickyNoteNode, type StickyNoteNodeProps } from '../StickyNoteNode';
+import { agentFlowManifest } from './agent-flow.manifest';
 import { PaneContextMenu } from './components/PaneContextMenu';
 import { SuggestionGroupPanel } from './components/SuggestionGroupPanel';
 import { TimelinePlayer } from './components/TimelinePlayer';
@@ -37,8 +39,6 @@ import { Edge } from './edges/Edge';
 import { AgentNodeElement } from './nodes/AgentNode';
 import { ResourceNode } from './nodes/ResourceNode';
 import { AgentFlowProvider, useAgentFlowStore } from './store/agent-flow-store';
-import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
-import { agentFlowManifest } from './agent-flow.manifest';
 
 const ToolbarContainer = styled.div`
   display: flex;
@@ -254,6 +254,7 @@ const AgentFlowInner = memo(
   ({
     children,
     mode,
+    readOnlyNodeIds,
     spans,
     onEnable,
     onDisable,
@@ -636,6 +637,7 @@ const AgentFlowInner = memo(
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             mode={mode}
+            readOnlyNodeIds={readOnlyNodeIds}
             initialAutoLayout={autoArrange}
             fitViewOptions={adjustedFitViewOptions}
             defaultViewport={defaultViewport}

@@ -4,6 +4,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DAY, HOUR, MINUTE, SECOND } from '../../../test/durations';
 import { render, screen, waitFor } from '../../utils/testing';
+import { ReadOnlyNodesProvider } from '../BaseCanvas/ReadOnlyNodesContext';
 import type { ListItem } from '../Toolbox';
 import { StageNode } from './StageNode';
 import type { StageNodeProps, StageTaskItem, StageTaskStatus } from './StageNode.types';
@@ -223,6 +224,27 @@ const renderStageNode = (props: Partial<StageNodeProps> = {}) => {
     </ReactFlowProvider>
   );
 };
+
+function StageNodeWithReadOnlyIds({
+  props,
+  readOnlyNodeIds,
+}: {
+  props: Partial<StageNodeProps>;
+  readOnlyNodeIds?: ReadonlySet<string>;
+}) {
+  return (
+    <ReactFlowProvider>
+      <ReadOnlyNodesProvider readOnlyNodeIds={readOnlyNodeIds}>
+        <StageNode {...defaultProps} {...props} />
+      </ReadOnlyNodesProvider>
+    </ReactFlowProvider>
+  );
+}
+
+const renderStageNodeWithReadOnlyIds = (
+  props: Partial<StageNodeProps>,
+  readOnlyNodeIds?: ReadonlySet<string>
+) => render(<StageNodeWithReadOnlyIds props={props} readOnlyNodeIds={readOnlyNodeIds} />);
 
 describe('StageNode - Test Hooks', () => {
   it('renders a stable test id for the stage header', () => {
@@ -621,6 +643,76 @@ describe('StageNode - Replace Task Functionality', () => {
       // Only add task panel might exist if onAddTaskFromToolbox is provided
       expect(panels.length).toBeLessThanOrEqual(1);
     });
+  });
+});
+
+describe('StageNode toolboxes when the stage is locked', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('closes the add-task toolbox when the stage becomes locked', async () => {
+    const user = userEvent.setup();
+    const props = { onAddTaskFromToolbox: vi.fn() };
+    const view = renderStageNodeWithReadOnlyIds(props);
+
+    await user.click(screen.getByRole('button', { name: 'Add task' }));
+    expect(screen.getByTestId('toolbox')).toBeInTheDocument();
+
+    view.rerender(
+      <StageNodeWithReadOnlyIds props={props} readOnlyNodeIds={new Set(['stage-1'])} />
+    );
+
+    await waitFor(() => expect(screen.queryByTestId('toolbox')).not.toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Add task' })).not.toBeInTheDocument();
+  });
+
+  it('closes the replace-task toolbox and keeps it closed while locked', async () => {
+    const user = userEvent.setup();
+    const onReplaceTaskFromToolbox = vi.fn();
+    const props = { onReplaceTaskFromToolbox };
+    const view = renderStageNodeWithReadOnlyIds(props);
+
+    await user.click(screen.getByTestId('task-menu-button-task-1'));
+    await user.click(screen.getByTestId('menu-item-task-1-replace-task'));
+    expect(screen.getByTestId('toolbox')).toBeInTheDocument();
+
+    const lockedProps = {
+      onReplaceTaskFromToolbox,
+      pendingReplaceTask: true,
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        selectedTaskId: 'task-1',
+      },
+    };
+    view.rerender(
+      <StageNodeWithReadOnlyIds props={lockedProps} readOnlyNodeIds={new Set(['stage-1'])} />
+    );
+
+    await waitFor(() => expect(screen.queryByTestId('toolbox')).not.toBeInTheDocument());
+    expect(screen.queryByTestId('task-menu-button-task-1')).not.toBeInTheDocument();
+  });
+});
+
+describe('StageNode host menu when the stage is locked', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const menuItems = [{ id: 'inspect', label: 'Inspect', onClick: vi.fn() }];
+
+  // Host-controlled, so it survives the lock: inspection and debug actions stay
+  // reachable. Stage-owned mutation affordances are gated separately.
+  it('keeps the host menu reachable on a locked stage', () => {
+    renderStageNodeWithReadOnlyIds({ menuItems }, new Set(['stage-1']));
+
+    expect(screen.getByTestId('node-context-menu')).toBeInTheDocument();
+  });
+
+  it('shows the same host menu when the stage is unlocked', () => {
+    renderStageNodeWithReadOnlyIds({ menuItems });
+
+    expect(screen.getByTestId('node-context-menu')).toBeInTheDocument();
   });
 });
 
@@ -1546,6 +1638,26 @@ describe('StageNode - Entry, exit and completion rules', () => {
     await user.click(screen.getByTestId('stage-rule-entry-1'));
 
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores rule clicks when the stage is locked', async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    renderStageNodeWithReadOnlyIds(
+      {
+        stageDetails: {
+          ...defaultProps.stageDetails,
+          entryRules: [{ id: 'entry-1', label: 'Amount > 1000', onClick }],
+        },
+      },
+      new Set(['stage-1'])
+    );
+
+    const rule = screen.getByTestId('stage-rule-entry-1');
+    await waitFor(() => expect(rule).not.toHaveAttribute('role', 'button'));
+    await user.click(rule);
+
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it('renders a collapsible entry rules header when a section state is provided', () => {

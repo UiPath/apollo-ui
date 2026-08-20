@@ -66,6 +66,8 @@ import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
 
 interface HierarchicalCanvasProps {
   mode?: 'view' | 'design' | 'readonly';
+  /** Node ids to lock individually. Forwarded to BaseCanvas `readOnlyNodeIds`. */
+  readOnlyNodeIds?: ReadonlySet<string>;
   /**
    * Initial canvas data used to populate the store on mount.
    * Changes to this prop after mount are ignored - use onCanvasesChange to persist updates.
@@ -113,6 +115,7 @@ function isDefaultViewport(viewport: Viewport): boolean {
 
 export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
   mode = 'design',
+  readOnlyNodeIds,
   initialCanvases,
   initialPath,
   onCanvasesChange,
@@ -502,6 +505,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
         onInit={handleInit}
         onToolbarAction={handleToolbarAction}
         mode={mode}
+        readOnlyNodeIds={readOnlyNodeIds}
         defaultViewport={currentCanvas.viewport}
         fitView={shouldFitView}
         fitViewOptions={{ padding: 0.2, minZoom: 1, maxZoom: 1 }}

@@ -2,6 +2,7 @@ import { Spacing } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
+import { useIsNodeReadOnly } from '../BaseCanvas/ReadOnlyNodesContext';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu } from '../NodeContextMenu';
 import { useSetNodeSelection } from '../NodePropertiesPanel/hooks';
@@ -45,7 +46,8 @@ const StageNodeInner = (props: StageNodeProps) => {
   const allTasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
 
   const isException = stageDetails?.isException;
-  const isReadOnly = !!stageDetails?.isReadOnly;
+  // A per-node lock outranks the stage's own data flag.
+  const isReadOnly = useIsNodeReadOnly(id) || !!stageDetails?.isReadOnly;
   const selectedTaskId = stageDetails?.selectedTaskId;
   const status = execution?.stageStatus?.status;
 
@@ -63,7 +65,7 @@ const StageNodeInner = (props: StageNodeProps) => {
   const [isReplacingTask, setIsReplacingTask] = useState(false);
 
   useEffect(() => {
-    if (pendingReplaceTask) {
+    if (pendingReplaceTask && !isReadOnly) {
       const match = allTasks
         .flatMap((group, gi) => group.map((task, ti) => ({ task, groupIndex: gi, taskIndex: ti })))
         .find(({ task }) => task.id === selectedTaskId);
@@ -77,18 +79,21 @@ const StageNodeInner = (props: StageNodeProps) => {
         setIsReplacingTask(true);
       }
     }
-  }, [pendingReplaceTask, selectedTaskId, allTasks]);
+  }, [pendingReplaceTask, selectedTaskId, allTasks, isReadOnly]);
 
   useEffect(() => {
-    if (selected === false) {
+    if (selected === false || isReadOnly) {
       setIsAddingTask(false);
       setIsReplacingTask(false);
     }
-  }, [selected]);
+  }, [selected, isReadOnly]);
 
+  // Not gated on `isReadOnly`: these items are host-controlled, so inspection
+  // and debug actions stay reachable on a locked stage. The stage's own
+  // mutation affordances are gated individually below.
   const shouldShowMenu = useMemo(() => {
-    return menuItems && menuItems.length > 0 && (selected || isHovered) && !isReadOnly;
-  }, [menuItems, selected, isHovered, isReadOnly]);
+    return menuItems && menuItems.length > 0 && (selected || isHovered);
+  }, [menuItems, selected, isHovered]);
 
   const { setSelectedNodeId } = useSetNodeSelection();
   const handleStageClick = useCallback(() => {
@@ -98,6 +103,7 @@ const StageNodeInner = (props: StageNodeProps) => {
   const handleTaskAddClick = useCallback(
     (event: React.MouseEvent) => {
       event.stopPropagation();
+      if (isReadOnly) return;
       if (onTaskAdd) {
         onTaskAdd();
       } else if (onAddTaskFromToolbox) {
@@ -105,7 +111,7 @@ const StageNodeInner = (props: StageNodeProps) => {
       }
       setSelectedNodeId(id);
     },
-    [onTaskAdd, onAddTaskFromToolbox, setSelectedNodeId, id]
+    [onTaskAdd, onAddTaskFromToolbox, setSelectedNodeId, id, isReadOnly]
   );
 
   const handleAddTaskToolboxItemSelected = useCallback(
@@ -180,7 +186,7 @@ const StageNodeInner = (props: StageNodeProps) => {
       {/* Panels are mounted only while open: FloatingCanvasPanel subscribes to the
           node's internals (useInternalNode), so a permanently mounted panel re-renders
           on every drag/measure frame of the stage even though it renders nothing. */}
-      {onAddTaskFromToolbox && isAddingTask && (
+      {onAddTaskFromToolbox && isAddingTask && !isReadOnly && (
         <FloatingCanvasPanel nodeId={id} offset={15}>
           <Toolbox
             title={labels.addTask}
@@ -192,7 +198,7 @@ const StageNodeInner = (props: StageNodeProps) => {
         </FloatingCanvasPanel>
       )}
 
-      {onReplaceTaskFromToolbox && isReplacingTask && (
+      {onReplaceTaskFromToolbox && isReplacingTask && !isReadOnly && (
         <FloatingCanvasPanel nodeId={id} offset={15}>
           <Toolbox
             title={labels.replaceTask}

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { Components } from 'react-markdown';
@@ -76,12 +76,23 @@ function renderStickyNoteNode(props: Partial<StickyNoteNodeProps> = {}) {
 type StickyNoteNodeCanvasProps = Readonly<{
   stickyNoteOptions: StickyNoteCanvasOptions;
   nodeProps?: Partial<StickyNoteNodeProps>;
+  readOnlyNodeIds?: ReadonlySet<string>;
 }>;
 
-function StickyNoteNodeCanvas({ stickyNoteOptions, nodeProps = {} }: StickyNoteNodeCanvasProps) {
+function StickyNoteNodeCanvas({
+  stickyNoteOptions,
+  nodeProps = {},
+  readOnlyNodeIds,
+}: StickyNoteNodeCanvasProps) {
   return (
     <ReactFlowProvider>
-      <BaseCanvas nodes={[]} edges={[]} nodeTypes={{}} stickyNoteOptions={stickyNoteOptions}>
+      <BaseCanvas
+        nodes={[]}
+        edges={[]}
+        nodeTypes={{}}
+        stickyNoteOptions={stickyNoteOptions}
+        readOnlyNodeIds={readOnlyNodeIds}
+      >
         <StickyNoteNode {...defaultProps} {...nodeProps} />
       </BaseCanvas>
     </ReactFlowProvider>
@@ -90,10 +101,15 @@ function StickyNoteNodeCanvas({ stickyNoteOptions, nodeProps = {} }: StickyNoteN
 
 function renderStickyNoteNodeInCanvas(
   stickyNoteOptions: StickyNoteCanvasOptions,
-  nodeProps: Partial<StickyNoteNodeProps> = {}
+  nodeProps: Partial<StickyNoteNodeProps> = {},
+  readOnlyNodeIds?: ReadonlySet<string>
 ) {
   return render(
-    <StickyNoteNodeCanvas stickyNoteOptions={stickyNoteOptions} nodeProps={nodeProps} />
+    <StickyNoteNodeCanvas
+      stickyNoteOptions={stickyNoteOptions}
+      nodeProps={nodeProps}
+      readOnlyNodeIds={readOnlyNodeIds}
+    />
   );
 }
 
@@ -110,6 +126,15 @@ beforeEach(() => {
 });
 
 describe('StickyNoteNode resize lifecycle', () => {
+  it('hides resize controls when the sticky note is locked', () => {
+    renderStickyNoteNodeInCanvas({ readOnly: false }, {}, new Set(['sticky-note-1']));
+
+    fireEvent.doubleClick(screen.getByText('Remember the resize lifecycle'));
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('node-resize-control-bottom-right')).not.toBeInTheDocument();
+  });
+
   it('settles an active resize before removing controls when canvas options become read-only', async () => {
     const onResizeStart = vi.fn();
     const onResize = vi.fn();
@@ -466,6 +491,47 @@ describe('StickyNoteNode editor extensions', () => {
       content: 'Before draft media After',
     });
     expect(editor).toHaveValue('Before draft media After');
+  });
+
+  it('ignores formatting changes completed after the sticky note becomes locked', async () => {
+    let editorContext: StickyNoteEditorActionContext | undefined;
+    const onContentChange = vi.fn();
+    const formattingActions: readonly StickyNoteFormattingAction[] = [
+      {
+        id: 'deferred-action',
+        label: 'Deferred action',
+        icon: <span aria-hidden="true">D</span>,
+        onAction: (context) => {
+          editorContext = context;
+        },
+      },
+    ];
+    const nodeProps = { onContentChange, formattingActions };
+    const view = renderStickyNoteNodeInCanvas({ readOnly: false }, nodeProps);
+
+    startEditing();
+    fireEvent.click(screen.getByRole('button', { name: 'Deferred action' }));
+
+    view.rerender(
+      <StickyNoteNodeCanvas
+        stickyNoteOptions={{ readOnly: false }}
+        nodeProps={nodeProps}
+        readOnlyNodeIds={new Set(['sticky-note-1'])}
+      />
+    );
+    await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
+
+    act(() => {
+      editorContext?.commit({
+        value: 'Late mutation',
+        selectionStart: 13,
+        selectionEnd: 13,
+      });
+    });
+
+    expect(onContentChange).not.toHaveBeenCalled();
+    expect(mockUpdateNodeData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('reads and resumes with externally updated content after the editor loses focus', () => {
@@ -909,5 +975,50 @@ describe('StickyNoteNode built-in media embedding', () => {
 
     expect(screen.queryByTitle('YouTube video')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Play video' })).toBeInTheDocument();
+  });
+});
+
+// A note listed in BaseCanvas `readOnlyNodeIds` keeps its toolbar with every
+// action disabled, matching BaseNode. The sticky-note-level `readOnly`
+// prop/option predates that contract and still hides the toolbar outright.
+describe('StickyNoteNode toolbar when the note is locked', () => {
+  const TOOLBAR_ACTION_NAMES = ['Delete', 'Edit', 'Color'];
+
+  it('keeps the toolbar mounted with every action disabled when the node is locked', () => {
+    renderStickyNoteNodeInCanvas(
+      { readOnly: false },
+      { selected: true },
+      new Set(['sticky-note-1'])
+    );
+
+    for (const name of TOOLBAR_ACTION_NAMES) {
+      expect(screen.getByRole('button', { name })).toBeDisabled();
+    }
+  });
+
+  it('leaves the toolbar actions enabled when the node is not locked', () => {
+    renderStickyNoteNodeInCanvas({ readOnly: false }, { selected: true });
+
+    for (const name of TOOLBAR_ACTION_NAMES) {
+      expect(screen.getByRole('button', { name })).toBeEnabled();
+    }
+  });
+
+  it('hides the toolbar when the sticky note itself is read-only', () => {
+    renderStickyNoteNodeInCanvas({ readOnly: true }, { selected: true });
+
+    for (const name of TOOLBAR_ACTION_NAMES) {
+      expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
+    }
+  });
+
+  it('blocks resizing while the node is locked', () => {
+    renderStickyNoteNodeInCanvas(
+      { readOnly: false },
+      { selected: true },
+      new Set(['sticky-note-1'])
+    );
+
+    expect(screen.queryAllByTestId(/^node-resize-control-/)).toHaveLength(0);
   });
 });

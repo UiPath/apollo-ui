@@ -13,10 +13,12 @@ import { useSafeLingui } from '../../../i18n';
 import { GRID_SPACING } from '../../constants';
 import { useLatestRef } from '../../hooks/useLatestRef';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
+import { useIsNodeReadOnly } from '../BaseCanvas/ReadOnlyNodesContext';
 import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import { NodeViewportOverlay } from '../NodeViewportOverlay';
 import type { ToolbarAction } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
+import { lockToolbarConfig } from '../Toolbar/NodeToolbar/NodeToolbar.utils';
 import { FormattingToolbar } from './FormattingToolbar';
 import {
   type ActiveFormats,
@@ -111,7 +113,10 @@ const StickyNoteNodeComponent = ({
 }: StickyNoteNodeProps) => {
   const { _ } = useSafeLingui();
   const canvasOptions = useStickyNoteCanvasOptions();
-  const readOnly = readOnlyProp ?? canvasOptions.readOnly;
+  const isNodeReadOnly = useIsNodeReadOnly(id);
+  // Sticky-note-level only; node-level read-only is combined below.
+  const stickyNoteReadOnly = readOnlyProp ?? canvasOptions.readOnly;
+  const readOnly = isNodeReadOnly || stickyNoteReadOnly;
   const enableMediaEmbedding = enableMediaEmbeddingProp ?? canvasOptions.enableMediaEmbedding;
   const { updateNodeData, deleteElements } = useReactFlow();
   const { multipleNodesSelected } = useSelectionState();
@@ -125,6 +130,7 @@ const StickyNoteNodeComponent = ({
   const formattingToolbarRef = useRef<HTMLDivElement>(null);
   const skipBlurRef = useRef<string | null>(null);
   const resizeActiveRef = useRef(false);
+  const readOnlyRef = useLatestRef(readOnly);
   const resizeLifecycle = {
     content: data.content,
     id,
@@ -192,6 +198,7 @@ const StickyNoteNodeComponent = ({
   useEffect(() => {
     if (readOnly) {
       setIsEditing(false);
+      setIsColorPickerOpen(false);
       updateLocalContent(data.content || '');
     }
   }, [readOnly, data.content, updateLocalContent]);
@@ -267,6 +274,7 @@ const StickyNoteNodeComponent = ({
       let completed = false;
 
       const restoreSelection = (next: TextSelection) => {
+        if (readOnlyRef.current) return;
         setIsEditing(true);
         requestAnimationFrame(() => {
           const currentTextarea = textAreaRef.current;
@@ -282,6 +290,10 @@ const StickyNoteNodeComponent = ({
       const complete = (next: TextSelection, shouldPersist: boolean) => {
         if (completed) return;
         completed = true;
+        if (readOnlyRef.current) {
+          skipBlurRef.current = null;
+          return;
+        }
         skipBlurRef.current = shouldPersist ? next.value : null;
         setActiveFormats(detectActiveFormats(next));
         if (shouldPersist) {
@@ -312,7 +324,7 @@ const StickyNoteNodeComponent = ({
         throw error;
       }
     },
-    [id, onContentChange, updateLocalContent, updateNodeData]
+    [id, onContentChange, readOnlyRef, updateLocalContent, updateNodeData]
   );
 
   const openMediaDialog = useCallback((context: StickyNoteEditorActionContext) => {
@@ -484,17 +496,19 @@ const StickyNoteNodeComponent = ({
   // Color change handler
   const handleColorChange = useCallback(
     (newColor: StickyNoteColor) => {
+      if (readOnly) return;
       onColorChange?.(newColor);
       updateNodeData(id, { color: newColor });
       setIsColorPickerOpen(false);
     },
-    [id, updateNodeData, onColorChange]
+    [id, updateNodeData, onColorChange, readOnly]
   );
 
   // Toggle color picker
   const handleToggleColorPicker = useCallback(() => {
+    if (readOnly) return;
     setIsColorPickerOpen((prev) => !prev);
-  }, []);
+  }, [readOnly]);
 
   // Handle edit button click
   const handleEditClick = useCallback(() => {
@@ -509,8 +523,9 @@ const StickyNoteNodeComponent = ({
   }, [readOnly]);
 
   const handleDelete = useCallback(() => {
+    if (readOnly) return;
     deleteElements({ nodes: [{ id }] });
-  }, [id, deleteElements]);
+  }, [id, deleteElements, readOnly]);
 
   // Custom markdown components to handle link clicks properly in React Flow nodes
   const builtInMarkdownComponents = useMemo<Components>(
@@ -608,8 +623,16 @@ const StickyNoteNodeComponent = ({
     };
   }, [_, handleEditClick, handleToggleColorPicker, color, handleDelete]);
 
+  const effectiveToolbarConfig = useMemo(
+    () => (isNodeReadOnly ? lockToolbarConfig(toolbarConfig) : toolbarConfig),
+    [isNodeReadOnly, toolbarConfig]
+  );
+
+  // A per-node lock keeps the toolbar with every action disabled, matching
+  // BaseNode. The sticky-note-level `readOnly` prop/option predates that
+  // contract and still hides the toolbar outright.
   const shouldRenderToolbarOverlay =
-    !readOnly && selected && !dragging && !isResizing && !multipleNodesSelected;
+    !stickyNoteReadOnly && selected && !dragging && !isResizing && !multipleNodesSelected;
   // XYFlow's active D3 gesture owns external listeners, so keep its controls mounted until resize end.
   const shouldRenderResizeControls = !readOnly || isResizing;
 
@@ -752,7 +775,12 @@ const StickyNoteNodeComponent = ({
         </StickyNoteContainer>
 
         {shouldRenderToolbarOverlay && (
-          <NodeToolbar nodeId={id} config={toolbarConfig} expanded={true} portalToNodeOverlay />
+          <NodeToolbar
+            nodeId={id}
+            config={effectiveToolbarConfig}
+            expanded={true}
+            portalToNodeOverlay
+          />
         )}
         {shouldRenderToolbarOverlay && (
           <NodeViewportOverlay nodeId={id} layer="nodeToolbar">

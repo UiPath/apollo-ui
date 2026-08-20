@@ -268,6 +268,9 @@ export type SpanAttributes = Record<string, unknown>;
 export type AgentFlowProps = {
   mode: 'design' | 'view';
 
+  /** Node ids to lock individually. Forwarded to BaseCanvas `readOnlyNodeIds`. */
+  readOnlyNodeIds?: ReadonlySet<string>;
+
   // all modes
   definition: Record<string, unknown>;
   spans: IRawSpan[];

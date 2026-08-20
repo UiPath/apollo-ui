@@ -42,8 +42,9 @@ import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import { SmartHandle, SmartHandleProvider } from '../ButtonHandle/SmartHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { InitialsBadge } from '../shared/InitialsBadge';
-import type { NodeToolbarConfig, ToolbarAction } from '../Toolbar';
+import type { NodeToolbarConfig } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
+import { lockToolbarConfig } from '../Toolbar/NodeToolbar/NodeToolbar.utils';
 import type {
   BaseNodeData,
   FooterVariant,
@@ -59,13 +60,6 @@ import { NodeLabel } from './NodeLabel';
 
 /** Stable predicate used to hard-disable add buttons on read-only nodes. */
 const NEVER_SHOW_ADD_BUTTON = () => false;
-
-/**
- * Returns the actions with every item disabled, separators untouched. Used to
- * lock a read-only node's toolbar instead of unmounting it.
- */
-const disableToolbarActions = (actions: ToolbarAction[]): ToolbarAction[] =>
-  actions.map((action) => (action.id === 'separator' ? action : { ...action, disabled: true }));
 
 const getContainerWidth = (shape: NodeShape | undefined, width: number | undefined) => {
   const defaultWidth = shape === 'rectangle' ? DEFAULT_RECTANGLE_NODE_WIDTH : DEFAULT_NODE_SIZE;
@@ -255,23 +249,13 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     return manifest ? resolveToolbar(manifest, statusContext) : undefined;
   }, [toolbarConfigProp, manifest, statusContext]);
 
-  // A locked node keeps its toolbar and disables it rather than hiding it: the
-  // greyed-out actions (with their tooltips intact) say "read-only", where a
-  // missing toolbar just reads as a node with nothing to offer. Disabling is
-  // also real enforcement, since a consumer's `onAction` never reaches the
-  // canvas-level delete veto.
-  const effectiveToolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
-    if (!toolbarConfig || !isNodeReadOnly) {
-      return toolbarConfig;
-    }
-    return {
-      ...toolbarConfig,
-      actions: disableToolbarActions(toolbarConfig.actions),
-      ...(toolbarConfig.overflowActions && {
-        overflowActions: disableToolbarActions(toolbarConfig.overflowActions),
-      }),
-    };
-  }, [toolbarConfig, isNodeReadOnly]);
+  // A locked node keeps its toolbar and disables it rather than hiding it. See
+  // `lockToolbarConfig` for why.
+  const effectiveToolbarConfig = useMemo(
+    (): NodeToolbarConfig | undefined =>
+      toolbarConfig && isNodeReadOnly ? lockToolbarConfig(toolbarConfig) : toolbarConfig,
+    [toolbarConfig, isNodeReadOnly]
+  );
 
   // Adornments resolution: use default resolver, then override with props if provided
   const adornments: NodeAdornments = useMemo(() => {
