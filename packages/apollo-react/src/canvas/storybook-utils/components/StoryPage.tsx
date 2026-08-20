@@ -1,4 +1,4 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn, Tabs, TabsContent, TabsList, TabsTrigger } from '@uipath/apollo-wind';
 import type { ReactNode } from 'react';
 import { CanvasIcon } from '../../utils/icon-registry';
 
@@ -109,13 +109,15 @@ export interface StoryCardProps {
   /** Value chip beside the title, e.g. the prop value this card illustrates. */
   code?: string;
   description: ReactNode;
+  /** Overrides the fixed anatomy-preview slot for larger live specimens. */
+  previewClassName?: string;
 }
 
 /** One entry in an anatomy gallery: a sample, a name, and what it is for. */
-export function StoryCard({ preview, title, code, description }: StoryCardProps) {
+export function StoryCard({ preview, title, code, description, previewClassName }: StoryCardProps) {
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
-      <div className="flex h-24 items-center justify-center">{preview}</div>
+      <div className={cn('flex h-24 items-center justify-center', previewClassName)}>{preview}</div>
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-base font-semibold text-foreground">{title}</span>
@@ -124,6 +126,57 @@ export function StoryCard({ preview, title, code, description }: StoryCardProps)
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
     </div>
+  );
+}
+
+/** Lets a dense interactive surface use the viewport while surrounding prose stays readable. */
+export function StoryWideContent({ children }: { children?: ReactNode }) {
+  return (
+    <div className="relative left-1/2 w-[calc(100vw-2rem)] max-w-[1600px] -translate-x-1/2">
+      {children}
+    </div>
+  );
+}
+
+export interface StoryTab {
+  value: string;
+  label: string;
+  content: ReactNode;
+}
+
+export interface StoryTabsProps {
+  tabs: readonly StoryTab[];
+  /** Accessible name for the tab list. */
+  label?: string;
+}
+
+/** A documentation tab rail that keeps one dense comparison visible at a time. */
+export function StoryTabs({ tabs, label = 'Comparisons' }: StoryTabsProps) {
+  const firstTab = tabs[0];
+  if (!firstTab) return null;
+
+  return (
+    <Tabs defaultValue={firstTab.value} className="w-full">
+      <TabsList
+        aria-label={label}
+        className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-border bg-transparent p-0"
+      >
+        {tabs.map((tab) => (
+          <TabsTrigger
+            key={tab.value}
+            value={tab.value}
+            className="h-10 shrink-0 rounded-none border-b-2 border-transparent px-4 text-sm font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+          >
+            {tab.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      {tabs.map((tab) => (
+        <TabsContent key={tab.value} value={tab.value} className="mt-6">
+          {tab.content}
+        </TabsContent>
+      ))}
+    </Tabs>
   );
 }
 
