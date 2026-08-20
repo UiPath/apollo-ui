@@ -4,8 +4,9 @@ import { type ComponentProps, createElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import * as stories from './BaseCanvas.stories';
 
-const { specializedNodeStores } = vi.hoisted(() => ({
+const { specializedNodeStores, connectionStores } = vi.hoisted(() => ({
   specializedNodeStores: new Map<number, { getState: () => unknown }>(),
+  connectionStores: new Map<number, { getState: () => unknown }>(),
 }));
 
 // Cancels the global xyflow stub from `src/test/canvas-mocks.ts` (loaded for every
@@ -46,6 +47,11 @@ vi.mock('./BaseCanvas', async (importOriginal) => {
     ...actual,
     BaseCanvas: (props: ComponentProps<typeof actual.BaseCanvas>) => {
       const store = useStoreApi();
+
+      if (props.edges?.some((edge) => edge.id === 'connection-comparison-edge')) {
+        connectionStores.set(props.readOnlyNodeIds?.size ?? 0, store);
+        return createElement('div');
+      }
 
       if (props.nodes?.[0]?.type === 'comparison-agent') {
         specializedNodeStores.set(props.readOnlyNodeIds?.size ?? 0, store);
@@ -94,5 +100,15 @@ describe('specialized node comparison previews', () => {
 
     expect(screen.getAllByText('Agent manifest available')).toHaveLength(2);
     expect(screen.queryByText('Manifest Undefined')).not.toBeInTheDocument();
+  });
+
+  it('keeps the connection comparison previews independent', () => {
+    connectionStores.clear();
+
+    render(createElement(PerNodeReadOnly));
+
+    // Neither, one, and both endpoints locked, each on its own store.
+    expect([...connectionStores.keys()].sort()).toEqual([0, 1, 2]);
+    expect(new Set([...connectionStores.values()].map((store) => store.getState)).size).toBe(3);
   });
 });

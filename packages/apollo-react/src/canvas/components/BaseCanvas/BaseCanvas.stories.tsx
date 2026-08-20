@@ -42,12 +42,14 @@ import { AgentNodeElement } from '../AgentCanvas/nodes/AgentNode';
 import { AgentFlowProvider } from '../AgentCanvas/store/agent-flow-store';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { CanvasEdge } from '../Edges';
 import { LoopNode } from '../LoopNode';
 import { StageNodeWrapper } from '../StageNode/StageNode.stories.utils';
 import type { StageNodeBaseProps } from '../StageNode/StageNode.types';
 import { StickyNoteNode } from '../StickyNoteNode';
 import type { StickyNoteData } from '../StickyNoteNode/StickyNoteNode.types';
 import { BaseCanvas } from './BaseCanvas';
+import { createConnectionComparisonNodes } from './BaseCanvas.stories.fixtures';
 import type { BaseCanvasRef } from './BaseCanvas.types';
 
 // ============================================================================
@@ -1636,9 +1638,9 @@ const specializedNodeComparisons = [
   {
     value: 'stage',
     label: 'StageNode',
-    unlocked: 'Title, task, rule, and add or replace affordances are shown on the stage.',
+    unlocked: 'Title, task, rule, and add affordances are shown on the stage.',
     locked:
-      'Stage mutation affordances are hidden while tasks, rules, statuses, and host menu items stay visible.',
+      'Stage mutation affordances are hidden while configured tasks, rules, and host menu items stay visible.',
   },
   {
     value: 'sticky-note',
@@ -1679,6 +1681,105 @@ function SpecializedNodeComparison({
   );
 }
 
+type ConnectionLockState = 'neither' | 'one' | 'both';
+
+const CONNECTION_SOURCE_ID = 'connection-source';
+const CONNECTION_TARGET_ID = 'connection-target';
+const connectionReadOnlyNodeIds: Record<ConnectionLockState, ReadonlySet<string>> = {
+  neither: new Set(),
+  one: new Set([CONNECTION_SOURCE_ID]),
+  both: new Set([CONNECTION_SOURCE_ID, CONNECTION_TARGET_ID]),
+};
+
+const connectionComparisonEdge: Edge = {
+  id: 'connection-comparison-edge',
+  source: CONNECTION_SOURCE_ID,
+  sourceHandle: `out-${Position.Right}`,
+  target: CONNECTION_TARGET_ID,
+  targetHandle: `in-${Position.Left}`,
+  type: 'connection-comparison-edge',
+  selected: true,
+  data: {
+    enableToolbar: true,
+    label: 'Approval',
+    routing: 'handle',
+  },
+};
+
+function ConnectionStatePill({ label, locked }: { label: string; locked: boolean }) {
+  return (
+    <span
+      className={cn(
+        'rounded-full border px-2 py-1 text-[11px] font-medium',
+        locked
+          ? 'border-primary/30 bg-primary/10 text-primary'
+          : 'border-border bg-background text-muted-foreground'
+      )}
+    >
+      {label} · {locked ? 'Locked' : 'Unlocked'}
+    </span>
+  );
+}
+
+function ConnectionComparisonSpecimen({ state }: { state: ConnectionLockState }) {
+  const initialNodes = useMemo(() => createConnectionComparisonNodes(), []);
+  const initialEdges = useMemo(() => [connectionComparisonEdge], []);
+  const { canvasProps } = useCanvasStory({ initialNodes, initialEdges });
+  const lockedIds = connectionReadOnlyNodeIds[state];
+
+  return (
+    <div className="flex h-full w-full flex-col">
+      <div className="flex flex-wrap justify-center gap-2 border-b border-border bg-card px-3 py-2.5">
+        <ConnectionStatePill label="Source" locked={lockedIds.has(CONNECTION_SOURCE_ID)} />
+        <ConnectionStatePill label="Target" locked={lockedIds.has(CONNECTION_TARGET_ID)} />
+      </div>
+      <div className="min-h-0 flex-1">
+        <ReactFlowProvider>
+          <BaseCanvas
+            {...canvasProps}
+            id={`connection-comparison-${state}`}
+            edgeTypes={{
+              ...canvasProps.edgeTypes,
+              'connection-comparison-edge': CanvasEdge,
+            }}
+            mode="design"
+            readOnlyNodeIds={lockedIds}
+            fitView
+            fitViewOptions={{ padding: 0.16, maxZoom: 0.75 }}
+            minZoom={0.35}
+          />
+        </ReactFlowProvider>
+      </div>
+    </div>
+  );
+}
+
+const connectionComparisons = [
+  {
+    state: 'neither',
+    title: 'Neither endpoint',
+    policy: 'editable',
+    description: 'Create, delete, reconnect, and split the connection normally.',
+  },
+  {
+    state: 'one',
+    title: 'One endpoint',
+    policy: 'editable',
+    description: 'The unlocked endpoint keeps the graph boundary available for connection edits.',
+  },
+  {
+    state: 'both',
+    title: 'Both endpoints',
+    policy: 'frozen',
+    description: 'Create, delete, reconnect, and split operations are blocked for the connection.',
+  },
+] as const satisfies readonly {
+  state: ConnectionLockState;
+  title: string;
+  policy: string;
+  description: string;
+}[];
+
 function PerNodeReadOnlyPage({ globalTheme }: { globalTheme: string }) {
   return (
     <StoryPage
@@ -1703,6 +1804,10 @@ function PerNodeReadOnlyPage({ globalTheme }: { globalTheme: string }) {
             <p>
               Drag locked nodes or use Organize to confirm that layout stays available while node
               content is protected.
+            </p>
+            <p>
+              Connections stay editable while either endpoint is unlocked. Lock both ends of an edge
+              to freeze its connection operations too.
             </p>
           </>
         }
@@ -1791,6 +1896,46 @@ function CustomNode({ id }: NodeProps) {
           same <StoryCode>readOnlyNodeIds</StoryCode> set to these renderers without adding a second
           policy layer.
         </p>
+      </StorySection>
+
+      <StorySection
+        title="Connection behavior"
+        description={
+          <>
+            <p>
+              A connection becomes read-only only when both endpoint nodes are locked. This keeps
+              the boundary of a locked region editable while protecting its internal wiring.
+            </p>
+            <p>
+              The guards read the current lock set when a connection gesture completes, so a lock
+              applied after the drag starts still takes effect. Custom edge renderers can mirror the
+              same policy with <StoryCode>useIsConnectionReadOnly</StoryCode>.
+            </p>
+          </>
+        }
+      >
+        <StoryWideContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            {connectionComparisons.map((comparison) => (
+              <StoryCard
+                key={comparison.state}
+                title={comparison.title}
+                code={comparison.policy}
+                description={comparison.description}
+                preview={<ConnectionComparisonSpecimen state={comparison.state} />}
+                previewClassName="h-[300px] w-full overflow-hidden rounded-lg border border-border bg-background"
+              />
+            ))}
+          </div>
+        </StoryWideContent>
+        <div className="mt-6">
+          <StoryCodeBlock>
+            {`function CustomEdge({ source, target }: EdgeProps) {
+  const isReadOnly = useIsConnectionReadOnly(source, target);
+  return <CustomEdgeToolbar hidden={isReadOnly} />;
+}`}
+          </StoryCodeBlock>
+        </div>
       </StorySection>
     </StoryPage>
   );
