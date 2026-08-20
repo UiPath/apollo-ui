@@ -213,26 +213,18 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const executionState = useNodeExecutionState(id);
   const validationState = useElementValidationStatus(id);
 
+  // Toolbar/adornment resolution reads only identity, status, and mode.
+  // Interaction state (isConnecting/isSelected/isDragging) is deliberately
+  // omitted: neither resolver reads it, and including it re-resolved toolbars
+  // and adornments on every connect gesture and selection change (see BaseNode).
   const statusContext: NodeStatusContext = useMemo(
     () => ({
       nodeId: id,
       executionState: executionStatusOverride ?? executionState,
       validationState,
-      isConnecting,
-      isSelected: selected,
-      isDragging: dragging,
       mode,
     }),
-    [
-      dragging,
-      executionStatusOverride,
-      executionState,
-      id,
-      isConnecting,
-      mode,
-      selected,
-      validationState,
-    ]
+    [executionStatusOverride, executionState, id, mode, validationState]
   );
 
   const executionStatus =

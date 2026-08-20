@@ -15,10 +15,6 @@ import {
   NODE_BADGE_SIZE,
   NODE_BORDER_SIZE,
   NODE_CONTAINER_RADIUS_RATIO,
-  NODE_HEIGHT_DEFAULT,
-  NODE_HEIGHT_FOOTER_BUTTON,
-  NODE_HEIGHT_FOOTER_DOUBLE,
-  NODE_HEIGHT_FOOTER_SINGLE,
   NODE_INNER_ICON_RATIO,
   NODE_INNER_RADIUS_RATIO,
   NODE_INNER_SHAPE_RATIO,
@@ -29,7 +25,13 @@ import type { NodeShape } from '../../schema';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import { CanvasIcon, getIcon } from '../../utils/icon-registry';
-import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
+import {
+  areResolvedHandleGroupsEqual,
+  type ResolvedHandleGroup,
+  resolveDisplay,
+  resolveHandles,
+} from '../../utils/manifest-resolver';
+import { computeBaseNodeHeight } from '../../utils/node-height';
 import { selectIsConnecting } from '../../utils/NodeUtils';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
@@ -42,12 +44,7 @@ import { SmartHandle, SmartHandleProvider } from '../ButtonHandle/SmartHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { InitialsBadge } from '../shared/InitialsBadge';
 import { NodeToolbar } from '../Toolbar';
-import type {
-  BaseNodeData,
-  FooterVariant,
-  NodeAdornments,
-  NodeStatusContext,
-} from './BaseNode.types';
+import type { BaseNodeData, NodeAdornments, NodeStatusContext } from './BaseNode.types';
 import { BaseBadgeSlot } from './BaseNodeBadgeSlot';
 import { useBaseNodeOverrideConfig } from './BaseNodeConfigContext';
 import { BaseContainer } from './BaseNodeContainer';
@@ -61,24 +58,6 @@ const getContainerWidth = (shape: NodeShape | undefined, width: number | undefin
     return width;
   }
   return defaultWidth;
-};
-
-// Intrinsic height: the fixed footer height when a footer is present, else the default.
-const getIntrinsicHeight = (
-  hasFooter: boolean,
-  footerVariant: FooterVariant | undefined
-): number => {
-  if (hasFooter) {
-    switch (footerVariant) {
-      case 'button':
-        return NODE_HEIGHT_FOOTER_BUTTON;
-      case 'single':
-        return NODE_HEIGHT_FOOTER_SINGLE;
-      case 'double':
-        return NODE_HEIGHT_FOOTER_DOUBLE;
-    }
-  }
-  return NODE_HEIGHT_DEFAULT;
 };
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
@@ -132,26 +111,19 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Get manifest and resolve with instance data
   const manifest = useMemo(() => nodeTypeRegistry.getManifest(type), [type, nodeTypeRegistry]);
 
+  // Toolbar/adornment resolution reads only identity, status, and mode.
+  // Interaction state (isConnecting/isSelected/isDragging) is deliberately
+  // omitted: neither resolver reads it, and including it re-resolved toolbars
+  // and adornments for every node on each connect gesture and selection change.
+  // Interaction-dependent toolbar behavior lives in `offsetToolbar` below.
   const statusContext: NodeStatusContext = useMemo(
     () => ({
       nodeId: id,
       executionState: executionStatusOverride ?? executionState,
       validationState,
-      isConnecting,
-      isSelected: selected,
-      isDragging: dragging,
       mode,
     }),
-    [
-      id,
-      executionStatusOverride,
-      executionState,
-      validationState,
-      isConnecting,
-      selected,
-      dragging,
-      mode,
-    ]
+    [id, executionStatusOverride, executionState, validationState, mode]
   );
 
   // Callbacks: Use props only (no longer in data)
@@ -185,29 +157,34 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     return <InitialsBadge name={display.label} size="var(--icon-size)" />;
   }, [iconComponent, display.icon, display.label]);
 
-  // Resolve handles: context override > data override > manifest default
-  const handleConfigurations = useMemo((): HandleGroupManifest[] => {
-    // Priority 1: Context override (runtime configuration from parent wrapper components)
-    if (handleConfigurationsProp && Array.isArray(handleConfigurationsProp)) {
-      return handleConfigurationsProp;
-    }
-
-    // Priority 2: Per-instance override via node data
+  // Resolve handles ONCE for every source (context override > data override >
+  // manifest default). The resolved output is handed to useButtonHandles with
+  // `preResolved`, so templates/repeat/visibility never resolve twice per render.
+  const resolvedHandleConfigurations = useMemo((): ResolvedHandleGroup[] => {
     const dataHandleConfigs = (data as Record<string, unknown>)?.handleConfigurations as
       | HandleGroupManifest[]
       | undefined;
-    if (dataHandleConfigs && Array.isArray(dataHandleConfigs)) {
-      return dataHandleConfigs;
+
+    // Priority 1/2: runtime override configs. resolveHandles spreads each
+    // handle, preserving the runtime-only fields overrides may carry
+    // (onAction, labelBackgroundColor, customPositionAndOffsets, ...).
+    const override =
+      (Array.isArray(handleConfigurationsProp) && handleConfigurationsProp) ||
+      (Array.isArray(dataHandleConfigs) && dataHandleConfigs);
+    if (override) {
+      // Pass nodeId and collapsed for collapse state lookup
+      return resolveHandles(override, { ...data, nodeId: id });
     }
 
-    // Priority 3: Manifest default
+    // Priority 3: manifest default. Only whitelisted fields reach the handle
+    // renderers — group-level extras (customPositionAndOffsets, boundary) from
+    // manifests were never honored here, and honoring them is a feature
+    // decision, not part of the single-resolution change.
     if (!manifest) return [];
-    // Pass nodeId and collapsed for collapse state lookup
     const resolved = resolveHandles(manifest.handleConfiguration, { ...data, nodeId: id });
-
-    // Convert resolved handles to HandleGroupManifest format for ButtonHandle
     return resolved.map((group) => ({
       position: group.position,
+      visible: group.visible,
       handles: group.handles.map((h) => ({
         id: h.id,
         type: h.type,
@@ -218,9 +195,21 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         labelVisibility: h.labelVisibility,
         constraints: h.constraints,
       })),
-      visible: group.visible,
     }));
   }, [handleConfigurationsProp, manifest, data, id]);
+
+  // Keep the previous array identity when resolution output is value-identical.
+  // Resolution allocates fresh objects on every `data` change (e.g. a label
+  // rename), and a new identity would cascade into updateNodeInternals (a DOM
+  // re-measure) and handle-element rebuilds even though no handle changed.
+  const stableHandleConfigsRef = useRef<ResolvedHandleGroup[]>(resolvedHandleConfigurations);
+  if (
+    stableHandleConfigsRef.current !== resolvedHandleConfigurations &&
+    !areResolvedHandleGroupsEqual(stableHandleConfigsRef.current, resolvedHandleConfigurations)
+  ) {
+    stableHandleConfigsRef.current = resolvedHandleConfigurations;
+  }
+  const handleConfigurations = stableHandleConfigsRef.current as HandleGroupManifest[];
 
   // Toolbar config resolution with priority: props > manifest
   const toolbarConfig = useMemo(() => {
@@ -250,28 +239,16 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Computed node height: max of the handle-count floor and the intrinsic default/footer
   // height. Pure (never reads the measured `height`); written to node.height below as
   // the authoritative size, so node content is expected to fit within it.
-  const computedHeight = useMemo(() => {
-    const leftHandles = handleConfigurations
-      .filter((config) => config.position === Position.Left && config.visible !== false)
-      .reduce(
-        (count, config) => count + config.handles.filter((h) => h.visible !== false).length,
-        0
-      );
-
-    const rightHandles = handleConfigurations
-      .filter((config) => config.position === Position.Right && config.visible !== false)
-      .reduce(
-        (count, config) => count + config.handles.filter((h) => h.visible !== false).length,
-        0
-      );
-
-    const leftRightHandles = Math.max(leftHandles, rightHandles);
-
-    // Each handle gets a 2-grid-space lane (32px), plus 2-grid-space padding at top + bottom of node.
-    const handleFloor = (leftRightHandles * 2 + 2) * GRID_SPACING;
-
-    return Math.max(getIntrinsicHeight(!!footerComponent, footerVariant), handleFloor);
-  }, [handleConfigurations, footerComponent, footerVariant]);
+  // Consumers can seed node.height at creation with the same computeBaseNodeHeight
+  // (utils/node-height) to skip the write-back entirely on mount.
+  const computedHeight = useMemo(
+    () =>
+      computeBaseNodeHeight(handleConfigurations, {
+        hasFooter: !!footerComponent,
+        footerVariant,
+      }),
+    [handleConfigurations, footerComponent, footerVariant]
+  );
 
   // Write computedHeight to node.height and recalculate handle positions. Compare
   // against node.height (not the measured `height` prop) so a lagging measurement
@@ -464,7 +441,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       }
     }
     return { hasButton, hasLabel };
-  }, [toolbarPosition, handleConfigurations]);
+  }, [toolbarPosition, handleConfigurations, useSmartHandles]);
 
   // Offset the toolbar to clear whichever handle affordance is actually rendered
   // at its side — not merely configured. A shown add button stacks button + label
@@ -524,6 +501,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     nodeHeight: computedHeight,
     shouldShowAddButtonFn,
     portalActions: !!parentId,
+    // Handles were already resolved above; skip the hook's internal resolution.
+    preResolved: true,
   });
 
   // Generate SmartHandle elements from handle configurations (opt-in)
