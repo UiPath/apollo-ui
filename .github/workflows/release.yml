@@ -111,6 +111,7 @@ jobs:
       - name: Pack dist for attestation
         run: |
           tar -czf "$RUNNER_TEMP/dist-apollo-core.tar.gz"  -C packages/apollo-core  dist
+          tar -czf "$RUNNER_TEMP/dist-apollo-ui-icons.tar.gz" -C packages/apollo-ui-icons dist
           tar -czf "$RUNNER_TEMP/dist-apollo-react.tar.gz" -C packages/apollo-react dist
           tar -czf "$RUNNER_TEMP/dist-apollo-wind.tar.gz"  -C packages/apollo-wind  dist
           tar -czf "$RUNNER_TEMP/dist-ap-chat.tar.gz"      -C web-packages/ap-chat  dist
@@ -159,6 +160,7 @@ jobs:
         if: steps.bump.outputs.changed == 'true'
         run: |
           pnpm --filter @uipath/apollo-core  sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-core.cyclonedx.json"
+          pnpm --filter @uipath/apollo-ui-icons sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-ui-icons.cyclonedx.json"
           pnpm --filter @uipath/apollo-react sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-react.cyclonedx.json"
           pnpm --filter @uipath/apollo-wind  sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-wind.cyclonedx.json"
           pnpm --filter '@uipath/ap-chat'    sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-ap-chat.cyclonedx.json"
@@ -169,6 +171,13 @@ jobs:
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-core.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-core.cyclonedx.json
+
+      - name: Attest SBOM — apollo-ui-icons
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e  # v4.1.0
+        with:
+          subject-path: ${{ runner.temp }}/dist-apollo-ui-icons.tar.gz
+          sbom-path: ${{ runner.temp }}/sbom-apollo-ui-icons.cyclonedx.json
 
       - name: Attest SBOM — apollo-react
         if: steps.bump.outputs.changed == 'true'
@@ -208,6 +217,12 @@ jobs:
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-core.tar.gz
+
+      - name: Attest build provenance — apollo-ui-icons
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ runner.temp }}/dist-apollo-ui-icons.tar.gz
 
       - name: Attest build provenance — apollo-react
         if: steps.bump.outputs.changed == 'true'

@@ -29,6 +29,7 @@ jobs:
         run: |
           PACKAGES=(
             "@uipath/apollo-core"
+            "@uipath/apollo-ui-icons"
             "@uipath/apollo-react"
             "@uipath/apollo-wind"
             "@uipath/ap-chat"

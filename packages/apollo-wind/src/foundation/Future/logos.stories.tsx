@@ -22,16 +22,16 @@ type Story = StoryObj<typeof meta>;
 // Brand logo data
 // ============================================================================
 
-import agentDesktopLogoUrl from '../../../../apollo-core/src/icons/svg/studio-icons/agent-desktop-logo.svg?url';
-import agentDesktopLogoBgUrl from '../../../../apollo-core/src/icons/svg/studio-icons/agent-desktop-logo-bg.svg?url';
-import agentDesktopLogoFlatUrl from '../../../../apollo-core/src/icons/svg/studio-icons/agent-desktop-logo-flat.svg?url';
-import studioNextLogoUrl from '../../../../apollo-core/src/icons/svg/studio-icons/studio-next-logo.svg?url';
-import studioNextLogoBgUrl from '../../../../apollo-core/src/icons/svg/studio-icons/studio-next-logo-bg.svg?url';
-import autopilotLogoUrl from '../../../../apollo-core/src/icons/svg/third-party/uipath-autopilot-logo.svg?url';
-import faviconUrl from '../../../../apollo-core/src/icons/svg/third-party/uipath-favicon.svg?url';
-import logoFullDarkUrl from '../../../../apollo-core/src/icons/svg/third-party/uipath-full-dark.svg?url';
-import logoFullLightUrl from '../../../../apollo-core/src/icons/svg/third-party/uipath-full-light.svg?url';
-import logoIconDarkUrl from '../../../../apollo-core/src/icons/svg/third-party/uipath-icon-dark.svg?url';
+import agentDesktopLogoUrl from '../../../../apollo-ui-icons/src/svg/studio-icons/agent-desktop-logo.svg?url';
+import agentDesktopLogoBgUrl from '../../../../apollo-ui-icons/src/svg/studio-icons/agent-desktop-logo-bg.svg?url';
+import agentDesktopLogoFlatUrl from '../../../../apollo-ui-icons/src/svg/studio-icons/agent-desktop-logo-flat.svg?url';
+import studioNextLogoUrl from '../../../../apollo-ui-icons/src/svg/studio-icons/studio-next-logo.svg?url';
+import studioNextLogoBgUrl from '../../../../apollo-ui-icons/src/svg/studio-icons/studio-next-logo-bg.svg?url';
+import autopilotLogoUrl from '../../../../apollo-ui-icons/src/svg/third-party/uipath-autopilot-logo.svg?url';
+import faviconUrl from '../../../../apollo-ui-icons/src/svg/third-party/uipath-favicon.svg?url';
+import logoFullDarkUrl from '../../../../apollo-ui-icons/src/svg/third-party/uipath-full-dark.svg?url';
+import logoFullLightUrl from '../../../../apollo-ui-icons/src/svg/third-party/uipath-full-light.svg?url';
+import logoIconDarkUrl from '../../../../apollo-ui-icons/src/svg/third-party/uipath-icon-dark.svg?url';
 
 const LIGHT_BG = '#ffffff';
 const DARK_BG = '#18181b';
@@ -89,7 +89,7 @@ const additionalProductLogos = [
 // Product logo data
 // ============================================================================
 
-const logoModules = import.meta.glob('../../../../apollo-core/src/icons/svg/product-logo/*.svg', {
+const logoModules = import.meta.glob('../../../../apollo-ui-icons/src/svg/product-logo/*.svg', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -175,7 +175,7 @@ function toImportName(filename: string): string {
     .join('');
 }
 
-const IMPORT_SOURCE = '@uipath/apollo-core/icons';
+const IMPORT_SOURCE = '@uipath/apollo-ui-icons';
 
 function toImportStatement(componentName: string): string {
   return `import { ${componentName} } from '${IMPORT_SOURCE}';`;
