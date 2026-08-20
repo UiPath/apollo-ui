@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.24.0...@uipath/apollo-react@6.25.0) (2026-08-20)
+
+### Features
+
+* **apollo-react:** add granular read-only node state ([fdad53c](https://github.com/UiPath/apollo-ui/commit/fdad53c6ecba695fd94f0ebab1bbbde7c573e031))
+
 ## [@uipath/apollo-react-v6.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.23.1...@uipath/apollo-react@6.24.0) (2026-08-20)
 
 ### Features
