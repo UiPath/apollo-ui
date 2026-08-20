@@ -64,7 +64,7 @@ Wait for full completion before continuing.
 pnpm build
 ```
 
-Turborepo builds `apollo-core`, `apollo-react`, and `apollo-wind` in dependency order. Wait for completion.
+Turborepo builds `apollo-core`, `apollo-ui-icons`, `apollo-react`, and `apollo-wind` in dependency order. Wait for completion.
 
 ## Step 6 — Start Apollo Wind Storybook
 

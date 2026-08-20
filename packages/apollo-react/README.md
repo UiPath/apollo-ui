@@ -237,7 +237,8 @@ This approach allows you to integrate Apollo design tokens into existing Materia
 
 ## Icons
 
-Access to 1300+ Apollo icons as React components:
+Access to 1300+ Apollo icons as React components, generated from
+[`@uipath/apollo-ui-icons`](../apollo-ui-icons):
 
 ```typescript
 import {

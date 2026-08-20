@@ -21,7 +21,8 @@ Explore components in interactive environments:
 
 ## Features
 
-- **Design Tokens** — 1300+ icons, comprehensive color system, typography, spacing
+- **Design Tokens** — comprehensive color system, typography, spacing
+- **Icons** — 1300+ SVG icons in `apollo-ui-icons`
 - **React Components** — Built on Material UI with Apollo theming
 - **Tailwind CSS** — Modern utility-first styling with shadcn/ui
 - **Web Components** — Cross-framework components for maximum flexibility
@@ -34,16 +35,22 @@ Explore components in interactive environments:
 ## Package Dependency Graph
 
 ```
-apollo-core  (Design Tokens, Icons, Fonts)
+apollo-core  (Design Tokens, Fonts)
      ↑
      ├── apollo-react  (React + Material UI)
      │        ↑
      │    ap-chat  (Chat Web Component)
      │
      └── apollo-wind  (Tailwind + shadcn/ui)
+
+apollo-ui-icons  (SVG Icon Set)
+     ↑
+     ├── apollo-react
+     └── apollo-core  (re-export only, deprecated)
 ```
 
 - **apollo-core** is the foundation — all other packages depend on it
+- **apollo-ui-icons** holds the icon set; `apollo-core/icons` still re-exports it but is deprecated
 - **apollo-react** and **apollo-wind** each build on core independently
 - **ap-chat** is built on top of apollo-react
 
@@ -54,7 +61,8 @@ apollo-core  (Design Tokens, Icons, Fonts)
 ```
 apollo-ui/
 ├── packages/                  # Core + framework packages
-│   ├── apollo-core/           # Design tokens, icons, fonts
+│   ├── apollo-core/           # Design tokens, fonts
+│   ├── apollo-ui-icons/       # SVG icon set
 │   ├── apollo-react/          # Canvas components, chat, icons, MUI theme
 │   └── apollo-wind/           # Tailwind + shadcn/ui components
 │
@@ -73,7 +81,11 @@ apollo-ui/
 
 ### `@uipath/apollo-core`
 
-Design tokens, 1300+ icons, and fonts. The framework-agnostic foundation for the entire design system. Both `apollo-react` and `apollo-wind` depend on this package.
+Design tokens and fonts. The framework-agnostic foundation for the entire design system. Both `apollo-react` and `apollo-wind` depend on this package.
+
+### `@uipath/apollo-ui-icons`
+
+1300+ SVG icons, importable as modules or raw assets. `@uipath/apollo-core/icons` still re-exports these for backwards compatibility but is deprecated and will be removed in the next major.
 
 ### `@uipath/apollo-react`
 

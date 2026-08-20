@@ -332,7 +332,7 @@ Commit Lint workflow. The commit MUST pass them.
 - Types: `feat` | `fix` | `docs` | `style` | `refactor` | `perf` | `test` |
   `build` | `ci` | `chore` | `revert`
 - Allowed scopes (`scope-enum`) — pick the one matching the changed files:
-  - Packages: `apollo-core`, `apollo-react`, `apollo-wind`, `ap-chat`
+  - Packages: `apollo-core`, `apollo-ui-icons`, `apollo-react`, `apollo-wind`, `ap-chat`
   - Apps: `apollo-vertex`, `apollo-wind-storybook`, `apollo-wind-demo`,
     `storybook`
   - Monorepo-wide: `repo`, `ci`, `docs`, `build`, `workspace`, `release`, `l10n`

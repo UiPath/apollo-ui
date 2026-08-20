@@ -10,7 +10,7 @@
 - Use a colon for lists or clarifications: `"Prerequisites: Node 18+, Tailwind v4"`
 - Use a comma for light joining: `"...templates, all consistent with..."`
 
-This applies to all packages: `apollo-wind`, `apollo-react`, `apollo-core`, and the root `apps/storybook` introduction pages.
+This applies to all packages: `apollo-wind`, `apollo-react`, `apollo-core`, `apollo-ui-icons`, and the root `apps/storybook` introduction pages.
 
 ---
 
@@ -137,7 +137,8 @@ apollo-ui/
 │   ├── storybook/              # Storybook documentation
 │
 ├── packages/                   # Core + framework packages
-│   ├── apollo-core/            # Design tokens (fonts, colors, spacing, icons)
+│   ├── apollo-core/            # Design tokens (fonts, colors, spacing)
+│   ├── apollo-ui-icons/        # SVG icon set
 │   ├── apollo-react/           # React components + Material UI theme
 │   └── apollo-wind/            # Tailwind/shadcn implementation
 │

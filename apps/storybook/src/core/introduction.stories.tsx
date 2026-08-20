@@ -150,17 +150,17 @@ function OverviewTab() {
     <div className="space-y-6">
       <SectionDescription>
         Apollo Core is the framework-agnostic foundation of the Apollo design system. It provides
-        design tokens, icons, fonts, and CSS custom properties consumed by both{' '}
-        <InlineCode>apollo-wind</InlineCode> and <InlineCode>apollo-react</InlineCode>.
+        design tokens, fonts, and CSS custom properties consumed by both{' '}
+        <InlineCode>apollo-wind</InlineCode> and <InlineCode>apollo-react</InlineCode>. Icons live
+        in <InlineCode>apollo-ui-icons</InlineCode>.
       </SectionDescription>
 
       <InfoCallout>
         <p className="mb-1 font-medium text-foreground">Most projects do not need this directly</p>
         <p>
-          Install Apollo Core directly only if you need tokens, icons, or fonts without a component
-          library. If you are starting a new React app, start with{' '}
-          <InlineCode>apollo-wind</InlineCode> or <InlineCode>apollo-react</InlineCode> instead.
-          Both already include core as a dependency.
+          Install Apollo Core directly only if you need tokens or fonts without a component library.
+          If you are starting a new React app, start with <InlineCode>apollo-wind</InlineCode> or{' '}
+          <InlineCode>apollo-react</InlineCode> instead. Both already include core as a dependency.
         </p>
       </InfoCallout>
 
@@ -191,7 +191,7 @@ function OverviewTab() {
             {
               title: 'Icons',
               description:
-                '1000+ SVG icons from the Apollo icon set, importable as React components or raw SVG.',
+                '1300+ SVG icons, importable as React components or raw SVG. These now ship in apollo-ui-icons; apollo-core/icons still re-exports them but is deprecated.',
               example: (
                 <svg
                   viewBox="0 0 24 24"
