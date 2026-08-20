@@ -58,7 +58,7 @@ export function ProductDetail({
           through the primitive. */}
       <header className="flex items-center gap-2 border-b px-6 py-4">
         <DialogTitle className="sr-only">{item.name}</DialogTitle>
-        <BrandMark item={item} />
+        <BrandMark vendor={item.vendor} />
         <span className="text-sm font-medium text-foreground">
           {item.vendor}
         </span>

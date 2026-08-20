@@ -69,7 +69,7 @@ function costCentreParenLabel(costCentre: string): string {
 // `${COST_CENTRE_RULE_PREFIX}${RECOMMENDED_COST_CENTRE_LABEL}.` is the full
 // sentence. Both pieces interpolate IDENTITY rather than restating it; see
 // the report for the exact derivation of the two short forms above.
-export const COST_CENTRE_RULE_PREFIX = `This cost centre can't be used with ${shortBuyingEntityLabel(IDENTITY.buyingEntity)}. Recommended for you: `;
+export const COST_CENTRE_RULE_PREFIX = `This cost center can't be used with ${shortBuyingEntityLabel(IDENTITY.buyingEntity)}. Recommended for you: `;
 export const RECOMMENDED_COST_CENTRE_LABEL = costCentreParenLabel(
   IDENTITY.costCentre,
 );
@@ -450,7 +450,7 @@ export const TIMELINE: TimelineEvent[] = [
   },
   {
     id: "cost-centre-corrected",
-    label: "Cost centre rule blocked CC-4820, corrected to CC-1450",
+    label: "Cost center rule blocked CC-4820, corrected to CC-1450",
     actor: "policy",
     when: atTime(D1, "09:14"),
   },
@@ -534,7 +534,7 @@ export const TIMELINE: TimelineEvent[] = [
   },
   {
     id: "year1-active",
-    label: `Year 1 licences active, ${SEATS_LABEL} seats provisioned`,
+    label: `Year 1 licenses active, ${SEATS_LABEL} seats provisioned`,
     actor: "system",
     when: D3,
   },

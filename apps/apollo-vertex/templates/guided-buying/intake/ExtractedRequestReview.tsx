@@ -50,8 +50,14 @@ function formatUSD(amount: number): string {
 // Right-aligned underlined text, matching Details' own provenance
 // treatment exactly (see the report). Details' version is a button that
 // opens a provenance popover; there's no popover system here, so this is
-// the same visual style as plain, non-interactive text.
-function ProvenanceLabel({ provenance }: { provenance: FieldProvenance }) {
+// the same visual style as plain, non-interactive text. Exported: Review's
+// own identity row (Priya's review step) reuses this exact tag rather
+// than a second one, for the same "from-order-form" meaning.
+export function ProvenanceLabel({
+  provenance,
+}: {
+  provenance: FieldProvenance;
+}) {
   return (
     <span className="whitespace-nowrap text-right text-xs text-muted-foreground underline decoration-dotted underline-offset-2">
       {FIELD_PROVENANCE_LABEL[provenance]}
@@ -179,8 +185,8 @@ function LineItemsRow() {
                 key={line.year}
                 className="flex items-center justify-between py-2 text-sm"
               >
-                <span className="text-muted-foreground">{`Year ${line.year} · ${line.quantity.toLocaleString("en-US")} licences`}</span>
-                <span className="text-muted-foreground">{`${formatUSD(line.unitPrice)}/licence`}</span>
+                <span className="text-muted-foreground">{`Year ${line.year} · ${line.quantity.toLocaleString("en-US")} licenses`}</span>
+                <span className="text-muted-foreground">{`${formatUSD(line.unitPrice)}/license`}</span>
                 <span className="font-medium text-foreground">
                   {formatUSD(line.amount)}
                 </span>
@@ -235,7 +241,7 @@ export function ExtractedRequestReview() {
           />
           <FieldRow
             icon={Building2}
-            label="Cost centre"
+            label="Cost center"
             value={IDENTITY.costCentre}
             provenance="from-profile"
           />

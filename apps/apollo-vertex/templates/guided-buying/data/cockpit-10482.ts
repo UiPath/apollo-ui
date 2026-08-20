@@ -188,14 +188,14 @@ export const DEVIATION_VERDICT = `${isAboveDecisionBand() ? "above" : "within"} 
 
 // Unit price's value and unit, split (prompt 40, for the row layout's own
 // value/unit split) from the single combined string prompt 39 introduced.
-// "/licence/yr" is still that combination ("/licence" from this codebase's
-// own established suffix, e.g. intake's own ReviewStep.tsx; "/yr" from
+// "/license/yr" is still that combination ("/license" per the US English
+// sweep, this codebase's own established suffix; "/yr" from
 // UNIT_PRICE_PER_YEAR's own established one), just split into two exports
 // now rather than one. The sub line keeps its own simpler "/yr": it
 // multiplies by quantity, so the per unit reading is already unambiguous
 // there.
 export const UNIT_PRICE_VALUE = formatUSD(UNIT_PRICE_PER_YEAR);
-export const UNIT_PRICE_UNIT = "/licence/yr";
+export const UNIT_PRICE_UNIT = "/license/yr";
 export const UNIT_PRICE_SUB_LINE = `${QUANTITY.toLocaleString("en-US")} × ${formatUSD(UNIT_PRICE_PER_YEAR)}/yr = ${formatUSD(ANNUAL_VALUE)}/yr`;
 
 // Base tier reference's value and unit, split the same way (prompt 40). The
@@ -203,7 +203,7 @@ export const UNIT_PRICE_SUB_LINE = `${QUANTITY.toLocaleString("en-US")} × ${for
 // part of the figure, not decoration). MARKET_REFERENCES_LINE above is
 // this value's own sub line.
 export const BASE_TIER_REFERENCE_VALUE = `~${formatUSD(BASE_TIER_REFERENCE_PRICE_PER_YEAR)}`;
-export const BASE_TIER_REFERENCE_UNIT = "/licence/yr";
+export const BASE_TIER_REFERENCE_UNIT = "/license/yr";
 
 // The scale earns its place only when the deviation is close enough to the
 // band, or past it, that the number alone under-communicates the position

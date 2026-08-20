@@ -36,15 +36,18 @@ interface ScanRowProps {
 /** Small brand mark — logo when available, vendor initials on missing/broken.
  * `size` defaults to the original fixed 36px tile every existing caller
  * relies on; `"lg"` is a 48px variant for contexts where the mark itself is
- * the hero, e.g. the submission recap. */
+ * the hero, e.g. the submission recap. Takes the vendor name directly
+ * rather than a full CatalogItem (all it ever read from one), so a
+ * non-catalog identity row (e.g. a software/licensing purchase with no
+ * CatalogItem at all) can reuse it too. */
 export function BrandMark({
-  item,
+  vendor,
   size = "sm",
 }: {
-  item: CatalogItem;
+  vendor: string;
   size?: "sm" | "lg";
 }) {
-  const logo = vendorLogoUrl(item.vendor);
+  const logo = vendorLogoUrl(vendor);
   const [failed, setFailed] = useState(false);
   const large = size === "lg";
   return (
@@ -58,7 +61,7 @@ export function BrandMark({
         // oxlint-disable-next-line next/no-img-element
         <img
           src={logo}
-          alt={`${item.vendor} logo`}
+          alt={`${vendor} logo`}
           loading="lazy"
           onError={() => setFailed(true)}
           className={cn("object-contain", large ? "size-7" : "size-5")}
@@ -70,7 +73,7 @@ export function BrandMark({
             large ? "text-xs" : "text-[10px]",
           )}
         >
-          {item.vendor.slice(0, 3).toUpperCase()}
+          {vendor.slice(0, 3).toUpperCase()}
         </span>
       )}
     </div>
@@ -128,7 +131,7 @@ export function ScanRow({
           className="shrink-0"
         />
 
-        <BrandMark item={item} />
+        <BrandMark vendor={item.vendor} />
 
         <div className="min-w-48 flex-1">
           <div className="flex flex-wrap items-center gap-2">

@@ -200,7 +200,7 @@ const DEALS_TABLE: StructuredTableProps = {
   columns: [
     { key: "descriptor", label: "Deal", align: "left" },
     { key: "seats", label: "Seats", align: "right" },
-    { key: "price", label: "Price/licence/yr", align: "right" },
+    { key: "price", label: "Price/license/yr", align: "right" },
   ],
   rows: [
     ...COMPARABLE_DEALS.map((deal) => ({

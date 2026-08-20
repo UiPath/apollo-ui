@@ -152,7 +152,7 @@ export function GeneralInfoStep() {
         <div>
           <FieldRow
             icon={Building2}
-            label="Cost centre"
+            label="Cost center"
             value={displayedCostCentre}
             provenance="from-profile"
             valueTone={blocked ? "error" : "default"}

@@ -61,7 +61,7 @@ export function SubmittedStep() {
             </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Cost centre</p>
+            <p className="text-xs text-muted-foreground">Cost center</p>
             <p className="font-medium text-foreground">{costCentre}</p>
           </div>
           <div>

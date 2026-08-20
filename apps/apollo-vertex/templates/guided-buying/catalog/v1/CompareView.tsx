@@ -194,7 +194,7 @@ export function CompareView({
                   className="sticky top-0 z-20 min-w-56 border-b border-r bg-background p-4 text-left align-top font-normal last:border-r-0"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <BrandMark item={product} />
+                    <BrandMark vendor={product.vendor} />
                     <Button
                       variant="ghost"
                       size="icon-xs"

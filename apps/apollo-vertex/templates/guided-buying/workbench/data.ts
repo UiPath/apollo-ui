@@ -655,7 +655,7 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
     details: [
       { label: "Request ID", value: IDENTITY.id },
       { label: "Buying entity", value: IDENTITY.buyingEntity },
-      { label: "Cost centre", value: IDENTITY.costCentre },
+      { label: "Cost center", value: IDENTITY.costCentre },
       { label: "Currency", value: IDENTITY.currency },
       { label: "Needed from", value: IDENTITY.neededFrom },
       { label: "Agreement", value: IDENTITY.agreement },

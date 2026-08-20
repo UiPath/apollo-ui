@@ -29,7 +29,7 @@ export function CartLine({
   const showStrike = showsListStrike(item, basis);
   return (
     <div className="flex gap-3 border-b py-4 last:border-b-0">
-      <BrandMark item={item} />
+      <BrandMark vendor={item.vendor} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">
           {item.name}
