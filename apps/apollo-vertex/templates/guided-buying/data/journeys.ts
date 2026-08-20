@@ -72,14 +72,14 @@ export type AssembledJourney = JourneyNode[];
 const BASE_STEPS: JourneyStep[] = [
   {
     id: "procurement-validation",
-    label: "Procurement Validation",
+    label: "Procurement validation",
     system: "Guided Buying",
   },
-  { id: "budget-approval", label: "Budget Approval", system: "Guided Buying" },
+  { id: "budget-approval", label: "Budget approval", system: "Guided Buying" },
   // PH-08
-  { id: "contract-execution", label: "Contract Execution", system: "DocuSign" },
-  { id: "pr-po", label: "PR / PO", system: "Coupa" },
-  { id: "goods-receipt", label: "Goods Receipt", system: "Coupa" },
+  { id: "contract-execution", label: "Contract execution", system: "DocuSign" },
+  { id: "pr-po", label: "PR and PO", system: "Coupa" },
+  { id: "goods-receipt", label: "Goods receipt", system: "Coupa" },
 ];
 
 const SPECIALIST_REVIEWS_GROUP_ID = "specialist-reviews";
@@ -104,7 +104,7 @@ const CONDITIONAL_STEPS: JourneyStep[] = [
   },
   {
     id: "privacy-review",
-    label: "Privacy Review",
+    label: "Privacy review",
     system: "ServiceNow",
     group: SPECIALIST_REVIEWS_GROUP_ID,
     addedBy: "CFG-2041",

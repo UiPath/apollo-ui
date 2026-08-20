@@ -4,34 +4,51 @@ import { Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { GLASS_CLASSES } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import {
   type AssembledJourney,
   assembleJourney,
   type IntakeAnswers,
   type JourneyStep,
+  ph,
   whyAdded,
 } from "../data";
+
+/** The first node's own step id, whether that node is a lone step or a
+ * leading group's first member — derived from the assembled sequence
+ * itself, not a hardcoded id or array index read out of context. Nothing
+ * in this model has a runtime done/current status yet (see the report),
+ * so "next" is exactly the first thing in journey order. */
+function firstStepId(nodes: AssembledJourney): string | undefined {
+  const [first] = nodes;
+  return first?.kind === "step" ? first.step.id : first?.steps[0]?.id;
+}
 
 /**
  * One step's row: label and system read straight from the model, the
  * reason (if any) read straight from whyAdded. No step identity is ever
  * matched against a name here, base steps get a null reason from whyAdded
  * itself (its own trigger map returns false for them), not from a branch
- * in this component. Block presentation only, see JourneyPreview below.
+ * in this component. The system chip only earns its place when the stage
+ * is actually leaving this tool (see the report on step.system). Block
+ * presentation only, see JourneyPreview below.
  */
 function JourneyStepRow({
   step,
   answers,
+  isNext,
 }: {
   step: JourneyStep;
   answers: IntakeAnswers;
+  isNext: boolean;
 }) {
   const reason = whyAdded(step.id, answers);
   return (
     <div className="flex min-w-0 flex-1 items-start gap-2.5">
       <span
-        className="mt-1.5 size-1.5 shrink-0 rounded-full border border-muted-foreground"
+        className={cn(
+          "mt-1.5 size-1.5 shrink-0 rounded-full",
+          isNext ? "bg-foreground" : "border border-muted-foreground",
+        )}
         aria-hidden
       />
       <div className="min-w-0 flex-1">
@@ -39,10 +56,17 @@ function JourneyStepRow({
           <span className="text-sm font-medium text-foreground">
             {step.label}
           </span>
-          <Badge variant="secondary" className="text-[10px]">
-            {step.system}
-          </Badge>
+          {step.system !== "Guided Buying" && (
+            <Badge variant="secondary" className="text-[10px]">
+              {step.system}
+            </Badge>
+          )}
         </div>
+        {isNext && (
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {ph("PH-63", "With procurement next")}
+          </p>
+        )}
         {reason != null && (
           <p className="mt-0.5 text-xs text-muted-foreground">{reason}</p>
         )}
@@ -52,17 +76,21 @@ function JourneyStepRow({
 }
 
 /**
- * The block presentation: Review's and the submitted state's own rendering,
- * unchanged from before the inline presentation existed (see the report).
- * A step renders as a row, a group renders its members side by side
- * (parallel, not sequential), reusing the same row for both so a step's
- * presentation never depends on whether it happened to be a base step or a
- * group member.
+ * The block presentation: the submitted state's own rendering. A step
+ * renders as a row, a group renders its members side by side (parallel,
+ * not sequential), reusing the same row for both so a step's presentation
+ * never depends on whether it happened to be a base step or a group
+ * member. No card of its own — the caller (SubmittedStep.tsx) already
+ * provides one; this renders directly inside it (see the report).
  *
  * A group's own membership count, not any per-step special case, decides
- * whether the dashed parallel container renders at all: two or more members
- * is a parallel group, exactly one is an ordinary sequential row, and zero
- * renders nothing.
+ * whether the parallel rail renders at all: two or more members is a
+ * parallel group (a solid left rail, the same treatment the timeline
+ * presentation below already uses for the identical data, not a second
+ * design), exactly one is an ordinary sequential row, and zero renders
+ * nothing. A rail rather than a box also means a third concurrent member
+ * (Privacy Review, when triggered) extends it rather than needing a wider
+ * box.
  */
 function BlockJourneyPreview({
   nodes,
@@ -71,45 +99,51 @@ function BlockJourneyPreview({
   nodes: AssembledJourney;
   answers: IntakeAnswers;
 }) {
+  const nextId = firstStepId(nodes);
   return (
     <div className="space-y-3">
-      <div className="relative">
-        <AiGlow variant="card" />
-        <div
-          className={cn(
-            GLASS_CLASSES,
-            "relative space-y-3 rounded-xl bg-[var(--ai-glass)] p-3 dark:bg-[var(--ai-glass)]",
-          )}
-        >
-          {nodes.map((node) => {
-            if (node.kind === "step") {
-              return (
-                <JourneyStepRow
-                  key={node.step.id}
-                  step={node.step}
-                  answers={answers}
-                />
-              );
-            }
-            if (node.steps.length === 0) return null;
-            if (node.steps.length === 1) {
-              const [only] = node.steps;
-              return (
-                <JourneyStepRow key={only.id} step={only} answers={answers} />
-              );
-            }
+      <div className="space-y-3">
+        {nodes.map((node) => {
+          if (node.kind === "step") {
             return (
-              <div
-                key={node.group.id}
-                className="flex flex-wrap gap-4 rounded-lg border border-dashed border-border p-3"
-              >
+              <JourneyStepRow
+                key={node.step.id}
+                step={node.step}
+                answers={answers}
+                isNext={node.step.id === nextId}
+              />
+            );
+          }
+          if (node.steps.length === 0) return null;
+          if (node.steps.length === 1) {
+            const [only] = node.steps;
+            return (
+              <JourneyStepRow
+                key={only.id}
+                step={only}
+                answers={answers}
+                isNext={only.id === nextId}
+              />
+            );
+          }
+          return (
+            <div key={node.group.id} className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">
+                {ph("PH-62", "Runs at the same time")}
+              </p>
+              <div className="flex flex-wrap gap-4 border-l-2 border-border pl-3">
                 {node.steps.map((step) => (
-                  <JourneyStepRow key={step.id} step={step} answers={answers} />
+                  <JourneyStepRow
+                    key={step.id}
+                    step={step}
+                    answers={answers}
+                    isNext={step.id === nextId}
+                  />
                 ))}
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
 
       <p className="flex items-center gap-1.5 px-1 text-xs text-muted-foreground">

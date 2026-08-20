@@ -341,7 +341,12 @@ export function BuyScaffold({
       <div ref={contentRef} className="flex flex-1 flex-col overflow-y-auto">
         <div
           className={cn(
-            "mx-auto flex w-full max-w-[720px] flex-1 flex-col px-4 pb-10",
+            // pb-24 rather than pb-10: FlowFooterBar's own rendered height
+            // (py-4 around an h-8 button, ~64px) is taller than pb-10 (40px)
+            // reserved, so a full-length step's last row could sit right up
+            // against the footer once scrolled to the end. pb-24 (96px)
+            // clears it with margin, for every step, not just one.
+            "mx-auto flex w-full max-w-[720px] flex-1 flex-col px-4 pb-24",
             // hideBrand steps supply their own hero (e.g. Choose) — same
             // pt-[7vh] anchor as the shared title block, so the two screens
             // place their headline at the same height.
