@@ -472,17 +472,19 @@ function StandaloneRightPropertiesComposition() {
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
     if (!target.closest('[data-slot="node-property-panel-drag-handle"]')) return;
-    const panelBounds = event.currentTarget.getBoundingClientRect();
+    const titleBar = target.closest<HTMLElement>('[data-slot="node-property-panel-titlebar"]');
+    if (!titleBar) return;
+    const titleBarBounds = titleBar.getBoundingClientRect();
     const containerBounds = event.currentTarget.parentElement?.getBoundingClientRect();
     if (!containerBounds) return;
     dragState.current = {
       pointerId: event.pointerId,
-      pointerOffsetX: event.clientX - panelBounds.left,
-      pointerOffsetY: event.clientY - panelBounds.top,
+      pointerOffsetX: event.clientX - titleBarBounds.left,
+      pointerOffsetY: event.clientY - titleBarBounds.top,
     };
     setDragPreviewPosition({
-      left: panelBounds.left - containerBounds.left,
-      top: panelBounds.top - containerBounds.top,
+      left: titleBarBounds.left - containerBounds.left,
+      top: titleBarBounds.top - containerBounds.top,
     });
     activeDropZoneRef.current = panelZone;
     setActiveDropZone(panelZone);
