@@ -30,24 +30,28 @@ export interface ComboboxProps {
   className?: string;
 }
 
-export function Combobox({
-  items,
-  value,
-  onValueChange,
-  placeholder = 'Select an option...',
-  searchPlaceholder = 'Search...',
-  emptyText = 'No results found.',
-  disabled,
-  className,
-}: ComboboxProps) {
+export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(function Combobox(
+  {
+    items,
+    value,
+    onValueChange,
+    placeholder = 'Select an option...',
+    searchPlaceholder = 'Search...',
+    emptyText = 'No results found.',
+    disabled,
+    className,
+  },
+  ref
+) {
   const [open, setOpen] = React.useState(false);
 
   const selectedItem = items.find((item) => item.value === value);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover data-slot="combobox" open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={ref}
           variant="outline"
           role="combobox"
           aria-expanded={open}
@@ -89,4 +93,4 @@ export function Combobox({
       </PopoverContent>
     </Popover>
   );
-}
+});

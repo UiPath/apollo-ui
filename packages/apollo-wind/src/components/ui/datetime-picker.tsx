@@ -17,14 +17,18 @@ export interface DateTimePickerProps {
   use12Hour?: boolean;
 }
 
-export function DateTimePicker({
-  value,
-  onValueChange,
-  disabled,
-  placeholder = 'Pick a date and time',
-  className,
-  use12Hour = false,
-}: DateTimePickerProps) {
+export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
+  function DateTimePicker(
+    {
+      value,
+      onValueChange,
+      disabled,
+      placeholder = 'Pick a date and time',
+      className,
+      use12Hour = false,
+    },
+    ref
+  ) {
   const [open, setOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
   const [timeValue, setTimeValue] = React.useState<string>(
@@ -71,6 +75,7 @@ export function DateTimePicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={ref}
           variant="outline"
           className={cn(
             'w-full justify-start text-left font-normal',
@@ -119,4 +124,4 @@ export function DateTimePicker({
       </PopoverContent>
     </Popover>
   );
-}
+});

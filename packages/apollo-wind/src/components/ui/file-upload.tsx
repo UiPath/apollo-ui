@@ -34,19 +34,23 @@ export interface FileUploadProps {
   onBlur?: React.FocusEventHandler<HTMLFieldSetElement>;
 }
 
-export function FileUpload({
-  id,
-  ariaLabel,
-  onFilesChange,
-  accept,
-  multiple = false,
-  disabled = false,
-  maxSize,
-  className,
-  showPreview = false,
-  errors,
-  onBlur,
-}: FileUploadProps) {
+export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>(
+  function FileUpload(
+    {
+      id,
+      ariaLabel,
+      onFilesChange,
+      accept,
+      multiple = false,
+      disabled = false,
+      maxSize,
+      className,
+      showPreview = false,
+      errors,
+      onBlur,
+    },
+    ref
+  ) {
   const [files, setFiles] = React.useState<File[]>([]);
   const [isDragging, setIsDragging] = React.useState(false);
   const [fileErrors, setFileErrors] = React.useState<Map<number, string>>(new Map());
@@ -232,6 +236,7 @@ export function FileUpload({
 
   return (
     <fieldset
+      ref={ref}
       className={cn('m-0 min-w-0 w-full border-0 p-0', className)}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
@@ -347,4 +352,4 @@ export function FileUpload({
       )}
     </fieldset>
   );
-}
+});

@@ -3,7 +3,7 @@
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
-import type * as React from 'react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -21,18 +21,15 @@ export interface DatePickerProps {
   >;
 }
 
-export function DatePicker({
-  value,
-  onValueChange,
-  disabled,
-  placeholder = 'Pick a date',
-  className,
-  calendarProps,
-}: DatePickerProps) {
+export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(function DatePicker(
+  { value, onValueChange, disabled, placeholder = 'Pick a date', className, calendarProps },
+  ref
+) {
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          ref={ref}
           variant="outline"
           aria-label={value ? `Selected date: ${format(value, 'PPP')}` : placeholder}
           className={cn(
@@ -57,7 +54,7 @@ export function DatePicker({
       </PopoverContent>
     </Popover>
   );
-}
+});
 
 export interface DateRangePickerProps {
   value?: DateRange;
@@ -77,19 +74,17 @@ export interface DateRangePickerProps {
   >;
 }
 
-export function DateRangePicker({
-  value,
-  onValueChange,
-  disabled,
-  placeholder = 'Pick a date range',
-  className,
-  calendarProps,
-}: DateRangePickerProps) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
+export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePickerProps>(
+  function DateRangePicker(
+    { value, onValueChange, disabled, placeholder = 'Pick a date range', className, calendarProps },
+    ref
+  ) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            ref={ref}
+            variant="outline"
           aria-label={
             value?.from
               ? value.to
@@ -132,4 +127,4 @@ export function DateRangePicker({
       </PopoverContent>
     </Popover>
   );
-}
+});

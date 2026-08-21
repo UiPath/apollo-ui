@@ -1412,6 +1412,7 @@ function FieldOptionsEditor({ options, onChange }: FieldOptionsEditorProps) {
             icon
             className="text-muted-foreground hover:text-destructive"
             onClick={() => removeOption(index)}
+            aria-label="Remove option"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -1591,28 +1592,28 @@ const RULE_EFFECTS: {
     label: 'Show field',
     description: 'Show this field when conditions are met',
     Icon: Eye,
-    color: 'text-green-600 bg-green-50 border-green-200',
+    color: 'text-success bg-success-background border-success/30',
   },
   {
     value: 'hide',
     label: 'Hide field',
     description: 'Hide this field when conditions are met',
     Icon: EyeOff,
-    color: 'text-orange-600 bg-orange-50 border-orange-200',
+    color: 'text-warning bg-warning-background border-warning/30',
   },
   {
     value: 'require',
     label: 'Make required',
     description: 'Require this field when conditions are met',
     Icon: Asterisk,
-    color: 'text-red-600 bg-red-50 border-red-200',
+    color: 'text-error bg-error-background border-error/30',
   },
   {
     value: 'disable',
     label: 'Disable field',
     description: 'Disable this field when conditions are met',
     Icon: Ban,
-    color: 'text-gray-600 bg-gray-50 border-gray-200',
+    color: 'text-muted-foreground bg-muted border-border',
   },
 ];
 
@@ -1859,13 +1860,13 @@ function RulesEditor({
 
   const getEffectDescription = (rule: FieldRule): { label: string; color: string } => {
     if (rule.effects.visible === true)
-      return { label: 'Show', color: 'text-green-600 bg-green-50' };
+      return { label: 'Show', color: 'text-success bg-success-background' };
     if (rule.effects.visible === false)
-      return { label: 'Hide', color: 'text-orange-600 bg-orange-50' };
+      return { label: 'Hide', color: 'text-warning bg-warning-background' };
     if (rule.effects.required === true)
-      return { label: 'Required', color: 'text-red-600 bg-red-50' };
+      return { label: 'Required', color: 'text-error bg-error-background' };
     if (rule.effects.disabled === true)
-      return { label: 'Disabled', color: 'text-gray-600 bg-gray-50' };
+      return { label: 'Disabled', color: 'text-muted-foreground bg-muted' };
     return { label: 'Unknown', color: 'text-muted-foreground bg-muted' };
   };
 
@@ -1881,7 +1882,7 @@ function RulesEditor({
       <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Asterisk className="h-5 w-5 text-red-500" />
+            <Asterisk className="h-5 w-5 text-error" />
             <div>
               <Label className="cursor-pointer font-medium">Always required</Label>
               <p className="text-xs text-muted-foreground">Field must always have a value</p>
@@ -1960,6 +1961,7 @@ function RulesEditor({
                         size="sm"
                         className="h-7 w-7 p-0"
                         onClick={() => editRule(index)}
+                        aria-label="Edit rule"
                       >
                         <Settings className="h-3.5 w-3.5" />
                       </Button>
@@ -1969,6 +1971,7 @@ function RulesEditor({
                         icon
                         className="text-destructive hover:text-destructive"
                         onClick={() => deleteRule(index)}
+                        aria-label="Delete rule"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>

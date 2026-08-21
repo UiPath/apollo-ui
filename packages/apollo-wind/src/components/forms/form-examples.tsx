@@ -839,7 +839,7 @@ export function FileUploadExample() {
             <ul className="space-y-2">
               {uploadedFiles.map((fileName, index) => (
                 <li key={index} className="flex items-center gap-2 text-sm">
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  <Badge variant="outline" className="bg-success-background text-success border-success/30">
                     ✓
                   </Badge>
                   <span>{fileName}</span>

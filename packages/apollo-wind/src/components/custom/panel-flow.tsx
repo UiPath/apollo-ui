@@ -77,7 +77,7 @@ export interface FlowPanelProps {
 
 function UiPathLogo() {
   return (
-    <div className="flex h-9 w-9 items-center justify-center overflow-clip rounded-lg bg-[#0092b8] shadow-sm">
+    <div className="flex h-9 w-9 items-center justify-center overflow-clip rounded-lg bg-brand shadow-sm">
       <svg
         viewBox="0 0 24 24"
         fill="none"
