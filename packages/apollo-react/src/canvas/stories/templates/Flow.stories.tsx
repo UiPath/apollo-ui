@@ -774,6 +774,11 @@ function BottomPropertiesComposition() {
             onLayoutChange={(layout) => {
               if (layout === 'bottom') setVisiblePanels(['input', 'properties', 'output']);
             }}
+            onPropertiesClick={() => {
+              setVisiblePanels((current) =>
+                current.includes('properties') ? current : [...current, 'properties']
+              );
+            }}
           />
         }
       />
@@ -1191,6 +1196,10 @@ function BottomPanels({
 }) {
   const [order, setOrder] = useState<BottomPanelId[]>(['input', 'properties', 'output']);
   const [draggedPanel, setDraggedPanel] = useState<BottomPanelId | null>(null);
+  const [dropTarget, setDropTarget] = useState<{
+    panelId: BottomPanelId;
+    position: 'before' | 'after';
+  } | null>(null);
 
   const panels: Record<BottomPanelId, ReactNode> = {
     input: (
@@ -1199,7 +1208,7 @@ function BottomPanels({
         dragHandleProps={{
           draggable: true,
           onDragStart: (event) => handleDragStart(event, 'input'),
-          onDragEnd: () => setDraggedPanel(null),
+          onDragEnd: () => resetDragState(),
         }}
         contentInset="0.875rem"
         className="h-full"
@@ -1225,7 +1234,7 @@ function BottomPanels({
         dragHandleProps={{
           draggable: true,
           onDragStart: (event) => handleDragStart(event, 'properties'),
-          onDragEnd: () => setDraggedPanel(null),
+          onDragEnd: () => resetDragState(),
         }}
       />
     ),
@@ -1235,7 +1244,7 @@ function BottomPanels({
         dragHandleProps={{
           draggable: true,
           onDragStart: (event) => handleDragStart(event, 'output'),
-          onDragEnd: () => setDraggedPanel(null),
+          onDragEnd: () => resetDragState(),
         }}
         contentInset="0.875rem"
         className="h-full"
@@ -1260,16 +1269,33 @@ function BottomPanels({
     setDraggedPanel(panelId);
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', panelId);
+    const titleBar = event.currentTarget.closest<HTMLElement>(
+      '[data-slot="node-property-panel-titlebar"]'
+    );
+    if (titleBar) {
+      const bounds = titleBar.getBoundingClientRect();
+      event.dataTransfer.setDragImage(
+        titleBar,
+        Math.max(0, event.clientX - bounds.left),
+        Math.max(0, event.clientY - bounds.top)
+      );
+    }
   };
 
-  const handleDrop = (targetPanel: BottomPanelId) => {
+  const resetDragState = () => {
+    setDraggedPanel(null);
+    setDropTarget(null);
+  };
+
+  const handleDrop = (targetPanel: BottomPanelId, position: 'before' | 'after') => {
     if (!draggedPanel || draggedPanel === targetPanel) return;
     setOrder((currentOrder) => {
       const nextOrder = currentOrder.filter((panelId) => panelId !== draggedPanel);
-      nextOrder.splice(nextOrder.indexOf(targetPanel), 0, draggedPanel);
+      const targetIndex = nextOrder.indexOf(targetPanel);
+      nextOrder.splice(position === 'after' ? targetIndex + 1 : targetIndex, 0, draggedPanel);
       return nextOrder;
     });
-    setDraggedPanel(null);
+    resetDragState();
   };
   const visibleOrder = order.filter((panelId) => visiblePanels.includes(panelId));
 
@@ -1287,19 +1313,31 @@ function BottomPanels({
                 if (draggedPanel && draggedPanel !== panelId) {
                   event.preventDefault();
                   event.dataTransfer.dropEffect = 'move';
+                  const bounds = event.currentTarget.getBoundingClientRect();
+                  setDropTarget({
+                    panelId,
+                    position: event.clientX < bounds.left + bounds.width / 2 ? 'before' : 'after',
+                  });
                 }
               }}
               onDrop={(event) => {
                 event.preventDefault();
-                handleDrop(panelId);
+                handleDrop(panelId, dropTarget?.position ?? 'before');
               }}
-              className={
+              className={`relative ${
                 draggedPanel === panelId
                   ? 'h-full w-full overflow-hidden opacity-50'
                   : 'h-full w-full overflow-hidden'
-              }
+              }`}
             >
               {panels[panelId]}
+              {dropTarget?.panelId === panelId && draggedPanel !== panelId && (
+                <div
+                  className={`pointer-events-none absolute inset-y-3 z-30 w-1 rounded-full bg-primary shadow-[0_0_0_4px_color-mix(in_srgb,var(--primary)_16%,transparent)] ${
+                    dropTarget.position === 'before' ? 'left-1' : 'right-1'
+                  }`}
+                />
+              )}
             </div>
           </ResizablePanel>
           {index < visibleOrder.length - 1 && <ResizableHandle withHandle />}
