@@ -1430,7 +1430,12 @@ function BottomPanels({
               )}
             </div>
           </ResizablePanel>
-          {index < visibleOrder.length - 1 && <ResizableHandle withHandle />}
+          {index < visibleOrder.length - 1 && (
+            <ResizableHandle
+              withHandle
+              className="cursor-col-resize after:w-3 [&>div]:opacity-0 hover:[&>div]:opacity-100 focus-visible:[&>div]:opacity-100 data-[separator=active]:[&>div]:opacity-100 data-[separator=hover]:[&>div]:opacity-100"
+            />
+          )}
         </Fragment>
       ))}
     </ResizablePanelGroup>
@@ -1527,7 +1532,12 @@ function DockedDataPanels({
             <ResizablePanel defaultSize={`${100 / panelIds.length}%`} minSize="15%">
               <div className="h-full min-h-0 overflow-hidden">{renderPanel(panelId)}</div>
             </ResizablePanel>
-            {index < panelIds.length - 1 && <ResizableHandle withHandle />}
+            {index < panelIds.length - 1 && (
+              <ResizableHandle
+                withHandle
+                className={`${zone === 'top' ? 'cursor-col-resize after:w-3' : 'cursor-row-resize aria-[orientation=horizontal]:after:h-3'} [&>div]:opacity-0 hover:[&>div]:opacity-100 focus-visible:[&>div]:opacity-100 data-[separator=active]:[&>div]:opacity-100 data-[separator=hover]:[&>div]:opacity-100`}
+              />
+            )}
           </Fragment>
         ))}
       </ResizablePanelGroup>
