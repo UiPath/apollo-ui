@@ -166,6 +166,9 @@ function ShareFeedbackTemplateContent() {
               initialStep="question"
               open
               onOpenChange={() => {}}
+              // This demo is just a static reference for the question step, so the
+              // options that would advance it to positive/negative are disabled.
+              disableQuestionOptions
               disclaimerLabel={t("share_feedback_disclaimer_admin_team")}
               consentLabel={t("share_feedback_consent_improve")}
               onSubmit={handleSubmit}

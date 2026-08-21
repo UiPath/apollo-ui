@@ -53,6 +53,11 @@ interface ShareFeedbackBaseProps {
   previousFeedbackHeading?: string;
   /** Which step the flow opens on. Use "positive"/"negative" to skip the question step (e.g. from a nudge). */
   initialStep?: ShareFeedbackStep;
+  /**
+   * Makes the "It got it right" / "It needs correction" options on the question step
+   * inert (clickable, but they don't advance the flow) without showing them as disabled.
+   */
+  disableQuestionOptions?: boolean;
   defaultReasonValues?: string[];
   defaultComment?: string;
   questionLabel: string;
@@ -72,6 +77,8 @@ interface ShareFeedbackBaseProps {
   onSubmit: (result: ShareFeedbackResult) => void;
   onCancel?: () => void;
   align?: React.ComponentProps<typeof PopoverContent>["align"];
+  /** Extra classes for the popover content, e.g. to raise its `z-index` above nearby content. */
+  contentClassName?: string;
 }
 
 interface ShareFeedbackBuiltinTriggerProps extends ShareFeedbackBaseProps {
@@ -110,6 +117,7 @@ function ShareFeedback({
   previousFeedback,
   previousFeedbackHeading,
   initialStep = "question",
+  disableQuestionOptions = false,
   defaultReasonValues,
   defaultComment,
   questionLabel,
@@ -128,6 +136,7 @@ function ShareFeedback({
   onSubmit,
   onCancel,
   align = "start",
+  contentClassName,
 }: ShareFeedbackProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
   const open = controlledOpen ?? uncontrolledOpen;
@@ -181,7 +190,7 @@ function ShareFeedback({
       <PopoverContent
         data-slot="share-feedback-content"
         align={align}
-        className="relative w-96 bg-muted"
+        className={cn("relative w-96 bg-muted", contentClassName)}
       >
         {step === "positive" && (
           <Button
@@ -204,7 +213,9 @@ function ShareFeedback({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setStep("positive")}
+                onClick={() => {
+                  if (!disableQuestionOptions) setStep("positive");
+                }}
               >
                 <CheckIcon />
                 {positiveOptionLabel}
@@ -213,7 +224,9 @@ function ShareFeedback({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setStep("negative")}
+                onClick={() => {
+                  if (!disableQuestionOptions) setStep("negative");
+                }}
               >
                 <PencilIcon />
                 {negativeOptionLabel}
@@ -247,7 +260,7 @@ function ShareFeedback({
                   <ToggleGroupItem
                     key={reason.value}
                     value={reason.value}
-                    className="h-auto rounded-full px-2 py-0.5 text-xs"
+                    className="h-auto cursor-pointer rounded-full px-2 py-0.5 text-xs data-[state=on]:border-transparent data-[state=on]:bg-info data-[state=on]:text-info-foreground"
                   >
                     {reason.label}
                   </ToggleGroupItem>
