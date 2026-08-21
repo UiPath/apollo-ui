@@ -3004,7 +3004,7 @@ function LockableValueFieldShowcase({
 
 export function QuickFormPanel({
   embedded = false,
-  onClose = () => {},
+  onClose,
   className = 'h-[760px]',
 }: {
   embedded?: boolean;
@@ -3165,10 +3165,10 @@ export function QuickFormPanel({
             <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
               Parameters
             </TabsTrigger>
-            <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+            <TabsTrigger value="branching" className={TAB_TRIGGER_CLASS}>
               Branching
             </TabsTrigger>
-            <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+            <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
               Error handling
             </TabsTrigger>
           </TabsList>
@@ -3441,8 +3441,8 @@ export function QuickFormPanel({
             </Card>
           </div>
         </TabsContent>
+        <TabsContent value="branching" className="mt-0" />
         <TabsContent value="error-handling" className="mt-0" />
-        <TabsContent value="advanced" className="mt-0" />
       </Tabs>
     </NodePropertyPanel>
   );

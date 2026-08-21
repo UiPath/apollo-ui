@@ -40,6 +40,22 @@ describe('NodePropertyPanel', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  it('forwards dragHandleProps to the title-bar drag handle', () => {
+    const onPointerDown = vi.fn();
+    const { container } = render(
+      <NodePropertyPanel
+        panelTitle="Properties"
+        dragHandleProps={{ draggable: true, 'aria-label': 'Move properties', onPointerDown }}
+      />
+    );
+    const dragHandle = container.querySelector('[data-slot="node-property-panel-drag-handle"]');
+
+    expect(dragHandle).toHaveAttribute('draggable', 'true');
+    expect(dragHandle).toHaveAttribute('aria-label', 'Move properties');
+    dragHandle?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    expect(onPointerDown).toHaveBeenCalledOnce();
+  });
+
   it('renders the node label and category in the identity row', () => {
     render(
       <NodePropertyPanel

@@ -675,7 +675,7 @@ function CanvasViewport({
   rightControlsOffset?: number;
   workflowVariant?: WorkflowVariant;
 }) {
-  const { getNodes, getNodesBounds, getViewport, setNodes, setViewport } = useReactFlow();
+  const { getNodes, getNodesBounds, getViewport, setEdges, setNodes, setViewport } = useReactFlow();
   const nodesInitialized = useNodesInitialized();
   const viewportContainerRef = useRef<HTMLDivElement>(null);
 
@@ -709,9 +709,11 @@ function CanvasViewport({
   }, [centerWorkflow, nodesInitialized]);
 
   const tidy = useCallback(() => {
-    setNodes(createFlowGraph(workflowVariant).nodes);
+    const graph = createFlowGraph(workflowVariant);
+    setNodes(graph.nodes);
+    setEdges(graph.edges);
     window.setTimeout(() => centerWorkflow(200), 100);
-  }, [centerWorkflow, setNodes, workflowVariant]);
+  }, [centerWorkflow, setEdges, setNodes, workflowVariant]);
 
   return (
     <div ref={viewportContainerRef} className="relative h-full min-h-0 min-w-0 overflow-hidden">
