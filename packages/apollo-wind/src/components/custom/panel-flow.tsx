@@ -157,6 +157,7 @@ function IconRail({
               <TooltipTrigger asChild>
                 <button
                   type="button"
+                  aria-label={item.label}
                   className="group flex h-12 w-full items-center justify-center"
                   onClick={() => onNavClick(item.id)}
                 >

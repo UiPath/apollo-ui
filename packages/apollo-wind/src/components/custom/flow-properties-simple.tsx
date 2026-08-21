@@ -119,7 +119,10 @@ function FieldItem({
       {/* Field control */}
       {field.type === 'select' ? (
         <Select value={value || undefined} onValueChange={setValue}>
-          <SelectTrigger className="h-10 rounded-xl border-0 bg-surface-overlay text-foreground shadow-sm placeholder:text-foreground-muted">
+          <SelectTrigger
+            aria-label={field.label}
+            className="h-10 rounded-xl border-0 bg-surface-overlay text-foreground shadow-sm placeholder:text-foreground-muted"
+          >
             <SelectValue placeholder={field.placeholder ?? 'Select...'} />
           </SelectTrigger>
           <SelectContent className="border-border bg-surface-overlay text-foreground">
