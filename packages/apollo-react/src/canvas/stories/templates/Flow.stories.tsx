@@ -765,6 +765,11 @@ function BottomPropertiesComposition() {
     setActiveDockZone(null);
   };
 
+  const closePanel = (panelId: BottomPanelId) => {
+    setVisiblePanels((current) => current.filter((id) => id !== panelId));
+    resetPanelDrag();
+  };
+
   const getCanvasDockZone = (event: DragEvent<HTMLDivElement>): StandaloneDockZone => {
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = (event.clientX - bounds.left) / bounds.width;
@@ -790,6 +795,7 @@ function BottomPropertiesComposition() {
         setPanelZones((current) => ({ ...current, [draggedPanel]: activeDockZone }));
         resetPanelDrag();
       }}
+      onDragEnd={resetPanelDrag}
     >
       <CanvasViewport
         bottomControlsOffset={bottomPanels.length > 0 ? panelHeight + 20 : 20}
@@ -844,9 +850,7 @@ function BottomPropertiesComposition() {
             key={zone}
             zone={zone}
             panelIds={zonePanels}
-            onPanelClose={(panelId) =>
-              setVisiblePanels((current) => current.filter((id) => id !== panelId))
-            }
+            onPanelClose={closePanel}
             onPanelDragStart={setDraggedPanel}
             onPanelDragEnd={resetPanelDrag}
           />
@@ -857,9 +861,7 @@ function BottomPropertiesComposition() {
           <BottomPanels
             visiblePanels={bottomPanels}
             activeDraggedPanel={draggedPanel}
-            onPanelClose={(panelId) =>
-              setVisiblePanels((current) => current.filter((id) => id !== panelId))
-            }
+            onPanelClose={closePanel}
             onPanelDragStart={setDraggedPanel}
             onPanelDragEnd={resetPanelDrag}
             onPanelReorderHover={() => setActiveDockZone(null)}
@@ -1288,6 +1290,12 @@ function BottomPanels({
     position: 'before' | 'after';
   } | null>(null);
   const activePanel = draggedPanel ?? activeDraggedPanel;
+
+  useEffect(() => {
+    if (activeDraggedPanel) return;
+    setDraggedPanel(null);
+    setDropTarget(null);
+  }, [activeDraggedPanel]);
 
   const panels: Record<BottomPanelId, ReactNode> = {
     input: (
