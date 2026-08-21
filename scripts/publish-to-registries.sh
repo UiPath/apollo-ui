@@ -58,14 +58,57 @@ done
 
 TAG="${TAG_NAME:-latest}"
 
+PKG_NAME=$(node -p "require('./package.json').name")
+PKG_VERSION=$(node -p "require('./package.json').version")
+
+# Confirm the version is actually retrievable from npmjs.org.
+#
+# `pnpm publish` exits 0 in cases where nothing reached npmjs.org at all (see the
+# OIDC note below), so the only trustworthy signal is asking the registry. Use the
+# version document rather than the packument: for a brand-new package name the
+# packument stays 404 for several minutes after the version endpoint is live.
+verify_on_npmjs() {
+  local url="https://registry.npmjs.org/${PKG_NAME//\//%2F}/${PKG_VERSION}"
+  for _ in $(seq 1 18); do
+    # 404s are expected while a fresh publish propagates; stay quiet until we give up
+    if curl -fsS -o /dev/null "$url" 2>/dev/null; then
+      return 0
+    fi
+    sleep 10
+  done
+  return 1
+}
+
 echo "📦 Publishing to npm.org (OIDC trusted publisher)..."
 # --provenance: binds artifact to GitHub Actions source via Sigstore. npmjs.org-only.
-# --@uipath:registry: scope-specific registry override. For scoped packages, this
-# beats both .npmrc's `@uipath:registry=` line and the plain `--registry=` flag
-pnpm publish "${filtered_args[@]}" --tag "$TAG" --provenance \
-  --@uipath:registry=https://registry.npmjs.org
+#
+# The `--@uipath:registry` override only holds while OIDC succeeds. When the token
+# exchange fails — which it does for any package with no Trusted Publisher on
+# npmjs.com, and a new package cannot have one before it exists — pnpm logs
+# "Skipped OIDC", silently falls back to the ambient registry (GHP), publishes
+# there and still exits 0. That shipped @uipath/apollo-core@5.13.0 and
+# @uipath/apollo-react@6.23.1 to npmjs.org depending on an @uipath/apollo-ui-icons
+# that was never published there, breaking installs for every consumer. Treat the
+# warning as fatal and verify the outcome.
+npm_log=$(mktemp)
+trap 'rm -f "$npm_log"' EXIT
 
-echo "✓ Published to npm.org"
+pnpm publish "${filtered_args[@]}" --tag "$TAG" --provenance \
+  --@uipath:registry=https://registry.npmjs.org 2>&1 | tee "$npm_log"
+
+if grep -q "Skipped OIDC" "$npm_log"; then
+  echo "::error::OIDC token exchange failed for ${PKG_NAME}, so pnpm did not publish to npmjs.org." >&2
+  echo "Add a Trusted Publisher for ${PKG_NAME} on npmjs.com (UiPath/apollo-ui, workflow release.yml, no environment, action: npm publish)." >&2
+  exit 1
+fi
+
+if ! verify_on_npmjs; then
+  echo "::error::${PKG_NAME}@${PKG_VERSION} is not retrievable from npmjs.org after publishing." >&2
+  echo "The publish reported success but the artifact is not there — check which registry it actually went to." >&2
+  exit 1
+fi
+
+echo "✓ Published to npm.org (verified retrievable)"
 echo ""
 echo "📦 Publishing to GitHub Package Registry..."
 NODE_AUTH_TOKEN="$GH_NPM_REGISTRY_TOKEN" \

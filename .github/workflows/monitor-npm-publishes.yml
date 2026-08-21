@@ -42,7 +42,7 @@ jobs:
             # Fetch all active dist-tag versions (not just latest) so publishes under
             # beta/next/rc tags are also caught. Use if ! to capture non-zero exit before
             # bash -e can terminate the step (GitHub Actions runs scripts with set -e).
-            if ! dist_tags=$(npm view "$pkg" dist-tags --json --registry https://registry.npmjs.org 2>/dev/null) \
+            if ! dist_tags=$(npm view "$pkg" dist-tags --json --@uipath:registry=https://registry.npmjs.org 2>/dev/null) \
                 || [ -z "$dist_tags" ] || [ "$dist_tags" = "null" ]; then
               echo "::warning::Could not fetch dist-tags for $pkg — skipping (will not auto-close alerts)"
               FETCH_ERRORS=$((FETCH_ERRORS + 1))
