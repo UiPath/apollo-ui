@@ -18,7 +18,18 @@ import {
   type TimelineActor,
   TOTAL_CONTRACT_VALUE,
   UNIT_PRICE_PER_YEAR,
+  UNIT_PRICE_UNIT,
+  UNIT_PRICE_UNIT_LABEL,
+  UNIT_PRICE_VALUE,
+  VENDOR_OPTIONS,
 } from "../data";
+
+// The plural noun for what's being licensed, derived from the same seed
+// string the cockpit's own unit label already carries (prompt 53: no new
+// noun authored, just the existing "License/yr" reduced to its noun and
+// pluralized). Reused by both the summary line and the details pane's own
+// Quantity fact below, so the derivation happens once.
+const UNIT_NOUN_PLURAL = `${UNIT_PRICE_UNIT_LABEL.replace("/yr", "").toLowerCase()}s`;
 
 function formatUSD(amount: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -78,6 +89,15 @@ export interface DetailField {
   value: string;
 }
 
+/** A labeled group of `DetailField`s within the Details tab (prompt 53).
+ * Optional on `WorkbenchDetail`: absent for every request except
+ * REQ-10482 today, which is the only one with an equivalent
+ * vendor/quantity/term/total-contract-value seed structure to group. */
+export interface DetailSection {
+  heading: string;
+  fields: DetailField[];
+}
+
 /** A shortlisted vendor in a sourcing detail. Figures are indicative estimates. */
 export interface VendorBid {
   name: string;
@@ -133,6 +153,10 @@ export interface WorkbenchDetail {
   source: { filename: string; lines: string[] };
   activity: TimelineEntry[];
   details: DetailField[];
+  /** Grouped replacement for `details` (prompt 53): present only for
+   * REQ-10482 today. `details` stays required and populated for every
+   * other request so their Details tab renders exactly as before. */
+  detailSections?: DetailSection[];
 }
 
 export const FORK_LABEL: Record<ForkType, string> = {
@@ -605,7 +629,12 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
     request: IDENTITY.shortTitle,
     requester: `${getPerson(IDENTITY.requester).name} · ${getPerson(IDENTITY.requester).org}`,
     value: `${formatUSD(ANNUAL_VALUE)}/yr`,
-    needBy: IDENTITY.neededFrom,
+    // Plain date, standardized format, for this header field specifically
+    // (prompt: drop the driver sub-line, "Month D, YYYY" throughout). Kept
+    // apart from IDENTITY.neededFrom, whose fuller "date · driver" context
+    // stays intact everywhere else it's read (timing below, the decision
+    // header, the intake steps).
+    needBy: "Sep 1, 2026",
     timing: IDENTITY.neededFrom,
     type: "contract",
     finding: {
@@ -652,13 +681,51 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
       time: timelineEntryTime(event.when),
       indicator: timelineEntryIndicator(event.actor),
     })),
-    details: [
-      { label: "Request ID", value: IDENTITY.id },
-      { label: "Buying entity", value: IDENTITY.buyingEntity },
-      { label: "Cost center", value: IDENTITY.costCentre },
-      { label: "Currency", value: IDENTITY.currency },
-      { label: "Needed from", value: IDENTITY.neededFrom },
-      { label: "Agreement", value: IDENTITY.agreement },
+    // Flat `details` is superseded by `detailSections` below (prompt 53:
+    // Request ID and Needed from are dropped, both duplicates of the
+    // header, and the four grouped sections have no slot for either).
+    // Left as an empty array, not removed, since `details` stays required
+    // for the other requests that still use it.
+    details: [],
+    detailSections: [
+      {
+        heading: ph("PH-64", "What is being bought"),
+        fields: [
+          { label: "Commodity", value: IDENTITY.commodity },
+          { label: "Vendor", value: VENDOR_OPTIONS[0].vendor },
+          {
+            label: "Quantity",
+            value: `${QUANTITY.toLocaleString("en-US")} ${UNIT_NOUN_PLURAL}`,
+          },
+          { label: "Term", value: `${TERM_YEARS} years` },
+        ],
+      },
+      {
+        heading: ph("PH-65", "Money"),
+        fields: [
+          {
+            label: "Unit price",
+            value: `${UNIT_PRICE_VALUE}${UNIT_PRICE_UNIT}`,
+          },
+          { label: "Annual value", value: `${formatUSD(ANNUAL_VALUE)}/yr` },
+          {
+            label: "Total contract value",
+            value: formatUSD(TOTAL_CONTRACT_VALUE),
+          },
+        ],
+      },
+      {
+        heading: ph("PH-66", "Where it charges"),
+        fields: [
+          { label: "Buying entity", value: IDENTITY.buyingEntity },
+          { label: "Cost center", value: IDENTITY.costCentre },
+          { label: "Currency", value: IDENTITY.currency },
+        ],
+      },
+      {
+        heading: ph("PH-67", "Governing"),
+        fields: [{ label: "Agreement", value: IDENTITY.agreement }],
+      },
     ],
   },
 };

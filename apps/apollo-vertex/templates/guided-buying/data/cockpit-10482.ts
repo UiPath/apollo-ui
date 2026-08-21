@@ -197,6 +197,10 @@ export const DEVIATION_VERDICT = `${isAboveDecisionBand() ? "above" : "within"} 
 export const UNIT_PRICE_VALUE = formatUSD(UNIT_PRICE_PER_YEAR);
 export const UNIT_PRICE_UNIT = "/license/yr";
 export const UNIT_PRICE_SUB_LINE = `${QUANTITY.toLocaleString("en-US")} × ${formatUSD(UNIT_PRICE_PER_YEAR)}/yr = ${formatUSD(ANNUAL_VALUE)}/yr`;
+// MetricColumn's own unit line (ExceptionEvidence.tsx) sits on its own row
+// beneath the value, not concatenated after it, so it doesn't need the
+// slash UNIT_PRICE_UNIT's other, inline call sites still do.
+export const UNIT_PRICE_UNIT_LABEL = "License/yr";
 
 // Base tier reference's value and unit, split the same way (prompt 40). The
 // approximation marker stays on the value, not the unit (prompt 39: it's
@@ -204,6 +208,8 @@ export const UNIT_PRICE_SUB_LINE = `${QUANTITY.toLocaleString("en-US")} × ${for
 // this value's own sub line.
 export const BASE_TIER_REFERENCE_VALUE = `~${formatUSD(BASE_TIER_REFERENCE_PRICE_PER_YEAR)}`;
 export const BASE_TIER_REFERENCE_UNIT = "/license/yr";
+// Same reasoning as UNIT_PRICE_UNIT_LABEL above.
+export const BASE_TIER_REFERENCE_UNIT_LABEL = "License/yr";
 
 // The scale earns its place only when the deviation is close enough to the
 // band, or past it, that the number alone under-communicates the position
@@ -306,14 +312,14 @@ const PRICE_EXCEPTION: Exception = {
       {
         label: "Unit price",
         value: UNIT_PRICE_VALUE,
-        unit: UNIT_PRICE_UNIT,
+        unit: UNIT_PRICE_UNIT_LABEL,
         subLine: UNIT_PRICE_SUB_LINE,
         role: "deviating",
       },
       {
         label: "Base tier reference",
         value: BASE_TIER_REFERENCE_VALUE,
-        unit: BASE_TIER_REFERENCE_UNIT,
+        unit: BASE_TIER_REFERENCE_UNIT_LABEL,
         subLine: MARKET_REFERENCES_LINE,
         role: "governing",
       },

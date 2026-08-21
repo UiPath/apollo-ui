@@ -46,11 +46,6 @@ import {
 } from "@/components/ui/page-header";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
@@ -71,18 +66,26 @@ import {
   COMPARABLE_DEALS,
   DEVIATION_BAND_RELATION,
   DEVIATION_PCT,
+  DEVIATION_PCT_SIGNED,
   DEVIATION_ROUTING_CONSEQUENCE,
+  DEVIATION_VERDICT,
   type DraftMessage,
   type Exception,
+  formatAnchoredTime,
   getExceptionSummary,
   getPerson,
+  IDENTITY,
   MARKET_REFERENCES_LINE,
   openExceptions,
+  PAYMENT_TERMS_SOURCES,
+  type PersonId,
   ph,
   QUANTITY,
   RELEASE_RECORD,
   SUPPLIER_REPLY,
   type Suggestion,
+  TIMELINE,
+  TOTAL_CONTRACT_VALUE,
   UNIT_PRICE_VALUE,
 } from "../data";
 import {
@@ -98,6 +101,7 @@ import {
   applyExceptionOverrides,
   type Decision,
   type WorkbenchDetail as Detail,
+  type DetailField,
   FORK_BADGE_STATUS,
   FORK_LABEL,
   req10482VisibleActivity,
@@ -149,12 +153,6 @@ function handleFlagForReview() {
 // card, unresolved in behaviour (see PH-40). No-op until that's ruled on.
 function handleShareFeedback() {
   // Intentionally empty, see PH-40.
-}
-
-// The header's record level disposition (prompt 31): which one, if any, is
-// unresolved content (see PH-37). No-op until that's ruled on.
-function handleRecordDisposition() {
-  // Intentionally empty, see PH-37.
 }
 
 // The decisive figure, highlighted inline rather than folded into plain
@@ -693,21 +691,65 @@ function ExceptionSurface({
   );
 }
 
-/** A resolved exception's own detail: a person's name, or a document's
- * own version plus what happened to it, tagged rather than read out of a
- * string, per the model's own distinction (see the report). Document
- * resolution reads as an actual re-run, not just receipt of a corrected
- * file: TIMELINE carries a distinct "revalidated" event ("Re-validated,
- * checks re-run", actor "agent") separate from the document's own arrival
+// Sam Rivera, the only buyer this prototype seats at the workbench. No
+// shared constant exists for "the current user" elsewhere in this file
+// (every other site inlines the same "sam-rivera" literal); named here
+// once so the person-resolved row below can tell itself apart from
+// someone else resolving it.
+const CURRENT_USER_ID: PersonId = "sam-rivera";
+
+function resolutionTime(when: Date | string): string {
+  return typeof when === "string" ? when : formatAnchoredTime(when);
+}
+
+function msOf(when: Date | string): number {
+  return typeof when === "string" ? Date.parse(when) : when.getTime();
+}
+
+function formatUSD(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+// Approvals.tsx's formatElapsed / ActivityTrack.tsx's dateText are the
+// only other elapsed-time formatters in this codebase: spelled-out unit
+// words, singular/plural via a trailing "s", collapsed to the single
+// largest whole unit rather than a multi-unit breakdown. Matched here
+// rather than inventing a second convention.
+function formatDuration(fromMs: number, toMs: number): string {
+  const minutes = Math.floor((toMs - fromMs) / 60_000);
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"}`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"}`;
+}
+
+/** A resolved exception's own detail: second person with a timestamp when
+ * the current user is who resolved it, third person naming them
+ * otherwise, or a document's own version plus what happened to it and
+ * when, tagged rather than read out of a string, per the model's own
+ * distinction (see the report). Document resolution reads as an actual
+ * re-run, not just receipt of a corrected file: TIMELINE carries a
+ * distinct "revalidated" event ("Re-validated, checks re-run", actor
+ * "agent") separate from the document's own arrival
  * ("order-form-v2-received"), so "cleared on re-validation" is what the
- * runtime evidences, not an asserted action nothing backs. */
+ * runtime evidences, not an asserted action nothing backs. The two rows
+ * stay deliberately unlike each other: a person resolving it is
+ * personal, a document arriving is not. */
 function exceptionResolutionDetail(exception: Exception): string {
   const resolution = exception.resolution;
   if (!resolution) return "";
   if (resolution.resolvedBy === "person") {
-    return `resolved by ${getPerson(resolution.by).name}`;
+    const time = resolutionTime(resolution.when);
+    return resolution.by === CURRENT_USER_ID
+      ? `You resolved this at ${time}`
+      : `Resolved by ${getPerson(resolution.by).name} at ${time}`;
   }
-  return `corrected document ${resolution.by}, cleared on re-validation`;
+  return `Corrected document ${resolution.by}, cleared on re-validation at ${resolutionTime(resolution.when)}`;
 }
 
 /** Initials for an avatar fallback: the same first-letter-per-word
@@ -725,35 +767,77 @@ function initialsOf(name: string): string {
 
 /**
  * The auto-release completion state: renders once every exception on the
- * request is resolved, none open, none waiting. Everything here is
- * RELEASE_RECORD (../data/cockpit-10482.ts) or the exceptions' own
- * resolution field, nothing authored beyond the document-resolution
- * template above. Three beats, not the outcome restated four times over:
- * the banner states it happened, the resolved rows state what backed it,
- * and Next step states what's left, each said once. No approve, accept,
- * or confirm control appears here, this is a record of what already
- * happened automatically.
+ * request is resolved, none open, none waiting. Leads with the outcome
+ * (the contract, and how long it took), not the automation that produced
+ * it: the banner's own headline states what Sam secured, its sub-line
+ * carries the automation claim. Everything here is RELEASE_RECORD
+ * (../data/cockpit-10482.ts), PAYMENT_TERMS_SOURCES/deviation exports, or
+ * the exceptions' own resolution field, nothing authored beyond the
+ * sentence templates themselves. Four beats, not the outcome restated
+ * over and over: the banner states what happened, the two cards state
+ * what changed, the resolved rows state what backed it, and Next step
+ * states what's left, each said once. No approve, accept, or confirm
+ * control appears here, this is a record of what already happened
+ * automatically.
  */
 function AutoReleaseCompletion({ exceptions }: { exceptions: Exception[] }) {
+  const elapsed = formatDuration(
+    msOf(TIMELINE[0].when),
+    msOf(RELEASE_RECORD.when),
+  );
+  const originalTerms = PAYMENT_TERMS_SOURCES.find(
+    (s) => s.check === "deviates",
+  )?.terms;
+  const correctedTerms = PAYMENT_TERMS_SOURCES.find(
+    (s) => s.check === "governing",
+  )?.terms;
   return (
     <div className="flex-1 overflow-y-auto px-4 pb-8 pt-8 sm:px-6 lg:px-8">
       <div className="max-w-[560px] space-y-6">
-        {/* Block 1: outcome. */}
+        {/* Block 1: outcome, what Sam secured and how long it took. The
+          automation claim moved to the sub-line: it belongs on this
+          screen, not as its headline. */}
         <Alert status="success" visual="tinted" className="py-2.5">
           <CheckCircle2 />
-          <AlertTitle>Validation completed automatically</AlertTitle>
+          <AlertTitle>
+            {formatUSD(TOTAL_CONTRACT_VALUE)} contract released in {elapsed}
+          </AlertTitle>
           <AlertDescription>
-            Resolving the exceptions released it. No manual step was needed.
+            Both exceptions resolved, released without a manual step.
           </AlertDescription>
         </Alert>
 
-        {/* Block 2: evidence, one row per resolved exception. */}
+        {/* Block 2: what changed, one card per exception's own outcome. */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="space-y-1 p-4">
+              <p className="text-xs text-muted-foreground">Terms</p>
+              <p className="text-sm font-medium text-foreground">
+                {originalTerms} corrected to {correctedTerms}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Matches {IDENTITY.agreement}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="space-y-1 p-4">
+              <p className="text-xs text-muted-foreground">Price</p>
+              <p className="text-sm font-medium text-foreground">
+                {DEVIATION_PCT_SIGNED} {DEVIATION_VERDICT}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {DEVIATION_BAND_RELATION === "within"
+                  ? "Accepted, no escalation"
+                  : "Escalated"}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Block 3: evidence, one row per resolved exception. */}
         <div>
-          <p className="text-xs text-muted-foreground">
-            {exceptions.length} exception{exceptions.length === 1 ? "" : "s"}{" "}
-            resolved
-          </p>
-          <div className="mt-2 divide-y divide-border">
+          <div className="divide-y divide-border">
             {exceptions.map((exception) => {
               const byPerson = exception.resolution?.resolvedBy === "person";
               return (
@@ -786,7 +870,7 @@ function AutoReleaseCompletion({ exceptions }: { exceptions: Exception[] }) {
           </div>
         </div>
 
-        {/* Block 3: next step, the one actionable item. */}
+        {/* Block 4: next step, the one actionable item. */}
         <div className="border-t border-border pt-5">
           <p className="text-xs text-muted-foreground">Next step</p>
           <div className="mt-2 flex items-center gap-3">
@@ -1155,22 +1239,47 @@ function ActivityTab({
   );
 }
 
+// Label above its value, both left aligned, so a long value wraps beneath
+// the label instead of going ragged against a right-aligned edge (prompt
+// 54). `min-w-0` lets the cell shrink inside the grid rather than forcing
+// its column wide.
+function DetailFieldPair({ field }: { field: DetailField }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <dt className="text-xs text-muted-foreground">{field.label}</dt>
+      <dd className="text-sm font-medium text-foreground">{field.value}</dd>
+    </div>
+  );
+}
+
+// Grouped when `detailSections` is set (REQ-10482 today, prompt 53), else
+// the flat list every other request still uses. Both paths render pairs in
+// the same two column grid (prompt 54); only the section heading is
+// unique to the grouped path.
 function DetailsTab({ detail }: { detail: Detail }) {
+  if (detail.detailSections) {
+    return (
+      <div className="flex-1 overflow-y-auto px-5 py-5">
+        <div className="space-y-8">
+          {detail.detailSections.map((section) => (
+            <dl
+              key={section.heading}
+              className="grid grid-cols-2 gap-x-4 gap-y-4"
+            >
+              {section.fields.map((f) => (
+                <DetailFieldPair key={f.label} field={f} />
+              ))}
+            </dl>
+          ))}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex-1 overflow-y-auto px-5 py-5">
-      <dl className="space-y-3">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-4">
         {detail.details.map((f) => (
-          <div
-            key={f.label}
-            className="flex items-baseline justify-between gap-4"
-          >
-            <dt className="shrink-0 text-xs text-muted-foreground">
-              {f.label}
-            </dt>
-            <dd className="text-right text-sm font-medium text-foreground">
-              {f.value}
-            </dd>
-          </div>
+          <DetailFieldPair key={f.label} field={f} />
         ))}
       </dl>
     </div>
@@ -1452,17 +1561,13 @@ export function WorkbenchDetail({
     WORKBENCH_EXCEPTIONS[id] ?? [],
     exceptionOverrides[id] ?? {},
   );
-  // The header's Need by field, split rather than restated. `detail.needBy`
-  // (not `detail.timing`) is the source: `timing` traces to whatever the
-  // flow set for the old flat header line, need-by for some requests,
-  // activation or engagement timing for others (see workbench/data.ts's own
-  // comment on the field), so labelling it "Need by" unconditionally would
-  // misname it for those. `needBy` is consistently a when-needed value
-  // across every request; REQ-10482's is the one that also carries a
-  // driver, joined by " · " (see cockpit-10482.ts / req-10482.ts).
-  // `needByDriver` is undefined wherever no driver segment exists, guarded
-  // at the render site.
-  const [needByDate, needByDriver] = detail.needBy.split(" · ");
+  // The header's Need by field. `detail.needBy` (not `detail.timing`) is
+  // the source: `timing` traces to whatever the flow set for the old flat
+  // header line, need-by for some requests, activation or engagement
+  // timing for others (see workbench/data.ts's own comment on the field),
+  // so labelling it "Need by" unconditionally would misname it for those.
+  // A plain date, one line, no driver sub-line (see workbench/data.ts's
+  // own REQ-10482 entry for where that fuller context still lives).
   // The header's Assigned to text: the same source WorkbenchList.tsx's own
   // Assignee column reads (`row.assignee`), not a hardcoded "You". Every
   // request reachable from this queue is assigned to "You" today (see
@@ -1576,7 +1681,11 @@ export function WorkbenchDetail({
               </PageHeaderTitleGroup>
             </PageHeaderNav>
 
-            <PageHeaderContent className="@3xl:justify-between @3xl:gap-0.5">
+            {/* ml-10: the grid's own column gap (gap-1, 4px) isn't enough
+                breathing room between the title group and Requested by on
+                its own; margin guarantees the extra 40px regardless of how
+                the surrounding columns size themselves. */}
+            <PageHeaderContent className="@3xl:ml-10 @3xl:justify-between @3xl:gap-0.5">
               {isUrgent && (
                 <Badge
                   status="error"
@@ -1606,13 +1715,8 @@ export function WorkbenchDetail({
               <PageHeaderField className="shrink-0">
                 <PageHeaderFieldLabel>Need by</PageHeaderFieldLabel>
                 <PageHeaderFieldValue className="overflow-visible">
-                  {needByDate}
+                  {detail.needBy}
                 </PageHeaderFieldValue>
-                {needByDriver != null && (
-                  <p className="truncate text-[11px] text-muted-foreground">
-                    {needByDriver}
-                  </p>
-                )}
               </PageHeaderField>
               <PageHeaderField className="shrink-0">
                 {/* One form of the fact, not two (prompt 31): an avatar next
@@ -1655,39 +1759,13 @@ export function WorkbenchDetail({
               </PageHeaderField>
             </PageHeaderContent>
 
-            {/* Record level disposition (prompt 31): the header carries the
-              action on the whole request, the pane carries the decision on
-              whichever exception is active. Which disposition Sam has here
-              (hold, reassign, or something else) is unresolved content, so
-              this is a registered placeholder wired to a no-op, not an
-              invented action (see PH-37).
-              An icon, not a truncated text button (prompt 39): the header
-              has no room for the full placeholder text, and truncating it
-              to an ellipsis is exactly the treatment this prompt's own
-              placeholder rule rules out. A generic overflow icon (the same
-              one this app already uses elsewhere for an undetermined set
-              of actions, e.g. DecisionWindow.tsx's own header) is a
-              reasonable stand in for an action with no settled shape yet,
-              and the tooltip on it carries the full placeholder text
-              without truncation, reusing the same affordance pattern
-              section 2 established for the metrics. */}
-            <PageHeaderActions>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    size="icon-sm"
-                    aria-label="Record level disposition"
-                    onClick={handleRecordDisposition}
-                  >
-                    <MoreHorizontal className="size-4" aria-hidden />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {ph("PH-37", "record disposition")}
-                </TooltipContent>
-              </Tooltip>
-            </PageHeaderActions>
+            {/* Record level disposition (prompt 31) rendered nothing here
+              (prompt 55): which disposition Sam has (hold, reassign, or
+              something else) is still unresolved content, and giving that
+              unresolved action a placeholder icon would make an
+              unsettled structural question look like a settled control
+              (see PH-37, left bracketed, not given a provisional value). */}
+            <PageHeaderActions />
           </PageHeader>
 
           {/* Center / right split */}

@@ -57,9 +57,10 @@ function MetricLabel({ label, info }: { label: string; info: string }) {
 }
 
 /** One metric column: label (with an optional info affordance) above a
- * large value, its unit inline after it in a smaller, secondary colour so
- * the figure stays the prominent thing and the unit stays legible rather
- * than competing with it. */
+ * large value, its unit on its own line beneath (the same position and
+ * style `suffix` uses for the deviation column's own band line) so the
+ * figure stays the prominent thing and the unit never competes with it or
+ * forces the value to share a line. */
 function MetricColumn({
   label,
   info,
@@ -86,21 +87,19 @@ function MetricColumn({
       ) : (
         <MetricLabel label={label} info={info} />
       )}
-      <span className="whitespace-nowrap">
-        <span
-          className={cn(
-            "text-[28px] font-semibold leading-none tracking-tight",
-            valueClassName,
-          )}
-        >
-          {value}
-        </span>
-        {unit != null && (
-          <span className="ml-0.5 text-xs font-normal text-muted-foreground">
-            {unit}
-          </span>
+      <span
+        className={cn(
+          "whitespace-nowrap text-[28px] font-semibold leading-none tracking-tight",
+          valueClassName,
         )}
+      >
+        {value}
       </span>
+      {unit != null && (
+        <span className="text-xs font-normal text-muted-foreground">
+          {unit}
+        </span>
+      )}
       {suffix != null && (
         <span className="text-xs font-normal text-muted-foreground">
           {suffix}

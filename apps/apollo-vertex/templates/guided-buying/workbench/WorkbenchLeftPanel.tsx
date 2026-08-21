@@ -113,9 +113,9 @@ function QueueItem({
       <Card
         variant="glass"
         className={cn(
-          "mx-4 gap-0 px-3.5 py-3 transition-colors",
+          "mx-4 gap-0 rounded-md px-3.5 py-3 transition-colors",
           isActive
-            ? "border-primary"
+            ? "ring-1 ring-primary"
             : "group-hover:bg-white/70 dark:group-hover:bg-white/[0.08]",
         )}
       >
