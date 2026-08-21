@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { nodeShapeSchema } from './node-definition/node-manifest';
+import { nodeShapeSchema } from './node-definition/shape';
 
 /**
  * Toolbar action definition

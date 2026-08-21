@@ -8,11 +8,7 @@ import type { FormSchema } from '@uipath/apollo-wind';
 import { z } from 'zod';
 import { toolbarConfigurationSchema } from '../toolbar';
 import { handleGroupManifestSchema } from './handle';
-
-/**
- * Node shape for display
- */
-export const nodeShapeSchema = z.enum(['circle', 'square', 'rectangle', 'container']);
+import { nodeShapeSchema } from './shape';
 
 /**
  * Debug configuration for a node
@@ -153,7 +149,6 @@ export const nodeManifestSchema = z.object({
 });
 
 // Export inferred types
-export type NodeShape = z.infer<typeof nodeShapeSchema>;
 export type NodeDisplayManifest = z.infer<typeof nodeDisplayManifestSchema>;
 export type NodeManifest = z.infer<typeof nodeManifestSchema>;
 export type RuntimeConstraints = z.infer<typeof nodeRuntimeConstraintsManifestSchema>;

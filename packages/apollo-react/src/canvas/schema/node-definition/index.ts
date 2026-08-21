@@ -24,12 +24,12 @@ export {
 export type {
   NodeDisplayManifest,
   NodeManifest,
-  NodeShape,
   RuntimeConstraints,
 } from './node-manifest';
 export {
   nodeDisplayManifestSchema,
   nodeManifestSchema,
   nodeRuntimeConstraintsManifestSchema,
-  nodeShapeSchema,
 } from './node-manifest';
+export type { NodeShape } from './shape';
+export { nodeShapeSchema } from './shape';

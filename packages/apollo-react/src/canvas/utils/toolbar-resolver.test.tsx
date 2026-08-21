@@ -87,6 +87,23 @@ describe('resolveToolbar', () => {
   });
 
   describe('duplicate action ids', () => {
+    it('moves a default into the overflow menu when an extension declares it there', () => {
+      const extended = {
+        ...plainManifest,
+        toolbarExtensions: {
+          design: {
+            actions: [],
+            overflowActions: [{ id: 'delete', icon: 'trash', label: 'Remove forever' }],
+          },
+        },
+      } as NodeManifest;
+
+      const toolbar = resolveToolbar(extended, context);
+
+      expect((toolbar?.actions ?? []).map((action) => action.id)).not.toContain('delete');
+      expect((toolbar?.overflowActions ?? []).map((action) => action.id)).toEqual(['delete']);
+    });
+
     it('lets a manifest extension override a default of the same id', () => {
       const extended = {
         ...plainManifest,
