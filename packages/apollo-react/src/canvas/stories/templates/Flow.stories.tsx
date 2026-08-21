@@ -2959,19 +2959,10 @@ function TakeoverComposition() {
         open={open}
         onOpenChange={setOpen}
         title="Test workflow"
-        sidebar={
-          <div className="space-y-3 p-4 text-xs">
-            <p className="font-semibold">Workflow outline</p>
-            <p>1. Read Excel</p>
-            <p>2. Analyze data</p>
-            <p>3. Send summary</p>
-          </div>
-        }
+        sidebar={<div className="h-full" />}
         headerActions={<Button size="sm">Run test</Button>}
       >
-        <div className="h-full min-h-[480px]">
-          <CanvasViewport />
-        </div>
+        <div className="h-full min-h-[480px] bg-surface" />
       </CanvasTakeoverModal>
     </div>
   );
