@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.29.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.28.0...@uipath/apollo-react@6.29.0) (2026-08-21)
+
+### Features
+
+* **apollo-react:** offer inline collapse on container nodes ([928ab13](https://github.com/UiPath/apollo-ui/commit/928ab13402e9adc0f15e00299f29c6cab9ccc287))
+
+### Bug Fixes
+
+* **apollo-react:** break the manifest/toolbar schema cycle ([5440cbd](https://github.com/UiPath/apollo-ui/commit/5440cbd11f17b6a360c727f712209ad06a0f3d75))
+
 ## [@uipath/apollo-react-v6.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.27.0...@uipath/apollo-react@6.28.0) (2026-08-21)
 
 ### Features
