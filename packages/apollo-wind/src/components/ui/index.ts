@@ -9,6 +9,7 @@ export * from './button';
 export * from './button-group';
 export * from './calendar';
 export * from './card';
+export * from './chart';
 export * from './checkbox';
 export * from './collapsible';
 export * from './combobox';
@@ -18,6 +19,7 @@ export * from './data-table';
 export * from './date-picker';
 export * from './datetime-picker';
 export * from './dialog';
+export * from './drawer';
 export * from './dropdown-menu';
 export * from './editable-cell';
 export * from './empty-state';
@@ -27,9 +29,11 @@ export * from './input';
 export * from './input-group';
 export * from './label';
 export * from './layout';
+export * from './lockable-value-field';
 export * from './multi-select';
 export * from './pagination';
 export * from './popover';
+export * from './portal-container';
 export * from './progress';
 export * from './prompt-editor';
 export * from './radio-group';
@@ -52,6 +56,7 @@ export * from './textarea';
 export * from './toggle';
 export * from './toggle-group';
 export * from './tooltip';
+export * from './variable-picker';
 export type {
   TreeViewIconMap,
   TreeViewItem,
