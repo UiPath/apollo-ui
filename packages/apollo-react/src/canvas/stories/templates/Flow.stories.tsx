@@ -442,8 +442,12 @@ function PanelTrigger({
   );
 }
 
-function StandaloneRightPropertiesComposition() {
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+function StandaloneRightPropertiesComposition({
+  initiallyOpen = true,
+}: {
+  initiallyOpen?: boolean;
+} = {}) {
+  const [rightPanelOpen, setRightPanelOpen] = useState(initiallyOpen);
   const [panelZone, setPanelZone] = useState<StandaloneDockZone>('right');
   const [activeDropZone, setActiveDropZone] = useState<StandaloneDockZone | null>(null);
   const [dragPreviewPosition, setDragPreviewPosition] = useState<{
@@ -1617,11 +1621,7 @@ function SendEmailTakeoverPanels() {
 
 export const CanvasOnly: Story = {
   name: 'Canvas Only',
-  render: () => (
-    <div className="h-screen bg-surface">
-      <CanvasViewport />
-    </div>
-  ),
+  render: () => <StandaloneRightPropertiesComposition initiallyOpen={false} />,
 };
 
 export const WithRightPropertiesPanel: Story = {
@@ -1649,7 +1649,11 @@ function DockviewCanvasPanel(_props: IDockviewPanelProps) {
     <CanvasViewport
       trigger={
         trigger ? (
-          <PanelTrigger panels={trigger.panels} onPanelToggle={trigger.onPanelToggle} />
+          <PanelTrigger
+            panels={trigger.panels}
+            onPanelToggle={trigger.onPanelToggle}
+            onPropertiesClick={() => trigger.onPanelToggle('properties', true)}
+          />
         ) : undefined
       }
     />
@@ -1929,6 +1933,7 @@ function ResizableBottomPanel() {
 
 function LeftSidebarComposition() {
   const [expanded, setExpanded] = useState(false);
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<CanvasLeftSidebarItemId>('variables');
   const labels: Record<CanvasLeftSidebarItemId, string> = {
     'coding-agent': 'Coding agent',
@@ -1950,8 +1955,34 @@ function LeftSidebarComposition() {
         onItemSelect={setActiveItem}
       />
       <div className="min-w-0 flex-1 overflow-hidden">
-        <CanvasViewport />
+        <CanvasViewport
+          rightControlsOffset={rightPanelOpen ? 412 : 16}
+          trigger={
+            <PanelTrigger
+              layout={rightPanelOpen ? 'right' : 'closed'}
+              panels={[
+                { id: 'input', label: 'Input', enabled: false },
+                { id: 'properties', label: 'Properties', enabled: rightPanelOpen },
+                { id: 'output', label: 'Output', enabled: false },
+              ]}
+              onPanelToggle={(id, enabled) => {
+                if (id === 'properties') setRightPanelOpen(enabled);
+              }}
+              onLayoutChange={(layout) => {
+                if (layout === 'right') setRightPanelOpen(true);
+              }}
+              onPropertiesClick={() => setRightPanelOpen(true)}
+            />
+          }
+        />
       </div>
+      {rightPanelOpen && (
+        <div className="absolute inset-y-0 right-0 z-20 p-4 pl-0">
+          <div className="h-full w-[380px] overflow-hidden rounded-2xl border border-border-subtle shadow-lg">
+            <PropertiesPanel className="h-full" onClose={() => setRightPanelOpen(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2650,6 +2681,7 @@ export function NodeInventoryComposition() {
             onLayoutChange={(layout) => {
               if (layout === 'right') setRightPanelOpen(true);
             }}
+            onPropertiesClick={() => setRightPanelOpen(true)}
           />
         </div>
       </div>
@@ -2771,6 +2803,7 @@ export function FullWorkbenchComposition({
               onPanelToggle={(id, enabled) => {
                 if (id === 'properties') setRightPanelOpen(enabled);
               }}
+              onPropertiesClick={() => setRightPanelOpen(true)}
             />
           }
         >
@@ -2815,7 +2848,7 @@ export function FullWorkbenchComposition({
           {!isBottomPanelCollapsed && (
             <ResizableHandle
               withHandle
-              className="pointer-events-auto z-20 mx-8 translate-y-3 bg-transparent aria-[orientation=horizontal]:w-[calc(100%-4rem)]"
+              className="pointer-events-auto z-20 mx-8 translate-y-3 cursor-row-resize bg-transparent aria-[orientation=horizontal]:w-[calc(100%-4rem)] aria-[orientation=horizontal]:after:h-3 [&>div]:opacity-0 hover:[&>div]:opacity-100 focus-visible:[&>div]:opacity-100 data-[separator=active]:[&>div]:opacity-100 data-[separator=hover]:[&>div]:opacity-100"
             />
           )}
           <ResizablePanel
@@ -2823,7 +2856,7 @@ export function FullWorkbenchComposition({
             collapsible
             collapsedSize={80}
             defaultSize={80}
-            minSize={368}
+            minSize={240}
             onResize={({ inPixels }) => setBottomPanelHeight(inPixels)}
             className="pointer-events-auto min-h-0 px-4 pb-4 pt-3"
           >
@@ -2896,6 +2929,7 @@ function TakeoverComposition() {
               onPanelToggle={(id, enabled) => {
                 if (id === 'properties') setRightPanelOpen(enabled);
               }}
+              onPropertiesClick={() => setRightPanelOpen(true)}
             />
           }
         >
