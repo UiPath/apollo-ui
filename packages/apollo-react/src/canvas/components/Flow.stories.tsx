@@ -35,7 +35,7 @@ interface FlowStoryArgs {
 }
 
 const meta: Meta<FlowStoryArgs> = {
-  title: 'Templates/Canvas Blank',
+  title: 'Templates/Canvas Performance',
   parameters: {
     layout: 'fullscreen',
   },
