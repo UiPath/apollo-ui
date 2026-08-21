@@ -462,11 +462,11 @@ function StandaloneRightPropertiesComposition() {
     if (!bounds) return panelZone;
     const x = (event.clientX - bounds.left) / bounds.width;
     const y = (event.clientY - bounds.top) / bounds.height;
-    if (x < 0.25) return 'left';
-    if (x > 0.75) return 'right';
-    if (y < 0.25) return 'top';
-    if (y > 0.75) return 'bottom';
-    return 'center';
+    const horizontalZone = x < 0.5 ? 'left' : 'right';
+    const verticalZone = y < 0.5 ? 'top' : 'bottom';
+    const horizontalEdgeDistance = Math.min(x, 1 - x);
+    const verticalEdgeDistance = Math.min(y, 1 - y);
+    return horizontalEdgeDistance < verticalEdgeDistance ? horizontalZone : verticalZone;
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -537,15 +537,12 @@ function StandaloneRightPropertiesComposition() {
     right: 'absolute inset-y-0 right-0 p-4 pl-0',
     top: 'absolute inset-x-0 top-0 p-4 pb-0',
     bottom: 'absolute inset-x-0 bottom-0 p-4 pt-0',
-    center: 'absolute inset-0 grid place-items-center p-4',
   }[panelZone];
   const panelSizeClass = dragPreviewPosition
     ? 'h-10 w-[min(380px,calc(100vw-16px))]'
     : panelZone === 'top' || panelZone === 'bottom'
       ? 'h-[360px] w-full'
-      : panelZone === 'center'
-        ? 'h-[min(720px,calc(100%-32px))] w-[380px]'
-        : 'h-full w-[380px]';
+      : 'h-full w-[380px]';
 
   return (
     <div className="relative h-screen overflow-hidden bg-surface">
@@ -570,9 +567,7 @@ function StandaloneRightPropertiesComposition() {
               if (id === 'properties') setRightPanelOpen(enabled);
             }}
             onLayoutChange={(layout) => {
-              setPanelZone(
-                layout === 'bottom' ? 'bottom' : layout === 'split' ? 'center' : 'right'
-              );
+              setPanelZone(layout === 'bottom' ? 'bottom' : layout === 'split' ? 'left' : 'right');
               setRightPanelOpen(true);
             }}
             onPropertiesClick={() => {
@@ -611,7 +606,7 @@ function StandaloneRightPropertiesComposition() {
   );
 }
 
-type StandaloneDockZone = 'left' | 'right' | 'top' | 'bottom' | 'center';
+type StandaloneDockZone = 'left' | 'right' | 'top' | 'bottom';
 
 function StandaloneDockHint({ zone }: { zone: StandaloneDockZone }) {
   const zoneClass = {
@@ -619,7 +614,6 @@ function StandaloneDockHint({ zone }: { zone: StandaloneDockZone }) {
     right: 'inset-y-4 left-[52%] right-4',
     top: 'inset-x-4 top-4 bottom-[52%]',
     bottom: 'inset-x-4 top-[52%] bottom-4',
-    center: 'inset-[24%]',
   }[zone];
 
   return (
