@@ -33,13 +33,20 @@ export default defineConfig({
         'storybook-static/',
         '*.config.ts',
         '*.config.js',
+        // Storybook-only demo apps, excluded from the published build (see rslib.config.ts)
+        'src/templates/**',
       ],
       include: ['src/**/*.{ts,tsx}'],
       all: true,
-      lines: 80,
-      functions: 80,
-      branches: 80,
-      statements: 80,
+      // Ratcheting floor: raise toward 80 as coverage grows, never lower it.
+      // Vitest only enforces thresholds nested under `coverage.thresholds`;
+      // top-level lines/functions/... are silently ignored.
+      thresholds: {
+        lines: 55,
+        functions: 55,
+        branches: 45,
+        statements: 55,
+      },
     },
   },
   resolve: {
