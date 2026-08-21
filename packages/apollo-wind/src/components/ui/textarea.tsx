@@ -168,6 +168,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     return (
       <textarea
+        data-slot="textarea"
         className={cn(
           // Base styles (all themes)
           'flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',

@@ -26,7 +26,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
   ref
 ) {
   return (
-    <Popover>
+    <Popover data-slot="date-picker">
       <PopoverTrigger asChild>
         <Button
           ref={ref}
@@ -80,51 +80,52 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
     ref
   ) {
     return (
-      <Popover>
+      <Popover data-slot="date-range-picker">
         <PopoverTrigger asChild>
           <Button
             ref={ref}
             variant="outline"
-          aria-label={
-            value?.from
-              ? value.to
-                ? `Selected range: ${format(value.from, 'LLL dd, y')} to ${format(value.to, 'LLL dd, y')}`
-                : `Selected date: ${format(value.from, 'LLL dd, y')}`
-              : placeholder
-          }
-          className={cn(
-            'w-[300px] justify-start text-left font-normal',
-            !value && 'text-muted-foreground',
-            className
-          )}
-          disabled={disabled}
-        >
-          <CalendarIcon />
-          {value?.from ? (
-            value.to ? (
-              <>
-                {format(value.from, 'LLL dd, y')} - {format(value.to, 'LLL dd, y')}
-              </>
+            aria-label={
+              value?.from
+                ? value.to
+                  ? `Selected range: ${format(value.from, 'LLL dd, y')} to ${format(value.to, 'LLL dd, y')}`
+                  : `Selected date: ${format(value.from, 'LLL dd, y')}`
+                : placeholder
+            }
+            className={cn(
+              'w-[300px] justify-start text-left font-normal',
+              !value && 'text-muted-foreground',
+              className
+            )}
+            disabled={disabled}
+          >
+            <CalendarIcon />
+            {value?.from ? (
+              value.to ? (
+                <>
+                  {format(value.from, 'LLL dd, y')} - {format(value.to, 'LLL dd, y')}
+                </>
+              ) : (
+                format(value.from, 'LLL dd, y')
+              )
             ) : (
-              format(value.from, 'LLL dd, y')
-            )
-          ) : (
-            <span>{placeholder}</span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          initialFocus
-          mode="range"
-          defaultMonth={value?.from}
-          selected={value}
-          onSelect={onValueChange}
-          numberOfMonths={2}
-          required={false}
-          {...calendarProps}
-        />
-      </PopoverContent>
-    </Popover>
-  );
-});
+              <span>{placeholder}</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            initialFocus
+            mode="range"
+            defaultMonth={value?.from}
+            selected={value}
+            onSelect={onValueChange}
+            numberOfMonths={2}
+            required={false}
+            {...calendarProps}
+          />
+        </PopoverContent>
+      </Popover>
+    );
+  }
+);

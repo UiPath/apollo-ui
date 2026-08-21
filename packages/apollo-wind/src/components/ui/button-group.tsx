@@ -13,6 +13,7 @@ const ButtonGroup = React.forwardRef<HTMLDivElement, ButtonGroupProps>(
       // biome-ignore lint/a11y/useSemanticElements: Button group needs role="group" to convey relationship between buttons
       <div
         ref={ref}
+        data-slot="button-group"
         role="group"
         aria-label="Button group"
         className={cn(
@@ -38,6 +39,7 @@ const ButtonGroupSeparator = React.forwardRef<HTMLHRElement, ButtonGroupSeparato
     return (
       <hr
         ref={ref}
+        data-slot="button-group-separator"
         aria-orientation={orientation}
         aria-label="Separator"
         className={cn(
@@ -62,6 +64,7 @@ const ButtonGroupText = React.forwardRef<HTMLSpanElement, ButtonGroupTextProps>(
     return (
       <Comp
         ref={ref}
+        data-slot="button-group-text"
         className={cn(
           'inline-flex items-center justify-center px-3 text-sm font-medium text-muted-foreground',
           className

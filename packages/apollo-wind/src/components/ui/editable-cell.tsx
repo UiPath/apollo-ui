@@ -80,7 +80,7 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
   // Checkbox doesn't need edit mode - just toggle
   if (type === 'checkbox') {
     return (
-      <div className="flex items-center justify-center">
+      <div data-slot="editable-cell" className="flex items-center justify-center">
         <Checkbox
           checked={Boolean(value)}
           onCheckedChange={(checked) => {
@@ -99,6 +99,7 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
   ) : (
     <button
       type="button"
+      data-slot="editable-cell"
       className={cn(
         'min-h-[32px] px-2 py-1.5 -mx-2 rounded cursor-pointer w-full text-left',
         'hover:bg-muted/50 transition-colors',

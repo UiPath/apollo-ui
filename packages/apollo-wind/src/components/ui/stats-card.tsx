@@ -40,7 +40,12 @@ const StatsCard = React.forwardRef<HTMLDivElement, StatsCardProps>(
     const trendColorClass = trendDirection === 'up' ? 'text-success' : 'text-error';
 
     return (
-      <Card ref={ref} className={cn(statsCardVariants({ variant }), className)} {...props}>
+      <Card
+        ref={ref}
+        data-slot="stats-card"
+        className={cn(statsCardVariants({ variant }), className)}
+        {...props}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">{title}</CardTitle>
           {icon && <div className="text-muted-foreground">{icon}</div>}

@@ -19,6 +19,7 @@ const ToggleGroup = React.forwardRef<
 >(({ className, variant, size, spacing = 0, children, ...props }, ref) => (
   <ToggleGroupPrimitive.Root
     ref={ref}
+    data-slot="toggle-group"
     data-variant={variant ?? 'default'}
     data-size={size ?? 'default'}
     data-spacing={spacing}
@@ -47,6 +48,7 @@ const ToggleGroupItem = React.forwardRef<
   return (
     <ToggleGroupPrimitive.Item
       ref={ref}
+      data-slot="toggle-group-item"
       data-variant={context.variant ?? variant ?? 'default'}
       data-size={context.size ?? size ?? 'default'}
       data-spacing={context.spacing ?? 0}

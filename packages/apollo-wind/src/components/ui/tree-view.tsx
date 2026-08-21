@@ -1096,7 +1096,11 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeVi
   }, [selectedIds, onSelectionChange, getSelectedItems]);
 
   return (
-    <div ref={ref} className={cn('flex gap-4 min-w-0', containerClassName ? 'w-full' : '')}>
+    <div
+      ref={ref}
+      data-slot="tree-view"
+      className={cn('flex gap-4 min-w-0', containerClassName ? 'w-full' : '')}
+    >
       <div
         ref={treeRef}
         className={cn(

@@ -80,10 +80,9 @@ export const EditorToolbar = ({
       />
       {/* Left: Edit/Preview mode switcher */}
       <div className="flex items-center gap-1 shrink-0">
-        <div
-          role="group"
+        <fieldset
           aria-label="Editor mode"
-          className="flex items-center rounded-md bg-muted p-0.5"
+          className="m-0 flex items-center rounded-md border-0 bg-muted p-0.5"
         >
           <button
             type="button"
@@ -109,7 +108,7 @@ export const EditorToolbar = ({
           >
             Preview
           </button>
-        </div>
+        </fieldset>
       </div>
 
       {/* Right: formatting cluster (Bold/Italic/Strike) → list cluster (Numbered/Bullet) → Expand. */}
