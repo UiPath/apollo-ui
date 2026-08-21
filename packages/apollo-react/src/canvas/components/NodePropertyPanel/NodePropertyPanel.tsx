@@ -38,6 +38,7 @@ const SURFACE_REMAP = 'future:[--surface-raised:var(--surface-overlay)]';
  */
 export function NodePropertyPanel({
   panelTitle,
+  dragHandleProps,
   onClose,
   nodeIcon,
   nodeLabel,
@@ -74,9 +75,16 @@ export function NodePropertyPanel({
     >
       {/* ── Title bar (optional; host panel system may own it) ── */}
       {panelTitle && (
-        <div className="flex h-10 shrink-0 items-center justify-between px-2">
+        <div
+          data-slot="node-property-panel-titlebar"
+          className="flex h-10 shrink-0 items-center justify-between px-2"
+        >
           <div className="flex items-center gap-1">
-            <div className="grid size-8 place-items-center text-foreground-subtle">
+            <div
+              {...dragHandleProps}
+              data-slot="node-property-panel-drag-handle"
+              className="grid size-8 cursor-grab touch-none place-items-center text-foreground-subtle active:cursor-grabbing"
+            >
               <GripVertical size={14} />
             </div>
             <span className="text-sm font-semibold text-foreground">{panelTitle}</span>
