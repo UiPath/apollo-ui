@@ -2736,6 +2736,7 @@ export function FullWorkbenchComposition({
   rightPanelVariant?: 'properties' | 'forms' | 'node' | 'rules' | 'variables' | 'dap';
 }) {
   const panelRef = useRef<PanelImperativeHandle | null>(null);
+  const expandedBottomPanelHeight = useRef(368);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [activeSidebarItem, setActiveSidebarItem] = useState<CanvasLeftSidebarItemId>('variables');
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
@@ -2779,8 +2780,13 @@ export function FullWorkbenchComposition({
   const setBottomPanelCollapsed = (collapsed: boolean) => {
     setIsBottomPanelCollapsed(collapsed);
     if (collapsed) panelRef.current?.collapse();
-    else panelRef.current?.expand();
+    else {
+      panelRef.current?.expand();
+      panelRef.current?.resize(expandedBottomPanelHeight.current);
+    }
   };
+
+  const canvasBottomOffset = bottomPanelHeight + 4;
 
   return (
     <div className="relative flex h-screen bg-surface">
@@ -2799,7 +2805,7 @@ export function FullWorkbenchComposition({
               ? 'default'
               : rightPanelVariant
           }
-          bottomControlsOffset={bottomPanelHeight + 20}
+          bottomControlsOffset={canvasBottomOffset}
           rightControlsOffset={rightPanelOpen ? 412 : 16}
           trigger={
             <PanelTrigger
@@ -2865,7 +2871,10 @@ export function FullWorkbenchComposition({
             collapsedSize={80}
             defaultSize={80}
             minSize={240}
-            onResize={({ inPixels }) => setBottomPanelHeight(inPixels)}
+            onResize={({ inPixels }) => {
+              setBottomPanelHeight(inPixels);
+              if (inPixels > 80) expandedBottomPanelHeight.current = inPixels;
+            }}
             className="pointer-events-auto min-h-0 px-4 pb-4 pt-3"
           >
             <CanvasBottomPanel
