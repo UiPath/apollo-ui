@@ -88,7 +88,7 @@ export function CanvasTakeoverModal({
   return (
     <div
       className={cn(
-        'absolute inset-0 z-50 flex items-center justify-center bg-ui-backdrop',
+        'absolute inset-0 z-50 flex items-center justify-center bg-black/60',
         expanded ? 'p-0' : 'p-3'
       )}
       onMouseDown={handleBackdropClick}
