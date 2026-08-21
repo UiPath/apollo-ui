@@ -43,6 +43,23 @@ describe('getIcon', () => {
     expect(container.querySelector('#case-management-project')).toBeInTheDocument();
   });
 
+  it('returns the FileSparklesCornerIcon for the registered file-sparkles-corner id', () => {
+    const Icon = getIcon('file-sparkles-corner');
+    const { container } = render(<Icon w={24} h={24} />);
+    // There is no Lucide `FileSparklesCorner`, so a registry miss would degrade to Box.
+    const svg = container.querySelector('svg.file-sparkles-corner-icon');
+    expect(svg).toBeInTheDocument();
+    // Truncated outline plus the fold, the scaled star, and the cross's two arms.
+    expect(svg?.querySelectorAll('path')).toHaveLength(5);
+    expect(svg?.querySelector('circle')).toBeInTheDocument();
+  });
+
+  it('applies the color prop to the file-sparkles-corner stroke', () => {
+    const Icon = getIcon('file-sparkles-corner');
+    const { container } = render(<Icon w={24} h={24} color="rgb(1, 2, 3)" />);
+    expect(container.querySelector('svg')).toHaveAttribute('stroke', 'rgb(1, 2, 3)');
+  });
+
   it('returns the LayersArrowUpRight icon for the registered layers-arrow-up-right id', () => {
     const Icon = getIcon('layers-arrow-up-right');
     const { container } = render(<Icon w={24} h={24} />);

@@ -57,16 +57,6 @@ function ExecutionStatusIndicatorInternal({ status, count }: { status?: string; 
   );
 }
 
-function SquareDashedIndicator() {
-  return (
-    <CanvasTooltip content="Node output is mocked" placement="bottom">
-      <span style={{ display: 'inline-flex' }}>
-        <CanvasIcon icon="square-dashed" size={16} color="var(--color-foreground-emp)" />
-      </span>
-    </CanvasTooltip>
-  );
-}
-
 export const ExecutionStatusIndicator = memo(ExecutionStatusIndicatorInternal);
 
 export function ValidationErrorIndicator({ message }: { message?: string }) {
@@ -104,7 +94,6 @@ const getDefaultAdornments = (
   const hasBreakpoint = typeof executionState === 'object' && executionState?.debug;
   const isExecutionStartPoint =
     typeof executionState === 'object' && executionState?.isExecutionStartPoint;
-  const isOutputPinned = typeof executionState === 'object' && executionState?.isOutputPinned;
 
   const hasValidationError =
     context.validationState?.validationStatus === ValidationErrorSeverity.ERROR ||
@@ -132,7 +121,7 @@ const getDefaultAdornments = (
     topLeft: hasBreakpoint ? <BreakpointIndicator /> : undefined,
     topRight: getTopRight(),
     bottomLeft: isExecutionStartPoint ? <ExecutionStartPointIndicator /> : undefined,
-    bottomRight: isOutputPinned ? <SquareDashedIndicator /> : undefined,
+    bottomRight: undefined,
   };
 };
 

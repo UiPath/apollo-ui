@@ -45,6 +45,9 @@ const iconRegistry: Record<string, IconComponent> = {
   mcp: ({ w, h }) => <Icons.McpIcon w={w ?? 29} h={h ?? 28} />,
   a2a: ({ w, h }) => <Icons.A2aIcon w={w ?? 29} h={h ?? 28} />,
   context: ({ w, h }) => <Icons.ContextIcon w={w ?? 29} h={h ?? 28} />,
+  'file-sparkles-corner': ({ w, h, color }) => (
+    <Icons.FileSparklesCornerIcon w={w ?? 24} h={h ?? 24} color={color} />
+  ),
 };
 
 /**

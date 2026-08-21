@@ -25,6 +25,7 @@ export { DecisionIcon } from './DecisionIcon';
 export { EarlyExitStatusIcon } from './EarlyExitStatusIcon';
 export { EntryConditionIcon } from './EntryConditionIcon';
 export { ExitConditionIcon } from './ExitConditionIcon';
+export { FileSparklesCornerIcon } from './FileSparklesCornerIcon';
 export { FlaskRunIcon } from './FlaskRunIcon';
 export { FlowProject } from './FlowProject';
 export { FunctionProject } from './FunctionProject';
