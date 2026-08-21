@@ -2841,11 +2841,6 @@ export function mapTemplateThemeToChat(theme: unknown): ApChatTheme {
   return theme.includes('dark') ? 'dark' : 'light';
 }
 
-export const WithDraggablePanels: Story = {
-  name: 'w/ Panel Draggable',
-  render: () => <DraggablePanelLayout />,
-};
-
 export const WithBottomPanel: Story = {
   name: 'w/ Bottom Executions',
   render: () => <ResizableBottomPanel />,
