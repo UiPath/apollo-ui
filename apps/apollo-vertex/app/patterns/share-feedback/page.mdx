@@ -1,0 +1,38 @@
+import { ShareFeedbackTemplate } from '@/templates/ShareFeedbackTemplate';
+
+# Share Feedback
+
+A trigger, staged popover flow, indicator, and nudge banner for capturing a reviewer's sentiment on any AI or automated output a person can accept, correct, or override.
+
+<div className="not-prose my-8">
+  <ShareFeedbackTemplate />
+</div>
+
+## Anatomy
+
+The pattern is made up of five key elements:
+
+1. **Trigger** — how a reviewer opens the flow: an outline or ghost button as icon button with tooltip or with label; or as an item inside an overflow menu.
+2. **Prompt/feedback flow** — a two-step popover or inline element: "How did it do?" branches into either an optional "What did it get right?" note, or "What did it get wrong?" with a set of quick-pick reason chips plus a free-text field and option to share with UiPath.
+3. **Indicator** — once feedback has been left on an output, the trigger icon shows as a message-circle-x for negative, or a message-circle-check for postive. 
+4. **Indicator tooltip** – hovering the indicator button shows the most recent feedback note (only one) along with the author and timestamp.
+5. **Nudge** — a banner shown after a reviewer overrides a decision or edits input data, inviting them to share feedback. Accepting opens the same prompt flow, pre-populated with the override reason and reasons scoped to override vs. edit.
+
+## Features
+
+- **Two-step flow** — sentiment first, then an optional-for-positive / structured-for-negative follow-up, matching the Figma frame's four prompt states
+- **Reason chips are a real multi-select** — built on [Toggle Group](/components/toggle-group) rather than static badges, so each reason carries `aria-pressed` state and keyboard navigation instead of only looking clickable
+- **Composable trigger** — pass your own `trigger` (for example a `DropdownMenuItem`) to place Share Feedback inside an existing menu; the built-in icon / icon-label trigger and its indicator are only used when you don't
+- **Pre-populatable** — `initialStep`, `defaultReasonValues`, and `defaultComment` let the nudge flow (or any other entry point) open straight into the negative step with the override reason already filled in
+- **Composes existing primitives** — [Button](/components/button), [Popover](/components/popover), [Textarea](/components/textarea), [Checkbox](/components/checkbox), [Tooltip](/components/tooltip)
+
+
+## Dependencies
+
+This pattern depends on the following components:
+
+- [Button](/components/button)
+- [Checkbox](/components/checkbox)
+- [Popover](/components/popover)
+- [Textarea](/components/textarea)
+- [Tooltip](/components/tooltip)

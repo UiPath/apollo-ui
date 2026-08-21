@@ -95,6 +95,9 @@
       "@/components/ui/scroll-area": ["./registry/scroll-area/scroll-area"],
       "@/components/ui/select": ["./registry/select/select"],
       "@/components/ui/separator": ["./registry/separator/separator"],
+      "@/components/ui/share-feedback": [
+        "./registry/share-feedback/share-feedback"
+      ],
       "@/components/ui/sheet": ["./registry/sheet/sheet"],
       "@/components/ui/shell": ["./registry/shell/shell"],
       "@/components/ui/sidebar": ["./registry/sidebar/sidebar"],

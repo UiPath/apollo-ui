@@ -2223,6 +2223,31 @@
       ]
     },
     {
+      "name": "share-feedback",
+      "type": "registry:ui",
+      "title": "Share Feedback",
+      "description": "A trigger, staged popover flow, indicator, and nudge banner for capturing sentiment and reasons on AI-generated content.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/checkbox",
+        "@uipath/popover",
+        "@uipath/textarea",
+        "@uipath/toggle-group",
+        "@uipath/tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/share-feedback/share-feedback.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/share-feedback/share-feedback-trigger.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "sheet",
       "type": "registry:ui",
       "title": "Sheet",
