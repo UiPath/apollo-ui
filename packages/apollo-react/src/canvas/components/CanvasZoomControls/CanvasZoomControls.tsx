@@ -1,15 +1,54 @@
-import { forwardRef, memo, useCallback } from 'react';
-import { BrushCleaning, Scan, ZoomIn, ZoomOut } from 'lucide-react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ToolbarButton } from '../ToolbarButton';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@uipath/apollo-wind';
+import { BrushCleaning, Scan, ZoomIn, ZoomOut } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Fragment, forwardRef, memo, useCallback } from 'react';
 import { useSafeLingui } from '../../../i18n';
+import { CanvasIcon } from '../../utils/icon-registry';
+import { ToolbarButton } from '../ToolbarButton';
+
+/** A single choice offered by the "Tidy up" menu, e.g. a layout strategy. */
+export interface TidyUpMenuOption {
+  id: string;
+  label: string;
+  disabled?: boolean;
+  /**
+   * Icon shown next to the label, matching NodeToolbar's overflow-menu
+   * format. Pass a canvas icon id string (resolved via the icon registry,
+   * e.g. "grid-3x3") or a pre-rendered ReactNode.
+   */
+  icon?: ReactNode;
+  /** Renders a separator above this option, e.g. to set a destructive/reset action apart. */
+  separatorBefore?: boolean;
+}
 
 export interface CanvasZoomControlsProps {
   orientation?: 'vertical' | 'horizontal';
   fitViewOptions?: { duration?: number; padding?: number; maxZoom?: number };
   zoomInOptions?: { duration?: number };
   zoomOutOptions?: { duration?: number };
+  /**
+   * Runs a single "Tidy up" action immediately on click. Ignored when
+   * `tidyUpOptions` is provided -- pass that instead to offer a choice of
+   * strategies via a menu.
+   */
   onOrganize?: () => void;
+  /**
+   * When provided (with at least one option), the "Tidy up" button opens a
+   * menu of strategies instead of running a single hardcoded action.
+   */
+  tidyUpOptions?: TidyUpMenuOption[];
+  onTidyUpSelect?: (optionId: string) => void;
   onFitView?: () => void;
 }
 
@@ -24,6 +63,8 @@ export const CanvasZoomControls = memo(
       zoomInOptions,
       zoomOutOptions,
       onOrganize,
+      tidyUpOptions,
+      onTidyUpSelect,
       onFitView,
     },
     ref
@@ -87,16 +128,59 @@ export const CanvasZoomControls = memo(
           <Scan />
         </ToolbarButton>
 
-        {onOrganize && (
-          <ToolbarButton
-            testId="organize-button"
-            label={_({ id: 'canvas.zoom.tidy_up', message: 'Tidy up' })}
-            tooltipSide={tooltipSide}
-            onClick={onOrganize}
-            className={ZOOM_ICON_BUTTON_CLASS}
-          >
-            <BrushCleaning />
-          </ToolbarButton>
+        {tidyUpOptions && tidyUpOptions.length > 0 ? (
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    data-testid="tidy-up-menu-button"
+                    aria-label={_({ id: 'canvas.zoom.tidy_up', message: 'Tidy up' })}
+                    variant="ghost"
+                    size="xs"
+                    icon
+                    className={ZOOM_ICON_BUTTON_CLASS}
+                  >
+                    <BrushCleaning />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent side={tooltipSide}>
+                {_({ id: 'canvas.zoom.tidy_up', message: 'Tidy up' })}
+              </TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="end" side={tooltipSide} sideOffset={8} className="w-48">
+              {tidyUpOptions.map((option) => (
+                <Fragment key={option.id}>
+                  {option.separatorBefore && <DropdownMenuSeparator />}
+                  <DropdownMenuItem
+                    data-testid={`tidy-up-option-${option.id}`}
+                    disabled={option.disabled}
+                    onSelect={() => onTidyUpSelect?.(option.id)}
+                  >
+                    {typeof option.icon === 'string' ? (
+                      <CanvasIcon icon={option.icon} size={16} />
+                    ) : (
+                      option.icon
+                    )}
+                    <span>{option.label}</span>
+                  </DropdownMenuItem>
+                </Fragment>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          onOrganize && (
+            <ToolbarButton
+              testId="organize-button"
+              label={_({ id: 'canvas.zoom.tidy_up', message: 'Tidy up' })}
+              tooltipSide={tooltipSide}
+              onClick={onOrganize}
+              className={ZOOM_ICON_BUTTON_CLASS}
+            >
+              <BrushCleaning />
+            </ToolbarButton>
+          )
         )}
       </div>
     );
