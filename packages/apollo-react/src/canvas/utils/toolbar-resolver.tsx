@@ -95,7 +95,6 @@ function evaluateCondition(
     return false;
   }
 
-  // Check node shape
   if (condition.shapes?.length) {
     const shape = manifest.display?.shape;
     if (!shape || !condition.shapes.includes(shape)) return false;
@@ -166,9 +165,18 @@ function mergeToolbarConfigs(
   if (!base) return extension!;
   if (!extension) return base;
 
+  // An extension owns every id it declares, so overriding a default into overflow moves it.
+  const extensionIds = new Set(
+    [...extension.actions, ...(extension.overflowActions ?? [])].map((action) => action.id)
+  );
+  const notOverridden = (action: ToolbarActionSchema) => !extensionIds.has(action.id);
+
   return {
-    actions: [...base.actions, ...extension.actions],
-    overflowActions: [...(base.overflowActions ?? []), ...(extension.overflowActions ?? [])],
+    actions: [...base.actions.filter(notOverridden), ...extension.actions],
+    overflowActions: [
+      ...(base.overflowActions ?? []).filter(notOverridden),
+      ...(extension.overflowActions ?? []),
+    ],
   };
 }
 
