@@ -275,11 +275,14 @@ export function resolveHandles(
   const isCollapsed = context?.isCollapsed ?? false;
 
   return handleGroups.map((group) => {
+    // Inner handles wire a container's body, which a collapsed node isn't showing.
+    const hidesGroup = isCollapsed && group.boundary === 'inner';
+
     const handles: ResolvedHandle[] = group.handles.flatMap((handle) => {
-      // Hide artifact handles when node is collapsed
       const isArtifactHandle = handle.handleType === 'artifact';
       const handleBaseVisible = resolveVisibility(handle.visible, context);
-      const handleVisible = isCollapsed && isArtifactHandle ? false : handleBaseVisible;
+      const handleVisible =
+        hidesGroup || (isCollapsed && isArtifactHandle) ? false : handleBaseVisible;
 
       // Handle repeat (dynamic handles from array)
       if (handle.repeat) {

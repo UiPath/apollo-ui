@@ -20,12 +20,19 @@ interface ExtendedNodeContext extends NodeStatusContext {
   permissions?: string[];
 }
 
+// Condition predicates are conjunctive, so artifact and container collapse need an entry each.
 const DEFAULT_ACTIONS_FOR_ALL_MODES: ModeToolbarConfig['actions'] = [
   {
     id: 'collapse',
     icon: 'chevrons-down-up',
     label: 'Toggle collapse',
     condition: { handles: [{ handleType: 'artifact', type: 'source' }] },
+  },
+  {
+    id: 'collapse',
+    icon: 'chevrons-down-up',
+    label: 'Toggle collapse',
+    condition: { shapes: ['container'] },
   },
 ];
 
@@ -88,6 +95,12 @@ function evaluateCondition(
     return false;
   }
 
+  // Check node shape
+  if (condition.shapes?.length) {
+    const shape = manifest.display?.shape;
+    if (!shape || !condition.shapes.includes(shape)) return false;
+  }
+
   // Check if node has matching handles
   if (condition.handles?.length) {
     const manifestHandles = manifest.handleConfiguration.flatMap(
@@ -133,6 +146,13 @@ function convertToNodeAction(
       });
     },
   };
+}
+
+/** Keeps each id once, at its first slot, carrying the last definition. */
+function dedupeById(actions: ToolbarActionSchema[]): ToolbarActionSchema[] {
+  const byId = new Map<string, ToolbarActionSchema>();
+  for (const action of actions) byId.set(action.id, action);
+  return [...byId.values()];
 }
 
 /**
@@ -188,13 +208,13 @@ export function resolveToolbar(
   const merged = mergeToolbarConfigs(modeDefaults, nodeExtensions);
 
   // Step 4: Filter actions based on conditions and convert to node actions
-  const filteredActions = merged.actions
-    .filter((action) => evaluateCondition(manifest, action, nodeType, context))
-    .map((action) => convertToNodeAction(action, mode, nodeData));
+  const resolveActions = (actions: ToolbarActionSchema[]) =>
+    dedupeById(
+      actions.filter((action) => evaluateCondition(manifest, action, nodeType, context))
+    ).map((action) => convertToNodeAction(action, mode, nodeData));
 
-  const filteredOverflow = (merged.overflowActions ?? [])
-    .filter((action) => evaluateCondition(manifest, action, nodeType, context))
-    .map((action) => convertToNodeAction(action, mode, nodeData));
+  const filteredActions = resolveActions(merged.actions);
+  const filteredOverflow = resolveActions(merged.overflowActions ?? []);
 
   // Return undefined if no actions
   if (filteredActions.length === 0 && filteredOverflow.length === 0) {

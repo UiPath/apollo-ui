@@ -281,9 +281,89 @@ describe('resolveHandles', () => {
       expect(result[0]!.handles[0]!.visible).toBe(false);
       expect(result[1]!.handles[0]!.visible).toBe(true);
     });
+
+    it('hides inner-boundary handles when collapsed, keeps outer handles visible', () => {
+      const result = resolveHandles(
+        [
+          {
+            position: 'left',
+            boundary: 'inner',
+            handles: [{ id: 'start', type: 'source', handleType: 'output' }],
+          },
+          {
+            position: 'left',
+            boundary: 'outer',
+            handles: [{ id: 'in', type: 'target', handleType: 'input' }],
+          },
+          {
+            position: 'right',
+            handles: [{ id: 'out', type: 'source', handleType: 'output' }],
+          },
+        ],
+        { isCollapsed: true }
+      );
+
+      expect(result[0]!.handles[0]!.visible).toBe(false);
+      expect(result[1]!.handles[0]!.visible).toBe(true);
+      expect(result[2]!.handles[0]!.visible).toBe(true);
+    });
+
+    it('keeps inner-boundary handles visible when expanded', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'left',
+            boundary: 'inner',
+            handles: [{ id: 'start', type: 'source', handleType: 'output' }],
+          },
+        ],
+        {}
+      );
+
+      expect(group.handles[0]!.visible).toBe(true);
+    });
+
+    it('hides repeat-generated inner-boundary handles when collapsed', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'right',
+            boundary: 'inner',
+            handles: [
+              {
+                id: 'case-{index}',
+                type: 'source',
+                handleType: 'output',
+                repeat: 'inputs.cases',
+                indexVar: 'index',
+              },
+            ],
+          },
+        ],
+        { isCollapsed: true, inputs: { cases: [{}, {}] } }
+      );
+
+      expect(group.handles).toHaveLength(2);
+      expect(group.handles.every((handle) => handle.visible === false)).toBe(true);
+    });
   });
 
   describe('group visibility when collapsed', () => {
+    it('hides an inner-boundary group when collapsed', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'left',
+            visible: true,
+            boundary: 'inner',
+            handles: [{ id: 'start', type: 'source', handleType: 'output' }],
+          },
+        ],
+        { isCollapsed: true }
+      );
+      expect(group.visible).toBe(false);
+    });
+
     it('hides group when collapsed and all handles are hidden', () => {
       const group = firstGroup(
         [
