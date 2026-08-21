@@ -1095,7 +1095,10 @@ export function FormDesigner() {
                 className={`group/section border rounded-lg ${selectedSectionId === section.id && !selectedFieldId ? 'ring-2 ring-primary' : ''}`}
               >
                 <div className="flex items-center gap-1 px-2 py-1.5">
-                  <AccordionTrigger className="h-5 w-5 p-0 hover:no-underline hover:bg-accent rounded [&>svg]:hidden flex items-center justify-center shrink-0">
+                  <AccordionTrigger
+                    aria-label={`Toggle section ${section.title}`}
+                    className="h-5 w-5 p-0 hover:no-underline hover:bg-accent rounded [&>svg]:hidden flex items-center justify-center shrink-0"
+                  >
                     <span className="flex items-center justify-center">
                       <ChevronRight className="h-3 w-3 shrink-0 transition-transform duration-200 group-data-[state=open]/section:rotate-90" />
                     </span>
@@ -1124,6 +1127,7 @@ export function FormDesigner() {
                         moveSection(section.id, 'up');
                       }}
                       disabled={sectionIndex === 0}
+                      aria-label={`Move section ${section.title} up`}
                     >
                       <MoveUp className="h-2.5 w-2.5" />
                     </Button>
@@ -1136,6 +1140,7 @@ export function FormDesigner() {
                         moveSection(section.id, 'down');
                       }}
                       disabled={sectionIndex === sections.length - 1}
+                      aria-label={`Move section ${section.title} down`}
                     >
                       <MoveDown className="h-2.5 w-2.5" />
                     </Button>
@@ -1148,6 +1153,7 @@ export function FormDesigner() {
                         removeSection(section.id);
                       }}
                       disabled={sections.length <= 1}
+                      aria-label={`Delete section ${section.title}`}
                     >
                       <Trash2 className="h-2.5 w-2.5 text-destructive" />
                     </Button>
@@ -1196,6 +1202,7 @@ export function FormDesigner() {
                               moveField(section.id, field.id, 'up');
                             }}
                             disabled={fieldIndex === 0}
+                            aria-label={`Move field ${field.label} up`}
                           >
                             <MoveUp className="h-2.5 w-2.5" />
                           </Button>
@@ -1208,6 +1215,7 @@ export function FormDesigner() {
                               moveField(section.id, field.id, 'down');
                             }}
                             disabled={fieldIndex === section.fields.length - 1}
+                            aria-label={`Move field ${field.label} down`}
                           >
                             <MoveDown className="h-2.5 w-2.5" />
                           </Button>
@@ -1219,6 +1227,7 @@ export function FormDesigner() {
                               e.stopPropagation();
                               removeField(section.id, field.id);
                             }}
+                            aria-label={`Delete field ${field.label}`}
                           >
                             <Trash2 className="h-2.5 w-2.5 text-destructive" />
                           </Button>
@@ -1455,7 +1464,7 @@ function DataSourceEditor({ dataSource, onChange }: DataSourceEditorProps) {
             }
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger aria-label="Data source type">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -1889,6 +1898,7 @@ function RulesEditor({
             </div>
           </div>
           <Checkbox
+            aria-label="Always required"
             checked={isAlwaysRequired}
             onCheckedChange={(checked) => {
               if (checked) {
@@ -2026,7 +2036,7 @@ function RulesEditor({
                   value={conditionOperator}
                   onValueChange={(v) => setConditionOperator(v as 'AND' | 'OR')}
                 >
-                  <SelectTrigger className="w-24 h-7 text-xs">
+                  <SelectTrigger aria-label="Condition match mode" className="w-24 h-7 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -2052,7 +2062,7 @@ function RulesEditor({
                       value={cond.field}
                       onValueChange={(v) => updateCondition(index, { field: v })}
                     >
-                      <SelectTrigger className="h-8 text-sm">
+                      <SelectTrigger aria-label="Condition field" className="h-8 text-sm">
                         <SelectValue placeholder="Select field..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -2072,7 +2082,7 @@ function RulesEditor({
                           })
                         }
                       >
-                        <SelectTrigger className="w-32 h-8 text-sm">
+                        <SelectTrigger aria-label="Condition operator" className="w-32 h-8 text-sm">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -2091,7 +2101,7 @@ function RulesEditor({
                             value={cond.value}
                             onValueChange={(v) => updateCondition(index, { value: v })}
                           >
-                            <SelectTrigger className="h-8 text-sm">
+                            <SelectTrigger aria-label="Condition value" className="h-8 text-sm">
                               <SelectValue placeholder="Select value..." />
                             </SelectTrigger>
                             <SelectContent>

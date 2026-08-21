@@ -393,17 +393,14 @@ describe('FormDesigner', () => {
       const { container } = render(<FormDesigner />);
       await screen.findByDisplayValue('Full Name');
 
-      // Known pre-existing issues in form-designer.tsx (tests must not modify
-      // source), excluded so regressions in every other rule still fail:
-      // - button-name: icon-only move/delete buttons and the unlabeled
-      //   "Always required" checkbox have no accessible name.
+      // Known structural issues in form-designer.tsx, excluded so regressions
+      // in every other rule still fail:
       // - empty-heading: the section accordion trigger renders an h3 whose
       //   button contains only a decorative chevron icon.
       // - nested-interactive: field rows are div[role="button"] wrappers
       //   containing the move/delete buttons.
       const results = await axe(container, {
         rules: {
-          'button-name': { enabled: false },
           'empty-heading': { enabled: false },
           'nested-interactive': { enabled: false },
         },
