@@ -495,7 +495,7 @@ function StandaloneRightPropertiesComposition() {
     const containerBounds = event.currentTarget.parentElement?.getBoundingClientRect();
     if (!containerBounds) return;
     const previewWidth = Math.min(380, containerBounds.width - 16);
-    const previewHeight = Math.min(560, containerBounds.height - 16);
+    const previewHeight = 40;
     setDragPreviewPosition({
       left: Math.max(
         8,
@@ -538,7 +538,7 @@ function StandaloneRightPropertiesComposition() {
     center: 'absolute inset-0 grid place-items-center p-4',
   }[panelZone];
   const panelSizeClass = dragPreviewPosition
-    ? 'h-[min(560px,calc(100vh-16px))] w-[min(380px,calc(100vw-16px))]'
+    ? 'h-10 w-[min(380px,calc(100vw-16px))]'
     : panelZone === 'top' || panelZone === 'bottom'
       ? 'h-[360px] w-full'
       : panelZone === 'center'
@@ -592,9 +592,16 @@ function StandaloneRightPropertiesComposition() {
           style={dragPreviewPosition ?? undefined}
         >
           <div
-            className={`${panelSizeClass} overflow-hidden rounded-2xl border border-border-subtle shadow-lg ${dragPreviewPosition ? 'cursor-grabbing opacity-80 shadow-2xl ring-2 ring-primary/30 [&_[data-slot=node-property-panel-drag-handle]]:cursor-grabbing [&_[data-slot=node-property-panel-titlebar]]:bg-surface-overlay' : ''}`}
+            className={`${panelSizeClass} overflow-hidden rounded-2xl border border-border-subtle shadow-lg ${dragPreviewPosition ? 'cursor-grabbing shadow-2xl ring-2 ring-primary/30 [&_[data-slot=node-property-panel-drag-handle]]:cursor-grabbing [&_[data-slot=node-property-panel-titlebar]]:bg-surface-overlay' : ''}`}
           >
-            <PropertiesPanel className="h-full" onClose={() => setRightPanelOpen(false)} />
+            <PropertiesPanel
+              className={
+                dragPreviewPosition
+                  ? 'h-10 [&>*:not([data-slot=node-property-panel-titlebar])]:hidden'
+                  : 'h-full'
+              }
+              onClose={() => setRightPanelOpen(false)}
+            />
           </div>
         </div>
       )}
