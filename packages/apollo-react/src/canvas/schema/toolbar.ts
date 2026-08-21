@@ -5,6 +5,7 @@
  */
 
 import { z } from 'zod';
+import { nodeShapeSchema } from './node-definition/node-manifest';
 
 /**
  * Toolbar action definition
@@ -33,6 +34,9 @@ export const toolbarActionSchema = z.object({
 
       /** Show only for specific node types */
       nodeTypes: z.array(z.string()).optional(),
+
+      /** Show only for manifests drawn in one of these shapes */
+      shapes: z.array(nodeShapeSchema).optional(),
 
       /** Show only if node has handles defined in its manifest */
       handles: z
