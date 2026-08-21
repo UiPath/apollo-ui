@@ -736,6 +736,15 @@ function BottomPropertiesComposition() {
     'properties',
     'output',
   ]);
+  const [panelZones, setPanelZones] = useState<
+    Record<BottomPanelId, StandaloneDockZone | 'bottom'>
+  >({
+    input: 'bottom',
+    properties: 'bottom',
+    output: 'bottom',
+  });
+  const [draggedPanel, setDraggedPanel] = useState<BottomPanelId | null>(null);
+  const [activeDockZone, setActiveDockZone] = useState<StandaloneDockZone | null>(null);
 
   useEffect(() => {
     const updatePanelHeight = () => setPanelHeight(getBottomPropertiesPanelHeight());
@@ -743,13 +752,53 @@ function BottomPropertiesComposition() {
     return () => window.removeEventListener('resize', updatePanelHeight);
   }, []);
 
+  const bottomPanels = visiblePanels.filter((panelId) => panelZones[panelId] === 'bottom');
+  const dockedPanels = (zone: Exclude<StandaloneDockZone, 'bottom'>) =>
+    visiblePanels.filter((panelId) => panelZones[panelId] === zone);
+
+  const resetPanelDrag = () => {
+    setDraggedPanel(null);
+    setActiveDockZone(null);
+  };
+
+  const getCanvasDockZone = (event: DragEvent<HTMLDivElement>): StandaloneDockZone => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width;
+    const y = (event.clientY - bounds.top) / bounds.height;
+    const horizontalZone = x < 0.5 ? 'left' : 'right';
+    const verticalZone = y < 0.5 ? 'top' : 'bottom';
+    return Math.min(x, 1 - x) < Math.min(y, 1 - y) ? horizontalZone : verticalZone;
+  };
+
   return (
-    <div className="relative h-screen overflow-hidden bg-surface">
+    <div
+      className="relative h-screen overflow-hidden bg-surface"
+      onDragOver={(event) => {
+        if (!draggedPanel || (event.target as HTMLElement).closest('[data-bottom-panel-slot]'))
+          return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        setActiveDockZone(getCanvasDockZone(event));
+      }}
+      onDrop={(event) => {
+        if (!draggedPanel || !activeDockZone) return;
+        event.preventDefault();
+        setPanelZones((current) => ({ ...current, [draggedPanel]: activeDockZone }));
+        resetPanelDrag();
+      }}
+    >
       <CanvasViewport
-        bottomControlsOffset={visiblePanels.length > 0 ? panelHeight + 20 : 20}
+        bottomControlsOffset={bottomPanels.length > 0 ? panelHeight + 20 : 20}
+        rightControlsOffset={dockedPanels('right').length > 0 ? 412 : 16}
         trigger={
           <PanelTrigger
-            layout={visiblePanels.length > 0 ? 'bottom' : 'closed'}
+            layout={
+              visiblePanels.length === 0
+                ? 'closed'
+                : bottomPanels.length === visiblePanels.length
+                  ? 'bottom'
+                  : 'split'
+            }
             panels={(['input', 'properties', 'output'] as const).map((id) => ({
               id,
               label: id[0]?.toUpperCase() + id.slice(1),
@@ -757,6 +806,9 @@ function BottomPropertiesComposition() {
             }))}
             onPanelToggle={(id, enabled) => {
               const panelId = id as BottomPanelId;
+              if (enabled) {
+                setPanelZones((current) => ({ ...current, [panelId]: 'bottom' }));
+              }
               setVisiblePanels((current) =>
                 enabled
                   ? current.includes(panelId)
@@ -766,9 +818,13 @@ function BottomPropertiesComposition() {
               );
             }}
             onLayoutChange={(layout) => {
-              if (layout === 'bottom') setVisiblePanels(['input', 'properties', 'output']);
+              if (layout === 'bottom') {
+                setVisiblePanels(['input', 'properties', 'output']);
+                setPanelZones({ input: 'bottom', properties: 'bottom', output: 'bottom' });
+              }
             }}
             onPropertiesClick={() => {
+              setPanelZones((current) => ({ ...current, properties: 'bottom' }));
               setVisiblePanels((current) =>
                 current.includes('properties') ? current : [...current, 'properties']
               );
@@ -776,12 +832,35 @@ function BottomPropertiesComposition() {
           />
         }
       />
-      {visiblePanels.length > 0 && (
-        <div className="absolute inset-x-0 bottom-0 z-20 p-4 pt-0" style={{ height: panelHeight }}>
-          <BottomPanels
-            visiblePanels={visiblePanels}
+      {activeDockZone && <StandaloneDockHint zone={activeDockZone} />}
+      {(['left', 'right', 'top'] as const).map((zone) => {
+        const zonePanels = dockedPanels(zone);
+        return zonePanels.length > 0 ? (
+          <DockedDataPanels
+            key={zone}
+            zone={zone}
+            panelIds={zonePanels}
             onPanelClose={(panelId) =>
               setVisiblePanels((current) => current.filter((id) => id !== panelId))
+            }
+            onPanelDragStart={setDraggedPanel}
+            onPanelDragEnd={resetPanelDrag}
+          />
+        ) : null;
+      })}
+      {bottomPanels.length > 0 && (
+        <div className="absolute inset-x-0 bottom-0 z-20 p-4 pt-0" style={{ height: panelHeight }}>
+          <BottomPanels
+            visiblePanels={bottomPanels}
+            activeDraggedPanel={draggedPanel}
+            onPanelClose={(panelId) =>
+              setVisiblePanels((current) => current.filter((id) => id !== panelId))
+            }
+            onPanelDragStart={setDraggedPanel}
+            onPanelDragEnd={resetPanelDrag}
+            onPanelReorderHover={() => setActiveDockZone(null)}
+            onPanelMoveToBottom={(panelId) =>
+              setPanelZones((current) => ({ ...current, [panelId]: 'bottom' }))
             }
           />
         </div>
@@ -1183,10 +1262,20 @@ type BottomPanelId = 'input' | 'properties' | 'output';
 
 function BottomPanels({
   visiblePanels,
+  activeDraggedPanel,
   onPanelClose,
+  onPanelDragStart,
+  onPanelDragEnd,
+  onPanelReorderHover,
+  onPanelMoveToBottom,
 }: {
   visiblePanels: BottomPanelId[];
+  activeDraggedPanel: BottomPanelId | null;
   onPanelClose: (panelId: BottomPanelId) => void;
+  onPanelDragStart: (panelId: BottomPanelId) => void;
+  onPanelDragEnd: () => void;
+  onPanelReorderHover: () => void;
+  onPanelMoveToBottom: (panelId: BottomPanelId) => void;
 }) {
   const [order, setOrder] = useState<BottomPanelId[]>(['input', 'properties', 'output']);
   const [draggedPanel, setDraggedPanel] = useState<BottomPanelId | null>(null);
@@ -1194,6 +1283,7 @@ function BottomPanels({
     panelId: BottomPanelId;
     position: 'before' | 'after';
   } | null>(null);
+  const activePanel = draggedPanel ?? activeDraggedPanel;
 
   const panels: Record<BottomPanelId, ReactNode> = {
     input: (
@@ -1261,6 +1351,7 @@ function BottomPanels({
 
   const handleDragStart = (event: DragEvent<HTMLDivElement>, panelId: BottomPanelId) => {
     setDraggedPanel(panelId);
+    onPanelDragStart(panelId);
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', panelId);
     const titleBar = event.currentTarget.closest<HTMLElement>(
@@ -1279,16 +1370,18 @@ function BottomPanels({
   const resetDragState = () => {
     setDraggedPanel(null);
     setDropTarget(null);
+    onPanelDragEnd();
   };
 
   const handleDrop = (targetPanel: BottomPanelId, position: 'before' | 'after') => {
-    if (!draggedPanel || draggedPanel === targetPanel) return;
+    if (!activePanel || activePanel === targetPanel) return;
     setOrder((currentOrder) => {
-      const nextOrder = currentOrder.filter((panelId) => panelId !== draggedPanel);
+      const nextOrder = currentOrder.filter((panelId) => panelId !== activePanel);
       const targetIndex = nextOrder.indexOf(targetPanel);
-      nextOrder.splice(position === 'after' ? targetIndex + 1 : targetIndex, 0, draggedPanel);
+      nextOrder.splice(position === 'after' ? targetIndex + 1 : targetIndex, 0, activePanel);
       return nextOrder;
     });
+    onPanelMoveToBottom(activePanel);
     resetDragState();
   };
   const visibleOrder = order.filter((panelId) => visiblePanels.includes(panelId));
@@ -1303,8 +1396,10 @@ function BottomPanels({
         <Fragment key={panelId}>
           <ResizablePanel defaultSize={index === 1 ? '34%' : '33%'} minSize="15%">
             <div
+              data-bottom-panel-slot
               onDragOver={(event) => {
-                if (draggedPanel && draggedPanel !== panelId) {
+                onPanelReorderHover();
+                if (activePanel && activePanel !== panelId) {
                   event.preventDefault();
                   event.dataTransfer.dropEffect = 'move';
                   const bounds = event.currentTarget.getBoundingClientRect();
@@ -1316,16 +1411,17 @@ function BottomPanels({
               }}
               onDrop={(event) => {
                 event.preventDefault();
+                event.stopPropagation();
                 handleDrop(panelId, dropTarget?.position ?? 'before');
               }}
               className={`relative ${
-                draggedPanel === panelId
+                activePanel === panelId
                   ? 'h-full w-full overflow-hidden opacity-50'
                   : 'h-full w-full overflow-hidden'
               }`}
             >
               {panels[panelId]}
-              {dropTarget?.panelId === panelId && draggedPanel !== panelId && (
+              {dropTarget?.panelId === panelId && activePanel !== panelId && (
                 <div
                   className={`pointer-events-none absolute inset-y-3 z-30 w-1 rounded-full bg-primary shadow-[0_0_0_4px_color-mix(in_srgb,var(--primary)_16%,transparent)] ${
                     dropTarget.position === 'before' ? 'left-1' : 'right-1'
@@ -1338,6 +1434,104 @@ function BottomPanels({
         </Fragment>
       ))}
     </ResizablePanelGroup>
+  );
+}
+
+function DockedDataPanels({
+  zone,
+  panelIds,
+  onPanelClose,
+  onPanelDragStart,
+  onPanelDragEnd,
+}: {
+  zone: Exclude<StandaloneDockZone, 'bottom'>;
+  panelIds: BottomPanelId[];
+  onPanelClose: (panelId: BottomPanelId) => void;
+  onPanelDragStart: (panelId: BottomPanelId) => void;
+  onPanelDragEnd: () => void;
+}) {
+  const positionClass = {
+    left: 'absolute inset-y-0 left-0 z-30 w-[380px] p-4 pr-0',
+    right: 'absolute inset-y-0 right-0 z-30 w-[380px] p-4 pl-0',
+    top: 'absolute inset-x-0 top-0 z-30 h-[360px] p-4 pb-0',
+  }[zone];
+
+  const dragHandleProps = (panelId: BottomPanelId) => ({
+    draggable: true,
+    onDragStart: (event: DragEvent<HTMLDivElement>) => {
+      onPanelDragStart(panelId);
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', panelId);
+      const titleBar = event.currentTarget.closest<HTMLElement>(
+        '[data-slot="node-property-panel-titlebar"]'
+      );
+      if (titleBar) {
+        const bounds = titleBar.getBoundingClientRect();
+        event.dataTransfer.setDragImage(
+          titleBar,
+          Math.max(0, event.clientX - bounds.left),
+          Math.max(0, event.clientY - bounds.top)
+        );
+      }
+    },
+    onDragEnd: onPanelDragEnd,
+  });
+
+  const renderPanel = (panelId: BottomPanelId) => {
+    if (panelId === 'properties') {
+      return (
+        <PropertiesPanel
+          className="h-full"
+          onClose={() => onPanelClose(panelId)}
+          dragHandleProps={dragHandleProps(panelId)}
+        />
+      );
+    }
+
+    const isInput = panelId === 'input';
+    return (
+      <NodePropertyPanel
+        panelTitle={isInput ? 'Input' : 'Output'}
+        dragHandleProps={dragHandleProps(panelId)}
+        contentInset="0.875rem"
+        className="h-full"
+        onClose={() => onPanelClose(panelId)}
+      >
+        <div className="flex h-full flex-col p-6 pt-4">
+          <NodeIOView
+            className="min-h-0 flex-1"
+            title="HTTP Request"
+            titleBadge="httpRequest1"
+            value={
+              isInput
+                ? { endpoint: 'https://finance.internal/api/invoices', method: 'GET' }
+                : { statusCode: 200, body: { invoiceId: 'INV-2024-001', valid: true } }
+            }
+            readOnly
+            searchPlaceholder={isInput ? 'Search inputs...' : 'Search output...'}
+            pathForCopy={(path) => `$vars.${path}`}
+          />
+        </div>
+      </NodePropertyPanel>
+    );
+  };
+
+  return (
+    <div className={positionClass}>
+      <ResizablePanelGroup
+        orientation={zone === 'top' ? 'horizontal' : 'vertical'}
+        className="h-full overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-lg"
+      >
+        {panelIds.map((panelId, index) => (
+          <Fragment key={panelId}>
+            <ResizablePanel defaultSize={`${100 / panelIds.length}%`} minSize="15%">
+              <div className="h-full min-h-0 overflow-hidden">{renderPanel(panelId)}</div>
+            </ResizablePanel>
+            {index < panelIds.length - 1 && <ResizableHandle withHandle />}
+          </Fragment>
+        ))}
+      </ResizablePanelGroup>
+    </div>
   );
 }
 
