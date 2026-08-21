@@ -1879,7 +1879,7 @@ function ResizableBottomPanel() {
         {!isCollapsed && (
           <ResizableHandle
             withHandle
-            className="pointer-events-auto z-20 mx-8 translate-y-3 bg-transparent aria-[orientation=horizontal]:w-[calc(100%-4rem)]"
+            className="pointer-events-auto z-20 mx-8 translate-y-3 cursor-row-resize bg-transparent aria-[orientation=horizontal]:w-[calc(100%-4rem)] aria-[orientation=horizontal]:after:h-3 [&>div]:opacity-0 hover:[&>div]:opacity-100 focus-visible:[&>div]:opacity-100 data-[separator=active]:[&>div]:opacity-100 data-[separator=hover]:[&>div]:opacity-100"
           />
         )}
         <ResizablePanel
@@ -1887,7 +1887,7 @@ function ResizableBottomPanel() {
           collapsible
           collapsedSize={80}
           defaultSize={368}
-          minSize={368}
+          minSize={240}
           onResize={({ inPixels }) => setPanelHeight(inPixels)}
           className="pointer-events-auto min-h-0 px-4 pb-4 pt-3"
         >
