@@ -48,8 +48,12 @@ export interface CanvasLeftSidebarProps {
   bottomItems?: readonly CanvasLeftSidebarItem[];
   /** Additional controls rendered before the collapse button in the panel header. */
   headerActions?: ReactNode;
+  /** Whether to render the expanded content-panel header. Defaults to true. */
+  showContentHeader?: boolean;
   /** Docked sidebars are square; floating sidebars use rounded, elevated chrome. */
   variant?: 'default' | 'floating';
+  /** Width of the expanded content panel. Defaults to 288px. */
+  expandedContentWidth?: number;
   className?: string;
 }
 
@@ -119,7 +123,9 @@ export const CanvasLeftSidebar = memo(function CanvasLeftSidebar({
   primaryItems = CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS,
   bottomItems = CANVAS_LEFT_SIDEBAR_DEFAULT_BOTTOM_ITEMS,
   headerActions,
+  showContentHeader = true,
   variant = 'default',
+  expandedContentWidth = CANVAS_LEFT_SIDEBAR_WIDTH,
   className,
 }: CanvasLeftSidebarProps) {
   const selectItem = (itemId: CanvasLeftSidebarItemId) => {
@@ -138,7 +144,7 @@ export const CanvasLeftSidebar = memo(function CanvasLeftSidebar({
       )}
       style={{
         width: isExpanded
-          ? CANVAS_LEFT_SIDEBAR_RAIL_WIDTH + CANVAS_LEFT_SIDEBAR_WIDTH
+          ? CANVAS_LEFT_SIDEBAR_RAIL_WIDTH + expandedContentWidth
           : CANVAS_LEFT_SIDEBAR_COLLAPSED_WIDTH,
       }}
     >
@@ -192,24 +198,31 @@ export const CanvasLeftSidebar = memo(function CanvasLeftSidebar({
           'flex h-full shrink-0 flex-col transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none',
           isExpanded ? 'translate-x-0 opacity-100' : 'invisible -translate-x-1 opacity-0'
         )}
-        style={{ width: CANVAS_LEFT_SIDEBAR_WIDTH }}
+        style={{ width: expandedContentWidth }}
       >
-        <header className="flex h-12 shrink-0 items-center justify-between gap-3 px-4">
-          <h2 className="min-w-0 truncate text-sm font-semibold tracking-[-0.35px]">{title}</h2>
-          <div className="flex shrink-0 items-center gap-1">
-            {headerActions}
-            <ToolbarButton
-              label="Collapse sidebar"
-              tooltipSide="right"
-              onClick={() => onExpandedChange(false)}
-              className="shrink-0 text-foreground-muted hover:bg-surface-hover hover:text-foreground [&_svg]:size-4"
-            >
-              <PanelLeftClose />
-            </ToolbarButton>
-          </div>
-        </header>
+        {showContentHeader && (
+          <header className="flex h-12 shrink-0 items-center justify-between gap-3 px-4">
+            <h2 className="min-w-0 truncate text-sm font-semibold tracking-[-0.35px]">{title}</h2>
+            <div className="flex shrink-0 items-center gap-1">
+              {headerActions}
+              <ToolbarButton
+                label="Collapse sidebar"
+                tooltipSide="right"
+                onClick={() => onExpandedChange(false)}
+                className="shrink-0 text-foreground-muted hover:bg-surface-hover hover:text-foreground [&_svg]:size-4"
+              >
+                <PanelLeftClose />
+              </ToolbarButton>
+            </div>
+          </header>
+        )}
 
-        <div className="min-h-0 flex-1 overflow-auto border-t border-border-subtle p-3">
+        <div
+          className={cn(
+            'min-h-0 flex-1 overflow-auto p-3',
+            showContentHeader && 'border-t border-border-subtle'
+          )}
+        >
           {children}
         </div>
       </div>
