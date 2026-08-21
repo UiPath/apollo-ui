@@ -429,14 +429,21 @@ function PanelTrigger({
   onPanelToggle?: (id: string, enabled: boolean) => void;
   onPropertiesClick?: () => void;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <NodePropertyTrigger
+      open={menuOpen}
+      onOpenChange={setMenuOpen}
       panels={panels}
       behaviorOptions={panelBehaviorOptions}
       layout={layout}
       layoutOptions={panelLayoutOptions}
       onLayoutChange={onLayoutChange}
-      onPanelToggle={onPanelToggle}
+      onPanelToggle={(id, enabled) => {
+        onPanelToggle?.(id, enabled);
+        setMenuOpen(false);
+      }}
       onPropertiesClick={onPropertiesClick}
     />
   );
