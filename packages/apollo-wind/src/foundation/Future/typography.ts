@@ -18,10 +18,6 @@ export const fontFamily = {
   monospace: "'JetBrains Mono', 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace",
   /** Numeric stack — used for tabular numbers and data displays */
   numeric: "'Inter', system-ui, -apple-system, sans-serif",
-
-  // Legacy alias kept for backwards compatibility with existing templates
-  /** @deprecated Use `fontFamily.base` instead */
-  sans: "'Inter', system-ui, -apple-system, sans-serif",
 } as const;
 
 // =============================================================================
