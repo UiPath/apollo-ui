@@ -1,5 +1,5 @@
 import type { FormPlugin, FormSchema } from '@uipath/apollo-wind';
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 export interface NodePropertyPanelProps {
   /**
@@ -7,6 +7,8 @@ export interface NodePropertyPanelProps {
    * the title bar when the host panel system (e.g. dockview) renders its own.
    */
   panelTitle?: string;
+  /** Native interaction props applied to the dedicated title-bar drag handle. */
+  dragHandleProps?: Omit<HTMLAttributes<HTMLDivElement>, 'className'>;
   /** Called when the X close button is clicked. The button only renders when both `panelTitle` and `onClose` are provided. */
   onClose?: () => void;
   /** Optional icon rendered left of the node name in the identity row. */

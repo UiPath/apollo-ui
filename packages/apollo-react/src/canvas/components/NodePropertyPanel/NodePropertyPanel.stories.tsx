@@ -432,6 +432,7 @@ const manualTriggerForm: FormSchema = {
 
 const meta: Meta<typeof NodePropertyPanel> = {
   title: 'Components/Panels/Node Property Panel',
+  excludeStories: ['QuickFormPanel'],
   component: NodePropertyPanel,
   parameters: {
     layout: 'fullscreen',
@@ -507,7 +508,7 @@ export const Default: Story = {
 
 export const QuickForm: Story = {
   name: 'Form HITL',
-  render: () => <QuickFormStory />,
+  render: () => <QuickFormPanel />,
 };
 
 export const EmbeddedNoTitleBar: Story = {
@@ -3001,7 +3002,15 @@ function LockableValueFieldShowcase({
   );
 }
 
-function QuickFormStory() {
+export function QuickFormPanel({
+  embedded = false,
+  onClose = () => {},
+  className = 'h-[760px]',
+}: {
+  embedded?: boolean;
+  onClose?: () => void;
+  className?: string;
+} = {}) {
   const monacoTheme = useMonacoTheme();
   const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
   const nextIdRef = useRef(4);
@@ -3139,316 +3148,310 @@ function QuickFormStory() {
 
   const activeCase = cases.find((c) => c.id === activeDragId);
 
-  return (
-    <div className="flex items-start gap-8">
-      <PanelFrame>
-        <NodePropertyPanel
-          panelTitle="Properties"
-          nodeIcon={<UserRoundCheck />}
-          nodeLabel="Quick Approve"
-          nodeCategory="Quick approve/reject decision for the extracted invoice."
-          action={<DebugButton />}
-          onClose={() => {}}
-          contentInset="0.875rem"
-          className="h-[760px]"
+  const panel = (
+    <NodePropertyPanel
+      panelTitle="Properties"
+      nodeIcon={<UserRoundCheck />}
+      nodeLabel="Quick Approve"
+      nodeCategory="Quick approve/reject decision for the extracted invoice."
+      action={<DebugButton />}
+      onClose={onClose}
+      contentInset="0.875rem"
+      className={className}
+    >
+      <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+          <TabsList className={TAB_LIST_CLASS}>
+            <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+              Parameters
+            </TabsTrigger>
+            <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+              Branching
+            </TabsTrigger>
+            <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+              Error handling
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        <TabsContent
+          value="parameters"
+          className="mt-0 flex min-h-0 flex-1 flex-col gap-4 overflow-auto py-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
         >
-          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-              <TabsList className={TAB_LIST_CLASS}>
-                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                  Parameters
-                </TabsTrigger>
-                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                  Branching
-                </TabsTrigger>
-                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                  Error handling
-                </TabsTrigger>
-              </TabsList>
+          {/* Quick form */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-foreground-muted">Quick form</span>
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label="Generate with AI"
+                            className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground aria-expanded:bg-surface-overlay aria-expanded:text-foreground"
+                          >
+                            <Sparkles size={14} />
+                          </button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Generate with AI</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <PopoverContent align="end" className="w-64 space-y-1.5">
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                      <Sparkles size={12} className="text-brand" />
+                      Describe the form you want
+                    </span>
+                    <Textarea
+                      rows={3}
+                      placeholder="e.g. An invoice approval form with amount and due date"
+                      className="resize-none text-sm"
+                    />
+                    <Button size="sm" className="w-full">
+                      Generate
+                    </Button>
+                  </PopoverContent>
+                </Popover>
+                <ToggleGroup
+                  type="single"
+                  size="xs"
+                  value={formView}
+                  onValueChange={(v) => v && setFormView(v as 'edit' | 'json')}
+                >
+                  <ToggleGroupItem value="edit" className="!px-2.5 !text-xs">
+                    UI
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="json" className="!px-2.5 !text-xs">
+                    JSON
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
             </div>
-            <TabsContent
-              value="parameters"
-              className="mt-0 flex min-h-0 flex-1 flex-col gap-4 overflow-auto py-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
-            >
-              {/* Quick form */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-foreground-muted">Quick form</span>
-                  <div className="flex items-center gap-2">
-                    <Popover>
+            <Card>
+              <CardContent className="flex flex-col gap-4 p-4">
+                <div className="flex items-center gap-3.5">
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={() => {}} />
+                  <HoverCard openDelay={300}>
+                    <HoverCardTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        aria-label="Upload a file"
+                        className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle transition hover:bg-surface-overlay/70 hover:text-foreground [&>svg]:size-5"
+                      >
+                        <Upload />
+                      </button>
+                    </HoverCardTrigger>
+                    <HoverCardContent align="start" className="w-56 space-y-1.5">
+                      <p className="text-xs font-semibold text-foreground">Upload form logo</p>
+                      <p className="text-xs text-foreground-muted">
+                        Images are automatically resized to fit the logo area.
+                      </p>
+                      <div className="space-y-0.5 text-[11px] text-foreground-subtle">
+                        <div>Type: PNG, JPG, SVG</div>
+                        <div>Size: 512 × 512 px</div>
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <div className="flex min-w-0 flex-1 flex-col justify-center">
+                    {editingFormTitle ? (
+                      <input
+                        ref={formTitleRef}
+                        value={formTitle}
+                        onChange={(e) => setFormTitle(e.target.value)}
+                        onBlur={() => setEditingFormTitle(false)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === 'Escape') setEditingFormTitle(false);
+                        }}
+                        className="rounded bg-surface-overlay px-1 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                        autoFocus
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingFormTitle(true);
+                          setTimeout(() => formTitleRef.current?.select(), 0);
+                        }}
+                        className="truncate rounded px-1 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                      >
+                        {formTitle}
+                      </button>
+                    )}
+                    {editingFormDescription ? (
+                      <input
+                        ref={formDescriptionRef}
+                        value={formDescription}
+                        onChange={(e) => setFormDescription(e.target.value)}
+                        onBlur={() => setEditingFormDescription(false)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === 'Escape')
+                            setEditingFormDescription(false);
+                        }}
+                        className="rounded bg-surface-overlay px-1 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                        autoFocus
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingFormDescription(true);
+                          setTimeout(() => formDescriptionRef.current?.select(), 0);
+                        }}
+                        className="truncate rounded px-1 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                      >
+                        {formDescription}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {formView === 'edit' && (
+                  <>
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragStart={handleDragStart}
+                      onDragOver={handleDragOver}
+                      onDragEnd={handleDragEnd}
+                      onDragCancel={handleDragCancel}
+                    >
+                      <SortableContext
+                        items={cases.map((c) => c.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="flex flex-col gap-4">
+                          {cases.map((c, index) => {
+                            const activeIndex = cases.findIndex((x) => x.id === activeDragId);
+                            const isOver =
+                              activeDragId != null && overDragId === c.id && c.id !== activeDragId;
+                            return (
+                              <LockableCaseRow
+                                key={c.id}
+                                id={c.id}
+                                caseTitle={c.title}
+                                onTitleChange={(title) => updateCase(c.id, { title })}
+                                required={c.required}
+                                onRequiredChange={(required) => updateCase(c.id, { required })}
+                                onDelete={() => deleteCase(c.id)}
+                                value={c.value}
+                                onValueChange={(value) => updateCase(c.id, { value })}
+                                locked={c.locked}
+                                onLockedChange={(locked) => updateCase(c.id, { locked })}
+                                mode={c.mode}
+                                onModeChange={(mode) => updateCase(c.id, { mode })}
+                                fieldType={c.fieldType}
+                                compact
+                                onFieldTypeChange={(fieldType) =>
+                                  updateCaseFieldType(c.id, fieldType)
+                                }
+                                controlsVisibility={showcaseControlsVisibility}
+                                monacoTheme={monacoTheme}
+                                insertBefore={isOver && activeIndex > index}
+                                insertAfter={isOver && activeIndex < index}
+                              />
+                            );
+                          })}
+                        </div>
+                      </SortableContext>
+                      {createPortal(
+                        <DragOverlay>
+                          {activeCase ? <FieldDragOverlay caseItem={activeCase} /> : null}
+                        </DragOverlay>,
+                        document.body
+                      )}
+                    </DndContext>
+                    <button
+                      type="button"
+                      onClick={() => addCaseWithType('string')}
+                      className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
+                    >
+                      <Plus size={12} />
+                      Add field
+                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {buttons.map((b) => (
+                        <FormButtonChip
+                          key={b.id}
+                          label={b.label}
+                          onLabelChange={(label) => updateButton(b.id, { label })}
+                          variant={b.variant}
+                          onVariantChange={(variant) => updateButton(b.id, { variant })}
+                          onDelete={() => deleteButton(b.id)}
+                        />
+                      ))}
                       <TooltipProvider delayDuration={300}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <PopoverTrigger asChild>
-                              <button
-                                type="button"
-                                aria-label="Generate with AI"
-                                className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground aria-expanded:bg-surface-overlay aria-expanded:text-foreground"
-                              >
-                                <Sparkles size={14} />
-                              </button>
-                            </PopoverTrigger>
+                            <button
+                              type="button"
+                              onClick={addButton}
+                              aria-label="Add button"
+                              className="grid size-10 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                            >
+                              <Plus size={16} />
+                            </button>
                           </TooltipTrigger>
-                          <TooltipContent>Generate with AI</TooltipContent>
+                          <TooltipContent>Add button</TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      <PopoverContent align="end" className="w-64 space-y-1.5">
-                        <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-                          <Sparkles size={12} className="text-brand" />
-                          Describe the form you want
-                        </span>
-                        <Textarea
-                          rows={3}
-                          placeholder="e.g. An invoice approval form with amount and due date"
-                          className="resize-none text-sm"
-                        />
-                        <Button size="sm" className="w-full">
-                          Generate
-                        </Button>
-                      </PopoverContent>
-                    </Popover>
-                    <ToggleGroup
-                      type="single"
-                      size="xs"
-                      value={formView}
-                      onValueChange={(v) => v && setFormView(v as 'edit' | 'json')}
-                    >
-                      <ToggleGroupItem value="edit" className="!px-2.5 !text-xs">
-                        UI
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="json" className="!px-2.5 !text-xs">
-                        JSON
-                      </ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-                </div>
-                <Card>
-                  <CardContent className="flex flex-col gap-4 p-4">
-                    <div className="flex items-center gap-3.5">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        className="hidden"
-                        onChange={() => {}}
-                      />
-                      <HoverCard openDelay={300}>
-                        <HoverCardTrigger asChild>
-                          <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            aria-label="Upload a file"
-                            className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle transition hover:bg-surface-overlay/70 hover:text-foreground [&>svg]:size-5"
-                          >
-                            <Upload />
-                          </button>
-                        </HoverCardTrigger>
-                        <HoverCardContent align="start" className="w-56 space-y-1.5">
-                          <p className="text-xs font-semibold text-foreground">Upload form logo</p>
-                          <p className="text-xs text-foreground-muted">
-                            Images are automatically resized to fit the logo area.
-                          </p>
-                          <div className="space-y-0.5 text-[11px] text-foreground-subtle">
-                            <div>Type: PNG, JPG, SVG</div>
-                            <div>Size: 512 × 512 px</div>
-                          </div>
-                        </HoverCardContent>
-                      </HoverCard>
-                      <div className="flex min-w-0 flex-1 flex-col justify-center">
-                        {editingFormTitle ? (
-                          <input
-                            ref={formTitleRef}
-                            value={formTitle}
-                            onChange={(e) => setFormTitle(e.target.value)}
-                            onBlur={() => setEditingFormTitle(false)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === 'Escape')
-                                setEditingFormTitle(false);
-                            }}
-                            className="rounded bg-surface-overlay px-1 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
-                            autoFocus
-                          />
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingFormTitle(true);
-                              setTimeout(() => formTitleRef.current?.select(), 0);
-                            }}
-                            className="truncate rounded px-1 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
-                          >
-                            {formTitle}
-                          </button>
-                        )}
-                        {editingFormDescription ? (
-                          <input
-                            ref={formDescriptionRef}
-                            value={formDescription}
-                            onChange={(e) => setFormDescription(e.target.value)}
-                            onBlur={() => setEditingFormDescription(false)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === 'Escape')
-                                setEditingFormDescription(false);
-                            }}
-                            className="rounded bg-surface-overlay px-1 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
-                            autoFocus
-                          />
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingFormDescription(true);
-                              setTimeout(() => formDescriptionRef.current?.select(), 0);
-                            }}
-                            className="truncate rounded px-1 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-                          >
-                            {formDescription}
-                          </button>
-                        )}
-                      </div>
                     </div>
-                    {formView === 'edit' && (
-                      <>
-                        <DndContext
-                          sensors={sensors}
-                          collisionDetection={closestCenter}
-                          onDragStart={handleDragStart}
-                          onDragOver={handleDragOver}
-                          onDragEnd={handleDragEnd}
-                          onDragCancel={handleDragCancel}
-                        >
-                          <SortableContext
-                            items={cases.map((c) => c.id)}
-                            strategy={verticalListSortingStrategy}
-                          >
-                            <div className="flex flex-col gap-4">
-                              {cases.map((c, index) => {
-                                const activeIndex = cases.findIndex((x) => x.id === activeDragId);
-                                const isOver =
-                                  activeDragId != null &&
-                                  overDragId === c.id &&
-                                  c.id !== activeDragId;
-                                return (
-                                  <LockableCaseRow
-                                    key={c.id}
-                                    id={c.id}
-                                    caseTitle={c.title}
-                                    onTitleChange={(title) => updateCase(c.id, { title })}
-                                    required={c.required}
-                                    onRequiredChange={(required) => updateCase(c.id, { required })}
-                                    onDelete={() => deleteCase(c.id)}
-                                    value={c.value}
-                                    onValueChange={(value) => updateCase(c.id, { value })}
-                                    locked={c.locked}
-                                    onLockedChange={(locked) => updateCase(c.id, { locked })}
-                                    mode={c.mode}
-                                    onModeChange={(mode) => updateCase(c.id, { mode })}
-                                    fieldType={c.fieldType}
-                                    compact
-                                    onFieldTypeChange={(fieldType) =>
-                                      updateCaseFieldType(c.id, fieldType)
-                                    }
-                                    controlsVisibility={showcaseControlsVisibility}
-                                    monacoTheme={monacoTheme}
-                                    insertBefore={isOver && activeIndex > index}
-                                    insertAfter={isOver && activeIndex < index}
-                                  />
-                                );
-                              })}
-                            </div>
-                          </SortableContext>
-                          {createPortal(
-                            <DragOverlay>
-                              {activeCase ? <FieldDragOverlay caseItem={activeCase} /> : null}
-                            </DragOverlay>,
-                            document.body
-                          )}
-                        </DndContext>
-                        <button
-                          type="button"
-                          onClick={() => addCaseWithType('string')}
-                          className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover"
-                        >
-                          <Plus size={12} />
-                          Add field
-                        </button>
-                        <div className="flex flex-wrap items-center gap-2">
-                          {buttons.map((b) => (
-                            <FormButtonChip
-                              key={b.id}
-                              label={b.label}
-                              onLabelChange={(label) => updateButton(b.id, { label })}
-                              variant={b.variant}
-                              onVariantChange={(variant) => updateButton(b.id, { variant })}
-                              onDelete={() => deleteButton(b.id)}
-                            />
-                          ))}
-                          <TooltipProvider delayDuration={300}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  onClick={addButton}
-                                  aria-label="Add button"
-                                  className="grid size-10 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                                >
-                                  <Plus size={16} />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>Add button</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </>
-                    )}
-                    {formView === 'json' && (
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-foreground-muted">
-                            Form schema
-                          </span>
-                          <TooltipProvider delayDuration={300}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  onClick={handleCopyJson}
-                                  aria-label="Copy JSON"
-                                  className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                                >
-                                  {jsonCopied ? (
-                                    <CircleCheck size={13} className="text-brand" />
-                                  ) : (
-                                    <Copy size={13} />
-                                  )}
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>{jsonCopied ? 'Copied' : 'Copy JSON'}</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                        <div className="h-[320px] overflow-hidden rounded-xl border border-surface-overlay">
-                          <MonacoEditor
-                            height="100%"
-                            language="json"
-                            value={jsonDraft}
-                            onChange={(value) => handleJsonChange(value ?? '')}
-                            theme={monacoTheme}
-                            beforeMount={registerMonacoThemes}
-                            options={JSON_EDITOR_OPTIONS}
-                          />
-                        </div>
-                        {jsonError && <span className="text-xs text-destructive">{jsonError}</span>}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            <TabsContent value="error-handling" className="mt-0" />
-            <TabsContent value="advanced" className="mt-0" />
-          </Tabs>
-        </NodePropertyPanel>
-      </PanelFrame>
+                  </>
+                )}
+                {formView === 'json' && (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-foreground-muted">Form schema</span>
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={handleCopyJson}
+                              aria-label="Copy JSON"
+                              className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                            >
+                              {jsonCopied ? (
+                                <CircleCheck size={13} className="text-brand" />
+                              ) : (
+                                <Copy size={13} />
+                              )}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>{jsonCopied ? 'Copied' : 'Copy JSON'}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <div className="h-[320px] overflow-hidden rounded-xl border border-surface-overlay">
+                      <MonacoEditor
+                        height="100%"
+                        language="json"
+                        value={jsonDraft}
+                        onChange={(value) => handleJsonChange(value ?? '')}
+                        theme={monacoTheme}
+                        beforeMount={registerMonacoThemes}
+                        options={JSON_EDITOR_OPTIONS}
+                      />
+                    </div>
+                    {jsonError && <span className="text-xs text-destructive">{jsonError}</span>}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        <TabsContent value="error-handling" className="mt-0" />
+        <TabsContent value="advanced" className="mt-0" />
+      </Tabs>
+    </NodePropertyPanel>
+  );
+
+  if (embedded) return panel;
+
+  return (
+    <div className="flex items-start gap-8">
+      <PanelFrame>{panel}</PanelFrame>
 
       <LockableValueFieldShowcase
         controlsVisibility={showcaseControlsVisibility}
