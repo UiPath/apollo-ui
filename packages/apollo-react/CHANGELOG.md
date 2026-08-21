@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.27.0...@uipath/apollo-react@6.28.0) (2026-08-21)
+
+### Features
+
+* **apollo-react:** freeze edges between read-only nodes ([06f98dc](https://github.com/UiPath/apollo-ui/commit/06f98dc209f1cfc08aa078ac508d7bb0f87de6a2))
+
 ## [@uipath/apollo-react-v6.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.26.0...@uipath/apollo-react@6.27.0) (2026-08-20)
 
 ### Features
