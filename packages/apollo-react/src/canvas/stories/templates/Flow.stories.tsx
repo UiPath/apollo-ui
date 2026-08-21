@@ -2809,6 +2809,7 @@ export function FullWorkbenchComposition({
           rightControlsOffset={rightPanelOpen ? 412 : 16}
           trigger={
             <PanelTrigger
+              layout={rightPanelOpen ? 'right' : 'closed'}
               panels={[
                 { id: 'input', label: 'Input', enabled: false },
                 { id: 'properties', label: 'Properties', enabled: rightPanelOpen },
@@ -2816,6 +2817,9 @@ export function FullWorkbenchComposition({
               ]}
               onPanelToggle={(id, enabled) => {
                 if (id === 'properties') setRightPanelOpen(enabled);
+              }}
+              onLayoutChange={(layout) => {
+                if (layout === 'right') setRightPanelOpen(true);
               }}
               onPropertiesClick={() => setRightPanelOpen(true)}
             />
