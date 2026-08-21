@@ -830,10 +830,12 @@ function PropertiesPanel({
   className,
   onClose,
   dragHandleProps,
+  hideTitleBar,
 }: {
   className?: string;
   onClose?: () => void;
   dragHandleProps?: NodePropertyPanelProps['dragHandleProps'];
+  hideTitleBar?: boolean;
 }) {
   return (
     <NodePropertyPanel
@@ -852,6 +854,7 @@ function PropertiesPanel({
       }
       schema={httpRequestForm}
       contentInset="0.875rem"
+      hideTitleBar={hideTitleBar}
       onClose={onClose}
       dragHandleProps={dragHandleProps}
       className={className}
@@ -1427,7 +1430,7 @@ function DockviewInputPanel(_props: IDockviewPanelProps) {
 }
 
 function DockviewPropertiesPanel(_props: IDockviewPanelProps) {
-  return <PropertiesPanel className="h-full" />;
+  return <PropertiesPanel className="h-full" hideTitleBar />;
 }
 
 function DockviewOutputPanel(_props: IDockviewPanelProps) {
@@ -1497,7 +1500,7 @@ export function DraggablePanelLayout({
             referencePanel: index === 0 ? 'canvas' : initialPanelIds[index - 1],
             direction: 'right',
           },
-          initialWidth: id === 'properties' ? 380 : 320,
+          initialWidth: 380,
           minimumWidth: 280,
           minimumHeight: 180,
         });
@@ -1523,8 +1526,8 @@ export function DraggablePanelLayout({
         title: id.charAt(0).toUpperCase() + id.slice(1),
         position: openSibling
           ? { referencePanel: openSibling, direction: 'right' }
-          : { referencePanel: 'canvas', direction: 'below' },
-        initialHeight: openSibling ? undefined : 300,
+          : { referencePanel: 'canvas', direction: 'right' },
+        initialWidth: 380,
         minimumHeight: 180,
         minimumWidth: 280,
       });
