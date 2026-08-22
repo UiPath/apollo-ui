@@ -1,15 +1,7 @@
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { CanvasIcon, partition } from '@uipath/apollo-react/canvas/utils';
 import { Skeleton } from '@uipath/apollo-wind';
-import {
-  forwardRef,
-  memo,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { forwardRef, memo, useCallback, useImperativeHandle, useMemo } from 'react';
 import type { ListImperativeAPI, RowComponentProps } from 'react-window';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
 import { CanvasTooltip } from '../CanvasTooltip';
@@ -61,7 +53,7 @@ export type ListItem<T = any> = {
   section?: string;
   /**
    * Secondary text rendered inline as the second line under the name. Also
-   * revealed in the row's hover tooltip when it (or the name) is truncated.
+   * revealed in the row's hover tooltip.
    */
   description?: string;
   /**
@@ -244,35 +236,15 @@ const ListViewRow = memo(
     // we only layer on the padding that insets content from the focus ring.
     const buttonStyle = useMemo(() => ({ ...style, padding: '4px 6px' }), [style]);
 
-    // Truncation of the name / inline description, measured lazily on hover so
-    // the row tooltip can reveal only the clipped lines. No persistent
-    // observers — one layout read per hover.
-    const nameRef = useRef<HTMLSpanElement>(null);
-    const descriptionRef = useRef<HTMLSpanElement>(null);
-    const [truncated, setTruncated] = useState({ name: false, description: false });
-
-    const measureTruncation = useCallback(() => {
-      const n = nameRef.current;
-      const d = descriptionRef.current;
-      const next = {
-        name: !!n && n.scrollWidth > n.clientWidth,
-        description: !!d && d.scrollWidth > d.clientWidth,
-      };
-      setTruncated((prev) =>
-        prev.name === next.name && prev.description === next.description ? prev : next
-      );
-    }, []);
-
     const handleButtonClick = useCallback(() => {
       const clickTarget = renderedItems[index];
       if (clickTarget?.type === 'item') onItemClick(clickTarget.item, index);
     }, [onItemClick, renderedItems, index]);
 
     const handleButtonHover = useCallback(() => {
-      measureTruncation();
       const hoverTarget = renderedItems[index];
       if (hoverTarget?.type === 'item') onItemHover?.(hoverTarget.item);
-    }, [measureTruncation, onItemHover, renderedItems, index]);
+    }, [onItemHover, renderedItems, index]);
 
     if (renderItem.type === 'section') {
       // Spaced uppercase label, no rule — the header itself is the separator.
@@ -351,17 +323,13 @@ const ListViewRow = memo(
         </IconContainerMemoized>
         <Column flex={1} overflow="hidden">
           <span
-            ref={nameRef}
             className="text-sm list-view-item-name"
             style={item.contentColor ? { color: item.contentColor } : undefined}
           >
             {item.name}
           </span>
           {item.description && (
-            <span
-              ref={descriptionRef}
-              className="text-xs list-view-item-name text-foreground-muted"
-            >
+            <span className="text-xs list-view-item-name text-foreground-muted">
               {item.description}
             </span>
           )}
@@ -389,27 +357,21 @@ const ListViewRow = memo(
       </ListItemButton>
     );
 
-    const showName = truncated.name;
-    const showDescription = !!item.description && truncated.description;
-    const showPopover = truncated.name || truncated.description || !!item.detail;
-    const popover = showPopover ? (
-      <div className="flex flex-col gap-0.5">
-        {showName && <span className="text-sm">{item.name}</span>}
-        {showDescription && (
-          <span className="text-xs text-foreground-inv-de-emp">{item.description}</span>
-        )}
-        {item.detail && <span className="text-xs">{item.detail}</span>}
-      </div>
-    ) : null;
-
     return (
       <CanvasTooltip
         key={item.id}
-        content={popover}
+        content={
+          <div className="flex flex-col gap-0.5">
+            <span className="text-sm">{item.name}</span>
+            {!!item.description && (
+              <span className="text-xs text-foreground-inv-de-emp">{item.description}</span>
+            )}
+            {!!item.detail && <span className="text-xs">{item.detail}</span>}
+          </div>
+        }
         placement="right"
         delay
         contentClassName="max-w-64"
-        hide={!showPopover}
         disableSkipDelay
       >
         {button}
