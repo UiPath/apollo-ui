@@ -1,9 +1,27 @@
+import { cva, type VariantProps } from 'class-variance-authority';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/index';
 
-export interface StatsCardProps extends React.HTMLAttributes<HTMLDivElement> {
+const statsCardVariants = cva('', {
+  variants: {
+    variant: {
+      default: '',
+      primary: 'border-primary/20 bg-primary/5',
+      success: 'border-success/20 bg-success/5',
+      warning: 'border-warning/20 bg-warning/5',
+      danger: 'border-error/20 bg-error/5',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+});
+
+export interface StatsCardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof statsCardVariants> {
   title: string;
   value: string | number;
   description?: string;
@@ -13,28 +31,21 @@ export interface StatsCardProps extends React.HTMLAttributes<HTMLDivElement> {
     label?: string;
     direction?: 'up' | 'down';
   };
-  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
 }
 
 const StatsCard = React.forwardRef<HTMLDivElement, StatsCardProps>(
-  ({ title, value, description, icon, trend, variant = 'default', className, ...props }, ref) => {
-    const variantStyles = {
-      default: '',
-      primary: 'border-primary/20 bg-primary/5',
-      success: 'border-green-500/20 bg-green-500/5',
-      warning: 'border-yellow-500/20 bg-yellow-500/5',
-      danger: 'border-red-500/20 bg-red-500/5',
-    };
-
+  ({ title, value, description, icon, trend, variant, className, ...props }, ref) => {
     const trendDirection = trend?.direction || (trend && trend.value >= 0 ? 'up' : 'down');
     const TrendIcon = trendDirection === 'up' ? TrendingUp : TrendingDown;
-    const trendColorClass =
-      trendDirection === 'up'
-        ? 'text-green-600 dark:text-green-400'
-        : 'text-red-600 dark:text-red-400';
+    const trendColorClass = trendDirection === 'up' ? 'text-success' : 'text-error';
 
     return (
-      <Card ref={ref} className={cn(variantStyles[variant], className)} {...props}>
+      <Card
+        ref={ref}
+        data-slot="stats-card"
+        className={cn(statsCardVariants({ variant }), className)}
+        {...props}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">{title}</CardTitle>
           {icon && <div className="text-muted-foreground">{icon}</div>}
@@ -60,4 +71,4 @@ const StatsCard = React.forwardRef<HTMLDivElement, StatsCardProps>(
 );
 StatsCard.displayName = 'StatsCard';
 
-export { StatsCard };
+export { StatsCard, statsCardVariants };

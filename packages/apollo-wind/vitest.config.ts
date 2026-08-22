@@ -10,6 +10,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    // Interaction-heavy Radix/userEvent suites (rule builder, selects) run
+    // close to vitest's 5s default on slow CI runners; give them headroom.
+    testTimeout: 20000,
+    hookTimeout: 20000,
     setupFiles: ['./tests/setup.ts'],
     environmentOptions: {
       jsdom: {
@@ -33,13 +37,20 @@ export default defineConfig({
         'storybook-static/',
         '*.config.ts',
         '*.config.js',
+        // Storybook-only demo apps, excluded from the published build (see rslib.config.ts)
+        'src/templates/**',
       ],
       include: ['src/**/*.{ts,tsx}'],
       all: true,
-      lines: 80,
-      functions: 80,
-      branches: 80,
-      statements: 80,
+      // Ratcheting floor: raise toward 80 as coverage grows, never lower it.
+      // Vitest only enforces thresholds nested under `coverage.thresholds`;
+      // top-level lines/functions/... are silently ignored.
+      thresholds: {
+        lines: 60,
+        functions: 63,
+        branches: 54,
+        statements: 58,
+      },
     },
   },
   resolve: {

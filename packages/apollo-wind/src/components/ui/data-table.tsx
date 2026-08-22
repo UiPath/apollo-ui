@@ -249,7 +249,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="w-full">
+    <div data-slot="data-table" className="w-full">
       <div className="flex items-center gap-4 py-4">
         {globalFilterFn ? (
           <Input
@@ -477,6 +477,7 @@ export function DataTableColumnHeader<TData, TValue>({
 
   return (
     <Button
+      data-slot="data-table-column-header"
       variant="ghost"
       size="sm"
       className="-ml-3 h-8 max-w-full data-[state=open]:bg-accent"

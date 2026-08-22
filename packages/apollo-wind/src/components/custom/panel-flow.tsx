@@ -77,7 +77,7 @@ export interface FlowPanelProps {
 
 function UiPathLogo() {
   return (
-    <div className="flex h-9 w-9 items-center justify-center overflow-clip rounded-lg bg-[#0092b8] shadow-sm">
+    <div className="flex h-9 w-9 items-center justify-center overflow-clip rounded-lg bg-brand shadow-sm">
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -157,6 +157,7 @@ function IconRail({
               <TooltipTrigger asChild>
                 <button
                   type="button"
+                  aria-label={item.label}
                   className="group flex h-12 w-full items-center justify-center"
                   onClick={() => onNavClick(item.id)}
                 >

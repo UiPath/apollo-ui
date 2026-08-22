@@ -219,7 +219,7 @@ describe('AlertDialog', () => {
     await user.click(trigger);
 
     await waitFor(() => {
-      const overlay = document.querySelector('.bg-black\\/80');
+      const overlay = document.querySelector('.bg-curtain');
       expect(overlay).toBeInTheDocument();
     });
   });

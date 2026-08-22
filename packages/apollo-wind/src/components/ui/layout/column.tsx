@@ -95,7 +95,13 @@ const Column = React.forwardRef<HTMLDivElement, ColumnProps>(
     });
 
     return (
-      <div ref={ref} className={cn(className)} style={{ ...layoutStyles, ...style }} {...htmlProps}>
+      <div
+        ref={ref}
+        data-slot="column"
+        className={cn(className)}
+        style={{ ...layoutStyles, ...style }}
+        {...htmlProps}
+      >
         {children}
       </div>
     );

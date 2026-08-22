@@ -395,7 +395,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             onValueChange={formField.onChange}
             disabled={disabled}
           >
-            <SelectTrigger>
+            <SelectTrigger aria-label={field.label}>
               <SelectValue placeholder={field.placeholder || 'Select...'} />
             </SelectTrigger>
             <SelectContent>

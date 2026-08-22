@@ -185,7 +185,7 @@ const getCheckState = (
 
 // Add this default icon map
 const defaultIconMap: TreeViewIconMap = {
-  file: <Box className="h-4 w-4 text-red-600" />,
+  file: <Box className="h-4 w-4 text-error" />,
   folder: <Folder className="h-4 w-4 text-primary/80" />,
 };
 
@@ -420,7 +420,12 @@ function TreeItem({
                 <div className="flex items-center gap-2 flex-1 min-w-0 group">
                   <Collapsible open={isOpen} onOpenChange={(open) => onToggleExpand(item.id, open)}>
                     <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="3xs" icon>
+                      <Button
+                        variant="ghost"
+                        size="3xs"
+                        icon
+                        aria-label={isOpen ? `Collapse ${item.name}` : `Expand ${item.name}`}
+                      >
                         <motion.div
                           initial={false}
                           animate={{ rotate: isOpen ? 90 : 0 }}
@@ -476,7 +481,7 @@ function TreeItem({
                   {selectedCount !== null && selectedCount > 0 && (
                     <Badge
                       variant="secondary"
-                      className="shrink-0 mr-1 bg-blue-100 hover:bg-blue-100"
+                      className="shrink-0 mr-1 bg-info-background hover:bg-info-background"
                     >
                       {selectedCount} selected
                     </Badge>
@@ -489,6 +494,7 @@ function TreeItem({
                           icon
                           className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => e.stopPropagation()}
+                          aria-label={`Actions for ${item.name}`}
                         >
                           <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                         </Button>
@@ -543,6 +549,7 @@ function TreeItem({
                           icon
                           className="h-6 w-6 shrink-0 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => e.stopPropagation()}
+                          aria-label={`Details for ${item.name}`}
                         >
                           <Info className="h-4 w-4 text-muted-foreground" />
                         </Button>
@@ -639,6 +646,7 @@ function TreeItem({
                           icon
                           className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => e.stopPropagation()}
+                          aria-label={`Actions for ${item.name}`}
                         >
                           <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                         </Button>
@@ -689,6 +697,7 @@ function TreeItem({
                           icon
                           className="h-6 w-6 shrink-0 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => e.stopPropagation()}
+                          aria-label={`Details for ${item.name}`}
                         >
                           <Info className="h-4 w-4 text-muted-foreground" />
                         </Button>
@@ -794,28 +803,31 @@ function TreeItem({
  *
  * **Layout**: Title → Search bar → Expand/Collapse + Selected count + Clear → Tree. No horizontal scroll.
  */
-export default function TreeView({
-  className,
-  containerClassName,
-  checkboxLabels = {
-    check: 'Check',
-    uncheck: 'Uncheck',
+const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeView(
+  {
+    className,
+    containerClassName,
+    checkboxLabels = {
+      check: 'Check',
+      uncheck: 'Uncheck',
+    },
+    data,
+    iconMap,
+    searchPlaceholder = 'Search...',
+    selectionText = 'selected',
+    showExpandAll = true,
+    showCheckboxes = false,
+    showSelectionCheckboxes = false,
+    selectionMode = 'multiple',
+    title,
+    getIcon,
+    onSelectionChange,
+    onAction,
+    onCheckChange,
+    menuItems,
   },
-  data,
-  iconMap,
-  searchPlaceholder = 'Search...',
-  selectionText = 'selected',
-  showExpandAll = true,
-  showCheckboxes = false,
-  showSelectionCheckboxes = false,
-  selectionMode = 'multiple',
-  title,
-  getIcon,
-  onSelectionChange,
-  onAction,
-  onCheckChange,
-  menuItems,
-}: TreeViewProps) {
+  ref
+) {
   const [currentMousePos, setCurrentMousePos] = useState<number>(0);
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [dragStartPosition, setDragStartPosition] = useState<{
@@ -1084,7 +1096,11 @@ export default function TreeView({
   }, [selectedIds, onSelectionChange, getSelectedItems]);
 
   return (
-    <div className={cn('flex gap-4 min-w-0', containerClassName ? 'w-full' : '')}>
+    <div
+      ref={ref}
+      data-slot="tree-view"
+      className={cn('flex gap-4 min-w-0', containerClassName ? 'w-full' : '')}
+    >
       <div
         ref={treeRef}
         className={cn(
@@ -1147,7 +1163,7 @@ export default function TreeView({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+                    className="h-8 px-2 text-success hover:text-success-text hover:bg-success-background"
                     onClick={() => {
                       const effectiveItems = getEffectiveSelectedItems();
                       const processItem = (item: TreeViewItem) => {
@@ -1162,7 +1178,7 @@ export default function TreeView({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="h-8 px-2 text-error hover:text-error-text hover:bg-error-background"
                     onClick={() => {
                       const effectiveItems = getEffectiveSelectedItems();
                       const processItem = (item: TreeViewItem) => {
@@ -1188,7 +1204,7 @@ export default function TreeView({
         >
           {isDragging && (
             <div
-              className="absolute inset-0 bg-blue-500/0 pointer-events-none"
+              className="absolute inset-0 bg-transparent pointer-events-none"
               style={{
                 top: Math.min(dragStart || 0, dragStart === null ? 0 : currentMousePos),
                 height: Math.abs((dragStart || 0) - (dragStart === null ? 0 : currentMousePos)),
@@ -1221,4 +1237,6 @@ export default function TreeView({
       </div>
     </div>
   );
-}
+});
+
+export default TreeView;
