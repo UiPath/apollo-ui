@@ -249,6 +249,36 @@ export class LocalHistoryService {
   }
 
   /**
+   * Renames an existing conversation in place.
+   */
+  public static async renameConversation(
+    conversationId: string,
+    name: string
+  ): Promise<void> {
+    const db = await LocalHistoryService.getConversationsDb();
+    const existing = await LocalHistoryService.getConversation(conversationId);
+
+    if (!existing) {
+      return;
+    }
+
+    const data: Conversation = {
+      ...existing,
+      name,
+      lastUpdated: Date.now(),
+    };
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('conversations', 'readwrite');
+      const store = transaction.objectStore('conversations');
+      const request = store.put(data, conversationId);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+  }
+
+  /**
    * Deletes a conversation and all associated messages for a conversation.
    */
   public static async deleteConversation(conversationId: string): Promise<void> {
@@ -416,6 +446,14 @@ export class LocalHistoryService {
           }
         );
 
+        const unsubscribeRenameConversation = chatService.on(
+          AutopilotChatEvent.RenameConversation,
+          async (payload: { conversationId: string; name: string }) => {
+            await LocalHistoryService.renameConversation(payload.conversationId, payload.name);
+            chatService.setHistory(await LocalHistoryService.getAllConversations());
+          }
+        );
+
         cleanup();
         LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('setHistory', unsubscribeSetHistory);
         LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set(
@@ -425,6 +463,10 @@ export class LocalHistoryService {
         LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set(
           'deleteConversation',
           unsubscribeDeleteConversation
+        );
+        LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set(
+          'renameConversation',
+          unsubscribeRenameConversation
         );
         LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('request', unsubscribeRequest);
         LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('response', unsubscribeResponse);

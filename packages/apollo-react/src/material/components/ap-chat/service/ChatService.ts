@@ -62,6 +62,7 @@ export class AutopilotChatService {
     // AudioStreaming (always-on voice interaction) will be disabled by default since each consumer needs to wire InputStream/OutputStream events
     // FullHeight will be disabled by default since most of the consumers will have the portal-shell header
     // HtmlPreview will be disabled by default
+    // RenameChat is disabled by default since consumers must wire up persistence for renames
     disabledFeatures: {
       settings: true,
       headerSeparator: true,
@@ -69,6 +70,7 @@ export class AutopilotChatService {
       audioStreaming: true,
       fullHeight: true,
       htmlPreview: true,
+      renameChat: true,
     },
     settingsRenderer: () => {},
     models: undefined,
@@ -139,6 +141,7 @@ export class AutopilotChatService {
     this.toggleHistory = this.toggleHistory.bind(this);
     this.toggleSettings = this.toggleSettings.bind(this);
     this.deleteConversation = this.deleteConversation.bind(this);
+    this.renameConversation = this.renameConversation.bind(this);
     this.openConversation = this.openConversation.bind(this);
     this.setAllowedAttachments = this.setAllowedAttachments.bind(this);
     this.toggleAutoScroll = this.toggleAutoScroll.bind(this);
@@ -932,6 +935,19 @@ export class AutopilotChatService {
     }
 
     this._eventBus.publish(AutopilotChatEvent.DeleteConversation, conversationId);
+  }
+
+  /**
+   * Renames a conversation in the chat service.
+   *
+   * @param conversationId - The conversation ID to rename
+   * @param name - The new name
+   */
+  renameConversation(conversationId: string, name: string) {
+    this._eventBus.publish(AutopilotChatEvent.RenameConversation, {
+      conversationId,
+      name,
+    });
   }
 
   /**

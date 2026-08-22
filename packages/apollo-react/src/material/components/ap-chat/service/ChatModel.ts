@@ -191,6 +191,7 @@ export interface AutopilotChatError {
  * @property {string} SetConversation - Emitted when the conversation is set
  * @property {string} SetHistory - Emitted when the history is set
  * @property {string} DeleteConversation - Emitted when a conversation is deleted from the history list
+ * @property {string} RenameConversation - Emitted when a conversation is renamed from the history list
  * @property {string} OpenConversation - Emitted when a conversation is opened (clicked on in the history list)
  * @property {string} Feedback - Emitted when a feedback is sent (thumbs up or thumbs down)
  * @property {string} Copy - Emitted when a message is copied
@@ -234,6 +235,7 @@ export enum AutopilotChatEvent {
   SetConversation = 'setConversation',
   SetHistory = 'setHistory',
   DeleteConversation = 'deleteConversation',
+  RenameConversation = 'renameConversation',
   OpenConversation = 'openConversation',
   Feedback = 'feedback',
   Copy = 'copy',
@@ -422,6 +424,7 @@ export interface PdfCitation extends Citation {
  * @property htmlPreview - Whether the chat has HTML preview for code blocks
  * @property audioStreaming - Whether to disable the always-on voice interaction button
  *                            (the feature requires the consumer to handle InputStream/OutputStream audio events)
+ * @property renameChat - Whether to disable the rename affordance on chat history items.
  */
 export interface AutopilotChatDisabledFeatures {
   resize?: boolean;
@@ -441,6 +444,7 @@ export interface AutopilotChatDisabledFeatures {
   copy?: boolean;
   htmlPreview?: boolean;
   audioStreaming?: boolean;
+  renameChat?: boolean;
 }
 
 /**
@@ -468,6 +472,8 @@ export interface AutopilotChatOverrideLabels {
  * @property {string} CloseChat - Emitted when the user attemps to close the chat
  * @property {string} CitationClick - Emitted when the user clicks on a citation
  * @property {string} Feedback - Emitted when the user clicks on feedback thumbs up or down
+ * @property {string} DeleteConversation - Emitted when the user attempts to delete a conversation
+ * @property {string} RenameConversation - Emitted when the user attempts to rename a conversation
  */
 export enum AutopilotChatPreHookAction {
   NewChat = 'new-chat',
@@ -478,6 +484,7 @@ export enum AutopilotChatPreHookAction {
   CitationClick = 'citation-click',
   Feedback = 'feedback',
   DeleteConversation = 'delete-conversation',
+  RenameConversation = 'rename-conversation',
 }
 
 /**
@@ -589,6 +596,18 @@ export interface AutopilotChatHistory {
   id: string;
   name: string;
   timestamp: string;
+}
+
+/**
+ * Payload emitted with `AutopilotChatEvent.RenameConversation` and passed to the
+ * `AutopilotChatPreHookAction.RenameConversation` pre-hook.
+ *
+ * @property conversationId - The id of the conversation being renamed
+ * @property name - The new (trimmed, non-empty) name
+ */
+export interface AutopilotChatRenameConversationPayload {
+  conversationId: string;
+  name: string;
 }
 
 /**
