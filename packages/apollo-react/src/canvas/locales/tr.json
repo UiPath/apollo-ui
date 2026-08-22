@@ -34,6 +34,7 @@
   "stage-node.status.early-exit": "Erken çıkış",
   "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} diğer {Ran # times}}",
   "stage-node.task-badge.running-again": "Tekrar çalıştırılıyor",
+  "stage-node.task-mocked": "Bu görevin çıktıları sahte",
   "stage-node.ungroup-parallel-tasks": "Paralel görevlerin grubunu çöz",
   "stage-node.untitled-stage": "Adsız adım",
   "sticky-note.formatting.bold": "Kalın ({boldShortcut})",

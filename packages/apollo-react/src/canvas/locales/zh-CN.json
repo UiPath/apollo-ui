@@ -34,6 +34,7 @@
   "stage-node.status.early-exit": "提前退出",
   "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} 其他 {Ran # times}}",
   "stage-node.task-badge.running-again": "正在再次运行",
+  "stage-node.task-mocked": "此任务的输出已模拟",
   "stage-node.ungroup-parallel-tasks": "取消并行任务分组",
   "stage-node.untitled-stage": "无标题阶段",
   "sticky-note.formatting.bold": "粗体 ({boldShortcut})",

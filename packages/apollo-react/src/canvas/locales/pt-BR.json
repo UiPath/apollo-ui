@@ -34,6 +34,7 @@
   "stage-node.status.early-exit": "Saída antecipada",
   "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} other {Ran # times}}",
   "stage-node.task-badge.running-again": "Executando novamente",
+  "stage-node.task-mocked": "As saídas desta tarefa são simuladas",
   "stage-node.ungroup-parallel-tasks": "Desagrupar tarefas paralelas",
   "stage-node.untitled-stage": "Estágio sem título",
   "sticky-note.formatting.bold": "Negrito ({boldShortcut})",
