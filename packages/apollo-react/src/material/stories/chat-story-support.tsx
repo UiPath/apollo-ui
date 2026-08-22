@@ -257,6 +257,7 @@ export function ChatShowcaseDemo({
     audio: false, // STT dictate (mic) button - disabled by default
     audioStreaming: false, // Always-on voice interaction button - disabled by default
     htmlPreview: true,
+    renameChat: true, // Rename affordance on history items - disabled by default
     headerSeparator: false, // Disabled by default (like HTML)
     fullHeight: true, // Enabled by default
     resize: true,
@@ -560,6 +561,7 @@ export function ChatShowcaseDemo({
           close: !features.close,
           feedback: !features.feedback,
           copy: !features.copy,
+          renameChat: !features.renameChat,
         },
         settingsRenderer: createSettingsRenderer(),
       },
@@ -701,6 +703,16 @@ export function ChatShowcaseDemo({
       // biome-ignore lint/suspicious/noExplicitAny: Event not in enum
       service.on('stopResponse' as any, () => {
         console.log('Stop response event');
+      })
+    );
+
+    unsubscribes.push(
+      service.on(AutopilotChatEvent.RenameConversation, (payload: unknown) => {
+        const { conversationId, name } = payload as {
+          conversationId: string;
+          name: string;
+        };
+        console.log(`[Rename] conversation ${conversationId} renamed to "${name}"`);
       })
     );
 
@@ -938,6 +950,7 @@ export function ChatShowcaseDemo({
     features.headerSeparator,
     features.history,
     features.htmlPreview,
+    features.renameChat,
     features.resize,
     features.settings,
     features.readOnly,
@@ -972,6 +985,7 @@ export function ChatShowcaseDemo({
           close: !features.close,
           feedback: !features.feedback,
           copy: !features.copy,
+          renameChat: !features.renameChat,
         },
         settingsRenderer: createSettingsRenderer(),
         ...(chatMode === AutopilotChatMode.Embedded &&
@@ -1537,7 +1551,14 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
   };
 
   const setPreHook = () => {
-    const actions = ['new-chat', 'toggle-history', 'toggle-chat', 'close-chat', 'feedback'];
+    const actions = [
+      'new-chat',
+      'toggle-history',
+      'toggle-chat',
+      'close-chat',
+      'feedback',
+      'rename-conversation',
+    ];
     actions.forEach((action) => {
       // biome-ignore lint/suspicious/noExplicitAny: setPreHook action parameter not fully typed
       chatService?.setPreHook(action as any, async () => {
@@ -2150,6 +2171,16 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
               />
             }
             label="History"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.renameChat}
+                onChange={() => toggleFeature('renameChat')}
+              />
+            }
+            label="Rename Chat"
           />
           <FormControlLabel
             control={
