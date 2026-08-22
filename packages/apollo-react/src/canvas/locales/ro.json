@@ -34,6 +34,7 @@
   "stage-node.status.early-exit": "Ieșire anticipată",
   "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} other {Ran # times}}",
   "stage-node.task-badge.running-again": "Rulează din nou",
+  "stage-node.task-mocked": "Rezultatele acestei sarcini sunt simulate",
   "stage-node.ungroup-parallel-tasks": "Anulați gruparea sarcinilor paralele",
   "stage-node.untitled-stage": "Scenă fără titlu",
   "sticky-note.formatting.bold": "Bold ({boldShortcut})",
