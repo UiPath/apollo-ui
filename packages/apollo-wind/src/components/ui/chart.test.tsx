@@ -170,10 +170,7 @@ describe('ChartStyle', () => {
 
   it('sanitizes unsafe characters out of ids and keys', () => {
     const { container } = render(
-      <ChartStyle
-        id='evil"]{}<script>'
-        config={{ 'bad key!': { label: 'Bad', color: 'red' } }}
-      />
+      <ChartStyle id='evil"]{}<script>' config={{ 'bad key!': { label: 'Bad', color: 'red' } }} />
     );
     const css = container.querySelector('style')?.textContent ?? '';
     expect(css).not.toContain('<script>');
