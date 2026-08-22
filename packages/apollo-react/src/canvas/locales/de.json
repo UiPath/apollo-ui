@@ -34,6 +34,7 @@
   "stage-node.status.early-exit": "Früher Austritt",
   "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} weitere {Ran # times}}",
   "stage-node.task-badge.running-again": "Wird erneut ausgeführt",
+  "stage-node.task-mocked": "Die Ausgaben dieses Knotens sind Pseudo-Ausgaben",
   "stage-node.ungroup-parallel-tasks": "Gruppierung paralleler Aufgaben aufheben",
   "stage-node.untitled-stage": "Schritt ohne Titel",
   "sticky-note.formatting.bold": "Fett ({boldShortcut})",

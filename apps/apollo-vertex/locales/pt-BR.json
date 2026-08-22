@@ -143,7 +143,7 @@
   "ixp_identical_ratio": "{{identical}}/{{total}} idênticos",
   "ixp_new": "Nova execução",
   "ixp_no_documents": "Nenhum documento foi comparado.",
-  "ixp_output_classified": "{{count}} classificado",
+  "ixp_output_classified": "{{count}} classificado(s)",
   "ixp_output_field_count": "{{count}} campo(s)",
   "ixp_output_no_documents": "Esta saída não tem documentos extraídos.",
   "ixp_output_total_files": "{{count}} arquivo(s)",

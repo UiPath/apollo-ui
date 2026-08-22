@@ -34,6 +34,7 @@
   "stage-node.status.early-exit": "提前退出",
   "stage-node.task-badge.ran-n-times": "{count, plural, one {Ran # time} 其他 {Ran # times}}",
   "stage-node.task-badge.running-again": "再次執行",
+  "stage-node.task-mocked": "已模擬此任務的輸出",
   "stage-node.ungroup-parallel-tasks": "將平行任務取消分組",
   "stage-node.untitled-stage": "未命名階段",
   "sticky-note.formatting.bold": "粗體 ({boldShortcut})",
