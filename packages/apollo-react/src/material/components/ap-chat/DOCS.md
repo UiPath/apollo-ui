@@ -140,6 +140,7 @@ See [Usage Examples](#usage-examples) for complete setup details.
 | `appendOlderHistoryItems(items: AutopilotChatHistory[], done?: boolean)`      | (Only when `paginatedHistory` is enabled) Appends older history items when loading more. Set `done` to `true` when no more items are available (see [Pagination and Loading More History](#pagination-and-loading-more-history)) |
 | `toggleHistory(open?: boolean)`                                               | Toggles the history panel visibility                                                                                                                                                                                             |
 | `deleteConversation(conversationId: string)`                                  | Deletes a conversation from the history                                                                                                                                                                                          |
+| `renameConversation(conversationId: string, name: string)`                    | Renames a conversation.                                                                                        |
 | `openConversation(conversationId: string \| null, showLoadingState: boolean)` | Opens a specific conversation from the history, second parameter indicates if the chat should show loading spinner for conversation (defaults to true)                                                                           |
 
 ### Settings Management
@@ -282,6 +283,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetConversation`: Emitted when the conversation is set
 - `SetHistory`: Emitted when the history is set
 - `DeleteConversation`: Emitted when a conversation is deleted from the history list
+- `RenameConversation`: Emitted when a conversation is renamed from the history list (see [Renaming Conversations](#renaming-conversations))
 - `OpenConversation`: Emitted when a conversation is opened (clicked on in the history list)
 - `Feedback`: Emitted when a feedback is sent (thumbs up or thumbs down)
 - `Copy`: Emitted when a message is copied
@@ -2375,6 +2377,23 @@ chatService.on(AutopilotChatEvent.DeleteConversation, (conversationId) => {
 });
 ```
 
+#### Renaming Conversations
+
+Users can rename a conversation inline from the history panel by clicking the edit icon
+on a row (revealed on hover). Consumers receive the `RenameConversation` event and are
+responsible for persisting the new name to their backend.
+
+```typescript
+// Rename a conversation in history
+chatService.renameConversation('conversation-2', 'Q3 planning notes');
+
+// Listen for rename events dispatched by the UI or by renameConversation()
+chatService.on(AutopilotChatEvent.RenameConversation, ({ conversationId, name }) => {
+  console.log('User renamed', conversationId, 'to', name);
+  // Persist to your backend
+});
+```
+
 #### Toggling the History Panel
 
 ```typescript
@@ -3071,6 +3090,7 @@ enum AutopilotChatMode {
  * @property copy - Whether the chat has copy button
  * @property audioStreaming - Whether to disable the always-on voice interaction button
  *                            (the feature requires the consumer to handle InputStream/OutputStream audio events)
+ * @property renameChat - Whether to disable the rename affordance on chat history items.
  */
 export interface AutopilotChatDisabledFeatures {
   resize?: boolean;
@@ -3089,6 +3109,7 @@ export interface AutopilotChatDisabledFeatures {
   fullHeight?: boolean;
   copy?: boolean;
   audioStreaming?: boolean;
+  renameChat?: boolean;
 }
 ```
 
@@ -3315,6 +3336,22 @@ export interface AutopilotChatHistory {
 }
 ```
 
+### AutopilotChatRenameConversationPayload
+
+```typescript
+/**
+ * Payload emitted with `AutopilotChatEvent.RenameConversation` and passed to the
+ * `AutopilotChatPreHookAction.RenameConversation` pre-hook.
+ *
+ * @property conversationId - The id of the conversation being renamed
+ * @property name - The new (trimmed, non-empty) name
+ */
+export interface AutopilotChatRenameConversationPayload {
+  conversationId: string;
+  name: string;
+}
+```
+
 ### AutopilotChatMessageRenderer
 
 ```typescript
@@ -3371,6 +3408,7 @@ export interface AutopilotChatActionPayload {
  * @property {string} CitationClick - Emitted when the user clicks on a citation
  * @property {string} Feedback - Emitted when the user clicks on the feedback buttons thumbs up/down
  * @property {string} DeleteConversation - Emitted when the user attempts to delete a conversation
+ * @property {string} RenameConversation - Emitted when the user attempts to rename a conversation
  */
 export enum AutopilotChatPreHookAction {
   NewChat = 'new-chat',
@@ -3380,7 +3418,8 @@ export enum AutopilotChatPreHookAction {
   CloseChat = 'close-chat',
   CitationClick = 'citation-click',
   Feedback = 'feedback',
-  DeleteConversation = 'delete-conversation'
+  DeleteConversation = 'delete-conversation',
+  RenameConversation = 'rename-conversation'
 }
 ```
 
