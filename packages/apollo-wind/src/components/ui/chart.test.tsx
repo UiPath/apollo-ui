@@ -171,7 +171,7 @@ describe('ChartStyle', () => {
   it('sanitizes unsafe characters out of ids and keys', () => {
     const { container } = render(
       <ChartStyle
-        id='evil"] { } <script>'
+        id='evil"]{}<script>'
         config={{ 'bad key!': { label: 'Bad', color: 'red' } }}
       />
     );
