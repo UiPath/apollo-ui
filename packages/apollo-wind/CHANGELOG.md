@@ -1,3 +1,19 @@
+## [@uipath/apollo-wind-v2.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.35.0...@uipath/apollo-wind@2.36.0) (2026-08-22)
+
+### Features
+
+* **apollo-wind:** add DAP component patterns page ([edf131e](https://github.com/UiPath/apollo-ui/commit/edf131e59e6136cfa5632049d0162230ceb6f73c))
+* **apollo-wind:** add Flow dense DAP preview ([d3cc919](https://github.com/UiPath/apollo-ui/commit/d3cc91949086a8a499bc02d44b253679401bcabc))
+
+### Bug Fixes
+
+* **apollo-wind:** inherit shared story theme ([1c5fb4e](https://github.com/UiPath/apollo-ui/commit/1c5fb4e74d526b5d818fd84a267f61b80621127c))
+* **apollo-wind:** strengthen Flow dense layout ([fd0a01f](https://github.com/UiPath/apollo-ui/commit/fd0a01f14742393141ee66a875a56ded82e2a367))
+
+### Reverts
+
+* **apollo-wind:** remove Flow dense DAP preview ([dfe3125](https://github.com/UiPath/apollo-ui/commit/dfe31251c981c528f007f32be5be4088f5cffa8c))
+
 ## [@uipath/apollo-wind-v2.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.34.0...@uipath/apollo-wind@2.35.0) (2026-08-20)
 
 ### Features
