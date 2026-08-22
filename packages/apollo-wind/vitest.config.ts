@@ -10,6 +10,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    // Interaction-heavy Radix/userEvent suites (rule builder, selects) run
+    // close to vitest's 5s default on slow CI runners; give them headroom.
+    testTimeout: 20000,
+    hookTimeout: 20000,
     setupFiles: ['./tests/setup.ts'],
     environmentOptions: {
       jsdom: {
