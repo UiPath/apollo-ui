@@ -26,6 +26,7 @@ export function generateStaticParams() {
     { slug: ["catalog"] },
     { slug: ["configure"] },
     { slug: ["workbench"] },
+    { slug: ["outcomes"] },
     { slug: ["requests"] },
     { slug: ["review"] },
     { slug: ["track"] },

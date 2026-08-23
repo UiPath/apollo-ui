@@ -1,3 +1,5 @@
+// oxlint-disable max-lines -- open-question register, grows by design as prompts add entries
+
 // J3's open-question register. Each entry names something pending a ruling
 // from product or design. Referencing ph("PH-0x") keeps the gap visible in
 // the running prototype and greppable in the source, instead of a
@@ -237,6 +239,48 @@ export const PLACEHOLDERS = {
   "PH-67": {
     description:
       "Sam's workbench details pane 'governing' section heading, pending a ruling on its wording",
+  },
+  "PH-68": {
+    description:
+      "Elena's outcomes hero headline wording, figure interpolated from the data module, pending a ruling",
+    provisional: "Intake quality holds at 82% first time right",
+  },
+  "PH-69": {
+    description:
+      "Elena's outcomes hero sub-line wording, figure interpolated from the data module, pending a ruling",
+    provisional: "Off contract spend concentrates in software",
+  },
+  "PH-70": {
+    description:
+      "Elena's outcomes composer placeholder copy, pending a ruling on its wording",
+    provisional: "Ask about any of these figures",
+  },
+  "PH-71": {
+    description:
+      "Elena's outcomes stage breakdown card heading, pending a ruling on its wording",
+    provisional: "Where the time goes",
+  },
+  "PH-72": {
+    description:
+      "Elena's outcomes page header time range control, unwired pending a ruling on its behaviour",
+    provisional: "This quarter",
+  },
+  "PH-73": {
+    description:
+      "Elena's outcomes page header primary action, unwired pending a ruling on its behaviour",
+    provisional: "Export",
+  },
+  "PH-74": {
+    description:
+      "Elena's outcomes page header badge text, pending a ruling on its wording",
+  },
+  "PH-75": {
+    description:
+      "Elena's outcomes composer first suggestion chip, pending a ruling on its wording",
+  },
+  "PH-76": {
+    description:
+      "Elena's outcomes composer second suggestion chip, pending a ruling on its wording",
   },
 } as const;
 

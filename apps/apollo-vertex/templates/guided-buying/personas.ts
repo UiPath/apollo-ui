@@ -1,5 +1,6 @@
 import type { RoutePaths } from "@tanstack/router-core";
 import {
+  BarChart3,
   ClipboardCheck,
   ClipboardList,
   Home as HomeIcon,
@@ -39,12 +40,21 @@ const approverNavItems: ShellNavItem[] = [
   { path: "/approvals", label: "approvals", icon: ClipboardCheck },
 ];
 
+// Elena's own seat (prompt 58): no queue, no buy flow, no requests list,
+// so none of the other roles' nav items apply to her. One item, the same
+// shape buyerNavItems/approverNavItems already use for a role that owns
+// exactly one surface.
+const analyticsNavItems: ShellNavItem[] = [
+  { path: "/outcomes", label: "analytics", icon: BarChart3 },
+];
+
 export type PersonaId =
   | "requester"
   | "buyer"
   | "approver"
   | "priya"
-  | "budget-owner";
+  | "budget-owner"
+  | "analytics";
 
 export interface Persona {
   id: PersonaId;
@@ -122,16 +132,29 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     homeRoute: "/approvals",
     navItems: approverNavItems,
   },
+  // Elena Vasquez (prompt 58), procurement outcomes. Name/role/chip
+  // subtitle derive from her people.ts record, the same way Priya's and
+  // Dana's entries do, not restated here.
+  analytics: {
+    id: "analytics",
+    name: PEOPLE["elena-vasquez"].name,
+    role: PEOPLE["elena-vasquez"].role,
+    chipSubtitle: `${PEOPLE["elena-vasquez"].role} · ${PEOPLE["elena-vasquez"].org}`,
+    homeRoute: "/outcomes",
+    navItems: analyticsNavItems,
+  },
 };
 
 // Menu order: Requester, Buyer, Approver per the spec, Priya appended,
-// Dana appended after her (Chunk C1's own second approver seat).
+// Dana appended after her (Chunk C1's own second approver seat), Elena
+// appended after Dana (prompt 58).
 export const PERSONA_MENU_ORDER: PersonaId[] = [
   "requester",
   "buyer",
   "approver",
   "priya",
   "budget-owner",
+  "analytics",
 ];
 
 // Which persona owns a given route prefix, used once, at mount, to pick
@@ -190,5 +213,6 @@ export function personaForPath(pathname: string, search?: unknown): PersonaId {
   }
   if (pathname.startsWith("/workbench")) return "buyer";
   if (pathname.startsWith("/intake")) return "priya";
+  if (pathname.startsWith("/outcomes")) return "analytics";
   return "requester";
 }

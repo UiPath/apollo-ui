@@ -7,6 +7,7 @@ import { Review } from "./catalog/v1/Review";
 import { GuidedBuyingLayout } from "./GuidedBuyingLayout";
 import { HomeRoute } from "./home/HomeRoute";
 import { IntakeFlow } from "./intake/IntakeFlow";
+import { Outcomes } from "./outcomes/Outcomes";
 import { Approvals } from "./requests/Approvals";
 import { DecisionWindow } from "./requests/DecisionWindow";
 import { MyRequests } from "./requests/MyRequests";
@@ -98,6 +99,13 @@ const workbenchRoute = createRoute({
   component: Workbench,
 });
 
+// Elena's procurement outcomes view (prompt 58).
+const outcomesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/outcomes",
+  component: Outcomes,
+});
+
 // J3 intake, Priya's own surface. Same convention as /buy: bare renders the
 // composer, the flow phases are addressable via ?phase=..., matching
 // Marcus's own /buy?phase=bridge / ?phase=selection.
@@ -186,6 +194,7 @@ export const routeTree = rootRoute.addChildren([
   catalogRoute,
   configureRoute,
   workbenchRoute,
+  outcomesRoute,
   intakeRoute,
   requestsRoute,
   requestDetailRoute,
