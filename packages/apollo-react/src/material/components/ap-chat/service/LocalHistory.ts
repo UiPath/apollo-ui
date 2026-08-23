@@ -251,10 +251,7 @@ export class LocalHistoryService {
   /**
    * Renames an existing conversation in place.
    */
-  public static async renameConversation(
-    conversationId: string,
-    name: string
-  ): Promise<void> {
+  public static async renameConversation(conversationId: string, name: string): Promise<void> {
     const db = await LocalHistoryService.getConversationsDb();
     const existing = await LocalHistoryService.getConversation(conversationId);
 

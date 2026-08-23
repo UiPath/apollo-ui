@@ -234,6 +234,10 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
         chatService.renameConversation(item.id, trimmed);
         setIsEditing(false);
         isCommittingRef.current = false;
+      })
+      .catch(() => {
+        // Pre-hook threw or rejected. Revert so the input doesn't stay stuck.
+        cancelRename();
       });
   }, [draftName, item.id, item.name, chatService, cancelRename]);
 
@@ -306,9 +310,11 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
           handleItemClick(item.id);
         }
       }}
-      aria-label={item.name}
-      role="button"
-      aria-pressed={isActive}
+      // While editing, drop the button role so the nested <input> is exposed correctly
+      // to assistive tech (ARIA disallows interactive descendants of role="button").
+      aria-label={isEditing ? undefined : item.name}
+      role={isEditing ? undefined : 'button'}
+      aria-pressed={isEditing ? undefined : isActive}
     >
       <GroupTitle>
         {isEditing ? (
@@ -345,31 +351,31 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
       {!isEditing && (
         <div className="action-buttons-wrapper">
           {renameEnabled && (
-          <AutopilotChatActionButton
-            disabled={!isHistoryOpen}
-            onClick={(ev) => handleRename(ev)}
-            onFocus={() => {
-              setIsFocused(true);
-            }}
-            onBlur={() => {
-              setIsFocused(false);
-            }}
-            onKeyDown={(ev) => {
-              // Close modal if escape is pressed (propagate to Popover parent)
-              if (ev.key !== 'Escape') {
-                ev.stopPropagation();
-              }
+            <AutopilotChatActionButton
+              disabled={!isHistoryOpen}
+              onClick={(ev) => handleRename(ev)}
+              onFocus={() => {
+                setIsFocused(true);
+              }}
+              onBlur={() => {
+                setIsFocused(false);
+              }}
+              onKeyDown={(ev) => {
+                // Close modal if escape is pressed (propagate to Popover parent)
+                if (ev.key !== 'Escape') {
+                  ev.stopPropagation();
+                }
 
-              if (ev.key === 'Enter' || ev.key === ' ') {
-                handleRename(ev);
-              }
-            }}
-            iconName="edit"
-            iconSize="16px"
-            tooltip={tooltipVisible ? renameLabel : ''}
-            data-testid="autopilot-chat-history-rename"
-            ariaLabel={renameLabel}
-          />
+                if (ev.key === 'Enter' || ev.key === ' ') {
+                  handleRename(ev);
+                }
+              }}
+              iconName="edit"
+              iconSize="16px"
+              tooltip={tooltipVisible ? renameLabel : ''}
+              data-testid="autopilot-chat-history-rename"
+              ariaLabel={renameLabel}
+            />
           )}
           <AutopilotChatActionButton
             disabled={!isHistoryOpen}
