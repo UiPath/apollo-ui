@@ -1,15 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-
-import { withCanvasProviders } from '../../storybook-utils';
 import {
   AgentExperienceComposition,
   FullWorkbenchComposition,
   mapTemplateThemeToChat,
   NodeInventoryComposition,
-} from './Flow.stories';
+} from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
+import { withCanvasProviders } from '../../../../packages/apollo-react/src/canvas/storybook-utils';
 
 const meta = {
-  title: 'Templates/Flow Standalone',
+  title: 'Apollo Wind/Patterns/Layout Patterns',
   parameters: {
     layout: 'fullscreen',
   },
@@ -19,32 +18,37 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const WorkbenchWithForms: Story = {
+export const Form: Story = {
   name: 'UX Form',
   render: () => <FullWorkbenchComposition rightPanelVariant="forms" />,
 };
 
-export const WorkbenchWithNode: Story = {
+export const Variables: Story = {
   name: 'UX Variables',
   render: () => <FullWorkbenchComposition rightPanelVariant="node" />,
 };
 
-export const RuleBuilding: Story = {
+export const VariableSelect: Story = {
+  name: 'UX Variables select',
+  render: () => <FullWorkbenchComposition rightPanelVariant="variables" />,
+};
+
+export const Rule: Story = {
   name: 'UX Rule',
   render: () => <FullWorkbenchComposition rightPanelVariant="rules" />,
 };
 
-export const VariableManagement: Story = {
+export const Nodes: Story = {
   name: 'UX Nodes',
   render: () => <NodeInventoryComposition />,
 };
 
-export const DapUX: Story = {
+export const Dap: Story = {
   name: 'UX DAP',
   render: () => <FullWorkbenchComposition rightPanelVariant="dap" />,
 };
 
-export const AgentExperience: Story = {
+export const Agent: Story = {
   name: 'UX Agent',
   render: (_args, context) => (
     <AgentExperienceComposition theme={mapTemplateThemeToChat(context.globals.theme)} />
