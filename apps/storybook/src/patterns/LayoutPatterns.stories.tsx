@@ -3,7 +3,6 @@ import {
   AgentExperienceComposition,
   FullWorkbenchComposition,
   mapTemplateThemeToChat,
-  NodeInventoryComposition,
 } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
 import { withCanvasProviders } from '../../../../packages/apollo-react/src/canvas/storybook-utils';
 
@@ -36,11 +35,6 @@ export const VariableSelect: Story = {
 export const Rule: Story = {
   name: 'UX Rule',
   render: () => <FullWorkbenchComposition rightPanelVariant="rules" />,
-};
-
-export const Nodes: Story = {
-  name: 'UX Nodes',
-  render: () => <NodeInventoryComposition />,
 };
 
 export const Dap: Story = {
