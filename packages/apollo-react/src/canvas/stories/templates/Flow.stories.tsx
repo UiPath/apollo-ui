@@ -7,34 +7,56 @@ import {
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Alert,
+  AlertDescription,
   Button,
   Card,
   CardContent,
+  Checkbox,
   type FormSchema,
+  Input,
   InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
   Label,
   type PanelImperativeHandle,
   RequiredIndicator,
+  RadioGroup,
+  RadioGroupItem,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
+  Switch,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
+  Textarea,
   ToggleGroup,
   ToggleGroupItem,
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  VariablePicker,
+  type VariablePickerItem,
 } from '@uipath/apollo-wind';
 import type { DockviewApi, DockviewReadyEvent, IDockviewPanelProps } from 'dockview-react';
 import { DockviewReact } from 'dockview-react';
 import 'dockview-react/dist/styles/dockview.css';
 import {
+  AtSign,
   Blocks,
   Bold,
   Bug,
@@ -49,6 +71,7 @@ import {
   List,
   ListOrdered,
   Mail,
+  Maximize2,
   Play,
   Plus,
   Redo2,
@@ -120,6 +143,7 @@ const meta = {
     'DraggablePanelLayout',
     'FullWorkbenchComposition',
     'NodeInventoryComposition',
+    'NodePatternComposition',
     'AgentExperienceComposition',
     'mapTemplateThemeToChat',
   ],
@@ -400,14 +424,26 @@ function createFlowGraph(variant: WorkflowVariant): {
 // Canvas content component (must be inside ReactFlowProvider)
 // ============================================================================
 
-function FlowCanvas({ workflowVariant = 'default' }: { workflowVariant?: WorkflowVariant }) {
+function FlowCanvas({
+  workflowVariant = 'default',
+  onNodeSelect,
+}: {
+  workflowVariant?: WorkflowVariant;
+  onNodeSelect?: (nodeId: string) => void;
+}) {
   const graph = useMemo(() => createFlowGraph(workflowVariant), [workflowVariant]);
   const { canvasProps } = useCanvasStory({
     initialNodes: graph.nodes,
     initialEdges: graph.edges,
   });
 
-  return <BaseCanvas {...canvasProps} mode="design" />;
+  return (
+    <BaseCanvas
+      {...canvasProps}
+      mode="design"
+      onNodeClick={(_event, node) => onNodeSelect?.(node.id)}
+    />
+  );
 }
 
 const panelBehaviorOptions = [
@@ -677,45 +713,62 @@ function CanvasViewport({
   bottomControlsOffset = 20,
   rightControlsOffset = 16,
   workflowVariant = 'default',
+  onNodeSelect,
 }: {
   trigger?: ReactNode;
   children?: ReactNode;
   bottomControlsOffset?: number;
   rightControlsOffset?: number;
   workflowVariant?: WorkflowVariant;
+  onNodeSelect?: (nodeId: string) => void;
 }) {
-  const { getNodes, getNodesBounds, getViewport, setEdges, setNodes, setViewport } = useReactFlow();
+  const { getNodes, getNodesBounds, setEdges, setNodes, setViewport } = useReactFlow();
   const nodesInitialized = useNodesInitialized();
   const viewportContainerRef = useRef<HTMLDivElement>(null);
   const occupiedRight = Math.max(0, rightControlsOffset - 16);
 
-  const centerWorkflow = useCallback(
+  const fitWorkflow = useCallback(
     (duration: number) => {
       const container = viewportContainerRef.current;
       const nodes = getNodes();
       if (!container || nodes.length === 0) return;
       const bounds = getNodesBounds(nodes);
-      const viewport = getViewport();
       const occupiedBottom = Math.max(0, bottomControlsOffset - 20);
-      const availableCenterX = (container.clientWidth - occupiedRight) / 2;
-      const availableCenterY = (container.clientHeight - occupiedBottom) / 2;
+      const availableWidth = container.clientWidth - occupiedRight;
+      const availableHeight = container.clientHeight - occupiedBottom;
+      const padding = 48;
+      const zoom = Math.min(
+        0.85,
+        Math.max(0.1, (availableWidth - padding * 2) / bounds.width),
+        Math.max(0.1, (availableHeight - padding * 2) / bounds.height)
+      );
+      const availableCenterX = availableWidth / 2;
+      const availableCenterY = availableHeight / 2;
       void setViewport(
         {
-          ...viewport,
-          x: availableCenterX - (bounds.x + bounds.width / 2) * viewport.zoom,
-          y: availableCenterY - (bounds.y + bounds.height / 2) * viewport.zoom,
+          zoom,
+          x: availableCenterX - (bounds.x + bounds.width / 2) * zoom,
+          y: availableCenterY - (bounds.y + bounds.height / 2) * zoom,
         },
         { duration }
       );
     },
-    [bottomControlsOffset, getNodes, getNodesBounds, getViewport, occupiedRight, setViewport]
+    [bottomControlsOffset, getNodes, getNodesBounds, occupiedRight, setViewport]
   );
 
   useEffect(() => {
     if (!nodesInitialized) return;
-    const timeout = window.setTimeout(() => centerWorkflow(200), 100);
+    const timeout = window.setTimeout(() => fitWorkflow(200), 100);
     return () => window.clearTimeout(timeout);
-  }, [centerWorkflow, nodesInitialized]);
+  }, [fitWorkflow, nodesInitialized]);
+
+  useEffect(() => {
+    const container = viewportContainerRef.current;
+    if (!container || !nodesInitialized) return;
+    const resizeObserver = new ResizeObserver(() => fitWorkflow(0));
+    resizeObserver.observe(container);
+    return () => resizeObserver.disconnect();
+  }, [fitWorkflow, nodesInitialized]);
 
   const tidy = useCallback(() => {
     const graph = createFlowGraph(workflowVariant);
@@ -726,7 +779,7 @@ function CanvasViewport({
 
   return (
     <div ref={viewportContainerRef} className="relative h-full min-h-0 min-w-0 overflow-hidden">
-      <FlowCanvas workflowVariant={workflowVariant} />
+      <FlowCanvas workflowVariant={workflowVariant} onNodeSelect={onNodeSelect} />
       {children}
       <div className="absolute top-4 z-20" style={{ right: rightControlsOffset }}>
         {trigger ?? <PanelTrigger />}
@@ -1134,17 +1187,49 @@ function QuickFormPropertiesPanel({ onClose }: { onClose: () => void }) {
   return <QuickFormPanel embedded onClose={onClose} className="h-full" />;
 }
 
-function ExpressionField({ value, placeholder }: { value?: string; placeholder?: string }) {
+function ExpressionField({
+  label,
+  value,
+  placeholder,
+  variables = [],
+  onInsertVariable,
+  onValueChange,
+}: {
+  label?: string;
+  value?: string;
+  placeholder?: string;
+  variables?: VariablePickerItem[];
+  onInsertVariable?: (variable: VariablePickerItem) => void;
+  onValueChange?: (value: string) => void;
+}) {
   return (
-    <div className="flex min-h-9 items-center rounded-lg border border-border-subtle bg-surface-overlay px-2.5 text-xs">
-      {value ? (
-        <span className="max-w-full truncate rounded-md bg-brand-subtle px-2 py-1 font-mono text-foreground-accent">
-          ƒx {value}
-        </span>
-      ) : (
-        <span className="truncate text-foreground-subtle">{placeholder}</span>
+    <div className="space-y-1.5">
+      {label && (
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-medium text-foreground">{label}</p>
+          <VariablePicker
+            items={variables}
+            onSelect={(variable) => onInsertVariable?.(variable)}
+            disabled={!onInsertVariable || variables.length === 0}
+            triggerLabel="Select variable"
+            triggerAriaLabel={`Select variable for ${label}`}
+          />
+        </div>
       )}
-      <SlidersHorizontal className="ml-auto size-4 shrink-0 text-foreground-muted" />
+      <div className="flex min-h-9 items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-overlay px-2.5 text-xs focus-within:border-border-focus focus-within:ring-1 focus-within:ring-border-focus">
+        <span className="shrink-0 font-mono text-foreground-accent" aria-hidden="true">
+          ƒx
+        </span>
+        <input
+          value={value ?? ''}
+          onChange={(event) => onValueChange?.(event.target.value)}
+          readOnly={!onValueChange}
+          placeholder={placeholder}
+          aria-label={label ? `${label} expression` : 'Expression'}
+          className="h-8 min-w-0 flex-1 bg-transparent font-mono text-xs text-foreground-accent outline-none placeholder:font-sans placeholder:text-foreground-subtle read-only:cursor-default"
+        />
+        <SlidersHorizontal className="ml-auto size-4 shrink-0 text-foreground-muted" />
+      </div>
     </div>
   );
 }
@@ -1259,7 +1344,13 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
   );
 }
 
-function SendEmailPropertiesPanel({ onClose }: { onClose: () => void }) {
+function SendEmailPropertiesPanel({
+  onClose,
+  onOpenTakeover,
+}: {
+  onClose: () => void;
+  onOpenTakeover: () => void;
+}) {
   return (
     <NodePropertyPanel
       panelTitle="Properties"
@@ -1267,8 +1358,8 @@ function SendEmailPropertiesPanel({ onClose }: { onClose: () => void }) {
       nodeLabel="Send Email"
       nodeCategory="Microsoft Outlook 365"
       action={
-        <Button size="sm">
-          <Play size={14} /> Run node
+        <Button size="sm" onClick={onOpenTakeover}>
+          Node Takeover
         </Button>
       }
       onClose={onClose}
@@ -2167,28 +2258,383 @@ function RuleBuildingPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
-function VariableManagementPanel({ onClose }: { onClose: () => void }) {
+type VariableDemoTab = 'parameters' | 'variables';
+
+type EditableWorkflowVariable = {
+  id: string;
+  name: string;
+  type: string;
+  value: string;
+};
+
+const VARIABLE_TAB_LIST_CLASS =
+  'mx-3 h-auto justify-start gap-0.5 overflow-x-auto rounded-lg bg-transparent p-0.5 text-muted-foreground [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+const VARIABLE_TAB_TRIGGER_CLASS =
+  'inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm';
+
+type VariableDemoNode = {
+  label: string;
+  category: string;
+  icon: ReactNode;
+  parameters: { label: string; value: string; expression?: boolean }[];
+  inputs: { name: string; type: string; required?: boolean }[];
+  outputs: { name: string; type: string }[];
+  updates?: { name: string; value: string }[];
+};
+
+const VARIABLE_DEMO_NODES: Record<string, VariableDemoNode> = {
+  trigger: {
+    label: 'Start workflow',
+    category: 'Manual trigger',
+    icon: <Play />,
+    parameters: [
+      { label: 'Trigger type', value: 'Manual' },
+      { label: 'Allow API invocation', value: 'Enabled' },
+      { label: 'Default invoice ID', value: '$vars.currentInvoice.id', expression: true },
+    ],
+    inputs: [
+      { name: 'invoiceId', type: 'Text', required: true },
+      { name: 'priority', type: 'Number' },
+    ],
+    outputs: [{ name: 'requestedBy', type: 'Text' }],
+  },
+  initialize: {
+    label: 'Initialize variables',
+    category: 'Workflow scope',
+    icon: <Code2 />,
+    parameters: [
+      { label: 'Invoice ID', value: '$vars.startWorkflow.output.invoiceId', expression: true },
+      { label: 'Initial status', value: 'Pending review' },
+    ],
+    inputs: [{ name: 'invoiceId', type: 'Text', required: true }],
+    outputs: [
+      { name: 'invoice', type: 'Object' },
+      { name: 'approvalStatus', type: 'Text' },
+    ],
+    updates: [
+      { name: 'currentInvoice', value: '$result.invoice' },
+      { name: 'approvalStatus', value: 'Pending review' },
+    ],
+  },
+  transform: {
+    label: 'Transform invoice data',
+    category: 'Expressions',
+    icon: <Sparkles />,
+    parameters: [
+      { label: 'Source', value: '$vars.currentInvoice', expression: true },
+      { label: 'Transformation', value: 'Normalize invoice fields' },
+    ],
+    inputs: [{ name: 'currentInvoice', type: 'Object', required: true }],
+    outputs: [{ name: 'normalizedInvoice', type: 'Object' }],
+  },
+  assign: {
+    label: 'Assign approval state',
+    category: 'Variables',
+    icon: <SlidersHorizontal />,
+    parameters: [
+      { label: 'Condition', value: '$vars.currentInvoice.total > 10000', expression: true },
+      { label: 'Approval state', value: 'Manager review' },
+    ],
+    inputs: [
+      { name: 'currentInvoice', type: 'Object', required: true },
+      { name: 'approvalStatus', type: 'Text' },
+    ],
+    outputs: [{ name: 'requiresApproval', type: 'Boolean' }],
+    updates: [{ name: 'approvalStatus', value: 'Manager review' }],
+  },
+  output: {
+    label: 'Publish outputs',
+    category: 'Workflow results',
+    icon: <Upload />,
+    parameters: [
+      { label: 'Invoice', value: '$vars.normalizedInvoice', expression: true },
+      { label: 'Status', value: '$vars.approvalStatus', expression: true },
+    ],
+    inputs: [
+      { name: 'normalizedInvoice', type: 'Object', required: true },
+      { name: 'approvalStatus', type: 'Text', required: true },
+    ],
+    outputs: [
+      { name: 'invoice', type: 'Object' },
+      { name: 'status', type: 'Text' },
+    ],
+  },
+};
+
+function VariableRow({ name, type, required }: { name: string; type: string; required?: boolean }) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-border-subtle bg-surface-overlay px-3 py-2.5">
+      <Code2 className="size-4 shrink-0 text-foreground-subtle" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-mono text-xs font-medium text-foreground">{name}</p>
+        <p className="mt-0.5 text-[11px] text-foreground-muted">
+          {type}
+          {required ? ' · Required' : ''}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function UnifiedVariablesPanel({
+  nodeId,
+  activeTab,
+  onActiveTabChange,
+  onClose,
+  onExpand,
+  workflowVariables,
+  onWorkflowVariablesChange,
+  parameterValues,
+  onParameterValueChange,
+  columnMode,
+}: {
+  nodeId: string;
+  activeTab: VariableDemoTab;
+  onActiveTabChange: (tab: VariableDemoTab) => void;
+  onClose?: () => void;
+  onExpand?: () => void;
+  workflowVariables: EditableWorkflowVariable[];
+  onWorkflowVariablesChange: (variables: EditableWorkflowVariable[]) => void;
+  parameterValues: Record<string, string>;
+  onParameterValueChange: (key: string, value: string) => void;
+  columnMode?: VariableDemoTab;
+}) {
+  const node = VARIABLE_DEMO_NODES[nodeId] ?? VARIABLE_DEMO_NODES.trigger;
+  const [editingVariableId, setEditingVariableId] = useState<string | null>(null);
+  const variablePickerItems = workflowVariables.map((variable) => ({
+    id: variable.id,
+    label: variable.name,
+    value: `$vars.${variable.name}`,
+    type: variable.type.toLowerCase(),
+  }));
+  const updateWorkflowVariable = (
+    variableId: string,
+    updates: Partial<EditableWorkflowVariable>
+  ) => {
+    onWorkflowVariablesChange(
+      workflowVariables.map((variable) =>
+        variable.id === variableId ? { ...variable, ...updates } : variable
+      )
+    );
+  };
   return (
     <NodePropertyPanel
-      panelTitle="Variables"
-      nodeIcon={<Code2 />}
-      nodeLabel="Workflow variables"
-      nodeCategory="Manage values used throughout this workflow"
+      panelTitle={
+        columnMode ? (columnMode === 'parameters' ? 'Parameters' : 'Variables') : 'Properties'
+      }
+      nodeIcon={columnMode ? undefined : node.icon}
+      nodeLabel={columnMode ? undefined : node.label}
+      nodeCategory={columnMode ? undefined : node.category}
       onClose={onClose}
+      headerExtra={
+        onExpand ? (
+          <button
+            type="button"
+            onClick={onExpand}
+            aria-label="Expand configuration"
+            title="Expand configuration"
+            className="grid size-6 place-items-center rounded text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+          >
+            <Maximize2 size={14} />
+          </button>
+        ) : undefined
+      }
       contentInset="0.875rem"
       className="h-full"
     >
-      <div className="flex min-h-0 flex-1 flex-col p-3">
-        <div className="grid min-h-52 flex-1 place-items-center rounded-xl border border-dashed border-border-subtle bg-surface-overlay/30 p-6 text-center">
-          <div className="max-w-56">
-            <Code2 className="mx-auto size-6 text-foreground-subtle" />
-            <p className="mt-3 text-sm font-semibold text-foreground">Variable management</p>
-            <p className="mt-1 text-xs leading-5 text-foreground-muted">
-              Add the variable list, editor, and scope controls here.
+      <Tabs
+        value={columnMode ?? activeTab}
+        onValueChange={(value) => onActiveTabChange(value as VariableDemoTab)}
+        className="flex h-full min-h-0 flex-col"
+      >
+        {!columnMode && (
+          <TabsList className={VARIABLE_TAB_LIST_CLASS}>
+            <TabsTrigger value="parameters" className={VARIABLE_TAB_TRIGGER_CLASS}>
+              Parameters
+            </TabsTrigger>
+            <TabsTrigger value="variables" className={VARIABLE_TAB_TRIGGER_CLASS}>
+              Variables
+            </TabsTrigger>
+          </TabsList>
+        )}
+        <TabsContent value="parameters" className="min-h-0 flex-1 overflow-auto p-3">
+          <div className="space-y-4">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Configure what this node does when the workflow runs.
             </p>
+            {node.parameters.map((parameter) => {
+              const parameterKey = `${nodeId}:${parameter.label}`;
+              const value = parameterValues[parameterKey] ?? parameter.value;
+              return (
+                <div key={parameter.label}>
+                  {parameter.expression ? (
+                    <ExpressionField
+                      label={parameter.label}
+                      value={value}
+                      variables={variablePickerItems}
+                      onInsertVariable={(variable) =>
+                        onParameterValueChange(parameterKey, variable.value ?? variable.label)
+                      }
+                      onValueChange={(nextValue) => onParameterValueChange(parameterKey, nextValue)}
+                    />
+                  ) : (
+                    <>
+                      <p className="mb-1.5 text-xs font-medium text-foreground">
+                        {parameter.label}
+                      </p>
+                      <div className="flex min-h-9 items-center rounded-lg border border-border-subtle bg-surface-overlay px-2.5 text-xs text-foreground">
+                        {value}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        </div>
-      </div>
+        </TabsContent>
+        <TabsContent value="variables" className="min-h-0 flex-1 overflow-auto p-3">
+          <div className="space-y-5">
+            <p className="text-xs leading-5 text-foreground-muted">
+              See the values this node receives, creates, and changes.
+            </p>
+            <section>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground">Inputs</p>
+                <span className="text-[11px] text-foreground-muted">Available to this node</span>
+              </div>
+              <div className="space-y-2">
+                {node.inputs.map((variable) => (
+                  <VariableRow key={variable.name} {...variable} />
+                ))}
+              </div>
+            </section>
+            <section>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground">Outputs</p>
+                <span className="text-[11px] text-foreground-muted">Created by this node</span>
+              </div>
+              <div className="space-y-2">
+                {node.outputs.map((variable) => (
+                  <VariableRow key={variable.name} {...variable} />
+                ))}
+              </div>
+            </section>
+            {node.updates && (
+              <section>
+                <p className="mb-2 text-xs font-semibold text-foreground">
+                  Changes when this node runs
+                </p>
+                <div className="space-y-2">
+                  {node.updates.map((update) => (
+                    <div
+                      key={update.name}
+                      className="rounded-lg border border-border-subtle px-3 py-2.5"
+                    >
+                      <p className="font-mono text-xs font-medium">{update.name}</p>
+                      <p className="mt-1 truncate font-mono text-[11px] text-foreground-muted">
+                        {update.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            <section className="border-t border-border-subtle pt-4">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Workflow variables</p>
+                  <p className="mt-0.5 text-[11px] text-foreground-muted">
+                    Reusable across every node
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs font-semibold text-brand hover:text-brand"
+                  onClick={() => {
+                    const id = `variable-${Date.now()}`;
+                    onWorkflowVariablesChange([
+                      ...workflowVariables,
+                      { id, name: 'newVariable', type: 'Text', value: '' },
+                    ]);
+                    setEditingVariableId(id);
+                  }}
+                >
+                  <Plus size={14} /> Add variable
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {workflowVariables.map((variable) =>
+                  editingVariableId === variable.id ? (
+                    <div
+                      key={variable.id}
+                      className="space-y-2 rounded-lg border border-border-focus bg-surface-overlay p-3"
+                    >
+                      <div className="grid grid-cols-[1fr_92px] gap-2">
+                        <input
+                          value={variable.name}
+                          onChange={(event) =>
+                            updateWorkflowVariable(variable.id, { name: event.target.value })
+                          }
+                          aria-label="Variable name"
+                          className="h-8 min-w-0 rounded-md border border-border-subtle bg-surface px-2 text-xs outline-none focus:border-border-focus"
+                        />
+                        <select
+                          value={variable.type}
+                          onChange={(event) =>
+                            updateWorkflowVariable(variable.id, { type: event.target.value })
+                          }
+                          aria-label="Variable type"
+                          className="h-8 rounded-md border border-border-subtle bg-surface px-2 text-xs outline-none focus:border-border-focus"
+                        >
+                          <option>Text</option>
+                          <option>Number</option>
+                          <option>Boolean</option>
+                          <option>Object</option>
+                        </select>
+                      </div>
+                      <input
+                        value={variable.value}
+                        onChange={(event) =>
+                          updateWorkflowVariable(variable.id, { value: event.target.value })
+                        }
+                        placeholder="Default value"
+                        aria-label="Default value"
+                        className="h-8 w-full rounded-md border border-border-subtle bg-surface px-2 text-xs outline-none focus:border-border-focus"
+                      />
+                      <div className="flex justify-end">
+                        <Button size="sm" onClick={() => setEditingVariableId(null)}>
+                          Done
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      key={variable.id}
+                      className="flex items-center gap-3 rounded-lg border border-border-subtle bg-surface-overlay px-3 py-2.5"
+                    >
+                      <Code2 className="size-4 shrink-0 text-foreground-subtle" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-mono text-xs font-medium">{variable.name}</p>
+                        <p className="mt-0.5 truncate text-[11px] text-foreground-muted">
+                          {variable.type} · {variable.value || 'No default value'}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setEditingVariableId(variable.id)}
+                      >
+                        Edit
+                      </Button>
+                    </div>
+                  )
+                )}
+              </div>
+            </section>
+          </div>
+        </TabsContent>
+      </Tabs>
     </NodePropertyPanel>
   );
 }
@@ -2550,17 +2996,6 @@ function InventoryCategoryNode({ data }: NodeProps<Node<BaseNodeData>>) {
   );
 }
 
-function InventoryItemNode({ data }: NodeProps<Node<BaseNodeData>>) {
-  return (
-    <div className="flex w-40 cursor-pointer flex-col items-center gap-2 text-center text-foreground">
-      <div className="grid size-16 place-items-center rounded-2xl border border-border-subtle bg-surface shadow-sm transition-shadow hover:shadow-md">
-        <CanvasIcon icon={data.display?.icon} size={28} />
-      </div>
-      <span className="max-w-40 text-xs font-medium leading-4">{data.display?.label}</span>
-    </div>
-  );
-}
-
 function createNodeInventoryNodes(): Node<BaseNodeData>[] {
   return NODE_INVENTORY_GROUPS.flatMap((group, rowIndex) => {
     const y = rowIndex * 150;
@@ -2571,32 +3006,41 @@ function createNodeInventoryNodes(): Node<BaseNodeData>[] {
       display: { label: group.category },
       data: { inventoryCategory: true },
     });
-    const itemNodes = group.items.map((item, columnIndex) =>
-      createNode({
+    const itemNodes = group.items.map((item, columnIndex) => {
+      const hasPanelMockup = NODE_PANEL_SPECS[item.id] !== undefined;
+      return createNode({
         id: item.id,
-        type: 'inventory-item',
+        type: 'uipath.blank-node',
         position: { x: 190 + columnIndex * 245, y: y + 8 },
         display: {
           label: item.label,
-          subLabel: item.source === 'dynamic' ? 'Dynamic catalog example' : group.category,
+          subLabel: hasPanelMockup
+            ? '🟢 Panel mockup'
+            : item.source === 'dynamic'
+              ? 'Dynamic catalog example'
+              : group.category,
           icon: item.icon,
         },
-        data: { nodeType: item.nodeType, inventoryItem: true },
-      })
-    );
+        data: {
+          inventoryNodeType: item.nodeType,
+          inventoryItem: true,
+        },
+      });
+    });
     return [categoryNode, ...itemNodes];
   });
 }
 
 const inventoryNodeTypes = {
   'inventory-category': InventoryCategoryNode,
-  'inventory-item': InventoryItemNode,
 };
 
 function NodeInventoryCanvas({
   onItemSelect,
+  rightPanelOpen,
 }: {
   onItemSelect: (item: NodeInventoryItem) => void;
+  rightPanelOpen: boolean;
 }) {
   const inventoryNodes = useMemo(createNodeInventoryNodes, []);
   const { fitView } = useReactFlow();
@@ -2625,10 +3069,16 @@ function NodeInventoryCanvas({
           if (item) onItemSelect(item);
         }}
       />
-      <div className="absolute bottom-5 left-1/2 z-20 -translate-x-1/2">
+      <div
+        className="absolute bottom-5 z-20 -translate-x-1/2 transition-[left] duration-200"
+        style={{ left: rightPanelOpen ? 'calc(50% - 198px)' : '50%' }}
+      >
         <CanvasNavigationControls />
       </div>
-      <div className="absolute bottom-5 right-4 z-20">
+      <div
+        className="absolute bottom-5 z-20 transition-[right] duration-200"
+        style={{ right: rightPanelOpen ? 412 : 16 }}
+      >
         <CanvasZoomControls
           orientation="vertical"
           onOrganize={() => void fitView({ padding: 0.12, duration: 200, maxZoom: 0.85 })}
@@ -2638,7 +3088,370 @@ function NodeInventoryCanvas({
   );
 }
 
-function NodeInventoryPanel({ item, onClose }: { item: NodeInventoryItem; onClose: () => void }) {
+type InventoryField = {
+  label: string;
+  value?: string;
+  helper?: string;
+  kind?: 'expression' | 'select' | 'textarea' | 'toggle' | 'checkbox';
+  required?: boolean;
+};
+
+type InventoryPanelSpec = {
+  section?: string;
+  description?: string;
+  fields?: InventoryField[];
+  action?: string;
+  empty?: boolean;
+};
+
+const NODE_PANEL_SPECS: Record<string, InventoryPanelSpec> = {
+  'autonomous-agent': {
+    section: 'Agent settings',
+    fields: [
+      { label: 'Harness', value: 'Standard harness', kind: 'select' },
+      { label: 'Model', value: 'anthropic.claude-sonnet-5', kind: 'select', required: true },
+      {
+        label: 'System prompt',
+        value: 'You are an agentic assistant.',
+        kind: 'textarea',
+        required: true,
+      },
+      {
+        label: 'User prompt',
+        value: 'What is the current date?',
+        kind: 'textarea',
+        required: true,
+      },
+    ],
+    action: 'Add output variable',
+  },
+  'conversational-agent': {
+    section: 'Agent settings',
+    fields: [
+      { label: 'Model', value: 'anthropic.claude-sonnet-5', kind: 'select' },
+      { label: 'System prompt', value: "You're an agent", kind: 'textarea' },
+      { label: 'Conversation context', value: '$vars.flowTest', kind: 'expression' },
+      {
+        label: 'End exchange',
+        helper: 'End the conversation exchange after this response.',
+        kind: 'checkbox',
+      },
+    ],
+    action: 'Add output variable',
+  },
+  'voice-agent': {
+    section: 'Agent settings',
+    fields: [
+      { label: 'Model', value: 'gemini-3.1-flash-live-preview', kind: 'select' },
+      { label: 'Persona', value: 'Aoede', kind: 'select' },
+      { label: 'System prompt', value: '', kind: 'textarea' },
+      { label: 'Call context', value: '$metadata.FolderKey', kind: 'expression' },
+    ],
+    action: 'Add output variable',
+  },
+  'http-request-v2': {
+    fields: [
+      { label: 'Authentication', value: 'Manual authentication', kind: 'select', required: true },
+      { label: 'Method', value: 'POST', kind: 'select', required: true },
+      { label: 'URL', value: 'https://catfact.ninja/fact', kind: 'expression', required: true },
+      { label: 'Body', value: '', kind: 'textarea' },
+    ],
+    action: 'Add header or query pair',
+  },
+  'slack-send': {
+    fields: [
+      { label: 'Slack connection', value: 'carl.schultze', kind: 'select', required: true },
+      {
+        label: 'Channel name/ID',
+        value: 'carl-design - C0HBZDNJKPT',
+        kind: 'expression',
+        required: true,
+      },
+      { label: 'Message', value: 'Test', kind: 'expression', required: true },
+      { label: 'Send as', value: 'Bot', kind: 'select', required: true },
+      { label: 'Button actions', value: '', kind: 'expression' },
+      { label: 'Image URL', value: '', kind: 'expression' },
+    ],
+  },
+  'batch-transform': {
+    section: 'Data source',
+    fields: [
+      { label: 'Attachment', value: '$vars.flowTest', kind: 'expression', required: true },
+      { label: 'Prompt', value: 'Transform the data', kind: 'textarea', required: true },
+      { label: 'Enable web search grounding', kind: 'checkbox' },
+      { label: 'Output column', value: 'OutputColumn1' },
+      {
+        label: 'Description',
+        value: 'Describe what this new column should contain',
+        kind: 'textarea',
+      },
+    ],
+    action: 'Add column',
+  },
+  filter: {
+    fields: [
+      { label: 'Collection', value: '$vars.flowArray', kind: 'expression', required: true },
+      { label: 'Condition', value: 'Equals', kind: 'select' },
+      { label: 'Value', value: '1' },
+    ],
+    action: 'Add condition',
+  },
+  'group-by': {
+    fields: [
+      { label: 'Collection', value: '$vars.flowArray', kind: 'expression', required: true },
+      { label: 'Operation', value: 'Count', kind: 'select', required: true },
+      { label: 'Output name', value: 'count', required: true },
+    ],
+    action: 'Add aggregation',
+  },
+  map: {
+    fields: [
+      { label: 'Collection', value: '$vars.flowArray', kind: 'expression', required: true },
+      { label: 'Transformation', value: 'Trim whitespace', kind: 'select' },
+    ],
+    action: 'Add field',
+  },
+  transform: {
+    description: 'Build a visual transformation from input to output.',
+    action: 'Edit transformation',
+  },
+  'read-entity': {
+    fields: [
+      { label: 'Data Fabric entity', value: 'Account', kind: 'select' },
+      { label: 'Filter field', value: 'Field', kind: 'select' },
+      { label: 'Filter value', value: '$vars.flowTest', kind: 'expression' },
+    ],
+    action: 'Add AND or OR filter',
+  },
+  'update-entity': {
+    section: 'How to identify the record',
+    fields: [
+      { label: 'Data Fabric entity', value: 'Account', kind: 'select' },
+      { label: 'Record ID', value: '1', kind: 'expression' },
+      { label: 'Field to update', value: 'AnotherThing', kind: 'select' },
+      { label: 'New value', value: '1', kind: 'expression' },
+    ],
+    action: 'Add field',
+  },
+  summarize: {
+    section: 'Data source',
+    fields: [
+      { label: 'Attachment', value: '$vars.flowTest', kind: 'expression', required: true },
+      { label: 'Prompt', value: 'Summarize this', kind: 'textarea', required: true },
+    ],
+  },
+  extract: {
+    section: 'Model config',
+    fields: [
+      { label: 'Model family', value: 'Gemini', kind: 'select' },
+      { label: 'Model version', value: '2.5 Flash', kind: 'select' },
+      { label: 'Execution mode', value: 'Standard', kind: 'select' },
+      { label: 'File', value: '$vars.flowTest', kind: 'expression', required: true },
+      {
+        label: 'Overall extraction instructions',
+        value: 'Context relevant across the whole schema...',
+        kind: 'textarea',
+      },
+    ],
+    action: 'Add field group',
+  },
+  'quick-form': {
+    section: 'Task delivery',
+    fields: [
+      { label: 'Delivery channel', value: 'Slack', kind: 'select' },
+      { label: 'Assignment criteria', value: 'All users', kind: 'select' },
+      { label: 'Form title', value: 'Quick Approval' },
+      { label: 'New field', value: '', kind: 'expression' },
+    ],
+    action: 'Add outcome',
+  },
+  'action-app': {
+    section: 'Task delivery',
+    fields: [
+      { label: 'Delivery channel', value: 'Slack', kind: 'select' },
+      { label: 'Assignment criteria', value: 'Single User', kind: 'select' },
+      { label: 'Assignee', value: 'carl.schultze@uipath.com' },
+      { label: 'Action App', value: 'Select a coded action app', kind: 'select' },
+    ],
+  },
+  mock: { empty: true },
+  merge: { empty: true },
+  flow: { empty: true },
+  'rpa-workflow': { empty: true },
+  decision: {
+    fields: [
+      { label: 'Condition', value: '$vars.flowBoolean', kind: 'expression', required: true },
+      { label: 'True branch label', value: 'True' },
+      { label: 'False branch label', value: 'False' },
+    ],
+  },
+  switch: {
+    section: 'Switch cases',
+    fields: [
+      { label: 'Case 1', value: '$vars.flowBoolean', kind: 'expression' },
+      { label: 'Other', value: '$vars.flowBoolean', kind: 'expression' },
+    ],
+    action: 'Add case',
+  },
+  end: { action: 'Add output variable' },
+  terminate: { empty: true },
+  loop: {
+    fields: [
+      { label: 'Collection', value: '$vars.flowArray', kind: 'expression', required: true },
+      { label: 'Parallel', helper: 'Run iterations at the same time.', kind: 'toggle' },
+      { label: 'Break on condition', value: '$vars.flowBoolean', kind: 'expression' },
+      { label: 'Show break handle', kind: 'toggle' },
+    ],
+  },
+  script: { fields: [{ label: 'Code', value: '//', kind: 'textarea', required: true }] },
+  'wait-message': {
+    fields: [
+      { label: 'Conversation ID', value: '$vars.flowTest', kind: 'expression', required: true },
+      { label: 'From', value: 'User', kind: 'select' },
+      { label: 'Number of exchanges', value: '20' },
+    ],
+  },
+  'conversation-context': {
+    fields: [
+      { label: 'Conversation ID', value: '$vars.flowTest', kind: 'expression', required: true },
+      { label: 'Exchange limit', value: '20' },
+    ],
+  },
+  'send-message': {
+    fields: [
+      { label: 'Conversation ID', value: '$vars.flowTest', kind: 'expression', required: true },
+      { label: 'Exchange ID', value: '$vars.flowTest', kind: 'expression', required: true },
+      { label: 'End exchange after writing', kind: 'checkbox' },
+      { label: 'Content', value: '$vars.flowTest', kind: 'expression', required: true },
+      { label: 'Mimetype', value: 'text/markdown' },
+    ],
+  },
+  'queue-create': {
+    fields: [{ label: 'Queue', value: 'Select a queue', kind: 'select', required: true }],
+  },
+  'queue-create-wait': {
+    fields: [{ label: 'Queue', value: 'Select a queue', kind: 'select', required: true }],
+  },
+  'outgoing-call': {
+    fields: [
+      { label: 'From', value: 'Select a connected number...', kind: 'select', required: true },
+      { label: 'To', value: '$vars.flowTest', kind: 'expression', required: true },
+    ],
+  },
+  'end-call': {
+    fields: [
+      { label: 'Call context', value: '$vars.flowTest', kind: 'expression', required: true },
+    ],
+  },
+  'manual-trigger': {
+    description: 'Define input arguments provided when this trigger starts the flow.',
+    action: 'Add input argument',
+  },
+  'scheduled-trigger': {
+    fields: [
+      { label: 'Frequency', value: 'Hourly', kind: 'select', required: true },
+      { label: 'Every', value: '1' },
+      { label: 'At minute', value: '0', kind: 'select' },
+    ],
+  },
+  'slack-trigger': {
+    fields: [{ label: 'Slack connection', value: 'carl.schultze', kind: 'select', required: true }],
+  },
+  'http-webhook': {
+    fields: [
+      { label: 'HTTP Webhook connection', value: 'Flow Test', kind: 'select', required: true },
+    ],
+  },
+  'incoming-call': { empty: true },
+  'conversation-trigger': { empty: true },
+  delay: {
+    fields: [
+      { label: 'Type', value: 'Duration', kind: 'select', required: true },
+      { label: 'Duration', value: '15 minutes', kind: 'select', required: true },
+    ],
+  },
+  'webhook-wait': {
+    fields: [
+      { label: 'HTTP Webhook connection', value: 'Flow Test', kind: 'select', required: true },
+    ],
+  },
+  'email-wait': {
+    fields: [
+      { label: 'Gmail connection', value: 'Select a connection', kind: 'select', required: true },
+    ],
+  },
+  subflow: {
+    section: 'Inputs',
+    description:
+      'Define input variables for this subflow and map expressions from the parent scope.',
+    action: 'Add input variable',
+  },
+  bpmn: { empty: true },
+  case: {
+    fields: [
+      {
+        label: 'Enable fire and forget',
+        helper: 'Start the run without waiting for it to finish.',
+        kind: 'toggle',
+      },
+    ],
+  },
+  'api-workflow': { empty: true },
+};
+
+function InventoryPanelField({ field }: { field: InventoryField }) {
+  if (field.kind === 'toggle' || field.kind === 'checkbox') {
+    return (
+      <div className="flex items-start justify-between gap-3 py-1">
+        <div>
+          <Label className="text-xs">{field.label}</Label>
+          {field.helper && (
+            <p className="mt-0.5 text-[11px] text-foreground-muted">{field.helper}</p>
+          )}
+        </div>
+        {field.kind === 'toggle' ? <Switch /> : <Checkbox aria-label={field.label} />}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs">
+        {field.label}
+        {field.required && <span className="text-error"> *</span>}
+      </Label>
+      {field.kind === 'select' ? (
+        <Select defaultValue="current">
+          <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="current">{field.value}</SelectItem>
+          </SelectContent>
+        </Select>
+      ) : field.kind === 'textarea' ? (
+        <Textarea
+          defaultValue={field.value}
+          className="min-h-24 resize-none bg-surface-overlay text-xs"
+        />
+      ) : field.kind === 'expression' ? (
+        <div className="flex items-center rounded-lg border border-border-subtle bg-surface-overlay px-2 focus-within:border-border-focus">
+          <span className="mr-1.5 font-mono text-xs text-foreground-subtle">=</span>
+          <Input
+            defaultValue={field.value}
+            className="border-0 bg-transparent px-0 font-mono text-xs text-foreground-accent shadow-none focus-visible:ring-0"
+          />
+        </div>
+      ) : (
+        <Input defaultValue={field.value} className="h-9 bg-surface-overlay text-xs" />
+      )}
+      {field.helper && <p className="text-[11px] text-foreground-muted">{field.helper}</p>}
+    </div>
+  );
+}
+
+function NodeInventoryPanel({ item, onClose }: { item: NodeInventoryItem; onClose?: () => void }) {
+  const spec = NODE_PANEL_SPECS[item.id];
   return (
     <NodePropertyPanel
       panelTitle="Properties"
@@ -2646,24 +3459,71 @@ function NodeInventoryPanel({ item, onClose }: { item: NodeInventoryItem; onClos
       nodeLabel={item.label}
       nodeCategory={item.category}
       onClose={onClose}
+      contentInset="0.875rem"
       className="h-full"
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
-        <div className="rounded-xl border border-border-subtle bg-surface-overlay p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-foreground-subtle">
-            Node type
-          </p>
-          <p className="mt-1 break-all font-mono text-xs text-foreground-muted">{item.nodeType}</p>
-        </div>
-        <div className="grid min-h-52 flex-1 place-items-center rounded-xl border border-dashed border-border-subtle p-6 text-center">
-          <div className="max-w-56">
-            <CanvasIcon icon={item.icon} size={24} />
-            <p className="mt-3 text-sm font-semibold">{item.label} panel experience</p>
-            <p className="mt-1 text-xs leading-5 text-foreground-muted">
-              Add the source-of-truth fields and interactions for this node here.
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+          <TabsList className={VARIABLE_TAB_LIST_CLASS}>
+            <TabsTrigger value="parameters" className={VARIABLE_TAB_TRIGGER_CLASS}>
+              Parameters
+            </TabsTrigger>
+            <TabsTrigger value="errors" className={VARIABLE_TAB_TRIGGER_CLASS}>
+              Error handling
+            </TabsTrigger>
+            <TabsTrigger value="advanced" className={VARIABLE_TAB_TRIGGER_CLASS}>
+              Advanced
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto p-3">
+            <div className="space-y-4">
+              <p className="text-xs leading-5 text-foreground-muted">
+                Configure what this node does when the workflow runs.
+              </p>
+              {spec?.section && (
+                <p className="text-xs font-semibold text-foreground">{spec.section}</p>
+              )}
+              {spec?.description && (
+                <p className="text-xs leading-5 text-foreground-muted">{spec.description}</p>
+              )}
+              {spec?.empty && (
+                <p className="text-xs text-foreground-muted">No available parameters</p>
+              )}
+              {spec?.fields?.map((field) => (
+                <InventoryPanelField key={field.label} field={field} />
+              ))}
+              {spec?.action && (
+                <Button
+                  size="sm"
+                  variant={spec.action.startsWith('Add') ? 'ghost' : 'outline'}
+                  className={
+                    spec.action.startsWith('Add')
+                      ? 'h-7 px-2 text-xs font-semibold text-brand hover:text-brand'
+                      : 'h-8 text-xs'
+                  }
+                >
+                  {spec.action.startsWith('Add') && <Plus size={14} />}
+                  {spec.action}
+                </Button>
+              )}
+              {!spec && (
+                <p className="text-xs text-foreground-muted">
+                  No Figma reference is available for this node yet.
+                </p>
+              )}
+            </div>
+          </TabsContent>
+          <TabsContent value="errors" className="mt-0 min-h-0 flex-1 overflow-auto p-3">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Configure retry, timeout, and error continuation behavior for this node.
             </p>
-          </div>
-        </div>
+          </TabsContent>
+          <TabsContent value="advanced" className="mt-0 min-h-0 flex-1 overflow-auto p-3">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Advanced execution settings are available when supported by this node.
+            </p>
+          </TabsContent>
+        </Tabs>
       </div>
     </NodePropertyPanel>
   );
@@ -2687,6 +3547,7 @@ export function NodeInventoryComposition() {
       />
       <div className="relative min-w-0 flex-1 overflow-hidden">
         <NodeInventoryCanvas
+          rightPanelOpen={rightPanelOpen}
           onItemSelect={(item) => {
             setSelectedItem(item);
             setRightPanelOpen(true);
@@ -2721,28 +3582,411 @@ export function NodeInventoryComposition() {
   );
 }
 
+function SingleNodePatternCanvas({ item }: { item: NodeInventoryItem }) {
+  const nodes = useMemo(
+    () => [
+      createNode({
+        id: item.id,
+        type: 'uipath.blank-node',
+        position: { x: 0, y: 0 },
+        selected: true,
+        display: {
+          label: item.label,
+          subLabel: item.category,
+          icon: item.icon,
+        },
+        data: {
+          inventoryNodeType: item.nodeType,
+          inventoryItem: true,
+        },
+      }),
+    ],
+    [item]
+  );
+  const { fitView, getViewport, setViewport } = useReactFlow();
+  const nodesInitialized = useNodesInitialized();
+  const { canvasProps } = useCanvasStory({ initialNodes: nodes, initialEdges: [] });
+
+  const fitNode = useCallback(
+    async (duration: number) => {
+      await fitView({ padding: 0.42, maxZoom: 1, duration });
+      const viewport = getViewport();
+      await setViewport({ ...viewport, x: viewport.x - 198 }, { duration: 0 });
+    },
+    [fitView, getViewport, setViewport]
+  );
+
+  useEffect(() => {
+    if (!nodesInitialized) return;
+    void fitNode(0);
+  }, [fitNode, nodesInitialized]);
+
+  return (
+    <div className="relative h-full min-h-0 overflow-hidden">
+      <BaseCanvas {...canvasProps} mode="view" />
+      <div
+        className="absolute bottom-5 z-20 -translate-x-1/2"
+        style={{ left: 'calc(50% - 198px)' }}
+      >
+        <CanvasNavigationControls />
+      </div>
+      <div className="absolute bottom-5 right-[412px] z-20">
+        <CanvasZoomControls orientation="vertical" onOrganize={() => void fitNode(200)} />
+      </div>
+    </div>
+  );
+}
+
+export function NodePatternComposition({ nodeId }: { nodeId: string }) {
+  const item = NODE_INVENTORY_ITEMS.find((candidate) => candidate.id === nodeId);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [activeSidebarItem, setActiveSidebarItem] = useState<CanvasLeftSidebarItemId>('variables');
+
+  if (!item) {
+    return (
+      <div className="grid h-screen place-items-center bg-surface p-8 text-sm text-foreground-muted">
+        Node pattern “{nodeId}” was not found.
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative flex h-screen bg-surface">
+      <CanvasLeftSidebar
+        title="Variables"
+        variant="default"
+        isExpanded={sidebarExpanded}
+        onExpandedChange={setSidebarExpanded}
+        activeItemId={activeSidebarItem}
+        onItemSelect={setActiveSidebarItem}
+      />
+      <div className="relative min-w-0 flex-1 overflow-hidden">
+        <SingleNodePatternCanvas item={item} />
+        <div className="absolute right-[412px] top-4 z-20">
+          <PanelTrigger
+            layout="right"
+            panels={[
+              { id: 'input', label: 'Input', enabled: false },
+              { id: 'properties', label: 'Properties', enabled: true },
+              { id: 'output', label: 'Output', enabled: false },
+            ]}
+          />
+        </div>
+      </div>
+      <div className="absolute inset-y-0 right-0 z-20 p-4 pl-0">
+        <div className="h-full w-[380px] overflow-hidden rounded-2xl border border-border-subtle shadow-lg">
+          <NodeInventoryPanel item={item} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DapValueField({
+  id,
+  label,
+  value,
+  placeholder,
+  required,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  placeholder: string;
+  required?: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className="text-xs">
+        {label}
+        {required && <span className="text-error"> *</span>}
+      </Label>
+      <InputGroup className="h-9 bg-surface-overlay">
+        <InputGroupInput
+          id={id}
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+          className="text-xs"
+        />
+        <InputGroupAddon align="inline-end" className="-my-1 gap-0 self-stretch">
+          <InputGroupButton
+            icon
+            aria-label={`Insert variable for ${label}`}
+            title="Insert variable"
+            className="h-full rounded-none border-l px-2.5"
+            onClick={() => onChange(`${value}$vars.`)}
+          >
+            <AtSign size={14} />
+          </InputGroupButton>
+          <InputGroupButton
+            icon
+            aria-label={`Configure value for ${label}`}
+            title="Configure value"
+            className="h-full rounded-none border-l px-2.5"
+          >
+            <SlidersHorizontal size={14} />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+    </div>
+  );
+}
+
 function DapPanel({ onClose }: { onClose: () => void }) {
+  const [subject, setSubject] = useState('Invoice approval required');
+  const [recipient, setRecipient] = useState('$vars.approverEmail');
+  const [body, setBody] = useState(
+    'Hi $vars.approverName,\n\nPlease review invoice $vars.invoiceNumber.'
+  );
+  const [attachment, setAttachment] = useState('$vars.invoicePdf');
+  const [replyTo, setReplyTo] = useState('finance-ops@example.com');
+  const [includeDetails, setIncludeDetails] = useState('true');
+  const [selectedProperties, setSelectedProperties] = useState(['Subject', 'Body', 'Importance']);
+
+  const toggleProperty = (property: string) => {
+    setSelectedProperties((current) =>
+      current.includes(property)
+        ? current.filter((candidate) => candidate !== property)
+        : [...current, property]
+    );
+  };
+
   return (
     <NodePropertyPanel
-      panelTitle="DAP"
-      nodeIcon={<Blocks />}
-      nodeLabel="DAP components"
-      nodeCategory="Component display and interaction guidance"
+      panelTitle="Properties"
+      nodeIcon={<Mail />}
+      nodeLabel="Send email"
+      nodeCategory="Gmail · DAP layout"
       onClose={onClose}
       contentInset="0.875rem"
       className="h-full"
     >
-      <div className="flex min-h-0 flex-1 flex-col p-3">
-        <div className="grid min-h-52 flex-1 place-items-center rounded-xl border border-dashed border-border-subtle bg-surface-overlay/30 p-6 text-center">
-          <div className="max-w-56">
-            <Blocks className="mx-auto size-6 text-foreground-subtle" />
-            <p className="mt-3 text-sm font-semibold text-foreground">DAP UX</p>
-            <p className="mt-1 text-xs leading-5 text-foreground-muted">
-              Add DAP components and their interaction guidance here.
+      <Tabs defaultValue="parameters" className="flex h-full min-h-0 flex-col">
+        <TabsList className={VARIABLE_TAB_LIST_CLASS}>
+          <TabsTrigger value="parameters" className={VARIABLE_TAB_TRIGGER_CLASS}>
+            Parameters
+          </TabsTrigger>
+          <TabsTrigger value="variables" className={VARIABLE_TAB_TRIGGER_CLASS}>
+            Variables
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="space-y-5">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Configure a connector activity using reusable DAP field and value-source patterns.
             </p>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold text-foreground">Connection</p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs font-semibold text-brand hover:text-brand"
+                >
+                  Refresh schema
+                </Button>
+              </div>
+              <Select defaultValue="gmail-finance">
+                <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gmail-finance">Gmail · Finance operations</SelectItem>
+                  <SelectItem value="gmail-personal">Gmail · Personal</SelectItem>
+                </SelectContent>
+              </Select>
+              <Alert className="border-brand/30 bg-brand-subtle/30 py-2.5">
+                <AlertDescription className="text-[11px] leading-4">
+                  Schema is current. Nine configurable message properties are available.
+                </AlertDescription>
+              </Alert>
+            </section>
+
+            <Separator />
+
+            <section className="space-y-4">
+              <p className="text-xs font-semibold text-foreground">Message</p>
+              <DapValueField
+                id="dap-recipient"
+                label="To"
+                value={recipient}
+                placeholder="Recipient email address"
+                required
+                onChange={setRecipient}
+              />
+              <DapValueField
+                id="dap-subject"
+                label="Subject"
+                value={subject}
+                placeholder="The subject of the email"
+                required
+                onChange={setSubject}
+              />
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="dap-body" className="text-xs">
+                    Body <span className="text-error">*</span>
+                  </Label>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs text-brand hover:text-brand"
+                    onClick={() => setBody(`${body}$vars.`)}
+                  >
+                    <AtSign size={13} /> Insert variable
+                  </Button>
+                </div>
+                <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-overlay focus-within:border-border-focus">
+                  <div className="flex h-8 items-center gap-1 border-b border-border-subtle px-2">
+                    <Button size="sm" variant="ghost" className="size-6 p-0" aria-label="Bold">
+                      <Bold size={13} />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="size-6 p-0"
+                      aria-label="Bulleted list"
+                    >
+                      <List size={13} />
+                    </Button>
+                    <span className="ml-auto text-[10px] text-foreground-muted">Rich text</span>
+                  </div>
+                  <Textarea
+                    id="dap-body"
+                    value={body}
+                    onChange={(event) => setBody(event.target.value)}
+                    className="min-h-28 resize-none rounded-none border-0 bg-transparent text-xs shadow-none focus-visible:ring-0"
+                  />
+                </div>
+              </div>
+              <DapValueField
+                id="dap-attachment"
+                label="Attachment"
+                value={attachment}
+                placeholder="The file to attach"
+                onChange={setAttachment}
+              />
+            </section>
+
+            <Accordion type="multiple" defaultValue={['options']} className="space-y-2">
+              <AccordionItem
+                value="options"
+                className="rounded-lg border border-border-subtle px-3"
+              >
+                <AccordionTrigger className="py-3 text-xs font-semibold hover:no-underline">
+                  Options
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pb-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Include message details</Label>
+                    <RadioGroup
+                      value={includeDetails}
+                      onValueChange={setIncludeDetails}
+                      className="flex gap-5"
+                    >
+                      <label className="flex items-center gap-2 text-xs" htmlFor="dap-details-true">
+                        <RadioGroupItem id="dap-details-true" value="true" /> True
+                      </label>
+                      <label
+                        className="flex items-center gap-2 text-xs"
+                        htmlFor="dap-details-false"
+                      >
+                        <RadioGroupItem id="dap-details-false" value="false" /> False
+                      </label>
+                    </RadioGroup>
+                  </div>
+                  <DapValueField
+                    id="dap-reply-to"
+                    label="Reply to"
+                    value={replyTo}
+                    placeholder="Reply-to address"
+                    onChange={setReplyTo}
+                  />
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Importance</Label>
+                    <Select defaultValue="normal">
+                      <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="normal">Normal</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem
+                value="properties"
+                className="rounded-lg border border-border-subtle px-3"
+              >
+                <AccordionTrigger className="py-3 text-xs font-semibold hover:no-underline">
+                  Manage properties
+                </AccordionTrigger>
+                <AccordionContent className="space-y-3 pb-3">
+                  <p className="text-[11px] leading-4 text-foreground-muted">
+                    Choose the optional fields shown for this connector activity.
+                  </p>
+                  {['Subject', 'Body', 'Reply to', 'Importance', 'Attachment'].map((property) => (
+                    <div
+                      key={property}
+                      className="flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1 text-xs"
+                    >
+                      <Checkbox
+                        id={`dap-property-${property.toLowerCase().replaceAll(' ', '-')}`}
+                        checked={selectedProperties.includes(property)}
+                        onCheckedChange={() => toggleProperty(property)}
+                      />
+                      <Label
+                        htmlFor={`dap-property-${property.toLowerCase().replaceAll(' ', '-')}`}
+                        className="flex-1 cursor-pointer text-xs font-normal"
+                      >
+                        {property}
+                      </Label>
+                      <span className="text-[10px] text-foreground-muted">String</span>
+                    </div>
+                  ))}
+                  <Button size="sm" variant="outline" className="h-8 w-full text-xs">
+                    Update fields
+                  </Button>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="variables" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="space-y-4">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Values available to the connector fields and produced when this activity runs.
+            </p>
+            {[
+              ['$vars.approverEmail', 'Text · Input'],
+              ['$vars.approverName', 'Text · Input'],
+              ['$vars.invoiceNumber', 'Text · Input'],
+              ['$vars.invoicePdf', 'File · Input'],
+              ['$output.messageId', 'Text · Output'],
+            ].map(([name, metadata]) => (
+              <div
+                key={name}
+                className="flex items-center gap-3 rounded-lg border border-border-subtle bg-surface-overlay px-3 py-2.5"
+              >
+                <Blocks className="size-4 shrink-0 text-foreground-subtle" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-mono text-xs font-medium">{name}</p>
+                  <p className="mt-0.5 text-[11px] text-foreground-muted">{metadata}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </NodePropertyPanel>
   );
 }
@@ -2881,7 +4125,19 @@ export function FullWorkbenchComposition({
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [activeSidebarItem, setActiveSidebarItem] = useState<CanvasLeftSidebarItemId>('variables');
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
-  const [takeoverOpen, setTakeoverOpen] = useState(rightPanelVariant === 'node');
+  const [takeoverOpen, setTakeoverOpen] = useState(false);
+  const [selectedVariableNodeId, setSelectedVariableNodeId] = useState('trigger');
+  const [variableDemoTab, setVariableDemoTab] = useState<VariableDemoTab>('parameters');
+  const [editableWorkflowVariables, setEditableWorkflowVariables] = useState<
+    EditableWorkflowVariable[]
+  >([
+    { id: 'current-invoice', name: 'currentInvoice', type: 'Object', value: '{}' },
+    { id: 'approval-status', name: 'approvalStatus', type: 'Text', value: 'Pending review' },
+    { id: 'review-threshold', name: 'reviewThreshold', type: 'Number', value: '10000' },
+  ]);
+  const [variableParameterValues, setVariableParameterValues] = useState<Record<string, string>>(
+    {}
+  );
   const [activeTabId, setActiveTabId] = useState('execution');
   const [isBottomPanelCollapsed, setIsBottomPanelCollapsed] = useState(true);
   const [bottomPanelHeight, setBottomPanelHeight] = useState(80);
@@ -2950,6 +4206,14 @@ export function FullWorkbenchComposition({
           }
           bottomControlsOffset={canvasBottomOffset}
           rightControlsOffset={rightPanelOpen ? 412 : 16}
+          onNodeSelect={
+            rightPanelVariant === 'variables'
+              ? (nodeId) => {
+                  setSelectedVariableNodeId(nodeId);
+                  setRightPanelOpen(true);
+                }
+              : undefined
+          }
           trigger={
             <PanelTrigger
               layout={rightPanelOpen ? 'right' : 'closed'}
@@ -2967,15 +4231,7 @@ export function FullWorkbenchComposition({
               onPropertiesClick={() => setRightPanelOpen(true)}
             />
           }
-        >
-          {rightPanelVariant === 'node' && !takeoverOpen && (
-            <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center">
-              <Button className="pointer-events-auto" onClick={() => setTakeoverOpen(true)}>
-                Open node takeover
-              </Button>
-            </div>
-          )}
-        </CanvasViewport>
+        />
 
         {rightPanelOpen && (
           <div
@@ -2988,13 +4244,28 @@ export function FullWorkbenchComposition({
               ) : rightPanelVariant === 'rules' ? (
                 <RuleBuildingPanel onClose={() => setRightPanelOpen(false)} />
               ) : rightPanelVariant === 'variables' ? (
-                <VariableManagementPanel onClose={() => setRightPanelOpen(false)} />
+                <UnifiedVariablesPanel
+                  nodeId={selectedVariableNodeId}
+                  activeTab={variableDemoTab}
+                  onActiveTabChange={setVariableDemoTab}
+                  onClose={() => setRightPanelOpen(false)}
+                  onExpand={() => setTakeoverOpen(true)}
+                  workflowVariables={editableWorkflowVariables}
+                  onWorkflowVariablesChange={setEditableWorkflowVariables}
+                  parameterValues={variableParameterValues}
+                  onParameterValueChange={(key, value) =>
+                    setVariableParameterValues((current) => ({ ...current, [key]: value }))
+                  }
+                />
               ) : rightPanelVariant === 'dap' ? (
                 <DapPanel onClose={() => setRightPanelOpen(false)} />
               ) : rightPanelVariant === 'field-help' ? (
                 <FieldHelpPanel onClose={() => setRightPanelOpen(false)} />
               ) : rightPanelVariant === 'node' ? (
-                <SendEmailPropertiesPanel onClose={() => setRightPanelOpen(false)} />
+                <SendEmailPropertiesPanel
+                  onClose={() => setRightPanelOpen(false)}
+                  onOpenTakeover={() => setTakeoverOpen(true)}
+                />
               ) : (
                 <PropertiesPanel className="h-full" onClose={() => setRightPanelOpen(false)} />
               )}
@@ -3061,6 +4332,40 @@ export function FullWorkbenchComposition({
           }
         >
           <SendEmailTakeoverPanels />
+        </CanvasTakeoverModal>
+      )}
+      {rightPanelVariant === 'variables' && (
+        <CanvasTakeoverModal
+          open={takeoverOpen}
+          onOpenChange={setTakeoverOpen}
+          title={VARIABLE_DEMO_NODES[selectedVariableNodeId]?.label ?? 'Node configuration'}
+        >
+          <div className="grid h-full min-h-0 grid-cols-2 divide-x divide-border-subtle overflow-hidden">
+            <UnifiedVariablesPanel
+              nodeId={selectedVariableNodeId}
+              activeTab={variableDemoTab}
+              onActiveTabChange={setVariableDemoTab}
+              workflowVariables={editableWorkflowVariables}
+              onWorkflowVariablesChange={setEditableWorkflowVariables}
+              parameterValues={variableParameterValues}
+              onParameterValueChange={(key, value) =>
+                setVariableParameterValues((current) => ({ ...current, [key]: value }))
+              }
+              columnMode="parameters"
+            />
+            <UnifiedVariablesPanel
+              nodeId={selectedVariableNodeId}
+              activeTab={variableDemoTab}
+              onActiveTabChange={setVariableDemoTab}
+              workflowVariables={editableWorkflowVariables}
+              onWorkflowVariablesChange={setEditableWorkflowVariables}
+              parameterValues={variableParameterValues}
+              onParameterValueChange={(key, value) =>
+                setVariableParameterValues((current) => ({ ...current, [key]: value }))
+              }
+              columnMode="variables"
+            />
+          </div>
         </CanvasTakeoverModal>
       )}
     </div>
