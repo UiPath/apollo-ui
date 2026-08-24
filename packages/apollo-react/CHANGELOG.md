@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.30.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.30.2...@uipath/apollo-react@6.30.3) (2026-08-24)
+
+### Bug Fixes
+
+* **apollo-react:** allow registry icons in node output mode dropdown [MST-13618] ([87fa2e7](https://github.com/UiPath/apollo-ui/commit/87fa2e72fb011f03cf0331d183d72594f4ed87c6))
+
 ## [@uipath/apollo-react-v6.30.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.30.1...@uipath/apollo-react@6.30.2) (2026-08-24)
 
 ### Bug Fixes
