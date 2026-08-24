@@ -137,6 +137,7 @@ const meta = {
     'DraggablePanelLayout',
     'FullWorkbenchComposition',
     'NodeInventoryComposition',
+    'NodePatternComposition',
     'AgentExperienceComposition',
     'mapTemplateThemeToChat',
   ],
@@ -3148,7 +3149,7 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
   );
 }
 
-function NodeInventoryPanel({ item, onClose }: { item: NodeInventoryItem; onClose: () => void }) {
+function NodeInventoryPanel({ item, onClose }: { item: NodeInventoryItem; onClose?: () => void }) {
   const spec = NODE_PANEL_SPECS[item.id];
   return (
     <NodePropertyPanel
@@ -3275,6 +3276,106 @@ export function NodeInventoryComposition() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function SingleNodePatternCanvas({ item }: { item: NodeInventoryItem }) {
+  const nodes = useMemo(
+    () => [
+      createNode({
+        id: item.id,
+        type: 'uipath.blank-node',
+        position: { x: 0, y: 0 },
+        selected: true,
+        display: {
+          label: item.label,
+          subLabel: item.category,
+          icon: item.icon,
+        },
+        data: {
+          inventoryNodeType: item.nodeType,
+          inventoryItem: true,
+        },
+      }),
+    ],
+    [item]
+  );
+  const { fitView, getViewport, setViewport } = useReactFlow();
+  const nodesInitialized = useNodesInitialized();
+  const { canvasProps } = useCanvasStory({ initialNodes: nodes, initialEdges: [] });
+
+  const fitNode = useCallback(
+    async (duration: number) => {
+      await fitView({ padding: 0.42, maxZoom: 1, duration });
+      const viewport = getViewport();
+      await setViewport({ ...viewport, x: viewport.x - 198 }, { duration: 0 });
+    },
+    [fitView, getViewport, setViewport]
+  );
+
+  useEffect(() => {
+    if (!nodesInitialized) return;
+    void fitNode(0);
+  }, [fitNode, nodesInitialized]);
+
+  return (
+    <div className="relative h-full min-h-0 overflow-hidden">
+      <BaseCanvas {...canvasProps} mode="view" />
+      <div
+        className="absolute bottom-5 z-20 -translate-x-1/2"
+        style={{ left: 'calc(50% - 198px)' }}
+      >
+        <CanvasNavigationControls />
+      </div>
+      <div className="absolute bottom-5 right-[412px] z-20">
+        <CanvasZoomControls orientation="vertical" onOrganize={() => void fitNode(200)} />
+      </div>
+    </div>
+  );
+}
+
+export function NodePatternComposition({ nodeId }: { nodeId: string }) {
+  const item = NODE_INVENTORY_ITEMS.find((candidate) => candidate.id === nodeId);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [activeSidebarItem, setActiveSidebarItem] = useState<CanvasLeftSidebarItemId>('variables');
+
+  if (!item) {
+    return (
+      <div className="grid h-screen place-items-center bg-surface p-8 text-sm text-foreground-muted">
+        Node pattern “{nodeId}” was not found.
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative flex h-screen bg-surface">
+      <CanvasLeftSidebar
+        title="Variables"
+        variant="default"
+        isExpanded={sidebarExpanded}
+        onExpandedChange={setSidebarExpanded}
+        activeItemId={activeSidebarItem}
+        onItemSelect={setActiveSidebarItem}
+      />
+      <div className="relative min-w-0 flex-1 overflow-hidden">
+        <SingleNodePatternCanvas item={item} />
+        <div className="absolute right-[412px] top-4 z-20">
+          <PanelTrigger
+            layout="right"
+            panels={[
+              { id: 'input', label: 'Input', enabled: false },
+              { id: 'properties', label: 'Properties', enabled: true },
+              { id: 'output', label: 'Output', enabled: false },
+            ]}
+          />
+        </div>
+      </div>
+      <div className="absolute inset-y-0 right-0 z-20 p-4 pl-0">
+        <div className="h-full w-[380px] overflow-hidden rounded-2xl border border-border-subtle shadow-lg">
+          <NodeInventoryPanel item={item} />
+        </div>
+      </div>
     </div>
   );
 }
