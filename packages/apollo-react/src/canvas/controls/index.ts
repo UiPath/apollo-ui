@@ -1,6 +1,7 @@
 export { Breadcrumb } from './Breadcrumb';
 export {
   DEFAULT_NODE_OUTPUT_MODES,
+  type NodeOutputModeIcon,
   type NodeOutputModeOption,
   NodeOutputModeSelect,
   type NodeOutputModeSelectProps,

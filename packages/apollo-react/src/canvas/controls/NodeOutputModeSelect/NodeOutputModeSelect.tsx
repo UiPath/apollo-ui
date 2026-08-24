@@ -8,15 +8,53 @@ import {
   DropdownMenuTrigger,
 } from '@uipath/apollo-wind';
 import type { LucideIcon } from 'lucide-react';
-import { ChevronDown, CircleDot, FileBracesCorner, Sparkles } from 'lucide-react';
+import { ChevronDown, CircleDot, FileBracesCorner } from 'lucide-react';
 import { useMemo } from 'react';
 import { useSafeLingui } from '../../../i18n';
+import { CanvasIcon } from '../../utils/icon-registry';
+
+/**
+ * A mode's icon: either a Lucide component, or a canvas icon-registry name.
+ *
+ * Names exist because not every canvas icon is a Lucide one — Apollo's own
+ * registry entries (`file-sparkles-corner`, the project glyphs) are plain
+ * components taking `{ w, h, color }`, so they are not assignable to
+ * `LucideIcon`. Passing the name lets a consumer use the same identifier here
+ * that it passes to `CanvasIcon` elsewhere, instead of keeping a parallel
+ * component map that can drift from it.
+ */
+export type NodeOutputModeIcon = LucideIcon | string;
 
 export interface NodeOutputModeOption {
   value: string;
   label: string;
   description?: string;
-  icon?: LucideIcon;
+  icon?: NodeOutputModeIcon;
+}
+
+/**
+ * Renders either icon shape. Registry icons ignore `className` and default to
+ * `currentColor`, so a name goes in a span that carries the colour class for the
+ * glyph to inherit, rather than being handed the class directly.
+ */
+function ModeIcon({
+  icon,
+  size,
+  className,
+}: {
+  icon: NodeOutputModeIcon;
+  size?: number;
+  className?: string;
+}) {
+  if (typeof icon === 'string') {
+    return (
+      <span className={cn('inline-flex', className)}>
+        <CanvasIcon icon={icon} size={size} />
+      </span>
+    );
+  }
+  const Icon = icon;
+  return <Icon size={size} className={className} />;
 }
 
 // Single source of truth for the default modes: label/description carry the
@@ -42,8 +80,12 @@ const MODE_DEFS = [
     },
   },
   {
+    // The one registry name here: generated output has no Lucide equivalent, and
+    // this is the icon the canvas node adornment uses for the same state, so the
+    // dropdown and the node read as one family. The others stay components,
+    // which are typo-proof.
     value: 'simulated',
-    icon: Sparkles,
+    icon: 'file-sparkles-corner',
     label: { id: 'canvas.node_mode_select.simulated_label', message: 'Simulated' },
     description: {
       id: 'canvas.node_mode_select.simulated_description',
@@ -123,7 +165,9 @@ export function NodeOutputModeSelect({
             className
           )}
         >
-          {CurrentIcon && <CurrentIcon className="text-foreground-subtle" />}
+          {CurrentIcon && (
+            <ModeIcon icon={CurrentIcon} className="text-foreground-subtle" size={10} />
+          )}
           <span className="min-w-0 flex-1 truncate shrink-0">{current?.label}</span>
           <ChevronDown className="text-foreground-subtle" />
         </Button>
@@ -144,7 +188,9 @@ export function NodeOutputModeSelect({
                   selectedValue === option.value && 'text-foreground'
                 )}
               >
-                {Icon && <Icon size={13} className="shrink-0 text-foreground-subtle" />}
+                {Icon && (
+                  <ModeIcon icon={Icon} size={13} className="shrink-0 text-foreground-subtle" />
+                )}
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="text-xs font-medium">{option.label}</span>
                   {option.description && (
