@@ -3103,11 +3103,11 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
     <div className="space-y-1.5">
       <Label className="text-xs">
         {field.label}
-        {field.required && <span className="text-foreground-danger"> *</span>}
+        {field.required && <span className="text-error"> *</span>}
       </Label>
       {field.kind === 'select' ? (
         <Select defaultValue="current">
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -3115,7 +3115,10 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
           </SelectContent>
         </Select>
       ) : field.kind === 'textarea' ? (
-        <Textarea defaultValue={field.value} className="min-h-24 resize-none text-xs" />
+        <Textarea
+          defaultValue={field.value}
+          className="min-h-24 resize-none bg-surface-overlay text-xs"
+        />
       ) : field.kind === 'expression' ? (
         <div className="flex items-center rounded-lg border border-border-subtle bg-surface-overlay px-2 focus-within:border-border-focus">
           <span className="mr-1.5 font-mono text-xs text-foreground-subtle">=</span>
@@ -3125,7 +3128,7 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
           />
         </div>
       ) : (
-        <Input defaultValue={field.value} className="text-xs" />
+        <Input defaultValue={field.value} className="h-9 bg-surface-overlay text-xs" />
       )}
       {field.helper && <p className="text-[11px] text-foreground-muted">{field.helper}</p>}
     </div>
@@ -3141,45 +3144,69 @@ function NodeInventoryPanel({ item, onClose }: { item: NodeInventoryItem; onClos
       nodeLabel={item.label}
       nodeCategory={item.category}
       onClose={onClose}
+      contentInset="0.875rem"
       className="h-full"
     >
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-          <TabsList className="mx-4 mt-3 w-fit">
-            <TabsTrigger value="parameters">Parameters</TabsTrigger>
-            <TabsTrigger value="errors">Error handling</TabsTrigger>
-            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+          <TabsList className={VARIABLE_TAB_LIST_CLASS}>
+            <TabsTrigger value="parameters" className={VARIABLE_TAB_TRIGGER_CLASS}>
+              Parameters
+            </TabsTrigger>
+            <TabsTrigger value="errors" className={VARIABLE_TAB_TRIGGER_CLASS}>
+              Error handling
+            </TabsTrigger>
+            <TabsTrigger value="advanced" className={VARIABLE_TAB_TRIGGER_CLASS}>
+              Advanced
+            </TabsTrigger>
           </TabsList>
-          <TabsContent value="parameters" className="mt-0 space-y-4 p-4">
-            {spec?.section && (
-              <p className="text-xs font-semibold text-foreground">{spec.section}</p>
-            )}
-            {spec?.description && (
-              <p className="text-xs leading-5 text-foreground-muted">{spec.description}</p>
-            )}
-            {spec?.empty && (
-              <p className="text-xs text-foreground-muted">No available parameters</p>
-            )}
-            {spec?.fields?.map((field) => (
-              <InventoryPanelField key={field.label} field={field} />
-            ))}
-            {spec?.action && (
-              <Button variant="outline" className="w-full">
-                <Plus size={14} />
-                {spec.action}
-              </Button>
-            )}
-            {!spec && (
-              <p className="text-xs text-foreground-muted">
-                No Figma reference is available for this node yet.
+          <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto p-3">
+            <div className="space-y-4">
+              <p className="text-xs leading-5 text-foreground-muted">
+                Configure what this node does when the workflow runs.
               </p>
-            )}
+              {spec?.section && (
+                <p className="text-xs font-semibold text-foreground">{spec.section}</p>
+              )}
+              {spec?.description && (
+                <p className="text-xs leading-5 text-foreground-muted">{spec.description}</p>
+              )}
+              {spec?.empty && (
+                <p className="text-xs text-foreground-muted">No available parameters</p>
+              )}
+              {spec?.fields?.map((field) => (
+                <InventoryPanelField key={field.label} field={field} />
+              ))}
+              {spec?.action && (
+                <Button
+                  size="sm"
+                  variant={spec.action.startsWith('Add') ? 'ghost' : 'outline'}
+                  className={
+                    spec.action.startsWith('Add')
+                      ? 'h-7 px-2 text-xs font-semibold text-brand hover:text-brand'
+                      : 'h-8 text-xs'
+                  }
+                >
+                  {spec.action.startsWith('Add') && <Plus size={14} />}
+                  {spec.action}
+                </Button>
+              )}
+              {!spec && (
+                <p className="text-xs text-foreground-muted">
+                  No Figma reference is available for this node yet.
+                </p>
+              )}
+            </div>
           </TabsContent>
-          <TabsContent value="errors" className="mt-0 p-4 text-xs text-foreground-muted">
-            Configure retry, timeout, and error continuation behavior for this node.
+          <TabsContent value="errors" className="mt-0 min-h-0 flex-1 overflow-auto p-3">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Configure retry, timeout, and error continuation behavior for this node.
+            </p>
           </TabsContent>
-          <TabsContent value="advanced" className="mt-0 p-4 text-xs text-foreground-muted">
-            Advanced execution settings are available when supported by this node.
+          <TabsContent value="advanced" className="mt-0 min-h-0 flex-1 overflow-auto p-3">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Advanced execution settings are available when supported by this node.
+            </p>
           </TabsContent>
         </Tabs>
       </div>
