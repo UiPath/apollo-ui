@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.30.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.30.1...@uipath/apollo-react@6.30.2) (2026-08-24)
+
+### Bug Fixes
+
+* **apollo-react:** list items always show tooltip [MST-13686] ([48c7d80](https://github.com/UiPath/apollo-ui/commit/48c7d80094433479e2f22247f17a305bb7406fc2))
+
 ## [@uipath/apollo-react-v6.30.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.30.0...@uipath/apollo-react@6.30.1) (2026-08-24)
 
 ### Bug Fixes
