@@ -2681,17 +2681,6 @@ function InventoryCategoryNode({ data }: NodeProps<Node<BaseNodeData>>) {
   );
 }
 
-function InventoryItemNode({ data }: NodeProps<Node<BaseNodeData>>) {
-  return (
-    <div className="flex w-40 cursor-pointer flex-col items-center gap-2 text-center text-foreground">
-      <div className="grid size-16 place-items-center rounded-2xl border border-border-subtle bg-surface shadow-sm transition-shadow hover:shadow-md">
-        <CanvasIcon icon={data.display?.icon} size={28} />
-      </div>
-      <span className="max-w-40 text-xs font-medium leading-4">{data.display?.label}</span>
-    </div>
-  );
-}
-
 function createNodeInventoryNodes(): Node<BaseNodeData>[] {
   return NODE_INVENTORY_GROUPS.flatMap((group, rowIndex) => {
     const y = rowIndex * 150;
@@ -2702,26 +2691,33 @@ function createNodeInventoryNodes(): Node<BaseNodeData>[] {
       display: { label: group.category },
       data: { inventoryCategory: true },
     });
-    const itemNodes = group.items.map((item, columnIndex) =>
-      createNode({
+    const itemNodes = group.items.map((item, columnIndex) => {
+      const hasPanelMockup = NODE_PANEL_SPECS[item.id] !== undefined;
+      return createNode({
         id: item.id,
-        type: 'inventory-item',
+        type: 'uipath.blank-node',
         position: { x: 190 + columnIndex * 245, y: y + 8 },
         display: {
           label: item.label,
-          subLabel: item.source === 'dynamic' ? 'Dynamic catalog example' : group.category,
+          subLabel: hasPanelMockup
+            ? '🟢 Panel mockup'
+            : item.source === 'dynamic'
+              ? 'Dynamic catalog example'
+              : group.category,
           icon: item.icon,
         },
-        data: { nodeType: item.nodeType, inventoryItem: true },
-      })
-    );
+        data: {
+          inventoryNodeType: item.nodeType,
+          inventoryItem: true,
+        },
+      });
+    });
     return [categoryNode, ...itemNodes];
   });
 }
 
 const inventoryNodeTypes = {
   'inventory-category': InventoryCategoryNode,
-  'inventory-item': InventoryItemNode,
 };
 
 function NodeInventoryCanvas({
