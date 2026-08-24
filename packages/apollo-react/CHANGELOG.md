@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.29.0...@uipath/apollo-react@6.30.0) (2026-08-24)
+
+### Features
+
+* **apollo-react:** Adds the ability to rename conversations in the chat history ([12b6595](https://github.com/UiPath/apollo-ui/commit/12b65957315a97c315cf4e5852abe4fd5e6df23d))
+
+### Bug Fixes
+
+* **apollo-react:** formatting and pr comments ([5bd4b2c](https://github.com/UiPath/apollo-ui/commit/5bd4b2c6c1cc53eb5febcefb46197218116114f9))
+
 ## [@uipath/apollo-react-v6.29.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.28.0...@uipath/apollo-react@6.29.0) (2026-08-21)
 
 ### Features
