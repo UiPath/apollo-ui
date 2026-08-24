@@ -7,14 +7,26 @@ import {
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Alert,
+  AlertDescription,
   Button,
   Card,
   CardContent,
   Checkbox,
   type FormSchema,
   Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
   Label,
   type PanelImperativeHandle,
+  RadioGroup,
+  RadioGroupItem,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -39,6 +51,7 @@ import type { DockviewApi, DockviewReadyEvent, IDockviewPanelProps } from 'dockv
 import { DockviewReact } from 'dockview-react';
 import 'dockview-react/dist/styles/dockview.css';
 import {
+  AtSign,
   Blocks,
   Bold,
   Bug,
@@ -3266,28 +3279,311 @@ export function NodeInventoryComposition() {
   );
 }
 
+function DapValueField({
+  id,
+  label,
+  value,
+  placeholder,
+  required,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  placeholder: string;
+  required?: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className="text-xs">
+        {label}
+        {required && <span className="text-error"> *</span>}
+      </Label>
+      <InputGroup className="h-9 bg-surface-overlay">
+        <InputGroupInput
+          id={id}
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+          className="text-xs"
+        />
+        <InputGroupAddon align="inline-end" className="-my-1 gap-0 self-stretch">
+          <InputGroupButton
+            icon
+            aria-label={`Insert variable for ${label}`}
+            title="Insert variable"
+            className="h-full rounded-none border-l px-2.5"
+            onClick={() => onChange(`${value}$vars.`)}
+          >
+            <AtSign size={14} />
+          </InputGroupButton>
+          <InputGroupButton
+            icon
+            aria-label={`Configure value for ${label}`}
+            title="Configure value"
+            className="h-full rounded-none border-l px-2.5"
+          >
+            <SlidersHorizontal size={14} />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+    </div>
+  );
+}
+
 function DapPanel({ onClose }: { onClose: () => void }) {
+  const [subject, setSubject] = useState('Invoice approval required');
+  const [recipient, setRecipient] = useState('$vars.approverEmail');
+  const [body, setBody] = useState(
+    'Hi $vars.approverName,\n\nPlease review invoice $vars.invoiceNumber.'
+  );
+  const [attachment, setAttachment] = useState('$vars.invoicePdf');
+  const [replyTo, setReplyTo] = useState('finance-ops@example.com');
+  const [includeDetails, setIncludeDetails] = useState('true');
+  const [selectedProperties, setSelectedProperties] = useState(['Subject', 'Body', 'Importance']);
+
+  const toggleProperty = (property: string) => {
+    setSelectedProperties((current) =>
+      current.includes(property)
+        ? current.filter((candidate) => candidate !== property)
+        : [...current, property]
+    );
+  };
+
   return (
     <NodePropertyPanel
-      panelTitle="DAP"
-      nodeIcon={<Blocks />}
-      nodeLabel="DAP components"
-      nodeCategory="Component display and interaction guidance"
+      panelTitle="Properties"
+      nodeIcon={<Mail />}
+      nodeLabel="Send email"
+      nodeCategory="Gmail · DAP layout"
       onClose={onClose}
       contentInset="0.875rem"
       className="h-full"
     >
-      <div className="flex min-h-0 flex-1 flex-col p-3">
-        <div className="grid min-h-52 flex-1 place-items-center rounded-xl border border-dashed border-border-subtle bg-surface-overlay/30 p-6 text-center">
-          <div className="max-w-56">
-            <Blocks className="mx-auto size-6 text-foreground-subtle" />
-            <p className="mt-3 text-sm font-semibold text-foreground">DAP UX</p>
-            <p className="mt-1 text-xs leading-5 text-foreground-muted">
-              Add DAP components and their interaction guidance here.
+      <Tabs defaultValue="parameters" className="flex h-full min-h-0 flex-col">
+        <TabsList className={VARIABLE_TAB_LIST_CLASS}>
+          <TabsTrigger value="parameters" className={VARIABLE_TAB_TRIGGER_CLASS}>
+            Parameters
+          </TabsTrigger>
+          <TabsTrigger value="variables" className={VARIABLE_TAB_TRIGGER_CLASS}>
+            Variables
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="space-y-5">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Configure a connector activity using reusable DAP field and value-source patterns.
             </p>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold text-foreground">Connection</p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs font-semibold text-brand hover:text-brand"
+                >
+                  Refresh schema
+                </Button>
+              </div>
+              <Select defaultValue="gmail-finance">
+                <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gmail-finance">Gmail · Finance operations</SelectItem>
+                  <SelectItem value="gmail-personal">Gmail · Personal</SelectItem>
+                </SelectContent>
+              </Select>
+              <Alert className="border-brand/30 bg-brand-subtle/30 py-2.5">
+                <AlertDescription className="text-[11px] leading-4">
+                  Schema is current. Nine configurable message properties are available.
+                </AlertDescription>
+              </Alert>
+            </section>
+
+            <Separator />
+
+            <section className="space-y-4">
+              <p className="text-xs font-semibold text-foreground">Message</p>
+              <DapValueField
+                id="dap-recipient"
+                label="To"
+                value={recipient}
+                placeholder="Recipient email address"
+                required
+                onChange={setRecipient}
+              />
+              <DapValueField
+                id="dap-subject"
+                label="Subject"
+                value={subject}
+                placeholder="The subject of the email"
+                required
+                onChange={setSubject}
+              />
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="dap-body" className="text-xs">
+                    Body <span className="text-error">*</span>
+                  </Label>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs text-brand hover:text-brand"
+                    onClick={() => setBody(`${body}$vars.`)}
+                  >
+                    <AtSign size={13} /> Insert variable
+                  </Button>
+                </div>
+                <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-overlay focus-within:border-border-focus">
+                  <div className="flex h-8 items-center gap-1 border-b border-border-subtle px-2">
+                    <Button size="sm" variant="ghost" className="size-6 p-0" aria-label="Bold">
+                      <Bold size={13} />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="size-6 p-0"
+                      aria-label="Bulleted list"
+                    >
+                      <List size={13} />
+                    </Button>
+                    <span className="ml-auto text-[10px] text-foreground-muted">Rich text</span>
+                  </div>
+                  <Textarea
+                    id="dap-body"
+                    value={body}
+                    onChange={(event) => setBody(event.target.value)}
+                    className="min-h-28 resize-none rounded-none border-0 bg-transparent text-xs shadow-none focus-visible:ring-0"
+                  />
+                </div>
+              </div>
+              <DapValueField
+                id="dap-attachment"
+                label="Attachment"
+                value={attachment}
+                placeholder="The file to attach"
+                onChange={setAttachment}
+              />
+            </section>
+
+            <Accordion type="multiple" defaultValue={['options']} className="space-y-2">
+              <AccordionItem
+                value="options"
+                className="rounded-lg border border-border-subtle px-3"
+              >
+                <AccordionTrigger className="py-3 text-xs font-semibold hover:no-underline">
+                  Options
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pb-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Include message details</Label>
+                    <RadioGroup
+                      value={includeDetails}
+                      onValueChange={setIncludeDetails}
+                      className="flex gap-5"
+                    >
+                      <label className="flex items-center gap-2 text-xs" htmlFor="dap-details-true">
+                        <RadioGroupItem id="dap-details-true" value="true" /> True
+                      </label>
+                      <label
+                        className="flex items-center gap-2 text-xs"
+                        htmlFor="dap-details-false"
+                      >
+                        <RadioGroupItem id="dap-details-false" value="false" /> False
+                      </label>
+                    </RadioGroup>
+                  </div>
+                  <DapValueField
+                    id="dap-reply-to"
+                    label="Reply to"
+                    value={replyTo}
+                    placeholder="Reply-to address"
+                    onChange={setReplyTo}
+                  />
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Importance</Label>
+                    <Select defaultValue="normal">
+                      <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="normal">Normal</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem
+                value="properties"
+                className="rounded-lg border border-border-subtle px-3"
+              >
+                <AccordionTrigger className="py-3 text-xs font-semibold hover:no-underline">
+                  Manage properties
+                </AccordionTrigger>
+                <AccordionContent className="space-y-3 pb-3">
+                  <p className="text-[11px] leading-4 text-foreground-muted">
+                    Choose the optional fields shown for this connector activity.
+                  </p>
+                  {['Subject', 'Body', 'Reply to', 'Importance', 'Attachment'].map((property) => (
+                    <div
+                      key={property}
+                      className="flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1 text-xs"
+                    >
+                      <Checkbox
+                        id={`dap-property-${property.toLowerCase().replaceAll(' ', '-')}`}
+                        checked={selectedProperties.includes(property)}
+                        onCheckedChange={() => toggleProperty(property)}
+                      />
+                      <Label
+                        htmlFor={`dap-property-${property.toLowerCase().replaceAll(' ', '-')}`}
+                        className="flex-1 cursor-pointer text-xs font-normal"
+                      >
+                        {property}
+                      </Label>
+                      <span className="text-[10px] text-foreground-muted">String</span>
+                    </div>
+                  ))}
+                  <Button size="sm" variant="outline" className="h-8 w-full text-xs">
+                    Update fields
+                  </Button>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="variables" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="space-y-4">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Values available to the connector fields and produced when this activity runs.
+            </p>
+            {[
+              ['$vars.approverEmail', 'Text · Input'],
+              ['$vars.approverName', 'Text · Input'],
+              ['$vars.invoiceNumber', 'Text · Input'],
+              ['$vars.invoicePdf', 'File · Input'],
+              ['$output.messageId', 'Text · Output'],
+            ].map(([name, metadata]) => (
+              <div
+                key={name}
+                className="flex items-center gap-3 rounded-lg border border-border-subtle bg-surface-overlay px-3 py-2.5"
+              >
+                <Blocks className="size-4 shrink-0 text-foreground-subtle" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-mono text-xs font-medium">{name}</p>
+                  <p className="mt-0.5 text-[11px] text-foreground-muted">{metadata}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </NodePropertyPanel>
   );
 }
