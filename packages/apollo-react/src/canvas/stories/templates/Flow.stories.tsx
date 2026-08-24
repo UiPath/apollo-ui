@@ -3017,8 +3017,10 @@ const inventoryNodeTypes = {
 
 function NodeInventoryCanvas({
   onItemSelect,
+  rightPanelOpen,
 }: {
   onItemSelect: (item: NodeInventoryItem) => void;
+  rightPanelOpen: boolean;
 }) {
   const inventoryNodes = useMemo(createNodeInventoryNodes, []);
   const { fitView } = useReactFlow();
@@ -3047,10 +3049,16 @@ function NodeInventoryCanvas({
           if (item) onItemSelect(item);
         }}
       />
-      <div className="absolute bottom-5 left-1/2 z-20 -translate-x-1/2">
+      <div
+        className="absolute bottom-5 z-20 -translate-x-1/2 transition-[left] duration-200"
+        style={{ left: rightPanelOpen ? 'calc(50% - 198px)' : '50%' }}
+      >
         <CanvasNavigationControls />
       </div>
-      <div className="absolute bottom-5 right-4 z-20">
+      <div
+        className="absolute bottom-5 z-20 transition-[right] duration-200"
+        style={{ right: rightPanelOpen ? 412 : 16 }}
+      >
         <CanvasZoomControls
           orientation="vertical"
           onOrganize={() => void fitView({ padding: 0.12, duration: 200, maxZoom: 0.85 })}
@@ -3492,6 +3500,7 @@ export function NodeInventoryComposition() {
       />
       <div className="relative min-w-0 flex-1 overflow-hidden">
         <NodeInventoryCanvas
+          rightPanelOpen={rightPanelOpen}
           onItemSelect={(item) => {
             setSelectedItem(item);
             setRightPanelOpen(true);
