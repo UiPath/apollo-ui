@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.30.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.30.0...@uipath/apollo-react@6.30.1) (2026-08-24)
+
+### Bug Fixes
+
+* **apollo-react:** hand the mocked-output adornment to consumers [MST-13618] ([d217605](https://github.com/UiPath/apollo-ui/commit/d217605da5fe13eb32a460f0e1cd9f1c35ccb02d))
+
 ## [@uipath/apollo-react-v6.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.29.0...@uipath/apollo-react@6.30.0) (2026-08-24)
 
 ### Features
