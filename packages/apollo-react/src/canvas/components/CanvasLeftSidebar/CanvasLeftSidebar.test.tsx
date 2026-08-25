@@ -31,6 +31,41 @@ describe('CanvasLeftSidebar', () => {
     expect(onExpandedChange).toHaveBeenCalledWith(false);
   });
 
+  it('omits the content header when requested', () => {
+    render(
+      <CanvasLeftSidebar
+        title="Variables"
+        isExpanded
+        onExpandedChange={vi.fn()}
+        showContentHeader={false}
+        headerActions={<button type="button">Header action</button>}
+      >
+        Sidebar content
+      </CanvasLeftSidebar>
+    );
+
+    expect(screen.queryByRole('heading', { name: 'Variables' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Header action' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Collapse sidebar' })).not.toBeInTheDocument();
+    expect(screen.getByText('Sidebar content')).toBeInTheDocument();
+  });
+
+  it('uses a consumer-defined expanded content width', () => {
+    const expandedContentWidth = 420;
+    render(
+      <CanvasLeftSidebar
+        title="Variables"
+        isExpanded
+        onExpandedChange={vi.fn()}
+        expandedContentWidth={expandedContentWidth}
+      />
+    );
+
+    expect(screen.getByTestId('canvas-left-sidebar')).toHaveStyle({
+      width: `${CANVAS_LEFT_SIDEBAR_RAIL_WIDTH + expandedContentWidth}px`,
+    });
+  });
+
   it('hides content and requests expansion from the collapsed state', async () => {
     const onExpandedChange = vi.fn();
     render(
