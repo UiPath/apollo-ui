@@ -1,3 +1,28 @@
+## [@uipath/apollo-react-v6.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.30.3...@uipath/apollo-react@6.31.0) (2026-08-25)
+
+### Features
+
+* **apollo-react:** add standalone and VS Code canvas templates ([a594601](https://github.com/UiPath/apollo-ui/commit/a594601864e153f011a28157db5495691bafbd43))
+* **apollo-react:** dock bottom data panels across canvas edges ([1af0b63](https://github.com/UiPath/apollo-ui/commit/1af0b633934129ebee8b52436508a872e09b6e08))
+
+### Bug Fixes
+
+* **apollo-react:** address canvas template review ([343dae9](https://github.com/UiPath/apollo-ui/commit/343dae95fb55d732170417f2847e0f467a66d94d))
+* **apollo-react:** address template review feedback ([5b29536](https://github.com/UiPath/apollo-ui/commit/5b29536d1c5c157694625091a6cee2aa02f79823))
+* **apollo-react:** align bottom panel drag interactions ([0f08b5a](https://github.com/UiPath/apollo-ui/commit/0f08b5a09aa7574311f9416cdf027ec92e457623))
+* **apollo-react:** align template panel interaction contracts ([6e9e28e](https://github.com/UiPath/apollo-ui/commit/6e9e28e6585e1a325ee11249af221574ef0f4006))
+* **apollo-react:** align VS Code panel layouts ([1791a02](https://github.com/UiPath/apollo-ui/commit/1791a025c7e223e8c04e6467846563f587266147))
+* **apollo-react:** align workbench bottom panel behavior ([d9c7767](https://github.com/UiPath/apollo-ui/commit/d9c7767189cc883805ae1866d7945b833e50d5b0))
+* **apollo-react:** anchor panel drag preview to grab point ([db2fee7](https://github.com/UiPath/apollo-ui/commit/db2fee7c2260cb96b78b516a3992e6a61c3b5d7d))
+* **apollo-react:** clear stale bottom panel drag state ([f4f23ba](https://github.com/UiPath/apollo-ui/commit/f4f23ba6226401105f6439a744bf0cbf90035eaf))
+* **apollo-react:** close template trigger after panel selection ([0a54f6d](https://github.com/UiPath/apollo-ui/commit/0a54f6dde26117e2b07897a44977d5cce9fe5442))
+* **apollo-react:** compact standalone panel drag preview ([421f2d8](https://github.com/UiPath/apollo-ui/commit/421f2d8f6240b41a1964b483adb0398d69a0a740))
+* **apollo-react:** constrain standalone panel docking to edges ([48e808a](https://github.com/UiPath/apollo-ui/commit/48e808a1ffe528a2cc765826a6a3f648803320da))
+* **apollo-react:** hide dockview-owned panel titles ([252292f](https://github.com/UiPath/apollo-ui/commit/252292f99183304f8f58a552efa8e8f745b90e77))
+* **apollo-react:** hide panel divider grips until hover ([1e6d446](https://github.com/UiPath/apollo-ui/commit/1e6d446ebf1782aff43043bfe424b66ea6bf2d94))
+* **apollo-react:** refine bottom panel resize handle ([8cfd34a](https://github.com/UiPath/apollo-ui/commit/8cfd34a86174dc28b62e286f66cbac852fdad829))
+* **apollo-react:** reopen workbench right panel from trigger ([3b697a3](https://github.com/UiPath/apollo-ui/commit/3b697a3f6d1197e2db3d3e7a0f18bf4599cad561))
+
 ## [@uipath/apollo-react-v6.30.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.30.2...@uipath/apollo-react@6.30.3) (2026-08-24)
 
 ### Bug Fixes
