@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useMemo, useState } from 'react';
 import { Button, Input } from '@uipath/apollo-wind';
 import { Search } from 'lucide-react';
@@ -15,6 +15,35 @@ const meta = {
 } satisfies Meta;
 
 export default meta;
+
+/**
+ * Story IDs carry the composing Storybook's `titlePrefix` (for example
+ * `apollo-react-canvas-`) in apps/storybook, but are unprefixed when this
+ * package's own Storybook runs standalone. Deriving the prefix from this story's
+ * own ID keeps the gallery links resolvable in both.
+ */
+const SELF_STORY_ID = 'components-all-components--default';
+
+const getIdPrefix = (storyId: string) =>
+  storyId.endsWith(SELF_STORY_ID) ? storyId.slice(0, -SELF_STORY_ID.length) : '';
+
+/**
+ * Storybook keeps globals (theme, locale) in the URL only, and these cards do a
+ * full top-frame navigation, so any global not carried over is lost on click.
+ * Rebuild the target URL from the current top-frame query string, swapping only
+ * `path`.
+ */
+const buildStoryHref = (storyId: string) => {
+  let extra = '';
+  try {
+    const params = new URLSearchParams(window.top?.location.search ?? '');
+    params.delete('path');
+    extra = params.toString();
+  } catch {
+    // Top frame is cross-origin; fall back to a bare path.
+  }
+  return `/?path=/story/${storyId}${extra ? `&${extra}` : ''}`;
+};
 
 enum Category {
   Canvas = 'Canvas',
@@ -35,7 +64,8 @@ const CATEGORY_ORDER: Category[] = [
 interface ComponentInfo {
   name: string;
   description: string;
-  storyPath: string;
+  /** Omitted when the component has no story of its own. */
+  storyPath?: string;
   category: Category;
   preview: React.ReactNode;
 }
@@ -172,7 +202,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Base Node',
     description: 'Core reusable node with shapes, icons and execution states',
-    storyPath: 'components-nodes-basenode--default',
+    storyPath: 'components-nodes-basenode--shapes',
     category: Category.Nodes,
     preview: (
       <div className="flex gap-3 items-center">
@@ -287,7 +317,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Collapse Config',
     description: 'Collapsible configuration sections for node properties',
-    storyPath: 'components-panels-collapseconfig--default',
+    storyPath: 'components-panels-node-collapse-config--default',
     category: Category.Controls,
     preview: (
       <div className="w-full rounded border border-border bg-card overflow-hidden text-xs">
@@ -308,7 +338,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Node Properties Panel',
     description: 'Side panel for editing selected node properties',
-    storyPath: 'components-panels-nodepropertiespanel--default',
+    storyPath: 'components-panels-node-property-panel--default',
     category: Category.Controls,
     preview: (
       <div className="w-full rounded border border-border bg-card p-2 flex flex-col gap-2 text-xs">
@@ -462,7 +492,6 @@ const components: ComponentInfo[] = [
   {
     name: 'Node Inspector',
     description: 'Debug overlay showing live node and edge state',
-    storyPath: 'components-panels-nodeinspector--default',
     category: Category.Utilities,
     preview: (
       <div className="w-full rounded border border-border bg-card p-2 font-mono text-[10px] text-muted-foreground leading-relaxed">
@@ -548,7 +577,7 @@ const components: ComponentInfo[] = [
 // Gallery component
 // ---------------------------------------------------------------------------
 
-function CanvasComponentGallery() {
+function CanvasComponentGallery({ idPrefix }: { idPrefix: string }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
 
@@ -658,31 +687,38 @@ function CanvasComponentGallery() {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {categoryComponents.map((component) => (
-                      <a
-                        key={component.name}
-                        href={`/?path=/story/${component.storyPath}`}
-                        target="_top"
-                        className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg min-w-0"
-                      >
-                        <div className="h-full rounded-lg border border-border/50 bg-card overflow-hidden transition-all duration-200 hover:border-border hover:shadow-md">
-                          {/* Preview Area */}
-                          <div className="h-[140px] bg-muted/30 flex items-center justify-center p-4">
-                            <div className="max-w-full w-full">{component.preview}</div>
-                          </div>
+                    {categoryComponents.map((component) => {
+                      const Wrapper = component.storyPath ? 'a' : 'div';
+                      return (
+                        <Wrapper
+                          key={component.name}
+                          href={
+                            component.storyPath
+                              ? buildStoryHref(`${idPrefix}${component.storyPath}`)
+                              : undefined
+                          }
+                          target={component.storyPath ? '_top' : undefined}
+                          className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg min-w-0"
+                        >
+                          <div className="h-full rounded-lg border border-border/50 bg-card overflow-hidden transition-all duration-200 hover:border-border hover:shadow-md">
+                            {/* Preview Area */}
+                            <div className="h-[140px] bg-muted/30 flex items-center justify-center p-4">
+                              <div className="max-w-full w-full">{component.preview}</div>
+                            </div>
 
-                          {/* Component Info */}
-                          <div className="px-4 py-3 border-t border-border/30">
-                            <h3 className="font-medium text-sm text-foreground">
-                              {component.name}
-                            </h3>
-                            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
-                              {component.description}
-                            </p>
+                            {/* Component Info */}
+                            <div className="px-4 py-3 border-t border-border/30">
+                              <h3 className="font-medium text-sm text-foreground">
+                                {component.name}
+                              </h3>
+                              <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+                                {component.description}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </a>
-                    ))}
+                        </Wrapper>
+                      );
+                    })}
                   </div>
                 </section>
               );
@@ -694,7 +730,6 @@ function CanvasComponentGallery() {
   );
 }
 
-export const Default = {
-  args: {},
-  render: () => <CanvasComponentGallery />,
+export const Default: StoryObj = {
+  render: (_args, ctx) => <CanvasComponentGallery idPrefix={getIdPrefix(ctx.id)} />,
 };

@@ -60,6 +60,35 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
+/**
+ * Story IDs carry the composing Storybook's `titlePrefix` (for example
+ * `apollo-react-material-maintenance-only-`) in apps/storybook, but are unprefixed when this
+ * package's own Storybook runs standalone. Deriving the prefix from this story's
+ * own ID keeps the gallery links resolvable in both.
+ */
+const SELF_STORY_ID = 'components-all-components--default';
+
+const getIdPrefix = (storyId: string) =>
+  storyId.endsWith(SELF_STORY_ID) ? storyId.slice(0, -SELF_STORY_ID.length) : '';
+
+/**
+ * Storybook keeps globals (theme, locale) in the URL only, and these cards do a
+ * full top-frame navigation, so any global not carried over is lost on click.
+ * Rebuild the target URL from the current top-frame query string, swapping only
+ * `path`.
+ */
+const buildStoryHref = (storyId: string) => {
+  let extra = '';
+  try {
+    const params = new URLSearchParams(window.top?.location.search ?? '');
+    params.delete('path');
+    extra = params.toString();
+  } catch {
+    // Top frame is cross-origin; fall back to a bare path.
+  }
+  return `/?path=/story/${storyId}${extra ? `&${extra}` : ''}`;
+};
+
 enum Category {
   Inputs = 'Inputs',
   DataDisplay = 'Data Display',
@@ -84,7 +113,7 @@ interface ComponentInfo {
   preview: ReactNode;
 }
 
-const storyDocs = (slug: string) => `material-maintenance-only-components-${slug}--docs`;
+const storyDocs = (slug: string) => `components-${slug}--docs`;
 
 const components: ComponentInfo[] = [
   // ── Inputs ────────────────────────────────────────────────────────────
@@ -559,7 +588,7 @@ const components: ComponentInfo[] = [
   },
 ];
 
-function ComponentGallery() {
+function ComponentGallery({ idPrefix }: { idPrefix: string }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
 
@@ -670,7 +699,7 @@ function ComponentGallery() {
                     <Box
                       key={component.name}
                       component="a"
-                      href={`/?path=/story/${component.storyPath}`}
+                      href={buildStoryHref(`${idPrefix}${component.storyPath}`)}
                       target="_top"
                       sx={(theme) => ({
                         display: 'block',
@@ -736,5 +765,5 @@ function ComponentGallery() {
 }
 
 export const Default: Story = {
-  render: () => <ComponentGallery />,
+  render: (_args, ctx) => <ComponentGallery idPrefix={getIdPrefix(ctx.id)} />,
 };
