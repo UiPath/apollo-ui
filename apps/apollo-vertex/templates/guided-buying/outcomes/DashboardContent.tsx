@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { AutopilotInsight } from "./AutopilotInsight";
 import { DashboardDataProvider } from "./DashboardDataProvider";
 import { DashboardGlow } from "./DashboardGlow";
@@ -23,6 +24,7 @@ import {
   type GlowConfig,
   type LayoutConfig,
 } from "./glow-config";
+import { HeroTrend } from "./hero-trend";
 import { InsightGrid } from "./InsightGrid";
 import { PromptBar } from "./PromptBar";
 import { useViewMode, type ViewMode } from "./use-view-mode";
@@ -44,6 +46,9 @@ export function ExecutiveLayout({
 }) {
   const { data } = useDashboardData();
   const [promptExpanded, setPromptExpanded] = useState(false);
+  const hasTrend = !!data.heroTrend && data.heroTrend.length > 0;
+  const trendStart = data.heroTrend?.[0];
+  const trendToday = data.heroTrend?.at(-1);
   const borderClass = cards.borderVisible ? "" : "dark:!border-transparent";
   const blurClass = cards.backdropBlur ? "" : "dark:!backdrop-blur-none";
   const shared = `!shadow-none dark:![background:var(--card-bg-override)] ${borderClass} ${blurClass}`;
@@ -55,7 +60,7 @@ export function ExecutiveLayout({
       style={gapStyle}
     >
       <div
-        className="flex flex-col h-full"
+        className="flex min-h-0 flex-col h-full"
         style={{ gap: promptExpanded ? 0 : layout.gap }}
       >
         <div
@@ -73,29 +78,52 @@ export function ExecutiveLayout({
             )}
           >
             <CardHeader className="!p-0 !gap-2">
-              <img
-                src="/Autopilot_dark.svg"
-                alt="AI Assistant"
-                className="size-5 block dark:hidden"
-              />
-              <img
-                src="/Autopilot_light.svg"
-                alt="AI Assistant"
-                className="size-5 hidden dark:block"
-              />
+              <AiMark size={20} gradientId="gb-ai-mark" aria-hidden />
               <CardTitle className="text-sm font-bold tracking-tight">
                 {data.greeting}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col !p-0 min-h-0">
-              <div>
-                <p className="text-4xl font-bold tracking-tight pr-16">
-                  {data.headline}
-                </p>
-                <p className="text-sm font-normal text-muted-foreground pr-32 mt-8 leading-relaxed">
-                  {data.subhead}
-                </p>
-              </div>
+              <p className="text-4xl font-bold tracking-tight pr-16">
+                {data.headline}
+              </p>
+              <p className="text-sm font-normal text-muted-foreground pr-16 mt-4 leading-relaxed">
+                {data.subhead}
+              </p>
+              {hasTrend && (
+                <div className="flex-1 min-h-0 mt-8 flex flex-col">
+                  <div className="flex-1 min-h-0">
+                    <HeroTrend
+                      values={data.heroTrend ?? []}
+                      target={data.heroTrendTarget ?? 0}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-end justify-between">
+                    <div className="text-left">
+                      <p className="text-[10px] text-muted-foreground/60">
+                        Start of quarter
+                      </p>
+                      <p className="text-xs text-muted-foreground/60">
+                        {trendStart} days
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] text-muted-foreground/60">
+                        Target
+                      </p>
+                      <p className="text-xs text-muted-foreground/60">
+                        {data.heroTrendTarget} days
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-muted-foreground">Today</p>
+                      <p className="text-xs text-foreground font-medium">
+                        {trendToday} days
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

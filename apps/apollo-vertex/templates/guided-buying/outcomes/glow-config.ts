@@ -30,11 +30,15 @@ export interface CardConfig {
   backdropBlur: boolean;
 }
 
+// Softened for this surface (prompt 71): containerOpacity 70 to 40,
+// fillOpacity 0.3 to 0.18, so the glow reads as ambient rather than a
+// second light source, while the card surfaces above it still show
+// through as translucent rather than flat.
 export const defaultLightGlow: GlowConfig = {
   start: "var(--insight-500)",
   end: "var(--primary-400)",
-  containerOpacity: 70,
-  fillOpacity: 0.3,
+  containerOpacity: 40,
+  fillOpacity: 0.18,
   startStopOpacity: 1,
   endStopOpacity: 1,
   endOffset: 0.35,
@@ -58,7 +62,10 @@ export type ChartType =
   | "horizontal-bars"
   | "sparkline"
   | "area"
-  | "stacked-bar";
+  | "stacked-bar"
+  | "average-marker-bars"
+  | "stage-duration-bars"
+  | "proportion-bar";
 
 export interface InsightCardContent {
   type: InsightCardType;
@@ -185,6 +192,7 @@ export const chartTypeOptions = [
   { label: "Sparkline", value: "sparkline" },
   { label: "Area", value: "area" },
   { label: "Stacked Bar", value: "stacked-bar" },
+  { label: "Average Marker Bars", value: "average-marker-bars" },
 ];
 
 export const sizeOptions = [
@@ -248,10 +256,9 @@ export function getInsightCardClasses(
         : "flex-1 flex flex-col",
     };
   }
-  const isBarChart = content.chartType === "horizontal-bars";
   return {
-    cardClassName: content.chartType === "donut" ? "!gap-0" : "",
-    contentClassName: isBarChart ? "flex-1" : "flex-1 flex flex-col",
+    cardClassName: "",
+    contentClassName: "flex-1 flex flex-col",
   };
 }
 
@@ -277,6 +284,9 @@ const CHART_TYPES = new Set<string>([
   "sparkline",
   "area",
   "stacked-bar",
+  "average-marker-bars",
+  "stage-duration-bars",
+  "proportion-bar",
 ]);
 const CARD_INTERACTIONS = new Set<string>(["static", "expand", "navigate"]);
 

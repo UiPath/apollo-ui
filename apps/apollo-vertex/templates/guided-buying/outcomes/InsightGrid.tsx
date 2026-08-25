@@ -75,6 +75,11 @@ export function InsightGrid({
   const expandedRow = isExpanding
     ? rows.findIndex((row) => row.some(({ idx }) => idx === expandedIdx))
     : -1;
+  // A card whose own data opts into "width" growth (currently off contract
+  // spend) only needs its row sibling to shrink, not every other row to
+  // collapse: its expanded content fits the row's existing height.
+  const expandsWidthOnly =
+    isExpanding && data.insightCards[expandedIdx]?.expandGrowth === "width";
 
   const handleClick = (
     cfg: (typeof visibleCards)[number]["cfg"],
@@ -94,6 +99,8 @@ export function InsightGrid({
       if (phase !== "idle") return "0fr";
       return "1fr";
     });
+  } else if (expandsWidthOnly) {
+    rowTemplates = rows.map(() => "1fr");
   } else {
     rowTemplates = rows.map((_, rowIndex) => {
       const isOtherRow = isExpanding && rowIndex !== expandedRow;
@@ -124,7 +131,10 @@ export function InsightGrid({
             : ""
       }`}
       style={{
-        gap: phase === "height" || phase === "full" ? 0 : layout.gap,
+        gap:
+          !expandsWidthOnly && (phase === "height" || phase === "full")
+            ? 0
+            : layout.gap,
         gridTemplateRows: rowTemplates.join(" "),
       }}
     >
@@ -190,7 +200,9 @@ export function InsightGrid({
                     gridTemplateColumns: cols,
                     gap: isRowWithExpanded && phase !== "idle" ? 0 : layout.gap,
                     opacity:
-                      isOtherRow && (phase === "height" || phase === "full")
+                      isOtherRow &&
+                      !expandsWidthOnly &&
+                      (phase === "height" || phase === "full")
                         ? 0
                         : 1,
                   } as React.CSSProperties

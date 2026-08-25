@@ -5,6 +5,14 @@
 // the running prototype and greppable in the source, instead of a
 // plausible-looking value standing in for a decision nobody made.
 
+import {
+  AVG_REQUEST_TO_PO_DAYS,
+  COMMITTED_SPEND_MILLIONS,
+  INTAKE_QUALITY_PCT,
+  OFF_CONTRACT_MILLIONS,
+  PROCESS_PERFORMANCE_SUB_FINDINGS,
+} from "./analytics";
+
 export const PLACEHOLDERS = {
   "PH-01": { description: "absolute date timeline" },
   "PH-03": { description: "v2 file size", provisional: "856 KB" },
@@ -240,15 +248,10 @@ export const PLACEHOLDERS = {
     description:
       "Sam's workbench details pane 'governing' section heading, pending a ruling on its wording",
   },
-  "PH-68": {
-    description:
-      "Elena's outcomes hero headline wording, figure interpolated from the data module, pending a ruling",
-    provisional: "Intake quality holds at 82% first time right",
-  },
   "PH-69": {
     description:
-      "Elena's outcomes hero sub-line wording, figure interpolated from the data module, pending a ruling",
-    provisional: "Off contract spend concentrates in software",
+      "Elena's outcomes hero summary beneath the headline, stating the intake rate, the auto cleared position, and the compliance position the headline does not, figures interpolated from the data module, pending a ruling (prompt 83 added the auto cleared claim)",
+    provisional: `Intake quality holds at ${INTAKE_QUALITY_PCT}% first time right, and most requests clear without a buyer. Off contract spend concentrates in software, where three suppliers carry most of it.`,
   },
   "PH-70": {
     description:
@@ -257,8 +260,8 @@ export const PLACEHOLDERS = {
   },
   "PH-71": {
     description:
-      "Elena's outcomes stage breakdown card heading, pending a ruling on its wording",
-    provisional: "Where the time goes",
+      "Elena's outcomes hero headline wording, states the finding rather than naming the topic (prompt 68), figure interpolated from the data module, pending a ruling",
+    provisional: `Requests reach a purchase order in ${AVG_REQUEST_TO_PO_DAYS} days, and security review takes nearly half of that`,
   },
   "PH-72": {
     description:
@@ -267,8 +270,8 @@ export const PLACEHOLDERS = {
   },
   "PH-73": {
     description:
-      "Elena's outcomes page header primary action, unwired pending a ruling on its behaviour",
-    provisional: "Export",
+      "Elena's outcomes page header secondary action, styled active but still unwired pending a ruling on its behaviour",
+    provisional: "Share",
   },
   "PH-74": {
     description:
@@ -281,6 +284,89 @@ export const PLACEHOLDERS = {
   "PH-76": {
     description:
       "Elena's outcomes composer second suggestion chip, pending a ruling on its wording",
+  },
+  "PH-77": {
+    description:
+      "Elena's outcomes return reason distribution (data/analytics.ts RETURN_REASONS), magnitudes provisional and not yet ruled",
+  },
+  "PH-78": {
+    description:
+      "Elena's outcomes second card label (prompt 84 repoints this id from 'return reasons'/'why requests come back' to intake quality, the card backing the hero's first time right claim; the return reason breakdown this id used to name now sits behind this card's own expand), pending a ruling on its wording",
+    provisional: "Intake quality",
+  },
+  "PH-79": {
+    description:
+      "Elena's outcomes fourth card label, backing the hero's off contract spend claim (unchanged content, now the last card rather than the second), pending a ruling on its wording",
+    provisional: "Off contract spend",
+  },
+  "PH-80": {
+    description:
+      "Elena's outcomes first card label (prompt 84 repoints this id from 'cycle time by commodity'/'which commodities run long' to the new stage duration breakdown backing the hero's headline; the commodity breakdown this id used to name now sits behind this card's own expand), pending a ruling on its wording",
+    provisional: "Where the time goes",
+  },
+  "PH-81": {
+    description:
+      "Elena's outcomes third card label, backing the hero's auto cleared claim (unchanged content and position), pending a ruling on its wording",
+    provisional: "Auto cleared",
+  },
+  "PH-82": {
+    description:
+      "Elena's outcomes 'why requests come back' card, foot line naming where duplicate requests concentrate; wording pending a ruling",
+    provisional: "Marketing services returns most often",
+  },
+  "PH-83": {
+    description:
+      "Elena's outcomes 'where spend leaks' card foot line, the fact beneath its figure; shortened from its prior full-finding wording in prompt 68, pending a ruling",
+    provisional: "Three suppliers carry most unlinked spend",
+  },
+  "PH-86": {
+    description:
+      "Elena's outcomes page header time period dropdown option set beyond the one period the data module holds (This quarter), pending a ruling on what other periods it offers",
+  },
+  "PH-87": {
+    description:
+      "Elena's outcomes hero cycle time trend (data/analytics.ts CYCLE_TIME_TREND_DAYS and CYCLE_TIME_TARGET_DAYS), values provisional and not yet ruled",
+  },
+  "PH-88": {
+    description:
+      "Elena's outcomes 'why requests come back' card, second foot line stating the first time right rate; the figure exists (data/analytics.ts INTAKE_QUALITY_PCT) but whether it belongs on this card rather than intake quality's own card is a ruling (prompt 73)",
+    provisional: `First time right rate is ${INTAKE_QUALITY_PCT}%`,
+  },
+  "PH-89": {
+    description:
+      "Elena's outcomes 'where spend leaks' card, supporting line combining the off contract amount (derived, data/analytics.ts OFF_CONTRACT_MILLIONS) against the total processed (COMMITTED_SPEND_MILLIONS) with the three-supplier concentration fact; the figures are real, the combined sentence is pending a wording ruling (prompt 77)",
+    provisional: `$${OFF_CONTRACT_MILLIONS.toFixed(1)}M of $${COMMITTED_SPEND_MILLIONS}M off contract, three suppliers`,
+  },
+  "PH-90": {
+    description:
+      "Elena's outcomes 'intake quality' card, expanded state finding stating what the return reason breakdown shows, pending a ruling on its wording (prompt 86)",
+    provisional:
+      "A missing statement of work sends back more requests than the other four reasons combined, most often on marketing services.",
+  },
+  "PH-91": {
+    description:
+      "Elena's outcomes 'intake quality' card, expanded state small heading naming the return reason breakdown list, pending a ruling on its wording (prompt 86)",
+    provisional: "Why the returned share came back",
+  },
+  "PH-92": {
+    description:
+      "Elena's outcomes 'off contract spend' card, expanded state small heading naming the right column's three facts, pending a ruling on its wording (prompt 87)",
+    provisional: "What sits behind it",
+  },
+  "PH-93": {
+    description:
+      "Elena's outcomes 'where the time goes' card, expanded state small heading naming the stage breakdown section (the same bars the face already shows), pending a ruling on its wording (prompt 88)",
+    provisional: "By stage",
+  },
+  "PH-94": {
+    description:
+      "Elena's outcomes 'where the time goes' card, expanded state sentence connecting the stage breakdown to the commodity breakdown beneath it; combines the two existing process performance sub findings rather than restating them, pending a ruling on its wording (prompt 88)",
+    provisional: `${PROCESS_PERFORMANCE_SUB_FINDINGS[0]} ${PROCESS_PERFORMANCE_SUB_FINDINGS[1]}`,
+  },
+  "PH-95": {
+    description:
+      "Elena's outcomes 'where the time goes' card, expanded state small heading naming the commodity cycle time breakdown section, pending a ruling on its wording (prompt 88)",
+    provisional: "By commodity",
   },
 } as const;
 

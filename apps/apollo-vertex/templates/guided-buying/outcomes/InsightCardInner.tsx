@@ -1,6 +1,15 @@
 "use client";
 
-import { ArrowUpRight, Maximize2, Minimize2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  Clock,
+  FileCheck,
+  Maximize2,
+  Minimize2,
+  Unlink,
+  Zap,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardAction,
@@ -22,6 +31,30 @@ import {
 } from "./glow-config";
 import type { ExpandPhase } from "./InsightGrid";
 import { InsightCardBody } from "./insight-card-renderers";
+
+// One muted icon beside each card title (prompt 85), naming the card's own
+// subject rather than decorating it, so it stays a text-sized visual cue
+// rather than an illustration.
+const CARD_TITLE_ICONS = {
+  clock: Clock,
+  "file-check": FileCheck,
+  zap: Zap,
+  unlink: Unlink,
+} as const;
+
+// How long the skeleton shows once the card has finished growing, before
+// the real expanded content swaps in.
+const SKELETON_MS = 350;
+
+function ExpandSkeleton() {
+  return (
+    <div className="flex flex-1 flex-col min-h-0 justify-center gap-3">
+      <div className="h-4 w-2/3 rounded-full bg-muted/50 animate-pulse" />
+      <div className="h-4 w-1/2 rounded-full bg-muted/50 animate-pulse" />
+      <div className="h-4 w-3/4 rounded-full bg-muted/50 animate-pulse" />
+    </div>
+  );
+}
 
 interface InsightCardInnerProps {
   cfg: InsightCardConfig;
@@ -61,7 +94,30 @@ export function InsightCardInner({
   const { data } = useDashboardData();
   const cardData = data.insightCards[cardIndex];
   const cardTitle = cardData?.title ?? cfg.content.title;
-  const hasDrilldown = cfg.content.chartType === "horizontal-bars";
+  const TitleIcon = cardData?.icon ? CARD_TITLE_ICONS[cardData.icon] : null;
+  // The reveal sequence on expand: the face fades out quickly while the
+  // card is still growing (phase "width"/"height"), a skeleton shows once
+  // it has finished growing (phase "full"), then the real expanded
+  // content swaps in after a brief pause, never mid-growth.
+  const [skeletonElapsed, setSkeletonElapsed] = useState(false);
+  useEffect(() => {
+    if (isThis && isExpanding && phase === "full") {
+      const t = setTimeout(() => setSkeletonElapsed(true), SKELETON_MS);
+      return () => clearTimeout(t);
+    }
+    setSkeletonElapsed(false);
+  }, [isThis, isExpanding, phase]);
+  const isFading =
+    isThis && isExpanding && (phase === "width" || phase === "height");
+  const showSkeleton =
+    isThis && isExpanding && phase === "full" && !skeletonElapsed;
+  const showExpandedBody =
+    isThis && isExpanding && phase === "full" && skeletonElapsed;
+  // Drilldown tabs read hardcoded sample content (ExpandedInsightContent.tsx)
+  // with no connection to Elena's own data, so they never fire here (prompt
+  // 66); every card's expand instead reveals the same visual with its full
+  // detail, via InsightCardBody's own isExpanded branch.
+  const hasDrilldown = false;
   const isExpandedWithDrilldown =
     isThis && isExpanding && hasDrilldown && phase === "full";
   const classes = getInsightCardClasses(cfg.content, viewMode);
@@ -70,7 +126,7 @@ export function InsightCardInner({
   return (
     <Card
       variant="glass"
-      className={`${(isThis && isExpanding) || isAutopilotActive ? "!bg-white dark:!bg-card !shadow-[0_2px_24px_2px_rgba(0,0,0,0.08)] dark:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.2)]" : "!bg-white/70"} ${shared} ${classes.cardClassName} group/card relative transition-all duration-300 ease-in-out overflow-hidden ${className}`}
+      className={`${(isThis && isExpanding) || isAutopilotActive ? "!bg-white dark:!bg-card !shadow-[0_2px_24px_2px_rgba(0,0,0,0.08)] dark:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.2)]" : "!bg-white/70 hover:!bg-white dark:hover:!bg-card hover:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.08)] dark:hover:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.2)]"} ${shared} ${classes.cardClassName} !py-6 group/card relative transition-all duration-300 ease-in-out overflow-hidden ${className}`}
       style={{
         ...cardBgStyle(
           cards.insightBg,
@@ -81,11 +137,14 @@ export function InsightCardInner({
       }}
     >
       <CardHeader className="shrink-0">
-        <CardTitle className="text-sm font-bold tracking-tight">
+        <CardTitle className="flex items-center gap-1.5 self-center text-sm font-bold tracking-tight">
+          {TitleIcon && (
+            <TitleIcon className="size-4 shrink-0 text-muted-foreground" />
+          )}
           {cardTitle}
         </CardTitle>
         {isInteractive && cfg.interaction === "expand" && (
-          <CardAction>
+          <CardAction className="row-span-1 self-center">
             <div
               className={`flex items-center gap-1 transition-all duration-75 ${
                 isThis || isAutopilotActive
@@ -143,7 +202,7 @@ export function InsightCardInner({
           </CardAction>
         )}
         {isInteractive && cfg.interaction === "navigate" && !isThis && (
-          <CardAction>
+          <CardAction className="row-span-1 self-center">
             <button
               type="button"
               className="size-7 rounded-md flex items-center justify-center opacity-0 translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0 transition-all duration-75 text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -234,7 +293,6 @@ export function InsightCardInner({
                 <InsightCardBody
                   content={cfg.content}
                   cardIndex={cardIndex}
-                  viewMode={viewMode}
                   isExpanded={isThis && isExpanding}
                 />
               ) : (
@@ -248,49 +306,28 @@ export function InsightCardInner({
         </div>
       ) : (
         /* Default card content: not expanded or no drilldown */
-        <CardContent className={`${classes.contentClassName} !flex-1 min-h-0`}>
-          <InsightCardBody
-            content={cfg.content}
-            cardIndex={cardIndex}
-            viewMode={viewMode}
-            isExpanded={isThis && isExpanding}
-          />
+        <CardContent
+          className={`${classes.contentClassName} !flex-1 min-h-0 transition-opacity duration-150 ${isFading ? "!opacity-0" : "opacity-100"}`}
+        >
+          {showSkeleton ? (
+            <ExpandSkeleton />
+          ) : (
+            <div
+              className={
+                showExpandedBody
+                  ? "flex flex-1 flex-col min-h-0 [&>*>*]:animate-in [&>*>*]:fade-in [&>*>*]:fill-mode-both [&>*>*]:duration-300 [&>*>*:nth-child(2)]:delay-75 [&>*>*:nth-child(3)]:delay-150 [&>*>*:nth-child(4)]:delay-200"
+                  : "flex flex-1 flex-col min-h-0"
+              }
+            >
+              <InsightCardBody
+                content={cfg.content}
+                cardIndex={cardIndex}
+                isExpanded={showExpandedBody}
+              />
+            </div>
+          )}
         </CardContent>
       )}
-      {/* Non-drilldown expanded content (other card types) */}
-      {isThis &&
-        isExpanding &&
-        !hasDrilldown &&
-        (phase === "height" || phase === "full") && (
-          <div
-            className={`flex-1 mx-6 mb-6 rounded-lg overflow-hidden transition-all duration-300 ${
-              phase === "full"
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-2"
-            }`}
-          >
-            {phase === "full" ? (
-              <div className="h-full overflow-y-auto rounded-lg bg-muted/30 p-4">
-                <ul className="space-y-2">
-                  {(cardData?.expandContent?.details ?? []).map((finding) => (
-                    <li
-                      key={finding}
-                      className="text-sm text-muted-foreground leading-relaxed"
-                    >
-                      {finding}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <div className="h-full space-y-3 p-4">
-                <div className="h-3 w-2/3 rounded-full bg-muted/50 animate-pulse" />
-                <div className="h-3 w-1/2 rounded-full bg-muted/50 animate-pulse" />
-                <div className="h-3 w-3/4 rounded-full bg-muted/50 animate-pulse" />
-              </div>
-            )}
-          </div>
-        )}
     </Card>
   );
 }
