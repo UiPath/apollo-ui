@@ -330,22 +330,28 @@
     },
     "curtain": {
       "light": {
-        "value": "rgba(black, 0.3)"
+        "value": "0000004d",
+        "comment": "4d hex = 0.30 Opacity"
       },
       "light-hc": {
-        "value": "rgba(black, 0.5)"
+        "value": "00000080",
+        "comment": "80 hex = 0.50 Opacity"
       },
       "dark": {
-        "value": "rgba(black, 0.75)"
+        "value": "000000bf",
+        "comment": "bf hex = 0.75 Opacity"
       },
       "dark-hc": {
-        "value": "rgba(black, 0.75)"
+        "value": "000000bf",
+        "comment": "bf hex = 0.75 Opacity"
       },
       "future-dark": {
-        "value": "rgba(black, 0.75)"
+        "value": "000000bf",
+        "comment": "bf hex = 0.75 Opacity"
       },
       "future-light": {
-        "value": "rgba(black, 0.3)"
+        "value": "0000004d",
+        "comment": "4d hex = 0.30 Opacity"
       }
     },
     "border": {
