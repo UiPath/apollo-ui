@@ -614,13 +614,14 @@ function FormSection({
   // Accordion's first child) so `first:` resolves against the sibling list.
   const dividerClassName = 'border-t first:border-t-0';
   const wrapperClassName = isPlain ? 'border-b-0' : 'border rounded-lg px-3';
-  // Plain: the chevron sits immediately right of the title (packed left with a
-  // small gap) rather than pushed to the far edge, and the header no longer
-  // underlines on hover — it reads as a section label, not a link. Semibold
-  // (vs the field labels' medium) keeps the header distinguishable from its own
-  // fields even when the collapse chevron is absent.
+  // Plain: the header no longer underlines on hover — it reads as a section
+  // label, not a link. Semibold (vs the field labels' medium) keeps the header
+  // distinguishable from its own fields even when the collapse chevron is
+  // absent. The chevron stays on the trailing edge (AccordionTrigger's own
+  // `justify-between`) so it lands in the same place in every expandable
+  // section, card or plain.
   const triggerClassName = isPlain
-    ? 'justify-start gap-2 py-4 text-sm font-semibold hover:no-underline'
+    ? 'py-4 text-sm font-semibold hover:no-underline'
     : 'text-sm font-medium';
 
   const fieldsGrid = (
