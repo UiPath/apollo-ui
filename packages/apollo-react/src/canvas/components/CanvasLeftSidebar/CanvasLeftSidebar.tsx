@@ -48,7 +48,7 @@ export interface CanvasLeftSidebarProps {
   bottomItems?: readonly CanvasLeftSidebarItem[];
   /** Additional controls rendered before the collapse button in the panel header. */
   headerActions?: ReactNode;
-  /** Whether to render the expanded content-panel header. Defaults to true. */
+  /** Whether to render the expanded panel title, header actions, and collapse control. Defaults to true. */
   showContentHeader?: boolean;
   /** Docked sidebars are square; floating sidebars use rounded, elevated chrome. */
   variant?: 'default' | 'floating';

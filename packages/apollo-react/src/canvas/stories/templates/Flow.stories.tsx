@@ -596,7 +596,7 @@ function StandaloneRightPropertiesComposition({
           onPointerUp={finishDrag}
           onPointerCancel={finishDrag}
           aria-grabbed={Boolean(dragPreviewPosition)}
-          className={`${dragPreviewPosition ? 'absolute p-0' : panelPositionClass} z-50 touch-none`}
+          className={`${dragPreviewPosition ? 'absolute touch-none p-0' : panelPositionClass} z-50`}
           style={dragPreviewPosition ?? undefined}
         >
           <div
