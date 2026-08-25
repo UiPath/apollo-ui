@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.36.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.36.0...@uipath/apollo-wind@2.36.1) (2026-08-25)
+
+### Bug Fixes
+
+* **apollo-wind:** keep plain section chevron on the trailing edge [MST-14024] ([0b4e06e](https://github.com/UiPath/apollo-ui/commit/0b4e06e58c897417d18901649cc24fdee4d2f161))
+
 ## [@uipath/apollo-wind-v2.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.35.0...@uipath/apollo-wind@2.36.0) (2026-08-22)
 
 ### Features
