@@ -3,10 +3,12 @@
 import { Circle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
+import { P2 } from "../P2";
 import { AreaContent, SparklineContent } from "./chart-stubs";
 import type { InsightCardData } from "./dashboard-data";
 import { useDashboardData } from "./dashboard-data-context";
 import type { InsightCardContent } from "./glow-config";
+import { StageDurationRecommendation } from "./StageDurationRecommendation";
 
 const LINE_CLAMP_CLASSES = { 2: "line-clamp-2", 3: "line-clamp-3" } as const;
 
@@ -297,7 +299,7 @@ function KpiContent({
     }
     return (
       <div className="flex flex-1 flex-col min-h-0 items-center">
-        <div className="flex min-h-0 w-full flex-1 items-center justify-center">
+        <div className="-mt-2 flex min-h-0 w-full flex-1 items-center justify-center">
           <DonutFigure cardData={cardData} />
         </div>
         <div className="mt-auto w-full space-y-1.5">
@@ -412,41 +414,55 @@ function StageDurationBarsContent({
 
     return (
       <div className="flex flex-1 flex-col min-h-0">
-        <p className="text-xs font-bold text-muted-foreground">
-          {cardData.expandContent.stageHeading}
-        </p>
-        <p className="mt-1.5 text-xs text-muted-foreground">
-          {cardData.expandContent.connectingLine}
-        </p>
-        <div className="mt-4">
-          <RankedBars bars={bars} unit={unit} colors={stageColors} />
+        <div className="grid grid-cols-2 items-start gap-8">
+          <div>
+            <p className="text-xs font-bold text-muted-foreground">
+              {cardData.expandContent.stageHeading}
+            </p>
+            <p className="mt-1.5 min-h-8 text-xs text-muted-foreground">
+              {cardData.expandContent.stageDescription}
+            </p>
+            <div className="mt-4">
+              <RankedBars bars={bars} unit={unit} colors={stageColors} />
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-bold text-muted-foreground">
+              {cardData.expandContent.commodityHeading}
+            </p>
+            <p className="mt-1.5 min-h-8 text-xs text-muted-foreground">
+              {cardData.expandContent.commodityDescription}
+            </p>
+            <div className="relative mt-4">
+              <div
+                className="pointer-events-none absolute inset-y-0 w-px bg-muted-foreground/30"
+                style={{ left: `${markerPct}%` }}
+              />
+              <RankedBars bars={cmBars} unit={cmUnit} colors={cmColors} />
+            </div>
+            <div className="relative mt-1 h-3.5">
+              <span
+                className="absolute -translate-x-1/2 whitespace-nowrap text-[10px] text-muted-foreground"
+                style={{ left: `${markerPct}%` }}
+              >
+                Average {average}
+                {cmUnit}
+              </span>
+            </div>
+          </div>
         </div>
-        <p className="mt-10 text-xs font-bold text-muted-foreground">
-          {cardData.expandContent.commodityHeading}
-        </p>
-        <div className="relative mt-3">
-          <div
-            className="pointer-events-none absolute inset-y-0 w-px bg-muted-foreground/30"
-            style={{ left: `${markerPct}%` }}
-          />
-          <RankedBars bars={cmBars} unit={cmUnit} colors={cmColors} />
-        </div>
-        <div className="relative mt-1 h-3.5">
-          <span
-            className="absolute -translate-x-1/2 whitespace-nowrap text-[10px] text-muted-foreground"
-            style={{ left: `${markerPct}%` }}
-          >
-            Average {average}
-            {cmUnit}
-          </span>
-        </div>
+        <P2>
+          <StageDurationRecommendation cardData={cardData} />
+        </P2>
       </div>
     );
   }
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
-      <RankedBars bars={bars} unit={unit} colors={stageColors} />
+      <div className="-mt-2">
+        <RankedBars bars={bars} unit={unit} colors={stageColors} />
+      </div>
       <FindingsFoot lines={cardData.footLines} className="mt-5" />
     </div>
   );

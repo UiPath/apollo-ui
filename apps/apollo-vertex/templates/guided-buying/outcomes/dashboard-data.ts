@@ -55,12 +55,27 @@ export interface InsightCardData {
     // the rest of the sentence, never a reworded copy of the fact.
     emphasisFacts?: { lead: string; rest: string }[];
     // Prompt 88: "where the time goes" expands by adding the commodity
-    // breakdown beneath the stage breakdown, not swapping to it. Headings
-    // for each section and the sentence connecting them, content and so
-    // registered as placeholders rather than authored inline.
+    // breakdown beside the stage breakdown (prompt 92 moved it from
+    // beneath). Headings for each section, content and so registered as
+    // placeholders rather than authored inline.
     stageHeading?: string;
     commodityHeading?: string;
-    connectingLine?: string;
+    // Prompt 92: replaces the single connecting sentence that used to sit
+    // above the stage section (it said one thing about stages and one
+    // about commodities) with one description per column, each stating
+    // only that column's own finding.
+    stageDescription?: string;
+    commodityDescription?: string;
+    // Prompt 91: "where the time goes" only, behind the <P2> gate. States
+    // the finding and offers to route it on; absent, the card renders no
+    // recommendation, the same absent-means-no-render rule prompt 90 set
+    // for `askAnswer`. `recommendationConfirmation` is a template with
+    // `{destination}`/`{date}` tokens, filled once sent; the send itself
+    // is local state, not data, so it lives outside this dataset.
+    recommendation?: string;
+    recommendationAction?: string;
+    recommendationConfirmation?: string;
+    recommendationDestination?: string;
   };
   // KPI data
   kpiNumber?: string;

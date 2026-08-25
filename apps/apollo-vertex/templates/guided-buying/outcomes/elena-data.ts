@@ -67,7 +67,23 @@ const insightCards: [
       barsUnit: " days",
       stageHeading: ph("PH-93", "by stage heading"),
       commodityHeading: ph("PH-95", "by commodity heading"),
-      connectingLine: ph("PH-94", "stage to commodity connecting line"),
+      stageDescription: ph("PH-109", "by stage column description"),
+      commodityDescription: ph("PH-110", "by commodity column description"),
+      // Prompt 93b: the observation (PH-104, shared with Ravi's CoE queue
+      // row) followed by the instruction (PH-115, Elena's card only) is
+      // the exact same sentence pair prompt 91 originally authored as one
+      // string; concatenating them here reproduces it unchanged rather
+      // than duplicating either half.
+      recommendation: `${ph("PH-104", "where the time goes recommendation")} ${ph(
+        "PH-115",
+        "where the time goes recommendation instruction",
+      )}`,
+      recommendationAction: ph("PH-105", "send to CoE action label"),
+      recommendationConfirmation: ph(
+        "PH-106",
+        "recommendation sent confirmation",
+      ),
+      recommendationDestination: ph("PH-107", "CoE destination name"),
     },
   },
   {

@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { ApolloShell } from "@/registry/shell/shell";
 import { AutopilotFab } from "./AutopilotFab";
+import { P2 } from "./P2";
 import { PersonaProvider } from "./persona-context";
 import {
   PERSONA_MENU_ORDER,
@@ -91,6 +92,23 @@ function PersonaMenuSection({
           </DropdownMenuItem>
         );
       })}
+      {/* Prompt 93: Ravi is P2 only surface, additive to the P1 list
+          above rather than folded into PERSONA_MENU_ORDER, so the P1 map
+          stays exactly as it was and carries zero tier conditionals of
+          its own. */}
+      <P2>
+        <DropdownMenuItem
+          onClick={() => onSelect("ravi")}
+          className="justify-between"
+        >
+          <span>
+            {PERSONAS.ravi.name} · {PERSONAS.ravi.role}
+          </span>
+          {personaId === "ravi" && (
+            <Check className="size-3.5 shrink-0 text-primary" />
+          )}
+        </DropdownMenuItem>
+      </P2>
     </>
   );
 }

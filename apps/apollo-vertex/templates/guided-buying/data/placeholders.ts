@@ -358,11 +358,6 @@ export const PLACEHOLDERS = {
       "Elena's outcomes 'where the time goes' card, expanded state small heading naming the stage breakdown section (the same bars the face already shows), pending a ruling on its wording (prompt 88)",
     provisional: "By stage",
   },
-  "PH-94": {
-    description:
-      "Elena's outcomes 'where the time goes' card, expanded state sentence connecting the stage breakdown to the commodity breakdown beneath it; combines the two existing process performance sub findings rather than restating them, pending a ruling on its wording (prompt 88)",
-    provisional: `${PROCESS_PERFORMANCE_SUB_FINDINGS[0]} ${PROCESS_PERFORMANCE_SUB_FINDINGS[1]}`,
-  },
   "PH-95": {
     description:
       "Elena's outcomes 'where the time goes' card, expanded state small heading naming the commodity cycle time breakdown section, pending a ruling on its wording (prompt 88)",
@@ -405,6 +400,98 @@ export const PLACEHOLDERS = {
     description:
       "Elena's outcomes 'where the time goes' card, third suggested follow up question shown beneath its ask answer, pending a ruling on its wording",
     provisional: "How does this compare to the start of the quarter?",
+  },
+  "PH-104": {
+    description:
+      "The security review observation: shared by Elena's outcomes 'where the time goes' card and Ravi's CoE queue row, the one source for this figure sentence (prompt 91, split from the instruction in prompt 93b since the instruction reads wrong sitting inside the queue it names)",
+    provisional: "Security review runs 2.9 days of the 6.4 day average.",
+  },
+  "PH-105": {
+    description:
+      "Elena's outcomes 'where the time goes' card, P2 recommendation's single action label, pending a ruling on its wording (prompt 91)",
+    provisional: "Send to CoE",
+  },
+  "PH-106": {
+    description:
+      "Elena's outcomes 'where the time goes' card, P2 recommendation's sent confirmation, a template filled with the destination name (PH-107) and the send timestamp once sent; the component prefixes this with the recommendation's own finding sentence (PH-104's first sentence) so the confirmation still says what was sent, not only when and where; not generated content so it carries no caveat, pending a ruling on its wording (prompt 91)",
+    provisional: "Sent to {destination} on {date}.",
+  },
+  "PH-107": {
+    description:
+      "Elena's outcomes 'where the time goes' card, P2 recommendation's destination name, one placeholder referenced in the sent confirmation and, in its dictated form, the action label and the recommendation text; pending a ruling on its wording (prompt 91)",
+    provisional: "CoE",
+  },
+  "PH-108": {
+    description:
+      "Elena's outcomes 'where the time goes' card, P2 recommendation's sent confirmation: whether the CoE destination is a named person or a queue is unruled, and changes the confirmation's wording; unset, so the confirmation names the destination alone rather than guessing which (prompt 91)",
+  },
+  "PH-109": {
+    description:
+      "Elena's outcomes 'where the time goes' card, expanded state left column description naming the stage breakdown's own finding; replaces PH-94's combined sentence now that the two breakdowns sit side by side rather than one above the other, restates the existing process performance sub finding rather than a new one, pending a ruling on its wording (prompt 92)",
+    provisional: PROCESS_PERFORMANCE_SUB_FINDINGS[0],
+  },
+  "PH-110": {
+    description:
+      "Elena's outcomes 'where the time goes' card, expanded state right column description naming the commodity breakdown's own finding; replaces PH-94's combined sentence now that the two breakdowns sit side by side rather than one above the other, restates the existing process performance sub finding rather than a new one, pending a ruling on its wording (prompt 92)",
+    provisional: PROCESS_PERFORMANCE_SUB_FINDINGS[1],
+  },
+  "PH-111": {
+    description:
+      "Ravi Mehta's persona registry role label, the prototype level word his seat uses in the switcher and identity chip, distinct from his people.ts job title the same way Dana Kim's persona role differs from hers, pending a ruling on its wording (prompt 93)",
+    provisional: "Config admin",
+  },
+  "PH-112": {
+    description:
+      "The CoE queue's second finding, implied by the deck but not yet written; not called anywhere, its absence from the seed record is the signal the row does not render, the same convention prompt 90 set for an unwritten askAnswer (prompt 93)",
+  },
+  "PH-113": {
+    description:
+      "The CoE queue's page title, pending a ruling on its wording (prompt 93)",
+    provisional: "Policy findings",
+  },
+  "PH-114": {
+    description:
+      "The CoE queue's empty state description, shown when no finding has been sent, pending a ruling on its wording (prompt 93)",
+  },
+  "PH-115": {
+    description:
+      "Elena's outcomes 'where the time goes' card, the instruction asking to route the security review observation (PH-104) to the CoE; rendered only on Elena's card, since it reads as Ravi telling himself to send it when it also sat in his own queue row, pending a ruling on its wording (prompt 93b)",
+    provisional: "Send this to the Center of Excellence for a policy review.",
+  },
+  "PH-116": {
+    description:
+      "The CoE finding detail's AI generated proposal block label, pending a ruling on its wording (prompt 94)",
+    provisional: "Proposed rule",
+  },
+  "PH-117": {
+    description:
+      "The CoE finding detail's proposed rule itself; unruled content, and per the section 0 finding, the seed has no structured commodity or policy routing mechanism to render this as anything but a sentence once it is written, pending a ruling on its wording (prompt 94)",
+  },
+  "PH-118": {
+    description:
+      "The CoE finding detail's test action label, pending a ruling on its wording (prompt 94)",
+    provisional: "Test this rule",
+  },
+  "PH-119": {
+    description:
+      "The CoE finding detail's projected average cycle time under the proposed rule; a new figure the rule itself would have to define, so it is not derivable from the seed and stays unset rather than authored, pending a ruling (prompt 94)",
+  },
+  "PH-120": {
+    description:
+      "The CoE finding detail's count of the AUTO_CLEARED_TOTAL requests the proposed rule would affect; a new figure the rule itself would have to define, so it is not derivable from the seed and stays unset rather than authored, pending a ruling (prompt 94)",
+  },
+  "PH-121": {
+    description:
+      "The CoE finding detail's publish action label, pending a ruling on its wording (prompt 94)",
+    provisional: "Publish",
+  },
+  "PH-122": {
+    description:
+      "The CoE finding detail's published confirmation, Ravi's own side, shown once the record's publishedAt is set, pending a ruling on its wording (prompt 94)",
+  },
+  "PH-123": {
+    description:
+      "Elena's outcomes 'where the time goes' card, the published line added to the sent confirmation once the shared record's publishedAt is set; a template with a {date} token the same way PH-106's sent confirmation has, pending a ruling on its wording (prompt 94)",
   },
 } as const;
 

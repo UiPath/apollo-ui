@@ -4,6 +4,8 @@ import { BuyFlow } from "./catalog/v1/BuyFlow";
 import { CatalogSubmitted } from "./catalog/v1/CatalogSubmitted";
 import { ConfigureFlow } from "./catalog/v1/ConfigureFlow";
 import { Review } from "./catalog/v1/Review";
+import { CoeFindingDetail } from "./coe/CoeFindingDetail";
+import { CoeQueue } from "./coe/CoeQueue";
 import { GuidedBuyingLayout } from "./GuidedBuyingLayout";
 import { HomeRoute } from "./home/HomeRoute";
 import { IntakeFlow } from "./intake/IntakeFlow";
@@ -106,6 +108,23 @@ const outcomesRoute = createRoute({
   component: Outcomes,
 });
 
+// Ravi's CoE queue (prompt 93), behind the <P2> gate at the persona
+// switcher; the route itself is registered like any other so its home
+// route type checks, the same way every P1 route already does.
+const coeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/coe",
+  component: CoeQueue,
+});
+
+// Ravi's finding detail (prompt 94), the same "$id" param and synchronous
+// record lookup convention as decisionRoute below, not a router loader.
+const coeFindingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/coe/$id",
+  component: CoeFindingDetail,
+});
+
 // J3 intake, Priya's own surface. Same convention as /buy: bare renders the
 // composer, the flow phases are addressable via ?phase=..., matching
 // Marcus's own /buy?phase=bridge / ?phase=selection.
@@ -195,6 +214,8 @@ export const routeTree = rootRoute.addChildren([
   configureRoute,
   workbenchRoute,
   outcomesRoute,
+  coeRoute,
+  coeFindingRoute,
   intakeRoute,
   requestsRoute,
   requestDetailRoute,

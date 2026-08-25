@@ -340,7 +340,9 @@ const MARKET_REFERENCES_TEXT = `${MARKET_REFERENCES_LINE}: ${BASE_TIER_REFERENCE
  * the disclosure up. That's the expanded state exposed to assistive
  * technology; the chevron is the same state's visible echo, not a second
  * source of truth for it. */
-function EvidenceDisclosureTrigger({
+// Exported for prompt 94: the CoE finding detail reuses this exact chip
+// for its own evidence, rather than a second copy of the same treatment.
+export function EvidenceDisclosureTrigger({
   label,
   expanded,
   ...props

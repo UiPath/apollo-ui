@@ -4,6 +4,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   Home as HomeIcon,
+  Inbox,
   ShoppingCart,
   Store,
   Wrench,
@@ -48,13 +49,23 @@ const analyticsNavItems: ShellNavItem[] = [
   { path: "/outcomes", label: "analytics", icon: BarChart3 },
 ];
 
+// Ravi Mehta (prompt 93): no configuration section, no studio, no
+// settings tree, none of that exists yet, so his nav names only the one
+// route this chunk actually builds, the same one-item shape
+// buyerNavItems/analyticsNavItems already use for a role that owns
+// exactly one surface.
+const coeNavItems: ShellNavItem[] = [
+  { path: "/coe", label: "coe", icon: Inbox },
+];
+
 export type PersonaId =
   | "requester"
   | "buyer"
   | "approver"
   | "priya"
   | "budget-owner"
-  | "analytics";
+  | "analytics"
+  | "ravi";
 
 export interface Persona {
   id: PersonaId;
@@ -143,6 +154,25 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     homeRoute: "/outcomes",
     navItems: analyticsNavItems,
   },
+  // Ravi Mehta (prompt 93), the CoE queue findings land in. Follows Dana's
+  // and Elena's own precedent exactly: name and chip subtitle derive from
+  // his people.ts record rather than restating it. `role` also reads
+  // PEOPLE["ravi-mehta"].role directly (prompt 93b), the same source
+  // Priya's and Elena's own persona `role` already read, rather than a
+  // registered placeholder (PH-111, prompt 93's original choice): the
+  // switcher and the identity chip disagreeing on his role's casing was
+  // two sources for one fact, not a wording call worth its own ruling.
+  // This entry only exists behind the <P2> gate at the point it's
+  // actually rendered (GuidedBuyingLayout.tsx's persona switcher); the
+  // registry entry itself, like every other persona's, is always defined.
+  ravi: {
+    id: "ravi",
+    name: PEOPLE["ravi-mehta"].name,
+    role: PEOPLE["ravi-mehta"].role,
+    chipSubtitle: `${PEOPLE["ravi-mehta"].role} · ${PEOPLE["ravi-mehta"].org}`,
+    homeRoute: "/coe",
+    navItems: coeNavItems,
+  },
 };
 
 // Menu order: Requester, Buyer, Approver per the spec, Priya appended,
@@ -214,5 +244,6 @@ export function personaForPath(pathname: string, search?: unknown): PersonaId {
   if (pathname.startsWith("/workbench")) return "buyer";
   if (pathname.startsWith("/intake")) return "priya";
   if (pathname.startsWith("/outcomes")) return "analytics";
+  if (pathname.startsWith("/coe")) return "ravi";
   return "requester";
 }
