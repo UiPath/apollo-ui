@@ -36,6 +36,7 @@ const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
       // biome-ignore lint/a11y/useSemanticElements: role="status" is the correct ARIA role for loading indicators, not <output>
       <div
         ref={ref}
+        data-slot="spinner"
         role="status"
         aria-label={label}
         className={cn('flex items-center justify-center gap-2', className)}

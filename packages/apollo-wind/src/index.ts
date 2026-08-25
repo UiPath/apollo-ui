@@ -177,6 +177,16 @@ export type {
 
 export { Progress } from './components/ui/progress';
 
+export {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartStyle,
+  ChartTooltip,
+  ChartTooltipContent,
+} from './components/ui/chart';
+export type { ChartConfig } from './components/ui/chart';
+
 // -----------------------------------------------------------------------------
 // Prompt Editor
 // -----------------------------------------------------------------------------
@@ -250,6 +260,19 @@ export {
   SheetTitle,
   SheetTrigger,
 } from './components/ui/sheet';
+
+export {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerPortal,
+  DrawerTitle,
+  DrawerTrigger,
+} from './components/ui/drawer';
 
 export {
   Popover,

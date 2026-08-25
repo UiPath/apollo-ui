@@ -95,7 +95,13 @@ const Row = React.forwardRef<HTMLDivElement, RowProps>(
     });
 
     return (
-      <div ref={ref} className={cn(className)} style={{ ...layoutStyles, ...style }} {...htmlProps}>
+      <div
+        ref={ref}
+        data-slot="row"
+        className={cn(className)}
+        style={{ ...layoutStyles, ...style }}
+        {...htmlProps}
+      >
         {children}
       </div>
     );

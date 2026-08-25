@@ -291,16 +291,6 @@ function QuickStartTab() {
                 <InlineCode>future-light</InlineCode>. All tokens adapt automatically.
               </p>
             </StepItem>
-
-            <StepItem step={4} title="Add your first component">
-              <CodeBlock label="terminal">
-                {'npx shadcn@latest add https://ui.uipath.com/r/button.json'}
-              </CodeBlock>
-              <p>
-                Copies the component source into{' '}
-                <InlineCode>src/components/ui/button.tsx</InlineCode>. It's yours to use and modify.
-              </p>
-            </StepItem>
           </div>
 
           <Divider />
