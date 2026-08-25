@@ -100,7 +100,7 @@ export function Outcomes() {
               </SelectItem>
             </SelectContent>
           </Select>
-          <Button size="sm" variant="secondary">
+          <Button size="lg" variant="secondary">
             {ph("PH-73", "secondary action")}
           </Button>
         </PageHeaderActions>

@@ -23,6 +23,14 @@ export interface InsightCardData {
   expandGrowth?: "grid" | "width";
   // Navigate config
   navigateTo?: string;
+  // Prompt 90: the scripted answer this card's own ask affordance returns,
+  // registered as a placeholder rather than authored inline. Absent for a
+  // card whose answer has not been written, which is also the signal the
+  // card's own ask mark does not render.
+  askAnswer?: string;
+  // Suggested follow up questions shown beneath the answer, registered as
+  // placeholders the same way. Absent where the answer itself is absent.
+  askFollowUps?: string[];
   // Expand config: additional content shown when card is expanded. `bars`/
   // `barsUnit`/`average`/`footLines` (prompt 84) are a second, self
   // contained chart dataset shown only once expanded, for a card whose face

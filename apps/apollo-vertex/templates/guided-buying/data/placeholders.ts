@@ -368,6 +368,44 @@ export const PLACEHOLDERS = {
       "Elena's outcomes 'where the time goes' card, expanded state small heading naming the commodity cycle time breakdown section, pending a ruling on its wording (prompt 88)",
     provisional: "By commodity",
   },
+  "PH-96": {
+    description:
+      "Elena's outcomes 'where the time goes' card, scripted answer returned by its per card ask affordance; relates figures already on the card and the hero trend rather than stating a new one, pending a ruling on its wording (prompt 90)",
+    provisional:
+      "Security review runs 2.9 days of the 6.4 day average. The other four stages together run 3.5 days. At the start of the quarter the average was 8.1 days, against a target of 6.",
+  },
+  "PH-97": {
+    description:
+      "Elena's outcomes 'intake quality' card, scripted answer for its per card ask affordance; not yet written, so the card renders no ask mark (prompt 90)",
+  },
+  "PH-98": {
+    description:
+      "Elena's outcomes 'auto cleared' card, scripted answer for its per card ask affordance; not yet written, so the card renders no ask mark (prompt 90)",
+  },
+  "PH-99": {
+    description:
+      "Elena's outcomes 'off contract spend' card, scripted answer for its per card ask affordance; not yet written, so the card renders no ask mark (prompt 90)",
+  },
+  "PH-100": {
+    description:
+      "Elena's outcomes composer placeholder once grounded to a card's ask affordance, narrower than the ungrounded resting string, pending a ruling on its wording (prompt 90)",
+    provisional: "Ask about this card",
+  },
+  "PH-101": {
+    description:
+      "Elena's outcomes 'where the time goes' card, first suggested follow up question shown beneath its ask answer, pending a ruling on its wording",
+    provisional: "Why does security review take longest?",
+  },
+  "PH-102": {
+    description:
+      "Elena's outcomes 'where the time goes' card, second suggested follow up question shown beneath its ask answer, pending a ruling on its wording",
+    provisional: "How do commodities compare on cycle time?",
+  },
+  "PH-103": {
+    description:
+      "Elena's outcomes 'where the time goes' card, third suggested follow up question shown beneath its ask answer, pending a ruling on its wording",
+    provisional: "How does this compare to the start of the quarter?",
+  },
 } as const;
 
 export type PlaceholderId = keyof typeof PLACEHOLDERS;

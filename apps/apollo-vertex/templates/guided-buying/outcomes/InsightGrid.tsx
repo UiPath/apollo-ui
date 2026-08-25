@@ -21,6 +21,8 @@ export function InsightGrid({
   viewMode = "desktop",
   onAutopilotOpen,
   autopilotActiveIdx,
+  onAskOpen,
+  activeCardIdx,
 }: {
   layout: LayoutConfig;
   shared: string;
@@ -28,12 +30,13 @@ export function InsightGrid({
   viewMode?: "desktop" | "compact" | "stacked";
   onAutopilotOpen?: (sourceTitle: string, idx: number) => void;
   autopilotActiveIdx?: number | null;
+  onAskOpen?: (idx: number) => void;
+  activeCardIdx?: number | null;
 }) {
   const { data } = useDashboardData();
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [phase, setPhase] = useState<ExpandPhase>("idle");
   const [drilldownTab, setDrilldownTab] = useState<DrilldownTab>("overview");
-
   useEffect(() => {
     if (expandedIdx === null) {
       setPhase("idle");
@@ -146,7 +149,10 @@ export function InsightGrid({
               <div
                 key={idx}
                 className="overflow-hidden min-h-0 transition-all duration-300 ease-in-out"
-                style={{ opacity: isOther && phase !== "idle" ? 0 : 1 }}
+                style={{
+                  opacity: isOther && phase !== "idle" ? 0 : 1,
+                  pointerEvents: isOther && phase !== "idle" ? "none" : "auto",
+                }}
               >
                 <InsightCardInner
                   cfg={cfg}
@@ -164,6 +170,9 @@ export function InsightGrid({
                       : null
                   }
                   isAutopilotActive={autopilotActiveIdx === idx}
+                  onAskClick={onAskOpen ? () => onAskOpen(idx) : null}
+                  isAskActive={activeCardIdx === idx}
+                  hasActiveAsk={activeCardIdx != null}
                   className="h-full"
                 />
               </div>
@@ -191,6 +200,10 @@ export function InsightGrid({
                 return cfg.size === "lg" ? "1fr" : sizeToFr[cfg.size];
               })
               .join(" ");
+            const rowIsFading =
+              isOtherRow &&
+              !expandsWidthOnly &&
+              (phase === "height" || phase === "full");
             return (
               <div
                 key={row.map(({ idx }) => idx).join("-")}
@@ -199,18 +212,15 @@ export function InsightGrid({
                   {
                     gridTemplateColumns: cols,
                     gap: isRowWithExpanded && phase !== "idle" ? 0 : layout.gap,
-                    opacity:
-                      isOtherRow &&
-                      !expandsWidthOnly &&
-                      (phase === "height" || phase === "full")
-                        ? 0
-                        : 1,
+                    opacity: rowIsFading ? 0 : 1,
+                    pointerEvents: rowIsFading ? "none" : "auto",
                   } as React.CSSProperties
                 }
               >
                 {row.map(({ cfg, idx }) => {
                   const isThis = idx === expandedIdx;
                   const isSibling = isExpanding && !isThis && isRowWithExpanded;
+                  const siblingIsFading = isSibling && phase !== "idle";
                   return (
                     <InsightCardInner
                       key={idx}
@@ -230,12 +240,13 @@ export function InsightGrid({
                           : null
                       }
                       isAutopilotActive={autopilotActiveIdx === idx}
+                      onAskClick={onAskOpen ? () => onAskOpen(idx) : null}
+                      isAskActive={activeCardIdx === idx}
+                      hasActiveAsk={activeCardIdx != null}
                       style={{
-                        opacity: isSibling && phase !== "idle" ? 0 : 1,
-                        transform:
-                          isSibling && phase !== "idle"
-                            ? "scale(0.95)"
-                            : "scale(1)",
+                        opacity: siblingIsFading ? 0 : 1,
+                        transform: siblingIsFading ? "scale(0.95)" : "scale(1)",
+                        pointerEvents: siblingIsFading ? "none" : "auto",
                       }}
                     />
                   );

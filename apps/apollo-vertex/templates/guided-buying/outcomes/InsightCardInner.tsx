@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { useDashboardData } from "./dashboard-data-context";
 import { type DrilldownTab, drilldownTabs } from "./drilldown-tabs";
 import {
@@ -70,6 +71,9 @@ interface InsightCardInnerProps {
   onExpandClick: () => void;
   onAutopilotOpen?: (() => void) | null;
   isAutopilotActive?: boolean;
+  onAskClick?: (() => void) | null;
+  isAskActive?: boolean;
+  hasActiveAsk?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -88,6 +92,9 @@ export function InsightCardInner({
   drilldownTab,
   onDrilldownTabChange,
   isAutopilotActive = false,
+  onAskClick,
+  isAskActive = false,
+  hasActiveAsk = false,
   className = "",
   style,
 }: InsightCardInnerProps) {
@@ -122,11 +129,16 @@ export function InsightCardInner({
     isThis && isExpanding && hasDrilldown && phase === "full";
   const classes = getInsightCardClasses(cfg.content, viewMode);
   const isInteractive = cfg.interaction !== "static";
+  // Prompt 90: a card offers to answer only once its own scripted answer
+  // is registered, never before, so an unanswerable card never invites
+  // the question.
+  const hasAsk = !!cardData?.askAnswer;
+  const isDimmed = hasActiveAsk && !isAskActive;
 
   return (
     <Card
       variant="glass"
-      className={`${(isThis && isExpanding) || isAutopilotActive ? "!bg-white dark:!bg-card !shadow-[0_2px_24px_2px_rgba(0,0,0,0.08)] dark:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.2)]" : "!bg-white/70 hover:!bg-white dark:hover:!bg-card hover:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.08)] dark:hover:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.2)]"} ${shared} ${classes.cardClassName} !py-6 group/card relative transition-all duration-300 ease-in-out overflow-hidden ${className}`}
+      className={`${(isThis && isExpanding) || isAutopilotActive ? "!bg-white dark:!bg-card !shadow-[0_2px_24px_2px_rgba(0,0,0,0.08)] dark:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.2)]" : "!bg-white/70 hover:!bg-white dark:hover:!bg-card hover:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.08)] dark:hover:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.2)]"} ${isDimmed ? "opacity-50" : ""} ${shared} ${classes.cardClassName} !py-6 group/card relative transition-all duration-300 ease-in-out overflow-hidden ${className}`}
       style={{
         ...cardBgStyle(
           cards.insightBg,
@@ -137,21 +149,44 @@ export function InsightCardInner({
       }}
     >
       <CardHeader className="shrink-0">
-        <CardTitle className="flex items-center gap-1.5 self-center text-sm font-bold tracking-tight">
+        <CardTitle className="flex min-h-7 items-center gap-1.5 self-center text-sm font-bold tracking-tight">
           {TitleIcon && (
             <TitleIcon className="size-4 shrink-0 text-muted-foreground" />
           )}
           {cardTitle}
         </CardTitle>
-        {isInteractive && cfg.interaction === "expand" && (
+        {(hasAsk || (isInteractive && cfg.interaction === "expand")) && (
           <CardAction className="row-span-1 self-center">
             <div
               className={`flex items-center gap-1 transition-all duration-75 ${
-                isThis || isAutopilotActive
+                isThis || isAutopilotActive || isAskActive
                   ? "opacity-100 translate-x-0"
-                  : "opacity-0 translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0"
+                  : "opacity-0 translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0 group-focus-within/card:opacity-100 group-focus-within/card:translate-x-0"
               }`}
             >
+              {hasAsk && (
+                <button
+                  type="button"
+                  aria-label="Ask about this card"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAskClick?.();
+                  }}
+                  className={`size-7 rounded-md flex items-center justify-center transition-all ${
+                    isAskActive
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <AiMark
+                    size={16}
+                    {...(isAskActive ? { gradientId: "gb-ai-mark" } : {})}
+                  />
+                </button>
+              )}
+              {hasAsk && isInteractive && cfg.interaction === "expand" && (
+                <div className="h-4 w-px bg-border/60" />
+              )}
               {onAutopilotOpen && (
                 <button
                   type="button"
@@ -187,17 +222,19 @@ export function InsightCardInner({
                   )}
                 </button>
               )}
-              <button
-                type="button"
-                onClick={onExpandClick}
-                className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-              >
-                {isThis && isExpanding ? (
-                  <Minimize2 className="size-4" />
-                ) : (
-                  <Maximize2 className="size-4" />
-                )}
-              </button>
+              {isInteractive && cfg.interaction === "expand" && (
+                <button
+                  type="button"
+                  onClick={onExpandClick}
+                  className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                >
+                  {isThis && isExpanding ? (
+                    <Minimize2 className="size-4" />
+                  ) : (
+                    <Maximize2 className="size-4" />
+                  )}
+                </button>
+              )}
             </div>
           </CardAction>
         )}

@@ -3,21 +3,17 @@
 import { Circle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/registry/tooltip/tooltip";
 import { AreaContent, SparklineContent } from "./chart-stubs";
 import type { InsightCardData } from "./dashboard-data";
 import { useDashboardData } from "./dashboard-data-context";
 import type { InsightCardContent } from "./glow-config";
 
-const LINE_CLAMP_CLASSES = {
-  2: "line-clamp-2",
-  3: "line-clamp-3",
-} as const;
+const LINE_CLAMP_CLASSES = { 2: "line-clamp-2", 3: "line-clamp-3" } as const;
 
+// A native `title` attribute, not a Radix tooltip: many of these sit
+// packed close together (the stage bar labels), and a floating tooltip's
+// own hover state machine was getting stuck open under quick, repeated
+// hovering across several at once. `title` has no state to get stuck in.
 function TruncatedText({
   children,
   className,
@@ -25,7 +21,7 @@ function TruncatedText({
 }: {
   children: string | undefined;
   className?: string;
-  lines?: 2 | 3;
+  lines?: 1 | 2 | 3;
 }) {
   const textRef = useRef<HTMLParagraphElement>(null);
   const [isTruncated, setIsTruncated] = useState(false);
@@ -33,31 +29,26 @@ function TruncatedText({
   useEffect(() => {
     const el = textRef.current;
     if (!el) return;
-    const check = () => setIsTruncated(el.scrollHeight > el.clientHeight);
+    const check = () =>
+      setIsTruncated(
+        lines === 1
+          ? el.scrollWidth > el.clientWidth
+          : el.scrollHeight > el.clientHeight,
+      );
     check();
     const observer = new ResizeObserver(check);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [children]);
+  }, [children, lines]);
 
-  const textEl = (
+  return (
     <p
       ref={textRef}
-      className={`${LINE_CLAMP_CLASSES[lines]} ${className ?? ""}`}
+      {...(isTruncated ? { title: children } : {})}
+      className={`${lines === 1 ? "truncate" : LINE_CLAMP_CLASSES[lines]} ${className ?? ""}`}
     >
       {children}
     </p>
-  );
-
-  if (!isTruncated) return textEl;
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{textEl}</TooltipTrigger>
-      <TooltipContent side="bottom" className="max-w-64">
-        {children}
-      </TooltipContent>
-    </Tooltip>
   );
 }
 
@@ -86,7 +77,6 @@ function FindingsFoot({
   );
 }
 
-// Arc derives from `donutPercent`. Track = 2*PI*r, r=15.5.
 const DONUT_TRACK_CIRCUMFERENCE = 97.39;
 const DONUT_GRADIENT_ID = "insight-donut-gradient";
 
@@ -152,7 +142,6 @@ function DonutFigure({
   );
 }
 
-// A stated whole, not a fill against a track: caption names the total.
 function ProportionBarVisual({ cardData }: { cardData: InsightCardData }) {
   const segments = cardData.proportionSegments ?? [];
   const onContract = segments[0];
@@ -239,7 +228,6 @@ function IntakeQualityExpanded({ cardData }: { cardData: InsightCardData }) {
   );
 }
 
-// Reused as the left column below; foot line stays face only.
 function ProportionBarFace({
   cardData,
   showFootLine = true,
@@ -249,7 +237,7 @@ function ProportionBarFace({
 }) {
   return (
     <div className="flex flex-1 flex-col min-h-0">
-      <span className="text-4xl font-normal tracking-tight leading-none whitespace-nowrap bg-gradient-to-r from-insight-800 to-primary-600 dark:from-insight-500 dark:to-primary-400 bg-clip-text text-transparent">
+      <span className="text-4xl font-normal tracking-tight leading-none whitespace-nowrap bg-clip-text text-transparent [background-image:var(--ai-gradient-text)]">
         {cardData.kpiNumber}
       </span>
       {cardData.kpiDescription && (
@@ -267,7 +255,6 @@ function ProportionBarFace({
   );
 }
 
-// Left: face minus its foot line. Right: heading plus three facts.
 function OffContractSpendExpanded({ cardData }: { cardData: InsightCardData }) {
   const facts = cardData.expandContent?.emphasisFacts ?? [];
 
@@ -321,10 +308,7 @@ function KpiContent({
   }
 
   if (cardData.chartType === "proportion-bar") {
-    if (
-      isExpanded &&
-      (cardData.expandContent?.emphasisFacts?.length ?? 0) > 0
-    ) {
+    if (isExpanded && cardData.expandContent?.emphasisFacts?.length) {
       return <OffContractSpendExpanded cardData={cardData} />;
     }
     return <ProportionBarFace cardData={cardData} />;
@@ -332,7 +316,7 @@ function KpiContent({
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
-      <span className="text-4xl font-normal tracking-tight leading-none whitespace-nowrap bg-gradient-to-r from-insight-800 to-primary-600 dark:from-insight-500 dark:to-primary-400 bg-clip-text text-transparent">
+      <span className="text-4xl font-normal tracking-tight leading-none whitespace-nowrap bg-clip-text text-transparent [background-image:var(--ai-gradient-text)]">
         {cardData.kpiNumber}
       </span>
       {cardData.kpiDescription && (
@@ -350,7 +334,6 @@ function KpiContent({
 const ACCENT_CLASS = "bg-chart-1";
 const ACCENT_TEXT_CLASS = "text-chart-1";
 
-// Longest gets `longestColor` full opacity, rest cycle `otherColors` muted.
 function rankColors(
   bars: { label: string; value: number }[],
   longestColor: string,
@@ -365,7 +348,6 @@ function rankColors(
   );
 }
 
-// Own token over a full width muted track; shared by both sections (prompt 88).
 function RankedBars({
   bars,
   unit,
@@ -383,9 +365,11 @@ function RankedBars({
         const isLongest = maxValue > 0 && bar.value === maxValue;
         return (
           <div key={bar.label}>
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="font-medium">{bar.label}</span>
-              <span className="font-bold">
+            <div className="flex items-center justify-between gap-2 text-xs mb-1.5">
+              <TruncatedText className="min-w-0 flex-1 font-medium" lines={1}>
+                {bar.label}
+              </TruncatedText>
+              <span className="shrink-0 font-bold whitespace-nowrap">
                 {bar.value}
                 {unit}
               </span>
@@ -403,7 +387,6 @@ function RankedBars({
   );
 }
 
-// Security stays warning yellow by direct request, unlike the longest commodity.
 const LONGEST_STAGE_COLOR = "bg-chart-3";
 const STAGE_COLORS = ["bg-chart-1", "bg-chart-2", "bg-chart-4", "bg-chart-5"];
 const COMMODITY_COLORS = ["bg-chart-2", "bg-chart-4"];

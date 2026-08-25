@@ -30,14 +30,14 @@ export interface CardConfig {
   backdropBlur: boolean;
 }
 
-// Softened for this surface (prompt 71): containerOpacity 70 to 40,
-// fillOpacity 0.3 to 0.18, so the glow reads as ambient rather than a
-// second light source, while the card surfaces above it still show
-// through as translucent rather than flat.
+// Softened for this surface (prompt 71): fillOpacity 0.3 to 0.18, so the
+// glow reads as ambient rather than a second light source, while the
+// card surfaces above it still show through as translucent rather than
+// flat.
 export const defaultLightGlow: GlowConfig = {
   start: "var(--insight-500)",
   end: "var(--primary-400)",
-  containerOpacity: 40,
+  containerOpacity: 50,
   fillOpacity: 0.18,
   startStopOpacity: 1,
   endStopOpacity: 1,
@@ -47,7 +47,7 @@ export const defaultLightGlow: GlowConfig = {
 export const defaultDarkGlow: GlowConfig = {
   start: "var(--insight-700)",
   end: "var(--primary-600)",
-  containerOpacity: 45,
+  containerOpacity: 55,
   fillOpacity: 1,
   startStopOpacity: 1,
   endStopOpacity: 0.4,

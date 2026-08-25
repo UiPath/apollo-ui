@@ -46,6 +46,29 @@ export function ExecutiveLayout({
 }) {
   const { data } = useDashboardData();
   const [promptExpanded, setPromptExpanded] = useState(false);
+  // Prompt 90: which card's ask affordance is grounded in the composer,
+  // and the scripted answers already returned. Swapping the active card
+  // never clears this history.
+  const [activeCardIdx, setActiveCardIdx] = useState<number | null>(null);
+  const [transcript, setTranscript] = useState<
+    { title: string; answer: string; followUps?: string[] }[]
+  >([]);
+  const activeCard =
+    activeCardIdx === null ? null : data.insightCards[activeCardIdx];
+  const handleAskOpen = (idx: number) => {
+    if (activeCardIdx === idx) {
+      setActiveCardIdx(null);
+      setPromptExpanded(false);
+      return;
+    }
+    setActiveCardIdx(idx);
+    setPromptExpanded(true);
+  };
+  const handleAskSubmit = () => {
+    if (!activeCard?.askAnswer) return;
+    const { title, askAnswer: answer, askFollowUps: followUps } = activeCard;
+    setTranscript((prev) => [...prev, { title, answer, followUps }]);
+  };
   const hasTrend = !!data.heroTrend && data.heroTrend.length > 0;
   const trendStart = data.heroTrend?.[0];
   const trendToday = data.heroTrend?.at(-1);
@@ -134,6 +157,9 @@ export function ExecutiveLayout({
           onSubmit={() => setPromptExpanded(true)}
           onExpand={() => setPromptExpanded(true)}
           onCollapse={() => setPromptExpanded(false)}
+          activeCard={activeCard}
+          onAskSubmit={handleAskSubmit}
+          transcript={transcript}
         />
       </div>
       <div className="h-full overflow-hidden">
@@ -144,6 +170,8 @@ export function ExecutiveLayout({
           viewMode={viewMode}
           onAutopilotOpen={onAutopilotOpen}
           autopilotActiveIdx={autopilotActiveIdx}
+          onAskOpen={handleAskOpen}
+          activeCardIdx={activeCardIdx}
         />
       </div>
     </div>

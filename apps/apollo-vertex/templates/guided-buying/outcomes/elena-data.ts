@@ -47,6 +47,12 @@ const insightCards: [
     size: "md",
     interaction: "expand",
     icon: "clock",
+    askAnswer: ph("PH-96", "where the time goes ask answer"),
+    askFollowUps: [
+      ph("PH-101", "where the time goes follow up 1"),
+      ph("PH-102", "where the time goes follow up 2"),
+      ph("PH-103", "where the time goes follow up 3"),
+    ],
     bars: SOFTWARE_STAGE_BREAKDOWN.map((s) => ({
       label: s.stage,
       value: s.days,
