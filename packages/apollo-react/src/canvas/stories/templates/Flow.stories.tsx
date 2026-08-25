@@ -44,6 +44,7 @@ import {
   Textarea,
   ToggleGroup,
   ToggleGroupItem,
+  VARIABLE_DRAG_MIME,
   VariablePicker,
   type VariablePickerItem,
 } from '@uipath/apollo-wind';
@@ -61,14 +62,18 @@ import {
   FlaskConical,
   GitBranch,
   Globe,
+  GripVertical,
   Italic,
   List,
   ListOrdered,
+  ListTree,
   Mail,
   Maximize2,
+  Pencil,
   Play,
   Plus,
   Redo2,
+  Search,
   SlidersHorizontal,
   Sparkles,
   StickyNote,
@@ -103,6 +108,7 @@ import { BaseCanvas } from '../../components/BaseCanvas';
 import type { BaseNodeData } from '../../components/BaseNode/BaseNode.types';
 import { CanvasBottomPanel, type CanvasBottomPanelTab } from '../../components/CanvasBottomPanel';
 import {
+  CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS,
   CanvasLeftSidebar,
   type CanvasLeftSidebarItemId,
 } from '../../components/CanvasLeftSidebar';
@@ -1196,6 +1202,40 @@ function ExpressionField({
   onInsertVariable?: (variable: VariablePickerItem) => void;
   onValueChange?: (value: string) => void;
 }) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [isVariableDragging, setIsVariableDragging] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  useEffect(() => {
+    const handleDragStart = (event: globalThis.DragEvent) => {
+      if (event.dataTransfer?.types.includes(VARIABLE_DRAG_MIME)) setIsVariableDragging(true);
+    };
+    const handleDragEnd = () => {
+      setIsVariableDragging(false);
+      setIsDragOver(false);
+    };
+    window.addEventListener('dragstart', handleDragStart);
+    window.addEventListener('dragend', handleDragEnd);
+    window.addEventListener('drop', handleDragEnd);
+    return () => {
+      window.removeEventListener('dragstart', handleDragStart);
+      window.removeEventListener('dragend', handleDragEnd);
+      window.removeEventListener('drop', handleDragEnd);
+    };
+  }, []);
+
+  const insertDroppedVariable = (path: string) => {
+    if (!onValueChange || !path) return;
+    const token = `$${path.replace(/^\$/, '')}`;
+    const currentValue = value ?? '';
+    const cursor = inputRef.current?.selectionStart ?? currentValue.length;
+    onValueChange(`${currentValue.slice(0, cursor)}${token}${currentValue.slice(cursor)}`);
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(cursor + token.length, cursor + token.length);
+    });
+  };
+
   return (
     <div className="space-y-1.5">
       {label && (
@@ -1210,11 +1250,50 @@ function ExpressionField({
           />
         </div>
       )}
-      <div className="flex min-h-9 items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-overlay px-2.5 text-xs focus-within:border-border-focus focus-within:ring-1 focus-within:ring-border-focus">
+      <div
+        onDragEnter={(event) => {
+          if (!event.dataTransfer.types.includes(VARIABLE_DRAG_MIME)) return;
+          if (onValueChange) event.preventDefault();
+          setIsDragOver(true);
+        }}
+        onDragOver={(event) => {
+          if (!event.dataTransfer.types.includes(VARIABLE_DRAG_MIME)) return;
+          if (onValueChange) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+          } else {
+            event.dataTransfer.dropEffect = 'none';
+          }
+        }}
+        onDragLeave={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as globalThis.Node | null)) {
+            setIsDragOver(false);
+          }
+        }}
+        onDrop={(event) => {
+          const path = event.dataTransfer.getData(VARIABLE_DRAG_MIME);
+          if (!path || !onValueChange) return;
+          event.preventDefault();
+          insertDroppedVariable(path);
+          setIsDragOver(false);
+        }}
+        className={`relative flex min-h-9 items-center gap-1.5 rounded-lg border bg-surface-overlay px-2.5 text-xs transition-[border-color,box-shadow,background-color] focus-within:border-border-focus focus-within:ring-1 focus-within:ring-border-focus ${
+          isDragOver && onValueChange
+            ? 'border-brand bg-brand-subtle/40 ring-2 ring-brand/30'
+            : isDragOver
+              ? 'border-error/60 bg-error/5'
+              : isVariableDragging && onValueChange
+                ? 'border-brand/60 bg-brand-subtle/20'
+                : isVariableDragging
+                  ? 'border-border-subtle opacity-60'
+                  : 'border-border-subtle'
+        }`}
+      >
         <span className="shrink-0 font-mono text-foreground-accent" aria-hidden="true">
           ƒx
         </span>
         <input
+          ref={inputRef}
           value={value ?? ''}
           onChange={(event) => onValueChange?.(event.target.value)}
           readOnly={!onValueChange}
@@ -1223,6 +1302,17 @@ function ExpressionField({
           className="h-8 min-w-0 flex-1 bg-transparent font-mono text-xs text-foreground-accent outline-none placeholder:font-sans placeholder:text-foreground-subtle read-only:cursor-default"
         />
         <SlidersHorizontal className="ml-auto size-4 shrink-0 text-foreground-muted" />
+        {isVariableDragging && (
+          <span
+            className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-[10px] font-medium ${
+              onValueChange
+                ? 'bg-brand text-foreground-on-accent'
+                : 'bg-surface-raised text-foreground-muted'
+            }`}
+          >
+            {onValueChange ? (isDragOver ? 'Drop to insert' : 'Drop variable') : 'Unavailable'}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -1247,7 +1337,40 @@ function BooleanField({ label }: { label: string }) {
   );
 }
 
-function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
+function SendEmailForm({
+  spacious = false,
+  variables = [],
+}: {
+  spacious?: boolean;
+  variables?: EditableWorkflowVariable[];
+}) {
+  const [fieldValues, setFieldValues] = useState({
+    to: '$vars.executeQuerySynchronously1.output[0].assignee_email',
+    subject: '$vars.recordUpdated1.output.Subject',
+    attachment: '',
+    replyTo: '',
+  });
+  const pickerItems = variables.map((variable) => ({
+    id: variable.id,
+    label: variable.name,
+    value: `$vars.${variable.name}`,
+    type: variable.type.toLowerCase(),
+  }));
+  const field = (key: keyof typeof fieldValues, label: string, placeholder?: string) => (
+    <ExpressionField
+      label={label}
+      value={fieldValues[key]}
+      placeholder={placeholder}
+      variables={pickerItems}
+      onInsertVariable={(variable) =>
+        setFieldValues((current) => ({
+          ...current,
+          [key]: `${current[key]}${variable.value ?? variable.label}`,
+        }))
+      }
+      onValueChange={(nextValue) => setFieldValues((current) => ({ ...current, [key]: nextValue }))}
+    />
+  );
   return (
     <div className={spacious ? 'mx-auto w-full max-w-[760px] p-6' : 'p-3'}>
       <div className="mb-5 flex items-center gap-1 border-b border-border-subtle pb-2">
@@ -1281,14 +1404,8 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
           </div>
         </div>
         <BooleanField label="Save as draft" />
-        <div>
-          <p className="mb-2 text-xs font-medium">To *</p>
-          <ExpressionField value="$vars.executeQuerySynchronously1.output[0].assignee_email" />
-        </div>
-        <div>
-          <p className="mb-2 text-xs font-medium">Subject</p>
-          <ExpressionField value="$vars.recordUpdated1.output.Subject" />
-        </div>
+        {field('to', 'To *')}
+        {field('subject', 'Subject')}
         <div>
           <p className="mb-2 text-xs font-medium">Body</p>
           <div className="rounded-lg border border-border-subtle bg-surface-overlay">
@@ -1317,10 +1434,7 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
             </div>
           </div>
         </div>
-        <div>
-          <p className="mb-2 text-xs font-medium">Attachment</p>
-          <ExpressionField placeholder="The file to attach to the email" />
-        </div>
+        {field('attachment', 'Attachment', 'The file to attach to the email')}
         <BooleanField label="Include message details" />
         <button
           type="button"
@@ -1329,10 +1443,7 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
           <Plus className="size-4" /> Manage Properties
         </button>
         <div className="rounded-lg bg-surface-overlay px-3 py-2 text-xs font-semibold">Options</div>
-        <div>
-          <p className="mb-2 text-xs font-medium">Reply to</p>
-          <ExpressionField placeholder="Email addresses to use when replying" />
-        </div>
+        {field('replyTo', 'Reply to', 'Email addresses to use when replying')}
       </div>
     </div>
   );
@@ -1341,9 +1452,11 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
 function SendEmailPropertiesPanel({
   onClose,
   onOpenTakeover,
+  variables,
 }: {
   onClose: () => void;
   onOpenTakeover: () => void;
+  variables?: EditableWorkflowVariable[];
 }) {
   return (
     <NodePropertyPanel
@@ -1360,7 +1473,7 @@ function SendEmailPropertiesPanel({
       className="h-full"
     >
       <div className="min-h-0 flex-1 overflow-auto">
-        <SendEmailForm />
+        <SendEmailForm variables={variables} />
       </div>
     </NodePropertyPanel>
   );
@@ -1659,7 +1772,7 @@ function DockedDataPanels({
   );
 }
 
-function SendEmailTakeoverPanels() {
+function SendEmailTakeoverPanels({ variables = [] }: { variables?: EditableWorkflowVariable[] }) {
   return (
     <NodePropertyPanelLayout
       className="h-full"
@@ -1699,7 +1812,7 @@ function SendEmailTakeoverPanels() {
           className="h-full"
         >
           <div className="min-h-0 flex-1 overflow-auto">
-            <SendEmailForm spacious />
+            <SendEmailForm spacious variables={variables} />
           </div>
         </NodePropertyPanel>
       }
@@ -2260,6 +2373,639 @@ type EditableWorkflowVariable = {
   type: string;
   value: string;
 };
+
+function WorkflowVariablesSidebar({
+  variables,
+  onVariablesChange,
+}: {
+  variables: EditableWorkflowVariable[];
+  onVariablesChange: (variables: EditableWorkflowVariable[]) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const visibleVariables = variables.filter((variable) =>
+    `${variable.name} ${variable.type} ${variable.value}`
+      .toLowerCase()
+      .includes(query.toLowerCase())
+  );
+  const updateVariable = (id: string, updates: Partial<EditableWorkflowVariable>) => {
+    onVariablesChange(
+      variables.map((variable) => (variable.id === id ? { ...variable, ...updates } : variable))
+    );
+  };
+  const addVariable = () => {
+    const id = `variable-${Date.now()}`;
+    onVariablesChange([...variables, { id, name: 'newVariable', type: 'Text', value: '' }]);
+    setEditingId(id);
+  };
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-foreground-muted" />
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Filter variables"
+          aria-label="Filter variables"
+          className="h-8 pl-8 text-xs"
+        />
+      </div>
+      <div className="mt-3 flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-foreground">Workflow scope</p>
+          <p className="mt-0.5 text-[11px] text-foreground-muted">
+            Drag a variable into a supported field.
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 px-2 text-xs font-semibold text-brand hover:text-brand"
+          onClick={addVariable}
+        >
+          <Plus size={14} /> Add
+        </Button>
+      </div>
+      <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-auto">
+        {visibleVariables.map((variable) =>
+          editingId === variable.id ? (
+            <div
+              key={variable.id}
+              className="space-y-3 rounded-xl border border-border-focus bg-surface-raised p-3 shadow-sm"
+            >
+              <div className="grid grid-cols-[minmax(0,1fr)_96px] gap-2">
+                <Input
+                  value={variable.name}
+                  onChange={(event) => updateVariable(variable.id, { name: event.target.value })}
+                  aria-label="Variable name"
+                  className="h-8 text-xs"
+                />
+                <Select
+                  value={variable.type}
+                  onValueChange={(type) => updateVariable(variable.id, { type })}
+                >
+                  <SelectTrigger className="h-8 text-xs" aria-label="Variable type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {['Text', 'Number', 'Boolean', 'Object'].map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Input
+                value={variable.value}
+                onChange={(event) => updateVariable(variable.id, { value: event.target.value })}
+                placeholder="Default value"
+                aria-label="Default value"
+                className="h-8 text-xs"
+              />
+              <div className="flex justify-between">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs text-destructive"
+                  onClick={() => {
+                    onVariablesChange(variables.filter((item) => item.id !== variable.id));
+                    setEditingId(null);
+                  }}
+                >
+                  <Trash2 size={13} /> Delete
+                </Button>
+                <Button size="sm" className="h-7 text-xs" onClick={() => setEditingId(null)}>
+                  Done
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div
+              key={variable.id}
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.effectAllowed = 'copy';
+                event.dataTransfer.setData(
+                  'application/x-variable',
+                  JSON.stringify({ id: variable.id, name: variable.name, type: variable.type })
+                );
+                event.dataTransfer.setData(VARIABLE_DRAG_MIME, `vars.${variable.name}`);
+                event.dataTransfer.setData('text/plain', `$vars.${variable.name}`);
+              }}
+              className="group flex cursor-grab items-center gap-2 rounded-lg border border-border-subtle bg-surface-overlay px-2 py-2 active:cursor-grabbing"
+            >
+              <GripVertical className="size-3.5 shrink-0 text-foreground-subtle" />
+              <Code2 className="size-4 shrink-0 text-brand" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-mono text-xs font-medium">{variable.name}</p>
+                <p className="mt-0.5 truncate text-[11px] text-foreground-muted">
+                  {variable.type} · {variable.value || 'No default value'}
+                </p>
+              </div>
+              <Button
+                size="3xs"
+                icon
+                variant="ghost"
+                aria-label={`Edit ${variable.name}`}
+                className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+                onClick={() => setEditingId(variable.id)}
+              >
+                <Pencil size={13} />
+              </Button>
+            </div>
+          )
+        )}
+        {visibleVariables.length === 0 && (
+          <p className="px-2 py-6 text-center text-xs text-foreground-muted">
+            No variables match this filter.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const TREE_OUTPUT_VARIABLES = [
+  { id: 'record-description', name: 'recordUpdated1.output.Description', type: 'Text' },
+  { id: 'account-name', name: 'getAccountDetails.output.AccountName', type: 'Text' },
+];
+
+function VariableTreeRow({
+  name,
+  type,
+  selected,
+  onSelect,
+}: {
+  name: string;
+  type: string;
+  selected?: boolean;
+  onSelect?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      draggable
+      onClick={onSelect}
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = 'copy';
+        event.dataTransfer.setData(VARIABLE_DRAG_MIME, name.replace(/^\$/, ''));
+        event.dataTransfer.setData('text/plain', name.startsWith('$') ? name : `$vars.${name}`);
+      }}
+      className={`group flex h-8 w-full cursor-grab items-center gap-2 rounded-md px-2 text-left transition active:cursor-grabbing ${
+        selected ? 'bg-surface-overlay text-foreground' : 'hover:bg-surface-hover'
+      }`}
+    >
+      <GripVertical className="size-3 shrink-0 text-foreground-subtle opacity-0 group-hover:opacity-100" />
+      <Code2 className="size-3.5 shrink-0 text-brand" />
+      <span className="min-w-0 flex-1 truncate font-mono text-xs">{name}</span>
+      <span className="text-[10px] text-foreground-subtle">{type}</span>
+    </button>
+  );
+}
+
+function WorkflowVariablesTreeSidebar({
+  variables,
+  onVariablesChange,
+}: {
+  variables: EditableWorkflowVariable[];
+  onVariablesChange: (variables: EditableWorkflowVariable[]) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(variables[0]?.id ?? null);
+  const [expanded, setExpanded] = useState({ flow: true, outputs: true });
+  const selectedVariable = variables.find((variable) => variable.id === selectedId);
+  const visibleVariables = variables.filter((variable) =>
+    variable.name.toLowerCase().includes(query.toLowerCase())
+  );
+  const updateSelected = (updates: Partial<EditableWorkflowVariable>) => {
+    if (!selectedId) return;
+    onVariablesChange(
+      variables.map((variable) =>
+        variable.id === selectedId ? { ...variable, ...updates } : variable
+      )
+    );
+  };
+  const addVariable = () => {
+    const id = `variable-${Date.now()}`;
+    onVariablesChange([...variables, { id, name: 'newVariable', type: 'Text', value: '' }]);
+    setSelectedId(id);
+    setExpanded((current) => ({ ...current, flow: true }));
+  };
+
+  const section = (id: 'flow' | 'outputs', label: string, count: number, children: ReactNode) => (
+    <section>
+      <button
+        type="button"
+        className="flex h-8 w-full items-center gap-2 rounded-md px-1 text-left hover:bg-surface-hover"
+        onClick={() => setExpanded((current) => ({ ...current, [id]: !current[id] }))}
+      >
+        <ChevronDown
+          className={`size-3.5 text-foreground-subtle transition-transform ${
+            expanded[id] ? '' : '-rotate-90'
+          }`}
+        />
+        <span className="flex-1 text-xs font-semibold text-foreground">{label}</span>
+        <span className="text-[10px] text-foreground-muted">{count}</span>
+      </button>
+      {expanded[id] && <div className="ml-2 border-l border-border-subtle pl-2">{children}</div>}
+    </section>
+  );
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-foreground-muted" />
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Filter variables"
+          aria-label="Filter tree variables"
+          className="h-8 pl-8 text-xs"
+        />
+      </div>
+      <div className="mt-3 flex items-center justify-between">
+        <p className="text-[11px] text-foreground-muted">Select to edit · drag to bind</p>
+        <Button
+          size="2xs"
+          variant="ghost"
+          className="text-brand hover:text-brand"
+          onClick={addVariable}
+        >
+          <Plus size={13} /> Add
+        </Button>
+      </div>
+      <div className="mt-2 min-h-0 flex-1 space-y-1 overflow-auto">
+        {section(
+          'flow',
+          'Flow scope',
+          visibleVariables.length,
+          visibleVariables.map((variable) => (
+            <VariableTreeRow
+              key={variable.id}
+              name={variable.name}
+              type={variable.type}
+              selected={selectedId === variable.id}
+              onSelect={() => setSelectedId(variable.id)}
+            />
+          ))
+        )}
+        {section(
+          'outputs',
+          'Node outputs',
+          TREE_OUTPUT_VARIABLES.length,
+          TREE_OUTPUT_VARIABLES.map((variable) => (
+            <VariableTreeRow key={variable.id} name={`$${variable.name}`} type={variable.type} />
+          ))
+        )}
+      </div>
+      {selectedVariable && (
+        <div className="mt-3 shrink-0 space-y-2 border-t border-border-subtle pt-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold">Variable details</p>
+            <Button
+              size="3xs"
+              icon
+              variant="ghost"
+              aria-label={`Delete ${selectedVariable.name}`}
+              onClick={() => {
+                onVariablesChange(variables.filter((variable) => variable.id !== selectedId));
+                setSelectedId(null);
+              }}
+            >
+              <Trash2 size={13} />
+            </Button>
+          </div>
+          <div className="grid grid-cols-[minmax(0,1fr)_96px] gap-2">
+            <Input
+              value={selectedVariable.name}
+              onChange={(event) => updateSelected({ name: event.target.value })}
+              aria-label="Tree variable name"
+              className="h-8 text-xs"
+            />
+            <Select
+              value={selectedVariable.type}
+              onValueChange={(type) => updateSelected({ type })}
+            >
+              <SelectTrigger className="h-8 text-xs" aria-label="Tree variable type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {['Text', 'Number', 'Boolean', 'Object'].map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Input
+            value={selectedVariable.value}
+            onChange={(event) => updateSelected({ value: event.target.value })}
+            placeholder="Default value"
+            aria-label="Tree variable default value"
+            className="h-8 text-xs"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function VariableSchemaBadge({ type }: { type: string }) {
+  const labels: Record<string, string> = { Text: 'T', Number: '#', Boolean: '?', Object: '{}' };
+  return (
+    <span className="inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded border border-border bg-surface-overlay px-0.5 font-mono text-[9px] font-semibold leading-none text-foreground-muted">
+      {labels[type] ?? 'T'}
+    </span>
+  );
+}
+
+function WorkflowVariablesSchemaSidebar({
+  variables,
+  onVariablesChange,
+}: {
+  variables: EditableWorkflowVariable[];
+  onVariablesChange: (variables: EditableWorkflowVariable[]) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState({ flow: false, outputs: false });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingValueId, setEditingValueId] = useState<string | null>(null);
+  const visibleVariables = variables.filter((variable) =>
+    `${variable.name} ${variable.value}`.toLowerCase().includes(query.toLowerCase())
+  );
+  const updateVariable = (id: string, updates: Partial<EditableWorkflowVariable>) => {
+    onVariablesChange(
+      variables.map((variable) => (variable.id === id ? { ...variable, ...updates } : variable))
+    );
+  };
+  const addVariable = () => {
+    const id = `variable-${Date.now()}`;
+    onVariablesChange([...variables, { id, name: 'newVariable', type: 'Text', value: '' }]);
+    setCollapsed((current) => ({ ...current, flow: false }));
+    setEditingId(id);
+  };
+  const allCollapsed = collapsed.flow && collapsed.outputs;
+  const containerRow = (
+    id: 'flow' | 'outputs',
+    label: string,
+    count: number,
+    children: ReactNode
+  ) => (
+    <>
+      <div className="group flex cursor-default items-center gap-2 py-1 pl-2 pr-3.5 transition hover:bg-surface-overlay">
+        <button
+          type="button"
+          onClick={() => setCollapsed((current) => ({ ...current, [id]: !current[id] }))}
+          aria-label={collapsed[id] ? `Expand ${label}` : `Collapse ${label}`}
+          className="grid size-3 shrink-0 cursor-pointer place-items-center text-foreground-subtle transition hover:text-foreground"
+        >
+          <ChevronDown
+            size={10}
+            className={`transition-transform duration-100 ${collapsed[id] ? '-rotate-90' : ''}`}
+          />
+        </button>
+        <VariableSchemaBadge type="Object" />
+        <span className="flex-1 truncate font-mono text-xs text-foreground">{label}</span>
+        <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
+          {count} {count === 1 ? 'key' : 'keys'}
+        </span>
+      </div>
+      {!collapsed[id] && children}
+    </>
+  );
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex shrink-0 items-center gap-1.5 pb-1 pt-1">
+        <button
+          type="button"
+          className="flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+        >
+          Filter: All <ChevronDown size={10} className="text-foreground-subtle" />
+        </button>
+        <div className="flex-1" />
+        {searchOpen ? (
+          <div className="relative flex items-center">
+            <Search
+              size={12}
+              className="pointer-events-none absolute left-2 text-foreground-subtle"
+            />
+            <Input
+              autoFocus
+              variant="ghost"
+              size="xs"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              aria-label="Search variable schema"
+              placeholder="Search variables..."
+              className="w-36 pl-6 pr-6 text-foreground focus-visible:ring-0"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('');
+                setSearchOpen(false);
+              }}
+              aria-label="Clear variable search"
+              className="absolute right-1.5 grid size-4 place-items-center text-foreground-subtle hover:text-foreground"
+            >
+              ×
+            </button>
+          </div>
+        ) : (
+          <Button
+            variant="ghost"
+            size="4xs"
+            icon
+            onClick={() => setSearchOpen(true)}
+            aria-label="Search variable fields"
+            className="rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+          >
+            <Search size={12} />
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="4xs"
+          icon
+          onClick={() => setCollapsed({ flow: !allCollapsed, outputs: !allCollapsed })}
+          aria-label={allCollapsed ? 'Expand all variable fields' : 'Collapse all variable fields'}
+          className="rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+        >
+          <ListTree size={12} />
+        </Button>
+      </div>
+      <div className="mt-1 min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay bg-surface-overlay/40 pb-0">
+        <div className="h-full overflow-y-auto pt-1.5">
+          {containerRow(
+            'flow',
+            'flow',
+            visibleVariables.length,
+            visibleVariables.map((variable) => (
+              <div
+                key={variable.id}
+                draggable={editingId !== variable.id}
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = 'copy';
+                  event.dataTransfer.setData(VARIABLE_DRAG_MIME, `vars.${variable.name}`);
+                  event.dataTransfer.setData('text/plain', `$vars.${variable.name}`);
+                }}
+                className="group flex min-h-7 cursor-grab items-center gap-2 py-1 pl-7 pr-2 transition hover:bg-surface-overlay active:cursor-grabbing"
+              >
+                <div className="size-3 shrink-0" />
+                <VariableSchemaBadge type={variable.type} />
+                {editingId === variable.id ? (
+                  <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                    <input
+                      value={variable.name}
+                      onChange={(event) =>
+                        updateVariable(variable.id, { name: event.target.value })
+                      }
+                      aria-label="Schema variable name"
+                      className="h-6 min-w-0 flex-1 rounded bg-transparent px-1 font-mono text-xs outline-none ring-1 ring-brand"
+                    />
+                    <Button size="4xs" variant="ghost" onClick={() => setEditingId(null)}>
+                      Done
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="shrink-0 font-mono text-xs text-foreground">
+                      {variable.name}
+                    </span>
+                    <span className="shrink-0 font-mono text-xs text-foreground-subtle">=</span>
+                    {editingValueId === variable.id ? (
+                      <input
+                        value={variable.value}
+                        onChange={(event) =>
+                          updateVariable(variable.id, { value: event.target.value })
+                        }
+                        onBlur={() => setEditingValueId(null)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === 'Escape') {
+                            setEditingValueId(null);
+                          }
+                        }}
+                        aria-label={`Edit value for ${variable.name}`}
+                        className="h-5 min-w-0 flex-1 rounded bg-transparent px-1 font-mono text-xs text-success outline-none ring-1 ring-brand"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setEditingValueId(variable.id)}
+                        className={`min-w-0 flex-1 truncate text-left font-mono text-xs ${
+                          variable.type === 'Number'
+                            ? 'text-info'
+                            : variable.type === 'Boolean'
+                              ? variable.value === 'true'
+                                ? 'text-success'
+                                : 'text-error'
+                              : variable.value
+                                ? 'text-success'
+                                : 'text-foreground-subtle'
+                        }`}
+                      >
+                        {variable.value
+                          ? variable.type === 'Text'
+                            ? `&quot;${variable.value}&quot;`
+                            : variable.value
+                          : 'null'}
+                      </button>
+                    )}
+                    <Button
+                      size="4xs"
+                      icon
+                      variant="ghost"
+                      aria-label={`Edit schema variable ${variable.name}`}
+                      className="opacity-0 group-hover:opacity-100"
+                      onClick={() => setEditingId(variable.id)}
+                    >
+                      <Pencil size={11} />
+                    </Button>
+                    <Button
+                      size="4xs"
+                      icon
+                      variant="ghost"
+                      aria-label={`Delete schema variable ${variable.name}`}
+                      className="opacity-0 group-hover:opacity-100"
+                      onClick={() =>
+                        onVariablesChange(variables.filter((item) => item.id !== variable.id))
+                      }
+                    >
+                      <Trash2 size={11} />
+                    </Button>
+                  </>
+                )}
+              </div>
+            ))
+          )}
+          {containerRow(
+            'outputs',
+            'nodeOutputs',
+            TREE_OUTPUT_VARIABLES.length,
+            TREE_OUTPUT_VARIABLES.map((variable) => (
+              <div
+                key={variable.id}
+                draggable
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = 'copy';
+                  event.dataTransfer.setData(VARIABLE_DRAG_MIME, variable.name);
+                  event.dataTransfer.setData('text/plain', `$${variable.name}`);
+                }}
+                className="group flex min-h-7 cursor-grab items-center gap-2 py-1 pl-7 pr-3.5 transition hover:bg-surface-overlay active:cursor-grabbing"
+              >
+                <div className="size-3 shrink-0" />
+                <VariableSchemaBadge type={variable.type} />
+                <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
+                  {variable.name}
+                </span>
+                <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
+                  {variable.type.toLowerCase()}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={addVariable}
+        className="flex cursor-pointer items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover"
+      >
+        <Plus size={12} /> Add variable
+      </button>
+    </div>
+  );
+}
+
+const withDiscoveryDot = (icon: ReactNode) => (
+  <span className="relative grid size-5 place-items-center">
+    {icon}
+    <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-brand ring-2 ring-surface-raised" />
+  </span>
+);
+
+const VARIABLE_CONCEPT_SIDEBAR_ITEMS = CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS.flatMap((item) =>
+  item.id === 'variables'
+    ? [
+        { ...item, icon: withDiscoveryDot(item.icon) },
+        {
+          id: 'variables-tree',
+          label: 'Variables tree',
+          icon: withDiscoveryDot(<ListTree strokeWidth={1.75} />),
+        },
+        {
+          id: 'variables-schema',
+          label: 'Variables schema tree',
+          icon: withDiscoveryDot(<Code2 strokeWidth={1.75} />),
+        },
+      ]
+    : [item]
+);
 
 const VARIABLE_TAB_LIST_CLASS =
   'mx-3 h-auto justify-start gap-0.5 overflow-x-auto rounded-lg bg-transparent p-0.5 text-muted-foreground [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
@@ -3992,7 +4738,7 @@ export function FullWorkbenchComposition({
 }) {
   const panelRef = useRef<PanelImperativeHandle | null>(null);
   const expandedBottomPanelHeight = useRef(368);
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(rightPanelVariant === 'node');
   const [activeSidebarItem, setActiveSidebarItem] = useState<CanvasLeftSidebarItemId>('variables');
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [takeoverOpen, setTakeoverOpen] = useState(false);
@@ -4015,6 +4761,8 @@ export function FullWorkbenchComposition({
     'coding-agent': 'Coding agent',
     files: 'Files',
     variables: 'Variables',
+    'variables-tree': 'Variables tree',
+    'variables-schema': 'Variables schema tree',
     connections: 'Connections',
     'run-history': 'Run history',
     'whats-new': "What's new",
@@ -4060,11 +4808,33 @@ export function FullWorkbenchComposition({
       <CanvasLeftSidebar
         title={sidebarLabels[activeSidebarItem]}
         variant="default"
+        primaryItems={VARIABLE_CONCEPT_SIDEBAR_ITEMS}
         isExpanded={sidebarExpanded}
         onExpandedChange={setSidebarExpanded}
         activeItemId={activeSidebarItem}
         onItemSelect={setActiveSidebarItem}
-      />
+      >
+        {activeSidebarItem === 'variables' ? (
+          <WorkflowVariablesSidebar
+            variables={editableWorkflowVariables}
+            onVariablesChange={setEditableWorkflowVariables}
+          />
+        ) : activeSidebarItem === 'variables-tree' ? (
+          <WorkflowVariablesTreeSidebar
+            variables={editableWorkflowVariables}
+            onVariablesChange={setEditableWorkflowVariables}
+          />
+        ) : activeSidebarItem === 'variables-schema' ? (
+          <WorkflowVariablesSchemaSidebar
+            variables={editableWorkflowVariables}
+            onVariablesChange={setEditableWorkflowVariables}
+          />
+        ) : (
+          <div className="py-6 text-center text-xs text-foreground-muted">
+            {sidebarLabels[activeSidebarItem]} content
+          </div>
+        )}
+      </CanvasLeftSidebar>
       <div className="relative min-w-0 flex-1 overflow-hidden">
         <CanvasViewport
           workflowVariant={
@@ -4131,6 +4901,7 @@ export function FullWorkbenchComposition({
                 <SendEmailPropertiesPanel
                   onClose={() => setRightPanelOpen(false)}
                   onOpenTakeover={() => setTakeoverOpen(true)}
+                  variables={editableWorkflowVariables}
                 />
               ) : (
                 <PropertiesPanel className="h-full" onClose={() => setRightPanelOpen(false)} />
@@ -4197,7 +4968,7 @@ export function FullWorkbenchComposition({
             </Button>
           }
         >
-          <SendEmailTakeoverPanels />
+          <SendEmailTakeoverPanels variables={editableWorkflowVariables} />
         </CanvasTakeoverModal>
       )}
       {rightPanelVariant === 'variables' && (
