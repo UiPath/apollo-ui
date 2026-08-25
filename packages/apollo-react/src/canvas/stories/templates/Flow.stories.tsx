@@ -17,6 +17,7 @@ import {
   Card,
   CardContent,
   Checkbox,
+  type FormPlugin,
   type FormSchema,
   Input,
   InputGroup,
@@ -873,6 +874,11 @@ const httpRequestForm: FormSchema = {
                 })),
               },
             },
+            {
+              type: 'custom',
+              name: 'save',
+              component: 'flow-save-action',
+            },
           ],
         },
       ],
@@ -881,6 +887,25 @@ const httpRequestForm: FormSchema = {
     { id: 'advanced', title: 'Advanced', sections: [] },
   ],
 };
+
+function FlowSaveAction() {
+  return (
+    <div className="flex justify-end pt-1">
+      <Button type="button" size="sm">
+        Save
+      </Button>
+    </div>
+  );
+}
+
+const httpRequestFormPlugins: FormPlugin[] = [
+  {
+    name: 'flow-save-action',
+    onFormInit: (context) => {
+      context.registerCustomComponent('flow-save-action', FlowSaveAction);
+    },
+  },
+];
 
 function PropertiesPanel({
   className,
@@ -907,6 +932,7 @@ function PropertiesPanel({
         </button>
       }
       schema={httpRequestForm}
+      plugins={httpRequestFormPlugins}
       contentInset="0.875rem"
       onClose={onClose}
       dragHandleProps={dragHandleProps}
