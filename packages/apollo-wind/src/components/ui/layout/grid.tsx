@@ -111,7 +111,13 @@ const Grid = React.forwardRef<HTMLDivElement, GridProps>(
     };
 
     return (
-      <div ref={ref} className={cn(...gridClasses, className)} style={inlineStyles} {...htmlProps}>
+      <div
+        ref={ref}
+        data-slot="grid"
+        className={cn(...gridClasses, className)}
+        style={inlineStyles}
+        {...htmlProps}
+      >
         {children}
       </div>
     );

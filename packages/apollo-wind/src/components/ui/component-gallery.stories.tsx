@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, useMemo } from 'react';
 import { Card, CardDescription, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
@@ -62,11 +62,40 @@ interface ComponentInfo {
   preview: React.ReactNode;
 }
 
+/**
+ * Story IDs carry the composing Storybook's `titlePrefix` (for example
+ * `apollo-wind-`) in apps/storybook, but are unprefixed when this package's own
+ * Storybook runs standalone. Deriving the prefix from this story's own ID keeps
+ * the gallery links resolvable in both.
+ */
+const SELF_STORY_ID = 'components-all-components--default';
+
+const getIdPrefix = (storyId: string) =>
+  storyId.endsWith(SELF_STORY_ID) ? storyId.slice(0, -SELF_STORY_ID.length) : '';
+
+/**
+ * Storybook keeps globals (theme, locale) in the URL only, and these cards do a
+ * full top-frame navigation, so any global not carried over is lost on click.
+ * Rebuild the target URL from the current top-frame query string, swapping only
+ * `path`.
+ */
+const buildStoryHref = (storyId: string) => {
+  let extra = '';
+  try {
+    const params = new URLSearchParams(window.top?.location.search ?? '');
+    params.delete('path');
+    extra = params.toString();
+  } catch {
+    // Top frame is cross-origin; fall back to a bare path.
+  }
+  return `/?path=/story/${storyId}${extra ? `&${extra}` : ''}`;
+};
+
 const components: ComponentInfo[] = [
   {
     name: 'Accordion',
     description: 'Interactive expandable sections',
-    storyPath: 'wind-components-data-display-accordion--docs',
+    storyPath: 'components-data-display-accordion--docs',
     category: Category.DataDisplay,
     preview: (
       <Accordion type="single" collapsible className="w-full">
@@ -80,7 +109,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Alert',
     description: 'Displays a callout message',
-    storyPath: 'wind-components-feedback-alert--docs',
+    storyPath: 'components-feedback-alert--docs',
     category: Category.Feedback,
     preview: (
       <Alert>
@@ -92,14 +121,14 @@ const components: ComponentInfo[] = [
   {
     name: 'Alert Dialog',
     description: 'Modal dialog for important actions',
-    storyPath: 'wind-components-overlays-alert-dialog--docs',
+    storyPath: 'components-overlays-alert-dialog--docs',
     category: Category.Overlays,
     preview: <Button variant="outline">Show Dialog</Button>,
   },
   {
     name: 'Aspect Ratio',
     description: 'Content with desired ratio',
-    storyPath: 'wind-components-layout-aspect-ratio--docs',
+    storyPath: 'components-layout-aspect-ratio--docs',
     category: Category.Layout,
     preview: (
       <div className="w-full aspect-video bg-muted rounded flex items-center justify-center text-xs">
@@ -110,7 +139,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Badge',
     description: 'Small status indicators',
-    storyPath: 'wind-components-data-display-badge--docs',
+    storyPath: 'components-data-display-badge--docs',
     category: Category.DataDisplay,
     preview: (
       <div className="flex gap-2 flex-wrap">
@@ -122,7 +151,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Breadcrumb',
     description: 'Navigation hierarchy path',
-    storyPath: 'wind-components-navigation-breadcrumb--docs',
+    storyPath: 'components-navigation-breadcrumb--docs',
     category: Category.Navigation,
     preview: (
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -137,7 +166,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Button',
     description: 'Clickable button element',
-    storyPath: 'wind-components-core-button--docs',
+    storyPath: 'components-core-button--docs',
     category: Category.Core,
     preview: (
       <div className="flex gap-2">
@@ -151,7 +180,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Button Group',
     description: 'Grouped set of related buttons',
-    storyPath: 'wind-components-core-buttongroup--docs',
+    storyPath: 'components-core-buttongroup--docs',
     category: Category.Core,
     preview: (
       <ButtonGroup>
@@ -170,14 +199,14 @@ const components: ComponentInfo[] = [
   {
     name: 'Calendar',
     description: 'Date selection calendar',
-    storyPath: 'wind-components-data-display-calendar--docs',
+    storyPath: 'components-data-display-calendar--docs',
     category: Category.DataDisplay,
     preview: <Calendar mode="single" className="scale-75 origin-top-left" />,
   },
   {
     name: 'Card',
     description: 'Container with content sections',
-    storyPath: 'wind-components-data-display-card--docs',
+    storyPath: 'components-data-display-card--docs',
     category: Category.DataDisplay,
     preview: (
       <Card className="w-full">
@@ -191,7 +220,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Checkbox',
     description: 'Toggle checkbox input',
-    storyPath: 'wind-components-core-checkbox--docs',
+    storyPath: 'components-core-checkbox--docs',
     category: Category.Core,
     preview: (
       <div className="flex items-center gap-2">
@@ -205,7 +234,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Combobox',
     description: 'Searchable select input',
-    storyPath: 'wind-components-core-combobox--docs',
+    storyPath: 'components-core-combobox--docs',
     category: Category.Core,
     preview: (
       <Combobox
@@ -220,7 +249,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Command',
     description: 'Command palette menu',
-    storyPath: 'wind-components-navigation-command--docs',
+    storyPath: 'components-navigation-command--docs',
     category: Category.Navigation,
     preview: (
       <Button variant="outline" size="sm">
@@ -231,14 +260,14 @@ const components: ComponentInfo[] = [
   {
     name: 'Context Menu',
     description: 'Right-click menu',
-    storyPath: 'wind-components-navigation-context-menu--docs',
+    storyPath: 'components-navigation-context-menu--docs',
     category: Category.Navigation,
     preview: <div className="border rounded p-2 text-xs text-center">Right click me</div>,
   },
   {
     name: 'Data Table',
     description: 'Powerful data table',
-    storyPath: 'wind-components-data-display-data-table--docs',
+    storyPath: 'components-data-display-data-table--docs',
     category: Category.DataDisplay,
     preview: (
       <Table>
@@ -260,7 +289,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Date Picker',
     description: 'Date selection input',
-    storyPath: 'wind-components-core-date-picker--docs',
+    storyPath: 'components-core-date-picker--docs',
     category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
@@ -271,7 +300,7 @@ const components: ComponentInfo[] = [
   {
     name: 'DateTime Picker',
     description: 'Date and time input',
-    storyPath: 'wind-components-core-datetime-picker--docs',
+    storyPath: 'components-core-datetime-picker--docs',
     category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
@@ -282,7 +311,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Dialog',
     description: 'Modal dialog window',
-    storyPath: 'wind-components-overlays-dialog--docs',
+    storyPath: 'components-overlays-dialog-modal--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -293,7 +322,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Drawer',
     description: 'Sliding side panel',
-    storyPath: 'wind-components-overlays-drawer-sheet--docs',
+    storyPath: 'components-overlays-drawer-sheet--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -304,7 +333,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Dropdown Menu',
     description: 'Dropdown menu list',
-    storyPath: 'wind-components-overlays-dropdown--docs',
+    storyPath: 'components-overlays-dropdown--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -315,14 +344,14 @@ const components: ComponentInfo[] = [
   {
     name: 'Empty State',
     description: 'No content placeholder',
-    storyPath: 'wind-components-feedback-empty-state--docs',
+    storyPath: 'components-feedback-empty-state--docs',
     category: Category.Feedback,
     preview: <div className="text-center p-4 text-muted-foreground text-xs">No items found</div>,
   },
   {
     name: 'File Upload',
     description: 'File upload with drag & drop',
-    storyPath: 'wind-components-core-file-upload--docs',
+    storyPath: 'components-core-file-upload--docs',
     category: Category.Core,
     preview: (
       <div className="border-2 border-dashed rounded p-4 text-xs text-center">Drop files here</div>
@@ -331,7 +360,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Column',
     description: 'Vertical flex layout',
-    storyPath: 'wind-components-layout-column--docs',
+    storyPath: 'components-layout-column--docs',
     category: Category.Layout,
     preview: (
       <div className="flex flex-col gap-2">
@@ -343,7 +372,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Grid',
     description: 'Responsive grid layout',
-    storyPath: 'wind-components-layout-grid--docs',
+    storyPath: 'components-layout-grid--docs',
     category: Category.Layout,
     preview: (
       <div className="grid grid-cols-2 gap-2">
@@ -357,7 +386,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Resizable',
     description: 'Resizable panel groups',
-    storyPath: 'wind-components-layout-resizable--docs',
+    storyPath: 'components-layout-resizable--docs',
     category: Category.Layout,
     preview: (
       <div className="flex gap-1 h-12">
@@ -370,7 +399,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Row',
     description: 'Horizontal flex layout',
-    storyPath: 'wind-components-layout-row--docs',
+    storyPath: 'components-layout-row--docs',
     category: Category.Layout,
     preview: (
       <div className="flex gap-2">
@@ -382,21 +411,21 @@ const components: ComponentInfo[] = [
   {
     name: 'Hover Card',
     description: 'Hover preview card',
-    storyPath: 'wind-components-overlays-hover-card--docs',
+    storyPath: 'components-overlays-hover-card--docs',
     category: Category.Overlays,
     preview: <span className="underline text-xs">Hover me</span>,
   },
   {
     name: 'Input',
     description: 'Text input field',
-    storyPath: 'wind-components-core-input--docs',
+    storyPath: 'components-core-input--docs',
     category: Category.Core,
     preview: <Input placeholder="Type here..." className="h-8 text-xs" />,
   },
   {
     name: 'Label',
     description: 'Form field label',
-    storyPath: 'wind-components-core-label--docs',
+    storyPath: 'components-core-label--docs',
     category: Category.Core,
     preview: (
       <div className="flex flex-col gap-2">
@@ -408,7 +437,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Multi Select',
     description: 'Multiple selection input',
-    storyPath: 'wind-components-core-multi-select--docs',
+    storyPath: 'components-core-multi-select--docs',
     category: Category.Core,
     preview: (
       <MultiSelect
@@ -425,7 +454,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Pagination',
     description: 'Page navigation',
-    storyPath: 'wind-components-navigation-pagination--docs',
+    storyPath: 'components-navigation-pagination--docs',
     category: Category.Navigation,
     preview: (
       <div className="flex gap-1">
@@ -444,7 +473,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Popover',
     description: 'Floating content panel',
-    storyPath: 'wind-components-overlays-popover--docs',
+    storyPath: 'components-overlays-popover--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -455,14 +484,14 @@ const components: ComponentInfo[] = [
   {
     name: 'Progress',
     description: 'Progress indicator',
-    storyPath: 'wind-components-feedback-progress--docs',
+    storyPath: 'components-feedback-progress--docs',
     category: Category.Feedback,
     preview: <Progress value={60} className="w-20" />,
   },
   {
     name: 'Radio Group',
     description: 'Single selection group',
-    storyPath: 'wind-components-core-radio-group--docs',
+    storyPath: 'components-core-radio-group--docs',
     category: Category.Core,
     preview: (
       <RadioGroup defaultValue="option1" className="gap-2">
@@ -484,7 +513,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Scroll Area',
     description: 'Custom scrollable area',
-    storyPath: 'wind-components-layout-scroll-area--docs',
+    storyPath: 'components-layout-scroll-area--docs',
     category: Category.Layout,
     preview: (
       <div className="h-16 border rounded p-2 overflow-hidden text-xs">Scrollable content area</div>
@@ -493,14 +522,14 @@ const components: ComponentInfo[] = [
   {
     name: 'Search',
     description: 'Search input field',
-    storyPath: 'wind-components-navigation-search--docs',
+    storyPath: 'components-navigation-search--docs',
     category: Category.Navigation,
     preview: <Input placeholder="Search..." className="h-8 text-xs" />,
   },
   {
     name: 'Select',
     description: 'Dropdown selection',
-    storyPath: 'wind-components-core-select--docs',
+    storyPath: 'components-core-select--docs',
     category: Category.Core,
     preview: (
       <Select>
@@ -517,14 +546,14 @@ const components: ComponentInfo[] = [
   {
     name: 'Separator',
     description: 'Content divider',
-    storyPath: 'wind-components-layout-separator--docs',
+    storyPath: 'components-layout-separator--docs',
     category: Category.Layout,
     preview: <Separator className="w-12" />,
   },
   {
     name: 'Sheet',
     description: 'Side panel overlay',
-    storyPath: 'wind-components-overlays-drawer-sheet--docs',
+    storyPath: 'components-overlays-drawer-sheet--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -535,7 +564,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Skeleton',
     description: 'Loading placeholder',
-    storyPath: 'wind-components-feedback-skeleton--docs',
+    storyPath: 'components-feedback-skeleton--docs',
     category: Category.Feedback,
     preview: (
       <div className="space-y-2">
@@ -547,28 +576,28 @@ const components: ComponentInfo[] = [
   {
     name: 'Slider',
     description: 'Range slider input',
-    storyPath: 'wind-components-core-slider--docs',
+    storyPath: 'components-core-slider--docs',
     category: Category.Core,
     preview: <Slider defaultValue={[50]} max={100} step={1} className="w-full" />,
   },
   {
     name: 'Sonner',
     description: 'Toast notifications',
-    storyPath: 'wind-components-feedback-toast-sonner--docs',
+    storyPath: 'components-feedback-toast-sonner--docs',
     category: Category.Feedback,
     preview: <div className="border rounded p-2 text-xs">Toast notification</div>,
   },
   {
     name: 'Spinner',
     description: 'Loading spinner',
-    storyPath: 'wind-components-feedback-spinner--docs',
+    storyPath: 'components-feedback-spinner--docs',
     category: Category.Feedback,
     preview: <Spinner className="w-6 h-6" />,
   },
   {
     name: 'Stats Card',
     description: 'Statistics display card',
-    storyPath: 'wind-components-data-display-stats-card--docs',
+    storyPath: 'components-data-display-stats-card--docs',
     category: Category.DataDisplay,
     preview: (
       <Card className="w-full">
@@ -582,7 +611,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Stepper',
     description: 'Step progress indicator',
-    storyPath: 'wind-components-navigation-stepper--docs',
+    storyPath: 'components-navigation-stepper--docs',
     category: Category.Navigation,
     preview: (
       <div className="flex gap-1">
@@ -598,7 +627,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Switch',
     description: 'Toggle switch',
-    storyPath: 'wind-components-core-switch--docs',
+    storyPath: 'components-core-switch--docs',
     category: Category.Core,
     preview: (
       <div className="flex items-center gap-2">
@@ -610,7 +639,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Table',
     description: 'Data table',
-    storyPath: 'wind-components-data-display-table--docs',
+    storyPath: 'components-data-display-table--docs',
     category: Category.DataDisplay,
     preview: (
       <Table>
@@ -630,7 +659,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Tabs',
     description: 'Tabbed content panels',
-    storyPath: 'wind-components-navigation-tabs--docs',
+    storyPath: 'components-navigation-tabs--docs',
     category: Category.Navigation,
     preview: (
       <Tabs defaultValue="tab1" className="w-full">
@@ -648,7 +677,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Tree View',
     description: 'Hierarchical tree with expand, search, selection',
-    storyPath: 'wind-components-data-display-tree-view--docs',
+    storyPath: 'components-data-display-tree-view--docs',
     category: Category.DataDisplay,
     preview: (
       <div className="w-full space-y-1 text-xs">
@@ -667,14 +696,14 @@ const components: ComponentInfo[] = [
   {
     name: 'Textarea',
     description: 'Multi-line text input',
-    storyPath: 'wind-components-core-textarea--docs',
+    storyPath: 'components-core-textarea--docs',
     category: Category.Core,
     preview: <Textarea placeholder="Type here..." className="h-16 text-xs resize-none w-full" />,
   },
   {
     name: 'Toggle',
     description: 'Toggle button',
-    storyPath: 'wind-components-core-toggle--docs',
+    storyPath: 'components-core-toggle--docs',
     category: Category.Core,
     preview: (
       <div className="flex gap-2">
@@ -688,7 +717,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Toggle Group',
     description: 'Toggle button group',
-    storyPath: 'wind-components-core-toggle-group--docs',
+    storyPath: 'components-core-toggle-group--docs',
     category: Category.Core,
     preview: (
       <ToggleGroup type="single">
@@ -701,7 +730,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Tooltip',
     description: 'Hover tooltip',
-    storyPath: 'wind-components-overlays-tooltip--docs',
+    storyPath: 'components-overlays-tooltip--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -711,7 +740,7 @@ const components: ComponentInfo[] = [
   },
 ];
 
-function ComponentGallery() {
+function ComponentGallery({ idPrefix }: { idPrefix: string }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
 
@@ -826,7 +855,7 @@ function ComponentGallery() {
                     {categoryComponents.map((component) => (
                       <a
                         key={component.name}
-                        href={`/?path=/story/${component.storyPath}`}
+                        href={buildStoryHref(`${idPrefix}${component.storyPath}`)}
                         target="_top"
                         className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg min-w-0"
                       >
@@ -859,7 +888,6 @@ function ComponentGallery() {
   );
 }
 
-export const Default = {
-  args: {},
-  render: () => <ComponentGallery />,
+export const Default: StoryObj = {
+  render: (_args, ctx) => <ComponentGallery idPrefix={getIdPrefix(ctx.id)} />,
 };

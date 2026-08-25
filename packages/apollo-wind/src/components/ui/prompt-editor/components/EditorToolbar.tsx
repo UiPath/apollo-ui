@@ -80,9 +80,13 @@ export const EditorToolbar = ({
       />
       {/* Left: Edit/Preview mode switcher */}
       <div className="flex items-center gap-1 shrink-0">
-        <div className="flex items-center rounded-md bg-muted p-0.5">
+        <fieldset
+          aria-label="Editor mode"
+          className="m-0 flex items-center rounded-md border-0 bg-muted p-0.5"
+        >
           <button
             type="button"
+            aria-pressed={mode === 'edit'}
             className={cn(
               'rounded px-2 py-0.5 text-[11px] font-semibold transition-colors',
               mode === 'edit' ? 'bg-primary/20 text-primary' : 'text-foreground hover:bg-accent'
@@ -94,6 +98,7 @@ export const EditorToolbar = ({
           </button>
           <button
             type="button"
+            aria-pressed={mode === 'preview'}
             className={cn(
               'rounded px-2 py-0.5 text-[11px] font-semibold transition-colors',
               mode === 'preview' ? 'bg-primary/20 text-primary' : 'text-foreground hover:bg-accent'
@@ -103,7 +108,7 @@ export const EditorToolbar = ({
           >
             Preview
           </button>
-        </div>
+        </fieldset>
       </div>
 
       {/* Right: formatting cluster (Bold/Italic/Strike) → list cluster (Numbered/Bullet) → Expand. */}

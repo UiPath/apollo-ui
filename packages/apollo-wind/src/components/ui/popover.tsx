@@ -8,11 +8,22 @@ import {
 } from '@/components/ui/portal-container';
 import { cn } from '@/lib';
 
-const Popover = PopoverPrimitive.Root;
+const Popover = (props: React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Root>) => (
+  <PopoverPrimitive.Root data-slot="popover" {...props} />
+);
+Popover.displayName = 'Popover';
 
-const PopoverTrigger = PopoverPrimitive.Trigger;
+const PopoverTrigger = React.forwardRef<
+  React.ElementRef<typeof PopoverPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Trigger>
+>((props, ref) => <PopoverPrimitive.Trigger ref={ref} data-slot="popover-trigger" {...props} />);
+PopoverTrigger.displayName = PopoverPrimitive.Trigger.displayName;
 
-const PopoverAnchor = PopoverPrimitive.Anchor;
+const PopoverAnchor = React.forwardRef<
+  React.ElementRef<typeof PopoverPrimitive.Anchor>,
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Anchor>
+>((props, ref) => <PopoverPrimitive.Anchor ref={ref} data-slot="popover-anchor" {...props} />);
+PopoverAnchor.displayName = PopoverPrimitive.Anchor.displayName;
 
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
@@ -25,6 +36,7 @@ const PopoverContent = React.forwardRef<
     <PopoverPrimitive.Portal container={resolvedContainer}>
       <PopoverPrimitive.Content
         ref={ref}
+        data-slot="popover-content"
         align={align}
         sideOffset={sideOffset}
         className={cn(

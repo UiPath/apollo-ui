@@ -39,7 +39,7 @@
       "!node_modules",
       "!.storybook",
       "!storybook-static",
-      "!templates",
+      "!src/templates/**",
       "!**/*.css"
     ]
   },

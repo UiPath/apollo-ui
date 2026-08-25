@@ -38,7 +38,7 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
     };
 
     return (
-      <InputGroup variant={variant} size={size}>
+      <InputGroup data-slot="search" variant={variant} size={size}>
         <InputGroupAddon align="inline-start">
           <SearchIcon className="text-muted-foreground" />
         </InputGroupAddon>
@@ -116,7 +116,7 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
     };
 
     return (
-      <div ref={ref} className={cn('relative', className)}>
+      <div ref={ref} data-slot="search-with-suggestions" className={cn('relative', className)}>
         <Popover open={open && filteredSuggestions.length > 0} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <div>

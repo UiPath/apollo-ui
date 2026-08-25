@@ -3,9 +3,18 @@ import * as React from 'react';
 
 import { cn } from '@/lib';
 
-const HoverCard = HoverCardPrimitive.Root;
+const HoverCard = (props: React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Root>) => (
+  <HoverCardPrimitive.Root data-slot="hover-card" {...props} />
+);
+HoverCard.displayName = 'HoverCard';
 
-const HoverCardTrigger = HoverCardPrimitive.Trigger;
+const HoverCardTrigger = React.forwardRef<
+  React.ElementRef<typeof HoverCardPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Trigger>
+>((props, ref) => (
+  <HoverCardPrimitive.Trigger ref={ref} data-slot="hover-card-trigger" {...props} />
+));
+HoverCardTrigger.displayName = HoverCardPrimitive.Trigger.displayName;
 
 const HoverCardContent = React.forwardRef<
   React.ElementRef<typeof HoverCardPrimitive.Content>,
@@ -13,6 +22,7 @@ const HoverCardContent = React.forwardRef<
 >(({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
   <HoverCardPrimitive.Content
     ref={ref}
+    data-slot="hover-card-content"
     align={align}
     sideOffset={sideOffset}
     className={cn(

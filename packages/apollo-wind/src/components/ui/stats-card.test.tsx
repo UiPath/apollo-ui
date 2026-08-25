@@ -71,19 +71,19 @@ describe('StatsCard', () => {
     it('applies success variant', () => {
       const { container } = render(<StatsCard title="Test" value="100" variant="success" />);
       const card = container.firstChild;
-      expect(card).toHaveClass('border-green-500/20');
+      expect(card).toHaveClass('border-success/20');
     });
 
     it('applies warning variant', () => {
       const { container } = render(<StatsCard title="Test" value="100" variant="warning" />);
       const card = container.firstChild;
-      expect(card).toHaveClass('border-yellow-500/20');
+      expect(card).toHaveClass('border-warning/20');
     });
 
     it('applies danger variant', () => {
       const { container } = render(<StatsCard title="Test" value="100" variant="danger" />);
       const card = container.firstChild;
-      expect(card).toHaveClass('border-red-500/20');
+      expect(card).toHaveClass('border-error/20');
     });
   });
 

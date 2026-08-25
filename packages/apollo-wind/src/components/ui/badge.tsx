@@ -37,7 +37,12 @@ export interface BadgeProps
 // without an anchor to position against, so it never becomes visible.
 const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
   ({ className, variant, ...props }, ref) => (
-    <div ref={ref} className={cn(badgeVariants({ variant }), className)} {...props} />
+    <div
+      ref={ref}
+      data-slot="badge"
+      className={cn(badgeVariants({ variant }), className)}
+      {...props}
+    />
   )
 );
 Badge.displayName = 'Badge';

@@ -31,6 +31,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
     return (
       <div
         ref={ref}
+        data-slot="stepper"
         className={cn(
           'flex',
           orientation === 'horizontal' ? 'flex-row items-start' : 'flex-col',

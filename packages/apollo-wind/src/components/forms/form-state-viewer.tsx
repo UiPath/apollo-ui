@@ -49,7 +49,7 @@ export function FormStateViewer({
             <h3 className="text-sm font-semibold">{title}</h3>
             <div className="flex gap-2">
               {stats.isValid ? (
-                <Badge variant="default" className="bg-green-600">
+                <Badge variant="success">
                   <CheckCircle2 className="w-3 h-3 mr-1" />
                   Valid
                 </Badge>
@@ -83,7 +83,7 @@ export function FormStateViewer({
           <h3 className="text-lg font-semibold">{title}</h3>
           <div className="flex gap-2">
             {stats.isValid ? (
-              <Badge variant="default" className="bg-green-600">
+              <Badge variant="success">
                 <CheckCircle2 className="w-3 h-3 mr-1" />
                 Valid
               </Badge>
@@ -166,7 +166,7 @@ export function FormStateViewer({
                 Validation errors from Zod schema
               </p>
               {Object.keys(formState.errors).length === 0 ? (
-                <div className="flex items-center gap-2 p-4 bg-green-50 dark:bg-green-900/10 rounded text-green-700 dark:text-green-400">
+                <div className="flex items-center gap-2 p-4 bg-success-background/25 rounded text-success">
                   <CheckCircle2 className="w-5 h-5" />
                   <span className="text-sm font-medium">No validation errors</span>
                 </div>
@@ -275,7 +275,7 @@ function StateItem({
       <span className="text-sm font-medium">{label}</span>
       {type === 'boolean' ? (
         value ? (
-          <Badge variant="default" className="bg-green-600">
+          <Badge variant="success">
             <CheckCircle2 className="w-3 h-3 mr-1" />
             True
           </Badge>

@@ -71,7 +71,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
     };
 
     return (
-      <div ref={ref} className={cn('relative', className)}>
+      <div ref={ref} data-slot="multi-select" className={cn('relative', className)}>
         <Popover
           open={open}
           onOpenChange={(nextOpen) => {
