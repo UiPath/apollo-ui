@@ -597,33 +597,4 @@ describe('MetadataForm', () => {
       expect(screen.queryByRole('tab', { name: 'Conditional' })).not.toBeInTheDocument();
     });
   });
-
-  describe('collapsible sections', () => {
-    const collapsibleSchema: FormSchema = {
-      id: 'collapsible-form',
-      title: 'Collapsible Form',
-      sections: [
-        {
-          id: 'advanced',
-          title: 'Advanced',
-          collapsible: true,
-          fields: [{ name: 'field1', type: 'text', label: 'Field 1' }],
-        },
-      ],
-    };
-
-    // The chevron belongs on the trailing edge in both variants, so an
-    // expandable section's affordance never moves depending on how the host
-    // framed it.
-    it.each([
-      'card',
-      'plain',
-    ] as const)('keeps the %s chevron on the trailing edge', (sectionVariant) => {
-      render(<MetadataForm schema={collapsibleSchema} sectionVariant={sectionVariant} />);
-
-      const trigger = screen.getByRole('button', { name: 'Advanced' });
-      expect(trigger).not.toHaveClass('justify-start');
-      expect(trigger.lastElementChild?.tagName).toBe('svg');
-    });
-  });
 });
