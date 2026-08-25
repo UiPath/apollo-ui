@@ -941,7 +941,7 @@ function PropertiesPanel({
 }) {
   return (
     <NodePropertyPanel
-      panelTitle="Properties"
+      panelTitle={hideTitleBar ? undefined : 'Properties'}
       nodeIcon={<Globe />}
       nodeLabel="Fetch invoice details"
       nodeCategory="HTTP Request"
@@ -956,7 +956,6 @@ function PropertiesPanel({
       }
       schema={httpRequestForm}
       contentInset="0.875rem"
-      hideTitleBar={hideTitleBar}
       onClose={onClose}
       dragHandleProps={dragHandleProps}
       className={className}
@@ -1679,7 +1678,7 @@ function DockviewCanvasPanel(_props: IDockviewPanelProps) {
 
 function DockviewInputPanel(_props: IDockviewPanelProps) {
   return (
-    <NodePropertyPanel panelTitle="Input" hideTitleBar className="h-full">
+    <NodePropertyPanel className="h-full">
       <div className="h-full p-4">
         <NodeIOView
           className="h-full"
@@ -1701,7 +1700,7 @@ function DockviewPropertiesPanel(_props: IDockviewPanelProps) {
 
 function DockviewOutputPanel(_props: IDockviewPanelProps) {
   return (
-    <NodePropertyPanel panelTitle="Output" hideTitleBar className="h-full">
+    <NodePropertyPanel className="h-full">
       <div className="h-full p-4">
         <NodeIOView
           className="h-full"
