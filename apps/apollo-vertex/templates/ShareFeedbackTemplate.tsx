@@ -81,7 +81,7 @@ function ShareFeedbackTemplateContent() {
 
         <div className="flex flex-row flex-wrap justify-between gap-6">
           <div className="flex flex-1 flex-col gap-2">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium text-foreground">
               {t("share_feedback_demo_icon_trigger_label")}
             </p>
             <ShareFeedback
@@ -95,7 +95,7 @@ function ShareFeedbackTemplateContent() {
           </div>
 
           <div className="flex flex-1 flex-col gap-2">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium text-foreground">
               {t("share_feedback_demo_icon_label_trigger_label")}
             </p>
             <ShareFeedback
@@ -109,7 +109,21 @@ function ShareFeedbackTemplateContent() {
           </div>
 
           <div className="flex flex-1 flex-col gap-2">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium text-foreground">
+              {t("share_feedback_demo_link_trigger_label")}
+            </p>
+            <ShareFeedback
+              {...sharedProps}
+              triggerVariant="link"
+              triggerLabel={t("share_feedback_trigger_label")}
+              disclaimerLabel={t("share_feedback_disclaimer_admin_team")}
+              consentLabel={t("share_feedback_consent_improve")}
+              onSubmit={handleSubmit}
+            />
+          </div>
+
+          <div className="flex flex-1 flex-col gap-2">
+            <p className="text-sm font-medium text-foreground">
               {t("share_feedback_demo_menu_item_label")}
             </p>
             <DropdownMenu>
@@ -150,15 +164,18 @@ function ShareFeedbackTemplateContent() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-4 rounded-lg border bg-card p-6 pb-[21rem]">
+      <section className="flex flex-col gap-4 rounded-lg border bg-card p-6">
         <h2 className="text-base font-semibold">
           {t("share_feedback_section_flow_heading")}
         </h2>
 
-        <div className="flex flex-col gap-32">
+        <div className="flex flex-col gap-48">
           <div className="flex flex-col gap-2">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium text-foreground">
               {t("share_feedback_demo_flow_question_label")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("share_feedback_demo_flow_question_output_note")}
             </p>
             <ShareFeedback
               {...sharedProps}
@@ -183,7 +200,9 @@ function ShareFeedbackTemplateContent() {
               ] as const
             ).map(([flowStep, labelKey]) => (
               <div key={flowStep} className="flex flex-1 flex-col gap-2">
-                <p className="text-sm text-muted-foreground">{t(labelKey)}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {t(labelKey)}
+                </p>
                 <ShareFeedback
                   {...sharedProps}
                   trigger={hiddenFlowTrigger}
@@ -194,6 +213,18 @@ function ShareFeedbackTemplateContent() {
                   consentLabel={t("share_feedback_consent_improve")}
                   onSubmit={handleSubmit}
                 />
+                {flowStep === "negative" && (
+                  <>
+                    {/* Reserves space for the open popover card above, which floats via a
+                        Portal and doesn't occupy flow height on its own, so this caption
+                        renders below it instead of underneath it. Re-check this offset if
+                        the negative card's content changes. */}
+                    <div className="h-[22rem]" aria-hidden="true" />
+                    <p className="text-xs text-muted-foreground">
+                      {t("share_feedback_demo_flow_negative_reasons_note")}
+                    </p>
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -238,7 +269,9 @@ function ShareFeedbackTemplateContent() {
               ] as const
             ).map(([state, labelKey, previousFeedback]) => (
               <div key={labelKey} className="flex flex-col items-start gap-2">
-                <p className="text-sm text-muted-foreground">{t(labelKey)}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {t(labelKey)}
+                </p>
                 <ShareFeedback
                   {...sharedProps}
                   triggerVariant="icon"
@@ -265,7 +298,7 @@ function ShareFeedbackTemplateContent() {
 
         <div className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
-            {t("share_feedback_demo_nudge_label")}
+            {t("share_feedback_demo_nudge_description")}
           </p>
           <div className="flex flex-col gap-4">
             <div className="max-w-lg">

@@ -84,7 +84,7 @@ interface ShareFeedbackBaseProps {
 interface ShareFeedbackBuiltinTriggerProps extends ShareFeedbackBaseProps {
   trigger?: undefined;
   /** Built-in trigger style. */
-  triggerVariant?: "icon" | "icon-label";
+  triggerVariant?: "icon" | "icon-label" | "link";
   /** Accessible label for the icon trigger, and its visible text for the icon-label trigger. */
   triggerLabel: string;
 }
@@ -190,7 +190,7 @@ function ShareFeedback({
       <PopoverContent
         data-slot="share-feedback-content"
         align={align}
-        className={cn("relative w-96 bg-muted", contentClassName)}
+        className={cn("relative w-80 bg-popover", contentClassName)}
       >
         {step === "positive" && (
           <Button
@@ -208,11 +208,11 @@ function ShareFeedback({
         {step === "question" && (
           <div className="flex w-full flex-col items-start gap-4">
             <p className="w-full text-sm font-medium">{questionLabel}</p>
-            <div className="flex w-full flex-wrap items-start gap-2">
+            <div className="flex w-full flex-col items-start gap-2">
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                className="w-full justify-start"
                 onClick={() => {
                   if (!disableQuestionOptions) setStep("positive");
                 }}
@@ -223,7 +223,7 @@ function ShareFeedback({
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                className="w-full justify-start"
                 onClick={() => {
                   if (!disableQuestionOptions) setStep("negative");
                 }}
@@ -260,7 +260,7 @@ function ShareFeedback({
                   <ToggleGroupItem
                     key={reason.value}
                     value={reason.value}
-                    className="h-auto cursor-pointer rounded-full px-2 py-0.5 text-xs data-[state=on]:border-transparent data-[state=on]:bg-info data-[state=on]:text-info-foreground"
+                    className="h-auto cursor-pointer rounded-full px-2 py-0.5 text-xs text-muted-foreground shadow-none data-[state=on]:border-primary data-[state=on]:bg-info/15 data-[state=on]:text-info data-[state=on]:dark:bg-info/25 data-[state=on]:dark:text-white"
                   >
                     {reason.label}
                   </ToggleGroupItem>

@@ -1,6 +1,7 @@
 import { ShareFeedbackTemplate } from '@/templates/ShareFeedbackTemplate';
+import { Badge } from '@/registry/badge/badge';
 
-# Share Feedback
+# Share Feedback <Badge variant="outline" className="align-middle">Beta</Badge>
 
 A trigger, staged popover flow, indicator, and nudge banner for capturing a reviewer's sentiment on any AI or automated output a person can accept, correct, or override.
 
@@ -12,8 +13,8 @@ A trigger, staged popover flow, indicator, and nudge banner for capturing a revi
 
 The pattern is made up of five key elements:
 
-1. **Trigger** — how a reviewer opens the flow: an outline or ghost button as icon button with tooltip or with label; or as an item inside an overflow menu.
-2. **Prompt/feedback flow** — a two-step popover or inline element: "How did it do?" branches into either an optional "What did it get right?" note, or "What did it get wrong?" with a set of quick-pick reason chips plus a free-text field and option to share with UiPath.
+1. **Trigger** — how a reviewer opens the flow: an icon button with tooltip or with label, an extra small link button, or as an item inside an overflow menu.
+2. **Prompt/feedback flow** — a two-step popover or inline element: "How did it do?" branches into either an optional "What did it get right?" note, or "What did it get wrong?" with a set of quick-pick reason chips plus a free-text field and option to share with UiPath. The reason chips shown here are suggestions, not a fixed list. Swap in reasons that match the feedback scenario, i.e. the kind of AI or automated output being reviewed.
 3. **Indicator** — once feedback has been left on an output, the trigger icon shows as a message-circle-x for negative, or a message-circle-check for postive. 
 4. **Indicator tooltip** – hovering the indicator button shows the most recent feedback note (only one) along with the author and timestamp.
 5. **Nudge** — a banner shown after a reviewer overrides a decision or edits input data, inviting them to share feedback. Accepting opens the same prompt flow, pre-populated with the override reason and reasons scoped to override vs. edit.
@@ -26,6 +27,10 @@ The pattern is made up of five key elements:
 - **Pre-populatable** — `initialStep`, `defaultReasonValues`, and `defaultComment` let the nudge flow (or any other entry point) open straight into the negative step with the override reason already filled in
 - **Composes existing primitives** — [Button](/components/button), [Popover](/components/popover), [Textarea](/components/textarea), [Checkbox](/components/checkbox), [Toggle Group](/components/toggle-group), [Tooltip](/components/tooltip)
 
+
+## Implementation note
+
+This pattern currently outlines the front-end experience only. It does not cover how to connect the feedback data to a feedback insights dashboard or other admin experience.
 
 ## Dependencies
 

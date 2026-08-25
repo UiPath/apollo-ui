@@ -23,7 +23,7 @@ import type {
 } from "./share-feedback";
 
 interface ShareFeedbackDefaultTriggerProps {
-  variant: "icon" | "icon-label";
+  variant: "icon" | "icon-label" | "link";
   label: string;
   state: ShareFeedbackSentiment | null;
   previousFeedback?: ShareFeedbackPreviousFeedback;
@@ -51,8 +51,17 @@ function ShareFeedbackDefaultTrigger({
 
   const button =
     variant === "icon" ? (
-      <Button type="button" variant="ghost" size="icon-sm" aria-label={label}>
+      <Button type="button" variant="ghost" size="icon" aria-label={label}>
         <Icon className={iconClassName} />
+      </Button>
+    ) : variant === "link" ? (
+      <Button
+        type="button"
+        variant="link"
+        size="sm"
+        className="h-auto p-0 text-xs"
+      >
+        {label}
       </Button>
     ) : (
       <Button type="button" variant="outline" size="sm">
