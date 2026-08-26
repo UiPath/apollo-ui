@@ -11,12 +11,7 @@ export interface ToolbarActionItem {
   isToggled?: boolean;
   /** Custom color for the button icon and underline when toggled */
   color?: string;
-  /**
-   * Keeps this action enabled on a read-only node, where `lockToolbarConfig`
-   * disables everything else. Set it on actions that only read the node — copy,
-   * inspect, navigate — and leave it off for anything that mutates the flow, so
-   * an action added later is locked by default.
-   */
+  /** Keeps this action enabled when a node is locked. */
   allowWhenReadOnly?: boolean;
   onAction: (nodeId: string) => void;
 }
