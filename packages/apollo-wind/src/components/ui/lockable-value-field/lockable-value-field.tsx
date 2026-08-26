@@ -119,7 +119,7 @@ export function LockableValueField({
       />
 
       {typeMeta.supportsExpression ? (
-        <InputGroup>
+        <InputGroup error={error} errorId={validationId}>
           <InputGroupAddon align="inline-start">
             <LockToggleButton locked={locked} onLockedChange={onLockedChange} />
           </InputGroupAddon>
@@ -138,9 +138,6 @@ export function LockableValueField({
             ) : (
               <InputGroupInput
                 id={fieldId}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={error ? validationId : undefined}
-                aria-errormessage={error ? validationId : undefined}
                 readOnly={!editableOnValueChange}
                 value={value}
                 onChange={(e) => editableOnValueChange?.(e.target.value)}
@@ -152,9 +149,6 @@ export function LockableValueField({
           ) : locked ? (
             <InputGroupInput
               id={fieldId}
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? validationId : undefined}
-              aria-errormessage={error ? validationId : undefined}
               readOnly
               value={lockedDisplayValue}
               placeholder={fieldLabel}
@@ -164,6 +158,9 @@ export function LockableValueField({
             <div className="flex h-full flex-1 items-center px-3">
               <Switch
                 id={fieldId}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? validationId : undefined}
+                aria-errormessage={error ? validationId : undefined}
                 checked={value === 'true'}
                 onCheckedChange={(checked) => onValueChange?.(String(checked))}
                 onBlur={onValueBlur}
@@ -183,6 +180,9 @@ export function LockableValueField({
                   type="button"
                   id={fieldId}
                   data-slot="input-group-control"
+                  aria-invalid={error ? true : undefined}
+                  aria-describedby={error ? validationId : undefined}
+                  aria-errormessage={error ? validationId : undefined}
                   disabled={!onValueChange}
                   className="flex h-full flex-1 items-center text-left text-sm text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -206,9 +206,6 @@ export function LockableValueField({
             <InputGroupInput
               id={fieldId}
               type={fieldType === 'integer' ? 'number' : 'text'}
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? validationId : undefined}
-              aria-errormessage={error ? validationId : undefined}
               readOnly={!onValueChange}
               value={value}
               onChange={(e) => onValueChange?.(e.target.value)}
@@ -275,7 +272,13 @@ export function LockableValueField({
               onValueChange={onValueChange}
               disabled={!onValueChange}
             >
-              <SelectTrigger id={fieldId} className="flex-1">
+                <SelectTrigger
+                  id={fieldId}
+                  className="flex-1"
+                  aria-invalid={error ? true : undefined}
+                  aria-describedby={error ? validationId : undefined}
+                  aria-errormessage={error ? validationId : undefined}
+                >
                 <SelectValue placeholder="Select an option" />
               </SelectTrigger>
               <SelectContent>
@@ -296,6 +299,9 @@ export function LockableValueField({
               placeholder="Select options..."
               disabled={!onValueChange}
               onBlur={onValueBlur}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? validationId : undefined}
+              aria-errormessage={error ? validationId : undefined}
             />
           ) : (
             fieldType === 'file' && (
@@ -306,13 +312,16 @@ export function LockableValueField({
                 onFilesChange={(files) => onValueChange?.(files.map((f) => f.name).join(', '))}
                 disabled={!onValueChange}
                 onBlur={onValueBlur}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? validationId : undefined}
+                aria-errormessage={error ? validationId : undefined}
               />
             )
           )}
         </div>
       )}
 
-      {error && (
+      {error && !typeMeta.supportsExpression && (
         <p
           id={validationId}
           data-slot="lockable-value-field-error"

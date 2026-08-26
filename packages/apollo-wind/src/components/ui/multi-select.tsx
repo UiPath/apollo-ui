@@ -29,6 +29,9 @@ export interface MultiSelectProps {
   clearAllText?: string | ((count: number) => string);
   /** Called when the multi-select popover closes after being opened. */
   onBlur?: () => void;
+  'aria-invalid'?: React.AriaAttributes['aria-invalid'];
+  'aria-describedby'?: string;
+  'aria-errormessage'?: string;
 }
 
 const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
@@ -46,6 +49,9 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
       searchPlaceholder = 'Search...',
       clearAllText,
       onBlur,
+      'aria-invalid': ariaInvalid,
+      'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
     },
     ref
   ) => {
@@ -85,6 +91,9 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
               variant="outline"
               role="combobox"
               aria-expanded={open}
+              aria-invalid={ariaInvalid}
+              aria-describedby={ariaDescribedBy}
+              aria-errormessage={ariaErrorMessage}
               // aria-label always wins over a `<label htmlFor>` association in the
               // accessible-name computation, so only set it when there's no id for a
               // consumer's label to target -- otherwise the label's own text names

@@ -32,6 +32,9 @@ export interface FileUploadProps {
   /** External errors keyed by filename. Use this to set errors from outside (e.g., upload failures). */
   errors?: Record<string, string>;
   onBlur?: React.FocusEventHandler<HTMLFieldSetElement>;
+  'aria-invalid'?: React.AriaAttributes['aria-invalid'];
+  'aria-describedby'?: string;
+  'aria-errormessage'?: string;
 }
 
 export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>(
@@ -48,6 +51,9 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
       showPreview = false,
       errors,
       onBlur,
+      'aria-invalid': ariaInvalid,
+      'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
     },
     ref
   ) {
@@ -258,12 +264,18 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
           // accessible-name computation, so only set it when there's no id for a
           // consumer's label to target (same pattern as MultiSelect).
           aria-label={id ? undefined : (ariaLabel ?? 'File upload')}
+          aria-invalid={ariaInvalid}
+          aria-describedby={ariaDescribedBy}
+          aria-errormessage={ariaErrorMessage}
         />
         {/** biome-ignore lint/a11y/useSemanticElements: A div avoids invalid nested buttons when uploaded files have remove actions. */}
         <div
           role="button"
           aria-label={ariaLabel ?? 'File upload area'}
           aria-disabled={disabled}
+          aria-invalid={ariaInvalid}
+          aria-describedby={ariaDescribedBy}
+          aria-errormessage={ariaErrorMessage}
           tabIndex={disabled ? -1 : 0}
           className={cn(
             // Base styles (all themes)
