@@ -7,11 +7,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { ConfidenceSignal } from "@/registry/confidence-signal/confidence-signal";
 import type { SupplierCase } from "../data/supplier-cases";
 import { isStatusFilter, type StatusFilter } from "./case-filters";
 import { DATE_GROUPS, dateGroup, relativeTime } from "./case-time";
-import { CONTROL_TONE, confidenceLevel } from "./control-tone";
+import { CONTROL_TONE } from "./control-tone";
 import { PANE_HEADING } from "./pane-grid";
 import { SCROLL_PANE } from "./scroll-pane";
 
@@ -22,34 +21,6 @@ import { SCROLL_PANE } from "./scroll-pane";
  */
 function snippet(c: SupplierCase): string {
   return (c.email ?? c.triggerReason ?? "").replaceAll(/\s+/g, " ").trim();
-}
-
-/**
- * The confidence chip for a row. Icon-only, so it reads as a signal rather than
- * a third pill. Medium and low levels require a next step, so theirs opens the
- * case, which is the only action a list row actually has.
- */
-function RowSignal({
-  case: c,
-  onSelect,
-}: {
-  case: SupplierCase;
-  onSelect: (id: string) => void;
-}) {
-  const level = confidenceLevel(c);
-  if (!level) return null;
-
-  const open = { label: "Open this case", onClick: () => onSelect(c.id) };
-
-  return (
-    <span className="pointer-events-auto inline-flex">
-      {level === "high" ? (
-        <ConfidenceSignal level="high" variant="min" />
-      ) : (
-        <ConfidenceSignal level={level} variant="min" nextStep={open} />
-      )}
-    </span>
-  );
 }
 
 function CaseCard({
@@ -66,9 +37,9 @@ function CaseCard({
   const needsAction = c.control !== "auto";
 
   return (
-    // Card's own `selectable` prop renders a <button>, which would nest inside
-    // the confidence chip's button. So the card stays presentational and the
-    // click target is a stretched overlay.
+    // The card stays presentational with a stretched overlay as the click
+    // target, rather than Card's `selectable` prop, which renders its own
+    // button and brings a selection treatment we are not using here.
     <Card
       variant="glass"
       className={cn(
@@ -118,7 +89,6 @@ function CaseCard({
           </span>
 
           <span className="mt-2 flex flex-wrap items-center gap-1.5">
-            <RowSignal case={c} onSelect={onSelect} />
             <Badge variant="secondary">{c.wfLabel}</Badge>
             <Badge status={CONTROL_TONE[c.control].badge} variant="secondary">
               {c.controlLabel}

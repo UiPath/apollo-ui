@@ -1,10 +1,13 @@
 "use client";
 
+import { RefreshCw } from "lucide-react";
 import { useId, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   PageHeader,
   PageHeaderActions,
   PageHeaderContent,
+  PageHeaderDescription,
   PageHeaderField,
   PageHeaderFieldLabel,
   PageHeaderFieldValue,
@@ -73,10 +76,23 @@ export function CommunicationsPage() {
         <PageHeaderNav>
           <PageHeaderTitleGroup>
             <PageHeaderTitle>Supplier communications</PageHeaderTitle>
+            {/* Static, like NOW: a live "x minutes ago" would drift away from
+                the fixed timestamps the rest of the demo is anchored to. */}
+            <PageHeaderDescription className="flex items-center gap-2">
+              Updated 1 minute ago
+              <Button
+                variant="link"
+                size="sm"
+                className="h-auto gap-1 p-0 text-xs font-normal"
+              >
+                <RefreshCw className="size-3" />
+                Refresh
+              </Button>
+            </PageHeaderDescription>
           </PageHeaderTitleGroup>
         </PageHeaderNav>
 
-        <PageHeaderContent className="justify-between @3xl:justify-between">
+        <PageHeaderContent className="justify-center gap-10 @3xl:justify-center @3xl:gap-10">
           {KPIS.map((kpi) => (
             <PageHeaderField key={kpi.label}>
               <PageHeaderFieldLabel>{kpi.label}</PageHeaderFieldLabel>
