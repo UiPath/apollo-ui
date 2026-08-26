@@ -28,10 +28,10 @@ describe('lockToolbarConfig', () => {
     expect(byId(locked.overflowActions, 'cut')?.disabled).toBe(true);
   });
 
-  it('leaves an action marked allowWhenReadOnly enabled, in both the bar and the overflow', () => {
+  it('leaves an action marked allowWhenLocked enabled, in both the bar and the overflow', () => {
     const config: NodeToolbarConfig = {
-      actions: [action('drill-into', { allowWhenReadOnly: true }), action('delete')],
-      overflowActions: [action('copy', { allowWhenReadOnly: true }), action('cut')],
+      actions: [action('drill-into', { allowWhenLocked: true }), action('delete')],
+      overflowActions: [action('copy', { allowWhenLocked: true }), action('cut')],
     };
 
     const locked = lockToolbarConfig(config);
@@ -44,7 +44,7 @@ describe('lockToolbarConfig', () => {
 
   it('keeps an action already disabled by the consumer disabled even when it opts out', () => {
     const config: NodeToolbarConfig = {
-      actions: [action('paste', { allowWhenReadOnly: true, disabled: true })],
+      actions: [action('paste', { allowWhenLocked: true, disabled: true })],
     };
 
     expect(byId(lockToolbarConfig(config).actions, 'paste')?.disabled).toBe(true);

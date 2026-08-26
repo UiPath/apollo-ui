@@ -12,7 +12,7 @@ export interface ToolbarActionItem {
   /** Custom color for the button icon and underline when toggled */
   color?: string;
   /** Keeps this action enabled when a node is locked. */
-  allowWhenReadOnly?: boolean;
+  allowWhenLocked?: boolean;
   onAction: (nodeId: string) => void;
 }
 

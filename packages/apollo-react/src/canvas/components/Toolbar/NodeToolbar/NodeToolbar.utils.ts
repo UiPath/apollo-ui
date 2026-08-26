@@ -9,7 +9,7 @@ export function isSeparator(item: ToolbarAction): item is ToolbarSeparator {
 
 /**
  * Returns the config with every mutating action disabled, separators and
- * actions marked `allowWhenReadOnly` untouched. Locks a read-only node's
+ * actions marked `allowWhenLocked` untouched. Locks a read-only node's
  * toolbar instead of unmounting it: the greyed-out actions (with their tooltips
  * intact) say "read-only", where a missing toolbar just reads as a node with
  * nothing to offer. Disabling is also real enforcement, since a consumer's
@@ -30,6 +30,6 @@ export function lockToolbarConfig(config: NodeToolbarConfig): NodeToolbarConfig 
 
 const disableActions = (actions: ToolbarAction[]): ToolbarAction[] =>
   actions.map((action) => {
-    if (isSeparator(action) || action.allowWhenReadOnly) return action;
+    if (isSeparator(action) || action.allowWhenLocked) return action;
     return { ...action, disabled: true };
   });
