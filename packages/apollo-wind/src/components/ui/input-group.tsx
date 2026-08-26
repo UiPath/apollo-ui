@@ -56,7 +56,6 @@ const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
           <p
             id={validationId}
             data-slot="input-group-error"
-            role="status"
             aria-live="polite"
             aria-atomic="true"
             className="mt-1 text-xs leading-4 text-error"
