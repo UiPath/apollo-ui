@@ -3,7 +3,7 @@ import type { NodeToolbarConfig } from './NodeToolbar.types';
 
 export type ProcessedToolbarItem = ExtendedToolbarAction | ToolbarSeparator;
 
-export function isSeparator(item: ProcessedToolbarItem | ToolbarAction): item is ToolbarSeparator {
+export function isSeparator(item: ToolbarAction): item is ToolbarSeparator {
   return item.id === 'separator';
 }
 
