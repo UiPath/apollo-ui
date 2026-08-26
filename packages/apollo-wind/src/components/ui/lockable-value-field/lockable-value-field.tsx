@@ -134,6 +134,10 @@ export function LockableValueField({
                 readOnly: !editableOnValueChange,
                 placeholder: fieldLabel,
                 fieldType,
+                'aria-invalid': error ? true : undefined,
+                'aria-describedby': error ? validationId : undefined,
+                'aria-errormessage': error ? validationId : undefined,
+                'data-slot': 'input-group-control',
               })
             ) : (
               <InputGroupInput
