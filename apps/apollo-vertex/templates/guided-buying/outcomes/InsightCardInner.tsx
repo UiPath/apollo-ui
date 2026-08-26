@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
+import { assetPath } from "../asset-prefix";
 import { useDashboardData } from "./dashboard-data-context";
 import { type DrilldownTab, drilldownTabs } from "./drilldown-tabs";
 import {
@@ -202,19 +203,19 @@ export function InsightCardInner({
                 >
                   {isAutopilotActive ? (
                     <img
-                      src="/Autopilot_light.svg"
+                      src={assetPath("/Autopilot_light.svg")}
                       alt="AI Assistant"
                       className="size-4"
                     />
                   ) : (
                     <>
                       <img
-                        src="/Autopilot_dark.svg"
+                        src={assetPath("/Autopilot_dark.svg")}
                         alt="AI Assistant"
                         className="size-4 block dark:hidden"
                       />
                       <img
-                        src="/Autopilot_light.svg"
+                        src={assetPath("/Autopilot_light.svg")}
                         alt="AI Assistant"
                         className="size-4 hidden dark:block"
                       />

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { assetPath } from "../asset-prefix";
 
 interface AutopilotInsightProps {
   onClose: () => void;
@@ -40,12 +41,12 @@ export function AutopilotInsight({
       <CardHeader className="!gap-2">
         <div className="flex items-center gap-2">
           <img
-            src="/Autopilot_dark.svg"
+            src={assetPath("/Autopilot_dark.svg")}
             alt="AI Assistant"
             className="size-5 block dark:hidden"
           />
           <img
-            src="/Autopilot_light.svg"
+            src={assetPath("/Autopilot_light.svg")}
             alt="AI Assistant"
             className="size-5 hidden dark:block"
           />

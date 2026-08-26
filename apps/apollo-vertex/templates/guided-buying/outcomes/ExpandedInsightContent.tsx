@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { assetPath } from "../asset-prefix";
 import type { DrilldownTab } from "./drilldown-tabs";
 
 // --- Sample data ---
@@ -290,12 +291,12 @@ export function AutopilotPrompts({
     <div className="pt-3 border-t border-muted-foreground/10 shrink-0">
       <div className="flex items-center gap-1.5 mb-2">
         <img
-          src="/Autopilot_dark.svg"
+          src={assetPath("/Autopilot_dark.svg")}
           alt="AI Assistant"
           className="size-3.5 block dark:hidden"
         />
         <img
-          src="/Autopilot_light.svg"
+          src={assetPath("/Autopilot_light.svg")}
           alt="AI Assistant"
           className="size-3.5 hidden dark:block"
         />

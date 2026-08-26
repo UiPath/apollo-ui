@@ -10,6 +10,7 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { ApolloShell } from "@/registry/shell/shell";
+import { assetPath } from "./asset-prefix";
 import { AutopilotFab } from "./AutopilotFab";
 import { P2 } from "./P2";
 import { PersonaProvider } from "./persona-context";
@@ -195,8 +196,8 @@ export function GuidedBuyingLayout() {
       companyName="UiPath"
       productName="Guided Buying"
       companyLogo={{
-        url: "/UiPath.svg",
-        darkUrl: "/UiPath_dark.svg",
+        url: assetPath("/UiPath.svg"),
+        darkUrl: assetPath("/UiPath_dark.svg"),
         alt: "UiPath logo",
       }}
       navItems={persona.navItems}
