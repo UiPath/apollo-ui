@@ -13,6 +13,7 @@ import {
   AccordionTrigger,
   Alert,
   AlertDescription,
+  AlertTitle,
   Button,
   Card,
   CardContent,
@@ -24,6 +25,7 @@ import {
   InputGroupButton,
   InputGroupInput,
   Label,
+  LockableValueField,
   type PanelImperativeHandle,
   PromptEditor,
   type PromptEditorAutoCompleteOption,
@@ -48,13 +50,13 @@ import {
   ToggleGroup,
   ToggleGroupItem,
   VARIABLE_DRAG_MIME,
-  VariablePicker,
   type VariablePickerItem,
 } from '@uipath/apollo-wind';
 import type { DockviewApi, DockviewReadyEvent, IDockviewPanelProps } from 'dockview-react';
 import { DockviewReact } from 'dockview-react';
 import 'dockview-react/dist/styles/dockview.css';
 import {
+  AlertCircle,
   AtSign,
   Blocks,
   Bold,
@@ -132,7 +134,9 @@ import {
   NodePropertyTrigger,
   type NodePropertyTriggerLayout,
 } from '../../controls/NodePropertyTrigger';
+import { ValidationStatusContext } from '../../hooks';
 import { createNode, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
+import { ValidationErrorSeverity } from '../../types/validation';
 import { CanvasIcon } from '../../utils/icon-registry';
 import './Flow.stories.css';
 
@@ -164,7 +168,7 @@ type Story = StoryObj<typeof meta>;
 // Sample Canvas Data
 // ============================================================================
 
-type WorkflowVariant = 'default' | 'forms' | 'node' | 'rules' | 'variables';
+type WorkflowVariant = 'default' | 'forms' | 'node' | 'rules' | 'variables' | 'validation';
 
 function createFlowGraph(variant: WorkflowVariant): {
   nodes: Node<BaseNodeData>[];
@@ -365,6 +369,50 @@ function createFlowGraph(variant: WorkflowVariant): {
     };
   }
 
+  if (variant === 'validation') {
+    const nodes = [
+      createNode({
+        id: 'trigger',
+        type: 'uipath.manual-trigger',
+        position: { x: 80, y: 200 },
+        display: { label: 'Invoice received', subLabel: 'Document trigger' },
+      }),
+      createNode({
+        id: 'extract',
+        type: 'uipath.blank-node',
+        position: { x: 340, y: 200 },
+        display: { label: 'Extract invoice details', subLabel: 'Document understanding' },
+      }),
+      createNode({
+        id: 'approver',
+        type: 'uipath.blank-node',
+        position: { x: 600, y: 200 },
+        display: { label: 'Get approver', subLabel: 'Directory lookup' },
+      }),
+      createNode({
+        id: 'email',
+        type: 'uipath.blank-node',
+        position: { x: 860, y: 200 },
+        selected: true,
+        display: { label: 'Send email', subLabel: 'Gmail' },
+      }),
+    ];
+    return {
+      nodes,
+      edges: [
+        ['trigger', 'extract'],
+        ['extract', 'approver'],
+        ['approver', 'email'],
+      ].map(([source, target]) => ({
+        id: `e-${source}-${target}`,
+        source,
+        target,
+        sourceHandle: 'output',
+        targetHandle: 'input',
+      })),
+    };
+  }
+
   const nodes = [
     createNode({
       id: 'trigger',
@@ -493,7 +541,7 @@ function PanelTrigger({
         onPanelToggle?.(id, enabled);
         setMenuOpen(false);
       }}
-      onPropertiesClick={onPropertiesClick}
+      onPropertiesClick={onPropertiesClick ?? (() => onPanelToggle?.('properties', true))}
     />
   );
 }
@@ -607,6 +655,7 @@ function StandaloneRightPropertiesComposition({
   return (
     <div className="relative h-screen overflow-hidden bg-surface">
       <CanvasViewport
+        leftControlsOffset={rightPanelOpen && panelZone === 'left' ? 412 : 16}
         rightControlsOffset={rightPanelOpen && panelZone === 'right' ? 412 : 16}
         bottomControlsOffset={rightPanelOpen && panelZone === 'bottom' ? 380 : 20}
         trigger={
@@ -715,6 +764,7 @@ function CanvasViewport({
   trigger,
   children,
   bottomControlsOffset = 20,
+  leftControlsOffset = 16,
   rightControlsOffset = 16,
   workflowVariant = 'default',
   onNodeSelect,
@@ -722,6 +772,7 @@ function CanvasViewport({
   trigger?: ReactNode;
   children?: ReactNode;
   bottomControlsOffset?: number;
+  leftControlsOffset?: number;
   rightControlsOffset?: number;
   workflowVariant?: WorkflowVariant;
   onNodeSelect?: (nodeId: string) => void;
@@ -736,9 +787,10 @@ function CanvasViewport({
       const nodes = getNodes();
       if (!container || nodes.length === 0) return;
       const bounds = getNodesBounds(nodes);
+      const occupiedLeft = Math.max(0, leftControlsOffset - 16);
       const occupiedRight = Math.max(0, rightControlsOffset - 16);
       const occupiedBottom = Math.max(0, bottomControlsOffset - 20);
-      const availableWidth = container.clientWidth - occupiedRight;
+      const availableWidth = container.clientWidth - occupiedLeft - occupiedRight;
       const availableHeight = container.clientHeight - occupiedBottom;
       const padding = 48;
       const zoom = Math.min(
@@ -746,7 +798,7 @@ function CanvasViewport({
         Math.max(0.1, (availableWidth - padding * 2) / bounds.width),
         Math.max(0.1, (availableHeight - padding * 2) / bounds.height)
       );
-      const availableCenterX = availableWidth / 2;
+      const availableCenterX = occupiedLeft + availableWidth / 2;
       const availableCenterY = availableHeight / 2;
       void setViewport(
         {
@@ -757,7 +809,14 @@ function CanvasViewport({
         { duration }
       );
     },
-    [bottomControlsOffset, getNodes, getNodesBounds, rightControlsOffset, setViewport]
+    [
+      bottomControlsOffset,
+      getNodes,
+      getNodesBounds,
+      leftControlsOffset,
+      rightControlsOffset,
+      setViewport,
+    ]
   );
 
   useEffect(() => {
@@ -790,7 +849,11 @@ function CanvasViewport({
       </div>
       <div
         className="absolute left-1/2 z-20 -translate-x-1/2"
-        style={{ bottom: bottomControlsOffset }}
+        style={{
+          bottom: bottomControlsOffset,
+          marginLeft:
+            (Math.max(0, leftControlsOffset - 16) - Math.max(0, rightControlsOffset - 16)) / 2,
+        }}
       >
         <CanvasNavigationControls />
       </div>
@@ -874,6 +937,7 @@ function BottomPropertiesComposition() {
     >
       <CanvasViewport
         bottomControlsOffset={bottomPanels.length > 0 ? panelHeight + 20 : 20}
+        leftControlsOffset={dockedPanels('left').length > 0 ? 412 : 16}
         rightControlsOffset={dockedPanels('right').length > 0 ? 412 : 16}
         trigger={
           <PanelTrigger
@@ -1219,37 +1283,16 @@ function ExpressionField({
   value,
   placeholder,
   variables = [],
-  onInsertVariable,
   onValueChange,
 }: {
   label?: string;
   value?: string;
   placeholder?: string;
   variables?: VariablePickerItem[];
-  onInsertVariable?: (variable: VariablePickerItem) => void;
   onValueChange?: (value: string) => void;
 }) {
-  const [isVariableDragging, setIsVariableDragging] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
-
-  useEffect(() => {
-    const handleDragStart = (event: globalThis.DragEvent) => {
-      if (event.dataTransfer?.types.includes(VARIABLE_DRAG_MIME)) setIsVariableDragging(true);
-    };
-    const handleDragEnd = () => {
-      setIsVariableDragging(false);
-      setIsDragOver(false);
-    };
-    window.addEventListener('dragstart', handleDragStart);
-    window.addEventListener('dragend', handleDragEnd);
-    window.addEventListener('drop', handleDragEnd);
-    return () => {
-      window.removeEventListener('dragstart', handleDragStart);
-      window.removeEventListener('dragend', handleDragEnd);
-      window.removeEventListener('drop', handleDragEnd);
-    };
-  }, []);
-
+  const [locked, setLocked] = useState(false);
+  const [mode, setMode] = useState<'fixed' | 'expression'>('expression');
   const tokens = useMemo(() => expressionValueToTokens(value ?? ''), [value]);
 
   const autoCompleteOptions = useMemo<PromptEditorAutoCompleteOption[]>(() => {
@@ -1268,74 +1311,40 @@ function ExpressionField({
   }, [variables, tokens]);
 
   return (
-    <div className="space-y-1.5">
-      {label && (
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs font-medium text-foreground">{label}</p>
-          <VariablePicker
-            items={variables}
-            onSelect={(variable) => onInsertVariable?.(variable)}
-            disabled={!onInsertVariable || variables.length === 0}
-            triggerLabel="Select variable"
-            triggerAriaLabel={`Select variable for ${label}`}
-          />
-        </div>
-      )}
-      <div
-        onDragEnter={(event) => {
-          if (!event.dataTransfer.types.includes(VARIABLE_DRAG_MIME)) return;
-          setIsDragOver(true);
-        }}
-        onDragOver={(event) => {
-          if (!event.dataTransfer.types.includes(VARIABLE_DRAG_MIME)) return;
-          event.dataTransfer.dropEffect = onValueChange ? 'copy' : 'none';
-        }}
-        onDragLeave={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget as globalThis.Node | null)) {
-            setIsDragOver(false);
-          }
-        }}
-        onDrop={() => setIsDragOver(false)}
-        className={`relative flex min-h-9 items-center gap-1.5 rounded-lg border bg-surface-overlay px-2.5 text-xs transition-[border-color,box-shadow,background-color] focus-within:border-border-focus focus-within:ring-1 focus-within:ring-border-focus ${
-          isDragOver && onValueChange
-            ? 'border-brand bg-brand-subtle/40 ring-2 ring-brand/30'
-            : isDragOver
-              ? 'border-error/60 bg-error/5'
-              : isVariableDragging && onValueChange
-                ? 'border-brand/60 bg-brand-subtle/20'
-                : isVariableDragging
-                  ? 'border-border-subtle opacity-60'
-                  : 'border-border-subtle'
-        }`}
-      >
-        <span className="shrink-0 font-mono text-foreground-accent" aria-hidden="true">
-          ƒx
-        </span>
+    <LockableValueField
+      label={
+        label ? (
+          <Label className="text-xs font-medium text-foreground-muted">{label}</Label>
+        ) : undefined
+      }
+      value={value}
+      locked={locked}
+      onLockedChange={setLocked}
+      mode={mode}
+      onModeChange={setMode}
+      fieldType="string"
+      showFieldActions
+      variables={variables.map((variable) => ({
+        label: variable.label,
+        value: variable.value ?? variable.label,
+      }))}
+      onValueChange={onValueChange}
+      renderExpressionEditor={({ id, onBlur, readOnly }) => (
         <PromptEditor
+          id={id}
           value={tokens}
           onChange={(nextTokens) => onValueChange?.(expressionTokensToValue(nextTokens))}
+          onBlur={onBlur}
           autoCompleteOptions={autoCompleteOptions}
           multiline={false}
           borderless
-          disabled={!onValueChange}
+          disabled={readOnly}
           placeholder={placeholder}
           ariaLabel={label ? `${label} expression` : 'Expression'}
           mapVarDropToToken={(insertPath) => ({ type: 'output', value: insertPath })}
         />
-        <SlidersHorizontal className="ml-auto size-4 shrink-0 text-foreground-muted" />
-        {isVariableDragging && (
-          <span
-            className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-[10px] font-medium ${
-              onValueChange
-                ? 'bg-brand text-foreground-on-accent'
-                : 'bg-surface-raised text-foreground-muted'
-            }`}
-          >
-            {onValueChange ? (isDragOver ? 'Drop to insert' : 'Drop variable') : 'Unavailable'}
-          </span>
-        )}
-      </div>
-    </div>
+      )}
+    />
   );
 }
 
@@ -1378,7 +1387,6 @@ function KeywordExpressionField({
   value,
   caption,
   variables = [],
-  onInsertVariable,
   onValueChange,
 }: {
   label: string;
@@ -1386,9 +1394,9 @@ function KeywordExpressionField({
   value?: string;
   caption?: string;
   variables?: VariablePickerItem[];
-  onInsertVariable?: (variable: VariablePickerItem) => void;
   onValueChange?: (value: string) => void;
 }) {
+  const [mode, setMode] = useState<'fixed' | 'expression'>('expression');
   const tokens = useMemo(() => keywordValueToTokens(value ?? ''), [value]);
 
   const autoCompleteOptions = useMemo<PromptEditorAutoCompleteOption[]>(() => {
@@ -1405,31 +1413,49 @@ function KeywordExpressionField({
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-foreground">
-          {label}
-          {required && <span className="ml-0.5 text-error">*</span>}
-        </p>
-        <VariablePicker
-          items={variables}
-          onSelect={(variable) => onInsertVariable?.(variable)}
-          disabled={!onInsertVariable || variables.length === 0}
-        />
-      </div>
-      <div className="flex min-h-11 items-center gap-2 rounded-lg border border-border-subtle bg-surface px-3">
-        <span className="shrink-0 font-mono text-sm text-foreground-muted">=</span>
-        <PromptEditor
-          value={tokens}
-          onChange={(nextTokens) => onValueChange?.(keywordTokensToValue(nextTokens))}
-          autoCompleteOptions={autoCompleteOptions}
-          multiline={false}
-          borderless
-          disabled={!onValueChange}
-          ariaLabel={`${label} expression`}
-          mapVarDropToToken={(insertPath) => ({ type: 'input', value: insertPath })}
-        />
-      </div>
-      {caption && <p className="text-xs text-foreground-muted">{caption}</p>}
+      <LockableValueField
+        label={
+          <Label className="text-xs font-medium text-foreground-muted">
+            {label}
+            {required && <span className="ml-0.5 text-error">*</span>}
+          </Label>
+        }
+        required={required}
+        value={value}
+        locked={false}
+        leadingAddon={
+          <span
+            className="font-mono text-sm font-semibold text-foreground-accent"
+            aria-hidden="true"
+          >
+            =
+          </span>
+        }
+        mode={mode}
+        onModeChange={setMode}
+        fieldType="string"
+        showFieldActions
+        variables={variables.map((variable) => ({
+          label: variable.label,
+          value: variable.value ?? variable.label,
+        }))}
+        onValueChange={onValueChange}
+        renderExpressionEditor={({ id, onBlur, readOnly }) => (
+          <PromptEditor
+            id={id}
+            value={tokens}
+            onChange={(nextTokens) => onValueChange?.(keywordTokensToValue(nextTokens))}
+            onBlur={onBlur}
+            autoCompleteOptions={autoCompleteOptions}
+            multiline={false}
+            borderless
+            disabled={readOnly}
+            ariaLabel={`${label} expression`}
+            mapVarDropToToken={(insertPath) => ({ type: 'input', value: insertPath })}
+          />
+        )}
+      />
+      {caption && <p className="text-[11px] leading-4 text-foreground-muted">{caption}</p>}
     </div>
   );
 }
@@ -1478,12 +1504,6 @@ function SendEmailForm({
       value={fieldValues[key]}
       placeholder={placeholder}
       variables={pickerItems}
-      onInsertVariable={(variable) =>
-        setFieldValues((current) => ({
-          ...current,
-          [key]: `${current[key]}${variable.value ?? variable.label}`,
-        }))
-      }
       onValueChange={(nextValue) => setFieldValues((current) => ({ ...current, [key]: nextValue }))}
     />
   );
@@ -2377,9 +2397,6 @@ function CollectionFilterPanel({
           value={collectionValue}
           caption="Conditions are applied to this collection."
           variables={pickerItems}
-          onInsertVariable={(variable) =>
-            setCollectionValue((current) => `${current}${variable.value ?? variable.label}`)
-          }
           onValueChange={setCollectionValue}
         />
 
@@ -3264,6 +3281,17 @@ const VARIABLE_CONCEPT_SIDEBAR_ITEMS = CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS
     : [item]
 );
 
+const withErrorDot = (icon: ReactNode) => (
+  <span className="relative grid size-5 place-items-center">
+    {icon}
+    <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-error ring-2 ring-surface-raised" />
+  </span>
+);
+
+const VALIDATION_SIDEBAR_ITEMS = CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS.map((item) =>
+  item.id === 'variables' ? { ...item, icon: withErrorDot(item.icon) } : item
+);
+
 const VARIABLE_TAB_LIST_CLASS =
   'mx-3 h-auto justify-start gap-0.5 overflow-x-auto rounded-lg bg-transparent p-0.5 text-muted-foreground [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 const VARIABLE_TAB_TRIGGER_CLASS =
@@ -3469,9 +3497,6 @@ function UnifiedVariablesPanel({
                       label={parameter.label}
                       value={value}
                       variables={variablePickerItems}
-                      onInsertVariable={(variable) =>
-                        onParameterValueChange(parameterKey, variable.value ?? variable.label)
-                      }
                       onValueChange={(nextValue) => onParameterValueChange(parameterKey, nextValue)}
                     />
                   ) : (
@@ -4685,6 +4710,7 @@ function DapValueField({
   value,
   placeholder,
   required,
+  error,
   onChange,
 }: {
   id: string;
@@ -4692,6 +4718,7 @@ function DapValueField({
   value: string;
   placeholder: string;
   required?: boolean;
+  error?: ReactNode;
   onChange: (value: string) => void;
 }) {
   return (
@@ -4700,7 +4727,7 @@ function DapValueField({
         {label}
         {required && <span className="text-error"> *</span>}
       </Label>
-      <InputGroup className="h-9 bg-surface-overlay">
+      <InputGroup className="h-9 bg-surface-overlay" error={error}>
         <InputGroupInput
           id={id}
           value={value}
@@ -4988,6 +5015,175 @@ function DapPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
+function ValidationTabLabel({ label, count }: { label: string; count?: number }) {
+  if (!count) return <>{label}</>;
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span>{label}</span>
+      <span
+        title={`${count} issue${count === 1 ? '' : 's'}`}
+        className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-foreground-on-accent"
+      >
+        <span aria-hidden="true">{count}</span>
+        <span className="sr-only">{`${count} issue${count === 1 ? '' : 's'}`}</span>
+      </span>
+    </span>
+  );
+}
+
+function DapValidationPanel({ onClose }: { onClose: () => void }) {
+  const [subject, setSubject] = useState('Invoice approval required');
+  const [recipient, setRecipient] = useState('');
+  const [body, setBody] = useState(
+    'Hi $vars.approverName,\n\nPlease review invoice $vars.invoiceNumber.'
+  );
+  const [errorHandlingEnabled, setErrorHandlingEnabled] = useState(true);
+  const [retryCount, setRetryCount] = useState('8');
+
+  return (
+    <NodePropertyPanel
+      panelTitle="Properties"
+      nodeIcon={<Mail />}
+      nodeLabel="Send email"
+      nodeCategory="Gmail · DAP layout"
+      onClose={onClose}
+      contentInset="0.875rem"
+      className="h-full"
+    >
+      <Tabs defaultValue="parameters" className="flex h-full min-h-0 flex-col">
+        <TabsList className={VARIABLE_TAB_LIST_CLASS}>
+          <TabsTrigger value="parameters" className={VARIABLE_TAB_TRIGGER_CLASS}>
+            <ValidationTabLabel label="Parameters" count={1} />
+          </TabsTrigger>
+          <TabsTrigger value="error-handling" className={VARIABLE_TAB_TRIGGER_CLASS}>
+            <ValidationTabLabel label="Error handling" count={1} />
+          </TabsTrigger>
+          <TabsTrigger value="variables" className={VARIABLE_TAB_TRIGGER_CLASS}>
+            Variables
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="space-y-5">
+            <Alert variant="destructive">
+              <AlertCircle />
+              <AlertTitle>Resolve 2 issues before running this node</AlertTitle>
+              <AlertDescription>
+                Fix the highlighted fields in Parameters and Error handling before you run or
+                publish this workflow.
+              </AlertDescription>
+            </Alert>
+
+            <section className="space-y-3">
+              <p className="text-xs font-semibold text-foreground">Connection</p>
+              <Select defaultValue="gmail-finance">
+                <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gmail-finance">Gmail · Finance operations</SelectItem>
+                  <SelectItem value="gmail-personal">Gmail · Personal</SelectItem>
+                </SelectContent>
+              </Select>
+            </section>
+
+            <Separator />
+
+            <section className="space-y-4">
+              <p className="text-xs font-semibold text-foreground">Message</p>
+              <DapValueField
+                id="dap-validation-recipient"
+                label="To"
+                value={recipient}
+                placeholder="Recipient email address"
+                required
+                error="This field is required. Enter a recipient or bind a variable."
+                onChange={setRecipient}
+              />
+              <DapValueField
+                id="dap-validation-subject"
+                label="Subject"
+                value={subject}
+                placeholder="The subject of the email"
+                required
+                onChange={setSubject}
+              />
+              <div className="space-y-1.5">
+                <Label htmlFor="dap-validation-body" className="text-xs">
+                  Body <span className="text-error">*</span>
+                </Label>
+                <Textarea
+                  id="dap-validation-body"
+                  value={body}
+                  onChange={(event) => setBody(event.target.value)}
+                  className="min-h-24 resize-none bg-surface-overlay text-xs"
+                />
+              </div>
+            </section>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="error-handling" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Label htmlFor="dap-validation-error-handling" className="text-xs">
+                  Enable error handling
+                </Label>
+                <p className="text-xs text-foreground-muted">
+                  Add an error output handle on the node to catch and handle failures.
+                </p>
+              </div>
+              <Switch
+                id="dap-validation-error-handling"
+                checked={errorHandlingEnabled}
+                onCheckedChange={setErrorHandlingEnabled}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="dap-validation-retry-count" className="text-xs">
+                Retry count
+              </Label>
+              <Input
+                id="dap-validation-retry-count"
+                value={retryCount}
+                onChange={(event) => setRetryCount(event.target.value)}
+                error="Retry count must be between 0 and 5."
+                className="bg-surface-overlay text-xs"
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="variables" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="space-y-4">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Values available to the connector fields and produced when this activity runs.
+            </p>
+            {[
+              ['$vars.approverEmail', 'Text · Input'],
+              ['$vars.approverName', 'Text · Input'],
+              ['$vars.invoiceNumber', 'Text · Input'],
+              ['$output.messageId', 'Text · Output'],
+            ].map(([name, metadata]) => (
+              <div
+                key={name}
+                className="flex items-center gap-3 rounded-lg border border-border-subtle bg-surface-overlay px-3 py-2.5"
+              >
+                <Blocks className="size-4 shrink-0 text-foreground-subtle" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-mono text-xs font-medium">{name}</p>
+                  <p className="mt-0.5 text-[11px] text-foreground-muted">{metadata}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </NodePropertyPanel>
+  );
+}
+
 export function FullWorkbenchComposition({
   rightPanelVariant = 'properties',
 }: {
@@ -4998,6 +5194,7 @@ export function FullWorkbenchComposition({
     | 'rules'
     | 'variables'
     | 'dap'
+    | 'validation'
     | 'collection';
 }) {
   const panelRef = useRef<PanelImperativeHandle | null>(null);
@@ -5037,7 +5234,11 @@ export function FullWorkbenchComposition({
       id: 'execution',
       label: (
         <>
-          <Bug className="size-3" /> Executions
+          <Bug className="size-3" />{' '}
+          <ValidationTabLabel
+            label="Executions"
+            count={rightPanelVariant === 'validation' ? 2 : undefined}
+          />
         </>
       ),
       group: 'debug',
@@ -5072,13 +5273,21 @@ export function FullWorkbenchComposition({
       <CanvasLeftSidebar
         title={sidebarLabels[activeSidebarItem]}
         variant="default"
-        primaryItems={VARIABLE_CONCEPT_SIDEBAR_ITEMS}
+        primaryItems={
+          rightPanelVariant === 'validation'
+            ? VALIDATION_SIDEBAR_ITEMS
+            : VARIABLE_CONCEPT_SIDEBAR_ITEMS
+        }
         isExpanded={sidebarExpanded}
         onExpandedChange={setSidebarExpanded}
         activeItemId={activeSidebarItem}
         onItemSelect={setActiveSidebarItem}
       >
-        {activeSidebarItem === 'variables' ? (
+        {rightPanelVariant === 'validation' ? (
+          <div className="py-6 text-center text-xs text-foreground-muted">
+            {sidebarLabels[activeSidebarItem]} content
+          </div>
+        ) : activeSidebarItem === 'variables' ? (
           <WorkflowVariablesSidebar
             variables={editableWorkflowVariables}
             onVariablesChange={setEditableWorkflowVariables}
@@ -5100,42 +5309,62 @@ export function FullWorkbenchComposition({
         )}
       </CanvasLeftSidebar>
       <div className="relative min-w-0 flex-1 overflow-hidden">
-        <CanvasViewport
-          workflowVariant={
-            rightPanelVariant === 'properties' ||
-            rightPanelVariant === 'dap' ||
-            rightPanelVariant === 'collection'
-              ? 'default'
-              : rightPanelVariant
-          }
-          bottomControlsOffset={canvasBottomOffset}
-          rightControlsOffset={rightPanelOpen ? 412 : 16}
-          onNodeSelect={
-            rightPanelVariant === 'variables'
-              ? (nodeId) => {
-                  setSelectedVariableNodeId(nodeId);
-                  setRightPanelOpen(true);
-                }
-              : undefined
-          }
-          trigger={
-            <PanelTrigger
-              layout={rightPanelOpen ? 'right' : 'closed'}
-              panels={[
-                { id: 'input', label: 'Input', enabled: false },
-                { id: 'properties', label: 'Properties', enabled: rightPanelOpen },
-                { id: 'output', label: 'Output', enabled: false },
-              ]}
-              onPanelToggle={(id, enabled) => {
-                if (id === 'properties') setRightPanelOpen(enabled);
-              }}
-              onLayoutChange={(layout) => {
-                if (layout === 'right') setRightPanelOpen(true);
-              }}
-              onPropertiesClick={() => setRightPanelOpen(true)}
-            />
-          }
-        />
+        <ValidationStatusContext.Provider
+          value={{
+            getElementValidationState:
+              rightPanelVariant === 'validation'
+                ? (elementId) =>
+                    elementId === 'email'
+                      ? {
+                          validationStatus: ValidationErrorSeverity.ERROR,
+                          validationError: {
+                            code: 'MISSING_REQUIRED_FIELDS',
+                            message: 'Resolve 2 issues before running this node.',
+                            description: 'Resolve 2 issues before running this node.',
+                            severity: ValidationErrorSeverity.ERROR,
+                          },
+                        }
+                      : undefined
+                : () => undefined,
+          }}
+        >
+          <CanvasViewport
+            workflowVariant={
+              rightPanelVariant === 'properties' ||
+              rightPanelVariant === 'dap' ||
+              rightPanelVariant === 'collection'
+                ? 'default'
+                : rightPanelVariant
+            }
+            bottomControlsOffset={canvasBottomOffset}
+            rightControlsOffset={rightPanelOpen ? 412 : 16}
+            onNodeSelect={
+              rightPanelVariant === 'variables'
+                ? (nodeId) => {
+                    setSelectedVariableNodeId(nodeId);
+                    setRightPanelOpen(true);
+                  }
+                : undefined
+            }
+            trigger={
+              <PanelTrigger
+                layout={rightPanelOpen ? 'right' : 'closed'}
+                panels={[
+                  { id: 'input', label: 'Input', enabled: false },
+                  { id: 'properties', label: 'Properties', enabled: rightPanelOpen },
+                  { id: 'output', label: 'Output', enabled: false },
+                ]}
+                onPanelToggle={(id, enabled) => {
+                  if (id === 'properties') setRightPanelOpen(enabled);
+                }}
+                onLayoutChange={(layout) => {
+                  if (layout === 'right') setRightPanelOpen(true);
+                }}
+                onPropertiesClick={() => setRightPanelOpen(true)}
+              />
+            }
+          />
+        </ValidationStatusContext.Provider>
 
         {rightPanelOpen && (
           <div
@@ -5168,6 +5397,8 @@ export function FullWorkbenchComposition({
                 />
               ) : rightPanelVariant === 'dap' ? (
                 <DapPanel onClose={() => setRightPanelOpen(false)} />
+              ) : rightPanelVariant === 'validation' ? (
+                <DapValidationPanel onClose={() => setRightPanelOpen(false)} />
               ) : rightPanelVariant === 'node' ? (
                 <SendEmailPropertiesPanel
                   onClose={() => setRightPanelOpen(false)}
