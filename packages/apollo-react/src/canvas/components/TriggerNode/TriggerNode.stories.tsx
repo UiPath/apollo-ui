@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import type {
   Connection,
   Edge,
@@ -12,7 +13,6 @@ import {
   applyNodeChanges,
   ReactFlowProvider,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { useCallback, useState } from 'react';
 import { BaseCanvas } from '../BaseCanvas';
 import { TriggerNode } from './TriggerNode';
@@ -222,4 +222,113 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => <TriggerNodeStory />,
+};
+
+const DefaultEntryPointStory = () => {
+  const [nodes, setNodes] = useState<Node[]>([
+    {
+      id: 'manual-trigger',
+      type: 'trigger',
+      position: { x: 96, y: 144 },
+      width: 96,
+      height: 96,
+      data: {
+        details: {
+          tooltip: 'Manual trigger',
+          icon: <CanvasIcon icon="mouse-pointer-click" size={28} />,
+        },
+      },
+    },
+    {
+      id: 'schedule-trigger',
+      type: 'trigger',
+      position: { x: 288, y: 144 },
+      width: 96,
+      height: 96,
+      data: {
+        details: {
+          tooltip: 'Schedule trigger — default entry point',
+          icon: <CanvasIcon icon="clock" size={28} />,
+          isDefaultEntryPoint: true,
+        },
+      },
+    },
+    {
+      id: 'webhook-trigger',
+      type: 'trigger',
+      position: { x: 480, y: 144 },
+      width: 96,
+      height: 96,
+      data: {
+        details: {
+          tooltip: 'Webhook trigger',
+          icon: <CanvasIcon icon="webhook" size={28} />,
+        },
+      },
+    },
+  ]);
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => setNodes((currentNodes) => applyNodeChanges(changes, currentNodes)),
+    []
+  );
+
+  return (
+    <BaseCanvas
+      nodes={nodes}
+      edges={[]}
+      nodeTypes={nodeTypes}
+      onNodesChange={onNodesChange}
+      mode="design"
+    />
+  );
+};
+
+/**
+ * The star marks the trigger used by toolbar Run and Debug actions when a flow
+ * has multiple triggers. Do not set `isDefaultEntryPoint` for a single-trigger
+ * flow: that trigger is implicitly the default.
+ */
+export const DefaultEntryPoint: Story = {
+  name: 'Default entry point',
+  render: () => <DefaultEntryPointStory />,
+};
+
+const ImplicitDefaultEntryPointStory = () => {
+  const [nodes, setNodes] = useState<Node[]>([
+    {
+      id: 'single-trigger',
+      type: 'trigger',
+      position: { x: 192, y: 144 },
+      width: 96,
+      height: 96,
+      data: {
+        details: {
+          tooltip: 'The only trigger is implicitly the default entry point',
+          icon: <CanvasIcon icon="clock" size={28} />,
+        },
+      },
+    },
+  ]);
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => setNodes((currentNodes) => applyNodeChanges(changes, currentNodes)),
+    []
+  );
+
+  return (
+    <BaseCanvas
+      nodes={nodes}
+      edges={[]}
+      nodeTypes={nodeTypes}
+      onNodesChange={onNodesChange}
+      mode="design"
+    />
+  );
+};
+
+/** A single trigger is implicitly the default, so Flow omits the visual marker. */
+export const ImplicitDefaultEntryPoint: Story = {
+  name: 'Implicit default (single trigger)',
+  render: () => <ImplicitDefaultEntryPointStory />,
 };

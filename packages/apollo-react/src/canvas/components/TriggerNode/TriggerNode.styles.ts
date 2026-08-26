@@ -109,3 +109,21 @@ export const TriggerIconWrapper = styled.div<{ status?: TriggerStatus; nodeHeigh
     }};
   }
 `;
+
+export const TriggerBottomAdornment = styled.div`
+  position: absolute;
+  z-index: 1;
+  bottom: -8px;
+  left: 50%;
+  display: flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(-50%);
+  color: var(--canvas-background);
+  background: var(--canvas-primary);
+  border: 2px solid var(--canvas-background);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+`;

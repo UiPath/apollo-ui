@@ -6,12 +6,22 @@ import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { CanvasTooltip } from '../CanvasTooltip';
-import { TriggerContainer, TriggerIconWrapper } from './TriggerNode.styles';
+import { TriggerBottomAdornment, TriggerContainer, TriggerIconWrapper } from './TriggerNode.styles';
 import type { TriggerNodeProps } from './TriggerNode.types';
+
+export function DefaultEntryPointIndicator() {
+  return (
+    <CanvasTooltip content="Default entry point" placement="bottom">
+      <TriggerBottomAdornment aria-label="Default entry point">
+        <CanvasIcon icon="star" size={14} fill="currentColor" />
+      </TriggerBottomAdornment>
+    </CanvasTooltip>
+  );
+}
 
 const TriggerNodeComponent = (props: TriggerNodeProps) => {
   const { selected, id, details = {} } = props;
-  const { tooltip, icon, status } = details;
+  const { tooltip, icon, status, isDefaultEntryPoint, bottomAdornment } = details;
 
   const [isHovered, setIsHovered] = useState(false);
 
@@ -65,6 +75,12 @@ const TriggerNodeComponent = (props: TriggerNodeProps) => {
       ) : (
         triggerContent
       )}
+
+      {bottomAdornment ? (
+        <TriggerBottomAdornment>{bottomAdornment}</TriggerBottomAdornment>
+      ) : isDefaultEntryPoint ? (
+        <DefaultEntryPointIndicator />
+      ) : null}
 
       {handleElements}
     </div>
