@@ -53,6 +53,7 @@
   "collapse": "Collapse",
   "collapse_all": "Collapse all",
   "collapse_tool_calls": "Collapse tool calls",
+  "communications": "Communications",
   "compliance_pass_rates": "Compliance Pass Rates",
   "confidence_signal_high_explanation": "The output is well-supported and reliable.",
   "confidence_signal_high_label": "High confidence",
