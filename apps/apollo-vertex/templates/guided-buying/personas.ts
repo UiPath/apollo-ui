@@ -175,14 +175,16 @@ export const PERSONAS: Record<PersonaId, Persona> = {
   },
 };
 
-// Menu order: Requester, Buyer, Approver per the spec, Priya appended,
-// Dana appended after her (Chunk C1's own second approver seat), Elena
-// appended after Dana (prompt 58).
-export const PERSONA_MENU_ORDER: PersonaId[] = [
-  "requester",
-  "buyer",
-  "approver",
+// Menu grouping: the switcher reads as two journeys rather than one flat
+// list. Journey 1 (Catalog) is Marcus's and Alex's original requester/
+// approver pair; Journey 3 (Software) is every seat added since (Priya,
+// Sam, Dana, Elena), Ravi included, though his own entry stays out of
+// this array and behind the <P2> gate in GuidedBuyingLayout.tsx, the same
+// way it already did before this grouping.
+export const JOURNEY_1_MENU_ORDER: PersonaId[] = ["requester", "approver"];
+export const JOURNEY_3_MENU_ORDER: PersonaId[] = [
   "priya",
+  "buyer",
   "budget-owner",
   "analytics",
 ];

@@ -6,6 +6,9 @@ import { useState } from "react";
 import {
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -15,7 +18,8 @@ import { AutopilotFab } from "./AutopilotFab";
 import { P2 } from "./P2";
 import { PersonaProvider } from "./persona-context";
 import {
-  PERSONA_MENU_ORDER,
+  JOURNEY_1_MENU_ORDER,
+  JOURNEY_3_MENU_ORDER,
   PERSONAS,
   type PersonaId,
   personaForPath,
@@ -61,9 +65,37 @@ function TierMenuSection() {
   );
 }
 
-// Same section-label and checked-state treatment as TierMenuSection, no
-// colored dots, personas have no color semantics and inventing three would
-// read as meaningful when it isn't.
+// Same checked-state treatment as TierMenuSection, no colored dots,
+// personas have no color semantics and inventing three would read as
+// meaningful when it isn't.
+function PersonaMenuItem({
+  id,
+  active,
+  onSelect,
+}: {
+  id: PersonaId;
+  active: boolean;
+  onSelect: (id: PersonaId) => void;
+}) {
+  const persona = PERSONAS[id];
+  return (
+    <DropdownMenuItem onClick={() => onSelect(id)} className="justify-between">
+      <span>
+        {persona.name} · {persona.role}
+      </span>
+      {active && <Check className="size-3.5 shrink-0 text-primary" />}
+    </DropdownMenuItem>
+  );
+}
+
+// Two journeys, each its own submenu, the same DropdownMenuSub pattern
+// Toggle theme and Language already use, rather than two flat labeled
+// lists. Journey 1 (Catalog) is Marcus's and Alex's original requester/
+// approver pair; Journey 3 (Software) is every seat added since. Ravi's
+// own entry stays out of JOURNEY_3_MENU_ORDER and behind the <P2> gate
+// below, additive to that group's own map rather than folded into it, so
+// the P1 map stays exactly as it was and carries zero tier conditionals
+// of its own.
 function PersonaMenuSection({
   personaId,
   onSelect,
@@ -73,43 +105,43 @@ function PersonaMenuSection({
 }) {
   return (
     <>
-      <DropdownMenuLabel className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Prototype persona
-      </DropdownMenuLabel>
-      {PERSONA_MENU_ORDER.map((id) => {
-        const persona = PERSONAS[id];
-        return (
-          <DropdownMenuItem
-            key={id}
-            onClick={() => onSelect(id)}
-            className="justify-between"
-          >
-            <span>
-              {persona.name} · {persona.role}
-            </span>
-            {personaId === id && (
-              <Check className="size-3.5 shrink-0 text-primary" />
-            )}
-          </DropdownMenuItem>
-        );
-      })}
-      {/* Prompt 93: Ravi is P2 only surface, additive to the P1 list
-          above rather than folded into PERSONA_MENU_ORDER, so the P1 map
-          stays exactly as it was and carries zero tier conditionals of
-          its own. */}
-      <P2>
-        <DropdownMenuItem
-          onClick={() => onSelect("ravi")}
-          className="justify-between"
-        >
-          <span>
-            {PERSONAS.ravi.name} · {PERSONAS.ravi.role}
-          </span>
-          {personaId === "ravi" && (
-            <Check className="size-3.5 shrink-0 text-primary" />
-          )}
-        </DropdownMenuItem>
-      </P2>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>
+          <span>Journey 1: Catalog</span>
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          {JOURNEY_1_MENU_ORDER.map((id) => (
+            <PersonaMenuItem
+              key={id}
+              id={id}
+              active={personaId === id}
+              onSelect={onSelect}
+            />
+          ))}
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>
+          <span>Journey 3: Software</span>
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          {JOURNEY_3_MENU_ORDER.map((id) => (
+            <PersonaMenuItem
+              key={id}
+              id={id}
+              active={personaId === id}
+              onSelect={onSelect}
+            />
+          ))}
+          <P2>
+            <PersonaMenuItem
+              id="ravi"
+              active={personaId === "ravi"}
+              onSelect={onSelect}
+            />
+          </P2>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
     </>
   );
 }
