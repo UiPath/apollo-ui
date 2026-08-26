@@ -8,7 +8,7 @@ import {
   type LucideIcon,
   ToggleLeft,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { AriaAttributes, ReactNode } from 'react';
 
 export type LockableValueFieldMode = 'fixed' | 'expression';
 
@@ -123,7 +123,7 @@ export interface LockableValueFieldProps {
     readOnly: boolean;
     placeholder: string;
     fieldType: LockableFieldType;
-    'aria-invalid'?: boolean;
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
     'aria-describedby'?: string;
     'aria-errormessage'?: string;
     'data-slot'?: string;

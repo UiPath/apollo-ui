@@ -78,7 +78,7 @@ export function LockableValueField({
   id,
   className,
 }: LockableValueFieldProps) {
-  const generatedId = useId();
+  const generatedId = useId().replace(/:/g, '');
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
   const fieldId = id ?? generatedId;
