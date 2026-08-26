@@ -25,6 +25,9 @@ import {
   InputGroupInput,
   Label,
   type PanelImperativeHandle,
+  PromptEditor,
+  type PromptEditorAutoCompleteOption,
+  type PromptEditorToken,
   RadioGroup,
   RadioGroupItem,
   ResizableHandle,
@@ -89,6 +92,7 @@ import {
   Fragment,
   type PointerEvent,
   type ReactNode,
+  type RefObject,
   useCallback,
   useContext,
   useEffect,
@@ -722,7 +726,7 @@ function CanvasViewport({
   workflowVariant?: WorkflowVariant;
   onNodeSelect?: (nodeId: string) => void;
 }) {
-  const { getNodes, getNodesBounds, getViewport, setEdges, setNodes, setViewport } = useReactFlow();
+  const { getNodes, getNodesBounds, setEdges, setNodes, setViewport } = useReactFlow();
   const nodesInitialized = useNodesInitialized();
   const viewportContainerRef = useRef<HTMLDivElement>(null);
 
@@ -774,8 +778,8 @@ function CanvasViewport({
     const graph = createFlowGraph(workflowVariant);
     setNodes(graph.nodes);
     setEdges(graph.edges);
-    window.setTimeout(() => centerWorkflow(200), 100);
-  }, [centerWorkflow, setEdges, setNodes, workflowVariant]);
+    window.setTimeout(() => fitWorkflow(200), 100);
+  }, [fitWorkflow, setEdges, setNodes, workflowVariant]);
 
   return (
     <div ref={viewportContainerRef} className="relative h-full min-h-0 min-w-0 overflow-hidden">
@@ -1187,6 +1191,29 @@ function QuickFormPropertiesPanel({ onClose }: { onClose: () => void }) {
   return <QuickFormPanel embedded onClose={onClose} className="h-full" />;
 }
 
+/** Matches a `$vars.foo.bar[0].baz`-style reference so it can be lifted into its own token. */
+const VARIABLE_REFERENCE_PATTERN = /\$vars(?:\.[a-zA-Z_$][\w$]*|\[\d+\])+/g;
+
+/** Splits a flat expression string into PromptEditor tokens, isolating each `$vars....` reference. */
+function expressionValueToTokens(value: string): PromptEditorToken[] {
+  if (!value) return [];
+  const tokens: PromptEditorToken[] = [];
+  let lastIndex = 0;
+  for (const match of value.matchAll(VARIABLE_REFERENCE_PATTERN)) {
+    const index = match.index ?? 0;
+    if (index > lastIndex) tokens.push({ type: 'text', value: value.slice(lastIndex, index) });
+    tokens.push({ type: 'output', value: match[0].slice(1) });
+    lastIndex = index + match[0].length;
+  }
+  if (lastIndex < value.length) tokens.push({ type: 'text', value: value.slice(lastIndex) });
+  return tokens;
+}
+
+/** Inverse of {@link expressionValueToTokens} — rejoins tokens back into a flat expression string. */
+function expressionTokensToValue(tokens: PromptEditorToken[]): string {
+  return tokens.map((token) => (token.type === 'text' ? token.value : `$${token.value}`)).join('');
+}
+
 function ExpressionField({
   label,
   value,
@@ -1202,7 +1229,6 @@ function ExpressionField({
   onInsertVariable?: (variable: VariablePickerItem) => void;
   onValueChange?: (value: string) => void;
 }) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const [isVariableDragging, setIsVariableDragging] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -1224,17 +1250,22 @@ function ExpressionField({
     };
   }, []);
 
-  const insertDroppedVariable = (path: string) => {
-    if (!onValueChange || !path) return;
-    const token = `$${path.replace(/^\$/, '')}`;
-    const currentValue = value ?? '';
-    const cursor = inputRef.current?.selectionStart ?? currentValue.length;
-    onValueChange(`${currentValue.slice(0, cursor)}${token}${currentValue.slice(cursor)}`);
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
-      inputRef.current?.setSelectionRange(cursor + token.length, cursor + token.length);
-    });
-  };
+  const tokens = useMemo(() => expressionValueToTokens(value ?? ''), [value]);
+
+  const autoCompleteOptions = useMemo<PromptEditorAutoCompleteOption[]>(() => {
+    const options = new Map<string, PromptEditorAutoCompleteOption>();
+    for (const variable of variables) {
+      const path = (variable.value ?? '').replace(/^\$/, '');
+      if (path) options.set(path, { type: 'output', value: path });
+    }
+    // Deep node-output paths already present in the value (e.g. `vars.recordUpdated1.output.Subject`)
+    // are legitimate upstream references even though they aren't in the workflow-scope variable list
+    // above — recognize them too so they don't render as "not found" on first paint.
+    for (const token of tokens) {
+      if (token.type !== 'text') options.set(token.value, { type: token.type, value: token.value });
+    }
+    return [...options.values()];
+  }, [variables, tokens]);
 
   return (
     <div className="space-y-1.5">
@@ -1253,30 +1284,18 @@ function ExpressionField({
       <div
         onDragEnter={(event) => {
           if (!event.dataTransfer.types.includes(VARIABLE_DRAG_MIME)) return;
-          if (onValueChange) event.preventDefault();
           setIsDragOver(true);
         }}
         onDragOver={(event) => {
           if (!event.dataTransfer.types.includes(VARIABLE_DRAG_MIME)) return;
-          if (onValueChange) {
-            event.preventDefault();
-            event.dataTransfer.dropEffect = 'copy';
-          } else {
-            event.dataTransfer.dropEffect = 'none';
-          }
+          event.dataTransfer.dropEffect = onValueChange ? 'copy' : 'none';
         }}
         onDragLeave={(event) => {
           if (!event.currentTarget.contains(event.relatedTarget as globalThis.Node | null)) {
             setIsDragOver(false);
           }
         }}
-        onDrop={(event) => {
-          const path = event.dataTransfer.getData(VARIABLE_DRAG_MIME);
-          if (!path || !onValueChange) return;
-          event.preventDefault();
-          insertDroppedVariable(path);
-          setIsDragOver(false);
-        }}
+        onDrop={() => setIsDragOver(false)}
         className={`relative flex min-h-9 items-center gap-1.5 rounded-lg border bg-surface-overlay px-2.5 text-xs transition-[border-color,box-shadow,background-color] focus-within:border-border-focus focus-within:ring-1 focus-within:ring-border-focus ${
           isDragOver && onValueChange
             ? 'border-brand bg-brand-subtle/40 ring-2 ring-brand/30'
@@ -1292,14 +1311,16 @@ function ExpressionField({
         <span className="shrink-0 font-mono text-foreground-accent" aria-hidden="true">
           ƒx
         </span>
-        <input
-          ref={inputRef}
-          value={value ?? ''}
-          onChange={(event) => onValueChange?.(event.target.value)}
-          readOnly={!onValueChange}
+        <PromptEditor
+          value={tokens}
+          onChange={(nextTokens) => onValueChange?.(expressionTokensToValue(nextTokens))}
+          autoCompleteOptions={autoCompleteOptions}
+          multiline={false}
+          borderless
+          disabled={!onValueChange}
           placeholder={placeholder}
-          aria-label={label ? `${label} expression` : 'Expression'}
-          className="h-8 min-w-0 flex-1 bg-transparent font-mono text-xs text-foreground-accent outline-none placeholder:font-sans placeholder:text-foreground-subtle read-only:cursor-default"
+          ariaLabel={label ? `${label} expression` : 'Expression'}
+          mapVarDropToToken={(insertPath) => ({ type: 'output', value: insertPath })}
         />
         <SlidersHorizontal className="ml-auto size-4 shrink-0 text-foreground-muted" />
         {isVariableDragging && (
@@ -1314,6 +1335,101 @@ function ExpressionField({
           </span>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Matches a leading `$vars`/`$state`/`$in`/`$out` keyword so only the namespace itself is pilled. */
+const KEYWORD_REFERENCE_PATTERN = /^\$(vars|state|in|out)\b/;
+
+/**
+ * Splits a flat expression string into PromptEditor tokens the same way {@link expressionValueToTokens}
+ * does, except only the leading `$vars`-style namespace keyword becomes a token — the remainder of the
+ * path (`.flowArray`) stays as plain editable text. Used by fields that reference a whole collection
+ * rather than a single resolved value, where highlighting the full path as one chip would be misleading.
+ */
+function keywordValueToTokens(value: string): PromptEditorToken[] {
+  if (!value) return [];
+  const match = value.match(KEYWORD_REFERENCE_PATTERN);
+  if (!match) return [{ type: 'text', value }];
+  const rest = value.slice(match[0].length);
+  return rest
+    ? [
+        { type: 'input', value: match[0].slice(1) },
+        { type: 'text', value: rest },
+      ]
+    : [{ type: 'input', value: match[0].slice(1) }];
+}
+
+/** Inverse of {@link keywordValueToTokens} — rejoins tokens back into a flat expression string. */
+function keywordTokensToValue(tokens: PromptEditorToken[]): string {
+  return tokens.map((token) => (token.type === 'text' ? token.value : `$${token.value}`)).join('');
+}
+
+/**
+ * Expression field for "operate on this whole collection" contexts (e.g. a Filter's source array),
+ * as opposed to {@link ExpressionField}'s "insert a value into this field" contexts. Only the leading
+ * namespace keyword is pilled — the rest of the path renders as plain syntax-colored text — and the
+ * insert control sits in the field's label row rather than beside the value.
+ */
+function KeywordExpressionField({
+  label,
+  required,
+  value,
+  caption,
+  variables = [],
+  onInsertVariable,
+  onValueChange,
+}: {
+  label: string;
+  required?: boolean;
+  value?: string;
+  caption?: string;
+  variables?: VariablePickerItem[];
+  onInsertVariable?: (variable: VariablePickerItem) => void;
+  onValueChange?: (value: string) => void;
+}) {
+  const tokens = useMemo(() => keywordValueToTokens(value ?? ''), [value]);
+
+  const autoCompleteOptions = useMemo<PromptEditorAutoCompleteOption[]>(() => {
+    const options = new Map<string, PromptEditorAutoCompleteOption>();
+    for (const variable of variables) {
+      const path = (variable.value ?? '').replace(/^\$/, '');
+      if (path) options.set(path, { type: 'input', value: path });
+    }
+    for (const token of tokens) {
+      if (token.type !== 'text') options.set(token.value, { type: token.type, value: token.value });
+    }
+    return [...options.values()];
+  }, [variables, tokens]);
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold text-foreground">
+          {label}
+          {required && <span className="ml-0.5 text-error">*</span>}
+        </p>
+        <VariablePicker
+          items={variables}
+          onSelect={(variable) => onInsertVariable?.(variable)}
+          disabled={!onInsertVariable || variables.length === 0}
+        />
+      </div>
+      <div className="flex min-h-11 items-center gap-2 rounded-lg border border-border-subtle bg-surface px-3">
+        <span className="shrink-0 font-mono text-sm text-foreground-muted">=</span>
+        <PromptEditor
+          value={tokens}
+          onChange={(nextTokens) => onValueChange?.(keywordTokensToValue(nextTokens))}
+          autoCompleteOptions={autoCompleteOptions}
+          multiline={false}
+          borderless
+          disabled={!onValueChange}
+          ariaLabel={`${label} expression`}
+          mapVarDropToToken={(insertPath) => ({ type: 'input', value: insertPath })}
+        />
+      </div>
+      {caption && <p className="text-xs text-foreground-muted">{caption}</p>}
     </div>
   );
 }
@@ -1438,7 +1554,7 @@ function SendEmailForm({
         <BooleanField label="Include message details" />
         <button
           type="button"
-          className="mx-auto flex items-center gap-2 text-xs font-semibold text-brand"
+          className="flex w-fit items-center gap-2 text-xs font-semibold text-brand"
         >
           <Plus className="size-4" /> Manage Properties
         </button>
@@ -2207,6 +2323,147 @@ function LeftSidebarComposition() {
         </div>
       )}
     </div>
+  );
+}
+
+type CollectionFilterCondition = { id: number; operator: string; value: string };
+
+/**
+ * Filters a collection down to items matching a set of conditions. Unlike {@link RuleBuildingPanel},
+ * conditions here apply to each item of the `Collection` field above rather than to separately named
+ * fields, so a condition row only needs an operator and a value.
+ */
+function CollectionFilterPanel({
+  onClose,
+  variables,
+}: {
+  onClose: () => void;
+  variables: EditableWorkflowVariable[];
+}) {
+  const [collectionValue, setCollectionValue] = useState('$vars.flowArray');
+  const [matchMode, setMatchMode] = useState<'all' | 'any'>('all');
+  const [conditions, setConditions] = useState<CollectionFilterCondition[]>([
+    { id: 1, operator: 'Equals', value: '1' },
+  ]);
+  const nextConditionId = useRef(2);
+
+  const pickerItems = variables.map((variable) => ({
+    id: variable.id,
+    label: variable.name,
+    value: `$vars.${variable.name}`,
+    type: variable.type.toLowerCase(),
+  }));
+
+  const updateCondition = (id: number, patch: Partial<CollectionFilterCondition>) =>
+    setConditions((current) =>
+      current.map((condition) => (condition.id === id ? { ...condition, ...patch } : condition))
+    );
+
+  return (
+    <NodePropertyPanel
+      panelTitle="Filter array"
+      nodeIcon={<ListTree />}
+      nodeLabel="Filter array"
+      nodeCategory="Keep items in a collection that match conditions"
+      action={<Button size="sm">Save</Button>}
+      onClose={onClose}
+      contentInset="0.875rem"
+      className="h-full"
+    >
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto px-3 pb-4 pt-3">
+        <KeywordExpressionField
+          label="Collection"
+          required
+          value={collectionValue}
+          caption="Conditions are applied to this collection."
+          variables={pickerItems}
+          onInsertVariable={(variable) =>
+            setCollectionValue((current) => `${current}${variable.value ?? variable.label}`)
+          }
+          onValueChange={setCollectionValue}
+        />
+
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-foreground-muted">Match</span>
+          <ToggleGroup
+            type="single"
+            size="xs"
+            value={matchMode}
+            onValueChange={(value) => value && setMatchMode(value as 'all' | 'any')}
+          >
+            <ToggleGroupItem value="all" className="!px-2.5 !text-xs">
+              All (AND)
+            </ToggleGroupItem>
+            <ToggleGroupItem value="any" className="!px-2.5 !text-xs">
+              Any (OR)
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
+        <div className="relative ml-3 border-l-2 border-brand/40 pl-4">
+          <span className="absolute -left-[13px] top-0 rounded-md border border-brand/30 bg-surface-raised px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand">
+            {matchMode === 'all' ? 'AND' : 'OR'}
+          </span>
+          <div className="space-y-3 pt-7">
+            {conditions.map((condition, index) => (
+              <Card key={condition.id} className="relative">
+                <CardContent className="space-y-2 p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-foreground-muted">
+                      Condition {index + 1}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={`Remove condition ${index + 1}`}
+                      onClick={() =>
+                        setConditions((current) => current.filter(({ id }) => id !== condition.id))
+                      }
+                      className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-destructive"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-2">
+                    <select
+                      value={condition.operator}
+                      onChange={(event) =>
+                        updateCondition(condition.id, { operator: event.target.value })
+                      }
+                      className="h-8 min-w-0 rounded-lg border border-border-subtle bg-surface-overlay px-2 text-xs"
+                    >
+                      <option>Equals</option>
+                      <option>Does not equal</option>
+                      <option>Contains</option>
+                      <option>Is greater than</option>
+                      <option>Is less than</option>
+                    </select>
+                    <input
+                      value={condition.value}
+                      onChange={(event) =>
+                        updateCondition(condition.id, { value: event.target.value })
+                      }
+                      aria-label={`Condition ${index + 1} value`}
+                      className="h-8 min-w-0 rounded-lg border border-border-subtle bg-surface-overlay px-2 text-xs outline-none focus:border-border-focus"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                const id = nextConditionId.current++;
+                setConditions((current) => [...current, { id, operator: 'Equals', value: '' }]);
+              }}
+              className="w-full border border-dashed border-border-subtle"
+            >
+              <Plus size={14} /> Add condition
+            </Button>
+          </div>
+        </div>
+      </div>
+    </NodePropertyPanel>
   );
 }
 
@@ -4734,7 +4991,14 @@ function DapPanel({ onClose }: { onClose: () => void }) {
 export function FullWorkbenchComposition({
   rightPanelVariant = 'properties',
 }: {
-  rightPanelVariant?: 'properties' | 'forms' | 'node' | 'rules' | 'variables' | 'dap';
+  rightPanelVariant?:
+    | 'properties'
+    | 'forms'
+    | 'node'
+    | 'rules'
+    | 'variables'
+    | 'dap'
+    | 'collection';
 }) {
   const panelRef = useRef<PanelImperativeHandle | null>(null);
   const expandedBottomPanelHeight = useRef(368);
@@ -4838,7 +5102,9 @@ export function FullWorkbenchComposition({
       <div className="relative min-w-0 flex-1 overflow-hidden">
         <CanvasViewport
           workflowVariant={
-            rightPanelVariant === 'properties' || rightPanelVariant === 'dap'
+            rightPanelVariant === 'properties' ||
+            rightPanelVariant === 'dap' ||
+            rightPanelVariant === 'collection'
               ? 'default'
               : rightPanelVariant
           }
@@ -4881,6 +5147,11 @@ export function FullWorkbenchComposition({
                 <QuickFormPropertiesPanel onClose={() => setRightPanelOpen(false)} />
               ) : rightPanelVariant === 'rules' ? (
                 <RuleBuildingPanel onClose={() => setRightPanelOpen(false)} />
+              ) : rightPanelVariant === 'collection' ? (
+                <CollectionFilterPanel
+                  onClose={() => setRightPanelOpen(false)}
+                  variables={editableWorkflowVariables}
+                />
               ) : rightPanelVariant === 'variables' ? (
                 <UnifiedVariablesPanel
                   nodeId={selectedVariableNodeId}
@@ -5005,6 +5276,244 @@ export function FullWorkbenchComposition({
           </div>
         </CanvasTakeoverModal>
       )}
+    </div>
+  );
+}
+
+/** Tracks an element's border-box width via ResizeObserver. Null until the first measurement lands. */
+function useContainerWidth(ref: RefObject<HTMLElement | null>) {
+  const [width, setWidth] = useState<number | null>(null);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) setWidth(entry.contentRect.width);
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return width;
+}
+
+// Below this container width the left sidebar auto-collapses to its icon rail, reclaiming space for
+// the canvas. Chosen wider than the right panel's threshold so the sidebar gives way first.
+const RESPONSIVE_SIDEBAR_COLLAPSE_WIDTH = 1180;
+// Below this container width the right panel auto-closes entirely (reopenable via the panel trigger),
+// since by this point the canvas needs the room more than a docked panel does.
+const RESPONSIVE_RIGHT_PANEL_COLLAPSE_WIDTH = 860;
+const RESPONSIVE_RIGHT_PANEL_MIN_WIDTH = 320;
+const RESPONSIVE_RIGHT_PANEL_MAX_WIDTH = 480;
+const RESPONSIVE_RIGHT_PANEL_DEFAULT_WIDTH = 380;
+
+/**
+ * Explores what the workbench should do as its container narrows: the left sidebar collapses to its
+ * icon rail first (wider breakpoint), the right panel closes second (narrower breakpoint), prioritizing
+ * canvas space. Both thresholds only ever force a collapse, never force a re-expand — once narrowed,
+ * re-opening either panel is left to the user via their normal manual controls. The right panel is also
+ * manually resizable within a fixed min/max range via the handle on its leading edge.
+ */
+export function ResponsiveWorkbenchComposition() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const containerWidth = useContainerWidth(containerRef);
+  const panelRef = useRef<PanelImperativeHandle | null>(null);
+
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [activeSidebarItem, setActiveSidebarItem] = useState<CanvasLeftSidebarItemId>('variables');
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [rightPanelWidth, setRightPanelWidth] = useState(RESPONSIVE_RIGHT_PANEL_DEFAULT_WIDTH);
+  const [activeTabId, setActiveTabId] = useState('execution');
+  const [isBottomPanelCollapsed, setIsBottomPanelCollapsed] = useState(true);
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(80);
+
+  useEffect(() => {
+    if (containerWidth !== null && containerWidth < RESPONSIVE_SIDEBAR_COLLAPSE_WIDTH) {
+      setSidebarExpanded(false);
+    }
+  }, [containerWidth]);
+
+  useEffect(() => {
+    if (containerWidth !== null && containerWidth < RESPONSIVE_RIGHT_PANEL_COLLAPSE_WIDTH) {
+      setRightPanelOpen(false);
+    }
+  }, [containerWidth]);
+
+  const handleResizeHandlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = rightPanelWidth;
+
+    const handlePointerMove = (moveEvent: globalThis.PointerEvent) => {
+      const nextWidth = startWidth + (startX - moveEvent.clientX);
+      setRightPanelWidth(
+        Math.min(
+          RESPONSIVE_RIGHT_PANEL_MAX_WIDTH,
+          Math.max(RESPONSIVE_RIGHT_PANEL_MIN_WIDTH, nextWidth)
+        )
+      );
+    };
+    const handlePointerUp = () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+  };
+
+  const setBottomPanelCollapsed = (collapsed: boolean) => {
+    setIsBottomPanelCollapsed(collapsed);
+    if (collapsed) panelRef.current?.collapse();
+    else panelRef.current?.expand();
+  };
+
+  const tabs: CanvasBottomPanelTab[] = [
+    {
+      id: 'execution',
+      label: (
+        <>
+          <Bug className="size-3" /> Executions
+        </>
+      ),
+      group: 'debug',
+      content: <DebugPanelContent />,
+    },
+    { id: 'datasets', label: 'Datasets', content: <EvaluatePanelContent /> },
+    { id: 'evaluators', label: 'Evaluators', content: <EvaluatePanelContent /> },
+  ];
+
+  return (
+    <div ref={containerRef} className="relative flex h-screen bg-surface">
+      <CanvasLeftSidebar
+        title="Variables"
+        variant="default"
+        primaryItems={VARIABLE_CONCEPT_SIDEBAR_ITEMS}
+        isExpanded={sidebarExpanded}
+        onExpandedChange={setSidebarExpanded}
+        activeItemId={activeSidebarItem}
+        onItemSelect={setActiveSidebarItem}
+      />
+      <div className="relative min-w-0 flex-1 overflow-hidden">
+        <CanvasViewport
+          bottomControlsOffset={bottomPanelHeight + 20}
+          rightControlsOffset={rightPanelOpen ? rightPanelWidth + 32 : 16}
+          trigger={
+            <PanelTrigger
+              panels={[
+                { id: 'input', label: 'Input', enabled: false },
+                { id: 'properties', label: 'Properties', enabled: rightPanelOpen },
+                { id: 'output', label: 'Output', enabled: false },
+              ]}
+              onPanelToggle={(id, enabled) => {
+                if (id === 'properties') setRightPanelOpen(enabled);
+              }}
+            />
+          }
+        />
+
+        <div className="pointer-events-none absolute left-3 top-3 z-30 rounded-lg border border-border-subtle bg-surface-raised/95 px-3 py-2 text-[11px] leading-5 text-foreground-muted shadow-lg backdrop-blur">
+          <p className="font-semibold text-foreground">
+            Container {containerWidth ? Math.round(containerWidth) : '—'}px
+          </p>
+          <p>
+            Sidebar {sidebarExpanded ? 'expanded' : 'collapsed'} · collapses under{' '}
+            {RESPONSIVE_SIDEBAR_COLLAPSE_WIDTH}px
+          </p>
+          <p>
+            Right panel {rightPanelOpen ? `open, ${rightPanelWidth}px` : 'closed'} · closes under{' '}
+            {RESPONSIVE_RIGHT_PANEL_COLLAPSE_WIDTH}px
+          </p>
+          <p>
+            Right panel range {RESPONSIVE_RIGHT_PANEL_MIN_WIDTH}–{RESPONSIVE_RIGHT_PANEL_MAX_WIDTH}
+            px
+          </p>
+        </div>
+
+        {rightPanelOpen && (
+          <div
+            className="absolute right-0 top-0 z-20 flex p-4 pl-0"
+            style={{ bottom: bottomPanelHeight - 12 }}
+          >
+            {/* biome-ignore lint/a11y/useSemanticElements: an <hr> can't carry pointer/keyboard drag handlers or a live aria-valuenow — this is an interactive resize handle, not a static divider. */}
+            <div
+              onPointerDown={handleResizeHandlePointerDown}
+              onKeyDown={(event) => {
+                const step = event.shiftKey ? 32 : 8;
+                if (event.key === 'ArrowLeft') {
+                  event.preventDefault();
+                  setRightPanelWidth((current) =>
+                    Math.min(RESPONSIVE_RIGHT_PANEL_MAX_WIDTH, current + step)
+                  );
+                } else if (event.key === 'ArrowRight') {
+                  event.preventDefault();
+                  setRightPanelWidth((current) =>
+                    Math.max(RESPONSIVE_RIGHT_PANEL_MIN_WIDTH, current - step)
+                  );
+                }
+              }}
+              role="separator"
+              tabIndex={0}
+              aria-orientation="vertical"
+              aria-label="Resize properties panel"
+              aria-valuenow={rightPanelWidth}
+              aria-valuemin={RESPONSIVE_RIGHT_PANEL_MIN_WIDTH}
+              aria-valuemax={RESPONSIVE_RIGHT_PANEL_MAX_WIDTH}
+              className="mr-1 w-1.5 shrink-0 cursor-col-resize rounded-full transition hover:bg-brand/40 active:bg-brand/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-focus"
+            />
+            <div
+              className="h-full shrink-0 overflow-hidden rounded-2xl border border-border-subtle shadow-lg"
+              style={{ width: rightPanelWidth }}
+            >
+              <RuleBuildingPanel onClose={() => setRightPanelOpen(false)} />
+            </div>
+          </div>
+        )}
+
+        <ResizablePanelGroup
+          orientation="vertical"
+          className="pointer-events-none absolute inset-y-0 left-0 z-30"
+          style={{ right: rightPanelOpen ? rightPanelWidth + 16 : 0 }}
+        >
+          <ResizablePanel defaultSize="55%" minSize="30%" className="pointer-events-none" />
+          {!isBottomPanelCollapsed && (
+            <ResizableHandle
+              withHandle
+              className="pointer-events-auto z-20 mx-8 translate-y-3 bg-transparent aria-[orientation=horizontal]:w-[calc(100%-4rem)]"
+            />
+          )}
+          <ResizablePanel
+            panelRef={panelRef}
+            collapsible
+            collapsedSize={80}
+            defaultSize={80}
+            minSize={368}
+            onResize={({ inPixels }) => setBottomPanelHeight(inPixels)}
+            className="pointer-events-auto min-h-0 px-4 pb-4 pt-3"
+          >
+            <CanvasBottomPanel
+              variant="floating"
+              className="h-full"
+              tabs={tabs}
+              activeTabId={activeTabId}
+              onTabChange={(tabId) => {
+                setActiveTabId(tabId);
+                if (isBottomPanelCollapsed) setBottomPanelCollapsed(false);
+              }}
+              isCollapsed={isBottomPanelCollapsed}
+              onCollapsedChange={setBottomPanelCollapsed}
+              headerActions={
+                <ToolbarButton
+                  label={isBottomPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
+                  onClick={() => setBottomPanelCollapsed(!isBottomPanelCollapsed)}
+                >
+                  {isBottomPanelCollapsed ? <ChevronUp /> : <ChevronDown />}
+                </ToolbarButton>
+              }
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </div>
   );
 }

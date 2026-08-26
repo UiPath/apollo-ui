@@ -84,7 +84,7 @@ const TokenPillBase = ({
         <Icon className="h-3.5 w-3.5" />
       </span>
       <span
-        className="font-normal whitespace-nowrap"
+        className="inline-block max-w-[200px] truncate align-bottom font-normal"
         style={{ color: colors.text, fontFamily: "'Noto Sans', sans-serif" }}
       >
         {value}

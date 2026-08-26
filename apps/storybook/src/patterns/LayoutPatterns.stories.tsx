@@ -3,6 +3,7 @@ import {
   AgentExperienceComposition,
   FullWorkbenchComposition,
   mapTemplateThemeToChat,
+  ResponsiveWorkbenchComposition,
 } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
 import { withCanvasProviders } from '../../../../packages/apollo-react/src/canvas/storybook-utils';
 
@@ -35,6 +36,16 @@ export const VariableSelect: Story = {
 export const Rule: Story = {
   name: 'UX Rule',
   render: () => <FullWorkbenchComposition rightPanelVariant="rules" />,
+};
+
+export const CollectionFilter: Story = {
+  name: 'UX Variable collection',
+  render: () => <FullWorkbenchComposition rightPanelVariant="collection" />,
+};
+
+export const ResponsiveBehaviors: Story = {
+  name: 'UX Responsive behaviors',
+  render: () => <ResponsiveWorkbenchComposition />,
 };
 
 export const Dap: Story = {
