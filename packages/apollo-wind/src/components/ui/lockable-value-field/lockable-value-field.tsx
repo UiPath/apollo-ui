@@ -272,13 +272,13 @@ export function LockableValueField({
               onValueChange={onValueChange}
               disabled={!onValueChange}
             >
-                <SelectTrigger
-                  id={fieldId}
-                  className="flex-1"
-                  aria-invalid={error ? true : undefined}
-                  aria-describedby={error ? validationId : undefined}
-                  aria-errormessage={error ? validationId : undefined}
-                >
+              <SelectTrigger
+                id={fieldId}
+                className="flex-1"
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? validationId : undefined}
+                aria-errormessage={error ? validationId : undefined}
+              >
                 <SelectValue placeholder="Select an option" />
               </SelectTrigger>
               <SelectContent>
@@ -325,7 +325,6 @@ export function LockableValueField({
         <p
           id={validationId}
           data-slot="lockable-value-field-error"
-          role="status"
           aria-live="polite"
           aria-atomic="true"
           className="mt-1 text-xs leading-4 text-error"

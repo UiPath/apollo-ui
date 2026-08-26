@@ -26,7 +26,7 @@ describe('LockableValueField', () => {
       />
     );
 
-    expect(screen.getByRole('status')).toHaveTextContent('Enter a unique name before saving.');
+    expect(screen.getByText('Enter a unique name before saving.')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('String value')).toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByPlaceholderText('String value')).toHaveAttribute(
       'aria-describedby',
