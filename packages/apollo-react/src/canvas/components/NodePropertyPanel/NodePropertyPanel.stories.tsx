@@ -4089,7 +4089,6 @@ function PanelUIInventoryStory() {
                       <div>
                         <Input
                           defaultValue="Existing node"
-                          aria-invalid="true"
                           error={
                             <>
                               <span className="block">This node name is already in use.</span>
