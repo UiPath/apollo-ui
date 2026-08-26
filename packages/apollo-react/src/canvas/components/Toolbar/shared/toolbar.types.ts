@@ -11,7 +11,7 @@ export interface ToolbarActionItem {
   isToggled?: boolean;
   /** Custom color for the button icon and underline when toggled */
   color?: string;
-  /** Keeps this action enabled when a node is locked. */
+  /** Prevents lockToolbarConfig from force-disabling this action when a node is locked. */
   allowWhenLocked?: boolean;
   onAction: (nodeId: string) => void;
 }
