@@ -16,6 +16,24 @@ describe('LockableValueField', () => {
     expect(screen.getByPlaceholderText('String value')).not.toHaveAttribute('readonly');
   });
 
+  it('renders inline validation below the active value control', () => {
+    render(
+      <LockableValueField
+        id="node-name"
+        value="Invoice processor"
+        error="Enter a unique name before saving."
+        locked
+      />
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter a unique name before saving.');
+    expect(screen.getByPlaceholderText('String value')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByPlaceholderText('String value')).toHaveAttribute(
+      'aria-describedby',
+      'node-name-error'
+    );
+  });
+
   it('renders a read-only input when unlocked but onValueChange is not provided', () => {
     render(<LockableValueField value="" locked={false} />);
     expect(screen.getByPlaceholderText('String value')).toHaveAttribute('readonly');

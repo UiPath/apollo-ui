@@ -39,6 +39,8 @@ and (for scalar types) switched between a literal value and a JS expression.
 - Header row is responsive (container query): the type, required,
   AI-assist, and insert-variable controls collapse to icon-only once the
   field gets too narrow for their labels. See **Responsive** below.
+- Inline validation stays immediately below the active control and explains
+  both the issue and the action needed to resolve it. See **Inline validation** below.
 - Built on \`InputGroup\` for the scalar types that support expressions; see
   Input Group's \`LockedFieldWithPopover\` story for a lighter-weight recipe
   using only \`InputGroup\` primitives.
@@ -112,6 +114,29 @@ function DefaultDemo() {
 
 export const Default: Story = {
   render: () => <DefaultDemo />,
+};
+
+export const InlineValidation: Story = {
+  render: () => (
+    <div className="w-80">
+      <LockableValueField
+        id="lockable-node-name"
+        label={<Label htmlFor="lockable-node-name">Node name</Label>}
+        value="Invoice processor"
+        error="This node name is already in use. Enter a unique name before saving."
+        locked
+        showFieldActions={false}
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the field-level `error` prop for validation that belongs to the active value. The message stays below the lockable control and the built-in input is marked invalid for assistive technology.',
+      },
+    },
+  },
 };
 
 /**

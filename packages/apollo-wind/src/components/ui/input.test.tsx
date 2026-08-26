@@ -49,6 +49,33 @@ describe('Input', () => {
     expect(screen.getByRole('textbox')).toHaveClass('custom-input');
   });
 
+  it('renders inline validation and associates it with the input', () => {
+    render(<Input id="node-name" error="Enter a unique name before saving." />);
+    const input = screen.getByRole('textbox');
+    const message = screen.getByRole('alert');
+
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', 'node-name-error');
+    expect(input).toHaveAttribute('aria-errormessage', 'node-name-error');
+    expect(message).toHaveAttribute('id', 'node-name-error');
+    expect(message).toHaveTextContent('Enter a unique name before saving.');
+    expect(message).toHaveClass('text-xs', 'leading-4', 'text-error');
+  });
+
+  it('preserves existing descriptions when rendering inline validation', () => {
+    render(
+      <>
+        <p id="name-help">Use a unique node name.</p>
+        <Input id="node-name" aria-describedby="name-help" error="Name is already in use." />
+      </>
+    );
+
+    expect(screen.getByRole('textbox')).toHaveAttribute(
+      'aria-describedby',
+      'name-help node-name-error'
+    );
+  });
+
   it('forwards ref correctly', () => {
     const ref = { current: null };
     render(<Input ref={ref} />);
