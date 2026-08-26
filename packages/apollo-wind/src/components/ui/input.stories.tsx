@@ -6,10 +6,16 @@ import { Label } from './label';
 const meta = {
   title: 'Components/Core/Input',
   component: Input,
+  tags: ['autodocs'],
   parameters: {
     layout: 'centered',
+    docs: {
+      description: {
+        component:
+          'Use inline validation when feedback belongs to one field. Pass `error` to keep the message beside the input; explain what went wrong and the action needed to resolve it. Use `aria-describedby` for additional guidance, not as a replacement for the visible error. See the [Node Property Panel UI Inventory](https://engdogfood.staging.uipath.host/apollo-design/?path=/story/apollo-react-canvas-components-panels-node-property-panel--panel-ui-inventory) for the reference state pattern.',
+      },
+    },
   },
-  tags: ['autodocs'],
   argTypes: {
     variant: {
       control: 'select',
@@ -42,6 +48,28 @@ export const WithLabel = {
     </div>
   ),
 } satisfies Story;
+
+export const WithInlineValidation: Story = {
+  render: () => (
+    <div className="grid w-full max-w-sm items-center gap-1.5">
+      <Label htmlFor="node-name">Node name</Label>
+      <Input
+        id="node-name"
+        value="Invoice processor"
+        error="This node name is already in use. Enter a unique name before saving."
+        readOnly
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inline validation stays beside the control so the issue and resolution are clear in context. The input exposes `aria-invalid` and associates the visible message with `aria-describedby` and `aria-errormessage` automatically.',
+      },
+    },
+  },
+};
 
 export const Disabled: Story = {
   args: {

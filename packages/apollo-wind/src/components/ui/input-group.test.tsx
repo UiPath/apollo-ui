@@ -45,7 +45,7 @@ describe('InputGroup', () => {
     expect(group).toHaveClass('bg-surface-overlay');
     expect(group).not.toHaveClass('border-input');
     // The input's own border is always zeroed, regardless of the group's variant.
-    expect(screen.getByPlaceholderText('Ghost')).toHaveClass('border-0');
+    expect(screen.getByPlaceholderText('Ghost')).toHaveClass('!border-0');
   });
 
   it('applies xs size classes to the wrapper', () => {
@@ -114,6 +114,25 @@ describe('InputGroup', () => {
       </InputGroup>
     );
     expect(screen.getByPlaceholderText('Disabled')).toBeDisabled();
+  });
+
+  it('stacks inline validation below the grouped input', () => {
+    render(
+      <InputGroup data-testid="group" error="Enter a unique name before saving.">
+        <InputGroupInput id="node-name" />
+      </InputGroup>
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter a unique name before saving.');
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('textbox')).toHaveClass('!border-0');
+    expect(screen.getByRole('textbox')).toHaveClass('!ring-0');
+    expect(screen.getByTestId('group')).toHaveClass(
+      'has-[[data-slot][aria-invalid=true]]:border-error'
+    );
+    expect(screen.getByTestId('group')).toHaveClass(
+      'future:has-[[data-slot][aria-invalid=true]]:ring-1'
+    );
   });
 
   it('supports a textarea control', () => {

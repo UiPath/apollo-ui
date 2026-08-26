@@ -4090,11 +4090,14 @@ function PanelUIInventoryStory() {
                         <Input
                           defaultValue="Existing node"
                           aria-invalid="true"
-                          className="!border !border-error"
-                        />
-                        <InlineValidationMessage
-                          message="This node name is already in use."
-                          action="Enter a unique name before saving."
+                          error={
+                            <>
+                              <span className="block">This node name is already in use.</span>
+                              <span className="mt-0.5 block text-foreground-muted">
+                                Enter a unique name before saving.
+                              </span>
+                            </>
+                          }
                         />
                       </div>
                     </InventoryField>

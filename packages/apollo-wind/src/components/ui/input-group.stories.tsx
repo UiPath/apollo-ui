@@ -134,6 +134,28 @@ export const WithLabel: Story = {
   ),
 };
 
+export const WithInlineValidation: Story = {
+  render: () => (
+    <div className="grid w-72 items-center gap-1.5">
+      <Label htmlFor="group-node-name">Node name</Label>
+      <InputGroup error="This node name is already in use. Enter a unique name before saving.">
+        <InputGroupAddon align="inline-start">
+          <Lock className="text-muted-foreground" />
+        </InputGroupAddon>
+        <InputGroupInput id="group-node-name" value="Invoice processor" readOnly />
+      </InputGroup>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Input group controls use the same inline validation behavior as Input. The message remains below the grouped control while the group border communicates the invalid state.',
+      },
+    },
+  },
+};
+
 export const Compact: Story = {
   render: () => (
     <InputGroup size="xs" className="w-72">

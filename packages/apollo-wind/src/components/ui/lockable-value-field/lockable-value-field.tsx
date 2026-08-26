@@ -65,6 +65,8 @@ export function LockableValueField({
   required,
   onRequiredChange,
   label,
+  error,
+  errorId,
   fileUploadAriaLabel,
   headerActions,
   compact,
@@ -80,6 +82,7 @@ export function LockableValueField({
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
   const fieldId = id ?? generatedId;
+  const validationId = errorId ?? `${fieldId}-error`;
   const typeMeta = FIELD_TYPE_META[fieldType];
   const effectiveMode = typeMeta.supportsExpression ? mode : 'fixed';
   const editableOnValueChange = locked ? undefined : onValueChange;
@@ -135,6 +138,8 @@ export function LockableValueField({
             ) : (
               <InputGroupInput
                 id={fieldId}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? validationId : undefined}
                 readOnly={!editableOnValueChange}
                 value={value}
                 onChange={(e) => editableOnValueChange?.(e.target.value)}
@@ -146,6 +151,8 @@ export function LockableValueField({
           ) : locked ? (
             <InputGroupInput
               id={fieldId}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? validationId : undefined}
               readOnly
               value={lockedDisplayValue}
               placeholder={fieldLabel}
@@ -197,6 +204,8 @@ export function LockableValueField({
             <InputGroupInput
               id={fieldId}
               type={fieldType === 'integer' ? 'number' : 'text'}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? validationId : undefined}
               readOnly={!onValueChange}
               value={value}
               onChange={(e) => onValueChange?.(e.target.value)}
@@ -243,6 +252,8 @@ export function LockableValueField({
           {locked ? (
             <Input
               id={fieldId}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? validationId : undefined}
               readOnly
               value={lockedDisplayValue}
               placeholder={fieldLabel}
@@ -295,6 +306,17 @@ export function LockableValueField({
             )
           )}
         </div>
+      )}
+
+      {error && (
+        <p
+          id={validationId}
+          data-slot="lockable-value-field-error"
+          role="alert"
+          className="text-xs leading-4 text-error"
+        >
+          {error}
+        </p>
       )}
     </div>
   );

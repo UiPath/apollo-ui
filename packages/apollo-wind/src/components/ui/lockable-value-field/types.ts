@@ -134,6 +134,10 @@ export interface LockableValueFieldProps {
   onRequiredChange?: (required: boolean) => void;
   /** Overrides the default mode-based label (e.g. a field name instead of "String value"). */
   label?: ReactNode;
+  /** Field-specific validation feedback rendered immediately below the active control. */
+  error?: ReactNode;
+  /** Optional id for the inline validation message. */
+  errorId?: string;
   /** Accessible name for the file-upload dropzone. Defaults to a string `label`, then the computed field label. */
   fileUploadAriaLabel?: string;
   /** Extra content rendered after the built-in AI assist / Insert variable buttons (e.g. a delete button). */

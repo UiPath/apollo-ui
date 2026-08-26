@@ -5,38 +5,64 @@ import { Input, type InputProps } from '@/components/ui/input';
 import { Textarea, type TextareaProps } from '@/components/ui/textarea';
 import { cn } from '@/lib';
 
+interface InputGroupValidationContextValue {
+  error?: React.ReactNode;
+  errorId?: string;
+}
+
+const InputGroupValidationContext = React.createContext<InputGroupValidationContextValue>({});
+
 export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'ghost';
   size?: 'default' | 'xs';
+  /** Field-specific validation feedback rendered below the grouped control. */
+  error?: React.ReactNode;
+  /** Optional id for the inline validation message. */
+  errorId?: string;
 }
 
 const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
-  ({ className, variant = 'default', size = 'default', ...props }, ref) => {
+  ({ className, error, errorId, variant = 'default', size = 'default', ...props }, ref) => {
+    const generatedId = React.useId();
+    const validationId = errorId ?? `input-group-${generatedId.replace(/:/g, '')}-error`;
+
     return (
-      // biome-ignore lint/a11y/useSemanticElements: input groups need role="group" to convey relationship between the field and its addons
-      <div
-        ref={ref}
-        role="group"
-        className={cn(
-          'group/input-group relative flex w-full items-center gap-2 transition-colors has-[>textarea]:h-auto has-[>textarea]:items-start',
-          // Size (mirrors Input's own size scale, since Input's box chrome moves up to this wrapper)
-          size === 'default' &&
-            'h-9 rounded-md px-3 py-1 future:h-10 future:rounded-xl future:py-2',
-          size === 'xs' && 'h-6 gap-1 rounded px-2',
-          // Variant (mirrors Input's own variant treatment exactly)
-          variant === 'default' &&
-            'border border-input bg-transparent future:border-0 future:bg-surface-overlay',
-          variant === 'ghost' && 'border-0 bg-surface-overlay',
-          // Focus state, forwarded from the inner control
-          'has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-ring future:has-[[data-slot=input-group-control]:focus-visible]:ring-offset-2 future:has-[[data-slot=input-group-control]:focus-visible]:ring-offset-background',
-          // Error state
-          'has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot][aria-invalid=true]]:ring-destructive/20',
-          // Disabled state
-          'has-[[data-slot=input-group-control]:disabled]:cursor-not-allowed has-[[data-slot=input-group-control]:disabled]:opacity-50',
-          className
+      <InputGroupValidationContext.Provider value={{ error, errorId: validationId }}>
+        {/* biome-ignore lint/a11y/useSemanticElements: input groups need role="group" to convey relationship between the field and its addons */}
+        <div
+          ref={ref}
+          role="group"
+          className={cn(
+            'group/input-group relative flex w-full items-center gap-2 transition-colors has-[>textarea]:h-auto has-[>textarea]:items-start',
+            // Size (mirrors Input's own size scale, since Input's box chrome moves up to this wrapper)
+            size === 'default' &&
+              'h-9 rounded-md px-3 py-1 future:h-10 future:rounded-xl future:py-2',
+            size === 'xs' && 'h-6 gap-1 rounded px-2',
+            // Variant (mirrors Input's own variant treatment exactly)
+            variant === 'default' &&
+              'border border-input bg-transparent future:border-0 future:bg-surface-overlay',
+            variant === 'ghost' && 'border-0 bg-surface-overlay',
+            // Focus state, forwarded from the inner control
+            'has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-ring future:has-[[data-slot=input-group-control]:focus-visible]:ring-offset-2 future:has-[[data-slot=input-group-control]:focus-visible]:ring-offset-background',
+            // Error state
+            'has-[[data-slot][aria-invalid=true]]:border-error has-[[data-slot][aria-invalid=true]]:ring-error/20 future:has-[[data-slot][aria-invalid=true]]:ring-1 future:has-[[data-slot][aria-invalid=true]]:ring-error/40',
+            // Disabled state
+            'has-[[data-slot=input-group-control]:disabled]:cursor-not-allowed has-[[data-slot=input-group-control]:disabled]:opacity-50',
+            className
+          )}
+          {...props}
+        />
+        {error && (
+          <p
+            id={validationId}
+            data-slot="input-group-error"
+            role="alert"
+            className="mt-1 text-xs leading-4 text-error"
+          >
+            {error}
+          </p>
         )}
-        {...props}
-      />
+      </InputGroupValidationContext.Provider>
     );
   }
 );
@@ -123,20 +149,33 @@ const InputGroupText = React.forwardRef<HTMLSpanElement, InputGroupTextProps>(
 );
 InputGroupText.displayName = 'InputGroupText';
 
-export interface InputGroupInputProps extends Omit<InputProps, 'variant' | 'size'> {}
+export interface InputGroupInputProps
+  extends Omit<InputProps, 'variant' | 'size' | 'error' | 'errorId'> {}
 
 const InputGroupInput = React.forwardRef<HTMLInputElement, InputGroupInputProps>(
-  ({ className, ...props }, ref) => {
+  (
+    { 'aria-describedby': ariaDescribedBy, 'aria-invalid': ariaInvalid, className, ...props },
+    ref
+  ) => {
+    const validation = React.useContext(InputGroupValidationContext);
+    const describedBy = [ariaDescribedBy, validation.error ? validation.errorId : undefined]
+      .filter(Boolean)
+      .join(' ');
+
     return (
-      <Input
-        ref={ref}
-        data-slot="input-group-control"
-        className={cn(
-          'h-full flex-1 rounded-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:h-full future:rounded-none future:border-0 future:bg-transparent future:p-0 future:focus-visible:ring-offset-0',
-          className
-        )}
-        {...props}
-      />
+      <div className="min-w-0 flex-1">
+        <Input
+          ref={ref}
+          data-slot="input-group-control"
+          aria-describedby={describedBy || undefined}
+          aria-invalid={validation.error ? true : ariaInvalid}
+          className={cn(
+            'h-full w-full rounded-none !border-0 !ring-0 bg-transparent p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:h-full future:rounded-none future:border-0 future:bg-transparent future:p-0 future:focus-visible:ring-offset-0',
+            className
+          )}
+          {...props}
+        />
+      </div>
     );
   }
 );
@@ -145,13 +184,23 @@ InputGroupInput.displayName = 'InputGroupInput';
 export interface InputGroupTextareaProps extends Omit<TextareaProps, 'variant'> {}
 
 const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, InputGroupTextareaProps>(
-  ({ className, ...props }, ref) => {
+  (
+    { 'aria-describedby': ariaDescribedBy, 'aria-invalid': ariaInvalid, className, ...props },
+    ref
+  ) => {
+    const validation = React.useContext(InputGroupValidationContext);
+    const describedBy = [ariaDescribedBy, validation.error ? validation.errorId : undefined]
+      .filter(Boolean)
+      .join(' ');
+
     return (
       <Textarea
         ref={ref}
         data-slot="input-group-control"
+        aria-describedby={describedBy || undefined}
+        aria-invalid={validation.error ? true : ariaInvalid}
         className={cn(
-          'min-h-0 flex-1 resize-none rounded-none border-0 bg-transparent p-0 py-2 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:rounded-none future:border-0 future:bg-transparent future:focus-visible:ring-offset-0',
+          'min-h-0 flex-1 resize-none rounded-none !border-0 !ring-0 bg-transparent p-0 py-2 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:rounded-none future:border-0 future:bg-transparent future:focus-visible:ring-offset-0',
           className
         )}
         {...props}
