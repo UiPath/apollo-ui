@@ -8,11 +8,17 @@ export function isSeparator(item: ProcessedToolbarItem): item is ToolbarSeparato
 }
 
 /**
- * Returns the config with every action disabled, separators untouched. Locks a
- * read-only node's toolbar instead of unmounting it: the greyed-out actions
- * (with their tooltips intact) say "read-only", where a missing toolbar just
- * reads as a node with nothing to offer. Disabling is also real enforcement,
- * since a consumer's `onAction` never reaches the canvas-level delete veto.
+ * Returns the config with every mutating action disabled, separators and
+ * actions marked `allowWhenReadOnly` untouched. Locks a read-only node's
+ * toolbar instead of unmounting it: the greyed-out actions (with their tooltips
+ * intact) say "read-only", where a missing toolbar just reads as a node with
+ * nothing to offer. Disabling is also real enforcement, since a consumer's
+ * `onAction` never reaches the canvas-level delete veto.
+ *
+ * Opting out is per action rather than per node because a single toolbar mixes
+ * both kinds: Copy and Drill into are safe on a locked node, Cut and Delete are
+ * not. An action that says nothing is disabled, so the safe default survives
+ * new actions.
  */
 export function lockToolbarConfig(config: NodeToolbarConfig): NodeToolbarConfig {
   return {
@@ -23,4 +29,14 @@ export function lockToolbarConfig(config: NodeToolbarConfig): NodeToolbarConfig 
 }
 
 const disableActions = (actions: ToolbarAction[]): ToolbarAction[] =>
-  actions.map((action) => (action.id === 'separator' ? action : { ...action, disabled: true }));
+  actions.map((action) => {
+    if (isSeparatorAction(action) || action.allowWhenReadOnly) return action;
+    return { ...action, disabled: true };
+  });
+
+/**
+ * `ToolbarActionItem.id` is a plain string, so comparing it to `'separator'`
+ * cannot narrow the union on its own — a predicate can.
+ */
+const isSeparatorAction = (action: ToolbarAction): action is ToolbarSeparator =>
+  action.id === 'separator';
