@@ -3,7 +3,7 @@ import type { NodeToolbarConfig } from './NodeToolbar.types';
 
 export type ProcessedToolbarItem = ExtendedToolbarAction | ToolbarSeparator;
 
-export function isSeparator(item: ProcessedToolbarItem): item is ToolbarSeparator {
+export function isSeparator(item: ProcessedToolbarItem | ToolbarAction): item is ToolbarSeparator {
   return item.id === 'separator';
 }
 
@@ -30,13 +30,6 @@ export function lockToolbarConfig(config: NodeToolbarConfig): NodeToolbarConfig 
 
 const disableActions = (actions: ToolbarAction[]): ToolbarAction[] =>
   actions.map((action) => {
-    if (isSeparatorAction(action) || action.allowWhenReadOnly) return action;
+    if (isSeparator(action) || action.allowWhenReadOnly) return action;
     return { ...action, disabled: true };
   });
-
-/**
- * `ToolbarActionItem.id` is a plain string, so comparing it to `'separator'`
- * cannot narrow the union on its own — a predicate can.
- */
-const isSeparatorAction = (action: ToolbarAction): action is ToolbarSeparator =>
-  action.id === 'separator';
