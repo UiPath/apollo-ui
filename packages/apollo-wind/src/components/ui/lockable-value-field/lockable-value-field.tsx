@@ -57,6 +57,7 @@ export function LockableValueField({
   onValueBlur,
   locked = true,
   onLockedChange,
+  leadingAddon,
   mode = 'fixed',
   onModeChange,
   renderExpressionEditor,
@@ -121,7 +122,7 @@ export function LockableValueField({
       {typeMeta.supportsExpression ? (
         <InputGroup error={error} errorId={validationId}>
           <InputGroupAddon align="inline-start">
-            <LockToggleButton locked={locked} onLockedChange={onLockedChange} />
+            {leadingAddon ?? <LockToggleButton locked={locked} onLockedChange={onLockedChange} />}
           </InputGroupAddon>
 
           {effectiveMode === 'expression' ? (

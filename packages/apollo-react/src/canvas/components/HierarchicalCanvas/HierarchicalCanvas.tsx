@@ -50,7 +50,8 @@ import {
 import { viewportManager } from '../../stores/viewportManager';
 import { DefaultCanvasTranslations } from '../../types';
 import type { CanvasLevel } from '../../types/canvas.types';
-import { type CanvasHandleActionEvent, isContainerNodeManifest } from '../../utils';
+import type { CanvasHandleActionEvent } from '../../utils/CanvasEventBus';
+import { isContainerNodeManifest } from '../../utils/container';
 import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { prefersReducedMotion } from '../../utils/transitions';
@@ -58,7 +59,7 @@ import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
 import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
 import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { BaseCanvas, type BaseCanvasRef } from '../BaseCanvas';
-import { BaseNode } from '../BaseNode';
+import { BaseNode } from '../BaseNode/BaseNode';
 import { BlankCanvasNode } from '../BlankCanvasNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { LoopCanvasNode } from '../LoopNode';

@@ -107,6 +107,11 @@ export interface LockableValueFieldProps {
   locked?: boolean;
   /** Called when the user toggles the lock. */
   onLockedChange?: (locked: boolean) => void;
+  /**
+   * Replaces the leading lock toggle with a semantic prefix such as `=`. This is presentational:
+   * consumers must also set `locked={false}` when the replacement field should remain editable.
+   */
+  leadingAddon?: ReactNode;
   /** Fixed value vs. JS expression. Defaults to 'fixed'. Ignored for types that don't support expressions. */
   mode?: LockableValueFieldMode;
   /** Called when the user switches modes. */

@@ -1,0 +1,937 @@
+<title>Variables Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --bg: #f5f6fa;
+    --surface: #ffffff;
+    --surface-alt: #ecedf4;
+    --ink: #171a23;
+    --ink-muted: #4b5165;
+    --ink-faint: #7d829a;
+    --line: #dcdee7;
+    --line-strong: #c3c6d6;
+    --accent: #0f8a82;
+    --accent-ink: #066159;
+    --accent-soft: #d9f0ed;
+
+    --dir-in: #2f6fed;
+    --dir-in-soft: #e3ecff;
+    --dir-out: #16a34a;
+    --dir-out-soft: #e0f6e8;
+    --dir-inout: #9333ea;
+    --dir-inout-soft: #f2e4fc;
+    --dir-node: #c2760a;
+    --dir-node-soft: #fbeed7;
+
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --font-body: "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12131a;
+      --surface: #191b24;
+      --surface-alt: #20222d;
+      --ink: #e9eaf2;
+      --ink-muted: #a4a8bd;
+      --ink-faint: #767b93;
+      --line: #2c2f3d;
+      --line-strong: #3a3e50;
+      --accent: #33bdb2;
+      --accent-ink: #7fe0d6;
+      --accent-soft: #163431;
+
+      --dir-in: #6f97f7;
+      --dir-in-soft: #1c2740;
+      --dir-out: #4ade80;
+      --dir-out-soft: #163524;
+      --dir-inout: #c084fc;
+      --dir-inout-soft: #2c1f42;
+      --dir-node: #f0a93d;
+      --dir-node-soft: #3a2b12;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #12131a;
+    --surface: #191b24;
+    --surface-alt: #20222d;
+    --ink: #e9eaf2;
+    --ink-muted: #a4a8bd;
+    --ink-faint: #767b93;
+    --line: #2c2f3d;
+    --line-strong: #3a3e50;
+    --accent: #33bdb2;
+    --accent-ink: #7fe0d6;
+    --accent-soft: #163431;
+
+    --dir-in: #6f97f7;
+    --dir-in-soft: #1c2740;
+    --dir-out: #4ade80;
+    --dir-out-soft: #163524;
+    --dir-inout: #c084fc;
+    --dir-inout-soft: #2c1f42;
+    --dir-node: #f0a93d;
+    --dir-node-soft: #3a2b12;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent-ink); text-decoration: none; border-bottom: 1px solid currentColor; }
+  a:hover { opacity: 0.8; }
+  a:focus-visible, button:focus-visible, .navlink:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  code, .mono { font-family: var(--font-mono); }
+
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 56px;
+  }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; gap: 0; }
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    grid-column: 1 / -1;
+    padding: 64px 0 40px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 1px;
+    display: inline-block;
+    transform: rotate(45deg);
+  }
+  h1.title {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: clamp(2.6rem, 6vw, 4rem);
+    letter-spacing: -0.01em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .dek {
+    max-width: 62ch;
+    font-size: 1.15rem;
+    color: var(--ink-muted);
+    margin: 0 0 28px;
+    text-wrap: pretty;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .meta-chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-muted);
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 5px 10px;
+  }
+
+  /* ---------- Nav rail ---------- */
+  nav.rail {
+    padding-top: 48px;
+  }
+  nav.rail .rail-inner {
+    position: sticky;
+    top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  nav.rail .navlabel {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+  .navlink {
+    font-size: 13.5px;
+    color: var(--ink-muted);
+    border-bottom: none;
+    padding: 7px 10px;
+    border-radius: 6px;
+    border-left: 2px solid transparent;
+  }
+  .navlink:hover { color: var(--ink); background: var(--surface-alt); }
+  @media (max-width: 900px) {
+    nav.rail {
+      padding-top: 24px;
+      overflow-x: auto;
+    }
+    nav.rail .rail-inner {
+      position: static;
+      flex-direction: row;
+      gap: 6px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 20px;
+    }
+    nav.rail .navlabel { display: none; }
+    .navlink { white-space: nowrap; background: var(--surface-alt); }
+  }
+
+  /* ---------- Main column ---------- */
+  main { padding-top: 48px; min-width: 0; }
+  section { margin-bottom: 76px; scroll-margin-top: 24px; }
+  section:last-child { margin-bottom: 0; }
+
+  .sec-head { margin-bottom: 24px; }
+  .sec-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    display: block;
+  }
+  h2 {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 3vw, 1.9rem);
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  .sec-intro {
+    max-width: 66ch;
+    color: var(--ink-muted);
+    font-size: 1.02rem;
+  }
+  h3 {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 36px 0 12px;
+    color: var(--ink);
+  }
+  p { max-width: 68ch; }
+  p.wide { max-width: none; }
+
+  /* ---------- Direction legend ---------- */
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin: 18px 0 8px;
+  }
+  .legend-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .legend-swatch {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 1px;
+  }
+  .legend-swatch.in { background: var(--dir-in-soft); color: var(--dir-in); }
+  .legend-swatch.out { background: var(--dir-out-soft); color: var(--dir-out); }
+  .legend-swatch.inout { background: var(--dir-inout-soft); color: var(--dir-inout); }
+  .legend-swatch.node { background: var(--dir-node-soft); color: var(--dir-node); }
+  .legend-body .legend-title {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .legend-body .legend-title .direction-tag.in { color: var(--dir-in); }
+  .legend-body .legend-title .direction-tag.out { color: var(--dir-out); }
+  .legend-body .legend-title .direction-tag.inout { color: var(--dir-inout); }
+  .legend-body .legend-title .direction-tag.node { color: var(--dir-node); }
+  .legend-body p { margin: 0; font-size: 13.5px; color: var(--ink-muted); max-width: none; }
+
+  /* ---------- Data model table ---------- */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; margin: 18px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--surface); }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface-alt);
+    white-space: nowrap;
+  }
+  tr:last-child td { border-bottom: none; }
+  td .fieldname { font-family: var(--font-mono); font-size: 13px; color: var(--accent-ink); font-weight: 500; }
+  td.muted { color: var(--ink-muted); }
+
+  /* ---------- Card grid (touchpoint map) ---------- */
+  .group-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin: 32px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .group-label:first-of-type { margin-top: 20px; }
+  .group-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  .touch-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .touch-card .comp {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .touch-card .trigger {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    align-self: flex-start;
+  }
+  .touch-card p { margin: 0; font-size: 13.5px; color: var(--ink-muted); max-width: none; }
+
+  /* ---------- User paths ---------- */
+  .path-list { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
+  .path-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .path-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .path-title { font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
+  .path-intent { margin-top: 3px; color: var(--ink-muted); font-size: 13px; }
+  .path-badge {
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    padding: 3px 9px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .path-steps {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .path-step {
+    position: relative;
+    min-width: 132px;
+    flex: 1 0 132px;
+    border-radius: 9px;
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    padding: 11px 12px;
+  }
+  .path-step:not(:last-child)::after {
+    content: ">";
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    z-index: 2;
+    width: 15px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink-faint);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .path-step-num {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--accent-ink);
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .path-step strong { display: block; font-size: 12.5px; line-height: 1.35; }
+  .path-step span:last-child {
+    display: block;
+    margin-top: 4px;
+    color: var(--ink-muted);
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
+  .path-question {
+    margin: 14px 0 0;
+    border-left: 2px solid var(--accent);
+    padding-left: 10px;
+    color: var(--ink-muted);
+    font-size: 12.5px;
+    font-style: italic;
+  }
+
+  /* ---------- Panel anatomy ---------- */
+  .anatomy {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface);
+    margin: 20px 0;
+  }
+  .anatomy-row {
+    display: grid;
+    grid-template-columns: 190px minmax(0,1fr);
+    border-bottom: 1px solid var(--line);
+  }
+  .anatomy-row:last-child { border-bottom: none; }
+  .anatomy-tag {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent-ink);
+    background: var(--surface-alt);
+    padding: 14px 16px;
+    border-right: 1px solid var(--line);
+  }
+  .anatomy-desc { padding: 14px 18px; font-size: 13.75px; color: var(--ink-muted); }
+  .anatomy-desc strong { color: var(--ink); font-weight: 600; }
+  @media (max-width: 640px) {
+    .anatomy-row { grid-template-columns: 1fr; }
+    .anatomy-tag { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+
+  /* ---------- Callout (in-flight redesign) ---------- */
+  .callout {
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin: 22px 0;
+  }
+  .callout-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .callout-label .pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .callout p { max-width: none; color: var(--ink); font-size: 14.5px; }
+  .callout ul { margin: 10px 0 0; padding-left: 20px; }
+  .callout li { margin-bottom: 8px; font-size: 14.5px; }
+  .callout code { font-size: 13px; background: var(--surface); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); }
+
+  /* ---------- Threads (numbered prompts) ---------- */
+  .thread-list { display: flex; flex-direction: column; gap: 16px; margin-top: 18px; }
+  .thread {
+    display: grid;
+    grid-template-columns: 40px minmax(0,1fr);
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+  }
+  .thread:first-child { border-top: none; padding-top: 0; }
+  .thread-num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-faint);
+    padding-top: 2px;
+  }
+  .thread-body p { margin: 0; max-width: 62ch; font-size: 14.5px; }
+  .thread-body .thread-title { font-weight: 600; margin-bottom: 4px; display: block; font-size: 15px; }
+
+  /* ---------- Source map ---------- */
+  .src-table td .path { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink); word-break: break-all; }
+  .src-table td .role { font-size: 13px; }
+
+  footer {
+    grid-column: 1 / -1;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    font-family: var(--font-mono);
+  }
+</style>
+
+<div class="shell">
+  <header class="masthead">
+    <div class="eyebrow">Research brief — canvas package</div>
+    <h1 class="title">Variables</h1>
+    <p class="dek">What a "variable" actually means in the flow editor, every place a builder currently runs into one, and how each of those places renders it today — compiled as raw material for concepting, not a proposal.</p>
+    <div class="meta-row">
+      <span class="meta-chip">scope: @flow/canvas</span>
+      <span class="meta-chip">branch: codex/MST-11724</span>
+      <span class="meta-chip">compiled 2026-08-26</span>
+    </div>
+  </header>
+
+  <nav class="rail">
+    <div class="rail-inner">
+      <span class="navlabel">Contents</span>
+      <a class="navlink" href="#model">01 · The mental model</a>
+      <a class="navlink" href="#touchpoints">02 · Where people touch them</a>
+      <a class="navlink" href="#paths">03 · User paths</a>
+      <a class="navlink" href="#presentation">04 · How they're shown today</a>
+      <a class="navlink" href="#inflight">05 · Live in this branch</a>
+      <a class="navlink" href="#threads">06 · Threads worth pulling</a>
+      <a class="navlink" href="#sourcemap">07 · Source map</a>
+    </div>
+  </nav>
+
+  <main>
+
+    <section id="model">
+      <div class="sec-head">
+        <span class="sec-num">01</span>
+        <h2>The mental model</h2>
+        <p class="sec-intro">"Variable" is an umbrella over four genuinely different things. They share one storage shape and one reference syntax, but a builder meets them under different names, in different places, created by different actors.</p>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-swatch in">↓</div>
+          <div class="legend-body">
+            <div class="legend-title"><span class="direction-tag in">in</span> — Input</div>
+            <p>Data the caller provides when the workflow starts. Grouped under whichever trigger node it belongs to; a connector trigger's inputs come pre-shaped from its manifest and can't be edited.</p>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch out">↑</div>
+          <div class="legend-body">
+            <div class="legend-title"><span class="direction-tag out">out</span> — Output</div>
+            <p>Data the workflow hands back on completion. Declared once at the workflow boundary; its value is whatever the author wires to it, or a literal default.</p>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch inout">⛁</div>
+          <div class="legend-body">
+            <div class="legend-title"><span class="direction-tag inout">inout</span> — Variable (state)</div>
+            <p>Internal, mutable, lives for the run. The only kind a node can write to mid-flow, via a per-node list of "variable updates" — an id plus an expression.</p>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch node">▢</div>
+          <div class="legend-body">
+            <div class="legend-title"><span class="direction-tag node">node output</span> — informal</div>
+            <p>Not declared by the author at all — it's whatever a node's own output definition says it produces. Becomes referenceable the moment the node exists; this is the largest category in most real workflows.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Storage shape — <code>WorkflowVariable</code></h3>
+      <p>Every declared variable (in / out / inout — not node outputs, which come from the node's own manifest) is the same Zod shape, defined once in <code>flow-schema</code>:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>field</th><th>purpose</th></tr></thead>
+          <tbody>
+            <tr><td><span class="fieldname">id</span></td><td>Unique identifier, referenced in expressions as <code>$vars.{id}</code>.</td></tr>
+            <tr><td><span class="fieldname">direction</span></td><td><code>'in' | 'out' | 'inout'</code> — see legend above.</td></tr>
+            <tr><td><span class="fieldname">type</span></td><td>String tag — <code>string</code> / <code>number</code> / <code>boolean</code> / <code>object</code> / <code>array</code> / <code>file</code>.</td></tr>
+            <tr><td><span class="fieldname">subType</span></td><td>Optional refinement (e.g. array item type).</td></tr>
+            <tr><td><span class="fieldname">schema</span></td><td>Full JSON Schema for <code>object</code>/<code>array</code> — authored via the visual Schema panel or a raw JSON toggle.</td></tr>
+            <tr><td><span class="fieldname">defaultValue</span></td><td>Only meaningful for <code>in</code> and <code>inout</code>.</td></tr>
+            <tr><td><span class="fieldname">description</span></td><td>Free text — doubles as intellisense hint text and (for agent outputs) as guidance to the model.</td></tr>
+            <tr><td><span class="fieldname">triggerNodeId</span></td><td>Present only on root-level <code>in</code> variables — ties an input to the specific trigger node it belongs to.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Scoping is graph-shaped, not text-ordered</h3>
+      <p class="wide">What's "available" at a node is computed fresh from the graph every time — <code>getUpstreamNodes</code> walks backward through edges (skipping loop-terminal edges so a loop body can't see its own future iteration), then <code>getAvailableVariables</code> collects every upstream node's outputs. Consequences a builder feels but rarely sees explained: a container (loop) node creates a nested scope — sibling loops at the same level can't see each other's variables, but a loop nested inside another loop still sees the parent loop's; a gateway's synthetic branch outputs are suppressed from every node except the one they were generated for; an <code>error</code> output only enters scope once a real edge is drawn from that node's error handle.</p>
+
+      <h3>Two adjacent concepts that are <em>not</em> <code>WorkflowVariable</code></h3>
+      <p class="wide"><strong>Environment variables</strong> are project-scoped, not workflow-scoped — a flat key/value set for coded agents, backed by an <code>EnvironmentVariablesService</code> that the VS Code host swaps for a real on-disk <code>.env</code> file. <strong>File-type variables</strong> aren't a distinct direction, but every file variable gets a canonical shape silently backfilled (<code>{ ID, FullName, MimeType, Metadata }</code>) so its tree row renders consistently no matter where it was declared.</p>
+    </section>
+
+    <section id="touchpoints">
+      <div class="sec-head">
+        <span class="sec-num">02</span>
+        <h2>Where people actually touch them</h2>
+        <p class="sec-intro">Thirteen distinct surfaces, none of which is "the" variables feature — a builder assembles their understanding out of whichever ones they happen to hit.</p>
+      </div>
+
+      <div class="group-label">Declare &amp; manage</div>
+      <div class="card-grid">
+        <div class="touch-card">
+          <span class="comp">Variables panel</span>
+          <span class="trigger">docked panel, always mounted</span>
+          <p>The one place that lists everything at once — inputs by trigger, outputs, state variables, then one collapsible group per node that produces output. A "Selected node" toggle scopes the whole list down to what that node can actually see.</p>
+        </div>
+        <div class="touch-card">
+          <span class="comp">Add / edit variable dialog</span>
+          <span class="trigger">"+" on any section header</span>
+          <p>Name, type, description, a type-appropriate default-value field, and — for object/array — a visual schema builder or raw JSON toggle.</p>
+        </div>
+        <div class="touch-card">
+          <span class="comp">Rename dialog</span>
+          <span class="trigger">pencil icon next to a locked ID</span>
+          <p>Renaming is gated behind its own dialog because it has to rewrite every expression that references the old id — the dialog surfaces a live reference count before you commit.</p>
+        </div>
+        <div class="touch-card">
+          <span class="comp">Schema panel</span>
+          <span class="trigger">"Define schema" on an object/array variable</span>
+          <p>Simple/Advanced JSON Schema editor, shared with node input/output definitions — not variable-specific, but variables are one of its biggest consumers.</p>
+        </div>
+      </div>
+
+      <div class="group-label">Reference in an expression</div>
+      <div class="card-grid">
+        <div class="touch-card">
+          <span class="comp">Variable picker</span>
+          <span class="trigger">type <code class="mono">$</code> in any code field</span>
+          <p>Virtualized, keyboard-navigable tree grouped by prefix — <code>$vars</code> starts open, <code>$self</code> and <code>$metadata</code> start collapsed. Filtering force-expands whatever still matches. Data Fabric live references carry a <strong>LIVE QUERY</strong> badge with a tooltip summarizing the entity + query behind it.</p>
+        </div>
+        <div class="touch-card">
+          <span class="comp">Prompt editor</span>
+          <span class="trigger">Lexical-based, agent prompt fields</span>
+          <p>Variables render as pills inline in the prompt text rather than raw <code>$vars.x</code> strings — its own plugin model, not interchangeable with the CodeMirror/Monaco fields used elsewhere.</p>
+        </div>
+        <div class="touch-card">
+          <span class="comp">Code editor variable highlighting</span>
+          <span class="trigger">ambient, while typing</span>
+          <p>A CodeMirror decoration plugin colors <code>$vars.x</code> tokens distinctly from surrounding script — the only place a variable reference gets a visual identity outside the picker itself.</p>
+        </div>
+      </div>
+
+      <div class="group-label">Assign a value</div>
+      <div class="card-grid">
+        <div class="touch-card">
+          <span class="comp">Variable update editor</span>
+          <span class="trigger">on a node, one row per assignment</span>
+          <p>The only place a node writes to state. Pick an existing <code>inout</code> variable or create one inline; the expression field defaults to a type-appropriate stub (<code>0</code>, <code>[]</code>, <code>true</code>...) so it opens already in the right mode.</p>
+        </div>
+        <div class="touch-card">
+          <span class="comp">Output default-value field</span>
+          <span class="trigger">inside the add/edit dialog, direction = out</span>
+          <p>A workflow output's fallback value when nothing else maps to it — type-switches its own input control (text / number / switch / JSON textarea).</p>
+        </div>
+      </div>
+
+      <div class="group-label">Configure a node's own I/O</div>
+      <div class="card-grid">
+        <div class="touch-card">
+          <span class="comp">Output variables editor</span>
+          <span class="trigger">agent / subflow node properties</span>
+          <p>Edits a node's own <code>outputs</code> definition — reuses the same add/edit dialog, with an extra "Required" switch for agent outputs (round-trips into <code>outputSchema.required[]</code>).</p>
+        </div>
+        <div class="touch-card">
+          <span class="comp">Subflow input / output editor</span>
+          <span class="trigger">on the subflow node, from the parent level</span>
+          <p>Renders in the parent's properties panel but writes into the child level it drills into — a deliberate break of the usual one-form-one-level rule.</p>
+        </div>
+        <div class="touch-card">
+          <span class="comp">HITL variable remapping</span>
+          <span class="trigger">human-in-the-loop task debug</span>
+          <p>Lets a reviewer re-point a task's inputs to different variables at debug time, without editing the node.</p>
+        </div>
+      </div>
+
+      <div class="group-label">Adjacent surfaces</div>
+      <div class="card-grid">
+        <div class="touch-card">
+          <span class="comp">Input variables dialog</span>
+          <span class="trigger">just before starting a debug run</span>
+          <p>One field per entry-point input, including file upload — uploads happen out of band and the dialog only ever holds a reference to the result, never the file bytes.</p>
+        </div>
+        <div class="touch-card">
+          <span class="comp">Environment variables editor</span>
+          <span class="trigger">coded-agent project settings</span>
+          <p>Flat key/value list, deliberately outside the workflow-variable system described above.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="paths">
+      <div class="sec-head">
+        <span class="sec-num">03</span>
+        <h2>User paths through variables</h2>
+        <p class="sec-intro">Concrete journeys from intent to outcome. Each path highlights the surfaces a builder crosses and the design question that transition creates.</p>
+      </div>
+
+      <div class="path-list">
+        <article class="path-card">
+          <div class="path-header">
+            <div><div class="path-title">Use an existing value</div><div class="path-intent">“I need data from an earlier step in this field.”</div></div>
+            <span class="path-badge">reference</span>
+          </div>
+          <div class="path-steps">
+            <div class="path-step"><span class="path-step-num">01</span><strong>Open workflow</strong><span>Enter the canvas editor.</span></div>
+            <div class="path-step"><span class="path-step-num">02</span><strong>Select a node</strong><span>Open its properties.</span></div>
+            <div class="path-step"><span class="path-step-num">03</span><strong>Choose a field</strong><span>Fixed value or expression?</span></div>
+            <div class="path-step"><span class="path-step-num">04</span><strong>Insert variable</strong><span>Open the scoped picker.</span></div>
+            <div class="path-step"><span class="path-step-num">05</span><strong>Find upstream data</strong><span>Browse or search by meaning.</span></div>
+            <div class="path-step"><span class="path-step-num">06</span><strong>Insert and verify</strong><span>See a token and resolved type.</span></div>
+          </div>
+          <p class="path-question">Design question: can users understand why some values are available here—and why others are not—without learning the graph-scoping model?</p>
+        </article>
+
+        <article class="path-card">
+          <div class="path-header">
+            <div><div class="path-title">Create reusable workflow state</div><div class="path-intent">“I need to save this value and use it later.”</div></div>
+            <span class="path-badge">create</span>
+          </div>
+          <div class="path-steps">
+            <div class="path-step"><span class="path-step-num">01</span><strong>Open workflow</strong><span>Enter the canvas editor.</span></div>
+            <div class="path-step"><span class="path-step-num">02</span><strong>Open Variables</strong><span>Use the left sidebar.</span></div>
+            <div class="path-step"><span class="path-step-num">03</span><strong>Add variable</strong><span>Choose state direction.</span></div>
+            <div class="path-step"><span class="path-step-num">04</span><strong>Define it</strong><span>Name, type, description, default.</span></div>
+            <div class="path-step"><span class="path-step-num">05</span><strong>Save</strong><span>Confirm its reference path.</span></div>
+            <div class="path-step"><span class="path-step-num">06</span><strong>Use in a node</strong><span>Find it through Insert variable.</span></div>
+          </div>
+          <p class="path-question">Design question: should creation begin in the Variables panel, or happen inline at the moment the user realizes they need persistent state?</p>
+        </article>
+
+        <article class="path-card">
+          <div class="path-header">
+            <div><div class="path-title">Change a variable when a node runs</div><div class="path-intent">“When this step completes, update workflow state.”</div></div>
+            <span class="path-badge">assign</span>
+          </div>
+          <div class="path-steps">
+            <div class="path-step"><span class="path-step-num">01</span><strong>Select a node</strong><span>Open its combined panel.</span></div>
+            <div class="path-step"><span class="path-step-num">02</span><strong>Find Changes</strong><span>Locate run-time assignments.</span></div>
+            <div class="path-step"><span class="path-step-num">03</span><strong>Choose a variable</strong><span>Only writable state appears.</span></div>
+            <div class="path-step"><span class="path-step-num">04</span><strong>Set expression</strong><span>Map output or enter a value.</span></div>
+            <div class="path-step"><span class="path-step-num">05</span><strong>Add more changes</strong><span>Review assignment order.</span></div>
+            <div class="path-step"><span class="path-step-num">06</span><strong>Run and inspect</strong><span>Confirm the resulting state.</span></div>
+          </div>
+          <p class="path-question">Design question: how clearly do we distinguish “read this variable” from “write to this variable” when both use similar field controls?</p>
+        </article>
+
+        <article class="path-card">
+          <div class="path-header">
+            <div><div class="path-title">Debug an unexpected value</div><div class="path-intent">“This node received the wrong data. Where did it come from?”</div></div>
+            <span class="path-badge">trace</span>
+          </div>
+          <div class="path-steps">
+            <div class="path-step"><span class="path-step-num">01</span><strong>Run workflow</strong><span>Observe a failed result.</span></div>
+            <div class="path-step"><span class="path-step-num">02</span><strong>Select the node</strong><span>Inspect parameters and outputs.</span></div>
+            <div class="path-step"><span class="path-step-num">03</span><strong>Open Variables</strong><span>Scope the tree to this node.</span></div>
+            <div class="path-step"><span class="path-step-num">04</span><strong>Trace the reference</strong><span>Find producer and writers.</span></div>
+            <div class="path-step"><span class="path-step-num">05</span><strong>Inspect runtime value</strong><span>Compare expected and actual.</span></div>
+            <div class="path-step"><span class="path-step-num">06</span><strong>Correct and rerun</strong><span>Edit the binding or assignment.</span></div>
+          </div>
+          <p class="path-question">Design question: can the product reveal lineage—who produced or last changed a value—without making users manually inspect every node?</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="presentation">
+      <div class="sec-head">
+        <span class="sec-num">04</span>
+        <h2>How they're shown today</h2>
+        <p class="sec-intro">The panel is one component doing five jobs — filter, browse, disambiguate scope, create, and mutate — stacked in a fixed vertical order.</p>
+      </div>
+
+      <h3>Panel anatomy, top to bottom</h3>
+      <div class="anatomy">
+        <div class="anatomy-row">
+          <div class="anatomy-tag">header</div>
+          <div class="anatomy-desc">Either <strong>"Variables"</strong> or, when scoped, <strong>"Scope: {node label}"</strong> — plus the <strong>Selected node</strong> switch that toggles scoping on.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-tag">search</div>
+          <div class="anatomy-desc">Free-text filter across id, name, type, and description — matches force sections and trigger sub-groups open and re-derive every count shown next to a header.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-tag">Inputs</div>
+          <div class="anatomy-desc">Sub-grouped one level deeper, per trigger node — each trigger shows its own icon, label, and node id, with a nested tree for its input shape.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-tag">Outputs</div>
+          <div class="anatomy-desc">Flat list of workflow-level <code>out</code> variables. Always rendered, even empty, so the "+" stays reachable.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-tag">Variables</div>
+          <div class="anatomy-desc">Flat list of <code>inout</code> state variables. Same always-visible treatment.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-tag">per-node groups</div>
+          <div class="anatomy-desc">One collapsible section per node that produces output — icon and label pulled live from the canvas, with a "focus" action that pans/zooms the canvas to that node and selects it.</div>
+        </div>
+      </div>
+
+      <h3>Row anatomy</h3>
+      <p class="wide">Every row shares one primitive (<code>VariableItem</code> / <code>VariableTreeRow</code>): a chevron if it has children, left-padding keyed to nesting depth, the value's type badge, and — only on hover — edit/delete actions so the resting state stays quiet. Object and array variables expand into a recursive schema tree in place, rather than opening a second surface.</p>
+
+      <h3>Add/edit dialog</h3>
+      <p class="wide">Name field validates against an identifier pattern live, with a same-tick check against every existing node id and variable id (collisions are illegal, not just discouraged). The instant the name is valid, a hint line appears showing exactly how it'll resolve in an expression — <code>$vars.name</code> for a plain global, <code>$vars.{node}.output.{name}</code> for anything tied to a trigger or an output node. Changing the data type resets the default value and — for anything other than object/array — silently drops any schema that had been drawn, so the dialog can never save a type/schema mismatch.</p>
+    </section>
+
+    <section id="inflight">
+      <div class="sec-head">
+        <span class="sec-num">05</span>
+        <h2>Live in this branch, right now</h2>
+        <p class="sec-intro">Worth knowing before sketching anything new: this exact area is mid-rework, uncommitted, on this branch.</p>
+      </div>
+
+      <div class="callout">
+        <div class="callout-label"><span class="pulse"></span>uncommitted working-tree changes</div>
+        <p>The team's own next move is already sitting in the working tree — a real signal of where their thinking is headed, not a hypothetical:</p>
+        <ul>
+          <li><strong>The separate "Variables" tab is gone.</strong> It no longer sits beside Properties as its own tab or its own dockable panel — <code>VariablesPanel</code> now renders stacked directly beneath <code>PropertiesPanel</code> inside one scrolling column, divided by a plain border.</li>
+          <li><strong>A new "Changes when this node runs" block</strong> appears above the variables list whenever exactly one node is selected — the <code>VariableUpdateEditor</code> is now generic and always available there, replacing the old approach of registering it per node-type as a form contributor (the <code>update-variable</code> contributor was just removed from the registry).</li>
+          <li><strong>Search was just added</strong> to the panel itself — a plain text input filtering ids, names, types, and descriptions across every section at once, with per-section counts updating live to match.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="threads">
+      <div class="sec-head">
+        <span class="sec-num">06</span>
+        <h2>Threads worth pulling</h2>
+        <p class="sec-intro">Observations, not recommendations — things that stood out while mapping the above that seem worth interrogating during concepting.</p>
+      </div>
+
+      <div class="thread-list">
+        <div class="thread">
+          <span class="thread-num">01</span>
+          <div class="thread-body">
+            <span class="thread-title">One list, four mental models.</span>
+            <p>Declared inputs, declared outputs, internal state, and node-produced values all live in the same flat panel today, distinguished only by section and a small color-coded icon. As workflows lean more agentic — more nodes producing more of their own outputs — that fourth, undeclared category keeps growing while the other three stay roughly fixed in size.</p>
+          </div>
+        </div>
+        <div class="thread">
+          <span class="thread-num">02</span>
+          <div class="thread-body">
+            <span class="thread-title">The reference syntax is the interface.</span>
+            <p><code>$vars.x</code> shows up as the literal hint text in the add dialog, the placeholder text in the update editor, and the label in the picker. It's precise, but it's also implementation vocabulary surfacing everywhere a less technical builder looks for help.</p>
+          </div>
+        </div>
+        <div class="thread">
+          <span class="thread-num">03</span>
+          <div class="thread-body">
+            <span class="thread-title">No trace of "who wrote this last."</span>
+            <p>A state variable can be updated by any number of nodes scattered across the graph. Nothing in the panel today answers "which nodes write to this one" — you'd have to open every node's properties and check its update list individually.</p>
+          </div>
+        </div>
+        <div class="thread">
+          <span class="thread-num">04</span>
+          <div class="thread-body">
+            <span class="thread-title">Three editors, one underlying shape.</span>
+            <p>Workflow inputs, trigger inputs, and subflow inputs are all the same <code>WorkflowVariable</code> with <code>direction: 'in'</code>, but a builder meets them through three differently-shaped editors depending on which boundary they're standing at.</p>
+          </div>
+        </div>
+        <div class="thread">
+          <span class="thread-num">05</span>
+          <div class="thread-body">
+            <span class="thread-title">Scale has no story yet.</span>
+            <p>The picker is virtualized because expression-time lookups can get long; the panel itself is not — every section renders in full. Search just landed as a first answer, but a workflow with a few hundred variables would still be a very long scroll.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sourcemap">
+      <div class="sec-head">
+        <span class="sec-num">07</span>
+        <h2>Source map</h2>
+        <p class="sec-intro">For anyone who wants to go straight to the code.</p>
+      </div>
+      <div class="table-wrap src-table">
+        <table>
+          <thead><tr><th>path</th><th>what's there</th></tr></thead>
+          <tbody>
+            <tr><td><span class="path">packages/flow-schema/src/workflow-core.ts</span></td><td class="role">Canonical <code>workflowVariableSchema</code> + variable-update schema.</td></tr>
+            <tr><td><span class="path">packages/canvas/src/components/variables-panel/</span></td><td class="role">The panel itself, plus the add/edit/rename dialogs, tree rows, and pure helpers (<code>save-variable.ts</code>, <code>variable-helpers.ts</code>).</td></tr>
+            <tr><td><span class="path">packages/canvas/src/components/properties-panel/VariableUpdateEditor.tsx</span></td><td class="role">The "Set Variable" list editor for a single node.</td></tr>
+            <tr><td><span class="path">packages/canvas/src/components/properties-panel/VariablePicker.tsx</span></td><td class="role">The <code>$</code>-triggered autocomplete tree.</td></tr>
+            <tr><td><span class="path">packages/canvas/src/services/ScopeService.ts</span></td><td class="role"><code>getUpstreamNodes</code>, <code>getAvailableVariables</code>, <code>getNodeOutputVariables</code> — the scoping engine.</td></tr>
+            <tr><td><span class="path">packages/canvas/src/context/VariablesContext.tsx</span></td><td class="role">Enrichment + the hooks (<code>useWritableVariables</code>, <code>useNodeVariableUpdates</code>, …) that everything above reads from.</td></tr>
+            <tr><td><span class="path">packages/canvas/src/components/hierarchical-canvas/panel-layout/</span></td><td class="role">Where the panel gets docked/seeded — currently mid-change, see §04.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>compiled from repo state on codex/MST-11724 — 2026-08-26 — for internal concepting use</footer>
+</div>

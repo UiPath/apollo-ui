@@ -20,6 +20,11 @@ and (for scalar types) switched between a literal value and a JS expression.
 
 - Left lock icon toggles Editable / Read-only. Read-only fields show plain
   text, not a disabled control.
+- Use the default lock control when a user can intentionally freeze or unlock
+  a configurable form value. For assignment/binding fields that should remain
+  editable, use the leadingAddon prop to replace the lock with a semantic
+  prefix such as an equals sign, and set locked to false. The addon changes presentation only; it
+  does not change editability.
 - Right value-mode icon switches between Fixed value and Expression,
   updating the value styling. Only shown for types an expression can
   produce.
@@ -137,6 +142,43 @@ export const InlineValidation: Story = {
       },
     },
   },
+};
+
+function AssignmentExpressionDemo() {
+  const [value, setValue] = useState('$vars.flowArray');
+  const [mode, setMode] = useState<LockableValueFieldMode>('expression');
+
+  return (
+    <div className="w-80">
+      <LockableValueField
+        label="Collection"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        leadingAddon={
+          <span
+            className="font-mono text-sm font-semibold text-foreground-accent"
+            aria-hidden="true"
+          >
+            =
+          </span>
+        }
+        mode={mode}
+        onModeChange={setMode}
+        variables={[{ label: 'Flow array', value: '$vars.flowArray' }]}
+      />
+    </div>
+  );
+}
+
+/**
+ * Assignment and binding fields are continuously editable, so `=` communicates
+ * expression assignment more clearly than a lock/unlock action. `leadingAddon`
+ * replaces only the visual control; `locked={false}` provides the editable state.
+ */
+export const AssignmentExpression: Story = {
+  name: 'Assignment expression (=)',
+  render: () => <AssignmentExpressionDemo />,
 };
 
 /**
