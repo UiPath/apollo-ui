@@ -763,6 +763,14 @@ body.canvas, .canvas {
   --color-gradient-human-end: var(--color-gradient-human-end);
 }
 
+/* `stroke-2` is the documented way to opt out of the icon-weight default in
+ * @layer base below. Tailwind only emits utilities it finds while scanning
+ * source, and nothing here writes `stroke-2`, so it would be missing from the
+ * prebuilt `styles.css` — the escape hatch has to exist for consumers who ship
+ * that file rather than building from `tailwind.css` with their own @source.
+ * Only 2 needs this; any other weight is still reachable via the prop. */
+@source inline("stroke-2");
+
 @layer base {
   * {
     border-color: var(--color-border-de-emp);
@@ -770,6 +778,29 @@ body.canvas, .canvas {
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Icon weight — lucide ships a 2px stroke, which reads too heavy against
+   * Apollo's type. 1.4 is the design-system default.
+   *
+   * lucide has no theming API (no provider, no context — `Icon` hard-codes
+   * `strokeWidth = 2` as a default parameter), so CSS is the only lever, and a
+   * stylesheet outranks the presentation attribute the prop compiles to. The
+   * selector therefore matches lucide's default only: every other
+   * `strokeWidth` still works, including the `strokeWidth={0}` filled glyphs
+   * rely on. Only the value 2 is indistinguishable from "no opinion", so
+   * `strokeWidth={2}` meaning "keep this bold" is the one case CSS would
+   * silently thin — write `className="stroke-2"` for that instead. Utilities
+   * sit in the `utilities` layer, which the cascade resolves after `base`
+   * whatever the specificity, so they win.
+   *
+   * This is a stopgap. lucide 1.x adds <LucideProvider strokeWidth={1.4}>,
+   * which makes 1.4 a real React default that props override cleanly, with no
+   * ambiguity around the value 2. Once consumers are on 1.x, replace this rule
+   * with the provider rather than running both — under a provider a deliberate
+   * strokeWidth={2} renders as 2 and would be thinned here all over again. */
+  svg.lucide[stroke-width="2"] {
+    stroke-width: 1.4;
   }
 }
 

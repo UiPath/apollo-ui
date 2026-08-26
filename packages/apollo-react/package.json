@@ -166,6 +166,7 @@
     "access": "public"
   },
   "peerDependencies": {
+    "lucide-react": ">=0.577.0 <2",
     "react": ">=18.3.0",
     "react-dom": ">=18.3.0"
   },
@@ -223,7 +224,6 @@
     "katex": "^0.16.27",
     "lexical": "0.42.0",
     "lodash": "^4.18.1",
-    "lucide-react": "^0.577.0",
     "luxon": "^3.7.1",
     "mermaid": "^11.16.1",
     "motion": "^13.1.0",
@@ -284,6 +284,7 @@
     "esbuild": "^0.28.1",
     "glob": "^13.0.0",
     "happy-dom": "^20.0.0",
+    "lucide-react": "^0.577.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "typescript": "^5.9.3",
