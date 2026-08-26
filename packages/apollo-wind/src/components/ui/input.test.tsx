@@ -52,7 +52,7 @@ describe('Input', () => {
   it('renders inline validation and associates it with the input', () => {
     render(<Input id="node-name" error="Enter a unique name before saving." />);
     const input = screen.getByRole('textbox');
-    const message = screen.getByRole('alert');
+    const message = screen.getByRole('status');
 
     expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(input).toHaveAttribute('aria-describedby', 'node-name-error');

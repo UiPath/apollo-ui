@@ -325,7 +325,9 @@ export function LockableValueField({
         <p
           id={validationId}
           data-slot="lockable-value-field-error"
-          role="alert"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
           className="mt-1 text-xs leading-4 text-error"
         >
           {error}
