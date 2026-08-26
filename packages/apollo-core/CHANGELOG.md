@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.13.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.13.0...@uipath/apollo-core@5.13.1) (2026-08-25)
+
+### Bug Fixes
+
+* **apollo-core:** restore the curtain token's alpha channel ([1ba2948](https://github.com/UiPath/apollo-ui/commit/1ba2948b0a2d70cb75c9e18014fa51db00baf2d8))
+
 ## [@uipath/apollo-core-v5.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.12.1...@uipath/apollo-core@5.13.0) (2026-08-20)
 
 ### Features

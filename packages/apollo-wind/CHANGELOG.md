@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.36.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.36.1...@uipath/apollo-wind@2.36.2) (2026-08-25)
+
+### Bug Fixes
+
+* **apollo-wind:** quality pass across the component library ([f4f880f](https://github.com/UiPath/apollo-ui/commit/f4f880f29a514be8520cc40e311322f03326140c))
+
 ## [@uipath/apollo-wind-v2.36.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.36.0...@uipath/apollo-wind@2.36.1) (2026-08-25)
 
 ### Bug Fixes

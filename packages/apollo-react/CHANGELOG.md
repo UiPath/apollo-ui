@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.31.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.31.0...@uipath/apollo-react@6.31.1) (2026-08-25)
+
+### Bug Fixes
+
+* **apollo-react:** keep gallery story links resolvable and theme-aware ([0d53474](https://github.com/UiPath/apollo-ui/commit/0d5347491e83468b90c1b046e8ba5b7e251dd09c))
+
 ## [@uipath/apollo-react-v6.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.30.3...@uipath/apollo-react@6.31.0) (2026-08-25)
 
 ### Features
