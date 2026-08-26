@@ -154,7 +154,13 @@ export interface InputGroupInputProps
 
 const InputGroupInput = React.forwardRef<HTMLInputElement, InputGroupInputProps>(
   (
-    { 'aria-describedby': ariaDescribedBy, 'aria-invalid': ariaInvalid, className, ...props },
+    {
+      'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
+      'aria-invalid': ariaInvalid,
+      className,
+      ...props
+    },
     ref
   ) => {
     const validation = React.useContext(InputGroupValidationContext);
@@ -168,6 +174,7 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, InputGroupInputProps>
           ref={ref}
           data-slot="input-group-control"
           aria-describedby={describedBy || undefined}
+          aria-errormessage={validation.error ? validation.errorId : ariaErrorMessage}
           aria-invalid={validation.error ? true : ariaInvalid}
           className={cn(
             'h-full w-full rounded-none !border-0 !ring-0 bg-transparent p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:h-full future:rounded-none future:border-0 future:bg-transparent future:p-0 future:focus-visible:ring-offset-0',
@@ -185,7 +192,13 @@ export interface InputGroupTextareaProps extends Omit<TextareaProps, 'variant'> 
 
 const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, InputGroupTextareaProps>(
   (
-    { 'aria-describedby': ariaDescribedBy, 'aria-invalid': ariaInvalid, className, ...props },
+    {
+      'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
+      'aria-invalid': ariaInvalid,
+      className,
+      ...props
+    },
     ref
   ) => {
     const validation = React.useContext(InputGroupValidationContext);
@@ -198,6 +211,7 @@ const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, InputGroupTexta
         ref={ref}
         data-slot="input-group-control"
         aria-describedby={describedBy || undefined}
+        aria-errormessage={validation.error ? validation.errorId : ariaErrorMessage}
         aria-invalid={validation.error ? true : ariaInvalid}
         className={cn(
           'min-h-0 flex-1 resize-none rounded-none !border-0 !ring-0 bg-transparent p-0 py-2 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:rounded-none future:border-0 future:bg-transparent future:focus-visible:ring-offset-0',
