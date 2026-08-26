@@ -140,6 +140,7 @@ export function LockableValueField({
                 id={fieldId}
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? validationId : undefined}
+                aria-errormessage={error ? validationId : undefined}
                 readOnly={!editableOnValueChange}
                 value={value}
                 onChange={(e) => editableOnValueChange?.(e.target.value)}
@@ -153,6 +154,7 @@ export function LockableValueField({
               id={fieldId}
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? validationId : undefined}
+              aria-errormessage={error ? validationId : undefined}
               readOnly
               value={lockedDisplayValue}
               placeholder={fieldLabel}
@@ -206,6 +208,7 @@ export function LockableValueField({
               type={fieldType === 'integer' ? 'number' : 'text'}
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? validationId : undefined}
+              aria-errormessage={error ? validationId : undefined}
               readOnly={!onValueChange}
               value={value}
               onChange={(e) => onValueChange?.(e.target.value)}
@@ -254,6 +257,7 @@ export function LockableValueField({
               id={fieldId}
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? validationId : undefined}
+              aria-errormessage={error ? validationId : undefined}
               readOnly
               value={lockedDisplayValue}
               placeholder={fieldLabel}
