@@ -17,6 +17,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
       'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
       'aria-invalid': ariaInvalid,
       className,
       error,
@@ -41,8 +42,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={type}
           data-slot="input"
           id={id}
+          {...props}
           aria-describedby={describedBy || undefined}
-          aria-errormessage={error ? validationId : undefined}
+          aria-errormessage={error ? validationId : ariaErrorMessage}
           aria-invalid={error ? true : ariaInvalid}
           className={cn(
             // Base styles (all themes)
@@ -61,7 +63,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className
           )}
           ref={ref}
-          {...props}
         />
         {error && (
           <p
