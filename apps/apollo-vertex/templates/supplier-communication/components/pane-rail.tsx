@@ -3,14 +3,24 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { PANE_HEADING } from "./pane-grid";
 import type { RailSection } from "./pane-rail-types";
 import { SCROLL_PANE } from "./scroll-pane";
 
-const SECTION_HEADING =
-  "px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground";
+const SECTION_HEADING = cn(PANE_HEADING, "px-4 pb-2");
+
+// rounded-r-lg matches the filter icon button in the list pane, which takes
+// Button's base rounded-lg. Applied to every row so hover and active agree.
+/**
+ * Rail width, in one place because it is set twice: on the container, which
+ * animates to zero when collapsed, and on the inner nav, which stays pinned so
+ * the labels do not reflow mid-slide. They have to match or the collapse
+ * animation scrambles the text.
+ */
+const RAIL_WIDTH = "w-60";
 
 const ROW =
-  "flex w-full items-center justify-between gap-2 px-3 py-1.5 text-sm";
+  "flex w-full items-center justify-between gap-2 rounded-r-lg px-4 py-2 text-sm";
 
 function Count({ value }: { value?: number }) {
   if (typeof value !== "number") return null;
@@ -25,6 +35,10 @@ function Count({ value }: { value?: number }) {
 interface PaneRailProps<T extends string> {
   /** Accessible name for the rail's nav landmark. */
   label: string;
+  /** Ties the rail to whatever toggles it, for `aria-controls`. */
+  id?: string;
+  /** Collapsed rails animate to zero width and go inert. */
+  collapsed?: boolean;
   sections: RailSection<T>[];
   /** Id of the selected item among the interactive sections. */
   value?: T;
@@ -38,18 +52,29 @@ interface PaneRailProps<T extends string> {
  */
 export function PaneRail<T extends string>({
   label,
+  id,
+  collapsed = false,
   sections,
   value,
   onChange,
 }: PaneRailProps<T>) {
   return (
     <ScrollArea
+      id={id}
       className={cn(
-        "w-56 shrink-0 border-r border-border bg-card",
+        // Width animates rather than display toggling, so the panes slide.
+        "shrink-0 overflow-hidden bg-muted/30 transition-[width] duration-300 ease-in-out motion-reduce:transition-none",
+        collapsed ? "w-0" : RAIL_WIDTH,
         SCROLL_PANE,
       )}
     >
-      <nav aria-label={label} className="py-3">
+      {/* Fixed width so the labels do not reflow while the rail slides shut,
+          and inert while hidden so it stays out of the tab order. */}
+      <nav
+        aria-label={label}
+        className={cn(RAIL_WIDTH, "py-4")}
+        inert={collapsed}
+      >
         {sections.map((section, i) => (
           <div key={section.heading}>
             {i > 0 && <Separator className="my-3" />}

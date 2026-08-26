@@ -14,25 +14,26 @@ const SECTIONS: RailSection<WorkflowFilter>[] = [
       ...WORKFLOWS.map((w) => ({ id: w.id, label: w.label, count: w.count })),
     ],
   },
-  {
-    heading: "Status",
-    items: [
-      { label: "Resolved today", count: 18 },
-      { label: "Awaiting approval", count: 3 },
-      { label: "Escalated", count: 4 },
-    ],
-  },
 ];
 
 interface WorkflowRailProps {
   value: WorkflowFilter;
   onChange: (wf: WorkflowFilter) => void;
+  id?: string;
+  collapsed?: boolean;
 }
 
-export function WorkflowRail({ value, onChange }: WorkflowRailProps) {
+export function WorkflowRail({
+  value,
+  onChange,
+  id,
+  collapsed,
+}: WorkflowRailProps) {
   return (
     <PaneRail
       label="Workflows"
+      id={id}
+      collapsed={collapsed}
       sections={SECTIONS}
       value={value}
       onChange={onChange}

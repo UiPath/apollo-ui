@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   PageHeader,
   PageHeaderActions,
@@ -19,7 +19,13 @@ import {
 } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CaseDetail } from "../components/case-detail";
-import { filterCases, type WorkflowFilter } from "../components/case-filters";
+import {
+  filterByStatus,
+  filterCases,
+  needsHuman,
+  type StatusFilter,
+  type WorkflowFilter,
+} from "../components/case-filters";
 import { CaseList } from "../components/case-list";
 import { SupplierInbox } from "../components/supplier-inbox";
 import { WorkflowRail } from "../components/workflow-rail";
@@ -27,9 +33,25 @@ import { KPIS } from "../data/supplier-cases";
 
 export function CommunicationsPage() {
   const [workflow, setWorkflow] = useState<WorkflowFilter>("all");
+  const [status, setStatus] = useState<StatusFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [railOpen, setRailOpen] = useState(true);
+  // Ties the rail to the filter button in the list pane via aria-controls.
+  const railId = useId();
 
-  const visible = filterCases(workflow);
+  // The status filter lives here, not in the list, so the selection fallback
+  // below sees the same set the list renders and cannot strand the detail pane
+  // on a case the active tab hides.
+  const inWorkflow = filterCases(workflow);
+  const visible = filterByStatus(inWorkflow, status);
+
+  // Counts come from the workflow-filtered set, before the tab narrows it.
+  const needsCount = inWorkflow.filter((c) => needsHuman(c)).length;
+  const counts = {
+    all: inWorkflow.length,
+    needs: needsCount,
+    flight: inWorkflow.length - needsCount,
+  };
 
   // Derived rather than stored: when the filter hides the selected case, the
   // detail pane falls back to the first case now visible instead of stranding
@@ -45,18 +67,20 @@ export function CommunicationsPage() {
       defaultValue="ap"
       className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden bg-background"
     >
-      <PageHeader bordered>
+      {/* @3xl:gap-10 sets the grid column gap to 40px, which is the space
+          between the KPI run and the AP team / Supplier tabs. */}
+      <PageHeader bordered className="@3xl:gap-10">
         <PageHeaderNav>
           <PageHeaderTitleGroup>
             <PageHeaderTitle>Supplier communications</PageHeaderTitle>
           </PageHeaderTitleGroup>
         </PageHeaderNav>
 
-        <PageHeaderContent>
+        <PageHeaderContent className="justify-between @3xl:justify-between">
           {KPIS.map((kpi) => (
             <PageHeaderField key={kpi.label}>
               <PageHeaderFieldLabel>{kpi.label}</PageHeaderFieldLabel>
-              <PageHeaderFieldValue className="tabular-nums">
+              <PageHeaderFieldValue className="text-lg font-bold tabular-nums">
                 {kpi.value}
               </PageHeaderFieldValue>
             </PageHeaderField>
@@ -72,7 +96,12 @@ export function CommunicationsPage() {
       </PageHeader>
 
       <TabsContent value="ap" className="flex min-h-0 flex-1">
-        <WorkflowRail value={workflow} onChange={setWorkflow} />
+        <WorkflowRail
+          value={workflow}
+          onChange={setWorkflow}
+          id={railId}
+          collapsed={!railOpen}
+        />
         {/*
           Only the list's right edge is draggable. `preserve-pixel-size` keeps
           the list at the width the user set when the window resizes, letting
@@ -92,8 +121,14 @@ export function CommunicationsPage() {
           >
             <CaseList
               cases={visible}
+              status={status}
+              onStatusChange={setStatus}
+              counts={counts}
               selectedId={selected?.id ?? null}
               onSelect={setSelectedId}
+              railOpen={railOpen}
+              onToggleRail={() => setRailOpen((open) => !open)}
+              railId={railId}
             />
           </ResizablePanel>
           <ResizableHandle withHandle className="hover:bg-primary/40" />

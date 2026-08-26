@@ -9,3 +9,10 @@
  */
 export const GUTTER_ROW = "flex gap-[18px]";
 export const GUTTER = "w-11 shrink-0";
+
+/**
+ * The small caps label that heads a pane: "WORKFLOWS" on the rail, "INBOX" on
+ * the list. Shared so the two stay on the same baseline when either changes.
+ */
+export const PANE_HEADING =
+  "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground";

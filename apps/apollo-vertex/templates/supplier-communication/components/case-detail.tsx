@@ -22,6 +22,7 @@ import { ActionBlock } from "./action-block";
 import { ActivityLog } from "./activity-log";
 import { AgentFoundPanel } from "./agent-found-panel";
 import { ApprovalSteps } from "./approval-steps";
+import { relativeTime } from "./case-time";
 import { ComposeCard } from "./compose-card";
 import {
   CONTROL_TONE,
@@ -261,7 +262,10 @@ function CaseBody({ case: c }: { case: SupplierCase }) {
         <div className="mt-8 flex flex-col">
           {/* Context: what arrived */}
           {c.trigger ? (
-            <Section eyebrow="What opened this case" meta={c.time}>
+            <Section
+              eyebrow="What opened this case"
+              meta={relativeTime(c.receivedAt)}
+            >
               <p className={cn("text-base leading-7 text-foreground", MEASURE)}>
                 {c.triggerReason}
               </p>
@@ -270,7 +274,7 @@ function CaseBody({ case: c }: { case: SupplierCase }) {
             c.email && (
               <Section
                 eyebrow="The message"
-                meta={c.time}
+                meta={relativeTime(c.receivedAt)}
                 aside={
                   <Avatar className="size-10">
                     <AvatarFallback className="text-xs font-medium text-muted-foreground">

@@ -3,6 +3,16 @@
  * Not real supplier information.
  */
 
+/**
+ * The demo's fixed "now". Anchored rather than read from the clock so the
+ * relative times and date groups stay put: with a live clock every case drifts
+ * into "Older" within a week and the grouping stops demonstrating anything.
+ *
+ * A Wednesday, chosen so day offsets 0-3 sit in this calendar week and 4-5 in
+ * the previous one, which makes the "Earlier this week" heading literally true.
+ */
+export const NOW = "2026-07-22T10:30:00";
+
 export type ControlState = "auto" | "review" | "locked";
 
 export type WorkflowId = "w1" | "w2" | "w3" | "w4" | "w5" | "w6";
@@ -24,7 +34,8 @@ export interface ApprovalStep {
 export interface SupplierCase {
   id: string;
   supplier: string;
-  time: string;
+  /** Local ISO datetime. Both the row's relative time and its date group derive from this. */
+  receivedAt: string;
   wf: WorkflowId;
   wfLabel: string;
   subject: string;
@@ -84,7 +95,7 @@ export const CASES: SupplierCase[] = [
   {
     id: "SC-10482",
     supplier: "Meridian Fasteners Co.",
-    time: "09:14",
+    receivedAt: "2026-07-22T09:14:00",
     wf: "w1",
     wfLabel: "Status inquiry",
     subject: "Following up on invoice #INV-88291 payment status",
@@ -113,7 +124,7 @@ export const CASES: SupplierCase[] = [
   {
     id: "SC-10479",
     supplier: "Nordic Components AB",
-    time: "08:52",
+    receivedAt: "2026-07-22T08:52:00",
     wf: "w1",
     wfLabel: "Status inquiry",
     subject: "Any update on PO 4471 invoice?",
@@ -142,7 +153,7 @@ export const CASES: SupplierCase[] = [
   {
     id: "SC-10471",
     supplier: "Atlas Precision GmbH",
-    time: "Yesterday",
+    receivedAt: "2026-07-21T16:20:00",
     wf: "w2",
     wfLabel: "Bank detail change",
     subject: "Updated banking details for remittance",
@@ -198,7 +209,7 @@ export const CASES: SupplierCase[] = [
   {
     id: "SC-10461",
     supplier: "Delta Packaging Ltd",
-    time: "2 days ago",
+    receivedAt: "2026-07-20T11:05:00",
     wf: "w5",
     wfLabel: "Statement reconciliation",
     subject: "Statement shows 3 open items we don't recognize",
@@ -239,7 +250,7 @@ export const CASES: SupplierCase[] = [
   {
     id: "SC-10450",
     supplier: "Kestrel Machining",
-    time: "3 days ago",
+    receivedAt: "2026-07-19T14:40:00",
     wf: "w3",
     wfLabel: "Onboarding",
     subject: "New supplier onboarding — indirect (tooling)",
@@ -274,7 +285,7 @@ export const CASES: SupplierCase[] = [
   {
     id: "SC-10440",
     supplier: "Vantage Sealing Systems",
-    time: "4 days ago",
+    receivedAt: "2026-07-18T09:05:00",
     wf: "w6",
     wfLabel: "Compliance refresh",
     subject: "Reminder: certificate of insurance expires 2026-08-02",
@@ -309,7 +320,7 @@ export const CASES: SupplierCase[] = [
   {
     id: "SC-10432",
     supplier: "Harborview Logistics",
-    time: "5 days ago",
+    receivedAt: "2026-07-17T15:30:00",
     wf: "w4",
     wfLabel: "PO dispatch",
     subject: "PO-99215 dispatched — awaiting acknowledgement",
@@ -344,7 +355,8 @@ export interface SupplierThread {
   id: string;
   from: string;
   to: string;
-  time: string;
+  /** Local ISO datetime, same basis as SupplierCase.receivedAt. */
+  receivedAt: string;
   subject: string;
   preview: string;
   body: string;
@@ -357,7 +369,7 @@ export const SUPPLIER_THREADS: SupplierThread[] = [
     id: "mail-1",
     from: "AP Team <ap-noreply@customer.com>",
     to: "R. Ostrowski, Meridian Fasteners Co.",
-    time: "09:15",
+    receivedAt: "2026-07-22T09:15:00",
     subject: "Re: Following up on invoice #INV-88291 payment status",
     preview: "Invoice INV-88291 has been approved and is scheduled…",
     body: "Hi R. Ostrowski,\n\nThanks for checking in. Invoice INV-88291 has been approved and is scheduled for payment on 2026-07-28. You'll receive a remittance advice once it clears.\n\nBest,\nAP Team",
@@ -368,7 +380,7 @@ export const SUPPLIER_THREADS: SupplierThread[] = [
     id: "mail-2",
     from: "Supplier Compliance Team <compliance-noreply@customer.com>",
     to: "Vantage Sealing Systems",
-    time: "4 days ago",
+    receivedAt: "2026-07-18T09:05:00",
     subject: "Reminder: certificate of insurance expires 2026-08-02",
     preview: "Our records show your certificate of insurance is set to…",
     body: "Hi Vantage Sealing Systems team,\n\nOur records show your certificate of insurance is set to expire on 2026-08-02. To avoid any interruption to active POs, could you send an updated certificate before then?\n\nThanks,\nSupplier Compliance Team",

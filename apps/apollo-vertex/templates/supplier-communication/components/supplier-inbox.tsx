@@ -11,6 +11,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { SUPPLIER_THREADS } from "../data/supplier-cases";
+import { DATE_GROUPS, dateGroup, relativeTime } from "./case-time";
 import { PaneRail } from "./pane-rail";
 import type { RailSection } from "./pane-rail-types";
 import { SCROLL_PANE } from "./scroll-pane";
@@ -44,6 +45,12 @@ export function SupplierInbox() {
   const threads = folder === "inbox" ? SUPPLIER_THREADS : [];
   const thread = threads.find((t) => t.id === selectedId) ?? threads[0] ?? null;
 
+  // Same buckets and order as the AP list, empty ones dropped.
+  const groups = DATE_GROUPS.map((g) => ({
+    ...g,
+    threads: threads.filter((t) => dateGroup(t.receivedAt) === g.id),
+  })).filter((g) => g.threads.length > 0);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <p className="shrink-0 border-b border-border bg-muted/50 px-4 py-2 text-xs text-muted-foreground">
@@ -70,51 +77,66 @@ export function SupplierInbox() {
             groupResizeBehavior="preserve-pixel-size"
             className="h-full"
           >
-            <ScrollArea className={cn("size-full", SCROLL_PANE)}>
-              {threads.length === 0 ? (
-                <p className="p-4 text-sm text-muted-foreground">
-                  Nothing in this folder.
-                </p>
-              ) : (
-                <ul>
-                  {threads.map((t) => {
-                    const selected = t.id === thread?.id;
+            <div className="flex h-full flex-col bg-muted/30">
+              <ScrollArea className={cn("min-h-0 flex-1", SCROLL_PANE)}>
+                {groups.length === 0 ? (
+                  <p className="p-4 text-sm text-muted-foreground">
+                    Nothing in this folder.
+                  </p>
+                ) : (
+                  groups.map((g) => (
+                    <section key={g.id}>
+                      <h3 className="sticky top-0 z-20 bg-muted/30 px-4 py-2 text-xs font-semibold text-muted-foreground backdrop-blur-sm">
+                        {g.label}
+                      </h3>
+                      <ul className="flex flex-col gap-2 px-4 pb-3">
+                        {g.threads.map((t) => {
+                          const selected = t.id === thread?.id;
 
-                    return (
-                      <li key={t.id}>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedId(t.id)}
-                          aria-current={selected ? "true" : "false"}
-                          className={cn(
-                            "w-full border-b border-l-2 border-b-border px-4 py-3 text-left transition-colors",
-                            "outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-                            selected
-                              ? "border-l-primary bg-accent"
-                              : "border-l-transparent hover:bg-muted/60",
-                          )}
-                        >
-                          <div className="flex min-w-0 items-baseline justify-between gap-2">
-                            <span className="min-w-0 truncate text-sm font-semibold text-foreground">
-                              {t.from.replace(/\s*<.*>$/, "")}
-                            </span>
-                            <span className="shrink-0 text-xs text-muted-foreground">
-                              {t.time}
-                            </span>
-                          </div>
-                          <p className="mt-0.5 min-w-0 truncate text-xs font-medium text-foreground">
-                            {t.subject}
-                          </p>
-                          <p className="mt-0.5 min-w-0 truncate text-xs text-muted-foreground">
-                            {t.preview}
-                          </p>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </ScrollArea>
+                          return (
+                            <li key={t.id}>
+                              <Card
+                                variant="glass"
+                                className={cn(
+                                  "relative gap-0 py-0 transition-colors",
+                                  selected
+                                    ? "border-primary dark:border-primary"
+                                    : "hover:border-primary/40 dark:hover:border-primary/40",
+                                )}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedId(t.id)}
+                                  aria-current={selected ? "true" : "false"}
+                                  aria-label={`${t.from}: ${t.subject}`}
+                                  className="absolute inset-0 z-0 rounded-2xl outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50"
+                                />
+                                <CardContent className="pointer-events-none relative z-10 px-3 py-3">
+                                  <div className="flex min-w-0 items-baseline justify-between gap-2">
+                                    <span className="min-w-0 truncate text-sm font-semibold text-foreground">
+                                      {t.from.replace(/\s*<.*>$/, "")}
+                                    </span>
+                                    <span className="shrink-0 text-xs text-muted-foreground">
+                                      {relativeTime(t.receivedAt)}
+                                    </span>
+                                  </div>
+                                  <p className="mt-0.5 min-w-0 truncate text-xs font-medium text-foreground">
+                                    {t.subject}
+                                  </p>
+                                  <p className="mt-0.5 min-w-0 truncate text-xs text-muted-foreground">
+                                    {t.preview}
+                                  </p>
+                                </CardContent>
+                              </Card>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </section>
+                  ))
+                )}
+              </ScrollArea>
+            </div>
           </ResizablePanel>
 
           <ResizableHandle withHandle className="hover:bg-primary/40" />
@@ -134,7 +156,7 @@ export function SupplierInbox() {
                           [
                             ["From", thread.from],
                             ["To", thread.to],
-                            ["Time", thread.time],
+                            ["Time", relativeTime(thread.receivedAt)],
                           ] as const
                         ).map(([label, value]) => (
                           <div key={label} className="flex gap-3">
