@@ -123,6 +123,10 @@ export interface LockableValueFieldProps {
     readOnly: boolean;
     placeholder: string;
     fieldType: LockableFieldType;
+    'aria-invalid'?: boolean;
+    'aria-describedby'?: string;
+    'aria-errormessage'?: string;
+    'data-slot'?: string;
   }) => ReactNode;
   /** The field's data type. Defaults to 'string'. Determines which control renders the value. */
   fieldType?: LockableFieldType;
