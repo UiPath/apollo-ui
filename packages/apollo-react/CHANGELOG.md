@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.32.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.31.1...@uipath/apollo-react@6.32.0) (2026-08-26)
+
+### Features
+
+* **apollo-wind:** add inline validation to fields ([7847ed7](https://github.com/UiPath/apollo-ui/commit/7847ed72508929a2eebefdc71867755cb1398ea3))
+
+### Bug Fixes
+
+* **apollo-wind:** align remaining review details ([258dbfd](https://github.com/UiPath/apollo-ui/commit/258dbfd1cfa8e1237334d589be4676ef931d1297))
+
 ## [@uipath/apollo-react-v6.31.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.31.0...@uipath/apollo-react@6.31.1) (2026-08-25)
 
 ### Bug Fixes

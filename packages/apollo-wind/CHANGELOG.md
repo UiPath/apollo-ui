@@ -1,3 +1,20 @@
+## [@uipath/apollo-wind-v2.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.36.2...@uipath/apollo-wind@2.37.0) (2026-08-26)
+
+### Features
+
+* **apollo-wind:** add inline validation to fields ([7847ed7](https://github.com/UiPath/apollo-ui/commit/7847ed72508929a2eebefdc71867755cb1398ea3))
+
+### Bug Fixes
+
+* **apollo-wind:** align remaining review details ([258dbfd](https://github.com/UiPath/apollo-ui/commit/258dbfd1cfa8e1237334d589be4676ef931d1297))
+* **apollo-wind:** complete inline validation aria wiring ([22e2d86](https://github.com/UiPath/apollo-ui/commit/22e2d868b57f4d1b5976d722b4f81c4e799de6cb))
+* **apollo-wind:** normalize lockable validation ids ([aa01619](https://github.com/UiPath/apollo-ui/commit/aa01619dd00261a7d56bce4f8cb0b98b05c11767))
+* **apollo-wind:** preserve generated error association ([dbbf8b3](https://github.com/UiPath/apollo-ui/commit/dbbf8b3f9fc8bf434f1af359e4efee15d8ff3f6c))
+* **apollo-wind:** satisfy validation lint checks ([9ae4370](https://github.com/UiPath/apollo-ui/commit/9ae4370e9c836e7c359b1e988073c1d12c6de33f))
+* **apollo-wind:** support custom validation controls ([05b514d](https://github.com/UiPath/apollo-ui/commit/05b514dd1054fa35dceb93f64d15b8d47d104983))
+* **apollo-wind:** use polite validation announcements ([bcfa8a3](https://github.com/UiPath/apollo-ui/commit/bcfa8a349b0a3e782bcf61b0090bf2f652485df7))
+* **apollo-wind:** wire validation to all field controls ([1048fd1](https://github.com/UiPath/apollo-ui/commit/1048fd165111fc35c10a0d53123cbf52a942de2d))
+
 ## [@uipath/apollo-wind-v2.36.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.36.1...@uipath/apollo-wind@2.36.2) (2026-08-25)
 
 ### Bug Fixes
