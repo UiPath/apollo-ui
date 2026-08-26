@@ -67,7 +67,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <p
             id={validationId}
             data-slot="input-error"
-            role="alert"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
             className="mt-1 text-xs leading-4 text-error"
           >
             {error}

@@ -123,7 +123,7 @@ describe('InputGroup', () => {
       </InputGroup>
     );
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Enter a unique name before saving.');
+    expect(screen.getByRole('status')).toHaveTextContent('Enter a unique name before saving.');
     expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByRole('textbox')).toHaveClass('!border-0');
     expect(screen.getByRole('textbox')).toHaveClass('!ring-0');
