@@ -2761,7 +2761,7 @@ function FieldHelpPanel({ onClose }: { onClose: () => void }) {
       contentInset="0.875rem"
       className="h-full"
     >
-      <TooltipProvider>
+      <TooltipProvider delayDuration={300}>
         <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pb-4">
           <p className="text-xs leading-5 text-foreground-muted">
             The Forms/Field guidance patterns, shown in a real scroll-constrained panel next to tabs
