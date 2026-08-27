@@ -121,6 +121,12 @@ declare module "@uipath/vs-core" {
         identity: {
           groups: unknown;
           groupMembers: unknown;
+          // Resolves group membership for a single user server-side (direct and
+          // transitive/AAD-inherited) in one call. Returns a groupId -> boolean map.
+          checkGroupMembership: (
+            userId: string,
+            groupIds: string[],
+          ) => Promise<Record<string, boolean>>;
         };
       };
     };
