@@ -88,12 +88,13 @@ function InlineDescriptionExample() {
   );
 }
 
-function TooltipHelpExample() {
+function TooltipHelpExample({ idSuffix }: { idSuffix: string }) {
+  const inputId = `retention-period-${idSuffix}`;
   return (
     <TooltipProvider>
       <div className="grid gap-1.5">
         <div className="flex items-center gap-1">
-          <Label htmlFor="retention-period">Retention period</Label>
+          <Label htmlFor={inputId}>Retention period</Label>
           <Tooltip>
             <HelpTrigger fieldName="retention period" />
             <TooltipContent side="top" className="max-w-64">
@@ -101,7 +102,7 @@ function TooltipHelpExample() {
             </TooltipContent>
           </Tooltip>
         </div>
-        <Input id="retention-period" inputMode="numeric" placeholder="30 days" />
+        <Input id={inputId} inputMode="numeric" placeholder="30 days" />
       </div>
     </TooltipProvider>
   );
@@ -168,7 +169,7 @@ function FieldGuidancePage({ globalTheme }: { globalTheme: string }) {
               title="Tooltip help"
               description="Use for supplementary context that most people can complete the field without."
             >
-              <TooltipHelpExample />
+              <TooltipHelpExample idSuffix="pattern-card" />
             </PatternCard>
           </div>
         </section>
@@ -213,7 +214,7 @@ function FieldGuidancePage({ globalTheme }: { globalTheme: string }) {
                 <Check aria-hidden="true" className="size-4 text-primary" />
                 Do
               </div>
-              <TooltipHelpExample />
+              <TooltipHelpExample idSuffix="do-example" />
               <p className="mt-4 text-sm leading-6 text-muted-foreground">
                 Use a visible, focusable help button beside the label as the explicit target.
               </p>
