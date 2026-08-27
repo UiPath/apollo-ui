@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.33.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.33.1...@uipath/apollo-react@6.33.2) (2026-08-27)
+
+### Bug Fixes
+
+* **apollo-react:** keep CanvasModeToolbar centered on the visible canvas area ([39a5ef2](https://github.com/UiPath/apollo-ui/commit/39a5ef2e275d1de30cc71baaaa78304f990873b7))
+
 ## [@uipath/apollo-react-v6.33.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.33.0...@uipath/apollo-react@6.33.1) (2026-08-27)
 
 ### Bug Fixes
