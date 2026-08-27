@@ -1,4 +1,34 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { BaseCanvas } from '@uipath/apollo-react/canvas/components/BaseCanvas';
+import {
+  CanvasBottomPanel,
+  type CanvasBottomPanelTab,
+} from '@uipath/apollo-react/canvas/components/CanvasBottomPanel';
+import {
+  CANVAS_LEFT_SIDEBAR_DEFAULT_BOTTOM_ITEMS,
+  CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS,
+  CanvasLeftSidebar,
+  type CanvasLeftSidebarItemId,
+} from '@uipath/apollo-react/canvas/components/CanvasLeftSidebar';
+import {
+  CanvasModeToolbar,
+  CountBadge,
+  TOOLBAR_ICON_BUTTON_CLASS,
+} from '@uipath/apollo-react/canvas/components/CanvasModeToolbar';
+import { CanvasZoomControls } from '@uipath/apollo-react/canvas/components/CanvasZoomControls';
+import { NodePropertyPanel } from '@uipath/apollo-react/canvas/components/NodePropertyPanel';
+import { ToolbarButton } from '@uipath/apollo-react/canvas/components/ToolbarButton';
+import {
+  NodePropertyTrigger,
+  type NodePropertyTriggerLayout,
+} from '@uipath/apollo-react/canvas/controls/NodePropertyTrigger';
+import { ValidationStatusContext } from '@uipath/apollo-react/canvas/hooks';
+import {
+  createNode,
+  useCanvasStory,
+  withCanvasProviders,
+} from '@uipath/apollo-react/canvas/storybook-utils';
+import { ValidationErrorSeverity } from '@uipath/apollo-react/canvas/types/validation';
 import {
   type Edge,
   type Node,
@@ -48,36 +78,6 @@ import {
   Undo2,
 } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BaseCanvas } from '../../../../packages/apollo-react/src/canvas/components/BaseCanvas';
-import {
-  CanvasBottomPanel,
-  type CanvasBottomPanelTab,
-} from '../../../../packages/apollo-react/src/canvas/components/CanvasBottomPanel';
-import {
-  CANVAS_LEFT_SIDEBAR_DEFAULT_BOTTOM_ITEMS,
-  CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS,
-  CanvasLeftSidebar,
-  type CanvasLeftSidebarItemId,
-} from '../../../../packages/apollo-react/src/canvas/components/CanvasLeftSidebar';
-import {
-  CanvasModeToolbar,
-  CountBadge,
-  TOOLBAR_ICON_BUTTON_CLASS,
-} from '../../../../packages/apollo-react/src/canvas/components/CanvasModeToolbar';
-import { CanvasZoomControls } from '../../../../packages/apollo-react/src/canvas/components/CanvasZoomControls';
-import { NodePropertyPanel } from '../../../../packages/apollo-react/src/canvas/components/NodePropertyPanel';
-import { ToolbarButton } from '../../../../packages/apollo-react/src/canvas/components/ToolbarButton';
-import {
-  NodePropertyTrigger,
-  type NodePropertyTriggerLayout,
-} from '../../../../packages/apollo-react/src/canvas/controls/NodePropertyTrigger';
-import { ValidationStatusContext } from '../../../../packages/apollo-react/src/canvas/hooks';
-import {
-  createNode,
-  useCanvasStory,
-  withCanvasProviders,
-} from '../../../../packages/apollo-react/src/canvas/storybook-utils';
-import { ValidationErrorSeverity } from '../../../../packages/apollo-react/src/canvas/types/validation';
 
 const ALL_SIDEBAR_ITEMS = [
   ...CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS,
