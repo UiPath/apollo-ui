@@ -11,6 +11,9 @@ import {
   Card,
   CardContent,
   type FormSchema,
+  InputGroup,
+  InputGroupInput,
+  Label,
   type PanelImperativeHandle,
   ResizableHandle,
   ResizablePanel,
@@ -22,6 +25,10 @@ import {
   TabsTrigger,
   ToggleGroup,
   ToggleGroupItem,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@uipath/apollo-wind';
 import type { DockviewApi, DockviewReadyEvent, IDockviewPanelProps } from 'dockview-react';
 import { DockviewReact } from 'dockview-react';
@@ -32,6 +39,7 @@ import {
   Bug,
   ChevronDown,
   ChevronUp,
+  CircleHelp,
   Code2,
   FlaskConical,
   GitBranch,
@@ -2738,10 +2746,134 @@ function DapPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
+function FieldHelpPanel({ onClose }: { onClose: () => void }) {
+  const [webhookUrl, setWebhookUrl] = useState('https://hooks.example.com/flows/finance-ops');
+  const [retryLimit, setRetryLimit] = useState('3');
+  const [signingSecret, setSigningSecret] = useState('whsec_8f2a1c9d4e7b3f60');
+
+  return (
+    <NodePropertyPanel
+      panelTitle="Properties"
+      nodeIcon={<Globe />}
+      nodeLabel="HTTP Webhook"
+      nodeCategory="Triggers · Field help pattern"
+      onClose={onClose}
+      contentInset="0.875rem"
+      className="h-full"
+    >
+      <TooltipProvider>
+        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pb-4">
+          <p className="text-xs leading-5 text-foreground-muted">
+            The Forms/Field guidance patterns, shown in a real scroll-constrained panel next to tabs
+            and dense field stacks.
+          </p>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="field-help-url" className="text-xs">
+              Webhook URL <span className="text-error">*</span>
+            </Label>
+            <InputGroup className="h-9 bg-surface-overlay">
+              <InputGroupInput
+                id="field-help-url"
+                aria-describedby="field-help-url-description"
+                value={webhookUrl}
+                onChange={(event) => setWebhookUrl(event.target.value)}
+                className="text-xs"
+              />
+            </InputGroup>
+            <p
+              id="field-help-url-description"
+              className="text-[11px] leading-4 text-foreground-muted"
+            >
+              Must be publicly reachable over HTTPS. You cannot change this after the flow is
+              published.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1">
+              <Label htmlFor="field-help-retry" className="text-xs">
+                Retry limit
+              </Label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Help for retry limit"
+                    className="inline-flex size-5 cursor-help items-center justify-center rounded-sm text-foreground-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <CircleHelp aria-hidden="true" className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-56">
+                  How many times to retry a failed delivery before giving up.
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <InputGroup className="h-9 bg-surface-overlay">
+              <InputGroupInput
+                id="field-help-retry"
+                inputMode="numeric"
+                value={retryLimit}
+                onChange={(event) => setRetryLimit(event.target.value)}
+                className="text-xs"
+              />
+            </InputGroup>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1">
+              <Label htmlFor="field-help-secret" className="text-xs">
+                Signing secret <span className="text-error">*</span>
+              </Label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Help for signing secret"
+                    className="inline-flex size-5 cursor-help items-center justify-center rounded-sm text-foreground-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <CircleHelp aria-hidden="true" className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-56">
+                  Regenerating this secret invalidates any endpoints still using the old value.
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <InputGroup className="h-9 bg-surface-overlay">
+              <InputGroupInput
+                id="field-help-secret"
+                aria-describedby="field-help-secret-description"
+                value={signingSecret}
+                onChange={(event) => setSigningSecret(event.target.value)}
+                className="font-mono text-xs"
+              />
+            </InputGroup>
+            <p
+              id="field-help-secret-description"
+              className="text-[11px] leading-4 text-foreground-muted"
+            >
+              Used to verify webhook payloads came from this flow.
+            </p>
+          </div>
+        </div>
+      </TooltipProvider>
+    </NodePropertyPanel>
+  );
+}
+
 export function FullWorkbenchComposition({
   rightPanelVariant = 'properties',
 }: {
-  rightPanelVariant?: 'properties' | 'forms' | 'node' | 'rules' | 'variables' | 'dap';
+  rightPanelVariant?:
+    | 'properties'
+    | 'forms'
+    | 'node'
+    | 'rules'
+    | 'variables'
+    | 'dap'
+    | 'field-help';
 }) {
   const panelRef = useRef<PanelImperativeHandle | null>(null);
   const expandedBottomPanelHeight = useRef(368);
@@ -2809,7 +2941,9 @@ export function FullWorkbenchComposition({
       <div className="relative min-w-0 flex-1 overflow-hidden">
         <CanvasViewport
           workflowVariant={
-            rightPanelVariant === 'properties' || rightPanelVariant === 'dap'
+            rightPanelVariant === 'properties' ||
+            rightPanelVariant === 'dap' ||
+            rightPanelVariant === 'field-help'
               ? 'default'
               : rightPanelVariant
           }
@@ -2856,6 +2990,8 @@ export function FullWorkbenchComposition({
                 <VariableManagementPanel onClose={() => setRightPanelOpen(false)} />
               ) : rightPanelVariant === 'dap' ? (
                 <DapPanel onClose={() => setRightPanelOpen(false)} />
+              ) : rightPanelVariant === 'field-help' ? (
+                <FieldHelpPanel onClose={() => setRightPanelOpen(false)} />
               ) : rightPanelVariant === 'node' ? (
                 <SendEmailPropertiesPanel onClose={() => setRightPanelOpen(false)} />
               ) : (
