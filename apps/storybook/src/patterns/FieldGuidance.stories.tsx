@@ -91,7 +91,7 @@ function InlineDescriptionExample() {
 function TooltipHelpExample({ idSuffix }: { idSuffix: string }) {
   const inputId = `retention-period-${idSuffix}`;
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={300}>
       <div className="grid gap-1.5">
         <div className="flex items-center gap-1">
           <Label htmlFor={inputId}>Retention period</Label>
