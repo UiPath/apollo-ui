@@ -678,6 +678,7 @@ function CanvasViewport({
   const { getNodes, getNodesBounds, getViewport, setEdges, setNodes, setViewport } = useReactFlow();
   const nodesInitialized = useNodesInitialized();
   const viewportContainerRef = useRef<HTMLDivElement>(null);
+  const occupiedRight = Math.max(0, rightControlsOffset - 16);
 
   const centerWorkflow = useCallback(
     (duration: number) => {
@@ -686,7 +687,6 @@ function CanvasViewport({
       if (!container || nodes.length === 0) return;
       const bounds = getNodesBounds(nodes);
       const viewport = getViewport();
-      const occupiedRight = Math.max(0, rightControlsOffset - 16);
       const occupiedBottom = Math.max(0, bottomControlsOffset - 20);
       const availableCenterX = (container.clientWidth - occupiedRight) / 2;
       const availableCenterY = (container.clientHeight - occupiedBottom) / 2;
@@ -699,7 +699,7 @@ function CanvasViewport({
         { duration }
       );
     },
-    [bottomControlsOffset, getNodes, getNodesBounds, getViewport, rightControlsOffset, setViewport]
+    [bottomControlsOffset, getNodes, getNodesBounds, getViewport, occupiedRight, setViewport]
   );
 
   useEffect(() => {
@@ -723,8 +723,8 @@ function CanvasViewport({
         {trigger ?? <PanelTrigger />}
       </div>
       <div
-        className="absolute left-1/2 z-20 -translate-x-1/2"
-        style={{ bottom: bottomControlsOffset }}
+        className="absolute z-20 -translate-x-1/2"
+        style={{ left: `calc(50% - ${occupiedRight / 2}px)`, bottom: bottomControlsOffset }}
       >
         <CanvasNavigationControls />
       </div>
