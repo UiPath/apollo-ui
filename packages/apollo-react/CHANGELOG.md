@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v6.33.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.33.0...@uipath/apollo-react@6.33.1) (2026-08-27)
+
+### Bug Fixes
+
+* **storybook:** add ring-offset-background to help-trigger focus rings ([d106dac](https://github.com/UiPath/apollo-ui/commit/d106dac2dd37dfce4ea0fa01c063fa7542f1d61a))
+* **storybook:** address Copilot review feedback on field guidance page ([973d2b8](https://github.com/UiPath/apollo-ui/commit/973d2b8b4d0f4b203ab9836bd090fc68c1e31ed4))
+* **storybook:** set explicit TooltipProvider delayDuration in field guidance ([b89f030](https://github.com/UiPath/apollo-ui/commit/b89f030ac86d096300e6014611d296adfb0b53d2))
+
 ## [@uipath/apollo-react-v6.33.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.32.0...@uipath/apollo-react@6.33.0) (2026-08-27)
 
 ### Features
