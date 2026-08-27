@@ -2749,7 +2749,7 @@ function DapPanel({ onClose }: { onClose: () => void }) {
 function FieldHelpPanel({ onClose }: { onClose: () => void }) {
   const [webhookUrl, setWebhookUrl] = useState('https://hooks.example.com/flows/finance-ops');
   const [retryLimit, setRetryLimit] = useState('3');
-  const [signingSecret, setSigningSecret] = useState('whsec_8f2a1c9d4e7b3f60');
+  const [signingSecret, setSigningSecret] = useState('example-signing-secret-value');
 
   return (
     <NodePropertyPanel
@@ -2770,7 +2770,8 @@ function FieldHelpPanel({ onClose }: { onClose: () => void }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="field-help-url" className="text-xs">
-              Webhook URL <span className="text-error">*</span>
+              Webhook URL <span aria-hidden="true">*</span>
+              <span className="sr-only"> (required)</span>
             </Label>
             <InputGroup className="h-9 bg-surface-overlay">
               <InputGroupInput
@@ -2824,7 +2825,8 @@ function FieldHelpPanel({ onClose }: { onClose: () => void }) {
           <div className="space-y-1.5">
             <div className="flex items-center gap-1">
               <Label htmlFor="field-help-secret" className="text-xs">
-                Signing secret <span className="text-error">*</span>
+                Signing secret <span aria-hidden="true">*</span>
+                <span className="sr-only"> (required)</span>
               </Label>
               <Tooltip>
                 <TooltipTrigger asChild>

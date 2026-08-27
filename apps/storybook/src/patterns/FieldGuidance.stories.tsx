@@ -204,8 +204,8 @@ function FieldGuidancePage({ globalTheme }: { globalTheme: string }) {
         <section>
           <SectionTitle>Tooltip triggers</SectionTitle>
           <SectionDescription>
-            Place a dedicated help icon immediately after the field label. The icon—not the label or
-            field control—is the tooltip trigger.
+            Place a dedicated help icon immediately after the field label. The icon is the tooltip
+            trigger, not the label or field control.
           </SectionDescription>
           <div className="grid gap-5 md:grid-cols-2">
             <div className="rounded-lg border border-border bg-card p-5">
