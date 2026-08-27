@@ -2801,7 +2801,7 @@ function FieldHelpPanel({ onClose }: { onClose: () => void }) {
                   <button
                     type="button"
                     aria-label="Help for retry limit"
-                    className="inline-flex size-5 cursor-help items-center justify-center rounded-sm text-foreground-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="inline-flex size-5 cursor-help items-center justify-center rounded-sm text-foreground-muted ring-offset-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <CircleHelp aria-hidden="true" className="size-3.5" />
                   </button>
@@ -2833,7 +2833,7 @@ function FieldHelpPanel({ onClose }: { onClose: () => void }) {
                   <button
                     type="button"
                     aria-label="Help for signing secret"
-                    className="inline-flex size-5 cursor-help items-center justify-center rounded-sm text-foreground-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="inline-flex size-5 cursor-help items-center justify-center rounded-sm text-foreground-muted ring-offset-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <CircleHelp aria-hidden="true" className="size-3.5" />
                   </button>

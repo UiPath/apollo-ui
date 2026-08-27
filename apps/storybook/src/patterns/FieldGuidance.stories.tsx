@@ -64,7 +64,7 @@ function HelpTrigger({ fieldName }: { fieldName: string }) {
       <button
         type="button"
         aria-label={`Help for ${fieldName}`}
-        className="inline-flex size-5 cursor-help items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="inline-flex size-5 cursor-help items-center justify-center rounded-sm text-muted-foreground ring-offset-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <CircleHelp aria-hidden="true" className="size-3.5" />
       </button>
