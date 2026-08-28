@@ -2901,7 +2901,7 @@ function LockableValueFieldShowcase() {
               aria-label="Delete field"
               title="Delete field"
               disabled
-              className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+              className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
             >
               <Trash2 size={14} />
             </button>
@@ -2941,7 +2941,7 @@ function LockableValueFieldShowcase() {
                 aria-label="Delete field"
                 title="Delete field"
                 disabled
-                className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
               >
                 <Trash2 size={14} />
               </button>
