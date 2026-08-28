@@ -451,11 +451,15 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
               />
               <div className="space-y-1.5">
                 <Label htmlFor="dap-validation-body" className="text-xs">
-                  Body <span className="text-foreground">*</span>
+                  Body{' '}
+                  <span aria-hidden="true" className="text-foreground">
+                    *
+                  </span>
                 </Label>
                 <Textarea
                   id="dap-validation-body"
                   value={body}
+                  required
                   onChange={(event) => setBody(event.target.value)}
                   className="min-h-24 resize-none bg-surface-overlay text-xs"
                 />
