@@ -1,3 +1,15 @@
+## [@uipath/apollo-wind-v2.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.38.0...@uipath/apollo-wind@2.39.0) (2026-08-28)
+
+### Features
+
+* **apollo-wind:** update value field docs and controls ([40618ca](https://github.com/UiPath/apollo-ui/commit/40618ca997e20e43f7913cecaa139d8b0242db47))
+
+### Bug Fixes
+
+* **apollo-wind:** address Value Field review feedback ([8cba8bb](https://github.com/UiPath/apollo-ui/commit/8cba8bb853a9ae66ec73b7776ea48964e25514c2))
+* **apollo-wind:** clarify disabled delete affordances ([f49a54e](https://github.com/UiPath/apollo-ui/commit/f49a54e0bc9089583441311a296111a0d5a46cb6))
+* **apollo-wind:** restore lockable value field title ([f1445ce](https://github.com/UiPath/apollo-ui/commit/f1445ce90fe247eab10a1e0da8f290984a17a4a5))
+
 ## [@uipath/apollo-wind-v2.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.37.1...@uipath/apollo-wind@2.38.0) (2026-08-28)
 
 ### Features
