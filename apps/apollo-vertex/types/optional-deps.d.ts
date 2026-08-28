@@ -123,6 +123,13 @@ declare module "@uipath/vs-core" {
           groupMembers: unknown;
         };
       };
+      identity: {
+        // Resolves each requested groupId to whether `userId` is a member.
+        checkGroupMembership: (
+          userId: string,
+          groupIds: string[],
+        ) => Promise<Record<string, boolean>>;
+      };
     };
   } | null;
 }
