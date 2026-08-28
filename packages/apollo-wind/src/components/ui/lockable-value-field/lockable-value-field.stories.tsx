@@ -6,7 +6,7 @@ import { LockableValueField } from './lockable-value-field';
 import { FIELD_TYPE_META, type LockableFieldType, type LockableValueFieldMode } from './types';
 
 const meta = {
-  title: 'Components/UiPath/Value Field',
+  title: 'Components/UiPath/Lockable Value Field',
   component: LockableValueField,
   parameters: {
     layout: 'centered',
