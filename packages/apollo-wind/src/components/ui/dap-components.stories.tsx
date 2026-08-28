@@ -1717,7 +1717,7 @@ function DapLayoutsPage() {
 }
 
 const meta = {
-  title: 'Patterns/Layout Patterns',
+  title: 'Apollo Wind/Patterns/Layout Patterns',
   component: DapLayoutsPage,
   tags: ['!autodocs'],
   parameters: {

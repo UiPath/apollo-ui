@@ -3726,7 +3726,6 @@ function DapValueField({
   id: string;
   label: string;
   value: string;
-  placeholder: string;
   required?: boolean;
   onChange: (value: string) => void;
 }) {
