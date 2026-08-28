@@ -299,7 +299,7 @@ function ReferenceExamplesDemo() {
 
 /** Reference layouts for assignment/binding fields used in node properties. */
 export const ReferenceExamples: Story = {
-  name: 'Assignment & Binding Examples',
+  name: 'Assignment & Binding',
   render: () => <ReferenceExamplesDemo />,
 };
 
