@@ -2303,7 +2303,7 @@
         "sonner",
         "@mantine/hooks@^9.0.0",
         "@tanstack/react-db",
-        "@uipath/vs-core@^1.2.2"
+        "@uipath/vs-core@^4.2.0"
       ],
       "registryDependencies": [
         "button",
@@ -2495,7 +2495,7 @@
       "dependencies": [
         "@tanstack/react-table@^8.21.0",
         "@tanstack/react-db",
-        "@uipath/vs-core@^1.2.2"
+        "@uipath/vs-core@^4.2.0"
       ],
       "registryDependencies": ["@uipath/use-data-table", "@uipath/data-table"],
       "files": [
@@ -3024,7 +3024,7 @@
         "@tanstack/react-query@^5.90.0",
         "@tanstack/react-table@^8.21.0",
         "@tanstack/react-router",
-        "@uipath/vs-core@^2.0.6",
+        "@uipath/vs-core@^4.2.0",
         "@uipath/uipath-typescript@^1.5.4",
         "react-i18next",
         "recharts@2.15.4",
