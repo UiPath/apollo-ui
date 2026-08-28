@@ -73,7 +73,6 @@ export function LockableValueField({
   fileUploadAriaLabel,
   headerActions,
   compact,
-  controlsVisibility = 'visible',
   showFieldActions = true,
   options = DEFAULT_SELECT_OPTIONS,
   onGenerateWithAi,
@@ -111,7 +110,6 @@ export function LockableValueField({
         fieldType={fieldType}
         onFieldTypeChange={onFieldTypeChange}
         onRequiredChange={onRequiredChange}
-        controlsVisibility={controlsVisibility}
         compact={compact}
         showFieldActions={showFieldActions}
         value={value}

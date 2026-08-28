@@ -171,8 +171,6 @@ export interface LockableValueFieldProps {
   headerActions?: ReactNode;
   /** Forces the header row into its narrow-container icon-only layout, regardless of actual width. For demos/comparisons. */
   compact?: boolean;
-  /** Whether the field-type, AI-assist, and insert-variable controls are always shown or only on hover. Defaults to 'visible'. */
-  controlsVisibility?: 'visible' | 'hover';
   /** Whether the AI-assist and Insert-variable actions render at all. Set to false for read-only reviewer contexts where field configuration isn't editable. Defaults to true. */
   showFieldActions?: boolean;
   /** Options for 'single-select' / 'multi-select' field types. Defaults to a small set of demo options. */

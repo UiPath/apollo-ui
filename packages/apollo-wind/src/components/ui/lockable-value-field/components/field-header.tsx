@@ -26,7 +26,6 @@ export function FieldHeader({
   fieldType,
   onFieldTypeChange,
   onRequiredChange,
-  controlsVisibility,
   compact,
   showFieldActions,
   value,
@@ -42,7 +41,6 @@ export function FieldHeader({
   fieldType: LockableFieldType;
   onFieldTypeChange?: (fieldType: LockableFieldType) => void;
   onRequiredChange?: (required: boolean) => void;
-  controlsVisibility: 'visible' | 'hover';
   compact?: boolean;
   showFieldActions: boolean;
   value: string;
@@ -70,13 +68,7 @@ export function FieldHeader({
       )}
       <TooltipProvider delayDuration={300}>
         <div className="ml-auto flex items-center gap-0.5">
-          <div
-            className={cn(
-              'flex items-center gap-0.5',
-              controlsVisibility === 'hover' &&
-                'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
-            )}
-          >
+          <div className="flex items-center gap-0.5">
             {onFieldTypeChange && (
               <DropdownMenu>
                 <Tooltip>
