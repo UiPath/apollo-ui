@@ -2876,7 +2876,7 @@ function LockableValueFieldShowcase() {
         <p className="text-xs leading-4 text-foreground-muted">
           Uses component →{' '}
           <a
-            href="/?path=/docs/apollo-wind-components-uipath-lockable-value-field--docs"
+            href="/?path=/docs/apollo-wind-components-uipath-value-field--docs"
             target="_top"
             className="font-medium text-brand transition hover:text-brand-hover"
           >
@@ -2900,6 +2900,7 @@ function LockableValueFieldShowcase() {
               type="button"
               aria-label="Delete field"
               title="Delete field"
+              disabled
               className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
             >
               <Trash2 size={14} />
@@ -2939,6 +2940,7 @@ function LockableValueFieldShowcase() {
                 type="button"
                 aria-label="Delete field"
                 title="Delete field"
+                disabled
                 className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
               >
                 <Trash2 size={14} />

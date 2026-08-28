@@ -31,7 +31,7 @@ and (for scalar types) switched between a literal value and a JS expression.
   \`showFieldActions={false}\` for read-only reviewer contexts.
 - \`label\` accepts any ReactNode, so a consumer can compose its own
   inline-editable title in place of the default text.
-- Header actions are shown at all times.
+- When provided, header actions are shown at all times.
 - Header row is responsive (container query): the type, required,
   AI-assist, and insert-variable controls collapse to icon-only once the
   field gets too narrow for their labels. See **Responsive** below.
@@ -55,6 +55,7 @@ function DeleteFieldButton({ onDelete }: { onDelete?: () => void }) {
     <button
       type="button"
       onClick={onDelete}
+      disabled={!onDelete}
       aria-label="Delete field"
       title="Delete field"
       className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
