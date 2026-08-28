@@ -3076,6 +3076,9 @@ function NodeInventoryCanvas({
   onItemSelect: (item: NodeInventoryItem) => void;
   rightPanelOpen: boolean;
 }) {
+  const rightPanelOffset = 412;
+  const closedControlsOffset = 16;
+  const panelCenterShift = (rightPanelOffset - closedControlsOffset) / 2;
   const inventoryNodes = useMemo(createNodeInventoryNodes, []);
   const { fitView } = useReactFlow();
   const nodesInitialized = useNodesInitialized();
@@ -3105,13 +3108,15 @@ function NodeInventoryCanvas({
       />
       <div
         className="absolute bottom-5 z-20 -translate-x-1/2 transition-[left] duration-200"
-        style={{ left: rightPanelOpen ? 'calc(50% - 198px)' : '50%' }}
+        style={{
+          left: rightPanelOpen ? `calc(50% - ${panelCenterShift}px)` : '50%',
+        }}
       >
         <CanvasNavigationControls />
       </div>
       <div
         className="absolute bottom-5 z-20 transition-[right] duration-200"
-        style={{ right: rightPanelOpen ? 412 : 16 }}
+        style={{ right: rightPanelOpen ? rightPanelOffset : closedControlsOffset }}
       >
         <CanvasZoomControls
           orientation="vertical"
@@ -3194,10 +3199,10 @@ const NODE_PANEL_SPECS: Record<string, InventoryPanelSpec> = {
   },
   'slack-send': {
     fields: [
-      { label: 'Slack connection', value: 'carl.schultze', kind: 'select', required: true },
+      { label: 'Slack connection', value: 'Example workspace', kind: 'select', required: true },
       {
         label: 'Channel name/ID',
-        value: 'carl-design - C0HBZDNJKPT',
+        value: 'general - C0EXAMPLE',
         kind: 'expression',
         required: true,
       },
@@ -3304,7 +3309,7 @@ const NODE_PANEL_SPECS: Record<string, InventoryPanelSpec> = {
     fields: [
       { label: 'Delivery channel', value: 'Slack', kind: 'select' },
       { label: 'Assignment criteria', value: 'Single User', kind: 'select' },
-      { label: 'Assignee', value: 'carl.schultze@uipath.com' },
+      { label: 'Assignee', value: 'user@example.com' },
       { label: 'Action App', value: 'Select a coded action app', kind: 'select' },
     ],
   },
@@ -3443,7 +3448,11 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
             <p className="mt-0.5 text-[11px] text-foreground-muted">{field.helper}</p>
           )}
         </div>
-        {field.kind === 'toggle' ? <Switch /> : <Checkbox aria-label={field.label} />}
+        {field.kind === 'toggle' ? (
+          <Switch aria-label={field.label} />
+        ) : (
+          <Checkbox aria-label={field.label} />
+        )}
       </div>
     );
   }
