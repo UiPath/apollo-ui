@@ -346,7 +346,7 @@ function DapValueField({
     <div className="space-y-1.5">
       <Label htmlFor={id} className="text-xs">
         {label}
-        {required && <span className="text-error"> *</span>}
+        {required && <span className="text-foreground"> *</span>}
       </Label>
       <InputGroup className="h-9 bg-surface-overlay" error={error}>
         <InputGroupInput
@@ -451,7 +451,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
               />
               <div className="space-y-1.5">
                 <Label htmlFor="dap-validation-body" className="text-xs">
-                  Body <span className="text-error">*</span>
+                  Body <span className="text-foreground">*</span>
                 </Label>
                 <Textarea
                   id="dap-validation-body"
