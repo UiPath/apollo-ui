@@ -1,14 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { X } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
-import { cn } from '@/lib';
 import { Label, RequiredIndicator } from '../label';
-import { ToggleGroup, ToggleGroupItem } from '../toggle-group';
 import { LockableValueField } from './lockable-value-field';
 import { FIELD_TYPE_META, type LockableFieldType, type LockableValueFieldMode } from './types';
 
 const meta = {
-  title: 'Components/UiPath/Lockable Value Field',
+  title: 'Components/UiPath/Value Field',
   component: LockableValueField,
   parameters: {
     layout: 'centered',
@@ -32,10 +30,8 @@ and (for scalar types) switched between a literal value and a JS expression.
   Insert-variable affordance for binding to upstream data. Both hidden via
   \`showFieldActions={false}\` for read-only reviewer contexts.
 - \`label\` accepts any ReactNode, so a consumer can compose its own
-  inline-editable title in place of the default text -- see **Controls**
-  below.
-- \`controlsVisibility\` decides whether the type/required/AI/insert/header
-  actions are always shown or only on hover -- see **Controls** below.
+  inline-editable title in place of the default text.
+- Header actions are shown at all times.
 - Header row is responsive (container query): the type, required,
   AI-assist, and insert-variable controls collapse to icon-only once the
   field gets too narrow for their labels. See **Responsive** below.
@@ -54,18 +50,16 @@ and (for scalar types) switched between a literal value and a JS expression.
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function CloseFieldButton({ controlsVisibility }: { controlsVisibility: 'visible' | 'hover' }) {
+function DeleteFieldButton({ onDelete }: { onDelete?: () => void }) {
   return (
     <button
       type="button"
-      aria-label="Close field"
-      className={cn(
-        'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-        controlsVisibility === 'hover' &&
-          'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
-      )}
+      onClick={onDelete}
+      aria-label="Delete field"
+      title="Delete field"
+      className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
     >
-      <X size={14} />
+      <Trash2 size={14} />
     </button>
   );
 }
@@ -77,6 +71,7 @@ function DefaultDemo() {
   const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
   const [fieldType, setFieldType] = useState<LockableFieldType>('string');
   const [required, setRequired] = useState(true);
+  const [deleted, setDeleted] = useState(false);
 
   const handleFieldTypeChange = (type: LockableFieldType) => {
     setFieldType(type);
@@ -85,6 +80,8 @@ function DefaultDemo() {
       setMode('fixed');
     }
   };
+
+  if (deleted) return null;
 
   return (
     <div className="w-80">
@@ -96,7 +93,7 @@ function DefaultDemo() {
             {required && <RequiredIndicator />}
           </Label>
         }
-        headerActions={<CloseFieldButton controlsVisibility="visible" />}
+        headerActions={<DeleteFieldButton onDelete={() => setDeleted(true)} />}
         value={value}
         onValueChange={setValue}
         locked={locked}
@@ -113,7 +110,44 @@ function DefaultDemo() {
 }
 
 export const Default: Story = {
+  name: 'Basic Value Field',
   render: () => <DefaultDemo />,
+};
+
+function ExpressionValueFieldDemo() {
+  const fieldId = useId();
+  const [value, setValue] = useState('');
+
+  return (
+    <div className="w-80">
+      <LockableValueField
+        id={fieldId}
+        label={<Label htmlFor={fieldId}>Expression</Label>}
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        mode="expression"
+        variables={[
+          { label: 'Customer name', value: '$input.customerName' },
+          { label: 'Invoice number', value: '$input.invoiceNumber' },
+          { label: 'User email', value: '$user.email' },
+        ]}
+      />
+    </div>
+  );
+}
+
+export const Expression: Story = {
+  name: 'Expression Value Field',
+  render: () => <ExpressionValueFieldDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A focused expression-writing example. Use the Insert variable action above the field to add an available variable to the expression.',
+      },
+    },
+  },
 };
 
 function EqualsAddon() {
@@ -264,7 +298,7 @@ function ReferenceExamplesDemo() {
 
 /** Reference layouts for assignment/binding fields used in node properties. */
 export const ReferenceExamples: Story = {
-  name: 'Reference examples (=)',
+  name: 'Assignment & Binding Examples',
   render: () => <ReferenceExamplesDemo />,
 };
 
@@ -350,70 +384,6 @@ function InlineEditableLabel({
   );
 }
 
-function ControlsPlayground() {
-  const [title, setTitle] = useState('Label');
-  const [value, setValue] = useState('');
-  const [locked, setLocked] = useState(true);
-  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
-  const [fieldType, setFieldType] = useState<LockableFieldType>('string');
-  const [required, setRequired] = useState(true);
-  const [controlsVisibility, setControlsVisibility] = useState<'visible' | 'hover'>('visible');
-
-  const handleFieldTypeChange = (type: LockableFieldType) => {
-    setFieldType(type);
-    setValue('');
-    if (!FIELD_TYPE_META[type].supportsExpression) {
-      setMode('fixed');
-    }
-  };
-
-  return (
-    <div className="flex w-80 flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
-          Controls
-        </span>
-        <ToggleGroup
-          type="single"
-          size="xs"
-          value={controlsVisibility}
-          onValueChange={(v) => v && setControlsVisibility(v as 'visible' | 'hover')}
-        >
-          <ToggleGroupItem value="visible" className="!px-2.5 !text-xs">
-            Show
-          </ToggleGroupItem>
-          <ToggleGroupItem value="hover" className="!px-2.5 !text-xs">
-            Hide
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
-      <LockableValueField
-        label={
-          <div className="flex min-w-0 flex-1 items-center gap-1">
-            <InlineEditableLabel title={title} onTitleChange={setTitle} required={required} />
-          </div>
-        }
-        headerActions={<CloseFieldButton controlsVisibility={controlsVisibility} />}
-        value={value}
-        onValueChange={setValue}
-        locked={locked}
-        onLockedChange={setLocked}
-        mode={mode}
-        onModeChange={setMode}
-        fieldType={fieldType}
-        onFieldTypeChange={handleFieldTypeChange}
-        required={required}
-        onRequiredChange={setRequired}
-        controlsVisibility={controlsVisibility}
-      />
-    </div>
-  );
-}
-
-export const Controls: Story = {
-  render: () => <ControlsPlayground />,
-};
-
 function ResponsiveDemo() {
   const fullWidthId = useId();
   const narrowId = useId();
@@ -449,7 +419,7 @@ function ResponsiveDemo() {
           <LockableValueField
             id={fullWidthId}
             label={label(fullWidthId)}
-            headerActions={<CloseFieldButton controlsVisibility="visible" />}
+            headerActions={<DeleteFieldButton />}
             value={value}
             onValueChange={setValue}
             locked={locked}
@@ -471,7 +441,7 @@ function ResponsiveDemo() {
           <LockableValueField
             id={narrowId}
             label={label(narrowId)}
-            headerActions={<CloseFieldButton controlsVisibility="visible" />}
+            headerActions={<DeleteFieldButton />}
             value={value}
             onValueChange={setValue}
             locked={locked}
@@ -494,7 +464,7 @@ function ResponsiveDemo() {
             compact
             id={compactId}
             label={label(compactId)}
-            headerActions={<CloseFieldButton controlsVisibility="visible" />}
+            headerActions={<DeleteFieldButton />}
             value={value}
             onValueChange={setValue}
             locked={locked}

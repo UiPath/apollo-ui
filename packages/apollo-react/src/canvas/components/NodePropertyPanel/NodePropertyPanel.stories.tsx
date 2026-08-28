@@ -1358,7 +1358,6 @@ function InlineCaseRow({
       onModeChange={setMode}
       fieldType="string"
       variables={LOCKABLE_VARIABLES}
-      controlsVisibility="visible"
     />
   );
 }
@@ -2568,7 +2567,6 @@ function LockableCaseRow({
   fieldType,
   onFieldTypeChange,
   compact,
-  controlsVisibility,
   monacoTheme,
   insertBefore,
   insertAfter,
@@ -2588,7 +2586,6 @@ function LockableCaseRow({
   fieldType: LockableFieldType;
   onFieldTypeChange: (fieldType: LockableFieldType) => void;
   compact?: boolean;
-  controlsVisibility?: 'visible' | 'hover';
   monacoTheme: string;
   /** Shows the insertion line above this row (the dragged item would land here). */
   insertBefore?: boolean;
@@ -2666,13 +2663,9 @@ function LockableCaseRow({
               onClick={onDelete}
               aria-label="Delete field"
               title="Delete field"
-              className={cn(
-                'grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                controlsVisibility === 'hover' &&
-                  'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
-              )}
+              className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
             >
-              <X size={12} />
+              <Trash2 size={12} />
             </button>
           }
           value={value}
@@ -2708,7 +2701,6 @@ function LockableCaseRow({
           onRequiredChange={onRequiredChange}
           variables={LOCKABLE_VARIABLES}
           compact={compact}
-          controlsVisibility={controlsVisibility}
         />
       </div>
       {insertAfter && (
@@ -2860,13 +2852,7 @@ function FieldDragOverlay({ caseItem }: { caseItem: LockableCase }) {
   );
 }
 
-function LockableValueFieldShowcase({
-  controlsVisibility,
-  onControlsVisibilityChange,
-}: {
-  controlsVisibility: 'visible' | 'hover';
-  onControlsVisibilityChange: (visibility: 'visible' | 'hover') => void;
-}) {
+function LockableValueFieldShowcase() {
   const fullViewId = useId();
   const compactViewId = useId();
   const [showcaseValue, setShowcaseValue] = useState('');
@@ -2888,34 +2874,15 @@ function LockableValueFieldShowcase({
       <div className="flex flex-col gap-1">
         <span className="text-sm font-semibold text-foreground">Demo controls</span>
         <p className="text-xs leading-4 text-foreground-muted">
-          Toggle Show/Hide to preview how field controls behave in the panel on the left. Uses
-          component →{' '}
+          Uses component →{' '}
           <a
             href="/?path=/docs/apollo-wind-components-uipath-lockable-value-field--docs"
             target="_top"
             className="font-medium text-brand transition hover:text-brand-hover"
           >
-            Lockable Value Field
+            Value Field
           </a>
         </p>
-      </div>
-      <div className="flex items-center justify-between border-t border-border-subtle pt-4">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
-          Controls
-        </span>
-        <ToggleGroup
-          type="single"
-          size="xs"
-          value={controlsVisibility}
-          onValueChange={(v) => v && onControlsVisibilityChange(v as 'visible' | 'hover')}
-        >
-          <ToggleGroupItem value="visible" className="!px-2.5 !text-xs">
-            Show
-          </ToggleGroupItem>
-          <ToggleGroupItem value="hover" className="!px-2.5 !text-xs">
-            Hide
-          </ToggleGroupItem>
-        </ToggleGroup>
       </div>
       <div className="flex flex-col gap-2">
         <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
@@ -2931,14 +2898,11 @@ function LockableValueFieldShowcase({
           headerActions={
             <button
               type="button"
-              aria-label="Close field"
-              className={cn(
-                'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                controlsVisibility === 'hover' &&
-                  'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
-              )}
+              aria-label="Delete field"
+              title="Delete field"
+              className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
             >
-              <X size={14} />
+              <Trash2 size={14} />
             </button>
           }
           value={showcaseValue}
@@ -2952,7 +2916,6 @@ function LockableValueFieldShowcase({
           required={showcaseRequired}
           onRequiredChange={setShowcaseRequired}
           variables={LOCKABLE_VARIABLES}
-          controlsVisibility={controlsVisibility}
         />
       </div>
       <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
@@ -2974,14 +2937,11 @@ function LockableValueFieldShowcase({
             headerActions={
               <button
                 type="button"
-                aria-label="Close field"
-                className={cn(
-                  'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                  controlsVisibility === 'hover' &&
-                    'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
-                )}
+                aria-label="Delete field"
+                title="Delete field"
+                className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
               >
-                <X size={14} />
+                <Trash2 size={14} />
               </button>
             }
             value={showcaseValue}
@@ -2995,7 +2955,6 @@ function LockableValueFieldShowcase({
             required={showcaseRequired}
             onRequiredChange={setShowcaseRequired}
             variables={LOCKABLE_VARIABLES}
-            controlsVisibility={controlsVisibility}
           />
         </div>
       </div>
@@ -3025,9 +2984,6 @@ export function QuickFormPanel({
   const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(DEFAULT_LOCKABLE_CASES, null, 2));
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [jsonCopied, setJsonCopied] = useState(false);
-  const [showcaseControlsVisibility, setShowcaseControlsVisibility] = useState<'visible' | 'hover'>(
-    'visible'
-  );
   const [buttons, setButtons] = useState<FormButtonItem[]>(DEFAULT_FORM_BUTTONS);
   const nextButtonIdRef = useRef(3);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -3347,7 +3303,6 @@ export function QuickFormPanel({
                                 onFieldTypeChange={(fieldType) =>
                                   updateCaseFieldType(c.id, fieldType)
                                 }
-                                controlsVisibility={showcaseControlsVisibility}
                                 monacoTheme={monacoTheme}
                                 insertBefore={isOver && activeIndex > index}
                                 insertAfter={isOver && activeIndex < index}
@@ -3454,10 +3409,7 @@ export function QuickFormPanel({
     <div className="flex items-start gap-8">
       <PanelFrame>{panel}</PanelFrame>
 
-      <LockableValueFieldShowcase
-        controlsVisibility={showcaseControlsVisibility}
-        onControlsVisibilityChange={setShowcaseControlsVisibility}
-      />
+      <LockableValueFieldShowcase />
     </div>
   );
 }
@@ -4377,7 +4329,6 @@ function PanelUIInventoryStory() {
                       required={compositionRequired}
                       onRequiredChange={setCompositionRequired}
                       variables={LOCKABLE_VARIABLES}
-                      controlsVisibility="visible"
                     />
                   </section>
                 </div>
