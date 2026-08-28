@@ -2876,11 +2876,11 @@ function LockableValueFieldShowcase() {
         <p className="text-xs leading-4 text-foreground-muted">
           Uses component →{' '}
           <a
-            href="/?path=/docs/apollo-wind-components-uipath-value-field--docs"
+            href="/?path=/docs/apollo-wind-components-uipath-lockable-value-field--docs"
             target="_top"
             className="font-medium text-brand transition hover:text-brand-hover"
           >
-            Value Field
+            Lockable Value Field
           </a>
         </p>
       </div>
