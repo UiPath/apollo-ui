@@ -181,6 +181,24 @@ describe('LockableValueField', () => {
     expect(screen.getByRole('button', { name: 'Choose value type' })).toBeInTheDocument();
   });
 
+  it('allows null addons to suppress the default controls', () => {
+    const { container } = render(
+      <LockableValueField
+        locked={false}
+        leadingAddon={null}
+        trailingAddon={null}
+        onLockedChange={vi.fn()}
+        onModeChange={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByRole('button', { name: /Editable/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Choose value type' })).not.toBeInTheDocument();
+    expect(
+      container.querySelector('[role="group"].bg-surface-overlay > [role="group"]')
+    ).not.toBeInTheDocument();
+  });
+
   it('renders headerActions content after the built-in controls', () => {
     render(
       <LockableValueField
@@ -255,8 +273,56 @@ describe('LockableValueField', () => {
   });
 
   it('renders a file upload control for file fields when unlocked', () => {
-    render(<LockableValueField locked={false} fieldType="file" />);
+    const { container } = render(<LockableValueField locked={false} fieldType="file" />);
     expect(screen.getByText(/drag/i, { exact: false })).toBeInTheDocument();
+    expect(container.querySelector('[role="group"].bg-surface-overlay')).toHaveClass(
+      'h-auto',
+      'items-stretch'
+    );
+  });
+
+  it('keeps locked file fields in the compact read-only layout', () => {
+    const { container } = render(
+      <LockableValueField locked fieldType="file" value="invoice.pdf" />
+    );
+    expect(container.querySelector('[role="group"].bg-surface-overlay')).not.toHaveClass(
+      'h-auto',
+      'items-stretch'
+    );
+  });
+
+  it('allows expression values for file and object fields', () => {
+    const onValueChange = vi.fn();
+    const { rerender } = render(
+      <LockableValueField
+        fieldType="file"
+        mode="expression"
+        value="$vars.flowTest"
+        locked={false}
+        onValueChange={onValueChange}
+        leadingAddon={<span>=</span>}
+      />
+    );
+
+    expect(screen.getByDisplayValue('$vars.flowTest')).toBeInTheDocument();
+    expect(screen.getByText('=')).toBeInTheDocument();
+
+    rerender(
+      <LockableValueField
+        fieldType="object"
+        mode="expression"
+        value="$vars.flowTest"
+        locked={false}
+        onValueChange={onValueChange}
+        leadingAddon={<span>=</span>}
+      />
+    );
+    expect(screen.getByDisplayValue('$vars.flowTest')).toHaveClass('font-mono');
+  });
+
+  it('renders content below the value control', () => {
+    render(<LockableValueField belowValue={<span>End exchange</span>} />);
+    expect(screen.getByText('End exchange')).toBeInTheDocument();
   });
 
   it('disables the file upload control when unlocked but onValueChange is not provided', () => {

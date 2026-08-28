@@ -1,5 +1,6 @@
 import {
   ALargeSmall,
+  Braces,
   Calendar as CalendarIcon,
   File as FileIcon,
   Hash,
@@ -19,7 +20,8 @@ export type LockableFieldType =
   | 'boolean'
   | 'single-select'
   | 'multi-select'
-  | 'file';
+  | 'file'
+  | 'object';
 
 interface FieldTypeMeta {
   label: string;
@@ -75,9 +77,16 @@ export const FIELD_TYPE_META: Record<LockableFieldType, FieldTypeMeta> = {
   file: {
     label: 'File',
     icon: FileIcon,
-    supportsExpression: false,
+    supportsExpression: true,
     fixedLabel: 'Fixed value',
     fixedDescription: 'Upload a file',
+  },
+  object: {
+    label: 'Object',
+    icon: Braces,
+    supportsExpression: true,
+    fixedLabel: 'Fixed value',
+    fixedDescription: 'Use a literal object value',
   },
 };
 
@@ -89,6 +98,7 @@ export const FIELD_TYPE_ORDER: LockableFieldType[] = [
   'single-select',
   'multi-select',
   'file',
+  'object',
 ];
 
 export interface LockableValueFieldOption {
@@ -107,6 +117,17 @@ export interface LockableValueFieldProps {
   locked?: boolean;
   /** Called when the user toggles the lock. */
   onLockedChange?: (locked: boolean) => void;
+  /**
+   * Replaces the leading lock toggle with a semantic prefix such as `=`.
+   * Pass `null` to suppress the built-in toggle; omitting the prop preserves it.
+   */
+  leadingAddon?: ReactNode;
+  /**
+   * Replaces the trailing fixed/expression menu with a consumer-provided action
+   * for expression-capable field types. Pass `null` to suppress the built-in
+   * menu; omitting the prop preserves it.
+   */
+  trailingAddon?: ReactNode;
   /** Fixed value vs. JS expression. Defaults to 'fixed'. Ignored for types that don't support expressions. */
   mode?: LockableValueFieldMode;
   /** Called when the user switches modes. */
@@ -142,6 +163,8 @@ export interface LockableValueFieldProps {
   error?: ReactNode;
   /** Optional id for the inline validation message. */
   errorId?: string;
+  /** Content rendered below the value control, such as a related checkbox or help text. */
+  belowValue?: ReactNode;
   /** Accessible name for the file-upload dropzone. Defaults to a string `label`, then the computed field label. */
   fileUploadAriaLabel?: string;
   /** Extra content rendered after the built-in AI assist / Insert variable buttons (e.g. a delete button). */

@@ -116,6 +116,172 @@ export const Default: Story = {
   render: () => <DefaultDemo />,
 };
 
+function EqualsAddon() {
+  return (
+    <span className="font-mono text-sm font-semibold text-foreground-accent" aria-hidden="true">
+      =
+    </span>
+  );
+}
+
+function RequiredExpressionLabel({
+  children,
+  htmlFor,
+  required = true,
+}: {
+  children: string;
+  htmlFor: string;
+  required?: boolean;
+}) {
+  return (
+    <Label htmlFor={htmlFor} className="text-xs font-medium text-foreground">
+      {children}
+      {required && <span className="ml-0.5 text-destructive">*</span>}
+    </Label>
+  );
+}
+
+function ReferenceExamplesDemo() {
+  const idPrefix = useId();
+  const [collection, setCollection] = useState('$vars.flowArray');
+  const [attachment, setAttachment] = useState('$vars.flowTest');
+  const [context, setContext] = useState('$vars.flowTest');
+  const [endExchange, setEndExchange] = useState(true);
+  const [file, setFile] = useState('$vars.flowTest');
+  const [conversationId, setConversationId] = useState('$vars.flowTest');
+  const [exchangeId, setExchangeId] = useState('$vars.flowTest');
+
+  return (
+    <div className="flex w-[620px] flex-col gap-8">
+      <LockableValueField
+        id={`${idPrefix}-collection`}
+        label={
+          <RequiredExpressionLabel htmlFor={`${idPrefix}-collection`}>
+            Collection
+          </RequiredExpressionLabel>
+        }
+        fieldType="object"
+        value={collection}
+        onValueChange={setCollection}
+        locked={false}
+        leadingAddon={<EqualsAddon />}
+        mode="expression"
+        variables={[{ label: 'Flow array', value: '$vars.flowArray' }]}
+      />
+      <LockableValueField
+        id={`${idPrefix}-attachment`}
+        label={
+          <RequiredExpressionLabel htmlFor={`${idPrefix}-attachment`}>
+            Attachment
+          </RequiredExpressionLabel>
+        }
+        fieldType="file"
+        value={attachment}
+        onValueChange={setAttachment}
+        locked={false}
+        leadingAddon={<EqualsAddon />}
+        mode="expression"
+      />
+      <LockableValueField
+        id={`${idPrefix}-conversation-context`}
+        label={
+          <RequiredExpressionLabel htmlFor={`${idPrefix}-conversation-context`} required={false}>
+            Conversation context
+          </RequiredExpressionLabel>
+        }
+        fieldType="object"
+        value={context}
+        onValueChange={setContext}
+        locked={false}
+        leadingAddon={<EqualsAddon />}
+        mode="expression"
+        belowValue={
+          <label className="flex items-start gap-2 pl-1 text-sm text-foreground">
+            <input
+              type="checkbox"
+              checked={endExchange}
+              onChange={(event) => setEndExchange(event.target.checked)}
+              className="mt-0.5 size-4 accent-brand"
+            />
+            <span>
+              <span className="block font-medium">End exchange</span>
+              <span className="block text-xs leading-4 text-foreground-muted">
+                When checked, the conversation exchange will be ended and the user will be able to
+                send another message. Leave unchecked if later node(s) should continue responding as
+                part of the process&apos;s turn.
+              </span>
+            </span>
+          </label>
+        }
+      />
+      <LockableValueField
+        id={`${idPrefix}-file`}
+        label={<RequiredExpressionLabel htmlFor={`${idPrefix}-file`}>File</RequiredExpressionLabel>}
+        fieldType="file"
+        value={file}
+        onValueChange={setFile}
+        locked={false}
+        leadingAddon={<EqualsAddon />}
+        mode="expression"
+        belowValue={<p className="text-xs text-foreground-muted">File to extract data from</p>}
+      />
+      <LockableValueField
+        id={`${idPrefix}-conversation-id`}
+        label={
+          <RequiredExpressionLabel htmlFor={`${idPrefix}-conversation-id`}>
+            Conversation ID
+          </RequiredExpressionLabel>
+        }
+        value={conversationId}
+        onValueChange={setConversationId}
+        locked={false}
+        leadingAddon={<EqualsAddon />}
+        mode="expression"
+        trailingAddon={<FunctionAddon />}
+      />
+      <LockableValueField
+        id={`${idPrefix}-exchange-id`}
+        label={
+          <RequiredExpressionLabel htmlFor={`${idPrefix}-exchange-id`}>
+            Exchange ID
+          </RequiredExpressionLabel>
+        }
+        value={exchangeId}
+        onValueChange={setExchangeId}
+        locked={false}
+        leadingAddon={<EqualsAddon />}
+        mode="expression"
+        trailingAddon={<FunctionAddon />}
+        belowValue={
+          <p className="text-xs text-foreground-muted">
+            The message will be added to this existing exchange.
+          </p>
+        }
+      />
+    </div>
+  );
+}
+
+/** Reference layouts for assignment/binding fields used in node properties. */
+export const ReferenceExamples: Story = {
+  name: 'Reference examples (=)',
+  render: () => <ReferenceExamplesDemo />,
+};
+
+function FunctionAddon() {
+  return (
+    <button
+      type="button"
+      aria-label="Open expression editor"
+      className="grid size-7 place-items-center border-l border-border text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <span className="rounded border border-current px-0.5 font-mono text-[10px] leading-3">
+        ƒ
+      </span>
+    </button>
+  );
+}
+
 export const InlineValidation: Story = {
   render: () => (
     <div className="w-80">
