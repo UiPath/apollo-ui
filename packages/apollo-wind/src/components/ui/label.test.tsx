@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
 import { Input } from './input';
-import { Label } from './label';
+import { Label, RequiredIndicator } from './label';
 
 describe('Label', () => {
   it('renders label with text', () => {
@@ -41,5 +41,33 @@ describe('Label', () => {
     const ref = { current: null };
     render(<Label ref={ref}>Label</Label>);
     expect(ref.current).toBeInstanceOf(HTMLLabelElement);
+  });
+});
+
+describe('RequiredIndicator', () => {
+  it('hides the asterisk glyph from assistive tech but announces it via sr-only text', () => {
+    render(
+      <Label htmlFor="name">
+        Name
+        <RequiredIndicator />
+      </Label>
+    );
+    expect(screen.getByText('*')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByText('(required)')).toHaveClass('sr-only');
+  });
+
+  it('announces the requirement even when the paired control has no required/aria-required', async () => {
+    const { container } = render(
+      <div>
+        <Label htmlFor="name">
+          Name
+          <RequiredIndicator />
+        </Label>
+        <Input id="name" />
+      </div>
+    );
+    expect(screen.getByLabelText(/Name\*?\s*\(required\)/)).toBeInTheDocument();
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 });

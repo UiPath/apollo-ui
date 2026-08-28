@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
+import { Label, RequiredIndicator } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
@@ -65,7 +65,7 @@ export function FieldHeader({
       {label ?? (
         <Label htmlFor={fieldId} className="text-xs font-medium text-foreground-muted">
           {fieldLabel}
-          {required && <span className="ml-0.5 text-destructive">*</span>}
+          {required && <RequiredIndicator />}
         </Label>
       )}
       <TooltipProvider delayDuration={300}>

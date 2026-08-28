@@ -4,7 +4,12 @@ import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { VARIABLE_DRAG_MIME } from './plugins/VariableDropPlugin';
 import { PromptEditor, type PromptEditorRef } from './prompt-editor';
-import type { PromptEditorAutoCompleteOption, PromptEditorMode, PromptEditorToken } from './types';
+import {
+  getPromptEditorTokenColors,
+  type PromptEditorAutoCompleteOption,
+  type PromptEditorMode,
+  type PromptEditorToken,
+} from './types';
 
 const OPTIONS: PromptEditorAutoCompleteOption[] = [
   { type: 'input', value: 'vars.firstName' },
@@ -12,6 +17,23 @@ const OPTIONS: PromptEditorAutoCompleteOption[] = [
 ];
 
 describe('PromptEditor', () => {
+  it('uses semantic info and error tokens for token colors', () => {
+    expect(getPromptEditorTokenColors()).toEqual({
+      valid: {
+        background: 'var(--color-info-background)',
+        border: 'var(--color-info-icon)',
+        text: 'var(--color-info-text)',
+        icon: 'var(--color-info-icon)',
+      },
+      invalid: {
+        background: 'var(--color-error-background)',
+        border: 'var(--color-error-icon)',
+        text: 'var(--color-error-text)',
+        icon: 'var(--color-error-icon)',
+      },
+    });
+  });
+
   describe('rendering', () => {
     it('renders an editable textbox with the given aria-label', () => {
       render(<PromptEditor ariaLabel="Prompt" />);

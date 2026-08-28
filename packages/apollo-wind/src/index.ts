@@ -73,8 +73,8 @@ export type {
 export { Textarea } from './components/ui/textarea';
 export type { TextareaProps } from './components/ui/textarea';
 
-export { Label } from './components/ui/label';
-export type { LabelProps } from './components/ui/label';
+export { Label, RequiredIndicator } from './components/ui/label';
+export type { LabelProps, RequiredIndicatorProps } from './components/ui/label';
 
 export { Checkbox } from './components/ui/checkbox';
 export type { CheckboxProps } from './components/ui/checkbox';

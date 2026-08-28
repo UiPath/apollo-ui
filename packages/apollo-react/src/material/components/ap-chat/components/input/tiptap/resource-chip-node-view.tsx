@@ -14,8 +14,8 @@ const ChipContent = styled('span')<{ readonly?: boolean }>(({ readonly }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   padding: `0 ${token.Padding.PadS}`,
-  backgroundColor: 'var(--color-primary-lighter)',
-  color: 'var(--color-foreground)',
+  backgroundColor: 'var(--color-info-background)',
+  color: 'var(--color-info-text)',
   borderRadius: `calc(${token.Border.BorderRadiusL} * 2)`,
   verticalAlign: 'middle',
   ...(!readonly && {
@@ -49,7 +49,7 @@ const ChipDeleteContainer = styled('span')<{ visible: boolean; compactMode: bool
     transform: 'translateY(-50%)',
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: 'var(--color-primary-lighter)',
+    backgroundColor: 'var(--color-info-background)',
     borderRadius: `calc(${token.Border.BorderRadiusL} * 2)`,
     transition: 'opacity 0.15s ease-in-out',
 

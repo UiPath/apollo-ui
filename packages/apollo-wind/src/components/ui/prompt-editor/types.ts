@@ -77,14 +77,14 @@ export const getPromptEditorTokenColors = (): Record<
   PromptEditorTokenColorConfig
 > => ({
   valid: {
-    background: 'var(--color-primary-lighter)',
-    border: 'var(--color-primary)',
-    text: 'var(--color-foreground)',
-    icon: 'var(--color-primary)',
+    background: 'var(--color-info-background)',
+    border: 'var(--color-info-icon)',
+    text: 'var(--color-info-text)',
+    icon: 'var(--color-info-icon)',
   },
   invalid: {
     background: 'var(--color-error-background)',
-    border: 'var(--color-error)',
+    border: 'var(--color-error-icon)',
     text: 'var(--color-error-text)',
     icon: 'var(--color-error-icon)',
   },
