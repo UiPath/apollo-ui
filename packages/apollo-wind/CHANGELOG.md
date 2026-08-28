@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.37.1...@uipath/apollo-wind@2.38.0) (2026-08-28)
+
+### Features
+
+* **apollo-wind:** extend lockable value field bindings ([b8c5f32](https://github.com/UiPath/apollo-ui/commit/b8c5f32e24b64bb8a6a16539c9026477f8a02b4d))
+
 ## [@uipath/apollo-wind-v2.37.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.37.0...@uipath/apollo-wind@2.37.1) (2026-08-28)
 
 ### Bug Fixes
