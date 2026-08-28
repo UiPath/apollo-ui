@@ -24,7 +24,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
+import { Label, RequiredIndicator } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/date-picker';
 import { DateTimePicker } from '@/components/ui/datetime-picker';
 import { FileUpload } from '@/components/ui/file-upload';
@@ -599,7 +599,7 @@ function FormLabel({
   return (
     <Label data-slot="form-label" htmlFor={htmlFor} className={className}>
       {children}
-      {required && <span className="text-destructive ml-1">*</span>}
+      {required && <RequiredIndicator className="ml-1" />}
     </Label>
   );
 }

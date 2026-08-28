@@ -13,7 +13,7 @@ import { schemaToJson } from './schema-serializer';
 import { MetadataForm } from './metadata-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, RequiredIndicator } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -1187,7 +1187,7 @@ export function FormDesigner() {
                           <div className="flex items-center gap-1">
                             <span className="text-xs font-medium truncate">{field.label}</span>
                             {field.rules?.some((r) => r.effects.required) && (
-                              <span className="text-[10px] text-destructive">*</span>
+                              <RequiredIndicator className="ml-0 text-[10px]" />
                             )}
                           </div>
                           <div className="text-[9px] text-muted-foreground">{field.type}</div>

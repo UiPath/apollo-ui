@@ -1,4 +1,4 @@
-import { cn, Label, type LabelProps } from '@uipath/apollo-wind';
+import { cn, Label, type LabelProps, RequiredIndicator } from '@uipath/apollo-wind';
 import {
   cloneElement,
   forwardRef,
@@ -45,7 +45,7 @@ export const PanelFieldLabel = forwardRef<HTMLLabelElement, PanelFieldLabelProps
       {...props}
     >
       {children}
-      {required && <span className="ml-0.5 text-destructive">*</span>}
+      {required && <RequiredIndicator />}
     </Label>
   )
 );

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { X } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { cn } from '@/lib';
-import { Label } from '../label';
+import { Label, RequiredIndicator } from '../label';
 import { ToggleGroup, ToggleGroupItem } from '../toggle-group';
 import { LockableValueField } from './lockable-value-field';
 import { FIELD_TYPE_META, type LockableFieldType, type LockableValueFieldMode } from './types';
@@ -93,7 +93,7 @@ function DefaultDemo() {
         label={
           <Label htmlFor={fieldId} className="text-xs font-medium text-foreground-muted">
             Label
-            {required && <span className="ml-0.5 text-destructive">*</span>}
+            {required && <RequiredIndicator />}
           </Label>
         }
         headerActions={<CloseFieldButton controlsVisibility="visible" />}
@@ -179,7 +179,7 @@ function InlineEditableLabel({
       className="truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
     >
       {title}
-      {required && <span className="ml-0.5 text-destructive">*</span>}
+      {required && <RequiredIndicator />}
     </button>
   );
 }
@@ -269,7 +269,7 @@ function ResponsiveDemo() {
   const label = (fieldId: string) => (
     <Label htmlFor={fieldId} className="text-xs font-medium text-foreground-muted">
       Label
-      {required && <span className="ml-0.5 text-destructive">*</span>}
+      {required && <RequiredIndicator />}
     </Label>
   );
 

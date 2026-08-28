@@ -57,6 +57,7 @@ import {
   PopoverTrigger,
   RadioGroup,
   RadioGroupItem,
+  RequiredIndicator,
   ScrollableTabsList,
   Select,
   SelectContent,
@@ -2654,7 +2655,7 @@ function LockableCaseRow({
                   className="truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
                 >
                   {caseTitle}
-                  {required && <span className="ml-0.5 text-destructive">*</span>}
+                  {required && <RequiredIndicator />}
                 </button>
               )}
             </div>
@@ -2853,7 +2854,7 @@ function FieldDragOverlay({ caseItem }: { caseItem: LockableCase }) {
       <meta.icon size={12} className="shrink-0 text-foreground-subtle" />
       <span className="truncate text-xs font-medium text-foreground">
         {caseItem.title}
-        {caseItem.required && <span className="ml-0.5 text-destructive">*</span>}
+        {caseItem.required && <RequiredIndicator />}
       </span>
     </div>
   );
