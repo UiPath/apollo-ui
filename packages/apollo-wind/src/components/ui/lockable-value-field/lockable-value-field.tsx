@@ -57,6 +57,8 @@ export function LockableValueField({
   onValueBlur,
   locked = true,
   onLockedChange,
+  leadingAddon,
+  trailingAddon,
   mode = 'fixed',
   onModeChange,
   renderExpressionEditor,
@@ -67,6 +69,7 @@ export function LockableValueField({
   label,
   error,
   errorId,
+  belowValue,
   fileUploadAriaLabel,
   headerActions,
   compact,
@@ -119,10 +122,23 @@ export function LockableValueField({
       />
 
       {typeMeta.supportsExpression ? (
-        <InputGroup error={error} errorId={validationId}>
-          <InputGroupAddon align="inline-start">
-            <LockToggleButton locked={locked} onLockedChange={onLockedChange} />
-          </InputGroupAddon>
+        <InputGroup
+          error={error}
+          errorId={validationId}
+          className={cn(
+            'bg-surface-overlay',
+            fieldType === 'file' && !locked && effectiveMode === 'fixed' && 'h-auto items-stretch'
+          )}
+        >
+          {leadingAddon !== null && (
+            <InputGroupAddon align="inline-start">
+              {leadingAddon !== undefined ? (
+                leadingAddon
+              ) : (
+                <LockToggleButton locked={locked} onLockedChange={onLockedChange} />
+              )}
+            </InputGroupAddon>
+          )}
 
           {effectiveMode === 'expression' ? (
             renderExpressionEditor ? (
@@ -206,6 +222,18 @@ export function LockableValueField({
                 />
               </PopoverContent>
             </Popover>
+          ) : fieldType === 'file' ? (
+            <FileUpload
+              id={fieldId}
+              ariaLabel={fileUploadAriaLabel ?? (typeof label === 'string' ? label : fieldLabel)}
+              className="flex-1"
+              onFilesChange={(files) => onValueChange?.(files.map((f) => f.name).join(', '))}
+              disabled={!onValueChange}
+              onBlur={onValueBlur}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? validationId : undefined}
+              aria-errormessage={error ? validationId : undefined}
+            />
           ) : (
             <InputGroupInput
               id={fieldId}
@@ -218,40 +246,53 @@ export function LockableValueField({
             />
           )}
 
-          <InputGroupAddon align="inline-end">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <InputGroupButton
-                  icon
-                  size="3xs"
-                  disabled={!onModeChange}
-                  aria-label="Choose value type"
-                >
-                  {effectiveMode === 'expression' ? <Code2 /> : <Type />}
-                </InputGroupButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <ModeMenuItem
-                  icon={Type}
-                  label={typeMeta.fixedLabel}
-                  description={typeMeta.fixedDescription}
-                  active={effectiveMode === 'fixed'}
-                  onClick={() => onModeChange?.('fixed')}
-                />
-                <ModeMenuItem
-                  icon={Code2}
-                  label="Expression"
-                  description="Use a JS expression"
-                  active={effectiveMode === 'expression'}
-                  onClick={() => onModeChange?.('expression')}
-                />
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </InputGroupAddon>
+          {trailingAddon !== null && (
+            <InputGroupAddon
+              align="inline-end"
+              className={trailingAddon != null ? 'cursor-default' : undefined}
+            >
+              {trailingAddon !== undefined ? (
+                trailingAddon
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <InputGroupButton
+                      icon
+                      size="3xs"
+                      disabled={!onModeChange}
+                      aria-label="Choose value type"
+                    >
+                      {effectiveMode === 'expression' ? <Code2 /> : <Type />}
+                    </InputGroupButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <ModeMenuItem
+                      icon={Type}
+                      label={typeMeta.fixedLabel}
+                      description={typeMeta.fixedDescription}
+                      active={effectiveMode === 'fixed'}
+                      onClick={() => onModeChange?.('fixed')}
+                    />
+                    <ModeMenuItem
+                      icon={Code2}
+                      label="Expression"
+                      description="Use a JS expression"
+                      active={effectiveMode === 'expression'}
+                      onClick={() => onModeChange?.('expression')}
+                    />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </InputGroupAddon>
+          )}
         </InputGroup>
       ) : (
         <div className="flex items-center gap-2">
-          <LockToggleButton locked={locked} onLockedChange={onLockedChange} />
+          {leadingAddon !== undefined ? (
+            leadingAddon
+          ) : (
+            <LockToggleButton locked={locked} onLockedChange={onLockedChange} />
+          )}
 
           {locked ? (
             <Input
@@ -307,21 +348,7 @@ export function LockableValueField({
               aria-describedby={error ? validationId : undefined}
               aria-errormessage={error ? validationId : undefined}
             />
-          ) : (
-            fieldType === 'file' && (
-              <FileUpload
-                id={fieldId}
-                ariaLabel={fileUploadAriaLabel ?? (typeof label === 'string' ? label : fieldLabel)}
-                className="flex-1"
-                onFilesChange={(files) => onValueChange?.(files.map((f) => f.name).join(', '))}
-                disabled={!onValueChange}
-                onBlur={onValueBlur}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={error ? validationId : undefined}
-                aria-errormessage={error ? validationId : undefined}
-              />
-            )
-          )}
+          ) : null}
         </div>
       )}
 
@@ -336,6 +363,8 @@ export function LockableValueField({
           {error}
         </p>
       )}
+
+      {belowValue}
     </div>
   );
 }

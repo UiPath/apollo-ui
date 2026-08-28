@@ -63,7 +63,7 @@ export function FieldHeader({
   return (
     <div className="flex items-center gap-1">
       {label ?? (
-        <Label htmlFor={fieldId} className="text-xs font-medium text-foreground-muted">
+        <Label htmlFor={fieldId} className="text-xs font-medium text-foreground">
           {fieldLabel}
           {required && <span className="ml-0.5 text-destructive">*</span>}
         </Label>
