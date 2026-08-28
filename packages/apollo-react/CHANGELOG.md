@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.33.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.33.2...@uipath/apollo-react@6.33.3) (2026-08-28)
+
+### Bug Fixes
+
+* **apollo-wind,apollo-react:** update field indicators and chip colors ([cf025f4](https://github.com/UiPath/apollo-ui/commit/cf025f4137fa19c87306e2f8c28766a1d7320e1e))
+
 ## [@uipath/apollo-react-v6.33.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.33.1...@uipath/apollo-react@6.33.2) (2026-08-27)
 
 ### Bug Fixes
