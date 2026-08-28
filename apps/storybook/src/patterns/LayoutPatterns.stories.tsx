@@ -346,13 +346,18 @@ function DapValueField({
     <div className="space-y-1.5">
       <Label htmlFor={id} className="text-xs">
         {label}
-        {required && <span className="text-foreground"> *</span>}
+        {required && (
+          <span aria-hidden="true" className="text-foreground">
+            {' *'}
+          </span>
+        )}
       </Label>
       <InputGroup className="h-9 bg-surface-overlay" error={error}>
         <InputGroupInput
           id={id}
           value={value}
           placeholder={placeholder}
+          required={required}
           onChange={(event) => onChange(event.target.value)}
           className="text-xs"
         />
