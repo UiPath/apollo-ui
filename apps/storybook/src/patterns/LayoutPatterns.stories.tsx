@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BaseCanvas } from '@uipath/apollo-react/canvas/components/BaseCanvas';
+import { FullWorkbenchComposition } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
 import {
   CanvasBottomPanel,
   type CanvasBottomPanelTab,
@@ -750,4 +751,9 @@ type Story = StoryObj<typeof meta>;
 export const ErrorAndValidation: Story = {
   name: 'UX Error and Validation',
   render: () => <ErrorAndValidationWorkbench />,
+};
+
+export const DapSendEmail: Story = {
+  name: 'UX DAP - Send email',
+  render: () => <FullWorkbenchComposition rightPanelVariant="dap" />,
 };

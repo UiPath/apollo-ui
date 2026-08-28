@@ -19,11 +19,9 @@ import {
   Checkbox,
   type FormSchema,
   Input,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
   Label,
+  LockableValueField,
+  type LockableValueFieldMode,
   type PanelImperativeHandle,
   RequiredIndicator,
   RadioGroup,
@@ -57,7 +55,6 @@ import { DockviewReact } from 'dockview-react';
 import 'dockview-react/dist/styles/dockview.css';
 import {
   AtSign,
-  Blocks,
   Bold,
   Bug,
   ChevronDown,
@@ -160,7 +157,7 @@ type Story = StoryObj<typeof meta>;
 // Sample Canvas Data
 // ============================================================================
 
-type WorkflowVariant = 'default' | 'forms' | 'node' | 'rules' | 'variables';
+type WorkflowVariant = 'default' | 'forms' | 'node' | 'rules' | 'variables' | 'dap';
 
 function createFlowGraph(variant: WorkflowVariant): {
   nodes: Node<BaseNodeData>[];
@@ -351,6 +348,43 @@ function createFlowGraph(variant: WorkflowVariant): {
         ['initialize', 'assign'],
         ['transform', 'output'],
         ['assign', 'output'],
+      ].map(([source, target]) => ({
+        id: `e-${source}-${target}`,
+        source,
+        target,
+        sourceHandle: 'output',
+        targetHandle: 'input',
+      })),
+    };
+  }
+
+  if (variant === 'dap') {
+    const nodes = [
+      createNode({
+        id: 'invoice-received',
+        type: 'uipath.manual-trigger',
+        position: { x: 80, y: 200 },
+        display: { label: 'Invoice received', subLabel: 'Manual trigger' },
+      }),
+      createNode({
+        id: 'extract-invoice',
+        type: 'uipath.blank-node',
+        position: { x: 350, y: 200 },
+        display: { label: 'Extract invoice', subLabel: 'Document understanding' },
+      }),
+      createNode({
+        id: 'send-email',
+        type: 'uipath.blank-node',
+        position: { x: 620, y: 200 },
+        selected: true,
+        display: { label: 'Send email', subLabel: 'Gmail · DAP' },
+      }),
+    ];
+    return {
+      nodes,
+      edges: [
+        ['invoice-received', 'extract-invoice'],
+        ['extract-invoice', 'send-email'],
       ].map(([source, target]) => ({
         id: `e-${source}-${target}`,
         source,
@@ -774,8 +808,8 @@ function CanvasViewport({
     const graph = createFlowGraph(workflowVariant);
     setNodes(graph.nodes);
     setEdges(graph.edges);
-    window.setTimeout(() => centerWorkflow(200), 100);
-  }, [centerWorkflow, setEdges, setNodes, workflowVariant]);
+    window.setTimeout(() => fitWorkflow(200), 100);
+  }, [fitWorkflow, setEdges, setNodes, workflowVariant]);
 
   return (
     <div ref={viewportContainerRef} className="relative h-full min-h-0 min-w-0 overflow-hidden">
@@ -3418,7 +3452,7 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
     <div className="space-y-1.5">
       <Label className="text-xs">
         {field.label}
-        {field.required && <span className="text-error"> *</span>}
+        {field.required && <span aria-hidden="true"> *</span>}
       </Label>
       {field.kind === 'select' ? (
         <Select defaultValue="current">
@@ -3686,7 +3720,6 @@ function DapValueField({
   id,
   label,
   value,
-  placeholder,
   required,
   onChange,
 }: {
@@ -3697,41 +3730,35 @@ function DapValueField({
   required?: boolean;
   onChange: (value: string) => void;
 }) {
+  const [locked, setLocked] = useState(false);
+  const [mode, setMode] = useState<LockableValueFieldMode>(
+    value.startsWith('$vars.') ? 'expression' : 'fixed'
+  );
+
   return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-xs">
-        {label}
-        {required && <span className="text-error"> *</span>}
-      </Label>
-      <InputGroup className="h-9 bg-surface-overlay">
-        <InputGroupInput
-          id={id}
-          value={value}
-          placeholder={placeholder}
-          onChange={(event) => onChange(event.target.value)}
-          className="text-xs"
-        />
-        <InputGroupAddon align="inline-end" className="-my-1 gap-0 self-stretch">
-          <InputGroupButton
-            icon
-            aria-label={`Insert variable for ${label}`}
-            title="Insert variable"
-            className="h-full rounded-none border-l px-2.5"
-            onClick={() => onChange(`${value}$vars.`)}
-          >
-            <AtSign size={14} />
-          </InputGroupButton>
-          <InputGroupButton
-            icon
-            aria-label={`Configure value for ${label}`}
-            title="Configure value"
-            className="h-full rounded-none border-l px-2.5"
-          >
-            <SlidersHorizontal size={14} />
-          </InputGroupButton>
-        </InputGroupAddon>
-      </InputGroup>
-    </div>
+    <LockableValueField
+      id={id}
+      label={
+        <Label htmlFor={id} className="text-xs font-medium text-foreground">
+          {label}
+          {required && <span aria-hidden="true"> *</span>}
+        </Label>
+      }
+      value={value}
+      onValueChange={onChange}
+      locked={locked}
+      onLockedChange={setLocked}
+      mode={mode}
+      onModeChange={setMode}
+      variables={[
+        { label: 'Approver email', value: '$vars.approverEmail' },
+        { label: 'Approver name', value: '$vars.approverName' },
+        { label: 'Invoice number', value: '$vars.invoiceNumber' },
+        { label: 'Invoice PDF', value: '$vars.invoicePdf' },
+      ]}
+      showFieldActions
+      className="gap-1.5"
+    />
   );
 }
 
@@ -3814,7 +3841,6 @@ function DapPanel({ onClose }: { onClose: () => void }) {
                 id="dap-recipient"
                 label="To"
                 value={recipient}
-                placeholder="Recipient email address"
                 required
                 onChange={setRecipient}
               />
@@ -3822,14 +3848,13 @@ function DapPanel({ onClose }: { onClose: () => void }) {
                 id="dap-subject"
                 label="Subject"
                 value={subject}
-                placeholder="The subject of the email"
                 required
                 onChange={setSubject}
               />
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="dap-body" className="text-xs">
-                    Body <span className="text-error">*</span>
+                    Body <span aria-hidden="true">*</span>
                   </Label>
                   <Button
                     size="sm"
@@ -3867,7 +3892,6 @@ function DapPanel({ onClose }: { onClose: () => void }) {
                 id="dap-attachment"
                 label="Attachment"
                 value={attachment}
-                placeholder="The file to attach"
                 onChange={setAttachment}
               />
             </section>
@@ -3903,7 +3927,6 @@ function DapPanel({ onClose }: { onClose: () => void }) {
                     id="dap-reply-to"
                     label="Reply to"
                     value={replyTo}
-                    placeholder="Reply-to address"
                     onChange={setReplyTo}
                   />
                   <div className="space-y-1.5">
@@ -3962,29 +3985,9 @@ function DapPanel({ onClose }: { onClose: () => void }) {
         </TabsContent>
 
         <TabsContent value="variables" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
-          <div className="space-y-4">
-            <p className="text-xs leading-5 text-foreground-muted">
-              Values available to the connector fields and produced when this activity runs.
-            </p>
-            {[
-              ['$vars.approverEmail', 'Text · Input'],
-              ['$vars.approverName', 'Text · Input'],
-              ['$vars.invoiceNumber', 'Text · Input'],
-              ['$vars.invoicePdf', 'File · Input'],
-              ['$output.messageId', 'Text · Output'],
-            ].map(([name, metadata]) => (
-              <div
-                key={name}
-                className="flex items-center gap-3 rounded-lg border border-border-subtle bg-surface-overlay px-3 py-2.5"
-              >
-                <Blocks className="size-4 shrink-0 text-foreground-subtle" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-mono text-xs font-medium">{name}</p>
-                  <p className="mt-0.5 text-[11px] text-foreground-muted">{metadata}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <p className="text-xs leading-5 text-foreground-muted">
+            Values available to the connector fields and produced when this activity runs.
+          </p>
         </TabsContent>
       </Tabs>
     </NodePropertyPanel>
@@ -4198,9 +4201,9 @@ export function FullWorkbenchComposition({
       <div className="relative min-w-0 flex-1 overflow-hidden">
         <CanvasViewport
           workflowVariant={
-            rightPanelVariant === 'properties' ||
-            rightPanelVariant === 'dap' ||
-            rightPanelVariant === 'field-help'
+            rightPanelVariant === 'dap'
+              ? 'dap'
+              : rightPanelVariant === 'properties' || rightPanelVariant === 'field-help'
               ? 'default'
               : rightPanelVariant
           }

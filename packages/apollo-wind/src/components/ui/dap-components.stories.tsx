@@ -1717,7 +1717,7 @@ function DapLayoutsPage() {
 }
 
 const meta = {
-  title: 'Patterns/DAP layouts',
+  title: 'Patterns/Layout Patterns',
   component: DapLayoutsPage,
   tags: ['!autodocs'],
   parameters: {
@@ -1728,4 +1728,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Page: Story = {};
+export const Page: Story = {
+  name: 'UX DAP - Alignment',
+};
