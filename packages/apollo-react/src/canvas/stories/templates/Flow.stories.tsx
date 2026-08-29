@@ -4212,8 +4212,8 @@ export function FullWorkbenchComposition({
             rightPanelVariant === 'dap'
               ? 'dap'
               : rightPanelVariant === 'properties' || rightPanelVariant === 'field-help'
-              ? 'default'
-              : rightPanelVariant
+                ? 'default'
+                : rightPanelVariant
           }
           bottomControlsOffset={canvasBottomOffset}
           rightControlsOffset={rightPanelOpen ? 412 : 16}
