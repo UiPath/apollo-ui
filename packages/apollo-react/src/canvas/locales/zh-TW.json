@@ -146,7 +146,7 @@
   "canvas.node_mode_select.disabled_label": "跳過節點",
   "canvas.node_mode_select.live_description": "使用此節點的實際回應",
   "canvas.node_mode_select.live_label": "即時",
-  "canvas.node_mode_select.node_mode": "節點模式",
+  "canvas.node_mode_select.node_mode": "節點輸出模式",
   "canvas.node_mode_select.simulated_description": "使用 LLM 動態產生回應",
   "canvas.node_mode_select.simulated_label": "已模擬",
   "canvas.node_mode_select.static_description": "一律傳回您定義的值",

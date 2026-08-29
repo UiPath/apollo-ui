@@ -146,7 +146,7 @@
   "canvas.node_mode_select.disabled_label": "Ignorer le nœud",
   "canvas.node_mode_select.live_description": "Utilise la réponse réelle de ce nœud.",
   "canvas.node_mode_select.live_label": "En production",
-  "canvas.node_mode_select.node_mode": "Mode nœud",
+  "canvas.node_mode_select.node_mode": "Mode de sortie du nœud",
   "canvas.node_mode_select.simulated_description": "Génère une réponse de manière dynamique à l’aide d’un LLM.",
   "canvas.node_mode_select.simulated_label": "Simulé",
   "canvas.node_mode_select.static_description": "Retourne toujours une valeur que vous avez définie.",

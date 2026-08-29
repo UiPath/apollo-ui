@@ -146,7 +146,7 @@
   "canvas.node_mode_select.disabled_label": "Omiteți nodul",
   "canvas.node_mode_select.live_description": "Utilizați răspunsul real de la acest nod",
   "canvas.node_mode_select.live_label": "Live",
-  "canvas.node_mode_select.node_mode": "Mod nod",
+  "canvas.node_mode_select.node_mode": "Mod de output al nodului",
   "canvas.node_mode_select.simulated_description": "Generați dinamic un răspuns folosind un LLM",
   "canvas.node_mode_select.simulated_label": "Simulat",
   "canvas.node_mode_select.static_description": "Returnați întotdeauna o valoare pe care o definiți",
