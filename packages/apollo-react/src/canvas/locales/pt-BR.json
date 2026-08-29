@@ -146,7 +146,7 @@
   "canvas.node_mode_select.disabled_label": "Pular nó",
   "canvas.node_mode_select.live_description": "Use a resposta real deste nó",
   "canvas.node_mode_select.live_label": "Em produção",
-  "canvas.node_mode_select.node_mode": "Modo de nó",
+  "canvas.node_mode_select.node_mode": "Modo de saída do nó",
   "canvas.node_mode_select.simulated_description": "Gere uma resposta dinamicamente usando um LLM",
   "canvas.node_mode_select.simulated_label": "Simulado",
   "canvas.node_mode_select.static_description": "Sempre retorne um valor que você define",
