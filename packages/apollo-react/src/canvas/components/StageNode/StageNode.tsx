@@ -32,6 +32,7 @@ const StageNodeInner = (props: StageNodeProps) => {
     execution,
     stageDetails,
     taskOptions = [],
+    replaceTaskToolboxTitle,
     menuItems,
     pendingReplaceTask,
     onStageClick,
@@ -201,7 +202,7 @@ const StageNodeInner = (props: StageNodeProps) => {
       {onReplaceTaskFromToolbox && isReplacingTask && !isReadOnly && (
         <FloatingCanvasPanel nodeId={id} offset={15}>
           <Toolbox
-            title={labels.replaceTask}
+            title={replaceTaskToolboxTitle ?? labels.replaceTask}
             initialItems={taskOptions}
             onClose={handleReplaceTaskToolboxClose}
             onItemSelect={handleReplaceTaskToolboxItemSelected}
