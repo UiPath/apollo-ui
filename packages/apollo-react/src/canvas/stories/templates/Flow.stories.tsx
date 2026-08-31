@@ -3764,7 +3764,7 @@ function DapValueField({
         { label: 'Invoice number', value: '$vars.invoiceNumber' },
         { label: 'Invoice PDF', value: '$vars.invoicePdf' },
       ]}
-      showFieldActions
+      showFieldActions={false}
       className="gap-1.5"
     />
   );
