@@ -15,6 +15,7 @@ import {
   InputGroupInput,
   Label,
   type PanelImperativeHandle,
+  RequiredIndicator,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -2770,8 +2771,7 @@ function FieldHelpPanel({ onClose }: { onClose: () => void }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="field-help-url" className="text-xs">
-              Webhook URL <span aria-hidden="true">*</span>
-              <span className="sr-only"> (required)</span>
+              Webhook URL <RequiredIndicator />
             </Label>
             <InputGroup className="h-9 bg-surface-overlay">
               <InputGroupInput
@@ -2825,8 +2825,7 @@ function FieldHelpPanel({ onClose }: { onClose: () => void }) {
           <div className="space-y-1.5">
             <div className="flex items-center gap-1">
               <Label htmlFor="field-help-secret" className="text-xs">
-                Signing secret <span aria-hidden="true">*</span>
-                <span className="sr-only"> (required)</span>
+                Signing secret <RequiredIndicator />
               </Label>
               <Tooltip>
                 <TooltipTrigger asChild>
