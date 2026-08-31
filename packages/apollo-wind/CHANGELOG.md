@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.40.0...@uipath/apollo-wind@2.41.0) (2026-08-31)
+
+### Features
+
+* **apollo-wind:** unify field label, description, and error styling ([8535e9d](https://github.com/UiPath/apollo-ui/commit/8535e9d1166a1a4178004fa93b8a19dbb64c16ea))
+
 ## [@uipath/apollo-wind-v2.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.39.0...@uipath/apollo-wind@2.40.0) (2026-08-31)
 
 ### Features

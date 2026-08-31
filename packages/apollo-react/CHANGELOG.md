@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.36.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.36.0...@uipath/apollo-react@6.36.1) (2026-08-31)
+
+### Bug Fixes
+
+* **apollo-react:** follow the unified apollo-wind label treatment ([98b0e46](https://github.com/UiPath/apollo-ui/commit/98b0e46572a2cfb18c2ee67232a48f5eb5569e43))
+
 ## [@uipath/apollo-react-v6.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.35.0...@uipath/apollo-react@6.36.0) (2026-08-31)
 
 ### Features
