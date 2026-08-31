@@ -3441,6 +3441,8 @@ const NODE_PANEL_SPECS: Record<string, InventoryPanelSpec> = {
 };
 
 function InventoryPanelField({ field }: { field: InventoryField }) {
+  const fieldId = `inventory-field-${field.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+
   if (field.kind === 'toggle' || field.kind === 'checkbox') {
     return (
       <div className="flex items-start justify-between gap-3 py-1">
@@ -3461,13 +3463,13 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs">
+      <Label className="text-xs" htmlFor={fieldId}>
         {field.label}
         {field.required && <RequiredIndicator />}
       </Label>
       {field.kind === 'select' ? (
         <Select defaultValue="current">
-          <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
+          <SelectTrigger id={fieldId} className="h-9 w-full bg-surface-overlay text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -3476,6 +3478,7 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
         </Select>
       ) : field.kind === 'textarea' ? (
         <Textarea
+          id={fieldId}
           defaultValue={field.value}
           className="min-h-24 resize-none bg-surface-overlay text-xs"
         />
@@ -3483,12 +3486,13 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
         <div className="flex items-center rounded-lg border border-border-subtle bg-surface-overlay px-2 focus-within:border-border-focus">
           <span className="mr-1.5 font-mono text-xs text-foreground-subtle">=</span>
           <Input
+            id={fieldId}
             defaultValue={field.value}
             className="border-0 bg-transparent px-0 font-mono text-xs text-foreground-accent shadow-none focus-visible:ring-0"
           />
         </div>
       ) : (
-        <Input defaultValue={field.value} className="h-9 bg-surface-overlay text-xs" />
+        <Input id={fieldId} defaultValue={field.value} className="h-9 bg-surface-overlay text-xs" />
       )}
       {field.helper && <p className="text-[11px] text-foreground-muted">{field.helper}</p>}
     </div>
@@ -4182,7 +4186,8 @@ export function FullWorkbenchComposition({
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [activeSidebarItem, setActiveSidebarItem] = useState<CanvasLeftSidebarItemId>('variables');
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
-  const [takeoverOpen, setTakeoverOpen] = useState(false);
+  const [nodeTakeoverOpen, setNodeTakeoverOpen] = useState(false);
+  const [variablesTakeoverOpen, setVariablesTakeoverOpen] = useState(false);
   const [selectedVariableNodeId, setSelectedVariableNodeId] = useState('trigger');
   const [variableDemoTab, setVariableDemoTab] = useState<VariableDemoTab>('parameters');
   const [editableWorkflowVariables, setEditableWorkflowVariables] = useState<
@@ -4306,7 +4311,7 @@ export function FullWorkbenchComposition({
                   activeTab={variableDemoTab}
                   onActiveTabChange={setVariableDemoTab}
                   onClose={() => setRightPanelOpen(false)}
-                  onExpand={() => setTakeoverOpen(true)}
+                  onExpand={() => setVariablesTakeoverOpen(true)}
                   workflowVariables={editableWorkflowVariables}
                   onWorkflowVariablesChange={setEditableWorkflowVariables}
                   parameterValues={variableParameterValues}
@@ -4321,7 +4326,7 @@ export function FullWorkbenchComposition({
               ) : rightPanelVariant === 'node' ? (
                 <SendEmailPropertiesPanel
                   onClose={() => setRightPanelOpen(false)}
-                  onOpenTakeover={() => setTakeoverOpen(true)}
+                  onOpenTakeover={() => setNodeTakeoverOpen(true)}
                 />
               ) : (
                 <PropertiesPanel className="h-full" onClose={() => setRightPanelOpen(false)} />
@@ -4379,8 +4384,8 @@ export function FullWorkbenchComposition({
       </div>
       {rightPanelVariant === 'node' && (
         <CanvasTakeoverModal
-          open={takeoverOpen}
-          onOpenChange={setTakeoverOpen}
+          open={nodeTakeoverOpen}
+          onOpenChange={setNodeTakeoverOpen}
           title="Send Email"
           headerActions={
             <Button size="sm" variant="secondary">
@@ -4393,8 +4398,8 @@ export function FullWorkbenchComposition({
       )}
       {rightPanelVariant === 'variables' && (
         <CanvasTakeoverModal
-          open={takeoverOpen}
-          onOpenChange={setTakeoverOpen}
+          open={variablesTakeoverOpen}
+          onOpenChange={setVariablesTakeoverOpen}
           title={VARIABLE_DEMO_NODES[selectedVariableNodeId]?.label ?? 'Node configuration'}
         >
           <div className="grid h-full min-h-0 grid-cols-2 divide-x divide-border-subtle overflow-hidden">
