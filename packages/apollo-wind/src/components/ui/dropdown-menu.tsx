@@ -24,26 +24,40 @@ const DropdownMenuTrigger = React.forwardRef<
     /** Optional id for the validation message referenced by aria-describedby. */
     errorId?: string;
   }
->(({ className, field, error, errorId, 'aria-describedby': ariaDescribedBy, ...props }, ref) => {
-  const describedBy = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(' ');
+>(
+  (
+    {
+      className,
+      field,
+      error,
+      errorId,
+      'aria-describedby': ariaDescribedBy,
+      'aria-invalid': ariaInvalid,
+      'aria-errormessage': ariaErrorMessage,
+      ...props
+    },
+    ref
+  ) => {
+    const describedBy = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(' ');
 
-  return (
-    <DropdownMenuPrimitive.Trigger
-      ref={ref}
-      data-slot="dropdown-menu-trigger"
-      className={cn(
-        field &&
-          'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:font-normal future:text-muted-foreground future:hover:bg-surface-hover',
-        error && 'border-error ring-error/20 future:ring-1 future:ring-error/40',
-        className
-      )}
-      aria-describedby={describedBy || undefined}
-      aria-errormessage={error ? errorId : undefined}
-      aria-invalid={error ? true : props['aria-invalid']}
-      {...props}
-    />
-  );
-});
+    return (
+      <DropdownMenuPrimitive.Trigger
+        ref={ref}
+        data-slot="dropdown-menu-trigger"
+        className={cn(
+          field &&
+            'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:font-normal future:text-muted-foreground future:hover:bg-surface-hover',
+          error && 'border-error ring-1 ring-error/20 future:ring-error/40',
+          className
+        )}
+        aria-describedby={describedBy || undefined}
+        aria-errormessage={error ? errorId : ariaErrorMessage}
+        aria-invalid={error ? true : ariaInvalid}
+        {...props}
+      />
+    );
+  }
+);
 DropdownMenuTrigger.displayName = DropdownMenuPrimitive.Trigger.displayName;
 
 const DropdownMenuGroup = React.forwardRef<
