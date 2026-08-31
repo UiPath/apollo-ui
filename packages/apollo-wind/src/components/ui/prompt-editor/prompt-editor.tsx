@@ -9,11 +9,13 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useId,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import { FormFieldError } from '@/components/ui/form-field';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { EditorToolbar } from './components/EditorToolbar';
 import { MarkdownPreview } from './components/MarkdownPreview';
@@ -72,6 +74,12 @@ export interface PromptEditorProps {
   fillHeight?: boolean;
   /** Drop the editor's own border/background/rounding so a parent can provide the field chrome. */
   borderless?: boolean;
+  /** Field-specific validation feedback rendered below the editor. */
+  error?: React.ReactNode;
+  /** Optional id for the inline validation message. */
+  errorId?: string;
+  /** Additional description id(s) associated with the editor. */
+  ariaDescribedBy?: string;
   /**
    * Enable variable drag-drop: map a path dropped onto the editor (see `VARIABLE_DRAG_MIME`) to the
    * token to insert at the drop point. The drag *source* is the consumer's (it sets the path on
@@ -111,6 +119,9 @@ const EditorInner = forwardRef(
       ariaLabel,
       fillHeight,
       borderless,
+      error,
+      errorId,
+      ariaDescribedBy,
       mapVarDropToToken,
       toolbarActionsRef,
       showToolbar,
@@ -305,7 +316,7 @@ const EditorInner = forwardRef(
 
     const wrapperClassName = borderless
       ? 'flex flex-col w-full relative'
-      : `prompt-editor-shell flex flex-col w-full relative border bg-background ${showToolbar ? 'border-t-0 rounded-b-md' : 'rounded-md'}`;
+      : `prompt-editor-shell flex flex-col w-full relative border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'} ${error ? 'border-error ring-1 ring-error/20 future:ring-error/40' : ''}`;
 
     return (
       <div
@@ -319,7 +330,7 @@ const EditorInner = forwardRef(
       >
         <style>{`
           .prompt-editor-paragraph { padding: 0; margin: 0; }
-          ${borderless ? '' : '.prompt-editor-shell:focus-within { border-color: var(--color-ring); box-shadow: 0 0 0 1px var(--color-ring); }'}
+          ${borderless ? '' : '.prompt-editor-shell:focus-within { border-color: var(--color-ring); box-shadow: 0 0 0 1px var(--color-ring); } .future .prompt-editor-shell:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ring) 35%, transparent); }'}
           .prompt-editor-root *::selection { background-color: color-mix(in srgb, var(--color-primary) 30%, transparent); }
         `}</style>
         <div
@@ -332,7 +343,15 @@ const EditorInner = forwardRef(
           }}
         >
           <PlainTextPlugin
-            contentEditable={<ContentEditable style={contentEditableStyle} ariaLabel={ariaLabel} />}
+            contentEditable={
+              <ContentEditable
+                style={contentEditableStyle}
+                ariaLabel={ariaLabel}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={ariaDescribedBy}
+                aria-errormessage={error ? errorId : undefined}
+              />
+            }
             placeholder={null}
             ErrorBoundary={LexicalErrorBoundary}
           />
@@ -406,6 +425,9 @@ export const PromptEditor = ({
   editorRef,
   fillHeight,
   borderless,
+  error,
+  errorId: providedErrorId,
+  ariaDescribedBy,
   mapVarDropToToken,
 }: PromptEditorProps) => {
   // Normalize the token-array props once so malformed input (e.g. `{}` from a Storybook object
@@ -440,6 +462,9 @@ export const PromptEditor = ({
 
   const isControlled = value !== undefined;
   const previewTokens = isControlled ? value : uncontrolledPreviewTokens;
+  const generatedErrorId = useId();
+  const errorId = providedErrorId ?? `prompt-editor-${generatedErrorId.replace(/:/g, '')}-error`;
+  const describedBy = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(' ');
 
   const handleEditorChange = useCallback(
     (tokens: PromptEditorToken[]) => {
@@ -476,7 +501,7 @@ export const PromptEditor = ({
             className={
               borderless
                 ? undefined
-                : `border bg-background ${showToolbar ? 'border-t-0 rounded-b-md' : 'rounded-md'}`
+                : `border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'}`
             }
           >
             <MarkdownPreview tokens={previewTokens} minRows={minRows} />
@@ -497,6 +522,9 @@ export const PromptEditor = ({
               autoCompleteOptions={autoCompleteOptions}
               disabled={disabled}
               ariaLabel={ariaLabel}
+              error={error}
+              errorId={error ? errorId : undefined}
+              ariaDescribedBy={describedBy || undefined}
               initialValue={initialValue}
               maxRows={maxRows}
               minRows={minRows}
@@ -512,6 +540,9 @@ export const PromptEditor = ({
             />
           </LexicalComposer>
         </div>
+        <FormFieldError id={errorId} data-slot="prompt-editor-error" className="mt-1">
+          {error}
+        </FormFieldError>
       </div>
     </TooltipProvider>
   );

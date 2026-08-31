@@ -16,10 +16,34 @@ DropdownMenu.displayName = 'DropdownMenu';
 
 const DropdownMenuTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger>
->((props, ref) => (
-  <DropdownMenuPrimitive.Trigger ref={ref} data-slot="dropdown-menu-trigger" {...props} />
-));
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger> & {
+    /** Apply the Future theme field treatment when the trigger is used as a form control. */
+    field?: boolean;
+    /** Field-specific validation feedback rendered below the trigger by the consumer. */
+    error?: React.ReactNode;
+    /** Optional id for the validation message referenced by aria-describedby. */
+    errorId?: string;
+  }
+>(({ className, field, error, errorId, 'aria-describedby': ariaDescribedBy, ...props }, ref) => {
+  const describedBy = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(' ');
+
+  return (
+    <DropdownMenuPrimitive.Trigger
+      ref={ref}
+      data-slot="dropdown-menu-trigger"
+      className={cn(
+        field &&
+          'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:font-normal future:text-muted-foreground future:hover:bg-surface-hover',
+        error && 'border-error ring-error/20 future:ring-1 future:ring-error/40',
+        className
+      )}
+      aria-describedby={describedBy || undefined}
+      aria-errormessage={error ? errorId : undefined}
+      aria-invalid={error ? true : props['aria-invalid']}
+      {...props}
+    />
+  );
+});
 DropdownMenuTrigger.displayName = DropdownMenuPrimitive.Trigger.displayName;
 
 const DropdownMenuGroup = React.forwardRef<

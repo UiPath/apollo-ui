@@ -57,6 +57,15 @@ export const Default: Story = {
   },
 };
 
+export const WithInlineValidation: Story = {
+  name: 'With inline validation',
+  args: {
+    placeholder: 'Write your prompt…',
+    ariaLabel: 'Prompt',
+    error: 'Enter a prompt before continuing.',
+  },
+};
+
 export const SingleLine: Story = {
   args: {
     multiline: false,
