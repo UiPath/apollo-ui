@@ -376,7 +376,7 @@ const EditorInner = forwardRef(
                       textOverflow: 'ellipsis' as const,
                     }),
               }}
-              className="text-muted-foreground/60"
+              className="text-muted-foreground future:text-foreground-muted future:font-normal"
             >
               {placeholder}
             </div>

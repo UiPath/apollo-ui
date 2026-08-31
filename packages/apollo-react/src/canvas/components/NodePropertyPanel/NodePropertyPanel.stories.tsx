@@ -4233,15 +4233,23 @@ function PanelUIInventoryStory() {
                   </section>
 
                   <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Manage and add" eyebrow="Action pattern">
-                      Manage opens a separate configuration surface, so it is a secondary action
-                      beside the field or section it affects. Use the lightweight plus link for
-                      adding another item to a repeatable list.
+                    <PatternNote title="Manage" eyebrow="Action pattern">
+                      Use a secondary button when the action opens a separate configuration surface
+                      for the field or section it affects.
                     </PatternNote>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center">
                       <Button variant="secondary" size="sm">
                         Manage
                       </Button>
+                    </div>
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Add" eyebrow="Action pattern">
+                      Use the lightweight plus link when adding another item to a repeatable list.
+                      Keep it separate from manage actions so the two intents are easy to scan.
+                    </PatternNote>
+                    <div className="flex flex-wrap items-center">
                       <PanelAddButton>Add field</PanelAddButton>
                     </div>
                   </section>
