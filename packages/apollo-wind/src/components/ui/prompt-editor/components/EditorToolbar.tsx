@@ -70,7 +70,7 @@ export const EditorToolbar = ({
       // No bottom border on the toolbar itself — the separator is drawn by the absolute hairline
       // `<span>` below at full width so the L/R outlines stay continuous with the editor body's
       // `border-t-0` border underneath.
-      className="relative flex items-center justify-between gap-1 overflow-hidden rounded-t-md border border-b-0 bg-background px-2 py-1"
+      className="relative flex items-center justify-between gap-1 overflow-hidden rounded-t-md border border-b-0 bg-background px-2 py-1 future:rounded-t-xl future:border-0 future:bg-surface-overlay"
       data-testid="editor-toolbar"
     >
       <span

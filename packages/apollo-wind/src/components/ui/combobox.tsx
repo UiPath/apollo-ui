@@ -57,7 +57,7 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(funct
           aria-expanded={open}
           aria-label={selectedItem ? selectedItem.label : placeholder}
           className={cn(
-            'w-[280px] justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:hover:bg-surface-hover future:font-normal future:text-muted-foreground',
+            'w-[280px] justify-between future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-muted-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
             className
           )}
           disabled={disabled}

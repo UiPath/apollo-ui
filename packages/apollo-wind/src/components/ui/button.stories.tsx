@@ -34,6 +34,18 @@ export const Default: Story = {
   },
 };
 
+export const IntrinsicWidth: Story = {
+  name: 'Intrinsic width',
+  parameters: {
+    layout: 'padded',
+  },
+  render: () => (
+    <div className="w-full max-w-lg rounded-lg border border-border-subtle p-4">
+      <Button>Content-sized action</Button>
+    </div>
+  ),
+};
+
 export const Destructive: Story = {
   args: {
     children: 'Delete',
@@ -67,6 +79,38 @@ export const Link: Story = {
     children: 'Link',
     variant: 'link',
   },
+};
+
+export const LinkSizes: Story = {
+  name: 'Link sizes',
+  parameters: {
+    layout: 'padded',
+  },
+  render: () => (
+    <div className="flex flex-wrap items-center gap-4">
+      <Button variant="link" size="sm">
+        Add another
+      </Button>
+      <Button variant="link" size="xs">
+        Learn more
+      </Button>
+      <Button variant="link" size="2xs">
+        Manage
+      </Button>
+      <Button variant="link" size="3xs">
+        View details
+      </Button>
+    </div>
+  ),
+};
+
+export const LinkAsAnchor: Story = {
+  name: 'Link as anchor',
+  render: () => (
+    <Button asChild variant="link" size="2xs">
+      <a href="/documentation">View documentation</a>
+    </Button>
+  ),
 };
 
 export const Disabled: Story = {

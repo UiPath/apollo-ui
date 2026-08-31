@@ -230,6 +230,18 @@ function DebugButton() {
   );
 }
 
+function PanelAddButton({ children = 'Add field' }: { children?: ReactNode }) {
+  return (
+    <button
+      type="button"
+      className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <Plus size={12} />
+      {children}
+    </button>
+  );
+}
+
 // ── Monaco ──────────────────────────────────────────────────────────────────
 
 let _monacoThemesRegistered = false;
@@ -3220,7 +3232,7 @@ export function QuickFormPanel({
                       placeholder="e.g. An invoice approval form with amount and due date"
                       className="resize-none text-sm"
                     />
-                    <Button size="sm" className="w-full">
+                    <Button size="sm" className="w-fit">
                       Generate
                     </Button>
                   </PopoverContent>
@@ -4200,6 +4212,16 @@ function PanelUIInventoryStory() {
                   </section>
 
                   <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Inline links" eyebrow="Action pattern">
+                      Use a compact link when the action is related to nearby content and should not
+                      compete with the panel's primary controls.
+                    </PatternNote>
+                    <Button variant="link" size="2xs" className="w-fit px-0">
+                      View documentation
+                    </Button>
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
                     <PatternNote title="Footer actions" eyebrow="Action pattern">
                       Place panel-level actions at the end of the content, with the primary action
                       last and the cancel action immediately before it.
@@ -4207,6 +4229,20 @@ function PanelUIInventoryStory() {
                     <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
                       <Button variant="ghost">Cancel</Button>
                       <Button>Save changes</Button>
+                    </div>
+                  </section>
+
+                  <section className="grid gap-3 border-t border-border-subtle pt-5">
+                    <PatternNote title="Manage and add" eyebrow="Action pattern">
+                      Manage opens a separate configuration surface, so it is a secondary action
+                      beside the field or section it affects. Use the lightweight plus link for
+                      adding another item to a repeatable list.
+                    </PatternNote>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button variant="secondary" size="sm">
+                        Manage
+                      </Button>
+                      <PanelAddButton>Add field</PanelAddButton>
                     </div>
                   </section>
 
