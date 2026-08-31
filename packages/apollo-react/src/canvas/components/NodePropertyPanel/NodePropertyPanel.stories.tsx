@@ -45,6 +45,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   FIELD_TYPE_META,
+  FormField,
+  FormFieldDescription,
+  FormFieldLabel,
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
@@ -126,6 +129,7 @@ import {
 } from 'lucide-react';
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import {
+  cloneElement,
   createContext,
   lazy,
   Suspense,
@@ -157,7 +161,6 @@ import { isJsonObject } from '../JsonTree';
 import { NodeIOView, type NodeIOViewTab } from '../NodeIOView';
 import { NodePropertyPanel } from './NodePropertyPanel';
 import { NodePropertyPanelLayout } from './NodePropertyPanelLayout';
-import { PanelField, PanelFieldLabel } from './PanelField';
 
 // @monaco-editor/react uses a CJS build without an `exports` field, which
 // causes Rolldown (Vite 8 production bundler) to resolve the default import as
@@ -707,7 +710,7 @@ function FullEditorStory() {
             </div>
             <TabsContent value="parameters" className="mt-0 flex min-h-0 flex-1 flex-col">
               <div className="flex shrink-0 items-center justify-between py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <PanelFieldLabel className="leading-4">Path</PanelFieldLabel>
+                <FormFieldLabel className="leading-4">Path</FormFieldLabel>
                 <div className="flex items-center gap-0.5">
                   <button
                     type="button"
@@ -940,7 +943,7 @@ function CasePanel({
               setEditingTitle(true);
               setTimeout(() => titleRef.current?.select(), 0);
             }}
-            className="flex-1 truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
+            className="flex min-w-0 flex-1 items-center rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
           >
             {caseTitle}
           </button>
@@ -967,7 +970,7 @@ function CasePanel({
         <>
           {/* Condition label + buttons */}
           <div className="flex items-center justify-between border-t border-border-subtle px-3 py-2">
-            <PanelFieldLabel className="leading-4">Condition</PanelFieldLabel>
+            <FormFieldLabel className="leading-4">Condition</FormFieldLabel>
             <div className="flex items-center gap-0.5">
               <button
                 type="button"
@@ -1358,6 +1361,7 @@ function InlineCaseRow({
       onModeChange={setMode}
       fieldType="string"
       variables={LOCKABLE_VARIABLES}
+      controlsVisibility="visible"
     />
   );
 }
@@ -2567,6 +2571,7 @@ function LockableCaseRow({
   fieldType,
   onFieldTypeChange,
   compact,
+  controlsVisibility,
   monacoTheme,
   insertBefore,
   insertAfter,
@@ -2586,6 +2591,7 @@ function LockableCaseRow({
   fieldType: LockableFieldType;
   onFieldTypeChange: (fieldType: LockableFieldType) => void;
   compact?: boolean;
+  controlsVisibility?: 'visible' | 'hover';
   monacoTheme: string;
   /** Shows the insertion line above this row (the dragged item would land here). */
   insertBefore?: boolean;
@@ -2649,10 +2655,14 @@ function LockableCaseRow({
                     setEditingTitle(true);
                     setTimeout(() => titleRef.current?.select(), 0);
                   }}
-                  className="truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
+                  title={caseTitle}
+                  className="flex min-w-0 items-center rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
                 >
-                  {caseTitle}
-                  {required && <RequiredIndicator />}
+                  {/* Single-line header row, so the title ellipsizes. The
+                      indicator sits outside the truncated run so the ellipsis
+                      cannot swallow it. */}
+                  <span className="truncate">{caseTitle}</span>
+                  {required && <RequiredIndicator className="shrink-0" />}
                 </button>
               )}
             </div>
@@ -2663,9 +2673,13 @@ function LockableCaseRow({
               onClick={onDelete}
               aria-label="Delete field"
               title="Delete field"
-              className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+              className={cn(
+                'grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                controlsVisibility === 'hover' &&
+                  'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+              )}
             >
-              <Trash2 size={12} />
+              <X size={12} />
             </button>
           }
           value={value}
@@ -2701,6 +2715,7 @@ function LockableCaseRow({
           onRequiredChange={onRequiredChange}
           variables={LOCKABLE_VARIABLES}
           compact={compact}
+          controlsVisibility={controlsVisibility}
         />
       </div>
       {insertAfter && (
@@ -2839,20 +2854,29 @@ function FieldDragOverlay({ caseItem }: { caseItem: LockableCase }) {
   const meta = FIELD_TYPE_META[caseItem.fieldType];
   return (
     <div
-      className="flex items-center gap-2 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 shadow-lg"
+      className="flex max-w-56 items-center gap-2 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 shadow-lg"
       style={{ cursor: 'grabbing' }}
     >
       <GripVertical size={12} className="shrink-0 text-foreground-subtle" />
       <meta.icon size={12} className="shrink-0 text-foreground-subtle" />
-      <span className="truncate text-xs font-medium text-foreground">
-        {caseItem.title}
-        {caseItem.required && <RequiredIndicator />}
+      <span
+        title={caseItem.title}
+        className="flex min-w-0 items-center text-xs font-medium text-foreground"
+      >
+        <span className="truncate">{caseItem.title}</span>
+        {caseItem.required && <RequiredIndicator className="shrink-0" />}
       </span>
     </div>
   );
 }
 
-function LockableValueFieldShowcase() {
+function LockableValueFieldShowcase({
+  controlsVisibility,
+  onControlsVisibilityChange,
+}: {
+  controlsVisibility: 'visible' | 'hover';
+  onControlsVisibilityChange: (visibility: 'visible' | 'hover') => void;
+}) {
   const fullViewId = useId();
   const compactViewId = useId();
   const [showcaseValue, setShowcaseValue] = useState('');
@@ -2874,7 +2898,8 @@ function LockableValueFieldShowcase() {
       <div className="flex flex-col gap-1">
         <span className="text-sm font-semibold text-foreground">Demo controls</span>
         <p className="text-xs leading-4 text-foreground-muted">
-          Uses component →{' '}
+          Toggle Show/Hide to preview how field controls behave in the panel on the left. Uses
+          component →{' '}
           <a
             href="/?path=/docs/apollo-wind-components-uipath-lockable-value-field--docs"
             target="_top"
@@ -2884,6 +2909,24 @@ function LockableValueFieldShowcase() {
           </a>
         </p>
       </div>
+      <div className="flex items-center justify-between border-t border-border-subtle pt-4">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
+          Controls
+        </span>
+        <ToggleGroup
+          type="single"
+          size="xs"
+          value={controlsVisibility}
+          onValueChange={(v) => v && onControlsVisibilityChange(v as 'visible' | 'hover')}
+        >
+          <ToggleGroupItem value="visible" className="!px-2.5 !text-xs">
+            Show
+          </ToggleGroupItem>
+          <ToggleGroupItem value="hover" className="!px-2.5 !text-xs">
+            Hide
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
       <div className="flex flex-col gap-2">
         <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
           Full view
@@ -2891,19 +2934,21 @@ function LockableValueFieldShowcase() {
         <LockableValueField
           id={fullViewId}
           label={
-            <PanelFieldLabel htmlFor={fullViewId} required={showcaseRequired} className="leading-4">
+            <FormFieldLabel htmlFor={fullViewId} required={showcaseRequired} className="leading-4">
               Label
-            </PanelFieldLabel>
+            </FormFieldLabel>
           }
           headerActions={
             <button
               type="button"
-              aria-label="Delete field"
-              title="Delete field"
-              disabled
-              className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+              aria-label="Close field"
+              className={cn(
+                'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                controlsVisibility === 'hover' &&
+                  'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+              )}
             >
-              <Trash2 size={14} />
+              <X size={14} />
             </button>
           }
           value={showcaseValue}
@@ -2917,6 +2962,7 @@ function LockableValueFieldShowcase() {
           required={showcaseRequired}
           onRequiredChange={setShowcaseRequired}
           variables={LOCKABLE_VARIABLES}
+          controlsVisibility={controlsVisibility}
         />
       </div>
       <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
@@ -2927,23 +2973,25 @@ function LockableValueFieldShowcase() {
           <LockableValueField
             id={compactViewId}
             label={
-              <PanelFieldLabel
+              <FormFieldLabel
                 htmlFor={compactViewId}
                 required={showcaseRequired}
                 className="leading-4"
               >
                 Label
-              </PanelFieldLabel>
+              </FormFieldLabel>
             }
             headerActions={
               <button
                 type="button"
-                aria-label="Delete field"
-                title="Delete field"
-                disabled
-                className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                aria-label="Close field"
+                className={cn(
+                  'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                  controlsVisibility === 'hover' &&
+                    'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+                )}
               >
-                <Trash2 size={14} />
+                <X size={14} />
               </button>
             }
             value={showcaseValue}
@@ -2957,6 +3005,7 @@ function LockableValueFieldShowcase() {
             required={showcaseRequired}
             onRequiredChange={setShowcaseRequired}
             variables={LOCKABLE_VARIABLES}
+            controlsVisibility={controlsVisibility}
           />
         </div>
       </div>
@@ -2986,6 +3035,9 @@ export function QuickFormPanel({
   const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(DEFAULT_LOCKABLE_CASES, null, 2));
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [jsonCopied, setJsonCopied] = useState(false);
+  const [showcaseControlsVisibility, setShowcaseControlsVisibility] = useState<'visible' | 'hover'>(
+    'visible'
+  );
   const [buttons, setButtons] = useState<FormButtonItem[]>(DEFAULT_FORM_BUTTONS);
   const nextButtonIdRef = useRef(3);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -3139,7 +3191,7 @@ export function QuickFormPanel({
           {/* Quick form */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-foreground-muted">Quick form</span>
+              <Label>Quick form</Label>
               <div className="flex items-center gap-2">
                 <Popover>
                   <TooltipProvider delayDuration={300}>
@@ -3305,6 +3357,7 @@ export function QuickFormPanel({
                                 onFieldTypeChange={(fieldType) =>
                                   updateCaseFieldType(c.id, fieldType)
                                 }
+                                controlsVisibility={showcaseControlsVisibility}
                                 monacoTheme={monacoTheme}
                                 insertBefore={isOver && activeIndex > index}
                                 insertAfter={isOver && activeIndex < index}
@@ -3411,7 +3464,10 @@ export function QuickFormPanel({
     <div className="flex items-start gap-8">
       <PanelFrame>{panel}</PanelFrame>
 
-      <LockableValueFieldShowcase />
+      <LockableValueFieldShowcase
+        controlsVisibility={showcaseControlsVisibility}
+        onControlsVisibilityChange={setShowcaseControlsVisibility}
+      />
     </div>
   );
 }
@@ -3430,10 +3486,15 @@ function InventoryField({
   description?: string;
   children: ReactElement;
 }) {
+  const generatedId = useId();
+  const controlId = children.props.id ?? generatedId;
+  const descriptionId = description ? `${controlId}-description` : undefined;
   return (
-    <PanelField label={label} description={description}>
-      {children}
-    </PanelField>
+    <FormField>
+      <FormFieldLabel htmlFor={controlId}>{label}</FormFieldLabel>
+      {cloneElement(children, { id: controlId, 'aria-describedby': descriptionId })}
+      <FormFieldDescription id={descriptionId}>{description}</FormFieldDescription>
+    </FormField>
   );
 }
 
@@ -3568,11 +3629,11 @@ function InventorySubContainer({
             </InventoryField>
             <InventoryField label="Processing mode">
               <RadioGroup defaultValue="automatic" className="grid gap-2">
-                <Label className="flex items-center gap-2 font-normal">
+                <Label variant="muted" className="flex items-center gap-2">
                   <RadioGroupItem value="automatic" />
                   Automatic
                 </Label>
-                <Label className="flex items-center gap-2 font-normal">
+                <Label variant="muted" className="flex items-center gap-2">
                   <RadioGroupItem value="manual" />
                   Manual review
                 </Label>
@@ -3584,14 +3645,12 @@ function InventorySubContainer({
                 checked={checked}
                 onCheckedChange={(value) => setChecked(value === true)}
               />
-              <Label htmlFor="sub-container-save-output" className="text-xs">
+              <Label variant="muted" htmlFor="sub-container-save-output">
                 Save output for later steps
               </Label>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <Label htmlFor="sub-container-enabled" className="text-xs">
-                Enabled
-              </Label>
+              <Label htmlFor="sub-container-enabled">Enabled</Label>
               <Switch id="sub-container-enabled" checked={enabled} onCheckedChange={setEnabled} />
             </div>
             <InventoryField label="Confidence threshold" description="Current value: 75%">
@@ -3841,9 +3900,7 @@ function PanelUIInventoryStory() {
                     </InventoryField>
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <Label htmlFor="flat-pattern-enabled" className="text-xs">
-                          Enabled
-                        </Label>
+                        <Label htmlFor="flat-pattern-enabled">Enabled</Label>
                         <p className="text-xs text-foreground-muted">
                           Run this node in the workflow.
                         </p>
@@ -3909,11 +3966,11 @@ function PanelUIInventoryStory() {
                       </InventoryField>
                       <InventoryField label="Processing mode">
                         <RadioGroup defaultValue="automatic" className="grid gap-2">
-                          <Label className="flex items-center gap-2 font-normal">
+                          <Label variant="muted" className="flex items-center gap-2">
                             <RadioGroupItem value="automatic" />
                             Automatic
                           </Label>
-                          <Label className="flex items-center gap-2 font-normal">
+                          <Label variant="muted" className="flex items-center gap-2">
                             <RadioGroupItem value="manual" />
                             Manual review
                           </Label>
@@ -3926,9 +3983,7 @@ function PanelUIInventoryStory() {
                           onCheckedChange={(value) => setChecked(value === true)}
                         />
                         <div className="grid gap-0.5">
-                          <Label htmlFor="save-output" className="text-xs">
-                            Save output to storage
-                          </Label>
+                          <Label htmlFor="save-output">Save output to storage</Label>
                           <p className="text-xs text-foreground-muted">
                             Makes the result available to later steps.
                           </p>
@@ -3936,9 +3991,7 @@ function PanelUIInventoryStory() {
                       </div>
                       <div className="flex items-center justify-between gap-4">
                         <div>
-                          <Label htmlFor="enabled-switch" className="text-xs">
-                            Enabled
-                          </Label>
+                          <Label htmlFor="enabled-switch">Enabled</Label>
                           <p className="text-xs text-foreground-muted">
                             Run this node in the workflow.
                           </p>
@@ -4305,13 +4358,13 @@ function PanelUIInventoryStory() {
                     <LockableValueField
                       id={compositionFieldId}
                       label={
-                        <PanelFieldLabel
+                        <FormFieldLabel
                           htmlFor={compositionFieldId}
                           required={compositionRequired}
                           className="leading-4"
                         >
                           Invoice value
-                        </PanelFieldLabel>
+                        </FormFieldLabel>
                       }
                       headerActions={
                         <CanvasTooltip content="Remove field">
@@ -4331,6 +4384,7 @@ function PanelUIInventoryStory() {
                       required={compositionRequired}
                       onRequiredChange={setCompositionRequired}
                       variables={LOCKABLE_VARIABLES}
+                      controlsVisibility="visible"
                     />
                   </section>
                 </div>
@@ -4467,7 +4521,7 @@ function CompactResponsivePanelStory() {
             <TabsContent
               key={step.id}
               value={step.id}
-              className="mt-0 min-h-0 flex-1 overflow-y-auto [&_[data-slot=form-description]]:text-xs [&_[data-slot=form-description]]:leading-4 [&_[data-slot=form-description]]:text-foreground-muted [&_[data-slot=form-label]]:text-xs [&_[data-slot=form-label]]:font-medium [&_[data-slot=form-label]]:leading-4 [&_[data-slot=form-label]]:text-foreground"
+              className="mt-0 min-h-0 flex-1 overflow-y-auto"
             >
               <MetadataForm
                 schema={flatSchema}

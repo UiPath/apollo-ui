@@ -1,4 +1,4 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn, FormFieldError } from '@uipath/apollo-wind';
 import { useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { EditorActions, EditorTextarea } from './EditorChrome';
@@ -89,7 +89,7 @@ export function JsonContainerEditor({
           })}
         />
       )}
-      {error && <p className="text-xs leading-4 text-error">{error}</p>}
+      <FormFieldError>{error}</FormFieldError>
       <EditorActions onApply={apply} onCancel={onCancel} />
     </div>
   );

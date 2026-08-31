@@ -146,12 +146,7 @@ export function NodePropertyPanel({
         // the header. This wrapper is a height-filling flex column, NOT the
         // scroll container — the form's inset/padding move inside TabbedStepForm.
         <div className="flex min-h-0 flex-1 flex-col">
-          <div
-            className={cn(
-              'flex min-h-0 flex-1 flex-col [&_[data-slot=form-description]]:text-xs [&_[data-slot=form-description]]:leading-4 [&_[data-slot=form-description]]:text-foreground-muted [&_[data-slot=form-label]]:text-xs [&_[data-slot=form-label]]:font-medium [&_[data-slot=form-label]]:leading-4 [&_[data-slot=form-label]]:text-foreground',
-              SURFACE_REMAP
-            )}
-          >
+          <div className={cn('flex min-h-0 flex-1 flex-col', SURFACE_REMAP)}>
             <MetadataForm
               key={resetKey}
               schema={formSchema}
@@ -171,12 +166,7 @@ export function NodePropertyPanel({
         // Single-page schema: classic behavior — this wrapper scrolls the whole
         // form. No stepVariant: it only applies to step-based schemas.
         <div className="min-h-0 flex-1 overflow-auto">
-          <div
-            className={cn(
-              '[&_[data-slot=form-description]]:text-xs [&_[data-slot=form-description]]:leading-4 [&_[data-slot=form-description]]:text-foreground-muted [&_[data-slot=form-label]]:text-xs [&_[data-slot=form-label]]:font-medium [&_[data-slot=form-label]]:leading-4 [&_[data-slot=form-label]]:text-foreground',
-              SURFACE_REMAP
-            )}
-          >
+          <div className={SURFACE_REMAP}>
             <MetadataForm
               key={resetKey}
               schema={formSchema}

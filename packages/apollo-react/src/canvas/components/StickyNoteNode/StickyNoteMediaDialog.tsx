@@ -135,13 +135,13 @@ export function StickyNoteMediaDialog({
               >
                 <div className="flex items-center gap-2">
                   <RadioGroupItem value="image" id={imageTypeId} />
-                  <Label htmlFor={imageTypeId}>
+                  <Label variant="muted" htmlFor={imageTypeId}>
                     {_({ id: 'sticky-note.media.dialog.image-option', message: 'Image' })}
                   </Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <RadioGroupItem value="video" id={videoTypeId} />
-                  <Label htmlFor={videoTypeId}>
+                  <Label variant="muted" htmlFor={videoTypeId}>
                     {_({ id: 'sticky-note.media.dialog.video-option', message: 'Video' })}
                   </Label>
                 </div>
@@ -221,7 +221,7 @@ export function StickyNoteMediaDialog({
                 className="mt-0.5"
               />
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor={fullWidthId} className="text-sm font-medium leading-none">
+                <Label htmlFor={fullWidthId}>
                   {_({
                     id: 'sticky-note.media.dialog.full-width-label',
                     message: 'Make full width',

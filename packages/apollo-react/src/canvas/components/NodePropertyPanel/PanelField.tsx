@@ -1,4 +1,11 @@
-import { cn, Label, type LabelProps, RequiredIndicator } from '@uipath/apollo-wind';
+import {
+  cn,
+  FormFieldDescription,
+  FormFieldError,
+  Label,
+  type LabelProps,
+  RequiredIndicator,
+} from '@uipath/apollo-wind';
 import {
   cloneElement,
   forwardRef,
@@ -31,19 +38,20 @@ export interface PanelFieldProps {
 }
 
 export interface PanelFieldLabelProps extends LabelProps {
-  /** Displays the panel-standard required indicator after the label. */
+  /** Appends the panel-standard required indicator after the label text. */
   required?: boolean;
 }
 
-/** Panel-scoped label treatment for controls that own their field layout. */
+/**
+ * Panel-scoped label treatment for controls that own their field layout.
+ *
+ * @deprecated Use `FormFieldLabel` from `@uipath/apollo-wind`. It renders the
+ * same label and required indicator at the same size, so nothing
+ * panel-specific is lost. This wrapper will be removed in the next major.
+ */
 export const PanelFieldLabel = forwardRef<HTMLLabelElement, PanelFieldLabelProps>(
-  ({ children, className, required = false, ...props }, ref) => (
-    <Label
-      ref={ref}
-      data-slot="panel-field-label"
-      className={cn('text-xs font-medium text-foreground', className)}
-      {...props}
-    >
+  ({ children, required = false, ...props }, ref) => (
+    <Label ref={ref} data-slot="panel-field-label" {...props}>
       {children}
       {required && <RequiredIndicator />}
     </Label>
@@ -56,6 +64,15 @@ PanelFieldLabel.displayName = 'PanelFieldLabel';
  * PanelField standardizes the label, spacing, supporting text, and validation
  * treatment used by inputs inside a NodePropertyPanel. It composes existing
  * controls without changing their own size, styling, or behavior.
+ *
+ * @deprecated Compose `FormField`, `FormFieldLabel`, `FormFieldDescription`,
+ * and `FormFieldError` from `@uipath/apollo-wind` instead. Those are the same
+ * parts the metadata form renderer is built from, so a hand-built panel field
+ * and a manifest-driven one stay identical by construction.
+ *
+ * The one thing they do not do for you is the id and aria wiring below, so
+ * generate a control id and pass `aria-describedby` yourself. This wrapper
+ * will be removed in the next major.
  */
 export function PanelField({
   label,
@@ -87,24 +104,12 @@ export function PanelField({
         {label}
       </PanelFieldLabel>
       {control}
-      {description && (
-        <p
-          id={descriptionId}
-          data-slot="panel-field-description"
-          className="text-xs leading-4 text-foreground-muted"
-        >
-          {description}
-        </p>
-      )}
-      {error && (
-        <p
-          id={errorId}
-          data-slot="panel-field-error"
-          className="text-xs leading-4 text-destructive"
-        >
-          {error}
-        </p>
-      )}
+      <FormFieldDescription id={descriptionId} data-slot="panel-field-description">
+        {description}
+      </FormFieldDescription>
+      <FormFieldError id={errorId} data-slot="panel-field-error">
+        {error}
+      </FormFieldError>
     </div>
   );
 }
