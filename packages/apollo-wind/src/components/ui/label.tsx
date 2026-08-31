@@ -39,7 +39,7 @@ export interface RequiredIndicatorProps
  */
 const RequiredIndicator = React.forwardRef<HTMLSpanElement, RequiredIndicatorProps>(
   ({ className, ...props }, ref) => (
-    <span ref={ref} {...props} className={cn(className, 'ml-0.5 text-foreground')}>
+    <span ref={ref} {...props} className={cn('ml-0.5', className, 'text-foreground')}>
       <span aria-hidden="true">*</span>
       <span className="sr-only"> (required)</span>
     </span>

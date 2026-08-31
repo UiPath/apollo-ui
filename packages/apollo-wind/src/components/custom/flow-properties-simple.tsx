@@ -122,7 +122,6 @@ function FieldItem({
       {field.type === 'select' ? (
         <Select value={value || undefined} onValueChange={setValue}>
           <SelectTrigger
-            aria-label={field.label}
             aria-required={field.required}
             id={inputId}
             className="h-10 rounded-xl border-0 bg-surface-overlay text-foreground shadow-sm placeholder:text-foreground-muted"

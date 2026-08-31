@@ -1,10 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { useEffect } from 'react';
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { useForm, FormProvider } from 'react-hook-form';
-import { FormFieldRenderer } from './field-renderer';
+import { FormProvider, useForm } from 'react-hook-form';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DataFetcher } from './data-fetcher';
+import { FormFieldRenderer } from './field-renderer';
 import type { FieldMetadata, FormContext } from './form-schema';
 
 // Wrapper component to provide form context
@@ -81,7 +81,7 @@ describe('FormFieldRenderer', () => {
         </FormWrapper>
       );
 
-      expect(screen.getByText('*').parentElement).toHaveClass('text-current');
+      expect(screen.getByText('*').parentElement).toHaveClass('text-foreground');
       expect(screen.getByText('*')).toHaveAttribute('aria-hidden', 'true');
     });
 
