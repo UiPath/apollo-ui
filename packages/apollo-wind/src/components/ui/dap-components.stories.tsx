@@ -778,7 +778,12 @@ function AccountFieldsExample() {
                 className={`text-base font-semibold ${invalid ? 'text-destructive' : ''}`}
                 htmlFor={`dap-${field.id}`}
               >
-                {field.label} {field.required && <span className="text-foreground" aria-hidden="true">*</span>}
+                {field.label}{' '}
+                {field.required && (
+                  <span className="text-foreground" aria-hidden="true">
+                    *
+                  </span>
+                )}
               </Label>
               <InputGroup className="future:rounded-lg">
                 <InputGroupInput
