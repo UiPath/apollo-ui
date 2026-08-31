@@ -18,6 +18,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
+import { Label, RequiredIndicator } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -95,19 +96,16 @@ function FieldItem({
   onGraphControl?: (label: string) => void;
 }) {
   const [value, setValue] = React.useState(field.value ?? '');
+  const inputId = React.useId();
 
   return (
     <div className="flex flex-col gap-1 pt-4">
       {/* Label row */}
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium leading-5 text-foreground-muted">
+        <Label htmlFor={inputId} className="text-sm font-medium leading-5 text-foreground-muted">
           {field.label}
-          {field.required && (
-            <span className="text-foreground" aria-hidden="true">
-              *
-            </span>
-          )}
-        </span>
+          {field.required && <RequiredIndicator />}
+        </Label>
         {field.showGraphControl && (
           <button
             type="button"
@@ -125,6 +123,8 @@ function FieldItem({
         <Select value={value || undefined} onValueChange={setValue}>
           <SelectTrigger
             aria-label={field.label}
+            aria-required={field.required}
+            id={inputId}
             className="h-10 rounded-xl border-0 bg-surface-overlay text-foreground shadow-sm placeholder:text-foreground-muted"
           >
             <SelectValue placeholder={field.placeholder ?? 'Select...'} />
@@ -144,6 +144,8 @@ function FieldItem({
       ) : field.type === 'url' ? (
         <div className="flex h-10 w-full items-center overflow-hidden rounded-xl bg-surface-overlay shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
           <Input
+            aria-required={field.required}
+            id={inputId}
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={field.placeholder}
@@ -159,6 +161,8 @@ function FieldItem({
         </div>
       ) : (
         <Input
+          aria-required={field.required}
+          id={inputId}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={field.placeholder}

@@ -1151,7 +1151,7 @@ function ExpressionField({ value, placeholder }: { value?: string; placeholder?:
 function BooleanField({ label }: { label: string }) {
   return (
     <div>
-      <Label className="mb-2 text-xs">{label}</Label>
+      <p className="mb-2 text-xs font-medium">{label}</p>
       <div className="flex items-center gap-5 text-xs text-foreground-muted">
         <span className="flex items-center gap-2">
           <span className="size-4 rounded-full border-2 border-border" /> True
@@ -1188,7 +1188,7 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
       <div className={spacious ? 'space-y-5' : 'space-y-4'}>
         <div>
           <div className="mb-2 flex items-center justify-between gap-3">
-            <Label className="text-xs">Microsoft Outlook 365 connection *</Label>
+            <p className="text-xs font-medium">Microsoft Outlook 365 connection *</p>
             <button type="button" className="shrink-0 text-xs text-brand">
               Refresh Schema
             </button>
@@ -1202,15 +1202,15 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
         </div>
         <BooleanField label="Save as draft" />
         <div>
-          <Label className="mb-2 text-xs">To *</Label>
+          <p className="mb-2 text-xs font-medium">To *</p>
           <ExpressionField value="$vars.executeQuerySynchronously1.output[0].assignee_email" />
         </div>
         <div>
-          <Label className="mb-2 text-xs">Subject</Label>
+          <p className="mb-2 text-xs font-medium">Subject</p>
           <ExpressionField value="$vars.recordUpdated1.output.Subject" />
         </div>
         <div>
-          <Label className="mb-2 text-xs">Body</Label>
+          <p className="mb-2 text-xs font-medium">Body</p>
           <div className="rounded-lg border border-border-subtle bg-surface-overlay">
             <div className="flex h-9 items-center gap-1 border-b border-border-subtle px-2 text-foreground-muted">
               {[
@@ -1238,7 +1238,7 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
           </div>
         </div>
         <div>
-          <Label className="mb-2 text-xs">Attachment</Label>
+          <p className="mb-2 text-xs font-medium">Attachment</p>
           <ExpressionField placeholder="The file to attach to the email" />
         </div>
         <BooleanField label="Include message details" />
@@ -1250,7 +1250,7 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
         </button>
         <div className="rounded-lg bg-surface-overlay px-3 py-2 text-xs font-semibold">Options</div>
         <div>
-          <Label className="mb-2 text-xs">Reply to</Label>
+          <p className="mb-2 text-xs font-medium">Reply to</p>
           <ExpressionField placeholder="Email addresses to use when replying" />
         </div>
       </div>
