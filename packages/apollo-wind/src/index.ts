@@ -74,7 +74,20 @@ export { Textarea } from './components/ui/textarea';
 export type { TextareaProps } from './components/ui/textarea';
 
 export { Label, RequiredIndicator } from './components/ui/label';
-export type { LabelProps, RequiredIndicatorProps } from './components/ui/label';
+export type { LabelProps, LabelVariants, RequiredIndicatorProps } from './components/ui/label';
+
+export {
+  FormField,
+  FormFieldDescription,
+  FormFieldError,
+  FormFieldLabel,
+} from './components/ui/form-field';
+export type {
+  FormFieldDescriptionProps,
+  FormFieldErrorProps,
+  FormFieldLabelProps,
+  FormFieldProps,
+} from './components/ui/form-field';
 
 export { Checkbox } from './components/ui/checkbox';
 export type { CheckboxProps } from './components/ui/checkbox';

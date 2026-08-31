@@ -233,12 +233,7 @@ export function FormBuilderExample() {
                             checked={formData.newsletter}
                             onCheckedChange={(checked) => updateField('newsletter', !!checked)}
                           />
-                          <Label
-                            htmlFor="newsletter"
-                            className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Subscribe to newsletter
-                          </Label>
+                          <Label htmlFor="newsletter">Subscribe to newsletter</Label>
                         </Row>
                       </CardContent>
                     </Card>
@@ -259,19 +254,19 @@ export function FormBuilderExample() {
                           >
                             <Row gap={2} align="center">
                               <RadioGroupItem value="public" id="public" />
-                              <Label htmlFor="public" className="font-normal">
+                              <Label variant="muted" htmlFor="public" className="font-normal">
                                 Public - Anyone can see your profile
                               </Label>
                             </Row>
                             <Row gap={2} align="center">
                               <RadioGroupItem value="private" id="private" />
-                              <Label htmlFor="private" className="font-normal">
+                              <Label variant="muted" htmlFor="private" className="font-normal">
                                 Private - Only you can see your profile
                               </Label>
                             </Row>
                             <Row gap={2} align="center">
                               <RadioGroupItem value="friends" id="friends" />
-                              <Label htmlFor="friends" className="font-normal">
+                              <Label variant="muted" htmlFor="friends" className="font-normal">
                                 Friends - Only friends can see your profile
                               </Label>
                             </Row>
@@ -318,10 +313,7 @@ export function FormBuilderExample() {
                                       }
                                     }}
                                   />
-                                  <Label
-                                    htmlFor={interest}
-                                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                  >
+                                  <Label variant="muted" htmlFor={interest} className="font-normal">
                                     {interest}
                                   </Label>
                                 </Row>

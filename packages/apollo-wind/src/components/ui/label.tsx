@@ -4,19 +4,44 @@ import * as React from 'react';
 
 import { cn } from '@/lib/index';
 
-const labelVariants = cva(
-  'text-xs font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-);
+const labelVariants = cva('text-xs peer-disabled:cursor-not-allowed peer-disabled:opacity-70', {
+  variants: {
+    variant: {
+      /** Names a field: the header above an input, select, or editor. */
+      default: 'font-medium text-foreground',
+      /** De-emphasized, for a label that names one option inside a field. */
+      muted: 'font-normal text-foreground-muted',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+});
 
-export type LabelProps = React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
-  VariantProps<typeof labelVariants>;
+/** Variant props, for consumers that forward a variant through to `Label`. */
+export type LabelVariants = VariantProps<typeof labelVariants>;
 
+export type LabelProps = React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & LabelVariants;
+
+/**
+ * Compose `RequiredIndicator` as the last child to mark a field required.
+ *
+ * Long labels wrap. Do not ellipsize one with `truncate`: the indicator shares
+ * the label's inline run, so the ellipsis swallows it, and a clipped field name
+ * is unreadable anyway.
+ *
+ * `data-variant` exposes the variant so a container can restyle every label of
+ * one kind at once rather than reaching for each slot by name. Target it as
+ * `label[data-variant=default]`: callers rename `data-slot`, and `data-variant`
+ * alone is a convention other components share.
+ */
 const Label = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, LabelProps>(
-  ({ className, ...props }, ref) => (
+  ({ className, variant = 'default', ...props }, ref) => (
     <LabelPrimitive.Root
       ref={ref}
       data-slot="label"
-      className={cn(labelVariants(), className)}
+      data-variant={variant}
+      className={cn(labelVariants({ variant }), className)}
       {...props}
     />
   )
@@ -24,7 +49,13 @@ const Label = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, Lab
 Label.displayName = LabelPrimitive.Root.displayName;
 
 export interface RequiredIndicatorProps
-  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'children' | 'aria-hidden'> {}
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'children' | 'aria-hidden'> {
+  /**
+   * Visually hidden text announced in place of the asterisk. apollo-wind ships
+   * no i18n, so localized consumers pass their own translated string here.
+   */
+  srLabel?: string;
+}
 
 /**
  * Marks a field as required. Place it right after the label text.
@@ -35,13 +66,14 @@ export interface RequiredIndicatorProps
  * glyph is `aria-hidden` since it's a visual affordance, not the thing that
  * makes the field required to assistive tech; a `sr-only` "(required)" is
  * included alongside it so the label still announces the requirement even if
- * the field's own control is missing `required`/`aria-required`.
+ * the field's own control is missing `required`/`aria-required`. That text is
+ * English by default; pass `srLabel` to localize it.
  */
 const RequiredIndicator = React.forwardRef<HTMLSpanElement, RequiredIndicatorProps>(
-  ({ className, ...props }, ref) => (
+  ({ className, srLabel = ' (required)', ...props }, ref) => (
     <span ref={ref} {...props} className={cn('ml-0.5', className, 'text-foreground')}>
       <span aria-hidden="true">*</span>
-      <span className="sr-only"> (required)</span>
+      <span className="sr-only">{srLabel}</span>
     </span>
   )
 );

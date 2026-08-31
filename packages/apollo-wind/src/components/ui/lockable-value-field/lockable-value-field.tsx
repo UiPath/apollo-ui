@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { FileUpload } from '@/components/ui/file-upload';
+import { FormFieldError } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import {
   InputGroup,
@@ -350,16 +351,10 @@ export function LockableValueField({
         </div>
       )}
 
-      {error && !typeMeta.supportsExpression && (
-        <p
-          id={validationId}
-          data-slot="lockable-value-field-error"
-          aria-live="polite"
-          aria-atomic="true"
-          className="mt-1 text-xs leading-4 text-error"
-        >
+      {!typeMeta.supportsExpression && (
+        <FormFieldError id={validationId} data-slot="lockable-value-field-error" className="mt-1">
           {error}
-        </p>
+        </FormFieldError>
       )}
 
       {belowValue}

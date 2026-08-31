@@ -17,15 +17,21 @@ export const Default = {
     <RadioGroup defaultValue="comfortable">
       <Row gap={2} align="center">
         <RadioGroupItem value="default" id="r1" />
-        <Label htmlFor="r1">Default</Label>
+        <Label variant="muted" htmlFor="r1">
+          Default
+        </Label>
       </Row>
       <Row gap={2} align="center">
         <RadioGroupItem value="comfortable" id="r2" />
-        <Label htmlFor="r2">Comfortable</Label>
+        <Label variant="muted" htmlFor="r2">
+          Comfortable
+        </Label>
       </Row>
       <Row gap={2} align="center">
         <RadioGroupItem value="compact" id="r3" />
-        <Label htmlFor="r3">Compact</Label>
+        <Label variant="muted" htmlFor="r3">
+          Compact
+        </Label>
       </Row>
     </RadioGroup>
   ),

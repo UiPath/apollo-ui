@@ -497,13 +497,13 @@ const components: ComponentInfo[] = [
       <RadioGroup defaultValue="option1" className="gap-2">
         <div className="flex items-center gap-2">
           <RadioGroupItem value="option1" id="rg-preview-1" />
-          <Label htmlFor="rg-preview-1" className="text-xs font-normal">
+          <Label variant="muted" htmlFor="rg-preview-1">
             Option 1
           </Label>
         </div>
         <div className="flex items-center gap-2">
           <RadioGroupItem value="option2" id="rg-preview-2" />
-          <Label htmlFor="rg-preview-2" className="text-xs font-normal">
+          <Label variant="muted" htmlFor="rg-preview-2">
             Option 2
           </Label>
         </div>
