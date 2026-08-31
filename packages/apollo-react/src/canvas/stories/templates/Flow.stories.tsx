@@ -4015,7 +4015,7 @@ function DapPanel({ onClose }: { onClose: () => void }) {
                   {['Subject', 'Body', 'Reply to', 'Importance', 'Attachment'].map((property) => (
                     <div
                       key={property}
-                      className="flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1 text-xs"
+                      className="flex items-center gap-2.5 rounded-md px-1 py-1 text-xs"
                     >
                       <Checkbox
                         id={`dap-property-${property.toLowerCase().replaceAll(' ', '-')}`}
