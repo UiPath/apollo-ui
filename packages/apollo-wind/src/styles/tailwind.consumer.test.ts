@@ -82,3 +82,78 @@ describe('dark variant selector behaviour', () => {
     expect(matches('<span id="target"></span>')).toBe(false);
   });
 });
+
+describe('tailwind.consumer.css icon stroke default', () => {
+  it('thins lucide icons to the design-system weight', () => {
+    expect(css).toMatch(/svg\.lucide\[stroke-width="2"\]\s*\{\s*stroke-width:\s*1\.4;/);
+  });
+
+  it('declares the rule inside @layer base so utilities outrank it', () => {
+    // stroke-* lands in `utilities`, which the cascade resolves after `base`
+    // regardless of specificity — that is what makes stroke-2 an escape hatch.
+    // Brace-match the block rather than compare offsets, so the assertion means
+    // "contained in" and not merely "appears somewhere after".
+    const open = css.indexOf('@layer base {');
+    expect(open).toBeGreaterThan(-1);
+    let depth = 0;
+    let end = -1;
+    for (let i = css.indexOf('{', open); i < css.length; i++) {
+      if (css[i] === '{') depth++;
+      else if (css[i] === '}' && --depth === 0) {
+        end = i;
+        break;
+      }
+    }
+    expect(end).toBeGreaterThan(open);
+    const rule = css.indexOf('svg.lucide[stroke-width="2"]');
+    expect(rule).toBeGreaterThan(open);
+    expect(rule).toBeLessThan(end);
+  });
+
+  it('safelists stroke-2 so the escape hatch survives into the prebuilt css', () => {
+    // Tailwind only emits utilities it finds while scanning source, and nothing
+    // here writes stroke-2. Without this, consumers shipping the prebuilt
+    // styles.css would have no way to keep an icon at weight 2.
+    expect(css).toContain('@source inline("stroke-2");');
+  });
+});
+
+describe('icon stroke selector behaviour', () => {
+  // Parsed from the stylesheet so these cases can't drift from what ships.
+  const selector = /(svg\.lucide\[stroke-width="2"\])\s*\{/.exec(css)?.[1];
+
+  const matches = (html: string) => {
+    document.body.innerHTML = html;
+    const target = document.querySelector('#target');
+    if (!target || !selector) throw new Error('missing target or selector');
+    return target.matches(selector);
+  };
+
+  it('matches a lucide icon left at the default weight', () => {
+    expect(matches('<svg id="target" class="lucide lucide-plus" stroke-width="2"></svg>')).toBe(
+      true
+    );
+  });
+
+  it('leaves a deliberate strokeWidth={0} alone', () => {
+    // Filled glyphs set 0 and would grow an outline if the rule caught them.
+    expect(matches('<svg id="target" class="lucide lucide-square" stroke-width="0"></svg>')).toBe(
+      false
+    );
+  });
+
+  it('leaves other deliberate weights alone', () => {
+    for (const weight of ['1', '1.5', '2.5', '3']) {
+      expect(
+        matches(`<svg id="target" class="lucide lucide-check" stroke-width="${weight}"></svg>`)
+      ).toBe(false);
+    }
+  });
+
+  it('ignores svgs that are not lucide icons', () => {
+    // recharts series, edge handles and hand-authored icons all carry
+    // stroke-width="2" and default to 1 without it — they must not be caught.
+    expect(matches('<svg id="target" stroke-width="2"></svg>')).toBe(false);
+    expect(matches('<svg id="target" class="recharts-line" stroke-width="2"></svg>')).toBe(false);
+  });
+});

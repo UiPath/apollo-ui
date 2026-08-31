@@ -55,7 +55,6 @@ export function AnimatedGradientIcon({
       <Sparkles
         stroke={`url(#${gradientId})`}
         className="size-full"
-        strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden

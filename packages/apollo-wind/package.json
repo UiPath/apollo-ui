@@ -76,6 +76,7 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
+    "lucide-react": ">=0.577.0 <2",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
@@ -127,7 +128,6 @@
     "framer-motion": "^13.1.0",
     "jsep": "^1.4.0",
     "lexical": "0.42.0",
-    "lucide-react": "^0.577.0",
     "marked": "^17.0.6",
     "next-themes": "^0.4.6",
     "react-day-picker": "^9.13.0",
@@ -172,6 +172,7 @@
     "globals": "^16.5.0",
     "jest-axe": "^10.0.0",
     "jsdom": "^27.2.0",
+    "lucide-react": "^0.577.0",
     "monaco-editor": "^0.55.1",
     "postcss": "^8.5.6",
     "postcss-import": "^16.1.1",
