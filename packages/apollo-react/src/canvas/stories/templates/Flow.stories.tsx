@@ -3780,6 +3780,39 @@ function DapPanel({ onClose }: { onClose: () => void }) {
   const [replyTo, setReplyTo] = useState('finance-ops@example.com');
   const [includeDetails, setIncludeDetails] = useState('true');
   const [selectedProperties, setSelectedProperties] = useState(['Subject', 'Body', 'Importance']);
+  const variables: VariablePickerItem[] = [
+    {
+      id: 'vars',
+      label: '$vars',
+      type: 'object',
+      children: [
+        {
+          id: 'approver',
+          label: 'approver',
+          type: 'object',
+          children: [
+            { id: 'email', label: 'email', value: '$vars.approver.email', type: 'string' },
+            { id: 'name', label: 'name', value: '$vars.approver.name', type: 'string' },
+          ],
+        },
+        {
+          id: 'invoice-number',
+          label: 'invoiceNumber',
+          value: '$vars.invoiceNumber',
+          type: 'string',
+        },
+        { id: 'invoice-pdf', label: 'invoicePdf', value: '$vars.invoicePdf', type: 'file' },
+      ],
+    },
+    {
+      id: 'output',
+      label: '$output',
+      type: 'object',
+      children: [
+        { id: 'message-id', label: 'messageId', value: '$output.messageId', type: 'string' },
+      ],
+    },
+  ];
 
   const toggleProperty = (property: string) => {
     setSelectedProperties((current) =>
@@ -3869,14 +3902,20 @@ function DapPanel({ onClose }: { onClose: () => void }) {
                   <Label htmlFor="dap-body" className="text-xs">
                     Body <RequiredIndicator />
                   </Label>
-                  <Button
-                    size="3xs"
-                    variant="ghost"
-                    className="h-7 gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle hover:text-foreground"
-                    onClick={() => setBody(`${body}$vars.`)}
+                  <VariablePicker
+                    items={variables}
+                    onSelect={(item) => {
+                      if (item.value) setBody((current) => `${current} ${item.value}`);
+                    }}
                   >
-                    <Braces size={12} /> <span>Insert</span> <ChevronDown size={9} />
-                  </Button>
+                    <Button
+                      size="3xs"
+                      variant="ghost"
+                      className="h-7 gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle hover:text-foreground"
+                    >
+                      <Braces size={12} /> <span>Insert</span> <ChevronDown size={9} />
+                    </Button>
+                  </VariablePicker>
                 </div>
                 <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-overlay focus-within:border-border-focus">
                   <div className="flex h-8 items-center gap-1 border-b border-border-subtle px-2">
