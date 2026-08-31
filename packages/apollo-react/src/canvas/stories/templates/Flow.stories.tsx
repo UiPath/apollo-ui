@@ -19,6 +19,8 @@ import {
   Checkbox,
   type FormSchema,
   Input,
+  InputGroup,
+  InputGroupInput,
   Label,
   LockableValueField,
   type LockableValueFieldMode,
