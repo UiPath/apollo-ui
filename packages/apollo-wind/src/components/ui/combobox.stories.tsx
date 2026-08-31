@@ -1,6 +1,7 @@
 import type { Meta } from '@storybook/react-vite';
 import { Check, ChevronsUpDown, Loader2, X } from 'lucide-react';
 import * as React from 'react';
+import { cn } from '../../lib';
 import { Badge } from './badge';
 import { Button } from './button';
 import { Combobox, ComboboxItem } from './combobox';
@@ -14,7 +15,6 @@ import {
 } from './command';
 import { Label } from './label';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
-import { cn } from '../../lib';
 
 const meta: Meta<typeof Combobox> = {
   title: 'Components/Core/Combobox',
@@ -95,7 +95,7 @@ function MultiSelectCombobox() {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[320px] justify-between future:rounded-xl future:border-0 future:bg-surface-raised future:hover:bg-surface-overlay future:font-normal future:text-muted-foreground"
+            className="w-[320px] justify-between future:rounded-xl future:border-0 future:font-normal future:text-muted-foreground"
           >
             {selected.length > 0 ? `${selected.length} selected` : 'Select frameworks...'}
             <ChevronsUpDown className="opacity-50" />
@@ -182,7 +182,7 @@ function CustomDisplayCombobox() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[320px] justify-between future:rounded-xl future:border-0 future:bg-surface-raised future:hover:bg-surface-overlay future:font-normal future:text-muted-foreground"
+          className="w-[320px] justify-between future:rounded-xl future:border-0 future:font-normal future:text-muted-foreground"
         >
           {selected ? (
             <span className="flex items-center gap-2">
@@ -284,7 +284,7 @@ function AsyncCombobox() {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[280px] justify-between future:rounded-xl future:border-0 future:bg-surface-raised future:hover:bg-surface-overlay future:font-normal future:text-muted-foreground"
+            className="w-[280px] justify-between future:rounded-xl future:border-0 future:font-normal future:text-muted-foreground"
           >
             {selected ? selected.label : 'Search libraries...'}
             <ChevronsUpDown className="opacity-50" />
