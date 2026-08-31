@@ -1,4 +1,5 @@
 import MonacoEditor from '@monaco-editor/react';
+import type { Meta } from '@storybook/react-vite';
 import {
   AtSign,
   Bold,
@@ -48,6 +49,13 @@ import { RadioGroup, RadioGroupItem } from './radio-group';
 import { Search } from './search';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
+
+const meta = {
+  title: 'Apollo Wind / Internal / DAP layouts helpers',
+  includeStories: [],
+} satisfies Meta;
+
+export default meta;
 
 interface PropertyRow {
   id: string;
