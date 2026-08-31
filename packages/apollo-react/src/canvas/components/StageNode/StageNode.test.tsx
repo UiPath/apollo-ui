@@ -348,6 +348,22 @@ describe('StageNode - Replace Task Functionality', () => {
       expect(screen.getByTestId('toolbox-title')).toHaveTextContent('Select activity');
     });
 
+    it('should keep the default title when the consumer supplies an empty one', async () => {
+      const user = userEvent.setup();
+      const onReplaceTaskFromToolbox = vi.fn();
+      renderStageNode({ onReplaceTaskFromToolbox, replaceTaskToolboxTitle: '' });
+
+      const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
+      await user.click(taskMenuButton);
+      await user.click(screen.getByTestId('menu-item-task-1-replace-task'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('toolbox')).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('toolbox-title')).toHaveTextContent('Replace task');
+    });
+
     it('should display task options in replace task toolbox', async () => {
       const user = userEvent.setup();
       const onReplaceTaskFromToolbox = vi.fn();
