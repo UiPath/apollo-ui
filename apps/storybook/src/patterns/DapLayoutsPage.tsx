@@ -1,4 +1,46 @@
 import MonacoEditor from '@monaco-editor/react';
+import type { PromptEditorAutoCompleteOption, PromptEditorToken } from '@uipath/apollo-wind';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Alert,
+  AlertDescription,
+  Button,
+  Checkbox,
+  Combobox,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  PromptEditor,
+  RadioGroup,
+  RadioGroupItem,
+  RequiredIndicator,
+  Search,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@uipath/apollo-wind';
 import {
   AtSign,
   Bold,
@@ -24,30 +66,8 @@ import {
   X,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import gmailIconUrl from '../../../../apollo-ui-icons/src/svg/third-party/google-gmail.svg?url';
-import { apolloFutureLightMonaco } from '../../editor-themes';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
-import { Alert, AlertDescription } from './alert';
-import { Button } from './button';
-import { Checkbox } from './checkbox';
-import { Combobox } from './combobox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from './dropdown-menu';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './input-group';
-import { Label, RequiredIndicator } from './label';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
-import { PromptEditor } from './prompt-editor';
-import type { PromptEditorAutoCompleteOption, PromptEditorToken } from './prompt-editor/types';
-import { RadioGroup, RadioGroupItem } from './radio-group';
-import { Search } from './search';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
+import gmailIconUrl from '../../../../packages/apollo-ui-icons/src/svg/third-party/google-gmail.svg?url';
+import { apolloFutureLightMonaco } from '../../../../packages/apollo-wind/src/editor-themes';
 
 interface PropertyRow {
   id: string;
