@@ -80,6 +80,7 @@ import {
 } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FullWorkbenchComposition } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
+import { DapLayoutsPage } from '../../../../packages/apollo-wind/src/components/ui/dap-components';
 
 const ALL_SIDEBAR_ITEMS = [
   ...CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS,
@@ -750,4 +751,9 @@ export const ErrorAndValidation: Story = {
 export const DapSendEmail: Story = {
   name: 'UX DAP - Send email',
   render: () => <FullWorkbenchComposition rightPanelVariant="dap" />,
+};
+
+export const DapAlignment: Story = {
+  name: 'UX DAP - Alignment',
+  render: () => <DapLayoutsPage />,
 };
