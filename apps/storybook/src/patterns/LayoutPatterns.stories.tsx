@@ -80,7 +80,7 @@ import {
 } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FullWorkbenchComposition } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
-import { DapLayoutsPage } from '../../../../packages/apollo-wind/src/components/ui/dap-components.stories';
+import { DapLayoutsPage } from '../../../../packages/apollo-wind/src/components/ui/dap-components';
 
 const ALL_SIDEBAR_ITEMS = [
   ...CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS,
