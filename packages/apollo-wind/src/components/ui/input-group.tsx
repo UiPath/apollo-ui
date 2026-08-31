@@ -4,6 +4,7 @@ import { Button, type ButtonProps } from '@/components/ui/button';
 import { Input, type InputProps } from '@/components/ui/input';
 import { Textarea, type TextareaProps } from '@/components/ui/textarea';
 import { cn } from '@/lib';
+import { FormFieldError } from './form-field';
 
 interface InputGroupValidationContextValue {
   error?: React.ReactNode;
@@ -53,17 +54,9 @@ const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
           )}
           {...props}
         />
-        {error && (
-          <p
-            id={validationId}
-            data-slot="input-group-error"
-            aria-live="polite"
-            aria-atomic="true"
-            className="mt-1 text-xs leading-4 text-error"
-          >
-            {error}
-          </p>
-        )}
+        <FormFieldError id={validationId} data-slot="input-group-error" className="mt-1">
+          {error}
+        </FormFieldError>
       </InputGroupValidationContext.Provider>
     );
   }

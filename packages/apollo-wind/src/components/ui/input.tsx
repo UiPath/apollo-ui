@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { FormFieldError } from './form-field';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   variant?: 'default' | 'ghost';
@@ -64,17 +65,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
           ref={ref}
         />
-        {error && (
-          <p
-            id={validationId}
-            data-slot="input-error"
-            aria-live="polite"
-            aria-atomic="true"
-            className="mt-1 text-xs leading-4 text-error"
-          >
-            {error}
-          </p>
-        )}
+        <FormFieldError id={validationId} data-slot="input-error" className="mt-1">
+          {error}
+        </FormFieldError>
       </>
     );
   }
