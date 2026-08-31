@@ -54,8 +54,8 @@ import type { DockviewApi, DockviewReadyEvent, IDockviewPanelProps } from 'dockv
 import { DockviewReact } from 'dockview-react';
 import 'dockview-react/dist/styles/dockview.css';
 import {
-  AtSign,
   Bold,
+  Braces,
   Bug,
   ChevronDown,
   ChevronUp,
@@ -3814,19 +3814,24 @@ function DapPanel({ onClose }: { onClose: () => void }) {
               Configure a connector activity using reusable DAP field and value-source patterns.
             </p>
 
-            <section className="space-y-3">
+            <section className="space-y-1.5">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold text-foreground">Connection</p>
+                <Label htmlFor="dap-connection" className="text-xs font-semibold text-foreground">
+                  Connection
+                </Label>
                 <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2 text-xs font-semibold text-brand hover:text-brand"
+                  size="3xs"
+                  variant="link"
+                  className="h-6 px-0 text-[11px] font-medium text-brand hover:text-brand"
                 >
                   Refresh schema
                 </Button>
               </div>
               <Select defaultValue="gmail-finance">
-                <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
+                <SelectTrigger
+                  id="dap-connection"
+                  className="h-9 w-full bg-surface-overlay text-xs"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -3865,12 +3870,12 @@ function DapPanel({ onClose }: { onClose: () => void }) {
                     Body <RequiredIndicator />
                   </Label>
                   <Button
-                    size="sm"
+                    size="3xs"
                     variant="ghost"
-                    className="h-7 px-2 text-xs text-brand hover:text-brand"
+                    className="h-7 gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle hover:text-foreground"
                     onClick={() => setBody(`${body}$vars.`)}
                   >
-                    <AtSign size={13} /> Insert variable
+                    <Braces size={12} /> <span>Insert</span> <ChevronDown size={9} />
                   </Button>
                 </div>
                 <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-overlay focus-within:border-border-focus">
