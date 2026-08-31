@@ -21,6 +21,7 @@ import { ChatComposer } from '@/components/custom/chat-composer';
 import { ChatFirstExperience } from '@/components/custom/chat-first-experience';
 import { StepsView } from '@/components/custom/chat-steps-view';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { NavItem } from './template-delegate';
 import { DelegateTemplate } from './template-delegate';
 
@@ -333,9 +334,9 @@ function SettingsContent() {
 
               {/* Your Name */}
               <div className="flex flex-col gap-2">
-                <label htmlFor="profile-name" className="text-sm font-medium text-foreground">
+                <Label htmlFor="profile-name" className="text-xs text-foreground">
                   Your name
-                </label>
+                </Label>
                 <Input
                   id="profile-name"
                   placeholder="Enter your name"
@@ -345,9 +346,9 @@ function SettingsContent() {
 
               {/* Your Email */}
               <div className="flex flex-col gap-2">
-                <label htmlFor="profile-email" className="text-sm font-medium text-foreground">
+                <Label htmlFor="profile-email" className="text-xs text-foreground">
                   Your email
-                </label>
+                </Label>
                 <Input
                   id="profile-email"
                   placeholder="Enter your email"
@@ -361,9 +362,9 @@ function SettingsContent() {
 
               {/* Language */}
               <div className="flex flex-col gap-2">
-                <label htmlFor="profile-language" className="text-sm font-medium text-foreground">
+                <Label htmlFor="profile-language" className="text-xs text-foreground">
                   Language
-                </label>
+                </Label>
                 <p className="text-sm text-foreground-muted">
                   Select your preferred language for the interface.
                 </p>

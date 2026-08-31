@@ -102,7 +102,7 @@ function FieldItem({
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium leading-5 text-foreground-muted">
           {field.label}
-          {field.required && '*'}
+          {field.required && <span className="text-foreground" aria-hidden="true">*</span>}
         </span>
         {field.showGraphControl && (
           <button
