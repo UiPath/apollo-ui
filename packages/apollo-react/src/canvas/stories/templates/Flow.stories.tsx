@@ -23,9 +23,9 @@ import {
   LockableValueField,
   type LockableValueFieldMode,
   type PanelImperativeHandle,
-  RequiredIndicator,
   RadioGroup,
   RadioGroupItem,
+  RequiredIndicator,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -3749,7 +3749,7 @@ function DapValueField({
       label={
         <Label htmlFor={id} className="text-xs font-medium text-foreground">
           {label}
-          {required && <span aria-hidden="true"> *</span>}
+          {required && <RequiredIndicator />}
         </Label>
       }
       value={value}
@@ -3862,7 +3862,7 @@ function DapPanel({ onClose }: { onClose: () => void }) {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="dap-body" className="text-xs">
-                    Body <span aria-hidden="true">*</span>
+                    Body <RequiredIndicator />
                   </Label>
                   <Button
                     size="sm"
