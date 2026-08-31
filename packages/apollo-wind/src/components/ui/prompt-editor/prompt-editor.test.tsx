@@ -47,6 +47,17 @@ describe('PromptEditor', () => {
       expect(screen.getByText('Type your prompt…')).toBeInTheDocument();
     });
 
+    it('associates inline validation feedback with the textbox', () => {
+      render(
+        <PromptEditor ariaLabel="Prompt" error="A prompt is required" errorId="prompt-error" />
+      );
+      const editor = screen.getByRole('textbox', { name: 'Prompt' });
+      expect(editor).toHaveAttribute('aria-invalid', 'true');
+      expect(editor).toHaveAttribute('aria-describedby', 'prompt-error');
+      expect(editor).toHaveAttribute('aria-errormessage', 'prompt-error');
+      expect(screen.getByText('A prompt is required')).toHaveAttribute('id', 'prompt-error');
+    });
+
     it('marks the editor non-editable when disabled', async () => {
       render(<PromptEditor ariaLabel="Prompt" disabled />);
       await waitFor(() =>

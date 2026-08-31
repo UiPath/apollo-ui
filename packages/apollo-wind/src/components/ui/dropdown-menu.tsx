@@ -51,7 +51,7 @@ const DropdownMenuTrigger = React.forwardRef<
           className
         )}
         aria-describedby={describedBy || undefined}
-        aria-errormessage={error ? errorId : ariaErrorMessage}
+        aria-errormessage={error ? (errorId ?? ariaErrorMessage) : ariaErrorMessage}
         aria-invalid={error ? true : ariaInvalid}
         {...props}
       />
