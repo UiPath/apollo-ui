@@ -19,7 +19,9 @@ function renderButton({
   onMouseLeave?: () => void;
   handleEl?: HTMLDivElement;
 } = {}) {
-  const handleRef = { current: handleEl ?? null } as React.RefObject<HTMLDivElement | null>;
+  const handleRef = {
+    current: handleEl ?? null,
+  } as React.RefObject<HTMLDivElement | null>;
 
   const result = render(
     <HandleButton
@@ -53,7 +55,10 @@ describe('HandleButton drag behaviour', () => {
     const { button, onAction } = renderButton();
 
     fireEvent.pointerDown(button, { clientX: 100, clientY: 100 });
-    fireEvent.pointerMove(document, { clientX: 100 + DRAG_THRESHOLD + 1, clientY: 100 });
+    fireEvent.pointerMove(document, {
+      clientX: 100 + DRAG_THRESHOLD + 1,
+      clientY: 100,
+    });
     fireEvent.pointerUp(document);
     fireEvent.click(button);
 
@@ -83,7 +88,10 @@ describe('HandleButton drag behaviour', () => {
     const { button } = renderButton({ handleEl });
 
     fireEvent.pointerDown(button, { clientX: 100, clientY: 100 });
-    fireEvent.pointerMove(document, { clientX: 100 + DRAG_THRESHOLD + 1, clientY: 100 });
+    fireEvent.pointerMove(document, {
+      clientX: 100 + DRAG_THRESHOLD + 1,
+      clientY: 100,
+    });
 
     expect(mousedownSpy).toHaveBeenCalledOnce();
     const event = mousedownSpy.mock.calls[0]?.[0] as MouseEvent;
@@ -252,5 +260,15 @@ describe('HandleButton mount & label visibility', () => {
     expect(screen.getByText('Tools').closest('[class*="transition-opacity"]')?.className).toContain(
       'opacity-100'
     );
+  });
+
+  it("names the add button after its label, so 'Tools' vs 'Escalations' vs 'Memory' aren't all announced as the same generic 'Add node'", () => {
+    render(<HandleButton visible position={Position.Top} onAction={vi.fn()} label="Escalations" />);
+    expect(screen.getByRole('button', { name: 'Add Escalations' })).toBeInTheDocument();
+  });
+
+  it('falls back to the generic name when no label is given', () => {
+    render(<HandleButton visible position={Position.Top} onAction={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Add node' })).toBeInTheDocument();
   });
 });
