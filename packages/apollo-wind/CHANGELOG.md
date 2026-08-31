@@ -1,3 +1,16 @@
+## [@uipath/apollo-wind-v2.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.39.0...@uipath/apollo-wind@2.40.0) (2026-08-31)
+
+### Features
+
+* **apollo-wind:** unify field label styling ([ba2a0be](https://github.com/UiPath/apollo-ui/commit/ba2a0be74454c8f4301262ca78c14dd07f7cb5f3))
+
+### Bug Fixes
+
+* **apollo-wind:** address accessibility review feedback ([42f25a2](https://github.com/UiPath/apollo-ui/commit/42f25a213bafd314c30e8d3fa094321b3aff3d1d))
+* **apollo-wind:** format label updates ([ac6c221](https://github.com/UiPath/apollo-ui/commit/ac6c22115505f4380edfac3b43e9e8e8f42d659a))
+* **apollo-wind:** resolve label review feedback ([0b91b09](https://github.com/UiPath/apollo-ui/commit/0b91b09e585c1d535e771efbd3b7b6d9eef42b28))
+* **apollo-wind:** standardize required indicators ([a273390](https://github.com/UiPath/apollo-ui/commit/a273390364a806bac36688d93ff7f7327a2f9622))
+
 ## [@uipath/apollo-wind-v2.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.38.0...@uipath/apollo-wind@2.39.0) (2026-08-28)
 
 ### Features

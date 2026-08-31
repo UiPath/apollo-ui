@@ -1,3 +1,16 @@
+## [@uipath/apollo-react-v6.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.35.0...@uipath/apollo-react@6.36.0) (2026-08-31)
+
+### Features
+
+* **apollo-wind:** unify field label styling ([ba2a0be](https://github.com/UiPath/apollo-ui/commit/ba2a0be74454c8f4301262ca78c14dd07f7cb5f3))
+
+### Bug Fixes
+
+* **apollo-react:** use standard field label styling ([40ff935](https://github.com/UiPath/apollo-ui/commit/40ff935b2b28764d1d3888559ca50b2cc87acc24))
+* **apollo-wind:** address accessibility review feedback ([42f25a2](https://github.com/UiPath/apollo-ui/commit/42f25a213bafd314c30e8d3fa094321b3aff3d1d))
+* **apollo-wind:** resolve label review feedback ([0b91b09](https://github.com/UiPath/apollo-ui/commit/0b91b09e585c1d535e771efbd3b7b6d9eef42b28))
+* **apollo-wind:** standardize required indicators ([a273390](https://github.com/UiPath/apollo-ui/commit/a273390364a806bac36688d93ff7f7327a2f9622))
+
 ## [@uipath/apollo-react-v6.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.34.0...@uipath/apollo-react@6.35.0) (2026-08-31)
 
 ### Features
