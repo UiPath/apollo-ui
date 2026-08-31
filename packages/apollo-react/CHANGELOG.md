@@ -1,3 +1,24 @@
+## [@uipath/apollo-react-v6.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.36.1...@uipath/apollo-react@6.37.0) (2026-08-31)
+
+### Features
+
+* **storybook:** add DAP layout reference ([6f0f7be](https://github.com/UiPath/apollo-ui/commit/6f0f7bed9cb9c7ef819d6a3f84e9cab24ca42801))
+* **storybook:** add DAP variable picker ([3fae0cf](https://github.com/UiPath/apollo-ui/commit/3fae0cf0f7a31c1ad91081d33515c8fd19b8f36e))
+* **storybook:** split node patterns into focused stories ([93c074e](https://github.com/UiPath/apollo-ui/commit/93c074ed741615cf8d6ba9cc3567ec0c30034d4a))
+
+### Bug Fixes
+
+* **storybook:** address DAP review feedback ([5429717](https://github.com/UiPath/apollo-ui/commit/5429717edec14982c26d1cdb53e61a15c79baecf))
+* **storybook:** address review feedback ([e3b6d67](https://github.com/UiPath/apollo-ui/commit/e3b6d674881141d97730c685a6c529fe0017b1cb))
+* **storybook:** align DAP field label spacing ([0bbd60c](https://github.com/UiPath/apollo-ui/commit/0bbd60c61d97cc57321791f093337506f5846640))
+* **storybook:** align properties row affordance ([93708b1](https://github.com/UiPath/apollo-ui/commit/93708b100b7475b0030b1ab27782441c7747b684))
+* **storybook:** refine DAP field controls ([3de8876](https://github.com/UiPath/apollo-ui/commit/3de887608809c7369f04690d77babcdced5884c9))
+* **storybook:** resolve DAP review comments ([a6f09a4](https://github.com/UiPath/apollo-ui/commit/a6f09a4bc61d306e6cf6b3ad998a45b1b03612c8))
+* **storybook:** restore PR build imports ([7c7dc15](https://github.com/UiPath/apollo-ui/commit/7c7dc157908c147cea81950d33a0ad6278797ad5))
+* **storybook:** separate DAP page helper from stories ([7d5b6c8](https://github.com/UiPath/apollo-ui/commit/7d5b6c8f49a57ab743b7bd9a4b105f2abbd8aecb))
+* **storybook:** standardize required indicators ([53dbe86](https://github.com/UiPath/apollo-ui/commit/53dbe864247925dbeb886c79290e6c926f2dff9b))
+* **storybook:** use shared required labels in DAP panel ([eabe678](https://github.com/UiPath/apollo-ui/commit/eabe6781bb262d1f86dca1282523dd5db1d183a9))
+
 ## [@uipath/apollo-react-v6.36.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.36.0...@uipath/apollo-react@6.36.1) (2026-08-31)
 
 ### Bug Fixes

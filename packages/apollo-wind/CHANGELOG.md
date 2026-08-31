@@ -1,3 +1,19 @@
+## [@uipath/apollo-wind-v2.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.41.0...@uipath/apollo-wind@2.42.0) (2026-08-31)
+
+### Features
+
+* **storybook:** add DAP layout reference ([6f0f7be](https://github.com/UiPath/apollo-ui/commit/6f0f7bed9cb9c7ef819d6a3f84e9cab24ca42801))
+
+### Bug Fixes
+
+* **storybook:** add metadata to DAP helper story ([d2498a2](https://github.com/UiPath/apollo-ui/commit/d2498a2d7ddc37a93389f32648ba43d91d99eb3d))
+* **storybook:** keep DAP layout page in Storybook ([bf72991](https://github.com/UiPath/apollo-ui/commit/bf72991befdd7091533225e8784ea575e9351640))
+* **storybook:** resolve DAP review comments ([a6f09a4](https://github.com/UiPath/apollo-ui/commit/a6f09a4bc61d306e6cf6b3ad998a45b1b03612c8))
+* **storybook:** restore DAP alignment pattern ([adeb030](https://github.com/UiPath/apollo-ui/commit/adeb030257a05f5d21f0a3e9cba8ab0f8bf5d0b1))
+* **storybook:** restore PR build imports ([7c7dc15](https://github.com/UiPath/apollo-ui/commit/7c7dc157908c147cea81950d33a0ad6278797ad5))
+* **storybook:** separate DAP page helper from stories ([7d5b6c8](https://github.com/UiPath/apollo-ui/commit/7d5b6c8f49a57ab743b7bd9a4b105f2abbd8aecb))
+* **storybook:** standardize required indicators ([53dbe86](https://github.com/UiPath/apollo-ui/commit/53dbe864247925dbeb886c79290e6c926f2dff9b))
+
 ## [@uipath/apollo-wind-v2.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.40.0...@uipath/apollo-wind@2.41.0) (2026-08-31)
 
 ### Features
