@@ -60,9 +60,7 @@ export const NumberField = memo(function NumberField({
 
   return (
     <div className="flex flex-col gap-1">
-      <Label htmlFor={`field-${field.key}`} className="text-xs text-(--canvas-foreground-de-emp)">
-        {field.label}
-      </Label>
+      <Label htmlFor={`field-${field.key}`}>{field.label}</Label>
       <div className="flex items-center gap-2">
         <input
           id={`field-${field.key}`}

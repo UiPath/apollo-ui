@@ -31,9 +31,7 @@ export const SelectField = memo(function SelectField({
 
   return (
     <div className="flex flex-col gap-1">
-      <Label htmlFor={selectId} className="text-xs text-(--canvas-foreground-de-emp)">
-        {field.label}
-      </Label>
+      <Label htmlFor={selectId}>{field.label}</Label>
       <div className="relative">
         <select
           id={selectId}
