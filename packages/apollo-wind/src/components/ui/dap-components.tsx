@@ -1,5 +1,4 @@
 import MonacoEditor from '@monaco-editor/react';
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
   AtSign,
   Bold,
@@ -1200,7 +1199,7 @@ const alignmentStatusStyles: Record<AlignmentStatus, string> = {
   'Runtime integration gap': 'border-border bg-muted/50 text-muted-foreground',
 };
 
-function DapLayoutsPage() {
+export function DapLayoutsPage() {
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   return (
@@ -1715,19 +1714,3 @@ function DapLayoutsPage() {
     </main>
   );
 }
-
-const meta = {
-  title: 'Apollo Wind/Patterns/Layout Patterns',
-  component: DapLayoutsPage,
-  tags: ['!autodocs'],
-  parameters: {
-    layout: 'fullscreen',
-  },
-} satisfies Meta<typeof DapLayoutsPage>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const Page: Story = {
-  name: 'UX DAP - Alignment',
-};
