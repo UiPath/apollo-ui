@@ -3447,16 +3447,14 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
     return (
       <div className="flex items-start justify-between gap-3 py-1">
         <div>
-          <Label className="text-xs">{field.label}</Label>
+          <Label className="text-xs" htmlFor={fieldId}>
+            {field.label}
+          </Label>
           {field.helper && (
             <p className="mt-0.5 text-[11px] text-foreground-muted">{field.helper}</p>
           )}
         </div>
-        {field.kind === 'toggle' ? (
-          <Switch aria-label={field.label} />
-        ) : (
-          <Checkbox aria-label={field.label} />
-        )}
+        {field.kind === 'toggle' ? <Switch id={fieldId} /> : <Checkbox id={fieldId} />}
       </div>
     );
   }
