@@ -41,7 +41,7 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './input-group';
-import { Label } from './label';
+import { Label, RequiredIndicator } from './label';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { PromptEditor } from './prompt-editor';
 import type { PromptEditorAutoCompleteOption, PromptEditorToken } from './prompt-editor/types';
@@ -778,12 +778,7 @@ function AccountFieldsExample() {
                 className={`text-base font-semibold ${invalid ? 'text-destructive' : ''}`}
                 htmlFor={`dap-${field.id}`}
               >
-                {field.label}{' '}
-                {field.required && (
-                  <span className="text-foreground" aria-hidden="true">
-                    *
-                  </span>
-                )}
+                {field.label} {field.required && <RequiredIndicator />}
               </Label>
               <InputGroup className="future:rounded-lg">
                 <InputGroupInput

@@ -29,7 +29,7 @@ export interface RequiredIndicatorProps
 /**
  * Marks a field as required. Place it right after the label text.
  *
- * Uses `text-current` rather than an error/destructive color: an untouched
+ * Uses the foreground color rather than an error/destructive color: an untouched
  * required field isn't in an error state, so coloring the asterisk red reads
  * as a validation failure before the person has done anything. The asterisk
  * glyph is `aria-hidden` since it's a visual affordance, not the thing that
@@ -39,7 +39,7 @@ export interface RequiredIndicatorProps
  */
 const RequiredIndicator = React.forwardRef<HTMLSpanElement, RequiredIndicatorProps>(
   ({ className, ...props }, ref) => (
-    <span ref={ref} {...props} className={cn('ml-0.5 text-current', className)}>
+    <span ref={ref} {...props} className={cn(className, 'ml-0.5 text-foreground')}>
       <span aria-hidden="true">*</span>
       <span className="sr-only"> (required)</span>
     </span>
