@@ -79,6 +79,8 @@ export interface PromptEditorProps {
   /** Optional id for the inline validation message. */
   errorId?: string;
   /** Additional description id(s) associated with the editor. */
+  'aria-describedby'?: string;
+  /** @deprecated Use the native `aria-describedby` prop instead. */
   ariaDescribedBy?: string;
   /**
    * Enable variable drag-drop: map a path dropped onto the editor (see `VARIABLE_DRAG_MIME`) to the
@@ -428,7 +430,8 @@ export const PromptEditor = ({
   borderless,
   error,
   errorId: providedErrorId,
-  ariaDescribedBy,
+  'aria-describedby': nativeAriaDescribedBy,
+  ariaDescribedBy: legacyAriaDescribedBy,
   mapVarDropToToken,
 }: PromptEditorProps) => {
   // Normalize the token-array props once so malformed input (e.g. `{}` from a Storybook object
@@ -465,7 +468,11 @@ export const PromptEditor = ({
   const previewTokens = isControlled ? value : uncontrolledPreviewTokens;
   const generatedErrorId = useId();
   const errorId = providedErrorId ?? `prompt-editor-${generatedErrorId.replace(/:/g, '')}-error`;
-  const describedBy = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(' ');
+  // Prefer the native prop while accepting the legacy camelCase alias for compatibility.
+  const additionalDescribedBy = nativeAriaDescribedBy ?? legacyAriaDescribedBy;
+  const describedBy = [additionalDescribedBy, error ? errorId : undefined]
+    .filter(Boolean)
+    .join(' ');
 
   const handleEditorChange = useCallback(
     (tokens: PromptEditorToken[]) => {
