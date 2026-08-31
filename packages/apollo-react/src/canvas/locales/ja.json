@@ -146,7 +146,7 @@
   "canvas.node_mode_select.disabled_label": "ノードをスキップ",
   "canvas.node_mode_select.live_description": "このノードからの実際の応答を使用します。",
   "canvas.node_mode_select.live_label": "本稼働",
-  "canvas.node_mode_select.node_mode": "ノード モード",
+  "canvas.node_mode_select.node_mode": "ノード出力モード",
   "canvas.node_mode_select.simulated_description": "LLM を使用して動的に応答を生成します。",
   "canvas.node_mode_select.simulated_label": "シミュレーション",
   "canvas.node_mode_select.static_description": "常に定義した値を返します。",

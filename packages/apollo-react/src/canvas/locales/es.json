@@ -146,7 +146,7 @@
   "canvas.node_mode_select.disabled_label": "Omitir nodo",
   "canvas.node_mode_select.live_description": "Utilizar la respuesta real de este nodo",
   "canvas.node_mode_select.live_label": "Producción",
-  "canvas.node_mode_select.node_mode": "Modo de nodo",
+  "canvas.node_mode_select.node_mode": "Modo de salida del nodo",
   "canvas.node_mode_select.simulated_description": "Generar una respuesta de forma dinámica utilizando un LLM",
   "canvas.node_mode_select.simulated_label": "Simulado",
   "canvas.node_mode_select.static_description": "Devolver siempre un valor que defina",

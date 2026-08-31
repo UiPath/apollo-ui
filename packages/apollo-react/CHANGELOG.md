@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.34.0...@uipath/apollo-react@6.35.0) (2026-08-31)
+
+### Features
+
+* **apollo-react:** let consumers title the replace-task toolbox ([283bf10](https://github.com/UiPath/apollo-ui/commit/283bf10486017b5b0236ec4adb7c6026ca1d7143))
+
+### Bug Fixes
+
+* **apollo-react:** fall back to the default replace-task toolbox title on an empty override ([631fe9f](https://github.com/UiPath/apollo-ui/commit/631fe9fd4e561b551bb612c8302dd370cca7321a))
+
 ## [@uipath/apollo-react-v6.34.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.33.3...@uipath/apollo-react@6.34.0) (2026-08-28)
 
 ### Features

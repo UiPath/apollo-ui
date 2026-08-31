@@ -146,7 +146,7 @@
   "canvas.node_mode_select.disabled_label": "Knoten überspringen",
   "canvas.node_mode_select.live_description": "Echte Antwort von diesem Knoten verwenden",
   "canvas.node_mode_select.live_label": "Live",
-  "canvas.node_mode_select.node_mode": "Knotenmodus",
+  "canvas.node_mode_select.node_mode": "Knotenausgabemodus",
   "canvas.node_mode_select.simulated_description": "Antwort dynamisch mit einem LLM generieren",
   "canvas.node_mode_select.simulated_label": "Simuliert",
   "canvas.node_mode_select.static_description": "Immer einen von Ihnen definierten Wert zurückgeben",

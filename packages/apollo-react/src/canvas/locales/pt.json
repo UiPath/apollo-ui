@@ -146,7 +146,7 @@
   "canvas.node_mode_select.disabled_label": "Ignorar nó",
   "canvas.node_mode_select.live_description": "Utilizar a resposta real deste nó",
   "canvas.node_mode_select.live_label": "Ativa",
-  "canvas.node_mode_select.node_mode": "Modo de nó",
+  "canvas.node_mode_select.node_mode": "Modo de saída do nó",
   "canvas.node_mode_select.simulated_description": "Gerar uma resposta dinamicamente com um LLM",
   "canvas.node_mode_select.simulated_label": "Simulado",
   "canvas.node_mode_select.static_description": "Devolva sempre um valor que definir",

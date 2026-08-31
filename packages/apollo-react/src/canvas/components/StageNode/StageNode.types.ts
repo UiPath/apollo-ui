@@ -82,6 +82,12 @@ export interface StageNodeBaseProps {
     completionRules?: StageRule[];
   };
   taskOptions?: ListItem[];
+  /**
+   * Overrides the title of the replace-task toolbox, for consumers that open it to answer a
+   * question of their own rather than to replace a task. Supply it already translated: Apollo only
+   * places it, since the wording belongs to the consumer's catalogues. Defaults to "Replace task".
+   */
+  replaceTaskToolboxTitle?: string;
   execution?: {
     stageStatus: {
       status?: StageStatus;

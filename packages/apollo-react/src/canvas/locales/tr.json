@@ -146,7 +146,7 @@
   "canvas.node_mode_select.disabled_label": "Düğümü atla",
   "canvas.node_mode_select.live_description": "Bu düğümden gelen gerçek yanıtı kullan",
   "canvas.node_mode_select.live_label": "Canlı",
-  "canvas.node_mode_select.node_mode": "Düğüm modu",
+  "canvas.node_mode_select.node_mode": "Düğüm çıkış modu",
   "canvas.node_mode_select.simulated_description": "LLM kullanarak dinamik olarak yanıt oluşturun",
   "canvas.node_mode_select.simulated_label": "Benzetim yapıldı",
   "canvas.node_mode_select.static_description": "Her zaman tanımladığınız bir değeri döndür",
