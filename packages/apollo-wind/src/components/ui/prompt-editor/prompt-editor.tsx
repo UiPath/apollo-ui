@@ -499,10 +499,11 @@ export const PromptEditor = ({
             the editor's own border/background here too (keeps edit/preview consistent). */}
         {mode === 'preview' && (
           <div
+            data-invalid={error ? 'true' : undefined}
             className={
               borderless
                 ? undefined
-                : `border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'}`
+                : `border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'} ${error ? 'border-error ring-1 ring-error/20 future:ring-error/40' : ''}`
             }
           >
             <MarkdownPreview tokens={previewTokens} minRows={minRows} />

@@ -134,6 +134,15 @@ describe('PromptEditor', () => {
       render(<PromptEditor value={[]} mode="preview" />);
       expect(screen.getByText('Nothing to preview')).toBeInTheDocument();
     });
+
+    it('keeps validation styling visible in preview mode', () => {
+      const { container } = render(
+        <PromptEditor mode="preview" error="A prompt is required" errorId="prompt-error" />
+      );
+      const invalidPreview = container.querySelector('[data-invalid="true"]');
+      expect(invalidPreview).toHaveClass('border-error', 'ring-1');
+      expect(screen.getByText('A prompt is required')).toBeInTheDocument();
+    });
   });
 
   describe('tokens', () => {
