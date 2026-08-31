@@ -321,6 +321,7 @@ const EditorInner = forwardRef(
     return (
       <div
         className={wrapperClassName}
+        data-invalid={error ? 'true' : undefined}
         style={{
           fontFamily: "'Noto Sans', sans-serif",
           fontSize: '14px',
@@ -330,7 +331,7 @@ const EditorInner = forwardRef(
       >
         <style>{`
           .prompt-editor-paragraph { padding: 0; margin: 0; }
-          ${borderless ? '' : '.prompt-editor-shell:focus-within { border-color: var(--color-ring); box-shadow: 0 0 0 1px var(--color-ring); } .future .prompt-editor-shell:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ring) 35%, transparent); }'}
+          ${borderless ? '' : '.prompt-editor-shell:not([data-invalid="true"]):focus-within { border-color: var(--color-ring); box-shadow: 0 0 0 1px var(--color-ring); } .future .prompt-editor-shell:not([data-invalid="true"]):focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ring) 35%, transparent); }'}
           .prompt-editor-root *::selection { background-color: color-mix(in srgb, var(--color-primary) 30%, transparent); }
         `}</style>
         <div
