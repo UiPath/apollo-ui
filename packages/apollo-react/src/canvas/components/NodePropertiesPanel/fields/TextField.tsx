@@ -61,9 +61,7 @@ export const TextField = memo(function TextField({
 
   return (
     <div className="flex flex-col gap-1">
-      <Label htmlFor={inputId} className="text-xs text-(--canvas-foreground-de-emp)">
-        {field.label}
-      </Label>
+      <Label htmlFor={inputId}>{field.label}</Label>
       {field.type === 'textarea' ? (
         <textarea
           id={inputId}

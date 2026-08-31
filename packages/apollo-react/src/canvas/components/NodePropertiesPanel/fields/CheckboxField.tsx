@@ -32,7 +32,7 @@ export const CheckboxField = memo(function CheckboxField({
       >
         <Label
           className={cn(
-            'flex items-center text-[13px] text-(--canvas-foreground) select-none',
+            'flex items-center select-none',
             field.disabled ? 'cursor-not-allowed' : 'cursor-pointer'
           )}
         >
