@@ -1,4 +1,4 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn, RequiredIndicator } from '@uipath/apollo-wind';
 import { ChevronDown, CircleCheck, Copy, Pencil, WrapText } from 'lucide-react';
 import { createContext, type MouseEvent, type ReactNode, useContext } from 'react';
 import { useSafeLingui } from '../../../i18n';
@@ -336,18 +336,16 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
             {decoration.sublabel}
           </span>
         )}
-        {/* `*` is presentational; the sr-only span carries the semantic so
-            screen readers don't announce a bare asterisk. */}
+        {/* Explicit color: the row establishes none, so an inherited indicator
+            would fall back to black. `ml-0` because the row already gaps. */}
         {node.required && (
-          <span className="shrink-0 text-[10px] text-error">
-            <span aria-hidden="true">*</span>
-            <span className="sr-only">
-              {_({
-                id: 'canvas.json_value_panel.required_marker',
-                message: 'required',
-              })}
-            </span>
-          </span>
+          <RequiredIndicator
+            className="ml-0 shrink-0 text-[10px] text-foreground"
+            srLabel={_({
+              id: 'canvas.json_value_panel.required_marker',
+              message: 'required',
+            })}
+          />
         )}
         {isContainer ? (
           <>
