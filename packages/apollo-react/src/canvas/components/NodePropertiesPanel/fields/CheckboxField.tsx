@@ -1,4 +1,4 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn, Label } from '@uipath/apollo-wind';
 import { memo, useCallback } from 'react';
 import type { ConfigField } from '../NodePropertiesPanel.types';
 
@@ -30,7 +30,7 @@ export const CheckboxField = memo(function CheckboxField({
           field.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-(--canvas-background-hover)'
         )}
       >
-        <label
+        <Label
           className={cn(
             'flex items-center text-[13px] text-(--canvas-foreground) select-none',
             field.disabled ? 'cursor-not-allowed' : 'cursor-pointer'
@@ -45,7 +45,7 @@ export const CheckboxField = memo(function CheckboxField({
           />
           <span>{field.label}</span>
           {field.icon && <span className="ml-2">{field.icon}</span>}
-        </label>
+        </Label>
       </div>
       {field.helpText && (
         <span className="text-[12px] text-(--canvas-foreground-de-emp) block ml-[26px]">

@@ -1,4 +1,4 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn, Label } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { ConfigField } from '../NodePropertiesPanel.types';
 
@@ -60,12 +60,9 @@ export const NumberField = memo(function NumberField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label
-        htmlFor={`field-${field.key}`}
-        className="text-[13px] text-(--canvas-foreground-de-emp)"
-      >
+      <Label htmlFor={`field-${field.key}`} className="text-xs text-(--canvas-foreground-de-emp)">
         {field.label}
-      </label>
+      </Label>
       <div className="flex items-center gap-2">
         <input
           id={`field-${field.key}`}

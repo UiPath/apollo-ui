@@ -81,7 +81,8 @@ describe('FormFieldRenderer', () => {
         </FormWrapper>
       );
 
-      expect(screen.getByText('*')).toBeInTheDocument();
+      expect(screen.getByText('*').parentElement).toHaveClass('text-current');
+      expect(screen.getByText('*')).toHaveAttribute('aria-hidden', 'true');
     });
 
     it('handles disabled state', () => {

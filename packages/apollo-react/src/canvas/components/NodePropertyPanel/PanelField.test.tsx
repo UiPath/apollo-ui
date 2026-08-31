@@ -24,7 +24,8 @@ describe('PanelField', () => {
       </PanelField>
     );
 
-    expect(screen.getByText('*')).toBeInTheDocument();
+    expect(screen.getByText('*').parentElement).toHaveClass('text-current');
+    expect(screen.getByText('*')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByLabelText(/Name/)).toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByText('Name is required.')).toHaveAttribute('id', 'name-error');
   });
@@ -48,6 +49,7 @@ describe('PanelField', () => {
     );
 
     expect(screen.getByText('Expression')).toHaveAttribute('for', 'expression');
-    expect(screen.getByText('*')).toBeInTheDocument();
+    expect(screen.getByText('*').parentElement).toHaveClass('text-current');
+    expect(screen.getByText('*')).toHaveAttribute('aria-hidden', 'true');
   });
 });

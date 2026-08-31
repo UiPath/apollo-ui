@@ -24,7 +24,7 @@ describe('Label', () => {
   it('applies base classes', () => {
     render(<Label>Email</Label>);
     const label = screen.getByText('Email');
-    expect(label).toHaveClass('text-sm', 'font-medium');
+    expect(label).toHaveClass('text-xs', 'font-medium');
   });
 
   it('accepts htmlFor attribute', () => {

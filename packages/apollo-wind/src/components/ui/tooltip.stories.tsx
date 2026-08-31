@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Button } from './button';
 import { Input } from './input';
+import { Label } from './label';
 import { Separator } from './separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
@@ -279,9 +280,9 @@ export const TooltipWithFormElements = {
       <div className="flex flex-col gap-4 max-w-sm">
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
-            <label htmlFor="api-key" className="text-sm font-medium">
+            <Label htmlFor="api-key" className="text-xs">
               API Key
-            </label>
+            </Label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
@@ -296,9 +297,9 @@ export const TooltipWithFormElements = {
 
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
-            <label htmlFor="webhook" className="text-sm font-medium">
+            <Label htmlFor="webhook" className="text-xs">
               Webhook URL
-            </label>
+            </Label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />

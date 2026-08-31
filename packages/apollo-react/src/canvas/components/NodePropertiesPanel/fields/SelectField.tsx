@@ -1,4 +1,4 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn, Label } from '@uipath/apollo-wind';
 import { ChevronDown } from 'lucide-react';
 import { memo, useCallback } from 'react';
 import type { ConfigField } from '../NodePropertiesPanel.types';
@@ -31,9 +31,9 @@ export const SelectField = memo(function SelectField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={selectId} className="text-[13px] text-(--canvas-foreground-de-emp)">
+      <Label htmlFor={selectId} className="text-xs text-(--canvas-foreground-de-emp)">
         {field.label}
-      </label>
+      </Label>
       <div className="relative">
         <select
           id={selectId}

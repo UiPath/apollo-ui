@@ -1,4 +1,4 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn, Label } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { ConfigField } from '../NodePropertiesPanel.types';
 
@@ -61,9 +61,9 @@ export const TextField = memo(function TextField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-[13px] text-(--canvas-foreground-de-emp)">
+      <Label htmlFor={inputId} className="text-xs text-(--canvas-foreground-de-emp)">
         {field.label}
-      </label>
+      </Label>
       {field.type === 'textarea' ? (
         <textarea
           id={inputId}

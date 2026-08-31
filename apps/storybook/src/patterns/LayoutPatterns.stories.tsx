@@ -420,10 +420,15 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
               </AlertDescription>
             </Alert>
 
-            <section className="space-y-3">
-              <p className="text-xs font-semibold text-foreground">Connection</p>
+            <section className="space-y-1.5">
+              <Label htmlFor="dap-validation-connection" className="text-xs text-foreground">
+                Connection
+              </Label>
               <Select defaultValue="gmail-finance">
-                <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
+                <SelectTrigger
+                  id="dap-validation-connection"
+                  className="h-9 w-full bg-surface-overlay text-xs"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
