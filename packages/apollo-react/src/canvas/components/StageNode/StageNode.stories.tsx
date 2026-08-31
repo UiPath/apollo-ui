@@ -1425,7 +1425,11 @@ const availableTaskOptions: ListItem[] = [
   },
 ];
 
-const AddAndReplaceTasksStory = () => {
+const AddAndReplaceTasksStory = ({
+  replaceTaskToolboxTitle,
+}: {
+  replaceTaskToolboxTitle?: string;
+}) => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
@@ -1673,6 +1677,7 @@ const AddAndReplaceTasksStory = () => {
                 },
                 onAddTaskFromToolbox: handleAddTask,
                 onReplaceTaskFromToolbox: handleReplaceTask,
+                replaceTaskToolboxTitle,
                 onTaskGroupModification: handleTaskGroupModification,
                 onTaskReorder: handleTaskReorder,
                 onTaskClick: handleTaskClick,
@@ -1694,6 +1699,7 @@ const AddAndReplaceTasksStory = () => {
       nodesState,
       pendingReplaceTask,
       selectedTaskId,
+      replaceTaskToolboxTitle,
       handleAddTask,
       handleReplaceTask,
       handleTaskGroupModification,
@@ -1767,6 +1773,14 @@ export const AddAndReplaceTasks: Story = {
     useCustomRender: true,
   },
   render: () => <AddAndReplaceTasksStory />,
+};
+
+export const ReplaceTaskToolboxCustomTitle: Story = {
+  name: 'Replace Task Toolbox with a Consumer Title',
+  parameters: {
+    useCustomRender: true,
+  },
+  render: () => <AddAndReplaceTasksStory replaceTaskToolboxTitle="Select activity" />,
 };
 
 const InlineTitleEditStory = () => {
