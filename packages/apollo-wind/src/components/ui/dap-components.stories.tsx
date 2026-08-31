@@ -848,7 +848,7 @@ function AccountObjectEditorExample() {
     <div className="rounded-xl border bg-background p-6 shadow-sm sm:p-10">
       <div className="mb-2 flex items-center justify-between gap-4">
         <Label className="text-base font-semibold">
-          Account <span aria-hidden="true">*</span>
+          Account <RequiredIndicator />
         </Label>
         <Button variant="link">Switch to fields view</Button>
       </div>
@@ -1008,7 +1008,7 @@ function GmailConnectionPickerExample() {
     <div className="rounded-xl border bg-background p-6 shadow-sm sm:p-10">
       <div className="mb-2 flex items-center justify-between gap-4">
         <Label className="text-base font-semibold" htmlFor="gmail-connection-picker">
-          Gmail connection <span aria-hidden="true">*</span>
+          Gmail connection <RequiredIndicator />
         </Label>
         <Button variant="link">Refresh schema</Button>
       </div>
