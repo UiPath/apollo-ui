@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BaseCanvas } from '@uipath/apollo-react/canvas/components/BaseCanvas';
-import { FullWorkbenchComposition } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
 import {
   CanvasBottomPanel,
   type CanvasBottomPanelTab,
@@ -47,6 +46,7 @@ import {
   InputGroupInput,
   Label,
   type PanelImperativeHandle,
+  RequiredIndicator,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -79,6 +79,7 @@ import {
   Undo2,
 } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FullWorkbenchComposition } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
 
 const ALL_SIDEBAR_ITEMS = [
   ...CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS,
@@ -347,11 +348,7 @@ function DapValueField({
     <div className="space-y-1.5">
       <Label htmlFor={id} className="text-xs">
         {label}
-        {required && (
-          <span aria-hidden="true" className="text-foreground">
-            {' *'}
-          </span>
-        )}
+        {required && <RequiredIndicator />}
       </Label>
       <InputGroup className="h-9 bg-surface-overlay" error={error}>
         <InputGroupInput
@@ -462,10 +459,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
               />
               <div className="space-y-1.5">
                 <Label htmlFor="dap-validation-body" className="text-xs">
-                  Body{' '}
-                  <span aria-hidden="true" className="text-foreground">
-                    *
-                  </span>
+                  Body <RequiredIndicator />
                 </Label>
                 <Textarea
                   id="dap-validation-body"

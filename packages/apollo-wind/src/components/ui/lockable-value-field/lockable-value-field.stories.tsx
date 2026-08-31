@@ -24,7 +24,7 @@ and (for scalar types) switched between a literal value and a JS expression.
 - Field type dropdown swaps the control itself: String, Integer, Date,
   Boolean, Single select, Multi select, and File each render their own
   matching input.
-- Required switch toggles the red asterisk on the label. Only shown when
+- Required switch toggles the shared foreground asterisk on the label. Only shown when
   \`onRequiredChange\` is provided.
 - Built-in AI-assist popover to describe and generate a value, and an
   Insert-variable affordance for binding to upstream data. Both hidden via
@@ -171,7 +171,7 @@ function RequiredExpressionLabel({
   return (
     <Label htmlFor={htmlFor} className="text-xs font-medium text-foreground">
       {children}
-      {required && <span className="ml-0.5 text-destructive">*</span>}
+      {required && <RequiredIndicator />}
     </Label>
   );
 }

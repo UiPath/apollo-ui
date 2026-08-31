@@ -3461,7 +3461,7 @@ function InventoryPanelField({ field }: { field: InventoryField }) {
     <div className="space-y-1.5">
       <Label className="text-xs">
         {field.label}
-        {field.required && <span aria-hidden="true"> *</span>}
+        {field.required && <RequiredIndicator />}
       </Label>
       {field.kind === 'select' ? (
         <Select defaultValue="current">
