@@ -143,7 +143,7 @@ export const HandleButton = memo(
       // accessibility tree so neither keyboard nor assistive tech reaches an invisible button.
       // `disabled:opacity-0` overrides the button's default `disabled:opacity-50`.
       <CanvasInlineButton
-        aria-label={label ? `Add ${label}` : 'Add node'}
+        aria-label={label ? `Add node from ${label} handle` : 'Add node'}
         aria-hidden={visible ? undefined : true}
         disabled={visible ? undefined : true}
         onClick={handleClick}
@@ -160,7 +160,7 @@ export const HandleButton = memo(
     ) : (
       visible && (
         <CanvasInlineButton
-          aria-label={label ? `Add ${label}` : 'Add node'}
+          aria-label={label ? `Add node from ${label} handle` : 'Add node'}
           onClick={handleClick}
           onPointerDown={handlePointerDown}
           onMouseEnter={onMouseEnter}

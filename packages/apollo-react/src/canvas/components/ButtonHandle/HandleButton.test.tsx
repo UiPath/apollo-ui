@@ -262,13 +262,33 @@ describe('HandleButton mount & label visibility', () => {
     );
   });
 
-  it("names the add button after its label, so 'Tools' vs 'Escalations' vs 'Memory' aren't all announced as the same generic 'Add node'", () => {
+  it('names the add button after its label', () => {
     render(<HandleButton visible position={Position.Top} onAction={vi.fn()} label="Escalations" />);
-    expect(screen.getByRole('button', { name: 'Add Escalations' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Add node from Escalations handle' })
+    ).toBeInTheDocument();
   });
 
   it('falls back to the generic name when no label is given', () => {
     render(<HandleButton visible position={Position.Top} onAction={vi.fn()} />);
     expect(screen.getByRole('button', { name: 'Add node' })).toBeInTheDocument();
+  });
+
+  it('names the mounted-but-hidden add button after its label too', () => {
+    render(
+      <HandleButton
+        visible={false}
+        keepButtonMounted
+        position={Position.Top}
+        onAction={vi.fn()}
+        label="Escalations"
+      />
+    );
+
+    // aria-hidden removes it from the accessible tree, so query with hidden: true
+    // and check the label via the attribute — same pattern as the plain "Add node" case above.
+    const button = screen.getByRole('button', { hidden: true });
+    expect(button).toHaveAttribute('aria-label', 'Add node from Escalations handle');
+    expect(button).toHaveAttribute('aria-hidden', 'true');
   });
 });
