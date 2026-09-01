@@ -95,7 +95,7 @@ function MultiSelectCombobox() {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[320px] justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-muted-foreground future:hover:bg-surface-hover"
+            className="w-[320px] justify-between future:gap-4 future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background"
           >
             {selected.length > 0 ? `${selected.length} selected` : 'Select frameworks...'}
             <ChevronsUpDown className="opacity-50" />
@@ -182,7 +182,7 @@ function CustomDisplayCombobox() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[320px] justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-muted-foreground future:hover:bg-surface-hover"
+          className="w-[320px] justify-between future:gap-4 future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background"
         >
           {selected ? (
             <span className="flex items-center gap-2">
@@ -284,7 +284,7 @@ function AsyncCombobox() {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[280px] justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-muted-foreground future:hover:bg-surface-hover"
+            className="w-[280px] justify-between future:gap-4 future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background"
           >
             {selected ? selected.label : 'Search libraries...'}
             <ChevronsUpDown className="opacity-50" />
