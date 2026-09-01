@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.43.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.43.0...@uipath/apollo-wind@2.43.1) (2026-09-01)
+
+### Bug Fixes
+
+* **apollo-wind:** removes sr-only default text for required indicator ([75a2745](https://github.com/UiPath/apollo-ui/commit/75a2745818542cb8aa178f782ee08bdcde6d1332))
+
 ## [@uipath/apollo-wind-v2.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.42.0...@uipath/apollo-wind@2.43.0) (2026-09-01)
 
 ### Features
