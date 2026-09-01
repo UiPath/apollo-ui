@@ -1,4 +1,7 @@
-import type { GuardrailValidatorFormLabels } from './i18n';
+import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from './i18n';
+
+/** Every string the guardrails family localizes; catalogs are sparse subsets of this. */
+export type GuardrailMessages = Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels>;
 
 export const GUARDRAIL_FORM_LOCALES = [
   'de',
@@ -19,7 +22,7 @@ export const GUARDRAIL_FORM_LOCALES = [
 
 export type GuardrailFormLocale = (typeof GUARDRAIL_FORM_LOCALES)[number];
 
-type CatalogModule = { messages: Partial<GuardrailValidatorFormLabels> };
+type CatalogModule = { messages: GuardrailMessages };
 
 // Written as literal imports on purpose: a template-literal dynamic import
 // (import(`./locales/${locale}`)) cannot be resolved by a consumer's bundler through the
@@ -62,7 +65,7 @@ export function resolveGuardrailFormLocale(locale?: string): GuardrailFormLocale
  */
 export async function loadGuardrailValidatorFormMessages(
   locale?: string
-): Promise<Partial<GuardrailValidatorFormLabels>> {
+): Promise<GuardrailMessages> {
   const tag = resolveGuardrailFormLocale(locale) ?? 'en';
   try {
     return (await CATALOGS[tag]()).messages;

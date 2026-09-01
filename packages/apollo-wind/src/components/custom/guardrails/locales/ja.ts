@@ -1,12 +1,71 @@
-// Translations harvested from Flow Workbench's canvas catalog (guardrailValidator_* keys)
-// so the extraction introduces no new translation work. Missing keys fall back to English
-// per key at resolve time (see i18n.ts).
-import type { GuardrailValidatorFormLabels } from '../i18n';
+// Translations harvested from Flow Workbench's canvas catalog so the extraction
+// introduces no new translation work. Missing keys fall back to English per key at
+// resolve time (see i18n.ts).
+import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels> = {
+export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
   moreInformation: '詳細情報',
   enumPlaceholder: '選択...',
   enumListPlaceholder: 'オプションを選択...',
   addItem: '追加',
   removeItem: '{{label}} {{position}} を削除',
+  editTitle: '{{name}} のガードレールを編集',
+  addTitle: '{{name}} のガードレールを追加',
+  typeLabel: 'ガードレールの種類',
+  nameLabel: 'ガードレール名',
+  namePlaceholder: 'ガードレール名を入力',
+  descriptionLabel: 'ガードレールの説明',
+  descriptionPlaceholder: 'ガードレールの説明を入力',
+  evalsLabel: '評価用にガードレールを有効化',
+  evalsInfoAriaLabel: '詳細情報',
+  evalsTooltip: '有効化すると、このガードレールは評価の実行中に適用されます。',
+  saveAsNew: '新規として保存',
+  cancel: 'キャンセル',
+  save: '保存',
+  byoDisabledMessage:
+    'このガードレールの設定は無効化され、使用できなくなりました。エージェントを実行する前に、管理者に問い合わせて設定を再度有効化するか、このガードレールを置換してください。',
+  unauthorizedMessage:
+    'ガードレールを使用する権限がありません。設定にアクセスすることはできますが、変更を保存することはできません。',
+  featureDisabledMessage:
+    'このガードレール機能は無効化されています。設定にアクセスすることはできますが、変更を保存することはできません。この機能が無効化されている間は、このガードレールを削除することをお勧めします。',
+  scopesLabel: 'スコープ',
+  toolsLabel: 'ツール',
+  scopeAgentLabel: 'エージェント',
+  scopeLlmLabel: 'LLM の呼び出し',
+  scopeToolLabel: 'ツール',
+  actionTypeLabel: 'アクションの種類',
+  actionLogLabel: 'ログ',
+  actionBlockLabel: 'ブロック',
+  actionFilterLabel: 'フィルター',
+  actionEscalateLabel: 'エスカレーション',
+  severityLabel: '重大度レベル',
+  severityInfoLabel: '情報',
+  severityWarningLabel: '警告',
+  severityErrorLabel: 'エラー',
+  blockReasonLabel: 'ブロックする理由',
+  blockReasonPlaceholder: 'ブロックする理由を入力',
+  assignToLabel: '割り当て先',
+  recipientUserLabel: 'ユーザー',
+  recipientGroupLabel: 'グループ',
+  recipientEmailLabel: 'メール アドレス',
+  recipientGroupNameLabel: 'グループ名',
+  recipientFallbackLabel: '受信者',
+  userSearchPlaceholder: 'ユーザーを検索...',
+  groupSearchPlaceholder: 'グループを検索...',
+  emailPlaceholder: 'メール アドレスを入力',
+  groupNamePlaceholder: 'グループ名を入力',
+  actionAppLabel: 'アクション アプリ',
+  appPickerUnavailable: 'アプリ ピッカーは利用できません。— Studio Web のホストが必要です。',
+  mixedScopesAlsoApplied: 'このガードレールは、次にも適用されます:',
+  mixedScopesSaveAsNewHint:
+    'このツールのみのために別のコピーを作成するには、「新規として保存」を使用します。',
+  nameRequiredError: 'ガードレール名は必須です。',
+  nameDuplicateError: 'この名前のガードレールはすでに存在します。',
+  parameterRequiredError: '値は必須です。',
+  scopesRequiredError: '少なくとも 1 つのスコープが必要です。',
+  toolsRequiredError: '少なくとも 1 つのツールが必要です。',
+  blockReasonRequiredError: 'ブロックする理由は必須です。',
+  filterFieldsRequiredError: 'フィールドの選択は必須です。',
+  recipientRequiredError: '受信者は必須です。',
+  actionAppRequiredError: 'アクション アプリは必須です。',
 };

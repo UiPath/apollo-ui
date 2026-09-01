@@ -1,8 +1,55 @@
 # Guardrails components
 
 Shared UI for the UiPath Guardrails experience, consumed by Flow (flow-workbench) and, in a
-later stage, Agents (`frontend-sw`). First member: `GuardrailValidatorForm` — the
-configuration section of an OOTB guardrail validator.
+later stage, Agents (`frontend-sw`). Members: `GuardrailBuilder` (the whole Add/Edit screen),
+`GuardrailFormLayout` (the screen shell), and `GuardrailValidatorForm` (the validator
+parameter section, also rendered inside the builder).
+
+## GuardrailBuilder
+
+The complete Add/Edit screen for an OOTB guardrail validator: status banners, usage note,
+type display (edit mode), name, description, validator parameters, scope selector, action
+(log / block / escalate; filter reserved for the custom-guardrail phase), evaluations
+toggle, mixed-scopes banner, and the Save / Cancel / Save-as-new footer.
+
+```tsx
+import { GuardrailBuilder } from '@uipath/apollo-wind';
+
+<GuardrailBuilder
+  open
+  inline
+  definition={definition}          // GuardrailDefinition (display-ready, host-localized strings)
+  scope="Agent"                    // scope selector renders only for 'Agent'
+  guardrail={existing}             // edit mode; omit to create
+  defaultName={uniqueName}
+  existingNames={otherNames}
+  availableToolNames={toolNames}
+  onSave={persist}
+  onCancel={close}
+  locale={i18n.language}
+/>;
+```
+
+Contract highlights:
+
+- **Owns form state.** Initialized from `definition`/`guardrail`/`defaultName` at mount —
+  remount with a new `key` to reset (all known hosts already remount per session).
+- **Owns validation and gates its own Save.** Messages come from the built-in catalog
+  (overridable per string via `labels`); a host that validates externally (e.g. zod) passes
+  `errors` — host messages display immediately, win per field, and gate Save. The pure
+  predicates (`getGuardrailActionErrorFields`, `getGuardrailSelectorErrorFields`,
+  `getRequiredEmptyParameterIds`) are exported.
+- **Escalation is slot-driven.** `renderRecipientSearch` (user/group directory autosuggest)
+  and `renderAppPicker` (escalation app) are host capabilities; `escalateHelp` renders under
+  the escalation grid (e.g. a marketplace link — product URLs never ship in this package).
+  Without slots the form falls back to a plain input / an "unavailable" note.
+- **Layout knobs for both hosts**: `inline`/`hideHeader`/`dialogMaxWidth`, `title` accepts a
+  ReactNode (chips, links), `evalsTogglePlacement: 'form' | 'footer'`.
+- Requires an ancestor `TooltipProvider`.
+
+`GuardrailFormLayout` is exported standalone for hosts composing their own screen: three
+modes (inline+hideHeader / inline with back-button header / modal Dialog), `secondaryAction`,
+`saveDisabled`, and a `footerStart` region.
 
 ## GuardrailValidatorForm
 

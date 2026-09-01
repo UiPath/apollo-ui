@@ -1,12 +1,71 @@
-// Translations harvested from Flow Workbench's canvas catalog (guardrailValidator_* keys)
-// so the extraction introduces no new translation work. Missing keys fall back to English
-// per key at resolve time (see i18n.ts).
-import type { GuardrailValidatorFormLabels } from '../i18n';
+// Translations harvested from Flow Workbench's canvas catalog so the extraction
+// introduces no new translation work. Missing keys fall back to English per key at
+// resolve time (see i18n.ts).
+import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels> = {
+export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
   moreInformation: 'Plus d’informations',
   enumPlaceholder: 'Sélectionner...',
   enumListPlaceholder: 'Sélectionnez des options…',
   addItem: 'Ajouter',
   removeItem: 'Supprimer {{label}} {{position}}',
+  editTitle: 'Modifier le garde-fou {{name}}',
+  addTitle: 'Ajouter le garde-fou {{name}}',
+  typeLabel: 'Type de garde-fou',
+  nameLabel: 'Nom du garde-fou',
+  namePlaceholder: 'Saisissez le nom du garde-fou',
+  descriptionLabel: 'Description du garde-fou',
+  descriptionPlaceholder: 'Saisissez la description du garde-fou',
+  evalsLabel: 'Activer le garde-fou pour les évaluations',
+  evalsInfoAriaLabel: 'Plus d’informations',
+  evalsTooltip: 'Une fois activé, ce garde-fou sera appliqué lors des exécutions d’évaluation.',
+  saveAsNew: 'Enregistrer en tant que nouveau',
+  cancel: 'Annuler',
+  save: 'Enregistrer',
+  byoDisabledMessage:
+    'La configuration de ce garde-fou a été désactivée et ne peut plus être utilisée. Avant d’exécuter l’agent, contactez votre administrateur pour réactiver la configuration ou remplacer ce garde-fou.',
+  unauthorizedMessage:
+    'Vous n’êtes pas autorisé à utiliser des garde-fous. Vous pouvez accéder aux paramètres de configuration, mais les modifications ne seront pas enregistrées.',
+  featureDisabledMessage:
+    'Cette fonctionnalité de garde-fou est désactivée. Vous pouvez accéder aux paramètres de configuration, mais les modifications ne seront pas enregistrées. Nous vous conseillons de supprimer ce garde-fou tant que la fonctionnalité est désactivée.',
+  scopesLabel: 'Étendues',
+  toolsLabel: 'Outils',
+  scopeAgentLabel: 'Agent',
+  scopeLlmLabel: 'Appels LLM',
+  scopeToolLabel: 'Outils',
+  actionTypeLabel: "Type d'action",
+  actionLogLabel: 'Journal',
+  actionBlockLabel: 'Bloc',
+  actionFilterLabel: 'Filtre',
+  actionEscalateLabel: 'Escalader',
+  severityLabel: 'Niveau de gravité',
+  severityInfoLabel: 'Info',
+  severityWarningLabel: 'Warning',
+  severityErrorLabel: 'Erreur',
+  blockReasonLabel: 'Motif du blocage',
+  blockReasonPlaceholder: 'Saisissez le motif du blocage',
+  assignToLabel: 'Affecter à',
+  recipientUserLabel: 'Utilisateur',
+  recipientGroupLabel: 'Groupe',
+  recipientEmailLabel: 'Adresse e-mail',
+  recipientGroupNameLabel: 'Nom de groupe',
+  recipientFallbackLabel: 'Destinataires',
+  userSearchPlaceholder: 'Rechercher un utilisateur…',
+  groupSearchPlaceholder: 'Rechercher un groupe…',
+  emailPlaceholder: 'Saisissez votre adresse e-mail',
+  groupNamePlaceholder: 'Saisissez le nom du groupe',
+  actionAppLabel: 'Application d’action',
+  appPickerUnavailable: 'Sélecteur d’applications non disponible, nécessite un hôte Studio Web.',
+  mixedScopesAlsoApplied: 'Ce garde-fou est également appliqué aux éléments suivants :',
+  mixedScopesSaveAsNewHint:
+    'Utilisez « Enregistrer en tant que nouveau » pour créer une copie distincte propre à cet outil.',
+  nameRequiredError: 'Le nom du garde-fou est requis',
+  nameDuplicateError: 'Un garde-fou portant ce nom existe déjà',
+  parameterRequiredError: 'Valeur requise',
+  scopesRequiredError: 'Au moins une portée est requise',
+  toolsRequiredError: 'Au moins un outil est requis',
+  blockReasonRequiredError: 'La raison du blocage est requise',
+  filterFieldsRequiredError: 'La sélection des champs est requise',
+  recipientRequiredError: 'Le destinataire est requis',
+  actionAppRequiredError: 'Une application Action est requise',
 };

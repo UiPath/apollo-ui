@@ -1,12 +1,72 @@
-// Translations harvested from Flow Workbench's canvas catalog (guardrailValidator_* keys)
-// so the extraction introduces no new translation work. Missing keys fall back to English
-// per key at resolve time (see i18n.ts).
-import type { GuardrailValidatorFormLabels } from '../i18n';
+// Translations harvested from Flow Workbench's canvas catalog so the extraction
+// introduces no new translation work. Missing keys fall back to English per key at
+// resolve time (see i18n.ts).
+import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels> = {
+export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
   moreInformation: 'Más información',
   enumPlaceholder: 'Seleccionar...',
   enumListPlaceholder: 'Seleccionar opciones...',
   addItem: 'Añadir',
   removeItem: 'Eliminar {{label}} {{position}}',
+  editTitle: 'Editar barrera de seguridad {{name}}',
+  addTitle: 'Añadir barrera de seguridad {{name}}',
+  typeLabel: 'Tipo de barrera de seguridad',
+  nameLabel: 'Nombre de la barrera de seguridad',
+  namePlaceholder: 'Introduzca el nombre de la barrera de seguridad',
+  descriptionLabel: 'Descripción de la barrera de seguridad',
+  descriptionPlaceholder: 'Introduzca la descripción de la barrera de seguridad',
+  evalsLabel: 'Habilitar barrera de seguridad para evaluaciones',
+  evalsInfoAriaLabel: 'Más información',
+  evalsTooltip:
+    'Cuando está habilitada, esta barrera de seguridad se aplicará durante las ejecuciones de evaluación.',
+  saveAsNew: 'Guardar como nuevo',
+  cancel: 'Cancelar',
+  save: 'Guardar',
+  byoDisabledMessage:
+    'La configuración de esta barrera de seguridad se ha deshabilitado y ya no se puede utilizar. Póngase en contacto con su administrador para volver a habilitar la configuración o reemplazar esta barrera de seguridad antes de ejecutar el agente.',
+  unauthorizedMessage:
+    'No tiene derecho a utilizar barreras de seguridad. Puede acceder a los ajustes de configuración, pero las modificaciones no se pueden guardar.',
+  featureDisabledMessage:
+    'Esta función de barrera de seguridad está deshabilitada. Puede acceder a los ajustes de configuración, pero las modificaciones no se pueden guardar. Lo mejor es eliminar esta barrera de seguridad mientras la función esté deshabilitada.',
+  scopesLabel: 'Ámbitos',
+  toolsLabel: 'Herramientas',
+  scopeAgentLabel: 'Agente',
+  scopeLlmLabel: 'Llamadas de LLM',
+  scopeToolLabel: 'Herramientas',
+  actionTypeLabel: 'Tipo de acción',
+  actionLogLabel: 'Acceso',
+  actionBlockLabel: 'Bloquear',
+  actionFilterLabel: 'Filtro',
+  actionEscalateLabel: 'Escalar',
+  severityLabel: 'Nivel de gravedad',
+  severityInfoLabel: 'Info',
+  severityWarningLabel: 'Advertencia',
+  severityErrorLabel: 'Error',
+  blockReasonLabel: 'Motivo del bloqueo',
+  blockReasonPlaceholder: 'Introduzca el motivo del bloqueo',
+  assignToLabel: 'Asignar a',
+  recipientUserLabel: 'Usuario',
+  recipientGroupLabel: 'Grupo',
+  recipientEmailLabel: 'Dirección de correo electrónico',
+  recipientGroupNameLabel: 'Nombre de grupo',
+  recipientFallbackLabel: 'Destinatario',
+  userSearchPlaceholder: 'Buscar un usuario...',
+  groupSearchPlaceholder: 'Buscar un grupo...',
+  emailPlaceholder: 'Introducir dirección de correo electrónico',
+  groupNamePlaceholder: 'Introducir nombre del grupo',
+  actionAppLabel: 'Aplicación de acción',
+  appPickerUnavailable: 'Selector de aplicaciones no disponible: requiere el host de Studio Web.',
+  mixedScopesAlsoApplied: 'Esta barrera de seguridad también se aplica a:',
+  mixedScopesSaveAsNewHint:
+    'Utilice "Guardar como nuevo" para crear una copia independiente solo para esta herramienta.',
+  nameRequiredError: 'El nombre de la barrera de seguridad es obligatorio',
+  nameDuplicateError: 'Ya existe una barrera de seguridad con este nombre',
+  parameterRequiredError: 'Valor obligatorio',
+  scopesRequiredError: 'Se requiere al menos un ámbito',
+  toolsRequiredError: 'Se requiere al menos una herramienta',
+  blockReasonRequiredError: 'El motivo del bloqueo es obligatorio',
+  filterFieldsRequiredError: 'La selección de campos es obligatoria',
+  recipientRequiredError: 'El destinatario es obligatorio',
+  actionAppRequiredError: 'La aplicación de acción es obligatoria',
 };
