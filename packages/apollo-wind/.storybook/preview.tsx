@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/react-vite';
 import React, { useEffect } from 'react';
+import '@uipath/apollo-core/fonts/font.css';
 import '../src/styles/tailwind.css';
 
 const isDev = import.meta.env.MODE !== 'production';
