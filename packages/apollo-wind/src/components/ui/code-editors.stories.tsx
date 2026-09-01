@@ -227,12 +227,11 @@ function registerAllMonacoThemes(monaco: any) {
   for (const cfg of editorThemeConfigs) {
     monaco.editor.defineTheme(cfg.monacoThemeName, cfg.monacoThemeObj);
   }
-  // These snippets are illustrative fragments, not complete programs — disable
-  // TS diagnostics so undeclared identifiers don't surface as false-positive
-  // red squigglies/error markers in the demos.
+  // These snippets are illustrative fragments, not complete programs, so
+  // undeclared identifiers are expected. Disable only semantic validation —
+  // syntax validation stays on so genuinely malformed code still surfaces.
   monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
     noSemanticValidation: true,
-    noSyntaxValidation: true,
   });
   monacoThemesRegistered = true;
 }
@@ -268,10 +267,11 @@ function buildCMExtensions(tokens: ApolloCodeMirrorTheme, isDark: boolean, compa
         caretColor: ui.cursor,
         // CodeMirror's own base styles set `.cm-content { font-family: monospace }` at the
         // same specificity as the `&` rule above, which wins the cascade by source order and
-        // silently overrides our font stack — restate it here so it actually takes effect.
-        fontFamily:
-          'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-        fontSize: '13px',
+        // silently overrides our font stack. `inherit` still overrides that default (picking
+        // up the correct stack from the `&` rule on the parent `.cm-editor`) without repeating
+        // the font stack literal in two places.
+        fontFamily: 'inherit',
+        fontSize: 'inherit',
       },
       '.cm-line': { padding: '0 16px' },
       '.cm-scroller': { overflow: 'auto' },
@@ -326,7 +326,7 @@ function LiveMonacoEditor({
     <MonacoEditor
       height={height}
       defaultLanguage="typescript"
-      defaultValue={value ?? monacoSample}
+      value={value ?? monacoSample}
       theme={themeConfig.monacoThemeName}
       beforeMount={registerAllMonacoThemes}
       onChange={onChange}
@@ -1370,7 +1370,7 @@ function EditorVariablesUsagePage() {
         </div>
         <p className="mt-3 text-xs leading-5 text-muted-foreground">
           Click into the editor to place your cursor, then choose{' '}
-          <span className="font-mono text-foreground">Insert → $vars → firstName</span> above — it
+          <span className="font-mono text-foreground">Insert → $vars → firstName</span> above. It
           inserts at the cursor via{' '}
           <span className="font-mono text-foreground">editor.executeEdits</span>, the same pattern
           used by the Node Property Panel's Full Editor composition.
