@@ -1,12 +1,13 @@
 import { Bold, Italic, List, ListOrdered, Maximize2, Strikethrough } from 'lucide-react';
-import { cn } from '@/lib';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib';
 import type { PromptEditorMode, PromptEditorToolbarActionsRef } from '../types';
 
 export interface EditorToolbarProps {
   mode: PromptEditorMode;
   onModeChange: (mode: PromptEditorMode) => void;
   disabled?: boolean;
+  error?: boolean;
   actionsRef?: React.RefObject<PromptEditorToolbarActionsRef | null>;
   onFullscreen?: () => void;
 }
@@ -53,6 +54,7 @@ export const EditorToolbar = ({
   mode,
   onModeChange,
   disabled,
+  error,
   actionsRef,
   onFullscreen,
 }: EditorToolbarProps) => {
@@ -70,7 +72,10 @@ export const EditorToolbar = ({
       // No bottom border on the toolbar itself — the separator is drawn by the absolute hairline
       // `<span>` below at full width so the L/R outlines stay continuous with the editor body's
       // `border-t-0` border underneath.
-      className="relative flex items-center justify-between gap-1 overflow-hidden rounded-t-md border border-b-0 bg-background px-2 py-1 future:rounded-t-xl future:border-0 future:bg-surface-overlay"
+      className={cn(
+        'relative flex items-center justify-between gap-1 overflow-hidden rounded-t-md border border-b-0 bg-background px-2 py-1 future:rounded-t-xl future:border-0 future:bg-surface-overlay',
+        error && 'border-error ring-1 ring-error/20 future:ring-error/40'
+      )}
       data-testid="editor-toolbar"
     >
       <span

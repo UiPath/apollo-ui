@@ -148,6 +148,18 @@ describe('PromptEditor', () => {
       expect(invalidPreview).toHaveClass('border-error', 'ring-1');
       expect(screen.getByText('A prompt is required')).toBeInTheDocument();
     });
+
+    it('applies validation styling to the toolbar', () => {
+      render(
+        <PromptEditor
+          mode="preview"
+          showToolbar
+          error="A prompt is required"
+          errorId="prompt-error"
+        />
+      );
+      expect(screen.getByTestId('editor-toolbar')).toHaveClass('border-error', 'ring-1');
+    });
   });
 
   describe('tokens', () => {
