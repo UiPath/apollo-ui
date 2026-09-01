@@ -123,7 +123,7 @@ export interface ApolloCodeMirrorTheme {
 /**
  * Apollo Future dark theme tokens for CodeMirror v6.
  *
- * Base palette: zinc-900 surfaces, cyan accent, muted zinc foregrounds.
+ * Base palette: zinc-800 surfaces, cyan accent, muted zinc foregrounds.
  * Syntax colors follow the `--code-*` custom properties from the design system.
  */
 export const apolloFutureDarkCodeMirror: ApolloCodeMirrorTheme = {
@@ -148,8 +148,8 @@ export const apolloFutureDarkCodeMirror: ApolloCodeMirrorTheme = {
     meta: '#71717a',
   },
   ui: {
-    // zinc-900
-    background: '#18181b',
+    // zinc-800 — matches Monaco's editor.background for this theme
+    background: '#27272a',
     // zinc-400 — matches --code-rest for default prose
     foreground: '#a1a1aa',
     // cyan-400
@@ -176,7 +176,7 @@ export const apolloFutureDarkCodeMirror: ApolloCodeMirrorTheme = {
 /**
  * Apollo Future light theme tokens for CodeMirror v6.
  *
- * Base palette: zinc-100 surfaces, cyan-700 accent, muted zinc foregrounds.
+ * Base palette: zinc-200 surfaces, cyan-700 accent, muted zinc foregrounds.
  * Syntax colors follow the `--code-*` custom properties from the design system.
  */
 export const apolloFutureLightCodeMirror: ApolloCodeMirrorTheme = {
@@ -201,8 +201,8 @@ export const apolloFutureLightCodeMirror: ApolloCodeMirrorTheme = {
     meta: '#71717a',
   },
   ui: {
-    // zinc-100
-    background: '#f4f4f5',
+    // zinc-200 — matches Monaco's editor.background for this theme
+    background: '#e4e4e7',
     // zinc-600 — matches --code-rest for default prose
     foreground: '#52525b',
     // cyan-600
