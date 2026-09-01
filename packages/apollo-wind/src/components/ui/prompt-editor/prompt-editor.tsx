@@ -496,6 +496,7 @@ export const PromptEditor = ({
           <EditorToolbar
             mode={mode}
             disabled={disabled}
+            error={Boolean(error)}
             actionsRef={toolbarActionsRef}
             onModeChange={handleModeChange}
             onFullscreen={onFullscreen}
