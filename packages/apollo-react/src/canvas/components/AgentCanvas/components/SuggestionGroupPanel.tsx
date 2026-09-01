@@ -88,6 +88,7 @@ const SuggestionGroupNavigator = ({
         variant="ghost"
         size="icon"
         className="h-8 w-8"
+        aria-label="Previous suggestion"
         onMouseEnter={() => setIsHoveringUp(true)}
         onMouseLeave={() => setIsHoveringUp(false)}
         onClick={onNavigatePrevious}
@@ -105,6 +106,7 @@ const SuggestionGroupNavigator = ({
         variant="ghost"
         size="icon"
         className="h-8 w-8"
+        aria-label="Next suggestion"
         onMouseEnter={() => setIsHoveringDown(true)}
         onMouseLeave={() => setIsHoveringDown(false)}
         onClick={onNavigateNext}
