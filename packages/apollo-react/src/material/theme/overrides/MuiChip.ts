@@ -96,7 +96,27 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
       height: 'auto',
     },
     '& .MuiChip-deleteIcon:hover': { color: palette.semantic.colorForeground },
-    '&.warning': {
+    // MUI color-prop slots (filled variant). Outlined + colored is left to MUI's
+    // built-in `MuiChip-outlinedXxx` styling (border/text only, transparent fill).
+    '&.MuiChip-filled.MuiChip-colorPrimary': {
+      color: palette.semantic.colorForegroundOnAccent,
+      background: palette.semantic.colorPrimary,
+      fontWeight: token.FontFamily.FontWeightSemibold,
+      '&:hover': {
+        color: palette.semantic.colorForegroundOnAccent,
+        background: palette.semantic.colorPrimaryHover,
+      },
+    },
+    '&.MuiChip-filled.MuiChip-colorSecondary': {
+      color: palette.secondary.contrastText,
+      background: palette.secondary.main,
+      fontWeight: token.FontFamily.FontWeightSemibold,
+      '&:hover': {
+        color: palette.secondary.contrastText,
+        background: palette.secondary.dark,
+      },
+    },
+    '&.MuiChip-filled.MuiChip-colorWarning': {
       color: palette.semantic.colorWarningText,
       background: palette.semantic.colorWarningBackground,
       fontWeight: token.FontFamily.FontWeightSemibold,
@@ -105,7 +125,7 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
         background: palette.semantic.colorWarningBackground,
       },
     },
-    '&.success': {
+    '&.MuiChip-filled.MuiChip-colorSuccess': {
       color: palette.semantic.colorSuccessText,
       background: palette.semantic.colorSuccessBackground,
       fontWeight: token.FontFamily.FontWeightSemibold,
@@ -114,7 +134,7 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
         background: palette.semantic.colorSuccessBackground,
       },
     },
-    '&.info': {
+    '&.MuiChip-filled.MuiChip-colorInfo': {
       color: palette.semantic.colorInfoForeground,
       background: palette.semantic.colorInfoBackground,
       fontWeight: token.FontFamily.FontWeightSemibold,
@@ -123,7 +143,7 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
         background: palette.semantic.colorInfoBackground,
       },
     },
-    '&.error': {
+    '&.MuiChip-filled.MuiChip-colorError': {
       color: palette.semantic.colorErrorText,
       background: palette.semantic.colorErrorBackground,
       fontWeight: token.FontFamily.FontWeightSemibold,
