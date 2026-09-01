@@ -3,5 +3,4 @@
 // per key at resolve time (see i18n.ts).
 import type { GuardrailValidatorFormLabels } from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels> = {
-};
+export const messages: Partial<GuardrailValidatorFormLabels> = {};
