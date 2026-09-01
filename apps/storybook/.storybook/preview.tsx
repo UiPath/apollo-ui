@@ -186,6 +186,8 @@ const preview: Preview = {
             ['Admin', 'Delegate', 'Flow', 'Maestro', 'Studio', 'Future'],
             'Forms',
             'Experiments',
+            'Patterns',
+            ['Layout Patterns', 'Code Editors', '*'],
             '*',
           ],
           'Apollo React',

@@ -786,7 +786,7 @@ function FullEditorStory() {
 }
 
 export const FullEditor: Story = {
-  name: 'Editor Full',
+  name: 'Panel: Full Editor',
   render: () => <FullEditorStory />,
 };
 
@@ -1309,7 +1309,7 @@ function CompactEditorStory() {
 }
 
 export const CompactEditor: Story = {
-  name: 'Editor Compact',
+  name: 'Panel: Compact Editor',
   render: () => <CompactEditorStory />,
 };
 
@@ -1521,7 +1521,7 @@ function InputEditorStory() {
 }
 
 export const InputEditor: Story = {
-  name: 'Editor Inline',
+  name: 'Panel: Inline Editor',
   render: () => <InputEditorStory />,
 };
 
