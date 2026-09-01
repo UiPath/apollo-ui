@@ -106,7 +106,7 @@ describe('RequiredIndicator', () => {
     expect(indicator).not.toHaveClass('text-error');
   });
 
-  it('hides the asterisk glyph from assistive tech but announces it via sr-only text', () => {
+  it('hides the asterisk glyph from assistive tech and has no sr label by default', () => {
     render(
       <Label htmlFor="name">
         Name
@@ -114,7 +114,7 @@ describe('RequiredIndicator', () => {
       </Label>
     );
     expect(screen.getByText('*')).toHaveAttribute('aria-hidden', 'true');
-    expect(screen.getByText('(required)')).toHaveClass('sr-only');
+    expect(screen.queryByText('(required)')).not.toBeInTheDocument();
   });
 
   it('lets a localized surface supply its own announced text', () => {
@@ -133,7 +133,7 @@ describe('RequiredIndicator', () => {
       <div>
         <Label htmlFor="name">
           Name
-          <RequiredIndicator />
+          <RequiredIndicator srLabel="(required)" />
         </Label>
         <Input id="name" />
       </div>
