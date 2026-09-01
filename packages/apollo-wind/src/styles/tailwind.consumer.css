@@ -185,6 +185,44 @@ body.future-light, .future-light {
   --destructive: var(--color-red-500);
   --destructive-foreground: var(--color-zinc-50);
   --input: var(--ap-wind-border);
+
+  /* Typography: Inter, shipped by apollo-core. Neither Inter nor noto-sans
+     covers CJK, so the four bundled Noto CJK families are chained explicitly
+     to keep ja/ko/zh resolving. Mono tokens untouched. */
+  --font-sans: Inter, noto-sans, "Noto Sans JP", "Noto Sans KR", "Noto Sans SC",
+    "Noto Sans TC", system-ui, sans-serif;
+  --font-normal: var(--font-sans);
+  --font-title: var(--font-sans);
+  --font-hero-bold-family: var(--font-sans);
+  --font-hero-family: var(--font-sans);
+  --font-header-1-bold-family: var(--font-sans);
+  --font-header-1-family: var(--font-sans);
+  --font-header-2-bold-family: var(--font-sans);
+  --font-header-2-family: var(--font-sans);
+  --font-header-3-bold-family: var(--font-sans);
+  --font-header-3-family: var(--font-sans);
+  --font-header-4-bold-family: var(--font-sans);
+  --font-header-4-family: var(--font-sans);
+  --font-l-bold-family: var(--font-sans);
+  --font-l-family: var(--font-sans);
+  --font-m-bold-family: var(--font-sans);
+  --font-m-family: var(--font-sans);
+  --font-link-family: var(--font-sans);
+  --font-s-bold-family: var(--font-sans);
+  --font-s-family: var(--font-sans);
+  --font-xs-bold-family: var(--font-sans);
+  --font-xs-family: var(--font-sans);
+  --font-brand-h-4-family: var(--font-sans);
+  --font-brand-l-family: var(--font-sans);
+  --font-brand-m-family: var(--font-sans);
+}
+
+/* Preflight pins --default-font-family at :root, so the theme class must set
+   font-family itself. Class doubled to outrank apollo's legacy Angular bundle,
+   which injects `.apollo-design { font-family: noto-sans }` (0,1,0) at runtime. */
+body.future-dark.future-dark, .future-dark.future-dark,
+body.future-light.future-light, .future-light.future-light {
+  font-family: var(--font-sans);
 }
 
 /* ── Future gradients (theme-specific stops, no core counterpart yet) ────── */

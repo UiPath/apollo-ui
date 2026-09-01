@@ -42,6 +42,7 @@
     },
     "./styles.css": "./dist/styles.css",
     "./tailwind.css": "./dist/tailwind.css",
+    "./fonts/*": "./dist/fonts/*",
     "./tailwind": {
       "import": "./dist/tailwind.preset.js",
       "require": "./dist/tailwind.preset.cjs"
