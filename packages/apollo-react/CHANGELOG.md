@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v6.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.37.0...@uipath/apollo-react@6.38.0) (2026-09-01)
+
+### Features
+
+* **apollo-wind:** align panel controls and field states ([e48d6d9](https://github.com/UiPath/apollo-ui/commit/e48d6d9bbc73546da0cf4d388e958dd1335e2530))
+
+### Bug Fixes
+
+* **apollo-wind:** align combobox story surfaces ([03a5db9](https://github.com/UiPath/apollo-ui/commit/03a5db9d44e1b426e91adf59727498c3ef391b4f))
+* **apollo-wind:** preserve intrinsic icon button sizing ([ea9a534](https://github.com/UiPath/apollo-ui/commit/ea9a534bcb9e04cc74bc6bcccb2813cc670e3115))
+
 ## [@uipath/apollo-react-v6.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.36.1...@uipath/apollo-react@6.37.0) (2026-08-31)
 
 ### Features

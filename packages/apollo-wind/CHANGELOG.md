@@ -1,3 +1,21 @@
+## [@uipath/apollo-wind-v2.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.42.0...@uipath/apollo-wind@2.43.0) (2026-09-01)
+
+### Features
+
+* **apollo-wind:** align panel controls and field states ([e48d6d9](https://github.com/UiPath/apollo-ui/commit/e48d6d9bbc73546da0cf4d388e958dd1335e2530))
+
+### Bug Fixes
+
+* **apollo-wind:** align combobox story backgrounds ([df82d43](https://github.com/UiPath/apollo-ui/commit/df82d437e6342e10ce7a6f13b1fcf2c17e03fea4))
+* **apollo-wind:** align combobox story focus states ([dbfd940](https://github.com/UiPath/apollo-ui/commit/dbfd940f2705ad463ea71395b1f4515c5f6fb244))
+* **apollo-wind:** align combobox story surfaces ([03a5db9](https://github.com/UiPath/apollo-ui/commit/03a5db9d44e1b426e91adf59727498c3ef391b4f))
+* **apollo-wind:** extend prompt errors across toolbar ([f8799df](https://github.com/UiPath/apollo-ui/commit/f8799df7e395f6e23110ee7cf313133c3978d06c))
+* **apollo-wind:** preserve dropdown validation semantics ([d29216a](https://github.com/UiPath/apollo-ui/commit/d29216a25e4a6d287874a2f44caff992d3041fd6))
+* **apollo-wind:** preserve intrinsic icon button sizing ([ea9a534](https://github.com/UiPath/apollo-ui/commit/ea9a534bcb9e04cc74bc6bcccb2813cc670e3115))
+* **apollo-wind:** preserve prompt editor error focus state ([c0cd386](https://github.com/UiPath/apollo-ui/commit/c0cd386a676cacbb77a99208769f6bafa09182ae))
+* **apollo-wind:** preserve prompt validation in preview ([52785f4](https://github.com/UiPath/apollo-ui/commit/52785f4ef7fe7bb9da22979567a9add127254a58))
+* **apollo-wind:** use native prompt editor aria prop ([1d369f4](https://github.com/UiPath/apollo-ui/commit/1d369f4ef6cee267e291ba3d23d53d902cc2fd57))
+
 ## [@uipath/apollo-wind-v2.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.41.0...@uipath/apollo-wind@2.42.0) (2026-08-31)
 
 ### Features
