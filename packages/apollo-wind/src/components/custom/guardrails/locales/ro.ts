@@ -1,12 +1,72 @@
-// Translations harvested from Flow Workbench's canvas catalog (guardrailValidator_* keys)
-// so the extraction introduces no new translation work. Missing keys fall back to English
-// per key at resolve time (see i18n.ts).
-import type { GuardrailValidatorFormLabels } from '../i18n';
+// Translations harvested from Flow Workbench's canvas catalog so the extraction
+// introduces no new translation work. Missing keys fall back to English per key at
+// resolve time (see i18n.ts).
+import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels> = {
+export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
   moreInformation: 'Mai multe informații',
   enumPlaceholder: 'Selectează...',
   enumListPlaceholder: 'Selectați opțiuni...',
   addItem: 'Adaugă',
   removeItem: 'Eliminați {{label}} {{position}}',
+  editTitle: 'Editați guardrail-ul {{name}}',
+  addTitle: 'Adăugați limita de siguranță {{name}}',
+  typeLabel: 'Tip mecanism de control',
+  nameLabel: 'Nume mecanism de control',
+  namePlaceholder: 'Introduceți numele guardrail',
+  descriptionLabel: 'Descriere mecanism de control',
+  descriptionPlaceholder: 'Introduceți descrierea guardrail',
+  evalsLabel: 'Activează mecanismul de control pentru evaluări',
+  evalsInfoAriaLabel: 'Mai multe informații',
+  evalsTooltip:
+    'Când este activată, această limită de siguranță va fi aplicată în timpul rulărilor de evaluare.',
+  saveAsNew: 'Salvează ca nou',
+  cancel: 'Anulați',
+  save: 'Salvați',
+  byoDisabledMessage:
+    'Această configurație a mecanismului de control a fost dezactivată și nu mai poate fi utilizată. Contactați administratorul pentru a reactiva configurația sau pentru a înlocui acest mecanism de control înainte de a executa agentul.',
+  unauthorizedMessage:
+    'Nu aveți dreptul să utilizați guardrails. Puteți accesa setările de configurare, dar modificările nu pot fi salvate.',
+  featureDisabledMessage:
+    'Această funcție de protecție este dezactivată. Puteți accesa setările de configurare, dar modificările nu pot fi salvate. Este recomandat să eliminați această protecție cât timp funcția este dezactivată.',
+  scopesLabel: 'Domenii',
+  toolsLabel: 'Unelte',
+  scopeAgentLabel: 'Agent',
+  scopeLlmLabel: 'Apeluri LLM',
+  scopeToolLabel: 'Unelte',
+  actionTypeLabel: 'Tip de acțiune',
+  actionLogLabel: 'Jurnal',
+  actionBlockLabel: 'Block',
+  actionFilterLabel: 'Filtru',
+  actionEscalateLabel: 'Escalează',
+  severityLabel: 'Nivelul de severitate',
+  severityInfoLabel: 'Informații',
+  severityWarningLabel: 'Atenție',
+  severityErrorLabel: 'Eroare',
+  blockReasonLabel: 'Motivul blocării',
+  blockReasonPlaceholder: 'Introduceți motivul blocării',
+  assignToLabel: 'Atribuiți la',
+  recipientUserLabel: 'Utilizator',
+  recipientGroupLabel: 'Grup',
+  recipientEmailLabel: 'Adresă de e-mail',
+  recipientGroupNameLabel: 'Nume grup',
+  recipientFallbackLabel: 'Destinatar',
+  userSearchPlaceholder: 'Căutați un utilizator...',
+  groupSearchPlaceholder: 'Căutați un grup...',
+  emailPlaceholder: 'Introduceți adresa de e-mail',
+  groupNamePlaceholder: 'Introduceți numele grupului',
+  actionAppLabel: 'Aplicația Action',
+  appPickerUnavailable: 'Selectorul de aplicații nu este disponibil — necesită o gazdă Studio Web.',
+  mixedScopesAlsoApplied: 'Această măsură de protecție se aplică și la:',
+  mixedScopesSaveAsNewHint:
+    'Utilizați „Salvați ca nou” pentru a crea o copie separată doar pentru acest instrument.',
+  nameRequiredError: 'Numele mecanismului de control este obligatoriu',
+  nameDuplicateError: 'Există deja un mecanism de control cu acest nume',
+  parameterRequiredError: 'Valoare necesară',
+  scopesRequiredError: 'Este necesar cel puțin un domeniu',
+  toolsRequiredError: 'Este necesar cel puțin un instrument',
+  blockReasonRequiredError: 'Este necesar un motiv pentru blocare',
+  filterFieldsRequiredError: 'Este necesară selectarea câmpurilor',
+  recipientRequiredError: 'Este necesar un destinatar',
+  actionAppRequiredError: 'Aplicația Action este necesară',
 };

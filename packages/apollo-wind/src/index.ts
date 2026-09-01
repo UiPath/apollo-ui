@@ -2,17 +2,61 @@
 // @uipath/apollo-wind - Public API Exports
 // =============================================================================
 
+export type {
+  GuardrailAction,
+  GuardrailAppPickerContext,
+  GuardrailBuilderErrors,
+  GuardrailBuilderSlots,
+  GuardrailBuilderValue,
+  GuardrailDefinition,
+  GuardrailDefinitionStatus,
+  GuardrailEscalateApp,
+  GuardrailEscalateRecipient,
+  GuardrailRecipientSearchContext,
+  GuardrailRecipientTypeValue,
+  GuardrailScope,
+  GuardrailSelector,
+  GuardrailSeverityLevel,
+} from './components/custom/guardrails/builder-types';
+export {
+  GUARDRAIL_BYO_VALIDATOR_TYPE,
+  GuardrailRecipientType,
+} from './components/custom/guardrails/builder-types';
+export type {
+  GuardrailActionErrorField,
+  GuardrailBuilderFormData,
+  GuardrailSelectorErrorField,
+} from './components/custom/guardrails/builder-utils';
+export {
+  createDefaultGuardrailAction,
+  generateGuardrailId,
+  getGuardrailActionErrorFields,
+  getGuardrailSelectorErrorFields,
+  initGuardrailBuilderFormData,
+} from './components/custom/guardrails/builder-utils';
+export type { GuardrailBuilderProps } from './components/custom/guardrails/guardrail-builder';
+export { GuardrailBuilder } from './components/custom/guardrails/guardrail-builder';
+export type { GuardrailFormLayoutProps } from './components/custom/guardrails/guardrail-form-layout';
+export { GuardrailFormLayout } from './components/custom/guardrails/guardrail-form-layout';
 // -----------------------------------------------------------------------------
 // Guardrails (custom domain components)
 // -----------------------------------------------------------------------------
 export { GuardrailValidatorForm } from './components/custom/guardrails/guardrail-validator-form';
-export type { GuardrailValidatorFormLabels } from './components/custom/guardrails/i18n';
+export type {
+  GuardrailBuilderLabels,
+  GuardrailValidatorFormLabels,
+} from './components/custom/guardrails/i18n';
 export {
   formatGuardrailFormMessage,
+  GUARDRAIL_BUILDER_EN_LABELS,
   GUARDRAIL_FORM_EN_LABELS,
+  resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
 } from './components/custom/guardrails/i18n';
-export type { GuardrailFormLocale } from './components/custom/guardrails/load-messages';
+export type {
+  GuardrailFormLocale,
+  GuardrailMessages,
+} from './components/custom/guardrails/load-messages';
 export {
   GUARDRAIL_FORM_LOCALES,
   loadGuardrailValidatorFormMessages,

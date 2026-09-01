@@ -1,12 +1,69 @@
-// Translations harvested from Flow Workbench's canvas catalog (guardrailValidator_* keys)
-// so the extraction introduces no new translation work. Missing keys fall back to English
-// per key at resolve time (see i18n.ts).
-import type { GuardrailValidatorFormLabels } from '../i18n';
+// Translations harvested from Flow Workbench's canvas catalog so the extraction
+// introduces no new translation work. Missing keys fall back to English per key at
+// resolve time (see i18n.ts).
+import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels> = {
+export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
   moreInformation: '更多資訊',
   enumPlaceholder: '選擇...',
   enumListPlaceholder: '選取選項...',
   addItem: '新增',
   removeItem: '移除 {{label}} {{position}}',
+  editTitle: '編輯 {{name}} 護欄',
+  addTitle: '新增 {{name}} 護欄',
+  typeLabel: '護欄類型',
+  nameLabel: '護欄名稱',
+  namePlaceholder: '輸入護欄名稱',
+  descriptionLabel: '護欄說明',
+  descriptionPlaceholder: '輸入護欄說明',
+  evalsLabel: '為評估啟用護欄',
+  evalsInfoAriaLabel: '更多資訊',
+  evalsTooltip: '啟用後，將在評估執行期間套用此護欄。',
+  saveAsNew: '另存為新版本',
+  cancel: '取消',
+  save: '儲存',
+  byoDisabledMessage:
+    '此護欄的組態已停用，無法再使用。請聯絡管理員以重新啟用組態或取代此護欄，然後再執行代理。',
+  unauthorizedMessage: '您沒有使用護欄的權限。您可以存取組態設定，但無法儲存修改。',
+  featureDisabledMessage:
+    '此護欄功能已停用。您可以存取組態設定，但無法儲存修改。只要此功能處於停用狀態，即建議您將其移除。',
+  scopesLabel: '作用域',
+  toolsLabel: '工具',
+  scopeAgentLabel: '代理',
+  scopeLlmLabel: 'LLM 呼叫',
+  scopeToolLabel: '工具',
+  actionTypeLabel: '動作類型',
+  actionLogLabel: '日誌',
+  actionBlockLabel: '遮罩',
+  actionFilterLabel: '篩選',
+  actionEscalateLabel: '升級',
+  severityLabel: '嚴重性層級',
+  severityInfoLabel: '信息',
+  severityWarningLabel: 'Warning警告',
+  severityErrorLabel: '錯誤',
+  blockReasonLabel: '封鎖原因',
+  blockReasonPlaceholder: '輸入封鎖原因',
+  assignToLabel: '分配給',
+  recipientUserLabel: '使用者',
+  recipientGroupLabel: '組',
+  recipientEmailLabel: '電子郵寄地址',
+  recipientGroupNameLabel: '組名稱',
+  recipientFallbackLabel: '收件者',
+  userSearchPlaceholder: '搜尋使用者...',
+  groupSearchPlaceholder: '搜尋群組...',
+  emailPlaceholder: '輸入電子郵件地址',
+  groupNamePlaceholder: '輸入群組名稱',
+  actionAppLabel: '動作應用程式',
+  appPickerUnavailable: '應用程式選擇器無法使用 — 需要 Studio Web 主機。',
+  mixedScopesAlsoApplied: '此護欄也適用於:',
+  mixedScopesSaveAsNewHint: '使用「另存為新檔案」建立一個僅供此工具使用的單獨副本。',
+  nameRequiredError: '護欄名稱是必填欄位',
+  nameDuplicateError: '已存在具有此名稱的護欄',
+  parameterRequiredError: '值為必填欄位',
+  scopesRequiredError: '至少需要一個範圍',
+  toolsRequiredError: '至少需要一個工具',
+  blockReasonRequiredError: '封鎖原因為必填欄位',
+  filterFieldsRequiredError: '必須選取欄位',
+  recipientRequiredError: '收件者為必填欄位',
+  actionAppRequiredError: '動作應用程式為必填欄位',
 };
