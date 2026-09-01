@@ -46,7 +46,7 @@ describe('PropertiesSimple', () => {
   it('renders a custom title and top-level field labels', () => {
     render(<PropertiesSimple title="Webhook trigger" fields={fields} />);
     expect(screen.getByText('Webhook trigger')).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /Method.*required/i })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Method.*/i })).toBeInTheDocument();
     expect(screen.getByText('Endpoint')).toBeInTheDocument();
   });
 

@@ -64,16 +64,16 @@ export interface RequiredIndicatorProps
  * required field isn't in an error state, so coloring the asterisk red reads
  * as a validation failure before the person has done anything. The asterisk
  * glyph is `aria-hidden` since it's a visual affordance, not the thing that
- * makes the field required to assistive tech; a `sr-only` "(required)" is
- * included alongside it so the label still announces the requirement even if
- * the field's own control is missing `required`/`aria-required`. That text is
- * English by default; pass `srLabel` to localize it.
+ * makes the field required to assistive tech;
+ * Use `required` or `aria-required` on the field's control for that.
+ * Or pass `srLabel` to provide assistive announcements if the field's own control
+ * is missing `required`/`aria-required`.
  */
 const RequiredIndicator = React.forwardRef<HTMLSpanElement, RequiredIndicatorProps>(
-  ({ className, srLabel = ' (required)', ...props }, ref) => (
+  ({ className, srLabel, ...props }, ref) => (
     <span ref={ref} {...props} className={cn('ml-0.5', className, 'text-foreground')}>
       <span aria-hidden="true">*</span>
-      <span className="sr-only">{srLabel}</span>
+      {srLabel && <span className="sr-only">{srLabel}</span>}
     </span>
   )
 );
