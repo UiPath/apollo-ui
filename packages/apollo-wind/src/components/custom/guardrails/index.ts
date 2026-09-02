@@ -30,6 +30,8 @@ export {
   getGuardrailSelectorErrorFields,
   initGuardrailBuilderFormData,
 } from './builder-utils';
+export type { GuardrailChipProps } from './components/guardrail-chip';
+export { GuardrailChip, guardrailChipVariants } from './components/guardrail-chip';
 export type { GuardrailBuilderProps } from './guardrail-builder';
 export { GuardrailBuilder } from './guardrail-builder';
 export type { GuardrailFormLayoutProps } from './guardrail-form-layout';

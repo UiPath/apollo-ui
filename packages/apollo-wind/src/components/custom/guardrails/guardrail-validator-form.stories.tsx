@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { FormField, FormFieldLabel } from '@/components/ui/form-field';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { GuardrailValidatorForm } from './guardrail-validator-form';
 import type {
@@ -166,10 +167,8 @@ export const JudgeModelSlot: Story = {
       renderParameter={(ctx) => {
         if (ctx.definition.id !== 'model') return undefined;
         return (
-          <div className="space-y-2">
-            <div className="text-sm font-medium">
-              {ctx.definition.label} <span className="text-destructive">*</span>
-            </div>
+          <FormField>
+            <FormFieldLabel required>{ctx.definition.label}</FormFieldLabel>
             <Button
               type="button"
               variant="outline"
@@ -183,7 +182,7 @@ export const JudgeModelSlot: Story = {
             <p className="text-xs text-muted-foreground">
               Placeholder for a product-owned picker (for example ModelPicker in Agents).
             </p>
-          </div>
+          </FormField>
         );
       }}
     />

@@ -1,9 +1,11 @@
 import { Check, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo } from 'react';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib';
+import { FormField, FormFieldError } from '@/components/ui/form-field';
+import { Label, RequiredIndicator } from '@/components/ui/label';
 import type { GuardrailScope, GuardrailSelector } from '../builder-types';
 import type { GuardrailBuilderLabels } from '../i18n';
+import { FieldShell } from './field-shell';
+import { GuardrailChip } from './guardrail-chip';
 
 const ALL_SCOPES: GuardrailScope[] = ['Agent', 'Llm', 'Tool'];
 
@@ -103,89 +105,63 @@ export function GuardrailScopeSelector({
   );
 
   return (
-    <div className="space-y-3">
+    <div data-slot="guardrail-scope-selector" className="space-y-3">
       {/* Scope multi-select, always visible */}
-      <div className="space-y-2">
+      <FormField>
         <Label>
-          {labels.scopesLabel} <span className="text-destructive">*</span>
+          {labels.scopesLabel}
+          <RequiredIndicator />
         </Label>
-        <div
-          className={cn(
-            'rounded-md border border-input bg-background px-3 py-2',
-            errors?.scopes && 'border-destructive'
-          )}
-        >
+        <FieldShell invalid={Boolean(errors?.scopes)}>
           <div className="flex flex-wrap gap-1.5">
-            {visibleScopes.map((scope) => {
-              const isSelected = selectedScopes.includes(scope);
-              return (
-                <button
-                  key={scope}
-                  type="button"
-                  onClick={() => handleToggleScope(scope)}
-                  className={cn(
-                    'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors cursor-pointer',
-                    isSelected
-                      ? 'bg-primary/10 text-primary border-primary/20'
-                      : 'bg-background text-foreground border-border hover:bg-muted'
-                  )}
-                >
-                  {scopeLabels[scope]}
-                </button>
-              );
-            })}
+            {visibleScopes.map((scope) => (
+              <GuardrailChip
+                key={scope}
+                pressed={selectedScopes.includes(scope)}
+                onPressedChange={() => handleToggleScope(scope)}
+              >
+                {scopeLabels[scope]}
+              </GuardrailChip>
+            ))}
           </div>
-        </div>
-        {errors?.scopes && <p className="text-xs text-destructive">{errors.scopes}</p>}
-      </div>
+        </FieldShell>
+        <FormFieldError>{errors?.scopes}</FormFieldError>
+      </FormField>
 
       {/* Tool name multi-select (only when Tool scope is selected) */}
       {hasToolScope && availableToolNames.length > 0 && (
-        <div className="space-y-2">
+        <FormField>
           <Label>
-            {labels.toolsLabel} <span className="text-destructive">*</span>
+            {labels.toolsLabel}
+            <RequiredIndicator />
           </Label>
-          <div
-            className={cn(
-              'rounded-md border border-input bg-background px-3 py-2',
-              errors?.toolNames && 'border-destructive'
-            )}
-          >
+          <FieldShell invalid={Boolean(errors?.toolNames)}>
             <div className="flex flex-wrap gap-1.5">
               {targetedTools.map((name) => (
-                <button
+                <GuardrailChip
                   key={`targeted-${name}`}
-                  type="button"
-                  aria-pressed={true}
-                  onClick={() => handleToggleTool(name)}
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors cursor-pointer',
-                    'bg-primary/10 text-primary border-primary/20'
-                  )}
+                  pressed={true}
+                  onPressedChange={() => handleToggleTool(name)}
                 >
-                  <Check className="h-3 w-3" aria-hidden="true" />
+                  <Check aria-hidden="true" />
                   {name}
-                </button>
+                </GuardrailChip>
               ))}
               {addableTools.map((name) => (
-                <button
+                <GuardrailChip
                   key={`addable-${name}`}
-                  type="button"
-                  aria-pressed={false}
-                  onClick={() => handleToggleTool(name)}
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-full border border-dashed px-2.5 py-0.5 text-xs font-medium transition-colors cursor-pointer',
-                    'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground'
-                  )}
+                  appearance="addable"
+                  pressed={false}
+                  onPressedChange={() => handleToggleTool(name)}
                 >
-                  <Plus className="h-3 w-3" aria-hidden="true" />
+                  <Plus aria-hidden="true" />
                   {name}
-                </button>
+                </GuardrailChip>
               ))}
             </div>
-          </div>
-          {errors?.toolNames && <p className="text-xs text-destructive">{errors.toolNames}</p>}
-        </div>
+          </FieldShell>
+          <FormFieldError>{errors?.toolNames}</FormFieldError>
+        </FormField>
       )}
     </div>
   );

@@ -11,13 +11,13 @@ describe('GuardrailStatusBanner', () => {
     expect(banner).toHaveTextContent('This configuration has been disabled.');
   });
 
-  it('renders a warning banner without the alert role', () => {
+  it('renders a warning banner as a polite status region, not an alert', () => {
     render(
       <GuardrailStatusBanner tone="warning" message="You are not entitled to use guardrails." />
     );
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(screen.getByText('You are not entitled to use guardrails.')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('You are not entitled to use guardrails.');
   });
 
   it('has no accessibility violations', async () => {

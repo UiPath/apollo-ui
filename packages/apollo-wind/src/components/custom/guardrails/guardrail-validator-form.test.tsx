@@ -251,6 +251,36 @@ describe('GuardrailValidatorForm', () => {
       expect(screen.getByText('SomeUnmappedEntity')).toBeInTheDocument();
     });
 
+    it('renders a MultiSelect for more than eight options and saves raw values', async () => {
+      const onChange = vi.fn();
+      const manyOptions = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+      const defs: GuardrailParameterDefinition[] = [
+        {
+          id: 'entities',
+          type: 'enum-list',
+          label: 'Entities',
+          required: true,
+          defaultValue: [],
+          options: manyOptions,
+          optionLabels: { A: 'Option A' },
+        },
+      ];
+
+      render(
+        <GuardrailValidatorForm parameterDefinitions={defs} parameters={[]} onChange={onChange} />
+      );
+
+      // Options live behind the closed MultiSelect popover.
+      expect(screen.queryByText('Option A')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('combobox', { name: /select options/i }));
+      fireEvent.click(await screen.findByText('Option A'));
+
+      expect(onChange).toHaveBeenCalledWith([
+        { $parameterType: 'enum-list', id: 'entities', value: ['A'] },
+      ]);
+    });
+
     it('renders a host-supplied error message', () => {
       const defs: GuardrailParameterDefinition[] = [
         {

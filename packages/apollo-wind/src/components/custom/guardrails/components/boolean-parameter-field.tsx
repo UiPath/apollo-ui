@@ -1,7 +1,8 @@
+import { FormField, FormFieldError } from '@/components/ui/form-field';
 import { Switch } from '@/components/ui/switch';
 import type { GuardrailValidatorFormLabels } from '../i18n';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from '../types';
-import { ParameterError, ParameterLabel } from './parameter-label';
+import { ParameterLabel } from './parameter-label';
 
 export interface BooleanParameterFieldProps {
   paramDef: GuardrailParameterDefinition;
@@ -25,12 +26,12 @@ export function BooleanParameterField({
   const switchId = `guardrail-param-${paramDef.id}`;
 
   return (
-    <div className="space-y-2">
+    <FormField>
       <div className="flex items-center gap-2">
         <Switch id={switchId} checked={current} onCheckedChange={(checked) => onChange(checked)} />
         <ParameterLabel paramDef={paramDef} labels={labels} htmlFor={switchId} />
       </div>
-      <ParameterError error={error} />
-    </div>
+      <FormFieldError>{error}</FormFieldError>
+    </FormField>
   );
 }

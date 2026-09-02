@@ -1,6 +1,9 @@
+import { Info } from 'lucide-react';
 import { type ReactNode, useCallback } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { FormField, FormFieldError } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, RequiredIndicator } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -8,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib';
 import {
   type GuardrailAction,
   type GuardrailAppPickerContext,
@@ -133,7 +135,7 @@ export function EscalateActionFields({
   const fields = (
     <>
       {/* Recipient type */}
-      <div className="space-y-2">
+      <FormField>
         <Label htmlFor="escalate-recipient-type">{labels.assignToLabel}</Label>
         <Select value={String(recipientType)} onValueChange={handleRecipientTypeChange}>
           <SelectTrigger
@@ -150,35 +152,38 @@ export function EscalateActionFields({
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
       {/* Recipient value */}
-      <div className="space-y-2">
+      <FormField>
         <Label>
-          {recipientTypeLabels[recipientType] ?? labels.recipientFallbackLabel}{' '}
-          <span className="text-destructive">*</span>
+          {recipientTypeLabels[recipientType] ?? labels.recipientFallbackLabel}
+          <RequiredIndicator />
         </Label>
         {isSearchable ? (
-          renderRecipientSearch ? (
-            renderRecipientSearch({
-              kind: searchKind,
-              displayValue: recipientDisplayValue,
-              placeholder: searchPlaceholder,
-              invalid: Boolean(errors?.recipient),
-              onSelect: handleRecipientSelect,
-              onClear: handleRecipientClear,
-            })
-          ) : (
-            // Fallback without a host directory search: a plain input writing the value directly.
-            <Input
-              value={recipientDisplayValue}
-              onChange={(e) =>
-                handleRecipientSelect({ value: e.target.value, displayName: e.target.value })
-              }
-              placeholder={searchPlaceholder}
-              className={cn(errors?.recipient && 'border-destructive')}
-            />
-          )
+          <>
+            {renderRecipientSearch ? (
+              renderRecipientSearch({
+                kind: searchKind,
+                displayValue: recipientDisplayValue,
+                placeholder: searchPlaceholder,
+                invalid: Boolean(errors?.recipient),
+                onSelect: handleRecipientSelect,
+                onClear: handleRecipientClear,
+              })
+            ) : (
+              // Fallback without a host directory search: a plain input writing the value directly.
+              <Input
+                value={recipientDisplayValue}
+                onChange={(e) =>
+                  handleRecipientSelect({ value: e.target.value, displayName: e.target.value })
+                }
+                placeholder={searchPlaceholder}
+                aria-invalid={errors?.recipient ? true : undefined}
+              />
+            )}
+            <FormFieldError>{errors?.recipient}</FormFieldError>
+          </>
         ) : (
           <Input
             value={recipientValue}
@@ -188,43 +193,37 @@ export function EscalateActionFields({
                 ? labels.emailPlaceholder
                 : labels.groupNamePlaceholder
             }
-            className={cn(errors?.recipient && 'border-destructive')}
+            error={errors?.recipient}
           />
         )}
-        {/* Recipient error, shown inside the cell only in single-column layout (below @sm). */}
-        {errors?.recipient && (
-          <p className="text-xs text-destructive @sm:hidden">{errors.recipient}</p>
-        )}
-      </div>
+      </FormField>
 
       {/* Action app picker (host capability) */}
-      <div className="space-y-2">
+      <FormField>
         {renderAppPicker ? (
           renderAppPicker(appPickerCtx)
         ) : (
           <>
             <Label>
-              {labels.actionAppLabel} <span className="text-destructive">*</span>
+              {labels.actionAppLabel}
+              <RequiredIndicator />
             </Label>
-            <p className="text-sm text-muted-foreground italic p-2 border rounded-md">
-              {labels.appPickerUnavailable}
-            </p>
+            <Alert variant="info">
+              <Info />
+              <AlertDescription>{labels.appPickerUnavailable}</AlertDescription>
+            </Alert>
           </>
         )}
-      </div>
+      </FormField>
     </>
   );
 
   return (
-    <div className="@container space-y-3">
+    <div data-slot="guardrail-escalate-fields" className="@container space-y-3">
       <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3 items-start">
         {actionTypeSelect}
         {fields}
       </div>
-      {/* Recipient error, shown below the grid only in two-column layout (@sm+). */}
-      {errors?.recipient && (
-        <p className="text-xs text-destructive hidden @sm:block">{errors.recipient}</p>
-      )}
       {escalateHelp}
     </div>
   );

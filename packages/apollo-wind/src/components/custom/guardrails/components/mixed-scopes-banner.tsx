@@ -16,7 +16,7 @@ export function MixedScopesBanner({ otherAppliedScopes, labels }: MixedScopesBan
   if (!otherAppliedScopes) return null;
 
   return (
-    <Alert>
+    <Alert variant="info" data-slot="guardrail-mixed-scopes-banner">
       <AlertCircle />
       <AlertDescription>
         <p>{labels.mixedScopesAlsoApplied}</p>
@@ -28,7 +28,7 @@ export function MixedScopesBanner({ otherAppliedScopes, labels }: MixedScopesBan
             <li key={tool}>{tool}</li>
           ))}
         </ul>
-        <p className="mt-1 text-muted-foreground">{labels.mixedScopesSaveAsNewHint}</p>
+        <p>{labels.mixedScopesSaveAsNewHint}</p>
       </AlertDescription>
     </Alert>
   );

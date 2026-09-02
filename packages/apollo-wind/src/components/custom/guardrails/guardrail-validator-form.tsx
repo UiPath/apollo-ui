@@ -104,7 +104,7 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
     );
 
     return (
-      <div ref={ref} className={cn('space-y-4', className)}>
+      <div ref={ref} data-slot="guardrail-validator-form" className={cn('space-y-4', className)}>
         {parameterDefinitions.map((paramDef) => {
           const entry = getParamEntry(paramDef.id);
           const error = errors?.[paramDef.id];

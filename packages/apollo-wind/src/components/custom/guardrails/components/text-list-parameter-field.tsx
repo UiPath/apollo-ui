@@ -1,10 +1,11 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { FormField, FormFieldError } from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
 import { formatGuardrailFormMessage, type GuardrailValidatorFormLabels } from '../i18n';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from '../types';
-import { ParameterError, ParameterLabel } from './parameter-label';
+import { ParameterLabel } from './parameter-label';
 
 export interface TextListParameterFieldProps {
   paramDef: GuardrailParameterDefinition;
@@ -71,44 +72,45 @@ export function TextListParameterField({
   );
 
   return (
-    <div className="space-y-2">
+    <FormField>
       <div className="flex items-center justify-between">
         <ParameterLabel paramDef={paramDef} labels={labels} asTextHeader />
         {canAdd && (
-          <Button type="button" variant="ghost" size="sm" onClick={addItem} className="h-7 px-2">
-            <Plus className="h-3.5 w-3.5 mr-1" />
+          <Button type="button" variant="ghost" size="2xs" onClick={addItem}>
+            <Plus />
             {labels.addItem}
           </Button>
         )}
       </div>
-      <div className="space-y-2">
+      <div className="grid gap-1.5">
         {items.map((item, index) => (
           <div key={rowIds[index] ?? index} className="flex items-start gap-2">
             <Textarea
               value={item}
               onChange={(e) => updateItem(index, e.target.value)}
-              rows={2}
+              minRows={2}
               maxLength={paramDef.maxLength}
               aria-label={`${paramDef.label} ${index + 1}`}
-              className="resize-y flex-1"
+              className="flex-1"
             />
             <Button
               type="button"
               variant="ghost"
-              size="icon"
+              size="sm"
+              icon
               onClick={() => removeItem(index)}
               aria-label={formatGuardrailFormMessage(labels.removeItem, {
                 label: paramDef.label,
                 position: index + 1,
               })}
-              className="h-9 w-9 shrink-0 text-muted-foreground"
+              className="shrink-0 text-muted-foreground"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 />
             </Button>
           </div>
         ))}
       </div>
-      <ParameterError error={error} />
-    </div>
+      <FormFieldError>{error}</FormFieldError>
+    </FormField>
   );
 }

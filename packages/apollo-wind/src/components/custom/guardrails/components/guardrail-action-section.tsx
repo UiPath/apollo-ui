@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
+import { FormField, FormFieldError } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label, RequiredIndicator } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -8,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib';
 import type {
   GuardrailAction,
   GuardrailAppPickerContext,
@@ -49,9 +49,10 @@ export function GuardrailActionSection({
   escalateHelp,
 }: GuardrailActionSectionProps) {
   const actionTypeSelect = (
-    <div className="space-y-2">
+    <FormField>
       <Label htmlFor="action-type">
-        {labels.actionTypeLabel} <span className="text-destructive">*</span>
+        {labels.actionTypeLabel}
+        <RequiredIndicator />
       </Label>
       <Select
         value={action.$actionType}
@@ -69,7 +70,7 @@ export function GuardrailActionSection({
           <SelectItem value="escalate">{labels.actionEscalateLabel}</SelectItem>
         </SelectContent>
       </Select>
-    </div>
+    </FormField>
   );
 
   if (action.$actionType === 'escalate') {
@@ -93,9 +94,10 @@ export function GuardrailActionSection({
         {actionTypeSelect}
 
         {action.$actionType === 'log' && (
-          <div className="space-y-2">
+          <FormField>
             <Label htmlFor="severity-level">
-              {labels.severityLabel} <span className="text-destructive">*</span>
+              {labels.severityLabel}
+              <RequiredIndicator />
             </Label>
             <Select
               value={action.severityLevel}
@@ -112,13 +114,14 @@ export function GuardrailActionSection({
                 <SelectItem value="Error">{labels.severityErrorLabel}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
         )}
 
         {action.$actionType === 'block' && (
-          <div className="space-y-2">
+          <FormField>
             <Label htmlFor="block-reason">
-              {labels.blockReasonLabel} <span className="text-destructive">*</span>
+              {labels.blockReasonLabel}
+              <RequiredIndicator />
             </Label>
             <Input
               id="block-reason"
@@ -127,21 +130,16 @@ export function GuardrailActionSection({
                 onActionChange({ ...action, reason: e.target.value } as GuardrailAction)
               }
               placeholder={labels.blockReasonPlaceholder}
-              className={cn(errors?.blockReason && 'border-destructive')}
+              error={errors?.blockReason}
             />
-            {errors?.blockReason && (
-              <p className="text-xs text-destructive">{errors.blockReason}</p>
-            )}
-          </div>
+          </FormField>
         )}
 
         {action.$actionType === 'filter' && (
-          <div className="space-y-2">
+          <FormField>
             {filterContent}
-            {errors?.filterFields && (
-              <p className="text-xs text-destructive">{errors.filterFields}</p>
-            )}
-          </div>
+            <FormFieldError>{errors?.filterFields}</FormFieldError>
+          </FormField>
         )}
       </div>
     </div>

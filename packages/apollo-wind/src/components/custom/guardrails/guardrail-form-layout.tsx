@@ -79,17 +79,25 @@ export function GuardrailFormLayout({
 
   if (inline) {
     return (
-      <div className="flex flex-col h-full">
+      <div data-slot="guardrail-form-layout" className="flex flex-col h-full">
         {!hideHeader && (
-          <div className="flex items-center gap-2 px-3 py-2 border-b shrink-0">
+          <div
+            data-slot="guardrail-form-layout-header"
+            className="flex items-center gap-2 px-3 py-2 border-b shrink-0"
+          >
             <Button variant="ghost" size="2xs" icon aria-label={cancelLabel} onClick={onCancel}>
               <ArrowLeft />
             </Button>
             <span className="text-sm font-medium">{title}</span>
           </div>
         )}
-        <div className="flex-1 min-h-0 overflow-y-auto px-4">{children}</div>
-        <div className="flex items-center gap-2 px-4 py-3 border-t shrink-0">
+        <div data-slot="guardrail-form-layout-body" className="flex-1 min-h-0 overflow-y-auto px-4">
+          {children}
+        </div>
+        <div
+          data-slot="guardrail-form-layout-footer"
+          className="flex items-center gap-2 px-4 py-3 border-t shrink-0"
+        >
           {footerStart && <div className="flex items-center gap-2 mr-auto">{footerStart}</div>}
           <div className="flex justify-end gap-2 ml-auto">{footerButtons('sm')}</div>
         </div>

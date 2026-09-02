@@ -1,8 +1,10 @@
 import { useCallback, useMemo } from 'react';
+import { FormField, FormFieldError } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { GuardrailValidatorFormLabels } from '../i18n';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from '../types';
-import { ParameterError, ParameterLabel } from './parameter-label';
+import { ParameterLabel } from './parameter-label';
 
 export interface MapEnumParameterFieldProps {
   paramDef: GuardrailParameterDefinition;
@@ -65,14 +67,14 @@ export function MapEnumParameterField({
   if (keys.length === 0) return null;
 
   return (
-    <div className="space-y-2">
+    <FormField>
       <ParameterLabel paramDef={paramDef} labels={labels} />
-      <div className="space-y-2">
+      <div className="grid gap-1.5">
         {keys.map((key) => (
           <div key={key} className="flex items-center gap-3">
-            <span className="text-sm w-1/3 truncate">
+            <Label variant="muted" className="w-1/3 truncate">
               {sourceParamDef?.optionLabels?.[key] ?? key}
-            </span>
+            </Label>
             <Input
               aria-label={`${paramDef.label}: ${sourceParamDef?.optionLabels?.[key] ?? key}`}
               type="number"
@@ -81,12 +83,12 @@ export function MapEnumParameterField({
               min={paramDef.min}
               max={paramDef.max}
               step={paramDef.step}
-              className="h-8 flex-1"
+              className="flex-1"
             />
           </div>
         ))}
       </div>
-      <ParameterError error={error} />
-    </div>
+      <FormFieldError>{error}</FormFieldError>
+    </FormField>
   );
 }
