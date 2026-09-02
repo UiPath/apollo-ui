@@ -1,6 +1,7 @@
 import type {
   ContentPart,
   ContentPartDataSource,
+  DocumentPart,
   ImagePart,
 } from "@tanstack/ai";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -81,7 +82,7 @@ function readAsDataSource(file: File): Promise<ContentPartDataSource> {
         reject(new Error("Expected data URL from FileReader"));
         return;
       }
-      // Strip the "data:<mime>;base64," prefix — ContentPartDataSource.value
+      // Strip the "data:<mime>;base64," prefix. ContentPartDataSource.value
       // stores the bare base64 payload and ContentPartDataSource.mimeType separately.
       const base64 = result.slice(result.indexOf(",") + 1);
       resolve({ type: "data", value: base64, mimeType: file.type });
@@ -93,19 +94,20 @@ function readAsDataSource(file: File): Promise<ContentPartDataSource> {
   });
 }
 
-async function fileToContentPart(file: File): Promise<ContentPart | null> {
+/** Images become an ImagePart; everything else (PDFs, spreadsheets, any other
+ * attached type) becomes a DocumentPart. Either way the file's presence
+ * survives into the returned part, so a caller can tell "a file was
+ * attached" from the part list alone, not just from image attachments. */
+async function fileToContentPart(file: File): Promise<ContentPart> {
+  const source = await readAsDataSource(file);
   if (file.type.startsWith("image/")) {
-    const source = await readAsDataSource(file);
     return { type: "image", source } satisfies ImagePart;
   }
-  return null;
+  return { type: "document", source } satisfies DocumentPart;
 }
 
-export async function pendingFilesToContentParts(
+export function pendingFilesToContentParts(
   files: ReadonlyArray<PendingFile>,
 ): Promise<ContentPart[]> {
-  const parts = await Promise.all(
-    files.map((pf) => fileToContentPart(pf.file)),
-  );
-  return parts.filter((p): p is ContentPart => p !== null);
+  return Promise.all(files.map((pf) => fileToContentPart(pf.file)));
 }
