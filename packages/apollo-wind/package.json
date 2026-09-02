@@ -40,6 +40,16 @@
       "require": "./dist/components/forms/*.cjs",
       "types": "./dist/components/forms/*.d.ts"
     },
+    "./components/custom": {
+      "import": "./dist/components/custom/index.js",
+      "require": "./dist/components/custom/index.cjs",
+      "types": "./dist/components/custom/index.d.ts"
+    },
+    "./components/custom/*": {
+      "import": "./dist/components/custom/*.js",
+      "require": "./dist/components/custom/*.cjs",
+      "types": "./dist/components/custom/*.d.ts"
+    },
     "./styles.css": "./dist/styles.css",
     "./tailwind.css": "./dist/tailwind.css",
     "./tailwind": {

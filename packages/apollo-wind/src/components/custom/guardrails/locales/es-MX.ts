@@ -1,0 +1,73 @@
+// Translations harvested from Flow Workbench's canvas catalog so the extraction
+// introduces no new translation work. Missing keys fall back to English per key at
+// resolve time (see i18n.ts).
+import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+
+export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+  moreInformation: 'Más información',
+  enumPlaceholder: 'Seleccionar...',
+  enumListPlaceholder: 'Seleccione opciones…',
+  addItem: 'Agregar',
+  removeItem: 'Eliminar {{label}} {{position}}',
+  editTitle: 'Editar medida de seguridad {{name}}',
+  addTitle: 'Agregar medida de seguridad {{name}}',
+  typeLabel: 'Tipo de medida de seguridad',
+  nameLabel: 'Nombre de la protección',
+  namePlaceholder: 'Introduzca el nombre de la medida de seguridad',
+  descriptionLabel: 'Descripción de la medida de seguridad',
+  descriptionPlaceholder: 'Introduzca la descripción de la medida de seguridad',
+  evalsLabel: 'Habilitar protección para las evaluaciones',
+  evalsInfoAriaLabel: 'Más información',
+  evalsTooltip:
+    'Cuando se habilite, esta medida de seguridad se aplicará durante las ejecuciones de evaluación.',
+  saveAsNew: 'Guardar como nuevo',
+  cancel: 'Cancelar',
+  save: 'Guardar',
+  byoDisabledMessage:
+    'La configuración de esta protección se ha deshabilitado y ya no se puede utilizar. Comuníquese con el administrador para volver a habilitar la configuración o reemplazar esta protección antes de ejecutar el agente.',
+  unauthorizedMessage:
+    'No tiene derecho a utilizar medidas de seguridad. Puede acceder a los ajustes de configuración, pero las modificaciones no se pueden guardar.',
+  featureDisabledMessage:
+    'Esta característica de protección está deshabilitada. Puede acceder a los ajustes de configuración, pero las modificaciones no se pueden guardar. Es mejor eliminar esta medida de seguridad siempre que la característica esté deshabilitada.',
+  scopesLabel: 'Scopes',
+  toolsLabel: 'Herramientas',
+  scopeAgentLabel: 'Agente',
+  scopeLlmLabel: 'Llamadas de LLM',
+  scopeToolLabel: 'Herramientas',
+  actionTypeLabel: 'Tipo de acción',
+  actionLogLabel: 'Registro',
+  actionBlockLabel: 'Bloque',
+  actionFilterLabel: 'Filtro',
+  actionEscalateLabel: 'Transferir',
+  severityLabel: 'Nivel de gravedad',
+  severityInfoLabel: 'Info',
+  severityWarningLabel: 'Advertencia',
+  severityErrorLabel: 'Error',
+  blockReasonLabel: 'Motivo del bloqueo',
+  blockReasonPlaceholder: 'Ingrese el motivo del bloqueo',
+  assignToLabel: 'Asignar a',
+  recipientUserLabel: 'Usuario',
+  recipientGroupLabel: 'Grupo',
+  recipientEmailLabel: 'Dirección de correo electrónico',
+  recipientGroupNameLabel: 'Nombre del grupo',
+  recipientFallbackLabel: 'Destinatario',
+  userSearchPlaceholder: 'Busque un usuario...',
+  groupSearchPlaceholder: 'Busque un grupo…',
+  emailPlaceholder: 'Introduzca la dirección de correo electrónico',
+  groupNamePlaceholder: 'Introduzca el nombre del grupo',
+  actionAppLabel: 'Aplicación de acción',
+  appPickerUnavailable:
+    'Selector de aplicaciones no disponible: se requiere un host de Studio Web.',
+  mixedScopesAlsoApplied: 'Esta medida de seguridad también se aplica a:',
+  mixedScopesSaveAsNewHint:
+    'Utilice "Guardar como nuevo" para crear una copia independiente solo para esta herramienta.',
+  nameRequiredError: 'El nombre de la protección es necesario.',
+  nameDuplicateError: 'Ya existe una protección con este nombre.',
+  parameterRequiredError: 'Se requiere valor.',
+  scopesRequiredError: 'Se requiere al menos un alcance',
+  toolsRequiredError: 'Se requiere al menos una herramienta',
+  blockReasonRequiredError: 'La razón del bloqueo es necesaria.',
+  filterFieldsRequiredError: 'Se requiere la selección de campos',
+  recipientRequiredError: 'El destinatario es necesario.',
+  actionAppRequiredError: 'La aplicación de acción es necesaria.',
+};
