@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.43.1...@uipath/apollo-wind@2.44.0) (2026-09-02)
+
+### Features
+
+* **apollo-wind:** polish field and inventory patterns ([6e31fb1](https://github.com/UiPath/apollo-ui/commit/6e31fb134f38d6916fdd7d4d84d8cd1713585e26))
+
 ## [@uipath/apollo-wind-v2.43.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.43.0...@uipath/apollo-wind@2.43.1) (2026-09-01)
 
 ### Bug Fixes

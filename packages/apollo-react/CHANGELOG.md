@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.38.0...@uipath/apollo-react@6.39.0) (2026-09-02)
+
+### Features
+
+* **apollo-wind:** polish field and inventory patterns ([6e31fb1](https://github.com/UiPath/apollo-ui/commit/6e31fb134f38d6916fdd7d4d84d8cd1713585e26))
+
 ## [@uipath/apollo-react-v6.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.37.0...@uipath/apollo-react@6.38.0) (2026-09-01)
 
 ### Features
