@@ -351,7 +351,7 @@ function DapValueField({
         {label}
         {required && <RequiredIndicator />}
       </Label>
-      <InputGroup className="h-9 bg-surface-overlay" error={error}>
+      <InputGroup className="h-9 future:bg-surface-overlay" error={error}>
         <InputGroupInput
           id={id}
           value={value}
@@ -426,7 +426,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
               <Select defaultValue="gmail-finance">
                 <SelectTrigger
                   id="dap-validation-connection"
-                  className="h-9 w-full bg-surface-overlay text-xs"
+                  className="h-9 w-full future:bg-surface-overlay text-xs"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -467,7 +467,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
                   value={body}
                   required
                   onChange={(event) => setBody(event.target.value)}
-                  className="min-h-24 resize-none bg-surface-overlay text-xs"
+                  className="min-h-24 resize-none future:bg-surface-overlay text-xs"
                 />
               </div>
             </section>
@@ -500,7 +500,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
                 value={retryCount}
                 onChange={(event) => setRetryCount(event.target.value)}
                 error="Retry count must be between 0 and 5."
-                className="bg-surface-overlay text-xs"
+                className="future:bg-surface-overlay text-xs"
               />
             </div>
           </div>
@@ -519,7 +519,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
             ].map(([name, metadata]) => (
               <div
                 key={name}
-                className="flex items-center gap-3 rounded-lg border border-border-subtle bg-surface-overlay px-3 py-2.5"
+                className="flex items-center gap-3 rounded-lg border border-border-subtle future:bg-surface-overlay px-3 py-2.5"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-mono text-xs font-medium">{name}</p>
@@ -539,7 +539,7 @@ function DebugPanelContent() {
     <div className="grid h-full grid-cols-[220px_1fr]">
       <div className="border-r border-border-subtle p-3">
         <p className="mb-2 text-xs font-semibold text-foreground">Run history</p>
-        <div className="rounded-lg bg-surface-overlay p-3">
+        <div className="rounded-lg future:bg-surface-overlay p-3">
           <span className="block text-xs font-medium text-foreground">Flow run</span>
           <span className="mt-1 block text-[11px] text-foreground-muted">Failed after 1.8s</span>
         </div>

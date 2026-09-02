@@ -39,6 +39,22 @@ describe('LockableValueField', () => {
     expect(screen.getByPlaceholderText('String value')).toHaveAttribute('readonly');
   });
 
+  it('can hide the built-in lock control', () => {
+    render(<LockableValueField locked={false} showLock={false} />);
+    expect(screen.queryByRole('button', { name: /Editable|Read-only/ })).not.toBeInTheDocument();
+  });
+
+  it('keeps a custom leading addon when the built-in lock control is hidden', () => {
+    render(
+      <LockableValueField
+        locked={false}
+        showLock={false}
+        leadingAddon={<span data-testid="custom-leading-addon">=</span>}
+      />
+    );
+    expect(screen.getByTestId('custom-leading-addon')).toBeInTheDocument();
+  });
+
   it('forwards blur from the built-in value control', () => {
     const handleBlur = vi.fn();
     render(
@@ -167,6 +183,12 @@ describe('LockableValueField', () => {
     expect(screen.queryByRole('button', { name: 'Insert variable' })).not.toBeInTheDocument();
   });
 
+  it('can hide only the AI-assist action', () => {
+    render(<LockableValueField locked={false} showAiAssist={false} />);
+    expect(screen.queryByRole('button', { name: 'AI assist' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Insert variable' })).toBeInTheDocument();
+  });
+
   it('shows AI-assist and Insert-variable actions by default', () => {
     render(<LockableValueField locked={false} />);
     expect(screen.getByRole('button', { name: 'AI assist' })).toBeInTheDocument();
@@ -179,6 +201,38 @@ describe('LockableValueField', () => {
 
     rerender(<LockableValueField locked={false} fieldType="string" />);
     expect(screen.getByRole('button', { name: 'Choose value type' })).toBeInTheDocument();
+  });
+
+  it('renders the More actions menu beside the value type control', async () => {
+    const user = userEvent.setup();
+    render(
+      <LockableValueField
+        locked={false}
+        onValueChange={vi.fn()}
+        onModeChange={vi.fn()}
+        more={{ onClear: vi.fn(), onRefresh: vi.fn() }}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'More value actions' }));
+
+    expect(screen.getByRole('menuitem', { name: 'Clear value' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Force refresh' })).toBeInTheDocument();
+  });
+
+  it('only renders available More actions and hides Clear value when locked', async () => {
+    const user = userEvent.setup();
+    render(<LockableValueField locked more={{ onClear: vi.fn(), onRefresh: vi.fn() }} />);
+
+    await user.click(screen.getByRole('button', { name: 'More value actions' }));
+
+    expect(screen.queryByRole('menuitem', { name: 'Clear value' })).not.toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Force refresh' })).toBeInTheDocument();
+  });
+
+  it('does not render More actions when no handlers are provided', () => {
+    render(<LockableValueField locked={false} more={{}} />);
+    expect(screen.queryByRole('button', { name: 'More value actions' })).not.toBeInTheDocument();
   });
 
   it('allows null addons to suppress the default controls', () => {
@@ -275,20 +329,19 @@ describe('LockableValueField', () => {
   it('renders a file upload control for file fields when unlocked', () => {
     const { container } = render(<LockableValueField locked={false} fieldType="file" />);
     expect(screen.getByText(/drag/i, { exact: false })).toBeInTheDocument();
-    expect(container.querySelector('[role="group"].bg-surface-overlay')).toHaveClass(
-      'h-auto',
-      'items-stretch'
-    );
+    expect(container.querySelector('[role="group"]')).toHaveClass('h-auto', 'items-stretch');
   });
 
   it('keeps locked file fields in the compact read-only layout', () => {
     const { container } = render(
       <LockableValueField locked fieldType="file" value="invoice.pdf" />
     );
-    expect(container.querySelector('[role="group"].bg-surface-overlay')).not.toHaveClass(
-      'h-auto',
-      'items-stretch'
-    );
+    expect(container.querySelector('[role="group"]')).not.toHaveClass('h-auto', 'items-stretch');
+  });
+
+  it('does not force the Future overlay background in classic themes', () => {
+    const { container } = render(<LockableValueField locked={false} value="INV-2024-0587" />);
+    expect(container.querySelector('[role="group"]')).not.toHaveClass('bg-surface-overlay');
   });
 
   it('allows expression values for file and object fields', () => {

@@ -1,11 +1,11 @@
-import * as React from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon, Clock } from 'lucide-react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib';
 
 export interface DateTimePickerProps {
@@ -79,6 +79,7 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
             variant="outline"
             className={cn(
               'w-full justify-start text-left font-normal',
+              'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
               !selectedDate && 'text-muted-foreground',
               className
             )}

@@ -111,6 +111,7 @@ import {
   GripVertical,
   HardDrive,
   Info,
+  Link2,
   MoreHorizontal,
   Pencil,
   Play,
@@ -496,6 +497,14 @@ const TAB_TRIGGER_CLASS =
 export const PanelUIInventory: Story = {
   name: 'UI Inventory',
   render: () => <PanelUIInventoryStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Tabs and inventory sections are deep-linkable. Use hashes such as `#ui-inventory/states` or `#ui-inventory/layout/text-fields` after the Storybook story URL to open a tab or section directly.',
+      },
+    },
+  },
 };
 
 export const Responsive: Story = {
@@ -974,7 +983,7 @@ function CasePanel({
           title="Delete case"
           className="shrink-0 rounded hover:bg-transparent text-foreground-subtle opacity-0 hover:text-foreground group-hover:opacity-100"
         >
-          <X size={12} />
+          <Trash2 size={12} />
         </Button>
       </div>
 
@@ -2691,7 +2700,7 @@ function LockableCaseRow({
                   'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
               )}
             >
-              <X size={12} />
+              <Trash2 size={12} />
             </button>
           }
           value={value}
@@ -2853,7 +2862,7 @@ function FormButtonChip({
             onClick={onDelete}
             className="flex w-full items-center gap-1.5 rounded-lg px-1.5 py-1 text-xs text-destructive transition hover:bg-destructive/10"
           >
-            <X size={12} />
+            <Trash2 size={12} />
             Delete button
           </button>
         </PopoverContent>
@@ -2960,7 +2969,7 @@ function LockableValueFieldShowcase({
                   'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
               )}
             >
-              <X size={14} />
+              <Trash2 size={14} />
             </button>
           }
           value={showcaseValue}
@@ -3003,7 +3012,7 @@ function LockableValueFieldShowcase({
                     'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
                 )}
               >
-                <X size={14} />
+                <Trash2 size={14} />
               </button>
             }
             value={showcaseValue}
@@ -3515,14 +3524,37 @@ const PatternNotesVisibilityContext = createContext(true);
 function PatternNote({
   title,
   eyebrow = 'Layout pattern',
+  linkTarget,
   children,
 }: {
   title: string;
   eyebrow?: string;
+  linkTarget?: string;
   children: ReactNode;
 }) {
   const [dismissed, setDismissed] = useState(false);
+  const [copied, setCopied] = useState(false);
   const notesVisible = useContext(PatternNotesVisibilityContext);
+
+  const copyLink = async () => {
+    if (!linkTarget) return;
+    const url = new URL(window.location.href);
+    url.hash = `ui-inventory/${linkTarget}`;
+    window.history.replaceState(null, '', url);
+    try {
+      if (!navigator.clipboard?.writeText) return;
+      await navigator.clipboard.writeText(url.toString());
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!copied) return;
+    const timeoutId = window.setTimeout(() => setCopied(false), 1500);
+    return () => window.clearTimeout(timeoutId);
+  }, [copied]);
 
   if (dismissed || !notesVisible) return null;
 
@@ -3532,17 +3564,32 @@ function PatternNote({
         <p className="pt-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-brand">
           {eyebrow}
         </p>
-        <Button
-          variant="ghost"
-          size="4xs"
-          icon
-          onClick={() => setDismissed(true)}
-          aria-label={`Dismiss ${title} note`}
-          title="Dismiss note"
-          className="-mr-1 -mt-1 shrink-0 text-foreground-subtle hover:bg-surface-raised hover:text-foreground"
-        >
-          <X size={12} />
-        </Button>
+        <div className="-mr-1 -mt-1 flex shrink-0 items-center">
+          {linkTarget && (
+            <Button
+              variant="ghost"
+              size="4xs"
+              icon
+              onClick={copyLink}
+              aria-label={copied ? `Copied link to ${title}` : `Copy link to ${title}`}
+              title={copied ? 'Link copied' : 'Copy link'}
+              className="text-foreground-subtle hover:bg-surface-raised hover:text-foreground"
+            >
+              <Link2 size={12} />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="4xs"
+            icon
+            onClick={() => setDismissed(true)}
+            aria-label={`Dismiss ${title} note`}
+            title="Dismiss note"
+            className="text-foreground-subtle hover:bg-surface-raised hover:text-foreground"
+          >
+            <X size={12} />
+          </Button>
+        </div>
       </div>
       <h3 className="mt-1 text-sm font-semibold text-foreground">{title}</h3>
       <p className="mt-1 text-xs leading-4 text-foreground-muted">{children}</p>
@@ -3601,7 +3648,7 @@ function InventorySubContainer({
                 <Input type="number" defaultValue="3" min="0" />
               </InventoryField>
               <InventoryField label="System identifier">
-                <Input value="invoice-extraction-01" readOnly disabled />
+                <Input value="invoice-extraction-01" readOnly />
               </InventoryField>
             </section>
           </div>
@@ -3663,7 +3710,12 @@ function InventorySubContainer({
             </div>
             <div className="flex items-center justify-between gap-4">
               <Label htmlFor="sub-container-enabled">Enabled</Label>
-              <Switch id="sub-container-enabled" checked={enabled} onCheckedChange={setEnabled} />
+              <Switch
+                id="sub-container-enabled"
+                size="sm"
+                checked={enabled}
+                onCheckedChange={setEnabled}
+              />
             </div>
             <InventoryField label="Confidence threshold" description="Current value: 75%">
               <Slider defaultValue={[75]} max={100} step={5} />
@@ -3782,6 +3834,8 @@ function CompositionFieldDragOverlay({ field }: { field: CompositionFieldItem })
 }
 
 function PanelUIInventoryStory() {
+  const [inventoryTab, setInventoryTab] = useState('layout');
+  const [inventorySection, setInventorySection] = useState<string | null>(null);
   const [enabled, setEnabled] = useState(true);
   const [checked, setChecked] = useState(true);
   const [notesVisible, setNotesVisible] = useState(true);
@@ -3808,6 +3862,51 @@ function PanelUIInventoryStory() {
   const allSubContainerSections = ['text-fields', 'choices', 'advanced'];
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [expandedSubContainerSections, setExpandedSubContainerSections] = useState<string[]>([]);
+
+  useEffect(() => {
+    const syncFromHash = () => {
+      let decodedHash = '';
+      try {
+        decodedHash = decodeURIComponent(window.location.hash.slice(1));
+      } catch {
+        return;
+      }
+
+      const match = decodedHash.match(/^ui-inventory\/([^/]+)(?:\/(.+))?$/);
+      if (!match) return;
+
+      const [, tab, section] = match;
+      if (!['layout', 'states', 'actions', 'composition'].includes(tab)) return;
+      setInventoryTab(tab);
+      setInventorySection(section ?? null);
+      if (tab === 'layout' && section && ['text-fields', 'choices', 'advanced'].includes(section)) {
+        setExpandedSections((current) =>
+          current.includes(section) ? current : [...current, section]
+        );
+      }
+    };
+
+    syncFromHash();
+    window.addEventListener('hashchange', syncFromHash);
+    return () => window.removeEventListener('hashchange', syncFromHash);
+  }, []);
+
+  useEffect(() => {
+    if (!inventorySection) return;
+
+    const timeoutId = window.setTimeout(() => {
+      document.getElementById(`ui-inventory-${inventoryTab}-${inventorySection}`)?.scrollIntoView({
+        block: 'start',
+      });
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [inventorySection, inventoryTab]);
+
+  const handleInventoryTabChange = (tab: string) => {
+    setInventoryTab(tab);
+    setInventorySection(null);
+    window.history.replaceState(null, '', `#ui-inventory/${tab}`);
+  };
   const allSectionsExpanded =
     expandedSections.length === allInventorySections.length &&
     expandedSubContainerSections.length === allSubContainerSections.length;
@@ -3843,22 +3942,42 @@ function PanelUIInventoryStory() {
           className="h-[720px]"
         >
           <PatternNotesVisibilityContext.Provider value={notesVisible}>
-            <Tabs defaultValue="layout" className="flex h-full min-h-0 flex-col">
+            <Tabs
+              value={inventoryTab}
+              onValueChange={handleInventoryTabChange}
+              className="flex h-full min-h-0 flex-col"
+            >
               <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle px-3.5 py-3">
                 <ScrollableTabsList
                   className={cn(TAB_LIST_CLASS, 'min-w-0 flex-1')}
                   scrollButtonClassName="size-6 hover:bg-surface-overlay"
                 >
-                  <TabsTrigger value="layout" className={TAB_TRIGGER_CLASS}>
+                  <TabsTrigger
+                    value="layout"
+                    className={TAB_TRIGGER_CLASS}
+                    id="ui-inventory-tab-layout"
+                  >
                     Layout
                   </TabsTrigger>
-                  <TabsTrigger value="states" className={TAB_TRIGGER_CLASS}>
+                  <TabsTrigger
+                    value="states"
+                    className={TAB_TRIGGER_CLASS}
+                    id="ui-inventory-tab-states"
+                  >
                     States
                   </TabsTrigger>
-                  <TabsTrigger value="actions" className={TAB_TRIGGER_CLASS}>
+                  <TabsTrigger
+                    value="actions"
+                    className={TAB_TRIGGER_CLASS}
+                    id="ui-inventory-tab-actions"
+                  >
                     Actions
                   </TabsTrigger>
-                  <TabsTrigger value="composition" className={TAB_TRIGGER_CLASS}>
+                  <TabsTrigger
+                    value="composition"
+                    className={TAB_TRIGGER_CLASS}
+                    id="ui-inventory-tab-composition"
+                  >
                     Composition
                   </TabsTrigger>
                 </ScrollableTabsList>
@@ -3887,8 +4006,8 @@ function PanelUIInventoryStory() {
               </div>
 
               <TabsContent value="layout" className="mt-0 min-h-0 flex-1 overflow-y-auto">
-                <div className="grid gap-4 px-3.5 py-5">
-                  <PatternNote title="Flat content">
+                <div id="ui-inventory-layout-flat-content" className="grid gap-4 px-3.5 py-5">
+                  <PatternNote title="Flat content" linkTarget="layout/flat-content">
                     A simple, always-visible layout for short configurations that do not need
                     collapsible sections or nested containers.
                   </PatternNote>
@@ -3917,12 +4036,15 @@ function PanelUIInventoryStory() {
                           Run this node in the workflow.
                         </p>
                       </div>
-                      <Switch id="flat-pattern-enabled" defaultChecked />
+                      <Switch id="flat-pattern-enabled" size="sm" defaultChecked />
                     </div>
                   </div>
                 </div>
-                <div className="border-t border-border-subtle px-3.5 has-[aside]:pt-5">
-                  <PatternNote title="Expandable sections">
+                <div
+                  id="ui-inventory-layout-expandable-sections"
+                  className="border-t border-border-subtle px-3.5 has-[aside]:pt-5"
+                >
+                  <PatternNote title="Expandable sections" linkTarget="layout/expandable-sections">
                     Full-width sections that reveal or hide related fields without adding nested
                     container chrome.
                   </PatternNote>
@@ -3932,7 +4054,11 @@ function PanelUIInventoryStory() {
                   value={expandedSections}
                   onValueChange={setExpandedSections}
                 >
-                  <AccordionItem value="text-fields" className="border-border-subtle px-3.5">
+                  <AccordionItem
+                    value="text-fields"
+                    id="ui-inventory-layout-text-fields"
+                    className="border-border-subtle px-3.5"
+                  >
                     <AccordionTrigger className="group py-4 text-sm hover:no-underline">
                       <span className="text-foreground transition-colors group-hover:text-foreground-muted">
                         Text and numeric fields
@@ -3952,12 +4078,16 @@ function PanelUIInventoryStory() {
                         <Input type="number" defaultValue="3" min="0" />
                       </InventoryField>
                       <InventoryField label="Read-only value">
-                        <Input value="Generated by the system" readOnly disabled />
+                        <Input value="Generated by the system" readOnly />
                       </InventoryField>
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="choices" className="border-border-subtle px-3.5">
+                  <AccordionItem
+                    value="choices"
+                    id="ui-inventory-layout-choices"
+                    className="border-border-subtle px-3.5"
+                  >
                     <AccordionTrigger className="group py-4 text-sm hover:no-underline">
                       <span className="text-foreground transition-colors group-hover:text-foreground-muted">
                         Selection controls
@@ -4010,6 +4140,7 @@ function PanelUIInventoryStory() {
                         </div>
                         <Switch
                           id="enabled-switch"
+                          size="sm"
                           checked={enabled}
                           onCheckedChange={setEnabled}
                         />
@@ -4020,7 +4151,11 @@ function PanelUIInventoryStory() {
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="advanced" className="border-border-subtle px-3.5">
+                  <AccordionItem
+                    value="advanced"
+                    id="ui-inventory-layout-advanced"
+                    className="border-border-subtle px-3.5"
+                  >
                     <AccordionTrigger className="group py-4 text-sm hover:no-underline">
                       <span className="text-foreground transition-colors group-hover:text-foreground-muted">
                         Advanced options
@@ -4033,8 +4168,11 @@ function PanelUIInventoryStory() {
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
-                <div className="grid gap-3 border-t border-border-subtle px-3.5 py-5">
-                  <PatternNote title="Sub-containers">
+                <div
+                  id="ui-inventory-layout-sub-containers"
+                  className="grid gap-3 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote title="Sub-containers" linkTarget="layout/sub-containers">
                     Dense, collapsible cards for related configuration when stronger visual grouping
                     is useful.
                   </PatternNote>
@@ -4047,8 +4185,12 @@ function PanelUIInventoryStory() {
 
               <TabsContent value="states" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
                 <div className="grid gap-5">
-                  <section className="grid gap-3">
-                    <PatternNote title="Section messages" eyebrow="State pattern">
+                  <section id="ui-inventory-states-section-messages" className="grid gap-3">
+                    <PatternNote
+                      title="Section messages"
+                      eyebrow="State pattern"
+                      linkTarget="states/section-messages"
+                    >
                       Persistent feedback summarizes a panel-level result and provides the next
                       action when one is needed.
                     </PatternNote>
@@ -4074,8 +4216,15 @@ function PanelUIInventoryStory() {
                     />
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Navigation validation" eyebrow="State pattern">
+                  <section
+                    id="ui-inventory-states-navigation-validation"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Navigation validation"
+                      eyebrow="State pattern"
+                      linkTarget="states/navigation-validation"
+                    >
                       Error counts on tabs reveal where unresolved issues live, including problems
                       in sections that are not currently visible.
                     </PatternNote>
@@ -4097,8 +4246,15 @@ function PanelUIInventoryStory() {
                     </Tabs>
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Inline validation" eyebrow="State pattern">
+                  <section
+                    id="ui-inventory-states-inline-validation"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Inline validation"
+                      eyebrow="State pattern"
+                      linkTarget="states/inline-validation"
+                    >
                       Field-specific feedback stays beside the control so the issue and resolution
                       are clear in context.
                     </PatternNote>
@@ -4122,8 +4278,15 @@ function PanelUIInventoryStory() {
                     </InventoryField>
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Transient feedback" eyebrow="State pattern">
+                  <section
+                    id="ui-inventory-states-transient-feedback"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Transient feedback"
+                      eyebrow="State pattern"
+                      linkTarget="states/transient-feedback"
+                    >
                       Toasts confirm the result of a user action without interrupting the task. Keep
                       actionable errors visible in the panel instead.
                     </PatternNote>
@@ -4171,8 +4334,15 @@ function PanelUIInventoryStory() {
                     </div>
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Status labels" eyebrow="State pattern">
+                  <section
+                    id="ui-inventory-states-status-labels"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Status labels"
+                      eyebrow="State pattern"
+                      linkTarget="states/status-labels"
+                    >
                       Short labels communicate passive field or setting states without interrupting
                       the task.
                     </PatternNote>
@@ -4187,8 +4357,12 @@ function PanelUIInventoryStory() {
 
               <TabsContent value="actions" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
                 <div className="grid gap-5">
-                  <section className="grid gap-3">
-                    <PatternNote title="Button hierarchy" eyebrow="Action pattern">
+                  <section id="ui-inventory-actions-button-hierarchy" className="grid gap-3">
+                    <PatternNote
+                      title="Button hierarchy"
+                      eyebrow="Action pattern"
+                      linkTarget="actions/button-hierarchy"
+                    >
                       Use one primary action per context, with secondary, tertiary, and destructive
                       styles reflecting lower emphasis or greater consequence.
                     </PatternNote>
@@ -4200,8 +4374,15 @@ function PanelUIInventoryStory() {
                     </div>
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Header actions" eyebrow="Action pattern">
+                  <section
+                    id="ui-inventory-actions-header-actions"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Header actions"
+                      eyebrow="Action pattern"
+                      linkTarget="actions/header-actions"
+                    >
                       Reserve the panel header for high-frequency node-level commands such as
                       running or debugging. Keep the set small so the primary task remains clear.
                     </PatternNote>
@@ -4211,8 +4392,15 @@ function PanelUIInventoryStory() {
                     </div>
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Inline links" eyebrow="Action pattern">
+                  <section
+                    id="ui-inventory-actions-inline-links"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Inline links"
+                      eyebrow="Action pattern"
+                      linkTarget="actions/inline-links"
+                    >
                       Use a compact link when the action is related to nearby content and should not
                       compete with the panel's primary controls.
                     </PatternNote>
@@ -4221,8 +4409,15 @@ function PanelUIInventoryStory() {
                     </Button>
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Footer actions" eyebrow="Action pattern">
+                  <section
+                    id="ui-inventory-actions-footer-actions"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Footer actions"
+                      eyebrow="Action pattern"
+                      linkTarget="actions/footer-actions"
+                    >
                       Place panel-level actions at the end of the content, with the primary action
                       last and the cancel action immediately before it.
                     </PatternNote>
@@ -4232,8 +4427,15 @@ function PanelUIInventoryStory() {
                     </div>
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Manage" eyebrow="Action pattern">
+                  <section
+                    id="ui-inventory-actions-manage"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Manage"
+                      eyebrow="Action pattern"
+                      linkTarget="actions/manage"
+                    >
                       Use a secondary button when the action opens a separate configuration surface
                       for the field or section it affects.
                     </PatternNote>
@@ -4244,8 +4446,11 @@ function PanelUIInventoryStory() {
                     </div>
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Add" eyebrow="Action pattern">
+                  <section
+                    id="ui-inventory-actions-add"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote title="Add" eyebrow="Action pattern" linkTarget="actions/add">
                       Use the lightweight plus link when adding another item to a repeatable list.
                       Keep it separate from manage actions so the two intents are easy to scan.
                     </PatternNote>
@@ -4254,8 +4459,15 @@ function PanelUIInventoryStory() {
                     </div>
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Icon-only utilities" eyebrow="Action pattern">
+                  <section
+                    id="ui-inventory-actions-icon-utilities"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Icon-only utilities"
+                      eyebrow="Action pattern"
+                      linkTarget="actions/icon-utilities"
+                    >
                       Use compact icon actions for familiar utilities when space is limited. Always
                       provide a tooltip and accessible name.
                     </PatternNote>
@@ -4291,8 +4503,12 @@ function PanelUIInventoryStory() {
                 className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5"
               >
                 <div className="grid gap-5">
-                  <section className="grid gap-3">
-                    <PatternNote title="Repeatable field list" eyebrow="Composition pattern">
+                  <section id="ui-inventory-composition-repeatable-list" className="grid gap-3">
+                    <PatternNote
+                      title="Repeatable field list"
+                      eyebrow="Composition pattern"
+                      linkTarget="composition/repeatable-list"
+                    >
                       Use reorder, add, and remove controls when users build a variable-length set
                       of related fields.
                     </PatternNote>
@@ -4361,8 +4577,15 @@ function PanelUIInventoryStory() {
                     </div>
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Editing modes" eyebrow="Composition pattern">
+                  <section
+                    id="ui-inventory-composition-editing-modes"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Editing modes"
+                      eyebrow="Composition pattern"
+                      linkTarget="composition/editing-modes"
+                    >
                       Switch between a guided interface and a source representation without changing
                       the underlying configuration.
                     </PatternNote>
@@ -4394,8 +4617,15 @@ function PanelUIInventoryStory() {
                     )}
                   </section>
 
-                  <section className="grid gap-3 border-t border-border-subtle pt-5">
-                    <PatternNote title="Lockable value field" eyebrow="Composition pattern">
+                  <section
+                    id="ui-inventory-composition-lockable-value-field"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Lockable value field"
+                      eyebrow="Composition pattern"
+                      linkTarget="composition/lockable-value-field"
+                    >
                       Combines field type, required state, AI assistance, variable insertion, and
                       fixed or expression values in one reusable Flow control.
                     </PatternNote>
@@ -4413,7 +4643,7 @@ function PanelUIInventoryStory() {
                       headerActions={
                         <CanvasTooltip content="Remove field">
                           <Button variant="ghost" size="4xs" icon aria-label="Remove field">
-                            <X size={14} />
+                            <Trash2 size={14} />
                           </Button>
                         </CanvasTooltip>
                       }

@@ -104,6 +104,31 @@ export const LinkSizes: Story = {
   ),
 };
 
+export const AddFieldAction: Story = {
+  name: 'Add field action',
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        story:
+          'Lightweight plus-link action for adding another field to a repeatable list. Use the Theme toolbar to preview it in Future Light or Future Dark.',
+      },
+    },
+  },
+  render: () => (
+    <div className="flex min-h-24 w-full max-w-md items-center rounded-lg border border-border-subtle bg-background p-4 text-foreground">
+      <Button
+        variant="link"
+        size="3xs"
+        className="w-fit gap-1.5 text-brand hover:text-brand-hover future:text-brand future:hover:text-brand-hover"
+      >
+        <Plus />
+        Add field
+      </Button>
+    </div>
+  ),
+};
+
 export const LinkAsAnchor: Story = {
   name: 'Link as anchor',
   render: () => (

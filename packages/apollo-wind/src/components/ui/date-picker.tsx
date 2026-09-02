@@ -2,8 +2,8 @@
 
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import type { DateRange } from 'react-day-picker';
 import * as React from 'react';
+import type { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -34,6 +34,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
           aria-label={value ? `Selected date: ${format(value, 'PPP')}` : placeholder}
           className={cn(
             'w-full justify-start text-left font-normal',
+            'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
             !value && 'text-muted-foreground',
             className
           )}
@@ -94,6 +95,7 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
             }
             className={cn(
               'w-[300px] justify-start text-left font-normal',
+              'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
               !value && 'text-muted-foreground',
               className
             )}

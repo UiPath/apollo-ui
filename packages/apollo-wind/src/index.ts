@@ -68,6 +68,7 @@ export type {
   LockableValueFieldMode,
   LockableFieldType,
   LockableValueFieldOption,
+  LockableValueFieldMoreActions,
 } from './components/ui/lockable-value-field';
 
 export { Textarea } from './components/ui/textarea';

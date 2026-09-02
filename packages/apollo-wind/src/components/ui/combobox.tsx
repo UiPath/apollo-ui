@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -63,7 +63,7 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(funct
           disabled={disabled}
         >
           {selectedItem ? selectedItem.label : placeholder}
-          <ChevronsUpDown className="opacity-50" />
+          <ChevronDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0">
