@@ -121,7 +121,7 @@ describe('EscalateActionFields', () => {
     );
   });
 
-  it('renders the recipient error in both responsive regions', () => {
+  it('renders the recipient error once, inside the recipient field', () => {
     render(
       <EscalateActionFields
         {...baseProps}
@@ -131,7 +131,7 @@ describe('EscalateActionFields', () => {
       />
     );
 
-    expect(screen.getAllByText('Recipient is required')).toHaveLength(2);
+    expect(screen.getAllByText('Recipient is required')).toHaveLength(1);
   });
 
   it('uses the renderAppPicker slot with app context', () => {

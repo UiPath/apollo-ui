@@ -1,8 +1,8 @@
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib';
 import type { GuardrailValidatorFormLabels } from '../i18n';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from '../types';
-import { ParameterError, ParameterLabel } from './parameter-label';
+import { ParameterLabel } from './parameter-label';
 
 export interface NumberParameterFieldProps {
   paramDef: GuardrailParameterDefinition;
@@ -24,7 +24,7 @@ export function NumberParameterField({
   const inputId = `guardrail-param-${paramDef.id}`;
 
   return (
-    <div className="space-y-2">
+    <FormField>
       <ParameterLabel paramDef={paramDef} labels={labels} htmlFor={inputId} />
       <Input
         id={inputId}
@@ -34,9 +34,8 @@ export function NumberParameterField({
         min={paramDef.min}
         max={paramDef.max}
         step={paramDef.step}
-        className={cn(error && 'border-destructive')}
+        error={error}
       />
-      <ParameterError error={error} />
-    </div>
+    </FormField>
   );
 }

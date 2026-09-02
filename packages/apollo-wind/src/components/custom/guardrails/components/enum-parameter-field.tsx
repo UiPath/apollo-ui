@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { FormField, FormFieldError } from '@/components/ui/form-field';
 import {
   Select,
   SelectContent,
@@ -6,10 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib';
 import type { GuardrailValidatorFormLabels } from '../i18n';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from '../types';
-import { ParameterError, ParameterLabel } from './parameter-label';
+import { ParameterLabel } from './parameter-label';
 
 export interface EnumParameterFieldProps {
   paramDef: GuardrailParameterDefinition;
@@ -51,10 +51,10 @@ export function EnumParameterField({
   const triggerId = `guardrail-param-${paramDef.id}`;
 
   return (
-    <div className="space-y-2">
+    <FormField>
       <ParameterLabel paramDef={paramDef} labels={labels} htmlFor={triggerId} />
       <Select value={current} onValueChange={onChange}>
-        <SelectTrigger id={triggerId} className={cn('h-9', error && 'border-destructive')}>
+        <SelectTrigger id={triggerId} aria-invalid={error ? true : undefined}>
           <SelectValue placeholder={labels.enumPlaceholder} />
         </SelectTrigger>
         <SelectContent>
@@ -65,7 +65,7 @@ export function EnumParameterField({
           ))}
         </SelectContent>
       </Select>
-      <ParameterError error={error} />
-    </div>
+      <FormFieldError>{error}</FormFieldError>
+    </FormField>
   );
 }

@@ -1,11 +1,12 @@
 import { Info } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { FormField, FormFieldLabel } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib';
 import {
   GUARDRAIL_BYO_VALIDATOR_TYPE,
@@ -26,6 +27,7 @@ import {
 import { GuardrailActionSection } from './components/guardrail-action-section';
 import { GuardrailScopeSelector } from './components/guardrail-scope-selector';
 import { GuardrailStatusBanner } from './components/guardrail-status-banner';
+import { InfoTooltip } from './components/info-tooltip';
 import { MixedScopesBanner } from './components/mixed-scopes-banner';
 import { GuardrailFormLayout } from './guardrail-form-layout';
 import { GuardrailValidatorForm } from './guardrail-validator-form';
@@ -294,8 +296,8 @@ export function GuardrailBuilder({
   ) : null;
 
   const usageNote = definition.usageNote ? (
-    <Alert className="border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
-      <Info className="h-4 w-4 text-blue-700 dark:text-blue-300" />
+    <Alert variant="info" data-slot="guardrail-usage-note">
+      <Info />
       <AlertDescription>{definition.usageNote}</AlertDescription>
     </Alert>
   ) : null;
@@ -307,65 +309,53 @@ export function GuardrailBuilder({
         checked={formData.enabledForEvals}
         onCheckedChange={(checked) => updateField('enabledForEvals', checked)}
       />
-      <Label htmlFor="ootb-enable-evals" className="text-sm font-normal cursor-pointer">
+      <Label variant="muted" htmlFor="ootb-enable-evals" className="cursor-pointer">
         {labels.evalsLabel}
       </Label>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Info
-            className="h-4 w-4 text-muted-foreground cursor-pointer"
-            aria-label={labels.evalsInfoAriaLabel}
-          />
-        </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-[300px]">
-          {labels.evalsTooltip}
-        </TooltipContent>
-      </Tooltip>
+      <InfoTooltip content={labels.evalsTooltip} aria-label={labels.evalsInfoAriaLabel} />
     </div>
   );
 
   const validatorFormErrors = displayErrors.parameters;
 
   const formBody = (
-    <div className={cn('space-y-4 py-4', className)}>
+    <div data-slot="guardrail-builder" className={cn('space-y-4 py-4', className)}>
       {statusBanner}
       {usageNote}
 
       {/* Guardrail type (read-only in edit mode — matches the type selector in the create flow) */}
       {guardrail && (
-        <div className="space-y-2">
+        <FormField>
           <Label htmlFor="ootb-type">{labels.typeLabel}</Label>
           <Input id="ootb-type" value={definition.displayName} disabled readOnly />
-        </div>
+        </FormField>
       )}
 
       {/* Name */}
-      <div className="space-y-2">
-        <Label htmlFor="ootb-name">
-          {labels.nameLabel} <span className="text-destructive">*</span>
-        </Label>
+      <FormField>
+        <FormFieldLabel htmlFor="ootb-name" required>
+          {labels.nameLabel}
+        </FormFieldLabel>
         <Input
           id="ootb-name"
           value={formData.name}
           onChange={(e) => updateField('name', e.target.value)}
           placeholder={labels.namePlaceholder}
-          className={cn(displayErrors.name && 'border-destructive')}
+          error={displayErrors.name}
         />
-        {displayErrors.name && <p className="text-xs text-destructive">{displayErrors.name}</p>}
-      </div>
+      </FormField>
 
       {/* Description */}
-      <div className="space-y-2">
+      <FormField>
         <Label htmlFor="ootb-description">{labels.descriptionLabel}</Label>
         <Textarea
           id="ootb-description"
-          rows={1}
+          minRows={1}
           value={formData.description}
           onChange={(e) => updateField('description', e.target.value)}
           placeholder={labels.descriptionPlaceholder}
-          className="resize-y !min-h-0"
         />
-      </div>
+      </FormField>
 
       {/* Validator parameters */}
       {definition.parameters.length > 0 && (
@@ -392,7 +382,7 @@ export function GuardrailBuilder({
         />
       )}
 
-      <hr className="border-border" />
+      <Separator />
 
       {/* Action section */}
       <div className="space-y-3">

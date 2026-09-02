@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { FormField, FormFieldError, FormFieldLabel } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { GuardrailBuilderValue, GuardrailDefinition } from './builder-types';
 import { GuardrailBuilder } from './guardrail-builder';
@@ -214,8 +214,8 @@ export const EscalateWithSlots: Story = {
             </div>
           )}
           renderAppPicker={(ctx) => (
-            <div className="space-y-2">
-              <Label>{ctx.label}</Label>
+            <FormField>
+              <FormFieldLabel required>{ctx.label}</FormFieldLabel>
               <Button
                 type="button"
                 variant="outline"
@@ -226,8 +226,8 @@ export const EscalateWithSlots: Story = {
               >
                 {ctx.app?.name ?? 'Pick an escalation app'}
               </Button>
-              {ctx.error && <p className="text-xs text-destructive">{ctx.error}</p>}
-            </div>
+              <FormFieldError>{ctx.error}</FormFieldError>
+            </FormField>
           )}
           escalateHelp={
             <p className="text-xs text-muted-foreground">

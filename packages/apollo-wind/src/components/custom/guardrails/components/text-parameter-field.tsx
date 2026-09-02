@@ -1,8 +1,8 @@
+import { FormField, FormFieldError } from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib';
 import type { GuardrailValidatorFormLabels } from '../i18n';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from '../types';
-import { ParameterError, ParameterLabel } from './parameter-label';
+import { ParameterLabel } from './parameter-label';
 
 export interface TextParameterFieldProps {
   paramDef: GuardrailParameterDefinition;
@@ -27,17 +27,17 @@ export function TextParameterField({
   const inputId = `guardrail-param-${paramDef.id}`;
 
   return (
-    <div className="space-y-2">
+    <FormField>
       <ParameterLabel paramDef={paramDef} labels={labels} htmlFor={inputId} />
       <Textarea
         id={inputId}
         value={current}
         onChange={(e) => onChange(e.target.value)}
-        rows={3}
+        minRows={3}
         maxLength={paramDef.maxLength}
-        className={cn('resize-y', error && 'border-destructive')}
+        aria-invalid={error ? true : undefined}
       />
-      <ParameterError error={error} />
-    </div>
+      <FormFieldError>{error}</FormFieldError>
+    </FormField>
   );
 }
