@@ -4,19 +4,22 @@ import * as React from 'react';
 
 import { cn } from '@/lib/index';
 
-const labelVariants = cva('text-xs peer-disabled:cursor-not-allowed peer-disabled:opacity-70', {
-  variants: {
-    variant: {
-      /** Names a field: the header above an input, select, or editor. */
-      default: 'font-medium text-foreground',
-      /** De-emphasized, for a label that names one option inside a field. */
-      muted: 'font-normal text-foreground-muted',
+const labelVariants = cva(
+  'inline-block text-xs peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+  {
+    variants: {
+      variant: {
+        /** Names a field: the header above an input, select, or editor. */
+        default: 'font-medium text-foreground',
+        /** De-emphasized, for a label that names one option inside a field. */
+        muted: 'font-normal text-foreground-muted',
+      },
     },
-  },
-  defaultVariants: {
-    variant: 'default',
-  },
-});
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+);
 
 /** Variant props, for consumers that forward a variant through to `Label`. */
 export type LabelVariants = VariantProps<typeof labelVariants>;
@@ -29,6 +32,15 @@ export type LabelProps = React.ComponentPropsWithoutRef<typeof LabelPrimitive.Ro
  * Long labels wrap. Do not ellipsize one with `truncate`: the indicator shares
  * the label's inline run, so the ellipsis swallows it, and a clipped field name
  * is unreadable anyway.
+ *
+ * Renders `inline-block` rather than the `<label>` default of `inline`.
+ * Vertical margins do nothing on an inline box, so under Tailwind v4, where
+ * `space-y-*` puts `margin-block-end` on every child but the last, the gap a
+ * `space-y-1.5` wrapper means to put under the label was silently dropped.
+ * `inline-block` keeps the label usable in inline flow, which `block` would
+ * not. As a grid or flex item the label is blockified anyway, so this changes
+ * nothing inside `FormField`, and a consumer needing another display passes
+ * one: `cn` merges `className` last.
  *
  * `data-variant` exposes the variant so a container can restyle every label of
  * one kind at once rather than reaching for each slot by name. Target it as

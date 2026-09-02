@@ -24,6 +24,18 @@ describe('Label', () => {
     expect(results).toHaveNoViolations();
   });
 
+  it('is inline-block so a vertical margin from a space-y-* wrapper lands', () => {
+    render(<Label>Email</Label>);
+    expect(screen.getByText('Email')).toHaveClass('inline-block');
+  });
+
+  it('lets a consumer swap the display', () => {
+    render(<Label className="flex items-center gap-2">Email</Label>);
+    const label = screen.getByText('Email');
+    expect(label).toHaveClass('flex');
+    expect(label).not.toHaveClass('inline-block');
+  });
+
   it('applies the default treatment', () => {
     render(<Label>Email</Label>);
     expect(screen.getByText('Email')).toHaveClass('text-xs', 'font-medium', 'text-foreground');
