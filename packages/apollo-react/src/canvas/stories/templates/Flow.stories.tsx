@@ -3775,6 +3775,7 @@ function DapValueField({
 }
 
 function DapPanel({ onClose }: { onClose: () => void }) {
+  const [connection, setConnection] = useState('gmail-finance');
   const [subject, setSubject] = useState('Invoice approval required');
   const [recipient, setRecipient] = useState('$vars.approverEmail');
   const [body, setBody] = useState(
@@ -3852,30 +3853,29 @@ function DapPanel({ onClose }: { onClose: () => void }) {
             </p>
 
             <section className="space-y-1.5">
-              <div className="flex items-center justify-between gap-3">
-                <Label htmlFor="dap-connection" className="text-xs font-semibold text-foreground">
-                  Connection
-                </Label>
-                <Button
-                  size="3xs"
-                  variant="link"
-                  className="h-6 px-0 text-[11px] font-medium text-brand hover:text-brand"
-                >
-                  Refresh schema
-                </Button>
-              </div>
-              <Select defaultValue="gmail-finance">
-                <SelectTrigger
-                  id="dap-connection"
-                  className="h-9 w-full bg-surface-overlay text-xs"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gmail-finance">Gmail · Finance operations</SelectItem>
-                  <SelectItem value="gmail-personal">Gmail · Personal</SelectItem>
-                </SelectContent>
-              </Select>
+              <LockableValueField
+                id="dap-connection"
+                label={
+                  <Label htmlFor="dap-connection" className="text-xs font-semibold text-foreground">
+                    Connection
+                  </Label>
+                }
+                fieldType="single-select"
+                value={connection}
+                onValueChange={setConnection}
+                locked={false}
+                showLock={false}
+                options={[
+                  { value: 'gmail-finance', label: 'Gmail · Finance operations' },
+                  { value: 'gmail-personal', label: 'Gmail · Personal' },
+                ]}
+                more={{
+                  onClear: () => setConnection(''),
+                  onRefresh: () => setConnection('gmail-finance'),
+                }}
+                showFieldActions={false}
+                className="gap-1.5"
+              />
               <Alert className="border-brand/30 bg-brand-subtle/30 py-2.5">
                 <AlertDescription className="text-[11px] leading-4">
                   Schema is current. Nine configurable message properties are available.
@@ -3921,7 +3921,7 @@ function DapPanel({ onClose }: { onClose: () => void }) {
                     </Button>
                   </VariablePicker>
                 </div>
-                <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-overlay focus-within:border-border-focus">
+                <div className="overflow-hidden rounded-lg border border-border-subtle future:bg-surface-overlay focus-within:border-border-focus">
                   <div className="flex h-8 items-center gap-1 border-b border-border-subtle px-2">
                     <Button size="sm" variant="ghost" className="size-6 p-0" aria-label="Bold">
                       <Bold size={13} />
@@ -3988,7 +3988,7 @@ function DapPanel({ onClose }: { onClose: () => void }) {
                   <div className="space-y-1.5">
                     <Label className="text-xs">Importance</Label>
                     <Select defaultValue="normal">
-                      <SelectTrigger className="h-9 w-full bg-surface-overlay text-xs">
+                      <SelectTrigger className="h-9 w-full future:bg-surface-overlay text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

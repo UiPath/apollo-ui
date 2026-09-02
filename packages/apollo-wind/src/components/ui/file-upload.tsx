@@ -237,7 +237,7 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
       const k = 1024;
       const sizes = ['Bytes', 'KB', 'MB', 'GB'];
       const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return Math.round((bytes / k ** i) * 100) / 100 + ' ' + sizes[i];
+      return `${Math.round((bytes / k ** i) * 100) / 100} ${sizes[i]}`;
     };
 
     return (
@@ -279,15 +279,15 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
           tabIndex={disabled ? -1 : 0}
           className={cn(
             // Base styles (all themes)
-            'relative flex flex-col items-center justify-center w-full h-32 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+            'relative flex w-full flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg px-4 py-6 cursor-pointer transition-colors',
+            'text-foreground-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
             // Future Dark / Future Light overrides
-            'future:rounded-xl',
+            'future:rounded-xl future:border-border-subtle future:bg-surface-overlay future:hover:bg-surface-hover future:focus-visible:ring-offset-background',
             isDragging
               ? 'border-primary bg-primary/5'
-              : 'border-input bg-background hover:bg-accent/50 future:border-border future:bg-surface-raised future:hover:bg-surface-overlay',
+              : 'border-input bg-background hover:bg-accent/50',
             disabled &&
-              'opacity-50 cursor-not-allowed hover:bg-background future:hover:bg-surface-raised'
+              'opacity-50 cursor-not-allowed hover:bg-background future:hover:bg-surface-overlay'
           )}
           onDragEnter={handleDragEnter}
           onDragOver={handleDragOver}
@@ -301,15 +301,19 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
             }
           }}
         >
-          <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground text-center">
+          <Upload className="mb-2 h-8 w-8 text-muted-foreground future:text-foreground-muted" />
+          <p className="text-center text-sm text-muted-foreground future:text-foreground-muted">
             <span className="font-semibold">Click to upload</span> or drag and drop
           </p>
           {accept && (
-            <p className="text-xs text-muted-foreground mt-1">{accept.split(',').join(', ')}</p>
+            <p className="mt-1 text-xs text-muted-foreground future:text-foreground-muted">
+              {accept.split(',').join(', ')}
+            </p>
           )}
           {maxSize && (
-            <p className="text-xs text-muted-foreground">Max size: {formatFileSize(maxSize)}</p>
+            <p className="text-xs text-muted-foreground future:text-foreground-muted">
+              Max size: {formatFileSize(maxSize)}
+            </p>
           )}
         </div>
 

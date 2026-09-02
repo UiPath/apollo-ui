@@ -1,5 +1,5 @@
 import type { Meta } from '@storybook/react-vite';
-import { Check, ChevronsUpDown, Loader2, X } from 'lucide-react';
+import { Check, ChevronDown, Loader2, X } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '../../lib';
 import { Badge } from './badge';
@@ -98,7 +98,7 @@ function MultiSelectCombobox() {
             className="w-[320px] justify-between future:gap-4 future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background"
           >
             {selected.length > 0 ? `${selected.length} selected` : 'Select frameworks...'}
-            <ChevronsUpDown className="opacity-50" />
+            <ChevronDown className="opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[320px] p-0">
@@ -192,7 +192,7 @@ function CustomDisplayCombobox() {
           ) : (
             'Select issue type...'
           )}
-          <ChevronsUpDown className="opacity-50" />
+          <ChevronDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[320px] p-0">
@@ -287,7 +287,7 @@ function AsyncCombobox() {
             className="w-[280px] justify-between future:gap-4 future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background"
           >
             {selected ? selected.label : 'Search libraries...'}
-            <ChevronsUpDown className="opacity-50" />
+            <ChevronDown className="opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[280px] p-0">

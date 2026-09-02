@@ -82,6 +82,7 @@ export const WithInlineValidation = {
         <DropdownMenuTrigger
           asChild
           field
+          className="w-fit"
           error="Select a connection before continuing."
           errorId="connection-dropdown-error"
         >
@@ -110,7 +111,7 @@ export const DropdownWithActions = {
   name: 'Dropdown with Actions',
   render: () => (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild field>
         <Button variant="outline">
           Actions
           <ChevronDown className="ml-2 h-4 w-4" />
@@ -148,7 +149,7 @@ export const DropdownWithActions = {
           Download
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive focus:text-destructive">
+        <DropdownMenuItem className="text-error focus:text-error">
           <Trash2 className="mr-2 h-4 w-4" />
           Delete
           <DropdownMenuShortcut>⌫</DropdownMenuShortcut>
@@ -172,7 +173,7 @@ export const DropdownWithCheckboxes = {
 
     return (
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger asChild field>
           <Button variant="outline">
             Columns
             <ChevronDown className="ml-2 h-4 w-4" />
@@ -279,17 +280,17 @@ export const FileActions = {
     ];
 
     return (
-      <div className="w-[500px] rounded-lg border">
+      <div className="w-[500px] overflow-hidden rounded-xl border border-border-subtle bg-surface-overlay">
         {files.map((file, i) => (
           <div
             key={file.name}
-            className={`flex items-center justify-between px-4 py-3 ${i < files.length - 1 ? 'border-b' : ''}`}
+            className={`flex items-center justify-between px-4 py-3 ${i < files.length - 1 ? 'border-b border-border-subtle' : ''}`}
           >
             <div className="flex items-center gap-3">
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <FileText className="h-4 w-4 text-foreground-muted" />
               <div>
                 <p className="text-sm font-medium">{file.name}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-foreground-muted">
                   {file.type} · {file.size}
                 </p>
               </div>
@@ -325,7 +326,7 @@ export const FileActions = {
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                <DropdownMenuItem className="text-error focus:text-error">
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete
                 </DropdownMenuItem>
@@ -471,7 +472,7 @@ export const DataTable = {
                     Duplicate
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive focus:text-destructive">
+                  <DropdownMenuItem className="text-error focus:text-error">
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
                   </DropdownMenuItem>
