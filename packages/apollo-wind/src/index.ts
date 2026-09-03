@@ -246,6 +246,16 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
+  Modal,
+  ModalClose,
+  ModalContent,
+  ModalDescription,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  ModalPortal,
+  ModalTitle,
+  ModalTrigger,
 } from './components/ui/dialog';
 
 export {

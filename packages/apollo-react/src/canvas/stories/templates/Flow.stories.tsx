@@ -24,6 +24,8 @@ import {
   Label,
   LockableValueField,
   type LockableValueFieldMode,
+  Modal,
+  ModalContent,
   type PanelImperativeHandle,
   RadioGroup,
   RadioGroupItem,
@@ -116,7 +118,6 @@ import {
   CountBadge,
   TOOLBAR_ICON_BUTTON_CLASS,
 } from '../../components/CanvasModeToolbar';
-import { CanvasTakeoverModal } from '../../components/CanvasTakeoverModal';
 import { CanvasZoomControls } from '../../components/CanvasZoomControls';
 import { NodeIOView } from '../../components/NodeIOView';
 import { NodePropertyPanel, NodePropertyPanelLayout } from '../../components/NodePropertyPanel';
@@ -729,7 +730,7 @@ function CanvasNavigationControls() {
         <CountBadge count={1} />
       </ToolbarButton>
       <Separator orientation="vertical" className="h-5" />
-      <ToolbarButton label="Run debug" className={TOOLBAR_ICON_BUTTON_CLASS}>
+      <ToolbarButton label="Run" className={TOOLBAR_ICON_BUTTON_CLASS}>
         <Play />
       </ToolbarButton>
       <Separator orientation="vertical" className="h-5" />
@@ -1076,7 +1077,7 @@ export function QuickFormPropertiesPanelPreview({ onClose }: { onClose: () => vo
           className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent"
         >
           <Play size={14} />
-          Debug
+          Run
         </button>
       }
       onClose={onClose}
@@ -4381,52 +4382,54 @@ export function FullWorkbenchComposition({
         </ResizablePanelGroup>
       </div>
       {rightPanelVariant === 'node' && (
-        <CanvasTakeoverModal
-          open={nodeTakeoverOpen}
-          onOpenChange={setNodeTakeoverOpen}
-          title="Send Email"
-          headerActions={
-            <Button size="sm" variant="secondary">
-              <Play size={14} /> Run node
-            </Button>
-          }
-        >
-          <SendEmailTakeoverPanels />
-        </CanvasTakeoverModal>
+        <Modal open={nodeTakeoverOpen} onOpenChange={setNodeTakeoverOpen}>
+          <ModalContent
+            variant="takeover"
+            title="Send Email"
+            headerActions={
+              <Button size="sm" variant="secondary">
+                <Play size={14} /> Run node
+              </Button>
+            }
+          >
+            <SendEmailTakeoverPanels />
+          </ModalContent>
+        </Modal>
       )}
       {rightPanelVariant === 'variables' && (
-        <CanvasTakeoverModal
-          open={variablesTakeoverOpen}
-          onOpenChange={setVariablesTakeoverOpen}
-          title={VARIABLE_DEMO_NODES[selectedVariableNodeId]?.label ?? 'Node configuration'}
-        >
-          <div className="grid h-full min-h-0 grid-cols-2 divide-x divide-border-subtle overflow-hidden">
-            <UnifiedVariablesPanel
-              nodeId={selectedVariableNodeId}
-              activeTab={variableDemoTab}
-              onActiveTabChange={setVariableDemoTab}
-              workflowVariables={editableWorkflowVariables}
-              onWorkflowVariablesChange={setEditableWorkflowVariables}
-              parameterValues={variableParameterValues}
-              onParameterValueChange={(key, value) =>
-                setVariableParameterValues((current) => ({ ...current, [key]: value }))
-              }
-              columnMode="parameters"
-            />
-            <UnifiedVariablesPanel
-              nodeId={selectedVariableNodeId}
-              activeTab={variableDemoTab}
-              onActiveTabChange={setVariableDemoTab}
-              workflowVariables={editableWorkflowVariables}
-              onWorkflowVariablesChange={setEditableWorkflowVariables}
-              parameterValues={variableParameterValues}
-              onParameterValueChange={(key, value) =>
-                setVariableParameterValues((current) => ({ ...current, [key]: value }))
-              }
-              columnMode="variables"
-            />
-          </div>
-        </CanvasTakeoverModal>
+        <Modal open={variablesTakeoverOpen} onOpenChange={setVariablesTakeoverOpen}>
+          <ModalContent
+            variant="takeover"
+            title={VARIABLE_DEMO_NODES[selectedVariableNodeId]?.label ?? 'Node configuration'}
+          >
+            <div className="grid h-full min-h-0 grid-cols-2 divide-x divide-border-subtle overflow-hidden">
+              <UnifiedVariablesPanel
+                nodeId={selectedVariableNodeId}
+                activeTab={variableDemoTab}
+                onActiveTabChange={setVariableDemoTab}
+                workflowVariables={editableWorkflowVariables}
+                onWorkflowVariablesChange={setEditableWorkflowVariables}
+                parameterValues={variableParameterValues}
+                onParameterValueChange={(key, value) =>
+                  setVariableParameterValues((current) => ({ ...current, [key]: value }))
+                }
+                columnMode="parameters"
+              />
+              <UnifiedVariablesPanel
+                nodeId={selectedVariableNodeId}
+                activeTab={variableDemoTab}
+                onActiveTabChange={setVariableDemoTab}
+                workflowVariables={editableWorkflowVariables}
+                onWorkflowVariablesChange={setEditableWorkflowVariables}
+                parameterValues={variableParameterValues}
+                onParameterValueChange={(key, value) =>
+                  setVariableParameterValues((current) => ({ ...current, [key]: value }))
+                }
+                columnMode="variables"
+              />
+            </div>
+          </ModalContent>
+        </Modal>
       )}
     </div>
   );
@@ -4478,15 +4481,16 @@ function TakeoverComposition() {
           </div>
         </div>
       )}
-      <CanvasTakeoverModal
-        open={open}
-        onOpenChange={setOpen}
-        title="Test workflow"
-        sidebar={<div className="h-full" />}
-        headerActions={<Button size="sm">Run test</Button>}
-      >
-        <div className="h-full min-h-[480px] bg-surface" />
-      </CanvasTakeoverModal>
+      <Modal open={open} onOpenChange={setOpen}>
+        <ModalContent
+          variant="takeover"
+          title="Test workflow"
+          sidebar={<div className="h-full" />}
+          headerActions={<Button size="sm">Run</Button>}
+        >
+          <div className="h-full min-h-[480px]" />
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

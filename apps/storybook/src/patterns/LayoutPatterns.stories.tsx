@@ -324,7 +324,7 @@ function CanvasNavigationControls() {
         <CountBadge count={1} />
       </ToolbarButton>
       <Separator orientation="vertical" className="h-5" />
-      <ToolbarButton label="Run debug" className={TOOLBAR_ICON_BUTTON_CLASS}>
+      <ToolbarButton label="Run" className={TOOLBAR_ICON_BUTTON_CLASS}>
         <Play />
       </ToolbarButton>
       <Separator orientation="vertical" className="h-5" />
@@ -1277,7 +1277,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
               </InventoryCallout>
               <div className="flex flex-wrap gap-2">
                 <Button className={panelId === 1 ? 'future:!text-white' : undefined}>Run</Button>
-                <Button variant="outline">Debug</Button>
+                <Button variant="outline">Run</Button>
               </div>
               <InventoryCallout eyebrow="Action pattern" title="Manage">
                 Use Manage when the action opens a separate configuration surface for the field or

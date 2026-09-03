@@ -1,9 +1,7 @@
 import type { Meta } from '@storybook/react-vite';
-import { ExternalLink, Trash2 } from 'lucide-react';
+import { ExternalLink, Plus, Trash2 } from 'lucide-react';
 import * as React from 'react';
 import { Button } from './button';
-import { Input } from './input';
-import { Label } from './label';
 import {
   Dialog,
   DialogClose,
@@ -14,13 +12,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './dialog';
+import { Input } from './input';
+import { Label } from './label';
 
 // Storybook decorator injects viewMode so story components can open by default
 // on the canvas page but stay closed on the docs page.
 const ViewModeContext = React.createContext<string>('story');
 
 const meta: Meta<typeof Dialog> = {
-  title: 'Components/Overlays/Dialog (Modal)',
+  title: 'Components/Overlays/Modal',
   component: Dialog,
   tags: ['autodocs'],
   decorators: [
@@ -34,9 +34,9 @@ const meta: Meta<typeof Dialog> = {
     docs: {
       description: {
         component:
-          'A window overlaid on the primary content, rendering it inert while the dialog is open. ' +
-          'This component follows [shadcn/ui](https://ui.shadcn.com/docs/components/dialog) naming conventions — ' +
-          'if you are looking for a **modal**, this is it. ' +
+          'A window overlaid on the primary content, rendering it inert while the modal is open. ' +
+          'This component uses the [shadcn/ui Dialog](https://ui.shadcn.com/docs/components/dialog) component and follows its naming conventions, ' +
+          'but we call it **Modal** in our internal Apollo system. If you are looking for a **modal**, this is it. ' +
           'For destructive confirmations that require an explicit user decision, see the **Alert Dialog** component instead.',
       },
     },
@@ -145,6 +145,71 @@ function ComplexDialogStory() {
 export const ComplexDialog = {
   name: 'Complex',
   render: () => <ComplexDialogStory />,
+};
+
+// ============================================================================
+// Takeover Modal
+// ============================================================================
+
+function TakeoverModalStory({ withSidebar }: { withSidebar: boolean }) {
+  const viewMode = React.useContext(ViewModeContext);
+  const [open, setOpen] = React.useState(viewMode === 'story');
+  const [expanded, setExpanded] = React.useState(false);
+
+  return (
+    <div className="relative h-screen min-h-[560px] overflow-hidden bg-surface">
+      <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_center,var(--color-surface-overlay)_1px,transparent_1px)] bg-[length:20px_20px]">
+        {!open && <Button onClick={() => setOpen(true)}>Open takeover modal</Button>}
+      </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          variant="takeover"
+          title="Modal title"
+          sidebar={
+            withSidebar ? (
+              <div className="p-2">
+                <div className="flex h-11 items-center justify-between px-2">
+                  <span className="text-sm font-semibold">Title</span>
+                  <button
+                    type="button"
+                    className="grid size-7 place-items-center rounded-md text-foreground-muted hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+                    aria-label="Add"
+                  >
+                    <Plus size={15} />
+                  </button>
+                </div>
+              </div>
+            ) : undefined
+          }
+          expanded={expanded}
+          onExpandedChange={setExpanded}
+        >
+          <div className="flex h-full min-h-[360px] flex-col">
+            <div className="flex min-h-14 items-center justify-between border-b border-border-subtle px-5">
+              <div>
+                <p className="text-sm font-semibold">Title</p>
+                <p className="text-xs text-foreground-subtle">Subtext</p>
+              </div>
+              <Button variant="secondary" size="sm">
+                Action
+              </Button>
+            </div>
+            <div className="min-h-0 flex-1" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+export const TakeoverWithSidebar = {
+  name: 'Takeover w/ Sidebar',
+  render: () => <TakeoverModalStory withSidebar />,
+};
+
+export const TakeoverNoSidebar = {
+  name: 'Takeover no Sidebar',
+  render: () => <TakeoverModalStory withSidebar={false} />,
 };
 
 // ============================================================================
@@ -366,7 +431,7 @@ function StickyFooterDialogStory() {
       <DialogTrigger asChild>
         <Button variant="outline">Invite members</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col gap-0 p-0">
+      <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-lg">
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle>Invite Team Members</DialogTitle>
           <DialogDescription>
@@ -386,19 +451,19 @@ function StickyFooterDialogStory() {
           ].map((person) => (
             <div
               key={person.email}
-              className="flex items-center justify-between rounded-md border p-3"
+              className="flex items-center justify-between rounded-md border border-border-subtle bg-surface-overlay p-3"
             >
               <div>
                 <p className="text-sm font-medium">{person.name}</p>
-                <p className="text-xs text-muted-foreground">{person.email}</p>
+                <p className="text-xs text-foreground-subtle">{person.email}</p>
               </div>
-              <span className="text-xs rounded-full border px-2 py-0.5 text-muted-foreground">
+              <span className="rounded-full border border-border-subtle px-2 py-0.5 text-xs text-foreground-muted">
                 {person.role}
               </span>
             </div>
           ))}
         </div>
-        <div className="border-t px-6 py-4 flex items-center gap-2">
+        <div className="flex items-center gap-2 border-t border-border-subtle bg-surface-raised px-6 py-4">
           <Input placeholder="Enter email address" className="flex-1" />
           <Button>Send Invite</Button>
         </div>

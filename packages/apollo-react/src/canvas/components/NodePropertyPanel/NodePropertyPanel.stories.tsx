@@ -219,18 +219,6 @@ function RunButtonIconOnly() {
   );
 }
 
-function DebugButton() {
-  return (
-    <button
-      type="button"
-      className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
-    >
-      <Play size={14} />
-      Debug
-    </button>
-  );
-}
-
 function PanelAddButton({ children = 'Add field' }: { children?: ReactNode }) {
   return (
     <button
@@ -710,7 +698,7 @@ function FullEditorStory() {
               </div>
             </div>
             <div className="shrink-0">
-              <DebugButton />
+              <RunButton />
             </div>
           </div>
 
@@ -1251,7 +1239,7 @@ function CompactEditorStory() {
               </div>
             </div>
             <div className="shrink-0">
-              <DebugButton />
+              <RunButton />
             </div>
           </div>
 
@@ -1472,7 +1460,7 @@ function InputEditorStory() {
               </div>
             </div>
             <div className="shrink-0">
-              <DebugButton />
+              <RunButton />
             </div>
           </div>
 
@@ -3186,7 +3174,7 @@ export function QuickFormPanel({
       nodeIcon={<UserRoundCheck />}
       nodeLabel="Quick Approve"
       nodeCategory="Quick approve/reject decision for the extracted invoice."
-      action={<DebugButton />}
+      action={<RunButton />}
       onClose={onClose}
       contentInset="0.875rem"
       className={className}
@@ -4388,7 +4376,7 @@ function PanelUIInventoryStory() {
                     </PatternNote>
                     <div className="flex flex-wrap items-center gap-2">
                       <RunButton />
-                      <DebugButton />
+                      <RunButton />
                     </div>
                   </section>
 
