@@ -1344,80 +1344,84 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                 related fields.
               </InventoryCallout>
               <div className="grid gap-2">
-                {compositionFields.map((field, index) => (
-                  <li
-                    key={field}
-                    aria-label={`Drag ${field} to reorder`}
-                    draggable
-                    onDragStart={() => setDraggedCompositionField(field)}
-                    onDragOver={(event) => {
-                      event.preventDefault();
-                      if (draggedCompositionField !== field) {
-                        setDragOverCompositionField(field);
-                      }
-                    }}
-                    onDrop={() => {
-                      if (!draggedCompositionField || draggedCompositionField === field) return;
-                      setCompositionFields((fields) => {
-                        const nextFields = [...fields];
-                        const fromIndex = nextFields.indexOf(draggedCompositionField);
-                        const toIndex = nextFields.indexOf(field);
-                        nextFields.splice(fromIndex, 1);
-                        nextFields.splice(toIndex, 0, draggedCompositionField);
-                        return nextFields;
-                      });
-                      setDraggedCompositionField(null);
-                      setDragOverCompositionField(null);
-                    }}
-                    onDragLeave={() => setDragOverCompositionField(null)}
-                    onDragEnd={() => {
-                      setDraggedCompositionField(null);
-                      setDragOverCompositionField(null);
-                    }}
-                    className={`group/field flex items-center gap-1 rounded-lg border border-border-subtle p-2 transition-colors hover:bg-accent ${
-                      draggedCompositionField === field ? 'opacity-50' : ''
-                    } ${
-                      dragOverCompositionField === field ? 'bg-accent ring-2 ring-brand/30' : ''
-                    }`}
-                  >
-                    <GripVertical
-                      className="h-3 w-3 shrink-0 cursor-grab text-muted-foreground opacity-0 group-hover/field:opacity-50 active:cursor-grabbing"
-                      aria-hidden="true"
-                    />
-                    <span className="min-w-0 flex-1 text-xs text-foreground">{field}</span>
-                    <div className="flex gap-0.5 opacity-0 transition-opacity group-hover/field:opacity-100">
-                      <Button
-                        variant="ghost"
-                        size="4xs"
-                        icon
-                        aria-label={`Move ${field} up`}
-                        disabled={index === 0}
-                      >
-                        <ChevronUp size={12} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="4xs"
-                        icon
-                        aria-label={`Move ${field} down`}
-                        disabled={index === 2}
-                      >
-                        <ChevronDown size={12} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="4xs"
-                        icon
-                        aria-label={`Remove ${field}`}
-                        onClick={() =>
-                          setCompositionFields((fields) => fields.filter((item) => item !== field))
+                <ul className="grid gap-2">
+                  {compositionFields.map((field, index) => (
+                    <li
+                      key={field}
+                      aria-label={`Drag ${field} to reorder`}
+                      draggable
+                      onDragStart={() => setDraggedCompositionField(field)}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        if (draggedCompositionField !== field) {
+                          setDragOverCompositionField(field);
                         }
-                      >
-                        <Trash2 size={12} />
-                      </Button>
-                    </div>
-                  </li>
-                ))}
+                      }}
+                      onDrop={() => {
+                        if (!draggedCompositionField || draggedCompositionField === field) return;
+                        setCompositionFields((fields) => {
+                          const nextFields = [...fields];
+                          const fromIndex = nextFields.indexOf(draggedCompositionField);
+                          const toIndex = nextFields.indexOf(field);
+                          nextFields.splice(fromIndex, 1);
+                          nextFields.splice(toIndex, 0, draggedCompositionField);
+                          return nextFields;
+                        });
+                        setDraggedCompositionField(null);
+                        setDragOverCompositionField(null);
+                      }}
+                      onDragLeave={() => setDragOverCompositionField(null)}
+                      onDragEnd={() => {
+                        setDraggedCompositionField(null);
+                        setDragOverCompositionField(null);
+                      }}
+                      className={`group/field flex items-center gap-1 rounded-lg border border-border-subtle p-2 transition-colors hover:bg-accent ${
+                        draggedCompositionField === field ? 'opacity-50' : ''
+                      } ${
+                        dragOverCompositionField === field ? 'bg-accent ring-2 ring-brand/30' : ''
+                      }`}
+                    >
+                      <GripVertical
+                        className="h-3 w-3 shrink-0 cursor-grab text-muted-foreground opacity-0 group-hover/field:opacity-50 active:cursor-grabbing"
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-0 flex-1 text-xs text-foreground">{field}</span>
+                      <div className="flex gap-0.5 opacity-0 transition-opacity group-hover/field:opacity-100">
+                        <Button
+                          variant="ghost"
+                          size="4xs"
+                          icon
+                          aria-label={`Move ${field} up`}
+                          disabled={index === 0}
+                        >
+                          <ChevronUp size={12} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="4xs"
+                          icon
+                          aria-label={`Move ${field} down`}
+                          disabled={index === compositionFields.length - 1}
+                        >
+                          <ChevronDown size={12} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="4xs"
+                          icon
+                          aria-label={`Remove ${field}`}
+                          onClick={() =>
+                            setCompositionFields((fields) =>
+                              fields.filter((item) => item !== field)
+                            )
+                          }
+                        >
+                          <Trash2 size={12} />
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
                 <Button
                   variant="link"
                   size="2xs"
