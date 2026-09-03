@@ -1,6 +1,8 @@
 import { cn, MetadataForm } from '@uipath/apollo-wind';
 import { GripVertical, X } from 'lucide-react';
 import { type CSSProperties, useMemo } from 'react';
+import { useSafeLingui } from '../../../i18n';
+import { EditableText } from './EditableText';
 import type { NodePropertyPanelProps } from './NodePropertyPanel.types';
 
 // Future themes raise the panel surface, so inputs remap surface-raised ->
@@ -12,10 +14,13 @@ const SURFACE_REMAP = 'future:[--surface-raised:var(--surface-overlay)]';
  * NodePropertyPanel — a presentational, docked properties panel for canvas nodes.
  *
  * The panel owns only the *chrome*: an optional title bar (drag handle + close),
- * a node identity row (icon / label / category + an action slot), and the form
- * frame. The form itself is a single `MetadataForm` rendered from the `schema`
- * you pass in, with multi-step schemas presented as tabs (Parameters, Error
- * handling, Advanced, ...).
+ * a node identity row (icon / label / description-or-category + an action slot),
+ * and the form frame. The label and description lines become click-to-edit when
+ * the matching `onNode*Change` callback is passed.
+ *
+ * The form itself is a single `MetadataForm` rendered from the `schema` you pass
+ * in, with multi-step schemas presented as tabs (Parameters, Error handling,
+ * Advanced, ...).
  *
  * The caller owns everything domain-specific: schema assembly, real-time change
  * handling, custom field components, and validation are all supplied through
@@ -27,7 +32,8 @@ const SURFACE_REMAP = 'future:[--surface-raised:var(--surface-overlay)]';
  * <NodePropertyPanel
  *   panelTitle="Properties"               // omit when dockview owns the title bar
  *   nodeLabel="Fetch invoice details"
- *   nodeCategory="HTTP Request"
+ *   nodeCategory="HTTP Request"         // fallback second line; a description wins
+ *   onNodeLabelChange={renameNode}      // omit for a read-only label
  *   action={<RunButton />}
  *   schema={assembledSchema}              // caller-built FormSchema (steps = tabs)
  *   plugins={formPlugins}                 // real-time onChange, custom fields
@@ -43,6 +49,13 @@ export function NodePropertyPanel({
   nodeIcon,
   nodeLabel,
   nodeCategory,
+  nodeDescription,
+  nodeLabelPlaceholder,
+  nodeDescriptionPlaceholder,
+  onNodeLabelChange,
+  onNodeDescriptionChange,
+  nodeLabelError,
+  nodeDescriptionError,
   action,
   schema,
   plugins,
@@ -58,7 +71,12 @@ export function NodePropertyPanel({
   activeStepId,
   onActiveStepChange,
 }: NodePropertyPanelProps) {
-  const hasNodeHeader = !!(nodeLabel || nodeCategory || nodeIcon || action);
+  const { _ } = useSafeLingui();
+  const isLabelEditable = !!onNodeLabelChange;
+  const isDescriptionEditable = !!onNodeDescriptionChange;
+  const showsDescription = !!nodeDescription || isDescriptionEditable || !!nodeDescriptionError;
+  const showsLabel = !!nodeLabel || isLabelEditable || !!nodeLabelError;
+  const hasNodeHeader = !!(showsLabel || nodeCategory || nodeIcon || action || showsDescription);
 
   // This panel is a live-edit surface: changes persist via plugins/onChange, so
   // there is no Submit button by default. Callers can still opt in by setting
@@ -95,8 +113,8 @@ export function NodePropertyPanel({
               <button
                 type="button"
                 onClick={onClose}
-                title="Close"
-                aria-label="Close"
+                title={_({ id: 'canvas.node_property_panel.close', message: 'Close' })}
+                aria-label={_({ id: 'canvas.node_property_panel.close', message: 'Close' })}
                 className="grid size-6 place-items-center rounded text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
               >
                 <X size={14} />
@@ -116,17 +134,52 @@ export function NodePropertyPanel({
               </div>
             )}
             <div className="flex min-w-0 flex-1 flex-col justify-center">
-              {nodeLabel && (
-                // <span>, not <p>: host apps (e.g. Angular Material's `.mat-typography p`)
-                // inject a bottom margin on <p> that breaks the header alignment.
-                <span className="block truncate text-base font-semibold leading-5 tracking-[-0.3px] text-foreground">
-                  {nodeLabel}
-                </span>
+              {showsLabel && (
+                <EditableText
+                  value={nodeLabel ?? ''}
+                  placeholder={
+                    nodeLabelPlaceholder ??
+                    _({ id: 'canvas.node_property_panel.name_placeholder', message: 'Name' })
+                  }
+                  size="lg"
+                  onChange={onNodeLabelChange}
+                  error={nodeLabelError}
+                  aria-label={_({
+                    id: 'canvas.node_property_panel.node_name',
+                    message: 'Node name',
+                  })}
+                  data-testid="node-property-panel-label"
+                />
               )}
-              {nodeCategory && (
-                <span className="block truncate text-xs leading-4 text-foreground-muted">
-                  {nodeCategory}
-                </span>
+              {showsDescription ? (
+                <EditableText
+                  value={nodeDescription ?? ''}
+                  placeholder={
+                    nodeDescriptionPlaceholder ??
+                    _({
+                      id: 'canvas.node_property_panel.description_placeholder',
+                      message: 'Description',
+                    })
+                  }
+                  size="sm"
+                  multiline
+                  maxLines={3}
+                  onChange={onNodeDescriptionChange}
+                  error={nodeDescriptionError}
+                  aria-label={_({
+                    id: 'canvas.node_property_panel.node_description',
+                    message: 'Node description',
+                  })}
+                  data-testid="node-property-panel-description"
+                />
+              ) : (
+                nodeCategory && (
+                  <EditableText
+                    value={nodeCategory}
+                    size="sm"
+                    data-testid="node-property-panel-category"
+                  />
+                )
               )}
             </div>
           </div>

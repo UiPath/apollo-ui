@@ -150,5 +150,10 @@
   "canvas.node_mode_select.simulated_description": "Generate a response dynamically using an LLM",
   "canvas.node_mode_select.simulated_label": "Simulated",
   "canvas.node_mode_select.static_description": "Always return a value you define",
-  "canvas.node_mode_select.static_label": "Static mock"
+  "canvas.node_mode_select.static_label": "Static mock",
+  "canvas.node_property_panel.close": "Close",
+  "canvas.node_property_panel.name_placeholder": "Name",
+  "canvas.node_property_panel.description_placeholder": "Description",
+  "canvas.node_property_panel.node_name": "Node name",
+  "canvas.node_property_panel.node_description": "Node description"
 }

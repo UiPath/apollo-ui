@@ -1,6 +1,6 @@
 import type { FormSchema } from '@uipath/apollo-wind';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '../../utils/testing';
+import { render, screen, userEvent } from '../../utils/testing';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
 const MULTI_STEP: FormSchema = {
@@ -10,12 +10,12 @@ const MULTI_STEP: FormSchema = {
     {
       id: 'parameters',
       title: 'Parameters',
-      sections: [{ id: 'p', fields: [{ id: 'url', name: 'url', type: 'text', label: 'URL' }] }],
+      sections: [{ id: 'p', fields: [{ name: 'url', type: 'text', label: 'URL' }] }],
     },
     {
       id: 'advanced',
       title: 'Advanced',
-      sections: [{ id: 'a', fields: [{ id: 'nid', name: 'nid', type: 'text', label: 'ID' }] }],
+      sections: [{ id: 'a', fields: [{ name: 'nid', type: 'text', label: 'ID' }] }],
     },
   ],
 };
@@ -68,6 +68,83 @@ describe('NodePropertyPanel', () => {
     expect(screen.getByText('HTTP Request')).toBeInTheDocument();
   });
 
+  it('renders the description instead of the category when a description is given', () => {
+    render(
+      <NodePropertyPanel
+        nodeLabel="Fetch invoice details"
+        nodeCategory="HTTP Request"
+        nodeDescription="Pulls the line items for one invoice"
+        schema={MULTI_STEP}
+      />
+    );
+    expect(screen.getByText('Pulls the line items for one invoice')).toBeInTheDocument();
+    expect(screen.queryByText('HTTP Request')).not.toBeInTheDocument();
+  });
+
+  it('keeps the identity row read-only when no change handlers are given', () => {
+    render(<NodePropertyPanel nodeLabel="Fetch invoice details" schema={MULTI_STEP} />);
+    expect(screen.queryByRole('button', { name: /^Node name/ })).not.toBeInTheDocument();
+  });
+
+  it('makes the label editable and reports the committed value', async () => {
+    const user = userEvent.setup();
+    const onNodeLabelChange = vi.fn();
+    render(
+      <NodePropertyPanel
+        nodeLabel="Fetch invoice details"
+        onNodeLabelChange={onNodeLabelChange}
+        schema={MULTI_STEP}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /^Node name/ }));
+    await user.keyboard('Fetch invoice{Enter}');
+
+    expect(onNodeLabelChange).toHaveBeenCalledExactlyOnceWith('Fetch invoice');
+  });
+
+  it('makes the description editable and reports the committed value', async () => {
+    const user = userEvent.setup();
+    const onNodeDescriptionChange = vi.fn();
+    render(
+      <NodePropertyPanel
+        nodeLabel="Fetch invoice details"
+        nodeDescription=""
+        onNodeDescriptionChange={onNodeDescriptionChange}
+        schema={MULTI_STEP}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /^Node description/ }));
+    await user.keyboard('One invoice{Enter}');
+
+    expect(onNodeDescriptionChange).toHaveBeenCalledExactlyOnceWith('One invoice');
+  });
+
+  it('keeps the category when the description is defined but empty', () => {
+    render(
+      <NodePropertyPanel
+        nodeLabel="Fetch invoice details"
+        nodeCategory="HTTP Request"
+        nodeDescription=""
+        schema={MULTI_STEP}
+      />
+    );
+    expect(screen.getByText('HTTP Request')).toBeInTheDocument();
+  });
+
+  it('renders the identity row for an editable-but-empty label, so the affordance survives a cleared name', () => {
+    render(
+      <NodePropertyPanel
+        nodeLabel=""
+        nodeLabelPlaceholder="HTTP Request"
+        onNodeLabelChange={vi.fn()}
+        schema={MULTI_STEP}
+      />
+    );
+    expect(screen.getByRole('button', { name: /^Node name/ })).toHaveTextContent('HTTP Request');
+  });
+
   it('renders a tab per step for a multi-step schema', () => {
     render(<NodePropertyPanel schema={MULTI_STEP} />);
     expect(screen.getByRole('tab', { name: 'Parameters' })).toBeInTheDocument();
@@ -113,7 +190,7 @@ describe('NodePropertyPanel', () => {
     const SINGLE_PAGE: FormSchema = {
       id: 'http',
       title: 'HTTP',
-      sections: [{ id: 'p', fields: [{ id: 'url', name: 'url', type: 'text', label: 'URL' }] }],
+      sections: [{ id: 'p', fields: [{ name: 'url', type: 'text', label: 'URL' }] }],
     };
     const { container } = render(<NodePropertyPanel schema={SINGLE_PAGE} autoComplete="off" />);
     expect(container.querySelector('form')).toHaveAttribute('autocomplete', 'off');
