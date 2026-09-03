@@ -233,13 +233,10 @@ function DebugButton() {
 
 function PanelAddButton({ children = 'Add field' }: { children?: ReactNode }) {
   return (
-    <button
-      type="button"
-      className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-brand transition hover:text-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-    >
-      <Plus size={12} />
+    <Button variant="text" size="2xs">
+      <Plus />
       {children}
-    </button>
+    </Button>
   );
 }
 

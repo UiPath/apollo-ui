@@ -34,6 +34,12 @@ describe('Button', () => {
     expect(button).toHaveClass('border');
   });
 
+  it('applies text variant classes', () => {
+    render(<Button variant="text">Text</Button>);
+    const button = screen.getByRole('button');
+    expect(button).toHaveClass('text-primary hover:text-primary-hover');
+  });
+
   it('applies text size classes', () => {
     const { rerender } = render(<Button size="lg">Large</Button>);
     expect(screen.getByRole('button')).toHaveClass('h-11');
