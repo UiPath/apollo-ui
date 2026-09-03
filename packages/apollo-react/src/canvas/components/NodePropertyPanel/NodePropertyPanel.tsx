@@ -119,8 +119,8 @@ export function NodePropertyPanel({
               {nodeLabel && (
                 // <span>, not <p>: host apps (e.g. Angular Material's `.mat-typography p`)
                 // inject a bottom margin on <p> that breaks the header alignment.
-                <span className="block truncate text-base font-semibold leading-5 tracking-[-0.3px] text-foreground">
-                  {nodeLabel}
+                <span className="flex min-w-0 items-center gap-2 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground">
+                  <span className="truncate">{nodeLabel}</span>
                 </span>
               )}
               {nodeCategory && (

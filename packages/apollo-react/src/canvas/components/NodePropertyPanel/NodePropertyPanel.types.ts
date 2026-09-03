@@ -14,9 +14,9 @@ export interface NodePropertyPanelProps {
   /** Optional icon rendered left of the node name in the identity row. */
   nodeIcon?: ReactNode;
   /** The node's display label shown in the node identity row. */
-  nodeLabel?: string;
-  /** Category/subtitle text shown below `nodeLabel` (e.g. "HTTP Request"). */
-  nodeCategory?: string;
+  nodeLabel?: ReactNode;
+  /** Category/subtitle shown below `nodeLabel` (e.g. "HTTP Request"). */
+  nodeCategory?: ReactNode;
   /** Action slot rendered on the right of the identity row (e.g. a Run button). */
   action?: ReactNode;
   /**

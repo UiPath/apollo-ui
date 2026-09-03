@@ -380,13 +380,74 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
   );
   const [errorHandlingEnabled, setErrorHandlingEnabled] = useState(true);
   const [retryCount, setRetryCount] = useState('8');
+  const [label, setLabel] = useState('Send email');
+  const [category, setCategory] = useState('Gmail · DAP layout');
+  const [editingLabel, setEditingLabel] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(false);
+  const labelRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLInputElement>(null);
 
   return (
     <NodePropertyPanel
       panelTitle="Properties"
       nodeIcon={<Mail />}
-      nodeLabel="Send email"
-      nodeCategory="Gmail · DAP layout"
+      nodeLabel={
+        <span className="flex flex-col items-start gap-1">
+          {editingLabel ? (
+            <input
+              ref={labelRef}
+              size={Math.max(label.length, 1)}
+              value={label}
+              onChange={(event) => setLabel(event.target.value)}
+              onBlur={() => setEditingLabel(false)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === 'Escape') setEditingLabel(false);
+              }}
+              className="rounded-md border border-error/60 bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingLabel(true);
+                setTimeout(() => labelRef.current?.select(), 0);
+              }}
+              className="rounded-md border border-error/60 px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+            >
+              {label}
+            </button>
+          )}
+          <span className="min-h-4 text-xs font-normal tracking-normal text-error">
+            Node details need attention
+          </span>
+        </span>
+      }
+      nodeCategory={
+        editingCategory ? (
+          <input
+            ref={categoryRef}
+            size={Math.max(category.length, 1)}
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+            onBlur={() => setEditingCategory(false)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === 'Escape') setEditingCategory(false);
+            }}
+            className="rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setEditingCategory(true);
+              setTimeout(() => categoryRef.current?.select(), 0);
+            }}
+            className="w-fit max-w-full truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
+          >
+            {category}
+          </button>
+        )
+      }
       onClose={onClose}
       contentInset="0.875rem"
       className="h-full"
@@ -408,10 +469,10 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
           <div className="space-y-5">
             <Alert variant="destructive">
               <AlertCircle />
-              <AlertTitle>Resolve 2 issues before running this node</AlertTitle>
+              <AlertTitle>3 areas need attention</AlertTitle>
               <AlertDescription>
-                Fix the highlighted fields in Parameters and Error handling before you run or
-                publish this workflow.
+                Review node details, Parameters, and Error handling before you run or publish this
+                workflow.
               </AlertDescription>
             </Alert>
 
