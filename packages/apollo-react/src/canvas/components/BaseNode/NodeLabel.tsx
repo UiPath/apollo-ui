@@ -16,10 +16,18 @@ export const BaseTextContainer = ({
   children,
 }: BaseTextContainerProps) => {
   if (shape === 'rectangle') {
-    return <div className="flex flex-1 min-w-0 flex-col items-start text-left">{children}</div>;
+    return (
+      <div
+        data-testid="node-label-container"
+        className="flex flex-1 min-w-0 flex-col items-start text-left"
+      >
+        {children}
+      </div>
+    );
   }
   return (
     <div
+      data-testid="node-label-container"
       className={cx(
         'absolute left-1/2 w-[150%] flex flex-col z-10 transition-transform duration-200',
         hasBottomHandles
@@ -143,6 +151,7 @@ interface EditableLabelProps {
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onBlur: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
   'aria-label'?: string;
+  'data-testid'?: string;
 }
 
 const EditableLabel = forwardRef<HTMLTextAreaElement, EditableLabelProps>(
@@ -158,6 +167,7 @@ const EditableLabel = forwardRef<HTMLTextAreaElement, EditableLabelProps>(
       onKeyDown,
       onBlur,
       'aria-label': ariaLabel,
+      'data-testid': dataTestId,
     },
     ref
   ) => (
@@ -167,6 +177,7 @@ const EditableLabel = forwardRef<HTMLTextAreaElement, EditableLabelProps>(
       placeholder={placeholder}
       rows={rows}
       aria-label={ariaLabel}
+      data-testid={dataTestId}
       onChange={onChange}
       onKeyDown={onKeyDown}
       onBlur={onBlur}
@@ -366,6 +377,7 @@ const NodeLabelInternal = ({
             placeholder="Name"
             rows={shape === 'rectangle' ? 1 : undefined}
             aria-label="Edit node name"
+            data-testid="node-label-input"
           />
           <EditableLabel
             ref={subLabelInputRef}
@@ -378,6 +390,7 @@ const NodeLabelInternal = ({
             placeholder="Description"
             rows={shape === 'rectangle' ? 2 : undefined}
             aria-label="Edit node description"
+            data-testid="node-sublabel-input"
           />
         </>
       ) : (

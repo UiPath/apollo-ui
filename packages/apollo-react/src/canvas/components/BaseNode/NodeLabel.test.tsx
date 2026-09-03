@@ -121,6 +121,34 @@ describe('NodeLabel', () => {
       expect(screen.getByRole('textbox', { name: 'Edit node description' })).toBeInTheDocument();
     });
 
+    // Canvas hosts key off these to exempt the inline editors from their own
+    // node-level double-click handling, so they are part of the public surface.
+    it('should stamp stable test ids on the inline editors', async () => {
+      render(<NodeLabel {...defaultProps} />);
+
+      await user.dblClick(screen.getByText('Test Node'));
+
+      expect(screen.getByTestId('node-label-input')).toHaveAccessibleName('Edit node name');
+      expect(screen.getByTestId('node-sublabel-input')).toHaveAccessibleName(
+        'Edit node description'
+      );
+    });
+
+    // The block is wider than the text, so hosts need to recognise the whole of
+    // it — not just the elements a click happens to land on.
+    it('should keep the label block test id across display and edit modes', async () => {
+      render(<NodeLabel {...defaultProps} />);
+
+      const block = screen.getByTestId('node-label-container');
+      expect(block).toContainElement(screen.getByTestId('node-label'));
+
+      await user.dblClick(screen.getByText('Test Node'));
+
+      expect(screen.getByTestId('node-label-container')).toBe(block);
+      expect(block).toContainElement(screen.getByTestId('node-label-input'));
+      expect(block).toContainElement(screen.getByTestId('node-sublabel-input'));
+    });
+
     // Locking is often an execution lock, so it must not commit the draft as a
     // side effect of taking hold.
     it('discards the draft when the label becomes read-only while editing', async () => {
