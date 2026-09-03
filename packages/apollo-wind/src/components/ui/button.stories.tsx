@@ -1,5 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ChevronRight, Download, Loader2, Mail, Plus, Settings, Trash2 } from 'lucide-react';
+import {
+  ChevronRight,
+  Download,
+  Loader2,
+  Mail,
+  Plus,
+  Settings,
+  Trash2,
+  Upload,
+} from 'lucide-react';
 import { Button } from './button';
 
 const meta = {
@@ -12,13 +21,16 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
+      options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link', 'text'],
     },
     size: {
       control: 'select',
       options: ['lg', 'default', 'sm', 'xs', '2xs', '3xs', '4xs'],
     },
     icon: {
+      control: 'boolean',
+    },
+    disabled: {
       control: 'boolean',
     },
   },
@@ -32,18 +44,6 @@ export const Default: Story = {
     children: 'Button',
     variant: 'default',
   },
-};
-
-export const IntrinsicWidth: Story = {
-  name: 'Intrinsic width',
-  parameters: {
-    layout: 'padded',
-  },
-  render: () => (
-    <div className="w-full max-w-lg rounded-lg border border-border-subtle p-4">
-      <Button>Content-sized action</Button>
-    </div>
-  ),
 };
 
 export const Destructive: Story = {
@@ -81,54 +81,6 @@ export const Link: Story = {
   },
 };
 
-export const LinkSizes: Story = {
-  name: 'Link sizes',
-  parameters: {
-    layout: 'padded',
-  },
-  render: () => (
-    <div className="flex flex-wrap items-center gap-4">
-      <Button variant="link" size="sm">
-        Add another
-      </Button>
-      <Button variant="link" size="xs">
-        Learn more
-      </Button>
-      <Button variant="link" size="2xs">
-        Manage
-      </Button>
-      <Button variant="link" size="3xs">
-        View details
-      </Button>
-    </div>
-  ),
-};
-
-export const AddFieldAction: Story = {
-  name: 'Add field action',
-  parameters: {
-    layout: 'padded',
-    docs: {
-      description: {
-        story:
-          'Lightweight plus-link action for adding another field to a repeatable list. Use the Theme toolbar to preview it in Future Light or Future Dark.',
-      },
-    },
-  },
-  render: () => (
-    <div className="flex min-h-24 w-full max-w-md items-center rounded-lg border border-border-subtle bg-background p-4 text-foreground">
-      <Button
-        variant="link"
-        size="3xs"
-        className="w-fit gap-1.5 text-brand hover:text-brand-hover future:text-brand future:hover:text-brand-hover"
-      >
-        <Plus />
-        Add field
-      </Button>
-    </div>
-  ),
-};
-
 export const LinkAsAnchor: Story = {
   name: 'Link as anchor',
   render: () => (
@@ -138,10 +90,10 @@ export const LinkAsAnchor: Story = {
   ),
 };
 
-export const Disabled: Story = {
+export const Text: Story = {
   args: {
-    children: 'Disabled',
-    disabled: true,
+    children: 'Text',
+    variant: 'text',
   },
 };
 
@@ -157,8 +109,8 @@ export const WithIcon: Story = {
         Download
       </Button>
       <Button size="sm">
-        <Plus />
-        Add item
+        <Upload />
+        Upload
       </Button>
       <Button size="xs">
         <Settings />
@@ -180,11 +132,23 @@ export const WithIcon: Story = {
         <Settings />
         Settings
       </Button>
+      <Button variant="text" size="xs">
+        <Plus />
+        Add item
+      </Button>
     </div>
   ),
 };
 
-const variants = ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'] as const;
+const variants = [
+  'default',
+  'destructive',
+  'outline',
+  'secondary',
+  'ghost',
+  'link',
+  'text',
+] as const;
 const sizes = ['lg', 'default', 'sm', 'xs', '2xs', '3xs', '4xs'] as const;
 
 export const VariantSizeMatrix: Story = {
