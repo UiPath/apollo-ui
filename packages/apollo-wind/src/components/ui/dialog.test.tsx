@@ -276,4 +276,17 @@ describe('Dialog', () => {
 
     expect(onOpenChange).not.toHaveBeenCalled();
   });
+
+  it('allows an aria-label when a takeover has no header title', () => {
+    render(
+      <Dialog open>
+        <DialogContent variant="takeover" aria-label="Accessible takeover">
+          Takeover content
+        </DialogContent>
+      </Dialog>
+    );
+
+    const dialog = screen.getByRole('dialog', { name: 'Accessible takeover' });
+    expect(dialog).toHaveAttribute('aria-labelledby', '');
+  });
 });

@@ -85,6 +85,7 @@ const DialogContent = React.forwardRef<
     overlayProps,
     overlayTestId,
     'data-expanded': dataExpanded,
+    'aria-labelledby': ariaLabelledBy,
     ...props
   },
   ref
@@ -126,13 +127,25 @@ const DialogContent = React.forwardRef<
         }}
         ref={ref}
         {...props}
+        {...((isTakeover && (headerTitle === undefined || headerTitle === null)) || ariaLabelledBy
+          ? {
+              'aria-labelledby':
+                isTakeover && (headerTitle === undefined || headerTitle === null)
+                  ? ''
+                  : ariaLabelledBy,
+            }
+          : {})}
       >
         {isTakeover ? (
           <>
             <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle px-4">
-              <DialogPrimitive.Title className="min-w-0 flex-1 truncate text-sm font-semibold">
-                {headerTitle}
-              </DialogPrimitive.Title>
+              {headerTitle !== undefined && headerTitle !== null ? (
+                <DialogPrimitive.Title className="min-w-0 flex-1 truncate text-sm font-semibold">
+                  {headerTitle}
+                </DialogPrimitive.Title>
+              ) : (
+                <div className="min-w-0 flex-1" aria-hidden="true" />
+              )}
               {headerActions}
               <div className="-mr-1 flex shrink-0 items-center gap-1">
                 <button
