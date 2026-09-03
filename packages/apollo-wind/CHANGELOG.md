@@ -1,3 +1,16 @@
+## [@uipath/apollo-wind-v2.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.45.0...@uipath/apollo-wind@2.45.1) (2026-09-03)
+
+### Bug Fixes
+
+* **apollo-wind:** pin FormField's grid column so truncating controls ellipsize ([4aaaf53](https://github.com/UiPath/apollo-ui/commit/4aaaf53861e0c7e62a945176eb4381f6e0a2ee0f))
+* **apollo-wind:** render Label as inline-block so vertical margins apply ([7e84f4e](https://github.com/UiPath/apollo-ui/commit/7e84f4e57cd7465fd57a8f335d9e613b9716e4a2))
+
+## [@uipath/apollo-wind-v2.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.44.0...@uipath/apollo-wind@2.45.0) (2026-09-03)
+
+### Features
+
+* **apollo-wind:** declare Inter font tokens for future themes ([709fdde](https://github.com/UiPath/apollo-ui/commit/709fdde60a7b82f9639b16c2c2bd860fd692e732))
+
 ## [@uipath/apollo-wind-v2.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.43.1...@uipath/apollo-wind@2.44.0) (2026-09-02)
 
 ### Features

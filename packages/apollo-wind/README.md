@@ -19,6 +19,18 @@ npm install @uipath/apollo-wind
 
 **Note:** This package is published to both npm and GitHub Package Registry. External users will automatically pull from npm. Internal UiPath users with `.npmrc` configured will automatically pull from GitHub Package Registry.
 
+**Fonts:** the Future themes (`.future-light` / `.future-dark`) point
+`--font-sans` at Inter and the bundled Noto families, but `tailwind.css` ships
+no `@font-face`. Import the font stylesheet once at your app entry, or those
+tokens fall back to the OS font:
+
+```tsx
+import "@uipath/apollo-wind/fonts/font.css";
+```
+
+Classic themes keep Tailwind's default `--font-sans` and need no font import.
+Apps that already import `@uipath/apollo-react/core/fonts/font.css` are covered.
+
 **Option 1: Zero Config** (Recommended for quick starts)
 
 ```tsx

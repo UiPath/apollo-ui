@@ -10,10 +10,23 @@ export type FormFieldProps = React.ComponentPropsWithoutRef<'div'>;
  *
  * These parts are presentational and hold no form state, so they compose the
  * same way inside a metadata-driven form as they do in hand-built panels.
+ *
+ * The single column is pinned to `minmax(0, 1fr)` rather than left implicit.
+ * An implicit `auto` track floors at its widest child's min-content, and a
+ * control that ellipsizes is `white-space: nowrap`, so its min-content is the
+ * whole string: the field would push past a width-constrained host instead of
+ * truncating. A `1fr` track still resolves to max-content when the host width
+ * is indefinite, so shrink-to-fit hosts are unaffected. `className` is merged
+ * last, so a consumer can still override with `grid-cols-2` or similar.
  */
 const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
   ({ children, className, ...props }, ref) => (
-    <div ref={ref} data-slot="form-field" className={cn('grid gap-1.5', className)} {...props}>
+    <div
+      ref={ref}
+      data-slot="form-field"
+      className={cn('grid grid-cols-[minmax(0,1fr)] gap-1.5', className)}
+      {...props}
+    >
       {children}
     </div>
   )

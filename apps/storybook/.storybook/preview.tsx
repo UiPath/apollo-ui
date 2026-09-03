@@ -30,12 +30,13 @@ try {
 // Apollo core + canvas CSS
 import '@uipath/apollo-react/core/tokens/css/variables.css';
 import '@uipath/apollo-react/core/tokens/css/theme-variables.css';
-import '@uipath/apollo-react/core/fonts/font.css';
 import '@uipath/apollo-react/canvas/styles/variables.css';
 import '@uipath/apollo-react/canvas/styles/tailwind.canvas.css';
 import '@uipath/apollo-react/canvas/xyflow/style.css';
 
-// Wind: source Tailwind CSS (processed by PostCSS/Tailwind at dev time)
+// Wind: fonts via the same subpath consumers use, plus source Tailwind CSS
+// (processed by PostCSS/Tailwind at dev time)
+import '@uipath/apollo-wind/fonts/font.css';
 import '@/styles/tailwind.css';
 
 // Human-readable display names for the locale toolbar.

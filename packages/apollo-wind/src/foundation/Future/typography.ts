@@ -11,17 +11,27 @@
 // Font Family
 // =============================================================================
 
+// Must stay in sync with --font-sans in styles/tailwind.consumer.css
+// (asserted in styles/tailwind.consumer.test.ts).
+const SANS_STACK =
+  "'Inter', 'noto-sans', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', " +
+  "'Noto Sans TC', system-ui, sans-serif";
+
 export const fontFamily = {
   /** Primary sans-serif stack — used for all UI text */
-  base: "'Inter', system-ui, -apple-system, sans-serif",
-  /** Monospace stack — used for code, data, and technical content */
+  base: SANS_STACK,
+  /**
+   * Monospace stack — used for code, data, and technical content.
+   * None of these ship with apollo-core: Storybook loads JetBrains Mono from
+   * the Google Fonts CDN, consumers resolve to an OS mono font.
+   */
   monospace: "'JetBrains Mono', 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace",
   /** Numeric stack — used for tabular numbers and data displays */
-  numeric: "'Inter', system-ui, -apple-system, sans-serif",
+  numeric: SANS_STACK,
 
   // Legacy alias kept for backwards compatibility with existing templates
   /** @deprecated Use `fontFamily.base` instead */
-  sans: "'Inter', system-ui, -apple-system, sans-serif",
+  sans: SANS_STACK,
 } as const;
 
 // =============================================================================

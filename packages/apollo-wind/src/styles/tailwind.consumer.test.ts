@@ -2,7 +2,12 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+import { fontFamily } from '../foundation/Future/typography';
+
 const css = readFileSync(resolve(__dirname, './tailwind.consumer.css'), 'utf8');
+
+/** Strips quotes and collapses whitespace so a TS stack and a CSS stack compare. */
+const normalize = (stack: string) => stack.replace(/["']/g, '').replace(/\s+/g, ' ').trim();
 
 const DARK_VARIANT =
   '@custom-variant dark (&:is(.dark:not(.react-flow), .dark-hc, .future-dark, .dark:not(.react-flow) *, .dark-hc *, .future-dark *));';
@@ -80,5 +85,60 @@ describe('dark variant selector behaviour', () => {
 
   it('stays off with no theme class', () => {
     expect(matches('<span id="target"></span>')).toBe(false);
+  });
+});
+
+describe('future theme typography', () => {
+  const block =
+    /body\.future-dark,\s*\.future-dark,\s*body\.future-light,\s*\.future-light\s*\{([^}]+)\}/g;
+  const typography =
+    [...css.matchAll(block)].map((m) => m[1]).find((b) => b.includes('--font-sans')) ?? '';
+
+  it('finds the future theme block', () => {
+    expect(typography).not.toBe('');
+  });
+
+  it('chains Inter through noto-sans to the bundled Noto CJK families', () => {
+    // Neither Inter nor noto-sans covers CJK, so ja/ko/zh depend on
+    // these four families being reachable. See apollo-core src/fonts/{JP,KR,SC,TC}.
+    expect(typography).toMatch(
+      /--font-sans:\s*Inter,\s*noto-sans,\s*"Noto Sans JP",\s*"Noto Sans KR",\s*"Noto Sans SC",\s*"Noto Sans TC",\s*system-ui,\s*sans-serif;/
+    );
+  });
+
+  it('points every apollo-core sans token at --font-sans', () => {
+    // Derived from apollo-core so a new token there fails here instead of
+    // silently keeping the old stack.
+    const core = readFileSync(
+      resolve(__dirname, '../../../apollo-core/src/tokens/css/variables.css'),
+      'utf8'
+    );
+    const sans = new Set(
+      [...core.matchAll(/--(font-(?:[a-z0-9-]+-family|normal|title))\s*:/g)]
+        .map((m) => m[1])
+        .filter((t) => !t.startsWith('font-mono'))
+    );
+
+    expect(sans.size).toBeGreaterThan(20);
+    for (const token of sans) {
+      expect(typography).toContain(`--${token}: var(--font-sans);`);
+    }
+  });
+
+  it('leaves monospace tokens alone', () => {
+    expect(typography).not.toContain('--font-mono');
+  });
+
+  it('keeps typography.ts fontFamily.base in sync with --font-sans', () => {
+    const cssStack = /--font-sans:\s*([^;]+);/.exec(typography)?.[1];
+
+    expect(normalize(fontFamily.base)).toBe(normalize(cssStack ?? ''));
+  });
+
+  it('sets font-family in a repeated-class rule that outranks .apollo-design', () => {
+    expect(typography).not.toMatch(/\n\s*font-family:/);
+    expect(css).toMatch(
+      /body\.future-dark\.future-dark,\s*\.future-dark\.future-dark,\s*body\.future-light\.future-light,\s*\.future-light\.future-light\s*\{\s*font-family:\s*var\(--font-sans\);\s*\}/
+    );
   });
 });

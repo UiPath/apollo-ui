@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-wind",
-  "version": "2.44.0",
+  "version": "2.45.1",
   "description": "UiPath wind design system - A Tailwind CSS based React component library",
   "type": "module",
   "main": "./dist/index.js",
@@ -42,6 +42,7 @@
     },
     "./styles.css": "./dist/styles.css",
     "./tailwind.css": "./dist/tailwind.css",
+    "./fonts/*": "./dist/fonts/*",
     "./tailwind": {
       "import": "./dist/tailwind.preset.js",
       "require": "./dist/tailwind.preset.cjs"

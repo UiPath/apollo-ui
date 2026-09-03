@@ -19,6 +19,18 @@ describe('FormField', () => {
     expect(screen.getByText('The URL to call.')).toBeInTheDocument();
     expect(screen.getByText('Endpoint is required.')).toBeInTheDocument();
   });
+
+  it('pins the column so a truncating control cannot widen the field', () => {
+    render(<FormField data-testid="field" />);
+    expect(screen.getByTestId('field')).toHaveClass('grid', 'grid-cols-[minmax(0,1fr)]');
+  });
+
+  it('lets a consumer override the column template', () => {
+    render(<FormField data-testid="field" className="grid-cols-2" />);
+    const field = screen.getByTestId('field');
+    expect(field).toHaveClass('grid-cols-2');
+    expect(field).not.toHaveClass('grid-cols-[minmax(0,1fr)]');
+  });
 });
 
 describe('FormFieldLabel', () => {
