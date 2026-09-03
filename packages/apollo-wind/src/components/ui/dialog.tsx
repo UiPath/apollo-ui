@@ -5,6 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { Maximize2, Minimize2, XIcon } from 'lucide-react';
 import * as React from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   type PortalContainerOverride,
   useResolvedPortalContainer,
@@ -162,21 +163,25 @@ const DialogContent = React.forwardRef<
               )}
               {headerActions}
               <div className="-mr-1 flex shrink-0 items-center gap-1">
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="icon"
                   aria-label={expanded ? 'Collapse modal' : 'Expand modal'}
                   title={expanded ? 'Collapse modal' : 'Expand modal'}
                   onClick={() => setExpanded(!expanded)}
-                  className="grid size-8 place-items-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+                  className="size-8 rounded-md text-foreground-muted hover:bg-surface-hover hover:text-foreground focus-visible:ring-border-focus"
                 >
                   {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                </button>
-                <DialogPrimitive.Close
-                  type="button"
-                  aria-label="Close modal"
-                  className="grid size-8 place-items-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
-                >
-                  <XIcon size={16} />
+                </Button>
+                <DialogPrimitive.Close asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Close modal"
+                    className="size-8 rounded-md text-foreground-muted hover:bg-surface-hover hover:text-foreground focus-visible:ring-border-focus"
+                  >
+                    <XIcon size={16} />
+                  </Button>
                 </DialogPrimitive.Close>
               </div>
             </header>
