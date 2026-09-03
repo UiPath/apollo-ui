@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.44.0...@uipath/apollo-wind@2.45.0) (2026-09-03)
+
+### Features
+
+* **apollo-wind:** declare Inter font tokens for future themes ([709fdde](https://github.com/UiPath/apollo-ui/commit/709fdde60a7b82f9639b16c2c2bd860fd692e732))
+
 ## [@uipath/apollo-wind-v2.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.43.1...@uipath/apollo-wind@2.44.0) (2026-09-02)
 
 ### Features
