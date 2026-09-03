@@ -8,6 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { usePromptEditorConfig } from '../prompt-editor-config';
 import {
   getPromptEditorTokenTypeLabel,
   type PromptEditorAutoCompleteOption,
@@ -30,7 +31,10 @@ const OPTION_ICON: Record<
 
 export interface PromptEditorAutocompleteMenuProps {
   open: boolean;
-  anchorEl: { getBoundingClientRect: () => DOMRect; contextElement?: Element } | null;
+  anchorEl: {
+    getBoundingClientRect: () => DOMRect;
+    contextElement?: Element;
+  } | null;
   /** Pre-fill the search input with the user's typed prefix (everything after `$`). */
   initialSearch: string;
   /** Variable options to offer. */
@@ -75,6 +79,7 @@ export const PromptEditorAutocompleteMenu = ({
 }: PromptEditorAutocompleteMenuProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState(initialSearch);
+  const { strings } = usePromptEditorConfig();
 
   // Re-seed the search box whenever the trigger re-opens with a different typed prefix.
   useEffect(() => {
@@ -158,7 +163,13 @@ export const PromptEditorAutocompleteMenu = ({
       ref={containerRef}
       data-variable-picker-popover=""
       className="rounded-md border bg-popover shadow-lg"
-      style={{ position: 'fixed', top: rect.bottom + 4, left, width: MENU_WIDTH, zIndex: 1400 }}
+      style={{
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left,
+        width: MENU_WIDTH,
+        zIndex: 1400,
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
           e.stopPropagation();
@@ -170,11 +181,11 @@ export const PromptEditorAutocompleteMenu = ({
         <CommandInput
           value={search}
           onValueChange={setSearch}
-          placeholder="Search variables…"
+          placeholder={strings.searchVariablesPlaceholder}
           autoFocus
         />
         <CommandList>
-          <CommandEmpty>No variables found.</CommandEmpty>
+          <CommandEmpty>{strings.noVariablesFound}</CommandEmpty>
           {options.map((option) => {
             const Icon = OPTION_ICON[option.type];
             return (
@@ -197,7 +208,7 @@ export const PromptEditorAutocompleteMenu = ({
             <CommandItem value={freeFormPath} onSelect={() => onCommitFreeForm?.(freeFormPath)}>
               <Variable className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <span className="truncate">
-                Insert <span className="font-medium">{freeFormPath}</span>
+                {strings.insertFreeForm} <span className="font-medium">{freeFormPath}</span>
               </span>
             </CommandItem>
           )}

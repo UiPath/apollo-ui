@@ -1,6 +1,7 @@
 import { Bold, Italic, List, ListOrdered, Maximize2, Strikethrough } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib';
+import { DEFAULT_PROMPT_EDITOR_STRINGS, type PromptEditorStrings } from '../prompt-editor-config';
 import type { PromptEditorMode, PromptEditorToolbarActionsRef } from '../types';
 
 export interface EditorToolbarProps {
@@ -10,6 +11,17 @@ export interface EditorToolbarProps {
   error?: boolean;
   actionsRef?: React.RefObject<PromptEditorToolbarActionsRef | null>;
   onFullscreen?: () => void;
+  /**
+   * Whether the Edit/Preview switcher renders. When hidden, the formatting cluster moves to the
+   * left edge (there is no preview mode to guard, so buttons follow `disabled` alone) and
+   * `trailing` right-aligns — the layout used by value-mode fields whose mode menu lives in
+   * `trailing`. Defaults to true.
+   */
+  showModeToggle?: boolean;
+  /** Consumer-supplied node rendered at the toolbar's right end (e.g. a value-mode menu). */
+  trailing?: React.ReactNode;
+  /** Overridable labels; every key defaults to the built-in English. */
+  strings?: PromptEditorStrings;
 }
 
 /**
@@ -57,8 +69,12 @@ export const EditorToolbar = ({
   error,
   actionsRef,
   onFullscreen,
+  showModeToggle = true,
+  trailing,
+  strings = DEFAULT_PROMPT_EDITOR_STRINGS,
 }: EditorToolbarProps) => {
-  const isEditMode = mode === 'edit';
+  // Without the Edit/Preview switcher there is no preview state to guard against.
+  const isEditMode = !showModeToggle || mode === 'edit';
 
   const handleFormat = (actionName: keyof PromptEditorToolbarActionsRef) => () => {
     if (!disabled && isEditMode) {
@@ -66,6 +82,56 @@ export const EditorToolbar = ({
       if (typeof fn === 'function') fn();
     }
   };
+
+  const formattingCluster = (
+    <>
+      <ToolbarButton
+        icon={Bold}
+        label={strings.bold}
+        disabled={disabled || !isEditMode}
+        onClick={handleFormat('formatBold')}
+      />
+      <ToolbarButton
+        icon={Italic}
+        label={strings.italic}
+        disabled={disabled || !isEditMode}
+        onClick={handleFormat('formatItalic')}
+      />
+      <ToolbarButton
+        icon={Strikethrough}
+        label={strings.strikethrough}
+        disabled={disabled || !isEditMode}
+        onClick={handleFormat('formatStrikethrough')}
+      />
+
+      <ToolbarSeparator />
+
+      <ToolbarButton
+        icon={ListOrdered}
+        label={strings.numberedList}
+        disabled={disabled || !isEditMode}
+        onClick={handleFormat('formatNumberedList')}
+      />
+      <ToolbarButton
+        icon={List}
+        label={strings.bulletedList}
+        disabled={disabled || !isEditMode}
+        onClick={handleFormat('formatBulletedList')}
+      />
+
+      {onFullscreen && (
+        <>
+          <ToolbarSeparator />
+          <ToolbarButton
+            icon={Maximize2}
+            label={strings.expand}
+            disabled={disabled}
+            onClick={onFullscreen}
+          />
+        </>
+      )}
+    </>
+  );
 
   return (
     <div
@@ -83,87 +149,61 @@ export const EditorToolbar = ({
         data-testid="editor-toolbar-separator"
         className="pointer-events-none absolute bottom-0 left-0 h-px w-full bg-border/40"
       />
-      {/* Left: Edit/Preview mode switcher */}
-      <div className="flex items-center gap-1 shrink-0">
-        <fieldset
-          aria-label="Editor mode"
-          className="m-0 flex items-center rounded-md border-0 bg-muted p-0.5"
-        >
-          <button
-            type="button"
-            aria-pressed={mode === 'edit'}
-            className={cn(
-              'rounded px-2 py-0.5 text-[11px] font-semibold transition-colors',
-              mode === 'edit' ? 'bg-primary/20 text-primary' : 'text-foreground hover:bg-accent'
+      {showModeToggle ? (
+        <>
+          {/* Left: Edit/Preview mode switcher */}
+          <div className="flex items-center gap-1 shrink-0">
+            <fieldset
+              aria-label={strings.editorModeLabel}
+              className="m-0 flex items-center rounded-md border-0 bg-muted p-0.5"
+            >
+              <button
+                type="button"
+                aria-pressed={mode === 'edit'}
+                className={cn(
+                  'rounded px-2 py-0.5 text-[11px] font-semibold transition-colors',
+                  mode === 'edit' ? 'bg-primary/20 text-primary' : 'text-foreground hover:bg-accent'
+                )}
+                disabled={disabled}
+                onClick={() => onModeChange('edit')}
+              >
+                {strings.edit}
+              </button>
+              <button
+                type="button"
+                aria-pressed={mode === 'preview'}
+                className={cn(
+                  'rounded px-2 py-0.5 text-[11px] font-semibold transition-colors',
+                  mode === 'preview'
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-foreground hover:bg-accent'
+                )}
+                disabled={disabled}
+                onClick={() => onModeChange('preview')}
+              >
+                {strings.preview}
+              </button>
+            </fieldset>
+          </div>
+
+          {/* Right: formatting cluster (Bold/Italic/Strike) → list cluster (Numbered/Bullet) → Expand → trailing. */}
+          <div className="flex items-center gap-0.5 overflow-hidden">
+            {formattingCluster}
+            {trailing && (
+              <>
+                <ToolbarSeparator />
+                {trailing}
+              </>
             )}
-            disabled={disabled}
-            onClick={() => onModeChange('edit')}
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            aria-pressed={mode === 'preview'}
-            className={cn(
-              'rounded px-2 py-0.5 text-[11px] font-semibold transition-colors',
-              mode === 'preview' ? 'bg-primary/20 text-primary' : 'text-foreground hover:bg-accent'
-            )}
-            disabled={disabled}
-            onClick={() => onModeChange('preview')}
-          >
-            Preview
-          </button>
-        </fieldset>
-      </div>
-
-      {/* Right: formatting cluster (Bold/Italic/Strike) → list cluster (Numbered/Bullet) → Expand. */}
-      <div className="flex items-center gap-0.5 overflow-hidden">
-        <ToolbarButton
-          icon={Bold}
-          label="Bold"
-          disabled={disabled || !isEditMode}
-          onClick={handleFormat('formatBold')}
-        />
-        <ToolbarButton
-          icon={Italic}
-          label="Italic"
-          disabled={disabled || !isEditMode}
-          onClick={handleFormat('formatItalic')}
-        />
-        <ToolbarButton
-          icon={Strikethrough}
-          label="Strikethrough"
-          disabled={disabled || !isEditMode}
-          onClick={handleFormat('formatStrikethrough')}
-        />
-
-        <ToolbarSeparator />
-
-        <ToolbarButton
-          icon={ListOrdered}
-          label="Numbered List"
-          disabled={disabled || !isEditMode}
-          onClick={handleFormat('formatNumberedList')}
-        />
-        <ToolbarButton
-          icon={List}
-          label="Bulleted List"
-          disabled={disabled || !isEditMode}
-          onClick={handleFormat('formatBulletedList')}
-        />
-
-        {onFullscreen && (
-          <>
-            <ToolbarSeparator />
-            <ToolbarButton
-              icon={Maximize2}
-              label="Expand"
-              disabled={disabled}
-              onClick={onFullscreen}
-            />
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* No mode switcher: formatting cluster left-aligns, trailing right-aligns. */}
+          <div className="flex items-center gap-0.5 overflow-hidden">{formattingCluster}</div>
+          {trailing && <div className="flex items-center gap-0.5 shrink-0">{trailing}</div>}
+        </>
+      )}
     </div>
   );
 };

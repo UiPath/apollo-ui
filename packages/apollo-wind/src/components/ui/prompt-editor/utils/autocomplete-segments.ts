@@ -8,6 +8,13 @@ import type { PromptEditorAutoCompleteOption, PromptEditorTokenType } from '../t
  * scope entry) and the dismissal sentinel that suppresses re-opening on cursor returns.
  */
 
+/**
+ * Normalize array indices in an expression-ready path (`items[0]` → `items[]`) for lookup, so an
+ * option advertised with the schema's example index (`records[0].id`) also validates user-entered
+ * indices such as `records[1].id`.
+ */
+export const normalizeVariablePath = (path: string): string => path.replace(/\[\d+\]/g, '[]');
+
 /** Leading-namespace → token type, for free-form paths with no matching option to inherit from. */
 const NAMESPACE_TOKEN_TYPE: Record<string, Exclude<PromptEditorTokenType, 'text'>> = {
   state: 'state',
@@ -25,18 +32,19 @@ export const inferTokenTypeFromPath = (
   path: string,
   options: PromptEditorAutoCompleteOption[]
 ): Exclude<PromptEditorTokenType, 'text'> => {
+  const target = normalizeVariablePath(path);
   for (const opt of options) {
-    if (opt.value === path) return opt.type;
+    if (normalizeVariablePath(opt.value) === target) return opt.type;
   }
-  const segments = path.split('.');
+  const segments = target.split('.');
   while (segments.length > 1) {
     segments.pop();
     const prefix = segments.join('.');
     for (const opt of options) {
-      if (opt.value === prefix) return opt.type;
+      if (normalizeVariablePath(opt.value) === prefix) return opt.type;
     }
   }
-  return NAMESPACE_TOKEN_TYPE[path.split('.')[0]] ?? 'input';
+  return NAMESPACE_TOKEN_TYPE[target.split('.')[0]] ?? 'input';
 };
 
 /**
@@ -46,7 +54,7 @@ export const inferTokenTypeFromPath = (
  * paths can be committed the same as input/output ones.
  */
 export const VARIABLE_PATH_REGEX =
-  /^(?:vars|metadata|agent|state|resource)\.[a-zA-Z_][a-zA-Z0-9_.]*$/;
+  /^(?:vars|metadata|agent|state|resource)\.[a-zA-Z_](?:[a-zA-Z0-9_.]|\[\d+\])*$/;
 
 /** Identifier for the `$` position the picker was last dismissed for. */
 export interface TriggerKey {

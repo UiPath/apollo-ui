@@ -19,6 +19,7 @@ import { FormFieldError } from '@/components/ui/form-field';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { EditorToolbar } from './components/EditorToolbar';
 import { MarkdownPreview } from './components/MarkdownPreview';
+import type { PromptEditorAutocompleteMenuProps } from './components/PromptEditorAutocompleteMenu';
 import { InputTokenNode, OutputTokenNode, ResourceTokenNode, StateTokenNode } from './nodes';
 import { AutocompletePlugin } from './plugins/AutocompletePlugin';
 import { CopyPastePlugin } from './plugins/CopyPastePlugin';
@@ -30,6 +31,12 @@ import { ToolbarActionsPlugin } from './plugins/ToolbarActionsPlugin';
 import { ValidateTokensPlugin } from './plugins/ValidateTokensPlugin';
 import { ValueSyncPlugin } from './plugins/ValueSyncPlugin';
 import { VariableDropPlugin } from './plugins/VariableDropPlugin';
+import {
+  DEFAULT_PROMPT_EDITOR_STRINGS,
+  PromptEditorConfigProvider,
+  type PromptEditorRenderTokenPill,
+  type PromptEditorStrings,
+} from './prompt-editor-config';
 import type {
   PromptEditorAutoCompleteOption,
   PromptEditorMode,
@@ -88,6 +95,35 @@ export interface PromptEditorProps {
    * `dataTransfer`); omit this prop to disable drop handling entirely.
    */
   mapVarDropToToken?: (insertPath: string) => PromptEditorAutoCompleteOption;
+  /**
+   * Token values chips are validated against. Defaults to `autoCompleteOptions`. Pass a wider set
+   * when values can be valid without being offered by autocomplete (e.g. runtime-only paths) —
+   * merging them into `autoCompleteOptions` instead would pollute the `$`-trigger menu.
+   */
+  validationOptions?: PromptEditorAutoCompleteOption[];
+  /**
+   * Replace the built-in `$`-trigger autocomplete menu with a consumer-supplied one. Receives the
+   * exact props the built-in menu would get (anchor, seeded search, options, select/close
+   * callbacks). Also enables the `$` trigger when `autoCompleteOptions` is empty, since the
+   * consumer's menu may source its own entries.
+   */
+  renderAutocompleteMenu?: (props: PromptEditorAutocompleteMenuProps) => React.ReactNode;
+  /**
+   * Replace (or decorate — the built-in pill is passed as `defaultPill`) the rendered token chips.
+   */
+  renderTokenPill?: PromptEditorRenderTokenPill;
+  /** Overridable user-facing strings for localizing hosts. Merged over the built-in English. */
+  strings?: Partial<PromptEditorStrings>;
+  /**
+   * Whether the toolbar's Edit/Preview switcher renders (only meaningful with `showToolbar`).
+   * When false the formatting cluster left-aligns and `toolbarTrailing` right-aligns, and the
+   * editor never enters preview mode. Defaults to true.
+   */
+  showModeToggle?: boolean;
+  /** Consumer-supplied node at the toolbar's right end (e.g. a value-mode menu). */
+  toolbarTrailing?: React.ReactNode;
+  /** Extra Lexical plugins mounted inside the composer (e.g. host-specific drop/replace plugins). */
+  children?: React.ReactNode;
 }
 
 const EMPTY_AUTOCOMPLETE_OPTIONS: PromptEditorAutoCompleteOption[] = [];
@@ -125,8 +161,11 @@ const EditorInner = forwardRef(
       errorId,
       ariaDescribedBy,
       mapVarDropToToken,
+      validationOptions,
+      renderAutocompleteMenu,
       toolbarActionsRef,
       showToolbar,
+      children,
     }: EditorInnerProps,
     ref: React.ForwardedRef<PromptEditorRef>
   ) => {
@@ -341,7 +380,12 @@ const EditorInner = forwardRef(
           style={{
             position: 'relative',
             ...(fillHeight
-              ? { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }
+              ? {
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: 0,
+                }
               : {}),
           }}
         >
@@ -397,12 +441,17 @@ const EditorInner = forwardRef(
         <MultilinePlugin multiline={multiline} />
         <OnChangePlugin ignoreSelectionChange onChange={handleChange} />
         <ToolbarActionsPlugin actionsRef={toolbarActionsRef} />
-        {options.length > 0 && <AutocompletePlugin options={options} />}
-        <ValidateTokensPlugin options={options} />
+        {(options.length > 0 || renderAutocompleteMenu) && (
+          <AutocompletePlugin options={options} renderMenu={renderAutocompleteMenu} />
+        )}
+        <ValidateTokensPlugin
+          options={Array.isArray(validationOptions) ? validationOptions : options}
+        />
         {options.length > 0 && <RenameTokensPlugin options={options} onChange={onChange} />}
         {mapVarDropToToken && (
           <VariableDropPlugin mapVarDropToToken={mapVarDropToToken} disabled={disabled} />
         )}
+        {children}
       </div>
     );
   }
@@ -433,6 +482,13 @@ export const PromptEditor = ({
   'aria-describedby': nativeAriaDescribedBy,
   ariaDescribedBy: legacyAriaDescribedBy,
   mapVarDropToToken,
+  validationOptions,
+  renderAutocompleteMenu,
+  renderTokenPill,
+  strings: partialStrings,
+  showModeToggle = true,
+  toolbarTrailing,
+  children,
 }: PromptEditorProps) => {
   // Normalize the token-array props once so malformed input (e.g. `{}` from a Storybook object
   // control) can't crash the editor, the preview, or ValueSyncPlugin.
@@ -440,7 +496,8 @@ export const PromptEditor = ({
   const initialValue = toTokenArray(rawInitialValue);
 
   const [internalMode, setInternalMode] = useState<PromptEditorMode>('edit');
-  const mode = controlledMode ?? internalMode;
+  // Without the Edit/Preview switcher there is no way (or reason) to enter preview mode.
+  const mode = showModeToggle ? (controlledMode ?? internalMode) : 'edit';
   const toolbarActionsRef = useRef<PromptEditorToolbarActionsRef | null>(null);
   const [uncontrolledPreviewTokens, setUncontrolledPreviewTokens] = useState<PromptEditorToken[]>(
     initialValue ?? []
@@ -482,78 +539,93 @@ export const PromptEditor = ({
     [isControlled, onChange]
   );
 
+  const strings = useMemo<PromptEditorStrings>(
+    () => ({ ...DEFAULT_PROMPT_EDITOR_STRINGS, ...partialStrings }),
+    [partialStrings]
+  );
+  const editorConfig = useMemo(() => ({ renderTokenPill, strings }), [renderTokenPill, strings]);
+
   return (
-    <TooltipProvider>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          width: '100%',
-          ...(fillHeight ? { flex: 1, minHeight: 0 } : {}),
-        }}
-      >
-        {showToolbar && (
-          <EditorToolbar
-            mode={mode}
-            disabled={disabled}
-            error={Boolean(error)}
-            actionsRef={toolbarActionsRef}
-            onModeChange={handleModeChange}
-            onFullscreen={onFullscreen}
-          />
-        )}
-
-        {/* Preview mode — mirror `borderless`: when set, the parent supplies the chrome, so drop
-            the editor's own border/background here too (keeps edit/preview consistent). */}
-        {mode === 'preview' && (
-          <div
-            data-invalid={error ? 'true' : undefined}
-            className={
-              borderless
-                ? undefined
-                : `border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'} ${error ? 'border-error ring-1 ring-error/20 future:ring-error/40' : ''}`
-            }
-          >
-            <MarkdownPreview tokens={previewTokens} minRows={minRows} />
-          </div>
-        )}
-
-        {/* Editor — keep mounted but hide in preview mode */}
+    <PromptEditorConfigProvider value={editorConfig}>
+      <TooltipProvider>
         <div
           style={{
-            display: mode === 'preview' ? 'none' : 'flex',
+            display: 'flex',
             flexDirection: 'column',
+            width: '100%',
             ...(fillHeight ? { flex: 1, minHeight: 0 } : {}),
           }}
         >
-          <LexicalComposer initialConfig={initialConfig}>
-            <EditorInner
-              ref={editorRef as React.Ref<PromptEditorRef>}
-              autoCompleteOptions={autoCompleteOptions}
+          {showToolbar && (
+            <EditorToolbar
+              mode={mode}
               disabled={disabled}
-              ariaLabel={ariaLabel}
-              error={error}
-              errorId={error ? errorId : undefined}
-              ariaDescribedBy={describedBy || undefined}
-              initialValue={initialValue}
-              maxRows={maxRows}
-              minRows={minRows}
-              multiline={multiline}
-              placeholder={placeholder}
-              fillHeight={fillHeight}
-              borderless={borderless}
-              mapVarDropToToken={mapVarDropToToken}
-              showToolbar={showToolbar}
-              toolbarActionsRef={toolbarActionsRef}
-              value={value}
-              onChange={handleEditorChange}
+              error={Boolean(error)}
+              actionsRef={toolbarActionsRef}
+              onModeChange={handleModeChange}
+              onFullscreen={onFullscreen}
+              showModeToggle={showModeToggle}
+              trailing={toolbarTrailing}
+              strings={strings}
             />
-          </LexicalComposer>
+          )}
+
+          {/* Preview mode — mirror `borderless`: when set, the parent supplies the chrome, so drop
+            the editor's own border/background here too (keeps edit/preview consistent). */}
+          {mode === 'preview' && (
+            <div
+              data-invalid={error ? 'true' : undefined}
+              className={
+                borderless
+                  ? undefined
+                  : `border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'} ${error ? 'border-error ring-1 ring-error/20 future:ring-error/40' : ''}`
+              }
+            >
+              <MarkdownPreview tokens={previewTokens} minRows={minRows} />
+            </div>
+          )}
+
+          {/* Editor — keep mounted but hide in preview mode */}
+          <div
+            style={{
+              display: mode === 'preview' ? 'none' : 'flex',
+              flexDirection: 'column',
+              ...(fillHeight ? { flex: 1, minHeight: 0 } : {}),
+            }}
+          >
+            <LexicalComposer initialConfig={initialConfig}>
+              <EditorInner
+                ref={editorRef as React.Ref<PromptEditorRef>}
+                autoCompleteOptions={autoCompleteOptions}
+                disabled={disabled}
+                ariaLabel={ariaLabel}
+                error={error}
+                errorId={error ? errorId : undefined}
+                ariaDescribedBy={describedBy || undefined}
+                initialValue={initialValue}
+                maxRows={maxRows}
+                minRows={minRows}
+                multiline={multiline}
+                placeholder={placeholder}
+                fillHeight={fillHeight}
+                borderless={borderless}
+                mapVarDropToToken={mapVarDropToToken}
+                validationOptions={validationOptions}
+                renderAutocompleteMenu={renderAutocompleteMenu}
+                showToolbar={showToolbar}
+                toolbarActionsRef={toolbarActionsRef}
+                value={value}
+                onChange={handleEditorChange}
+              >
+                {children}
+              </EditorInner>
+            </LexicalComposer>
+          </div>
+          <FormFieldError id={errorId} data-slot="prompt-editor-error" className="mt-1">
+            {error}
+          </FormFieldError>
         </div>
-        <FormFieldError id={errorId} data-slot="prompt-editor-error" className="mt-1">
-          {error}
-        </FormFieldError>
-      </div>
-    </TooltipProvider>
+      </TooltipProvider>
+    </PromptEditorConfigProvider>
   );
 };
