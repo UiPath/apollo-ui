@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.39.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.39.0...@uipath/apollo-react@6.39.1) (2026-09-03)
+
+### Bug Fixes
+
+* **apollo-react:** use MUI CSS classes for color variants ([359d66c](https://github.com/UiPath/apollo-ui/commit/359d66c1c04acffc02f2711361c385dc3c7d5542))
+
 ## [@uipath/apollo-react-v6.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.38.0...@uipath/apollo-react@6.39.0) (2026-09-02)
 
 ### Features
