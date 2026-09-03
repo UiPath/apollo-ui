@@ -1276,8 +1276,12 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                 debugging, and keep the set small.
               </InventoryCallout>
               <div className="flex flex-wrap gap-2">
-                <Button className={panelId === 1 ? 'future:!text-white' : undefined}>Run</Button>
-                <Button variant="outline">Run</Button>
+                <Button className={panelId === 1 ? 'future:!text-white' : undefined}>
+                  <Play size={14} /> Run
+                </Button>
+                <Button variant="outline">
+                  <Play size={14} /> Run
+                </Button>
               </div>
               <InventoryCallout eyebrow="Action pattern" title="Manage">
                 Use Manage when the action opens a separate configuration surface for the field or

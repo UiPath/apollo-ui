@@ -4486,7 +4486,11 @@ function TakeoverComposition() {
           variant="takeover"
           headerTitle="Test workflow"
           sidebar={<div className="h-full" />}
-          headerActions={<Button size="sm">Run</Button>}
+          headerActions={
+            <Button size="sm">
+              <Play size={14} /> Run
+            </Button>
+          }
         >
           <div className="h-full min-h-[480px]" />
         </ModalContent>
