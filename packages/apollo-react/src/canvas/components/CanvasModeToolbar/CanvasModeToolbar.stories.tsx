@@ -63,7 +63,7 @@ function DefaultStory() {
         <ToolbarButton
           label="Run"
           className={TOOLBAR_ICON_BUTTON_CLASS}
-          onClick={() => console.log('run debug')}
+          onClick={() => console.log('run')}
         >
           <Play />
         </ToolbarButton>

@@ -1473,7 +1473,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
               <LockableValueField
                 id={`ux-${panelId}-composition-value`}
                 label={<Label className="text-xs font-medium">Invoice value</Label>}
-                value="${vars.invoiceNumber}"
+                value="$vars.invoiceNumber"
                 onValueChange={() => undefined}
                 locked={false}
                 mode="expression"

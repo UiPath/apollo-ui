@@ -185,7 +185,7 @@ const DialogContent = React.forwardRef<
     </DialogOverlay>
   );
 
-  return isTakeover ? (
+  return isTakeover && !container ? (
     content
   ) : (
     <DialogPortal data-slot="dialog-portal" container={resolvedContainer}>

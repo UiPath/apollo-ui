@@ -57,7 +57,6 @@ export function CanvasTakeoverModal({
         sidebarClassName={sidebarClassName}
         closeOnBackdropClick={closeOnBackdropClick}
         overlayTestId="canvas-takeover-backdrop"
-        data-expanded={expanded ?? defaultExpanded ?? false}
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           (event.currentTarget as HTMLElement)
