@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.45.1...@uipath/apollo-wind@2.46.0) (2026-09-03)
+
+### Features
+
+* **apollo-wind:** add text button variant ([35e243d](https://github.com/UiPath/apollo-ui/commit/35e243d43124ddb3d58a322f7b059a8fd8e7d9d9))
+
 ## [@uipath/apollo-wind-v2.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.45.0...@uipath/apollo-wind@2.45.1) (2026-09-03)
 
 ### Bug Fixes

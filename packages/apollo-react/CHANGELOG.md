@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.40.0...@uipath/apollo-react@6.41.0) (2026-09-03)
+
+### Features
+
+* **apollo-wind:** add text button variant ([35e243d](https://github.com/UiPath/apollo-ui/commit/35e243d43124ddb3d58a322f7b059a8fd8e7d9d9))
+
 ## [@uipath/apollo-react-v6.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.39.1...@uipath/apollo-react@6.40.0) (2026-09-03)
 
 ### Features
