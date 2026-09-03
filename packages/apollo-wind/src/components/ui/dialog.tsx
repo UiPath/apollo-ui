@@ -86,6 +86,7 @@ const DialogContent = React.forwardRef<
     overlayTestId,
     'data-expanded': dataExpanded,
     'aria-labelledby': ariaLabelledBy,
+    onPointerDownOutside,
     ...props
   },
   ref
@@ -124,17 +125,15 @@ const DialogContent = React.forwardRef<
         )}
         onPointerDownOutside={(event) => {
           if (isTakeover && !closeOnBackdropClick) event.preventDefault();
+          onPointerDownOutside?.(event);
         }}
         ref={ref}
         {...props}
-        {...((isTakeover && (headerTitle === undefined || headerTitle === null)) || ariaLabelledBy
-          ? {
-              'aria-labelledby':
-                isTakeover && (headerTitle === undefined || headerTitle === null)
-                  ? ''
-                  : ariaLabelledBy,
-            }
-          : {})}
+        {...(isTakeover && (headerTitle === undefined || headerTitle === null)
+          ? { 'aria-labelledby': ariaLabelledBy }
+          : ariaLabelledBy
+            ? { 'aria-labelledby': ariaLabelledBy }
+            : {})}
       >
         {isTakeover ? (
           <>

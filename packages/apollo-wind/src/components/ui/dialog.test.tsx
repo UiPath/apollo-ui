@@ -287,6 +287,6 @@ describe('Dialog', () => {
     );
 
     const dialog = screen.getByRole('dialog', { name: 'Accessible takeover' });
-    expect(dialog).toHaveAttribute('aria-labelledby', '');
+    expect(dialog).not.toHaveAttribute('aria-labelledby');
   });
 });
