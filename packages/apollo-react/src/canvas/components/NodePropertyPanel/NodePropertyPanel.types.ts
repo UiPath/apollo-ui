@@ -15,8 +15,25 @@ export interface NodePropertyPanelProps {
   nodeIcon?: ReactNode;
   /** The node's display label shown in the node identity row. */
   nodeLabel?: string;
-  /** Category/subtitle text shown below `nodeLabel` (e.g. "HTTP Request"). */
+  /** Category/subtitle text shown below `nodeLabel` (e.g. "HTTP Request"). Fallback: a description, a description callback, or a description error takes the line instead. */
   nodeCategory?: string;
+  /** User-authored description on the identity row's second line. Takes the line from `nodeCategory` whenever it is non-empty, as does `onNodeDescriptionChange` on its own. */
+  nodeDescription?: string;
+  /** Hint shown in place of an empty `nodeLabel`. Defaults to a localized `"Name"`. Never committed. */
+  nodeLabelPlaceholder?: string;
+  /** Hint shown in place of an empty `nodeDescription`. Defaults to a localized `"Description"`. Never committed. */
+  nodeDescriptionPlaceholder?: string;
+  /** Makes `nodeLabel` click-to-edit: commits the trimmed value on Enter or blur, Escape reverts. Omit for read-only. */
+  onNodeLabelChange?: (label: string) => void;
+  /** Makes `nodeDescription` click-to-edit. Same contract as `onNodeLabelChange`. */
+  onNodeDescriptionChange?: (description: string) => void;
+  /**
+   * Validation message for the node name, rendered below it with a persistent
+   * error ring.
+   */
+  nodeLabelError?: ReactNode;
+  /** Validation message for the description. Same contract as `nodeLabelError`; takes the second line even with no description or edit callback. */
+  nodeDescriptionError?: ReactNode;
   /** Action slot rendered on the right of the identity row (e.g. a Run button). */
   action?: ReactNode;
   /**

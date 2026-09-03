@@ -45,6 +45,10 @@ export interface BaseNodeOverrideConfig {
   // Display Customization
   labelTooltip?: string;
   labelBackgroundColor?: string;
+  /** Hint shown in the inline name editor while empty. Defaults to `"Name"`. */
+  labelPlaceholder?: string;
+  /** Hint shown in the inline description editor while empty. Defaults to `"Description"`. */
+  subLabelPlaceholder?: string;
   /** When providing a `footerComponent`, also set `footerVariant` to a sized variant (`button` | `single` | `double`). */
   footerVariant?: FooterVariant;
   footerComponent?: React.ReactNode;

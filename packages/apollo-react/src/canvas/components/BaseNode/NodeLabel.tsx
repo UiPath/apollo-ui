@@ -205,6 +205,10 @@ const EmptyLabelPlaceholder = ({ disabled, onDoubleClick }: EmptyLabelPlaceholde
 export interface NodeLabelProps {
   label?: string;
   subLabel?: string;
+  /** Hint shown in the name editor while empty. Defaults to `"Name"`. */
+  labelPlaceholder?: string;
+  /** Hint shown in the description editor while empty. Defaults to `"Description"`. */
+  subLabelPlaceholder?: string;
   labelTooltip?: string;
   labelBackgroundColor?: string;
   shape?: NodeShape;
@@ -221,6 +225,8 @@ export interface NodeLabelProps {
 const NodeLabelInternal = ({
   label = '',
   subLabel = '',
+  labelPlaceholder = 'Name',
+  subLabelPlaceholder = 'Description',
   labelTooltip,
   labelBackgroundColor,
   shape,
@@ -245,11 +251,11 @@ const NodeLabelInternal = ({
     setIsEditing(false);
     setFocusTarget(null);
 
-    // Only call onChange if values have changed
-    if (localLabel !== label || localSubLabel !== subLabel) {
+    const [nextLabel, nextSubLabel] = [localLabel.trim(), localSubLabel.trim()];
+    if (nextLabel !== label || nextSubLabel !== subLabel) {
       onChange?.({
-        label: localLabel,
-        subLabel: localSubLabel,
+        label: nextLabel,
+        subLabel: nextSubLabel,
       });
     }
   }, [localLabel, localSubLabel, label, subLabel, onChange]);
@@ -363,7 +369,7 @@ const NodeLabelInternal = ({
             shape={shape}
             variant="normal"
             backgroundColor={labelBackgroundColor}
-            placeholder="Name"
+            placeholder={labelPlaceholder}
             rows={shape === 'rectangle' ? 1 : undefined}
             aria-label="Edit node name"
           />
@@ -375,7 +381,7 @@ const NodeLabelInternal = ({
             onBlur={handleBlur}
             shape={shape}
             variant="subtext"
-            placeholder="Description"
+            placeholder={subLabelPlaceholder}
             rows={shape === 'rectangle' ? 2 : undefined}
             aria-label="Edit node description"
           />

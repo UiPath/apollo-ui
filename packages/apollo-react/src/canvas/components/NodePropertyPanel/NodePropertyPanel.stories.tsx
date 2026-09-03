@@ -272,7 +272,7 @@ function getMonacoThemeName(): string {
   if (typeof document === 'undefined') return 'apollo-future-dark';
   const classes = Array.from(document.body.classList);
   const match = classes.find((c) => c in THEME_CLASS_MAP);
-  return match ? THEME_CLASS_MAP[match] : 'apollo-future-dark';
+  return (match ? THEME_CLASS_MAP[match] : undefined) ?? 'apollo-future-dark';
 }
 
 function useMonacoTheme(): string {
@@ -385,7 +385,6 @@ const httpRequestForm: FormSchema = {
               name: 'node_id',
               label: 'ID',
               defaultValue: 'httpRequest1',
-              disabled: true,
             },
             { type: 'text', name: 'label', label: 'Label', defaultValue: 'Fetch invoice details' },
             { type: 'textarea', name: 'description', label: 'Description' },
@@ -432,7 +431,6 @@ const manualTriggerForm: FormSchema = {
               name: 'node_id',
               label: 'ID',
               defaultValue: 'manualTrigger1',
-              disabled: true,
             },
             { type: 'text', name: 'label', label: 'Label', defaultValue: 'Manual trigger' },
             { type: 'textarea', name: 'description', label: 'Description' },
@@ -534,6 +532,54 @@ export const Default: Story = {
 export const QuickForm: Story = {
   name: 'Form HITL',
   render: () => <QuickFormPanel />,
+};
+
+function IdentityValidationStory() {
+  const [label, setLabel] = useState('Analyze files');
+  const [description, setDescription] = useState('');
+
+  // Stand-in for a host rule (here: an agent tool name). The caller owns both
+  // the message and when it clears, so the ring persists after the editor
+  // closes on a value the host would reject.
+  const labelError = !label
+    ? 'Tool name is required.'
+    : /^[A-Z_a-z][\w ]*$/.test(label)
+      ? undefined
+      : 'Tool name must begin with a letter or underscore and contain only letters, digits, spaces, and underscores.';
+
+  return (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle="Properties"
+        nodeIcon={<Globe />}
+        nodeLabel={label}
+        nodeLabelPlaceholder="Name"
+        nodeDescription={description}
+        nodeDescriptionPlaceholder="Client-side tool"
+        onNodeLabelChange={setLabel}
+        onNodeDescriptionChange={setDescription}
+        nodeLabelError={labelError}
+        action={<RunButton />}
+        schema={httpRequestForm}
+        contentInset="0.875rem"
+        onClose={() => {}}
+        className="h-[640px]"
+      />
+    </PanelFrame>
+  );
+}
+
+export const IdentityValidation: Story = {
+  name: 'Identity Validation',
+  render: () => <IdentityValidationStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Rename the node to something starting with a digit to see the error state. `nodeLabelError` / `nodeDescriptionError` render below the line with a persistent error ring, matching `Input`: the control gets `aria-invalid` plus `aria-errormessage`, and the message renders through `FormFieldError` so it announces politely. The ring stays after the editor closes, so a commit the host rejects still explains itself.',
+      },
+    },
+  },
 };
 
 export const EmbeddedNoTitleBar: Story = {
@@ -1392,11 +1438,7 @@ function InputEditorStory() {
   const nextIdRef = useRef(2);
   const [defaultBranch, setDefaultBranch] = useState(false);
   const [label, setLabel] = useState('End');
-  const [category, setCategory] = useState('Control');
-  const [editingLabel, setEditingLabel] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(false);
-  const labelRef = useRef<HTMLInputElement>(null);
-  const categoryRef = useRef<HTMLInputElement>(null);
+  const [description, setDescription] = useState('');
 
   const addCase = () => {
     const id = nextIdRef.current++;
@@ -1412,70 +1454,16 @@ function InputEditorStory() {
         onClose={() => {}}
         contentInset="0.875rem"
         className="h-[640px]"
+        nodeIcon={<CircleCheck />}
+        nodeLabel={label}
+        nodeLabelPlaceholder="Control"
+        nodeDescription={description}
+        nodeDescriptionPlaceholder="Control"
+        onNodeLabelChange={setLabel}
+        onNodeDescriptionChange={setDescription}
+        action={<DebugButton />}
       >
         <div className="flex h-full flex-col">
-          {/* Inline-editable identity row */}
-          <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-            <div className="flex min-w-0 flex-1 items-center gap-3.5">
-              <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
-                <CircleCheck />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col justify-center">
-                {editingLabel ? (
-                  <input
-                    ref={labelRef}
-                    value={label}
-                    onChange={(e) => setLabel(e.target.value)}
-                    onBlur={() => setEditingLabel(false)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
-                    }}
-                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
-                    autoFocus
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingLabel(true);
-                      setTimeout(() => labelRef.current?.select(), 0);
-                    }}
-                    className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
-                  >
-                    {label}
-                  </button>
-                )}
-                {editingCategory ? (
-                  <input
-                    ref={categoryRef}
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    onBlur={() => setEditingCategory(false)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
-                    }}
-                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
-                    autoFocus
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingCategory(true);
-                      setTimeout(() => categoryRef.current?.select(), 0);
-                    }}
-                    className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
-                  >
-                    {category}
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="shrink-0">
-              <DebugButton />
-            </div>
-          </div>
-
           {/* Tabs */}
           <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
             <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
@@ -3505,7 +3493,7 @@ function InventoryField({
 }: {
   label: string;
   description?: string;
-  children: ReactElement;
+  children: ReactElement<{ id?: string; 'aria-describedby'?: string }>;
 }) {
   const generatedId = useId();
   const controlId = children.props.id ?? generatedId;
@@ -3876,7 +3864,7 @@ function PanelUIInventoryStory() {
       if (!match) return;
 
       const [, tab, section] = match;
-      if (!['layout', 'states', 'actions', 'composition'].includes(tab)) return;
+      if (!tab || !['layout', 'states', 'actions', 'composition'].includes(tab)) return;
       setInventoryTab(tab);
       setInventorySection(section ?? null);
       if (tab === 'layout' && section && ['text-fields', 'choices', 'advanced'].includes(section)) {

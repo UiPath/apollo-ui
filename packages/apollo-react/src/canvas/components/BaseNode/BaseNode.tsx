@@ -106,6 +106,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     executionStatusOverride,
     labelTooltip,
     labelBackgroundColor,
+    labelPlaceholder,
+    subLabelPlaceholder,
     footerVariant,
     footerComponent,
     subLabelComponent,
@@ -696,6 +698,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           subLabel={displaySubLabel}
           labelTooltip={displayLabelTooltip}
           labelBackgroundColor={displayLabelBackgroundColor}
+          labelPlaceholder={labelPlaceholder}
+          subLabelPlaceholder={subLabelPlaceholder}
           shape={displayShape}
           hasBottomHandles={hasVisibleBottomHandles}
           selected={selected}
