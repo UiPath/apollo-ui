@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.39.1...@uipath/apollo-react@6.40.0) (2026-09-03)
+
+### Features
+
+* **apollo-react:** inline-editable node name and description ([9bb7a7d](https://github.com/UiPath/apollo-ui/commit/9bb7a7daf47ed0118f287b3715b7fcc556d56ea8))
+
 ## [@uipath/apollo-react-v6.39.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.39.0...@uipath/apollo-react@6.39.1) (2026-09-03)
 
 ### Bug Fixes
