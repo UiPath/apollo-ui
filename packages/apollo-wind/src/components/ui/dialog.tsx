@@ -169,17 +169,11 @@ const DialogContent = React.forwardRef<
                   aria-label={expanded ? 'Collapse modal' : 'Expand modal'}
                   title={expanded ? 'Collapse modal' : 'Expand modal'}
                   onClick={() => setExpanded(!expanded)}
-                  className="size-8 rounded-md text-foreground-muted hover:bg-surface-hover hover:text-foreground focus-visible:ring-border-focus"
                 >
                   {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                 </Button>
                 <DialogPrimitive.Close asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Close modal"
-                    className="size-8 rounded-md text-foreground-muted hover:bg-surface-hover hover:text-foreground focus-visible:ring-border-focus"
-                  >
+                  <Button variant="ghost" size="icon" aria-label="Close modal">
                     <XIcon size={16} />
                   </Button>
                 </DialogPrimitive.Close>
