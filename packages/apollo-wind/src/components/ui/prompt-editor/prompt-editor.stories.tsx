@@ -91,6 +91,39 @@ export const WithToolbar: Story = {
   },
 };
 
+/**
+ * Widget-style toolbar: no Edit/Preview switcher, formatting cluster left-aligned, and a
+ * consumer-supplied control (here a "T" value-mode button) right-aligned via `toolbarTrailing`.
+ */
+export const WithTrailingModeControl: Story = {
+  args: {
+    showToolbar: true,
+    showModeToggle: false,
+    toolbarTrailing: (
+      <button
+        type="button"
+        aria-label="Value mode"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 28,
+          height: 28,
+          borderRadius: 4,
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'var(--color-muted-foreground)',
+        }}
+      >
+        T
+      </button>
+    ),
+    initialValue: SAMPLE_VALUE,
+    autoCompleteOptions: AUTOCOMPLETE_OPTIONS,
+    ariaLabel: 'Body',
+  },
+};
+
 /** Type `$` in the editor to open the variable autocomplete menu. */
 export const WithAutocomplete: Story = {
   args: {
@@ -169,10 +202,20 @@ export const WithVariableDragDrop: Story = {
     const DragDropExample = () => {
       const [value, setValue] = useState<PromptEditorToken[]>([]);
       const mapVarDropToToken = (path: string): PromptEditorAutoCompleteOption =>
-        AUTOCOMPLETE_OPTIONS.find((o) => o.value === path) ?? { type: 'input', value: path };
+        AUTOCOMPLETE_OPTIONS.find((o) => o.value === path) ?? {
+          type: 'input',
+          value: path,
+        };
       return (
         <div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 8,
+              marginBottom: 12,
+            }}
+          >
             {AUTOCOMPLETE_OPTIONS.map((o) => (
               // biome-ignore lint/a11y/noStaticElementInteractions: demo drag source for the story; real consumers own the (accessible) drag affordance.
               <span

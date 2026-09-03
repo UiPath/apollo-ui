@@ -259,4 +259,126 @@ describe('PromptEditor', () => {
       );
     });
   });
+
+  describe('extension points', () => {
+    it('hides the Edit/Preview switcher with showModeToggle=false and keeps formatting enabled', () => {
+      render(<PromptEditor showToolbar showModeToggle={false} />);
+      expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Preview' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Bold' })).toBeEnabled();
+    });
+
+    it('never enters preview mode when showModeToggle=false, even with mode="preview"', () => {
+      render(
+        <PromptEditor
+          showToolbar
+          showModeToggle={false}
+          mode="preview"
+          value={[{ type: 'text', value: '# Hi' }]}
+          ariaLabel="Prompt"
+        />
+      );
+      // The editor (not the markdown preview) renders.
+      expect(screen.getByRole('textbox', { name: 'Prompt' })).toBeInTheDocument();
+    });
+
+    it('renders toolbarTrailing at the toolbar right end', () => {
+      render(
+        <PromptEditor
+          showToolbar
+          showModeToggle={false}
+          toolbarTrailing={<button type="button">T-mode</button>}
+        />
+      );
+      const toolbar = screen.getByTestId('editor-toolbar');
+      expect(toolbar).toContainElement(screen.getByRole('button', { name: 'T-mode' }));
+    });
+
+    it('applies overridden strings to toolbar labels', () => {
+      render(
+        <PromptEditor
+          showToolbar
+          strings={{
+            bold: 'Fett',
+            edit: 'Bearbeiten',
+            numberedList: 'Nummerierte Liste',
+          }}
+        />
+      );
+      expect(screen.getByRole('button', { name: 'Fett' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Bearbeiten' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Nummerierte Liste' })).toBeInTheDocument();
+      // Unspecified keys keep the built-in English.
+      expect(screen.getByRole('button', { name: 'Italic' })).toBeInTheDocument();
+    });
+
+    it('renders token pills through renderTokenPill', async () => {
+      const initialValue: PromptEditorToken[] = [{ type: 'input', value: 'vars.firstName' }];
+      render(
+        <PromptEditor
+          ariaLabel="Prompt"
+          initialValue={initialValue}
+          renderTokenPill={({ value, tokenType }) => (
+            <span data-testid="custom-pill">
+              {tokenType}:{value}
+            </span>
+          )}
+        />
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('custom-pill')).toHaveTextContent('input:vars.firstName')
+      );
+    });
+
+    it('mounts the $-trigger flow with renderAutocompleteMenu even without options', () => {
+      const renderMenu = vi.fn().mockReturnValue(null);
+      render(<PromptEditor ariaLabel="Prompt" renderAutocompleteMenu={renderMenu} />);
+      expect(renderMenu).toHaveBeenCalled();
+      const props = renderMenu.mock.calls.at(-1)?.[0];
+      expect(props).toMatchObject({ open: false, options: [] });
+      expect(typeof props.onSelect).toBe('function');
+      expect(typeof props.onClose).toBe('function');
+    });
+
+    it('validates chips against validationOptions instead of autoCompleteOptions', async () => {
+      const seen: Array<{ value: string; isInvalid?: boolean }> = [];
+      render(
+        <PromptEditor
+          ariaLabel="Prompt"
+          initialValue={[
+            { type: 'input', value: 'vars.firstName' },
+            { type: 'input', value: 'vars.records[2].id' },
+            { type: 'input', value: 'vars.notInEitherSet' },
+          ]}
+          autoCompleteOptions={[]}
+          validationOptions={[
+            { type: 'input', value: 'vars.firstName' },
+            { type: 'input', value: 'vars.records[0].id' },
+          ]}
+          renderTokenPill={(pill) => {
+            seen.push({ value: pill.value, isInvalid: pill.isInvalid });
+            return (
+              <span data-testid={`pill-${pill.value}`}>{String(Boolean(pill.isInvalid))}</span>
+            );
+          }}
+        />
+      );
+      // Valid: exact match. Valid: index-normalized match. Invalid: in neither set.
+      await waitFor(() => {
+        expect(screen.getByTestId('pill-vars.firstName')).toHaveTextContent('false');
+        expect(screen.getByTestId('pill-vars.records[2].id')).toHaveTextContent('false');
+        expect(screen.getByTestId('pill-vars.notInEitherSet')).toHaveTextContent('true');
+      });
+    });
+
+    it('mounts extra Lexical plugins passed as children inside the composer', () => {
+      const Probe = () => <div data-testid="extra-plugin" />;
+      render(
+        <PromptEditor ariaLabel="Prompt">
+          <Probe />
+        </PromptEditor>
+      );
+      expect(screen.getByTestId('extra-plugin')).toBeInTheDocument();
+    });
+  });
 });

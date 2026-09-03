@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { PromptEditorAutoCompleteOption } from '../types';
 import {
   inferTokenTypeFromPath,
+  normalizeVariablePath,
   shouldSuppressOpenForDismissed,
   VARIABLE_PATH_REGEX,
 } from './autocomplete-segments';
@@ -30,6 +31,25 @@ describe('inferTokenTypeFromPath', () => {
     expect(inferTokenTypeFromPath('state.unknown', OPTIONS)).toBe('state');
     expect(inferTokenTypeFromPath('resource.unknown', OPTIONS)).toBe('resource');
   });
+
+  it('matches options across differing array indices', () => {
+    const indexed: PromptEditorAutoCompleteOption[] = [
+      { type: 'output', value: 'vars.records[0].id' },
+    ];
+    expect(inferTokenTypeFromPath('vars.records[1].id', indexed)).toBe('output');
+    expect(inferTokenTypeFromPath('vars.records[7].id.nested', indexed)).toBe('output');
+  });
+});
+
+describe('normalizeVariablePath', () => {
+  it('normalizes numeric array indices to []', () => {
+    expect(normalizeVariablePath('vars.records[0].id')).toBe('vars.records[].id');
+    expect(normalizeVariablePath('vars.a[12].b[3]')).toBe('vars.a[].b[]');
+  });
+
+  it('leaves paths without indices untouched', () => {
+    expect(normalizeVariablePath('vars.firstName')).toBe('vars.firstName');
+  });
 });
 
 describe('VARIABLE_PATH_REGEX (free-form Enter commit)', () => {
@@ -40,6 +60,8 @@ describe('VARIABLE_PATH_REGEX (free-form Enter commit)', () => {
     'vars.a.b.c',
     'state.retryCount',
     'resource.knowledgeBase',
+    'vars.records[0].id',
+    'vars.a[12].b[3]',
   ])('accepts valid path %s', (path) => expect(VARIABLE_PATH_REGEX.test(path)).toBe(true));
 
   it.each([
