@@ -164,7 +164,7 @@ function TakeoverModalStory({ withSidebar }: { withSidebar: boolean }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           variant="takeover"
-          title="Modal title"
+          headerTitle="Modal title"
           sidebar={
             withSidebar ? (
               <div className="p-2">

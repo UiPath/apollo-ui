@@ -47,7 +47,7 @@ export function CanvasTakeoverModal({
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent
         variant="takeover"
-        title={title}
+        headerTitle={title}
         headerActions={headerActions}
         sidebar={sidebar}
         expanded={expanded}
@@ -61,13 +61,10 @@ export function CanvasTakeoverModal({
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           (event.currentTarget as HTMLElement)
-            .querySelector<HTMLElement>('[aria-label="Expand modal"]')
+            .querySelector<HTMLElement>(
+              '[aria-label="Expand modal"], [aria-label="Collapse modal"]'
+            )
             ?.focus();
-        }}
-        overlayProps={{
-          onMouseDown: (event) => {
-            if (closeOnBackdropClick && event.target === event.currentTarget) onOpenChange?.(false);
-          },
         }}
       >
         {children}

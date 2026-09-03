@@ -51,11 +51,11 @@ const DialogOverlay = React.forwardRef<
 
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
-  Omit<React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>, 'title'> & {
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     showCloseButton?: boolean;
     container?: PortalContainerOverride;
     variant?: 'default' | 'takeover';
-    title?: React.ReactNode;
+    headerTitle?: React.ReactNode;
     headerActions?: React.ReactNode;
     sidebar?: React.ReactNode;
     sidebarClassName?: string;
@@ -74,7 +74,7 @@ const DialogContent = React.forwardRef<
     showCloseButton = true,
     container,
     variant = 'default',
-    title,
+    headerTitle,
     headerActions,
     sidebar,
     sidebarClassName,
@@ -131,7 +131,7 @@ const DialogContent = React.forwardRef<
           <>
             <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle px-4">
               <DialogPrimitive.Title className="min-w-0 flex-1 truncate text-sm font-semibold">
-                {title}
+                {headerTitle}
               </DialogPrimitive.Title>
               {headerActions}
               <div className="-mr-1 flex shrink-0 items-center gap-1">

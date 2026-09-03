@@ -4385,7 +4385,7 @@ export function FullWorkbenchComposition({
         <Modal open={nodeTakeoverOpen} onOpenChange={setNodeTakeoverOpen}>
           <ModalContent
             variant="takeover"
-            title="Send Email"
+            headerTitle="Send Email"
             headerActions={
               <Button size="sm" variant="secondary">
                 <Play size={14} /> Run node
@@ -4400,7 +4400,7 @@ export function FullWorkbenchComposition({
         <Modal open={variablesTakeoverOpen} onOpenChange={setVariablesTakeoverOpen}>
           <ModalContent
             variant="takeover"
-            title={VARIABLE_DEMO_NODES[selectedVariableNodeId]?.label ?? 'Node configuration'}
+            headerTitle={VARIABLE_DEMO_NODES[selectedVariableNodeId]?.label ?? 'Node configuration'}
           >
             <div className="grid h-full min-h-0 grid-cols-2 divide-x divide-border-subtle overflow-hidden">
               <UnifiedVariablesPanel
@@ -4484,7 +4484,7 @@ function TakeoverComposition() {
       <Modal open={open} onOpenChange={setOpen}>
         <ModalContent
           variant="takeover"
-          title="Test workflow"
+          headerTitle="Test workflow"
           sidebar={<div className="h-full" />}
           headerActions={<Button size="sm">Run</Button>}
         >

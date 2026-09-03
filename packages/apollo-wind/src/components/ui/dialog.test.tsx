@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
@@ -226,5 +226,54 @@ describe('Dialog', () => {
       const overlay = document.querySelector('[data-slot="dialog-overlay"]');
       expect(overlay).toBeInTheDocument();
     });
+  });
+
+  it('supports the takeover variant with a header, sidebar, and expansion', () => {
+    const onExpandedChange = vi.fn();
+    render(
+      <Dialog open>
+        <DialogContent
+          variant="takeover"
+          headerTitle="Takeover title"
+          title="Native tooltip"
+          sidebar={<nav>Sidebar content</nav>}
+          onExpandedChange={onExpandedChange}
+        >
+          Takeover content
+        </DialogContent>
+      </Dialog>
+    );
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveTextContent('Takeover title');
+    expect(dialog).toHaveTextContent('Sidebar content');
+    expect(dialog).toHaveAttribute('title', 'Native tooltip');
+    expect(dialog).toHaveAttribute('data-expanded', 'false');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand modal' }));
+
+    expect(dialog).toHaveAttribute('data-expanded', 'true');
+    expect(onExpandedChange).toHaveBeenCalledWith(true);
+    expect(screen.getByRole('button', { name: 'Collapse modal' })).toBeInTheDocument();
+  });
+
+  it('prevents takeover backdrop dismissal when disabled', () => {
+    const onOpenChange = vi.fn();
+    render(
+      <Dialog open onOpenChange={onOpenChange}>
+        <DialogContent
+          variant="takeover"
+          headerTitle="Takeover title"
+          closeOnBackdropClick={false}
+          overlayTestId="takeover-overlay"
+        >
+          Takeover content
+        </DialogContent>
+      </Dialog>
+    );
+
+    fireEvent.pointerDown(screen.getByTestId('takeover-overlay'));
+
+    expect(onOpenChange).not.toHaveBeenCalled();
   });
 });

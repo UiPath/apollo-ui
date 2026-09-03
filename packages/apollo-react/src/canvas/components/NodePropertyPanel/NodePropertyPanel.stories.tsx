@@ -4376,7 +4376,7 @@ function PanelUIInventoryStory() {
                     </PatternNote>
                     <div className="flex flex-wrap items-center gap-2">
                       <RunButton />
-                      <RunButton />
+                      <RunButtonIconOnly />
                     </div>
                   </section>
 
