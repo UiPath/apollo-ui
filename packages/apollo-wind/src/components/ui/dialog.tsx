@@ -1,6 +1,7 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { Maximize2, Minimize2, XIcon } from 'lucide-react';
 import * as React from 'react';
 
@@ -24,6 +25,22 @@ const DialogTrigger = React.forwardRef<
 function DialogPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
+
+const dialogContentVariants = cva(
+  'bg-surface-raised text-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 relative z-50 border border-border-subtle shadow-xl duration-200',
+  {
+    variants: {
+      variant: {
+        default:
+          'grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-2xl p-6 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:max-w-lg',
+        takeover: 'flex min-h-0 w-full flex-col overflow-hidden',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+);
 
 const DialogClose = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Close>,
@@ -52,9 +69,9 @@ const DialogOverlay = React.forwardRef<
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    variant?: VariantProps<typeof dialogContentVariants>['variant'];
     showCloseButton?: boolean;
     container?: PortalContainerOverride;
-    variant?: 'default' | 'takeover';
     headerTitle?: React.ReactNode;
     headerActions?: React.ReactNode;
     sidebar?: React.ReactNode;
@@ -117,9 +134,7 @@ const DialogContent = React.forwardRef<
         data-variant={variant}
         data-expanded={isTakeover ? expanded : dataExpanded}
         className={cn(
-          isTakeover
-            ? 'bg-surface-raised text-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 relative z-50 flex min-h-0 w-full flex-col overflow-hidden border border-border-subtle shadow-xl duration-200'
-            : 'bg-surface-raised text-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 relative z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-2xl border border-border-subtle p-6 shadow-xl duration-200 sm:max-w-lg',
+          dialogContentVariants({ variant }),
           isTakeover && (expanded ? 'h-full w-full' : 'h-[95%] w-[95%] rounded-2xl'),
           className
         )}
