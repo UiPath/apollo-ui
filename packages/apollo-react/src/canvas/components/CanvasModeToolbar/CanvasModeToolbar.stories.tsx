@@ -61,9 +61,9 @@ function DefaultStory() {
         <Separator orientation="vertical" className="h-5" />
 
         <ToolbarButton
-          label="Run debug"
+          label="Run"
           className={TOOLBAR_ICON_BUTTON_CLASS}
-          onClick={() => console.log('run debug')}
+          onClick={() => console.log('run')}
         >
           <Play />
         </ToolbarButton>
@@ -103,7 +103,7 @@ function DebugRunningStory() {
     <div style={{ padding: 32 }}>
       <CanvasModeToolbar>
         <ToolbarButton
-          label="Stop debug"
+          label="Stop"
           className={TOOLBAR_ICON_BUTTON_CLASS}
           onClick={() => console.log('stop')}
         >
@@ -139,7 +139,7 @@ function DebugPausedStory() {
     <div style={{ padding: 32 }}>
       <CanvasModeToolbar>
         <ToolbarButton
-          label="Stop debug"
+          label="Stop"
           className={TOOLBAR_ICON_BUTTON_CLASS}
           onClick={() => console.log('stop')}
         >
@@ -202,7 +202,7 @@ function ReadOnlyStory() {
 
         <Separator orientation="vertical" className="h-5" />
 
-        <ToolbarButton label="Run debug" disabled className={TOOLBAR_ICON_BUTTON_CLASS}>
+        <ToolbarButton label="Run" disabled className={TOOLBAR_ICON_BUTTON_CLASS}>
           <Play />
         </ToolbarButton>
 

@@ -213,7 +213,7 @@ function CanvasCompositionStory() {
       <BaseCanvas {...canvasProps} mode="design">
         <Panel position="top-center">
           <CanvasModeToolbar>
-            <ToolbarButton label="Run debug" className={TOOLBAR_ICON_BUTTON_CLASS}>
+            <ToolbarButton label="Run" className={TOOLBAR_ICON_BUTTON_CLASS}>
               <Play />
             </ToolbarButton>
             <ToolbarButton label="Stop" disabled className={TOOLBAR_ICON_BUTTON_CLASS}>

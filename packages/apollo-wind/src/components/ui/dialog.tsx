@@ -1,9 +1,11 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { XIcon } from 'lucide-react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { Maximize2, Minimize2, XIcon } from 'lucide-react';
 import * as React from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   type PortalContainerOverride,
   useResolvedPortalContainer,
@@ -24,6 +26,22 @@ const DialogTrigger = React.forwardRef<
 function DialogPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
+
+const dialogContentVariants = cva(
+  'bg-surface-raised text-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 relative z-50 border border-border-subtle shadow-xl duration-200',
+  {
+    variants: {
+      variant: {
+        default:
+          'grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-2xl p-6 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:max-w-lg',
+        takeover: 'flex min-h-0 w-full flex-col overflow-hidden',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+);
 
 const DialogClose = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Close>,
@@ -52,38 +70,150 @@ const DialogOverlay = React.forwardRef<
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    variant?: VariantProps<typeof dialogContentVariants>['variant'];
     showCloseButton?: boolean;
     container?: PortalContainerOverride;
+    headerTitle?: React.ReactNode;
+    headerActions?: React.ReactNode;
+    sidebar?: React.ReactNode;
+    sidebarClassName?: string;
+    expanded?: boolean;
+    defaultExpanded?: boolean;
+    onExpandedChange?: (expanded: boolean) => void;
+    closeOnBackdropClick?: boolean;
+    overlayProps?: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>;
+    overlayTestId?: string;
+    'data-expanded'?: boolean;
   }
 >(function DialogContent(
-  { className, children, showCloseButton = true, container, ...props },
+  {
+    className,
+    children,
+    showCloseButton = true,
+    container,
+    variant = 'default',
+    headerTitle,
+    headerActions,
+    sidebar,
+    sidebarClassName,
+    expanded: controlledExpanded,
+    defaultExpanded = false,
+    onExpandedChange,
+    closeOnBackdropClick = true,
+    overlayProps,
+    overlayTestId,
+    'data-expanded': dataExpanded,
+    'aria-labelledby': ariaLabelledBy,
+    onPointerDownOutside,
+    ...props
+  },
   ref
 ) {
   const resolvedContainer = useResolvedPortalContainer(container);
+  const [uncontrolledExpanded, setUncontrolledExpanded] = React.useState(defaultExpanded);
+  const expanded = controlledExpanded ?? uncontrolledExpanded;
+  const isTakeover = variant === 'takeover';
+
+  const setExpanded = (nextExpanded: boolean) => {
+    if (controlledExpanded === undefined) setUncontrolledExpanded(nextExpanded);
+    onExpandedChange?.(nextExpanded);
+  };
+
+  const content = (
+    <DialogOverlay
+      {...overlayProps}
+      data-testid={overlayTestId}
+      className={cn(
+        isTakeover
+          ? cn('!absolute !bg-curtain items-center justify-center', expanded ? 'p-0' : 'p-3')
+          : undefined,
+        overlayProps?.className
+      )}
+    >
+      <DialogPrimitive.Content
+        data-slot="dialog-content"
+        data-variant={variant}
+        data-expanded={isTakeover ? expanded : dataExpanded}
+        className={cn(
+          dialogContentVariants({ variant }),
+          isTakeover && (expanded ? 'h-full w-full' : 'h-[95%] w-[95%] rounded-2xl'),
+          className
+        )}
+        onPointerDownOutside={(event) => {
+          if (isTakeover && !closeOnBackdropClick) event.preventDefault();
+          onPointerDownOutside?.(event);
+        }}
+        ref={ref}
+        {...props}
+        {...(isTakeover && (headerTitle === undefined || headerTitle === null)
+          ? { 'aria-labelledby': ariaLabelledBy }
+          : ariaLabelledBy
+            ? { 'aria-labelledby': ariaLabelledBy }
+            : {})}
+      >
+        {isTakeover ? (
+          <>
+            <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle px-4">
+              {headerTitle !== undefined && headerTitle !== null ? (
+                <DialogPrimitive.Title className="min-w-0 flex-1 truncate text-sm font-semibold">
+                  {headerTitle}
+                </DialogPrimitive.Title>
+              ) : (
+                <div className="min-w-0 flex-1" aria-hidden="true" />
+              )}
+              {headerActions}
+              <div className="-mr-1 flex shrink-0 items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={expanded ? 'Collapse modal' : 'Expand modal'}
+                  title={expanded ? 'Collapse modal' : 'Expand modal'}
+                  onClick={() => setExpanded(!expanded)}
+                >
+                  {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                </Button>
+                <DialogPrimitive.Close asChild>
+                  <Button variant="ghost" size="icon" aria-label="Close modal">
+                    <XIcon size={16} />
+                  </Button>
+                </DialogPrimitive.Close>
+              </div>
+            </header>
+            <div className="flex min-h-0 flex-1">
+              {sidebar != null && (
+                <aside
+                  className={cn(
+                    'w-64 shrink-0 overflow-auto border-r border-border-subtle',
+                    sidebarClassName
+                  )}
+                >
+                  {sidebar}
+                </aside>
+              )}
+              <main className="min-w-0 flex-1 overflow-auto">{children}</main>
+            </div>
+          </>
+        ) : (
+          <>
+            {children}
+            {showCloseButton && (
+              <DialogPrimitive.Close
+                data-slot="dialog-close"
+                className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 cursor-pointer rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:cursor-default disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+              >
+                <XIcon />
+                <span className="sr-only">Close</span>
+              </DialogPrimitive.Close>
+            )}
+          </>
+        )}
+      </DialogPrimitive.Content>
+    </DialogOverlay>
+  );
+
   return (
     <DialogPortal data-slot="dialog-portal" container={resolvedContainer}>
-      <DialogOverlay>
-        <DialogPrimitive.Content
-          data-slot="dialog-content"
-          className={cn(
-            'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 relative z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg',
-            className
-          )}
-          ref={ref}
-          {...props}
-        >
-          {children}
-          {showCloseButton && (
-            <DialogPrimitive.Close
-              data-slot="dialog-close"
-              className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 cursor-pointer rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:cursor-default disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-            >
-              <XIcon />
-              <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
-          )}
-        </DialogPrimitive.Content>
-      </DialogOverlay>
+      {content}
     </DialogPortal>
   );
 });
@@ -129,7 +259,7 @@ const DialogDescription = React.forwardRef<
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn('text-muted-foreground text-sm', className)}
+      className={cn('text-foreground-muted text-sm', className)}
       ref={ref}
       {...props}
     />
@@ -147,4 +277,30 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
+};
+
+// Modal is the product-facing name. Dialog aliases remain available for
+// compatibility with existing consumers and Radix's component vocabulary.
+const Modal = Dialog;
+const ModalClose = DialogClose;
+const ModalContent = DialogContent;
+const ModalDescription = DialogDescription;
+const ModalFooter = DialogFooter;
+const ModalHeader = DialogHeader;
+const ModalOverlay = DialogOverlay;
+const ModalPortal = DialogPortal;
+const ModalTitle = DialogTitle;
+const ModalTrigger = DialogTrigger;
+
+export {
+  Modal,
+  ModalClose,
+  ModalContent,
+  ModalDescription,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  ModalPortal,
+  ModalTitle,
+  ModalTrigger,
 };
