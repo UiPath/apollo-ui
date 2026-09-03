@@ -1,4 +1,4 @@
-import MonacoEditor from '@monaco-editor/react';
+import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BaseCanvas } from '@uipath/apollo-react/canvas/components/BaseCanvas';
 import {
@@ -103,7 +103,9 @@ import {
 import {
   type CSSProperties,
   createContext,
+  lazy,
   type ReactNode,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -121,6 +123,18 @@ import {
   apolloFutureLightMonaco,
 } from '../../../../packages/apollo-wind/src/editor-themes';
 import { DapLayoutsPage } from './DapLayoutsPage';
+
+// @monaco-editor/react uses a CJS build without an `exports` field, which can
+// cause Rolldown (Vite 8 production bundler) to resolve the default import as
+// undefined. Lazy-loading via dynamic import keeps the Storybook build stable.
+const LazyMonaco = lazy(() => import('@monaco-editor/react'));
+function MonacoEditor(props: EditorProps) {
+  return (
+    <Suspense fallback={<div className="min-h-[200px] flex-1" />}>
+      <LazyMonaco {...props} />
+    </Suspense>
+  );
+}
 
 const INVENTORY_TAB_LIST_CLASS =
   'h-auto justify-start gap-0.5 overflow-x-auto rounded-lg bg-transparent p-0.5 text-muted-foreground [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
