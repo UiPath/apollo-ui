@@ -43,8 +43,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
   FIELD_TYPE_META,
+  FIELD_TYPE_ORDER,
   FormField,
   FormFieldDescription,
   FormFieldLabel,
@@ -529,6 +533,18 @@ export const Default: Story = {
 export const QuickForm: Story = {
   name: 'Form HITL',
   render: () => <QuickFormPanel />,
+};
+
+export const QuickFormIntrtn: Story = {
+  name: 'Form HITL V2.1',
+  render: () => <QuickFormPanel variant="intrtn" />,
+  parameters: {
+    docs: {
+      description: {
+        story: 'Iteration workspace for the Form HITL interaction design.',
+      },
+    },
+  },
 };
 
 function IdentityValidationStory() {
@@ -2581,6 +2597,7 @@ function LockableCaseRow({
   monacoTheme,
   insertBefore,
   insertAfter,
+  deletePlacement = 'header',
 }: {
   id: number;
   caseTitle: string;
@@ -2603,6 +2620,8 @@ function LockableCaseRow({
   insertBefore?: boolean;
   /** Shows the insertion line below this row (the dragged item would land here). */
   insertAfter?: boolean;
+  /** Placement used by the HITL2 comparison story. */
+  deletePlacement?: 'header' | 'outside' | 'sides' | 'trailing' | 'menu';
 }) {
   const [editingTitle, setEditingTitle] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -2626,103 +2645,198 @@ function LockableCaseRow({
         />
       )}
       <div
-        className={cn(isDragging && 'rounded-lg border-2 border-dashed border-brand/50 opacity-50')}
+        className={cn(
+          'relative',
+          isDragging && 'rounded-lg border-2 border-dashed border-brand/50 opacity-50'
+        )}
       >
-        <LockableValueField
-          id={`return-value-${id}`}
-          label={
-            <div className="flex min-w-0 flex-1 items-center gap-1">
-              <button
-                type="button"
-                {...attributes}
-                {...listeners}
-                aria-label="Drag to reorder"
-                title="Drag to reorder"
-                className="grid size-5 shrink-0 touch-none place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground [cursor:grab]"
-              >
-                <GripVertical size={12} />
-              </button>
-              {editingTitle ? (
-                <input
-                  ref={titleRef}
-                  value={caseTitle}
-                  onChange={(e) => onTitleChange(e.target.value)}
-                  onBlur={() => setEditingTitle(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false);
-                  }}
-                  className="min-w-0 flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
-                  autoFocus
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingTitle(true);
-                    setTimeout(() => titleRef.current?.select(), 0);
-                  }}
-                  title={caseTitle}
-                  className="flex min-w-0 items-center rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
-                >
-                  {/* Single-line header row, so the title ellipsizes. The
+        <div
+          className={cn(
+            deletePlacement === 'outside' && 'group relative min-w-0',
+            deletePlacement === 'sides' && 'group relative min-w-0 px-7'
+          )}
+        >
+          <LockableValueField
+            id={`return-value-${id}`}
+            label={
+              <div className="flex min-w-0 flex-1 items-center gap-1">
+                {deletePlacement !== 'outside' &&
+                  deletePlacement !== 'sides' &&
+                  deletePlacement !== 'menu' && (
+                    <button
+                      type="button"
+                      {...attributes}
+                      {...listeners}
+                      aria-label="Drag to reorder"
+                      title="Drag to reorder"
+                      className="grid size-5 shrink-0 touch-none place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground [cursor:grab]"
+                    >
+                      <GripVertical size={12} />
+                    </button>
+                  )}
+                {editingTitle ? (
+                  <input
+                    ref={titleRef}
+                    value={caseTitle}
+                    onChange={(e) => onTitleChange(e.target.value)}
+                    onBlur={() => setEditingTitle(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false);
+                    }}
+                    className="min-w-0 flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingTitle(true);
+                      setTimeout(() => titleRef.current?.select(), 0);
+                    }}
+                    title={caseTitle}
+                    className="flex min-w-0 items-center rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
+                  >
+                    {/* Single-line header row, so the title ellipsizes. The
                       indicator sits outside the truncated run so the ellipsis
                       cannot swallow it. */}
-                  <span className="truncate">{caseTitle}</span>
-                  {required && <RequiredIndicator className="shrink-0" />}
+                    <span className="truncate">{caseTitle}</span>
+                    {required && deletePlacement !== 'menu' && (
+                      <RequiredIndicator className="shrink-0" />
+                    )}
+                  </button>
+                )}
+              </div>
+            }
+            headerActions={
+              deletePlacement === 'header' ? (
+                <DeleteFieldButton
+                  onDelete={onDelete}
+                  className={cn(
+                    controlsVisibility === 'hover' &&
+                      'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+                  )}
+                />
+              ) : undefined
+            }
+            value={value}
+            onValueChange={onValueChange}
+            locked={locked}
+            onLockedChange={onLockedChange}
+            showLock={deletePlacement !== 'menu'}
+            leadingAddon={
+              deletePlacement === 'menu' ? (
+                <button
+                  type="button"
+                  {...attributes}
+                  {...listeners}
+                  aria-label="Drag to reorder"
+                  title="Drag to reorder"
+                  className="grid h-6 w-0 shrink-0 touch-none overflow-hidden place-items-center rounded-md text-foreground-subtle opacity-0 transition-[width,opacity,background-color,color] group-hover:w-6 group-hover:opacity-100 group-focus-within:w-6 group-focus-within:opacity-100 hover:bg-surface-overlay hover:text-foreground future:rounded-xl [cursor:grab]"
+                >
+                  <GripVertical size={12} />
                 </button>
-              )}
-            </div>
-          }
-          headerActions={
+              ) : undefined
+            }
+            leadingAddonClassName={
+              deletePlacement === 'menu'
+                ? 'mr-[-0.5rem] group-hover:mr-0 group-focus-within:mr-0'
+                : undefined
+            }
+            mode={mode}
+            onModeChange={onModeChange}
+            renderExpressionEditor={({
+              id,
+              value,
+              onValueChange,
+              onBlur,
+              readOnly,
+              placeholder,
+            }) => (
+              <div className="relative h-10 min-w-0 flex-1 overflow-visible" onBlur={onBlur}>
+                <MonacoEditor
+                  height="40px"
+                  language="javascript"
+                  value={value}
+                  onChange={(nextValue) => onValueChange?.(nextValue ?? '')}
+                  theme={monacoTheme}
+                  beforeMount={registerMonacoThemes}
+                  options={{ ...INLINE_EDITOR_OPTIONS, readOnly, fixedOverflowWidgets: true }}
+                />
+                {value === '' && (
+                  <label
+                    htmlFor={id}
+                    className="pointer-events-none absolute left-[14px] top-1/2 -translate-y-1/2 font-mono text-[13px] text-foreground-subtle"
+                  >
+                    {placeholder}
+                  </label>
+                )}
+              </div>
+            )}
+            trailingAddon={
+              deletePlacement === 'trailing' ? (
+                <DeleteFieldButton
+                  onDelete={onDelete}
+                  className="w-0 overflow-hidden opacity-0 transition-[width,opacity] group-hover:w-6 group-hover:opacity-100 group-focus-within:w-6 group-focus-within:opacity-100"
+                />
+              ) : undefined
+            }
+            showValueTypeAction={deletePlacement !== 'menu'}
+            fieldType={fieldType}
+            onFieldTypeChange={deletePlacement === 'menu' ? undefined : onFieldTypeChange}
+            required={deletePlacement === 'menu' ? undefined : required}
+            onRequiredChange={deletePlacement === 'menu' ? undefined : onRequiredChange}
+            variables={LOCKABLE_VARIABLES}
+            more={
+              deletePlacement === 'menu'
+                ? {
+                    onDelete,
+                    children: (
+                      <MoreFieldActionsMenuItems
+                        fieldType={fieldType}
+                        onFieldTypeChange={onFieldTypeChange}
+                        mode={mode}
+                        onModeChange={onModeChange}
+                        required={required}
+                        onRequiredChange={onRequiredChange}
+                        onValueChange={onValueChange}
+                        variables={LOCKABLE_VARIABLES}
+                      />
+                    ),
+                  }
+                : undefined
+            }
+            showFieldActions={deletePlacement !== 'menu'}
+            compact={compact}
+            controlsVisibility={controlsVisibility}
+            className={deletePlacement === 'outside' ? 'min-w-0' : undefined}
+          />
+          {(deletePlacement === 'outside' || deletePlacement === 'sides') && (
             <button
               type="button"
-              onClick={onDelete}
-              aria-label="Delete field"
-              title="Delete field"
+              {...attributes}
+              {...listeners}
+              aria-label="Drag to reorder"
+              title="Drag to reorder"
               className={cn(
-                'grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                controlsVisibility === 'hover' &&
-                  'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+                'grid h-10 w-6 shrink-0 touch-none place-items-center rounded-md text-foreground-subtle opacity-0 transition-[opacity,background-color,color] group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-surface-overlay hover:text-foreground future:rounded-xl [cursor:grab]',
+                deletePlacement === 'outside' && 'absolute -left-7 bottom-0',
+                deletePlacement === 'sides' && 'absolute bottom-0 left-0'
               )}
             >
-              <Trash2 size={12} />
+              <GripVertical size={12} />
             </button>
-          }
-          value={value}
-          onValueChange={onValueChange}
-          locked={locked}
-          onLockedChange={onLockedChange}
-          mode={mode}
-          onModeChange={onModeChange}
-          renderExpressionEditor={({ id, value, onValueChange, onBlur, readOnly, placeholder }) => (
-            <div className="relative h-10 min-w-0 flex-1 overflow-visible" onBlur={onBlur}>
-              <MonacoEditor
-                height="40px"
-                language="javascript"
-                value={value}
-                onChange={(nextValue) => onValueChange?.(nextValue ?? '')}
-                theme={monacoTheme}
-                beforeMount={registerMonacoThemes}
-                options={{ ...INLINE_EDITOR_OPTIONS, readOnly, fixedOverflowWidgets: true }}
-              />
-              {value === '' && (
-                <label
-                  htmlFor={id}
-                  className="pointer-events-none absolute left-[14px] top-1/2 -translate-y-1/2 font-mono text-[13px] text-foreground-subtle"
-                >
-                  {placeholder}
-                </label>
-              )}
-            </div>
           )}
-          fieldType={fieldType}
-          onFieldTypeChange={onFieldTypeChange}
-          required={required}
-          onRequiredChange={onRequiredChange}
-          variables={LOCKABLE_VARIABLES}
-          compact={compact}
-          controlsVisibility={controlsVisibility}
-        />
+          {(deletePlacement === 'outside' || deletePlacement === 'sides') && (
+            <DeleteFieldButton
+              onDelete={onDelete}
+              className={cn(
+                'h-10 w-6 shrink-0 rounded-md opacity-0 transition-[opacity,background-color,color] group-hover:opacity-100 group-focus-within:opacity-100 future:rounded-xl',
+                deletePlacement === 'outside' && 'absolute -right-7 bottom-0',
+                deletePlacement === 'sides' && 'absolute bottom-0 right-0'
+              )}
+            />
+          )}
+        </div>
       </div>
       {insertAfter && (
         <div
@@ -2731,6 +2845,112 @@ function LockableCaseRow({
         />
       )}
     </div>
+  );
+}
+
+function DeleteFieldButton({ onDelete, className }: { onDelete: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onDelete}
+      aria-label="Delete field"
+      title="Delete field"
+      className={cn(
+        'grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+        className
+      )}
+    >
+      <Trash2 size={12} />
+    </button>
+  );
+}
+
+function MoreFieldActionsMenuItems({
+  fieldType,
+  onFieldTypeChange,
+  mode,
+  onModeChange,
+  required,
+  onRequiredChange,
+  onValueChange,
+  variables,
+}: {
+  fieldType: LockableFieldType;
+  onFieldTypeChange: (fieldType: LockableFieldType) => void;
+  mode: LockableValueFieldMode;
+  onModeChange: (mode: LockableValueFieldMode) => void;
+  required: boolean;
+  onRequiredChange: (required: boolean) => void;
+  onValueChange: (value: string) => void;
+  variables: VariablePickerItem[];
+}) {
+  return (
+    <>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>Value type</DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          <DropdownMenuItem onSelect={() => onModeChange('fixed')}>
+            Field{mode === 'fixed' ? ' (current)' : ''}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onModeChange('expression')}>
+            Expression{mode === 'expression' ? ' (current)' : ''}
+          </DropdownMenuItem>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>Field type</DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          {FIELD_TYPE_ORDER.map((type) => {
+            const meta = FIELD_TYPE_META[type];
+            return (
+              <DropdownMenuItem key={type} onSelect={() => onFieldTypeChange(type)}>
+                <meta.icon
+                  className={type === fieldType ? 'text-brand' : 'text-foreground-muted'}
+                />
+                {meta.label}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>Required</DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          <DropdownMenuItem onSelect={() => onRequiredChange(true)}>
+            Yes{required ? ' (current)' : ''}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onRequiredChange(false)}>
+            No{required ? '' : ' (current)'}
+          </DropdownMenuItem>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>AI assist</DropdownMenuSubTrigger>
+        <DropdownMenuSubContent className="w-64 space-y-1.5 p-3">
+          <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+            Describe the value you want
+          </span>
+          <Textarea
+            rows={3}
+            placeholder="e.g. Extract the invoice total"
+            className="resize-none text-sm"
+          />
+          <Button size="sm" className="w-fit">
+            Generate
+          </Button>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>Insert variable</DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          {variables.map((variable) => (
+            <DropdownMenuItem key={variable.value} onSelect={() => onValueChange(variable.value)}>
+              {variable.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+    </>
   );
 }
 
@@ -2876,13 +3096,7 @@ function FieldDragOverlay({ caseItem }: { caseItem: LockableCase }) {
   );
 }
 
-function LockableValueFieldShowcase({
-  controlsVisibility,
-  onControlsVisibilityChange,
-}: {
-  controlsVisibility: 'visible' | 'hover';
-  onControlsVisibilityChange: (visibility: 'visible' | 'hover') => void;
-}) {
+function LockableValueFieldShowcase() {
   const fullViewId = useId();
   const compactViewId = useId();
   const [showcaseValue, setShowcaseValue] = useState('');
@@ -2904,8 +3118,7 @@ function LockableValueFieldShowcase({
       <div className="flex flex-col gap-1">
         <span className="text-sm font-semibold text-foreground">Demo controls</span>
         <p className="text-xs leading-4 text-foreground-muted">
-          Toggle Show/Hide to preview how field controls behave in the panel on the left. Uses
-          component →{' '}
+          Field controls are shown here as a reference. Uses component →{' '}
           <a
             href="/?path=/docs/apollo-wind-components-uipath-lockable-value-field--docs"
             target="_top"
@@ -2914,24 +3127,6 @@ function LockableValueFieldShowcase({
             Lockable Value Field
           </a>
         </p>
-      </div>
-      <div className="flex items-center justify-between border-t border-border-subtle pt-4">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
-          Controls
-        </span>
-        <ToggleGroup
-          type="single"
-          size="xs"
-          value={controlsVisibility}
-          onValueChange={(v) => v && onControlsVisibilityChange(v as 'visible' | 'hover')}
-        >
-          <ToggleGroupItem value="visible" className="!px-2.5 !text-xs">
-            Show
-          </ToggleGroupItem>
-          <ToggleGroupItem value="hover" className="!px-2.5 !text-xs">
-            Hide
-          </ToggleGroupItem>
-        </ToggleGroup>
       </div>
       <div className="flex flex-col gap-2">
         <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
@@ -2950,8 +3145,7 @@ function LockableValueFieldShowcase({
               aria-label="Close field"
               className={cn(
                 'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                controlsVisibility === 'hover' &&
-                  'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+                'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
               )}
             >
               <Trash2 size={14} />
@@ -2968,7 +3162,7 @@ function LockableValueFieldShowcase({
           required={showcaseRequired}
           onRequiredChange={setShowcaseRequired}
           variables={LOCKABLE_VARIABLES}
-          controlsVisibility={controlsVisibility}
+          controlsVisibility="visible"
         />
       </div>
       <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
@@ -2993,8 +3187,7 @@ function LockableValueFieldShowcase({
                 aria-label="Close field"
                 className={cn(
                   'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                  controlsVisibility === 'hover' &&
-                    'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+                  'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
                 )}
               >
                 <Trash2 size={14} />
@@ -3011,7 +3204,7 @@ function LockableValueFieldShowcase({
             required={showcaseRequired}
             onRequiredChange={setShowcaseRequired}
             variables={LOCKABLE_VARIABLES}
-            controlsVisibility={controlsVisibility}
+            controlsVisibility="visible"
           />
         </div>
       </div>
@@ -3023,14 +3216,40 @@ export function QuickFormPanel({
   embedded = false,
   onClose,
   className = 'h-[760px]',
+  variant = 'default',
 }: {
   embedded?: boolean;
   onClose?: () => void;
   className?: string;
+  variant?: 'default' | 'placement-comparison' | 'intrtn';
 } = {}) {
   const monacoTheme = useMonacoTheme();
-  const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
-  const nextIdRef = useRef(4);
+  const initialCases =
+    variant === 'intrtn'
+      ? [
+          ...DEFAULT_LOCKABLE_CASES,
+          {
+            id: 4,
+            title: 'Concept 4',
+            required: true,
+            value: '',
+            locked: true,
+            mode: 'fixed' as const,
+            fieldType: 'string' as const,
+          },
+        ].map((caseItem, index) => ({
+          ...caseItem,
+          title: `Concept ${index + 1}`,
+          locked: false,
+        }))
+      : variant === 'placement-comparison'
+        ? DEFAULT_LOCKABLE_CASES.map((caseItem, index) => ({
+            ...caseItem,
+            title: `Concept ${index + 1}`,
+          }))
+        : DEFAULT_LOCKABLE_CASES;
+  const [cases, setCases] = useState<LockableCase[]>(initialCases);
+  const nextIdRef = useRef(initialCases.length + 1);
   const [formView, setFormView] = useState<'edit' | 'json'>('edit');
   const [formTitle, setFormTitle] = useState('Quick Approve');
   const [formDescription, setFormDescription] = useState('Add a description');
@@ -3038,12 +3257,9 @@ export function QuickFormPanel({
   const [editingFormDescription, setEditingFormDescription] = useState(false);
   const formTitleRef = useRef<HTMLInputElement>(null);
   const formDescriptionRef = useRef<HTMLInputElement>(null);
-  const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(DEFAULT_LOCKABLE_CASES, null, 2));
+  const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(initialCases, null, 2));
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [jsonCopied, setJsonCopied] = useState(false);
-  const [showcaseControlsVisibility, setShowcaseControlsVisibility] = useState<'visible' | 'hover'>(
-    'visible'
-  );
   const [buttons, setButtons] = useState<FormButtonItem[]>(DEFAULT_FORM_BUTTONS);
   const nextButtonIdRef = useRef(3);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -3363,10 +3579,23 @@ export function QuickFormPanel({
                                 onFieldTypeChange={(fieldType) =>
                                   updateCaseFieldType(c.id, fieldType)
                                 }
-                                controlsVisibility={showcaseControlsVisibility}
+                                controlsVisibility="visible"
                                 monacoTheme={monacoTheme}
                                 insertBefore={isOver && activeIndex > index}
                                 insertAfter={isOver && activeIndex < index}
+                                deletePlacement={
+                                  variant === 'placement-comparison'
+                                    ? ((['header', 'trailing', 'menu'] as const)[index] ?? 'header')
+                                    : variant === 'intrtn'
+                                      ? index === 1
+                                        ? 'outside'
+                                        : index === 2
+                                          ? 'menu'
+                                          : index === 3
+                                            ? 'sides'
+                                            : 'header'
+                                      : 'header'
+                                }
                               />
                             );
                           })}
@@ -3470,10 +3699,7 @@ export function QuickFormPanel({
     <div className="flex items-start gap-8">
       <PanelFrame>{panel}</PanelFrame>
 
-      <LockableValueFieldShowcase
-        controlsVisibility={showcaseControlsVisibility}
-        onControlsVisibilityChange={setShowcaseControlsVisibility}
-      />
+      <LockableValueFieldShowcase />
     </div>
   );
 }
