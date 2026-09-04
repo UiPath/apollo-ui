@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.0...@uipath/apollo-wind@2.47.1) (2026-09-04)
+
+### Performance Improvements
+
+* **apollo-wind:** re-render only the edited field in MetadataForm ([e46a6f5](https://github.com/UiPath/apollo-ui/commit/e46a6f553e3e895e73bacc4eaba49d9b56e450bf))
+
 ## [@uipath/apollo-wind-v2.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.46.0...@uipath/apollo-wind@2.47.0) (2026-09-04)
 
 ### Features
