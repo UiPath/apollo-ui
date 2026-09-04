@@ -1,3 +1,21 @@
+## [@uipath/apollo-wind-v2.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.46.0...@uipath/apollo-wind@2.47.0) (2026-09-04)
+
+### Features
+
+* **apollo-wind:** add PromptEditor extension points for host integration ([4267f49](https://github.com/UiPath/apollo-ui/commit/4267f49578c5efb25ef5db47e25ad2c55f3f37a7))
+* **apollo-wind:** WYSIWYG rich mode for PromptEditor ([005cab0](https://github.com/UiPath/apollo-ui/commit/005cab0f96e2d7f062f8b648ee26e4b4f670006a))
+
+### Bug Fixes
+
+* **apollo-wind:** frame-level focus ring and persistent pill selection ([040b733](https://github.com/UiPath/apollo-ui/commit/040b733aa54146de2ab4becd31e35565aafa424c))
+* **apollo-wind:** hoist a stray mid-file import and drop story em dashes ([823cd89](https://github.com/UiPath/apollo-ui/commit/823cd89ea0f8d88e07776c6e9cf1808a51455a87))
+* **apollo-wind:** input-matching focus ring + host-controlled preview pills ([11626f8](https://github.com/UiPath/apollo-ui/commit/11626f863d06612dd3d30e934373d4c3dd06537d))
+* **apollo-wind:** keep the validation message outside the focus frame ([abf5514](https://github.com/UiPath/apollo-ui/commit/abf551448a725477182e34fb4086e1dcf87ded8a))
+* **apollo-wind:** localize remaining PromptEditor strings, review nits ([c357f10](https://github.com/UiPath/apollo-ui/commit/c357f10f015eba67fa1dd93a4f0631d6cf28456e))
+* **apollo-wind:** localize the invalid-chip tooltip copy ([0dcfe19](https://github.com/UiPath/apollo-ui/commit/0dcfe19a4a1f9e89398a85c0beb5c5e82d927d4b))
+* **apollo-wind:** pointer cursor on prompt-editor toolbar buttons ([523ebbf](https://github.com/UiPath/apollo-ui/commit/523ebbfbe3fd0a34d404f76bc7fc4524db4b8bad))
+* **apollo-wind:** tighten free-form path syntax, respect preview without a toolbar ([ef68b43](https://github.com/UiPath/apollo-ui/commit/ef68b43b64e04fe935cfaf885d75b9dfa3ed6322))
+
 ## [@uipath/apollo-wind-v2.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.45.1...@uipath/apollo-wind@2.46.0) (2026-09-03)
 
 ### Features
