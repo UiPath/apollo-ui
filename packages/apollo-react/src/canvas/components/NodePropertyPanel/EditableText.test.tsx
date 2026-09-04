@@ -196,6 +196,41 @@ describe('EditableText', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  it('returns focus to the read trigger after Enter, so the tab sequence continues', async () => {
+    const user = userEvent.setup();
+    render(<EditableText value="End" onChange={vi.fn()} aria-label="Node name" />);
+
+    await user.click(screen.getByRole('button', { name: /^Node name/ }));
+    await user.keyboard('Wrap up{Enter}');
+
+    expect(screen.getByRole('button', { name: /^Node name/ })).toHaveFocus();
+  });
+
+  it('returns focus to the read trigger after Escape', async () => {
+    const user = userEvent.setup();
+    render(<EditableText value="End" onChange={vi.fn()} aria-label="Node name" />);
+
+    await user.click(screen.getByRole('button', { name: /^Node name/ }));
+    await user.keyboard('{Escape}');
+
+    expect(screen.getByRole('button', { name: /^Node name/ })).toHaveFocus();
+  });
+
+  it('lands focus on the next field when tabbing out of the editor', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <EditableText value="End" onChange={vi.fn()} aria-label="Node name" />
+        <button type="button">next</button>
+      </>
+    );
+
+    await user.click(screen.getByRole('button', { name: /^Node name/ }));
+    await user.tab();
+
+    expect(screen.getByRole('button', { name: 'next' })).toHaveFocus();
+  });
+
   describe('overflow tooltip', () => {
     it('offers the full value as a tooltip on the read trigger', () => {
       render(<EditableText value="A very long description" onChange={vi.fn()} />);

@@ -65,6 +65,13 @@ export function EditableText({
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const readRef = useRef<HTMLButtonElement>(null);
+  /**
+   * Where focus goes once the editor unmounts: the read trigger for Enter/Escape, the element the
+   * user tabbed to otherwise. Without this the focused editor unmounts mid-blur and focus falls to
+   * `document.body`, so the next Tab restarts from the top of the document.
+   */
+  const pendingFocus = useRef<HTMLElement | 'read' | null>(null);
   const errorId = `editable-text-${useId().replace(/:/g, '')}-error`;
 
   const hasError = !!error;
@@ -73,18 +80,29 @@ export function EditableText({
   const describedBy = hasError ? errorId : undefined;
 
   useIsomorphicLayoutEffect(() => {
-    if (!isEditing) return;
-    inputRef.current?.focus();
-    inputRef.current?.select();
+    if (isEditing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+      return;
+    }
+    const target = pendingFocus.current;
+    pendingFocus.current = null;
+    if (target === 'read') readRef.current?.focus();
+    else target?.focus();
   }, [isEditing]);
 
-  const commit = useCallback(() => {
-    setIsEditing(false);
-    const next = draft.trim();
-    if (next !== value) onChange?.(next);
-  }, [draft, value, onChange]);
+  const commit = useCallback(
+    (nextFocus: HTMLElement | 'read' | null) => {
+      pendingFocus.current = nextFocus;
+      setIsEditing(false);
+      const next = draft.trim();
+      if (next !== value) onChange?.(next);
+    },
+    [draft, value, onChange]
+  );
 
   const cancel = useCallback(() => {
+    pendingFocus.current = 'read';
     setIsEditing(false);
   }, []);
 
@@ -93,7 +111,7 @@ export function EditableText({
       // Shift+Enter falls through to insert a newline; every other Enter commits.
       if (e.key === 'Enter' && !(multiline && e.shiftKey)) {
         e.preventDefault();
-        commit();
+        commit('read');
       } else if (e.key === 'Escape') {
         e.preventDefault();
         cancel();
@@ -155,7 +173,9 @@ export function EditableText({
       'aria-errormessage': hasError ? errorId : undefined,
       'aria-invalid': hasError || undefined,
       onKeyDown: handleKeyDown,
-      onBlur: commit,
+      // A click outside leaves `relatedTarget` null: commit, but do not yank focus back.
+      onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+        commit((e.relatedTarget as HTMLElement | null) ?? null),
       className: cn(
         'nodrag nowheel w-full min-w-0 border-none bg-surface-overlay text-foreground outline-none ring-1',
         hasError ? 'ring-error' : 'ring-brand',
@@ -197,6 +217,7 @@ export function EditableText({
       <CanvasTooltip content={value || placeholder} smartTooltip delay>
         <button
           type="button"
+          ref={readRef}
           data-slot="editable-text"
           data-testid={dataTestId}
           aria-label={ariaLabel && `${ariaLabel}: ${value || placeholder || ''}`}
