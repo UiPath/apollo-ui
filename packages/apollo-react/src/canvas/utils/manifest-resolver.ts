@@ -343,6 +343,51 @@ export function resolveHandles(
   });
 }
 
+const shallowEqual = (a: object, b: object): boolean => {
+  if (a === b) return true;
+  const recordA = a as Record<string, unknown>;
+  const recordB = b as Record<string, unknown>;
+  const aKeys = Object.keys(recordA);
+  if (aKeys.length !== Object.keys(recordB).length) return false;
+  for (const key of aKeys) {
+    if (!Object.is(recordA[key], recordB[key])) return false;
+  }
+  return true;
+};
+
+/**
+ * Value-compare two resolved handle-group arrays.
+ *
+ * Resolution allocates fresh group/handle objects every run, so output
+ * identity changes even when nothing resolved differently (e.g. a node label
+ * edit re-runs resolution with identical handle inputs). Callers can use this
+ * to keep the previous array identity and avoid cascading invalidation
+ * (handle re-measures, element rebuilds).
+ *
+ * Comparison is shallow per group and per handle: nested objects (constraints,
+ * customPositionAndOffsets) and callbacks compare by reference, which is
+ * conservative — a false negative only costs the old re-render, never staleness.
+ */
+export function areResolvedHandleGroupsEqual(
+  a: readonly ResolvedHandleGroup[],
+  b: readonly ResolvedHandleGroup[]
+): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const groupA = a[i]!;
+    const groupB = b[i]!;
+    if (groupA.handles.length !== groupB.handles.length) return false;
+    const { handles: handlesA, ...restA } = groupA;
+    const { handles: handlesB, ...restB } = groupB;
+    if (!shallowEqual(restA, restB)) return false;
+    for (let j = 0; j < handlesA.length; j++) {
+      if (!shallowEqual(handlesA[j]!, handlesB[j]!)) return false;
+    }
+  }
+  return true;
+}
+
 /**
  * Get a property value by dot-notation path.
  *

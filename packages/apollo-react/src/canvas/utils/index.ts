@@ -4,6 +4,7 @@ export * from './CanvasEventBus';
 export * from './CssUtil';
 export * from './coded-agents/d3-layout';
 export * from './coded-agents/mermaid-parser';
+export * from './node-height';
 export * from './node-size';
 export * from './constraint-validator';
 export * from './container';

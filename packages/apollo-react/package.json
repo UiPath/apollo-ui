@@ -149,6 +149,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "pnpm run i18n:compile && vitest --run --coverage",
+    "bench": "pnpm run i18n:compile && vitest bench --run",
     "clean": "rm -rf dist",
     "i18n:extract": "lingui extract",
     "i18n:extract:watch": "lingui extract --watch",
