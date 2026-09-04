@@ -422,6 +422,24 @@ describe('PromptEditor', () => {
       expect(shell?.className).not.toContain('focus-within:ring-2');
     });
 
+    it('leaves the validation message OUTSIDE the focus frame', () => {
+      const { container } = render(
+        <PromptEditor
+          ariaLabel="Prompt"
+          showToolbar
+          error="A prompt is required"
+          errorId="prompt-error"
+        />
+      );
+      const frame = container.querySelector('.prompt-editor-frame');
+      const message = container.querySelector('[data-slot="prompt-editor-error"]');
+      expect(frame).not.toBeNull();
+      expect(message).not.toBeNull();
+      // The ring wraps toolbar + body only — a frame containing the message drew the focus ring
+      // around the error text too.
+      expect(frame?.contains(message)).toBe(false);
+    });
+
     it('keeps the input-matching focus ring on the shell when there is no toolbar', () => {
       const { container } = render(<PromptEditor ariaLabel="Prompt" />);
       expect(container.querySelector('.prompt-editor-frame')).toBeNull();
