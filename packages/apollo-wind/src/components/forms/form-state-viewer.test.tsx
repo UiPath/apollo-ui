@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
-import type { FieldValues, UseFormReturn } from 'react-hook-form';
+import { createFormControl, type FieldValues, type UseFormReturn } from 'react-hook-form';
 import { describe, expect, it } from 'vitest';
 import { FormStateViewer } from './form-state-viewer';
 
@@ -24,11 +24,13 @@ interface MockFormStateOptions {
 }
 
 /**
- * FormStateViewer only reads `form.formState` and `form.watch()`, so a plain
- * stub gives deterministic state without racing react-hook-form validation.
+ * Built on a real form control so `useWatch` has something to subscribe to,
+ * with only `formState` stubbed to keep the flags deterministic.
  */
 function createMockForm(options: MockFormStateOptions = {}): UseFormReturn<FieldValues> {
+  const formControl = createFormControl<FieldValues>({ defaultValues: options.values ?? {} });
   return {
+    ...formControl,
     formState: {
       isValid: options.isValid ?? true,
       isDirty: options.isDirty ?? false,
@@ -41,7 +43,6 @@ function createMockForm(options: MockFormStateOptions = {}): UseFormReturn<Field
       dirtyFields: options.dirtyFields ?? {},
       touchedFields: options.touchedFields ?? {},
     },
-    watch: () => options.values ?? {},
   } as unknown as UseFormReturn<FieldValues>;
 }
 
