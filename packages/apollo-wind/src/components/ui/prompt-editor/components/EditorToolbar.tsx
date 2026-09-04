@@ -56,7 +56,7 @@ const ToolbarButton = ({
         disabled={disabled}
         onClick={onClick}
         className={cn(
-          'inline-flex h-7 w-7 items-center justify-center rounded text-muted-foreground',
+          'inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded text-muted-foreground',
           'hover:bg-accent hover:text-accent-foreground',
           'disabled:opacity-50 disabled:pointer-events-none',
           pressed && 'bg-accent text-accent-foreground'
@@ -178,7 +178,7 @@ export const EditorToolbar = ({
                 type="button"
                 aria-pressed={mode === 'edit'}
                 className={cn(
-                  'rounded px-2 py-0.5 text-[11px] font-semibold transition-colors',
+                  'cursor-pointer rounded px-2 py-0.5 text-[11px] font-semibold transition-colors',
                   mode === 'edit' ? 'bg-primary/20 text-primary' : 'text-foreground hover:bg-accent'
                 )}
                 disabled={disabled}
@@ -190,7 +190,7 @@ export const EditorToolbar = ({
                 type="button"
                 aria-pressed={mode === 'preview'}
                 className={cn(
-                  'rounded px-2 py-0.5 text-[11px] font-semibold transition-colors',
+                  'cursor-pointer rounded px-2 py-0.5 text-[11px] font-semibold transition-colors',
                   mode === 'preview'
                     ? 'bg-primary/20 text-primary'
                     : 'text-foreground hover:bg-accent'
