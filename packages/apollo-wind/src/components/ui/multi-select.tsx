@@ -106,16 +106,14 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                     : placeholder
               }
               className={cn(
-                'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-muted-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
+                'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
                 selected.length > 0 ? 'h-auto min-h-10' : 'h-10'
               )}
               disabled={disabled}
             >
               <div className="flex flex-wrap gap-1 flex-1">
                 {selected.length === 0 ? (
-                  <span className="text-muted-foreground future:text-foreground-muted">
-                    {placeholder}
-                  </span>
+                  <span className="text-foreground-muted">{placeholder}</span>
                 ) : (
                   selected.map((value) => {
                     const option = options.find((opt) => opt.value === value);

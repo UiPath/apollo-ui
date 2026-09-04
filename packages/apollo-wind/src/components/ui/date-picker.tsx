@@ -33,15 +33,18 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
           variant="outline"
           aria-label={value ? `Selected date: ${format(value, 'PPP')}` : placeholder}
           className={cn(
-            'w-full justify-start text-left font-normal',
-            'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
-            !value && 'text-muted-foreground',
+            'w-full justify-start text-left font-normal [&>svg]:text-foreground-muted hover:[&>svg]:text-accent-foreground',
+            'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
             className
           )}
           disabled={disabled}
         >
           <CalendarIcon />
-          {value ? format(value, 'PPP') : <span>{placeholder}</span>}
+          {value ? (
+            format(value, 'PPP')
+          ) : (
+            <span className="text-foreground-muted">{placeholder}</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
@@ -94,9 +97,8 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
                 : placeholder
             }
             className={cn(
-              'w-[300px] justify-start text-left font-normal',
-              'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
-              !value && 'text-muted-foreground',
+              'w-[300px] justify-start text-left font-normal [&>svg]:text-foreground-muted hover:[&>svg]:text-accent-foreground',
+              'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
               className
             )}
             disabled={disabled}
@@ -111,7 +113,7 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
                 format(value.from, 'LLL dd, y')
               )
             ) : (
-              <span>{placeholder}</span>
+              <span className="text-foreground-muted">{placeholder}</span>
             )}
           </Button>
         </PopoverTrigger>

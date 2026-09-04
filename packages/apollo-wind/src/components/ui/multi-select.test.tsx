@@ -236,4 +236,27 @@ describe('MultiSelect', () => {
     render(<MultiSelect ref={ref} options={mockOptions} selected={[]} onChange={onChange} />);
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
+
+  describe('value vs placeholder color', () => {
+    it('mutes the placeholder via its own span', () => {
+      render(
+        <MultiSelect
+          options={mockOptions}
+          selected={[]}
+          onChange={vi.fn()}
+          placeholder="Select frameworks..."
+        />
+      );
+      const placeholder = screen.getByText('Select frameworks...');
+      expect(placeholder.tagName).toBe('SPAN');
+      expect(placeholder).toHaveClass('text-foreground-muted');
+    });
+
+    it('overrides the outline variant so the trigger is not globally muted', () => {
+      render(<MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />);
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toHaveClass('future:text-foreground');
+      expect(trigger).not.toHaveClass('future:text-muted-foreground');
+    });
+  });
 });

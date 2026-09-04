@@ -163,4 +163,43 @@ describe('DateTimePicker', () => {
       expect(screen.getByRole('button', { name: 'Done' })).toBeDisabled();
     });
   });
+
+  describe('value vs placeholder color', () => {
+    it('mutes the placeholder via its own span', () => {
+      render(<DateTimePicker placeholder="Pick a date and time" />);
+      const placeholder = screen.getByText('Pick a date and time');
+      expect(placeholder.tagName).toBe('SPAN');
+      expect(placeholder).toHaveClass('text-foreground-muted');
+    });
+
+    it('renders a selected value at full strength', () => {
+      const { container } = render(<DateTimePicker value={new Date(2024, 5, 15, 14, 30)} />);
+      expect(screen.getByRole('button')).toHaveTextContent(/June 15/);
+      expect(container.querySelector('.text-foreground-muted')).toBeNull();
+    });
+
+    it('overrides the outline variant so the trigger is not globally muted', () => {
+      render(<DateTimePicker />);
+      const trigger = screen.getByRole('button');
+      expect(trigger).toHaveClass('future:text-foreground');
+      expect(trigger).not.toHaveClass('future:text-muted-foreground');
+    });
+  });
+
+  describe('trigger icon color', () => {
+    it('mutes the icon and brightens it on hover', () => {
+      render(<DateTimePicker />);
+      const trigger = screen.getByRole('button');
+      expect(trigger).toHaveClass('[&>svg]:text-foreground-muted');
+      expect(trigger).toHaveClass('hover:[&>svg]:text-accent-foreground');
+    });
+
+    // The [&>svg] selector only matches a direct child, so wrapping the icon
+    // would silently drop both rules.
+    it('keeps the icon a direct child of the trigger', () => {
+      render(<DateTimePicker />);
+      const trigger = screen.getByRole('button');
+      expect(trigger.querySelector(':scope > svg')).not.toBeNull();
+    });
+  });
 });
