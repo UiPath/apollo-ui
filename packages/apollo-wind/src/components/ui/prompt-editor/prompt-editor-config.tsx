@@ -56,6 +56,9 @@ export interface PromptEditorStrings {
   removeToken: string;
   /** Preview-mode placeholder when there is no content. */
   nothingToPreview: string;
+  /** Invalid-chip tooltip: title, and a body template whose `{path}` is the chip's variable path. */
+  invalidTokenTitle: string;
+  invalidTokenDescription: string;
 }
 
 export const DEFAULT_PROMPT_EDITOR_STRINGS: PromptEditorStrings = {
@@ -77,6 +80,9 @@ export const DEFAULT_PROMPT_EDITOR_STRINGS: PromptEditorStrings = {
   tokenTypeResource: 'Resource',
   removeToken: 'Remove token',
   nothingToPreview: 'Nothing to preview',
+  invalidTokenTitle: 'Variable not found',
+  invalidTokenDescription:
+    "{path} isn't available in this scope. Fix or remove this reference before publishing.",
 };
 
 interface PromptEditorConfig {
