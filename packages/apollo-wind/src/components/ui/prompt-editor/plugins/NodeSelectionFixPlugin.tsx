@@ -11,6 +11,7 @@ import {
   $isRootNode,
   $isTextNode,
   $setSelection,
+  CLICK_COMMAND,
   COMMAND_PRIORITY_HIGH,
   KEY_ARROW_DOWN_COMMAND,
   KEY_ARROW_LEFT_COMMAND,
@@ -414,8 +415,21 @@ export const registerNodeSelectionFixCommands = (editor: LexicalEditor): (() => 
     handleEscape,
     COMMAND_PRIORITY_HIGH
   );
+  // Rich mode: @lexical/rich-text clears any NodeSelection on CLICK_COMMAND (which fires on
+  // mouseup) — so clicking a pill selected it for exactly as long as the button was held. Swallow
+  // the click when it originated inside a pill's decorator DOM; the pill's own mousedown handler
+  // owns that selection. Plain mode registers no such clear, so this is a no-op there.
+  const unregisterClick = editor.registerCommand(
+    CLICK_COMMAND,
+    (event: MouseEvent) => {
+      const target = event.target;
+      return target instanceof Element && target.closest('[data-lexical-decorator]') != null;
+    },
+    COMMAND_PRIORITY_HIGH
+  );
 
   return () => {
+    unregisterClick();
     unregisterBackspace();
     unregisterDelete();
     unregisterArrowLeft();
