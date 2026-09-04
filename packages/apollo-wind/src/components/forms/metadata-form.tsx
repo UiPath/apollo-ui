@@ -1,6 +1,6 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { type FieldValues, FormProvider, useForm, useFormState } from 'react-hook-form';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type FieldValues, FormProvider, useForm, useFormState, useWatch } from 'react-hook-form';
 import { z } from 'zod/v4';
 import {
   Accordion,
@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollableTabsList, Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import { deepEqual, get } from '@/lib';
 
 import { DataFetcher } from './data-fetcher';
 import { FormFieldRenderer } from './field-renderer';
@@ -93,28 +94,42 @@ export function MetadataForm({
   >({});
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Stabilize schema reference using deep equality
+  const schemaRef = useRef(schema);
+  const stableSchema = useMemo(() => {
+    if (deepEqual(schemaRef.current, schema)) {
+      return schemaRef.current;
+    }
+    schemaRef.current = schema;
+    return schema;
+  }, [schema]);
+
   // Build Zod schema from metadata
-  const zodSchema = useMemo(() => buildZodSchema(schema), [schema]);
+  const zodSchema = useMemo(() => buildZodSchema(stableSchema), [stableSchema]);
 
   // Initialize React Hook Form
   const form = useForm<FieldValues>({
     resolver: standardSchemaResolver(zodSchema),
-    mode: schema.mode || 'onSubmit',
-    reValidateMode: schema.reValidateMode || 'onChange',
+    defaultValues: stableSchema.initialData || {},
+    mode: stableSchema.mode || 'onSubmit',
+    reValidateMode: stableSchema.reValidateMode || 'onChange',
   });
 
   const { watch, handleSubmit, reset } = form;
 
   // Use ref to store values - prevents context recreation on every render
-  const valuesRef = useRef<Record<string, unknown>>({});
-  // This watch() triggers re-renders but we store in ref for stable context access
-  const watchedValues = watch();
-  valuesRef.current = watchedValues;
+  const valuesRef = useRef<Record<string, unknown>>(form.getValues());
+
+  // Stable refs for plugins and onSubmit to use in memoized callbacks
+  const pluginsRef = useRef(plugins);
+  pluginsRef.current = plugins;
+  const onSubmitRef = useRef(onSubmit);
+  onSubmitRef.current = onSubmit;
 
   // Build form context - STABLE reference (values accessed via ref/getters)
   const context: FormContext = useMemo(
     () => ({
-      schema,
+      schema: stableSchema,
       form,
       // Use getter to always return latest values without recreating context
       get values() {
@@ -129,7 +144,7 @@ export function MetadataForm({
       get isDirty() {
         return form.formState.isDirty;
       },
-      currentStep: schema.steps ? currentStep : undefined,
+      currentStep: stableSchema.steps ? currentStep : undefined,
 
       evaluateConditions: (conditions: FieldCondition[]) =>
         RulesEngine.evaluateConditions(conditions, valuesRef.current, 'AND'),
@@ -146,12 +161,30 @@ export function MetadataForm({
         setCustomComponents((prev) => ({ ...prev, [name]: component }));
       },
     }),
-    [schema, form, currentStep]
+    [stableSchema, form, currentStep]
   );
 
   // Ref for context to use in useEffects without causing dependency loops
   const contextRef = useRef(context);
   contextRef.current = context;
+
+  const isInitializedRef = useRef(isInitialized);
+  isInitializedRef.current = isInitialized;
+
+  // valuesRef is written before the plugin fan-out: context.values must be current.
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      valuesRef.current = value as Record<string, unknown>;
+
+      if (!name || !isInitializedRef.current) return;
+
+      pluginsRef.current.forEach((plugin) => {
+        plugin.onValueChange?.(name, get(value, name), contextRef.current);
+      });
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   // Initialize form - runs once on mount only
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs once on mount - use key prop to reinitialize with new schema
@@ -161,8 +194,8 @@ export function MetadataForm({
 
     const initializeForm = async () => {
       // Load initial data
-      if (schema.initialData) {
-        const data = await loadInitialData(schema.initialData, contextRef.current);
+      if (stableSchema.initialData) {
+        const data = await loadInitialData(stableSchema.initialData, contextRef.current);
         reset(data);
       }
 
@@ -177,62 +210,49 @@ export function MetadataForm({
     initializeForm();
   }, [isInitialized]);
 
-  // Watch for field changes and execute plugin hooks
-  useEffect(() => {
-    if (!isInitialized) return;
+  // Built once, so plugins/onSubmit/context are read from refs at call time.
+  const handleFormSubmit = useMemo(
+    () =>
+      handleSubmit(async (data) => {
+        // Plugin submit hooks
+        let finalData = data;
+        for (const plugin of pluginsRef.current) {
+          if (plugin.onSubmit) {
+            finalData = (await plugin.onSubmit(finalData, contextRef.current)) || finalData;
+          }
+        }
 
-    const subscription = watch((value, { name }) => {
-      if (name) {
-        // Update valuesRef with the latest values BEFORE calling plugins
-        // This ensures context.values returns current data, not stale data
-        valuesRef.current = value as Record<string, unknown>;
+        // Execute submit
+        if (onSubmitRef.current) {
+          await onSubmitRef.current(finalData);
+        }
+      }),
+    [handleSubmit]
+  );
 
-        // Plugin field change hooks
-        plugins.forEach((plugin) => {
-          plugin.onValueChange?.(name, value[name], contextRef.current);
-        });
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [watch, isInitialized, plugins]);
-
-  // Handle form submission
-  const handleFormSubmit = handleSubmit(async (data) => {
-    // Plugin submit hooks
-    let finalData = data;
-    for (const plugin of plugins) {
-      if (plugin.onSubmit) {
-        finalData = (await plugin.onSubmit(finalData, context)) || finalData;
-      }
-    }
-
-    // Execute submit
-    if (onSubmit) {
-      await onSubmit(finalData);
-    }
-  });
+  // Stable reset callback
+  const handleReset = useCallback(() => reset(), [reset]);
 
   // Render based on form structure
   const renderContent = () => {
-    if (schema.steps) {
+    if (stableSchema.steps) {
       if (stepVariant === 'tabs') {
         return (
           <TabbedStepForm
-            schema={schema}
+            schema={stableSchema}
             context={context}
             customComponents={customComponents}
             disabled={disabled}
             sectionVariant={sectionVariant}
             activeStepId={activeStepId}
             onActiveStepChange={onActiveStepChange}
-            onReset={() => reset()}
+            onReset={handleReset}
           />
         );
       }
       return (
         <MultiStepForm
-          schema={schema}
+          schema={stableSchema}
           context={context}
           currentStep={currentStep}
           setCurrentStep={setCurrentStep}
@@ -245,7 +265,7 @@ export function MetadataForm({
 
     return (
       <SinglePageForm
-        schema={schema}
+        schema={stableSchema}
         context={context}
         customComponents={customComponents}
         disabled={disabled}
@@ -262,7 +282,9 @@ export function MetadataForm({
         {/* Wizard forms own their navigation/Submit, and tabbed forms render
             FormActions inside TabbedStepForm so it's suppressed when no tab is
             visible. Only single-page forms render FormActions here. */}
-        {!schema.steps && <FormActions schema={schema} context={context} onReset={() => reset()} />}
+        {!stableSchema.steps && (
+          <FormActions schema={stableSchema} context={context} onReset={handleReset} />
+        )}
       </form>
     </FormProvider>
   );
@@ -272,6 +294,26 @@ export function MetadataForm({
 // Supporting Components
 // ============================================================================
 
+// Field names a set of `conditions` reads. As in FormFieldRenderer, fields used
+// only inside a `custom` expression aren't traced.
+function conditionDependencies(conditionGroups: Array<FieldCondition[] | undefined>): string[] {
+  const fields = new Set<string>();
+  for (const conditions of conditionGroups) {
+    for (const condition of conditions || []) {
+      if (condition.when) {
+        fields.add(condition.when);
+      }
+    }
+  }
+  return Array.from(fields);
+}
+
+// Conditions are evaluated during render from context.values, and these
+// components are memo'd behind stable props, so the subscription must live here.
+function useConditionDependencies(context: FormContext, conditionFields: string[]) {
+  useWatch({ control: context.form.control, name: conditionFields });
+}
+
 interface SinglePageFormProps {
   schema: FormSchema;
   context: FormContext;
@@ -280,7 +322,7 @@ interface SinglePageFormProps {
   sectionVariant?: 'card' | 'plain';
 }
 
-function SinglePageForm({
+const SinglePageForm = React.memo(function SinglePageForm({
   schema,
   context,
   customComponents,
@@ -288,6 +330,12 @@ function SinglePageForm({
   sectionVariant,
 }: SinglePageFormProps) {
   const sections = schema.sections || [];
+
+  const conditionFields = useMemo(
+    () => conditionDependencies(schema.sections?.map((section) => section.conditions) ?? []),
+    [schema]
+  );
+  useConditionDependencies(context, conditionFields);
 
   // Filter visible sections
   const visibleSections = sections.filter(
@@ -310,14 +358,14 @@ function SinglePageForm({
       ))}
     </div>
   );
-}
+});
 
 interface MultiStepFormProps extends SinglePageFormProps {
   currentStep: number;
   setCurrentStep: (step: number) => void;
 }
 
-function MultiStepForm({
+const MultiStepForm = React.memo(function MultiStepForm({
   schema,
   context,
   currentStep,
@@ -327,18 +375,35 @@ function MultiStepForm({
   sectionVariant,
 }: MultiStepFormProps) {
   const steps = schema.steps || [];
-  const step = steps[currentStep];
 
-  if (!step) return null;
+  const conditionFields = useMemo(
+    () => conditionDependencies(schema.steps?.map((step) => step.conditions) ?? []),
+    [schema]
+  );
+  useConditionDependencies(context, conditionFields);
 
-  // Evaluate step conditions
-  if (step.conditions && !context.evaluateConditions(step.conditions)) {
-    // Auto-skip hidden steps
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+  // Find the next visible step starting from currentStep, skipping all hidden
+  // steps in one pass to avoid intermediate renders / flicker.
+  // Not memoized: the walk reads context.values via a ref no dep list can track.
+  let visibleStepIndex = -1;
+  for (let i = currentStep; i < steps.length; i++) {
+    const candidate = steps[i];
+    if (!candidate.conditions || context.evaluateConditions(candidate.conditions)) {
+      visibleStepIndex = i;
+      break;
     }
-    return null;
   }
+
+  // Jump to the first visible step if it differs from the current one
+  useEffect(() => {
+    if (visibleStepIndex !== -1 && visibleStepIndex !== currentStep) {
+      setCurrentStep(visibleStepIndex);
+    }
+  }, [visibleStepIndex, currentStep, setCurrentStep]);
+
+  const step = visibleStepIndex !== -1 ? steps[visibleStepIndex] : undefined;
+
+  if (!step || visibleStepIndex !== currentStep) return null;
 
   return (
     <div className="space-y-6">
@@ -390,7 +455,7 @@ function MultiStepForm({
       </div>
     </div>
   );
-}
+});
 
 interface TabbedStepFormProps extends SinglePageFormProps {
   onReset: () => void;
@@ -409,6 +474,18 @@ function TabbedStepForm({
   onActiveStepChange,
 }: TabbedStepFormProps) {
   const steps = schema.steps || [];
+
+  const conditionFields = useMemo(
+    () =>
+      conditionDependencies(
+        schema.steps?.flatMap((step) => [
+          step.conditions,
+          ...step.sections.map((section) => section.conditions),
+        ]) ?? []
+      ),
+    [schema]
+  );
+  useConditionDependencies(context, conditionFields);
 
   // Hide steps whose conditions evaluate to false, or that would render nothing:
   // a step needs at least one *currently visible* section (sections hidden by
@@ -590,7 +667,7 @@ interface FormSectionProps {
   sectionVariant?: 'card' | 'plain';
 }
 
-function FormSection({
+const FormSection = React.memo(function FormSection({
   section,
   context,
   customComponents,
@@ -712,7 +789,7 @@ function FormSection({
       </div>
     </div>
   );
-}
+});
 
 interface FormActionsProps {
   schema: FormSchema;
@@ -720,7 +797,21 @@ interface FormActionsProps {
   onReset: () => void;
 }
 
-function FormActions({ schema, context, onReset }: FormActionsProps) {
+const FormActions = React.memo(function FormActions({
+  schema,
+  context,
+  onReset,
+}: FormActionsProps) {
+  // context is a stable reference and this component is memoized, so it has to
+  // subscribe to the submit state and condition fields it reads itself.
+  const { isSubmitting } = useFormState({ control: context.form.control });
+
+  const conditionFields = useMemo(
+    () => conditionDependencies(schema.actions?.map((action) => action.conditions) ?? []),
+    [schema]
+  );
+  useConditionDependencies(context, conditionFields);
+
   const actions = schema.actions || [
     {
       id: 'submit',
@@ -762,15 +853,15 @@ function FormActions({ schema, context, onReset }: FormActionsProps) {
             key={action.id}
             type={action.type === 'submit' ? 'submit' : 'button'}
             variant={action.variant || 'default'}
-            disabled={action.disabled || (action.type === 'submit' && context.isSubmitting)}
+            disabled={action.disabled || (action.type === 'submit' && isSubmitting)}
           >
-            {action.loading && context.isSubmitting ? 'Loading...' : action.label}
+            {action.loading && isSubmitting ? 'Loading...' : action.label}
           </Button>
         );
       })}
     </div>
   );
-}
+});
 
 // ============================================================================
 // Utility Functions

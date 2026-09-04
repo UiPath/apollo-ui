@@ -1,10 +1,10 @@
+import { AlertCircle, CheckCircle2, Database, Eye, FileEdit, XCircle } from 'lucide-react';
 import { useState } from 'react';
-import type { UseFormReturn, FieldValues } from 'react-hook-form';
+import { type FieldValues, type UseFormReturn, useWatch } from 'react-hook-form';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CheckCircle2, XCircle, AlertCircle, FileEdit, Eye, Database } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 /**
  * FormStateViewer Component
@@ -27,8 +27,14 @@ export function FormStateViewer({
   compact = false,
 }: FormStateViewerProps) {
   const [activeTab, setActiveTab] = useState('values');
-  const { formState, watch } = form;
-  const values = watch();
+  const { formState, control, getValues } = form;
+
+  // useWatch re-renders only this component. A bare watch() would instead set
+  // watchAll on the shared control, re-rendering the useForm owner (e.g.
+  // MetadataForm) once per keystroke. Values are read fresh on every render so
+  // fields that register after mount are included.
+  useWatch({ control });
+  const values = getValues() as Record<string, unknown>;
 
   const stats = {
     isValid: formState.isValid,

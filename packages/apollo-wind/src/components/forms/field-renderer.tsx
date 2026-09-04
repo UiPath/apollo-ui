@@ -211,22 +211,26 @@ export function FormFieldRenderer({
     });
   }, [field.rules, field.validation?.required, getValues, watchedRuleDependentValues]);
 
+  // Tracked apart from inlineOptions so a field whose options go away clears to [].
+  const isOptionsField = hasOptions(field);
+  const inlineOptions = isOptionsField ? field.options : undefined;
+
   // Sync inline options when field.options changes (for fields without dataSource)
   useEffect(() => {
     if (field.dataSource) return; // Skip if using dataSource
-    if (!hasOptions(field)) return;
+    if (!isOptionsField) return;
 
-    const inlineOptions = field.options || [];
+    const nextOptions = inlineOptions || [];
     setFieldState((prev) => {
-      if (deepEqual(prev.options, inlineOptions)) {
+      if (deepEqual(prev.options, nextOptions)) {
         return prev;
       }
       return {
         ...prev,
-        options: inlineOptions,
+        options: nextOptions,
       };
     });
-  }, [field]);
+  }, [field.dataSource, isOptionsField, inlineOptions]);
 
   // Fetch data source options (re-fetches when dependent fields change)
   // biome-ignore lint/correctness/useExhaustiveDependencies: watchedDataSourceValues triggers re-fetch when dependent field values change (cascading dropdowns)
