@@ -24,6 +24,7 @@ import {
   type LexicalNode,
 } from 'lexical';
 import { useEffect } from 'react';
+import { WORD_JOINER } from '../utils';
 import { isPromptTokenNode, type PromptTokenNode } from './shared/token-nodes';
 
 /** Non-inline element that can host inline children directly (paragraph in plain mode; list items
@@ -32,8 +33,6 @@ const $isBlockElement = (
   node: LexicalNode | null | undefined
 ): node is import('lexical').ElementNode =>
   $isElementNode(node) && !node.isInline() && !$isRootNode(node);
-
-import { WORD_JOINER } from '../utils';
 
 /**
  * Confluence-style pill focus controller. Pills are inline `DecoratorNode`s with no caret-anchor,
@@ -206,7 +205,11 @@ export const registerNodeSelectionFixCommands = (editor: LexicalEditor): (() => 
       const before = (() => {
         const prev = selectedToken.getPreviousSibling();
         if ($isTextNode(prev))
-          return { kind: 'text' as const, key: prev.getKey(), offset: prev.getTextContentSize() };
+          return {
+            kind: 'text' as const,
+            key: prev.getKey(),
+            offset: prev.getTextContentSize(),
+          };
         const parent = selectedToken.getParent();
         if (parent)
           return {
