@@ -340,6 +340,30 @@ describe('PromptEditor', () => {
       );
     });
 
+    it('renders the invalid-chip tooltip from strings with the path substituted', async () => {
+      const user = userEvent.setup();
+      render(
+        <PromptEditor
+          ariaLabel="Prompt"
+          initialValue={[{ type: 'input', value: 'vars.gone' }]}
+          autoCompleteOptions={[{ type: 'input', value: 'vars.other' }]}
+          strings={{
+            invalidTokenTitle: 'Variable nicht gefunden',
+            invalidTokenDescription: 'In diesem Bereich ist {path} nicht verfügbar.',
+          }}
+        />
+      );
+      const pill = await screen.findByText('vars.gone');
+      await user.hover(pill);
+      // Radix renders the tooltip plus a visually-hidden accessible copy, so match "all".
+      await waitFor(() =>
+        expect(screen.getAllByText('Variable nicht gefunden').length).toBeGreaterThan(0)
+      );
+      expect(
+        screen.getAllByText('In diesem Bereich ist vars.gone nicht verfügbar.').length
+      ).toBeGreaterThan(0);
+    });
+
     it('renders the empty preview message from strings', () => {
       render(
         <PromptEditor

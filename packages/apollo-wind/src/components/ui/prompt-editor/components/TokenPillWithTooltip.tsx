@@ -78,10 +78,9 @@ export const TokenPillWithTooltip = ({ nodeKey, ...props }: TokenPillWithTooltip
       <TooltipContent side="top" align="start">
         {isInvalid ? (
           <div className="flex w-[280px] flex-col gap-1 text-xs">
-            <div className="font-medium">Variable not found</div>
+            <div className="font-medium">{strings.invalidTokenTitle}</div>
             <div className="break-words opacity-80">
-              {pillValue} isn&apos;t available in this scope. Fix or remove this reference before
-              publishing.
+              {strings.invalidTokenDescription.replace('{path}', pillValue)}
             </div>
           </div>
         ) : (
