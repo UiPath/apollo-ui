@@ -671,13 +671,6 @@ export const PromptEditor = ({
     <PromptEditorConfigProvider value={editorConfig}>
       <TooltipProvider>
         <div
-          // With a toolbar, the FRAME (toolbar + body) is the focus target: a body-only focus ring
-          // would draw its top edge as a stray line directly under the toolbar.
-          className={
-            showToolbar && !borderless
-              ? 'prompt-editor-frame rounded-md future:rounded-xl focus-within:ring-2 focus-within:ring-ring future:focus-within:ring-offset-2 future:focus-within:ring-offset-background'
-              : undefined
-          }
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -685,77 +678,95 @@ export const PromptEditor = ({
             ...(fillHeight ? { flex: 1, minHeight: 0 } : {}),
           }}
         >
-          {showToolbar && (
-            <EditorToolbar
-              mode={mode}
-              disabled={disabled}
-              error={Boolean(error)}
-              actionsRef={toolbarActionsRef}
-              onModeChange={handleModeChange}
-              onFullscreen={onFullscreen}
-              showModeToggle={showModeToggle && !richText}
-              trailing={toolbarTrailing}
-              strings={strings}
-              activeFormats={richText ? activeFormats : undefined}
-            />
-          )}
-
-          {/* Preview mode — mirror `borderless`: when set, the parent supplies the chrome, so drop
-            the editor's own border/background here too (keeps edit/preview consistent). */}
-          {mode === 'preview' && (
-            <div
-              data-invalid={error ? 'true' : undefined}
-              className={
-                borderless
-                  ? undefined
-                  : `border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'} ${error ? 'border-error ring-1 ring-error/20 future:ring-error/40' : ''}`
-              }
-            >
-              <MarkdownPreview
-                tokens={previewTokens}
-                minRows={minRows}
-                previewToken={previewToken}
-              />
-            </div>
-          )}
-
-          {/* Editor — keep mounted but hide in preview mode */}
+          {/* With a toolbar, the FRAME (toolbar + body — NOT the validation message below) is the
+              focus target: a body-only focus ring drew its top edge as a stray line directly under
+              the toolbar. The ring itself is the exact treatment apollo's inputs use
+              (ring-2 ring-ring + future offset). */}
           <div
+            className={
+              showToolbar && !borderless
+                ? 'prompt-editor-frame rounded-md future:rounded-xl focus-within:ring-2 focus-within:ring-ring future:focus-within:ring-offset-2 future:focus-within:ring-offset-background'
+                : undefined
+            }
             style={{
-              display: mode === 'preview' ? 'none' : 'flex',
+              display: 'flex',
               flexDirection: 'column',
+              width: '100%',
               ...(fillHeight ? { flex: 1, minHeight: 0 } : {}),
             }}
           >
-            <LexicalComposer initialConfig={initialConfig}>
-              <EditorInner
-                ref={editorRef as React.Ref<PromptEditorRef>}
-                autoCompleteOptions={autoCompleteOptions}
+            {showToolbar && (
+              <EditorToolbar
+                mode={mode}
                 disabled={disabled}
-                ariaLabel={ariaLabel}
-                error={error}
-                errorId={error ? errorId : undefined}
-                ariaDescribedBy={describedBy || undefined}
-                initialValue={initialValue}
-                maxRows={maxRows}
-                minRows={minRows}
-                multiline={multiline}
-                placeholder={placeholder}
-                fillHeight={fillHeight}
-                borderless={borderless}
-                mapVarDropToToken={mapVarDropToToken}
-                validationOptions={validationOptions}
-                renderAutocompleteMenu={renderAutocompleteMenu}
-                showToolbar={showToolbar}
-                toolbarActionsRef={toolbarActionsRef}
-                value={value}
-                onChange={handleEditorChange}
-                richText={richText}
-                onActiveFormatsChange={richText ? setActiveFormats : undefined}
+                error={Boolean(error)}
+                actionsRef={toolbarActionsRef}
+                onModeChange={handleModeChange}
+                onFullscreen={onFullscreen}
+                showModeToggle={showModeToggle && !richText}
+                trailing={toolbarTrailing}
+                strings={strings}
+                activeFormats={richText ? activeFormats : undefined}
+              />
+            )}
+
+            {/* Preview mode — mirror `borderless`: when set, the parent supplies the chrome, so drop
+            the editor's own border/background here too (keeps edit/preview consistent). */}
+            {mode === 'preview' && (
+              <div
+                data-invalid={error ? 'true' : undefined}
+                className={
+                  borderless
+                    ? undefined
+                    : `border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'} ${error ? 'border-error ring-1 ring-error/20 future:ring-error/40' : ''}`
+                }
               >
-                {children}
-              </EditorInner>
-            </LexicalComposer>
+                <MarkdownPreview
+                  tokens={previewTokens}
+                  minRows={minRows}
+                  previewToken={previewToken}
+                />
+              </div>
+            )}
+
+            {/* Editor — keep mounted but hide in preview mode */}
+            <div
+              style={{
+                display: mode === 'preview' ? 'none' : 'flex',
+                flexDirection: 'column',
+                ...(fillHeight ? { flex: 1, minHeight: 0 } : {}),
+              }}
+            >
+              <LexicalComposer initialConfig={initialConfig}>
+                <EditorInner
+                  ref={editorRef as React.Ref<PromptEditorRef>}
+                  autoCompleteOptions={autoCompleteOptions}
+                  disabled={disabled}
+                  ariaLabel={ariaLabel}
+                  error={error}
+                  errorId={error ? errorId : undefined}
+                  ariaDescribedBy={describedBy || undefined}
+                  initialValue={initialValue}
+                  maxRows={maxRows}
+                  minRows={minRows}
+                  multiline={multiline}
+                  placeholder={placeholder}
+                  fillHeight={fillHeight}
+                  borderless={borderless}
+                  mapVarDropToToken={mapVarDropToToken}
+                  validationOptions={validationOptions}
+                  renderAutocompleteMenu={renderAutocompleteMenu}
+                  showToolbar={showToolbar}
+                  toolbarActionsRef={toolbarActionsRef}
+                  value={value}
+                  onChange={handleEditorChange}
+                  richText={richText}
+                  onActiveFormatsChange={richText ? setActiveFormats : undefined}
+                >
+                  {children}
+                </EditorInner>
+              </LexicalComposer>
+            </div>
           </div>
           <FormFieldError id={errorId} data-slot="prompt-editor-error" className="mt-1">
             {error}
