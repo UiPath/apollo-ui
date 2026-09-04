@@ -125,8 +125,8 @@ export const WithTrailingModeControl: Story = {
 };
 
 /**
- * WYSIWYG mode: formatting renders live while editing (real bold/strike and lists — no Edit/Preview
- * switcher, the editor IS the preview). Text tokens still carry markdown; try typing `**bold**` or
+ * WYSIWYG mode: formatting renders live while editing (real bold/strike and lists, no Edit/Preview
+ * switcher: the editor IS the preview). Text tokens still carry markdown; try typing `**bold**` or
  * `- ` for a live markdown shortcut.
  */
 export const RichText: Story = {
@@ -215,7 +215,7 @@ export const Controlled: Story = {
 
 /**
  * Variable drag-drop. The chips above the editor are the drag *source* (the consumer's
- * responsibility) — each sets the variable path on `dataTransfer` under `VARIABLE_DRAG_MIME` on
+ * responsibility): each sets the variable path on `dataTransfer` under `VARIABLE_DRAG_MIME` on
  * drag start. Dropping one onto the editor inserts a token at the drop point via `mapVarDropToToken`.
  * Drag a chip into the editor to try it.
  */
