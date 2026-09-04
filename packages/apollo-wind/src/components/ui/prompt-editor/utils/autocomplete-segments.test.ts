@@ -70,6 +70,9 @@ describe('VARIABLE_PATH_REGEX (free-form Enter commit)', () => {
     'foo.bar',
     '$vars.firstName',
     'vars.1bad',
+    'vars.records[0]id',
+    'vars.a..b',
+    'vars.a[0',
     '',
   ])('rejects invalid path %s', (path) => expect(VARIABLE_PATH_REGEX.test(path)).toBe(false));
 });

@@ -282,6 +282,21 @@ describe('PromptEditor', () => {
       expect(screen.getByRole('textbox', { name: 'Prompt' })).toBeInTheDocument();
     });
 
+    it('respects controlled preview mode when there is no toolbar, regardless of showModeToggle', () => {
+      render(
+        <PromptEditor
+          showModeToggle={false}
+          mode="preview"
+          value={[{ type: 'text', value: '# Hi' }]}
+          ariaLabel="Prompt"
+        />
+      );
+      // Preview-only host: the markdown preview renders (heading formatting), not the editor.
+      const heading = screen.getByText('Hi');
+      expect(heading.tagName.toLowerCase()).toBe('h1');
+      expect(screen.queryByRole('textbox', { name: 'Prompt' })).not.toBeInTheDocument();
+    });
+
     it('renders toolbarTrailing at the toolbar right end', () => {
       render(
         <PromptEditor

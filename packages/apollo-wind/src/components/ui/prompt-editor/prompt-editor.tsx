@@ -591,9 +591,11 @@ export const PromptEditor = ({
   });
 
   const [internalMode, setInternalMode] = useState<PromptEditorMode>('edit');
-  // Without the Edit/Preview switcher there is no way (or reason) to enter preview mode; in rich
-  // mode the editor IS the preview, so preview mode is inert there too.
-  const mode = showModeToggle && !richText ? (controlledMode ?? internalMode) : 'edit';
+  // In rich mode the editor IS the preview, and a toolbar without the Edit/Preview switcher offers
+  // no way out of preview — both lock the mode to edit. With no toolbar at all the controlled `mode`
+  // prop is respected, so preview-only hosts keep working.
+  const modeLocked = richText || (showToolbar && !showModeToggle);
+  const mode = modeLocked ? 'edit' : (controlledMode ?? internalMode);
   const toolbarActionsRef = useRef<PromptEditorToolbarActionsRef | null>(null);
   const [activeFormats, setActiveFormats] = useState<PromptEditorToolbarActiveFormats | undefined>(
     undefined
