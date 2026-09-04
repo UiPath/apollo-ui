@@ -1,14 +1,14 @@
-import { useEffect } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   $createNodeSelection,
   $createRangeSelection,
   $createTextNode,
   $getSelection,
+  $isElementNode,
   $isLineBreakNode,
   $isNodeSelection,
-  $isParagraphNode,
   $isRangeSelection,
+  $isRootNode,
   $isTextNode,
   $setSelection,
   COMMAND_PRIORITY_HIGH,
@@ -22,7 +22,16 @@ import {
   type LexicalEditor,
   type LexicalNode,
 } from 'lexical';
+import { useEffect } from 'react';
 import { isPromptTokenNode, type PromptTokenNode } from './shared/token-nodes';
+
+/** Non-inline element that can host inline children directly (paragraph in plain mode; list items
+ *  and paragraphs in rich mode). The caret-vs-pill fixes below apply inside any of them. */
+const $isBlockElement = (
+  node: LexicalNode | null | undefined
+): node is import('lexical').ElementNode =>
+  $isElementNode(node) && !node.isInline() && !$isRootNode(node);
+
 import { WORD_JOINER } from '../utils';
 
 /**
@@ -73,7 +82,7 @@ const getPromptTokenBeforeCursor = (): PromptTokenNode | null => {
     const prev = anchorNode.getPreviousSibling();
     return isPromptTokenNode(prev) ? prev : null;
   }
-  if ($isParagraphNode(anchorNode)) {
+  if ($isBlockElement(anchorNode)) {
     const offset = selection.anchor.offset;
     if (offset === 0) return null;
     const prev = anchorNode.getChildAtIndex(offset - 1);
@@ -92,7 +101,7 @@ const getPromptTokenAfterCursor = (): PromptTokenNode | null => {
     const next = anchorNode.getNextSibling();
     return isPromptTokenNode(next) ? next : null;
   }
-  if ($isParagraphNode(anchorNode)) {
+  if ($isBlockElement(anchorNode)) {
     const next = anchorNode.getChildAtIndex(selection.anchor.offset);
     return isPromptTokenNode(next) ? next : null;
   }
@@ -228,7 +237,7 @@ export const registerNodeSelectionFixCommands = (editor: LexicalEditor): (() => 
     const anchorNode = selection.anchor.getNode();
     let paragraph = null;
     let offset = 0;
-    if (selection.anchor.type === 'element' && $isParagraphNode(anchorNode)) {
+    if (selection.anchor.type === 'element' && $isBlockElement(anchorNode)) {
       paragraph = anchorNode;
       offset = selection.anchor.offset;
     } else if (
@@ -237,7 +246,7 @@ export const registerNodeSelectionFixCommands = (editor: LexicalEditor): (() => 
       selection.anchor.offset === 0
     ) {
       const parent = anchorNode.getParent();
-      if (!$isParagraphNode(parent)) return false;
+      if (!$isBlockElement(parent)) return false;
       paragraph = parent;
       offset = anchorNode.getIndexWithinParent();
     } else {

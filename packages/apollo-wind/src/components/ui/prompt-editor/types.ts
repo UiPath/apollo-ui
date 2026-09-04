@@ -46,6 +46,15 @@ export interface PromptEditorAutoCompleteOption {
 
 export type PromptEditorMode = 'edit' | 'preview';
 
+/** Which formats are active at the selection (rich mode) — drives the toolbar's pressed states. */
+export interface PromptEditorToolbarActiveFormats {
+  bold: boolean;
+  italic: boolean;
+  strikethrough: boolean;
+  orderedList: boolean;
+  bulletedList: boolean;
+}
+
 export interface PromptEditorToolbarActionsRef {
   formatBold: () => void;
   formatItalic: () => void;

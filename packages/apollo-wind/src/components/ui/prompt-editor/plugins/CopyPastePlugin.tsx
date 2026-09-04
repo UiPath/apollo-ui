@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   $generateNodesFromSerializedNodes,
   $getLexicalContent,
@@ -18,11 +17,12 @@ import {
   type LexicalNode,
   PASTE_COMMAND,
 } from 'lexical';
+import { useEffect } from 'react';
 import {
   createInputTokenNode,
   createOutputTokenNode,
-  createStateTokenNode,
   createResourceTokenNode,
+  createStateTokenNode,
 } from '../nodes';
 import type { PromptEditorToken } from '../types';
 import {

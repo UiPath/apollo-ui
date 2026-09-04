@@ -1,9 +1,9 @@
-import type { LexicalNode } from 'lexical';
 import { $dfs } from '@lexical/utils';
+import type { LexicalNode } from 'lexical';
 import { type InputTokenNode, isInputTokenNode } from '../../nodes/InputTokenNode';
-import { type OutputTokenNode, isOutputTokenNode } from '../../nodes/OutputTokenNode';
-import { type StateTokenNode, isStateTokenNode } from '../../nodes/StateTokenNode';
-import { type ResourceTokenNode, isResourceTokenNode } from '../../nodes/ResourceTokenNode';
+import { isOutputTokenNode, type OutputTokenNode } from '../../nodes/OutputTokenNode';
+import { isResourceTokenNode, type ResourceTokenNode } from '../../nodes/ResourceTokenNode';
+import { isStateTokenNode, type StateTokenNode } from '../../nodes/StateTokenNode';
 
 export type PromptTokenNode = InputTokenNode | OutputTokenNode | StateTokenNode | ResourceTokenNode;
 

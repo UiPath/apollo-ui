@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -379,6 +379,96 @@ describe('PromptEditor', () => {
         </PromptEditor>
       );
       expect(screen.getByTestId('extra-plugin')).toBeInTheDocument();
+    });
+  });
+
+  describe('rich (WYSIWYG) mode', () => {
+    it('renders markdown text tokens as formatted content while editing', async () => {
+      render(
+        <PromptEditor
+          ariaLabel="Body"
+          richText
+          initialValue={[{ type: 'text', value: 'a **bold** word' }]}
+        />
+      );
+      await waitFor(() => {
+        const bold = document.querySelector('.prompt-editor-text-bold');
+        expect(bold).not.toBeNull();
+        expect(bold).toHaveTextContent('bold');
+      });
+      // The markers themselves are not visible content.
+      expect(screen.getByRole('textbox', { name: 'Body' }).textContent).not.toContain('**');
+    });
+
+    it('renders list markdown as real list elements', async () => {
+      render(
+        <PromptEditor
+          ariaLabel="Body"
+          richText
+          initialValue={[{ type: 'text', value: '- one\n- two' }]}
+        />
+      );
+      await waitFor(() => {
+        const list = document.querySelector('ul.prompt-editor-list-ul');
+        expect(list).not.toBeNull();
+        expect(list?.querySelectorAll('li')).toHaveLength(2);
+      });
+    });
+
+    it('emits unchanged markdown tokens through setTokens → onChange (round trip)', async () => {
+      const onChange = vi.fn();
+      const ref = createRef<PromptEditorRef>();
+      const tokens: PromptEditorToken[] = [
+        { type: 'text', value: '**Hello** ' },
+        { type: 'input', value: 'vars.firstName' },
+        { type: 'text', value: '\n- a\n- b' },
+      ];
+      render(<PromptEditor ariaLabel="Body" richText editorRef={ref} onChange={onChange} />);
+      act(() => {
+        ref.current?.setTokens(tokens);
+      });
+      await waitFor(() => expect(onChange).toHaveBeenCalled());
+      expect(onChange.mock.calls.at(-1)?.[0]).toEqual(tokens);
+    });
+
+    it('never renders the Edit/Preview switcher or the markdown preview', () => {
+      render(
+        <PromptEditor
+          ariaLabel="Body"
+          richText
+          showToolbar
+          mode="preview"
+          value={[{ type: 'text', value: '# Hi' }]}
+        />
+      );
+      expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Preview' })).not.toBeInTheDocument();
+      // The editor renders (preview mode is inert in rich mode).
+      expect(screen.getByRole('textbox', { name: 'Body' })).toBeInTheDocument();
+    });
+
+    it('marks toolbar formatting buttons with aria-pressed in rich mode', () => {
+      render(<PromptEditor ariaLabel="Body" richText showToolbar />);
+      expect(screen.getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByRole('button', { name: 'Bulleted List' })).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      );
+    });
+
+    it('falls back to the plain editor (with a warning) when multiline is false', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      render(
+        <PromptEditor
+          ariaLabel="Body"
+          richText
+          multiline={false}
+          initialValue={[{ type: 'text', value: '**b**' }]}
+        />
+      );
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('richText requires multiline'));
+      expect(document.querySelector('.prompt-editor-text-bold')).toBeNull();
+      warn.mockRestore();
     });
   });
 });

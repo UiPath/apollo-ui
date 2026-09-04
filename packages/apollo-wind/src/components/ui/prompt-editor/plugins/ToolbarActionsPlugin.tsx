@@ -1,4 +1,11 @@
+import {
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+  ListNode,
+  REMOVE_LIST_COMMAND,
+} from '@lexical/list';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { $getNearestNodeOfType, mergeRegister } from '@lexical/utils';
 import {
   $createTextNode,
   $getRoot,
@@ -6,13 +13,55 @@ import {
   $isParagraphNode,
   $isRangeSelection,
   $isTextNode,
+  COMMAND_PRIORITY_LOW,
+  FORMAT_TEXT_COMMAND,
+  SELECTION_CHANGE_COMMAND,
 } from 'lexical';
 import { type MutableRefObject, useEffect } from 'react';
-import type { PromptEditorToolbarActionsRef } from '../types';
+import type { PromptEditorToolbarActionsRef, PromptEditorToolbarActiveFormats } from '../types';
 
 interface ToolbarActionsPluginProps {
   actionsRef: MutableRefObject<PromptEditorToolbarActionsRef | null>;
+  /** WYSIWYG mode: dispatch real Lexical format/list commands instead of inserting markdown markers. */
+  richText?: boolean;
+  /** Rich mode only: reports which formats are active at the selection, for toolbar pressed states. */
+  onActiveFormatsChange?: (formats: PromptEditorToolbarActiveFormats) => void;
 }
+
+const EMPTY_ACTIVE_FORMATS: PromptEditorToolbarActiveFormats = {
+  bold: false,
+  italic: false,
+  strikethrough: false,
+  orderedList: false,
+  bulletedList: false,
+};
+
+/** Which formats/list types the selection currently carries. Must run inside a read/update. */
+const $readActiveFormats = (): PromptEditorToolbarActiveFormats => {
+  const selection = $getSelection();
+  if (!$isRangeSelection(selection)) {
+    return EMPTY_ACTIVE_FORMATS;
+  }
+  const anchorNode = selection.anchor.getNode();
+  const listType = $getNearestNodeOfType(anchorNode, ListNode)?.getListType();
+  return {
+    bold: selection.hasFormat('bold'),
+    italic: selection.hasFormat('italic'),
+    strikethrough: selection.hasFormat('strikethrough'),
+    orderedList: listType === 'number',
+    bulletedList: listType === 'bullet',
+  };
+};
+
+const activeFormatsEqual = (
+  a: PromptEditorToolbarActiveFormats,
+  b: PromptEditorToolbarActiveFormats
+) =>
+  a.bold === b.bold &&
+  a.italic === b.italic &&
+  a.strikethrough === b.strikethrough &&
+  a.orderedList === b.orderedList &&
+  a.bulletedList === b.bulletedList;
 
 /**
  * Wrap current selection with start/end markers (e.g., **bold**, *italic*, `code`).
@@ -118,33 +167,89 @@ const insertLinePrefixForSelection = (getPrefix: (index: number) => string) => {
   }
 };
 
-export const ToolbarActionsPlugin = ({ actionsRef }: ToolbarActionsPluginProps) => {
+export const ToolbarActionsPlugin = ({
+  actionsRef,
+  richText,
+  onActiveFormatsChange,
+}: ToolbarActionsPluginProps) => {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    actionsRef.current = {
-      formatBold: () => {
-        editor.update(() => wrapSelectionWithMarkers('**', '**'));
-      },
-      formatItalic: () => {
-        editor.update(() => wrapSelectionWithMarkers('*', '*'));
-      },
-      formatStrikethrough: () => {
-        // GFM strikethrough — `marked` (preview renderer) honours it natively.
-        editor.update(() => wrapSelectionWithMarkers('~~', '~~'));
-      },
-      formatNumberedList: () => {
-        editor.update(() => insertLinePrefixForSelection((i) => `${i + 1}. `));
-      },
-      formatBulletedList: () => {
-        editor.update(() => insertLinePrefixForSelection(() => '- '));
-      },
-    };
+    if (richText) {
+      // WYSIWYG: real Lexical formatting — the state holds formatted nodes, serialized to
+      // markdown only at the token boundary (see utils/rich-serialization).
+      const toggleList = (target: 'number' | 'bullet') => {
+        const listType = editor.getEditorState().read(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) return undefined;
+          return $getNearestNodeOfType(selection.anchor.getNode(), ListNode)?.getListType();
+        });
+        if (listType === target) {
+          editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
+        } else {
+          editor.dispatchCommand(
+            target === 'number' ? INSERT_ORDERED_LIST_COMMAND : INSERT_UNORDERED_LIST_COMMAND,
+            undefined
+          );
+        }
+      };
+      actionsRef.current = {
+        formatBold: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold'),
+        formatItalic: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic'),
+        formatStrikethrough: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough'),
+        formatNumberedList: () => toggleList('number'),
+        formatBulletedList: () => toggleList('bullet'),
+      };
+    } else {
+      actionsRef.current = {
+        formatBold: () => {
+          editor.update(() => wrapSelectionWithMarkers('**', '**'));
+        },
+        formatItalic: () => {
+          editor.update(() => wrapSelectionWithMarkers('*', '*'));
+        },
+        formatStrikethrough: () => {
+          // GFM strikethrough — `marked` (preview renderer) honours it natively.
+          editor.update(() => wrapSelectionWithMarkers('~~', '~~'));
+        },
+        formatNumberedList: () => {
+          editor.update(() => insertLinePrefixForSelection((i) => `${i + 1}. `));
+        },
+        formatBulletedList: () => {
+          editor.update(() => insertLinePrefixForSelection(() => '- '));
+        },
+      };
+    }
 
     return () => {
       actionsRef.current = null;
     };
-  }, [editor, actionsRef]);
+  }, [editor, actionsRef, richText]);
+
+  // Pressed-state tracking for the toolbar, rich mode only (plain mode has no live formats).
+  useEffect(() => {
+    if (!richText || !onActiveFormatsChange) return;
+    let last: PromptEditorToolbarActiveFormats | null = null;
+    const report = () => {
+      const next = editor.getEditorState().read($readActiveFormats);
+      if (!last || !activeFormatsEqual(last, next)) {
+        last = next;
+        onActiveFormatsChange(next);
+      }
+    };
+    report();
+    return mergeRegister(
+      editor.registerUpdateListener(report),
+      editor.registerCommand(
+        SELECTION_CHANGE_COMMAND,
+        () => {
+          report();
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      )
+    );
+  }, [editor, richText, onActiveFormatsChange]);
 
   return null;
 };

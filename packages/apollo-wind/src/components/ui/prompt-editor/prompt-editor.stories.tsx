@@ -124,6 +124,28 @@ export const WithTrailingModeControl: Story = {
   },
 };
 
+/**
+ * WYSIWYG mode: formatting renders live while editing (real bold/strike and lists — no Edit/Preview
+ * switcher, the editor IS the preview). Text tokens still carry markdown; try typing `**bold**` or
+ * `- ` for a live markdown shortcut.
+ */
+export const RichText: Story = {
+  args: {
+    richText: true,
+    showToolbar: true,
+    initialValue: [
+      { type: 'text', value: '**Hello** ' },
+      { type: 'input', value: 'vars.firstName' },
+      {
+        type: 'text',
+        value: ',\n\nYour order:\n- item one\n- item two\n\nThanks, ~~the team~~ *us*',
+      },
+    ],
+    autoCompleteOptions: AUTOCOMPLETE_OPTIONS,
+    ariaLabel: 'Body',
+  },
+};
+
 /** Type `$` in the editor to open the variable autocomplete menu. */
 export const WithAutocomplete: Story = {
   args: {
