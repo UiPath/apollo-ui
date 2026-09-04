@@ -65,7 +65,8 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     };
 
     const formatDisplayValue = () => {
-      if (!selectedDate) return placeholder;
+      // Placeholder is rendered by the caller; this only narrows for format().
+      if (!selectedDate) return null;
       const datePart = format(selectedDate, 'PPP');
       const timePart = format(selectedDate, use12Hour ? 'hh:mm a' : 'HH:mm');
       return `${datePart} at ${timePart}`;
@@ -78,15 +79,18 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
             ref={ref}
             variant="outline"
             className={cn(
-              'w-full justify-start text-left font-normal',
-              'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-muted-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
-              !selectedDate && 'text-muted-foreground',
+              'w-full justify-start text-left font-normal [&>svg]:text-foreground-muted hover:[&>svg]:text-accent-foreground',
+              'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
               className
             )}
             disabled={disabled}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {formatDisplayValue()}
+            {selectedDate ? (
+              formatDisplayValue()
+            ) : (
+              <span className="text-foreground-muted">{placeholder}</span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

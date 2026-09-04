@@ -126,4 +126,29 @@ describe('Combobox', () => {
       });
     });
   });
+
+  describe('Value vs placeholder color', () => {
+    it('mutes the placeholder via its own span', () => {
+      render(<Combobox items={mockItems} placeholder="Select an option..." />);
+      const placeholder = screen.getByText('Select an option...');
+      expect(placeholder.tagName).toBe('SPAN');
+      expect(placeholder).toHaveClass('text-foreground-muted');
+    });
+
+    it('renders a selected value at full strength', () => {
+      render(<Combobox items={mockItems} value="apple" />);
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toHaveTextContent('Apple');
+      expect(trigger.querySelector('.text-foreground-muted')).toBeNull();
+    });
+
+    // The outline Button variant mutes its own text in Future themes, so the
+    // trigger has to override it rather than rely on removing the class.
+    it('overrides the outline variant so the trigger is not globally muted', () => {
+      render(<Combobox items={mockItems} />);
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toHaveClass('future:text-foreground');
+      expect(trigger).not.toHaveClass('future:text-muted-foreground');
+    });
+  });
 });
