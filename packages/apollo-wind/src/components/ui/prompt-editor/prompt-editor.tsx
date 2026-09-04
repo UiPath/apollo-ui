@@ -399,7 +399,15 @@ const EditorInner = forwardRef(
       >
         <style>{`
           .prompt-editor-paragraph { padding: 0; margin: 0; }
-          ${borderless ? '' : '.prompt-editor-shell:not([data-invalid="true"]):focus-within { border-color: var(--color-ring); box-shadow: 0 0 0 1px var(--color-ring); } .future .prompt-editor-shell:not([data-invalid="true"]):focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ring) 35%, transparent); }'}
+          ${
+            borderless
+              ? ''
+              : showToolbar
+                ? /* Frame focus: one ring around toolbar + body, and both boxes' borders recolored —
+                     a shell-only ring drew its top edge as a stray line under the toolbar. */
+                  '.prompt-editor-frame:not([data-invalid="true"]):focus-within { box-shadow: 0 0 0 1px var(--color-ring); } .prompt-editor-frame:not([data-invalid="true"]):focus-within .prompt-editor-shell, .prompt-editor-frame:not([data-invalid="true"]):focus-within [data-testid="editor-toolbar"] { border-color: var(--color-ring); } .future .prompt-editor-frame:not([data-invalid="true"]):focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ring) 35%, transparent); }'
+                : '.prompt-editor-shell:not([data-invalid="true"]):focus-within { border-color: var(--color-ring); box-shadow: 0 0 0 1px var(--color-ring); } .future .prompt-editor-shell:not([data-invalid="true"]):focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ring) 35%, transparent); }'
+          }
           .prompt-editor-root *::selection { background-color: color-mix(in srgb, var(--color-primary) 30%, transparent); }
           ${
             richText
@@ -660,6 +668,14 @@ export const PromptEditor = ({
     <PromptEditorConfigProvider value={editorConfig}>
       <TooltipProvider>
         <div
+          // With a toolbar, the FRAME (toolbar + body) is the focus target: a body-only focus ring
+          // would draw its top edge as a stray line directly under the toolbar.
+          className={
+            showToolbar && !borderless
+              ? 'prompt-editor-frame rounded-md future:rounded-xl'
+              : undefined
+          }
+          data-invalid={showToolbar && !borderless && error ? 'true' : undefined}
           style={{
             display: 'flex',
             flexDirection: 'column',

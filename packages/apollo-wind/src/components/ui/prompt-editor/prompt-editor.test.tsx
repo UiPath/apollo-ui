@@ -382,6 +382,25 @@ describe('PromptEditor', () => {
     });
   });
 
+  describe('focus chrome', () => {
+    it('wraps toolbar + body in a focus frame when the toolbar is shown', () => {
+      const { container } = render(<PromptEditor ariaLabel="Prompt" showToolbar />);
+      expect(container.querySelector('.prompt-editor-frame')).not.toBeNull();
+      // The focus ring targets the FRAME (one ring around toolbar + body); a shell-only ring drew
+      // its top edge as a stray line under the toolbar.
+      const css = [...container.querySelectorAll('style')].map((st) => st.textContent).join('');
+      expect(css).toContain('.prompt-editor-frame:not([data-invalid="true"]):focus-within');
+      expect(css).not.toContain('.prompt-editor-shell:not([data-invalid="true"]):focus-within {');
+    });
+
+    it('keeps the shell-based focus ring when there is no toolbar', () => {
+      const { container } = render(<PromptEditor ariaLabel="Prompt" />);
+      expect(container.querySelector('.prompt-editor-frame')).toBeNull();
+      const css = [...container.querySelectorAll('style')].map((st) => st.textContent).join('');
+      expect(css).toContain('.prompt-editor-shell:not([data-invalid="true"]):focus-within');
+    });
+  });
+
   describe('rich (WYSIWYG) mode', () => {
     it('renders markdown text tokens as formatted content while editing', async () => {
       render(
