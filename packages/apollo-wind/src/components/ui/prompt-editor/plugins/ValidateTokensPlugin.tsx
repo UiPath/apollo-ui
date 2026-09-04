@@ -2,15 +2,11 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { useEffect } from 'react';
 import type { PromptEditorAutoCompleteOption } from '../types';
 import { normalizeVariablePath } from '../utils/autocomplete-segments';
-import { getAllPromptTokenNodes, type PromptTokenNode } from './shared/token-nodes';
-
-/** Lexical node type → token type. Constant, so defined once at module scope (not per node/pass). */
-const NODE_TYPE_TO_TOKEN_TYPE: Record<string, string> = {
-  'input-token': 'input',
-  'output-token': 'output',
-  'state-token': 'state',
-  'resource-token': 'resource',
-};
+import {
+  getAllPromptTokenNodes,
+  NODE_TYPE_TO_TOKEN_TYPE,
+  type PromptTokenNode,
+} from './shared/token-nodes';
 
 export const ValidateTokensPlugin = ({
   options,

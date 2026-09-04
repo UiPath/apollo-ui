@@ -13,6 +13,7 @@ import {
   $setSelection,
   CLICK_COMMAND,
   COMMAND_PRIORITY_HIGH,
+  type ElementNode,
   KEY_ARROW_DOWN_COMMAND,
   KEY_ARROW_LEFT_COMMAND,
   KEY_ARROW_RIGHT_COMMAND,
@@ -29,9 +30,7 @@ import { isPromptTokenNode, type PromptTokenNode } from './shared/token-nodes';
 
 /** Non-inline element that can host inline children directly (paragraph in plain mode; list items
  *  and paragraphs in rich mode). The caret-vs-pill fixes below apply inside any of them. */
-const $isBlockElement = (
-  node: LexicalNode | null | undefined
-): node is import('lexical').ElementNode =>
+const $isBlockElement = (node: LexicalNode | null | undefined): node is ElementNode =>
   $isElementNode(node) && !node.isInline() && !$isRootNode(node);
 
 /**

@@ -42,8 +42,20 @@ export interface PromptEditorStrings {
   /** `$`-trigger autocomplete menu */
   searchVariablesPlaceholder: string;
   noVariablesFound: string;
-  /** Label prefix for the free-form "Insert <path>" item. */
+  /**
+   * Label for the free-form "Insert <path>" item. `{path}` marks where the typed path renders
+   * (bold), so verb-last languages can move it; a string without `{path}` is treated as a prefix.
+   */
   insertFreeForm: string;
+  /** Token type labels: chip hover tooltip + autocomplete menu's trailing hint. */
+  tokenTypeInput: string;
+  tokenTypeOutput: string;
+  tokenTypeState: string;
+  tokenTypeResource: string;
+  /** aria-label of the chip's × button. */
+  removeToken: string;
+  /** Preview-mode placeholder when there is no content. */
+  nothingToPreview: string;
 }
 
 export const DEFAULT_PROMPT_EDITOR_STRINGS: PromptEditorStrings = {
@@ -58,7 +70,13 @@ export const DEFAULT_PROMPT_EDITOR_STRINGS: PromptEditorStrings = {
   expand: 'Expand',
   searchVariablesPlaceholder: 'Search variables…',
   noVariablesFound: 'No variables found.',
-  insertFreeForm: 'Insert',
+  insertFreeForm: 'Insert {path}',
+  tokenTypeInput: 'Input variable',
+  tokenTypeOutput: 'Output variable',
+  tokenTypeState: 'State variable',
+  tokenTypeResource: 'Resource',
+  removeToken: 'Remove token',
+  nothingToPreview: 'Nothing to preview',
 };
 
 interface PromptEditorConfig {

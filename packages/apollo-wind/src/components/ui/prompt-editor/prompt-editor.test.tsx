@@ -312,6 +312,30 @@ describe('PromptEditor', () => {
       expect(screen.getByRole('button', { name: 'Italic' })).toBeInTheDocument();
     });
 
+    it('applies overridden strings to the chip remove button', async () => {
+      render(
+        <PromptEditor
+          ariaLabel="Prompt"
+          initialValue={[{ type: 'input', value: 'vars.firstName' }]}
+          strings={{ removeToken: 'Token entfernen' }}
+        />
+      );
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Token entfernen' })).toBeInTheDocument()
+      );
+    });
+
+    it('renders the empty preview message from strings', () => {
+      render(
+        <PromptEditor
+          showToolbar
+          mode="preview"
+          strings={{ nothingToPreview: 'Nichts anzuzeigen' }}
+        />
+      );
+      expect(screen.getByText('Nichts anzuzeigen')).toBeInTheDocument();
+    });
+
     it('renders token pills through renderTokenPill', async () => {
       const initialValue: PromptEditorToken[] = [{ type: 'input', value: 'vars.firstName' }];
       render(
