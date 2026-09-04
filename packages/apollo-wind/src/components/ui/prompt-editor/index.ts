@@ -25,6 +25,7 @@ export type {
   PromptEditorMode,
   PromptEditorToken,
   PromptEditorTokenType,
+  PromptEditorToolbarActiveFormats,
 } from './types';
 export {
   getPromptEditorTokenColors,
@@ -39,6 +40,10 @@ export {
   $insertTokenAtCursor,
   createTokenNodeForOption,
 } from './utils/insert-token';
+export {
+  normalizeRichTextTokens,
+  PROMPT_EDITOR_RICH_TRANSFORMERS,
+} from './utils/rich-serialization';
 export {
   getEditorTokens,
   setEditorTokens,

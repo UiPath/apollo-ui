@@ -2,8 +2,11 @@ import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { $getSelection, $isRangeSelection, type LexicalEditor } from 'lexical';
 import {
   forwardRef,
@@ -42,6 +45,7 @@ import type {
   PromptEditorMode,
   PromptEditorToken,
   PromptEditorToolbarActionsRef,
+  PromptEditorToolbarActiveFormats,
 } from './types';
 import {
   $getEditorTokensInternal,
@@ -49,6 +53,12 @@ import {
   $setEditorTokensInternal,
   areTokensEqual,
 } from './utils';
+import {
+  $getRichEditorTokensInternal,
+  $setRichEditorTokensInternal,
+  PROMPT_EDITOR_RICH_TRANSFORMERS,
+  RICH_EDITOR_EXTRA_NODES,
+} from './utils/rich-serialization';
 
 const DEFAULT_MIN_ROWS = 4;
 const DEFAULT_MAX_ROWS = 20;
@@ -124,6 +134,14 @@ export interface PromptEditorProps {
   toolbarTrailing?: React.ReactNode;
   /** Extra Lexical plugins mounted inside the composer (e.g. host-specific drop/replace plugins). */
   children?: React.ReactNode;
+  /**
+   * WYSIWYG mode: formatting renders live in the editor (real bold/italic/strike and lists) instead
+   * of markdown markers with a separate preview. The `PromptEditorToken[]` contract is unchanged —
+   * text tokens still carry markdown; the conversion happens at the editor boundary. Mount-time
+   * only (it feeds the composer's frozen `initialConfig`); requires `multiline`. In rich mode the
+   * Edit/Preview switcher and `mode='preview'` are inert — the editor IS the preview.
+   */
+  richText?: boolean;
 }
 
 const EMPTY_AUTOCOMPLETE_OPTIONS: PromptEditorAutoCompleteOption[] = [];
@@ -140,6 +158,8 @@ interface EditorInnerProps
   > {
   toolbarActionsRef: React.MutableRefObject<PromptEditorToolbarActionsRef | null>;
   showToolbar?: boolean;
+  /** Rich mode: reports the selection's active formats up for the toolbar's pressed states. */
+  onActiveFormatsChange?: (formats: PromptEditorToolbarActiveFormats) => void;
 }
 
 const EditorInner = forwardRef(
@@ -166,10 +186,16 @@ const EditorInner = forwardRef(
       toolbarActionsRef,
       showToolbar,
       children,
+      richText,
+      onActiveFormatsChange,
     }: EditorInnerProps,
     ref: React.ForwardedRef<PromptEditorRef>
   ) => {
     const editorRef = useRef<LexicalEditor | null>(null);
+    // Mode-aware serialization, picked once (richText is mount-time-only): rich mode converts
+    // formatted nodes ⇄ markdown text tokens; plain mode walks flat paragraphs.
+    const $getTokens = richText ? $getRichEditorTokensInternal : $getEditorTokensInternal;
+    const $setTokens = richText ? $setRichEditorTokensInternal : $setEditorTokensInternal;
     const [isEmpty, setIsEmpty] = useState(() => {
       const seed = initialValue ?? value;
       return !seed || seed.length === 0;
@@ -195,7 +221,7 @@ const EditorInner = forwardRef(
             // resulting state. Don't also call onChange here, or controlled consumers get a duplicate
             // emit per setTokens() (extra renders / feedback loops).
             editorRef.current.update(() => {
-              $setEditorTokensInternal(tokens);
+              $setTokens(tokens);
             });
           } else {
             // No editor mounted yet → no OnChangePlugin emit, so notify directly.
@@ -226,7 +252,7 @@ const EditorInner = forwardRef(
           });
         },
       }),
-      []
+      [$setTokens]
     );
 
     const contentEditableStyle = useMemo(() => {
@@ -277,11 +303,12 @@ const EditorInner = forwardRef(
       editorRef.current = editor;
     }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies($getTokens): mode-picked once at mount (richText is mount-time-only), so the getter identity is stable.
     const handleChange = useCallback(() => {
       if (!editorRef.current) return;
 
       editorRef.current.getEditorState().read(() => {
-        const tokens = $getEditorTokensInternal();
+        const tokens = $getTokens();
         const newIsEmpty =
           tokens.length === 0 ||
           (tokens.length === 1 && tokens[0].type === 'text' && tokens[0].value === '');
@@ -337,7 +364,7 @@ const EditorInner = forwardRef(
       queueMicrotask(() => {
         if (!editorRef.current || initializedRef.current) return;
         editorRef.current.update(() => {
-          $setEditorTokensInternal(valueToSet);
+          $setTokens(valueToSet);
           setIsEmpty(valueToSet.length === 0);
           initializedRef.current = true;
         });
@@ -374,6 +401,21 @@ const EditorInner = forwardRef(
           .prompt-editor-paragraph { padding: 0; margin: 0; }
           ${borderless ? '' : '.prompt-editor-shell:not([data-invalid="true"]):focus-within { border-color: var(--color-ring); box-shadow: 0 0 0 1px var(--color-ring); } .future .prompt-editor-shell:not([data-invalid="true"]):focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ring) 35%, transparent); }'}
           .prompt-editor-root *::selection { background-color: color-mix(in srgb, var(--color-primary) 30%, transparent); }
+          ${
+            richText
+              ? `
+          /* Rich-mode formatting — metrics mirror MarkdownPreview so editing matches rendering. */
+          .prompt-editor-text-bold { font-weight: 700; }
+          .prompt-editor-text-italic { font-style: italic; }
+          .prompt-editor-text-strikethrough { text-decoration: line-through; }
+          .prompt-editor-list-ul, .prompt-editor-list-ol { margin: 0.25em 0; padding-left: 1.5em; }
+          .prompt-editor-list-ul { list-style-type: disc; }
+          .prompt-editor-list-ol { list-style-type: decimal; }
+          .prompt-editor-list-item { margin: 0.125em 0; }
+          .prompt-editor-list-item-nested { list-style-type: none; }
+          `
+              : ''
+          }
         `}</style>
         <div
           className="prompt-editor-root"
@@ -389,19 +431,35 @@ const EditorInner = forwardRef(
               : {}),
           }}
         >
-          <PlainTextPlugin
-            contentEditable={
-              <ContentEditable
-                style={contentEditableStyle}
-                ariaLabel={ariaLabel}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={ariaDescribedBy}
-                aria-errormessage={error ? errorId : undefined}
-              />
-            }
-            placeholder={null}
-            ErrorBoundary={LexicalErrorBoundary}
-          />
+          {richText ? (
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable
+                  style={contentEditableStyle}
+                  ariaLabel={ariaLabel}
+                  aria-invalid={error ? true : undefined}
+                  aria-describedby={ariaDescribedBy}
+                  aria-errormessage={error ? errorId : undefined}
+                />
+              }
+              placeholder={null}
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+          ) : (
+            <PlainTextPlugin
+              contentEditable={
+                <ContentEditable
+                  style={contentEditableStyle}
+                  ariaLabel={ariaLabel}
+                  aria-invalid={error ? true : undefined}
+                  aria-describedby={ariaDescribedBy}
+                  aria-errormessage={error ? errorId : undefined}
+                />
+              }
+              placeholder={null}
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+          )}
           {placeholder && isEmpty && (
             <div
               style={{
@@ -437,10 +495,25 @@ const EditorInner = forwardRef(
           editorRef={editorRef}
           lastEmittedValueRef={lastEmittedValueRef}
           isSyncingRef={isSyncingRef}
+          richText={richText}
         />
-        <MultilinePlugin multiline={multiline} />
+        {/* MultilinePlugin collapses the whole root into one paragraph — plain-mode only; rich
+            mode requires multiline and its lists would be destroyed by the collapse. */}
+        {!richText && <MultilinePlugin multiline={multiline} />}
+        {richText && (
+          <>
+            <ListPlugin />
+            {/* Live markdown shortcuts: typing `**x**` bolds, `- ` starts a list, matching the
+                toolbar's feature set exactly (the transformer list is shared with serialization). */}
+            <MarkdownShortcutPlugin transformers={PROMPT_EDITOR_RICH_TRANSFORMERS} />
+          </>
+        )}
         <OnChangePlugin ignoreSelectionChange onChange={handleChange} />
-        <ToolbarActionsPlugin actionsRef={toolbarActionsRef} />
+        <ToolbarActionsPlugin
+          actionsRef={toolbarActionsRef}
+          richText={richText}
+          onActiveFormatsChange={onActiveFormatsChange}
+        />
         {(options.length > 0 || renderAutocompleteMenu) && (
           <AutocompletePlugin options={options} renderMenu={renderAutocompleteMenu} />
         )}
@@ -489,16 +562,31 @@ export const PromptEditor = ({
   showModeToggle = true,
   toolbarTrailing,
   children,
+  richText: richTextProp,
 }: PromptEditorProps) => {
   // Normalize the token-array props once so malformed input (e.g. `{}` from a Storybook object
   // control) can't crash the editor, the preview, or ValueSyncPlugin.
   const value = toTokenArray(rawValue);
   const initialValue = toTokenArray(rawInitialValue);
 
+  // Rich mode requires multiline (lists/paragraph structure make no sense in a one-line field).
+  // MOUNT-TIME ONLY: the first render's value feeds the composer's frozen initialConfig.
+  const [richText] = useState(() => {
+    if (richTextProp && !multiline) {
+      console.warn('PromptEditor: richText requires multiline — falling back to the plain editor.');
+      return false;
+    }
+    return !!richTextProp;
+  });
+
   const [internalMode, setInternalMode] = useState<PromptEditorMode>('edit');
-  // Without the Edit/Preview switcher there is no way (or reason) to enter preview mode.
-  const mode = showModeToggle ? (controlledMode ?? internalMode) : 'edit';
+  // Without the Edit/Preview switcher there is no way (or reason) to enter preview mode; in rich
+  // mode the editor IS the preview, so preview mode is inert there too.
+  const mode = showModeToggle && !richText ? (controlledMode ?? internalMode) : 'edit';
   const toolbarActionsRef = useRef<PromptEditorToolbarActionsRef | null>(null);
+  const [activeFormats, setActiveFormats] = useState<PromptEditorToolbarActiveFormats | undefined>(
+    undefined
+  );
   const [uncontrolledPreviewTokens, setUncontrolledPreviewTokens] = useState<PromptEditorToken[]>(
     initialValue ?? []
   );
@@ -514,11 +602,34 @@ export const PromptEditor = ({
   const initialConfig = useMemo(
     () => ({
       namespace: 'PromptEditor',
-      theme: { paragraph: 'prompt-editor-paragraph' },
+      theme: {
+        paragraph: 'prompt-editor-paragraph',
+        ...(richText
+          ? {
+              text: {
+                bold: 'prompt-editor-text-bold',
+                italic: 'prompt-editor-text-italic',
+                strikethrough: 'prompt-editor-text-strikethrough',
+              },
+              list: {
+                ul: 'prompt-editor-list-ul',
+                ol: 'prompt-editor-list-ol',
+                listitem: 'prompt-editor-list-item',
+                nested: { listitem: 'prompt-editor-list-item-nested' },
+              },
+            }
+          : {}),
+      },
       onError: (error: Error) => console.error('PromptEditor error:', error),
-      nodes: [InputTokenNode, OutputTokenNode, StateTokenNode, ResourceTokenNode],
+      nodes: [
+        InputTokenNode,
+        OutputTokenNode,
+        StateTokenNode,
+        ResourceTokenNode,
+        ...(richText ? RICH_EDITOR_EXTRA_NODES : []),
+      ],
     }),
-    []
+    [richText]
   );
 
   const isControlled = value !== undefined;
@@ -564,9 +675,10 @@ export const PromptEditor = ({
               actionsRef={toolbarActionsRef}
               onModeChange={handleModeChange}
               onFullscreen={onFullscreen}
-              showModeToggle={showModeToggle}
+              showModeToggle={showModeToggle && !richText}
               trailing={toolbarTrailing}
               strings={strings}
+              activeFormats={richText ? activeFormats : undefined}
             />
           )}
 
@@ -616,6 +728,8 @@ export const PromptEditor = ({
                 toolbarActionsRef={toolbarActionsRef}
                 value={value}
                 onChange={handleEditorChange}
+                richText={richText}
+                onActiveFormatsChange={richText ? setActiveFormats : undefined}
               >
                 {children}
               </EditorInner>

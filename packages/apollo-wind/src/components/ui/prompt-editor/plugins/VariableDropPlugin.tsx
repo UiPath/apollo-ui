@@ -4,7 +4,7 @@ import {
   $getNearestNodeFromDOMNode,
   $getRoot,
   $isDecoratorNode,
-  $isParagraphNode,
+  $isElementNode,
   $isTextNode,
   $setSelection,
   type LexicalEditor,
@@ -65,7 +65,9 @@ const $resolveDropPosition = (
     };
   }
   if ($isTextNode(node)) return { key: node.getKey(), offset: domOffset, type: 'text' };
-  if ($isParagraphNode(node)) return { key: node.getKey(), offset: domOffset, type: 'element' };
+  // Any non-inline element (paragraph; list item in rich mode) can take an element-anchored caret.
+  if ($isElementNode(node) && !node.isInline())
+    return { key: node.getKey(), offset: domOffset, type: 'element' };
   return null;
 };
 

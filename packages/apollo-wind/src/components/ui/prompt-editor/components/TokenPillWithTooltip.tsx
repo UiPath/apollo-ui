@@ -1,10 +1,10 @@
-import { useCallback, useMemo } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useLexicalNodeSelection } from '@lexical/react/useLexicalNodeSelection';
 import { $createNodeSelection, $setSelection, type NodeKey } from 'lexical';
+import { useCallback, useMemo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { TokenPill, type TokenPillProps } from './TokenPill';
 import { getPromptEditorTokenTypeLabel } from '../types';
+import { TokenPill, type TokenPillProps } from './TokenPill';
 
 export interface TokenPillWithTooltipProps extends TokenPillProps {
   /** Lexical node key for the underlying decorator — drives `NodeSelection` click-to-focus. */

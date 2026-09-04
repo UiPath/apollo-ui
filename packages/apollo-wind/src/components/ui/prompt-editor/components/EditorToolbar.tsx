@@ -2,7 +2,11 @@ import { Bold, Italic, List, ListOrdered, Maximize2, Strikethrough } from 'lucid
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib';
 import { DEFAULT_PROMPT_EDITOR_STRINGS, type PromptEditorStrings } from '../prompt-editor-config';
-import type { PromptEditorMode, PromptEditorToolbarActionsRef } from '../types';
+import type {
+  PromptEditorMode,
+  PromptEditorToolbarActionsRef,
+  PromptEditorToolbarActiveFormats,
+} from '../types';
 
 export interface EditorToolbarProps {
   mode: PromptEditorMode;
@@ -22,6 +26,8 @@ export interface EditorToolbarProps {
   trailing?: React.ReactNode;
   /** Overridable labels; every key defaults to the built-in English. */
   strings?: PromptEditorStrings;
+  /** Rich mode: which formats the selection carries — drives `aria-pressed` on the buttons. */
+  activeFormats?: PromptEditorToolbarActiveFormats;
 }
 
 /**
@@ -32,23 +38,28 @@ const ToolbarButton = ({
   label,
   disabled,
   onClick,
+  pressed,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   disabled?: boolean;
   onClick?: () => void;
+  /** Toggled-on state (rich mode). Undefined = the button is a plain action, no aria-pressed. */
+  pressed?: boolean;
 }) => (
   <Tooltip>
     <TooltipTrigger asChild>
       <button
         type="button"
         aria-label={label}
+        aria-pressed={pressed}
         disabled={disabled}
         onClick={onClick}
         className={cn(
           'inline-flex h-7 w-7 items-center justify-center rounded text-muted-foreground',
           'hover:bg-accent hover:text-accent-foreground',
-          'disabled:opacity-50 disabled:pointer-events-none'
+          'disabled:opacity-50 disabled:pointer-events-none',
+          pressed && 'bg-accent text-accent-foreground'
         )}
       >
         <Icon className="h-3.5 w-3.5" />
@@ -72,6 +83,7 @@ export const EditorToolbar = ({
   showModeToggle = true,
   trailing,
   strings = DEFAULT_PROMPT_EDITOR_STRINGS,
+  activeFormats,
 }: EditorToolbarProps) => {
   // Without the Edit/Preview switcher there is no preview state to guard against.
   const isEditMode = !showModeToggle || mode === 'edit';
@@ -87,18 +99,21 @@ export const EditorToolbar = ({
     <>
       <ToolbarButton
         icon={Bold}
+        pressed={activeFormats?.bold}
         label={strings.bold}
         disabled={disabled || !isEditMode}
         onClick={handleFormat('formatBold')}
       />
       <ToolbarButton
         icon={Italic}
+        pressed={activeFormats?.italic}
         label={strings.italic}
         disabled={disabled || !isEditMode}
         onClick={handleFormat('formatItalic')}
       />
       <ToolbarButton
         icon={Strikethrough}
+        pressed={activeFormats?.strikethrough}
         label={strings.strikethrough}
         disabled={disabled || !isEditMode}
         onClick={handleFormat('formatStrikethrough')}
@@ -108,12 +123,14 @@ export const EditorToolbar = ({
 
       <ToolbarButton
         icon={ListOrdered}
+        pressed={activeFormats?.orderedList}
         label={strings.numberedList}
         disabled={disabled || !isEditMode}
         onClick={handleFormat('formatNumberedList')}
       />
       <ToolbarButton
         icon={List}
+        pressed={activeFormats?.bulletedList}
         label={strings.bulletedList}
         disabled={disabled || !isEditMode}
         onClick={handleFormat('formatBulletedList')}

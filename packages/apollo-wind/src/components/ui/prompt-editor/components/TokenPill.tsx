@@ -1,7 +1,7 @@
-import { memo } from 'react';
 import { Database, Paperclip, SquareFunction, Variable } from 'lucide-react';
-import { getPromptEditorTokenColors } from '../types';
+import { memo } from 'react';
 import type { PromptEditorDiffType, PromptEditorTokenType } from '../types';
+import { getPromptEditorTokenColors } from '../types';
 
 /** Leading icon per token type — mirrors the SVG markup `MarkdownPreview` inlines for preview mode. */
 const TOKEN_TYPE_ICON: Record<

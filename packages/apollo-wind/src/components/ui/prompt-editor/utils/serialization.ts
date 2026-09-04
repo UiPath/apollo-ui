@@ -3,11 +3,13 @@ import {
   $createParagraphNode,
   $createTextNode,
   $getRoot,
+  $isElementNode,
   $isLineBreakNode,
   $isParagraphNode,
   $isRangeSelection,
   $isTextNode,
   type BaseSelection,
+  type ElementNode,
   type LexicalEditor,
   type LexicalNode,
   type ParagraphNode,
@@ -234,21 +236,30 @@ export const getEditorTokensFromSelection = (selection: BaseSelection): PromptEd
       : firstSelectedNode.getKey() === anchorKey ||
         firstSelectedNode.getParent()?.getKey() === anchorKey;
 
-  let prevNodeParagraph: ParagraphNode | null = null;
+  // "Line" = nearest non-inline element ancestor (paragraph in plain mode; a list item counts as
+  // its own line in rich mode) so copying across list items still yields \n-separated plain text.
+  const blockOf = (node: LexicalNode): ElementNode | null => {
+    let current: LexicalNode | null = node;
+    while (current) {
+      if ($isElementNode(current) && !current.isInline()) return current;
+      current = current.getParent();
+    }
+    return null;
+  };
+  let prevNodeBlock: ElementNode | null = null;
 
   for (const node of nodesToProcess) {
     const nodeKey = node.getKey();
     const nodeType = node.getType();
-    const nodeParagraph = $isParagraphNode(node)
-      ? node
-      : (node.getParent() as ParagraphNode | null);
+    const nodeBlock = blockOf(node);
 
-    if (prevNodeParagraph && nodeParagraph && prevNodeParagraph !== nodeParagraph) {
+    if (prevNodeBlock && nodeBlock && prevNodeBlock !== nodeBlock) {
       addText('\n');
     }
-    prevNodeParagraph = nodeParagraph;
+    prevNodeBlock = nodeBlock;
 
-    if ($isParagraphNode(node)) continue;
+    // Element containers (paragraphs; lists and list items in rich mode) carry no text of their own.
+    if ($isElementNode(node)) continue;
 
     if (nodeType === 'input-token') {
       tokens.push({ type: 'input', value: (node as InputTokenNode).getValue() });
