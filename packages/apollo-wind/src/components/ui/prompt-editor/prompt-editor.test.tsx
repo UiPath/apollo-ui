@@ -382,22 +382,52 @@ describe('PromptEditor', () => {
     });
   });
 
-  describe('focus chrome', () => {
-    it('wraps toolbar + body in a focus frame when the toolbar is shown', () => {
-      const { container } = render(<PromptEditor ariaLabel="Prompt" showToolbar />);
-      expect(container.querySelector('.prompt-editor-frame')).not.toBeNull();
-      // The focus ring targets the FRAME (one ring around toolbar + body); a shell-only ring drew
-      // its top edge as a stray line under the toolbar.
-      const css = [...container.querySelectorAll('style')].map((st) => st.textContent).join('');
-      expect(css).toContain('.prompt-editor-frame:not([data-invalid="true"]):focus-within');
-      expect(css).not.toContain('.prompt-editor-shell:not([data-invalid="true"]):focus-within {');
+  describe('preview token override', () => {
+    it('renders host-supplied icon markup and label for preview pills', () => {
+      render(
+        <PromptEditor
+          value={[{ type: 'input', value: 'vars.firstName' }]}
+          mode="preview"
+          previewToken={(token) =>
+            token.type === 'text'
+              ? undefined
+              : {
+                  label: `$${token.value}`,
+                  iconSvg:
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" data-testid="custom-type-icon"><circle cx="12" cy="12" r="9"></circle></svg>',
+                }
+          }
+        />
+      );
+      expect(screen.getByText('$vars.firstName')).toBeInTheDocument();
+      expect(document.querySelector('.token-pill circle')).not.toBeNull();
     });
 
-    it('keeps the shell-based focus ring when there is no toolbar', () => {
+    it('falls back to the role icon and raw value without the override', () => {
+      render(<PromptEditor value={[{ type: 'input', value: 'vars.firstName' }]} mode="preview" />);
+      expect(screen.getByText('vars.firstName')).toBeInTheDocument();
+    });
+  });
+
+  describe('focus chrome', () => {
+    it('puts the input-matching focus ring on the FRAME when the toolbar is shown', () => {
+      const { container } = render(<PromptEditor ariaLabel="Prompt" showToolbar />);
+      // One ring around toolbar + body — a shell-only ring drew its top edge as a stray line under
+      // the toolbar — using the exact treatment apollo's inputs use (ring-2 ring-ring).
+      const frame = container.querySelector('.prompt-editor-frame');
+      expect(frame).not.toBeNull();
+      expect(frame?.className).toContain('focus-within:ring-2');
+      expect(frame?.className).toContain('focus-within:ring-ring');
+      const shell = container.querySelector('.prompt-editor-shell');
+      expect(shell?.className).not.toContain('focus-within:ring-2');
+    });
+
+    it('keeps the input-matching focus ring on the shell when there is no toolbar', () => {
       const { container } = render(<PromptEditor ariaLabel="Prompt" />);
       expect(container.querySelector('.prompt-editor-frame')).toBeNull();
-      const css = [...container.querySelectorAll('style')].map((st) => st.textContent).join('');
-      expect(css).toContain('.prompt-editor-shell:not([data-invalid="true"]):focus-within');
+      const shell = container.querySelector('.prompt-editor-shell');
+      expect(shell?.className).toContain('focus-within:ring-2');
+      expect(shell?.className).toContain('focus-within:ring-ring');
     });
   });
 

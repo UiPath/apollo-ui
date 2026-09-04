@@ -1,3 +1,4 @@
+export type { MarkdownPreviewTokenOverride } from './components/MarkdownPreview';
 export type { PromptEditorAutocompleteMenuProps } from './components/PromptEditorAutocompleteMenu';
 export { TokenPill, type TokenPillProps } from './components/TokenPill';
 export {
