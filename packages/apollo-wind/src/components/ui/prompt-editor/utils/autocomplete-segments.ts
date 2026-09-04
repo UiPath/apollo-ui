@@ -54,7 +54,7 @@ export const inferTokenTypeFromPath = (
  * paths can be committed the same as input/output ones.
  */
 export const VARIABLE_PATH_REGEX =
-  /^(?:vars|metadata|agent|state|resource)\.[a-zA-Z_](?:[a-zA-Z0-9_.]|\[\d+\])*$/;
+  /^(?:vars|metadata|agent|state|resource)(?:\.[a-zA-Z_][a-zA-Z0-9_]*(?:\[\d+\])*)+$/;
 
 /** Identifier for the `$` position the picker was last dismissed for. */
 export interface TriggerKey {
