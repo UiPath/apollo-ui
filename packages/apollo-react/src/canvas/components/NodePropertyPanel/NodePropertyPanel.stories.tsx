@@ -160,6 +160,7 @@ import type {
 } from '../JsonTree';
 import { isJsonObject } from '../JsonTree';
 import { NodeIOView, type NodeIOViewTab } from '../NodeIOView';
+import { EditableText } from './EditableText';
 import { NodePropertyPanel } from './NodePropertyPanel';
 import { NodePropertyPanelLayout } from './NodePropertyPanelLayout';
 
@@ -624,10 +625,6 @@ function FullEditorStory() {
   const editorRef = useRef<Parameters<NonNullable<EditorProps['onMount']>>[0] | null>(null);
   const [label, setLabel] = useState('Script');
   const [category, setCategory] = useState('HTTP Request');
-  const [editingLabel, setEditingLabel] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(false);
-  const labelRef = useRef<HTMLInputElement>(null);
-  const categoryRef = useRef<HTMLInputElement>(null);
   const variables = useMemo<VariablePickerItem[]>(
     () => [
       {
@@ -691,72 +688,16 @@ function FullEditorStory() {
       <NodePropertyPanel
         panelTitle="Properties"
         onClose={() => {}}
+        nodeIcon={<Code2 />}
+        nodeLabel={label}
+        onNodeLabelChange={setLabel}
+        nodeDescription={category}
+        onNodeDescriptionChange={setCategory}
+        action={<DebugButton />}
         contentInset="0.875rem"
         className="h-[560px]"
       >
         <div className="flex h-full flex-col">
-          {/* Inline-editable identity row */}
-          <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-            <div className="flex min-w-0 flex-1 items-center gap-3.5">
-              <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
-                <Code2 />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col justify-center">
-                {editingLabel ? (
-                  <input
-                    ref={labelRef}
-                    value={label}
-                    onChange={(e) => setLabel(e.target.value)}
-                    onBlur={() => setEditingLabel(false)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
-                    }}
-                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
-                    autoFocus
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingLabel(true);
-                      setTimeout(() => labelRef.current?.select(), 0);
-                    }}
-                    className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
-                  >
-                    {label}
-                  </button>
-                )}
-                {editingCategory ? (
-                  <input
-                    ref={categoryRef}
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    onBlur={() => setEditingCategory(false)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
-                    }}
-                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
-                    autoFocus
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingCategory(true);
-                      setTimeout(() => categoryRef.current?.select(), 0);
-                    }}
-                    className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
-                  >
-                    {category}
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="shrink-0">
-              <DebugButton />
-            </div>
-          </div>
-
           {/* Tabs + editor */}
           <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
             <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
@@ -953,8 +894,6 @@ function CasePanel({
   errorAction?: string;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
-  const [editingTitle, setEditingTitle] = useState(false);
-  const titleRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<Parameters<NonNullable<EditorProps['onMount']>>[0] | null>(null);
   const hasError = Boolean(errorMessage);
 
@@ -988,30 +927,12 @@ function CasePanel({
             className={cn('transition-transform duration-150', !expanded && '-rotate-90')}
           />
         </Button>
-        {editingTitle ? (
-          <input
-            ref={titleRef}
-            value={caseTitle}
-            onChange={(e) => onTitleChange(e.target.value)}
-            onBlur={() => setEditingTitle(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false);
-            }}
-            className="flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
-            autoFocus
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setEditingTitle(true);
-              setTimeout(() => titleRef.current?.select(), 0);
-            }}
-            className="flex min-w-0 flex-1 items-center rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
-          >
-            {caseTitle}
-          </button>
-        )}
+        <EditableText
+          value={caseTitle}
+          onChange={onTitleChange}
+          size="sm"
+          className="min-w-0 flex-1 font-medium text-foreground"
+        />
         {hasError && (
           <Badge variant="error" className="h-5 gap-1 px-1.5 text-[10px] font-medium">
             <CircleAlert size={10} />1
@@ -1222,82 +1143,22 @@ function CompactEditorStory() {
     setCases((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
   const [label, setLabel] = useState('Switch');
   const [category, setCategory] = useState('Control');
-  const [editingLabel, setEditingLabel] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(false);
-  const labelRef = useRef<HTMLInputElement>(null);
-  const categoryRef = useRef<HTMLInputElement>(null);
 
   return (
     <PanelFrame>
       <NodePropertyPanel
         panelTitle="Properties"
         onClose={() => {}}
+        nodeIcon={<GitFork />}
+        nodeLabel={label}
+        onNodeLabelChange={setLabel}
+        nodeDescription={category}
+        onNodeDescriptionChange={setCategory}
+        action={<DebugButton />}
         contentInset="0.875rem"
         className="h-[640px]"
       >
         <div className="flex h-full flex-col">
-          {/* Inline-editable identity row */}
-          <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-            <div className="flex min-w-0 flex-1 items-center gap-3.5">
-              <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
-                <GitFork />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col justify-center">
-                {editingLabel ? (
-                  <input
-                    ref={labelRef}
-                    value={label}
-                    onChange={(e) => setLabel(e.target.value)}
-                    onBlur={() => setEditingLabel(false)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
-                    }}
-                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
-                    autoFocus
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingLabel(true);
-                      setTimeout(() => labelRef.current?.select(), 0);
-                    }}
-                    className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
-                  >
-                    {label}
-                  </button>
-                )}
-                {editingCategory ? (
-                  <input
-                    ref={categoryRef}
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    onBlur={() => setEditingCategory(false)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
-                    }}
-                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
-                    autoFocus
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingCategory(true);
-                      setTimeout(() => categoryRef.current?.select(), 0);
-                    }}
-                    className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
-                  >
-                    {category}
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="shrink-0">
-              <DebugButton />
-            </div>
-          </div>
-
           <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
             <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
               <TabsList className={TAB_LIST_CLASS}>
@@ -1380,8 +1241,6 @@ function InlineCaseRow({
   defaultValue?: string;
 }) {
   const fieldId = useId();
-  const [editingTitle, setEditingTitle] = useState(false);
-  const titleRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(defaultValue);
   const [locked, setLocked] = useState(false);
   const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
@@ -1390,32 +1249,12 @@ function InlineCaseRow({
     <LockableValueField
       id={fieldId}
       label={
-        <div className="flex min-w-0 flex-1 items-center">
-          {editingTitle ? (
-            <input
-              ref={titleRef}
-              value={caseTitle}
-              onChange={(event) => onTitleChange(event.target.value)}
-              onBlur={() => setEditingTitle(false)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === 'Escape') setEditingTitle(false);
-              }}
-              className="min-w-0 flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium leading-4 text-foreground outline-none ring-1 ring-brand"
-              autoFocus
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setEditingTitle(true);
-                setTimeout(() => titleRef.current?.select(), 0);
-              }}
-              className="min-w-0 flex-1 truncate rounded px-1 py-0.5 text-left text-xs font-medium leading-4 text-foreground transition hover:bg-surface-overlay"
-            >
-              {caseTitle}
-            </button>
-          )}
-        </div>
+        <EditableText
+          value={caseTitle}
+          onChange={onTitleChange}
+          size="sm"
+          className="min-w-0 flex-1 font-medium text-foreground"
+        />
       }
       value={value}
       onValueChange={setValue}
@@ -2604,8 +2443,6 @@ function LockableCaseRow({
   /** Shows the insertion line below this row (the dragged item would land here). */
   insertAfter?: boolean;
 }) {
-  const [editingTitle, setEditingTitle] = useState(false);
-  const titleRef = useRef<HTMLInputElement>(null);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
   });
@@ -2642,35 +2479,13 @@ function LockableCaseRow({
               >
                 <GripVertical size={12} />
               </button>
-              {editingTitle ? (
-                <input
-                  ref={titleRef}
-                  value={caseTitle}
-                  onChange={(e) => onTitleChange(e.target.value)}
-                  onBlur={() => setEditingTitle(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false);
-                  }}
-                  className="min-w-0 flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
-                  autoFocus
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingTitle(true);
-                    setTimeout(() => titleRef.current?.select(), 0);
-                  }}
-                  title={caseTitle}
-                  className="flex min-w-0 items-center rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
-                >
-                  {/* Single-line header row, so the title ellipsizes. The
-                      indicator sits outside the truncated run so the ellipsis
-                      cannot swallow it. */}
-                  <span className="truncate">{caseTitle}</span>
-                  {required && <RequiredIndicator className="shrink-0" />}
-                </button>
-              )}
+              <EditableText
+                value={caseTitle}
+                onChange={onTitleChange}
+                size="sm"
+                className="min-w-0 flex-1 font-medium text-foreground"
+              />
+              {required && <RequiredIndicator className="shrink-0" />}
             </div>
           }
           headerActions={
@@ -3034,10 +2849,6 @@ export function QuickFormPanel({
   const [formView, setFormView] = useState<'edit' | 'json'>('edit');
   const [formTitle, setFormTitle] = useState('Quick Approve');
   const [formDescription, setFormDescription] = useState('Add a description');
-  const [editingFormTitle, setEditingFormTitle] = useState(false);
-  const [editingFormDescription, setEditingFormDescription] = useState(false);
-  const formTitleRef = useRef<HTMLInputElement>(null);
-  const formDescriptionRef = useRef<HTMLInputElement>(null);
   const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(DEFAULT_LOCKABLE_CASES, null, 2));
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [jsonCopied, setJsonCopied] = useState(false);
@@ -3273,55 +3084,8 @@ export function QuickFormPanel({
                     </HoverCardContent>
                   </HoverCard>
                   <div className="flex min-w-0 flex-1 flex-col justify-center">
-                    {editingFormTitle ? (
-                      <input
-                        ref={formTitleRef}
-                        value={formTitle}
-                        onChange={(e) => setFormTitle(e.target.value)}
-                        onBlur={() => setEditingFormTitle(false)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === 'Escape') setEditingFormTitle(false);
-                        }}
-                        className="rounded bg-surface-overlay px-1 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
-                        autoFocus
-                      />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingFormTitle(true);
-                          setTimeout(() => formTitleRef.current?.select(), 0);
-                        }}
-                        className="truncate rounded px-1 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
-                      >
-                        {formTitle}
-                      </button>
-                    )}
-                    {editingFormDescription ? (
-                      <input
-                        ref={formDescriptionRef}
-                        value={formDescription}
-                        onChange={(e) => setFormDescription(e.target.value)}
-                        onBlur={() => setEditingFormDescription(false)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === 'Escape')
-                            setEditingFormDescription(false);
-                        }}
-                        className="rounded bg-surface-overlay px-1 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
-                        autoFocus
-                      />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingFormDescription(true);
-                          setTimeout(() => formDescriptionRef.current?.select(), 0);
-                        }}
-                        className="truncate rounded px-1 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-                      >
-                        {formDescription}
-                      </button>
-                    )}
+                    <EditableText value={formTitle} onChange={setFormTitle} size="lg" />
+                    <EditableText value={formDescription} onChange={setFormDescription} size="sm" />
                   </div>
                 </div>
                 {formView === 'edit' && (

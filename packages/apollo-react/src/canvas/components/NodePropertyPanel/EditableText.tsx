@@ -66,11 +66,6 @@ export function EditableText({
   const [draft, setDraft] = useState(value);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const readRef = useRef<HTMLButtonElement>(null);
-  /**
-   * Where focus goes once the editor unmounts: the read trigger for Enter/Escape, the element the
-   * user tabbed to otherwise. Without this the focused editor unmounts mid-blur and focus falls to
-   * `document.body`, so the next Tab restarts from the top of the document.
-   */
   const pendingFocus = useRef<HTMLElement | 'read' | null>(null);
   const errorId = `editable-text-${useId().replace(/:/g, '')}-error`;
 
@@ -175,7 +170,7 @@ export function EditableText({
       onKeyDown: handleKeyDown,
       // A click outside leaves `relatedTarget` null: commit, but do not yank focus back.
       onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-        commit((e.relatedTarget as HTMLElement | null) ?? null),
+        commit(e.relatedTarget instanceof HTMLElement ? e.relatedTarget : null),
       className: cn(
         'nodrag nowheel w-full min-w-0 border-none bg-surface-overlay text-foreground outline-none ring-1',
         hasError ? 'ring-error' : 'ring-brand',
