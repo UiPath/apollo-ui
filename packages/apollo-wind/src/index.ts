@@ -313,6 +313,7 @@ export type { PortalContainerProviderProps } from './components/ui/portal-contai
 export { PortalContainerProvider } from './components/ui/portal-container';
 export { Progress } from './components/ui/progress';
 export type {
+  MarkdownPreviewTokenOverride,
   PromptEditorAutoCompleteOption,
   PromptEditorAutocompleteMenuProps,
   PromptEditorDiffType,

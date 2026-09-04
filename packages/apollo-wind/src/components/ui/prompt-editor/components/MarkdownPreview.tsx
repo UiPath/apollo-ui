@@ -40,9 +40,22 @@ const MARKDOWN_PREVIEW_STYLES = `
 .prompt-editor-preview .token-pill svg { display: block; flex-shrink: 0; color: var(--color-info-icon); width: 14px; height: 14px; }
 `;
 
+/** Host override for a variable pill's preview rendering (icon markup and/or label). */
+export interface MarkdownPreviewTokenOverride {
+  /** Raw SVG markup for the leading icon (sanitized through the same DOMPurify allowlist). */
+  iconSvg?: string;
+  /** Label text (HTML-escaped before insertion). Defaults to the token's value. */
+  label?: string;
+}
+
 export interface MarkdownPreviewProps {
   tokens: PromptEditorToken[];
   minRows?: number;
+  /**
+   * Per-token pill override so preview pills can match the host's edit-mode pills (e.g. flow shows
+   * the variable's TYPE icon and `$`-prefixed path, not the token-role icon / raw value).
+   */
+  previewToken?: (token: PromptEditorToken) => MarkdownPreviewTokenOverride | undefined;
 }
 
 /**
@@ -155,14 +168,18 @@ const escapeHtml = (str: string): string =>
  * text is the verbatim `token.value` (full path) so authors always see the path they're referencing;
  * the leading icon is chosen by token type to match what the editor renders in edit mode.
  */
-const tokensToMarkdownWithPills = (tokens: PromptEditorToken[]): string => {
+const tokensToMarkdownWithPills = (
+  tokens: PromptEditorToken[],
+  previewToken?: MarkdownPreviewProps['previewToken']
+): string => {
   let md = '';
   for (const token of tokens) {
     if (token.type === 'text') {
       md += token.value;
     } else {
-      const iconSvg = buildTokenIconSvgMarkup(token.type);
-      md += `<span class="token-pill">${iconSvg}${escapeHtml(token.value)}</span>`;
+      const override = previewToken?.(token);
+      const iconSvg = override?.iconSvg ?? buildTokenIconSvgMarkup(token.type);
+      md += `<span class="token-pill">${iconSvg}${escapeHtml(override?.label ?? token.value)}</span>`;
     }
   }
   return md;
@@ -180,14 +197,14 @@ const EMPTY_MESSAGE = 'Nothing to preview';
  * stale/unknown tokens as invalid — preview does not receive the option set and so does not reflect
  * token validity. Switch to edit mode to see validation state.
  */
-export const MarkdownPreview = ({ tokens, minRows = 4 }: MarkdownPreviewProps) => {
+export const MarkdownPreview = ({ tokens, minRows = 4, previewToken }: MarkdownPreviewProps) => {
   const html = useMemo(() => {
     if (tokens.length === 0)
       return `<p class="prompt-editor-preview-empty">${escapeHtml(EMPTY_MESSAGE)}</p>`;
-    const md = tokensToMarkdownWithPills(tokens);
+    const md = tokensToMarkdownWithPills(tokens, previewToken);
     const rawHtml = marked.parse(md) as string;
     return DOMPurify.sanitize(rawHtml, PURIFY_CONFIG);
-  }, [tokens]);
+  }, [tokens, previewToken]);
 
   return (
     <>

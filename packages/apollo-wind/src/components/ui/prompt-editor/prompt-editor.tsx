@@ -21,7 +21,7 @@ import {
 import { FormFieldError } from '@/components/ui/form-field';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { EditorToolbar } from './components/EditorToolbar';
-import { MarkdownPreview } from './components/MarkdownPreview';
+import { MarkdownPreview, type MarkdownPreviewProps } from './components/MarkdownPreview';
 import type { PromptEditorAutocompleteMenuProps } from './components/PromptEditorAutocompleteMenu';
 import { InputTokenNode, OutputTokenNode, ResourceTokenNode, StateTokenNode } from './nodes';
 import { AutocompletePlugin } from './plugins/AutocompletePlugin';
@@ -134,6 +134,11 @@ export interface PromptEditorProps {
   toolbarTrailing?: React.ReactNode;
   /** Extra Lexical plugins mounted inside the composer (e.g. host-specific drop/replace plugins). */
   children?: React.ReactNode;
+  /**
+   * Per-token pill override for PREVIEW mode, so preview pills can match the host's edit-mode pills
+   * (icon markup and/or label). See {@link MarkdownPreviewTokenOverride}.
+   */
+  previewToken?: MarkdownPreviewProps['previewToken'];
   /**
    * WYSIWYG mode: formatting renders live in the editor (real bold/italic/strike and lists) instead
    * of markdown markers with a separate preview. The `PromptEditorToken[]` contract is unchanged —
@@ -382,9 +387,15 @@ const EditorInner = forwardRef(
       ? autoCompleteOptions
       : EMPTY_AUTOCOMPLETE_OPTIONS;
 
+    // Focus chrome matches apollo's inputs (ring-2 ring-ring + future offset). With a toolbar the
+    // ring lives on the FRAME (outer container) instead — a body-only ring drew its top edge as a
+    // stray line under the toolbar.
+    const shellFocusClasses = showToolbar
+      ? ''
+      : ' focus-within:ring-2 focus-within:ring-ring future:focus-within:ring-offset-2 future:focus-within:ring-offset-background';
     const wrapperClassName = borderless
       ? 'flex flex-col w-full relative'
-      : `prompt-editor-shell flex flex-col w-full relative border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'} ${error ? 'border-error ring-1 ring-error/20 future:ring-error/40' : ''}`;
+      : `prompt-editor-shell flex flex-col w-full relative border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'} ${error ? 'border-error ring-1 ring-error/20 future:ring-error/40' : ''}${shellFocusClasses}`;
 
     return (
       <div
@@ -399,15 +410,6 @@ const EditorInner = forwardRef(
       >
         <style>{`
           .prompt-editor-paragraph { padding: 0; margin: 0; }
-          ${
-            borderless
-              ? ''
-              : showToolbar
-                ? /* Frame focus: one ring around toolbar + body, and both boxes' borders recolored —
-                     a shell-only ring drew its top edge as a stray line under the toolbar. */
-                  '.prompt-editor-frame:not([data-invalid="true"]):focus-within { box-shadow: 0 0 0 1px var(--color-ring); } .prompt-editor-frame:not([data-invalid="true"]):focus-within .prompt-editor-shell, .prompt-editor-frame:not([data-invalid="true"]):focus-within [data-testid="editor-toolbar"] { border-color: var(--color-ring); } .future .prompt-editor-frame:not([data-invalid="true"]):focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ring) 35%, transparent); }'
-                : '.prompt-editor-shell:not([data-invalid="true"]):focus-within { border-color: var(--color-ring); box-shadow: 0 0 0 1px var(--color-ring); } .future .prompt-editor-shell:not([data-invalid="true"]):focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ring) 35%, transparent); }'
-          }
           .prompt-editor-root *::selection { background-color: color-mix(in srgb, var(--color-primary) 30%, transparent); }
           ${
             richText
@@ -571,6 +573,7 @@ export const PromptEditor = ({
   toolbarTrailing,
   children,
   richText: richTextProp,
+  previewToken,
 }: PromptEditorProps) => {
   // Normalize the token-array props once so malformed input (e.g. `{}` from a Storybook object
   // control) can't crash the editor, the preview, or ValueSyncPlugin.
@@ -672,10 +675,9 @@ export const PromptEditor = ({
           // would draw its top edge as a stray line directly under the toolbar.
           className={
             showToolbar && !borderless
-              ? 'prompt-editor-frame rounded-md future:rounded-xl'
+              ? 'prompt-editor-frame rounded-md future:rounded-xl focus-within:ring-2 focus-within:ring-ring future:focus-within:ring-offset-2 future:focus-within:ring-offset-background'
               : undefined
           }
-          data-invalid={showToolbar && !borderless && error ? 'true' : undefined}
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -709,7 +711,11 @@ export const PromptEditor = ({
                   : `border bg-background future:border-0 future:bg-surface-overlay ${showToolbar ? 'border-t-0 rounded-b-md future:rounded-b-xl' : 'rounded-md future:rounded-xl'} ${error ? 'border-error ring-1 ring-error/20 future:ring-error/40' : ''}`
               }
             >
-              <MarkdownPreview tokens={previewTokens} minRows={minRows} />
+              <MarkdownPreview
+                tokens={previewTokens}
+                minRows={minRows}
+                previewToken={previewToken}
+              />
             </div>
           )}
 
