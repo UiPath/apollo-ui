@@ -9,6 +9,20 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { usePromptEditorConfig } from '../prompt-editor-config';
+
+/** Renders the free-form insert label around its `{path}` placeholder (bold path), so verb-last
+ *  languages can order it; a label without `{path}` is treated as a prefix. */
+const renderInsertFreeForm = (label: string, path: string) => {
+  const [before, after = ''] = label.includes('{path}') ? label.split('{path}', 2) : [`${label} `];
+  return (
+    <>
+      {before}
+      <span className="font-medium">{path}</span>
+      {after}
+    </>
+  );
+};
+
 import {
   getPromptEditorTokenTypeLabel,
   type PromptEditorAutoCompleteOption,
@@ -197,7 +211,7 @@ export const PromptEditorAutocompleteMenu = ({
                 <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 <span className="truncate">{option.value}</span>
                 <span className="ml-auto pl-2 text-xs text-muted-foreground">
-                  {getPromptEditorTokenTypeLabel(option.type)}
+                  {getPromptEditorTokenTypeLabel(option.type, strings)}
                 </span>
               </CommandItem>
             );
@@ -208,7 +222,7 @@ export const PromptEditorAutocompleteMenu = ({
             <CommandItem value={freeFormPath} onSelect={() => onCommitFreeForm?.(freeFormPath)}>
               <Variable className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <span className="truncate">
-                {strings.insertFreeForm} <span className="font-medium">{freeFormPath}</span>
+                {renderInsertFreeForm(strings.insertFreeForm, freeFormPath)}
               </span>
             </CommandItem>
           )}

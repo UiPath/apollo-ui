@@ -99,17 +99,29 @@ export const getPromptEditorTokenColors = (): Record<
   },
 });
 
-/** Human-readable label for a token type, used in the chip's hover tooltip. */
-export const getPromptEditorTokenTypeLabel = (type: PromptEditorTokenType): string => {
+/** The token-type label subset of `PromptEditorStrings` (structural, to avoid a config↔types cycle). */
+export interface PromptEditorTokenTypeLabels {
+  tokenTypeInput: string;
+  tokenTypeOutput: string;
+  tokenTypeState: string;
+  tokenTypeResource: string;
+}
+
+/** Human-readable label for a token type, used in the chip's hover tooltip. Pass the editor's
+ *  `strings` to localize; the English defaults apply otherwise. */
+export const getPromptEditorTokenTypeLabel = (
+  type: PromptEditorTokenType,
+  labels?: PromptEditorTokenTypeLabels
+): string => {
   switch (type) {
     case 'input':
-      return 'Input variable';
+      return labels?.tokenTypeInput ?? 'Input variable';
     case 'output':
-      return 'Output variable';
+      return labels?.tokenTypeOutput ?? 'Output variable';
     case 'state':
-      return 'State variable';
+      return labels?.tokenTypeState ?? 'State variable';
     case 'resource':
-      return 'Resource';
+      return labels?.tokenTypeResource ?? 'Resource';
     default:
       return 'Text';
   }

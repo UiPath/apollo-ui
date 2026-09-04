@@ -1,5 +1,6 @@
 import { Database, Paperclip, SquareFunction, Variable } from 'lucide-react';
 import { memo } from 'react';
+import { usePromptEditorConfig } from '../prompt-editor-config';
 import type { PromptEditorDiffType, PromptEditorTokenType } from '../types';
 import { getPromptEditorTokenColors } from '../types';
 
@@ -39,6 +40,7 @@ const TokenPillBase = ({
   isSelected,
   onMouseDown,
 }: TokenPillProps) => {
+  const { strings } = usePromptEditorConfig();
   const PROMPT_EDITOR_TOKEN_COLORS = getPromptEditorTokenColors();
   const colors =
     isInvalid && !diffType ? PROMPT_EDITOR_TOKEN_COLORS.invalid : PROMPT_EDITOR_TOKEN_COLORS.valid;
@@ -92,7 +94,7 @@ const TokenPillBase = ({
       {!readonly && (
         <button
           type="button"
-          aria-label="Remove token"
+          aria-label={strings.removeToken}
           className="inline-flex items-center justify-center p-px border-0 bg-transparent cursor-pointer rounded-[2px] w-4 h-4"
           style={{ color: colors.text }}
           onMouseDown={handleRemoveMouseDown}

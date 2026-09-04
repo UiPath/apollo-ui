@@ -3,6 +3,7 @@ import { useLexicalNodeSelection } from '@lexical/react/useLexicalNodeSelection'
 import { $createNodeSelection, $setSelection, type NodeKey } from 'lexical';
 import { useCallback, useMemo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { usePromptEditorConfig } from '../prompt-editor-config';
 import { getPromptEditorTokenTypeLabel } from '../types';
 import { TokenPill, type TokenPillProps } from './TokenPill';
 
@@ -21,7 +22,8 @@ export const TokenPillWithTooltip = ({ nodeKey, ...props }: TokenPillWithTooltip
   // Pull primitives off props so the memo deps below stay stable (a fresh `props` bag is created on
   // every parent render even when its contents are unchanged).
   const { value: pillValue, tokenType, readonly, diffType, isInvalid, onRemove } = props;
-  const typeLabel = getPromptEditorTokenTypeLabel(tokenType);
+  const { strings } = usePromptEditorConfig();
+  const typeLabel = getPromptEditorTokenTypeLabel(tokenType, strings);
 
   const [editor] = useLexicalComposerContext();
   // Only `isSelected` from the hook — its `setSelected(true)` *adds* to the current NodeSelection,

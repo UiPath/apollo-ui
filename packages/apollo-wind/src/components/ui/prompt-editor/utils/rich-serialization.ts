@@ -16,7 +16,7 @@ import {
 } from '@lexical/markdown';
 import { $getRoot, createEditor, type TextNode } from 'lexical';
 import { InputTokenNode, OutputTokenNode, ResourceTokenNode, StateTokenNode } from '../nodes';
-import { isPromptTokenNode } from '../plugins/shared/token-nodes';
+import { isPromptTokenNode, NODE_TYPE_TO_TOKEN_TYPE } from '../plugins/shared/token-nodes';
 import type { PromptEditorToken, PromptEditorTokenType } from '../types';
 import { createTokenNodeForOption } from './insert-token';
 import { WORD_JOINER } from './serialization';
@@ -92,11 +92,12 @@ function createPillExportTransformer(pills: PillRef[]): TextMatchTransformer {
       if (!isPromptTokenNode(node)) {
         return null;
       }
+      const type = NODE_TYPE_TO_TOKEN_TYPE[node.getType()];
+      if (!type) {
+        return null;
+      }
       const index = pills.length;
-      pills.push({
-        type: node.getType().replace('-token', '') as PillRef['type'],
-        value: node.getValue(),
-      });
+      pills.push({ type, value: node.getValue() });
       return `${PILL_SENTINEL_START}${index}${PILL_SENTINEL_END}`;
     },
     type: 'text-match',

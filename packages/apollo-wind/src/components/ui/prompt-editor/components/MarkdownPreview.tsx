@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
 import { Marked } from 'marked';
 import { useMemo } from 'react';
+import { usePromptEditorConfig } from '../prompt-editor-config';
 import { type PromptEditorToken } from '../types';
 import { buildTokenIconSvgMarkup } from './token-icon-markup';
 
@@ -187,7 +188,6 @@ const tokensToMarkdownWithPills = (
 
 const LINE_HEIGHT = 20;
 const VERTICAL_PADDING = 8;
-const EMPTY_MESSAGE = 'Nothing to preview';
 
 /**
  * Renders the prompt tokens as sanitized markdown for preview mode.
@@ -198,13 +198,15 @@ const EMPTY_MESSAGE = 'Nothing to preview';
  * token validity. Switch to edit mode to see validation state.
  */
 export const MarkdownPreview = ({ tokens, minRows = 4, previewToken }: MarkdownPreviewProps) => {
+  const { strings } = usePromptEditorConfig();
+  const emptyMessage = strings.nothingToPreview;
   const html = useMemo(() => {
     if (tokens.length === 0)
-      return `<p class="prompt-editor-preview-empty">${escapeHtml(EMPTY_MESSAGE)}</p>`;
+      return `<p class="prompt-editor-preview-empty">${escapeHtml(emptyMessage)}</p>`;
     const md = tokensToMarkdownWithPills(tokens, previewToken);
     const rawHtml = marked.parse(md) as string;
     return DOMPurify.sanitize(rawHtml, PURIFY_CONFIG);
-  }, [tokens, previewToken]);
+  }, [tokens, previewToken, emptyMessage]);
 
   return (
     <>
