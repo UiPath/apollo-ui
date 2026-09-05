@@ -17,6 +17,8 @@
   "autopilot-chat.message.actions.copy": "コピー",
   "autopilot-chat.message.code-block-copy": "コピー",
   "autopilot-chat.history.delete": "削除",
+  "autopilot-chat.history.rename": "チャットの名前を変更",
+  "autopilot-chat.history.rename-input": "チャット名",
   "autopilot-chat.dropzone.overlay-title": "ここにファイルをドロップして、プロンプトに追加します。",
   "autopilot-chat.message.expand": "展開",
   "autopilot-chat.header.actions.expand": "展開",

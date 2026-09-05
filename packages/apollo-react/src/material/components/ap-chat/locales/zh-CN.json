@@ -17,6 +17,8 @@
   "autopilot-chat.message.actions.copy": "复制",
   "autopilot-chat.message.code-block-copy": "复制",
   "autopilot-chat.history.delete": "删除",
+  "autopilot-chat.history.rename": "重命名聊天",
+  "autopilot-chat.history.rename-input": "聊天名称",
   "autopilot-chat.dropzone.overlay-title": "将文件拖放到此处，以将其添加到提示中",
   "autopilot-chat.message.expand": "展开",
   "autopilot-chat.header.actions.expand": "展开",
