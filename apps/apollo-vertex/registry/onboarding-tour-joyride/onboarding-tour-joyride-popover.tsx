@@ -6,6 +6,7 @@ import { useId } from "react";
 import type { TooltipRenderProps } from "react-joyride";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AiGlow } from "@/registry/ai-glow/ai-glow";
 
 interface OnboardingTourJoyridePopoverData {
   /** Step title */
@@ -86,14 +87,7 @@ function OnboardingTourJoyridePopoverCard({
       {...rootProps}
       className={cn("relative", className)}
     >
-      {/* Gradient glow background */}
-      <div
-        className="absolute inset-0 rounded-xl pointer-events-none blur-xl"
-        style={{
-          background:
-            "linear-gradient(112.44deg, rgba(108, 90, 239, 0.2) 31.16%, rgba(18, 203, 123, 0.1) 106.82%)",
-        }}
-      />
+      <AiGlow />
 
       <div
         className="relative w-full max-w-[360px] bg-card rounded-xl border border-border shadow-lg p-5"
