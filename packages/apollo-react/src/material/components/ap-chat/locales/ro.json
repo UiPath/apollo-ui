@@ -17,6 +17,8 @@
   "autopilot-chat.message.actions.copy": "Copiază",
   "autopilot-chat.message.code-block-copy": "Copiază",
   "autopilot-chat.history.delete": "Ștergeți",
+  "autopilot-chat.history.rename": "Redenumește chatul",
+  "autopilot-chat.history.rename-input": "Nume chat",
   "autopilot-chat.dropzone.overlay-title": "Lasă fișierele aici pentru a le adăuga la promptul tău",
   "autopilot-chat.message.expand": "Extinde",
   "autopilot-chat.header.actions.expand": "Extinde",

@@ -17,6 +17,8 @@
   "autopilot-chat.message.actions.copy": "Kopyala",
   "autopilot-chat.message.code-block-copy": "Kopyala",
   "autopilot-chat.history.delete": "Sil",
+  "autopilot-chat.history.rename": "Sohbeti yeniden adlandır",
+  "autopilot-chat.history.rename-input": "Sohbet Adı",
   "autopilot-chat.dropzone.overlay-title": "Dosyalarınızı isteminize eklemek için buraya bırakın",
   "autopilot-chat.message.expand": "Genişlet",
   "autopilot-chat.header.actions.expand": "Genişlet",
