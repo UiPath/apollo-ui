@@ -17,6 +17,8 @@
   "autopilot-chat.message.actions.copy": "복사",
   "autopilot-chat.message.code-block-copy": "복사",
   "autopilot-chat.history.delete": "삭제",
+  "autopilot-chat.history.rename": "채팅 이름 바꾸기",
+  "autopilot-chat.history.rename-input": "채팅 이름",
   "autopilot-chat.dropzone.overlay-title": "파일을 여기에 끌어다 놓아 프롬프트에 추가하십시오",
   "autopilot-chat.message.expand": "확장",
   "autopilot-chat.header.actions.expand": "확장",
