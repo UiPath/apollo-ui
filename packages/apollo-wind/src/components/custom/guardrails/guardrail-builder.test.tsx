@@ -959,3 +959,38 @@ describe('GuardrailBuilder', () => {
     });
   });
 });
+
+describe('renderParameter passthrough', () => {
+  it('forwards renderParameter to the internal validator form', () => {
+    const def = makeDef({
+      parameters: [
+        {
+          id: 'model',
+          type: 'enum',
+          label: 'Judge model',
+          required: true,
+          defaultValue: '',
+          options: ['gpt-4o'],
+        },
+      ],
+    });
+
+    render(
+      <GuardrailBuilder
+        open
+        inline
+        definition={def}
+        scope="Agent"
+        onSave={() => {}}
+        onCancel={() => {}}
+        renderParameter={(ctx) =>
+          ctx.definition.id === 'model' ? <div data-testid="host-picker" /> : undefined
+        }
+      />
+    );
+
+    expect(screen.getByTestId('host-picker')).toBeInTheDocument();
+    // The default enum select for the overridden parameter must not render.
+    expect(screen.queryByRole('combobox', { name: /Judge model/ })).not.toBeInTheDocument();
+  });
+});

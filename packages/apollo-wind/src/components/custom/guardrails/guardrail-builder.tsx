@@ -37,6 +37,7 @@ import {
   resolveGuardrailBuilderLabels,
 } from './i18n';
 import { loadGuardrailMessages } from './load-messages';
+import type { GuardrailValidatorFormProps } from './types';
 import {
   dropEmptyOptionalParameters,
   getRequiredEmptyParameterIds,
@@ -84,6 +85,11 @@ export interface GuardrailBuilderProps {
    * Host errors display immediately and gate Save like internal ones.
    */
   errors?: Partial<GuardrailBuilderErrors>;
+  /**
+   * Forwarded to the internal `GuardrailValidatorForm`: replace the editor for individual
+   * validator parameters (e.g. mounting a product model picker for a judge-model parameter).
+   */
+  renderParameter?: GuardrailValidatorFormProps['renderParameter'];
   /** Locale for the builder's own strings; loads the built-in catalog, English fallback per key. */
   locale?: string;
   labels?: Partial<GuardrailBuilderLabels>;
@@ -146,6 +152,7 @@ export function GuardrailBuilder({
   renderAppPicker,
   escalateHelp,
   errors: hostErrors,
+  renderParameter,
   locale,
   labels: labelOverrides,
   className,
@@ -365,6 +372,7 @@ export function GuardrailBuilder({
             parameters={formData.validatorParameters}
             onChange={(params) => updateField('validatorParameters', params)}
             errors={validatorFormErrors}
+            renderParameter={renderParameter}
             locale={locale}
           />
         </div>
