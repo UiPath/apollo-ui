@@ -110,6 +110,7 @@ export type {
   FormSchema,
   FormSection,
   FormStep,
+  StringListFieldMetadata,
 } from './components/forms/form-schema';
 export {
   hasMinMaxStep,
@@ -317,6 +318,8 @@ export {
   HoverCardContent,
   HoverCardTrigger,
 } from './components/ui/hover-card';
+export type { InfoTooltipProps } from './components/ui/info-tooltip';
+export { InfoTooltip } from './components/ui/info-tooltip';
 export type { InputProps } from './components/ui/input';
 // -----------------------------------------------------------------------------
 // Form Input Components

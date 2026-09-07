@@ -963,3 +963,279 @@ describe('MetadataForm', () => {
     });
   });
 });
+
+// ============================================================================
+// Controlled host seam (values / onValuesChange / errors / disableValidation /
+// components / container)
+// ============================================================================
+
+describe('controlled host seam', () => {
+  const controlledSchema: FormSchema = {
+    id: 'controlled-form',
+    title: '',
+    actions: [],
+    sections: [
+      {
+        id: 'main',
+        fields: [
+          { name: 'alpha', type: 'text', label: 'Alpha', defaultValue: '' },
+          { name: 'beta', type: 'text', label: 'Beta', defaultValue: '' },
+        ],
+      },
+    ],
+  };
+
+  it('emits onValuesChange with the full record and changed field on every user edit', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+
+    render(
+      <MetadataForm
+        schema={controlledSchema}
+        onValuesChange={onValuesChange}
+        disableValidation
+        container="div"
+      />
+    );
+
+    await user.type(screen.getByLabelText('Alpha'), 'x');
+    expect(onValuesChange).toHaveBeenCalledWith({ alpha: 'x', beta: '' }, 'alpha');
+  });
+
+  it('syncs external values in per field and treats an identical echo as a no-op', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+
+    const { rerender } = render(
+      <MetadataForm
+        schema={controlledSchema}
+        values={{ alpha: '', beta: '' }}
+        onValuesChange={onValuesChange}
+        disableValidation
+        container="div"
+      />
+    );
+
+    const alpha = screen.getByLabelText('Alpha');
+    await user.type(alpha, 'x');
+    expect(onValuesChange).toHaveBeenCalledTimes(1);
+    expect(alpha).toHaveFocus();
+
+    // Host echoes the emitted record back — no re-emission, focus untouched.
+    rerender(
+      <MetadataForm
+        schema={controlledSchema}
+        values={{ alpha: 'x', beta: '' }}
+        onValuesChange={onValuesChange}
+        disableValidation
+        container="div"
+      />
+    );
+    expect(onValuesChange).toHaveBeenCalledTimes(1);
+    expect(alpha).toHaveFocus();
+    expect(alpha).toHaveValue('x');
+
+    // A genuinely different external value updates the field without emitting.
+    rerender(
+      <MetadataForm
+        schema={controlledSchema}
+        values={{ alpha: 'x', beta: 'external' }}
+        onValuesChange={onValuesChange}
+        disableValidation
+        container="div"
+      />
+    );
+    expect(screen.getByLabelText('Beta')).toHaveValue('external');
+    expect(onValuesChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows host-supplied errors, keeps them through typing, and clears them only via the prop', async () => {
+    const user = userEvent.setup();
+
+    const { rerender } = render(
+      <MetadataForm
+        schema={controlledSchema}
+        errors={{ alpha: 'Host says no' }}
+        disableValidation
+        container="div"
+      />
+    );
+
+    expect(screen.getByText('Host says no')).toBeInTheDocument();
+
+    // Typing does not self-clear an external error — the prop owns it.
+    await user.type(screen.getByLabelText('Alpha'), 'y');
+    expect(screen.getByText('Host says no')).toBeInTheDocument();
+
+    rerender(
+      <MetadataForm schema={controlledSchema} errors={{}} disableValidation container="div" />
+    );
+    expect(screen.queryByText('Host says no')).not.toBeInTheDocument();
+  });
+
+  it('disableValidation removes the resolver so submit succeeds despite required config', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+
+    const schema: FormSchema = {
+      id: 'no-validation',
+      title: '',
+      sections: [
+        {
+          id: 'main',
+          fields: [
+            {
+              name: 'must',
+              type: 'text',
+              label: 'Must',
+              validation: { required: true },
+              defaultValue: '',
+            },
+          ],
+        },
+      ],
+    };
+
+    render(<MetadataForm schema={schema} onSubmit={onSubmit} disableValidation />);
+
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ must: '' }));
+  });
+
+  it('renders components-prop custom fields on the first paint (synchronously)', () => {
+    const schema: FormSchema = {
+      id: 'custom-form',
+      title: '',
+      actions: [],
+      sections: [
+        {
+          id: 'main',
+          fields: [{ name: 'special', type: 'custom', label: 'Special', component: 'my-widget' }],
+        },
+      ],
+    };
+
+    render(
+      <MetadataForm
+        schema={schema}
+        components={{
+          'my-widget': ({ name }) => <div data-testid="my-widget">{name}</div>,
+        }}
+        disableValidation
+        container="div"
+      />
+    );
+
+    // Synchronous assertion on purpose: plugin-registered components only appear after the
+    // async init effect, which broke first-paint rendering before the `components` prop.
+    expect(screen.getByTestId('my-widget')).toHaveTextContent('special');
+  });
+
+  it("container='div' renders no form element and no phantom submit button", () => {
+    const { container } = render(
+      <MetadataForm schema={basicSchema} disableValidation container="div" />
+    );
+
+    expect(container.querySelector('form')).toBeNull();
+    expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument();
+  });
+});
+
+// ============================================================================
+// string-list field type
+// ============================================================================
+
+describe('string-list field', () => {
+  const stringListSchema: FormSchema = {
+    id: 'string-list-form',
+    title: '',
+    actions: [],
+    sections: [
+      {
+        id: 'main',
+        fields: [
+          {
+            name: 'phrases',
+            type: 'string-list',
+            label: 'Phrases',
+            defaultValue: ['first'],
+            maxItems: 2,
+            maxLength: 50,
+            addItemLabel: 'Add phrase',
+            removeItemAriaLabel: 'Remove {{label}} {{position}}',
+          },
+        ],
+      },
+    ],
+  };
+
+  it('renders rows from the value and appends an empty row on Add', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+
+    render(
+      <MetadataForm
+        schema={stringListSchema}
+        onValuesChange={onValuesChange}
+        disableValidation
+        container="div"
+      />
+    );
+
+    expect(screen.getByLabelText('Phrases 1')).toHaveValue('first');
+
+    await user.click(screen.getByRole('button', { name: 'Add phrase' }));
+    expect(onValuesChange).toHaveBeenCalledWith({ phrases: ['first', ''] }, 'phrases');
+
+    // maxItems reached (2 rows) — the Add button hides.
+    expect(screen.queryByRole('button', { name: 'Add phrase' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Phrases 2')).toHaveValue('');
+  });
+
+  it('edits one row without touching siblings and removes by index', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+
+    render(
+      <MetadataForm
+        schema={{
+          ...stringListSchema,
+          sections: [
+            {
+              id: 'main',
+              fields: [
+                {
+                  name: 'phrases',
+                  type: 'string-list',
+                  label: 'Phrases',
+                  defaultValue: ['one', 'two'],
+                },
+              ],
+            },
+          ],
+        }}
+        onValuesChange={onValuesChange}
+        disableValidation
+        container="div"
+      />
+    );
+
+    await user.type(screen.getByLabelText('Phrases 2'), '!');
+    expect(onValuesChange).toHaveBeenLastCalledWith({ phrases: ['one', 'two!'] }, 'phrases');
+
+    await user.click(screen.getByRole('button', { name: 'Remove Phrases 1' }));
+    expect(onValuesChange).toHaveBeenLastCalledWith({ phrases: ['two!'] }, 'phrases');
+  });
+
+  it('applies the per-row maxLength cap', () => {
+    render(<MetadataForm schema={stringListSchema} disableValidation container="div" />);
+    expect(screen.getByLabelText('Phrases 1')).toHaveAttribute('maxlength', '50');
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <MetadataForm schema={stringListSchema} disableValidation container="div" />
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});

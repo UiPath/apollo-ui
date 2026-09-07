@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ValidationConfig, FieldType } from './form-schema';
+import type { FieldType, ValidationConfig } from './form-schema';
 
 /**
  * Validation Converter
@@ -79,6 +79,7 @@ function getBaseSchemaForType(fieldType: FieldType): z.ZodTypeAny {
       return z.string();
 
     case 'multiselect':
+    case 'string-list':
       return z.array(z.string());
 
     case 'date':
@@ -117,7 +118,7 @@ function isNumberType(fieldType: FieldType): boolean {
  * Check if field type uses array schema
  */
 function isArrayType(fieldType: FieldType): boolean {
-  return ['multiselect'].includes(fieldType);
+  return ['multiselect', 'string-list'].includes(fieldType);
 }
 
 /**
