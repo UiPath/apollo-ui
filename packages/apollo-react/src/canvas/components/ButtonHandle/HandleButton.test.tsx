@@ -291,4 +291,33 @@ describe('HandleButton mount & label visibility', () => {
     expect(button).toHaveAttribute('aria-label', 'Add node from Escalations handle');
     expect(button).toHaveAttribute('aria-hidden', 'true');
   });
+
+  it('names the add button after ariaLabel when a caller already renders its own visual label', () => {
+    // Inward handles (ButtonHandle.tsx) render their own adjacent label via
+    // InwardHandleContent, so they pass ariaLabel instead of label — this must
+    // still produce the specific accessible name without rendering a second,
+    // duplicate visual label from HandleButton's own InlineLabel.
+    render(
+      <HandleButton visible position={Position.Top} onAction={vi.fn()} ariaLabel="Escalations" />
+    );
+    expect(
+      screen.getByRole('button', { name: 'Add node from Escalations handle' })
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Escalations')).toBeNull();
+  });
+
+  it('prefers ariaLabel over label when both are given', () => {
+    render(
+      <HandleButton
+        visible
+        position={Position.Top}
+        onAction={vi.fn()}
+        label="Tools"
+        ariaLabel="Escalations"
+      />
+    );
+    expect(
+      screen.getByRole('button', { name: 'Add node from Escalations handle' })
+    ).toBeInTheDocument();
+  });
 });
