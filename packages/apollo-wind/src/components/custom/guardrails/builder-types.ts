@@ -76,7 +76,7 @@ export interface GuardrailDefinition {
   parameters: GuardrailParameterDefinition[];
   status: GuardrailDefinitionStatus;
   /** Pre-localized informational note rendered above the form. */
-  usageNote?: string;
+  usageNote?: React.ReactNode;
   /** Present for bring-your-own guardrail definitions; stamped onto saved values. */
   byoValidatorName?: string;
 }
