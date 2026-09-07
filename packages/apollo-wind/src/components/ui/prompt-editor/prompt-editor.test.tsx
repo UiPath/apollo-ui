@@ -37,11 +37,11 @@ describe('PromptEditor', () => {
   describe('rendering', () => {
     it('tags the placeholder with a stable slot for host styling', () => {
       render(<PromptEditor placeholder="Type here…" ariaLabel="Prompt" />);
-      const slot = document.querySelector('[data-slot="prompt-editor-placeholder"]');
-      expect(slot).not.toBeNull();
-      expect(slot?.textContent).toBe('Type here…');
+      expect(screen.getByText('Type here…')).toHaveAttribute(
+        'data-slot',
+        'prompt-editor-placeholder'
+      );
     });
-
 
     it('renders an editable textbox with the given aria-label', () => {
       render(<PromptEditor ariaLabel="Prompt" />);
