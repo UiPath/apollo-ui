@@ -13,6 +13,7 @@ export type {
   GuardrailScope,
   GuardrailSelector,
   GuardrailSeverityLevel,
+  GuardrailStaticRecipientContext,
 } from './builder-types';
 export {
   GUARDRAIL_BYO_VALIDATOR_TYPE,

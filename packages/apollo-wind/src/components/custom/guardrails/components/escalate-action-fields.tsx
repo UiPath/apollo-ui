@@ -17,6 +17,7 @@ import {
   type GuardrailEscalateRecipient,
   type GuardrailRecipientSearchContext,
   GuardrailRecipientType,
+  type GuardrailStaticRecipientContext,
 } from '../builder-types';
 import type { GuardrailBuilderLabels } from '../i18n';
 
@@ -30,6 +31,7 @@ export interface EscalateActionFieldsProps {
   errors?: { recipient?: string; actionApp?: string };
   labels: GuardrailBuilderLabels;
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
+  renderStaticRecipient?: (ctx: GuardrailStaticRecipientContext) => ReactNode | undefined;
   renderAppPicker?: (ctx: GuardrailAppPickerContext) => ReactNode;
   /** Rendered under the escalation grid (e.g. a marketplace help line). */
   escalateHelp?: ReactNode;
@@ -47,6 +49,7 @@ export function EscalateActionFields({
   errors,
   labels,
   renderRecipientSearch,
+  renderStaticRecipient,
   renderAppPicker,
   escalateHelp,
 }: EscalateActionFieldsProps) {
@@ -58,6 +61,14 @@ export function EscalateActionFields({
   };
 
   const recipientType = action.recipient.type;
+  // The type select offers the four base entries; asset variants (a host-slot concern)
+  // display as their static siblings so the selection never blanks.
+  const displayedRecipientType =
+    recipientType === GuardrailRecipientType.AssetEmail
+      ? GuardrailRecipientType.StaticEmail
+      : recipientType === GuardrailRecipientType.AssetGroupName
+        ? GuardrailRecipientType.StaticGroupName
+        : recipientType;
 
   const handleRecipientTypeChange = useCallback(
     (value: string) => {
@@ -111,12 +122,18 @@ export function EscalateActionFields({
         r.type === GuardrailRecipientType.StaticGroupName
       ) {
         onChange({ ...action, recipient: { ...r, value } });
+      } else if (
+        r.type === GuardrailRecipientType.AssetEmail ||
+        r.type === GuardrailRecipientType.AssetGroupName
+      ) {
+        onChange({ ...action, recipient: { ...r, assetName: value } });
       }
     },
     [action, onChange]
   );
 
-  const recipientValue = 'value' in action.recipient ? action.recipient.value : '';
+  const recipientValue =
+    'value' in action.recipient ? action.recipient.value : action.recipient.assetName;
   const recipientDisplayValue =
     ('displayName' in action.recipient ? action.recipient.displayName : '') || recipientValue;
   const isSearchable =
@@ -137,10 +154,10 @@ export function EscalateActionFields({
       {/* Recipient type */}
       <FormField>
         <Label htmlFor="escalate-recipient-type">{labels.assignToLabel}</Label>
-        <Select value={String(recipientType)} onValueChange={handleRecipientTypeChange}>
+        <Select value={String(displayedRecipientType)} onValueChange={handleRecipientTypeChange}>
           <SelectTrigger
             id="escalate-recipient-type"
-            aria-label={`${labels.assignToLabel}: ${recipientTypeLabels[recipientType] ?? labels.recipientFallbackLabel}`}
+            aria-label={`${labels.assignToLabel}: ${recipientTypeLabels[displayedRecipientType] ?? labels.recipientFallbackLabel}`}
           >
             <SelectValue />
           </SelectTrigger>
@@ -157,7 +174,7 @@ export function EscalateActionFields({
       {/* Recipient value */}
       <FormField>
         <Label>
-          {recipientTypeLabels[recipientType] ?? labels.recipientFallbackLabel}
+          {recipientTypeLabels[displayedRecipientType] ?? labels.recipientFallbackLabel}
           <RequiredIndicator />
         </Label>
         {isSearchable ? (
@@ -185,16 +202,39 @@ export function EscalateActionFields({
             <FormFieldError>{errors?.recipient}</FormFieldError>
           </>
         ) : (
-          <Input
-            value={recipientValue}
-            onChange={(e) => handleTextValueChange(e.target.value)}
-            placeholder={
-              recipientType === GuardrailRecipientType.StaticEmail
-                ? labels.emailPlaceholder
-                : labels.groupNamePlaceholder
+          (() => {
+            const staticNode = renderStaticRecipient?.({
+              kind:
+                displayedRecipientType === GuardrailRecipientType.StaticEmail
+                  ? 'email'
+                  : 'groupName',
+              recipient: action.recipient,
+              label: recipientTypeLabels[displayedRecipientType] ?? labels.recipientFallbackLabel,
+              invalid: Boolean(errors?.recipient),
+              error: errors?.recipient,
+              onChange: (recipient) => onChange({ ...action, recipient }),
+            });
+            if (staticNode !== undefined) {
+              return (
+                <>
+                  {staticNode}
+                  <FormFieldError>{errors?.recipient}</FormFieldError>
+                </>
+              );
             }
-            error={errors?.recipient}
-          />
+            return (
+              <Input
+                value={recipientValue}
+                onChange={(e) => handleTextValueChange(e.target.value)}
+                placeholder={
+                  displayedRecipientType === GuardrailRecipientType.StaticEmail
+                    ? labels.emailPlaceholder
+                    : labels.groupNamePlaceholder
+                }
+                error={errors?.recipient}
+              />
+            );
+          })()
         )}
       </FormField>
 

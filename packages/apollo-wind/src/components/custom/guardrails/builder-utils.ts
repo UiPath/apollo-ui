@@ -47,8 +47,12 @@ export function getGuardrailActionErrorFields(
       if (action.fields.length === 0) fields.push('filterFields');
       break;
     case 'escalate': {
-      if (!('value' in action.recipient) || !action.recipient.value.trim())
-        fields.push('recipient');
+      const recipient = action.recipient;
+      const filled =
+        'value' in recipient
+          ? recipient.value.trim().length > 0
+          : recipient.assetName.trim().length > 0;
+      if (!filled) fields.push('recipient');
       if (!action.app.id) fields.push('actionApp');
       break;
     }

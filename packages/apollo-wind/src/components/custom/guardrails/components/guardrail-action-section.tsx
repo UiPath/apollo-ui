@@ -13,6 +13,7 @@ import type {
   GuardrailAction,
   GuardrailAppPickerContext,
   GuardrailRecipientSearchContext,
+  GuardrailStaticRecipientContext,
 } from '../builder-types';
 import { createDefaultGuardrailAction } from '../builder-utils';
 import type { GuardrailBuilderLabels } from '../i18n';
@@ -28,6 +29,7 @@ export interface GuardrailActionSectionProps {
   errors?: { blockReason?: string; filterFields?: string; recipient?: string; actionApp?: string };
   labels: GuardrailBuilderLabels;
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
+  renderStaticRecipient?: (ctx: GuardrailStaticRecipientContext) => ReactNode | undefined;
   renderAppPicker?: (ctx: GuardrailAppPickerContext) => ReactNode;
   escalateHelp?: ReactNode;
 }
@@ -45,6 +47,7 @@ export function GuardrailActionSection({
   errors,
   labels,
   renderRecipientSearch,
+  renderStaticRecipient,
   renderAppPicker,
   escalateHelp,
 }: GuardrailActionSectionProps) {
@@ -82,6 +85,7 @@ export function GuardrailActionSection({
         errors={errors}
         labels={labels}
         renderRecipientSearch={renderRecipientSearch}
+        renderStaticRecipient={renderStaticRecipient}
         renderAppPicker={renderAppPicker}
         escalateHelp={escalateHelp}
       />

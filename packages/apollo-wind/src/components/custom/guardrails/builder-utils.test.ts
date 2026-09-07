@@ -76,13 +76,13 @@ describe('getGuardrailActionErrorFields', () => {
     expect(getGuardrailActionErrorFields(filled)).toEqual([]);
   });
 
-  it('treats an asset recipient (no value field) as missing', () => {
+  it('treats a filled asset recipient as valid (validated on assetName)', () => {
     const assetRecipient: GuardrailAction = {
       $actionType: 'escalate',
       app: { id: 'app-1', version: '1', name: 'App' },
       recipient: { type: GuardrailRecipientType.AssetEmail, assetName: 'asset' },
     };
-    expect(getGuardrailActionErrorFields(assetRecipient)).toEqual(['recipient']);
+    expect(getGuardrailActionErrorFields(assetRecipient)).toEqual([]);
   });
 
   it('never flags a log action', () => {
@@ -109,6 +109,27 @@ describe('getGuardrailSelectorErrorFields', () => {
 
   it('accepts non-Tool scopes without matchNames', () => {
     expect(getGuardrailSelectorErrorFields({ scopes: ['Agent', 'Llm'] })).toEqual([]);
+  });
+});
+
+describe('getGuardrailActionErrorFields — asset recipients', () => {
+  it('treats a filled assetName as a valid recipient and an empty one as invalid', () => {
+    const base = {
+      $actionType: 'escalate' as const,
+      app: { id: 'app1', version: '1', name: 'App' },
+    };
+    expect(
+      getGuardrailActionErrorFields({
+        ...base,
+        recipient: { type: GuardrailRecipientType.AssetEmail, assetName: 'EmailAsset' },
+      })
+    ).toEqual([]);
+    expect(
+      getGuardrailActionErrorFields({
+        ...base,
+        recipient: { type: GuardrailRecipientType.AssetGroupName, assetName: '  ' },
+      })
+    ).toEqual(['recipient']);
   });
 });
 

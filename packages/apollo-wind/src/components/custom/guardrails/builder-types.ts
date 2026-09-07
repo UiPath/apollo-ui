@@ -138,9 +138,38 @@ export interface GuardrailAppPickerContext {
   error?: string;
 }
 
+/**
+ * Context handed to the `renderStaticRecipient` slot (StaticEmail/AssetEmail/StaticGroupName/
+ * AssetGroupName recipients).
+ */
+export interface GuardrailStaticRecipientContext {
+  /** Which recipient family the type select currently shows. */
+  kind: 'email' | 'groupName';
+  /** The current recipient — the static or asset variant of the kind. */
+  recipient: GuardrailEscalateRecipient;
+  /** Localized field label for the kind. */
+  label: string;
+  /** Whether the recipient currently fails validation (style the control accordingly). */
+  invalid: boolean;
+  /** Validation message to surface, if any. */
+  error?: string;
+  /**
+   * Replace the recipient wholesale — lets hosts toggle between the static and asset
+   * variants of the same kind (StaticEmail 3 ↔ AssetEmail 4, StaticGroupName 5 ↔
+   * AssetGroupName 6).
+   */
+  onChange: (recipient: GuardrailEscalateRecipient) => void;
+}
+
 export interface GuardrailBuilderSlots {
   /** Replace the recipient autosuggest for User/Group recipients. Fallback: a plain input. */
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => React.ReactNode;
+  /**
+   * Replace the editor for static/asset recipients (types 3/4/5/6). Return `undefined` to
+   * fall through to the built-in plain input (which edits `value` for static recipients and
+   * `assetName` for asset ones).
+   */
+  renderStaticRecipient?: (ctx: GuardrailStaticRecipientContext) => React.ReactNode | undefined;
   /** Render the escalation app picker. Fallback: a localized "picker unavailable" note. */
   renderAppPicker?: (ctx: GuardrailAppPickerContext) => React.ReactNode;
   /** Rendered under the escalation grid (e.g. a marketplace help line). */

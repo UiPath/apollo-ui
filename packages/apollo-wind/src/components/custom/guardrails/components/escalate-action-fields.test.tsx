@@ -194,3 +194,116 @@ describe('EscalateActionFields', () => {
     expect(results).toHaveNoViolations();
   });
 });
+
+describe('renderStaticRecipient slot', () => {
+  it('mounts the slot for static recipients and lets it replace the recipient wholesale', () => {
+    const onChange = vi.fn();
+    const action = makeAction({
+      recipient: { type: GuardrailRecipientType.StaticEmail, value: 'a@b.c' },
+    });
+
+    render(
+      <EscalateActionFields
+        {...baseProps}
+        action={action}
+        onChange={onChange}
+        renderStaticRecipient={(ctx) => (
+          <button
+            type="button"
+            data-testid="static-slot"
+            data-kind={ctx.kind}
+            onClick={() =>
+              ctx.onChange({
+                type: GuardrailRecipientType.AssetEmail,
+                assetName: 'EmailAsset',
+              })
+            }
+          >
+            {ctx.label}
+          </button>
+        )}
+      />
+    );
+
+    const slot = screen.getByTestId('static-slot');
+    expect(slot).toHaveAttribute('data-kind', 'email');
+    fireEvent.click(slot);
+    expect(onChange).toHaveBeenCalledWith({
+      ...action,
+      recipient: { type: GuardrailRecipientType.AssetEmail, assetName: 'EmailAsset' },
+    });
+  });
+
+  it('falls through to the built-in input when the slot returns undefined', () => {
+    const onChange = vi.fn();
+    const action = makeAction({
+      recipient: { type: GuardrailRecipientType.StaticGroupName, value: '' },
+    });
+
+    render(
+      <EscalateActionFields
+        {...baseProps}
+        action={action}
+        onChange={onChange}
+        renderStaticRecipient={() => undefined}
+      />
+    );
+
+    const input = screen.getByPlaceholderText(labels.groupNamePlaceholder);
+    fireEvent.change(input, { target: { value: 'Ops' } });
+    expect(onChange).toHaveBeenCalledWith({
+      ...action,
+      recipient: { type: GuardrailRecipientType.StaticGroupName, value: 'Ops' },
+    });
+  });
+
+  it('is not invoked for searchable (user/group) recipients', () => {
+    const renderStaticRecipient = vi.fn();
+    render(
+      <EscalateActionFields
+        {...baseProps}
+        action={makeAction()}
+        onChange={() => {}}
+        renderStaticRecipient={renderStaticRecipient}
+      />
+    );
+    expect(renderStaticRecipient).not.toHaveBeenCalled();
+  });
+});
+
+describe('asset recipient variants', () => {
+  it('displays an asset recipient as its static sibling in the type select', () => {
+    render(
+      <EscalateActionFields
+        {...baseProps}
+        action={makeAction({
+          recipient: { type: GuardrailRecipientType.AssetGroupName, assetName: 'GroupAsset' },
+        })}
+        onChange={() => {}}
+      />
+    );
+
+    expect(
+      screen.getByRole('combobox', {
+        name: `${labels.assignToLabel}: ${labels.recipientGroupNameLabel}`,
+      })
+    ).toBeInTheDocument();
+  });
+
+  it('edits assetName through the built-in fallback input', () => {
+    const onChange = vi.fn();
+    const action = makeAction({
+      recipient: { type: GuardrailRecipientType.AssetEmail, assetName: 'Old' },
+    });
+
+    render(<EscalateActionFields {...baseProps} action={action} onChange={onChange} />);
+
+    const input = screen.getByPlaceholderText(labels.emailPlaceholder);
+    expect(input).toHaveValue('Old');
+    fireEvent.change(input, { target: { value: 'New' } });
+    expect(onChange).toHaveBeenCalledWith({
+      ...action,
+      recipient: { type: GuardrailRecipientType.AssetEmail, assetName: 'New' },
+    });
+  });
+});

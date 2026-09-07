@@ -17,6 +17,7 @@ import {
   type GuardrailRecipientSearchContext,
   type GuardrailScope,
   type GuardrailSelector,
+  type GuardrailStaticRecipientContext,
 } from './builder-types';
 import {
   type GuardrailBuilderFormData,
@@ -77,6 +78,11 @@ export interface GuardrailBuilderProps {
   /** Where the enable-for-evaluations switch renders. Default 'form'. */
   evalsTogglePlacement?: 'form' | 'footer';
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
+  /**
+   * Replace the editor for static/asset recipients (types 3/4/5/6). Return `undefined` to
+   * fall through to the built-in plain input.
+   */
+  renderStaticRecipient?: (ctx: GuardrailStaticRecipientContext) => ReactNode | undefined;
   renderAppPicker?: (ctx: GuardrailAppPickerContext) => ReactNode;
   /** Rendered under the escalation grid (e.g. a marketplace help line). */
   escalateHelp?: ReactNode;
@@ -90,6 +96,11 @@ export interface GuardrailBuilderProps {
    * validator parameters (e.g. mounting a product model picker for a judge-model parameter).
    */
   renderParameter?: GuardrailValidatorFormProps['renderParameter'];
+  /**
+   * Extra host-owned Save gate, OR'd with the builder's own (e.g. while an async resolution
+   * a slot started is still in flight).
+   */
+  saveDisabled?: boolean;
   /** Locale for the builder's own strings; loads the built-in catalog, English fallback per key. */
   locale?: string;
   labels?: Partial<GuardrailBuilderLabels>;
@@ -149,10 +160,12 @@ export function GuardrailBuilder({
   title,
   evalsTogglePlacement = 'form',
   renderRecipientSearch,
+  renderStaticRecipient,
   renderAppPicker,
   escalateHelp,
   errors: hostErrors,
   renderParameter,
+  saveDisabled: hostSaveDisabled = false,
   locale,
   labels: labelOverrides,
   className,
@@ -405,6 +418,7 @@ export function GuardrailBuilder({
           }}
           labels={labels}
           renderRecipientSearch={renderRecipientSearch}
+          renderStaticRecipient={renderStaticRecipient}
           renderAppPicker={renderAppPicker}
           escalateHelp={escalateHelp}
         />
@@ -436,7 +450,7 @@ export function GuardrailBuilder({
       hideHeader={hideHeader}
       dialogMaxWidth={dialogMaxWidth}
       secondaryAction={secondaryAction}
-      saveDisabled={!isDefinitionAvailable}
+      saveDisabled={!isDefinitionAvailable || hostSaveDisabled}
       footerStart={evalsTogglePlacement === 'footer' ? evalsToggle : undefined}
       labels={{ cancel: labels.cancel, save: labels.save }}
     >

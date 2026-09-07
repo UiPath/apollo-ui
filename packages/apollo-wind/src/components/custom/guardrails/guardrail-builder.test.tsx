@@ -994,3 +994,38 @@ describe('renderParameter passthrough', () => {
     expect(screen.queryByRole('combobox', { name: /Judge model/ })).not.toBeInTheDocument();
   });
 });
+
+describe('saveDisabled passthrough', () => {
+  it('disables Save while the host gate is on, on top of internal validation', () => {
+    const { rerender } = render(
+      <GuardrailBuilder
+        open
+        inline
+        definition={makeDef()}
+        scope="Agent"
+        guardrail={makeGuardrail()}
+        onSave={() => {}}
+        onCancel={() => {}}
+        saveDisabled
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+
+    rerender(
+      <TooltipProvider>
+        <GuardrailBuilder
+          open
+          inline
+          definition={makeDef()}
+          scope="Agent"
+          guardrail={makeGuardrail()}
+          onSave={() => {}}
+          onCancel={() => {}}
+          saveDisabled={false}
+        />
+      </TooltipProvider>
+    );
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
+});
