@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.41.0...@uipath/apollo-react@6.42.0) (2026-09-07)
+
+### Features
+
+* **apollo-react:** virtualize JsonTree rows behind an opt-in prop ([3f98d39](https://github.com/UiPath/apollo-ui/commit/3f98d3964c862e9a23b788e5e52cc8142c164126))
+
 ## [@uipath/apollo-react-v6.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.40.0...@uipath/apollo-react@6.41.0) (2026-09-03)
 
 ### Features
