@@ -472,6 +472,7 @@ const EditorInner = forwardRef(
           )}
           {placeholder && isEmpty && (
             <div
+              data-slot="prompt-editor-placeholder"
               style={{
                 position: 'absolute',
                 top: '8px',
