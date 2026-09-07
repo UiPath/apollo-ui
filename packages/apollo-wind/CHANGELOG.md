@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.47.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.1...@uipath/apollo-wind@2.47.2) (2026-09-07)
+
+### Bug Fixes
+
+* **apollo-wind:** idiomatic slot assertion in the placeholder test ([9c712de](https://github.com/UiPath/apollo-ui/commit/9c712dec45a1b3ea289ab4acd12da83141fe5432))
+* **apollo-wind:** tag the PromptEditor placeholder with a data-slot ([55cf1bb](https://github.com/UiPath/apollo-ui/commit/55cf1bb54e0d4feda3ee2292da7d5b13116ce3ec))
+
 ## [@uipath/apollo-wind-v2.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.0...@uipath/apollo-wind@2.47.1) (2026-09-04)
 
 ### Performance Improvements
