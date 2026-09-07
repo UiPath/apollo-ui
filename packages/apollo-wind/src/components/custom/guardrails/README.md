@@ -62,7 +62,7 @@ types:
 | `text` | multiline textarea (`maxLength`) |
 | `boolean` | switch |
 | `enum` | single select (a stored value missing from `options` is kept as a synthetic option) |
-| `enum-list` | toggleable chips, inline for ≤8 options, otherwise in a popover |
+| `enum-list` | toggleable chips inline for ≤8 options, otherwise the wind `MultiSelect` |
 | `text-list` | repeated textarea rows with Add/Remove (`maxItems`, `maxLength`) |
 | `map-enum` | one numeric input per key selected in the sibling `keySource` enum-list |
 
@@ -148,3 +148,47 @@ Radix overlays (the enum select, the enum-list popover, tooltips) portal to `doc
 by default and escape shadow roots; wrap the form's subtree with `PortalContainerProvider`
 and inject the package CSS into the shadow root (see `HitlSchemaCanvas` in `frontend-sw` for
 the `?inline` injection precedent).
+
+## Built on the forms/ MetadataForm stack
+
+`GuardrailValidatorForm` is not a form renderer of its own: internally it is
+`buildGuardrailFormSchema(definitions, labels)` + the package's `MetadataForm`
+(`components/forms/`: `FormSchema` → `MetadataForm` → `field-renderer`), mounted through the
+controlled-host seam (`values` / `onValuesChange` / `errors` / `disableValidation` /
+`container="div"` / synchronous `components`). The public contract above is the adapter
+boundary — hosts never see the schema.
+
+How each parameter type maps:
+
+| parameter type | rendering |
+| --- | --- |
+| `number` | field type `number` |
+| `text` | field type `textarea` (`minRows`, `maxLength`) |
+| `boolean` | field type `switch` |
+| `enum` | field type `select` (synthetic option appended for a stale stored value) |
+| `enum-list` > 8 options | field type `multiselect` |
+| `enum-list` ≤ 8 options | custom component `guardrail-enum-list-chips` (`GuardrailChip` toggles in a `FieldShell`) |
+| `text-list` | field type `string-list` (added to forms/ for this convergence — generic) |
+| `map-enum` | custom component `guardrail-map-enum` (reads the `keySource` sibling via the form context) |
+| any id claimed by `renderParameter` | custom component `guardrail-render-parameter` (the bridge that mounts the host's node and exposes `onValueChange`/`onParametersChange`) |
+
+Why the three custom components stay guardrail-owned: the chip-toggle UX is a product
+decision (small option sets read better as chips than a dropdown), `map-enum` derives its
+rows from a sibling field's live selection, and `renderParameter` is a host seam — all three
+are exactly what `type: 'custom'` + component registration exists for.
+
+Adapter invariants (guarded by the `controlled contract` tests in
+`guardrail-validator-form.test.tsx`):
+
+- Emissions upsert only the edited parameter into the host's current array — untouched
+  defaults never leak in, and parameters without a matching definition (sidecars written via
+  `onParametersChange`, e.g. `byomConnectionId`) never enter the form and round-trip
+  untouched.
+- A synchronous host echo of the emitted array is a no-op (per-field deep-equal guard): no
+  re-emission, focus and cursor survive. Hosts must echo synchronously from `onChange`.
+- Values are coerced to the wire shape on emit (`coerceGuardrailParameterValue`): a cleared
+  number input persists `0`, never `NaN`; text/enum never persist `null`.
+
+**Rule for new work**: a new parameter editor extends `field-renderer` with a first-class
+field type (when it's generic) or registers a custom component here (when it's
+guardrail-shaped) — never a parallel renderer next to `MetadataForm`.

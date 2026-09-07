@@ -1155,3 +1155,120 @@ describe('GuardrailValidatorForm', () => {
     });
   });
 });
+
+// ============================================================================
+// Controlled contract under the MetadataForm internals
+// ============================================================================
+
+describe('controlled contract (MetadataForm internals)', () => {
+  const textDef: GuardrailParameterDefinition = {
+    id: 'prompt',
+    type: 'text',
+    label: 'Prompt',
+    required: true,
+    defaultValue: '',
+  };
+
+  it('a synchronous host echo is a no-op: no re-emission, focus and value survive', () => {
+    const onChange = vi.fn();
+
+    const { rerender } = render(
+      <GuardrailValidatorForm
+        parameterDefinitions={[textDef]}
+        parameters={[]}
+        onChange={onChange}
+      />
+    );
+
+    const textarea = screen.getByLabelText(/Prompt/);
+    textarea.focus();
+    fireEvent.change(textarea, { target: { value: 'hello' } });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    const emitted = onChange.mock.calls[0][0] as GuardrailValidatorParameter[];
+    expect(emitted).toEqual([{ $parameterType: 'text', id: 'prompt', value: 'hello' }]);
+
+    // Host echoes the emitted array back, as controlled hosts do on every keystroke.
+    rerender(
+      <GuardrailValidatorForm
+        parameterDefinitions={[textDef]}
+        parameters={emitted}
+        onChange={onChange}
+      />
+    );
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(textarea).toHaveFocus();
+    expect(textarea).toHaveValue('hello');
+  });
+
+  it('an external (non-echo) parameters change updates the rendered value', () => {
+    const { rerender } = render(
+      <GuardrailValidatorForm
+        parameterDefinitions={[textDef]}
+        parameters={[{ $parameterType: 'text', id: 'prompt', value: 'one' }]}
+        onChange={() => {}}
+      />
+    );
+    expect(screen.getByLabelText(/Prompt/)).toHaveValue('one');
+
+    rerender(
+      <GuardrailValidatorForm
+        parameterDefinitions={[textDef]}
+        parameters={[{ $parameterType: 'text', id: 'prompt', value: 'two' }]}
+        onChange={() => {}}
+      />
+    );
+    expect(screen.getByLabelText(/Prompt/)).toHaveValue('two');
+  });
+
+  it('sidecar parameters without a definition ride along untouched through later edits', () => {
+    const onChange = vi.fn();
+    const defs: GuardrailParameterDefinition[] = [
+      {
+        id: 'model',
+        type: 'enum',
+        label: 'Model',
+        required: true,
+        defaultValue: 'a',
+        options: ['a', 'b'],
+      },
+      textDef,
+    ];
+    // byomConnectionId has no definition — it was written by a renderParameter override.
+    const parameters: GuardrailValidatorParameter[] = [
+      { $parameterType: 'enum', id: 'model', value: 'byo-model' },
+      { $parameterType: 'text', id: 'byomConnectionId', value: 'conn-1' },
+    ];
+
+    render(
+      <GuardrailValidatorForm
+        parameterDefinitions={defs}
+        parameters={parameters}
+        onChange={onChange}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText(/Prompt/), { target: { value: 'edited' } });
+    expect(onChange).toHaveBeenCalledWith([
+      { $parameterType: 'enum', id: 'model', value: 'byo-model' },
+      { $parameterType: 'text', id: 'byomConnectionId', value: 'conn-1' },
+      { $parameterType: 'text', id: 'prompt', value: 'edited' },
+    ]);
+  });
+
+  it('clearing a number input emits 0, never NaN', () => {
+    const onChange = vi.fn();
+    const defs: GuardrailParameterDefinition[] = [
+      { id: 'threshold', type: 'number', label: 'Threshold', required: true, defaultValue: 0.5 },
+    ];
+
+    render(
+      <GuardrailValidatorForm parameterDefinitions={defs} parameters={[]} onChange={onChange} />
+    );
+
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '' } });
+    expect(onChange).toHaveBeenCalledWith([
+      { $parameterType: 'number', id: 'threshold', value: 0 },
+    ]);
+  });
+});
