@@ -279,7 +279,10 @@ export function FormFieldRenderer({
           name={field.name}
           control={control}
           defaultValue={field.defaultValue}
-          render={({ field: formField, fieldState: { error } }) => (
+          // `ref` is destructured away: custom components are plain function components
+          // (CustomFieldComponentProps declares no ref), and spreading the Controller's ref
+          // onto one triggers React's function-component ref warning.
+          render={({ field: { ref: _ref, ...formField }, fieldState: { error } }) => (
             <CustomComponent
               {...formField}
               {...field.componentProps}
