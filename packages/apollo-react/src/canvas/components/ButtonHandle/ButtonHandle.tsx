@@ -249,6 +249,7 @@ const ButtonHandleBase = ({
             onMouseEnter={handleButtonMouseEnter}
             onMouseLeave={handleButtonMouseLeave}
             handleRef={handleRef}
+            ariaLabel={label}
           />
         ) : null}
       </div>
