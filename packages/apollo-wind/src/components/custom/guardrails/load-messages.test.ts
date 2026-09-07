@@ -6,7 +6,7 @@ import {
 } from './i18n';
 import {
   GUARDRAIL_FORM_LOCALES,
-  loadGuardrailValidatorFormMessages,
+  loadGuardrailMessages,
   resolveGuardrailFormLocale,
 } from './load-messages';
 
@@ -40,20 +40,20 @@ describe('resolveGuardrailFormLocale', () => {
   });
 });
 
-describe('loadGuardrailValidatorFormMessages', () => {
+describe('loadGuardrailMessages', () => {
   it('loads a supported catalog', async () => {
-    const messages = await loadGuardrailValidatorFormMessages('de');
+    const messages = await loadGuardrailMessages('de');
     expect(messages.addItem).toBe('Hinzufügen');
   });
 
   it('falls back to the English catalog for unsupported locales', async () => {
-    const messages = await loadGuardrailValidatorFormMessages('xx');
+    const messages = await loadGuardrailMessages('xx');
     expect(messages.addItem).toBe('Add');
   });
 
   it('loads every supported catalog and resolves complete labels from each', async () => {
     for (const locale of GUARDRAIL_FORM_LOCALES) {
-      const messages = await loadGuardrailValidatorFormMessages(locale);
+      const messages = await loadGuardrailMessages(locale);
       const labels = resolveGuardrailFormLabels(messages);
       expect(labels.addItem.length, `addItem for ${locale}`).toBeGreaterThan(0);
       expect(labels.removeItem, `removeItem template for ${locale}`).toContain('{{label}}');
@@ -61,7 +61,7 @@ describe('loadGuardrailValidatorFormMessages', () => {
   });
 
   it('returns a sparse catalog for locales without translations (per-key English fallback)', async () => {
-    const messages = await loadGuardrailValidatorFormMessages('ru');
+    const messages = await loadGuardrailMessages('ru');
     expect(messages.addItem).toBeUndefined();
     expect(resolveGuardrailFormLabels(messages).addItem).toBe(GUARDRAIL_FORM_EN_LABELS.addItem);
   });

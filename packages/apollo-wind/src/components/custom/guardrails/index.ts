@@ -48,7 +48,7 @@ export {
 export type { GuardrailFormLocale } from './load-messages';
 export {
   GUARDRAIL_FORM_LOCALES,
-  loadGuardrailValidatorFormMessages,
+  loadGuardrailMessages,
   resolveGuardrailFormLocale,
 } from './load-messages';
 export type {

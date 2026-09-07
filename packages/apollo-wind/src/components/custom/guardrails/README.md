@@ -139,7 +139,7 @@ messages belong to hosts.
 This is apollo-wind's first component with built-in locale catalogs (the package's
 LOCALIZATION_GUIDE prescribes props-based localization). The catalogs follow the
 `ap-model-picker` mechanism from apollo-react, minus Lingui: plain TypeScript modules and a
-never-rejecting loader (`loadGuardrailValidatorFormMessages`). If catalogs are ever dropped,
+never-rejecting loader (`loadGuardrailMessages`). If catalogs are ever dropped,
 the `labels` prop remains a complete, non-breaking localization path.
 
 ### Consuming from a shadow-DOM host (Agents stage 2)

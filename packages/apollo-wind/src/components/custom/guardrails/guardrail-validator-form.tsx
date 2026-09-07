@@ -11,7 +11,7 @@ import {
   GUARDRAIL_RENDER_PARAMETER_COMPONENT,
 } from './form-schema-builder';
 import { type GuardrailValidatorFormLabels, resolveGuardrailFormLabels } from './i18n';
-import { loadGuardrailValidatorFormMessages } from './load-messages';
+import { loadGuardrailMessages } from './load-messages';
 import { GuardrailRenderParameterProvider, RenderParameterBridge } from './render-parameter-bridge';
 import type {
   GuardrailParameterDefinition,
@@ -35,7 +35,7 @@ function useGuardrailFormLabels(
       return;
     }
     let cancelled = false;
-    loadGuardrailValidatorFormMessages(locale).then((messages) => {
+    loadGuardrailMessages(locale).then((messages) => {
       if (!cancelled) setCatalog(messages);
     });
     return () => {

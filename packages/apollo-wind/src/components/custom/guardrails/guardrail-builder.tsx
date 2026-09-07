@@ -36,7 +36,7 @@ import {
   type GuardrailBuilderLabels,
   resolveGuardrailBuilderLabels,
 } from './i18n';
-import { loadGuardrailValidatorFormMessages } from './load-messages';
+import { loadGuardrailMessages } from './load-messages';
 import {
   dropEmptyOptionalParameters,
   getRequiredEmptyParameterIds,
@@ -103,7 +103,7 @@ function useGuardrailBuilderLabels(
       return;
     }
     let cancelled = false;
-    loadGuardrailValidatorFormMessages(locale).then((messages) => {
+    loadGuardrailMessages(locale).then((messages) => {
       if (!cancelled) setCatalog(messages);
     });
     return () => {

@@ -59,7 +59,7 @@ export type {
 } from './components/custom/guardrails/load-messages';
 export {
   GUARDRAIL_FORM_LOCALES,
-  loadGuardrailValidatorFormMessages,
+  loadGuardrailMessages,
   resolveGuardrailFormLocale,
 } from './components/custom/guardrails/load-messages';
 export type {
