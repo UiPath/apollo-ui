@@ -74,9 +74,7 @@ export function resolveGuardrailFormLocale(locale?: string): GuardrailFormLocale
  * or a failed chunk load falls back to the English catalog, then to `{}` (which resolves to
  * the built-in English defaults per key).
  */
-export async function loadGuardrailMessages(
-  locale?: string
-): Promise<GuardrailMessages> {
+export async function loadGuardrailMessages(locale?: string): Promise<GuardrailMessages> {
   const tag = resolveGuardrailFormLocale(locale) ?? 'en';
   try {
     return (await CATALOGS[tag]()).messages;
