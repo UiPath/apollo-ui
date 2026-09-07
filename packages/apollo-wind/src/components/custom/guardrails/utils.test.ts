@@ -137,6 +137,20 @@ describe('syncMapEnumParameters', () => {
     expect(getMap(syncMapEnumParameters(params, paramDefs))).toEqual({ Email: 0.9, Address: 0.5 });
   });
 
+  it('rebuilds the map from defaults when the persisted value is array-shaped', () => {
+    const params: GuardrailValidatorParameter[] = [
+      { $parameterType: 'enum-list', id: 'entities', value: ['Email', 'Address'] },
+      {
+        $parameterType: 'map-enum',
+        id: 'entityThresholds',
+        value: [0.7, 0.3] as unknown as Record<string, number>,
+      },
+    ];
+
+    // A malformed array must not be indexed into as a map; every key falls to its default.
+    expect(getMap(syncMapEnumParameters(params, paramDefs))).toEqual({ Email: 0.5, Address: 0.5 });
+  });
+
   it('drops thresholds for entities removed from the selection', () => {
     const params: GuardrailValidatorParameter[] = [
       { $parameterType: 'enum-list', id: 'entities', value: ['Email'] },

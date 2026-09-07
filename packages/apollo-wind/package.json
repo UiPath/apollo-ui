@@ -45,6 +45,11 @@
       "require": "./dist/components/custom/index.cjs",
       "types": "./dist/components/custom/index.d.ts"
     },
+    "./components/custom/guardrails": {
+      "import": "./dist/components/custom/guardrails/index.js",
+      "require": "./dist/components/custom/guardrails/index.cjs",
+      "types": "./dist/components/custom/guardrails/index.d.ts"
+    },
     "./components/custom/*": {
       "import": "./dist/components/custom/*.js",
       "require": "./dist/components/custom/*.cjs",

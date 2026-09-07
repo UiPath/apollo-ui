@@ -24,6 +24,15 @@ describe('resolveGuardrailFormLocale', () => {
     expect(resolveGuardrailFormLocale('fr-CA')).toBe('fr');
   });
 
+  it('resolves Chinese script and region subtags to the right catalog', () => {
+    expect(resolveGuardrailFormLocale('zh-Hant-TW')).toBe('zh-TW');
+    expect(resolveGuardrailFormLocale('zh-Hant')).toBe('zh-TW');
+    expect(resolveGuardrailFormLocale('zh-HK')).toBe('zh-TW');
+    expect(resolveGuardrailFormLocale('zh-Hans-CN')).toBe('zh-CN');
+    expect(resolveGuardrailFormLocale('zh-SG')).toBe('zh-CN');
+    expect(resolveGuardrailFormLocale('zh')).toBe('zh-CN');
+  });
+
   it('returns undefined for unsupported or empty locales', () => {
     expect(resolveGuardrailFormLocale('xx')).toBeUndefined();
     expect(resolveGuardrailFormLocale('')).toBeUndefined();

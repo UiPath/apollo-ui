@@ -47,14 +47,25 @@ const CATALOGS = {
 /**
  * Normalize a host locale to a supported catalog tag: `pt_BR` matches `pt-BR`, matching is
  * case-insensitive, and an unsupported regional tag falls back to its base language
- * (`fr-CA` resolves to `fr`). Returns `undefined` when nothing matches.
+ * (`fr-CA` resolves to `fr`). Chinese needs the script, not the base language: `zh-Hant*`
+ * (and the Traditional-script regions TW/HK/MO) resolve to `zh-TW`, every other `zh*` tag to
+ * `zh-CN` — a bare `zh` split would match neither catalog. Returns `undefined` when nothing
+ * matches.
  */
 export function resolveGuardrailFormLocale(locale?: string): GuardrailFormLocale | undefined {
   const raw = locale?.trim().replace(/_/g, '-');
   if (!raw) return undefined;
   const exact = GUARDRAIL_FORM_LOCALES.find((tag) => tag.toLowerCase() === raw.toLowerCase());
   if (exact) return exact;
-  const base = raw.split('-')[0]?.toLowerCase();
+  const lower = raw.toLowerCase();
+  if (lower === 'zh' || lower.startsWith('zh-')) {
+    const subtags = lower.split('-').slice(1);
+    const traditional = subtags.some(
+      (sub) => sub === 'hant' || sub === 'tw' || sub === 'hk' || sub === 'mo'
+    );
+    return traditional ? 'zh-TW' : 'zh-CN';
+  }
+  const base = lower.split('-')[0];
   return GUARDRAIL_FORM_LOCALES.find((tag) => tag.toLowerCase() === base);
 }
 

@@ -65,8 +65,11 @@ export function syncMapEnumParameters(
       (Array.isArray(sourceDef?.defaultValue) ? (sourceDef.defaultValue as string[]) : undefined);
     if (!allowedKeys) return param;
 
-    // Guard against a null/non-object persisted map before indexing into it.
-    const currentMap = param.value && typeof param.value === 'object' ? param.value : {};
+    // Guard against a null/array/non-object persisted map before indexing into it.
+    const currentMap =
+      param.value && typeof param.value === 'object' && !Array.isArray(param.value)
+        ? param.value
+        : {};
     const defaults = (def?.defaultValue as Record<string, number> | undefined) ?? {};
     const fallback = def?.min ?? 0;
     const synced: Record<string, number> = {};
