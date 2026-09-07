@@ -112,12 +112,12 @@ export function initGuardrailBuilderFormData(
     };
   }
 
-  const initialScope =
-    scope === 'Agent'
-      ? definition.allowedScopes.includes('Agent')
-        ? 'Agent'
-        : definition.allowedScopes[0]
-      : scope;
+  // Coerce for every opening scope, not just Agent: hosts filter definitions by allowedScopes
+  // before opening the builder, but a definition that doesn't allow the opening scope must not
+  // seed an invalid selector the user can't fix (the scope selector only renders for Agent).
+  const initialScope = definition.allowedScopes.includes(scope)
+    ? scope
+    : definition.allowedScopes[0];
 
   return {
     id: generateGuardrailId(),

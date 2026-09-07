@@ -144,6 +144,19 @@ describe('initGuardrailBuilderFormData', () => {
     expect(form.selector.matchNames).toBeUndefined();
   });
 
+  it('falls back to the first allowedScope when the opening scope is not allowed (non-Agent too)', () => {
+    // The palette filters by allowedScopes before opening, but a disallowed opening scope
+    // must never seed a selector the user can't fix (the scope selector renders only for Agent).
+    const form = initGuardrailBuilderFormData(
+      makeDef({ allowedScopes: ['Agent', 'Llm'] }),
+      'Tool',
+      undefined,
+      'MyTool'
+    );
+    expect(form.selector.scopes).toEqual(['Agent']);
+    expect(form.selector.matchNames).toBeUndefined();
+  });
+
   it('falls back to first allowedScope when Agent is not allowed', () => {
     const form = initGuardrailBuilderFormData(
       makeDef({ allowedScopes: ['Llm', 'Tool'] }),

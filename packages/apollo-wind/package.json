@@ -50,11 +50,6 @@
       "require": "./dist/components/custom/guardrails/index.cjs",
       "types": "./dist/components/custom/guardrails/index.d.ts"
     },
-    "./components/custom/*": {
-      "import": "./dist/components/custom/*.js",
-      "require": "./dist/components/custom/*.cjs",
-      "types": "./dist/components/custom/*.d.ts"
-    },
     "./styles.css": "./dist/styles.css",
     "./tailwind.css": "./dist/tailwind.css",
     "./fonts/*": "./dist/fonts/*",
