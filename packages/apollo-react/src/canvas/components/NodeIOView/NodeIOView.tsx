@@ -93,6 +93,7 @@ export function NodeIOView({
   renderCodeEditor,
   pathForCopy,
   onCopy,
+  virtualized = false,
   defaultCollapsedDepth = 2,
   className,
 }: NodeIOViewProps) {
@@ -267,6 +268,7 @@ export function NodeIOView({
               renderCodeEditor={renderCodeEditor}
               pathForCopy={pathForCopy}
               onCopy={onCopy}
+              virtualized={virtualized}
               // JsonTree shows its own "no match" text while a search or
               // filter is active; this only covers the genuinely-empty case.
               emptyMessage={emptyMessage}
