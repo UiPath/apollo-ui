@@ -219,18 +219,6 @@ function RunButtonIconOnly() {
   );
 }
 
-function DebugButton() {
-  return (
-    <button
-      type="button"
-      className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
-    >
-      <Play size={14} />
-      Debug
-    </button>
-  );
-}
-
 function PanelAddButton({ children = 'Add field' }: { children?: ReactNode }) {
   return (
     <Button variant="text" size="2xs">
@@ -531,54 +519,6 @@ export const QuickForm: Story = {
   render: () => <QuickFormPanel />,
 };
 
-function IdentityValidationStory() {
-  const [label, setLabel] = useState('Analyze files');
-  const [description, setDescription] = useState('');
-
-  // Stand-in for a host rule (here: an agent tool name). The caller owns both
-  // the message and when it clears, so the ring persists after the editor
-  // closes on a value the host would reject.
-  const labelError = !label
-    ? 'Tool name is required.'
-    : /^[A-Z_a-z][\w ]*$/.test(label)
-      ? undefined
-      : 'Tool name must begin with a letter or underscore and contain only letters, digits, spaces, and underscores.';
-
-  return (
-    <PanelFrame>
-      <NodePropertyPanel
-        panelTitle="Properties"
-        nodeIcon={<Globe />}
-        nodeLabel={label}
-        nodeLabelPlaceholder="Name"
-        nodeDescription={description}
-        nodeDescriptionPlaceholder="Client-side tool"
-        onNodeLabelChange={setLabel}
-        onNodeDescriptionChange={setDescription}
-        nodeLabelError={labelError}
-        action={<RunButton />}
-        schema={httpRequestForm}
-        contentInset="0.875rem"
-        onClose={() => {}}
-        className="h-[640px]"
-      />
-    </PanelFrame>
-  );
-}
-
-export const IdentityValidation: Story = {
-  name: 'Identity Validation',
-  render: () => <IdentityValidationStory />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Rename the node to something starting with a digit to see the error state. `nodeLabelError` / `nodeDescriptionError` render below the line with a persistent error ring, matching `Input`: the control gets `aria-invalid` plus `aria-errormessage`, and the message renders through `FormFieldError` so it announces politely. The ring stays after the editor closes, so a commit the host rejects still explains itself.',
-      },
-    },
-  },
-};
-
 export const EmbeddedNoTitleBar: Story = {
   name: 'Form Embedded',
   render: () => (
@@ -753,7 +693,7 @@ function FullEditorStory() {
               </div>
             </div>
             <div className="shrink-0">
-              <DebugButton />
+              <RunButton />
             </div>
           </div>
 
@@ -1294,7 +1234,7 @@ function CompactEditorStory() {
               </div>
             </div>
             <div className="shrink-0">
-              <DebugButton />
+              <RunButton />
             </div>
           </div>
 
@@ -1458,7 +1398,7 @@ function InputEditorStory() {
         nodeDescriptionPlaceholder="Control"
         onNodeLabelChange={setLabel}
         onNodeDescriptionChange={setDescription}
-        action={<DebugButton />}
+        action={<RunButton />}
       >
         <div className="flex h-full flex-col">
           {/* Tabs */}
@@ -3171,7 +3111,7 @@ export function QuickFormPanel({
       nodeIcon={<UserRoundCheck />}
       nodeLabel="Quick Approve"
       nodeCategory="Quick approve/reject decision for the extracted invoice."
-      action={<DebugButton />}
+      action={<RunButton />}
       onClose={onClose}
       contentInset="0.875rem"
       className={className}
@@ -4373,7 +4313,7 @@ function PanelUIInventoryStory() {
                     </PatternNote>
                     <div className="flex flex-wrap items-center gap-2">
                       <RunButton />
-                      <DebugButton />
+                      <RunButtonIconOnly />
                     </div>
                   </section>
 
