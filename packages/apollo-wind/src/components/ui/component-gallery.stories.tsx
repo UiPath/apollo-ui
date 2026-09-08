@@ -378,7 +378,7 @@ const components: ComponentInfo[] = [
   },
   {
     name: 'Drawer',
-    description: 'Sliding side panel',
+    description: 'Bottom panel with drag-to-dismiss',
     storyPath: 'components-overlays-drawer-bottom--docs',
     category: Category.Overlays,
     preview: (
