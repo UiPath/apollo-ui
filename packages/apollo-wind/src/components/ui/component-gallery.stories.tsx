@@ -1,31 +1,36 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useState, useMemo } from 'react';
-import { Card, CardDescription, CardHeader, CardTitle } from './card';
+import { Pencil, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Bar, BarChart } from 'recharts';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
+import { Alert, AlertDescription, AlertTitle } from './alert';
+import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { Badge } from './badge';
 import { Button } from './button';
-import { Input } from './input';
+import { ButtonGroup } from './button-group';
+import { Calendar } from './calendar';
+import { Card, CardDescription, CardHeader, CardTitle } from './card';
+import { type ChartConfig, ChartContainer } from './chart';
 import { Checkbox } from './checkbox';
-import { Switch } from './switch';
-import { Slider } from './slider';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible';
+import { Combobox } from './combobox';
+import { Input } from './input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from './input-group';
+import { Label } from './label';
+import { MultiSelect } from './multi-select';
 import { Progress } from './progress';
-import { Spinner } from './spinner';
+import { RadioGroup, RadioGroupItem } from './radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Separator } from './separator';
 import { Skeleton } from './skeleton';
-import { Alert, AlertDescription, AlertTitle } from './alert';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
-import { Tabs, TabsList, TabsTrigger } from './tabs';
+import { Slider } from './slider';
+import { Spinner } from './spinner';
+import { Switch } from './switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
-import { Calendar } from './calendar';
-import { ButtonGroup } from './button-group';
+import { Tabs, TabsList, TabsTrigger } from './tabs';
 import { Textarea } from './textarea';
-import { Label } from './label';
-import { RadioGroup, RadioGroupItem } from './radio-group';
 import { Toggle } from './toggle';
 import { ToggleGroup, ToggleGroupItem } from './toggle-group';
-import { Combobox } from './combobox';
-import { MultiSelect } from './multi-select';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from './select';
-import { Search } from 'lucide-react';
 
 const meta = {
   title: 'Components/All Components',
@@ -137,6 +142,18 @@ const components: ComponentInfo[] = [
     ),
   },
   {
+    name: 'Avatar',
+    description: 'User profile image with fallback',
+    storyPath: 'components-data-display-avatar--docs',
+    category: Category.DataDisplay,
+    preview: (
+      <Avatar>
+        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+        <AvatarFallback>CN</AvatarFallback>
+      </Avatar>
+    ),
+  },
+  {
     name: 'Badge',
     description: 'Small status indicators',
     storyPath: 'components-data-display-badge--docs',
@@ -232,6 +249,46 @@ const components: ComponentInfo[] = [
     ),
   },
   {
+    name: 'Chart',
+    description: 'Themed Recharts wrapper',
+    storyPath: 'components-data-display-chart--docs',
+    category: Category.DataDisplay,
+    preview: (
+      <ChartContainer
+        config={
+          {
+            desktop: { label: 'Desktop', color: 'var(--color-chart-blue-secondary)' },
+          } satisfies ChartConfig
+        }
+        className="h-16 w-full"
+      >
+        <BarChart
+          data={[
+            { month: 'Jan', desktop: 186 },
+            { month: 'Feb', desktop: 305 },
+            { month: 'Mar', desktop: 237 },
+          ]}
+        >
+          <Bar dataKey="desktop" fill="var(--color-desktop)" radius={2} />
+        </BarChart>
+      </ChartContainer>
+    ),
+  },
+  {
+    name: 'Collapsible',
+    description: 'Expand or collapse a single panel',
+    storyPath: 'components-data-display-collapsible--docs',
+    category: Category.DataDisplay,
+    preview: (
+      <Collapsible defaultOpen className="w-full space-y-1">
+        <CollapsibleTrigger className="text-xs font-medium">@peduarte starred</CollapsibleTrigger>
+        <CollapsibleContent className="rounded border px-2 py-1 font-mono text-xs">
+          @radix-ui/primitives
+        </CollapsibleContent>
+      </Collapsible>
+    ),
+  },
+  {
     name: 'Combobox',
     description: 'Searchable select input',
     storyPath: 'components-core-combobox--docs',
@@ -322,7 +379,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Drawer',
     description: 'Sliding side panel',
-    storyPath: 'components-overlays-drawer-sheet--docs',
+    storyPath: 'components-overlays-drawer-bottom--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -339,6 +396,18 @@ const components: ComponentInfo[] = [
       <Button variant="outline" size="sm">
         Open Menu
       </Button>
+    ),
+  },
+  {
+    name: 'Editable Cell',
+    description: 'Inline-editable table cell',
+    storyPath: 'components-data-display-editable-cell--docs',
+    category: Category.DataDisplay,
+    preview: (
+      <div className="flex items-center gap-1 rounded border px-2 py-1 text-xs">
+        <span>Invoice #1042</span>
+        <Pencil className="h-3 w-3 text-muted-foreground" />
+      </div>
     ),
   },
   {
@@ -421,6 +490,20 @@ const components: ComponentInfo[] = [
     storyPath: 'components-core-input--docs',
     category: Category.Core,
     preview: <Input placeholder="Type here..." className="h-8 text-xs" />,
+  },
+  {
+    name: 'Input Group',
+    description: 'Input with addons for icons and actions',
+    storyPath: 'components-core-input-group--docs',
+    category: Category.Core,
+    preview: (
+      <InputGroup className="h-8 text-xs">
+        <InputGroupAddon align="inline-start">
+          <Search className="h-3 w-3 text-muted-foreground" />
+        </InputGroupAddon>
+        <InputGroupInput placeholder="Search..." />
+      </InputGroup>
+    ),
   },
   {
     name: 'Label',
