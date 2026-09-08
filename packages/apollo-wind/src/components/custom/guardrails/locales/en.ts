@@ -1,6 +1,12 @@
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: 'More information',
   enumPlaceholder: 'Select...',
   enumListPlaceholder: 'Select options...',
@@ -64,4 +70,17 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: 'Fields selection is required',
   recipientRequiredError: 'Recipient is required',
   actionAppRequiredError: 'Action app is required',
+  // Guardrail list section
+  headerTitle: 'Guardrails',
+  addButton: 'Add',
+  emptyState: 'No guardrails configured',
+  reorderHandleAriaLabel: 'Reorder guardrail {{name}}',
+  editButtonAriaLabel: 'Edit guardrail',
+  deleteButtonAriaLabel: 'Delete guardrail',
+  providerLabel: 'Provider',
+  previewChip: 'Preview',
+  byoDisabledNotice:
+    "This guardrail's configuration has been disabled and can no longer be used. Contact your administrator to re-enable the configuration or replace this guardrail before running the agent.",
+  byoUnavailableNotice:
+    "This guardrail's configuration is no longer available. Replace it before running the agent.",
 };

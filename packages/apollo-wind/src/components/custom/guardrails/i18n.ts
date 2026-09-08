@@ -159,20 +159,29 @@ export const GUARDRAIL_BUILDER_EN_LABELS: GuardrailBuilderLabels = {
   actionAppRequiredError: 'Action app is required',
 };
 
-/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
-export function resolveGuardrailBuilderLabels(
-  catalog?: Partial<GuardrailBuilderLabels>,
-  overrides?: Partial<GuardrailBuilderLabels>
-): GuardrailBuilderLabels {
-  const merged: GuardrailBuilderLabels = { ...GUARDRAIL_BUILDER_EN_LABELS };
-  for (const source of [catalog, overrides]) {
+/**
+ * Layer sparse sources over a complete English default set, later source wins per key.
+ * Only keys the defaults declare are copied, so a catalog carrying stale keys cannot inject
+ * them, and an explicit `undefined` override falls through to the layer below.
+ */
+function mergeLabels<T extends object>(defaults: T, sources: Array<Partial<T> | undefined>): T {
+  const merged: T = { ...defaults };
+  for (const source of sources) {
     if (!source) continue;
-    for (const key of Object.keys(merged) as Array<keyof GuardrailBuilderLabels>) {
+    for (const key of Object.keys(merged) as Array<keyof T>) {
       const value = source[key];
       if (value !== undefined) merged[key] = value;
     }
   }
   return merged;
+}
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailBuilderLabels(
+  catalog?: Partial<GuardrailBuilderLabels>,
+  overrides?: Partial<GuardrailBuilderLabels>
+): GuardrailBuilderLabels {
+  return mergeLabels(GUARDRAIL_BUILDER_EN_LABELS, [catalog, overrides]);
 }
 
 /** Interpolate `{{token}}` placeholders in a catalog message. Unknown tokens are left as-is. */
@@ -190,13 +199,69 @@ export function resolveGuardrailFormLabels(
   catalog?: Partial<GuardrailValidatorFormLabels>,
   overrides?: Partial<GuardrailValidatorFormLabels>
 ): GuardrailValidatorFormLabels {
-  const merged: GuardrailValidatorFormLabels = { ...GUARDRAIL_FORM_EN_LABELS };
-  for (const source of [catalog, overrides]) {
-    if (!source) continue;
-    for (const key of Object.keys(merged) as Array<keyof GuardrailValidatorFormLabels>) {
-      const value = source[key];
-      if (value !== undefined) merged[key] = value;
-    }
-  }
-  return merged;
+  return mergeLabels(GUARDRAIL_FORM_EN_LABELS, [catalog, overrides]);
+}
+
+/**
+ * Chrome strings of the guardrail list section (header, row affordances, status chips, and
+ * the two BYO row notices). Domain strings stay host-resolved: scope names and action types
+ * are printed as given, or reshaped through the list's `formatScopes` / `formatAction` slots.
+ *
+ * Strings shared with the builder are referenced from `GUARDRAIL_BUILDER_EN_LABELS` rather
+ * than retyped, so the two label sets cannot drift apart the way the two products' tables did.
+ */
+export interface GuardrailListLabels {
+  headerTitle: string;
+  addButton: string;
+  emptyState: string;
+  /** Aria-label template of a row's drag handle: `{{name}}`. */
+  reorderHandleAriaLabel: string;
+  /** Aria-label template of the whole row when `rowActivatesEdit` is set: `{{name}}`. */
+  editRowAriaLabel: string;
+  editButtonAriaLabel: string;
+  deleteButtonAriaLabel: string;
+  providerLabel: string;
+  previewChip: string;
+  originGovernanceChip: string;
+  statusDisabledChip: string;
+  statusUnauthorizedChip: string;
+  statusFeatureDisabledChip: string;
+  statusUnavailableChip: string;
+  /** Row notice for a BYO guardrail whose configuration was disabled. */
+  byoDisabledNotice: string;
+  /** Row notice for a BYO guardrail whose configuration no longer exists. */
+  byoUnavailableNotice: string;
+  // Mixed scopes banner (shared with the builder)
+  mixedScopesAlsoApplied: string;
+  mixedScopesSaveAsNewHint: string;
+}
+
+export const GUARDRAIL_LIST_EN_LABELS: GuardrailListLabels = {
+  headerTitle: 'Guardrails',
+  addButton: 'Add',
+  emptyState: 'No guardrails configured',
+  reorderHandleAriaLabel: 'Reorder guardrail {{name}}',
+  editRowAriaLabel: 'Edit guardrail {{name}}',
+  editButtonAriaLabel: 'Edit guardrail',
+  deleteButtonAriaLabel: 'Delete guardrail',
+  providerLabel: 'Provider',
+  previewChip: 'Preview',
+  originGovernanceChip: 'Governance',
+  statusDisabledChip: 'Disabled',
+  statusUnauthorizedChip: 'Not entitled',
+  statusFeatureDisabledChip: 'Feature disabled',
+  statusUnavailableChip: 'Unavailable',
+  byoDisabledNotice: GUARDRAIL_BUILDER_EN_LABELS.byoDisabledMessage,
+  byoUnavailableNotice:
+    "This guardrail's configuration is no longer available. Replace it before running the agent.",
+  mixedScopesAlsoApplied: GUARDRAIL_BUILDER_EN_LABELS.mixedScopesAlsoApplied,
+  mixedScopesSaveAsNewHint: GUARDRAIL_BUILDER_EN_LABELS.mixedScopesSaveAsNewHint,
+};
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailListLabels(
+  catalog?: Partial<GuardrailListLabels>,
+  overrides?: Partial<GuardrailListLabels>
+): GuardrailListLabels {
+  return mergeLabels(GUARDRAIL_LIST_EN_LABELS, [catalog, overrides]);
 }

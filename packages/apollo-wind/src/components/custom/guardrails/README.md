@@ -2,8 +2,9 @@
 
 Shared UI for the UiPath Guardrails experience, consumed by Flow (flow-workbench) and, in a
 later stage, Agents (`frontend-sw`). Members: `GuardrailBuilder` (the whole Add/Edit screen),
-`GuardrailFormLayout` (the screen shell), and `GuardrailValidatorForm` (the validator
-parameter section, also rendered inside the builder).
+`GuardrailFormLayout` (the screen shell), `GuardrailValidatorForm` (the validator parameter
+section, also rendered inside the builder), and `GuardrailList` (the list section that shows,
+reorders and annotates the guardrails already applied).
 
 ## GuardrailBuilder
 
@@ -157,6 +158,139 @@ Radix overlays (the enum select, the enum-list popover, tooltips) portal to `doc
 by default and escape shadow roots; wrap the form's subtree with `PortalContainerProvider`
 and inject the package CSS into the shadow root (see `HitlSchemaCanvas` in `frontend-sw` for
 the `?inline` injection precedent).
+
+## GuardrailList
+
+The guardrails list section: the guardrails applied to an agent or tool, with drag and
+keyboard reorder, status and origin chips, per-row edit and remove intents, the BYO provider
+line and its two failure notices, and the mixed-scopes banner.
+
+```tsx
+import { GuardrailList } from '@uipath/apollo-wind';
+
+<GuardrailList
+  guardrails={visibleGuardrails}   // pre-filtered by the host
+  definitions={definitions}        // pre-filtered by the host
+  disabled={isReadOnly}
+  onReorder={(next) => save(next)}
+  onEdit={openBuilder}
+  onRemove={confirmRemoval}
+  onAdd={openPalette}
+  locale={i18n.language}
+/>;
+```
+
+### Contract
+
+- **The host filters, the component renders.** `GuardrailList` never drops a row. Every
+  product gate stays on the host side of the boundary: Agents' `enableOutOfTheBoxGuardrails`,
+  `enableGuardrailPII`, `enableGuardrailPromptInjection`, `enableGuardrailHarmfulContent`,
+  `enableGuardrailIntellectualProperty` and `enableGuardrailUserPromptAttacks`, and Flow's
+  `canvas.guardrails` entitlement plus its allowed-scope filter. Pass the survivors. There is
+  deliberately no flag prop, and adding one would put a product's release process inside a
+  design-system release.
+- **Callbacks are intents, not mutations.** `onRemove` fires when the user asks to remove a
+  guardrail; the confirmation dialog and the write stay host-side, because the two products
+  confirm with different copy and unwind tool-scoped guardrails differently. Same for
+  `onAdd` / `onEdit`: the palette and the builder are the host's.
+- **No telemetry.** Both products instrument add, reorder and delete. Wrap the callbacks.
+- **Row identity** defaults to `id`, falling back to `name` for hosts that persist no id.
+  Override with `getItemId`.
+- **Origin is host-supplied.** Governance-managed guardrails come from a different endpoint in
+  both products and are not inferable from the record, so tag them with `getItemOrigin`.
+- **New UI is opt-in.** `statusChips` and `previewChip` are both off by default, so an
+  adopting host gets a swap that renders what it renders today and turns the additions on
+  deliberately. The two BYO row notices are not gated, because both products already show them.
+- **`disabled` governs the row actions, `reorderDisabled` governs the handle.** The latter
+  defaults to `disabled` (Agents), and Flow passes `false` to keep its read-only list
+  reorderable, which is what it does today.
+- Requires no provider of its own, unless `renderRowTooltip` is supplied, which needs an
+  ancestor `TooltipProvider`.
+
+### Matching a host's existing chrome
+
+`GuardrailList` ships Flow's layout, because that is the shape the extraction converges on.
+Agents wraps its list in a `SectionAccordion`, puts the add affordance below the rows, and
+hovers a combined description/provider/scopes tooltip. Those are props, not forks:
+
+```tsx
+<GuardrailList
+  unstyled                        // no card border, rounding or padding
+  hideHeader                      // the accordion supplies the title
+  emptyState={null}               // no empty-state line, just the add button
+  footer={addButton}              // add affordance below the rows
+  rowActivatesEdit                // the whole row opens the builder
+  formatAction={() => null}       // no action badge
+  formatScopes={localizedScopes}
+  renderItemActions={overflowMenu}
+  renderRowTooltip={combinedHover}
+/>
+```
+
+### Reordering a filtered view
+
+`onReorder` receives the reordered *visible* array plus the move that produced it, so a host
+rendering a tool-level view over an agent-level list can splice the change back:
+
+```tsx
+<GuardrailList
+  guardrails={toolGuardrails}
+  onReorder={(_next, { from, to }) => {
+    const indices = allGuardrails.flatMap((g, i) => (isVisible(g) ? [i] : []));
+    setAllGuardrails(moveWithin(allGuardrails, indices[from], indices[to]));
+  }}
+/>
+```
+
+The pure helpers behind the rows are exported for hosts that need the same derivations
+elsewhere: `resolveGuardrailListItemState`, `findGuardrailDefinition`,
+`matchGuardrailDefinition`, `defaultGuardrailItemId` and `moveGuardrail`.
+
+### Chips and notices
+
+| Row state | Rendering |
+| --- | --- |
+| any, with `statusChips` off (the default) | no chip at all |
+| `Available`, origin `local` | no chip; the common row stays quiet |
+| `FeatureDisabled`, `Unauthorised` | warning chip |
+| `Disabled` | error chip, plus an inline notice when the guardrail is BYO |
+| `Unavailable` (BYO definition missing from a loaded catalog) | error chip and an inline notice |
+| origin `governance` | accent chip |
+| built-in validator, with `previewChip` | accent "Preview" chip |
+
+A BYO row reports nothing while the catalog is still empty. That guard is load-order
+protection, not defensiveness: without it every BYO row flashes "no longer available" during
+the definitions request, and both products already carry it.
+
+Chips are `Badge`-based (`GuardrailStatusChip`), not `GuardrailChip`. `GuardrailChip` wraps a
+Radix Toggle, so it is a focusable button with pressed state; these are read-only labels and
+would otherwise put fake buttons in the tab order. The geometry matches, so the two chip
+families still read as one system.
+
+### Slots
+
+| Slot | Fallback |
+| --- | --- |
+| `renderItemActions` | inline Edit and Delete icon buttons. The slot receives `edit` and `remove`, so an overflow menu still routes through the list's callbacks |
+| `addSlot` | the header Add button, when `onAdd` is set |
+| `footer` | nothing. Rendered below the rows, for hosts whose add affordance lives there |
+| `emptyState` | "No guardrails configured". Pass `null` for nothing at all |
+| `renderRowTooltip` | no tooltip. Wraps the row body; needs a `TooltipProvider` |
+| `title` | the localized header title |
+| `formatScopes` | the raw `selector.scopes`, comma-joined |
+| `formatAction` | the raw `action.$actionType` |
+
+Scope names and action types are domain strings and print as stored. Hosts that localize them
+(Agents renders `Llm` as "LLM calls") pass `formatScopes` / `formatAction` rather than the
+package growing a scope-label map.
+
+### Localization
+
+Chrome strings follow the family mechanism: English defaults < packaged catalog (`locale`) <
+`labels` overrides. Ten of the list's strings are translated in all 13 non-English catalogs,
+harvested from Flow's canvas catalog. The status and origin chip labels and the row
+aria-label are English-only for now and fall back per key, so a host that needs them
+translated today supplies them through `labels`.
 
 ## Definitions layer
 

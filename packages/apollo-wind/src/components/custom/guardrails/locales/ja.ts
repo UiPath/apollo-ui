@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: '詳細情報',
   enumPlaceholder: '選択...',
   enumListPlaceholder: 'オプションを選択...',
@@ -68,4 +74,17 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: 'フィールドの選択は必須です。',
   recipientRequiredError: '受信者は必須です。',
   actionAppRequiredError: 'アクション アプリは必須です。',
+  // Guardrail list section
+  headerTitle: 'ガードレール',
+  addButton: '追加',
+  emptyState: 'ガードレールは設定されていません。',
+  reorderHandleAriaLabel: 'ガードレール {{name}} を並べ替え',
+  editButtonAriaLabel: 'ガードレールを編集',
+  deleteButtonAriaLabel: 'ガードレールを削除',
+  providerLabel: 'プロバイダー',
+  previewChip: 'プレビュー',
+  byoDisabledNotice:
+    'このガードレールの設定は無効化され、使用できなくなりました。エージェントを実行する前に、管理者に問い合わせて設定を再度有効化するか、このガードレールを置換してください。',
+  byoUnavailableNotice:
+    'このガードレールの設定は利用できなくなりました。エージェントを実行する前に、置換してください。',
 };

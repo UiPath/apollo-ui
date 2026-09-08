@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: '更多資訊',
   enumPlaceholder: '選擇...',
   enumListPlaceholder: '選取選項...',
@@ -66,4 +72,16 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: '必須選取欄位',
   recipientRequiredError: '收件者為必填欄位',
   actionAppRequiredError: '動作應用程式為必填欄位',
+  // Guardrail list section
+  headerTitle: '護欄',
+  addButton: '新增',
+  emptyState: '未配置護欄',
+  reorderHandleAriaLabel: '重新排序護欄 {{name}}',
+  editButtonAriaLabel: '編輯護欄',
+  deleteButtonAriaLabel: '刪除護欄',
+  providerLabel: '提供程式',
+  previewChip: '預覽',
+  byoDisabledNotice:
+    '此護欄的組態已停用，無法再使用。請聯絡管理員以重新啟用組態或取代此護欄，然後再執行代理。',
+  byoUnavailableNotice: '此護欄的組態不再可用。在執行代理程式之前取代它。',
 };

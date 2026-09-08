@@ -33,6 +33,15 @@ export {
 } from './builder-utils';
 export type { GuardrailChipProps } from './components/guardrail-chip';
 export { GuardrailChip, guardrailChipVariants } from './components/guardrail-chip';
+export type { GuardrailStatusBannerProps } from './components/guardrail-status-banner';
+export { GuardrailStatusBanner } from './components/guardrail-status-banner';
+export type {
+  GuardrailStatusChipProps,
+  GuardrailStatusChipTone,
+} from './components/guardrail-status-chip';
+export { GuardrailStatusChip } from './components/guardrail-status-chip';
+export type { MixedScopesBannerProps } from './components/mixed-scopes-banner';
+export { MixedScopesBanner } from './components/mixed-scopes-banner';
 export type { GuardrailCopyKey, GuardrailCopyTranslator } from './definitions-copy';
 export {
   GUARDRAIL_COPY_EN,
@@ -62,15 +71,40 @@ export type { GuardrailBuilderProps } from './guardrail-builder';
 export { GuardrailBuilder } from './guardrail-builder';
 export type { GuardrailFormLayoutProps } from './guardrail-form-layout';
 export { GuardrailFormLayout } from './guardrail-form-layout';
+export type { GuardrailListProps } from './guardrail-list';
+export { GuardrailList } from './guardrail-list';
+export type { GuardrailListDefinition } from './guardrail-list-utils';
+export {
+  defaultGuardrailItemId,
+  findGuardrailDefinition,
+  matchGuardrailDefinition,
+  moveGuardrail,
+  resolveGuardrailListItemState,
+} from './guardrail-list-utils';
 export { GuardrailValidatorForm } from './guardrail-validator-form';
-export type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from './i18n';
+export type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from './i18n';
 export {
   formatGuardrailFormMessage,
   GUARDRAIL_BUILDER_EN_LABELS,
   GUARDRAIL_FORM_EN_LABELS,
+  GUARDRAIL_LIST_EN_LABELS,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
+  resolveGuardrailListLabels,
 } from './i18n';
+export type {
+  GuardrailListItem,
+  GuardrailListItemActionsContext,
+  GuardrailListItemNotice,
+  GuardrailListItemState,
+  GuardrailListItemStatus,
+  GuardrailListMove,
+  GuardrailListOrigin,
+} from './list-types';
 export type { GuardrailFormLocale } from './load-messages';
 export {
   GUARDRAIL_FORM_LOCALES,

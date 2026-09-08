@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: '자세한 정보',
   enumPlaceholder: '선택...',
   enumListPlaceholder: '옵션 선택...',
@@ -68,4 +74,17 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: '필드를 선택해야 합니다',
   recipientRequiredError: '수신자는 필수입니다',
   actionAppRequiredError: '액션 앱은 필수입니다',
+  // Guardrail list section
+  headerTitle: '가드레일',
+  addButton: '추가',
+  emptyState: '가드레일이 구성되지 않음',
+  reorderHandleAriaLabel: '가드레일 {{name}} 순서 변경',
+  editButtonAriaLabel: '가드레일 편집',
+  deleteButtonAriaLabel: '가드레일 삭제',
+  providerLabel: '공급자',
+  previewChip: '미리 보기',
+  byoDisabledNotice:
+    '이 가드레일의 구성이 비활성화되어 더 이상 사용할 수 없습니다. 에이전트를 실행하기 전에 관리자에게 문의하여 구성을 다시 활성화하거나 이 가드레일을 교체하십시오.',
+  byoUnavailableNotice:
+    '이 가드레일의 구성은 더 이상 사용할 수 없습니다. 에이전트를 실행하기 전에 바꾸십시오.',
 };

@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: '更多信息',
   enumPlaceholder: '选择...',
   enumListPlaceholder: '选择选项...',
@@ -66,4 +72,16 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: '“字段选择”为必填项',
   recipientRequiredError: '收件人为必填项',
   actionAppRequiredError: '操作应用程序为必填项',
+  // Guardrail list section
+  headerTitle: '防护机制',
+  addButton: '添加',
+  emptyState: '未配置防护机制',
+  reorderHandleAriaLabel: '重新排序防护机制 {{name}}',
+  editButtonAriaLabel: '编辑防护机制',
+  deleteButtonAriaLabel: '删除防护机制',
+  providerLabel: '提供程序',
+  previewChip: '预览',
+  byoDisabledNotice:
+    '此防护机制配置已禁用，无法再使用。请在运行智能体之前联系您的管理员重新启用配置或替换此防护机制。',
+  byoUnavailableNotice: '此防护机制的配置不再可用。在运行智能体之前进行替换。',
 };

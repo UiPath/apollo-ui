@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: 'Más información',
   enumPlaceholder: 'Seleccionar...',
   enumListPlaceholder: 'Seleccione opciones…',
@@ -70,4 +76,17 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: 'Se requiere la selección de campos',
   recipientRequiredError: 'El destinatario es necesario.',
   actionAppRequiredError: 'La aplicación de acción es necesaria.',
+  // Guardrail list section
+  headerTitle: 'Protecciones',
+  addButton: 'Agregar',
+  emptyState: 'No hay medidas de seguridad configuradas',
+  reorderHandleAriaLabel: 'Reordenar la medida de seguridad {{name}}',
+  editButtonAriaLabel: 'Editar protección',
+  deleteButtonAriaLabel: 'Eliminar medida de seguridad',
+  providerLabel: 'Proveedor',
+  previewChip: 'Vista previa',
+  byoDisabledNotice:
+    'La configuración de esta protección se ha deshabilitado y ya no se puede utilizar. Comuníquese con el administrador para volver a habilitar la configuración o reemplazar esta protección antes de ejecutar el agente.',
+  byoUnavailableNotice:
+    'La configuración de esta protección ya no está disponible. Reemplácela antes de ejecutar el agente.',
 };

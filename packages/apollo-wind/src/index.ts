@@ -35,6 +35,10 @@ export {
   getGuardrailSelectorErrorFields,
   initGuardrailBuilderFormData,
 } from './components/custom/guardrails/builder-utils';
+export type { GuardrailStatusBannerProps } from './components/custom/guardrails/components/guardrail-status-banner';
+export { GuardrailStatusBanner } from './components/custom/guardrails/components/guardrail-status-banner';
+export type { MixedScopesBannerProps } from './components/custom/guardrails/components/mixed-scopes-banner';
+export { MixedScopesBanner } from './components/custom/guardrails/components/mixed-scopes-banner';
 export type {
   GuardrailCopyKey,
   GuardrailCopyTranslator,
@@ -67,21 +71,43 @@ export type { GuardrailBuilderProps } from './components/custom/guardrails/guard
 export { GuardrailBuilder } from './components/custom/guardrails/guardrail-builder';
 export type { GuardrailFormLayoutProps } from './components/custom/guardrails/guardrail-form-layout';
 export { GuardrailFormLayout } from './components/custom/guardrails/guardrail-form-layout';
+export type { GuardrailListProps } from './components/custom/guardrails/guardrail-list';
+export { GuardrailList } from './components/custom/guardrails/guardrail-list';
+export type { GuardrailListDefinition } from './components/custom/guardrails/guardrail-list-utils';
+export {
+  defaultGuardrailItemId,
+  findGuardrailDefinition,
+  matchGuardrailDefinition,
+  moveGuardrail,
+  resolveGuardrailListItemState,
+} from './components/custom/guardrails/guardrail-list-utils';
 // -----------------------------------------------------------------------------
 // Guardrails (custom domain components)
 // -----------------------------------------------------------------------------
 export { GuardrailValidatorForm } from './components/custom/guardrails/guardrail-validator-form';
 export type {
   GuardrailBuilderLabels,
+  GuardrailListLabels,
   GuardrailValidatorFormLabels,
 } from './components/custom/guardrails/i18n';
 export {
   formatGuardrailFormMessage,
   GUARDRAIL_BUILDER_EN_LABELS,
   GUARDRAIL_FORM_EN_LABELS,
+  GUARDRAIL_LIST_EN_LABELS,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
+  resolveGuardrailListLabels,
 } from './components/custom/guardrails/i18n';
+export type {
+  GuardrailListItem,
+  GuardrailListItemActionsContext,
+  GuardrailListItemNotice,
+  GuardrailListItemState,
+  GuardrailListItemStatus,
+  GuardrailListMove,
+  GuardrailListOrigin,
+} from './components/custom/guardrails/list-types';
 export type {
   GuardrailFormLocale,
   GuardrailMessages,

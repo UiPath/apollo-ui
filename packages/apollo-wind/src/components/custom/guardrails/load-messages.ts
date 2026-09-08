@@ -1,7 +1,13 @@
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from './i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from './i18n';
 
 /** Every string the guardrails family localizes; catalogs are sparse subsets of this. */
-export type GuardrailMessages = Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels>;
+export type GuardrailMessages = Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+>;
 
 export const GUARDRAIL_FORM_LOCALES = [
   'de',

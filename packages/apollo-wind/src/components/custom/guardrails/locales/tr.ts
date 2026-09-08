@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: 'Daha fazla bilgi',
   enumPlaceholder: 'Seç...',
   enumListPlaceholder: 'Seçenek belirle...',
@@ -69,4 +75,17 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: 'Alan seçimi gereklidir',
   recipientRequiredError: 'Alıcı gereklidir',
   actionAppRequiredError: 'Eylem uygulaması gereklidir',
+  // Guardrail list section
+  headerTitle: 'Tasarım ve uygulama kuralları',
+  addButton: 'Ekle',
+  emptyState: 'Tasarım ve uygulama kuralı yapılandırılmamış',
+  reorderHandleAriaLabel: '{{name}} tasarım ve uygulama kuralını yeniden sırala',
+  editButtonAriaLabel: 'Tasarım ve uygulama kuralını düzenle',
+  deleteButtonAriaLabel: 'Tasarım ve uygulama kuralını sil',
+  providerLabel: 'Sağlayıcı',
+  previewChip: 'Önizleme',
+  byoDisabledNotice:
+    "Bu guardrail'in yapılandırması devre dışı bırakıldı ve artık kullanılamaz. Aracıyı çalıştırmadan önce yapılandırmayı yeniden etkinleştirmek veya bu guardrail'i değiştirmek için yöneticinizle iletişime geçin.",
+  byoUnavailableNotice:
+    'Bu guardrail yapılandırması artık kullanılamıyor. Aracıyı çalıştırmadan önce değiştirin.',
 };

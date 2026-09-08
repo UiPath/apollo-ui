@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: 'Plus d’informations',
   enumPlaceholder: 'Sélectionner...',
   enumListPlaceholder: 'Sélectionnez des options…',
@@ -68,4 +74,17 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: 'La sélection des champs est requise',
   recipientRequiredError: 'Le destinataire est requis',
   actionAppRequiredError: 'Une application Action est requise',
+  // Guardrail list section
+  headerTitle: 'Garde-fous',
+  addButton: 'Ajouter',
+  emptyState: 'Aucun garde-fou n’est configuré',
+  reorderHandleAriaLabel: 'Réorganiser le garde-fou {{name}}',
+  editButtonAriaLabel: 'Modifier le garde-fou',
+  deleteButtonAriaLabel: 'Supprimer le garde-fou',
+  providerLabel: 'Fournisseur',
+  previewChip: 'Aperçu',
+  byoDisabledNotice:
+    'La configuration de ce garde-fou a été désactivée et ne peut plus être utilisée. Avant d’exécuter l’agent, contactez votre administrateur pour réactiver la configuration ou remplacer ce garde-fou.',
+  byoUnavailableNotice:
+    'La configuration de ce garde-fou n’est plus disponible. Remplacez-la avant d’exécuter l’agent.',
 };

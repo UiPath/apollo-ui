@@ -46,10 +46,10 @@ export default defineConfig({
       // Vitest only enforces thresholds nested under `coverage.thresholds`;
       // top-level lines/functions/... are silently ignored.
       thresholds: {
-        lines: 60,
-        functions: 63,
-        branches: 54,
-        statements: 58,
+        lines: 69,
+        functions: 72,
+        branches: 63,
+        statements: 67,
       },
     },
   },

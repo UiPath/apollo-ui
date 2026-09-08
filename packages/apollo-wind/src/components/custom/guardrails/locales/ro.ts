@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: 'Mai multe informații',
   enumPlaceholder: 'Selectează...',
   enumListPlaceholder: 'Selectați opțiuni...',
@@ -69,4 +75,17 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: 'Este necesară selectarea câmpurilor',
   recipientRequiredError: 'Este necesar un destinatar',
   actionAppRequiredError: 'Aplicația Action este necesară',
+  // Guardrail list section
+  headerTitle: 'Mecanisme de Control',
+  addButton: 'Adaugă',
+  emptyState: 'Nu sunt configurate măsuri de protecție',
+  reorderHandleAriaLabel: 'Reordonați limita de protecție {{name}}',
+  editButtonAriaLabel: 'Editați limita de protecție',
+  deleteButtonAriaLabel: 'Ștergeți balustrada de protecție',
+  providerLabel: 'Furnizor',
+  previewChip: 'Previzualizare',
+  byoDisabledNotice:
+    'Această configurație a mecanismului de control a fost dezactivată și nu mai poate fi utilizată. Contactați administratorul pentru a reactiva configurația sau pentru a înlocui acest mecanism de control înainte de a executa agentul.',
+  byoUnavailableNotice:
+    'Configurația acestui mecanism de control nu mai este disponibilă. Înlocuiți-l înainte de a executa agentul.',
 };

@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: 'Mais informações',
   enumPlaceholder: 'Selecionar...',
   enumListPlaceholder: 'Selecionar opções…',
@@ -69,4 +75,17 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: 'A seleção de campos é obrigatória',
   recipientRequiredError: 'O destinatário é obrigatório',
   actionAppRequiredError: 'A aplicação Action é obrigatória',
+  // Guardrail list section
+  headerTitle: 'Barreiras de proteção',
+  addButton: 'Adicionar',
+  emptyState: 'Nenhuma barreira de proteção configurada',
+  reorderHandleAriaLabel: 'Reordenar barreira de proteção {{name}}',
+  editButtonAriaLabel: 'Editar verificador de integridade',
+  deleteButtonAriaLabel: 'Eliminar barreira de proteção',
+  providerLabel: 'Fornecedor',
+  previewChip: 'Pré-visualizar',
+  byoDisabledNotice:
+    'A configuração desta barreira de proteção foi desativada e já não pode ser utilizada. Contacte o seu administrador para reativar a configuração ou substituir esta barreira de proteção antes de executar o agente.',
+  byoUnavailableNotice:
+    'A configuração desta barreira de proteção já não está disponível. Substitua-a antes de executar o agente.',
 };

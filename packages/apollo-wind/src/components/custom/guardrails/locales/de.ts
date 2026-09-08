@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: 'Weitere Informationen',
   enumPlaceholder: 'Auswählen…',
   enumListPlaceholder: 'Optionen auswählen…',
@@ -69,4 +75,17 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: 'Eine Feldauswahl ist erforderlich.',
   recipientRequiredError: 'Empfänger ist erforderlich',
   actionAppRequiredError: 'Aktions-App ist erforderlich',
+  // Guardrail list section
+  headerTitle: 'Leitlinien',
+  addButton: 'Hinzufügen',
+  emptyState: 'Keine Leitplanken konfiguriert',
+  reorderHandleAriaLabel: 'Leitplanke {{name}} neu anordnen',
+  editButtonAriaLabel: 'Leitplanke bearbeiten',
+  deleteButtonAriaLabel: 'Leitplanke löschen',
+  providerLabel: 'Provider',
+  previewChip: 'Vorschau',
+  byoDisabledNotice:
+    'Die Konfiguration dieser Leitplanke wurde deaktiviert und kann nicht mehr verwendet werden. Wenden Sie sich an Ihren Administrator, um die Konfiguration wieder zu aktivieren oder diese Leitplanke zu ersetzen, bevor Sie den Agent ausführen.',
+  byoUnavailableNotice:
+    'Die Konfiguration dieser Leitplanke ist nicht mehr verfügbar. Ersetzen Sie sie, bevor Sie den Agent ausführen.',
 };

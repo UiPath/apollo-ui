@@ -1,9 +1,15 @@
 // Translations harvested from Flow Workbench's canvas catalog so the extraction
 // introduces no new translation work. Missing keys fall back to English per key at
 // resolve time (see i18n.ts).
-import type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from '../i18n';
+import type {
+  GuardrailBuilderLabels,
+  GuardrailListLabels,
+  GuardrailValidatorFormLabels,
+} from '../i18n';
 
-export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLabels> = {
+export const messages: Partial<
+  GuardrailValidatorFormLabels & GuardrailBuilderLabels & GuardrailListLabels
+> = {
   moreInformation: 'Más información',
   enumPlaceholder: 'Seleccionar...',
   enumListPlaceholder: 'Seleccionar opciones...',
@@ -69,4 +75,17 @@ export const messages: Partial<GuardrailValidatorFormLabels & GuardrailBuilderLa
   filterFieldsRequiredError: 'La selección de campos es obligatoria',
   recipientRequiredError: 'El destinatario es obligatorio',
   actionAppRequiredError: 'La aplicación de acción es obligatoria',
+  // Guardrail list section
+  headerTitle: 'Barandillas',
+  addButton: 'Añadir',
+  emptyState: 'No hay barreras de seguridad configuradas',
+  reorderHandleAriaLabel: 'Reordenar barrera de seguridad {{name}}',
+  editButtonAriaLabel: 'Editar barrera de seguridad',
+  deleteButtonAriaLabel: 'Eliminar barrera de seguridad',
+  providerLabel: 'Proveedor',
+  previewChip: 'Vista previa',
+  byoDisabledNotice:
+    'La configuración de esta barrera de seguridad se ha deshabilitado y ya no se puede utilizar. Póngase en contacto con su administrador para volver a habilitar la configuración o reemplazar esta barrera de seguridad antes de ejecutar el agente.',
+  byoUnavailableNotice:
+    'La configuración de esta barrera de seguridad ya no está disponible. Reemplázalo antes de ejecutar el agente.',
 };
