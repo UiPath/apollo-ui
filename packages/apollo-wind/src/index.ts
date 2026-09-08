@@ -35,6 +35,34 @@ export {
   getGuardrailSelectorErrorFields,
   initGuardrailBuilderFormData,
 } from './components/custom/guardrails/builder-utils';
+export type {
+  GuardrailCopyKey,
+  GuardrailCopyTranslator,
+} from './components/custom/guardrails/definitions-copy';
+export {
+  GUARDRAIL_COPY_EN,
+  GUARDRAIL_COPY_KEY_PREFIX,
+  GUARDRAIL_COPY_VALIDATORS,
+} from './components/custom/guardrails/definitions-copy';
+export type {
+  EnrichedGuardrailDefinition,
+  EnrichGuardrailDefinitionsOptions,
+  GuardrailFolderMetadata,
+} from './components/custom/guardrails/definitions-enrich';
+export {
+  enrichGuardrailDefinitions,
+  humanizeGuardrailParameterId,
+  isByoGuardrailDefinition,
+  withGuardrailFolderMetadata,
+} from './components/custom/guardrails/definitions-enrich';
+export { parseGuardrailDefinitions } from './components/custom/guardrails/definitions-parse';
+export type {
+  GuardrailDefinitionParseFailure,
+  GuardrailDefinitionParseIssue,
+  GuardrailDefinitionsParseResult,
+  GuardrailDefinitionWire,
+  GuardrailParameterDefinitionWire,
+} from './components/custom/guardrails/definitions-wire';
 export type { GuardrailBuilderProps } from './components/custom/guardrails/guardrail-builder';
 export { GuardrailBuilder } from './components/custom/guardrails/guardrail-builder';
 export type { GuardrailFormLayoutProps } from './components/custom/guardrails/guardrail-form-layout';

@@ -33,6 +33,31 @@ export {
 } from './builder-utils';
 export type { GuardrailChipProps } from './components/guardrail-chip';
 export { GuardrailChip, guardrailChipVariants } from './components/guardrail-chip';
+export type { GuardrailCopyKey, GuardrailCopyTranslator } from './definitions-copy';
+export {
+  GUARDRAIL_COPY_EN,
+  GUARDRAIL_COPY_KEY_PREFIX,
+  GUARDRAIL_COPY_VALIDATORS,
+} from './definitions-copy';
+export type {
+  EnrichedGuardrailDefinition,
+  EnrichGuardrailDefinitionsOptions,
+  GuardrailFolderMetadata,
+} from './definitions-enrich';
+export {
+  enrichGuardrailDefinitions,
+  humanizeGuardrailParameterId,
+  isByoGuardrailDefinition,
+  withGuardrailFolderMetadata,
+} from './definitions-enrich';
+export { parseGuardrailDefinitions } from './definitions-parse';
+export type {
+  GuardrailDefinitionParseFailure,
+  GuardrailDefinitionParseIssue,
+  GuardrailDefinitionsParseResult,
+  GuardrailDefinitionWire,
+  GuardrailParameterDefinitionWire,
+} from './definitions-wire';
 export type { GuardrailBuilderProps } from './guardrail-builder';
 export { GuardrailBuilder } from './guardrail-builder';
 export type { GuardrailFormLayoutProps } from './guardrail-form-layout';

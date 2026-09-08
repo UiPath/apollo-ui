@@ -97,8 +97,9 @@ Requires an ancestor `TooltipProvider` (for the per-parameter info tooltips).
   the matching editor and calls `onClearError(id)` before `onChange` when that parameter is
   edited.
 - **Definitions arrive pre-resolved.** `label`, `tooltip` and `optionLabels` are display
-  strings the host already localized; domain copy (PII entity names, validator descriptions)
-  never ships in this package.
+  strings, already resolved by the time they reach the component. Build them with the
+  definitions layer below, which owns the canonical English for built-in validators and takes
+  the host's translator; or resolve them yourself and pass them in.
 - **No product types cross the boundary.** `GuardrailValidatorParameter` structurally mirrors
   the wire shape both products persist, so host unions assign cleanly in both directions.
 - **Per-parameter override.** `renderParameter(ctx)` replaces the editor for any parameter
@@ -142,12 +143,116 @@ LOCALIZATION_GUIDE prescribes props-based localization). The catalogs follow the
 never-rejecting loader (`loadGuardrailMessages`). If catalogs are ever dropped,
 the `labels` prop remains a complete, non-breaking localization path.
 
+**The copy rule, in two halves.** Chrome copy (the component's own placeholders, buttons and
+aria labels) is localized in-package, as above. Domain copy (validator names and descriptions,
+parameter labels and tooltips, PII entity names) ships **English-only, plus a translator seam**:
+the canonical strings live in `definitions-copy.ts` and each host resolves them through its own
+i18n toolchain. Domain copy is here rather than host-side for one specific reason, covered
+below: the backend cannot supply it, so the alternative is every product describing the same
+catalog itself, which is what produced the drift this layer exists to end.
+
 ### Consuming from a shadow-DOM host (Agents stage 2)
 
 Radix overlays (the enum select, the enum-list popover, tooltips) portal to `document.body`
 by default and escape shadow roots; wrap the form's subtree with `PortalContainerProvider`
 and inject the package CSS into the shadow root (see `HitlSchemaCanvas` in `frontend-sw` for
 the `?inline` injection precedent).
+
+## Definitions layer
+
+Four modules turn a raw guardrail definitions API response into the display-ready shape the
+components above render. No fetching: every host's transport differs irreducibly (different
+query libraries, different HTTP clients, tenant id versus tenant name in the URL, and one host
+that never fetches at all because its definitions arrive over `postMessage`), so definitions
+arrive as data and the host keeps its own transport, exactly as the components keep their own
+values.
+
+| Module | Role |
+| --- | --- |
+| `definitions-wire.ts` | Hand-written public wire types. No zod, ever. |
+| `definitions-parse.ts` | Private zod schemas plus `parseGuardrailDefinitions`. The only zod importer. |
+| `definitions-copy.ts` | Canonical English for built-in validators, and the copy-key contract. |
+| `definitions-enrich.ts` | `enrichGuardrailDefinitions` and the display-ready output type. |
+
+```ts
+import {
+  enrichGuardrailDefinitions,
+  parseGuardrailDefinitions,
+  withGuardrailFolderMetadata,
+} from '@uipath/apollo-wind';
+
+const { definitions, invalid, inputError } = parseGuardrailDefinitions(await response.json());
+if (invalid.length > 0) logger.warn('guardrail definitions dropped', invalid);
+
+const enriched = enrichGuardrailDefinitions(definitions, {
+  translate: (key, defaultValue) => t(key, { defaultValue }),
+  hiddenValidators: ['prompt_injection'],
+});
+
+// BYO folder paths are not on the wire; stitch them on from your own connection lookup.
+const withFolders = withGuardrailFolderMetadata(enriched, folderByConnectionId);
+```
+
+`EnrichedGuardrailDefinition extends GuardrailDefinition`, so the result passes straight into
+`<GuardrailBuilder definition={...} />` while still carrying the fields hosts need outside the
+form (`folderPath`, `byoConnectorName`, `byoGuardrailConnectionId`, `byoConnectorKey`,
+`byoConfigurationId`, `folderKey`, and the payload/stage metadata both products discard today).
+
+### Contract
+
+- **Never throws.** `parseGuardrailDefinitions` returns a result: valid definitions in input
+  order, plus one `invalid` entry per dropped definition with its index, its best-effort
+  validator id and its issues. A guardrail surface renders inside a shadow root with no error
+  boundary, where a thrown parse error blanks the whole panel. A non-array body reports
+  `inputError` rather than throwing on `.map`.
+- **A bad definition is dropped whole**, not partially parsed, which is what both products do
+  today: half a definition renders a form that cannot be saved.
+- **Unknown keys are stripped, not rejected.** The API adds fields without a frontend release,
+  and a strict schema would turn each addition into an empty catalog. Note this parser only ever
+  sees *definitions*: persisted guardrail values, sidecar parameters included, never pass through
+  it.
+- **zod stays private.** No exported type references zod, transitively or otherwise, because
+  consuming hosts sit on different zod majors. Enforced three ways: a compile-time
+  bidirectional assignability assertion against the hand-written wire types, a runtime key-set
+  assertion, and a source-level guard test asserting `definitions-parse.ts` is the only importer.
+- **Enrichment is a locale snapshot.** Every string resolves eagerly, so re-run it when the host
+  locale changes.
+- **Hiding is host policy.** `hiddenValidators` is a parameter, not a catalog field, and BYO
+  definitions are never hidden by it: a connector manifest can legitimately declare
+  `validator: "pii_detection"`.
+
+### Why the copy lives here
+
+The backend does not send display copy for built-in validators and cannot be made to without a
+backend change: `OutOfTheBoxGuardrailDefinitionDto` marks the validator's friendly name
+`[JsonIgnore]`, and `OutOfTheBoxGuardrailDefinitions` never sets `displayName`, `description` or
+`optionLabels` for any built-in. Only BYO definitions carry display metadata, from their
+connector manifest. So every frontend has had to describe the same catalog itself, and the two
+hand-maintained tables had already drifted in 16 strings. Owning it once here ends that class of
+bug; translations stay in each host's toolchain.
+
+Copy precedence is asymmetric between the two levels, preserving what both products already
+render:
+
+| Level | Winner |
+| --- | --- |
+| Definition `displayName` / `description` | Curated catalog over the wire, for non-BYO |
+| Parameter `label` / `tooltip` | Wire (`displayName` / `description`) over curated |
+| `optionLabels` | Merged, manifest over curated |
+| Anything on a BYO definition | Manifest only. No curated copy at any level |
+
+Copy keys are `guardrail/<validator>/<slot>`, always built by the module's own helpers and never
+written by hand, and the separator is `/` deliberately. `.` is i18next's default `keySeparator`
+and one host's catalog is flat, so a dotted key would resolve as a nested path, miss, and fall
+back to the English default: English would look perfect while every other locale went quietly
+untranslated. `:` is the namespace separator and fails the same way. Option keys use the raw wire
+value (`USSocialSecurityNumber`) so the key is derivable from the data rather than transcribed,
+which is how the two products ended up with `finNationalId` and `fiNationalId` for one option.
+
+`GUARDRAIL_COPY_EN` is the flat English record a host feeds its catalog generation. Regenerate
+and diff it in host CI: both i18next and lingui prefer their own catalog's English over a
+supplied `defaultValue`, so a host that bumps this package without regenerating silently keeps
+the old strings and re-creates the drift.
 
 ## Built on the forms/ MetadataForm stack
 
