@@ -7,6 +7,7 @@ import {
   XIcon,
 } from "lucide-react";
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -261,6 +262,7 @@ function ComboboxBadge({
   children,
   ...props
 }: ComboboxBadgeProps) {
+  const { t } = useTranslation();
   const { value: selectedValues, onValueChange } = useComboboxContext();
 
   function handleRemove(e: React.MouseEvent | React.KeyboardEvent) {
@@ -290,7 +292,7 @@ function ComboboxBadge({
         }
       >
         <XIcon className="size-3" />
-        <span className="sr-only">{"Remove"}</span>
+        <span className="sr-only">{t("remove")}</span>
       </button>
     </Badge>
   );
