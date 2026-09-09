@@ -1033,7 +1033,7 @@ export function MatchCarousel({
     const summary = `Narrowed ${laptops.length} laptops to ${qualifying.length} that meet your ${cardRamMinThreshold}GB minimum, picked the ${lead.name}.`;
     const detail = [
       `${laptops.length} laptops in the catalog matched your request.`,
-      `${qualifying.length} met the ${cardRamMinThreshold}GB minimum.`,
+      "**Policy checked:** Only showing laptops that meet engineering spec.",
       `Picked ${lead.name}: best price after EPP and meets full spec.`,
     ];
     addStepEntry("choose", summary, detail);

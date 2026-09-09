@@ -109,6 +109,27 @@ function msg(
   return { id, role, parts: [{ type: "text", content }] };
 }
 
+/** Timeline detail lines are plain strings, not markdown, so `**bold**`
+ * segments (e.g. "Policy checked:") need their own tiny parser rather than
+ * pulling in the full `AiChatMarkdown` block renderer, which adds prose
+ * spacing meant for chat responses, not compact one-line bullets. */
+function renderDetailLine(line: string): ReactNode {
+  const segments = line.split(/\*\*(.+?)\*\*/g);
+  if (segments.length === 1) return line;
+  return segments.map((segment, index) =>
+    index % 2 === 1 ? (
+      // A line's split segments are fixed at render and never reordered,
+      // inserted into, or removed from, so the index is a stable key here.
+      // oxlint-disable-next-line eslint-plugin-react/no-array-index-key
+      <strong key={index} className="font-semibold text-foreground">
+        {segment}
+      </strong>
+    ) : (
+      segment
+    ),
+  );
+}
+
 /** Renders an assistant message by walking its blocks in order (prompt 45):
  * prose through `AiChatMessage` exactly as before, tables through the
  * shared `StructuredTable`. `children` (the receipt-chip treatment for a
@@ -615,7 +636,7 @@ export function ShelfDock({
                                   aria-hidden
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                  {line}
+                                  {renderDetailLine(line)}
                                 </p>
                               </div>
                             ))}
