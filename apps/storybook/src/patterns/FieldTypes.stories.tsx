@@ -466,10 +466,17 @@ function StatusBadge({ status }: { status: Status }) {
 }
 
 // Live, interactive demo of a real fieldType, not a screenshot, so it can never drift
-// out of sync with the component it documents.
-function FieldTypeExample({ fieldType }: { fieldType: LockableFieldType }) {
-  const [value, setValue] = useState('');
-  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
+// out of sync with the component it documents. Seeded into fixed or expression mode
+// so both variants are visible without anyone having to click the mode switch.
+function FieldTypeExample({
+  fieldType,
+  initialMode = 'fixed',
+}: {
+  fieldType: LockableFieldType;
+  initialMode?: LockableValueFieldMode;
+}) {
+  const [value, setValue] = useState(initialMode === 'expression' ? '$vars.example' : '');
+  const [mode, setMode] = useState<LockableValueFieldMode>(initialMode);
   return (
     <div className="w-44">
       <LockableValueField
@@ -482,6 +489,14 @@ function FieldTypeExample({ fieldType }: { fieldType: LockableFieldType }) {
         showFieldActions={false}
       />
     </div>
+  );
+}
+
+function ExampleLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+      {children}
+    </span>
   );
 }
 
@@ -515,7 +530,22 @@ function VisualExampleCell({ visual }: { visual?: VisualExample }) {
   if (!visual) return <GapPlaceholder />;
   if (visual === 'mode-fixed') return <ModeExample mode="fixed" />;
   if (visual === 'mode-expression') return <ModeExample mode="expression" />;
-  return <FieldTypeExample fieldType={visual} />;
+
+  if (!FIELD_TYPE_META[visual].supportsExpression) {
+    return <FieldTypeExample fieldType={visual} />;
+  }
+
+  // Expression-capable types get both variants stacked, since the fixed vs.
+  // expression toggle changes the control's placeholder, styling, and (for a
+  // custom renderExpressionEditor) the editor itself, not just its value.
+  return (
+    <div className="flex flex-col gap-2">
+      <ExampleLabel>Fixed</ExampleLabel>
+      <FieldTypeExample fieldType={visual} initialMode="fixed" />
+      <ExampleLabel>Expression</ExampleLabel>
+      <FieldTypeExample fieldType={visual} initialMode="expression" />
+    </div>
+  );
 }
 
 function CategoryTable({ title, description, rows, rowLabel = 'Type' }: Category) {
