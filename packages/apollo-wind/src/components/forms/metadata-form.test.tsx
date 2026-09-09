@@ -1232,6 +1232,30 @@ describe('string-list field', () => {
     expect(screen.getByLabelText('Phrases 1')).toHaveAttribute('maxlength', '50');
   });
 
+  it('marks every row invalid when the list carries an error', () => {
+    const { rerender } = render(
+      <MetadataForm
+        schema={stringListSchema}
+        values={{ phrases: ['first', 'second'] }}
+        disableValidation
+        container="div"
+      />
+    );
+    expect(screen.getByLabelText('Phrases 1')).not.toHaveAttribute('aria-invalid');
+
+    rerender(
+      <MetadataForm
+        schema={stringListSchema}
+        values={{ phrases: ['first', 'second'] }}
+        errors={{ phrases: 'Add at least one phrase.' }}
+        disableValidation
+        container="div"
+      />
+    );
+    expect(screen.getByLabelText('Phrases 1')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('Phrases 2')).toHaveAttribute('aria-invalid', 'true');
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <MetadataForm schema={stringListSchema} disableValidation container="div" />

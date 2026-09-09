@@ -108,6 +108,10 @@ export function StringListField({
               maxLength={field.maxLength}
               disabled={disabled}
               aria-label={`${field.label} ${index + 1}`}
+              // The error belongs to the list as a whole, so every row carries the invalid
+              // state: it drives Textarea's aria-invalid styling and gives assistive tech
+              // the signal that the FormFieldError text below is about these inputs.
+              aria-invalid={error ? true : undefined}
               className="flex-1"
             />
             <Button
