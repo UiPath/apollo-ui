@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { FormField, FormFieldDescription, FormFieldError, FormFieldLabel } from './form-field';
+import { TooltipProvider } from './tooltip';
 
 describe('FormField', () => {
   it('composes the field anatomy without any form context', () => {
@@ -42,6 +43,38 @@ describe('FormFieldLabel', () => {
   it('omits the indicator by default', () => {
     render(<FormFieldLabel>Endpoint</FormFieldLabel>);
     expect(screen.queryByText('*')).not.toBeInTheDocument();
+  });
+
+  it('renders the info tooltip trigger after the required indicator', () => {
+    render(
+      <TooltipProvider>
+        <FormFieldLabel required tooltip="The URL to call." tooltipAriaLabel="About the endpoint">
+          Endpoint
+        </FormFieldLabel>
+      </TooltipProvider>
+    );
+    const trigger = screen.getByRole('button', { name: 'About the endpoint' });
+    expect(trigger).toBeInTheDocument();
+    // Order matters: label text, then the asterisk, then the tooltip trigger.
+    expect(screen.getByText('*').compareDocumentPosition(trigger)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+  });
+
+  it('defaults the tooltip trigger name and renders none without a tooltip', () => {
+    const { rerender } = render(
+      <TooltipProvider>
+        <FormFieldLabel tooltip="The URL to call.">Endpoint</FormFieldLabel>
+      </TooltipProvider>
+    );
+    expect(screen.getByRole('button', { name: 'More information' })).toBeInTheDocument();
+
+    rerender(
+      <TooltipProvider>
+        <FormFieldLabel>Endpoint</FormFieldLabel>
+      </TooltipProvider>
+    );
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });
 

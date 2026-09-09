@@ -1,6 +1,6 @@
 import type { Meta } from '@storybook/react-vite';
+import { FormFieldLabel } from './form-field';
 import { InfoTooltip } from './info-tooltip';
-import { Label, RequiredIndicator } from './label';
 import { Textarea } from './textarea';
 import { TooltipProvider } from './tooltip';
 
@@ -18,8 +18,10 @@ The trigger is a real \`<button>\`, so the tooltip is keyboard-reachable and scr
 announce it from the required \`aria-label\`. An ancestor \`TooltipProvider\` is required:
 Radix throws \`Tooltip must be used within TooltipProvider\` without one.
 
-Schema-driven forms get this for free. Set \`tooltip\` (and optionally \`tooltipAriaLabel\`)
-on any field metadata and \`MetadataForm\` renders the trigger beside the label.
+**In forms, reach for \`FormFieldLabel\` instead of composing this by hand**: it takes
+\`tooltip\` / \`tooltipAriaLabel\` and places the trigger after the required indicator for you.
+Schema-driven forms get it for free — set \`tooltip\` on any field metadata and
+\`MetadataForm\` renders it.
         `,
       },
     },
@@ -43,16 +45,22 @@ export const Default = {
   },
 };
 
-/** The usual placement: after a field label, before the required indicator. */
+/**
+ * The idiomatic form usage: `FormFieldLabel` owns the composition, so the trigger lands
+ * after the required indicator without the call site assembling the parts.
+ */
 export const NextToALabel = {
   args: Default.args,
   render: (args: React.ComponentProps<typeof InfoTooltip>) => (
     <div className="w-80 space-y-1.5">
-      <Label htmlFor="blocked-phrases">
+      <FormFieldLabel
+        htmlFor="blocked-phrases"
+        required
+        tooltip={args.content}
+        tooltipAriaLabel={args['aria-label']}
+      >
         Blocked phrases
-        <RequiredIndicator />
-        <InfoTooltip {...args} />
-      </Label>
+      </FormFieldLabel>
       <Textarea id="blocked-phrases" placeholder="confidential" minRows={2} />
     </div>
   ),

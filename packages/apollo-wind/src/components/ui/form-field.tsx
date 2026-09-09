@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Label, RequiredIndicator } from '@/components/ui/label';
 import { cn } from '@/lib/index';
 
@@ -36,14 +37,24 @@ FormField.displayName = 'FormField';
 export interface FormFieldLabelProps extends React.ComponentPropsWithoutRef<typeof Label> {
   /** Appends the required indicator after the label text. */
   required?: boolean;
+  /**
+   * Appends an info-tooltip trigger after the label text and the required indicator.
+   * Requires an ancestor `TooltipProvider` (Radix throws without one).
+   */
+  tooltip?: React.ReactNode;
+  /** Accessible name of the tooltip trigger. Defaults to 'More information'. */
+  tooltipAriaLabel?: string;
 }
 
 /** Names the field. Pair with a control via `htmlFor`. */
 const FormFieldLabel = React.forwardRef<HTMLLabelElement, FormFieldLabelProps>(
-  ({ children, required = false, ...props }, ref) => (
+  ({ children, required = false, tooltip, tooltipAriaLabel, ...props }, ref) => (
     <Label ref={ref} data-slot="form-field-label" {...props}>
       {children}
       {required && <RequiredIndicator />}
+      {tooltip !== undefined && tooltip !== null && tooltip !== false && (
+        <InfoTooltip content={tooltip} aria-label={tooltipAriaLabel ?? 'More information'} />
+      )}
     </Label>
   )
 );
