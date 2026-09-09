@@ -793,6 +793,18 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
         <Divider />
 
         <section>
+          <SectionTitle>What each type looks like</SectionTitle>
+          <SectionDescription>
+            A side-by-side comparison, each type in its default fixed-value state. The tables below
+            drill into one type at a time: its gaps, its status, and (where it applies) its
+            expression variant.
+          </SectionDescription>
+          <VisualReferenceGrid />
+        </section>
+
+        <Divider />
+
+        <section>
           <SectionTitle>Supported today</SectionTitle>
           <SectionDescription>
             The fieldType values LockableValueField already implements, read live from{' '}
@@ -802,18 +814,6 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
             .
           </SectionDescription>
           <SupportedTodayStrip />
-        </section>
-
-        <Divider />
-
-        <section>
-          <SectionTitle>What each type looks like</SectionTitle>
-          <SectionDescription>
-            A side-by-side comparison, each type in its default fixed-value state. The tables below
-            drill into one type at a time: its gaps, its status, and (where it applies) its
-            expression variant.
-          </SectionDescription>
-          <VisualReferenceGrid />
         </section>
 
         <Divider />
