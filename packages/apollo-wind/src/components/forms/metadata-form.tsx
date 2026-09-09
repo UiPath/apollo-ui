@@ -394,7 +394,12 @@ export function MetadataForm({
           FormActions inside TabbedStepForm so it's suppressed when no tab is
           visible. Only single-page forms render FormActions here. */}
       {!stableSchema.steps && (container !== 'div' || stableSchema.actions) && (
-        <FormActions schema={stableSchema} context={context} onReset={handleReset} />
+        <FormActions
+          schema={stableSchema}
+          context={context}
+          onReset={handleReset}
+          onSubmit={container === 'div' ? handleFormSubmit : undefined}
+        />
       )}
     </>
   );
@@ -917,12 +922,19 @@ interface FormActionsProps {
   schema: FormSchema;
   context: FormContext;
   onReset: () => void;
+  /**
+   * Supplied only for `container="div"`, where there is no owning <form>: submit actions
+   * render as plain buttons calling this instead of `type="submit"`, which would otherwise
+   * submit whatever ancestor form the host embedded us in.
+   */
+  onSubmit?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const FormActions = React.memo(function FormActions({
   schema,
   context,
   onReset,
+  onSubmit,
 }: FormActionsProps) {
   // context is a stable reference and this component is memoized, so it has to
   // subscribe to the submit state and condition fields it reads itself.
@@ -973,7 +985,8 @@ const FormActions = React.memo(function FormActions({
         return (
           <Button
             key={action.id}
-            type={action.type === 'submit' ? 'submit' : 'button'}
+            type={action.type === 'submit' && !onSubmit ? 'submit' : 'button'}
+            onClick={action.type === 'submit' && onSubmit ? onSubmit : undefined}
             variant={action.variant || 'default'}
             disabled={action.disabled || (action.type === 'submit' && isSubmitting)}
           >

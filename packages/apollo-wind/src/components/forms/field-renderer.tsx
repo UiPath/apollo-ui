@@ -360,6 +360,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             type={field.type}
             placeholder={field.placeholder}
             disabled={disabled}
+            aria-invalid={error ? true : undefined}
             aria-label={field.ariaLabel}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
@@ -390,6 +391,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             step={field.step}
             placeholder={field.placeholder}
             disabled={disabled}
+            aria-invalid={error ? true : undefined}
             onChange={(e) => formField.onChange(parseFloat(e.target.value))}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
@@ -470,6 +472,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
       return (
         <FormField>
           <FormFieldLabel
+            htmlFor={field.name}
             required={required}
             tooltip={field.tooltip}
             tooltipAriaLabel={field.tooltipAriaLabel}
@@ -477,6 +480,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             {field.label}
           </FormFieldLabel>
           <MultiSelect
+            id={field.name}
             selected={(formField.value as string[]) || []}
             onChange={formField.onChange}
             options={options.map((opt) => ({
@@ -640,6 +644,8 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             {field.label}
           </FormFieldLabel>
           <FileUpload
+            id={field.name}
+            ariaLabel={field.ariaLabel ?? field.label}
             accept={field.accept}
             multiple={field.multiple}
             disabled={disabled}
@@ -660,6 +666,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
           field={field}
           value={formField.value as string[] | undefined}
           onChange={formField.onChange}
+          onBlur={formField.onBlur}
           error={error}
           disabled={disabled}
           required={required}

@@ -1,4 +1,5 @@
 import type { Meta } from '@storybook/react-vite';
+import type { ComponentProps } from 'react';
 import { FormFieldLabel } from './form-field';
 import { InfoTooltip } from './info-tooltip';
 import { Textarea } from './textarea';
@@ -51,7 +52,7 @@ export const Default = {
  */
 export const NextToALabel = {
   args: Default.args,
-  render: (args: React.ComponentProps<typeof InfoTooltip>) => (
+  render: (args: ComponentProps<typeof InfoTooltip>) => (
     <div className="w-80 space-y-1.5">
       <FormFieldLabel
         htmlFor="blocked-phrases"
