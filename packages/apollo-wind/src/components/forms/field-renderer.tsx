@@ -10,9 +10,8 @@ import {
   FormFieldError,
   FormFieldLabel,
 } from '@/components/ui/form-field';
-import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Input } from '@/components/ui/input';
-import { Label, RequiredIndicator } from '@/components/ui/label';
+import { Label } from '@/components/ui/label';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
@@ -337,41 +336,20 @@ interface FieldByTypeProps {
   options: FieldOption[];
 }
 
-/**
- * Field label with the required indicator and the optional info tooltip. The indicator is
- * composed manually (not via FormFieldLabel's `required` prop) so the tooltip trigger lands
- * after the asterisk. Tooltips require an ancestor TooltipProvider.
- */
-function FieldLabel({
-  field,
-  required,
-  htmlFor,
-}: {
-  field: FieldMetadata;
-  required: boolean;
-  htmlFor?: string;
-}) {
-  return (
-    <FormFieldLabel htmlFor={htmlFor}>
-      {field.label}
-      {required && <RequiredIndicator />}
-      {field.tooltip && (
-        <InfoTooltip
-          content={field.tooltip}
-          aria-label={field.tooltipAriaLabel ?? 'More information'}
-        />
-      )}
-    </FormFieldLabel>
-  );
-}
-
 function FieldByType({ field, formField, error, disabled, required, options }: FieldByTypeProps) {
   switch (field.type) {
     case 'text':
     case 'email':
       return (
         <FormField>
-          <FieldLabel field={field} required={required} htmlFor={field.name} />
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Input
             id={field.name}
             value={formField.value as string | undefined}
@@ -392,7 +370,14 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'number':
       return (
         <FormField>
-          <FieldLabel field={field} required={required} htmlFor={field.name} />
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Input
             id={field.name}
             value={formField.value as number | undefined}
@@ -415,7 +400,14 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'textarea':
       return (
         <FormField>
-          <FieldLabel field={field} required={required} htmlFor={field.name} />
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Textarea
             id={field.name}
             value={formField.value as string | undefined}
@@ -437,7 +429,14 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'select':
       return (
         <FormField>
-          <FieldLabel field={field} required={required} htmlFor={field.name} />
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Select
             value={formField.value as string | undefined}
             onValueChange={formField.onChange}
@@ -470,7 +469,13 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'multiselect':
       return (
         <FormField>
-          <FieldLabel field={field} required={required} />
+          <FormFieldLabel
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <MultiSelect
             selected={(formField.value as string[]) || []}
             onChange={formField.onChange}
@@ -516,7 +521,14 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         <FormField>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <FieldLabel field={field} required={required} htmlFor={field.name} />
+              <FormFieldLabel
+                htmlFor={field.name}
+                required={required}
+                tooltip={field.tooltip}
+                tooltipAriaLabel={field.tooltipAriaLabel}
+              >
+                {field.label}
+              </FormFieldLabel>
               <FormFieldDescription>{field.description}</FormFieldDescription>
             </div>
             <Switch
@@ -533,7 +545,13 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'radio':
       return (
         <FormField>
-          <FieldLabel field={field} required={required} />
+          <FormFieldLabel
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <RadioGroup
             value={formField.value as string | null | undefined}
             onValueChange={formField.onChange}
@@ -571,7 +589,13 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'date':
       return (
         <FormField>
-          <FieldLabel field={field} required={required} />
+          <FormFieldLabel
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <DatePicker
             value={formField.value as Date | undefined}
             onValueChange={formField.onChange}
@@ -586,7 +610,13 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'datetime':
       return (
         <FormField>
-          <FieldLabel field={field} required={required} />
+          <FormFieldLabel
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <DateTimePicker
             value={formField.value as Date | undefined}
             onValueChange={formField.onChange}
@@ -602,7 +632,13 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'file':
       return (
         <FormField>
-          <FieldLabel field={field} required={required} />
+          <FormFieldLabel
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <FileUpload
             accept={field.accept}
             multiple={field.multiple}
@@ -685,7 +721,13 @@ function SliderField({ field, formField, error, disabled, required }: SliderFiel
   return (
     <FormField>
       <div className="flex justify-between">
-        <FieldLabel field={field} required={required} />
+        <FormFieldLabel
+          required={required}
+          tooltip={field.tooltip}
+          tooltipAriaLabel={field.tooltipAriaLabel}
+        >
+          {field.label}
+        </FormFieldLabel>
         <span className="text-sm text-muted-foreground">{displayValue as React.ReactNode}</span>
       </div>
       <Slider
