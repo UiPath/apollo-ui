@@ -33,6 +33,34 @@ export {
 } from './builder-utils';
 export type { GuardrailChipProps } from './components/guardrail-chip';
 export { GuardrailChip, guardrailChipVariants } from './components/guardrail-chip';
+export type { GuardrailCopyTable, GuardrailValidatorCopy } from './definitions-copy';
+export {
+  CURATED_GUARDRAIL_VALIDATORS,
+  GUARDRAIL_COPY_EN,
+  GUARDRAIL_COPY_EN_MESSAGES,
+  useGuardrailDefinitionCopy,
+} from './definitions-copy';
+export type {
+  EnrichedGuardrailDefinition,
+  EnrichGuardrailDefinitionsOptions,
+  GuardrailFolderMetadata,
+} from './definitions-enrich';
+export {
+  enrichGuardrailDefinitions,
+  humanizeGuardrailParameterId,
+  isByoGuardrailDefinition,
+  withGuardrailFolderMetadata,
+} from './definitions-enrich';
+export type {
+  GuardrailDefinitionParseIssue,
+  GuardrailDefinitionsParseResult,
+} from './definitions-parse';
+export { parseGuardrailDefinitions } from './definitions-parse';
+export type {
+  GuardrailDefinitionWire,
+  GuardrailParameterDefinitionWire,
+  GuardrailParameterWireBase,
+} from './definitions-wire';
 export type { GuardrailBuilderProps } from './guardrail-builder';
 export { GuardrailBuilder } from './guardrail-builder';
 export type { GuardrailFormLayoutProps } from './guardrail-form-layout';
@@ -55,6 +83,15 @@ export type {
   GuardrailValidatorFormProps,
   GuardrailValidatorParameter,
 } from './types';
+export type {
+  GuardrailDefinitionsRequestContext,
+  UseGuardrailDefinitionsOptions,
+  UseGuardrailDefinitionsResult,
+} from './use-guardrail-definitions';
+export {
+  GUARDRAIL_DEFINITIONS_PATH,
+  useGuardrailDefinitions,
+} from './use-guardrail-definitions';
 export {
   dropEmptyOptionalParameters,
   getOutOfRangeParameterIds,
