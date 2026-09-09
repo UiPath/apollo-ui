@@ -18,6 +18,8 @@ export interface StringListFieldProps {
   field: StringListFieldMetadata;
   value: string[] | undefined;
   onChange: (value: string[]) => void;
+  /** Forwarded to every row so blur-mode validation and touched state work. */
+  onBlur?: () => void;
   error?: string;
   disabled?: boolean;
   required?: boolean;
@@ -30,6 +32,7 @@ export function StringListField({
   field,
   value,
   onChange,
+  onBlur,
   error,
   disabled = false,
   required = false,
@@ -104,6 +107,7 @@ export function StringListField({
             <Textarea
               value={item}
               onChange={(e) => updateItem(index, e.target.value)}
+              onBlur={onBlur}
               minRows={field.minRows ?? 2}
               maxLength={field.maxLength}
               disabled={disabled}

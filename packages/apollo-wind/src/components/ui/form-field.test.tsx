@@ -59,6 +59,10 @@ describe('FormFieldLabel', () => {
     expect(screen.getByText('*').compareDocumentPosition(trigger)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
+    // ...and the trigger must not be a <label> descendant: <button> is labelable, which
+    // <label>'s content model forbids and which makes clicking it ambiguous with
+    // activating the labelled control.
+    expect(trigger.closest('label')).toBeNull();
   });
 
   it('defaults the tooltip trigger name and renders none without a tooltip', () => {

@@ -1139,6 +1139,28 @@ describe('controlled host seam', () => {
     expect(container.querySelector('form')).toBeNull();
     expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument();
   });
+
+  it("container='div' renders schema submit actions as plain buttons that still submit", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const withActions: FormSchema = {
+      ...basicSchema,
+      actions: [{ id: 'submit', type: 'submit', label: 'Save', variant: 'default' }],
+    };
+
+    const { container } = render(
+      <MetadataForm schema={withActions} disableValidation container="div" onSubmit={onSubmit} />
+    );
+
+    expect(container.querySelector('form')).toBeNull();
+    const save = screen.getByRole('button', { name: 'Save' });
+    // type="submit" without an owning <form> would submit whatever ancestor form the host
+    // embedded this in — the exact hazard container='div' exists to avoid.
+    expect(save).toHaveAttribute('type', 'button');
+
+    await user.click(save);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
 });
 
 // ============================================================================
