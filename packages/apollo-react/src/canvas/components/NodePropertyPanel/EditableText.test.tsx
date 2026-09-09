@@ -1,6 +1,7 @@
-import type { HTMLAttributes, ReactNode } from 'react';
+import { type HTMLAttributes, type ReactNode, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, userEvent } from '../../utils/testing';
+import type { EditableTextProps } from './EditableText';
 import { EditableText } from './EditableText';
 
 // Stand in for the real overflow detection, which needs layout jsdom does not do.
@@ -17,21 +18,90 @@ vi.mock('../CanvasTooltip', async () => {
   };
 });
 
+/** Owns the text, as a real consumer must: the field only shows what comes back through `value`. */
+function Controlled({
+  initial,
+  validate,
+  onChangeSpy,
+  ...props
+}: {
+  initial: string;
+  validate?: (text: string) => string | undefined;
+  onChangeSpy?: (next: string) => void;
+} & Omit<EditableTextProps, 'value' | 'onChange'>) {
+  const [text, setText] = useState(initial);
+
+  return (
+    <EditableText
+      {...props}
+      value={text}
+      onChange={(next) => {
+        onChangeSpy?.(next);
+        setText(next);
+      }}
+      error={props.error ?? validate?.(text)}
+    />
+  );
+}
+
 describe('EditableText', () => {
-  it('renders static text with no interactive affordance when onChange is omitted', () => {
+  it('renders static text with no interactive affordance when the callbacks are omitted', () => {
     render(<EditableText value="End" />);
     expect(screen.getByText('End')).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
+  it('stays static without onSubmit, since it would have nowhere to commit', () => {
+    render(<EditableText value="End" onChange={vi.fn()} />);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('does not enter edit mode when disabled', async () => {
+    const user = userEvent.setup();
+    render(<Controlled initial="End" onSubmit={vi.fn()} aria-label="Node name" disabled />);
+
+    const trigger = screen.getByRole('button', { name: /^Node name/ });
+    await user.click(trigger);
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    // The trigger stays a focusable button (aria-disabled, not disabled), so a
+    // truncated value keeps its overflow tooltip.
+    expect(trigger).toHaveAttribute('data-tooltip-trigger', 'End');
+    expect(trigger).not.toBeDisabled();
+  });
+
+  it('leaves edit mode without submitting when disabled mid-edit', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const { rerender } = render(
+      <EditableText value="End" onChange={vi.fn()} onSubmit={onSubmit} aria-label="Node name" />
+    );
+
+    await user.click(screen.getByRole('button', { name: /^Node name/ }));
+    rerender(
+      <EditableText
+        value="Ending"
+        onChange={vi.fn()}
+        onSubmit={onSubmit}
+        aria-label="Node name"
+        disabled
+      />
+    );
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+    // The text belongs to the owner, so it survives the editor closing.
+    expect(screen.getByRole('button', { name: /^Node name/ })).toHaveTextContent('Ending');
+  });
+
   it('shows the placeholder in place of an empty value', () => {
-    render(<EditableText value="" placeholder="Control" onChange={vi.fn()} />);
+    render(<Controlled initial="" placeholder="Control" onSubmit={vi.fn()} />);
     expect(screen.getByRole('button', { name: 'Control' })).toBeInTheDocument();
   });
 
   it('enters edit mode on a single click and selects the current value', async () => {
     const user = userEvent.setup();
-    render(<EditableText value="End" onChange={vi.fn()} aria-label="Node name" />);
+    render(<Controlled initial="End" onSubmit={vi.fn()} aria-label="Node name" />);
 
     await user.click(screen.getByRole('button', { name: /^Node name/ }));
 
@@ -42,24 +112,40 @@ describe('EditableText', () => {
     expect((input as HTMLInputElement).selectionEnd).toBe(3);
   });
 
-  it('commits the new value on Enter', async () => {
+  it('reports every keystroke through onChange', async () => {
     const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(<EditableText value="End" onChange={onChange} aria-label="Node name" />);
+    const onChangeSpy = vi.fn();
+    render(
+      <Controlled initial="" onChangeSpy={onChangeSpy} onSubmit={vi.fn()} aria-label="Node name" />
+    );
 
     await user.click(screen.getByRole('button', { name: /^Node name/ }));
-    await user.keyboard('Wrap up{Enter}');
+    await user.keyboard('End');
 
-    expect(onChange).toHaveBeenCalledExactlyOnceWith('Wrap up');
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(onChangeSpy.mock.calls.map(([next]) => next)).toEqual(['E', 'En', 'End']);
+    expect(screen.getByRole('textbox', { name: 'Node name' })).toHaveValue('End');
   });
 
-  it('commits on blur', async () => {
+  it('submits the trimmed value on Enter and closes', async () => {
     const user = userEvent.setup();
-    const onChange = vi.fn();
+    const onSubmit = vi.fn();
+    render(<Controlled initial="End" onSubmit={onSubmit} aria-label="Node name" />);
+
+    await user.click(screen.getByRole('button', { name: /^Node name/ }));
+    await user.keyboard('  Wrap up  {Enter}');
+
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith('Wrap up');
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    // The trim reaches the owner too, so read mode shows what was submitted.
+    expect(screen.getByRole('button', { name: /^Node name/ })).toHaveTextContent('Wrap up');
+  });
+
+  it('submits on blur', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
     render(
       <>
-        <EditableText value="End" onChange={onChange} aria-label="Node name" />
+        <Controlled initial="End" onSubmit={onSubmit} aria-label="Node name" />
         <button type="button">elsewhere</button>
       </>
     );
@@ -68,52 +154,73 @@ describe('EditableText', () => {
     await user.keyboard('Wrap up');
     await user.click(screen.getByRole('button', { name: 'elsewhere' }));
 
-    expect(onChange).toHaveBeenCalledExactlyOnceWith('Wrap up');
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith('Wrap up');
   });
 
-  it('reverts on Escape without committing', async () => {
+  it('reverts to the text it opened with on Escape, without submitting', async () => {
     const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(<EditableText value="End" onChange={onChange} aria-label="Node name" />);
+    const onSubmit = vi.fn();
+    render(<Controlled initial="End" onSubmit={onSubmit} aria-label="Node name" />);
 
     await user.click(screen.getByRole('button', { name: /^Node name/ }));
     await user.keyboard('Wrap up{Escape}');
 
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: /^Node name/ })).toHaveTextContent('End');
   });
 
-  it('trims the committed value', async () => {
+  it('does not submit when the editor closes on the text it opened with', async () => {
     const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(<EditableText value="End" onChange={onChange} aria-label="Node name" />);
+    const onSubmit = vi.fn();
+    render(
+      <>
+        <Controlled initial="End" onSubmit={onSubmit} aria-label="Node name" />
+        <button type="button">elsewhere</button>
+      </>
+    );
 
     await user.click(screen.getByRole('button', { name: /^Node name/ }));
-    await user.keyboard('  Wrap up  {Enter}');
+    await user.click(screen.getByRole('button', { name: 'elsewhere' }));
 
-    expect(onChange).toHaveBeenCalledExactlyOnceWith('Wrap up');
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('commits an empty string when the value is cleared, so the caller can delete it', async () => {
+  it('submits an empty string when the value is cleared, so the caller can delete it', async () => {
     const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(<EditableText value="End" onChange={onChange} aria-label="Node name" />);
+    const onSubmit = vi.fn();
+    render(<Controlled initial="End" onSubmit={onSubmit} aria-label="Node name" />);
 
     await user.click(screen.getByRole('button', { name: /^Node name/ }));
     await user.keyboard('{Backspace}{Enter}');
 
-    expect(onChange).toHaveBeenCalledExactlyOnceWith('');
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith('');
   });
 
-  it('does not fire onChange when the value is unchanged', async () => {
+  it('renders owner feedback about the text being typed', async () => {
     const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(<EditableText value="End" onChange={onChange} aria-label="Node name" />);
+    render(
+      <Controlled
+        initial="End"
+        validate={(text) => (/^\d/.test(text) ? 'Must begin with a letter' : undefined)}
+        onSubmit={vi.fn()}
+        aria-label="Node name"
+      />
+    );
 
     await user.click(screen.getByRole('button', { name: /^Node name/ }));
-    await user.keyboard('{Enter}');
+    await user.clear(screen.getByRole('textbox', { name: 'Node name' }));
+    await user.keyboard('2fa');
 
-    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByText('Must begin with a letter')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Node name' })).toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
+
+    await user.keyboard('{Escape}');
+
+    // Escape reverts the text, so the owner's message goes with it.
+    expect(screen.queryByText('Must begin with a letter')).not.toBeInTheDocument();
   });
 
   it('keeps keystrokes from reaching an ancestor while editing', async () => {
@@ -121,7 +228,7 @@ describe('EditableText', () => {
     const onAncestorKeyDown = vi.fn();
     render(
       <div onKeyDown={onAncestorKeyDown}>
-        <EditableText value="End" onChange={vi.fn()} aria-label="Node name" />
+        <Controlled initial="End" onSubmit={vi.fn()} aria-label="Node name" />
       </div>
     );
 
@@ -131,240 +238,85 @@ describe('EditableText', () => {
     expect(onAncestorKeyDown).not.toHaveBeenCalled();
   });
 
-  it('picks up an external value change while not editing', () => {
-    const { rerender } = render(
-      <EditableText value="End" onChange={vi.fn()} aria-label="Node name" />
-    );
-    rerender(<EditableText value="Finish" onChange={vi.fn()} aria-label="Node name" />);
-    expect(screen.getByRole('button', { name: /^Node name/ })).toHaveTextContent('Finish');
-  });
-  it('announces the value through the trigger, not only the field name', () => {
-    render(<EditableText value="End" onChange={vi.fn()} aria-label="Node name" />);
-    expect(screen.getByRole('button', { name: 'Node name: End' })).toBeInTheDocument();
-  });
-
-  it('keeps the draft when the parent re-renders with a new value mid-edit', async () => {
+  it('follows an external value change, editing or not', async () => {
     const user = userEvent.setup();
     const { rerender } = render(
-      <EditableText value="End" onChange={vi.fn()} aria-label="Node name" />
+      <EditableText value="End" onChange={vi.fn()} onSubmit={vi.fn()} aria-label="Node name" />
     );
+    rerender(
+      <EditableText value="Finish" onChange={vi.fn()} onSubmit={vi.fn()} aria-label="Node name" />
+    );
+    expect(screen.getByRole('button', { name: /^Node name/ })).toHaveTextContent('Finish');
 
     await user.click(screen.getByRole('button', { name: /^Node name/ }));
-    await user.keyboard('Wrap up');
-    rerender(<EditableText value="Finish" onChange={vi.fn()} aria-label="Node name" />);
-
+    rerender(
+      <EditableText value="Wrap up" onChange={vi.fn()} onSubmit={vi.fn()} aria-label="Node name" />
+    );
     expect(screen.getByRole('textbox', { name: 'Node name' })).toHaveValue('Wrap up');
   });
 
-  it('reopens the editor on the current value after a commit the caller ignores', async () => {
-    const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(<EditableText value="End" onChange={onChange} aria-label="Node name" />);
-
-    await user.click(screen.getByRole('button', { name: /^Node name/ }));
-    await user.keyboard('Wrap up{Enter}');
-    await user.click(screen.getByRole('button', { name: /^Node name/ }));
-
-    expect(screen.getByRole('textbox', { name: 'Node name' })).toHaveValue('End');
-  });
-
-  it('commits an empty string for whitespace-only input', async () => {
-    const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(<EditableText value="End" onChange={onChange} aria-label="Node name" />);
-
-    await user.click(screen.getByRole('button', { name: /^Node name/ }));
-    await user.keyboard('   {Enter}');
-
-    expect(onChange).toHaveBeenCalledExactlyOnceWith('');
-  });
-
-  it('does not commit after Escape when focus moves elsewhere', async () => {
-    const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(
-      <>
-        <EditableText value="End" onChange={onChange} aria-label="Node name" />
-        <button type="button">elsewhere</button>
-      </>
-    );
-
-    await user.click(screen.getByRole('button', { name: /^Node name/ }));
-    await user.keyboard('Wrap up{Escape}');
-    await user.click(screen.getByRole('button', { name: 'elsewhere' }));
-
-    expect(onChange).not.toHaveBeenCalled();
-  });
-
-  describe('overflow tooltip', () => {
-    it('offers the full value as a tooltip on the read trigger', () => {
-      render(<EditableText value="A very long description" onChange={vi.fn()} />);
-
-      expect(screen.getByRole('button')).toHaveAttribute(
-        'data-tooltip-trigger',
-        'A very long description'
-      );
-    });
-
-    it('offers the tooltip on static text too', () => {
-      render(<EditableText value="Client-side tool" />);
-
-      expect(screen.getByText('Client-side tool')).toHaveAttribute(
-        'data-tooltip-trigger',
-        'Client-side tool'
-      );
-    });
-
-    it('falls back to the placeholder, which is what a value-less field renders', () => {
-      render(<EditableText value="" placeholder="A very long placeholder" onChange={vi.fn()} />);
-
-      expect(screen.getByRole('button')).toHaveAttribute(
-        'data-tooltip-trigger',
-        'A very long placeholder'
-      );
-    });
-
-    it('drops the tooltip while editing, where the text is not truncated', async () => {
-      const user = userEvent.setup();
-      render(<EditableText value="A very long description" onChange={vi.fn()} />);
-
-      await user.click(screen.getByRole('button'));
-
-      expect(screen.getByRole('textbox')).not.toHaveAttribute('data-tooltip-trigger');
-    });
+  it('announces the value through the trigger, not only the field name', () => {
+    render(<Controlled initial="End" onSubmit={vi.fn()} aria-label="Node name" />);
+    expect(screen.getByRole('button', { name: 'Node name: End' })).toBeInTheDocument();
   });
 
   describe('multiline', () => {
-    it('inserts a newline on Shift+Enter without committing', async () => {
+    it('inserts a newline on Shift+Enter, submits the multi-line value on a plain Enter', async () => {
       const user = userEvent.setup();
-      const onChange = vi.fn();
-      render(<EditableText value="First" multiline onChange={onChange} aria-label="Description" />);
+      const onSubmit = vi.fn();
+      render(<Controlled initial="First" multiline onSubmit={onSubmit} aria-label="Description" />);
 
       await user.click(screen.getByRole('button', { name: /^Description/ }));
       await user.keyboard('{End}{Shift>}{Enter}{/Shift}Second');
+      expect(screen.getByRole('textbox', { name: 'Description' })).toHaveValue('First\nSecond');
+      expect(onSubmit).not.toHaveBeenCalled();
 
-      expect(screen.getByRole('textbox', { name: /^Description/ })).toHaveValue('First\nSecond');
-      expect(onChange).not.toHaveBeenCalled();
+      await user.keyboard('{Enter}');
+      expect(onSubmit).toHaveBeenCalledExactlyOnceWith('First\nSecond');
     });
 
-    it('commits the multi-line value on a plain Enter', async () => {
+    it('collapses newlines and submits on Enter in wrap mode', async () => {
       const user = userEvent.setup();
-      const onChange = vi.fn();
-      render(<EditableText value="First" multiline onChange={onChange} aria-label="Description" />);
+      const onSubmit = vi.fn();
+      render(
+        <Controlled initial="First" multiline="wrap" onSubmit={onSubmit} aria-label="Description" />
+      );
 
       await user.click(screen.getByRole('button', { name: /^Description/ }));
-      await user.keyboard('{End}{Shift>}{Enter}{/Shift}Second{Enter}');
+      await user.keyboard('{End} draft{Shift>}{Enter}{/Shift}');
+      expect(onSubmit).toHaveBeenCalledWith('First draft');
 
-      expect(onChange).toHaveBeenCalledExactlyOnceWith('First\nSecond');
-      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: /^Description/ }));
+      await user.keyboard('{End}');
+      await user.paste('\nSecond');
+      expect(screen.getByRole('textbox', { name: 'Description' })).toHaveValue(
+        'First draft Second'
+      );
     });
 
-    it('caps the editor at maxLines and leaves it scrollable', async () => {
+    it.each([
+      [true],
+      ['wrap'] as const,
+    ])('caps the read clamp and the editor height at maxLines (multiline=%s)', async (multiline) => {
       const user = userEvent.setup();
       render(
-        <EditableText
-          value="First"
-          multiline
+        <Controlled
+          initial="First"
+          multiline={multiline}
           maxLines={2}
-          size="sm"
-          onChange={vi.fn()}
+          onSubmit={vi.fn()}
           aria-label="Description"
         />
       );
 
-      await user.click(screen.getByRole('button', { name: /^Description/ }));
+      const trigger = screen.getByRole('button', { name: /^Description/ });
+      expect(trigger).toHaveStyle({ '--editable-text-lines': '2' });
 
-      // 2 lines * 16px (`leading-4`) + 4px of `py-0.5`.
-      expect(screen.getByRole('textbox', { name: /^Description/ })).toHaveStyle({
-        maxHeight: '36px',
+      await user.click(trigger);
+      // 2 lines at the `lg` line box (20px) plus the editor's vertical padding.
+      expect(screen.getByRole('textbox', { name: 'Description' })).toHaveStyle({
+        maxHeight: '44px',
       });
-    });
-
-    it('keeps Enter single-line when multiline is off', async () => {
-      const user = userEvent.setup();
-      const onChange = vi.fn();
-      render(<EditableText value="First" onChange={onChange} aria-label="Node name" />);
-
-      await user.click(screen.getByRole('button', { name: /^Node name/ }));
-      await user.keyboard('{Shift>}{Enter}{/Shift}');
-
-      expect(onChange).not.toHaveBeenCalled();
-      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('error state', () => {
-    it('renders no error message when no error is passed', () => {
-      render(<EditableText value="End" onChange={vi.fn()} aria-label="Node name" />);
-      expect(document.querySelector('[data-slot="editable-text-error"]')).toBeNull();
-    });
-
-    it('shows the message and marks the trigger invalid while collapsed', () => {
-      render(
-        <EditableText
-          value="1 bad"
-          onChange={vi.fn()}
-          aria-label="Node name"
-          error="Tool name must begin with a letter."
-        />
-      );
-
-      const trigger = screen.getByRole('button', { name: /^Node name/ });
-      expect(trigger).toHaveAttribute('aria-invalid', 'true');
-      expect(screen.getByText('Tool name must begin with a letter.')).toBeInTheDocument();
-      expect(trigger).toHaveAccessibleDescription('Tool name must begin with a letter.');
-    });
-
-    it('keeps the error visible after the editor closes, so a rejected commit still explains itself', async () => {
-      const user = userEvent.setup();
-      render(
-        <EditableText
-          value="1 bad"
-          onChange={vi.fn()}
-          aria-label="Node name"
-          error="Tool name must begin with a letter."
-        />
-      );
-
-      await user.click(screen.getByRole('button', { name: /^Node name/ }));
-      const input = screen.getByRole('textbox', { name: 'Node name' });
-      expect(input).toHaveAttribute('aria-invalid', 'true');
-      expect(input).toHaveAccessibleDescription('Tool name must begin with a letter.');
-
-      await user.keyboard('{Escape}');
-
-      expect(screen.getByRole('button', { name: /^Node name/ })).toHaveAttribute(
-        'aria-invalid',
-        'true'
-      );
-      expect(screen.getByText('Tool name must begin with a letter.')).toBeInTheDocument();
-    });
-
-    it('describes static text without claiming an unsupported invalid state on a generic role', () => {
-      render(<EditableText value="End" error="Something is off." />);
-
-      const text = document.querySelector('[data-slot="editable-text"]')!;
-      expect(text).not.toHaveAttribute('aria-invalid');
-      expect(screen.getByText('Something is off.')).toBeInTheDocument();
-      expect(text).toHaveAccessibleDescription('Something is off.');
-    });
-
-    it('still commits while in error, so the user can type their way out', async () => {
-      const user = userEvent.setup();
-      const onChange = vi.fn();
-      render(
-        <EditableText
-          value="1 bad"
-          onChange={onChange}
-          aria-label="Node name"
-          error="Tool name must begin with a letter."
-        />
-      );
-
-      await user.click(screen.getByRole('button', { name: /^Node name/ }));
-      await user.keyboard('Analyze files{Enter}');
-
-      expect(onChange).toHaveBeenCalledExactlyOnceWith('Analyze files');
     });
   });
 });
