@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   FIELD_TYPE_META,
   FIELD_TYPE_ORDER,
@@ -516,7 +517,7 @@ function FieldTypeExample({
   const [value, setValue] = useState(initialMode === 'expression' ? '$vars.example' : '');
   const [mode, setMode] = useState<LockableValueFieldMode>(initialMode);
   return (
-    <div className="w-44">
+    <div className="w-56">
       <LockableValueField
         fieldType={fieldType}
         value={value}
@@ -541,7 +542,7 @@ function ExampleLabel({ children }: { children: React.ReactNode }) {
 function ModeExample({ mode }: { mode: LockableValueFieldMode }) {
   const [value, setValue] = useState(mode === 'expression' ? '$vars.example' : 'Example value');
   return (
-    <div className="w-44">
+    <div className="w-56">
       <LockableValueField
         fieldType="string"
         value={value}
@@ -558,7 +559,7 @@ function ModeExample({ mode }: { mode: LockableValueFieldMode }) {
 // and a hand-drawn one would look like it already exists.
 function GapPlaceholder() {
   return (
-    <div className="flex h-9 w-44 items-center justify-center rounded-lg border border-dashed border-border px-2 text-center text-[11px] text-muted-foreground">
+    <div className="flex h-9 w-56 items-center justify-center rounded-lg border border-dashed border-border px-2 text-center text-[11px] text-muted-foreground">
       No control yet
     </div>
   );
@@ -598,13 +599,13 @@ function CategoryTable({ description, rows, rowLabel = 'Type' }: Category) {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[16%]')}>{rowLabel}</TableHead>
-              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[18%]')}>Visual example</TableHead>
-              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[15%]')}>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[13%]')}>{rowLabel}</TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[23%]')}>Visual example</TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[13%]')}>
                 Apollo Wind support
               </TableHead>
-              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[11%]')}>Status</TableHead>
-              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[24%]')}>Recommended action</TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[10%]')}>Status</TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[21%]')}>Recommended action</TableHead>
               <TableHead className={HEADER_CELL_CLASS}>Source in flow-workbench</TableHead>
             </TableRow>
           </TableHeader>
@@ -665,7 +666,10 @@ function SupportedTodayStrip() {
   );
 }
 
+const ALL_SECTION_TITLES = ALL_SECTIONS.map((section) => section.title);
+
 function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
+  const [openSections, setOpenSections] = useState<string[]>(ALL_SECTION_TITLES);
   return (
     <div
       className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}
@@ -765,7 +769,16 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
 
         <Divider />
 
-        <Accordion type="multiple" defaultValue={ALL_SECTIONS.map((section) => section.title)}>
+        <div className="mb-4 flex items-center justify-end gap-2">
+          <Button variant="outline" size="2xs" onClick={() => setOpenSections(ALL_SECTION_TITLES)}>
+            Expand all
+          </Button>
+          <Button variant="outline" size="2xs" onClick={() => setOpenSections([])}>
+            Collapse all
+          </Button>
+        </div>
+
+        <Accordion type="multiple" value={openSections} onValueChange={setOpenSections}>
           {ALL_SECTIONS.map((section) => (
             <AccordionItem key={section.title} value={section.title} className="border-border">
               <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline">
