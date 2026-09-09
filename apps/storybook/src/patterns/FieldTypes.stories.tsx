@@ -650,7 +650,12 @@ function CategoryTable({ description, rows, rowLabel = 'Type' }: Category) {
   return (
     <div>
       <p className="mb-4 text-sm leading-6 text-muted-foreground">{description}</p>
-      <div className="overflow-hidden rounded-lg border border-border">
+      {/* No overflow-hidden: the Visual example column's w-56 demos (doubled to
+          two stacked for expression-capable types) routinely make the table
+          wider than its container. overflow-hidden would silently clip
+          whatever's in the last column instead of letting it scroll into
+          view via the Table primitive's own overflow-auto container. */}
+      <div className="rounded-lg border border-border">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -984,7 +989,12 @@ const INPUT_GROUP_STATES: StateRow[] = [
 function StatesTable({ rows }: { rows: StateRow[] }) {
   const columnClass = rows.length === 4 ? 'w-1/4' : undefined;
   return (
-    <div className="overflow-hidden rounded-lg border border-border">
+    // No overflow-hidden here: 4 columns of w-56 examples plus padding (~1024px)
+    // routinely exceeds the ~960px content width, and overflow-hidden would
+    // silently clip the last column instead of letting it scroll into view.
+    // Table's own scroll container (overflow-auto) handles that; rounded-lg
+    // still applies, just without the corner-clipping that also hid content.
+    <div className="rounded-lg border border-border">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
