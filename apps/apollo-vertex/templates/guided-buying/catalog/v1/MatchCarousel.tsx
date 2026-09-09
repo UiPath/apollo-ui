@@ -145,7 +145,7 @@ function winningReasonParts(
   const parts: string[] = [];
   if (signals.epp) parts.push("has the best price after EPP");
   if (signals.minRam && (ramGb(item) ?? 0) >= ramMinThreshold) {
-    parts.push(`clears your ${ramMinThreshold}GB minimum`);
+    parts.push("meets engineering laptop specs");
   }
   if (signals.mayOrder && item.vendor === "Lenovo") {
     parts.push("matches your team's recent ThinkPad orders");
@@ -1185,7 +1185,7 @@ export function MatchCarousel({
                           narrativeSignals,
                           narrativeRamMinThreshold,
                         )
-                      : `Best price after EPP, and it clears your ${narrativeRamMinThreshold}GB minimum.`}
+                      : "Best price after EPP, and it meets engineering laptop specs."}
                   </motion.span>
                 </AnimatePresence>
               </motion.p>
