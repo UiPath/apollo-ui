@@ -977,29 +977,42 @@ const INPUT_GROUP_STATES: StateRow[] = [
   },
 ];
 
+// States run across as columns, not down as rows: with every table on this
+// page so far having exactly 4 states, 4 stacked rows (each a label + a live
+// example + a paragraph) took much more vertical room than laying them out
+// side by side and reading the example/notes pair down each column instead.
 function StatesTable({ rows }: { rows: StateRow[] }) {
+  const columnClass = rows.length === 4 ? 'w-1/4' : undefined;
   return (
     <div className="overflow-hidden rounded-lg border border-border">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={cn(HEADER_CELL_CLASS, 'w-[16%]')}>State</TableHead>
-            <TableHead className={cn(HEADER_CELL_CLASS, 'w-[28%]')}>Example</TableHead>
-            <TableHead className={HEADER_CELL_CLASS}>Notes</TableHead>
+            {rows.map(({ label }) => (
+              <TableHead key={label} className={cn(HEADER_CELL_CLASS, columnClass)}>
+                {label}
+              </TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map(({ label, description, Example }) => (
-            <TableRow key={label}>
-              <TableCell className={cn(BODY_CELL_CLASS, 'font-mono text-xs')}>{label}</TableCell>
-              <TableCell className={BODY_CELL_CLASS}>
+          <TableRow>
+            {rows.map(({ label, Example }) => (
+              <TableCell key={label} className={cn(BODY_CELL_CLASS, columnClass)}>
                 <Example />
               </TableCell>
-              <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
+            ))}
+          </TableRow>
+          <TableRow>
+            {rows.map(({ label, description }) => (
+              <TableCell
+                key={label}
+                className={cn(BODY_CELL_CLASS, columnClass, 'text-xs text-muted-foreground')}
+              >
                 {description}
               </TableCell>
-            </TableRow>
-          ))}
+            ))}
+          </TableRow>
         </TableBody>
       </Table>
     </div>
