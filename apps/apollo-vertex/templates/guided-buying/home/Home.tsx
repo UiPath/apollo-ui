@@ -52,7 +52,8 @@ function timeOfDayGreeting() {
 // popover's quoted phrase). Not the same string as the chip's own label or
 // STARTER_SUGGESTIONS' bare value: this one reads as something a person
 // typed, first person, since the audience watches it land before it submits.
-const LAPTOPS_CHIP_TEXT = "I need 15 laptops for Fusion Event contractors";
+const LAPTOPS_CHIP_TEXT =
+  "15 laptops for contractors for an upcoming dev project";
 
 /** What the requester owes, if anything, the row's inline action button.
  * Awaiting approval and the agent still working are someone/something
