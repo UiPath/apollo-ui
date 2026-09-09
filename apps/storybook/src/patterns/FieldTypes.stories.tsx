@@ -559,10 +559,10 @@ function CategoryTable({ title, description, rows, rowLabel = 'Type' }: Category
             <TableRow>
               <TableHead className="w-[16%]">{rowLabel}</TableHead>
               <TableHead className="w-[18%]">Visual example</TableHead>
-              <TableHead className="w-[16%]">Source in flow-workbench</TableHead>
               <TableHead className="w-[15%]">Apollo Wind support</TableHead>
               <TableHead className="w-[11%]">Status</TableHead>
-              <TableHead>Recommended action</TableHead>
+              <TableHead className="w-[24%]">Recommended action</TableHead>
+              <TableHead>Source in flow-workbench</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -573,9 +573,6 @@ function CategoryTable({ title, description, rows, rowLabel = 'Type' }: Category
                   <VisualExampleCell visual={row.visual} />
                 </TableCell>
                 <TableCell className="align-top text-xs text-muted-foreground">
-                  {row.source}
-                </TableCell>
-                <TableCell className="align-top text-xs text-muted-foreground">
                   {row.support}
                 </TableCell>
                 <TableCell className="align-top">
@@ -583,6 +580,9 @@ function CategoryTable({ title, description, rows, rowLabel = 'Type' }: Category
                 </TableCell>
                 <TableCell className="align-top text-xs text-muted-foreground">
                   {row.action ?? '—'}
+                </TableCell>
+                <TableCell className="align-top text-xs text-muted-foreground">
+                  {row.source}
                 </TableCell>
               </TableRow>
             ))}
