@@ -21,7 +21,7 @@ Radix throws \`Tooltip must be used within TooltipProvider\` without one.
 
 **In forms, reach for \`FormFieldLabel\` instead of composing this by hand**: it takes
 \`tooltip\` / \`tooltipAriaLabel\` and places the trigger after the required indicator for you.
-Schema-driven forms get it for free — set \`tooltip\` on any field metadata and
+Schema-driven forms get it for free: set \`tooltip\` on any field metadata and
 \`MetadataForm\` renders it.
         `,
       },
