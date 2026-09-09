@@ -739,6 +739,119 @@ function VisualReferenceGrid() {
   );
 }
 
+// Mirrors EqualsAddon in lockable-value-field.stories.tsx's "Assignment &
+// Binding" reference example: a leadingAddon that replaces the lock icon with
+// a semantic "=" prefix, the pattern node-property assignment fields use.
+function EqualsAddon() {
+  return (
+    <span className="font-mono text-sm font-semibold text-foreground-accent" aria-hidden="true">
+      =
+    </span>
+  );
+}
+
+function LockedStateExample() {
+  return (
+    <div className="w-56">
+      <LockableValueField
+        fieldType="string"
+        value="Invoice processor"
+        locked
+        showFieldActions={false}
+      />
+    </div>
+  );
+}
+
+function UnlockedLockShownExample() {
+  const [value, setValue] = useState('Editable value');
+  return (
+    <div className="w-56">
+      <LockableValueField
+        fieldType="string"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        showFieldActions={false}
+      />
+    </div>
+  );
+}
+
+function UnlockedLockHiddenExample() {
+  const [value, setValue] = useState('Editable value');
+  return (
+    <div className="w-56">
+      <LockableValueField
+        fieldType="string"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        showLock={false}
+        showFieldActions={false}
+      />
+    </div>
+  );
+}
+
+function AssignmentBindingExample() {
+  const [value, setValue] = useState('$vars.flowArray');
+  return (
+    <div className="w-56">
+      <LockableValueField
+        fieldType="object"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        leadingAddon={<EqualsAddon />}
+        mode="expression"
+        showFieldActions={false}
+      />
+    </div>
+  );
+}
+
+const LOCKABLE_STATES: {
+  label: string;
+  description: string;
+  Example: React.ComponentType;
+}[] = [
+  {
+    label: 'Locked',
+    description: 'Read-only display, not a disabled control. The default.',
+    Example: LockedStateExample,
+  },
+  {
+    label: 'Unlocked, lock shown',
+    description: 'locked={false}. showLock defaults to true.',
+    Example: UnlockedLockShownExample,
+  },
+  {
+    label: 'Unlocked, lock hidden',
+    description: 'showLock={false}, for consumers supplying their own lock affordance elsewhere.',
+    Example: UnlockedLockHiddenExample,
+  },
+  {
+    label: 'Assignment binding',
+    description: 'leadingAddon replaces the lock icon with a semantic prefix, e.g. "=".',
+    Example: AssignmentBindingExample,
+  },
+];
+
+function LockableStatesGrid() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {LOCKABLE_STATES.map(({ label, description, Example }) => (
+        <div key={label} className="rounded-lg border border-border bg-card p-4">
+          <span className="text-xs font-medium text-foreground">{label}</span>
+          <p className="mb-3 mt-1 text-xs text-muted-foreground">{description}</p>
+          <Example />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const ALL_SECTION_TITLES = ALL_SECTIONS.map((section) => section.title);
 
 function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
@@ -800,6 +913,27 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
             expression variant.
           </SectionDescription>
           <VisualReferenceGrid />
+        </section>
+
+        <Divider />
+
+        <section>
+          <SectionTitle>LockableValueField states</SectionTitle>
+          <SectionDescription>
+            Cross-cutting states layered on top of fieldType: whether the field is locked, whether
+            the lock affordance itself is shown, and the assignment-binding pattern used for
+            node-property fields.
+          </SectionDescription>
+          <InfoCallout>
+            LockableValueField composes Input and Input Group, which each have their own dedicated
+            Storybook page (<span className="font-mono text-foreground">Components/Core/Input</span>
+            , <span className="font-mono text-foreground">Components/Core/Input Group</span>)
+            documenting their full set of states. Not duplicated here, this page stays focused on
+            LockableValueField and type coverage.
+          </InfoCallout>
+          <div className="mt-4">
+            <LockableStatesGrid />
+          </div>
         </section>
 
         <Divider />
