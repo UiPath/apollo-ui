@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { ValidationConfig } from './form-schema';
 import {
-  validationConfigToZod,
   buildZodSchemaFromFields,
   mergeValidationConfigs,
+  validationConfigToZod,
 } from './validation-converter';
-import type { ValidationConfig } from './form-schema';
 
 describe('validationConfigToZod', () => {
   describe('base schema by field type', () => {
@@ -105,6 +105,28 @@ describe('validationConfigToZod', () => {
         // Zod v4 uses issues array
         expect(result.error.issues[0].message).toBe('Please fill this');
       }
+    });
+
+    it.each([
+      'string-list',
+      'multiselect',
+    ] as const)('rejects an empty array for a required %s', (fieldType) => {
+      const schema = validationConfigToZod({ required: true }, fieldType);
+      expect(schema.safeParse(['a']).success).toBe(true);
+      // An empty array is a present value to zod, so without the array branch a
+      // required field would submit with nothing selected.
+      expect(schema.safeParse([]).success).toBe(false);
+      expect(schema.safeParse(undefined).success).toBe(false);
+    });
+
+    it('leaves an explicit minItems in charge of the required array message', () => {
+      const schema = validationConfigToZod(
+        { required: true, minItems: 2, messages: { minItems: 'Pick two' } },
+        'string-list'
+      );
+      const result = schema.safeParse(['a']);
+      expect(result.success).toBe(false);
+      if (!result.success) expect(result.error.issues[0].message).toBe('Pick two');
     });
 
     it('makes field optional when config.required is false', () => {

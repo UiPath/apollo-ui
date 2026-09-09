@@ -48,6 +48,14 @@ export function validationConfigToZod(
         config.messages?.required || 'This field is required'
       );
     }
+    // Same for arrays: an empty array is a filled-in field to zod, so a required
+    // multiselect/string-list would otherwise submit with nothing selected.
+    if (isArrayType(fieldType) && config.minItems == null) {
+      schema = (schema as z.ZodArray<z.ZodTypeAny>).min(
+        1,
+        config.messages?.required || 'This field is required'
+      );
+    }
     return schema;
   }
 

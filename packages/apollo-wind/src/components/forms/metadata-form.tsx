@@ -359,6 +359,7 @@ export function MetadataForm({
             activeStepId={activeStepId}
             onActiveStepChange={onActiveStepChange}
             onReset={handleReset}
+            onSubmit={container === 'div' ? handleFormSubmit : undefined}
           />
         );
       }
@@ -371,6 +372,7 @@ export function MetadataForm({
           customComponents={allCustomComponents}
           disabled={disabled}
           sectionVariant={sectionVariant}
+          onSubmit={container === 'div' ? handleFormSubmit : undefined}
         />
       );
     }
@@ -490,6 +492,8 @@ const SinglePageForm = React.memo(function SinglePageForm({
 interface MultiStepFormProps extends SinglePageFormProps {
   currentStep: number;
   setCurrentStep: (step: number) => void;
+  /** See `FormActionsProps.onSubmit` — supplied only for `container="div"`. */
+  onSubmit?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const MultiStepForm = React.memo(function MultiStepForm({
@@ -500,6 +504,7 @@ const MultiStepForm = React.memo(function MultiStepForm({
   customComponents,
   disabled,
   sectionVariant,
+  onSubmit,
 }: MultiStepFormProps) {
   const steps = schema.steps || [];
 
@@ -575,7 +580,7 @@ const MultiStepForm = React.memo(function MultiStepForm({
             Next
           </Button>
         ) : (
-          <Button type="submit" variant="default">
+          <Button type={onSubmit ? 'button' : 'submit'} onClick={onSubmit} variant="default">
             Submit
           </Button>
         )}
@@ -588,6 +593,8 @@ interface TabbedStepFormProps extends SinglePageFormProps {
   onReset: () => void;
   activeStepId?: string;
   onActiveStepChange?: (stepId: string) => void;
+  /** See `FormActionsProps.onSubmit` — supplied only for `container="div"`. */
+  onSubmit?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 function TabbedStepForm({
@@ -599,6 +606,7 @@ function TabbedStepForm({
   onReset,
   activeStepId,
   onActiveStepChange,
+  onSubmit,
 }: TabbedStepFormProps) {
   const steps = schema.steps || [];
 
@@ -781,7 +789,7 @@ function TabbedStepForm({
           );
         })}
       </Tabs>
-      <FormActions schema={schema} context={context} onReset={onReset} />
+      <FormActions schema={schema} context={context} onReset={onReset} onSubmit={onSubmit} />
     </>
   );
 }

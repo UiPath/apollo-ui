@@ -637,6 +637,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
       return (
         <FormField>
           <FormFieldLabel
+            htmlFor={field.name}
             required={required}
             tooltip={field.tooltip}
             tooltipAriaLabel={field.tooltipAriaLabel}
@@ -646,6 +647,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
           <FileUpload
             id={field.name}
             ariaLabel={field.ariaLabel ?? field.label}
+            aria-invalid={error ? true : undefined}
             accept={field.accept}
             multiple={field.multiple}
             disabled={disabled}
