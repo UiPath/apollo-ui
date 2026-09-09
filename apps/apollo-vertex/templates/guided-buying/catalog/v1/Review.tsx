@@ -2,8 +2,8 @@
 
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Info, Plus, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Check, Info, Plus, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,10 @@ import { useContentOverflow } from "./use-content-overflow";
 
 // Review commits the EPP-priced catalog scenario.
 const BASIS = "epp" as const;
+
+// Brief "submitting" pause before routing to /track — long enough to read as
+// the request actually going somewhere, not an instant, faked hop.
+const SUBMIT_DELAY_MS = 3000;
 
 // Bridge defaults — used when Review is reached without a resolved Bridge
 // (e.g. the catalog path); the Bridge overrides these when it confirms.
@@ -82,6 +86,8 @@ export function Review() {
   } = useConversation();
   const [shelfDockOpen, setShelfDockOpen] = useState(false);
   const [addItemsOpen, setAddItemsOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const submitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { ref: contentRef, overflowing } = useContentOverflow<HTMLDivElement>();
   const { addStepEntry } = useAssistantThread();
 
@@ -154,6 +160,22 @@ export function Review() {
     } else {
       void navigate({ to: "/buy", state: { fromReview: true } });
     }
+  };
+
+  // Clears the pending navigation if Review unmounts before it fires (e.g.
+  // the user is routed away by something other than this submit itself).
+  useEffect(() => {
+    return () => {
+      if (submitTimerRef.current) clearTimeout(submitTimerRef.current);
+    };
+  }, []);
+
+  const submitRequest = () => {
+    if (submitting) return;
+    setSubmitting(true);
+    submitTimerRef.current = setTimeout(() => {
+      void navigate({ to: "/track" });
+    }, SUBMIT_DELAY_MS);
   };
 
   return (
@@ -362,16 +384,23 @@ export function Review() {
           <FlowFooterBar
             bordered={overflowing}
             left={
-              <Button variant="outline" onClick={goBack}>
+              <Button variant="outline" onClick={goBack} disabled={submitting}>
                 Back
               </Button>
             }
             right={
               <Button
-                disabled={items.length === 0}
-                onClick={() => void navigate({ to: "/track" })}
+                disabled={items.length === 0 || submitting}
+                onClick={submitRequest}
               >
-                Submit request
+                {submitting ? (
+                  <>
+                    <Check className="size-4" aria-hidden />
+                    Submitting…
+                  </>
+                ) : (
+                  "Submit request"
+                )}
               </Button>
             }
           />

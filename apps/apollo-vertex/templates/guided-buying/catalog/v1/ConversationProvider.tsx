@@ -52,7 +52,8 @@ const ALT_IDS = CATALOG_ITEMS.filter(
 
 const START_MS = 350;
 const WORD_MS = 42;
-const SKELETON_MS = 900;
+const SKELETON_MS = 3000;
+const ENVELOPE_REVEAL_MS = 1500;
 
 function textMessage(
   id: string,
@@ -168,9 +169,9 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       );
     });
 
-    // Intro settles, then the inferred request envelope lands in the same turn
-    // (the envelope self-animates its own staggered field reveal).
-    const streamEnd = START_MS + words.length * WORD_MS;
+    // Intro settles, then after a beat (the "thinking" pause) the inferred
+    // request envelope lands in the same turn (the envelope self-animates
+    // its own staggered field reveal).
     timers.current.push(
       setTimeout(() => {
         setAssistantParts(assistantId, [
@@ -181,7 +182,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
         ]);
         setStatus("ready");
         setHasResolved(true);
-      }, streamEnd + 150),
+      }, ENVELOPE_REVEAL_MS),
     );
   };
 
