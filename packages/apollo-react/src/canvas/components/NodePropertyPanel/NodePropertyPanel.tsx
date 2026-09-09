@@ -16,7 +16,7 @@ const SURFACE_REMAP = 'future:[--surface-raised:var(--surface-overlay)]';
  * The panel owns only the *chrome*: an optional title bar (drag handle + close),
  * a node identity row (icon / label / description-or-category + an action slot),
  * and the form frame. The label and description lines become click-to-edit when
- * the matching `onNode*Change` callback is passed.
+ * both matching callbacks are passed (`onNode*Change` and `onNode*Submit`).
  *
  * The form itself is a single `MetadataForm` rendered from the `schema` you pass
  * in, with multi-step schemas presented as tabs (Parameters, Error handling,
@@ -29,11 +29,15 @@ const SURFACE_REMAP = 'future:[--surface-raised:var(--surface-overlay)]';
  *
  * @example
  * ```tsx
+ * // The label is controlled: the draft has to flow back through `nodeLabel`.
+ * const [draftLabel, setDraftLabel] = useState(node.label);
+ *
  * <NodePropertyPanel
  *   panelTitle="Properties"               // omit when dockview owns the title bar
- *   nodeLabel="Fetch invoice details"
+ *   nodeLabel={draftLabel}
  *   nodeCategory="HTTP Request"         // fallback second line; a description wins
- *   onNodeLabelChange={renameNode}      // omit for a read-only label
+ *   onNodeLabelChange={setDraftLabel}   // per keystroke; omit either for a read-only label
+ *   onNodeLabelSubmit={renameNode}      // on Enter or blur, trimmed
  *   action={<RunButton />}
  *   schema={assembledSchema}              // caller-built FormSchema (steps = tabs)
  *   plugins={formPlugins}                 // real-time onChange, custom fields
@@ -53,7 +57,9 @@ export function NodePropertyPanel({
   nodeLabelPlaceholder,
   nodeDescriptionPlaceholder,
   onNodeLabelChange,
+  onNodeLabelSubmit,
   onNodeDescriptionChange,
+  onNodeDescriptionSubmit,
   nodeLabelError,
   nodeDescriptionError,
   action,
@@ -72,8 +78,8 @@ export function NodePropertyPanel({
   onActiveStepChange,
 }: NodePropertyPanelProps) {
   const { _ } = useSafeLingui();
-  const isLabelEditable = !!onNodeLabelChange;
-  const isDescriptionEditable = !!onNodeDescriptionChange;
+  const isLabelEditable = !!onNodeLabelChange && !!onNodeLabelSubmit;
+  const isDescriptionEditable = !!onNodeDescriptionChange && !!onNodeDescriptionSubmit;
   const showsDescription = !!nodeDescription || isDescriptionEditable || !!nodeDescriptionError;
   const showsLabel = !!nodeLabel || isLabelEditable || !!nodeLabelError;
   const hasNodeHeader = !!(showsLabel || nodeCategory || nodeIcon || action || showsDescription);
@@ -143,6 +149,8 @@ export function NodePropertyPanel({
                   }
                   size="lg"
                   onChange={onNodeLabelChange}
+                  onSubmit={onNodeLabelSubmit}
+                  disabled={disabled}
                   error={nodeLabelError}
                   aria-label={_({
                     id: 'canvas.node_property_panel.node_name',
@@ -165,6 +173,8 @@ export function NodePropertyPanel({
                   multiline
                   maxLines={3}
                   onChange={onNodeDescriptionChange}
+                  onSubmit={onNodeDescriptionSubmit}
+                  disabled={disabled}
                   error={nodeDescriptionError}
                   aria-label={_({
                     id: 'canvas.node_property_panel.node_description',

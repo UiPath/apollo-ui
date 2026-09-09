@@ -15,18 +15,22 @@ export interface NodePropertyPanelProps {
   nodeIcon?: ReactNode;
   /** The node's display label shown in the node identity row. */
   nodeLabel?: string;
-  /** Category/subtitle text shown below `nodeLabel` (e.g. "HTTP Request"). Fallback: a description, a description callback, or a description error takes the line instead. */
+  /** Category/subtitle text shown below `nodeLabel` (e.g. "HTTP Request"). Fallback: a description, an editable description, or a description error takes the line instead. */
   nodeCategory?: string;
-  /** User-authored description on the identity row's second line. Takes the line from `nodeCategory` whenever it is non-empty, as does `onNodeDescriptionChange` on its own. */
+  /** User-authored description on the identity row's second line. Takes the line from `nodeCategory` whenever it is non-empty, as does an editable description (`onNodeDescriptionChange` and `onNodeDescriptionSubmit` together). */
   nodeDescription?: string;
   /** Hint shown in place of an empty `nodeLabel`. Defaults to a localized `"Name"`. Never committed. */
   nodeLabelPlaceholder?: string;
   /** Hint shown in place of an empty `nodeDescription`. Defaults to a localized `"Description"`. Never committed. */
   nodeDescriptionPlaceholder?: string;
-  /** Makes `nodeLabel` click-to-edit: commits the trimmed value on Enter or blur, Escape reverts. Omit for read-only. */
+  /** Fires on every keystroke in `nodeLabel`; required with `onNodeLabelSubmit` to make it editable, since the editor is controlled. */
   onNodeLabelChange?: (label: string) => void;
-  /** Makes `nodeDescription` click-to-edit. Same contract as `onNodeLabelChange`. */
+  /** Fires on Enter or blur with the trimmed `nodeLabel`, for the owner to persist. */
+  onNodeLabelSubmit?: (label: string) => void;
+  /** Fires on every keystroke in `nodeDescription`. Same contract as `onNodeLabelChange`. */
   onNodeDescriptionChange?: (description: string) => void;
+  /** Fires on Enter or blur with the trimmed `nodeDescription`. Same contract as `onNodeLabelSubmit`. */
+  onNodeDescriptionSubmit?: (description: string) => void;
   /**
    * Validation message for the node name, rendered below it with a persistent
    * error ring.

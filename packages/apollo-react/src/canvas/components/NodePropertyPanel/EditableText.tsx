@@ -4,21 +4,32 @@ import { useIsomorphicLayoutEffect } from '../../hooks/useIsomorphicLayoutEffect
 import { CanvasTooltip } from '../CanvasTooltip';
 
 export interface EditableTextProps {
+  /** The text on screen, in both modes: this is a controlled field, so an edit shows up only once `onChange` has been applied here. */
   value: string;
   placeholder?: string;
   size?: 'sm' | 'lg';
-  /** Accept newlines (Shift+Enter). Enter still commits. */
-  multiline?: boolean;
+  /**
+   * Text layout. `true` accepts newlines (Shift+Enter); `'wrap'` wraps across lines but keeps the
+   * value single-line, so every Enter commits and pasted newlines collapse. Enter always commits.
+   */
+  multiline?: boolean | 'wrap';
   /** Visible-line ceiling when `multiline`. The editor scrolls past it. Defaults to 3. */
   maxLines?: number;
+  /** Fires on every keystroke with the text as typed, like any controlled input. Pair with `onSubmit`: both are required to make the text editable, and `value` has to follow this callback or the field won't accept input. Escape reports the text held when the editor opened, so the owner reverts through this same path. */
   onChange?: (next: string) => void;
+  /** Fires on Enter or blur with the trimmed `value`, and only when it differs from the text the editor opened with, so a click in and straight back out is silent. The owner decides whether to persist it. */
+  onSubmit?: (next: string) => void;
+  /** Locks the text as-is: no edit mode, no commit. Ignored for static text. */
+  disabled?: boolean;
   /** Field-specific feedback rendered immediately below the text. */
   error?: ReactNode;
-  /** Names the editor and its click target. Unused for static text (no `onChange`). */
+  /** Names the editor and its click target. Unused for static text. */
   'aria-label'?: string;
   className?: string;
   'data-testid'?: string;
 }
+
+const stripNewlines = (text: string) => text.replace(/\n+/g, ' ');
 
 const READ_CLASS = {
   lg: 'text-base font-semibold leading-5 tracking-[-0.3px] text-foreground',
@@ -49,7 +60,12 @@ const INTERACTIVE_CLASS = 'rounded px-1.5 py-0.5 -mx-1.5';
 
 const ERROR_RING_CLASS = 'ring-1 ring-error';
 
-/** Click-to-edit text for the node identity row: enters on click, commits on Enter or blur, reverts on Escape. Static text without `onChange`. */
+/**
+ * Click-to-edit text for the node identity row: enters on click, submits on Enter or blur, reverts
+ * on Escape. Controlled — the owner holds the text and feeds it back through `value`, which lets it
+ * validate what is being typed and render the message through `error`. Renders static text unless
+ * both `onChange` and `onSubmit` are given.
+ */
 export function EditableText({
   value,
   placeholder,
@@ -57,14 +73,20 @@ export function EditableText({
   multiline,
   maxLines = 3,
   onChange,
+  onSubmit,
+  disabled,
   error,
   'aria-label': ariaLabel,
   className,
   'data-testid': dataTestId,
 }: EditableTextProps) {
+  const allowNewlines = multiline === true;
+  const editable = !!onChange && !!onSubmit;
   const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState(value);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  // What Escape reverts to. Taken when the editor opens, since by then `value`
+  // is the owner's live state and no longer remembers where the edit started.
+  const openedWith = useRef(value);
   const errorId = `editable-text-${useId().replace(/:/g, '')}-error`;
 
   const hasError = !!error;
@@ -73,25 +95,33 @@ export function EditableText({
   const describedBy = hasError ? errorId : undefined;
 
   useIsomorphicLayoutEffect(() => {
+    // Going disabled mid-edit closes the editor (below) without submitting. The
+    // text itself is the owner's, so re-enabling shows whatever it kept.
+    if (disabled) return setIsEditing(false);
     if (!isEditing) return;
     inputRef.current?.focus();
     inputRef.current?.select();
-  }, [isEditing]);
+  }, [isEditing, disabled]);
 
   const commit = useCallback(() => {
     setIsEditing(false);
-    const next = draft.trim();
+    const next = value.trim();
     if (next !== value) onChange?.(next);
-  }, [draft, value, onChange]);
+    // Opening and closing without touching the text is not an edit: staying
+    // silent keeps the owner from persisting a value it already has.
+    if (next !== openedWith.current) onSubmit?.(next);
+  }, [value, onChange, onSubmit]);
 
   const cancel = useCallback(() => {
     setIsEditing(false);
-  }, []);
+    if (openedWith.current !== value) onChange?.(openedWith.current);
+  }, [value, onChange]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      // Shift+Enter falls through to insert a newline; every other Enter commits.
-      if (e.key === 'Enter' && !(multiline && e.shiftKey)) {
+      // Only `multiline` (not `'wrap'`) lets Shift+Enter fall through to a newline;
+      // every other Enter commits.
+      if (e.key === 'Enter' && !(allowNewlines && e.shiftKey)) {
         e.preventDefault();
         commit();
       } else if (e.key === 'Escape') {
@@ -100,7 +130,7 @@ export function EditableText({
       }
       e.stopPropagation();
     },
-    [commit, cancel, multiline]
+    [commit, cancel, allowNewlines]
   );
 
   // Read mode caps the rendered lines through the clamp; edit mode grows with
@@ -119,7 +149,7 @@ export function EditableText({
     </FormFieldError>
   );
 
-  if (!onChange) {
+  if (!editable) {
     return (
       <>
         <CanvasTooltip content={value || placeholder} smartTooltip delay>
@@ -144,11 +174,11 @@ export function EditableText({
     );
   }
 
-  if (isEditing) {
+  if (isEditing && !disabled) {
     const sharedProps = {
       'data-slot': 'editable-text-input',
       'data-testid': dataTestId ? `${dataTestId}-input` : undefined,
-      value: draft,
+      value,
       placeholder,
       'aria-label': ariaLabel,
       'aria-describedby': describedBy,
@@ -177,14 +207,16 @@ export function EditableText({
               sharedProps.className,
               'field-sizing-content max-w-full resize-none overflow-y-auto wrap-break-word'
             )}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) =>
+              onChange?.(allowNewlines ? e.target.value : stripNewlines(e.target.value))
+            }
           />
         ) : (
           <input
             {...sharedProps}
             ref={inputRef as React.RefObject<HTMLInputElement>}
             autoComplete="off"
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => onChange?.(e.target.value)}
           />
         )}
         {message}
@@ -203,13 +235,16 @@ export function EditableText({
           aria-describedby={describedBy}
           aria-errormessage={hasError ? errorId : undefined}
           aria-invalid={hasError || undefined}
+          aria-disabled={disabled || undefined}
           onClick={() => {
-            setDraft(value);
+            if (disabled) return;
+            openedWith.current = value;
             setIsEditing(true);
           }}
           style={readClampStyle}
           className={cn(
             'nodrag max-w-full cursor-text border-none bg-transparent text-left transition hover:bg-surface-overlay',
+            'aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent',
             readClampClass,
             INTERACTIVE_CLASS,
             READ_CLASS[size],

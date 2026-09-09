@@ -519,6 +519,56 @@ export const QuickForm: Story = {
   render: () => <QuickFormPanel />,
 };
 
+function IdentityValidationStory() {
+  const [label, setLabel] = useState('Analyze files');
+  const [description, setDescription] = useState('');
+
+  // Stand-in for a host rule (here: an agent tool name). The editor is
+  // controlled, so this runs on every keystroke and the message tracks the text
+  // on screen — including after the editor closes on a value the host rejects.
+  const labelError = !label
+    ? 'Tool name is required.'
+    : /^[A-Z_a-z][\w ]*$/.test(label)
+      ? undefined
+      : 'Tool name must begin with a letter or underscore and contain only letters, digits, spaces, and underscores.';
+
+  return (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle="Properties"
+        nodeIcon={<Globe />}
+        nodeLabel={label}
+        nodeLabelPlaceholder="Name"
+        nodeDescription={description}
+        nodeDescriptionPlaceholder="Client-side tool"
+        onNodeLabelChange={setLabel}
+        onNodeLabelSubmit={setLabel}
+        onNodeDescriptionChange={setDescription}
+        onNodeDescriptionSubmit={setDescription}
+        nodeLabelError={labelError}
+        action={<RunButton />}
+        schema={httpRequestForm}
+        contentInset="0.875rem"
+        onClose={() => {}}
+        className="h-[640px]"
+      />
+    </PanelFrame>
+  );
+}
+
+export const IdentityValidation: Story = {
+  name: 'Identity Validation',
+  render: () => <IdentityValidationStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Rename the node to something starting with a digit to see the error state. `nodeLabelError` / `nodeDescriptionError` render below the line with a persistent error ring, matching `Input`: the control gets `aria-invalid` plus `aria-errormessage`, and the message renders through `FormFieldError` so it announces politely. The ring stays after the editor closes, so a commit the host rejects still explains itself.',
+      },
+    },
+  },
+};
+
 export const EmbeddedNoTitleBar: Story = {
   name: 'Form Embedded',
   render: () => (
@@ -1397,7 +1447,9 @@ function InputEditorStory() {
         nodeDescription={description}
         nodeDescriptionPlaceholder="Control"
         onNodeLabelChange={setLabel}
+        onNodeLabelSubmit={setLabel}
         onNodeDescriptionChange={setDescription}
+        onNodeDescriptionSubmit={setDescription}
         action={<RunButton />}
       >
         <div className="flex h-full flex-col">

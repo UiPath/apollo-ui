@@ -56,6 +56,28 @@ describe('NodePropertyPanel', () => {
     expect(onPointerDown).toHaveBeenCalledOnce();
   });
 
+  it('locks the identity row when the panel is disabled', async () => {
+    const user = userEvent.setup();
+    render(
+      <NodePropertyPanel
+        nodeLabel="Fetch invoice"
+        nodeDescription="Calls the billing API"
+        onNodeLabelChange={vi.fn()}
+        onNodeLabelSubmit={vi.fn()}
+        onNodeDescriptionChange={vi.fn()}
+        onNodeDescriptionSubmit={vi.fn()}
+        schema={MULTI_STEP}
+        disabled
+      />
+    );
+
+    await user.click(screen.getByTestId('node-property-panel-label'));
+    await user.click(screen.getByTestId('node-property-panel-description'));
+
+    expect(screen.queryByTestId('node-property-panel-label-input')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('node-property-panel-description-input')).not.toBeInTheDocument();
+  });
+
   it('renders the node label and category in the identity row', () => {
     render(
       <NodePropertyPanel
@@ -86,39 +108,77 @@ describe('NodePropertyPanel', () => {
     expect(screen.queryByRole('button', { name: /^Node name/ })).not.toBeInTheDocument();
   });
 
-  it('makes the label editable and reports the committed value', async () => {
+  it('makes the label editable, reporting keystrokes and the submitted value', async () => {
     const user = userEvent.setup();
     const onNodeLabelChange = vi.fn();
-    render(
+    const onNodeLabelSubmit = vi.fn();
+    const { rerender } = render(
       <NodePropertyPanel
-        nodeLabel="Fetch invoice details"
+        nodeLabel="Fetch"
         onNodeLabelChange={onNodeLabelChange}
+        onNodeLabelSubmit={onNodeLabelSubmit}
         schema={MULTI_STEP}
       />
     );
 
     await user.click(screen.getByRole('button', { name: /^Node name/ }));
-    await user.keyboard('Fetch invoice{Enter}');
+    await user.keyboard('{End}!');
 
-    expect(onNodeLabelChange).toHaveBeenCalledExactlyOnceWith('Fetch invoice');
+    // Controlled: the panel reports the keystroke, the owner decides what `nodeLabel` becomes.
+    expect(onNodeLabelChange).toHaveBeenCalledExactlyOnceWith('Fetch!');
+
+    rerender(
+      <NodePropertyPanel
+        nodeLabel="Fetch!"
+        onNodeLabelChange={onNodeLabelChange}
+        onNodeLabelSubmit={onNodeLabelSubmit}
+        schema={MULTI_STEP}
+      />
+    );
+    await user.keyboard('{Enter}');
+    expect(onNodeLabelSubmit).toHaveBeenCalledExactlyOnceWith('Fetch!');
   });
 
-  it('makes the description editable and reports the committed value', async () => {
-    const user = userEvent.setup();
-    const onNodeDescriptionChange = vi.fn();
+  it('renders owner feedback under the label', () => {
     render(
       <NodePropertyPanel
         nodeLabel="Fetch invoice details"
-        nodeDescription=""
-        onNodeDescriptionChange={onNodeDescriptionChange}
+        onNodeLabelChange={vi.fn()}
+        onNodeLabelSubmit={vi.fn()}
+        nodeLabelError="Name is required"
+        schema={MULTI_STEP}
+      />
+    );
+
+    expect(screen.getByText('Name is required')).toBeInTheDocument();
+  });
+
+  it('makes the description editable and reports the submitted value', async () => {
+    const user = userEvent.setup();
+    const onNodeDescriptionSubmit = vi.fn();
+    const { rerender } = render(
+      <NodePropertyPanel
+        nodeLabel="Fetch invoice details"
+        nodeDescription="One invoice"
+        onNodeDescriptionChange={vi.fn()}
+        onNodeDescriptionSubmit={onNodeDescriptionSubmit}
         schema={MULTI_STEP}
       />
     );
 
     await user.click(screen.getByRole('button', { name: /^Node description/ }));
-    await user.keyboard('One invoice{Enter}');
+    rerender(
+      <NodePropertyPanel
+        nodeLabel="Fetch invoice details"
+        nodeDescription="Two invoices"
+        onNodeDescriptionChange={vi.fn()}
+        onNodeDescriptionSubmit={onNodeDescriptionSubmit}
+        schema={MULTI_STEP}
+      />
+    );
+    await user.keyboard('{Enter}');
 
-    expect(onNodeDescriptionChange).toHaveBeenCalledExactlyOnceWith('One invoice');
+    expect(onNodeDescriptionSubmit).toHaveBeenCalledExactlyOnceWith('Two invoices');
   });
 
   it('keeps the category when the description is defined but empty', () => {
@@ -139,6 +199,7 @@ describe('NodePropertyPanel', () => {
         nodeLabel=""
         nodeLabelPlaceholder="HTTP Request"
         onNodeLabelChange={vi.fn()}
+        onNodeLabelSubmit={vi.fn()}
         schema={MULTI_STEP}
       />
     );
