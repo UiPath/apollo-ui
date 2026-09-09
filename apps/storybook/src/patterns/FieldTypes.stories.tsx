@@ -505,8 +505,25 @@ const HEADER_CELL_CLASS =
 // short line or a badge, not a paragraph.
 const BODY_CELL_CLASS = 'align-top px-4 py-3';
 
+// One level below the page's own h1: Overview, Types, LockableValueField
+// status. SectionTitle (h3) nests underneath each of these.
+function PartTitle({
+  children,
+  actions,
+}: {
+  children: React.ReactNode;
+  actions?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-6 flex items-center justify-between gap-4">
+      <h2 className="text-[1.75rem] font-bold tracking-tight text-foreground">{children}</h2>
+      {actions}
+    </div>
+  );
+}
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">{children}</h2>;
+  return <h3 className="mb-2 text-2xl font-bold tracking-tight text-foreground">{children}</h3>;
 }
 
 function SectionDescription({ children }: { children: React.ReactNode }) {
@@ -536,16 +553,14 @@ function StatusBadge({ status }: { status: Status }) {
 function FieldTypeExample({
   fieldType,
   initialMode = 'fixed',
-  className,
 }: {
   fieldType: LockableFieldType;
   initialMode?: LockableValueFieldMode;
-  className?: string;
 }) {
   const [value, setValue] = useState(initialMode === 'expression' ? '$vars.example' : '');
   const [mode, setMode] = useState<LockableValueFieldMode>(initialMode);
   return (
-    <div className={cn('w-56', className)}>
+    <div className="w-56">
       <LockableValueField
         fieldType={fieldType}
         value={value}
@@ -558,14 +573,6 @@ function FieldTypeExample({
     </div>
   );
 }
-
-// FileUpload's dropzone is a fixed h-32 with its own "Click to upload or drag
-// and drop" copy, both sized for a full-width form field, not a compact
-// side-by-side comparison cell. Collapses it to a single icon-only row here;
-// the accessible name (aria-label="File upload area") is unaffected, it does
-// not depend on this visible text.
-const COMPACT_FILE_UPLOAD_CLASS =
-  '[&_[role="button"]]:h-9 [&_[role="button"]]:flex-row [&_[role="button"]]:justify-start [&_[role="button"]]:gap-2 [&_[role="button"]]:px-3 [&_[role="button"]]:py-0 [&_[role="button"]_svg]:mb-0 [&_[role="button"]_svg]:size-4 [&_[role="button"]_p]:hidden';
 
 function ExampleLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -726,35 +733,155 @@ function SupportedTodayStrip() {
   );
 }
 
-// A side-by-side visual comparison across types, each in its default fixed
-// state. Distinct from the per-category tables below: this answers "what does
-// a date field look like next to a select," those answer "what's the gap for
-// this one type."
-function VisualReferenceGrid() {
+interface StateRow {
+  label: string;
+  description: string;
+  Example: React.ComponentType;
+}
+
+// Four states, shown twice: once with showLock={false}, once with the
+// default showLock={true}, so the two tables are directly comparable column
+// by column, the icon toggle is the only thing that differs between them.
+function LvfDefaultExample({ showLock }: { showLock: boolean }) {
+  const [value, setValue] = useState('Editable value');
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-      {FIELD_TYPE_ORDER.map((type) => {
-        const typeMeta = FIELD_TYPE_META[type];
-        return (
-          <div key={type} className="flex flex-col gap-2">
-            <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-              <typeMeta.icon size={12} />
-              {typeMeta.label}
-            </span>
-            <FieldTypeExample
-              fieldType={type}
-              className={type === 'file' ? COMPACT_FILE_UPLOAD_CLASS : undefined}
-            />
-          </div>
-        );
-      })}
+    <div className="w-full">
+      <LockableValueField
+        fieldType="string"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        showLock={showLock}
+        showFieldActions={false}
+      />
     </div>
   );
 }
 
-// Mirrors EqualsAddon in lockable-value-field.stories.tsx's "Assignment &
-// Binding" reference example: a leadingAddon that replaces the lock icon with
-// a semantic "=" prefix, the pattern node-property assignment fields use.
+function LvfLockedExample({ showLock }: { showLock: boolean }) {
+  return (
+    <div className="w-full">
+      <LockableValueField
+        fieldType="string"
+        value="Invoice processor"
+        locked
+        showLock={showLock}
+        showFieldActions={false}
+      />
+    </div>
+  );
+}
+
+function LvfInvalidExample({ showLock }: { showLock: boolean }) {
+  const [value, setValue] = useState('Invalid value');
+  return (
+    <div className="w-full">
+      <LockableValueField
+        fieldType="string"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        showLock={showLock}
+        showFieldActions={false}
+        error="This field is required."
+      />
+    </div>
+  );
+}
+
+function LvfExpressionExample({ showLock }: { showLock: boolean }) {
+  const [value, setValue] = useState('$vars.example');
+  return (
+    <div className="w-full">
+      <LockableValueField
+        fieldType="string"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        showLock={showLock}
+        mode="expression"
+        showFieldActions={false}
+      />
+    </div>
+  );
+}
+
+function LvfNoIconDefaultExample() {
+  return <LvfDefaultExample showLock={false} />;
+}
+function LvfNoIconLockedExample() {
+  return <LvfLockedExample showLock={false} />;
+}
+function LvfNoIconInvalidExample() {
+  return <LvfInvalidExample showLock={false} />;
+}
+function LvfNoIconExpressionExample() {
+  return <LvfExpressionExample showLock={false} />;
+}
+
+function LvfWithIconDefaultExample() {
+  return <LvfDefaultExample showLock={true} />;
+}
+function LvfWithIconLockedExample() {
+  return <LvfLockedExample showLock={true} />;
+}
+function LvfWithIconInvalidExample() {
+  return <LvfInvalidExample showLock={true} />;
+}
+function LvfWithIconExpressionExample() {
+  return <LvfExpressionExample showLock={true} />;
+}
+
+const LVF_NO_ICON_STATES: StateRow[] = [
+  {
+    label: 'Default',
+    description: 'showLock={false}, locked={false}. No lock affordance at all.',
+    Example: LvfNoIconDefaultExample,
+  },
+  {
+    label: 'Locked',
+    description: 'showLock={false}, locked={true}. Read-only display, but nothing signals why.',
+    Example: LvfNoIconLockedExample,
+  },
+  {
+    label: 'Invalid',
+    description: 'error, same as Input and Input Group.',
+    Example: LvfNoIconInvalidExample,
+  },
+  {
+    label: 'Expression',
+    description: 'mode="expression". Still no lock icon, for consumers supplying their own.',
+    Example: LvfNoIconExpressionExample,
+  },
+];
+
+const LVF_WITH_ICON_STATES: StateRow[] = [
+  {
+    label: 'Default',
+    description: 'showLock defaults to true. The lock toggle is the built-in affordance.',
+    Example: LvfWithIconDefaultExample,
+  },
+  {
+    label: 'Locked',
+    description: 'Read-only display, not a disabled control. The default state.',
+    Example: LvfWithIconLockedExample,
+  },
+  {
+    label: 'Invalid',
+    description: 'error, same as Input and Input Group.',
+    Example: LvfWithIconInvalidExample,
+  },
+  {
+    label: 'Expression',
+    description: 'mode="expression". The lock toggle stays available alongside it.',
+    Example: LvfWithIconExpressionExample,
+  },
+];
+
+// Mirrors the "Assignment & Binding" reference example in
+// lockable-value-field.stories.tsx: leadingAddon replaces the lock icon with
+// a semantic "=" prefix, and mode is always expression, the pattern used for
+// node-property assignment fields in flow-workbench.
 function EqualsAddon() {
   return (
     <span className="font-mono text-sm font-semibold text-foreground-accent" aria-hidden="true">
@@ -763,54 +890,24 @@ function EqualsAddon() {
   );
 }
 
-function LockedStateExample() {
+function FunctionAddon() {
   return (
-    <div className="w-56">
-      <LockableValueField
-        fieldType="string"
-        value="Invoice processor"
-        locked
-        showFieldActions={false}
-      />
-    </div>
+    <button
+      type="button"
+      aria-label="Open expression editor"
+      className="grid size-7 place-items-center border-l border-border text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <span className="rounded border border-current px-0.5 font-mono text-[10px] leading-3">
+        ƒ
+      </span>
+    </button>
   );
 }
 
-function UnlockedLockShownExample() {
-  const [value, setValue] = useState('Editable value');
-  return (
-    <div className="w-56">
-      <LockableValueField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        showFieldActions={false}
-      />
-    </div>
-  );
-}
-
-function UnlockedLockHiddenExample() {
-  const [value, setValue] = useState('Editable value');
-  return (
-    <div className="w-56">
-      <LockableValueField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        showLock={false}
-        showFieldActions={false}
-      />
-    </div>
-  );
-}
-
-function AssignmentBindingExample() {
+function BindingObjectExample() {
   const [value, setValue] = useState('$vars.flowArray');
   return (
-    <div className="w-56">
+    <div className="w-full">
       <LockableValueField
         fieldType="object"
         value={value}
@@ -824,32 +921,81 @@ function AssignmentBindingExample() {
   );
 }
 
-interface StateRow {
-  label: string;
-  description: string;
-  Example: React.ComponentType;
+function BindingFileExample() {
+  const [value, setValue] = useState('$vars.flowTest');
+  return (
+    <div className="w-full">
+      <LockableValueField
+        fieldType="file"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        leadingAddon={<EqualsAddon />}
+        mode="expression"
+        showFieldActions={false}
+      />
+    </div>
+  );
 }
 
-const LOCKABLE_STATES: StateRow[] = [
+function BindingWithHelperTextExample() {
+  const [value, setValue] = useState('$vars.flowTest');
+  return (
+    <div className="w-full">
+      <LockableValueField
+        fieldType="file"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        leadingAddon={<EqualsAddon />}
+        mode="expression"
+        showFieldActions={false}
+        belowValue={<p className="text-xs text-foreground-muted">File to extract data from</p>}
+      />
+    </div>
+  );
+}
+
+function BindingFunctionAddonExample() {
+  const [value, setValue] = useState('$vars.flowTest');
+  return (
+    <div className="w-full">
+      <LockableValueField
+        fieldType="string"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        leadingAddon={<EqualsAddon />}
+        mode="expression"
+        showFieldActions={false}
+        trailingAddon={<FunctionAddon />}
+      />
+    </div>
+  );
+}
+
+const LVF_BINDING_STATES: StateRow[] = [
   {
-    label: 'Locked',
-    description: 'Read-only display, not a disabled control. The default.',
-    Example: LockedStateExample,
+    label: 'Object',
+    description:
+      'fieldType="object". leadingAddon="=" replaces the lock icon; mode is always expression.',
+    Example: BindingObjectExample,
   },
   {
-    label: 'Unlocked, lock shown',
-    description: 'locked={false}. showLock defaults to true.',
-    Example: UnlockedLockShownExample,
+    label: 'File',
+    description: 'fieldType="file" with the same = leadingAddon and expression mode.',
+    Example: BindingFileExample,
   },
   {
-    label: 'Unlocked, lock hidden',
-    description: 'showLock={false}, for consumers supplying their own lock affordance elsewhere.',
-    Example: UnlockedLockHiddenExample,
+    label: 'With helper text',
+    description: 'belowValue adds context below the field, same prop the plain Input uses.',
+    Example: BindingWithHelperTextExample,
   },
   {
-    label: 'Assignment binding',
-    description: 'leadingAddon replaces the lock icon with a semantic prefix, e.g. "=".',
-    Example: AssignmentBindingExample,
+    label: 'Custom expression editor',
+    description:
+      'trailingAddon replaces the built-in Fixed/Expression toggle with a dedicated "Open expression editor" button.',
+    Example: BindingFunctionAddonExample,
   },
 ];
 
@@ -857,7 +1003,7 @@ function InputDefaultExample() {
   const [value, setValue] = useState('');
   return (
     <Input
-      className="w-56"
+      className="w-full"
       placeholder="Enter a value"
       value={value}
       onChange={(e) => setValue(e.target.value)}
@@ -866,18 +1012,18 @@ function InputDefaultExample() {
 }
 
 function InputDisabledExample() {
-  return <Input className="w-56" placeholder="Enter a value" disabled />;
+  return <Input className="w-full" placeholder="Enter a value" disabled />;
 }
 
 function InputReadOnlyExample() {
-  return <Input className="w-56" value="Read-only value" readOnly />;
+  return <Input className="w-full" value="Read-only value" readOnly />;
 }
 
 function InputInvalidExample() {
   const [value, setValue] = useState('Invalid value');
   return (
     <Input
-      className="w-56"
+      className="w-full"
       value={value}
       onChange={(e) => setValue(e.target.value)}
       error="This field is required."
@@ -912,7 +1058,7 @@ const INPUT_STATES: StateRow[] = [
 function InputGroupDefaultExample() {
   const [value, setValue] = useState('');
   return (
-    <InputGroup className="w-56">
+    <InputGroup className="w-full">
       <InputGroupAddon align="inline-start">
         <Search size={14} />
       </InputGroupAddon>
@@ -927,7 +1073,7 @@ function InputGroupDefaultExample() {
 
 function InputGroupDisabledExample() {
   return (
-    <InputGroup className="w-56">
+    <InputGroup className="w-full">
       <InputGroupAddon align="inline-start">
         <Search size={14} />
       </InputGroupAddon>
@@ -939,7 +1085,7 @@ function InputGroupDisabledExample() {
 function InputGroupInvalidExample() {
   const [value, setValue] = useState('Invalid value');
   return (
-    <InputGroup className="w-56" error="This field is required.">
+    <InputGroup className="w-full" error="This field is required.">
       <InputGroupInput value={value} onChange={(e) => setValue(e.target.value)} />
     </InputGroup>
   );
@@ -947,7 +1093,7 @@ function InputGroupInvalidExample() {
 
 function InputGroupLockedExample() {
   return (
-    <InputGroup className="w-56">
+    <InputGroup className="w-full">
       <InputGroupAddon align="inline-start">
         <InputGroupButton icon size="3xs" aria-label="Locked">
           <Lock size={12} />
@@ -982,6 +1128,47 @@ const INPUT_GROUP_STATES: StateRow[] = [
   },
 ];
 
+interface TypesSection {
+  title: string;
+  description: string;
+  rows: StateRow[];
+}
+
+const TYPES_SECTIONS: TypesSection[] = [
+  {
+    title: 'Input',
+    description:
+      'The bare control underneath everything else on this page. Reach for it directly when a field needs nothing beyond a value and native HTML validation, no lock, no mode, no addons.',
+    rows: INPUT_STATES,
+  },
+  {
+    title: 'Input Group',
+    description:
+      'Input plus addon slots (icons, buttons, prefixes) sharing one bordered container and one validation message. Reach for it when a field needs a leading or trailing affordance but not the full lock/mode/fieldType model LockableValueField adds on top.',
+    rows: INPUT_GROUP_STATES,
+  },
+  {
+    title: 'LockableValueField, no left icon',
+    description:
+      'The showLock prop set to false: no built-in lock affordance. For consumers supplying their own, or embedding the field somewhere the lock toggle doesn’t make sense.',
+    rows: LVF_NO_ICON_STATES,
+  },
+  {
+    title: 'LockableValueField, with left icon',
+    description:
+      'showLock defaults to true: the built-in lock toggle. Same four states as above, so the two tables are directly comparable, the icon is the only thing that differs.',
+    rows: LVF_WITH_ICON_STATES,
+  },
+  {
+    title: 'LockableValueField, assignment & binding',
+    description:
+      'Mirrors the “Assignment & Binding” reference example in lockable-value-field.stories.tsx: the pattern node-property assignment fields use, leadingAddon replaces the lock icon with a semantic “=”, and mode is always expression.',
+    rows: LVF_BINDING_STATES,
+  },
+];
+
+const ALL_TYPES_SECTION_TITLES = TYPES_SECTIONS.map((section) => section.title);
+
 // States run across as columns, not down as rows: with every table on this
 // page so far having exactly 4 states, 4 stacked rows (each a label + a live
 // example + a paragraph) took much more vertical room than laying them out
@@ -989,13 +1176,12 @@ const INPUT_GROUP_STATES: StateRow[] = [
 function StatesTable({ rows }: { rows: StateRow[] }) {
   const columnClass = rows.length === 4 ? 'w-1/4' : undefined;
   return (
-    // No overflow-hidden here: 4 columns of w-56 examples plus padding (~1024px)
-    // routinely exceeds the ~960px content width, and overflow-hidden would
-    // silently clip the last column instead of letting it scroll into view.
-    // Table's own scroll container (overflow-auto) handles that; rounded-lg
-    // still applies, just without the corner-clipping that also hid content.
+    // table-fixed forces every column to its declared w-1/4, an even quarter
+    // of the container, rather than sizing to content. Each Example fills
+    // that with w-full instead of a fixed pixel width, so all 4 columns show
+    // at once with nothing pushed past the edge and clipped or scrolled.
     <div className="rounded-lg border border-border">
-      <Table>
+      <Table className="table-fixed">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             {rows.map(({ label }) => (
@@ -1032,6 +1218,7 @@ function StatesTable({ rows }: { rows: StateRow[] }) {
 const ALL_SECTION_TITLES = ALL_SECTIONS.map((section) => section.title);
 
 function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
+  const [openTypesSections, setOpenTypesSections] = useState<string[]>(ALL_TYPES_SECTION_TITLES);
   const [openSections, setOpenSections] = useState<string[]>(ALL_SECTION_TITLES);
   const [onlySupported, setOnlySupported] = useState(false);
 
@@ -1064,6 +1251,8 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
 
         <Divider />
 
+        <PartTitle>Overview</PartTitle>
+
         <section>
           <SectionTitle>Why this exists</SectionTitle>
           <SectionDescription>
@@ -1082,53 +1271,44 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
 
         <Divider />
 
-        <section>
-          <SectionTitle>Input</SectionTitle>
-          <SectionDescription>
-            The bare control underneath everything else on this page. Reach for it directly when a
-            field needs nothing beyond a value and native HTML validation, no lock, no mode, no
-            addons.
-          </SectionDescription>
-          <StatesTable rows={INPUT_STATES} />
-        </section>
+        <PartTitle
+          actions={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="2xs"
+                onClick={() => setOpenTypesSections(ALL_TYPES_SECTION_TITLES)}
+              >
+                Expand all
+              </Button>
+              <Button variant="outline" size="2xs" onClick={() => setOpenTypesSections([])}>
+                Collapse all
+              </Button>
+            </div>
+          }
+        >
+          Types
+        </PartTitle>
+
+        <Accordion type="multiple" value={openTypesSections} onValueChange={setOpenTypesSections}>
+          {TYPES_SECTIONS.map((section) => (
+            <AccordionItem key={section.title} value={section.title} className="border-border">
+              <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline">
+                {section.title}
+              </AccordionTrigger>
+              <AccordionContent>
+                <p className="mb-4 text-sm leading-6 text-muted-foreground">
+                  {section.description}
+                </p>
+                <StatesTable rows={section.rows} />
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
 
         <Divider />
 
-        <section>
-          <SectionTitle>Input Group</SectionTitle>
-          <SectionDescription>
-            Input plus addon slots (icons, buttons, prefixes) sharing one bordered container and one
-            validation message. Reach for it when a field needs a leading or trailing affordance but
-            not the full lock/mode/fieldType model LockableValueField adds on top.
-          </SectionDescription>
-          <StatesTable rows={INPUT_GROUP_STATES} />
-        </section>
-
-        <Divider />
-
-        <section>
-          <SectionTitle>What each type looks like</SectionTitle>
-          <SectionDescription>
-            A side-by-side comparison, each type in its default fixed-value state. The tables below
-            drill into one type at a time: its gaps, its status, and (where it applies) its
-            expression variant.
-          </SectionDescription>
-          <VisualReferenceGrid />
-        </section>
-
-        <Divider />
-
-        <section>
-          <SectionTitle>LockableValueField states</SectionTitle>
-          <SectionDescription>
-            Cross-cutting states layered on top of fieldType: whether the field is locked, whether
-            the lock affordance itself is shown, and the assignment-binding pattern used for
-            node-property fields.
-          </SectionDescription>
-          <StatesTable rows={LOCKABLE_STATES} />
-        </section>
-
-        <Divider />
+        <PartTitle>LockableValueField status</PartTitle>
 
         <section>
           <SectionTitle>Supported today</SectionTitle>
@@ -1142,9 +1322,7 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
           <SupportedTodayStrip />
         </section>
 
-        <Divider />
-
-        <section>
+        <section className="mt-10">
           <SectionTitle>How to read the status column</SectionTitle>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-lg border border-border bg-card p-4">
