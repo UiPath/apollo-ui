@@ -1,6 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type * as React from 'react';
 import { useState } from 'react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import {
   FIELD_TYPE_META,
@@ -38,6 +44,9 @@ interface TypeRow {
   status: Status;
   action?: string;
   visual?: VisualExample;
+  // False when it is unconfirmed that flow-workbench itself renders this as a
+  // distinct control, not just declares it in a schema. Defaults to true.
+  flowWorkbenchConfirmed?: boolean;
 }
 
 interface Category {
@@ -107,6 +116,7 @@ const CATEGORIES: Category[] = [
         status: 'needs-type',
         action:
           'Confirm whether the 32 vs. 64 bit distinction matters at the UI layer. If it is a backend validation constraint only, no UI change is needed.',
+        flowWorkbenchConfirmed: false,
       },
     ],
   },
@@ -165,6 +175,7 @@ const CATEGORIES: Category[] = [
         status: 'needs-type',
         action:
           'Clarify what verbatim means at the UI layer. Likely no visual difference from string. Confirm with the flow-workbench team.',
+        flowWorkbenchConfirmed: false,
       },
     ],
   },
@@ -232,6 +243,7 @@ const CATEGORIES: Category[] = [
         status: 'needs-component',
         action:
           'Clarify against the generic array row above. May be the same concept under a different name.',
+        flowWorkbenchConfirmed: false,
       },
       {
         type: 'stringArray / rawStringArray / stringArrayWithExpression',
@@ -239,6 +251,7 @@ const CATEGORIES: Category[] = [
         support: 'Overlaps with multi-select and generic array.',
         status: 'needs-type',
         action: 'De-duplicate with flow-workbench before adding a new fieldType.',
+        flowWorkbenchConfirmed: false,
       },
     ],
   },
@@ -303,6 +316,7 @@ const CATEGORIES: Category[] = [
         status: 'needs-type',
         action:
           'Confirm whether an all-options-visible checkbox group is a real visual distinction worth its own fieldType, versus multi-select’s dropdown and chips.',
+        flowWorkbenchConfirmed: false,
       },
       {
         type: 'radioGroup',
@@ -311,6 +325,7 @@ const CATEGORIES: Category[] = [
         status: 'needs-type',
         action:
           'Confirm whether a radio group is a real visual distinction worth its own fieldType, versus a single-select dropdown.',
+        flowWorkbenchConfirmed: false,
       },
       {
         type: 'autoComplete / connectorAutocomplete / autoCompleteForExpression',
@@ -389,6 +404,7 @@ const CATEGORIES: Category[] = [
         status: 'needs-type',
         action:
           'Usually paired with another type in a union, such as a nullable string. Confirm whether an explicit null or empty state is needed per type, or whether an empty value already covers it.',
+        flowWorkbenchConfirmed: false,
       },
       {
         type: 'ref',
@@ -396,6 +412,7 @@ const CATEGORIES: Category[] = [
         support: 'Overlaps with the resource reference family above.',
         status: 'needs-component',
         action: 'De-duplicate with the resource reference family before adding.',
+        flowWorkbenchConfirmed: false,
       },
     ],
   },
@@ -434,11 +451,32 @@ const BINDING_STATE_ROWS: TypeRow[] = [
   },
 ];
 
+// Every collapsible section on the page, category tables plus the binding-state
+// table, in the order they render.
+const ALL_SECTIONS: Category[] = [
+  ...CATEGORIES,
+  {
+    title: 'Binding state',
+    description:
+      'Separate from field type: how a value relates to fixed input versus an upstream binding. LockableValueField only distinguishes fixed and expression. The integration-service widget catalog has a richer set.',
+    rows: BINDING_STATE_ROWS,
+    rowLabel: 'State',
+  },
+];
+
 const STATUS_META: Record<Status, { label: string; variant: 'success' | 'warning' | 'info' }> = {
   supported: { label: 'Supported', variant: 'success' },
   'needs-type': { label: 'Needs fieldType', variant: 'warning' },
   'needs-component': { label: 'Needs component', variant: 'info' },
 };
+
+// Smaller and denser than the Table primitive's default h-12/text-sm header,
+// so a 6-column reference table reads as a table, not a lighter block of prose.
+const HEADER_CELL_CLASS =
+  'h-9 whitespace-nowrap bg-muted/40 text-[11px] font-semibold uppercase tracking-wide';
+// Tighter than the Table primitive's default p-4, since most cells here are one
+// short line or a badge, not a paragraph.
+const BODY_CELL_CLASS = 'align-top px-4 py-3';
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">{children}</h2>;
@@ -548,40 +586,55 @@ function VisualExampleCell({ visual }: { visual?: VisualExample }) {
   );
 }
 
-function CategoryTable({ title, description, rows, rowLabel = 'Type' }: Category) {
+function gapCount(rows: TypeRow[]) {
+  return rows.filter((row) => row.status !== 'supported').length;
+}
+
+function CategoryTable({ description, rows, rowLabel = 'Type' }: Category) {
   return (
-    <section className="mb-10">
-      <h3 className="mb-1.5 text-lg font-semibold text-foreground">{title}</h3>
+    <div>
       <p className="mb-4 text-sm leading-6 text-muted-foreground">{description}</p>
       <div className="overflow-hidden rounded-lg border border-border">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-[16%]">{rowLabel}</TableHead>
-              <TableHead className="w-[18%]">Visual example</TableHead>
-              <TableHead className="w-[15%]">Apollo Wind support</TableHead>
-              <TableHead className="w-[11%]">Status</TableHead>
-              <TableHead className="w-[24%]">Recommended action</TableHead>
-              <TableHead>Source in flow-workbench</TableHead>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[16%]')}>{rowLabel}</TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[18%]')}>Visual example</TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[15%]')}>
+                Apollo Wind support
+              </TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[11%]')}>Status</TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[24%]')}>Recommended action</TableHead>
+              <TableHead className={HEADER_CELL_CLASS}>Source in flow-workbench</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.type}>
-                <TableCell className="align-top font-mono text-xs">{row.type}</TableCell>
-                <TableCell className="align-top">
+                <TableCell className={cn(BODY_CELL_CLASS, 'font-mono text-xs')}>
+                  {row.type}
+                  {row.flowWorkbenchConfirmed === false && (
+                    <sup
+                      className="ml-0.5 cursor-help text-muted-foreground"
+                      title="Not confirmed as a distinct, separately-rendered type in flow-workbench either, only a schema-level type name. See Recommended action."
+                    >
+                      †
+                    </sup>
+                  )}
+                </TableCell>
+                <TableCell className={BODY_CELL_CLASS}>
                   <VisualExampleCell visual={row.visual} />
                 </TableCell>
-                <TableCell className="align-top text-xs text-muted-foreground">
+                <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
                   {row.support}
                 </TableCell>
-                <TableCell className="align-top">
+                <TableCell className={BODY_CELL_CLASS}>
                   <StatusBadge status={row.status} />
                 </TableCell>
-                <TableCell className="align-top text-xs text-muted-foreground">
+                <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
                   {row.action ?? '—'}
                 </TableCell>
-                <TableCell className="align-top text-xs text-muted-foreground">
+                <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
                   {row.source}
                 </TableCell>
               </TableRow>
@@ -589,7 +642,7 @@ function CategoryTable({ title, description, rows, rowLabel = 'Type' }: Category
           </TableBody>
         </Table>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -697,20 +750,40 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
               </p>
             </div>
           </div>
+          <InfoCallout>
+            Status describes the gap on the Apollo Wind side only. It assumes flow-workbench already
+            renders the type distinctly, which is true for most rows (backed by a real renderer: the
+            integration-service widget catalog, JSON Schema, entity fields). A type marked{' '}
+            <span className="font-mono text-foreground">†</span> is different: it is only a
+            schema-level type name, and it is not confirmed that flow-workbench itself treats it as
+            a separately-rendered control. For those rows the gap may not be &ldquo;Apollo Wind is
+            missing this,&rdquo; it may be &ldquo;no one has decided this is a real distinction yet,
+            in either place.&rdquo; See that row&rsquo;s recommended action before treating it as a
+            straightforward addition.
+          </InfoCallout>
         </section>
 
         <Divider />
 
-        {CATEGORIES.map((category) => (
-          <CategoryTable key={category.title} {...category} />
-        ))}
-
-        <CategoryTable
-          title="Binding state"
-          description="Separate from field type: how a value relates to fixed input versus an upstream binding. LockableValueField only distinguishes fixed and expression. The integration-service widget catalog has a richer set."
-          rows={BINDING_STATE_ROWS}
-          rowLabel="State"
-        />
+        <Accordion type="multiple" defaultValue={ALL_SECTIONS.map((section) => section.title)}>
+          {ALL_SECTIONS.map((section) => (
+            <AccordionItem key={section.title} value={section.title} className="border-border">
+              <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline">
+                <span>
+                  {section.title}
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    {gapCount(section.rows) === 0
+                      ? 'all supported'
+                      : `${gapCount(section.rows)} gap${gapCount(section.rows) === 1 ? '' : 's'}`}
+                  </span>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <CategoryTable {...section} />
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
 
         <Divider />
 
