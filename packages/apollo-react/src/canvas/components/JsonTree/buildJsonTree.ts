@@ -340,7 +340,11 @@ export function flattenJsonTree(
               filterPredicate: selfPredicateMatch ? undefined : filterPredicate,
             }
           : options;
-      rows.push(...flattenJsonTree(node.children, childOptions, depth + 1));
+      // Not `rows.push(...childRows)`: spreading tens of thousands of arguments
+      // into `push` overflows the engine's call-stack argument limit.
+      for (const row of flattenJsonTree(node.children, childOptions, depth + 1)) {
+        rows.push(row);
+      }
     }
   }
   return rows;

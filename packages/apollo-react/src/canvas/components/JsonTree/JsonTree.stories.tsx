@@ -1,16 +1,37 @@
 import type { Meta, StoryFn } from '@storybook/react';
 import { useMemo, useState } from 'react';
 import { Column, Row } from '../../layouts';
-import { buildJsonTree } from './buildJsonTree';
-import type { JsonTreeNode } from './JsonTree.types';
+import { buildJsonTree, removeValueAtPath, setValueAtPath } from './buildJsonTree';
+import type { JsonObject, JsonTreeNode } from './JsonTree.types';
 import { JsonTree } from './JsonTree';
 
 export default {
-  title: 'Components/JsonTree',
+  title: 'Components/Tree View Code',
+  tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
+    docs: {
+      description: {
+        component: `
+An interactive tree for structured data: a JSON value merged with its schema, rendered as expandable objects and arrays with typed, editable leaves.
+
+## Features
+
+- **Search** – Matches keys and scalar values; matching containers auto-expand
+- **Inline editing** – Every JSON type edits in place; objects and arrays open a code editor
+- **Copy** – Copy a field's path or its value from the row actions
+- **Custom rendering** – Override value cells, type icons, and per-node decorations (labels, chips, badge colors)
+- **Virtualization** – Mount only the rows in view for trees with thousands of fields, opt in with \`virtualized\`
+
+## Where this is used
+
+- **Node Property Panel**: the Input / Output 3 Column story renders request and response shapes with this component, via \`NodeIOView\`
+- **Templates, Flow Standalone**: node inspector panels throughout the canvas flow demo
+        `,
+      },
+    },
   },
-} satisfies Meta;
+} satisfies Meta<typeof JsonTree>;
 
 const RECORD_COUNT = 20_000;
 
@@ -44,6 +65,43 @@ function useCollapsed() {
 }
 
 const frame = { background: 'var(--canvas-background)', color: 'var(--canvas-foreground)' };
+
+/**
+ * The tree on its own, with no panel chrome around it: a small, realistic response shape,
+ * editable inline. This is the same component the Node Property Panel's Input / Output view
+ * renders, via `NodeIOView`.
+ */
+export const Default: StoryFn = () => {
+  const [value, setValue] = useState<JsonObject>({
+    code: 200,
+    headers: { 'content-type': 'application/json' },
+    body: {
+      id: '9e415fe5-0001',
+      name: 'Record 1',
+      isActive: true,
+      tags: ['alpha', 'beta'],
+    },
+  });
+  const { collapsed, toggle } = useCollapsed();
+  const nodes = useMemo(() => buildJsonTree({ value }), [value]);
+
+  return (
+    <Column p={24} gap={12} style={frame}>
+      <JsonTree
+        nodes={nodes}
+        collapsed={collapsed}
+        onToggleCollapsed={toggle}
+        onEdit={(node, nodeValue) => {
+          const next =
+            nodeValue === undefined
+              ? removeValueAtPath(value, node.segments)
+              : setValueAtPath(value, node.segments, nodeValue);
+          if (next !== undefined) setValue(next as JsonObject);
+        }}
+      />
+    </Column>
+  );
+};
 
 /** Only the rows in view mount; the tree scrolls inside its own box, capped at the viewport height. */
 export const VirtualizedOwnScrollBox: StoryFn = () => {
