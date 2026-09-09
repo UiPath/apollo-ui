@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Toaster } from '@/components/ui/sonner';
 import { Switch } from '@/components/ui/switch';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { setupDemoMocks } from './demo-mocks';
 import {
   automationJobSchema,
@@ -1287,4 +1288,63 @@ const CompactStateExample = () => {
  */
 export const WithCompactStateViewer = {
   render: () => <CompactStateExample />,
+} satisfies Story;
+
+/**
+ * String List + Tooltip + Controlled Host
+ *
+ * Demonstrates the `string-list` field type (repeated multiline rows with Add/Remove),
+ * the `tooltip` field metadata, and the controlled-host seam (`values`/`onValuesChange`/
+ * `errors`/`disableValidation`/`container="div"`) where the host owns state and validation.
+ */
+const stringListSchema: FormSchema = {
+  id: 'string-list-demo',
+  title: '',
+  actions: [],
+  sections: [
+    {
+      id: 'main',
+      fields: [
+        {
+          name: 'blockedPhrases',
+          type: 'string-list',
+          label: 'Blocked phrases',
+          tooltip: 'Each row is matched against generated output.',
+          defaultValue: ['confidential'],
+          maxItems: 5,
+          maxLength: 200,
+          addItemLabel: 'Add phrase',
+          removeItemAriaLabel: 'Remove {{label}} {{position}}',
+        },
+      ],
+    },
+  ],
+};
+
+const StringListControlledExample = () => {
+  const [values, setValues] = useState<Record<string, unknown>>({
+    blockedPhrases: ['confidential'],
+  });
+  const phrases = (values.blockedPhrases as string[]) ?? [];
+  const errors = phrases.length === 0 ? { blockedPhrases: 'Add at least one phrase.' } : undefined;
+
+  return (
+    <TooltipProvider>
+      <div className="max-w-md space-y-4">
+        <MetadataForm
+          schema={stringListSchema}
+          values={values}
+          onValuesChange={setValues}
+          errors={errors}
+          disableValidation
+          container="div"
+        />
+        <pre className="text-xs text-muted-foreground">{JSON.stringify(values, null, 2)}</pre>
+      </div>
+    </TooltipProvider>
+  );
+};
+
+export const StringListControlled = {
+  render: () => <StringListControlledExample />,
 } satisfies Story;
