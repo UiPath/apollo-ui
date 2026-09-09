@@ -27,12 +27,17 @@ import type {
 import { RulesEngine } from './rules-engine';
 import { validationConfigToZod } from './validation-converter';
 
+// Re-exported so packages composing MetadataForm's custom fields (e.g. apollo-react's
+// guardrails) subscribe through the same react-hook-form instance — a second RHF copy
+// would read a different FormProvider context and see no values.
+export { useWatch } from 'react-hook-form';
+
 /**
  * Core MetadataForm Component
  * Renders forms from JSON/object schema with full RHF integration
  */
 
-interface MetadataFormProps {
+export interface MetadataFormProps {
   schema: FormSchema;
   plugins?: FormPlugin[];
   onSubmit?: (data: unknown) => void | Promise<void>;
@@ -71,6 +76,43 @@ interface MetadataFormProps {
    * and uncontrolled mode. Pair it with `activeStepId` to persist the selection.
    */
   onActiveStepChange?: (stepId: string) => void;
+  /**
+   * Externally-owned field values, synced into the form per field and guarded by deep
+   * equality — an echo of the form's own emission performs zero writes, so focus and cursor
+   * position survive. Sync-ins never re-fire `onValuesChange`. Hosts that pass this should
+   * echo the emitted values back synchronously from `onValuesChange`.
+   */
+  values?: Record<string, unknown>;
+  /**
+   * Fires on every user-driven field change with the full values record and the changed
+   * field's name. Unlike the plugin `onValueChange` hook it is not gated behind async form
+   * initialization, and it never fires for `values` sync-ins.
+   */
+  onValuesChange?: (values: Record<string, unknown>, changedField: string) => void;
+  /**
+   * Host-supplied errors keyed by field name, shown through the normal per-field error path.
+   * Managed as `type: 'external'` react-hook-form errors: this prop is their single source of
+   * truth (they never self-clear on typing), and the effect only ever clears its own entries,
+   * so resolver-produced errors are untouched.
+   */
+  errors?: Record<string, string | undefined>;
+  /**
+   * Skip building/attaching the zod resolver entirely — for hosts that own validation and
+   * inject results via `errors`. Without this the resolver always exists and would compete
+   * with host errors on submit/trigger.
+   */
+  disableValidation?: boolean;
+  /**
+   * Custom field components available synchronously from the first render, keyed by the
+   * `component` name in `type: 'custom'` field metadata. Plugin-registered components
+   * (via `registerCustomComponent`) take precedence on name collisions.
+   */
+  components?: Record<string, React.ComponentType<CustomFieldComponentProps>>;
+  /**
+   * Render a `<div>` instead of a `<form>` — for hosts that embed the form inside their own
+   * chrome and own submission (no implicit Enter-to-submit, safe inside another form).
+   */
+  container?: 'form' | 'div';
 }
 
 // Stable default to prevent re-renders
@@ -87,6 +129,12 @@ export function MetadataForm({
   sectionVariant = 'card',
   activeStepId,
   onActiveStepChange,
+  values,
+  onValuesChange,
+  errors,
+  disableValidation = false,
+  components,
+  container = 'form',
 }: MetadataFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [customComponents, setCustomComponents] = useState<
@@ -104,12 +152,15 @@ export function MetadataForm({
     return schema;
   }, [schema]);
 
-  // Build Zod schema from metadata
-  const zodSchema = useMemo(() => buildZodSchema(stableSchema), [stableSchema]);
+  // Build Zod schema from metadata (skipped entirely when the host owns validation)
+  const zodSchema = useMemo(
+    () => (disableValidation ? undefined : buildZodSchema(stableSchema)),
+    [stableSchema, disableValidation]
+  );
 
   // Initialize React Hook Form
   const form = useForm<FieldValues>({
-    resolver: standardSchemaResolver(zodSchema),
+    resolver: zodSchema ? standardSchemaResolver(zodSchema) : undefined,
     defaultValues: stableSchema.initialData || {},
     mode: stableSchema.mode || 'onSubmit',
     reValidateMode: stableSchema.reValidateMode || 'onChange',
@@ -171,12 +222,24 @@ export function MetadataForm({
   const isInitializedRef = useRef(isInitialized);
   isInitializedRef.current = isInitialized;
 
+  // Suppresses onValuesChange while the `values` sync-in effect writes fields — safe because
+  // react-hook-form notifies watch subscribers synchronously inside setValue.
+  const syncingValuesRef = useRef(false);
+  const onValuesChangeRef = useRef(onValuesChange);
+  onValuesChangeRef.current = onValuesChange;
+
   // valuesRef is written before the plugin fan-out: context.values must be current.
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       valuesRef.current = value as Record<string, unknown>;
 
-      if (!name || !isInitializedRef.current) return;
+      if (!name || syncingValuesRef.current) return;
+
+      // Deliberately not behind the isInitialized gate: controlled hosts need the very first
+      // user edit, which can land before the async init effect finishes.
+      onValuesChangeRef.current?.(value as Record<string, unknown>, name);
+
+      if (!isInitializedRef.current) return;
 
       pluginsRef.current.forEach((plugin) => {
         plugin.onValueChange?.(name, get(value, name), contextRef.current);
@@ -185,6 +248,44 @@ export function MetadataForm({
 
     return () => subscription.unsubscribe();
   }, [watch]);
+
+  // Sync externally-owned values in, per field and deep-equal guarded: an echo of the form's
+  // own emission is a no-op (no setValue call, no re-render), so focus/cursor survive.
+  useEffect(() => {
+    if (!values) return;
+    const current = form.getValues();
+    syncingValuesRef.current = true;
+    try {
+      for (const [name, v] of Object.entries(values)) {
+        if (!deepEqual(get(current, name), v)) {
+          form.setValue(name, v as never);
+        }
+      }
+    } finally {
+      syncingValuesRef.current = false;
+    }
+    valuesRef.current = form.getValues();
+  }, [values, form]);
+
+  // Host-supplied errors: applied as `type: 'external'`, cleared only by this effect (never by
+  // typing), and only ever clearing its own entries so resolver errors are untouched.
+  const appliedExternalErrorsRef = useRef<Record<string, string>>({});
+  useEffect(() => {
+    const next: Record<string, string> = {};
+    for (const [name, message] of Object.entries(errors ?? {})) {
+      if (!message) continue;
+      next[name] = message;
+      if (appliedExternalErrorsRef.current[name] !== message) {
+        form.setError(name, { type: 'external', message });
+      }
+    }
+    for (const name of Object.keys(appliedExternalErrorsRef.current)) {
+      if (!next[name] && form.getFieldState(name).error?.type === 'external') {
+        form.clearErrors(name);
+      }
+    }
+    appliedExternalErrorsRef.current = next;
+  }, [errors, form]);
 
   // Initialize form - runs once on mount only
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs once on mount - use key prop to reinitialize with new schema
@@ -233,6 +334,17 @@ export function MetadataForm({
   // Stable reset callback
   const handleReset = useCallback(() => reset(), [reset]);
 
+  // Custom components from every source, available synchronously: the `components` prop and
+  // plugin `components` declarations from first render; `registerCustomComponent` entries win
+  // on name collisions once registered.
+  const allCustomComponents = useMemo(() => {
+    const fromPlugins: Record<string, React.ComponentType<CustomFieldComponentProps>> = {};
+    for (const plugin of plugins) {
+      Object.assign(fromPlugins, plugin.components);
+    }
+    return { ...components, ...fromPlugins, ...customComponents };
+  }, [components, plugins, customComponents]);
+
   // Render based on form structure
   const renderContent = () => {
     if (stableSchema.steps) {
@@ -241,7 +353,7 @@ export function MetadataForm({
           <TabbedStepForm
             schema={stableSchema}
             context={context}
-            customComponents={customComponents}
+            customComponents={allCustomComponents}
             disabled={disabled}
             sectionVariant={sectionVariant}
             activeStepId={activeStepId}
@@ -256,7 +368,7 @@ export function MetadataForm({
           context={context}
           currentStep={currentStep}
           setCurrentStep={setCurrentStep}
-          customComponents={customComponents}
+          customComponents={allCustomComponents}
           disabled={disabled}
           sectionVariant={sectionVariant}
         />
@@ -267,25 +379,35 @@ export function MetadataForm({
       <SinglePageForm
         schema={stableSchema}
         context={context}
-        customComponents={customComponents}
+        customComponents={allCustomComponents}
         disabled={disabled}
         sectionVariant={sectionVariant}
       />
     );
   };
 
+  const content = (
+    <>
+      {renderContent()}
+
+      {/* Wizard forms own their navigation/Submit, and tabbed forms render
+          FormActions inside TabbedStepForm so it's suppressed when no tab is
+          visible. Only single-page forms render FormActions here. */}
+      {!stableSchema.steps && (container !== 'div' || stableSchema.actions) && (
+        <FormActions schema={stableSchema} context={context} onReset={handleReset} />
+      )}
+    </>
+  );
+
   return (
     <FormProvider {...form}>
-      <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
-        {renderContent()}
-
-        {/* Wizard forms own their navigation/Submit, and tabbed forms render
-            FormActions inside TabbedStepForm so it's suppressed when no tab is
-            visible. Only single-page forms render FormActions here. */}
-        {!stableSchema.steps && (
-          <FormActions schema={stableSchema} context={context} onReset={handleReset} />
-        )}
-      </form>
+      {container === 'div' ? (
+        <div className={className}>{content}</div>
+      ) : (
+        <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
+          {content}
+        </form>
+      )}
     </FormProvider>
   );
 }
