@@ -1,6 +1,7 @@
 import type { Meta } from '@storybook/react-vite';
 import { InfoTooltip } from './info-tooltip';
 import { Label, RequiredIndicator } from './label';
+import { Textarea } from './textarea';
 import { TooltipProvider } from './tooltip';
 
 const meta = {
@@ -46,11 +47,14 @@ export const Default = {
 export const NextToALabel = {
   args: Default.args,
   render: (args: React.ComponentProps<typeof InfoTooltip>) => (
-    <Label htmlFor="blocked-phrases">
-      Blocked phrases
-      <RequiredIndicator />
-      <InfoTooltip {...args} />
-    </Label>
+    <div className="w-80 space-y-1.5">
+      <Label htmlFor="blocked-phrases">
+        Blocked phrases
+        <RequiredIndicator />
+        <InfoTooltip {...args} />
+      </Label>
+      <Textarea id="blocked-phrases" placeholder="confidential" minRows={2} />
+    </div>
   ),
 };
 
