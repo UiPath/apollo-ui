@@ -272,5 +272,17 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "O modelo usado para avaliar a política em relação a cada carga.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Cargas opcionais que devem ser aprovadas na política. Usadas pelo juiz como âncoras de calibração.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Cargas opcionais que devem ser reprovadas na política. Usadas pelo juiz como âncoras de calibração.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigor, em uma escala de 0 a 6. Os valores mais baixos são mais rigorosos — o juiz sinaliza qualquer coisa que indica uma violação. Valores mais altos são mais flexíveis — apenas violações claras e inquestionáveis são sinalizadas."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigor, em uma escala de 0 a 6. Os valores mais baixos são mais rigorosos — o juiz sinaliza qualquer coisa que indica uma violação. Valores mais altos são mais flexíveis — apenas violações claras e inquestionáveis são sinalizadas.",
+  "guardrails.list.title": "Proteções",
+  "guardrails.list.add": "Adicionar",
+  "guardrails.list.empty": "Nenhuma proteção configurada",
+  "guardrails.list.reorder-item": "Reordenar proteção {name}",
+  "guardrails.list.edit-item": "Editar diretriz",
+  "guardrails.list.remove-item": "Remover diretriz",
+  "guardrails.list.preview": "Visualizar",
+  "guardrails.list.provider": "Provedor",
+  "guardrails.list.action-unknown": "Desconhecido",
+  "guardrails.list.byo-disabled-notice": "A configuração desta proteção foi desabilitada e não pode mais ser usada. Entre em contato com seu administrador para reativar a configuração ou substitua esta proteção antes de executar o agente.",
+  "guardrails.list.byo-unavailable-notice": "A configuração desta proteção não está mais disponível. Substitua-a antes de executar o agente.",
+  "guardrails.list.status-unauthorized": "Não autorizado"
 }

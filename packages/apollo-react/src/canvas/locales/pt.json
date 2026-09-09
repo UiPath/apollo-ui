@@ -272,5 +272,17 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "O modelo utilizado para avaliar a política em relação a cada payload.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Payloads opcionais que devem fazer passar a política. Utilizado pelo judge como âncoras de calibração.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Payloads opcionais que devem fazer falhar a política. Utilizado pelo judge como âncoras de calibração.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Exatidão numa escala de 0 a 6. Os valores mais baixos são mais exatos – o judge sinaliza qualquer ação que insinue uma violação. Os valores mais elevados são mais flexíveis – apenas são sinalizadas violações claras e não ambíguas."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Exatidão numa escala de 0 a 6. Os valores mais baixos são mais exatos – o judge sinaliza qualquer ação que insinue uma violação. Os valores mais elevados são mais flexíveis – apenas são sinalizadas violações claras e não ambíguas.",
+  "guardrails.list.title": "Barreiras de proteção",
+  "guardrails.list.add": "Adicionar",
+  "guardrails.list.empty": "Nenhuma barreira de proteção configurada",
+  "guardrails.list.reorder-item": "Reordenar barreira de proteção {name}",
+  "guardrails.list.edit-item": "Editar verificador de integridade",
+  "guardrails.list.remove-item": "Remover verificador de integridade",
+  "guardrails.list.preview": "Pré-visualizar",
+  "guardrails.list.provider": "Fornecedor",
+  "guardrails.list.action-unknown": "Desconhecido",
+  "guardrails.list.byo-disabled-notice": "A configuração desta barreira de proteção foi desativada e já não pode ser utilizada. Contacte o seu administrador para reativar a configuração ou substituir esta barreira de proteção antes de executar o agente.",
+  "guardrails.list.byo-unavailable-notice": "A configuração desta barreira de proteção já não está disponível. Substitua-a antes de executar o agente.",
+  "guardrails.list.status-unauthorized": "Não autorizado"
 }

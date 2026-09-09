@@ -272,5 +272,17 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "Modelul utilizat pentru a evalua politica pentru fiecare payload.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Sarcini utile opționale care ar trebui să respecte politica. Folosite de evaluator ca puncte de referință pentru calibrare.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Sarcini utile opționale care ar trebui să nu respecte politica. Folosite de evaluator ca puncte de calibrare.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigoare pe o scară de la 0 la 6. Valorile mai mici sunt mai stricte — evaluatorul semnalează orice element care sugerează o încălcare. Valorile mai mari sunt mai permisive — sunt semnalate doar încălcările clare, fără ambiguitate."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigoare pe o scară de la 0 la 6. Valorile mai mici sunt mai stricte — evaluatorul semnalează orice element care sugerează o încălcare. Valorile mai mari sunt mai permisive — sunt semnalate doar încălcările clare, fără ambiguitate.",
+  "guardrails.list.title": "Mecanisme de Control",
+  "guardrails.list.add": "Adaugă",
+  "guardrails.list.empty": "Nu sunt configurate măsuri de protecție",
+  "guardrails.list.reorder-item": "Reordonați limita de protecție {name}",
+  "guardrails.list.edit-item": "Editați limita de protecție",
+  "guardrails.list.remove-item": "Eliminați mecanismul de control",
+  "guardrails.list.preview": "Previzualizare",
+  "guardrails.list.provider": "Furnizor",
+  "guardrails.list.action-unknown": "Necunoscut",
+  "guardrails.list.byo-disabled-notice": "Această configurație a mecanismului de control a fost dezactivată și nu mai poate fi utilizată. Contactați administratorul pentru a reactiva configurația sau pentru a înlocui acest mecanism de control înainte de a executa agentul.",
+  "guardrails.list.byo-unavailable-notice": "Configurația acestui mecanism de control nu mai este disponibilă. Înlocuiți-l înainte de a executa agentul.",
+  "guardrails.list.status-unauthorized": "Neautorizat"
 }
