@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.42.0...@uipath/apollo-react@6.43.0) (2026-09-09)
+
+### Features
+
+* **apollo-wind:** align modal takeover and run actions ([55b555d](https://github.com/UiPath/apollo-ui/commit/55b555d5a7c390d1a34cb638c9ca78aa223c9f29))
+
 ## [@uipath/apollo-react-v6.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.41.0...@uipath/apollo-react@6.42.0) (2026-09-07)
 
 ### Features

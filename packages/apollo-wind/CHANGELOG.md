@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.2...@uipath/apollo-wind@2.48.0) (2026-09-09)
+
+### Features
+
+* **apollo-wind:** align modal takeover and run actions ([55b555d](https://github.com/UiPath/apollo-ui/commit/55b555d5a7c390d1a34cb638c9ca78aa223c9f29))
+
 ## [@uipath/apollo-wind-v2.47.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.1...@uipath/apollo-wind@2.47.2) (2026-09-07)
 
 ### Bug Fixes
