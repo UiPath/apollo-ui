@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Lock, Search } from 'lucide-react';
 import type * as React from 'react';
 import { useState } from 'react';
 import {
@@ -9,6 +10,13 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import {
   FIELD_TYPE_META,
@@ -811,11 +819,13 @@ function AssignmentBindingExample() {
   );
 }
 
-const LOCKABLE_STATES: {
+interface StateRow {
   label: string;
   description: string;
   Example: React.ComponentType;
-}[] = [
+}
+
+const LOCKABLE_STATES: StateRow[] = [
   {
     label: 'Locked',
     description: 'Read-only display, not a disabled control. The default.',
@@ -838,16 +848,160 @@ const LOCKABLE_STATES: {
   },
 ];
 
-function LockableStatesGrid() {
+function InputDefaultExample() {
+  const [value, setValue] = useState('');
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      {LOCKABLE_STATES.map(({ label, description, Example }) => (
-        <div key={label} className="rounded-lg border border-border bg-card p-4">
-          <span className="text-xs font-medium text-foreground">{label}</span>
-          <p className="mb-3 mt-1 text-xs text-muted-foreground">{description}</p>
-          <Example />
-        </div>
-      ))}
+    <Input
+      className="w-56"
+      placeholder="Enter a value"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+    />
+  );
+}
+
+function InputDisabledExample() {
+  return <Input className="w-56" placeholder="Enter a value" disabled />;
+}
+
+function InputReadOnlyExample() {
+  return <Input className="w-56" value="Read-only value" readOnly />;
+}
+
+function InputInvalidExample() {
+  const [value, setValue] = useState('Invalid value');
+  return (
+    <Input
+      className="w-56"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      error="This field is required."
+    />
+  );
+}
+
+const INPUT_STATES: StateRow[] = [
+  {
+    label: 'Default',
+    description: 'The bare control most fields are built on top of.',
+    Example: InputDefaultExample,
+  },
+  {
+    label: 'Disabled',
+    description:
+      'disabled. Not the same as locked: a locked field uses LockableValueField’s read-only display instead, not a disabled Input.',
+    Example: InputDisabledExample,
+  },
+  {
+    label: 'Read-only',
+    description: 'readOnly.',
+    Example: InputReadOnlyExample,
+  },
+  {
+    label: 'Invalid',
+    description: 'error sets aria-invalid and renders the message below the input.',
+    Example: InputInvalidExample,
+  },
+];
+
+function InputGroupDefaultExample() {
+  const [value, setValue] = useState('');
+  return (
+    <InputGroup className="w-56">
+      <InputGroupAddon align="inline-start">
+        <Search size={14} />
+      </InputGroupAddon>
+      <InputGroupInput
+        placeholder="Search..."
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+    </InputGroup>
+  );
+}
+
+function InputGroupDisabledExample() {
+  return (
+    <InputGroup className="w-56">
+      <InputGroupAddon align="inline-start">
+        <Search size={14} />
+      </InputGroupAddon>
+      <InputGroupInput placeholder="Search..." disabled />
+    </InputGroup>
+  );
+}
+
+function InputGroupInvalidExample() {
+  const [value, setValue] = useState('Invalid value');
+  return (
+    <InputGroup className="w-56" error="This field is required.">
+      <InputGroupInput value={value} onChange={(e) => setValue(e.target.value)} />
+    </InputGroup>
+  );
+}
+
+function InputGroupLockedExample() {
+  return (
+    <InputGroup className="w-56">
+      <InputGroupAddon align="inline-start">
+        <InputGroupButton icon size="3xs" aria-label="Locked">
+          <Lock size={12} />
+        </InputGroupButton>
+      </InputGroupAddon>
+      <InputGroupInput readOnly value="Locked value" />
+    </InputGroup>
+  );
+}
+
+const INPUT_GROUP_STATES: StateRow[] = [
+  {
+    label: 'Default',
+    description: 'InputGroupAddon + InputGroupInput, e.g. a leading icon.',
+    Example: InputGroupDefaultExample,
+  },
+  {
+    label: 'Disabled',
+    description: 'disabled on InputGroupInput.',
+    Example: InputGroupDisabledExample,
+  },
+  {
+    label: 'Invalid',
+    description: 'error on InputGroup itself, shared across every input inside it.',
+    Example: InputGroupInvalidExample,
+  },
+  {
+    label: 'Locked (read-only)',
+    description:
+      'The lighter-weight recipe referenced in LockableValueField’s own docs: a lock icon addon plus a readOnly InputGroupInput, without pulling in the full component.',
+    Example: InputGroupLockedExample,
+  },
+];
+
+function StatesTable({ rows }: { rows: StateRow[] }) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-border">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={cn(HEADER_CELL_CLASS, 'w-[16%]')}>State</TableHead>
+            <TableHead className={cn(HEADER_CELL_CLASS, 'w-[28%]')}>Example</TableHead>
+            <TableHead className={HEADER_CELL_CLASS}>Notes</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map(({ label, description, Example }) => (
+            <TableRow key={label}>
+              <TableCell className={cn(BODY_CELL_CLASS, 'font-mono text-xs')}>{label}</TableCell>
+              <TableCell className={BODY_CELL_CLASS}>
+                <Example />
+              </TableCell>
+              <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
+                {description}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -906,6 +1060,30 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
         <Divider />
 
         <section>
+          <SectionTitle>Input</SectionTitle>
+          <SectionDescription>
+            The bare control underneath everything else on this page. Reach for it directly when a
+            field needs nothing beyond a value and native HTML validation, no lock, no mode, no
+            addons.
+          </SectionDescription>
+          <StatesTable rows={INPUT_STATES} />
+        </section>
+
+        <Divider />
+
+        <section>
+          <SectionTitle>Input Group</SectionTitle>
+          <SectionDescription>
+            Input plus addon slots (icons, buttons, prefixes) sharing one bordered container and one
+            validation message. Reach for it when a field needs a leading or trailing affordance but
+            not the full lock/mode/fieldType model LockableValueField adds on top.
+          </SectionDescription>
+          <StatesTable rows={INPUT_GROUP_STATES} />
+        </section>
+
+        <Divider />
+
+        <section>
           <SectionTitle>What each type looks like</SectionTitle>
           <SectionDescription>
             A side-by-side comparison, each type in its default fixed-value state. The tables below
@@ -924,16 +1102,7 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
             the lock affordance itself is shown, and the assignment-binding pattern used for
             node-property fields.
           </SectionDescription>
-          <InfoCallout>
-            LockableValueField composes Input and Input Group, which each have their own dedicated
-            Storybook page (<span className="font-mono text-foreground">Components/Core/Input</span>
-            , <span className="font-mono text-foreground">Components/Core/Input Group</span>)
-            documenting their full set of states. Not duplicated here, this page stays focused on
-            LockableValueField and type coverage.
-          </InfoCallout>
-          <div className="mt-4">
-            <LockableStatesGrid />
-          </div>
+          <StatesTable rows={LOCKABLE_STATES} />
         </section>
 
         <Divider />
