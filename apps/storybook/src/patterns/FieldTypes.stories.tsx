@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   FIELD_TYPE_META,
   FIELD_TYPE_ORDER,
@@ -16,6 +17,7 @@ import {
   LockableValueField,
   type LockableValueFieldMode,
 } from '@/components/ui/lockable-value-field';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -706,6 +708,18 @@ const ALL_SECTION_TITLES = ALL_SECTIONS.map((section) => section.title);
 
 function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
   const [openSections, setOpenSections] = useState<string[]>(ALL_SECTION_TITLES);
+  const [onlySupported, setOnlySupported] = useState(false);
+
+  // Sections with nothing supported (e.g. Security, Resource reference) drop out
+  // entirely under the filter, rather than sticking around empty.
+  const visibleSections = onlySupported
+    ? ALL_SECTIONS.map((section) => ({
+        ...section,
+        rows: section.rows.filter((row) => row.status === 'supported'),
+      })).filter((section) => section.rows.length > 0)
+    : ALL_SECTIONS;
+  const visibleSectionTitles = visibleSections.map((section) => section.title);
+
   return (
     <div
       className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}
@@ -817,17 +831,34 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
 
         <Divider />
 
-        <div className="mb-4 flex items-center justify-end gap-2">
-          <Button variant="outline" size="2xs" onClick={() => setOpenSections(ALL_SECTION_TITLES)}>
-            Expand all
-          </Button>
-          <Button variant="outline" size="2xs" onClick={() => setOpenSections([])}>
-            Collapse all
-          </Button>
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Switch
+              id="only-supported"
+              size="sm"
+              checked={onlySupported}
+              onCheckedChange={setOnlySupported}
+            />
+            <Label htmlFor="only-supported" className="text-sm font-medium text-foreground">
+              Only show supported
+            </Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="2xs"
+              onClick={() => setOpenSections(visibleSectionTitles)}
+            >
+              Expand all
+            </Button>
+            <Button variant="outline" size="2xs" onClick={() => setOpenSections([])}>
+              Collapse all
+            </Button>
+          </div>
         </div>
 
         <Accordion type="multiple" value={openSections} onValueChange={setOpenSections}>
-          {ALL_SECTIONS.map((section) => (
+          {visibleSections.map((section) => (
             <AccordionItem key={section.title} value={section.title} className="border-border">
               <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline">
                 <span>
