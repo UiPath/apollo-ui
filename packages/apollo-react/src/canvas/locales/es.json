@@ -272,5 +272,17 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "El modelo utilizado para evaluar la política frente a cada carga útil.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Cargas útiles opcionales que deben aprobar la política. Utilizadas por el juez como anclajes de calibración.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Cargas útiles opcionales que deben rechazar la política. Utilizadas por el juez como anclajes de calibración.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Nivel de rigor en una escala de 0 a 6. Los valores más bajos son más estrictos: el juez marca cualquier indicio de incumplimiento. Los valores más altos son más tolerantes: solo se marcan las infracciones claras e inequívocas."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Nivel de rigor en una escala de 0 a 6. Los valores más bajos son más estrictos: el juez marca cualquier indicio de incumplimiento. Los valores más altos son más tolerantes: solo se marcan las infracciones claras e inequívocas.",
+  "guardrails.list.title": "Barandillas",
+  "guardrails.list.add": "Añadir",
+  "guardrails.list.empty": "No hay barreras de seguridad configuradas",
+  "guardrails.list.reorder-item": "Reordenar barrera de seguridad {name}",
+  "guardrails.list.edit-item": "Editar barrera de seguridad",
+  "guardrails.list.remove-item": "Eliminar barrera de seguridad",
+  "guardrails.list.preview": "Vista previa",
+  "guardrails.list.provider": "Proveedor",
+  "guardrails.list.action-unknown": "Desconocido",
+  "guardrails.list.byo-disabled-notice": "La configuración de esta barrera de seguridad se ha deshabilitado y ya no se puede utilizar. Póngase en contacto con su administrador para volver a habilitar la configuración o reemplazar esta barrera de seguridad antes de ejecutar el agente.",
+  "guardrails.list.byo-unavailable-notice": "La configuración de esta barrera de seguridad ya no está disponible. Reemplázalo antes de ejecutar el agente.",
+  "guardrails.list.status-unauthorized": "Sin autorización"
 }

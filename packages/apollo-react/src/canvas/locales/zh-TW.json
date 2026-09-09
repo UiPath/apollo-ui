@@ -272,5 +272,17 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "用於針對每個裝載評估原則的模型。",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "應判定原則通過的選用裝載。由評判當作校準錨點使用。",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "應判定為原則不通過的選用裝載。由評判當作校準錨點使用。",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "嚴格性範圍為 0–6。值越低越嚴格 — 評判會標記任何有違規跡象的行為。值越高越寬鬆 — 僅標記明確、無可爭議的違規行為。"
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "嚴格性範圍為 0–6。值越低越嚴格 — 評判會標記任何有違規跡象的行為。值越高越寬鬆 — 僅標記明確、無可爭議的違規行為。",
+  "guardrails.list.title": "護欄",
+  "guardrails.list.add": "新增",
+  "guardrails.list.empty": "未配置護欄",
+  "guardrails.list.reorder-item": "重新排序護欄 {name}",
+  "guardrails.list.edit-item": "編輯護欄",
+  "guardrails.list.remove-item": "移除護欄",
+  "guardrails.list.preview": "預覽",
+  "guardrails.list.provider": "提供程式",
+  "guardrails.list.action-unknown": "未知",
+  "guardrails.list.byo-disabled-notice": "此護欄的組態已停用，無法再使用。請聯絡管理員以重新啟用組態或取代此護欄，然後再執行代理。",
+  "guardrails.list.byo-unavailable-notice": "此護欄的組態不再可用。在執行代理程式之前取代它。",
+  "guardrails.list.status-unauthorized": "未經授權"
 }

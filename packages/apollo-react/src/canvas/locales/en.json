@@ -278,5 +278,22 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "The model used to evaluate the policy against each payload.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Optional payloads that should pass the policy. Used by the judge as calibration anchors.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Optional payloads that should fail the policy. Used by the judge as calibration anchors.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Strictness on a 0–6 scale. Lower values are stricter — the judge flags anything that hints at a violation. Higher values are more lenient — only clear, unambiguous violations are flagged."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Strictness on a 0–6 scale. Lower values are stricter — the judge flags anything that hints at a violation. Higher values are more lenient — only clear, unambiguous violations are flagged.",
+  "guardrails.list.title": "Guardrails",
+  "guardrails.list.add": "Add",
+  "guardrails.list.empty": "No guardrails configured",
+  "guardrails.list.reorder-item": "Reorder guardrail {name}",
+  "guardrails.list.edit-item": "Edit guardrail",
+  "guardrails.list.edit-row": "Edit {name}",
+  "guardrails.list.remove-item": "Remove guardrail",
+  "guardrails.list.preview": "Preview",
+  "guardrails.list.provider": "Provider",
+  "guardrails.list.action-unknown": "Unknown",
+  "guardrails.list.byo-disabled-notice": "This guardrail's configuration has been disabled and can no longer be used. Contact your administrator to re-enable the configuration or replace this guardrail before running the agent.",
+  "guardrails.list.byo-unavailable-notice": "This guardrail's configuration is no longer available. Replace it before running the agent.",
+  "guardrails.list.status-feature-disabled": "Feature disabled",
+  "guardrails.list.status-unauthorized": "Unauthorized",
+  "guardrails.list.status-disabled": "Disabled",
+  "guardrails.list.status-unavailable": "Unavailable",
+  "guardrails.list.administration-governance": "Governance managed"
 }
