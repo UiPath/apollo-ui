@@ -272,5 +272,17 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "각 페이로드에 대해 정책을 평가하는 데 사용되는 모델입니다.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "정책을 통과해야 하는 선택적 페이로드입니다. 판단자가 보정 기준으로 사용합니다.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "정책을 위반해야 하는 선택적 페이로드입니다. 판단자가 보정 기준으로 사용합니다.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0–6 척도의 엄격도입니다. 값이 작을수록 더 엄격하며 판단자는 위반 가능성이 조금이라도 있는 경우를 모두 표시합니다. 값이 클수록 더 관대하며, 명확하고 확실한 위반만 표시합니다."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0–6 척도의 엄격도입니다. 값이 작을수록 더 엄격하며 판단자는 위반 가능성이 조금이라도 있는 경우를 모두 표시합니다. 값이 클수록 더 관대하며, 명확하고 확실한 위반만 표시합니다.",
+  "guardrails.list.title": "가드레일",
+  "guardrails.list.add": "추가",
+  "guardrails.list.empty": "가드레일이 구성되지 않음",
+  "guardrails.list.reorder-item": "가드레일 {name} 순서 변경",
+  "guardrails.list.edit-item": "가드레일 편집",
+  "guardrails.list.remove-item": "가드레일 제거",
+  "guardrails.list.preview": "미리 보기",
+  "guardrails.list.provider": "공급자",
+  "guardrails.list.action-unknown": "알 수 없음",
+  "guardrails.list.byo-disabled-notice": "이 가드레일의 구성이 비활성화되어 더 이상 사용할 수 없습니다. 에이전트를 실행하기 전에 관리자에게 문의하여 구성을 다시 활성화하거나 이 가드레일을 교체하십시오.",
+  "guardrails.list.byo-unavailable-notice": "이 가드레일의 구성은 더 이상 사용할 수 없습니다. 에이전트를 실행하기 전에 바꾸십시오.",
+  "guardrails.list.status-unauthorized": "권한이 없음"
 }

@@ -272,5 +272,17 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "用于根据每个负载评估策略的模型。",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "应该通过策略的可选负载。评判器将其用作校准锚点。",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "应该违反策略的可选负载。评判器将其用作校准锚点。",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "严格程度分为 0–6 级。数值越低越严格 — 评判器会标记任何暗示违规的内容。数值越高越宽松 — 仅标记明确、无歧义的违规行为。"
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "严格程度分为 0–6 级。数值越低越严格 — 评判器会标记任何暗示违规的内容。数值越高越宽松 — 仅标记明确、无歧义的违规行为。",
+  "guardrails.list.title": "防护机制",
+  "guardrails.list.add": "添加",
+  "guardrails.list.empty": "未配置防护机制",
+  "guardrails.list.reorder-item": "重新排序防护机制 {name}",
+  "guardrails.list.edit-item": "编辑防护机制",
+  "guardrails.list.remove-item": "删除防护机制",
+  "guardrails.list.preview": "预览",
+  "guardrails.list.provider": "提供程序",
+  "guardrails.list.action-unknown": "未知",
+  "guardrails.list.byo-disabled-notice": "此防护机制配置已禁用，无法再使用。请在运行智能体之前联系您的管理员重新启用配置或替换此防护机制。",
+  "guardrails.list.byo-unavailable-notice": "此防护机制的配置不再可用。在运行智能体之前进行替换。",
+  "guardrails.list.status-unauthorized": "未经授权"
 }

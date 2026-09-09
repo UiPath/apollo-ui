@@ -272,5 +272,17 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "Her yüke karşı politikayı değerlendirmek için kullanılan model.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Politikayı geçmesi gereken isteğe bağlı yükler. Karar yetkilisi tarafından ayar bağlayıcıları olarak kullanılır.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Politikada başarısız olması gereken isteğe bağlı yükler. Karar yetkilisi tarafından ayar bağlayıcıları olarak kullanılır.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0-6 ölçeğinde katılık. Daha düşük değerler daha katıdır. Karar yetkilisi ihlali ima eden her şeyi işaretler. Daha yüksek değerler daha esnektir. Yalnızca net ihlaller işaretlenir."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0-6 ölçeğinde katılık. Daha düşük değerler daha katıdır. Karar yetkilisi ihlali ima eden her şeyi işaretler. Daha yüksek değerler daha esnektir. Yalnızca net ihlaller işaretlenir.",
+  "guardrails.list.title": "Tasarım ve uygulama kuralları",
+  "guardrails.list.add": "Ekle",
+  "guardrails.list.empty": "Tasarım ve uygulama kuralı yapılandırılmamış",
+  "guardrails.list.reorder-item": "{name} tasarım ve uygulama kuralını yeniden sırala",
+  "guardrails.list.edit-item": "Tasarım ve uygulama kuralını düzenle",
+  "guardrails.list.remove-item": "Uygulama ve tasarım kuralını kaldır",
+  "guardrails.list.preview": "Önizleme",
+  "guardrails.list.provider": "Sağlayıcı",
+  "guardrails.list.action-unknown": "Bilinmiyor",
+  "guardrails.list.byo-disabled-notice": "Bu guardrail'in yapılandırması devre dışı bırakıldı ve artık kullanılamaz. Aracıyı çalıştırmadan önce yapılandırmayı yeniden etkinleştirmek veya bu guardrail'i değiştirmek için yöneticinizle iletişime geçin.",
+  "guardrails.list.byo-unavailable-notice": "Bu guardrail yapılandırması artık kullanılamıyor. Aracıyı çalıştırmadan önce değiştirin.",
+  "guardrails.list.status-unauthorized": "Yetkilendirilmemiş"
 }

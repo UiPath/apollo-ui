@@ -272,5 +272,17 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "ポリシーを各ペイロードに照らし合わせて評価するのに使用されるモデルです。",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "任意の、ポリシーに合格するペイロードです。評価者により、キャリブレーション アンカーとして使用されます。",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "任意の、ポリシーに合格しないペイロードです。評価者により、キャリブレーション アンカーとして使用されます。",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0 から 6 のスケールで表される厳密性です。値が低いほど厳格になり、評価者は違反を示唆するものすべてにフラグを立てます。値が大きいほど寛容になり、明確で曖昧さのない違反にのみフラグを立てます。"
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0 から 6 のスケールで表される厳密性です。値が低いほど厳格になり、評価者は違反を示唆するものすべてにフラグを立てます。値が大きいほど寛容になり、明確で曖昧さのない違反にのみフラグを立てます。",
+  "guardrails.list.title": "ガードレール",
+  "guardrails.list.add": "追加",
+  "guardrails.list.empty": "ガードレールは設定されていません。",
+  "guardrails.list.reorder-item": "ガードレール {name} を並べ替え",
+  "guardrails.list.edit-item": "ガードレールを編集",
+  "guardrails.list.remove-item": "ガードレールを削除",
+  "guardrails.list.preview": "プレビュー",
+  "guardrails.list.provider": "プロバイダー",
+  "guardrails.list.action-unknown": "不明",
+  "guardrails.list.byo-disabled-notice": "このガードレールの設定は無効化され、使用できなくなりました。エージェントを実行する前に、管理者に問い合わせて設定を再度有効化するか、このガードレールを置換してください。",
+  "guardrails.list.byo-unavailable-notice": "このガードレールの設定は利用できなくなりました。エージェントを実行する前に、置換してください。",
+  "guardrails.list.status-unauthorized": "未認可"
 }

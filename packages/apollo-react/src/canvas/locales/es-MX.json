@@ -272,5 +272,17 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "El modelo utilizado para evaluar la política en función de cada carga útil.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Cargas útiles opcionales que deberían aprobar la política. El juez las usa como anclajes de calibración.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Cargas útiles opcionales que deberían incumplir la política. El juez las usa como anclajes de calibración.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigor en una escala de 0 a 6. Los valores más bajos son más estrictos: el juez marca lo que sea que sugiera una infracción. Los valores más altos son más flexibles: solo se marcan las infracciones claras e inequívocas."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigor en una escala de 0 a 6. Los valores más bajos son más estrictos: el juez marca lo que sea que sugiera una infracción. Los valores más altos son más flexibles: solo se marcan las infracciones claras e inequívocas.",
+  "guardrails.list.title": "Protecciones",
+  "guardrails.list.add": "Agregar",
+  "guardrails.list.empty": "No hay medidas de seguridad configuradas",
+  "guardrails.list.reorder-item": "Reordenar la medida de seguridad {name}",
+  "guardrails.list.edit-item": "Editar protección",
+  "guardrails.list.remove-item": "Eliminar protección",
+  "guardrails.list.preview": "Vista previa",
+  "guardrails.list.provider": "Proveedor",
+  "guardrails.list.action-unknown": "Desconocido",
+  "guardrails.list.byo-disabled-notice": "La configuración de esta protección se ha deshabilitado y ya no se puede utilizar. Comuníquese con el administrador para volver a habilitar la configuración o reemplazar esta protección antes de ejecutar el agente.",
+  "guardrails.list.byo-unavailable-notice": "La configuración de esta protección ya no está disponible. Reemplácela antes de ejecutar el agente.",
+  "guardrails.list.status-unauthorized": "Sin autorizar"
 }

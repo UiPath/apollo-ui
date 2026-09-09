@@ -162,20 +162,32 @@ export const GUARDRAIL_BUILDER_EN_LABELS: GuardrailBuilderLabels = {
   actionAppRequiredError: 'Action app is required',
 };
 
+// One merge for every label set: English defaults, then the catalog, then the host's
+// overrides, skipping `undefined` so a partial source never blanks a string.
+function mergeLabels<T extends object>(
+  defaults: T,
+  catalog?: Partial<T>,
+  overrides?: Partial<T>
+): T {
+  const merged: T = { ...defaults };
+  for (const source of [catalog, overrides]) {
+    if (!source) continue;
+    for (const key of Object.keys(merged) as Array<keyof T>) {
+      const value = source[key];
+      // `Partial<T>[keyof T]` is `T[keyof T] | undefined`; TS cannot follow the narrowing
+      // through a generic index, hence the assertion.
+      if (value !== undefined) merged[key] = value as T[keyof T];
+    }
+  }
+  return merged;
+}
+
 /** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
 export function resolveGuardrailBuilderLabels(
   catalog?: Partial<GuardrailBuilderLabels>,
   overrides?: Partial<GuardrailBuilderLabels>
 ): GuardrailBuilderLabels {
-  const merged: GuardrailBuilderLabels = { ...GUARDRAIL_BUILDER_EN_LABELS };
-  for (const source of [catalog, overrides]) {
-    if (!source) continue;
-    for (const key of Object.keys(merged) as Array<keyof GuardrailBuilderLabels>) {
-      const value = source[key];
-      if (value !== undefined) merged[key] = value;
-    }
-  }
-  return merged;
+  return mergeLabels(GUARDRAIL_BUILDER_EN_LABELS, catalog, overrides);
 }
 
 /** Interpolate `{{token}}` placeholders in a catalog message. Unknown tokens are left as-is. */
@@ -193,15 +205,7 @@ export function resolveGuardrailFormLabels(
   catalog?: Partial<GuardrailValidatorFormLabels>,
   overrides?: Partial<GuardrailValidatorFormLabels>
 ): GuardrailValidatorFormLabels {
-  const merged: GuardrailValidatorFormLabels = { ...GUARDRAIL_FORM_EN_LABELS };
-  for (const source of [catalog, overrides]) {
-    if (!source) continue;
-    for (const key of Object.keys(merged) as Array<keyof GuardrailValidatorFormLabels>) {
-      const value = source[key];
-      if (value !== undefined) merged[key] = value;
-    }
-  }
-  return merged;
+  return mergeLabels(GUARDRAIL_FORM_EN_LABELS, catalog, overrides);
 }
 
 // Reifies each ICU placeholder back into the `{{token}}` template convention: the
@@ -423,6 +427,152 @@ export function useGuardrailBuilderLabels(
         },
         overrides
       ),
+    [_, overrides]
+  );
+}
+
+/**
+ * Chrome strings of the guardrail list section (header, add affordance, row actions, status
+ * chips, BYO notices). Domain copy stays out: scope and action wording arrive through
+ * `formatScopes` / `formatAction`, and the guardrail's own name and description are data.
+ *
+ * Values may contain `{{placeholder}}` tokens; interpolate with `formatGuardrailFormMessage`.
+ */
+export interface GuardrailListLabels {
+  /** Section header title. */
+  title: string;
+  /** Header add-button label. */
+  add: string;
+  /** Line shown instead of the rows when the list is empty. */
+  empty: string;
+  /** Aria-label template of a row's drag handle: `{{name}}`. */
+  reorderItem: string;
+  /** Aria-label of a row's edit button. */
+  editItem: string;
+  /** Aria-label template of the row body when `rowActivatesEdit` is set: `{{name}}`. */
+  editRow: string;
+  /** Aria-label of a row's remove button. */
+  removeItem: string;
+  /** Lifecycle badge on built-in-validator rows (rendered only with `previewChip`). */
+  preview: string;
+  /** Prefix of the BYO connector line, rendered as `{provider}: {connector}`. */
+  provider: string;
+  /** Action badge text for a row whose action is missing or unrecognized. */
+  actionUnknown: string;
+  /** Row notice: the BYO configuration this guardrail points at was disabled. */
+  byoDisabledNotice: string;
+  /** Row notice: the BYO configuration this guardrail points at is gone. */
+  byoUnavailableNotice: string;
+  /** Status chip: the validator's feature flag is off tenant-wide. */
+  statusFeatureDisabled: string;
+  /** Status chip: the tenant is not entitled to the validator. */
+  statusUnauthorized: string;
+  /** Status chip: the (BYO) configuration is disabled. */
+  statusDisabled: string;
+  /** Status chip: no definition resolves for this row any more. */
+  statusUnavailable: string;
+  /** Administration chip on rows a governance policy owns. */
+  administrationGovernance: string;
+}
+
+/** The subset of `useSafeLingui`'s translator the list labels need. */
+type ListTranslate = (descriptor: {
+  id: string;
+  message: string;
+  values?: Record<string, string>;
+}) => string;
+
+// One builder holds every `_({ id, message })` call, so the English defaults, the flat record
+// the catalog test diffs and the runtime lingui path cannot drift, and `lingui extract` still
+// sees static calls. Same shape as `definitions-copy.ts`.
+function buildGuardrailListLabels(_: ListTranslate): GuardrailListLabels {
+  return {
+    title: _({ id: 'guardrails.list.title', message: 'Guardrails' }),
+    add: _({ id: 'guardrails.list.add', message: 'Add' }),
+    empty: _({ id: 'guardrails.list.empty', message: 'No guardrails configured' }),
+    reorderItem: _({
+      id: 'guardrails.list.reorder-item',
+      message: 'Reorder guardrail {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    editItem: _({ id: 'guardrails.list.edit-item', message: 'Edit guardrail' }),
+    editRow: _({
+      id: 'guardrails.list.edit-row',
+      message: 'Edit {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    removeItem: _({ id: 'guardrails.list.remove-item', message: 'Remove guardrail' }),
+    preview: _({ id: 'guardrails.list.preview', message: 'Preview' }),
+    provider: _({ id: 'guardrails.list.provider', message: 'Provider' }),
+    actionUnknown: _({ id: 'guardrails.list.action-unknown', message: 'Unknown' }),
+    byoDisabledNotice: _({
+      id: 'guardrails.list.byo-disabled-notice',
+      message:
+        "This guardrail's configuration has been disabled and can no longer be used. Contact your administrator to re-enable the configuration or replace this guardrail before running the agent.",
+    }),
+    byoUnavailableNotice: _({
+      id: 'guardrails.list.byo-unavailable-notice',
+      message:
+        "This guardrail's configuration is no longer available. Replace it before running the agent.",
+    }),
+    statusFeatureDisabled: _({
+      id: 'guardrails.list.status-feature-disabled',
+      message: 'Feature disabled',
+    }),
+    statusUnauthorized: _({
+      id: 'guardrails.list.status-unauthorized',
+      message: 'Unauthorized',
+    }),
+    statusDisabled: _({ id: 'guardrails.list.status-disabled', message: 'Disabled' }),
+    statusUnavailable: _({ id: 'guardrails.list.status-unavailable', message: 'Unavailable' }),
+    administrationGovernance: _({
+      id: 'guardrails.list.administration-governance',
+      message: 'Governance managed',
+    }),
+  };
+}
+
+// Resolves a descriptor the way lingui does with `values: TEMPLATE_TOKENS`, so the English
+// defaults carry the same `{{token}}` convention as a translated catalog entry.
+const englishListTranslate: ListTranslate = ({ message, values }) =>
+  values
+    ? message.replace(/\{(\w+)\}/g, (match, token: string) => values[token] ?? match)
+    : message;
+
+/** The English chrome strings, resolved without a lingui provider. */
+export const GUARDRAIL_LIST_EN_LABELS: GuardrailListLabels =
+  buildGuardrailListLabels(englishListTranslate);
+
+/**
+ * The same strings flattened to message id to the **ICU source message**, which is the form
+ * the catalogs store: the parity test compares these against `locales/en.json` verbatim.
+ */
+export const GUARDRAIL_LIST_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+  (() => {
+    const messages: Record<string, string> = {};
+    buildGuardrailListLabels((descriptor) => {
+      messages[descriptor.id] = descriptor.message;
+      return descriptor.message;
+    });
+    return messages;
+  })()
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailListLabels(
+  catalog?: Partial<GuardrailListLabels>,
+  overrides?: Partial<GuardrailListLabels>
+): GuardrailListLabels {
+  return mergeLabels(GUARDRAIL_LIST_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the list section; per-string `overrides` always win. */
+export function useGuardrailListLabels(
+  overrides?: Partial<GuardrailListLabels>
+): GuardrailListLabels {
+  const { _ } = useSafeLingui();
+  return useMemo(
+    () => resolveGuardrailListLabels(buildGuardrailListLabels(_), overrides),
     [_, overrides]
   );
 }
