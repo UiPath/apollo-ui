@@ -9,7 +9,7 @@
       "title": "Apollo Vertex Theme",
       "description": "Apollo Vertex design system tokens — colors, typography, spacing, shadows, and easing functions with light and dark mode support.",
       "dependencies": ["tw-animate-css"],
-      "registryDependencies": ["font-inter"],
+      "registryDependencies": ["@uipath/font-inter"],
       "cssVars": {
         "theme": {
           "radius-sm": "calc(var(--radius) - 4px)",
@@ -1658,7 +1658,7 @@
       "title": "Button Group",
       "description": "Groups multiple buttons together.",
       "dependencies": ["@radix-ui/react-slot"],
-      "registryDependencies": ["separator"],
+      "registryDependencies": ["@uipath/separator"],
       "files": [
         {
           "path": "registry/button-group/button-group.tsx",
@@ -1746,7 +1746,12 @@
       "type": "registry:ui",
       "title": "Combobox",
       "description": "An autocomplete input with a filterable list, supporting single and multi-select with badges.",
-      "registryDependencies": ["badge", "button", "command", "popover"],
+      "registryDependencies": [
+        "@uipath/badge",
+        "@uipath/button",
+        "@uipath/command",
+        "@uipath/popover"
+      ],
       "dependencies": ["react-i18next"],
       "files": [
         {
@@ -1761,7 +1766,7 @@
       "title": "Command",
       "description": "A command menu for searching and executing commands.",
       "dependencies": ["cmdk"],
-      "registryDependencies": ["dialog"],
+      "registryDependencies": ["@uipath/dialog"],
       "files": [
         {
           "path": "registry/command/command.tsx",
@@ -1775,7 +1780,11 @@
       "title": "Confidence Signal",
       "description": "A signal-bar chip that communicates AI confidence (high/medium/low/unknown) without a raw score, with an optional popover for factor breakdowns and required next steps.",
       "dependencies": ["framer-motion", "lucide-react", "react-i18next"],
-      "registryDependencies": ["button", "popover", "tooltip"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/popover",
+        "@uipath/tooltip"
+      ],
       "cssVars": {
         "theme": {
           "color-success": "var(--success)",
@@ -1994,7 +2003,7 @@
       "type": "registry:ui",
       "title": "Field",
       "description": "A form field component with label, input, and description.",
-      "registryDependencies": ["label", "separator"],
+      "registryDependencies": ["@uipath/label", "@uipath/separator"],
       "files": [{ "path": "registry/field/field.tsx", "type": "registry:ui" }]
     },
     {
@@ -2046,7 +2055,11 @@
       "type": "registry:ui",
       "title": "Input Group",
       "description": "Groups input elements with addons and buttons.",
-      "registryDependencies": ["button", "input", "textarea"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/input",
+        "@uipath/textarea"
+      ],
       "files": [
         {
           "path": "registry/input-group/input-group.tsx",
@@ -2073,7 +2086,7 @@
       "title": "Item",
       "description": "A list item component for displaying content in lists.",
       "dependencies": ["@radix-ui/react-slot"],
-      "registryDependencies": ["separator"],
+      "registryDependencies": ["@uipath/separator"],
       "files": [{ "path": "registry/item/item.tsx", "type": "registry:ui" }]
     },
     {
@@ -2109,7 +2122,11 @@
       "type": "registry:ui",
       "title": "Metric Card",
       "description": "Displays a labeled metric with value, optional trend indicator, and percentage change badge.",
-      "registryDependencies": ["@uipath/card", "@uipath/badge", "skeleton"],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/badge",
+        "@uipath/skeleton"
+      ],
       "files": [
         {
           "path": "registry/metric-card/metric-card.tsx",
@@ -2127,7 +2144,7 @@
         "lucide-react",
         "@radix-ui/react-dialog"
       ],
-      "registryDependencies": ["button"],
+      "registryDependencies": ["@uipath/button"],
       "files": [
         {
           "path": "registry/onboarding-tour-joyride/index.ts",
@@ -2306,14 +2323,14 @@
         "@uipath/vs-core@^4.2.0"
       ],
       "registryDependencies": [
-        "button",
-        "tooltip",
-        "avatar",
-        "dropdown-menu",
-        "skeleton",
-        "sidebar",
-        "spinner",
-        "collapsible"
+        "@uipath/button",
+        "@uipath/tooltip",
+        "@uipath/avatar",
+        "@uipath/dropdown-menu",
+        "@uipath/skeleton",
+        "@uipath/sidebar",
+        "@uipath/spinner",
+        "@uipath/collapsible"
       ],
       "cssVars": {
         "theme": {
@@ -2530,13 +2547,13 @@
         "react-i18next"
       ],
       "registryDependencies": [
-        "button",
-        "input",
-        "separator",
-        "sheet",
-        "skeleton",
-        "tooltip",
-        "use-mobile"
+        "@uipath/button",
+        "@uipath/input",
+        "@uipath/separator",
+        "@uipath/sheet",
+        "@uipath/skeleton",
+        "@uipath/tooltip",
+        "@uipath/use-mobile"
       ],
       "files": [
         {
@@ -2703,14 +2720,14 @@
       "description": "A composition-first form built on TanStack Form and Zod with Apollo-bound field components and translatable validation errors.",
       "dependencies": ["@tanstack/react-form", "zod", "react-i18next"],
       "registryDependencies": [
-        "button",
-        "checkbox",
-        "field",
-        "input",
-        "radio-group",
-        "select",
-        "switch",
-        "textarea"
+        "@uipath/button",
+        "@uipath/checkbox",
+        "@uipath/field",
+        "@uipath/input",
+        "@uipath/radio-group",
+        "@uipath/select",
+        "@uipath/switch",
+        "@uipath/textarea"
       ],
       "files": [
         {
@@ -2901,7 +2918,7 @@
       "title": "Toggle Group",
       "description": "A set of two-state buttons that can be toggled on or off.",
       "dependencies": ["@radix-ui/react-toggle-group"],
-      "registryDependencies": ["toggle"],
+      "registryDependencies": ["@uipath/toggle"],
       "files": [
         {
           "path": "registry/toggle-group/toggle-group.tsx",
@@ -2933,7 +2950,11 @@
         "lucide-react",
         "react-i18next"
       ],
-      "registryDependencies": ["button", "popover", "@uipath/calendar"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/popover",
+        "@uipath/calendar"
+      ],
       "files": [
         {
           "path": "registry/date-picker/date-picker.tsx",
