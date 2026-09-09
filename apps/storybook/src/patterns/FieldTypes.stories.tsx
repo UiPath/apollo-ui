@@ -606,7 +606,7 @@ function CategoryTable({ description, rows, rowLabel = 'Type' }: Category) {
               </TableHead>
               <TableHead className={cn(HEADER_CELL_CLASS, 'w-[10%]')}>Status</TableHead>
               <TableHead className={cn(HEADER_CELL_CLASS, 'w-[21%]')}>Recommended action</TableHead>
-              <TableHead className={HEADER_CELL_CLASS}>Source in flow-workbench</TableHead>
+              <TableHead className={HEADER_CELL_CLASS}>Source</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -754,7 +754,7 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
               </p>
             </div>
           </div>
-          <InfoCallout>
+          <p className="mt-4 text-sm leading-6 text-muted-foreground">
             Status describes the gap on the Apollo Wind side only. It assumes flow-workbench already
             renders the type distinctly, which is true for most rows (backed by a real renderer: the
             integration-service widget catalog, JSON Schema, entity fields). A type marked{' '}
@@ -764,7 +764,7 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
             missing this,&rdquo; it may be &ldquo;no one has decided this is a real distinction yet,
             in either place.&rdquo; See that row&rsquo;s recommended action before treating it as a
             straightforward addition.
-          </InfoCallout>
+          </p>
         </section>
 
         <Divider />
