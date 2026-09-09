@@ -510,14 +510,16 @@ function StatusBadge({ status }: { status: Status }) {
 function FieldTypeExample({
   fieldType,
   initialMode = 'fixed',
+  className,
 }: {
   fieldType: LockableFieldType;
   initialMode?: LockableValueFieldMode;
+  className?: string;
 }) {
   const [value, setValue] = useState(initialMode === 'expression' ? '$vars.example' : '');
   const [mode, setMode] = useState<LockableValueFieldMode>(initialMode);
   return (
-    <div className="w-56">
+    <div className={cn('w-56', className)}>
       <LockableValueField
         fieldType={fieldType}
         value={value}
@@ -530,6 +532,14 @@ function FieldTypeExample({
     </div>
   );
 }
+
+// FileUpload's dropzone is a fixed h-32 with its own "Click to upload or drag
+// and drop" copy, both sized for a full-width form field, not a compact
+// side-by-side comparison cell. Collapses it to a single icon-only row here;
+// the accessible name (aria-label="File upload area") is unaffected, it does
+// not depend on this visible text.
+const COMPACT_FILE_UPLOAD_CLASS =
+  '[&_[role="button"]]:h-9 [&_[role="button"]]:flex-row [&_[role="button"]]:justify-start [&_[role="button"]]:gap-2 [&_[role="button"]]:px-3 [&_[role="button"]]:py-0 [&_[role="button"]_svg]:mb-0 [&_[role="button"]_svg]:size-4 [&_[role="button"]_p]:hidden';
 
 function ExampleLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -666,6 +676,32 @@ function SupportedTodayStrip() {
   );
 }
 
+// A side-by-side visual comparison across types, each in its default fixed
+// state. Distinct from the per-category tables below: this answers "what does
+// a date field look like next to a select," those answer "what's the gap for
+// this one type."
+function VisualReferenceGrid() {
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {FIELD_TYPE_ORDER.map((type) => {
+        const typeMeta = FIELD_TYPE_META[type];
+        return (
+          <div key={type} className="flex flex-col gap-2">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+              <typeMeta.icon size={12} />
+              {typeMeta.label}
+            </span>
+            <FieldTypeExample
+              fieldType={type}
+              className={type === 'file' ? COMPACT_FILE_UPLOAD_CLASS : undefined}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const ALL_SECTION_TITLES = ALL_SECTIONS.map((section) => section.title);
 
 function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
@@ -717,6 +753,18 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
             .
           </SectionDescription>
           <SupportedTodayStrip />
+        </section>
+
+        <Divider />
+
+        <section>
+          <SectionTitle>What each type looks like</SectionTitle>
+          <SectionDescription>
+            A side-by-side comparison, each type in its default fixed-value state. The tables below
+            drill into one type at a time: its gaps, its status, and (where it applies) its
+            expression variant.
+          </SectionDescription>
+          <VisualReferenceGrid />
         </section>
 
         <Divider />
