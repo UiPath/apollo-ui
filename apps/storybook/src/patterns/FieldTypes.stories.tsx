@@ -38,7 +38,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 type Status = 'supported' | 'needs-type' | 'needs-component';
-type VisualExample = LockableFieldType | 'mode-fixed' | 'mode-expression';
+type VisualExample = LockableFieldType | 'mode-fixed' | 'mode-expression' | 'insert-variable';
 
 interface TypeRow {
   type: string;
@@ -331,7 +331,7 @@ const CATEGORIES: Category[] = [
         flowWorkbenchConfirmed: false,
       },
       {
-        type: 'autoComplete / connectorAutocomplete / autoCompleteForExpression',
+        type: 'autoComplete / connectorAutocomplete',
         source: 'integration-service WidgetType',
         support: 'Not modeled.',
         status: 'needs-component',
@@ -452,6 +452,22 @@ const BINDING_STATE_ROWS: TypeRow[] = [
     action:
       'Add a read-only bound state to LockableValueFieldMode, rendered like the locked display but indicating an upstream binding rather than a static value.',
   },
+  {
+    type: 'Insert variable (click to append)',
+    source: 'n/a, this is the Apollo Wind mechanism, not a flow-workbench type',
+    support: 'VariablePicker in field-header.tsx, wired via the variables prop',
+    status: 'supported',
+    visual: 'insert-variable',
+  },
+  {
+    type: 'Inline reference autocomplete while typing',
+    source: 'integration-service WidgetType.autoCompleteForExpression',
+    support:
+      'Not modeled. The expression input is a plain monospace field (or a consumer-supplied renderExpressionEditor) with no built-in suggestion behavior.',
+    status: 'needs-component',
+    action:
+      'Different from the Insert variable button above: this is IntelliSense-style, suggest a reference as the user types "$" inside an expression. Needs an editor with suggestion support (e.g. Monaco), not a fieldType addition.',
+  },
 ];
 
 // Every collapsible section on the page, category tables plus the binding-state
@@ -567,6 +583,24 @@ function ModeExample({ mode }: { mode: LockableValueFieldMode }) {
   );
 }
 
+// showFieldActions stays at its true default here (every other example turns it
+// off) since the Insert variable button only renders when it's on.
+function InsertVariableExample() {
+  const [value, setValue] = useState('');
+  return (
+    <div className="w-56">
+      <LockableValueField
+        fieldType="string"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        showAiAssist={false}
+        variables={[{ label: 'Customer name', value: '$vars.customerName' }]}
+      />
+    </div>
+  );
+}
+
 // Rendered instead of a fake mockup for gap rows: there is no real control to show,
 // and a hand-drawn one would look like it already exists.
 function GapPlaceholder() {
@@ -581,6 +615,7 @@ function VisualExampleCell({ visual }: { visual?: VisualExample }) {
   if (!visual) return <GapPlaceholder />;
   if (visual === 'mode-fixed') return <ModeExample mode="fixed" />;
   if (visual === 'mode-expression') return <ModeExample mode="expression" />;
+  if (visual === 'insert-variable') return <InsertVariableExample />;
 
   if (!FIELD_TYPE_META[visual].supportsExpression) {
     return <FieldTypeExample fieldType={visual} />;
