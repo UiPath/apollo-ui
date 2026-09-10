@@ -272,5 +272,14 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "O modelo utilizado para avaliar a política em relação a cada payload.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Payloads opcionais que devem fazer passar a política. Utilizado pelo judge como âncoras de calibração.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Payloads opcionais que devem fazer falhar a política. Utilizado pelo judge como âncoras de calibração.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Exatidão numa escala de 0 a 6. Os valores mais baixos são mais exatos – o judge sinaliza qualquer ação que insinue uma violação. Os valores mais elevados são mais flexíveis – apenas são sinalizadas violações claras e não ambíguas."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Exatidão numa escala de 0 a 6. Os valores mais baixos são mais exatos – o judge sinaliza qualquer ação que insinue uma violação. Os valores mais elevados são mais flexíveis – apenas são sinalizadas violações claras e não ambíguas.",
+  "guardrails.palette.list-aria-label": "Verificadores de integridade disponíveis",
+  "guardrails.palette.create-custom": "Barra de proteção personalizada",
+  "guardrails.palette.create-custom-description": "Criar uma barreira de proteção com regras personalizadas",
+  "guardrails.palette.empty": "Nenhuma barreira de proteção disponível",
+  "guardrails.palette.loading": "A carregar...",
+  "guardrails.palette.load-error": "Falha ao carregar validadores incorporados",
+  "guardrails.palette.uipath-group": "Barreiras de proteção UiPath",
+  "guardrails.palette.preview": "Pré-visualizar",
+  "guardrails.palette.status-unauthorized": "Não autorizado"
 }

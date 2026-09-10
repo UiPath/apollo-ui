@@ -272,5 +272,14 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "Modelul utilizat pentru a evalua politica pentru fiecare payload.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Sarcini utile opționale care ar trebui să respecte politica. Folosite de evaluator ca puncte de referință pentru calibrare.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Sarcini utile opționale care ar trebui să nu respecte politica. Folosite de evaluator ca puncte de calibrare.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigoare pe o scară de la 0 la 6. Valorile mai mici sunt mai stricte — evaluatorul semnalează orice element care sugerează o încălcare. Valorile mai mari sunt mai permisive — sunt semnalate doar încălcările clare, fără ambiguitate."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigoare pe o scară de la 0 la 6. Valorile mai mici sunt mai stricte — evaluatorul semnalează orice element care sugerează o încălcare. Valorile mai mari sunt mai permisive — sunt semnalate doar încălcările clare, fără ambiguitate.",
+  "guardrails.palette.list-aria-label": "Mecanisme de control disponibile",
+  "guardrails.palette.create-custom": "Limită de protecție personalizată",
+  "guardrails.palette.create-custom-description": "Creați un guardrail cu reguli personalizate",
+  "guardrails.palette.empty": "Nu există mecanisme de control disponibile",
+  "guardrails.palette.loading": "Se încarcă...",
+  "guardrails.palette.load-error": "Nu s-au putut încărca validatorii încorporați",
+  "guardrails.palette.uipath-group": "UiPath mecanisme de control",
+  "guardrails.palette.preview": "Previzualizare",
+  "guardrails.palette.status-unauthorized": "Neautorizat"
 }

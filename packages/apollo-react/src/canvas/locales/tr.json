@@ -272,5 +272,14 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "Her yüke karşı politikayı değerlendirmek için kullanılan model.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Politikayı geçmesi gereken isteğe bağlı yükler. Karar yetkilisi tarafından ayar bağlayıcıları olarak kullanılır.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Politikada başarısız olması gereken isteğe bağlı yükler. Karar yetkilisi tarafından ayar bağlayıcıları olarak kullanılır.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0-6 ölçeğinde katılık. Daha düşük değerler daha katıdır. Karar yetkilisi ihlali ima eden her şeyi işaretler. Daha yüksek değerler daha esnektir. Yalnızca net ihlaller işaretlenir."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0-6 ölçeğinde katılık. Daha düşük değerler daha katıdır. Karar yetkilisi ihlali ima eden her şeyi işaretler. Daha yüksek değerler daha esnektir. Yalnızca net ihlaller işaretlenir.",
+  "guardrails.palette.list-aria-label": "Kullanılabilir tasarım ve uygulama kuralları",
+  "guardrails.palette.create-custom": "Özel tasarım ve uygulama kuralı",
+  "guardrails.palette.create-custom-description": "Özel kurallarla bir tasarım ve uygulama kuralı oluştur",
+  "guardrails.palette.empty": "Kullanılabilir guardrail yok",
+  "guardrails.palette.loading": "Yükleniyor...",
+  "guardrails.palette.load-error": "Yerleşik doğrulayıcılar yüklenemedi",
+  "guardrails.palette.uipath-group": "UiPath korumaları",
+  "guardrails.palette.preview": "Önizleme",
+  "guardrails.palette.status-unauthorized": "Yetkilendirilmemiş"
 }

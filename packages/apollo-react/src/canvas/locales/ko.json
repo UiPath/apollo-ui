@@ -272,5 +272,14 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "각 페이로드에 대해 정책을 평가하는 데 사용되는 모델입니다.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "정책을 통과해야 하는 선택적 페이로드입니다. 판단자가 보정 기준으로 사용합니다.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "정책을 위반해야 하는 선택적 페이로드입니다. 판단자가 보정 기준으로 사용합니다.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0–6 척도의 엄격도입니다. 값이 작을수록 더 엄격하며 판단자는 위반 가능성이 조금이라도 있는 경우를 모두 표시합니다. 값이 클수록 더 관대하며, 명확하고 확실한 위반만 표시합니다."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0–6 척도의 엄격도입니다. 값이 작을수록 더 엄격하며 판단자는 위반 가능성이 조금이라도 있는 경우를 모두 표시합니다. 값이 클수록 더 관대하며, 명확하고 확실한 위반만 표시합니다.",
+  "guardrails.palette.list-aria-label": "사용 가능한 가드레일",
+  "guardrails.palette.create-custom": "사용자 지정 가드레일",
+  "guardrails.palette.create-custom-description": "사용자 지정 규칙으로 가드레일 생성",
+  "guardrails.palette.empty": "사용 가능한 가드레일 없음",
+  "guardrails.palette.loading": "로드하는 중...",
+  "guardrails.palette.load-error": "기본 제공 유효성 검사기를 로드하지 못했습니다",
+  "guardrails.palette.uipath-group": "UiPath 가드레일",
+  "guardrails.palette.preview": "미리 보기",
+  "guardrails.palette.status-unauthorized": "권한이 없음"
 }

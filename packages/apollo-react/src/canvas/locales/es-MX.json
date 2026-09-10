@@ -272,5 +272,14 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "El modelo utilizado para evaluar la política en función de cada carga útil.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Cargas útiles opcionales que deberían aprobar la política. El juez las usa como anclajes de calibración.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Cargas útiles opcionales que deberían incumplir la política. El juez las usa como anclajes de calibración.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigor en una escala de 0 a 6. Los valores más bajos son más estrictos: el juez marca lo que sea que sugiera una infracción. Los valores más altos son más flexibles: solo se marcan las infracciones claras e inequívocas."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigor en una escala de 0 a 6. Los valores más bajos son más estrictos: el juez marca lo que sea que sugiera una infracción. Los valores más altos son más flexibles: solo se marcan las infracciones claras e inequívocas.",
+  "guardrails.palette.list-aria-label": "Medidas de seguridad disponibles",
+  "guardrails.palette.create-custom": "Medida de seguridad personalizada",
+  "guardrails.palette.create-custom-description": "Cree una medida de seguridad con reglas personalizadas",
+  "guardrails.palette.empty": "No hay protecciones disponibles",
+  "guardrails.palette.loading": "Cargando...",
+  "guardrails.palette.load-error": "Se produjo un error al cargar los validadores integrados",
+  "guardrails.palette.uipath-group": "Protecciones de UiPath",
+  "guardrails.palette.preview": "Vista previa",
+  "guardrails.palette.status-unauthorized": "Sin autorizar"
 }
