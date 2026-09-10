@@ -79,10 +79,14 @@ export {
   matchesGuardrailListDefinition,
   resolveGuardrailListItemState,
 } from './guardrail-list-utils';
+export type { GuardrailPaletteProps } from './guardrail-palette';
+export { GuardrailPalette } from './guardrail-palette';
+export { getGuardrailPaletteItemId, groupGuardrailsForPalette } from './guardrail-palette-utils';
 export { GuardrailValidatorForm } from './guardrail-validator-form';
 export type {
   GuardrailBuilderLabels,
   GuardrailListLabels,
+  GuardrailPaletteLabels,
   GuardrailValidatorFormLabels,
 } from './i18n';
 export {
@@ -91,12 +95,16 @@ export {
   GUARDRAIL_FORM_EN_LABELS,
   GUARDRAIL_LIST_EN_LABELS,
   GUARDRAIL_LIST_EN_MESSAGES,
+  GUARDRAIL_PALETTE_EN_LABELS,
+  GUARDRAIL_PALETTE_EN_MESSAGES,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
+  resolveGuardrailPaletteLabels,
   useGuardrailBuilderLabels,
   useGuardrailFormLabels,
   useGuardrailListLabels,
+  useGuardrailPaletteLabels,
 } from './i18n';
 export type {
   GuardrailListAdministration,
@@ -108,6 +116,7 @@ export type {
   GuardrailListStatus,
   GuardrailReorderMove,
 } from './list-types';
+export type { GuardrailPaletteDefinition, GuardrailPaletteGroup } from './palette-types';
 export type {
   GuardrailParameterDefinition,
   GuardrailParameterRenderContext,

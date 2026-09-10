@@ -295,5 +295,14 @@
   "guardrails.list.status-unauthorized": "Unauthorized",
   "guardrails.list.status-disabled": "Disabled",
   "guardrails.list.status-unavailable": "Unavailable",
-  "guardrails.list.administration-governance": "Governance managed"
+  "guardrails.list.administration-governance": "Governance managed",
+  "guardrails.palette.list-aria-label": "Available guardrails",
+  "guardrails.palette.create-custom": "Custom guardrail",
+  "guardrails.palette.create-custom-description": "Create a guardrail with custom rules",
+  "guardrails.palette.empty": "No guardrails available",
+  "guardrails.palette.loading": "Loading...",
+  "guardrails.palette.load-error": "Failed to load built-in validators",
+  "guardrails.palette.uipath-group": "UiPath guardrails",
+  "guardrails.palette.preview": "Preview",
+  "guardrails.palette.status-unauthorized": "Unauthorized"
 }

@@ -284,5 +284,14 @@
   "guardrails.list.action-unknown": "Bilinmiyor",
   "guardrails.list.byo-disabled-notice": "Bu guardrail'in yapılandırması devre dışı bırakıldı ve artık kullanılamaz. Aracıyı çalıştırmadan önce yapılandırmayı yeniden etkinleştirmek veya bu guardrail'i değiştirmek için yöneticinizle iletişime geçin.",
   "guardrails.list.byo-unavailable-notice": "Bu guardrail yapılandırması artık kullanılamıyor. Aracıyı çalıştırmadan önce değiştirin.",
-  "guardrails.list.status-unauthorized": "Yetkilendirilmemiş"
+  "guardrails.list.status-unauthorized": "Yetkilendirilmemiş",
+  "guardrails.palette.list-aria-label": "Kullanılabilir tasarım ve uygulama kuralları",
+  "guardrails.palette.create-custom": "Özel tasarım ve uygulama kuralı",
+  "guardrails.palette.create-custom-description": "Özel kurallarla bir tasarım ve uygulama kuralı oluştur",
+  "guardrails.palette.empty": "Kullanılabilir guardrail yok",
+  "guardrails.palette.loading": "Yükleniyor...",
+  "guardrails.palette.load-error": "Yerleşik doğrulayıcılar yüklenemedi",
+  "guardrails.palette.uipath-group": "UiPath korumaları",
+  "guardrails.palette.preview": "Önizleme",
+  "guardrails.palette.status-unauthorized": "Yetkilendirilmemiş"
 }
