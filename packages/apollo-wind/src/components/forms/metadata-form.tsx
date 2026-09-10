@@ -264,6 +264,12 @@ export function MetadataForm({
 
   // Sync externally-owned values in, per field and deep-equal guarded: an echo of the form's
   // own emission is a no-op (no setValue call, no re-render), so focus/cursor survive.
+  //
+  // Depends on `isInitialized` as well as `values`: initialization resets the form from
+  // `schema.initialData` asynchronously, which lands *after* this effect's first run and
+  // would otherwise leave a controlled host displaying and submitting schema data — the
+  // prop reference is unchanged, so nothing would re-apply it. Re-running is free when
+  // nothing differs, thanks to the per-field deep-equal guard.
   useEffect(() => {
     if (!values) return;
     const current = form.getValues();
@@ -278,7 +284,7 @@ export function MetadataForm({
       syncingValuesRef.current = false;
     }
     valuesRef.current = form.getValues();
-  }, [values, form]);
+  }, [values, form, isInitialized]);
 
   // Host-supplied errors: applied as `type: 'external'`, cleared only by this effect (never by
   // typing), and only ever clearing its own entries so resolver errors are untouched.
