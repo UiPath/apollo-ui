@@ -239,9 +239,12 @@ export function MetadataForm({
         }
       }
 
-      // Plugin initialization
+      // Plugin initialization. Only actually await a hook that returns a promise: awaiting a
+      // synchronous one defers `setIsInitialized` into a microtask, which lands outside
+      // React's act() scope and makes every synchronous host test emit an act warning.
       for (const plugin of plugins) {
-        await plugin.onFormInit?.(contextRef.current);
+        const result = plugin.onFormInit?.(contextRef.current);
+        if (result instanceof Promise) await result;
       }
 
       setIsInitialized(true);
