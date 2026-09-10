@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from './types';
 import {
   dropEmptyOptionalParameters,
+  getOutOfRangeParameterIds,
   getRequiredEmptyParameterIds,
   seedGuardrailParameters,
   syncMapEnumParameters,
@@ -291,6 +292,52 @@ describe('dropEmptyOptionalParameters', () => {
 
     const result = dropEmptyOptionalParameters(params, definitions);
     expect(result.map((p) => p.id)).toEqual(['note', 'unknownParam']);
+  });
+});
+
+describe('getOutOfRangeParameterIds', () => {
+  const defs = [
+    { id: 'threshold', type: 'number', label: 'Threshold', required: true, min: 10, max: 90 },
+    { id: 'unbounded', type: 'number', label: 'Unbounded', required: false },
+  ] as const;
+
+  it('flags values outside the declared range', () => {
+    // min/max only bind on native form submission, which this form never does — so without
+    // this check an out-of-range guardrail saves silently.
+    expect(
+      getOutOfRangeParameterIds(defs as never, [
+        { $parameterType: 'number', id: 'threshold', value: 5 },
+      ])
+    ).toEqual(['threshold']);
+    expect(
+      getOutOfRangeParameterIds(defs as never, [
+        { $parameterType: 'number', id: 'threshold', value: 95 },
+      ])
+    ).toEqual(['threshold']);
+  });
+
+  it('accepts in-range values, the bounds themselves, and unbounded parameters', () => {
+    for (const value of [10, 50, 90]) {
+      expect(
+        getOutOfRangeParameterIds(defs as never, [
+          { $parameterType: 'number', id: 'threshold', value },
+        ])
+      ).toEqual([]);
+    }
+    expect(
+      getOutOfRangeParameterIds(defs as never, [
+        { $parameterType: 'number', id: 'unbounded', value: -1000 },
+      ])
+    ).toEqual([]);
+  });
+
+  it('ignores missing and non-numeric values, which the required check owns', () => {
+    expect(getOutOfRangeParameterIds(defs as never, [])).toEqual([]);
+    expect(
+      getOutOfRangeParameterIds(defs as never, [
+        { $parameterType: 'number', id: 'threshold', value: Number.NaN },
+      ])
+    ).toEqual([]);
   });
 });
 

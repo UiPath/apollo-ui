@@ -28,6 +28,21 @@ export interface BuildGuardrailFormSchemaOptions {
 }
 
 /**
+ * Metadata-expressed validation for a parameter. `min`/`max` also reach the number input as
+ * DOM attributes, but those only bind on native form submission, which this form never does —
+ * declaring them here is what makes the range enforceable.
+ */
+function buildFieldValidation(def: GuardrailParameterDefinition) {
+  const validation: { required?: boolean; min?: number; max?: number } = {};
+  if (def.required) validation.required = true;
+  if (def.type === 'number') {
+    if (def.min != null) validation.min = def.min;
+    if (def.max != null) validation.max = def.max;
+  }
+  return Object.keys(validation).length > 0 ? validation : undefined;
+}
+
+/**
  * Map guardrail parameter definitions onto the forms/ `MetadataForm` schema. Five of the
  * seven parameter types map to first-class field types (`number`, `textarea`, `switch`,
  * `select`, `multiselect`/`string-list`); enum-lists small enough for the chip UX, `map-enum`
@@ -67,7 +82,7 @@ function buildGuardrailField(
     label: def.label,
     tooltip: def.tooltip,
     tooltipAriaLabel: labels.moreInformation,
-    validation: def.required ? { required: true } : undefined,
+    validation: buildFieldValidation(def),
   };
 
   if (options?.overriddenIds?.has(def.id)) {

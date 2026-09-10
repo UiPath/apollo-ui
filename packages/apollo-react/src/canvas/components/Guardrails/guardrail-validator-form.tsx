@@ -16,6 +16,7 @@ import type {
   GuardrailValidatorFormProps,
   GuardrailValidatorParameter,
 } from './types';
+import { useMetadataFormBridge } from './use-metadata-form-bridge';
 
 const GUARDRAIL_CUSTOM_COMPONENTS = {
   [GUARDRAIL_ENUM_LIST_CHIPS_COMPONENT]: EnumListChipsField,
@@ -36,7 +37,9 @@ const EMPTY_OVERRIDES: ReadonlySet<string> = new Set();
  * overrides register as custom field components. The public contract is unchanged — fully
  * controlled and validation-free: the host owns values (`parameters` + `onChange`, echoed
  * back synchronously) and validation (`errors` + `onClearError`); compute required-field
- * errors with `getRequiredEmptyParameterIds`. Parameters the host's `parameters` array
+ * errors with `getRequiredEmptyParameterIds` and out-of-range numbers with
+ * `getOutOfRangeParameterIds`. That controlled contract is translated onto MetadataForm's
+ * plugin seam in one place — see `useMetadataFormBridge`. Parameters the host's `parameters` array
  * carries without a matching definition (sidecars written via `onParametersChange`, e.g. a
  * model picker's connection metadata) never enter the form and round-trip untouched.
  */
@@ -157,14 +160,21 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
       return record;
     }, [parameters, defsById]);
 
-    const handleValuesChange = useCallback(
-      (record: Record<string, unknown>, changedField: string) => {
+    const handleValueChange = useCallback(
+      (changedField: string, value: unknown) => {
         const def = defsById.get(changedField);
         if (!def) return;
-        updateParam(def, coerceGuardrailParameterValue(record[changedField], def));
+        updateParam(def, coerceGuardrailParameterValue(value, def));
       },
       [defsById, updateParam]
     );
+
+    const { plugins, schemaMode } = useMetadataFormBridge({
+      values,
+      errors,
+      onValueChange: handleValueChange,
+      components: GUARDRAIL_CUSTOM_COMPONENTS,
+    });
 
     const bridgeContext = useMemo(
       () => ({ renderParameter, defsById, parameters, errors, updateParam, replaceParams }),
@@ -175,13 +185,9 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
       <div ref={ref} data-slot="guardrail-validator-form" className={cn('space-y-4', className)}>
         <GuardrailRenderParameterProvider value={bridgeContext}>
           <MetadataForm
-            schema={schema}
-            values={values}
-            onValuesChange={handleValuesChange}
-            errors={errors}
-            disableValidation
+            schema={useMemo(() => ({ ...schema, mode: schemaMode }), [schema, schemaMode])}
+            plugins={plugins}
             container="div"
-            components={GUARDRAIL_CUSTOM_COMPONENTS}
           />
         </GuardrailRenderParameterProvider>
       </div>
