@@ -5,9 +5,9 @@ later stage, Agents (`frontend-sw`). Lives in apollo-react next to canvas — MU
 entirely on `@uipath/apollo-wind` primitives and its `forms/` engine, strings on lingui —
 and is exported through the narrow `@uipath/apollo-react/canvas/guardrails` subpath (also
 re-exported from `./canvas`). Members: the definitions layer (wire types, parser, canonical
-copy and `useGuardrailDefinitions`), `GuardrailBuilder` (the whole Add/Edit screen),
-`GuardrailFormLayout` (the screen shell), and `GuardrailValidatorForm` (the validator
-parameter section, also rendered inside the builder).
+copy and `useGuardrailDefinitions`), `GuardrailRemoveDialog` (the removal confirmation),
+`GuardrailBuilder` (the whole Add/Edit screen), `GuardrailFormLayout` (the screen shell), and
+`GuardrailValidatorForm` (the validator parameter section, also rendered inside the builder).
 
 ## Definitions layer
 
@@ -132,6 +132,61 @@ can diff their remaining local tables against it in CI while they migrate off th
 > entries are hand-authored. A test asserts every message reaches `src/canvas/locales/en.json`
 > with the same English, and that the catalog carries no `guardrails.definitions.*` id the
 > source no longer declares. That test is what extraction would otherwise be doing for you.
+
+## GuardrailRemoveDialog
+
+The confirmation step before a guardrail is removed, with the impact of the removal spelled
+out.
+
+```tsx
+import { GuardrailRemoveDialog } from '@uipath/apollo-react/canvas/guardrails';
+
+<GuardrailRemoveDialog
+  open={pending !== null}
+  guardrailName={pending?.name ?? ''}
+  toolName={currentToolName}          // the tool the removal was requested from
+  remainingToolNames={remainingTools} // what survives a scoped removal
+  remainingScopes={remainingScopes}
+  formatScope={scopeLabel}            // 'Llm' -> 'LLM calls'
+  onConfirm={applyRemoval}
+  onCancel={() => setPending(null)}
+/>;
+```
+
+### Contract
+
+- **The impact is structured props, not a slot.** There are exactly two situations and both
+  products already describe both: `affectedToolNames` / `affectedScopes` are what a **full**
+  removal also takes the guardrail off ("This guardrail is also applicable to:"), and
+  `remainingToolNames` / `remainingScopes` are what survives a **tool-scoped** removal ("It
+  will still be applicable to:"). Flow computes them from one guardrail plus an
+  `isToolOnAgent` flag; that branch converges here by filling one pair or the other. Pass
+  neither pair and the dialog is the question on its own. All four default to empty.
+- **Deciding which removal is happening stays host-side**, along with the unwind. The two
+  products disagree about it in ways that are theirs to keep: Agents strips the tool from
+  `matchNames`, then drops the `Tool` scope, then deletes; Flow calls
+  `removeToolFromGuardrail`. The component only renders the description of the outcome.
+- **`toolName` names the tool in the scoped-removal line**, and only alongside something
+  remaining: with nothing left the guardrail is gone everywhere, and naming one tool would
+  misdescribe it. Both products already behave that way.
+- **`onConfirm` and `onCancel` are intents.** Neither closes the dialog: `open` is controlled,
+  so the write, the telemetry event and the close all stay with the host. `onCancel` covers
+  the Cancel button and Escape, and fires **once** per dismissal. Confirming never also
+  reports a cancel, which is why the confirm button is a wind `Button` rather than
+  `AlertDialogAction`: Radix's action is a close button, so it drives `onOpenChange(false)` on
+  top of the click. Flow's dialog reports both today.
+- **Scopes arrive raw and localize through `formatScope`**, the same idiom as
+  `GuardrailList`'s `formatScopes`. Scope vocabulary is product-owned; both products already
+  hold the mapping, and an adapter that omits the callback renders `Llm` instead of
+  `LLM calls`. Pass only the scopes worth listing: both products drop `Tool` when the
+  remaining tools are listed by name.
+- **The whole impact is the accessible description**, not just the first sentence, so an
+  alert dialog announces what the removal costs. Focus opens on Cancel, the least destructive
+  control, and Tab is trapped inside.
+- **`container` picks the portal target**: omit it to inherit the nearest wind
+  `PortalContainerProvider`, pass an element to portal into it, or `'body'` to force
+  `document.body` even under a provider. Agents' dialog deliberately escapes its shadow root
+  today, which is what `'body'` preserves; Flow's stays in place.
 
 ## GuardrailBuilder
 
