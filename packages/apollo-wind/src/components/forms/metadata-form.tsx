@@ -78,38 +78,6 @@ export interface MetadataFormProps {
    */
   onActiveStepChange?: (stepId: string) => void;
   /**
-   * Externally-owned field values, synced into the form per field and guarded by deep
-   * equality — an echo of the form's own emission performs zero writes, so focus and cursor
-   * position survive. Sync-ins never re-fire `onValuesChange`. Hosts that pass this should
-   * echo the emitted values back synchronously from `onValuesChange`.
-   */
-  values?: Record<string, unknown>;
-  /**
-   * Fires on every user-driven field change with the full values record and the changed
-   * field's name. Unlike the plugin `onValueChange` hook it is not gated behind async form
-   * initialization, and it never fires for `values` sync-ins.
-   */
-  onValuesChange?: (values: Record<string, unknown>, changedField: string) => void;
-  /**
-   * Host-supplied errors keyed by field name, shown through the normal per-field error path.
-   * Managed as `type: 'external'` react-hook-form errors: this prop is their single source of
-   * truth (they never self-clear on typing), and the effect only ever clears its own entries,
-   * so resolver-produced errors are untouched.
-   */
-  errors?: Record<string, string | undefined>;
-  /**
-   * Skip building/attaching the zod resolver entirely — for hosts that own validation and
-   * inject results via `errors`. Without this the resolver always exists and would compete
-   * with host errors on submit/trigger.
-   */
-  disableValidation?: boolean;
-  /**
-   * Custom field components available synchronously from the first render, keyed by the
-   * `component` name in `type: 'custom'` field metadata. Plugin-registered components
-   * (via `registerCustomComponent`) take precedence on name collisions.
-   */
-  components?: Record<string, React.ComponentType<CustomFieldComponentProps>>;
-  /**
    * Render a `<div>` instead of a `<form>` — for hosts that embed the form inside their own
    * chrome and own submission. Enter is swallowed for single-line inputs so it cannot trigger
    * the host form's implicit submission, and schema submit actions become plain buttons.
@@ -133,11 +101,6 @@ export function MetadataForm({
   sectionVariant = 'card',
   activeStepId,
   onActiveStepChange,
-  values,
-  onValuesChange,
-  errors,
-  disableValidation = false,
-  components,
   container = 'form',
 }: MetadataFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -169,14 +132,11 @@ export function MetadataForm({
   }, [stableSchema]);
 
   // Build Zod schema from metadata (skipped entirely when the host owns validation)
-  const zodSchema = useMemo(
-    () => (disableValidation ? undefined : buildZodSchema(stableSchema)),
-    [stableSchema, disableValidation]
-  );
+  const zodSchema = useMemo(() => buildZodSchema(stableSchema), [stableSchema]);
 
   // Initialize React Hook Form
   const form = useForm<FieldValues>({
-    resolver: zodSchema ? standardSchemaResolver(zodSchema) : undefined,
+    resolver: standardSchemaResolver(zodSchema),
     defaultValues: stableSchema.initialData || {},
     mode: stableSchema.mode || 'onSubmit',
     reValidateMode: stableSchema.reValidateMode || 'onChange',
@@ -240,21 +200,14 @@ export function MetadataForm({
 
   // Suppresses onValuesChange while the `values` sync-in effect writes fields — safe because
   // react-hook-form notifies watch subscribers synchronously inside setValue.
-  const syncingValuesRef = useRef(false);
   const initializingRef = useRef(false);
-  const onValuesChangeRef = useRef(onValuesChange);
-  onValuesChangeRef.current = onValuesChange;
 
   // valuesRef is written before the plugin fan-out: context.values must be current.
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       valuesRef.current = value as Record<string, unknown>;
 
-      if (!name || syncingValuesRef.current) return;
-
-      // Deliberately not behind the isInitialized gate: controlled hosts need the very first
-      // user edit, which can land before the async init effect finishes.
-      onValuesChangeRef.current?.(value as Record<string, unknown>, name);
+      if (!name) return;
 
       // Suppressed only while initialization's `reset` writes schema data — gating on the
       // whole mount swallowed a plugin's first keystroke, since init resolves asynchronously.
@@ -267,50 +220,6 @@ export function MetadataForm({
 
     return () => subscription.unsubscribe();
   }, [watch]);
-
-  // Sync externally-owned values in, per field and deep-equal guarded: an echo of the form's
-  // own emission is a no-op (no setValue call, no re-render), so focus/cursor survive.
-  //
-  // Depends on `isInitialized` as well as `values`: initialization resets the form from
-  // `schema.initialData` asynchronously, which lands *after* this effect's first run and
-  // would otherwise leave a controlled host displaying and submitting schema data — the
-  // prop reference is unchanged, so nothing would re-apply it. Re-running is free when
-  // nothing differs, thanks to the per-field deep-equal guard.
-  useEffect(() => {
-    if (!values) return;
-    const current = form.getValues();
-    syncingValuesRef.current = true;
-    try {
-      for (const [name, v] of Object.entries(values)) {
-        if (!deepEqual(get(current, name), v)) {
-          form.setValue(name, v as never);
-        }
-      }
-    } finally {
-      syncingValuesRef.current = false;
-    }
-    valuesRef.current = form.getValues();
-  }, [values, form, isInitialized]);
-
-  // Host-supplied errors: applied as `type: 'external'`, cleared only by this effect (never by
-  // typing), and only ever clearing its own entries so resolver errors are untouched.
-  const appliedExternalErrorsRef = useRef<Record<string, string>>({});
-  useEffect(() => {
-    const next: Record<string, string> = {};
-    for (const [name, message] of Object.entries(errors ?? {})) {
-      if (!message) continue;
-      next[name] = message;
-      if (appliedExternalErrorsRef.current[name] !== message) {
-        form.setError(name, { type: 'external', message });
-      }
-    }
-    for (const name of Object.keys(appliedExternalErrorsRef.current)) {
-      if (!next[name] && form.getFieldState(name).error?.type === 'external') {
-        form.clearErrors(name);
-      }
-    }
-    appliedExternalErrorsRef.current = next;
-  }, [errors, form]);
 
   // Initialize form - runs once on mount only
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs once on mount - use key prop to reinitialize with new schema
@@ -367,13 +276,15 @@ export function MetadataForm({
   // Custom components from every source, available synchronously: the `components` prop and
   // plugin `components` declarations from first render; `registerCustomComponent` entries win
   // on name collisions once registered.
+  // Custom components registered by plugins. `FormPlugin.components` is honoured from the
+  // first render; `registerCustomComponent` entries win on name collisions once registered.
   const allCustomComponents = useMemo(() => {
     const fromPlugins: Record<string, React.ComponentType<CustomFieldComponentProps>> = {};
     for (const plugin of plugins) {
       Object.assign(fromPlugins, plugin.components);
     }
-    return { ...components, ...fromPlugins, ...customComponents };
-  }, [components, plugins, customComponents]);
+    return { ...fromPlugins, ...customComponents };
+  }, [plugins, customComponents]);
 
   // Render based on form structure
   const renderContent = () => {

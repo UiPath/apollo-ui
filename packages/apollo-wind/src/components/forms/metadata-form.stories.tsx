@@ -32,7 +32,7 @@ import {
   multiStepSchema,
 } from './form-examples';
 import { analyticsPlugin, autoSavePlugin } from './form-plugins';
-import type { FormSchema } from './form-schema';
+import type { FormPlugin, FormSchema } from './form-schema';
 import { FormStateViewer } from './form-state-viewer';
 import { MetadataForm } from './metadata-form';
 import { RuleBuilder } from './rules-engine';
@@ -1290,16 +1290,21 @@ export const WithCompactStateViewer = {
 } satisfies Story;
 
 /**
- * String List + Tooltip + Controlled Host
+ * String List + Tooltip
  *
- * Demonstrates the `string-list` field type (repeated multiline rows with Add/Remove),
- * the `tooltip` field metadata, and the controlled-host seam (`values`/`onValuesChange`/
- * `errors`/`disableValidation`/`container="div"`) where the host owns state and validation.
+ * The `string-list` field type (repeated multiline rows with Add/Remove) and `tooltip` field
+ * metadata, validated the way the schema already expresses it: `minItems: 1` for "at least
+ * one row" and `pattern: '\\S'` for "not just whitespace" — no host-side re-implementation.
+ *
+ * A host that needs to observe or drive values does so with a `FormPlugin`
+ * (`onValueChange` to read, `context.form.setValue`/`setError` to write), which is the seam
+ * `NodePropertyPanel` and flow-workbench's `ValidationPlugin` both use.
  */
 const stringListSchema: FormSchema = {
   id: 'string-list-demo',
   title: '',
   actions: [],
+  mode: 'onChange',
   sections: [
     {
       id: 'main',
@@ -1314,34 +1319,36 @@ const stringListSchema: FormSchema = {
           maxLength: 200,
           addItemLabel: 'Add phrase',
           removeItemAriaLabel: 'Remove {{label}} {{position}}',
+          validation: {
+            required: true,
+            minItems: 1,
+            messages: { minItems: 'Add at least one phrase.' },
+          },
         },
       ],
     },
   ],
 };
 
-const StringListControlledExample = () => {
-  const [values, setValues] = useState<Record<string, unknown>>({
+const StringListExample = () => {
+  const [seen, setSeen] = useState<Record<string, unknown>>({
     blockedPhrases: ['confidential'],
   });
-  const phrases = (values.blockedPhrases as string[]) ?? [];
-  const errors = phrases.length === 0 ? { blockedPhrases: 'Add at least one phrase.' } : undefined;
+
+  // Reading values is a plugin concern; the form stays the owner of its state.
+  const plugin: FormPlugin = {
+    name: 'story-observer',
+    onValueChange: (name, value) => setSeen((prev) => ({ ...prev, [name]: value })),
+  };
 
   return (
     <div className="max-w-md space-y-4">
-      <MetadataForm
-        schema={stringListSchema}
-        values={values}
-        onValuesChange={setValues}
-        errors={errors}
-        disableValidation
-        container="div"
-      />
-      <pre className="text-xs text-muted-foreground">{JSON.stringify(values, null, 2)}</pre>
+      <MetadataForm schema={stringListSchema} plugins={[plugin]} container="div" />
+      <pre className="text-xs text-muted-foreground">{JSON.stringify(seen, null, 2)}</pre>
     </div>
   );
 };
 
-export const StringListControlled = {
-  render: () => <StringListControlledExample />,
+export const StringList = {
+  render: () => <StringListExample />,
 } satisfies Story;
