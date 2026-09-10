@@ -2,8 +2,8 @@ import type { Meta, StoryFn } from '@storybook/react';
 import { useMemo, useState } from 'react';
 import { Column, Row } from '../../layouts';
 import { buildJsonTree } from './buildJsonTree';
-import type { JsonTreeNode } from './JsonTree.types';
 import { JsonTree } from './JsonTree';
+import type { JsonTreeNode } from './JsonTree.types';
 
 export default {
   title: 'Components/JsonTree',
@@ -12,11 +12,14 @@ export default {
   },
 } satisfies Meta;
 
-const RECORD_COUNT = 20_000;
+const RECORD_COUNT = 10_000;
+
+/** The unvirtualized baseline mounts every row, so it gets a page it can actually paint. */
+const SMALL_RECORD_COUNT = 50;
 
 /**
  * A connector-style response: a status, headers, and a page of records. Built on first
- * render and cached, so opening any other story does not pay for 20k records.
+ * render and cached, so opening any other story does not pay to rebuild it.
  */
 let cachedNodes: JsonTreeNode[] | undefined;
 function useLargeTree(): JsonTreeNode[] {
@@ -35,6 +38,23 @@ function useLargeTree(): JsonTreeNode[] {
     });
     return cachedNodes;
   }, []);
+}
+
+/**
+ * The same tree with `body` cut to the first `recordCount` records — the nodes are
+ * reused as built, so no second tree is constructed and the paths still line up.
+ */
+function useTruncatedTree(recordCount: number): JsonTreeNode[] {
+  const nodes = useLargeTree();
+  return useMemo(
+    () =>
+      nodes.map((node) =>
+        node.key === 'body' && node.children
+          ? { ...node, children: node.children.slice(0, recordCount) }
+          : node
+      ),
+    [nodes, recordCount]
+  );
 }
 
 function useCollapsed() {
@@ -124,13 +144,15 @@ export const VirtualizedEditable: StoryFn = () => {
   );
 };
 
-/** Baseline: every row mounts. Kept for comparison; expect a long first paint at this size. */
+/** Baseline: every row mounts, on a page small enough that mounting them all is fine. */
 export const NotVirtualized: StoryFn = () => {
-  const nodes = useLargeTree();
+  const nodes = useTruncatedTree(SMALL_RECORD_COUNT);
   const { collapsed, toggle } = useCollapsed();
   return (
     <Column p={24} gap={12} minH="100vh" style={frame}>
-      <span style={{ fontSize: 14 }}>Same value without virtualization.</span>
+      <span style={{ fontSize: 14 }}>
+        The same shape without virtualization, at {SMALL_RECORD_COUNT} records.
+      </span>
       <JsonTree nodes={nodes} collapsed={collapsed} onToggleCollapsed={toggle} readOnly />
     </Column>
   );
