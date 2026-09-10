@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Lock, Search } from 'lucide-react';
+import { Code2, Lock, Search } from 'lucide-react';
 import type * as React from 'react';
 import { useState } from 'react';
 import {
@@ -890,17 +890,16 @@ function EqualsAddon() {
   );
 }
 
+// The real "Assignment & Binding" reference story renders this as a bordered,
+// divider-set button (a literal "ƒ" glyph in a box). That reads as a stray
+// outlier next to every other trailing icon on this page (mode-switch,
+// Insert variable, lock toggle), all plain ghost icon buttons with no
+// divider, so it's restyled to match those here instead of copied verbatim.
 function FunctionAddon() {
   return (
-    <button
-      type="button"
-      aria-label="Open expression editor"
-      className="grid size-7 place-items-center border-l border-border text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-    >
-      <span className="rounded border border-current px-0.5 font-mono text-[10px] leading-3">
-        ƒ
-      </span>
-    </button>
+    <InputGroupButton icon size="3xs" aria-label="Open expression editor">
+      <Code2 />
+    </InputGroupButton>
   );
 }
 
@@ -996,6 +995,97 @@ const LVF_BINDING_STATES: StateRow[] = [
     description:
       'trailingAddon replaces the built-in Fixed/Expression toggle with a dedicated "Open expression editor" button.',
     Example: BindingFunctionAddonExample,
+  },
+];
+
+const DEMO_VARIABLES = [
+  { label: 'Customer name', value: '$input.customerName' },
+  { label: 'Invoice number', value: '$input.invoiceNumber' },
+];
+
+function InsertVariableDefaultExample() {
+  const [value, setValue] = useState('');
+  return (
+    <div className="w-full">
+      <LockableValueField
+        fieldType="string"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        variables={DEMO_VARIABLES}
+      />
+    </div>
+  );
+}
+
+function InsertVariableLockedExample() {
+  return (
+    <div className="w-full">
+      <LockableValueField
+        fieldType="string"
+        value="Invoice processor"
+        locked
+        variables={DEMO_VARIABLES}
+      />
+    </div>
+  );
+}
+
+function InsertVariableEmptyExample() {
+  const [value, setValue] = useState('');
+  return (
+    <div className="w-full">
+      <LockableValueField
+        fieldType="string"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        variables={[]}
+      />
+    </div>
+  );
+}
+
+function InsertVariableOnlyExample() {
+  const [value, setValue] = useState('');
+  return (
+    <div className="w-full">
+      <LockableValueField
+        fieldType="string"
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        showAiAssist={false}
+        variables={DEMO_VARIABLES}
+      />
+    </div>
+  );
+}
+
+const LVF_INSERT_VARIABLE_STATES: StateRow[] = [
+  {
+    label: 'Default',
+    description:
+      'showFieldActions defaults to true. Insert variable opens a popover listing variables; selecting one appends its value.',
+    Example: InsertVariableDefaultExample,
+  },
+  {
+    label: 'Locked',
+    description:
+      'onValueChange becomes undefined when locked, so Insert variable disables automatically, not because variables is empty.',
+    Example: InsertVariableLockedExample,
+  },
+  {
+    label: 'No variables',
+    description:
+      'variables={[]} (the default). Renders but stays disabled until variables are provided.',
+    Example: InsertVariableEmptyExample,
+  },
+  {
+    label: 'Insert variable only',
+    description:
+      'showAiAssist={false} hides just the AI-assist button; Insert variable is independent of it.',
+    Example: InsertVariableOnlyExample,
   },
 ];
 
@@ -1164,6 +1254,12 @@ const TYPES_SECTIONS: TypesSection[] = [
     description:
       'Mirrors the “Assignment & Binding” reference example in lockable-value-field.stories.tsx: the pattern node-property assignment fields use, leadingAddon replaces the lock icon with a semantic “=”, and mode is always expression.',
     rows: LVF_BINDING_STATES,
+  },
+  {
+    title: 'LockableValueField, insert variable',
+    description:
+      'The variables prop and its built-in Insert variable popover, gated separately from the AI-assist button by showAiAssist and showFieldActions. Every other table on this page sets showFieldActions={false} to keep it out of the way; this is the one place it is shown.',
+    rows: LVF_INSERT_VARIABLE_STATES,
   },
 ];
 
