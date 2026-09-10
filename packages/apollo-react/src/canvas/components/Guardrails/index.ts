@@ -33,6 +33,8 @@ export {
 } from './builder-utils';
 export type { GuardrailChipProps } from './components/guardrail-chip';
 export { GuardrailChip, guardrailChipVariants } from './components/guardrail-chip';
+export type { GuardrailStatusChipProps } from './components/guardrail-status-chip';
+export { GuardrailStatusChip } from './components/guardrail-status-chip';
 export type { GuardrailCopyTable, GuardrailValidatorCopy } from './definitions-copy';
 export {
   CURATED_GUARDRAIL_VALIDATORS,
