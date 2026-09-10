@@ -27,6 +27,10 @@ export interface StringListFieldProps {
 
 /**
  * Repeated multiline rows with Add / Remove — the `string-list` field type.
+ *
+ * Rendering it standalone with `field.tooltip` set requires an ancestor `TooltipProvider`:
+ * the info trigger is a Radix tooltip, which throws without one. Inside `MetadataForm` this
+ * is handled for you — it mounts a provider for schemas that use tooltip metadata.
  */
 export function StringListField({
   field,

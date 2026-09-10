@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import type React from 'react';
@@ -1154,6 +1154,40 @@ describe('controlled host seam', () => {
     await user.click(screen.getByPlaceholderText('Enter name'));
     await user.keyboard('{Enter}');
     expect(hostSubmit).not.toHaveBeenCalled();
+  });
+
+  it('keeps controlled values after schema.initialData initialization settles', async () => {
+    const withInitialData: FormSchema = {
+      id: 'initial-data-form',
+      title: '',
+      actions: [],
+      initialData: { name: 'from-schema' },
+      sections: [
+        {
+          id: 'main',
+          fields: [{ name: 'name', type: 'text', label: 'Name', defaultValue: '' }],
+        },
+      ],
+    };
+
+    render(
+      <MetadataForm
+        schema={withInitialData}
+        values={{ name: 'from-host' }}
+        disableValidation
+        container="div"
+      />
+    );
+
+    // Initialization resets from `initialData` asynchronously; without re-applying the
+    // sync afterwards the host's own value is silently replaced by the schema's.
+    await waitFor(() => {
+      expect(screen.getByLabelText('Name')).toHaveValue('from-host');
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    expect(screen.getByLabelText('Name')).toHaveValue('from-host');
   });
 
   it('mounts a TooltipProvider itself when the schema uses tooltip metadata', () => {
