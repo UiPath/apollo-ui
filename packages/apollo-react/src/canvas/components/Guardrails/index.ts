@@ -57,6 +57,7 @@ export type {
 } from './types';
 export {
   dropEmptyOptionalParameters,
+  getOutOfRangeParameterIds,
   getRequiredEmptyParameterIds,
   seedGuardrailParameters,
   syncMapEnumParameters,

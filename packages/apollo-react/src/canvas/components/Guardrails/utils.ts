@@ -103,6 +103,35 @@ export function dropEmptyOptionalParameters(
 }
 
 /**
+ * Ids of number parameters whose value falls outside the definition's `min`/`max`.
+ *
+ * `min`/`max` reach the input as DOM attributes, which browsers only enforce on native form
+ * submission — and this form has none, since the host owns saving. Without this check an
+ * out-of-range value saves silently, so hosts should gate Save on it alongside
+ * `getRequiredEmptyParameterIds`.
+ */
+export function getOutOfRangeParameterIds(
+  definitions: readonly GuardrailParameterDefinition[],
+  parameters: readonly GuardrailValidatorParameter[]
+): string[] {
+  const ids: string[] = [];
+  for (const paramDef of definitions) {
+    if (paramDef.type !== 'number') continue;
+    if (paramDef.min == null && paramDef.max == null) continue;
+    const param = parameters.find((p) => p.id === paramDef.id);
+    const value = param?.value;
+    if (typeof value !== 'number' || Number.isNaN(value)) continue;
+    if (
+      (paramDef.min != null && value < paramDef.min) ||
+      (paramDef.max != null && value > paramDef.max)
+    ) {
+      ids.push(paramDef.id);
+    }
+  }
+  return ids;
+}
+
+/**
  * Ids of required parameters whose current value counts as empty: a missing entry, a
  * blank/whitespace-only text or enum, an empty enum-list, a text-list whose rows are all
  * blank, or a map-enum with no keys. Numbers and booleans are never empty once present.

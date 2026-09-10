@@ -90,11 +90,16 @@ const [parameters, setParameters] = useState(() =>
 
 Requires an ancestor `TooltipProvider` (for the per-parameter info tooltips).
 
+The controlled contract above is this family's, not `MetadataForm`'s: the form owns its own
+state and exposes a plugin seam, so the translation lives in one named place,
+`useMetadataFormBridge`. Nothing else in the family reaches into `context.form`.
+
 ### Contract
 
 - **Fully controlled, validation-free.** The host owns values and validation. Compute
-  required-field errors with `getRequiredEmptyParameterIds(definitions, parameters)` and map
-  the returned ids to your own (localized) messages; the component renders `errors[id]` under
+  required-field errors with `getRequiredEmptyParameterIds(definitions, parameters)` and
+  out-of-range numbers with `getOutOfRangeParameterIds(definitions, parameters)` — gate Save
+  on both — then map the returned ids to your own (localized) messages; the component renders `errors[id]` under
   the matching editor and calls `onClearError(id)` before `onChange` when that parameter is
   edited.
 - **Definitions arrive pre-resolved.** `label`, `tooltip` and `optionLabels` are display
