@@ -1,12 +1,13 @@
 import { Column } from '@uipath/apollo-react/canvas/layouts';
-import { CanvasIcon, partition } from '@uipath/apollo-react/canvas/utils';
-import { Skeleton } from '@uipath/apollo-wind';
+import { CanvasIcon, cx, partition } from '@uipath/apollo-react/canvas/utils';
+import { badgeVariants, cn, Skeleton } from '@uipath/apollo-wind';
+import { motion } from 'motion/react';
 import { forwardRef, memo, useCallback, useImperativeHandle, useMemo } from 'react';
-import type { ListImperativeAPI, RowComponentProps } from 'react-window';
+import { List, type ListImperativeAPI, type RowComponentProps } from 'react-window';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { InitialsBadge } from '../shared/InitialsBadge';
-import { IconContainer, ListItemButton, StyledList } from './ListView.styles';
+import { ListViewIconContainer } from './ListViewIconContainer';
 
 export interface ListItemIcon {
   /**
@@ -207,6 +208,32 @@ export function buildRenderedItems<T extends ListItem>(
   return result;
 }
 
+// `box-border` is explicit rather than inherited from a consumer's global
+// reset: the row combines width:100% + an explicit react-window height with its
+// own padding, so content-box would overflow the slot and desync the
+// virtualizer's row positions.
+//
+// The focus-ring geometry is reserved in the resting state (invisible via a
+// transparent color) so activating a row only flips outline-color. Without this
+// the outline falls back to UA defaults (3px / currentColor) and every
+// sub-property jumps at once, flashing a thick dark border under transition.
+const ROW_BUTTON_CLASS =
+  'box-border flex w-full cursor-pointer items-center gap-2.5 border-none bg-transparent text-left ' +
+  'rounded-lg ' +
+  'outline-1 outline-transparent [outline-offset:-1px] ' +
+  'hover:bg-(--canvas-background-hover) ' +
+  'aria-selected:bg-(--canvas-background-hover) aria-selected:outline-(--canvas-primary) ' +
+  'disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-50 [&:disabled_*]:opacity-70 ' +
+  'transition-[background-color,opacity,outline-color] duration-150';
+
+// Thin scrollbar for every theme. apollo-wind already ships this for the dark
+// families (including future-dark), but the light ones would otherwise fall
+// back to the platform's full-width scrollbar inside a 320px panel.
+const LIST_SCROLLBAR_CLASS =
+  '[scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent ' +
+  '[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--canvas-border-de-emp) ' +
+  '[&::-webkit-scrollbar-thumb:hover]:bg-(--canvas-border)';
+
 export interface ListViewRowProps<T extends ListItem> {
   renderedItems: RenderItem<T>[];
   activeIndex: number;
@@ -215,8 +242,6 @@ export interface ListViewRowProps<T extends ListItem> {
   onItemClick: (item: T, index: number) => void;
   onItemHover?: (item: T) => void;
 }
-
-const IconContainerMemoized = memo(IconContainer);
 
 const ListViewRow = memo(
   <T extends ListItem>({
@@ -295,8 +320,9 @@ const ListViewRow = memo(
     const isActive = index === activeIndex;
 
     const button = (
-      <ListItemButton
+      <motion.button
         {...ariaAttributes}
+        type="button"
         tabIndex={-1}
         id={`toolbox-item-${item.id}`}
         role="option"
@@ -304,14 +330,12 @@ const ListViewRow = memo(
         style={buttonStyle}
         onClick={handleButtonClick}
         onHoverStart={handleButtonHover}
-        className={`${isLoading ? 'loading' : ''} ${isActive ? 'active' : ''}`}
+        // `loading` carries no styling of its own (the `disabled:` variants do
+        // that) but stays on the row as its public busy-state hook.
+        className={cx(ROW_BUTTON_CLASS, { loading: !!isLoading })}
         disabled={isLoading}
       >
-        <IconContainerMemoized
-          bgColor={bgColor}
-          style={item.contentColor ? { color: item.contentColor } : undefined}
-          data-testid="list-item-icon"
-        >
+        <ListViewIconContainer background={bgColor} color={item.contentColor}>
           {item.icon?.url && (
             <img src={item.icon?.url} alt={item.name} draggable={false} className="w-5 h-5" />
           )}
@@ -320,23 +344,27 @@ const ListViewRow = memo(
           {!item.icon?.url && !item.icon?.name && !item.icon?.Component && (
             <InitialsBadge name={item.name} size="20px" data-testid="list-item-initials-badge" />
           )}
-        </IconContainerMemoized>
+        </ListViewIconContainer>
         <Column flex={1} overflow="hidden">
           <span
-            className="text-sm list-view-item-name"
+            className="truncate text-sm"
             style={item.contentColor ? { color: item.contentColor } : undefined}
           >
             {item.name}
           </span>
           {item.description && (
-            <span className="text-xs list-view-item-name text-foreground-muted">
-              {item.description}
-            </span>
+            <span className="truncate text-xs text-foreground-muted">{item.description}</span>
           )}
         </Column>
         {item.badge && (
+          // Wind's badge styling on a span rather than <Badge>, which renders a
+          // div: a button only admits phrasing content, so a div here would be
+          // invalid markup. Sharing `badgeVariants` keeps the look in step.
           <span
-            className="shrink-0 uppercase font-semibold text-[10px] py-px px-1 rounded border border-border text-foreground-muted"
+            className={cn(
+              badgeVariants({ variant: 'outline' }),
+              'shrink-0 rounded border-border px-1 py-1 text-[8px] uppercase text-foreground-muted'
+            )}
             data-testid="list-item-badge"
           >
             {item.badge}
@@ -354,7 +382,7 @@ const ListViewRow = memo(
         {!!item.children && (
           <CanvasIcon icon="chevron-right" size={16} color="var(--canvas-foreground-de-emp)" />
         )}
-      </ListItemButton>
+      </motion.button>
     );
 
     return (
@@ -425,7 +453,7 @@ const ListItemSkeleton = () => (
     aria-hidden="true"
     data-testid="list-item-skeleton"
   >
-    <Skeleton className="h-6 w-6 shrink-0 rounded-md" />
+    <Skeleton className="h-6 w-6 shrink-0 rounded-md future:rounded-lg" />
     <Skeleton className="h-3.5 w-1/2" />
   </div>
 );
@@ -485,8 +513,9 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   }
 
   return (
-    <StyledList
+    <List
       id="toolbox-listbox"
+      className={LIST_SCROLLBAR_CLASS}
       role="listbox"
       // Signal "list is being updated" to assistive tech while skeleton
       // sentinels are rendered in place of real items.

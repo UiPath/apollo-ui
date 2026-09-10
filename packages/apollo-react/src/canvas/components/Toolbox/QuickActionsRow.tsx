@@ -1,7 +1,15 @@
-import { Button } from '@uipath/apollo-wind';
+import { Button, Separator } from '@uipath/apollo-wind';
 import { memo, type MouseEvent, type ReactNode } from 'react';
 import { TOOLBOX_PADDING_X } from '../../constants';
 import { CanvasTooltip } from '../CanvasTooltip';
+
+// The strip's rule spans the full panel width, so it cancels the Toolbox's own
+// horizontal padding and re-applies it to its content. Hoisted out of render so
+// the object identity stays stable.
+const BLEED_TO_PANEL_EDGE_STYLE = {
+  paddingInline: TOOLBOX_PADDING_X,
+  marginInline: -TOOLBOX_PADDING_X,
+};
 
 export type ToolboxQuickAction = {
   id: string;
@@ -47,16 +55,17 @@ export const QuickActionsRow = memo(function QuickActionsRow({ actions }: QuickA
 
   return (
     <div
-      className="flex items-center justify-center gap-3 min-h-11 pb-2 border-b border-border shrink-0"
-      style={{ paddingInline: TOOLBOX_PADDING_X, marginInline: -TOOLBOX_PADDING_X }}
+      className="flex min-h-11 shrink-0 items-center justify-center gap-3 border-b border-border pb-2 future:border-border-subtle"
+      style={BLEED_TO_PANEL_EDGE_STYLE}
       data-testid="toolbox-quick-actions"
     >
       {leading.map((action) => (
         <QuickActionButton key={action.id} action={action} />
       ))}
       {trailing.length > 0 && leading.length > 0 && (
-        <div
-          className="w-px self-stretch mx-1 bg-border shrink-0"
+        <Separator
+          orientation="vertical"
+          className="mx-1 h-auto shrink-0 self-stretch"
           data-testid="toolbox-quick-actions-separator"
         />
       )}

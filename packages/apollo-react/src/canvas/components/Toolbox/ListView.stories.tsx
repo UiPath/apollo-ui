@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { StoryInfoPanel, withCanvasProviders } from '../../storybook-utils';
 import { CanvasIcon } from '../../utils/icon-registry';
+import { CanvasPanelSurface } from '../FloatingCanvasPanel';
 import { ListView } from './ListView';
 
 const meta: Meta<typeof ListView> = {
@@ -42,21 +43,11 @@ function PanelWrapper({
         paddingTop,
       }}
     >
-      <div
-        style={{
-          width: '320px',
-          margin: '0 auto',
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: 'var(--canvas-background-raised)',
-          border: '1px solid var(--canvas-border-de-emp)',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          overflow: 'hidden',
-        }}
-      >
+      {/* The real panel surface. Width is fixed to the Toolbox's own 320px
+          since a bare ListView has no intrinsic one. */}
+      <CanvasPanelSurface className="mx-auto w-[320px] overflow-hidden" scrollableContent={false}>
         {children}
-      </div>
+      </CanvasPanelSurface>
     </div>
   );
 }

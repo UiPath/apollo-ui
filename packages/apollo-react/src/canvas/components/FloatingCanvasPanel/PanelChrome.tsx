@@ -1,4 +1,3 @@
-import styled from '@emotion/styled';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Button } from '@uipath/apollo-wind';
 import type { ReactNode } from 'react';
@@ -6,38 +5,20 @@ import { useEffect, useRef } from 'react';
 
 import { CanvasIcon } from '../../utils/icon-registry';
 
-const PanelHeader = styled.div`
-  border-bottom: 1px solid var(--canvas-border-de-emp);
-  padding: 8px 16px;
-  background-color: var(--canvas-background-raised);
-  border-radius: 8px 8px 0 0;
-  flex-shrink: 0;
-`;
+// The header paints the same surface as the panel and is not clipped by it, so
+// its top corners have to mirror the panel's own radius in both theme families
+// (see PANEL_SHELL_CLASS in CanvasPanelSurface) or they bleed past the shell.
+const PANEL_HEADER_CLASS =
+  'shrink-0 rounded-t-lg border-b border-b-(--canvas-border-de-emp) bg-(--canvas-background-raised) px-4 py-2 future:rounded-t-2xl';
 
-const PanelContent = styled.div<{ scrollable?: boolean }>`
-  flex: 1;
-  min-height: 0;
-  overflow-y: ${(props) => (props.scrollable === false ? 'hidden' : 'auto')};
-  overflow-x: hidden;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: var(--canvas-background-secondary);
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--canvas-border);
-    border-radius: 3px;
-
-    &:hover {
-      background: var(--canvas-border-de-emp);
-    }
-  }
-`;
+// The scroll container's own radius clips the scrollbar it paints, so it tracks
+// the panel's bottom corners for the same reason the header tracks the top.
+const PANEL_CONTENT_CLASS =
+  'min-h-0 flex-1 overflow-x-hidden rounded-b-lg future:rounded-b-2xl ' +
+  '[scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 ' +
+  '[&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-(--canvas-background-secondary) ' +
+  '[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--canvas-border) ' +
+  '[&::-webkit-scrollbar-thumb:hover]:bg-(--canvas-border-de-emp)';
 
 export interface PanelChromeProps {
   title?: ReactNode;
@@ -69,7 +50,7 @@ export function PanelChrome({
   return (
     <>
       {(header || title || onClose) && (
-        <PanelHeader>
+        <div className={PANEL_HEADER_CLASS}>
           {header ?? (
             <Row gap={8} justify="between" align="center">
               <span className="text-base font-bold">{title}</span>
@@ -89,11 +70,18 @@ export function PanelChrome({
               </Row>
             </Row>
           )}
-        </PanelHeader>
+        </div>
       )}
-      <PanelContent ref={contentRef} scrollable={scrollableContent}>
+      <div
+        ref={contentRef}
+        className={
+          scrollableContent
+            ? `${PANEL_CONTENT_CLASS} overflow-y-auto`
+            : `${PANEL_CONTENT_CLASS} overflow-y-hidden`
+        }
+      >
         {children}
-      </PanelContent>
+      </div>
     </>
   );
 }
