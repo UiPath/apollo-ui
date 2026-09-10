@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v6.44.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.44.0...@uipath/apollo-react@6.44.1) (2026-09-10)
+
+### Bug Fixes
+
+* **apollo-react:** flatten large JsonTree values without a spread [MST-15023] ([cd29366](https://github.com/UiPath/apollo-ui/commit/cd29366dedfba9be747bc9556162a08bce6c78df))
+* **apollo-react:** subscribe the virtualized JsonTree to its own scroll box [MST-15023] ([870fc2f](https://github.com/UiPath/apollo-ui/commit/870fc2f1c17a3867a659b498d05c00e50fa3081d))
+
 ## [@uipath/apollo-react-v6.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.43.0...@uipath/apollo-react@6.44.0) (2026-09-10)
 
 ### Features
