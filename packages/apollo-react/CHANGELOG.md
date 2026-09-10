@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.43.0...@uipath/apollo-react@6.44.0) (2026-09-10)
+
+### Features
+
+* **apollo-react:** add disabled and wrap to EditableText ([6e9f8dd](https://github.com/UiPath/apollo-ui/commit/6e9f8dd518ce494492558edd356f41f645219eda))
+
 ## [@uipath/apollo-react-v6.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.42.0...@uipath/apollo-react@6.43.0) (2026-09-09)
 
 ### Features
