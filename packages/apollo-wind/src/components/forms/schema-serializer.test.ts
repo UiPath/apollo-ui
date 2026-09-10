@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { serializeSchema, schemaToJson } from './schema-serializer';
-import type { FormSchema, FieldMetadata } from './form-schema';
+import { describe, expect, it } from 'vitest';
+import type { FieldMetadata, FormSchema } from './form-schema';
+import { schemaToJson, serializeSchema } from './schema-serializer';
 
 describe('serializeSchema', () => {
   describe('single-page form', () => {

@@ -86,6 +86,46 @@ describe('validationConfigToZod', () => {
     });
   });
 
+  describe('custom-field value shape', () => {
+    it('enforces required once a custom field declares its value shape', () => {
+      // Undeclared: z.any(), so required cannot be enforced — the documented default.
+      const untyped = validationConfigToZod({ required: true }, 'custom');
+      expect(untyped.safeParse(undefined).success).toBe(true);
+
+      const asString = validationConfigToZod({ required: true }, 'custom', 'string');
+      expect(asString.safeParse('x').success).toBe(true);
+      expect(asString.safeParse('').success).toBe(false);
+
+      const asList = validationConfigToZod({ required: true }, 'custom', 'string-array');
+      expect(asList.safeParse(['x']).success).toBe(true);
+      expect(asList.safeParse([]).success).toBe(false);
+    });
+
+    it('applies minItems to a declared list-shaped custom field', () => {
+      const schema = validationConfigToZod({ minItems: 2 }, 'custom', 'string-array');
+      expect(schema.safeParse(['a', 'b']).success).toBe(true);
+      expect(schema.safeParse(['a']).success).toBe(false);
+    });
+  });
+
+  describe('ValidationConfig.custom expression', () => {
+    it('enforces a jsep expression against the value', () => {
+      const schema = validationConfigToZod(
+        { custom: 'value.length > 2', messages: { custom: 'Too short' } },
+        'text'
+      );
+      expect(schema.safeParse('abc').success).toBe(true);
+      const result = schema.safeParse('ab');
+      expect(result.success).toBe(false);
+      if (!result.success) expect(result.error.issues[0].message).toBe('Too short');
+    });
+
+    it('never blocks the user on an unparseable expression', () => {
+      const schema = validationConfigToZod({ custom: 'value.some(' }, 'text');
+      expect(schema.safeParse('anything').success).toBe(true);
+    });
+  });
+
   describe('required validation', () => {
     it('makes field required when config.required is true', () => {
       const schema = validationConfigToZod({ required: true }, 'text');

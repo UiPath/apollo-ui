@@ -26,7 +26,7 @@ import type {
   FormSection as FormSectionType,
 } from './form-schema';
 import { RulesEngine } from './rules-engine';
-import { validationConfigToZod } from './validation-converter';
+import { isEmptyFieldValue, validationConfigToZod } from './validation-converter';
 
 // Re-exported so packages composing MetadataForm's custom fields (e.g. apollo-react's
 // guardrails) subscribe through the same react-hook-form instance — a second RHF copy
@@ -111,7 +111,10 @@ export interface MetadataFormProps {
   components?: Record<string, React.ComponentType<CustomFieldComponentProps>>;
   /**
    * Render a `<div>` instead of a `<form>` — for hosts that embed the form inside their own
-   * chrome and own submission (no implicit Enter-to-submit, safe inside another form).
+   * chrome and own submission. Enter is swallowed for single-line inputs so it cannot trigger
+   * the host form's implicit submission, and schema submit actions become plain buttons.
+   *
+   * Suppressing the action row is the schema's job, not this prop's: pass `actions: []`.
    */
   container?: 'form' | 'div';
 }
@@ -238,6 +241,7 @@ export function MetadataForm({
   // Suppresses onValuesChange while the `values` sync-in effect writes fields — safe because
   // react-hook-form notifies watch subscribers synchronously inside setValue.
   const syncingValuesRef = useRef(false);
+  const initializingRef = useRef(false);
   const onValuesChangeRef = useRef(onValuesChange);
   onValuesChangeRef.current = onValuesChange;
 
@@ -252,7 +256,9 @@ export function MetadataForm({
       // user edit, which can land before the async init effect finishes.
       onValuesChangeRef.current?.(value as Record<string, unknown>, name);
 
-      if (!isInitializedRef.current) return;
+      // Suppressed only while initialization's `reset` writes schema data — gating on the
+      // whole mount swallowed a plugin's first keystroke, since init resolves asynchronously.
+      if (initializingRef.current) return;
 
       pluginsRef.current.forEach((plugin) => {
         plugin.onValueChange?.(name, get(value, name), contextRef.current);
@@ -316,7 +322,12 @@ export function MetadataForm({
       // Load initial data
       if (stableSchema.initialData) {
         const data = await loadInitialData(stableSchema.initialData, contextRef.current);
-        reset(data);
+        initializingRef.current = true;
+        try {
+          reset(data);
+        } finally {
+          initializingRef.current = false;
+        }
       }
 
       // Plugin initialization
@@ -414,7 +425,7 @@ export function MetadataForm({
       {/* Wizard forms own their navigation/Submit, and tabbed forms render
           FormActions inside TabbedStepForm so it's suppressed when no tab is
           visible. Only single-page forms render FormActions here. */}
-      {!stableSchema.steps && (container !== 'div' || stableSchema.actions) && (
+      {!stableSchema.steps && (
         <FormActions
           schema={stableSchema}
           context={context}
@@ -1116,7 +1127,11 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
         : undefined;
 
     // Convert to Zod schema using the converter
-    shape[field.name] = validationConfigToZod(validationConfig, field.type);
+    shape[field.name] = validationConfigToZod(
+      validationConfig,
+      field.type,
+      field.type === 'custom' ? field.valueType : undefined
+    );
   });
 
   const baseSchema = z.object(shape);
@@ -1149,14 +1164,8 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
       const isRequired = ruleResult.required === true || staticRequired;
 
       if (isRequired) {
-        const value = values[name];
-        const isEmpty =
-          value === undefined ||
-          value === null ||
-          value === '' ||
-          (Array.isArray(value) && value.length === 0);
-
-        if (isEmpty) {
+        // Shared with the resolver's required check so the two paths cannot disagree.
+        if (isEmptyFieldValue(values[name])) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: customRequiredMessage || 'This field is required',
