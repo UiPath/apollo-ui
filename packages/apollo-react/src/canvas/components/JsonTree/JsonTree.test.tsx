@@ -1,3 +1,4 @@
+import { render as bareRender } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '../../utils/testing';
@@ -9,10 +10,14 @@ interface VirtualizerOptions {
   count: number;
   getItemKey?: (index: number) => string | number;
   scrollMargin?: number;
+  getScrollElement: () => Element | null;
 }
 
 const WINDOW_SIZE = 3;
 const virtualizerCalls: VirtualizerOptions[] = [];
+// What `getScrollElement` resolved to each time the virtualizer would have
+// subscribed. See the mock below.
+const attachedScrollElements: (Element | null)[] = [];
 // Driven per test: where the window sits, and whether a scroll is in flight.
 let windowStart = 0;
 let isScrolling = false;
@@ -20,33 +25,42 @@ let isScrolling = false;
 // The virtualizer needs a laid-out scroll element, which happy-dom has none of.
 // Standing in for it with a movable window exercises the tree's side of the
 // contract: what it hands the virtualizer and what it does with the items back.
-vi.mock('@tanstack/react-virtual', () => ({
-  useVirtualizer: (options: VirtualizerOptions) => {
-    virtualizerCalls.push(options);
-    const scrollMargin = options.scrollMargin ?? 0;
-    const measure = (index: number) => ({
-      index,
-      key: options.getItemKey?.(index) ?? index,
-      start: scrollMargin + index * ROW_MIN_HEIGHT_PX,
-      end: scrollMargin + (index + 1) * ROW_MIN_HEIGHT_PX,
-      size: ROW_MIN_HEIGHT_PX,
-      lane: 0,
-    });
-    const windowed = Array.from(
-      { length: Math.max(0, Math.min(WINDOW_SIZE, options.count - windowStart)) },
-      (_, offset) => measure(windowStart + offset)
-    );
-    return {
-      getVirtualItems: () => windowed,
-      getTotalSize: () => options.count * ROW_MIN_HEIGHT_PX,
-      measureElement: () => {},
-      measurementsCache: Array.from({ length: options.count }, (_, index) => measure(index)),
-      options: { scrollMargin },
-      scrollElement: null,
-      isScrolling,
-    };
-  },
-}));
+vi.mock('@tanstack/react-virtual', async () => {
+  const { useLayoutEffect } = await import('react');
+  return {
+    useVirtualizer: (options: VirtualizerOptions) => {
+      virtualizerCalls.push(options);
+      // The real adapter resolves the scroll element in a layout effect after
+      // every render and subscribes only when it changed, so an element that is
+      // still null on the mount pass is never observed and no row is ever placed.
+      useLayoutEffect(() => {
+        attachedScrollElements.push(options.getScrollElement());
+      });
+      const scrollMargin = options.scrollMargin ?? 0;
+      const measure = (index: number) => ({
+        index,
+        key: options.getItemKey?.(index) ?? index,
+        start: scrollMargin + index * ROW_MIN_HEIGHT_PX,
+        end: scrollMargin + (index + 1) * ROW_MIN_HEIGHT_PX,
+        size: ROW_MIN_HEIGHT_PX,
+        lane: 0,
+      });
+      const windowed = Array.from(
+        { length: Math.max(0, Math.min(WINDOW_SIZE, options.count - windowStart)) },
+        (_, offset) => measure(windowStart + offset)
+      );
+      return {
+        getVirtualItems: () => windowed,
+        getTotalSize: () => options.count * ROW_MIN_HEIGHT_PX,
+        measureElement: () => {},
+        measurementsCache: Array.from({ length: options.count }, (_, index) => measure(index)),
+        options: { scrollMargin },
+        scrollElement: null,
+        isScrolling,
+      };
+    },
+  };
+});
 
 /** happy-dom reports every rect as zero, so the offsets the effect reads are stubbed in. */
 function stubOffsets(
@@ -70,6 +84,7 @@ const nodes = buildJsonTree({ value });
 describe('JsonTree', () => {
   beforeEach(() => {
     virtualizerCalls.length = 0;
+    attachedScrollElements.length = 0;
     windowStart = 0;
     isScrolling = false;
   });
@@ -98,6 +113,21 @@ describe('JsonTree', () => {
     expect((rowHost.parentElement as HTMLElement).style.height).toBe(
       `${FIELD_COUNT * ROW_MIN_HEIGHT_PX}px`
     );
+  });
+
+  // Rendered without the shared i18n provider: activating it re-renders the tree
+  // a second time, which resolves the box by chance and hides the defect below.
+  it('re-renders to hand the virtualizer its own scroll box on mount', () => {
+    const { container } = bareRender(<JsonTree nodes={nodes} readOnly virtualized />);
+
+    // A parent's ref is assigned only after its children's layout effects have
+    // run, so reading the box through a ref leaves it null for the whole mount
+    // and the sequence below stops at the first entry. The virtualizer
+    // subscribes only when the element changed, so it would then never observe
+    // anything, keep a zero viewport, and window no rows at all — until some
+    // unrelated re-render happened to come along. Remounting the tree (switching
+    // a tab away and back) lands in exactly that state.
+    expect(attachedScrollElements).toEqual([null, container.firstElementChild]);
   });
 
   it('caps its own scroll box at the viewport so rows out of view never mount', () => {
