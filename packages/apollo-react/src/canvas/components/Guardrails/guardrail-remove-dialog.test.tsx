@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
+import { ApI18nProvider } from '../../../i18n';
 import { GuardrailRemoveDialog } from './guardrail-remove-dialog';
 
 const SCOPE_LABELS: Record<string, string> = {
@@ -191,6 +192,25 @@ describe('GuardrailRemoveDialog', () => {
     expect(screen.getByText('Delete guardrail')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+  });
+
+  it('interpolates into a localized template from the canvas catalog', async () => {
+    // The two-stage convention: lingui resolves the ICU `{name}` against sentinel values, so
+    // the catalog string comes back carrying `{{name}}`, and the component formats that. A
+    // catalog entry whose placeholder is spelled differently would silently render the token.
+    render(
+      <ApI18nProvider component="canvas" locale="ja">
+        <GuardrailRemoveDialog {...baseProps} toolName="Send email" remainingScopes={['Agent']} />
+      </ApI18nProvider>
+    );
+
+    expect(
+      await screen.findByText('ガードレール「PII detection 1」の削除を確定してください。')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('ツール「Send email」のガードレールが削除されます。')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '削除' })).toBeInTheDocument();
   });
 
   it('has no accessibility violations', async () => {
