@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/select';
 import { Toaster } from '@/components/ui/sonner';
 import { Switch } from '@/components/ui/switch';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { setupDemoMocks } from './demo-mocks';
 import {
   automationJobSchema,
@@ -1329,19 +1328,17 @@ const StringListControlledExample = () => {
   const errors = phrases.length === 0 ? { blockedPhrases: 'Add at least one phrase.' } : undefined;
 
   return (
-    <TooltipProvider>
-      <div className="max-w-md space-y-4">
-        <MetadataForm
-          schema={stringListSchema}
-          values={values}
-          onValuesChange={setValues}
-          errors={errors}
-          disableValidation
-          container="div"
-        />
-        <pre className="text-xs text-muted-foreground">{JSON.stringify(values, null, 2)}</pre>
-      </div>
-    </TooltipProvider>
+    <div className="max-w-md space-y-4">
+      <MetadataForm
+        schema={stringListSchema}
+        values={values}
+        onValuesChange={setValues}
+        errors={errors}
+        disableValidation
+        container="div"
+      />
+      <pre className="text-xs text-muted-foreground">{JSON.stringify(values, null, 2)}</pre>
+    </div>
   );
 };
 
