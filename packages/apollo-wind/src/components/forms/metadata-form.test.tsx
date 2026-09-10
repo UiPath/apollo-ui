@@ -1132,9 +1132,12 @@ describe('controlled host seam', () => {
     expect(screen.getByTestId('my-widget')).toHaveTextContent('special');
   });
 
-  it("container='div' renders no form element and no phantom submit button", () => {
+  it("container='div' renders no form element, and actions: [] renders no action row", () => {
+    // `actions: []` is how a schema says "no actions"; FormActions returns null for it.
+    // An absent `actions` key still falls back to the default Submit, by design.
+    const noActions: FormSchema = { ...basicSchema, actions: [] };
     const { container } = render(
-      <MetadataForm schema={basicSchema} disableValidation container="div" />
+      <MetadataForm schema={noActions} disableValidation container="div" />
     );
 
     expect(container.querySelector('form')).toBeNull();

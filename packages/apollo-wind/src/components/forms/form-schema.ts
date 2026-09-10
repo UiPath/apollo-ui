@@ -295,6 +295,12 @@ export interface CustomFieldMetadata extends BaseFieldMetadata {
   type: 'custom';
   component: string;
   componentProps?: Record<string, unknown>;
+  /**
+   * Shape of the value the component owns. Without it the field validates as `z.any()`, so
+   * `required` (and `minItems` for lists) silently does nothing — declare it and the normal
+   * metadata constraints apply to custom components like any other field.
+   */
+  valueType?: 'string' | 'number' | 'boolean' | 'string-array';
 }
 
 /**

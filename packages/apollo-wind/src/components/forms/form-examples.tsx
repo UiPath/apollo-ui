@@ -10,11 +10,11 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { MetadataForm } from './metadata-form';
-import type { FormSchema } from './form-schema';
-import { RuleBuilder } from './rules-engine';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { FormSchema } from './form-schema';
+import { MetadataForm } from './metadata-form';
+import { RuleBuilder } from './rules-engine';
 
 // ============================================================================
 // Example 1: User Registration - Cascading Dropdowns

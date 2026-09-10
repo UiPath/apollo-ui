@@ -1,5 +1,7 @@
+import jsep from 'jsep';
 import { z } from 'zod';
 import type { FieldType, ValidationConfig } from './form-schema';
+import { RulesEngine } from './rules-engine';
 
 /**
  * Validation Converter
@@ -24,10 +26,15 @@ import type { FieldType, ValidationConfig } from './form-schema';
  */
 export function validationConfigToZod(
   config: ValidationConfig | undefined,
-  fieldType: FieldType
+  fieldType: FieldType,
+  /**
+   * Declared shape of a `type: 'custom'` field's value. Custom fields otherwise validate as
+   * `z.any()`, where `required` and the array constraints are no-ops.
+   */
+  customValueType?: CustomValueType
 ): z.ZodTypeAny {
   // Get base schema for field type
-  let schema = getBaseSchemaForType(fieldType);
+  let schema = getBaseSchemaForType(fieldType, customValueType);
 
   // If no config, return optional base schema
   if (!config) {
@@ -35,14 +42,14 @@ export function validationConfigToZod(
   }
 
   // Apply type-specific constraints
-  schema = applyStringConstraints(schema, config, fieldType);
+  schema = applyStringConstraints(schema, config, fieldType, customValueType);
   schema = applyNumberConstraints(schema, config, fieldType);
-  schema = applyArrayConstraints(schema, config, fieldType);
+  schema = applyArrayConstraints(schema, config, fieldType, customValueType);
 
   // Apply required/optional
   if (config.required) {
     // For strings, also check for non-empty
-    if (isStringType(fieldType) && !config.minLength) {
+    if (isStringType(fieldType, customValueType) && !config.minLength) {
       schema = (schema as z.ZodString).min(
         1,
         config.messages?.required || 'This field is required'
@@ -50,22 +57,55 @@ export function validationConfigToZod(
     }
     // Same for arrays: an empty array is a filled-in field to zod, so a required
     // multiselect/string-list would otherwise submit with nothing selected.
-    if (isArrayType(fieldType) && config.minItems == null) {
+    if (isArrayType(fieldType, customValueType) && config.minItems == null) {
       schema = (schema as z.ZodArray<z.ZodTypeAny>).min(
         1,
         config.messages?.required || 'This field is required'
       );
     }
+    return applyCustomExpression(schema, config);
+  }
+
+  return applyCustomExpression(schema, config).optional();
+}
+
+/**
+ * `ValidationConfig.custom` — a jsep expression evaluated against `{ value }`. Declared and
+ * serialized since the schema's first version but never enforced until now.
+ *
+ * The evaluator supports literals, identifiers, member access, and binary/unary/conditional
+ * operators; it has no `CallExpression`, so `value.length > 0` works while `value.some(...)`
+ * does not.
+ */
+function applyCustomExpression(schema: z.ZodTypeAny, config: ValidationConfig): z.ZodTypeAny {
+  if (!config.custom) return schema;
+  const expression = config.custom;
+  const message = config.messages?.custom || 'This value is not valid';
+
+  // Parse once, here, rather than on every validation: the evaluator returns `false` for a
+  // malformed expression exactly as it does for a legitimately failing one, so a typo in a
+  // schema would otherwise make the field permanently unsubmittable. A schema authoring
+  // mistake should not block the user, so an unparseable expression is simply not enforced.
+  try {
+    jsep(expression);
+  } catch {
     return schema;
   }
 
-  return schema.optional();
+  return schema.superRefine((value: unknown, ctx: z.RefinementCtx) => {
+    if (!RulesEngine.evaluateExpression(expression, { value })) {
+      ctx.addIssue({ code: 'custom', message });
+    }
+  });
 }
 
 /**
  * Get the base Zod schema for a field type
  */
-function getBaseSchemaForType(fieldType: FieldType): z.ZodTypeAny {
+function getBaseSchemaForType(
+  fieldType: FieldType,
+  customValueType?: CustomValueType
+): z.ZodTypeAny {
   switch (fieldType) {
     case 'text':
     case 'textarea':
@@ -101,7 +141,19 @@ function getBaseSchemaForType(fieldType: FieldType): z.ZodTypeAny {
       return z.any();
 
     case 'custom':
-      return z.any();
+      switch (customValueType) {
+        case 'string':
+          return z.string();
+        case 'number':
+          return z.number();
+        case 'boolean':
+          return z.boolean();
+        case 'string-array':
+          return z.array(z.string());
+        default:
+          // Undeclared shape: nothing can be enforced, so `required` stays a no-op by design.
+          return z.any();
+      }
 
     default:
       return z.string();
@@ -111,7 +163,23 @@ function getBaseSchemaForType(fieldType: FieldType): z.ZodTypeAny {
 /**
  * Check if field type uses string schema
  */
-function isStringType(fieldType: FieldType): boolean {
+/**
+ * The one definition of "empty" for a required field. Exported so the resolver and the
+ * conditional-required `superRefine` in metadata-form agree — they used to disagree, with
+ * the narrower resolver path missing whitespace-only strings.
+ */
+export function isEmptyFieldValue(value: unknown): boolean {
+  if (value === undefined || value === null) return true;
+  if (typeof value === 'string') return value.trim() === '';
+  if (Array.isArray(value)) return value.length === 0;
+  return false;
+}
+
+/** Value shapes a `type: 'custom'` field can declare so metadata constraints apply to it. */
+export type CustomValueType = 'string' | 'number' | 'boolean' | 'string-array';
+
+function isStringType(fieldType: FieldType, customValueType?: CustomValueType): boolean {
+  if (fieldType === 'custom') return customValueType === 'string';
   return ['text', 'textarea', 'email', 'select', 'radio'].includes(fieldType);
 }
 
@@ -125,7 +193,8 @@ function isNumberType(fieldType: FieldType): boolean {
 /**
  * Check if field type uses array schema
  */
-function isArrayType(fieldType: FieldType): boolean {
+function isArrayType(fieldType: FieldType, customValueType?: CustomValueType): boolean {
+  if (fieldType === 'custom') return customValueType === 'string-array';
   return ['multiselect', 'string-list'].includes(fieldType);
 }
 
@@ -135,9 +204,10 @@ function isArrayType(fieldType: FieldType): boolean {
 function applyStringConstraints(
   schema: z.ZodTypeAny,
   config: ValidationConfig,
-  fieldType: FieldType
+  fieldType: FieldType,
+  customValueType?: CustomValueType
 ): z.ZodTypeAny {
-  if (!isStringType(fieldType)) {
+  if (!isStringType(fieldType, customValueType)) {
     return schema;
   }
 
@@ -237,9 +307,10 @@ function applyNumberConstraints(
 function applyArrayConstraints(
   schema: z.ZodTypeAny,
   config: ValidationConfig,
-  fieldType: FieldType
+  fieldType: FieldType,
+  customValueType?: CustomValueType
 ): z.ZodTypeAny {
-  if (!isArrayType(fieldType)) {
+  if (!isArrayType(fieldType, customValueType)) {
     return schema;
   }
 

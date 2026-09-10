@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { RulesEngine, RuleBuilder, ExpressionBuilder } from './rules-engine';
+import { describe, expect, it } from 'vitest';
 import type { FieldCondition, FieldRule, FormContext } from './form-schema';
+import { ExpressionBuilder, RuleBuilder, RulesEngine } from './rules-engine';
 
 describe('RulesEngine', () => {
   describe('evaluateCondition', () => {
