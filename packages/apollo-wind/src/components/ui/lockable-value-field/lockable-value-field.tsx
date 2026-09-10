@@ -33,20 +33,13 @@ import { FIELD_TYPE_META, type LockableValueFieldMoreActions } from './types';
 import {
   DEFAULT_SELECT_OPTIONS,
   formatDateValue,
-  getLockedDisplayValue,
   parseDateValue,
   parseListValue,
   toDateOnlyString,
 } from './utils';
 
-function MoreActionsMenu({
-  more,
-  locked,
-}: {
-  more: LockableValueFieldMoreActions;
-  locked: boolean;
-}) {
-  const onClear = locked ? undefined : more.onClear;
+function MoreActionsMenu({ more }: { more: LockableValueFieldMoreActions }) {
+  const onClear = more.onClear;
   const onRefresh = more.onRefresh;
 
   if (!onClear && !onRefresh) return null;
@@ -77,9 +70,15 @@ function MoreActionsMenu({
 }
 
 /**
- * LockableValueField — a field that can be locked to read-only, typed as one
- * of several data types, and (for scalar types) switched between a literal
- * value and a JS expression.
+ * LockableValueField — a field with a lock toggle, typed as one of several
+ * data types, and (for scalar types) switched between a literal value and a
+ * JS expression.
+ *
+ * `locked` is a visual/config indicator only — it does not change the
+ * field's interactivity. The value control remains exactly as editable while
+ * locked as it is while unlocked; consumers that want locked fields to be
+ * non-interactive should omit `onValueChange` (or otherwise gate it) rather
+ * than rely on `locked`.
  *
  * The expression mode is styled as code (monospace) but does not carry real
  * syntax highlighting or evaluation. Select/multiselect options default to a
@@ -127,19 +126,13 @@ export function LockableValueField({
   const validationId = errorId ?? `${fieldId}-error`;
   const typeMeta = FIELD_TYPE_META[fieldType];
   const effectiveMode = typeMeta.supportsExpression ? mode : 'fixed';
-  const editableOnValueChange = locked ? undefined : onValueChange;
   const fieldTypeLabel = typeMeta.label.toLowerCase();
   const expressionArticle = /^[aeiou]/.test(fieldTypeLabel) ? 'an' : 'a';
   const fieldLabel =
     effectiveMode === 'expression'
       ? `Write ${expressionArticle} ${fieldTypeLabel} expression`
       : `${typeMeta.label} value`;
-  const hasMoreActions = Boolean(more?.onRefresh || (!locked && more?.onClear));
-
-  // Locked fields are read-only, not disabled — the raw control (switch, date
-  // picker, select) has nothing left to do once editing is blocked, so it's
-  // replaced with plain, selectable text showing the same value.
-  const lockedDisplayValue = getLockedDisplayValue(fieldType, value, options);
+  const hasMoreActions = Boolean(more?.onRefresh || more?.onClear);
 
   return (
     <div className={cn('@container group flex flex-col gap-1.5', className)}>
@@ -155,7 +148,7 @@ export function LockableValueField({
         showFieldActions={showFieldActions}
         showAiAssist={showAiAssist}
         value={value}
-        onValueChange={editableOnValueChange}
+        onValueChange={onValueChange}
         variables={variables}
         onGenerateWithAi={onGenerateWithAi}
         headerActions={headerActions}
@@ -166,7 +159,7 @@ export function LockableValueField({
           error={error}
           errorId={validationId}
           className={cn(
-            fieldType === 'file' && !locked && effectiveMode === 'fixed' && 'h-auto items-stretch'
+            fieldType === 'file' && effectiveMode === 'fixed' && 'h-auto items-stretch'
           )}
         >
           {(showLock || leadingAddon !== undefined) && leadingAddon !== null && (
@@ -182,9 +175,9 @@ export function LockableValueField({
               renderExpressionEditor({
                 id: fieldId,
                 value,
-                onValueChange: editableOnValueChange,
+                onValueChange,
                 onBlur: onValueBlur,
-                readOnly: !editableOnValueChange,
+                readOnly: !onValueChange,
                 placeholder: fieldLabel,
                 fieldType,
                 'aria-invalid': error ? true : undefined,
@@ -195,22 +188,14 @@ export function LockableValueField({
             ) : (
               <InputGroupInput
                 id={fieldId}
-                readOnly={!editableOnValueChange}
+                readOnly={!onValueChange}
                 value={value}
-                onChange={(e) => editableOnValueChange?.(e.target.value)}
+                onChange={(e) => onValueChange?.(e.target.value)}
                 onBlur={onValueBlur}
                 placeholder={fieldLabel}
                 className="font-mono"
               />
             )
-          ) : locked ? (
-            <InputGroupInput
-              id={fieldId}
-              readOnly
-              value={lockedDisplayValue}
-              placeholder={fieldLabel}
-              onBlur={onValueBlur}
-            />
           ) : fieldType === 'boolean' ? (
             <div className="flex h-full flex-1 items-center px-3">
               <Switch
@@ -317,7 +302,7 @@ export function LockableValueField({
                       />
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  {hasMoreActions && more && <MoreActionsMenu more={more} locked={locked} />}
+                  {hasMoreActions && more && <MoreActionsMenu more={more} />}
                 </>
               )}
             </InputGroupAddon>
@@ -333,16 +318,7 @@ export function LockableValueField({
             </InputGroupAddon>
           )}
 
-          {locked ? (
-            <InputGroupInput
-              id={fieldId}
-              readOnly
-              value={lockedDisplayValue}
-              placeholder={fieldLabel}
-              className="min-w-0"
-              onBlur={onValueBlur}
-            />
-          ) : fieldType === 'single-select' ? (
+          {fieldType === 'single-select' ? (
             <Select
               open={selectOpen}
               onOpenChange={(open) => {
@@ -387,7 +363,7 @@ export function LockableValueField({
           ) : null}
           {hasMoreActions && more && (
             <InputGroupAddon align="inline-end" className="cursor-default">
-              <MoreActionsMenu more={more} locked={locked} />
+              <MoreActionsMenu more={more} />
             </InputGroupAddon>
           )}
         </InputGroup>

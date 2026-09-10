@@ -1,4 +1,4 @@
-import type { LockableFieldType, LockableValueFieldOption } from './types';
+import type { LockableValueFieldOption } from './types';
 
 export const DEFAULT_SELECT_OPTIONS: LockableValueFieldOption[] = [
   { label: 'Option 1', value: 'option-1' },
@@ -58,39 +58,4 @@ export function formatDateValue(value: string): string {
   return date
     ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
     : value;
-}
-
-/**
- * Computes the plain-text shown in place of the real control once a field is locked.
- * Boolean/single-select/multi-select resolve their stored value to a display label;
- * everything else (including an invalid date, so the component never throws on
- * external input) falls back to the raw value.
- */
-export function getLockedDisplayValue(
-  fieldType: LockableFieldType,
-  value: string,
-  options: LockableValueFieldOption[]
-): string {
-  switch (fieldType) {
-    case 'boolean':
-      if (value === 'true') return 'True';
-      if (value === 'false') return 'False';
-      return '';
-    case 'date':
-      return value ? formatDateValue(value) : '';
-    case 'single-select':
-      return options.find((option) => option.value === value)?.label ?? value;
-    case 'multi-select': {
-      const parsed = parseListValue(value);
-      // A malformed value (not JSON, or an array with no string entries) also
-      // parses to an empty list -- fall back to the raw value so it's still
-      // visible, rather than rendering as if the field were genuinely empty.
-      if (parsed.length === 0 && value && value !== '[]') {
-        return value;
-      }
-      return parsed.map((v) => options.find((option) => option.value === v)?.label ?? v).join(', ');
-    }
-    default:
-      return value;
-  }
 }

@@ -118,7 +118,13 @@ export interface LockableValueFieldProps {
   onValueChange?: (value: string) => void;
   /** Called when the active value control loses focus. */
   onValueBlur?: () => void;
-  /** Whether the field is read-only. Defaults to true. */
+  /**
+   * Whether the field shows as locked. Purely a visual/config state: it drives the
+   * lock icon shown by the built-in toggle, but doesn't affect the field's
+   * interactivity. Consumers who show the toggle already know the field's lock
+   * state, so a locked field remains exactly as editable as an unlocked one.
+   * Defaults to true.
+   */
   locked?: boolean;
   /** Called when the user toggles the lock. */
   onLockedChange?: (locked: boolean) => void;
