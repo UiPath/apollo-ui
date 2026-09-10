@@ -81,7 +81,7 @@
     "style-dictionary": "2.8.3",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.5"
+    "vitest": "^5.0.0"
   },
   "dependencies": {
     "@uipath/apollo-ui-icons": "workspace:*"
