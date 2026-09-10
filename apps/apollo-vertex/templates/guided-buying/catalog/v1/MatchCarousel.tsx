@@ -10,6 +10,7 @@ import {
   Clock,
   Info,
   Plus,
+  ShieldCheck,
   Store,
   X,
 } from "lucide-react";
@@ -35,17 +36,27 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
+import { AiAttention } from "../../AiAttention";
+import { ClaimTrigger } from "../../ClaimTrigger";
+import { CARD_HIGHLIGHT, CROSSFADE, NO_MOTION } from "../../motion";
 import { P1 } from "../../P1";
 import { P2 } from "../../P2";
-import { useAssistantThread } from "./assistant-thread-context";
+import {
+  type ThreadFinding,
+  useAssistantThread,
+} from "./assistant-thread-context";
 import { useCart } from "./cart-context";
 import { useConversation } from "./conversation-context";
 import {
   activePrice,
   CATALOG_ITEMS,
+  CLAIM_TRIGGER_LABEL,
   defaultQuantityFor,
   formatPrice,
+  RECOMMENDATION_REASON,
+  type ReasonSegment,
   ramGb,
+  SHORTLIST_COPY,
   showsListStrike,
 } from "./data";
 import { useFlowFooter } from "./FlowFooter";
@@ -171,16 +182,38 @@ function reasonKeywords(
     : "what's left of your preferences";
 }
 
-function buildSubhead(
+/**
+ * The reason line, as the segments that make it up rather than as one
+ * sentence, so the clause carrying the claim can become its own trigger
+ * while the rest stays plain copy.
+ *
+ * Before a re-rank the segments come straight from the recommendation data.
+ * After one they are rebuilt from the signals still active, the same as the
+ * sentence this replaced: the first winning reason is the claim, and any
+ * others trail it as ordinary text.
+ */
+function reasonSegments(
   item: CatalogItem,
   signals: Record<SignalId, boolean>,
   ramMinThreshold: number,
-): string {
+): ReasonSegment[] {
   const parts = winningReasonParts(item, signals, ramMinThreshold);
   if (parts.length === 0) {
-    return "The closest match among what's left of your preferences.";
+    return [
+      { text: "The closest match among what's left of your preferences." },
+    ];
   }
-  return `It ${joinParts(parts)}.`;
+  const [claim, ...rest] = parts;
+  return [
+    { text: "It " },
+    { text: claim, claim: true },
+    { text: rest.length > 0 ? `, and ${joinParts(rest)}.` : "." },
+  ];
+}
+
+/** A stable key for a reason line, so a re-rank swaps the whole line. */
+function reasonKey(segments: ReasonSegment[]): string {
+  return segments.map((segment) => segment.text).join("");
 }
 
 /** Only ever cites a source whose signal is still on — never a signal the
@@ -297,6 +330,9 @@ function MatchCard({
 }: MatchCardProps) {
   const reduceMotion = useReducedMotion();
   const { inCart, setQuantity, quantities } = useCart();
+  const { highlightedItemId } = useAssistantThread();
+  // The panel points at this card while a finding about it lands.
+  const highlighted = highlightedItemId === item.id;
 
   const added = inCart(item.id);
   const requestQty = defaultQuantityFor(item);
@@ -376,6 +412,10 @@ function MatchCard({
                     !leadRationale.brand && (
                       <span className="italic">Best remaining match</span>
                     )}
+                  <span className="inline-flex items-center gap-1">
+                    <ShieldCheck className="size-3" aria-hidden />
+                    In policy
+                  </span>
                 </>
               ) : (
                 <>
@@ -395,6 +435,10 @@ function MatchCard({
                       Ordered in May
                     </span>
                   </P2>
+                  <span className="inline-flex items-center gap-1">
+                    <ShieldCheck className="size-3" aria-hidden />
+                    In policy
+                  </span>
                 </>
               )}
             </div>
@@ -537,6 +581,24 @@ function MatchCard({
           <AiGlow variant="card" />
         </motion.div>
       )}
+      {/* The emphasis pass when the panel's finding lands on this card: a
+          second `AiGlow`, the AI toolkit's own card-level emphasis, fading
+          up over whatever the card already has and back down again. A lead
+          card already carries one, so layering reads as that glow
+          strengthening rather than as a different treatment appearing. */}
+      <AnimatePresence>
+        {highlighted && (
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={reduceMotion ? NO_MOTION : CARD_HIGHLIGHT}
+            style={{ willChange: "opacity" }}
+          >
+            <AiGlow variant="card" />
+          </motion.div>
+        )}
+      </AnimatePresence>
       {setAside ? (
         <div className="relative flex items-center gap-4 rounded-lg border-[1.5px] border-dashed border-border/60 bg-background p-4">
           {rowContent}
@@ -776,6 +838,8 @@ export function MatchCarousel({
   onNotFindingClick,
   onYogaShowAnyway,
   onOpenDetail,
+  assistantOpen = false,
+  onOpenAssistant,
 }: {
   output: MatchesOutput;
   /** True after the P2 dock correction — Yoga card enters set-aside state. */
@@ -788,6 +852,10 @@ export function MatchCarousel({
   onYogaShowAnyway?: () => void;
   /** Opens the ProductDetail overlay for a given catalog item. */
   onOpenDetail?: (item: CatalogItem) => void;
+  /** True while the assistant panel is open. */
+  assistantOpen?: boolean;
+  /** Opens the assistant panel from the headline's claim-level trigger. */
+  onOpenAssistant?: () => void;
 }) {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
@@ -906,6 +974,31 @@ export function MatchCarousel({
 
   const narrativeRanked = rankBy(narrativeSignals, narrativeRamMinThreshold);
   const narrativeLead = narrativeRanked[0] ?? lead;
+
+  /**
+   * The headline's reason line. Straight from the recommendation data until
+   * a re-rank happens, then rebuilt from the signals still active, so the
+   * claim the trigger wraps is never stale.
+   */
+  const headlineReason: ReasonSegment[] =
+    hasReranked && narrativeLead
+      ? reasonSegments(
+          narrativeLead,
+          narrativeSignals,
+          narrativeRamMinThreshold,
+        )
+      : RECOMMENDATION_REASON;
+
+  /**
+   * Arms the trigger's arrival pass once per entry to this phase. Keyed on
+   * the results having settled rather than on a mount, so navigating away
+   * and back re-arms it while a re-render or a re-rank does not.
+   * `AiAttention` owns the delay and the spend-once behaviour.
+   */
+  const [attentionArmed, setAttentionArmed] = useState(false);
+  useEffect(() => {
+    setAttentionArmed(!output.loading);
+  }, [output.loading]);
   const cardRanked = rankBy(cardSignals, cardRamMinThreshold);
   const cardLead = cardRanked[0] ?? lead;
 
@@ -1030,12 +1123,27 @@ export function MatchCarousel({
   // Thread entry: live once the pick has resolved, not gated on any click.
   useEffect(() => {
     if (!lead || output.loading) return;
-    const summary =
-      "Identified that the laptops are for engineering and assessed engineering laptop requirements to narrow the search.";
-    const detail = [
-      `${laptops.length} laptops in the catalog matched your request.`,
-      "**Policy checked:** Only showing laptops that meet engineering spec.",
-      `**Suggested ${lead.name}:** best price after EPP and meets full spec.`,
+    const summary = SHORTLIST_COPY.lede;
+    // The third finding is about the lead product specifically, so it
+    // carries a reference to it. That reference is what lets the panel
+    // highlight the matching card as the finding lands, instead of matching
+    // on the product name inside the rendered copy.
+    // Copy comes from the data layer; only the derived values are composed
+    // here. The first detail no longer repeats "catalog" from its own label.
+    const detail: ThreadFinding[] = [
+      {
+        label: SHORTLIST_COPY.catalogMatch,
+        detail: `${laptops.length} laptops matched your request.`,
+      },
+      {
+        label: SHORTLIST_COPY.policyApplied,
+        detail: SHORTLIST_COPY.policyDetail,
+      },
+      {
+        label: SHORTLIST_COPY.suggestedPick,
+        detail: `${lead.name}: best price after EPP and meets full spec.`,
+        itemId: lead.id,
+      },
     ];
     addStepEntry("choose", summary, detail);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1161,31 +1269,33 @@ export function MatchCarousel({
               >
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.span
-                    key={
-                      hasReranked
-                        ? buildSubhead(
-                            narrativeLead,
-                            narrativeSignals,
-                            narrativeRamMinThreshold,
-                          )
-                        : "default"
-                    }
+                    key={reasonKey(headlineReason)}
                     initial={reduceMotion ? false : { opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-                    transition={{
-                      duration: reduceMotion ? 0 : 0.18,
-                      ease: EASE,
-                    }}
+                    transition={reduceMotion ? NO_MOTION : CROSSFADE}
                     className="block"
                   >
-                    {hasReranked
-                      ? buildSubhead(
-                          narrativeLead,
-                          narrativeSignals,
-                          narrativeRamMinThreshold,
-                        )
-                      : "Best price after EPP, and it meets engineering laptop specs."}
+                    {/* The claim clause becomes a trigger; the rest of the
+                        line stays plain copy. Which segment is the claim is
+                        a property of the data, not of this component. */}
+                    {headlineReason.map((segment) =>
+                      segment.claim ? (
+                        <ClaimTrigger
+                          key={segment.text}
+                          clause={segment.text}
+                          label={CLAIM_TRIGGER_LABEL}
+                          onOpen={() => onOpenAssistant?.()}
+                        >
+                          <AiAttention
+                            armed={attentionArmed}
+                            suppressed={assistantOpen}
+                          />
+                        </ClaimTrigger>
+                      ) : (
+                        <span key={segment.text}>{segment.text}</span>
+                      ),
+                    )}
                   </motion.span>
                 </AnimatePresence>
               </motion.p>

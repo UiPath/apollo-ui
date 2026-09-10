@@ -1,4 +1,10 @@
 // oxlint-disable max-lines -- mock catalog dataset (fixtures); grows with items
+
+/**
+ * Stubbed Intake output. Replacing this (or passing a different `request` prop
+ * to <Selection />) is the seam where real intake wires in later.
+ */
+import type { ThreadStep } from "./assistant-thread-context";
 import type {
   BuyRequest,
   CatalogCategory,
@@ -7,10 +13,6 @@ import type {
   SortKey,
 } from "./types";
 
-/**
- * Stubbed Intake output. Replacing this (or passing a different `request` prop
- * to <Selection />) is the seam where real intake wires in later.
- */
 export const SAMPLE_REQUEST: BuyRequest = {
   summary: "15 laptops for Fusion Event contractors.",
   agentNote: "Found 12 catalog matches · applied EPP pricing · in-stock only.",
@@ -431,6 +433,126 @@ export const CATALOG_ITEMS: CatalogItem[] = [
 export const RECOMMENDATION = {
   itemId: "lnv-x1c-g12",
   alternatives: 2,
+} as const;
+
+/**
+ * One span of the recommendation's reason line. The line is split into
+ * segments rather than held as a single sentence so the clause carrying the
+ * assistant's claim can become its own inspectable trigger, leaving the rest
+ * of the line as plain copy. Exactly one segment is the claim.
+ */
+export interface ReasonSegment {
+  text: string;
+  /** Marks the clause that becomes the claim-level trigger. */
+  claim?: boolean;
+}
+
+/**
+ * The default reason line, before any re-rank. Wording is unchanged from the
+ * single string this replaced, split at the clause boundary so the claim can
+ * be inspected on its own. The re-ranked line is assembled from the live
+ * signals instead (see `reasonSegments` in `MatchCarousel`).
+ */
+export const RECOMMENDATION_REASON: ReasonSegment[] = [
+  { text: "Best price after EPP", claim: true },
+  { text: ", and it meets engineering laptop specs." },
+];
+
+/**
+ * Accessible name for the claim trigger, announced in place of the clause
+ * itself so the control reads as an action rather than as a restatement.
+ *
+ * Provisional wording.
+ */
+export const CLAIM_TRIGGER_LABEL = "Explain this claim";
+
+/**
+ * Group headers for the assistant panel's step entries.
+ *
+ * A separate vocabulary from the stepper's own phase labels, which live in
+ * `FlowPhaseBar`. The stepper names what the requester does next, in the
+ * imperative; a group header names what the assistant produced. "Choose" and
+ * "Shortlist" are the same step under those two readings, and the stepper is
+ * already on screen above the panel, so repeating its word here said nothing.
+ *
+ * Keyed by step so the two sets can diverge further without either one
+ * having to know about the other.
+ *
+ * Provisional wording. `details`, `review` and `done` still carry stepper
+ * vocabulary and need naming as a set.
+ */
+export const THREAD_GROUP_LABELS: Record<ThreadStep, string> = {
+  details: "Details",
+  choose: "Shortlist",
+  review: "Review",
+  done: "Done",
+};
+
+/**
+ * The choose step's narration and finding labels.
+ *
+ * Copy lives here with the rest of the finding content rather than inside
+ * the component that assembles the entry, so wording can be ruled on without
+ * touching a component. Derived values (the catalog count, the lead's name)
+ * are interpolated at the call site.
+ *
+ * Provisional wording.
+ */
+export const SHORTLIST_COPY = {
+  /** Narration above the findings. */
+  lede: "Narrowed the catalog to laptops that meet engineering spec.",
+  /** Parallel noun phrases, short enough to scan as a column. */
+  catalogMatch: "Catalog match",
+  policyApplied: "Policy applied",
+  suggestedPick: "Suggested pick",
+  /** Detail beneath "Policy applied". */
+  policyDetail: "Only showing laptops that meet engineering spec.",
+} as const;
+
+/**
+ * The review step's finding labels. Parallel noun phrases, matching the
+ * shortlist's own set. Provisional wording.
+ */
+export const REVIEW_COPY = {
+  approvalLimit: "Approval limit",
+  savings: "EPP savings",
+  approvalRoute: "Approval route",
+} as const;
+
+/**
+ * The done step's finding labels and the one detail that does not carry a
+ * derived value. Provisional wording.
+ */
+export const DONE_COPY = {
+  submitted: "Submitted",
+  approver: "Approver",
+  nextStep: "What happens next",
+  nextStepDetail: "You'll be notified when it's decided.",
+} as const;
+
+/**
+ * Copy for the structured answer: row and column labels, the framing and
+ * summary lines, and the actions.
+ *
+ * Values are never here, only the words around them. Provisional wording.
+ */
+export const ANSWER_COPY = {
+  metricColumn: "Metric",
+  caption: "Side by side",
+  framing: "Here is how the two compare on price and spec.",
+  unitPrice: "Unit price",
+  eppDiscount: "EPP discount",
+  memory: "Memory",
+  /** Takes the request quantity, so the row names the actual order size. */
+  extendedTotal: (quantity: number) => `Total for ${quantity}`,
+  /** Both halves derived: which item is cheaper, and by how much. */
+  summary: (name: string, amount: string, quantity: number) =>
+    `${name} is ${amount} less across ${quantity} units.`,
+  switchTo: (name: string) => `Switch to ${name}`,
+  keep: (name: string) => `Keep ${name}`,
+  /** A chip offering the comparison the thread has not had yet. Phrased as
+   * a question to match the step's own starter prompts. */
+  compare: (name: string) => `How does the ${name} compare?`,
 } as const;
 
 /** Distinct brands (vendors), for the Brand filter facet. */

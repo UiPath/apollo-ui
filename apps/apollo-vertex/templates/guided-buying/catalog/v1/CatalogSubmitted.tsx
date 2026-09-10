@@ -19,6 +19,7 @@ import {
   activePrice,
   activeSavings,
   CATALOG_ITEMS,
+  DONE_COPY,
   defaultQuantityFor,
   displayRequestTitle,
   formatPrice,
@@ -167,10 +168,12 @@ export function CatalogSubmitted() {
         ownerName: shipToException.ownerName,
       });
     }
+    // Labels come from the data layer. The first two details drop the word
+    // their own label already carries.
     addStepEntry("done", `Submitted. With ${approverName} for approval.`, [
-      `Request ${REQUEST_ID} submitted.`,
-      `With ${approver} for approval.`,
-      "You'll be notified when it's decided.",
+      { label: DONE_COPY.submitted, detail: `Request ${REQUEST_ID}.` },
+      { label: DONE_COPY.approver, detail: `Waiting with ${approver}.` },
+      { label: DONE_COPY.nextStep, detail: DONE_COPY.nextStepDetail },
     ]);
     // re-checked once the seed effect's cart update lands
     // eslint-disable-next-line react-hooks/exhaustive-deps

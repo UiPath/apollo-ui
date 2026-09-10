@@ -9,6 +9,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import {
+  FINDING_DETAIL,
+  FINDING_LABEL,
+  PANEL_EYEBROW,
+  PANEL_EYEBROW_GAP,
+} from "./panel-type";
 
 export interface StructuredTableColumn {
   key: string;
@@ -56,7 +62,13 @@ export interface StructuredTableProps {
  * labels (`text-xs font-medium text-foreground`, unchanged) by weight,
  * and from a caption below the table (`text-[11px]`, unmarked weight) by
  * size and weight. */
-const TABLE_HEADING_CLASSNAME = "text-xs font-semibold text-foreground";
+/**
+ * The heading above a table. Takes the assistant panel's eyebrow treatment
+ * from `panel-type` rather than setting its own size and weight, so a table
+ * rendered in that panel is introduced the same way the phase line and the
+ * chips group are.
+ */
+const TABLE_HEADING_CLASSNAME = cn(PANEL_EYEBROW, PANEL_EYEBROW_GAP);
 
 /** The row-level wash and weight for `status`/`emphasized` (prompt 50 for
  * the neutral case, prompt 51 for the status one): `status` wins if a row
@@ -111,25 +123,35 @@ function StackedRow({
   return (
     <li
       className={cn(
-        "py-2.5 pl-2.5 text-xs",
+        "py-2.5 pl-2.5",
         rowBackgroundClassName(row),
         rowBorderClassName(row),
       )}
     >
-      {subject && (
-        <p className="font-medium text-foreground">{row.cells[subject.key]}</p>
-      )}
+      {/* The row's subject is its label, and everything under it its
+          detail, taking the panel's own treatment from `panel-type` rather
+          than setting sizes and weights here. The row is the same shape as
+          a finding, so it reads at the same rhythm. */}
+      {subject && <p className={FINDING_LABEL}>{row.cells[subject.key]}</p>}
       {textColumns.map((column) => (
-        <p key={column.key} className="mt-0.5 text-muted-foreground">
+        <p key={column.key} className={FINDING_DETAIL}>
           {row.cells[column.key]}
         </p>
       ))}
       {figureColumns.length > 0 && (
-        <div className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <div
+          className={cn(
+            FINDING_DETAIL,
+            "flex flex-wrap items-baseline gap-x-4 gap-y-1",
+          )}
+        >
           {figureColumns.map((column) => (
-            <span key={column.key} className="text-muted-foreground">
+            <span key={column.key}>
               {column.label}{" "}
-              <span className="font-medium tabular-nums text-foreground">
+              {/* Figures keep the label's weight and tabular figures: they
+                  are the values being compared, so they carry the emphasis
+                  within an otherwise secondary line. */}
+              <span className={cn(FINDING_LABEL, "tabular-nums")}>
                 {row.cells[column.key]}
               </span>
             </span>

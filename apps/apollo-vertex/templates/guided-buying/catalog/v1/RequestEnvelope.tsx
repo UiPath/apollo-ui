@@ -41,6 +41,7 @@ import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { P2 } from "../../P2";
 import {
   type DetailField,
+  type ThreadFinding,
   useAssistantThread,
 } from "./assistant-thread-context";
 import { useConversation } from "./conversation-context";
@@ -548,7 +549,12 @@ export function RequestEnvelope() {
       assumedCount > 0
         ? `${restatedPrefix}${fields.length} fields: ${recordsCount} from your records, ${assumedCount} guessed.`
         : `${restatedPrefix}${fields.length} fields, all from your records.`;
-    const detail = fields.map((f) => `${f.label}: ${f.value} (${f.source})`);
+    // The field's own name is the label and its value plus provenance the
+    // detail, so this step needs no placeholder: both halves are derived.
+    const detail: ThreadFinding[] = fields.map((f) => ({
+      label: f.label,
+      detail: `${f.value} (${f.source})`,
+    }));
 
     addStepEntry("details", summary, detail, fields);
     if (revisedFrom) clearRevisedFrom();

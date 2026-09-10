@@ -6,7 +6,7 @@
 // report); already over on its own before prompt 45's block rendering.
 
 import type { UIMessage } from "@tanstack/ai-client";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   Bookmark,
   ChevronDown,
@@ -18,21 +18,52 @@ import {
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { POP_TRANSITION } from "@/registry/ai-chat/animations";
 import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
 import { AiChatLoading } from "@/registry/ai-chat/components/ai-chat-loading";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AiGlow } from "@/registry/ai-glow/ai-glow";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
+import {
+  ANSWER_LATENCY,
+  CARD_HIGHLIGHT_HOLD,
+  ENTER,
+  NO_MOTION,
+  RISE_PX,
+} from "../../motion";
 import { P1 } from "../../P1";
 import { P2 } from "../../P2";
-import { StructuredTable } from "../../StructuredTable";
 import {
+  FINDING_DETAIL,
+  FINDING_GROUP,
+  FINDING_ICON,
+  FINDING_LABEL,
+  FINDING_ROW,
+  PANEL_BAND_EVIDENCE,
+  PANEL_BAND_NEXT_MOVE,
+  PANEL_EYEBROW,
+  PANEL_EYEBROW_GAP,
+  PANEL_LEDE,
+} from "../../panel-type";
+import { StructuredTable } from "../../StructuredTable";
+import { alternativeFor, buildComparisonAnswer } from "./answers";
+import {
+  type AnswerAction,
   type MessageBlock,
-  type ThreadStep,
+  type ThreadFinding,
   useAssistantThread,
 } from "./assistant-thread-context";
+import { useCart } from "./cart-context";
+import {
+  ANSWER_COPY,
+  CATALOG_ITEMS,
+  INFERRED_REQUEST_QUANTITY,
+  RECOMMENDATION,
+  THREAD_GROUP_LABELS,
+} from "./data";
 import { RailDock } from "./RailDock";
 import type { CatalogItem } from "./types";
+import { type StagedReveal, useStagedReveal } from "./use-staged-reveal";
 
 // Deck j1-06: XPS defense, bold numbered lines + price-priority closer.
 const XPS_DEFENSE = `**1. Price after EPP**: The X1 Carbon's employee discount brings it to $1,249. The XPS starts lower but its discount is smaller. After EPP, the Carbon wins by $38 per unit.
@@ -54,9 +85,12 @@ If touchscreen mobility matters for these contractors, the Yoga is worth a secon
 
 const DELL_XPS_ID = "dell-xps-14";
 
-// Deck j1-06: dock response body drops to text-sm; bold labels stay legible.
-const RESPONSE_MARKDOWN_CLASSNAME =
-  "py-1 text-sm leading-relaxed bg-transparent text-foreground prose dark:prose-invert max-w-none";
+// An assistant response's prose is narration, so it sets to the panel's own
+// lede treatment rather than repeating a size and leading here.
+const RESPONSE_MARKDOWN_CLASSNAME = cn(
+  PANEL_LEDE,
+  "py-1 bg-transparent prose dark:prose-invert max-w-none",
+);
 
 // Deck j1-06: P1 correction, scoped to request only, nothing saved.
 const P1_CORRECTION =
@@ -91,14 +125,6 @@ const SUGGESTED_QUESTIONS: Record<GenericContext, string[]> = {
   ],
 };
 
-// Matches FlowPhaseBar's CATALOG_PHASES labels.
-const STEP_LABELS: Record<ThreadStep, string> = {
-  details: "Details",
-  choose: "Choose",
-  review: "Review",
-  done: "Done",
-};
-
 type Phase = "thinking" | "response" | "correcting" | "corrected";
 
 function msg(
@@ -107,27 +133,6 @@ function msg(
   content: string,
 ): UIMessage {
   return { id, role, parts: [{ type: "text", content }] };
-}
-
-/** Timeline detail lines are plain strings, not markdown, so `**bold**`
- * segments (e.g. "Policy checked:") need their own tiny parser rather than
- * pulling in the full `AiChatMarkdown` block renderer, which adds prose
- * spacing meant for chat responses, not compact one-line bullets. */
-function renderDetailLine(line: string): ReactNode {
-  const segments = line.split(/\*\*(.+?)\*\*/g);
-  if (segments.length === 1) return line;
-  return segments.map((segment, index) =>
-    index % 2 === 1 ? (
-      // A line's split segments are fixed at render and never reordered,
-      // inserted into, or removed from, so the index is a stable key here.
-      // oxlint-disable-next-line eslint-plugin-react/no-array-index-key
-      <strong key={index} className="font-semibold text-foreground">
-        {segment}
-      </strong>
-    ) : (
-      segment
-    ),
-  );
 }
 
 /** Renders an assistant message by walking its blocks in order (prompt 45):
@@ -143,11 +148,15 @@ function AssistantMessageBlocks({
   blocks,
   markdownClassName,
   children,
+  onAction,
 }: {
   idPrefix: string;
   blocks: MessageBlock[];
   markdownClassName?: string;
   children?: ReactNode;
+  /** Dispatches an answer's closing actions. Omitted where a message has
+   * none, which is every message that is not an answer. */
+  onAction?: (action: AnswerAction) => void;
 }) {
   const lastProseIndex = blocks.map((b) => b.type).lastIndexOf("prose");
   return (
@@ -179,7 +188,104 @@ function AssistantMessageBlocks({
             />
           );
         }
+        if (block.type === "actions") {
+          return (
+            <div key={key} className="flex flex-wrap gap-1.5 pt-0.5">
+              {block.actions.map((action) => (
+                <Button
+                  key={action.id}
+                  type="button"
+                  variant={action.intent === "switch" ? "default" : "outline"}
+                  size="sm"
+                  className="h-auto rounded-full px-3 py-1 text-xs"
+                  onClick={() => onAction?.(action)}
+                >
+                  {action.label}
+                </Button>
+              ))}
+            </div>
+          );
+        }
         return null;
+      })}
+    </div>
+  );
+}
+
+/**
+ * A step's findings. The current step's arrive one at a time when the panel
+ * opens, each one fading and rising into place, with its status icon
+ * resolving a beat after its own text has settled. Earlier, condensed steps
+ * render complete: their reveal already happened.
+ *
+ * Nothing here decides any timing. `reveal` says what may be on screen, and
+ * a null `reveal` means render everything.
+ */
+function StepFindings({
+  findings,
+  isCurrent,
+  reveal,
+  reduceMotion,
+}: {
+  findings: ThreadFinding[];
+  isCurrent: boolean;
+  reveal: StagedReveal | null;
+  reduceMotion: boolean;
+}) {
+  return (
+    <div className={cn(FINDING_GROUP, !isCurrent && "pl-1")}>
+      {findings.map((finding, index) => {
+        const labelShown = reveal ? reveal.label(index) : true;
+        const detailShown = reveal ? reveal.detail(index) : true;
+        const iconShown = reveal ? reveal.icon(index) : true;
+        if (!labelShown) return null;
+        return (
+          <motion.div
+            key={finding.label}
+            data-slot="step-finding"
+            data-icon-resolved={iconShown ? "true" : "false"}
+            className={FINDING_ROW}
+            initial={reduceMotion ? false : { opacity: 0, y: RISE_PX }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={reduceMotion ? NO_MOTION : ENTER}
+          >
+            {/* The icon holds its slot from the start, so resolving does not
+                shift the label it belongs to. The grid row aligns it to the
+                row start, which puts its box inside the label's first line
+                box rather than on the label's baseline: a circled glyph
+                hung from the baseline sits above the line entirely. */}
+            <span className={FINDING_ICON} data-slot="step-finding-icon">
+              <AnimatePresence>
+                {iconShown && (
+                  <motion.span
+                    initial={reduceMotion ? false : { opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={reduceMotion ? NO_MOTION : POP_TRANSITION}
+                    className="block"
+                  >
+                    <CircleCheck className="size-4" aria-hidden />
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </span>
+            <div className="min-w-0">
+              <p className={FINDING_LABEL} data-slot="step-finding-label">
+                {finding.label}
+              </p>
+              {detailShown && (
+                <motion.p
+                  className={FINDING_DETAIL}
+                  data-slot="step-finding-detail"
+                  initial={reduceMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={reduceMotion ? NO_MOTION : ENTER}
+                >
+                  {finding.detail}
+                </motion.p>
+              )}
+            </div>
+          </motion.div>
+        );
       })}
     </div>
   );
@@ -211,7 +317,9 @@ export function ShelfDock({
   onCorrectionMade,
 }: ShelfDockProps) {
   const reduceMotion = useReducedMotion();
-  const { entries, currentStep, addQaEntry } = useAssistantThread();
+  const { entries, currentStep, addQaEntry, highlightItem, highlightedItemId } =
+    useAssistantThread();
+  const { setQuantity, quantities } = useCart();
   const defense = subject
     ? subject.id === DELL_XPS_ID
       ? XPS_DEFENSE
@@ -229,6 +337,59 @@ export function ShelfDock({
     () => new Set(),
   );
   const bodyRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Opening the panel moves focus into it, so the claim trigger that opened
+   * it hands the keyboard on rather than leaving it behind in the headline.
+   * The panel mounts on open, so a mount effect is the open event.
+   */
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
+
+  // The findings being revealed: the current step's, which is the entry that
+  // renders expanded. Nothing else in the thread stages.
+  const currentStepEntry = entries.find(
+    (entry) => entry.kind === "step" && entry.step === currentStep,
+  );
+  const revealCount =
+    currentStepEntry?.kind === "step" && !currentStepEntry.fields
+      ? currentStepEntry.detail.length
+      : 0;
+
+  /**
+   * Highlights the card the last finding concerns, so the panel is visibly
+   * operating on the results list rather than narrating beside it. Held
+   * briefly, then cleared; cancelling the sequence clears it too.
+   */
+  const highlightFinalFinding = () => {
+    if (currentStepEntry?.kind !== "step") return;
+    const itemId = currentStepEntry.detail.at(-1)?.itemId;
+    if (!itemId) return;
+    highlightItem(itemId);
+  };
+
+  const reveal = useStagedReveal({
+    count: revealCount,
+    active: !subject && revealCount > 0,
+    immediate: Boolean(reduceMotion),
+    onComplete: highlightFinalFinding,
+  });
+
+  // Clearing the highlight is a timer of its own so the hold survives the
+  // reveal sequence finishing, and so unmounting the panel takes it down.
+  useEffect(() => {
+    if (!highlightedItemId) return;
+    const id = setTimeout(
+      () => highlightItem(null),
+      CARD_HIGHLIGHT_HOLD * 1000,
+    );
+    return () => clearTimeout(id);
+  }, [highlightedItemId, highlightItem]);
+
+  // The panel unmounting must not leave a card lit up behind it.
+  useEffect(() => () => highlightItem(null), [highlightItem]);
 
   // Thinking → response after a brief artificial delay. Scripted mode only.
   useEffect(() => {
@@ -244,18 +405,40 @@ export function ShelfDock({
     return () => clearTimeout(id);
   }, [phase]);
 
-  // Generic mode: brief "thinking" delay before the canned acknowledgement
-  // lands in the shared thread.
+  // Generic mode: brief "thinking" delay, then the answer lands in the
+  // shared thread. A question naming another product gets the structured
+  // comparison; anything else keeps the canned acknowledgement it had.
   useEffect(() => {
     if (!pendingQuestion) return;
     const question = pendingQuestion;
     const id = setTimeout(() => {
-      addQaEntry(question, GENERIC_ACK);
+      const alternative = alternativeFor(question, RECOMMENDATION.itemId);
+      const structured = alternative
+        ? buildComparisonAnswer(RECOMMENDATION.itemId, alternative.id)
+        : null;
+      addQaEntry(question, structured ?? GENERIC_ACK);
       setPendingQuestion(null);
-    }, 900);
+    }, ANSWER_LATENCY * 1000);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingQuestion]);
+
+  /**
+   * Runs an answer's closing action through the cart, which is the app's
+   * existing selection handling: switching moves the requested quantity onto
+   * the alternative and takes the old pick back off, keeping leaves the
+   * selection alone. No second selection path is introduced here.
+   */
+  const handleAnswerAction = (action: AnswerAction) => {
+    if (action.intent === "keep") return;
+    const next = CATALOG_ITEMS.find((item) => item.id === action.itemId);
+    if (!next) return;
+    const outgoing = CATALOG_ITEMS.filter(
+      (item) => item.id !== next.id && (quantities[item.id] ?? 0) > 0,
+    );
+    setQuantity(next, quantities[next.id] || INFERRED_REQUEST_QUANTITY);
+    for (const item of outgoing) setQuantity(item, 0);
+  };
 
   // Tracks the last qa/note entry id already scrolled to, so a newly
   // posted exchange (e.g. the evidence exchange, prompt 47) scrolls to its
@@ -305,6 +488,11 @@ export function ShelfDock({
   const sendGenericMessage = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || pendingQuestion) return;
+    // Asking something ends the arrival sequence: remaining timers are
+    // cleared and the findings settle at once, so nothing trickles in behind
+    // the question.
+    reveal.settle();
+    highlightItem(null);
     setPendingQuestion(trimmed);
     setGenericInput("");
   };
@@ -321,15 +509,54 @@ export function ShelfDock({
   const handleGenericSubmit = () => sendGenericMessage(genericInput);
 
   const showComposer = subject ? phase !== "corrected" : true;
-  // Starter prompts step aside once the thread has any Q&A of its own.
-  const hasQa = entries.some((e) => e.kind === "qa");
   const starters = starterQuestions ?? SUGGESTED_QUESTIONS[context];
+
+  /**
+   * The chips on offer now. They regenerate after each answer rather than
+   * standing aside once the thread has Q&A in it: whatever has already been
+   * asked drops out, and once the step's own starters are used up the
+   * remaining laptops in the catalog become the next thing to ask about, so
+   * the panel always offers a move.
+   */
+  const askedQuestions = new Set(
+    entries
+      .filter((entry) => entry.kind === "qa")
+      .map((entry) => entry.question),
+  );
+  const unaskedStarters = starters.filter(
+    (question) => !askedQuestions.has(question),
+  );
+  // Which alternatives have already been the subject of a question, resolved
+  // the same way an incoming question is, so a chip cannot re-offer a
+  // comparison the thread already contains.
+  const comparedIds = new Set<string>();
+  for (const question of askedQuestions) {
+    const id = alternativeFor(question, RECOMMENDATION.itemId)?.id;
+    if (id) comparedIds.add(id);
+  }
+  const derivedSuggestions = CATALOG_ITEMS.filter(
+    (item) =>
+      item.category === "Laptops" &&
+      item.id !== RECOMMENDATION.itemId &&
+      !comparedIds.has(item.id),
+  ).map((item) => ANSWER_COPY.compare(item.name));
+  const suggestions =
+    unaskedStarters.length > 0 ? unaskedStarters : derivedSuggestions;
   const showSuggestions =
-    !subject && !hasQa && !pendingQuestion && starters.length > 0;
+    !subject && !pendingQuestion && suggestions.length > 0 && reveal.chips;
 
   return (
     <RailDock open width="380px" onExpand={() => {}}>
-      <div className="relative h-full w-[380px]">
+      {/* Focus target for the panel opening. `tabIndex={-1}` makes it
+          programmatically focusable without adding a tab stop, and the
+          region role plus label give it a name once focus lands. */}
+      <div
+        ref={panelRef}
+        tabIndex={-1}
+        role="region"
+        aria-label="Assistant"
+        className="relative h-full w-[380px] outline-none"
+      >
         {/* Ambient glow, cropped and bleeding off the panel's top-left
             corner, clipped by RailDock's own overflow-hidden <aside>.
             --ai-gradient (not the static -start/-end pair) has its own
@@ -377,7 +604,14 @@ export function ShelfDock({
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={onClose}
+              onClick={() => {
+                // Halt first: the panel stays mounted through
+                // `AnimatePresence`'s exit, so a still-running sequence
+                // would keep inserting findings on the way out.
+                reveal.halt();
+                highlightItem(null);
+                onClose();
+              }}
               aria-label="Close assistant"
             >
               <PanelLeftClose className="size-4" />
@@ -495,6 +729,7 @@ export function ShelfDock({
                           idPrefix={`${entry.id}-a`}
                           blocks={entry.answer}
                           markdownClassName={RESPONSE_MARKDOWN_CLASSNAME}
+                          onAction={handleAnswerAction}
                         />
                       </div>
                     );
@@ -524,10 +759,19 @@ export function ShelfDock({
                   const isCurrent = entry.step === currentStep;
                   const isOpen = isCurrent || manuallyExpanded.has(entry.id);
                   return (
-                    <div key={entry.id}>
+                    <div
+                      key={entry.id}
+                      data-slot="thread-entry"
+                      data-step={entry.step}
+                      data-current={isCurrent ? "true" : "false"}
+                      data-open={isOpen ? "true" : "false"}
+                    >
                       {isCurrent ? (
-                        <p className="text-xs text-muted-foreground">
-                          {STEP_LABELS[entry.step]} · {entry.time}
+                        <p
+                          data-slot="panel-eyebrow"
+                          className={cn(PANEL_EYEBROW, PANEL_EYEBROW_GAP)}
+                        >
+                          {THREAD_GROUP_LABELS[entry.step]} · {entry.time}
                         </p>
                       ) : (
                         <button
@@ -537,7 +781,7 @@ export function ShelfDock({
                         >
                           <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
                             <span className="font-medium text-foreground">
-                              {STEP_LABELS[entry.step]}:
+                              {THREAD_GROUP_LABELS[entry.step]}:
                             </span>{" "}
                             {entry.summary}
                           </span>
@@ -551,7 +795,7 @@ export function ShelfDock({
                         </button>
                       )}
                       {isCurrent && (
-                        <p className="mt-0.5 text-sm font-semibold text-foreground">
+                        <p data-slot="panel-lede" className={PANEL_LEDE}>
                           {entry.summary}
                         </p>
                       )}
@@ -591,55 +835,78 @@ export function ShelfDock({
                                 </div>
                               ))}
                             {entry.fields.some((f) => !f.assumed) && (
-                              <div className="space-y-[11px]">
-                                <p className="text-xs font-medium text-muted-foreground">
+                              <div>
+                                {/* Same eyebrow treatment as the phase line
+                                    and the chips group, so every group in
+                                    the panel is introduced the same way. */}
+                                <p
+                                  data-slot="panel-eyebrow"
+                                  className={cn(
+                                    PANEL_EYEBROW,
+                                    PANEL_EYEBROW_GAP,
+                                  )}
+                                >
                                   Straight from your records
                                 </p>
-                                {entry.fields
-                                  .filter((f) => !f.assumed)
-                                  .map((f) => (
-                                    <div
-                                      key={f.label}
-                                      className="flex items-start gap-2.5"
-                                    >
-                                      <CircleCheck
-                                        className="mt-0.5 size-3.5 shrink-0 text-(--primary)"
-                                        aria-hidden
-                                      />
-                                      <div className="min-w-0 flex-1">
-                                        <p className="text-sm text-foreground">
-                                          {f.value}
-                                        </p>
-                                        <p className="mt-0.5 text-xs text-muted-foreground">
-                                          {f.label} · {f.source}
-                                        </p>
+                                {/* Same glyph, colour and vertical spacing
+                                    as a finding: with both on the circled
+                                    primary mark there is no longer any
+                                    reason for two rhythms in one panel. The
+                                    type hierarchy stays inverted here, since
+                                    a record leads with its value and a
+                                    finding leads with its label. */}
+                                <div
+                                  className={FINDING_GROUP}
+                                  data-slot="records-group"
+                                >
+                                  {entry.fields
+                                    .filter((f) => !f.assumed)
+                                    .map((f) => (
+                                      <div
+                                        key={f.label}
+                                        className={FINDING_ROW}
+                                        data-slot="records-row"
+                                      >
+                                        <span
+                                          className={FINDING_ICON}
+                                          data-slot="records-icon"
+                                        >
+                                          <CircleCheck
+                                            className="size-4"
+                                            aria-hidden
+                                          />
+                                        </span>
+                                        <div className="min-w-0">
+                                          <p
+                                            className={FINDING_LABEL}
+                                            data-slot="records-value"
+                                          >
+                                            {f.value}
+                                          </p>
+                                          <p className={FINDING_DETAIL}>
+                                            {f.label} · {f.source}
+                                          </p>
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
+                                    ))}
+                                </div>
                               </div>
                             )}
                           </div>
                         ) : (
+                          // Rule one of two: narration above, evidence
+                          // below. Only under the current step, which is the
+                          // entry that carries narration to divide from.
                           <div
-                            className={cn(
-                              "space-y-1.5",
-                              isCurrent ? "mt-2" : "mt-2 pl-1",
-                            )}
+                            data-slot="panel-band-evidence"
+                            className={isCurrent ? PANEL_BAND_EVIDENCE : "mt-3"}
                           >
-                            {entry.detail.map((line) => (
-                              <div
-                                key={line}
-                                className="flex items-start gap-2"
-                              >
-                                <CircleCheck
-                                  className="mt-0.5 size-3.5 shrink-0 text-(--primary)"
-                                  aria-hidden
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                  {renderDetailLine(line)}
-                                </p>
-                              </div>
-                            ))}
+                            <StepFindings
+                              findings={entry.detail}
+                              isCurrent={isCurrent}
+                              reveal={isCurrent ? reveal : null}
+                              reduceMotion={Boolean(reduceMotion)}
+                            />
                           </div>
                         ))}
                     </div>
@@ -655,6 +922,42 @@ export function ShelfDock({
                     <AiChatLoading />
                   </div>
                 )}
+
+                {/* Chips sit in the thread, below the most recent message,
+                    rather than pinned above the composer: they are the next
+                    move in the conversation, so they belong where the
+                    conversation currently ends. Last to arrive on open. */}
+                {showSuggestions && (
+                  <motion.div
+                    data-slot="panel-band-next-move"
+                    className={PANEL_BAND_NEXT_MOVE}
+                    initial={reduceMotion ? false : { opacity: 0, y: RISE_PX }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={reduceMotion ? NO_MOTION : ENTER}
+                  >
+                    {/* Rule two of two: evidence above, next move below. The
+                        heading takes the same eyebrow treatment as the phase
+                        line, so the two bands are introduced the same way. */}
+                    <p
+                      data-slot="panel-eyebrow"
+                      className={cn(PANEL_EYEBROW, PANEL_EYEBROW_GAP)}
+                    >
+                      Try asking
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {suggestions.map((question) => (
+                        <button
+                          key={question}
+                          type="button"
+                          className="rounded-full border px-3 py-1 text-xs text-foreground hover:bg-muted"
+                          onClick={() => sendGenericMessage(question)}
+                        >
+                          {question}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
             )}
           </div>
@@ -662,25 +965,6 @@ export function ShelfDock({
           {/* Composer + caveat pinned to bottom, same 24px inset as the panel. */}
           {showComposer && (
             <div className="shrink-0 px-6 pt-4 pb-6">
-              {showSuggestions && (
-                <div className="mb-3 space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    Try asking
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {starters.map((question) => (
-                      <button
-                        key={question}
-                        type="button"
-                        className="rounded-full border px-3 py-1 text-xs text-foreground hover:bg-muted"
-                        onClick={() => sendGenericMessage(question)}
-                      >
-                        {question}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
               {subject ? (
                 <AiChatInput
                   value={correctionInput}

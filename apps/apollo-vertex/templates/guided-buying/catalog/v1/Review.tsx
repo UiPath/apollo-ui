@@ -10,7 +10,10 @@ import { Button } from "@/components/ui/button";
 import { GLASS_CLASSES } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { AddItemsDrawer } from "./AddItemsDrawer";
-import { useAssistantThread } from "./assistant-thread-context";
+import {
+  type ThreadFinding,
+  useAssistantThread,
+} from "./assistant-thread-context";
 import { BuyScaffold } from "./BuyScaffold";
 import { CartLine } from "./CartLine";
 import { CartSummary } from "./CartSummary";
@@ -25,6 +28,7 @@ import {
   displayRequestTitle,
   formatPrice,
   RECOMMENDATION,
+  REVIEW_COPY,
 } from "./data";
 import { FlowFooterBar } from "./FlowFooter";
 import { FlowPhaseBar } from "./FlowPhaseBar";
@@ -134,12 +138,21 @@ export function Review() {
     const summary = needsApproval
       ? `Checked policy: over your ${formatPrice(APPROVAL_LIMIT, "USD")} limit, needs approval.`
       : `Checked policy: within limit, ${formatPrice(savings, "USD")} saved with EPP.`;
-    const detail = [
-      needsApproval
-        ? `Over your ${formatPrice(APPROVAL_LIMIT, "USD")} limit.`
-        : `Within your ${formatPrice(APPROVAL_LIMIT, "USD")} limit, no procurement review needed.`,
-      `${formatPrice(savings, "USD")} saved applying EPP pricing.`,
-      `Routes to ${approver} for approval.`,
+    // Labels come from the data layer. Each detail drops the word its own
+    // label already carries, so the pair does not say "limit" or "approval"
+    // twice in two lines.
+    const detail: ThreadFinding[] = [
+      {
+        label: REVIEW_COPY.approvalLimit,
+        detail: needsApproval
+          ? `Over your ${formatPrice(APPROVAL_LIMIT, "USD")}.`
+          : `Within your ${formatPrice(APPROVAL_LIMIT, "USD")}, no procurement review needed.`,
+      },
+      {
+        label: REVIEW_COPY.savings,
+        detail: `${formatPrice(savings, "USD")} across the order.`,
+      },
+      { label: REVIEW_COPY.approvalRoute, detail: `To ${approver}.` },
     ];
     addStepEntry("review", summary, detail);
     // eslint-disable-next-line react-hooks/exhaustive-deps

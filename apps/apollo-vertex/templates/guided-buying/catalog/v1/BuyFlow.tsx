@@ -429,6 +429,8 @@ export function BuyFlow() {
                     correctionMade={correctionMade}
                     onYogaShowAnyway={() => setCorrectionMade(false)}
                     onOpenDetail={openShelfDetail}
+                    assistantOpen={shelfDockOpen}
+                    onOpenAssistant={openShelfDockGeneric}
                   />
                 )}
               </BuyScaffold>

@@ -26,13 +26,39 @@ export interface DetailField {
   assumed?: boolean;
 }
 
+/**
+ * One finding under a step: a short label, the detail supporting it, and an
+ * optional reference to the catalog item it concerns.
+ *
+ * The label/detail split lives here rather than in the component because the
+ * panel renders them on separate lines with different weight, colour and
+ * leading. Carrying a finding as one string with a bold prefix convention
+ * inside it, which is what this replaced, left the component no structure to
+ * lay out: it would have had to parse emphasis markers or split on a colon
+ * at render time, and one of the three findings had no prefix to parse
+ * anyway.
+ *
+ * The item reference is what lets the panel highlight the matching card in
+ * the results list as the finding lands, so that link is a data relationship
+ * rather than a name-string match against the rendered copy.
+ */
+export interface ThreadFinding {
+  /** Short enough to scan as a column against its siblings. */
+  label: string;
+  /** The supporting line, set beneath the label. */
+  detail: string;
+  /** `CatalogItem.id` of the product this finding is about, when it is
+   * about one. Findings that describe the whole search carry no reference. */
+  itemId?: string;
+}
+
 export interface ThreadStepEntry {
   id: string;
   kind: "step";
   step: ThreadStep;
   time: string;
   summary: string;
-  detail: string[];
+  detail: ThreadFinding[];
   /** Structured field breakdown, currently only the "details" step (Bridge)
    * provides this; other steps render the plain `detail` bullet list. */
   fields?: DetailField[];
@@ -57,13 +83,35 @@ export interface TableBlock {
   rows: StructuredTableRow[];
 }
 
+/**
+ * One action offered at the end of an answer. The block carries only what
+ * the action *is*; the panel supplies the dispatch, so the data layer never
+ * holds a handler and the action still runs through the app's existing
+ * selection handling rather than a path of its own.
+ */
+export interface AnswerAction {
+  id: string;
+  label: string;
+  /** Which item the action concerns: the one it would select, or the one it
+   * would keep. */
+  itemId: string;
+  /** `switch` changes the current selection, `keep` leaves it alone. */
+  intent: "switch" | "keep";
+}
+
+/** Actions closing out an answer, operating on the results list. */
+export interface ActionsBlock {
+  type: "actions";
+  actions: AnswerAction[];
+}
+
 /** An assistant message's content: an ordered list of typed blocks rather
  * than a single string, so a message can carry more than prose without
  * changing what a message is (prompt 45). A union on `type` admits further
  * block types later (e.g. a chart) without changing existing consumers,
  * which only need to add one more case to whatever they switch on and
  * leave their handling of the others untouched. */
-export type MessageBlock = ProseBlock | TableBlock;
+export type MessageBlock = ProseBlock | TableBlock | ActionsBlock;
 
 export interface ThreadQaEntry {
   id: string;
@@ -99,7 +147,7 @@ interface AssistantThreadContextValue {
   addStepEntry: (
     step: ThreadStep,
     summary: string,
-    detail: string[],
+    detail: ThreadFinding[],
     fields?: DetailField[],
   ) => void;
   /** Appends a question/answer pair at the end of the thread. The answer is
@@ -110,6 +158,15 @@ interface AssistantThreadContextValue {
   /** Appends a standalone assistant note (e.g. a remembered preference
    * change). Plain text, wrapped as a single prose block. */
   addNoteEntry: (text: string) => void;
+  /**
+   * The results-list card the panel is currently pointing at, or null. Lives
+   * here because the panel and the results list are siblings that both
+   * already consume this context, so a finding can reach its card without
+   * either one learning about the other.
+   */
+  highlightedItemId: string | null;
+  /** Points at a card, or clears the highlight when passed null. */
+  highlightItem: (itemId: string | null) => void;
 }
 
 const AssistantThreadContext =
@@ -131,13 +188,21 @@ function timeNow(): string {
 export function AssistantThreadProvider({ children }: { children: ReactNode }) {
   const [entries, setEntries] = useState<ThreadEntry[]>([]);
   const [currentStep, setCurrentStep] = useState<ThreadStep | null>(null);
+  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(
+    null,
+  );
   const counter = useRef(0);
+
+  const highlightItem = useCallback(
+    (itemId: string | null) => setHighlightedItemId(itemId),
+    [],
+  );
 
   const addStepEntry = useCallback(
     (
       step: ThreadStep,
       summary: string,
-      detail: string[],
+      detail: ThreadFinding[],
       fields?: DetailField[],
     ) => {
       setEntries((prev) => {
@@ -199,7 +264,15 @@ export function AssistantThreadProvider({ children }: { children: ReactNode }) {
 
   return (
     <AssistantThreadContext.Provider
-      value={{ entries, currentStep, addStepEntry, addQaEntry, addNoteEntry }}
+      value={{
+        entries,
+        currentStep,
+        addStepEntry,
+        addQaEntry,
+        addNoteEntry,
+        highlightedItemId,
+        highlightItem,
+      }}
     >
       {children}
     </AssistantThreadContext.Provider>

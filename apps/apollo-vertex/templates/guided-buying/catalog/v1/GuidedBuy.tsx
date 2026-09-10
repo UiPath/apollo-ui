@@ -27,6 +27,13 @@ interface GuidedBuyProps {
   onYogaShowAnyway?: () => void;
   /** Opens the ProductDetail overlay for a shelf card. */
   onOpenDetail?: (item: CatalogItem) => void;
+  /** True while the assistant panel is open. Suppresses the results
+   * headline's arrival treatment, which exists only to point at a panel the
+   * user has not opened yet. */
+  assistantOpen?: boolean;
+  /** Opens the assistant panel with no specific item in question, for the
+   * headline's claim-level trigger. */
+  onOpenAssistant?: () => void;
 }
 
 type ToolPart = MessagePart & { id: string; name: string; output: unknown };
@@ -44,6 +51,8 @@ export function GuidedBuy({
   correctionMade,
   onYogaShowAnyway,
   onOpenDetail,
+  assistantOpen,
+  onOpenAssistant,
 }: GuidedBuyProps) {
   const { messages, status } = useConversation();
 
@@ -77,6 +86,8 @@ export function GuidedBuy({
             onNotFindingClick={onNotFindingClick}
             onYogaShowAnyway={onYogaShowAnyway}
             onOpenDetail={onOpenDetail}
+            assistantOpen={assistantOpen}
+            onOpenAssistant={onOpenAssistant}
           />
         );
       case "reviewCta":
