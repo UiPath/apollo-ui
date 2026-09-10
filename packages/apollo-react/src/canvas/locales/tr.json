@@ -272,5 +272,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "Her yüke karşı politikayı değerlendirmek için kullanılan model.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Politikayı geçmesi gereken isteğe bağlı yükler. Karar yetkilisi tarafından ayar bağlayıcıları olarak kullanılır.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Politikada başarısız olması gereken isteğe bağlı yükler. Karar yetkilisi tarafından ayar bağlayıcıları olarak kullanılır.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0-6 ölçeğinde katılık. Daha düşük değerler daha katıdır. Karar yetkilisi ihlali ima eden her şeyi işaretler. Daha yüksek değerler daha esnektir. Yalnızca net ihlaller işaretlenir."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0-6 ölçeğinde katılık. Daha düşük değerler daha katıdır. Karar yetkilisi ihlali ima eden her şeyi işaretler. Daha yüksek değerler daha esnektir. Yalnızca net ihlaller işaretlenir.",
+  "guardrails.remove-dialog.title": "Uygulama ve tasarım kuralını kaldır",
+  "guardrails.remove-dialog.confirm-prompt": "Lütfen \"{name}\" tasarım ve uygulama kuralını kaldırmak istediğinizi onaylayın",
+  "guardrails.remove-dialog.also-applicable": "Bu tasarım ve uygulama kuralı şunlar için de geçerlidir:",
+  "guardrails.remove-dialog.removed-for-tool": "\"{toolName}\" aracı için tasarım ve uygulama kuralı kaldırılacak.",
+  "guardrails.remove-dialog.still-applicable": "Aşağıdakiler için geçerli olmaya devam edecektir:",
+  "guardrails.remove-dialog.cancel": "İptal",
+  "guardrails.remove-dialog.remove": "Kaldır"
 }

@@ -278,5 +278,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "The model used to evaluate the policy against each payload.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Optional payloads that should pass the policy. Used by the judge as calibration anchors.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Optional payloads that should fail the policy. Used by the judge as calibration anchors.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Strictness on a 0–6 scale. Lower values are stricter — the judge flags anything that hints at a violation. Higher values are more lenient — only clear, unambiguous violations are flagged."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Strictness on a 0–6 scale. Lower values are stricter — the judge flags anything that hints at a violation. Higher values are more lenient — only clear, unambiguous violations are flagged.",
+  "guardrails.remove-dialog.title": "Remove guardrail",
+  "guardrails.remove-dialog.confirm-prompt": "Please, confirm you’d like to remove \"{name}\" guardrail",
+  "guardrails.remove-dialog.also-applicable": "This guardrail is also applicable to:",
+  "guardrails.remove-dialog.removed-for-tool": "The guardrail will be removed for tool \"{toolName}\".",
+  "guardrails.remove-dialog.still-applicable": "It will still be applicable to:",
+  "guardrails.remove-dialog.cancel": "Cancel",
+  "guardrails.remove-dialog.remove": "Remove"
 }

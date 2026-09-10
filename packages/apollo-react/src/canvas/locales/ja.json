@@ -272,5 +272,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "ポリシーを各ペイロードに照らし合わせて評価するのに使用されるモデルです。",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "任意の、ポリシーに合格するペイロードです。評価者により、キャリブレーション アンカーとして使用されます。",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "任意の、ポリシーに合格しないペイロードです。評価者により、キャリブレーション アンカーとして使用されます。",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0 から 6 のスケールで表される厳密性です。値が低いほど厳格になり、評価者は違反を示唆するものすべてにフラグを立てます。値が大きいほど寛容になり、明確で曖昧さのない違反にのみフラグを立てます。"
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0 から 6 のスケールで表される厳密性です。値が低いほど厳格になり、評価者は違反を示唆するものすべてにフラグを立てます。値が大きいほど寛容になり、明確で曖昧さのない違反にのみフラグを立てます。",
+  "guardrails.remove-dialog.title": "ガードレールを削除",
+  "guardrails.remove-dialog.confirm-prompt": "ガードレール「{name}」の削除を確定してください。",
+  "guardrails.remove-dialog.also-applicable": "このガードレールは、次にも適用されます:",
+  "guardrails.remove-dialog.removed-for-tool": "ツール「{toolName}」のガードレールが削除されます。",
+  "guardrails.remove-dialog.still-applicable": "引き続き次に適用されます:",
+  "guardrails.remove-dialog.cancel": "キャンセル",
+  "guardrails.remove-dialog.remove": "削除"
 }

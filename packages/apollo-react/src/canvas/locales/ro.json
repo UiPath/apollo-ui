@@ -272,5 +272,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "Modelul utilizat pentru a evalua politica pentru fiecare payload.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Sarcini utile opționale care ar trebui să respecte politica. Folosite de evaluator ca puncte de referință pentru calibrare.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Sarcini utile opționale care ar trebui să nu respecte politica. Folosite de evaluator ca puncte de calibrare.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigoare pe o scară de la 0 la 6. Valorile mai mici sunt mai stricte — evaluatorul semnalează orice element care sugerează o încălcare. Valorile mai mari sunt mai permisive — sunt semnalate doar încălcările clare, fără ambiguitate."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigoare pe o scară de la 0 la 6. Valorile mai mici sunt mai stricte — evaluatorul semnalează orice element care sugerează o încălcare. Valorile mai mari sunt mai permisive — sunt semnalate doar încălcările clare, fără ambiguitate.",
+  "guardrails.remove-dialog.title": "Eliminați mecanismul de control",
+  "guardrails.remove-dialog.confirm-prompt": "Vă rugăm să confirmați că doriți să eliminați mecanismul de control „{name}”",
+  "guardrails.remove-dialog.also-applicable": "Acest mecanism de control este aplicabil și pentru:",
+  "guardrails.remove-dialog.removed-for-tool": "Mecanismul de control va fi eliminat pentru unealta \"{toolName}\".",
+  "guardrails.remove-dialog.still-applicable": "Va rămâne aplicabil pentru:",
+  "guardrails.remove-dialog.cancel": "Anulați",
+  "guardrails.remove-dialog.remove": "Eliminare"
 }

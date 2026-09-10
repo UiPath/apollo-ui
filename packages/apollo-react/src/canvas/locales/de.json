@@ -272,5 +272,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "Das Modell, das zum Auswerten der Richtlinie für jede Nutzlast verwendet wird.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Optionale Nutzlasten, bei denen die Richtlinie erfolgreich soll. Wird vom Richtermodell als Kalibrierungsanker verwendet.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Optionale Nutzlasten, bei denen die Richtlinie fehlschlagen soll. Wird vom Richtermodell als Kalibrierungsanker verwendet.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Striktheit auf einer Skala von 0–6. Niedrigere Werte bedeuten eine striktere Bewertung – der Richter kennzeichnet alles, was auf einen Verstoß hindeutet. Höhere Werte bedeuten eine großzügigere Bewertung – nur eindeutige, unmissverständliche Verstöße werden gekennzeichnet."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Striktheit auf einer Skala von 0–6. Niedrigere Werte bedeuten eine striktere Bewertung – der Richter kennzeichnet alles, was auf einen Verstoß hindeutet. Höhere Werte bedeuten eine großzügigere Bewertung – nur eindeutige, unmissverständliche Verstöße werden gekennzeichnet.",
+  "guardrails.remove-dialog.title": "Leitplanke entfernen",
+  "guardrails.remove-dialog.confirm-prompt": "Bestätigen Sie, dass Sie die Leitplanke „{name}“ entfernen möchten",
+  "guardrails.remove-dialog.also-applicable": "Diese Leitplanke gilt auch für:",
+  "guardrails.remove-dialog.removed-for-tool": "Die Leitplanke wird für das Tool „{toolName}“ entfernt.",
+  "guardrails.remove-dialog.still-applicable": "Sie gilt weiterhin für:",
+  "guardrails.remove-dialog.cancel": "Abbrechen",
+  "guardrails.remove-dialog.remove": "Entfernen"
 }

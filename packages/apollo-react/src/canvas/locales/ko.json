@@ -272,5 +272,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "각 페이로드에 대해 정책을 평가하는 데 사용되는 모델입니다.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "정책을 통과해야 하는 선택적 페이로드입니다. 판단자가 보정 기준으로 사용합니다.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "정책을 위반해야 하는 선택적 페이로드입니다. 판단자가 보정 기준으로 사용합니다.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0–6 척도의 엄격도입니다. 값이 작을수록 더 엄격하며 판단자는 위반 가능성이 조금이라도 있는 경우를 모두 표시합니다. 값이 클수록 더 관대하며, 명확하고 확실한 위반만 표시합니다."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0–6 척도의 엄격도입니다. 값이 작을수록 더 엄격하며 판단자는 위반 가능성이 조금이라도 있는 경우를 모두 표시합니다. 값이 클수록 더 관대하며, 명확하고 확실한 위반만 표시합니다.",
+  "guardrails.remove-dialog.title": "가드레일 제거",
+  "guardrails.remove-dialog.confirm-prompt": "\"{name}\" 가드레일을 제거할 것인지 확인하십시오",
+  "guardrails.remove-dialog.also-applicable": "이 가드레일은 다음에도 적용됩니다.",
+  "guardrails.remove-dialog.removed-for-tool": "\"{toolName}\" 도구에 대한 가드레일이 제거됩니다.",
+  "guardrails.remove-dialog.still-applicable": "다음에 대해 계속 적용됩니다.",
+  "guardrails.remove-dialog.cancel": "취소",
+  "guardrails.remove-dialog.remove": "제거"
 }

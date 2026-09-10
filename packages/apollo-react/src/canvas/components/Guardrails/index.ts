@@ -65,16 +65,26 @@ export type { GuardrailBuilderProps } from './guardrail-builder';
 export { GuardrailBuilder } from './guardrail-builder';
 export type { GuardrailFormLayoutProps } from './guardrail-form-layout';
 export { GuardrailFormLayout } from './guardrail-form-layout';
+export type { GuardrailRemoveDialogProps } from './guardrail-remove-dialog';
+export { GuardrailRemoveDialog } from './guardrail-remove-dialog';
 export { GuardrailValidatorForm } from './guardrail-validator-form';
-export type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from './i18n';
+export type {
+  GuardrailBuilderLabels,
+  GuardrailRemoveDialogLabels,
+  GuardrailValidatorFormLabels,
+} from './i18n';
 export {
   formatGuardrailFormMessage,
   GUARDRAIL_BUILDER_EN_LABELS,
   GUARDRAIL_FORM_EN_LABELS,
+  GUARDRAIL_REMOVE_DIALOG_EN_LABELS,
+  GUARDRAIL_REMOVE_DIALOG_EN_MESSAGES,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
+  resolveGuardrailRemoveDialogLabels,
   useGuardrailBuilderLabels,
   useGuardrailFormLabels,
+  useGuardrailRemoveDialogLabels,
 } from './i18n';
 export type {
   GuardrailParameterDefinition,

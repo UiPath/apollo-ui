@@ -272,5 +272,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "El modelo utilizado para evaluar la política en función de cada carga útil.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Cargas útiles opcionales que deberían aprobar la política. El juez las usa como anclajes de calibración.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Cargas útiles opcionales que deberían incumplir la política. El juez las usa como anclajes de calibración.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigor en una escala de 0 a 6. Los valores más bajos son más estrictos: el juez marca lo que sea que sugiera una infracción. Los valores más altos son más flexibles: solo se marcan las infracciones claras e inequívocas."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigor en una escala de 0 a 6. Los valores más bajos son más estrictos: el juez marca lo que sea que sugiera una infracción. Los valores más altos son más flexibles: solo se marcan las infracciones claras e inequívocas.",
+  "guardrails.remove-dialog.title": "Eliminar protección",
+  "guardrails.remove-dialog.confirm-prompt": "Confirme que desea eliminar la protección \"{name}\"",
+  "guardrails.remove-dialog.also-applicable": "Esta protección también se aplica a:",
+  "guardrails.remove-dialog.removed-for-tool": "Se quitará la protección para la herramienta \"{toolName}\".",
+  "guardrails.remove-dialog.still-applicable": "Seguirá aplicándose a:",
+  "guardrails.remove-dialog.cancel": "Cancelar",
+  "guardrails.remove-dialog.remove": "Eliminar"
 }

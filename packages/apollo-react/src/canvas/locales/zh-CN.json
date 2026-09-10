@@ -272,5 +272,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "用于根据每个负载评估策略的模型。",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "应该通过策略的可选负载。评判器将其用作校准锚点。",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "应该违反策略的可选负载。评判器将其用作校准锚点。",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "严格程度分为 0–6 级。数值越低越严格 — 评判器会标记任何暗示违规的内容。数值越高越宽松 — 仅标记明确、无歧义的违规行为。"
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "严格程度分为 0–6 级。数值越低越严格 — 评判器会标记任何暗示违规的内容。数值越高越宽松 — 仅标记明确、无歧义的违规行为。",
+  "guardrails.remove-dialog.title": "删除防护机制",
+  "guardrails.remove-dialog.confirm-prompt": "请确认是否要删除“{name}”防护机制",
+  "guardrails.remove-dialog.also-applicable": "此防护机制还适用于：",
+  "guardrails.remove-dialog.removed-for-tool": "系统将删除工具“{toolName}”的防护机制。",
+  "guardrails.remove-dialog.still-applicable": "它仍将适用于：",
+  "guardrails.remove-dialog.cancel": "取消",
+  "guardrails.remove-dialog.remove": "删除"
 }

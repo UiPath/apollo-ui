@@ -272,5 +272,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "O modelo usado para avaliar a política em relação a cada carga.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Cargas opcionais que devem ser aprovadas na política. Usadas pelo juiz como âncoras de calibração.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Cargas opcionais que devem ser reprovadas na política. Usadas pelo juiz como âncoras de calibração.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigor, em uma escala de 0 a 6. Os valores mais baixos são mais rigorosos — o juiz sinaliza qualquer coisa que indica uma violação. Valores mais altos são mais flexíveis — apenas violações claras e inquestionáveis são sinalizadas."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigor, em uma escala de 0 a 6. Os valores mais baixos são mais rigorosos — o juiz sinaliza qualquer coisa que indica uma violação. Valores mais altos são mais flexíveis — apenas violações claras e inquestionáveis são sinalizadas.",
+  "guardrails.remove-dialog.title": "Remover diretriz",
+  "guardrails.remove-dialog.confirm-prompt": "Confirme que deseja remover a proteção \"{name}\"",
+  "guardrails.remove-dialog.also-applicable": "Essa diretriz também se aplica a:",
+  "guardrails.remove-dialog.removed-for-tool": "A diretriz será removida da ferramenta \"{toolName}\".",
+  "guardrails.remove-dialog.still-applicable": "Ela ainda será aplicável a:",
+  "guardrails.remove-dialog.cancel": "Cancelar",
+  "guardrails.remove-dialog.remove": "Remover"
 }

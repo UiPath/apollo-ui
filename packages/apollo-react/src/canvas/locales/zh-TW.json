@@ -272,5 +272,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "用於針對每個裝載評估原則的模型。",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "應判定原則通過的選用裝載。由評判當作校準錨點使用。",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "應判定為原則不通過的選用裝載。由評判當作校準錨點使用。",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "嚴格性範圍為 0–6。值越低越嚴格 — 評判會標記任何有違規跡象的行為。值越高越寬鬆 — 僅標記明確、無可爭議的違規行為。"
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "嚴格性範圍為 0–6。值越低越嚴格 — 評判會標記任何有違規跡象的行為。值越高越寬鬆 — 僅標記明確、無可爭議的違規行為。",
+  "guardrails.remove-dialog.title": "移除護欄",
+  "guardrails.remove-dialog.confirm-prompt": "請確認您要移除 \"{name}\" 護欄",
+  "guardrails.remove-dialog.also-applicable": "此護欄也適用於:",
+  "guardrails.remove-dialog.removed-for-tool": "系統將為工具 \"{toolName}\" 移除護欄。",
+  "guardrails.remove-dialog.still-applicable": "其仍適用於:",
+  "guardrails.remove-dialog.cancel": "取消",
+  "guardrails.remove-dialog.remove": "刪除"
 }

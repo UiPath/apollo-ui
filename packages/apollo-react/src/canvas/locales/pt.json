@@ -272,5 +272,12 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "O modelo utilizado para avaliar a política em relação a cada payload.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Payloads opcionais que devem fazer passar a política. Utilizado pelo judge como âncoras de calibração.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Payloads opcionais que devem fazer falhar a política. Utilizado pelo judge como âncoras de calibração.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Exatidão numa escala de 0 a 6. Os valores mais baixos são mais exatos – o judge sinaliza qualquer ação que insinue uma violação. Os valores mais elevados são mais flexíveis – apenas são sinalizadas violações claras e não ambíguas."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Exatidão numa escala de 0 a 6. Os valores mais baixos são mais exatos – o judge sinaliza qualquer ação que insinue uma violação. Os valores mais elevados são mais flexíveis – apenas são sinalizadas violações claras e não ambíguas.",
+  "guardrails.remove-dialog.title": "Remover verificador de integridade",
+  "guardrails.remove-dialog.confirm-prompt": "Confirme que pretende remover o verificador de integridade \"{name}\"",
+  "guardrails.remove-dialog.also-applicable": "Este verificador de integridade também é aplicável a:",
+  "guardrails.remove-dialog.removed-for-tool": "O verificador de integridade será removido para a ferramenta \"{toolName}\".",
+  "guardrails.remove-dialog.still-applicable": "Ainda será aplicável a:",
+  "guardrails.remove-dialog.cancel": "Cancelar",
+  "guardrails.remove-dialog.remove": "Remover"
 }
