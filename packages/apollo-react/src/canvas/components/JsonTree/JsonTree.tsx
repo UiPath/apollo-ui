@@ -1,7 +1,7 @@
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual';
 import { cn } from '@uipath/apollo-wind';
 import { TooltipProvider } from '@uipath/apollo-wind/components/ui/tooltip';
-import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { useIsomorphicLayoutEffect } from '../../hooks/useIsomorphicLayoutEffect';
 import { CanvasTooltipProviderMarker } from '../CanvasTooltip';
@@ -113,12 +113,19 @@ function scrollMarginOf(element: HTMLElement, scrollElement: HTMLElement): numbe
  */
 function VirtualRows({
   rows,
-  containerRef,
+  container,
   scrollElement,
   pinnedPaths,
 }: {
   rows: FlatRows;
-  containerRef: RefObject<HTMLDivElement | null>;
+  /**
+   * The tree's own scroll box, held as state rather than read from a ref: the
+   * virtualizer resolves its scroll element in a layout effect, and a parent's
+   * ref is assigned only after its children's effects have run, so a ref would
+   * still be null on the mount pass. Subscribing only happens when the element
+   * changed, so it would then never observe anything and window no rows.
+   */
+  container: HTMLDivElement | null;
   scrollElement?: HTMLElement | null;
   /** Rows that must stay mounted wherever the window is (see `pinnedItems`). */
   pinnedPaths: readonly string[];
@@ -127,7 +134,7 @@ function VirtualRows({
   const getItemKey = useCallback((index: number) => rows[index]?.node.path ?? index, [rows]);
   const virtualizer = useVirtualizer({
     count: rows.length,
-    getScrollElement: () => scrollElement ?? containerRef.current,
+    getScrollElement: () => scrollElement ?? container,
     estimateSize: () => ROW_MIN_HEIGHT_PX,
     getItemKey,
     overscan: VIRTUAL_OVERSCAN,
@@ -139,7 +146,6 @@ function VirtualRows({
   // rect reads would force layout on each tick, and the offset cannot change while scrolling
   // anyway (the tree's top moves up by exactly the scroll delta).
   useIsomorphicLayoutEffect(() => {
-    const container = containerRef.current;
     // The scroller can go away while this stays mounted (a panel collapsing, a tab switching).
     // A margin left over from it would shift every measurement while the offset restarts at 0,
     // and the row transform and total size both subtract it, so only scrolling would look wrong.
@@ -255,7 +261,8 @@ export function JsonTree({
   className,
 }: JsonTreeProps) {
   const { _ } = useSafeLingui();
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  // State, not a ref — see `VirtualRows`' `container` prop.
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const usesAncestorScroller = virtualized && !!scrollElement;
   const RowWrapper = rowWrapper ?? DefaultRowWrapper;
   const [editingPath, setEditingPath] = useState<string | null>(null);
@@ -373,7 +380,7 @@ export function JsonTree({
       <CanvasTooltipProviderMarker>
         <JsonTreeRowContextProvider value={rowContext}>
           <div
-            ref={containerRef}
+            ref={setContainer}
             className={cn(
               // Scrolled by an ancestor: grow to content and scroll nothing here. `clip`, not
               // `hidden`: per CSS Overflow 3, `hidden` on one axis makes a `visible` other axis
@@ -390,7 +397,7 @@ export function JsonTree({
             {virtualized ? (
               <VirtualRows
                 rows={rows}
-                containerRef={containerRef}
+                container={container}
                 scrollElement={scrollElement}
                 pinnedPaths={pinnedPaths}
               />
