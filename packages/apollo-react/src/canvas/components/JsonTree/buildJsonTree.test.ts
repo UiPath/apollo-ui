@@ -299,6 +299,31 @@ describe('flattenJsonTree', () => {
   });
 });
 
+// A subtree bigger than the engine's argument limit: spreading its rows into the
+// parent's `push` (`push(...rows)`) throws RangeError once a container holds more
+// descendants than a call can take arguments — a real run output reaches this.
+describe('large trees', () => {
+  const tree = buildJsonTree({
+    value: {
+      body: Array.from({ length: 20_000 }, (_, index) => ({
+        id: index,
+        name: `Record ${index}`,
+        tags: ['alpha', 'beta'],
+      })),
+    },
+  });
+
+  it('flattens without exceeding the call-stack argument limit', () => {
+    // 20k records x (record + id + name + tags + 2 tag items), plus the body array.
+    expect(flattenJsonTree(tree)).toHaveLength(120_001);
+  });
+
+  it('collects container paths without exceeding it either', () => {
+    // The body array, each record, and each record's tags array.
+    expect(collectContainerPaths(tree)).toHaveLength(40_001);
+  });
+});
+
 describe('value path helpers', () => {
   it('collects container paths with depth', () => {
     const tree = buildJsonTree({ value: { a: { b: { c: 1 } } } });
