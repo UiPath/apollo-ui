@@ -272,5 +272,14 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "Le modèle utilisé pour évaluer la politique par rapport à chaque charge utile.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Charges utiles facultatives qui sont supposées respecter la politique. Utilisé par le juge comme base pour s’ajuster.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Charges utiles facultatives qui sont supposées constituer une violation de la politique. Utilisé par le juge comme base pour s’ajuster.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigueur sur une échelle 0 à 6. Des valeurs plus faibles sont plus strictes. Le juge signale tout ce qui suggère une violation. Des valeurs plus élevées sont plus souples. Seules les violations claires et sans ambiguïté sont signalées."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Rigueur sur une échelle 0 à 6. Des valeurs plus faibles sont plus strictes. Le juge signale tout ce qui suggère une violation. Des valeurs plus élevées sont plus souples. Seules les violations claires et sans ambiguïté sont signalées.",
+  "guardrails.palette.list-aria-label": "Garde-fous disponibles",
+  "guardrails.palette.create-custom": "Garde-fou personnalisé",
+  "guardrails.palette.create-custom-description": "Crée un garde-fou avec des règles personnalisées",
+  "guardrails.palette.empty": "Aucun garde-fou disponible",
+  "guardrails.palette.loading": "Chargement en cours...",
+  "guardrails.palette.load-error": "Échec du chargement des validateurs intégrés",
+  "guardrails.palette.uipath-group": "Garde-fous UiPath",
+  "guardrails.palette.preview": "Aperçu",
+  "guardrails.palette.status-unauthorized": "Non autorisé"
 }

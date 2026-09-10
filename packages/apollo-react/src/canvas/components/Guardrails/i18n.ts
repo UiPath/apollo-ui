@@ -162,20 +162,32 @@ export const GUARDRAIL_BUILDER_EN_LABELS: GuardrailBuilderLabels = {
   actionAppRequiredError: 'Action app is required',
 };
 
+// One merge for every label set: English defaults, then the catalog, then the host's
+// overrides, skipping `undefined` so a partial source never blanks a string.
+function mergeLabels<T extends object>(
+  defaults: T,
+  catalog?: Partial<T>,
+  overrides?: Partial<T>
+): T {
+  const merged: T = { ...defaults };
+  for (const source of [catalog, overrides]) {
+    if (!source) continue;
+    for (const key of Object.keys(merged) as Array<keyof T>) {
+      const value = source[key];
+      // `Partial<T>[keyof T]` is `T[keyof T] | undefined`; TS cannot follow the narrowing
+      // through a generic index, hence the assertion.
+      if (value !== undefined) merged[key] = value as T[keyof T];
+    }
+  }
+  return merged;
+}
+
 /** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
 export function resolveGuardrailBuilderLabels(
   catalog?: Partial<GuardrailBuilderLabels>,
   overrides?: Partial<GuardrailBuilderLabels>
 ): GuardrailBuilderLabels {
-  const merged: GuardrailBuilderLabels = { ...GUARDRAIL_BUILDER_EN_LABELS };
-  for (const source of [catalog, overrides]) {
-    if (!source) continue;
-    for (const key of Object.keys(merged) as Array<keyof GuardrailBuilderLabels>) {
-      const value = source[key];
-      if (value !== undefined) merged[key] = value;
-    }
-  }
-  return merged;
+  return mergeLabels(GUARDRAIL_BUILDER_EN_LABELS, catalog, overrides);
 }
 
 /** Interpolate `{{token}}` placeholders in a catalog message. Unknown tokens are left as-is. */
@@ -193,15 +205,7 @@ export function resolveGuardrailFormLabels(
   catalog?: Partial<GuardrailValidatorFormLabels>,
   overrides?: Partial<GuardrailValidatorFormLabels>
 ): GuardrailValidatorFormLabels {
-  const merged: GuardrailValidatorFormLabels = { ...GUARDRAIL_FORM_EN_LABELS };
-  for (const source of [catalog, overrides]) {
-    if (!source) continue;
-    for (const key of Object.keys(merged) as Array<keyof GuardrailValidatorFormLabels>) {
-      const value = source[key];
-      if (value !== undefined) merged[key] = value;
-    }
-  }
-  return merged;
+  return mergeLabels(GUARDRAIL_FORM_EN_LABELS, catalog, overrides);
 }
 
 // Reifies each ICU placeholder back into the `{{token}}` template convention: the
@@ -423,6 +427,102 @@ export function useGuardrailBuilderLabels(
         },
         overrides
       ),
+    [_, overrides]
+  );
+}
+
+/**
+ * Chrome strings of the add-guardrail palette. Definition copy (display names, descriptions,
+ * connector and folder names) is not localized here: it arrives resolved on the definitions,
+ * from the canonical copy table or the wire.
+ */
+export interface GuardrailPaletteLabels {
+  /** Accessible name of the palette region. */
+  listAriaLabel: string;
+  /** Create-custom entry, rendered only when the host wires `onCreateCustom`. */
+  createCustom: string;
+  createCustomDescription: string;
+  /** Line shown instead of the entries when there is nothing to pick. */
+  empty: string;
+  /** Line shown while the definitions are in flight. */
+  loading: string;
+  /** Banner message when the definitions failed to load. */
+  loadError: string;
+  /** Heading of the trailing group of UiPath validators, shown only alongside BYO groups. */
+  uipathGroup: string;
+  /** Lifecycle chip on definition entries (rendered only with `previewChip`). */
+  preview: string;
+  /** Status chip on an entry the tenant is not entitled to. */
+  statusUnauthorized: string;
+}
+
+/** The subset of `useSafeLingui`'s translator the palette labels need. */
+type PaletteTranslate = (descriptor: { id: string; message: string }) => string;
+
+// One builder holds every `_({ id, message })` call, so the English defaults, the flat record
+// the catalog test diffs and the runtime lingui path cannot drift, and `lingui extract` still
+// sees static calls. Same shape as `definitions-copy.ts`.
+function buildGuardrailPaletteLabels(_: PaletteTranslate): GuardrailPaletteLabels {
+  return {
+    listAriaLabel: _({
+      id: 'guardrails.palette.list-aria-label',
+      message: 'Available guardrails',
+    }),
+    createCustom: _({ id: 'guardrails.palette.create-custom', message: 'Custom guardrail' }),
+    createCustomDescription: _({
+      id: 'guardrails.palette.create-custom-description',
+      message: 'Create a guardrail with custom rules',
+    }),
+    empty: _({ id: 'guardrails.palette.empty', message: 'No guardrails available' }),
+    loading: _({ id: 'guardrails.palette.loading', message: 'Loading...' }),
+    loadError: _({
+      id: 'guardrails.palette.load-error',
+      message: 'Failed to load built-in validators',
+    }),
+    uipathGroup: _({ id: 'guardrails.palette.uipath-group', message: 'UiPath guardrails' }),
+    preview: _({ id: 'guardrails.palette.preview', message: 'Preview' }),
+    statusUnauthorized: _({
+      id: 'guardrails.palette.status-unauthorized',
+      message: 'Unauthorized',
+    }),
+  };
+}
+
+/** The English chrome strings, resolved without a lingui provider. */
+export const GUARDRAIL_PALETTE_EN_LABELS: GuardrailPaletteLabels = buildGuardrailPaletteLabels(
+  ({ message }) => message
+);
+
+/**
+ * The same strings flattened to message id to the **ICU source message**, which is the form
+ * the catalogs store: the parity test compares these against `locales/en.json` verbatim.
+ */
+export const GUARDRAIL_PALETTE_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+  (() => {
+    const messages: Record<string, string> = {};
+    buildGuardrailPaletteLabels((descriptor) => {
+      messages[descriptor.id] = descriptor.message;
+      return descriptor.message;
+    });
+    return messages;
+  })()
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailPaletteLabels(
+  catalog?: Partial<GuardrailPaletteLabels>,
+  overrides?: Partial<GuardrailPaletteLabels>
+): GuardrailPaletteLabels {
+  return mergeLabels(GUARDRAIL_PALETTE_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the palette; per-string `overrides` always win. */
+export function useGuardrailPaletteLabels(
+  overrides?: Partial<GuardrailPaletteLabels>
+): GuardrailPaletteLabels {
+  const { _ } = useSafeLingui();
+  return useMemo(
+    () => resolveGuardrailPaletteLabels(buildGuardrailPaletteLabels(_), overrides),
     [_, overrides]
   );
 }
