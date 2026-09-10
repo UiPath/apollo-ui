@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.44.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.44.1...@uipath/apollo-react@6.44.2) (2026-09-10)
+
+### Bug Fixes
+
+* **apollo-react:** wrap node description input ([a26912f](https://github.com/UiPath/apollo-ui/commit/a26912f7f7cbeb7a972a169f16fe04a1232cb7a9))
+
 ## [@uipath/apollo-react-v6.44.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.44.0...@uipath/apollo-react@6.44.1) (2026-09-10)
 
 ### Bug Fixes
