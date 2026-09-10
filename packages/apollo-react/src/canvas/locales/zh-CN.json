@@ -272,5 +272,14 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "用于根据每个负载评估策略的模型。",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "应该通过策略的可选负载。评判器将其用作校准锚点。",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "应该违反策略的可选负载。评判器将其用作校准锚点。",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "严格程度分为 0–6 级。数值越低越严格 — 评判器会标记任何暗示违规的内容。数值越高越宽松 — 仅标记明确、无歧义的违规行为。"
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "严格程度分为 0–6 级。数值越低越严格 — 评判器会标记任何暗示违规的内容。数值越高越宽松 — 仅标记明确、无歧义的违规行为。",
+  "guardrails.palette.list-aria-label": "可用的防护机制",
+  "guardrails.palette.create-custom": "自定义防护机制",
+  "guardrails.palette.create-custom-description": "创建带有自定义规则的防护机制",
+  "guardrails.palette.empty": "没有可用的防护机制",
+  "guardrails.palette.loading": "正在加载…",
+  "guardrails.palette.load-error": "内置验证器加载失败",
+  "guardrails.palette.uipath-group": "UiPath 防护机制",
+  "guardrails.palette.preview": "预览",
+  "guardrails.palette.status-unauthorized": "未经授权"
 }

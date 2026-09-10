@@ -272,5 +272,14 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "ポリシーを各ペイロードに照らし合わせて評価するのに使用されるモデルです。",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "任意の、ポリシーに合格するペイロードです。評価者により、キャリブレーション アンカーとして使用されます。",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "任意の、ポリシーに合格しないペイロードです。評価者により、キャリブレーション アンカーとして使用されます。",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0 から 6 のスケールで表される厳密性です。値が低いほど厳格になり、評価者は違反を示唆するものすべてにフラグを立てます。値が大きいほど寛容になり、明確で曖昧さのない違反にのみフラグを立てます。"
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "0 から 6 のスケールで表される厳密性です。値が低いほど厳格になり、評価者は違反を示唆するものすべてにフラグを立てます。値が大きいほど寛容になり、明確で曖昧さのない違反にのみフラグを立てます。",
+  "guardrails.palette.list-aria-label": "利用可能なガードレール",
+  "guardrails.palette.create-custom": "カスタム ガードレール",
+  "guardrails.palette.create-custom-description": "カスタム ルールを含むガードレールを作成します。",
+  "guardrails.palette.empty": "利用できるガードレールはありません。",
+  "guardrails.palette.loading": "読み込んでいます...",
+  "guardrails.palette.load-error": "組み込みバリデーターの読み込みに失敗しました。",
+  "guardrails.palette.uipath-group": "UiPath のガードレール",
+  "guardrails.palette.preview": "プレビュー",
+  "guardrails.palette.status-unauthorized": "未認可"
 }

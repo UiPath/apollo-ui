@@ -272,5 +272,14 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "Das Modell, das zum Auswerten der Richtlinie für jede Nutzlast verwendet wird.",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Optionale Nutzlasten, bei denen die Richtlinie erfolgreich soll. Wird vom Richtermodell als Kalibrierungsanker verwendet.",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "Optionale Nutzlasten, bei denen die Richtlinie fehlschlagen soll. Wird vom Richtermodell als Kalibrierungsanker verwendet.",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Striktheit auf einer Skala von 0–6. Niedrigere Werte bedeuten eine striktere Bewertung – der Richter kennzeichnet alles, was auf einen Verstoß hindeutet. Höhere Werte bedeuten eine großzügigere Bewertung – nur eindeutige, unmissverständliche Verstöße werden gekennzeichnet."
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Striktheit auf einer Skala von 0–6. Niedrigere Werte bedeuten eine striktere Bewertung – der Richter kennzeichnet alles, was auf einen Verstoß hindeutet. Höhere Werte bedeuten eine großzügigere Bewertung – nur eindeutige, unmissverständliche Verstöße werden gekennzeichnet.",
+  "guardrails.palette.list-aria-label": "Verfügbare Leitlinien",
+  "guardrails.palette.create-custom": "Benutzerdefinierte Leitplanke",
+  "guardrails.palette.create-custom-description": "Leitplanke mit benutzerdefinierten Regeln erstellen",
+  "guardrails.palette.empty": "Keine Leitplanken verfügbar",
+  "guardrails.palette.loading": "Wird geladen…",
+  "guardrails.palette.load-error": "Fehler beim Laden der integrierten Validierer",
+  "guardrails.palette.uipath-group": "UiPath-Leitplanken",
+  "guardrails.palette.preview": "Vorschau",
+  "guardrails.palette.status-unauthorized": "Nicht autorisiert"
 }

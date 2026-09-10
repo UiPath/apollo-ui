@@ -272,5 +272,14 @@
   "guardrails.definitions.llm_as_judge.param.model.tooltip": "用於針對每個裝載評估原則的模型。",
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "應判定原則通過的選用裝載。由評判當作校準錨點使用。",
   "guardrails.definitions.llm_as_judge.param.negativeExamples.tooltip": "應判定為原則不通過的選用裝載。由評判當作校準錨點使用。",
-  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "嚴格性範圍為 0–6。值越低越嚴格 — 評判會標記任何有違規跡象的行為。值越高越寬鬆 — 僅標記明確、無可爭議的違規行為。"
+  "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "嚴格性範圍為 0–6。值越低越嚴格 — 評判會標記任何有違規跡象的行為。值越高越寬鬆 — 僅標記明確、無可爭議的違規行為。",
+  "guardrails.palette.list-aria-label": "可用的護欄",
+  "guardrails.palette.create-custom": "自訂護欄",
+  "guardrails.palette.create-custom-description": "使用自訂規則建立護欄",
+  "guardrails.palette.empty": "沒有可用的護欄",
+  "guardrails.palette.loading": "正在載入...",
+  "guardrails.palette.load-error": "無法載入內建驗證器",
+  "guardrails.palette.uipath-group": "UiPath 護欄",
+  "guardrails.palette.preview": "預覽",
+  "guardrails.palette.status-unauthorized": "未經授權"
 }
