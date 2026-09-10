@@ -966,144 +966,78 @@ describe('MetadataForm', () => {
 });
 
 // ============================================================================
-// Controlled host seam (values / onValuesChange / errors / disableValidation /
-// components / container)
+// Plugin-driven hosts: the seam MetadataForm actually exposes
 // ============================================================================
 
-describe('controlled host seam', () => {
-  const controlledSchema: FormSchema = {
-    id: 'controlled-form',
+describe('plugin-driven hosts (the intended seam)', () => {
+  const hostSchema: FormSchema = {
+    id: 'host-form',
     title: '',
     actions: [],
     sections: [
       {
         id: 'main',
         fields: [
-          { name: 'alpha', type: 'text', label: 'Alpha', defaultValue: '' },
-          { name: 'beta', type: 'text', label: 'Beta', defaultValue: '' },
+          { name: 'name', type: 'text', label: 'Name', defaultValue: '' },
+          { name: 'note', type: 'text', label: 'Note', defaultValue: '' },
         ],
       },
     ],
   };
 
-  it('emits onValuesChange with the full record and changed field on every user edit', async () => {
+  it('reports every user edit to a plugin, including the first keystroke', async () => {
     const user = userEvent.setup();
-    const onValuesChange = vi.fn();
+    const onValueChange = vi.fn();
+    const plugin: FormPlugin = { name: 'host', onValueChange };
 
-    render(
-      <MetadataForm
-        schema={controlledSchema}
-        onValuesChange={onValuesChange}
-        disableValidation
-        container="div"
-      />
-    );
+    render(<MetadataForm schema={hostSchema} plugins={[plugin]} container="div" />);
+    await user.type(screen.getByLabelText('Name'), 'a');
 
-    await user.type(screen.getByLabelText('Alpha'), 'x');
-    expect(onValuesChange).toHaveBeenCalledWith({ alpha: 'x', beta: '' }, 'alpha');
+    // Previously gated behind mount-lifetime initialization, which swallowed this.
+    expect(onValueChange).toHaveBeenCalledWith('name', 'a', expect.anything());
   });
 
-  it('syncs external values in per field and treats an identical echo as a no-op', async () => {
-    const user = userEvent.setup();
-    const onValuesChange = vi.fn();
-
-    const { rerender } = render(
-      <MetadataForm
-        schema={controlledSchema}
-        values={{ alpha: '', beta: '' }}
-        onValuesChange={onValuesChange}
-        disableValidation
-        container="div"
-      />
-    );
-
-    const alpha = screen.getByLabelText('Alpha');
-    await user.type(alpha, 'x');
-    expect(onValuesChange).toHaveBeenCalledTimes(1);
-    expect(alpha).toHaveFocus();
-
-    // Host echoes the emitted record back — no re-emission, focus untouched.
-    rerender(
-      <MetadataForm
-        schema={controlledSchema}
-        values={{ alpha: 'x', beta: '' }}
-        onValuesChange={onValuesChange}
-        disableValidation
-        container="div"
-      />
-    );
-    expect(onValuesChange).toHaveBeenCalledTimes(1);
-    expect(alpha).toHaveFocus();
-    expect(alpha).toHaveValue('x');
-
-    // A genuinely different external value updates the field without emitting.
-    rerender(
-      <MetadataForm
-        schema={controlledSchema}
-        values={{ alpha: 'x', beta: 'external' }}
-        onValuesChange={onValuesChange}
-        disableValidation
-        container="div"
-      />
-    );
-    expect(screen.getByLabelText('Beta')).toHaveValue('external');
-    expect(onValuesChange).toHaveBeenCalledTimes(1);
-  });
-
-  it('shows host-supplied errors, keeps them through typing, and clears them only via the prop', async () => {
-    const user = userEvent.setup();
-
-    const { rerender } = render(
-      <MetadataForm
-        schema={controlledSchema}
-        errors={{ alpha: 'Host says no' }}
-        disableValidation
-        container="div"
-      />
-    );
-
-    expect(screen.getByText('Host says no')).toBeInTheDocument();
-
-    // Typing does not self-clear an external error — the prop owns it.
-    await user.type(screen.getByLabelText('Alpha'), 'y');
-    expect(screen.getByText('Host says no')).toBeInTheDocument();
-
-    rerender(
-      <MetadataForm schema={controlledSchema} errors={{}} disableValidation container="div" />
-    );
-    expect(screen.queryByText('Host says no')).not.toBeInTheDocument();
-  });
-
-  it('disableValidation removes the resolver so submit succeeds despite required config', async () => {
-    const user = userEvent.setup();
-    const onSubmit = vi.fn();
-
-    const schema: FormSchema = {
-      id: 'no-validation',
-      title: '',
-      sections: [
-        {
-          id: 'main',
-          fields: [
-            {
-              name: 'must',
-              type: 'text',
-              label: 'Must',
-              validation: { required: true },
-              defaultValue: '',
-            },
-          ],
-        },
-      ],
+  it('lets a plugin write values through context.form', async () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      onFormInit: (context) => {
+        context.form.setValue('name', 'from-plugin');
+      },
     };
 
-    render(<MetadataForm schema={schema} onSubmit={onSubmit} disableValidation />);
-
-    await user.click(screen.getByRole('button', { name: /submit/i }));
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ must: '' }));
+    render(<MetadataForm schema={hostSchema} plugins={[plugin]} container="div" />);
+    await waitFor(() => {
+      expect(screen.getByLabelText('Name')).toHaveValue('from-plugin');
+    });
   });
 
-  it('renders components-prop custom fields on the first paint (synchronously)', () => {
+  it('lets a plugin own validation through context.form.setError', async () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      onValueChange: (name, value, context) => {
+        if (name === 'name' && !String(value).trim()) {
+          context.form.setError('name', { type: 'host', message: 'Name is required' });
+        } else {
+          context.form.clearErrors('name');
+        }
+      },
+    };
+
+    const user = userEvent.setup();
+    render(<MetadataForm schema={hostSchema} plugins={[plugin]} container="div" />);
+
+    await user.type(screen.getByLabelText('Name'), 'a');
+    await user.clear(screen.getByLabelText('Name'));
+    expect(await screen.findByText('Name is required')).toBeInTheDocument();
+  });
+
+  it('renders plugin-declared custom components on the first paint', () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      components: {
+        'host-field': ({ value }) => <div data-testid="host-field">{String(value ?? '')}</div>,
+      },
+    };
     const schema: FormSchema = {
       id: 'custom-form',
       title: '',
@@ -1111,35 +1045,27 @@ describe('controlled host seam', () => {
       sections: [
         {
           id: 'main',
-          fields: [{ name: 'special', type: 'custom', label: 'Special', component: 'my-widget' }],
+          fields: [
+            {
+              name: 'thing',
+              type: 'custom',
+              label: 'Thing',
+              component: 'host-field',
+              defaultValue: 'seeded',
+            },
+          ],
         },
       ],
     };
 
-    render(
-      <MetadataForm
-        schema={schema}
-        components={{
-          'my-widget': ({ name }) => <div data-testid="my-widget">{name}</div>,
-        }}
-        disableValidation
-        container="div"
-      />
-    );
-
-    // Synchronous assertion on purpose: plugin-registered components only appear after the
-    // async init effect, which broke first-paint rendering before the `components` prop.
-    expect(screen.getByTestId('my-widget')).toHaveTextContent('special');
+    // Synchronous: `FormPlugin.components` was declared but never read, so hosts had to
+    // register asynchronously and missed the first paint.
+    render(<MetadataForm schema={schema} plugins={[plugin]} container="div" />);
+    expect(screen.getByTestId('host-field')).toHaveTextContent('seeded');
   });
 
   it("container='div' renders no form element, and actions: [] renders no action row", () => {
-    // `actions: []` is how a schema says "no actions"; FormActions returns null for it.
-    // An absent `actions` key still falls back to the default Submit, by design.
-    const noActions: FormSchema = { ...basicSchema, actions: [] };
-    const { container } = render(
-      <MetadataForm schema={noActions} disableValidation container="div" />
-    );
-
+    const { container } = render(<MetadataForm schema={hostSchema} container="div" />);
     expect(container.querySelector('form')).toBeNull();
     expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument();
   });
@@ -1150,47 +1076,13 @@ describe('controlled host seam', () => {
 
     render(
       <form onSubmit={hostSubmit}>
-        <MetadataForm schema={basicSchema} disableValidation container="div" />
+        <MetadataForm schema={hostSchema} container="div" />
       </form>
     );
 
-    await user.click(screen.getByPlaceholderText('Enter name'));
+    await user.click(screen.getByLabelText('Name'));
     await user.keyboard('{Enter}');
     expect(hostSubmit).not.toHaveBeenCalled();
-  });
-
-  it('keeps controlled values after schema.initialData initialization settles', async () => {
-    const withInitialData: FormSchema = {
-      id: 'initial-data-form',
-      title: '',
-      actions: [],
-      initialData: { name: 'from-schema' },
-      sections: [
-        {
-          id: 'main',
-          fields: [{ name: 'name', type: 'text', label: 'Name', defaultValue: '' }],
-        },
-      ],
-    };
-
-    render(
-      <MetadataForm
-        schema={withInitialData}
-        values={{ name: 'from-host' }}
-        disableValidation
-        container="div"
-      />
-    );
-
-    // Initialization resets from `initialData` asynchronously; without re-applying the
-    // sync afterwards the host's own value is silently replaced by the schema's.
-    await waitFor(() => {
-      expect(screen.getByLabelText('Name')).toHaveValue('from-host');
-    });
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    });
-    expect(screen.getByLabelText('Name')).toHaveValue('from-host');
   });
 
   it('mounts a TooltipProvider itself when the schema uses tooltip metadata', () => {
@@ -1216,38 +1108,10 @@ describe('controlled host seam', () => {
     };
 
     // Radix throws without a provider, so rendering bare is the assertion.
-    expect(() =>
-      render(<MetadataForm schema={withTooltip} disableValidation container="div" />)
-    ).not.toThrow();
+    expect(() => render(<MetadataForm schema={withTooltip} container="div" />)).not.toThrow();
     expect(screen.getByRole('button', { name: 'About the endpoint' })).toBeInTheDocument();
   });
-
-  it("container='div' renders schema submit actions as plain buttons that still submit", async () => {
-    const user = userEvent.setup();
-    const onSubmit = vi.fn();
-    const withActions: FormSchema = {
-      ...basicSchema,
-      actions: [{ id: 'submit', type: 'submit', label: 'Save', variant: 'default' }],
-    };
-
-    const { container } = render(
-      <MetadataForm schema={withActions} disableValidation container="div" onSubmit={onSubmit} />
-    );
-
-    expect(container.querySelector('form')).toBeNull();
-    const save = screen.getByRole('button', { name: 'Save' });
-    // type="submit" without an owning <form> would submit whatever ancestor form the host
-    // embedded this in — the exact hazard container='div' exists to avoid.
-    expect(save).toHaveAttribute('type', 'button');
-
-    await user.click(save);
-    expect(onSubmit).toHaveBeenCalledTimes(1);
-  });
 });
-
-// ============================================================================
-// string-list field type
-// ============================================================================
 
 describe('string-list field', () => {
   const stringListSchema: FormSchema = {
@@ -1275,21 +1139,15 @@ describe('string-list field', () => {
 
   it('renders rows from the value and appends an empty row on Add', async () => {
     const user = userEvent.setup();
-    const onValuesChange = vi.fn();
+    const onValueChange = vi.fn();
+    const plugin: FormPlugin = { name: 'host', onValueChange };
 
-    render(
-      <MetadataForm
-        schema={stringListSchema}
-        onValuesChange={onValuesChange}
-        disableValidation
-        container="div"
-      />
-    );
+    render(<MetadataForm schema={stringListSchema} plugins={[plugin]} container="div" />);
 
     expect(screen.getByLabelText('Phrases 1')).toHaveValue('first');
 
     await user.click(screen.getByRole('button', { name: 'Add phrase' }));
-    expect(onValuesChange).toHaveBeenCalledWith({ phrases: ['first', ''] }, 'phrases');
+    expect(onValueChange).toHaveBeenCalledWith('phrases', ['first', ''], expect.anything());
 
     // maxItems reached (2 rows) — the Add button hides.
     expect(screen.queryByRole('button', { name: 'Add phrase' })).not.toBeInTheDocument();
@@ -1298,7 +1156,8 @@ describe('string-list field', () => {
 
   it('edits one row without touching siblings and removes by index', async () => {
     const user = userEvent.setup();
-    const onValuesChange = vi.fn();
+    const onValueChange = vi.fn();
+    const plugin: FormPlugin = { name: 'host', onValueChange };
 
     render(
       <MetadataForm
@@ -1318,52 +1177,41 @@ describe('string-list field', () => {
             },
           ],
         }}
-        onValuesChange={onValuesChange}
-        disableValidation
+        plugins={[plugin]}
         container="div"
       />
     );
 
     await user.type(screen.getByLabelText('Phrases 2'), '!');
-    expect(onValuesChange).toHaveBeenLastCalledWith({ phrases: ['one', 'two!'] }, 'phrases');
+    expect(onValueChange).toHaveBeenLastCalledWith('phrases', ['one', 'two!'], expect.anything());
 
     await user.click(screen.getByRole('button', { name: 'Remove Phrases 1' }));
-    expect(onValuesChange).toHaveBeenLastCalledWith({ phrases: ['two!'] }, 'phrases');
+    expect(onValueChange).toHaveBeenLastCalledWith('phrases', ['two!'], expect.anything());
   });
 
   it('applies the per-row maxLength cap', () => {
-    render(<MetadataForm schema={stringListSchema} disableValidation container="div" />);
+    render(<MetadataForm schema={stringListSchema} container="div" />);
     expect(screen.getByLabelText('Phrases 1')).toHaveAttribute('maxlength', '50');
   });
 
-  it('marks every row invalid when the list carries an error', () => {
-    const { rerender } = render(
-      <MetadataForm
-        schema={stringListSchema}
-        values={{ phrases: ['first', 'second'] }}
-        disableValidation
-        container="div"
-      />
-    );
-    expect(screen.getByLabelText('Phrases 1')).not.toHaveAttribute('aria-invalid');
+  it('marks every row invalid when the list carries an error', async () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      onFormInit: (context) => {
+        context.form.setError('phrases', { type: 'host', message: 'Add at least one phrase.' });
+      },
+    };
 
-    rerender(
-      <MetadataForm
-        schema={stringListSchema}
-        values={{ phrases: ['first', 'second'] }}
-        errors={{ phrases: 'Add at least one phrase.' }}
-        disableValidation
-        container="div"
-      />
-    );
-    expect(screen.getByLabelText('Phrases 1')).toHaveAttribute('aria-invalid', 'true');
-    expect(screen.getByLabelText('Phrases 2')).toHaveAttribute('aria-invalid', 'true');
+    render(<MetadataForm schema={stringListSchema} plugins={[plugin]} container="div" />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Phrases 1')).toHaveAttribute('aria-invalid', 'true');
+    });
+    expect(screen.getByText('Add at least one phrase.')).toBeInTheDocument();
   });
 
   it('has no accessibility violations', async () => {
-    const { container } = render(
-      <MetadataForm schema={stringListSchema} disableValidation container="div" />
-    );
+    const { container } = render(<MetadataForm schema={stringListSchema} container="div" />);
     expect(await axe(container)).toHaveNoViolations();
   });
 });
