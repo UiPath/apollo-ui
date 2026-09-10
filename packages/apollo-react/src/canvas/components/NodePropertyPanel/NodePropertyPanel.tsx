@@ -170,7 +170,7 @@ export function NodePropertyPanel({
                     })
                   }
                   size="sm"
-                  multiline
+                  multiline="wrap"
                   maxLines={3}
                   onChange={onNodeDescriptionChange}
                   onSubmit={onNodeDescriptionSubmit}
