@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.48.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.48.0...@uipath/apollo-wind@2.48.1) (2026-09-10)
+
+### Bug Fixes
+
+* **apollo-wind:** correct Drawer card description in gallery ([663bfe3](https://github.com/UiPath/apollo-ui/commit/663bfe3b3128ad56432e9c48e5dc3de72c269035))
+* **apollo-wind:** correct Drawer link and add missing components to gallery ([5694476](https://github.com/UiPath/apollo-ui/commit/5694476f66a16c5b7cde7f9231bc5c5a46cdd21a))
+
 ## [@uipath/apollo-wind-v2.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.2...@uipath/apollo-wind@2.48.0) (2026-09-09)
 
 ### Features
