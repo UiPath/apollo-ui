@@ -340,7 +340,12 @@ export function flattenJsonTree(
               filterPredicate: selfPredicateMatch ? undefined : filterPredicate,
             }
           : options;
-      rows.push(...flattenJsonTree(node.children, childOptions, depth + 1));
+      // Appended one by one, not spread: a spread passes every descendant row as
+      // its own argument, and a large tree (a run output with tens of thousands
+      // of records) exceeds the engine's argument limit and throws RangeError.
+      for (const row of flattenJsonTree(node.children, childOptions, depth + 1)) {
+        rows.push(row);
+      }
     }
   }
   return rows;
@@ -357,7 +362,10 @@ export function collectContainerPaths(nodes: JsonTreeNode[], depth = 0): Contain
   for (const node of nodes) {
     if (node.children) {
       paths.push({ path: node.path, depth });
-      paths.push(...collectContainerPaths(node.children, depth + 1));
+      // Appended, not spread — same argument-limit ceiling as flattenJsonTree above.
+      for (const child of collectContainerPaths(node.children, depth + 1)) {
+        paths.push(child);
+      }
     }
   }
   return paths;
