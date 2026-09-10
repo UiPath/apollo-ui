@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
+import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { FormPlugin, FormSchema } from './form-schema';
 import { MetadataForm } from './metadata-form';
@@ -1138,6 +1139,50 @@ describe('controlled host seam', () => {
 
     expect(container.querySelector('form')).toBeNull();
     expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument();
+  });
+
+  it("container='div' swallows Enter in inputs so an ancestor form cannot submit", async () => {
+    const user = userEvent.setup();
+    const hostSubmit = vi.fn((e: React.FormEvent) => e.preventDefault());
+
+    render(
+      <form onSubmit={hostSubmit}>
+        <MetadataForm schema={basicSchema} disableValidation container="div" />
+      </form>
+    );
+
+    await user.click(screen.getByPlaceholderText('Enter name'));
+    await user.keyboard('{Enter}');
+    expect(hostSubmit).not.toHaveBeenCalled();
+  });
+
+  it('mounts a TooltipProvider itself when the schema uses tooltip metadata', () => {
+    const withTooltip: FormSchema = {
+      id: 'tooltip-form',
+      title: '',
+      actions: [],
+      sections: [
+        {
+          id: 'main',
+          fields: [
+            {
+              name: 'endpoint',
+              type: 'text',
+              label: 'Endpoint',
+              defaultValue: '',
+              tooltip: 'The URL to call.',
+              tooltipAriaLabel: 'About the endpoint',
+            },
+          ],
+        },
+      ],
+    };
+
+    // Radix throws without a provider, so rendering bare is the assertion.
+    expect(() =>
+      render(<MetadataForm schema={withTooltip} disableValidation container="div" />)
+    ).not.toThrow();
+    expect(screen.getByRole('button', { name: 'About the endpoint' })).toBeInTheDocument();
   });
 
   it("container='div' renders schema submit actions as plain buttons that still submit", async () => {

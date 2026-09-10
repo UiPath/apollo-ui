@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollableTabsList, Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { deepEqual, get } from '@/lib';
 
 import { DataFetcher } from './data-fetcher';
@@ -151,6 +152,18 @@ export function MetadataForm({
     schemaRef.current = schema;
     return schema;
   }, [schema]);
+
+  // Radix throws when a tooltip renders with no ancestor provider, and `tooltip` field
+  // metadata puts one inside the form — so the form supplies its own when the schema uses
+  // it. Scoped to schemas that need it: a provider only carries delay settings, and an
+  // unconditional one would silently override a host's own configuration.
+  const hasFieldTooltip = useMemo(() => {
+    const sections = [
+      ...(stableSchema.sections ?? []),
+      ...(stableSchema.steps ?? []).flatMap((step) => step.sections),
+    ];
+    return sections.some((section) => section.fields.some((field) => field.tooltip !== undefined));
+  }, [stableSchema]);
 
   // Build Zod schema from metadata (skipped entirely when the host owns validation)
   const zodSchema = useMemo(
@@ -406,15 +419,32 @@ export function MetadataForm({
     </>
   );
 
+  const body =
+    container === 'div' ? (
+      // Without an owning <form> the inputs still belong to whatever form the host wrapped
+      // us in, so Enter would trigger *its* implicit submission. Swallow it for single-line
+      // controls (textareas keep Enter for newlines, buttons keep it for activation).
+      <div
+        className={className}
+        onKeyDown={(event) => {
+          if (event.key !== 'Enter' || event.defaultPrevented) return;
+          const target = event.target as HTMLElement;
+          if (target instanceof HTMLInputElement && target.type !== 'button') {
+            event.preventDefault();
+          }
+        }}
+      >
+        {content}
+      </div>
+    ) : (
+      <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
+        {content}
+      </form>
+    );
+
   return (
     <FormProvider {...form}>
-      {container === 'div' ? (
-        <div className={className}>{content}</div>
-      ) : (
-        <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
-          {content}
-        </form>
-      )}
+      {hasFieldTooltip ? <TooltipProvider>{body}</TooltipProvider> : body}
     </FormProvider>
   );
 }

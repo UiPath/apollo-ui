@@ -1,13 +1,13 @@
 import type {
-  FormSchema,
-  FieldMetadata,
-  FormSection,
-  FormStep,
-  FieldRule,
   DataSource,
   FieldCondition,
+  FieldMetadata,
   FieldOption,
+  FieldRule,
   FormAction,
+  FormSchema,
+  FormSection,
+  FormStep,
   ValidationConfig,
 } from './form-schema';
 
@@ -223,6 +223,8 @@ function serializeField(field: FieldMetadata): JsonObject {
   if (field.grid) result.grid = field.grid as JsonObject;
   if (field.ariaLabel) result.ariaLabel = field.ariaLabel;
   if (field.ariaDescribedBy) result.ariaDescribedBy = field.ariaDescribedBy;
+  if (field.tooltip) result.tooltip = field.tooltip;
+  if (field.tooltipAriaLabel) result.tooltipAriaLabel = field.tooltipAriaLabel;
 
   // Type-specific properties
   if ('options' in field && field.options) {
@@ -238,6 +240,17 @@ function serializeField(field: FieldMetadata): JsonObject {
   if ('maxSize' in field && field.maxSize) result.maxSize = field.maxSize;
   if ('showPreview' in field && field.showPreview) result.showPreview = field.showPreview;
   if ('use12Hour' in field && field.use12Hour) result.use12Hour = field.use12Hour;
+  if ('minRows' in field && field.minRows !== undefined) result.minRows = field.minRows;
+  if ('maxLength' in field && field.maxLength !== undefined) result.maxLength = field.maxLength;
+  if ('maxItems' in field && field.maxItems !== undefined) result.maxItems = field.maxItems;
+  if ('emptyMessage' in field && field.emptyMessage) result.emptyMessage = field.emptyMessage;
+  if ('searchPlaceholder' in field && field.searchPlaceholder) {
+    result.searchPlaceholder = field.searchPlaceholder;
+  }
+  if ('addItemLabel' in field && field.addItemLabel) result.addItemLabel = field.addItemLabel;
+  if ('removeItemAriaLabel' in field && field.removeItemAriaLabel) {
+    result.removeItemAriaLabel = field.removeItemAriaLabel;
+  }
   if ('component' in field && field.component) result.component = field.component;
   if ('componentProps' in field && field.componentProps) {
     result.componentProps = field.componentProps as JsonObject;

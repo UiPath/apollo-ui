@@ -510,7 +510,12 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
               id={field.name}
             />
             <div className="space-y-1 leading-none">
-              <FormFieldLabel htmlFor={field.name} className="font-normal">
+              <FormFieldLabel
+                htmlFor={field.name}
+                tooltip={field.tooltip}
+                tooltipAriaLabel={field.tooltipAriaLabel}
+                className="font-normal"
+              >
                 {field.label}
               </FormFieldLabel>
               <FormFieldDescription>{field.description}</FormFieldDescription>
