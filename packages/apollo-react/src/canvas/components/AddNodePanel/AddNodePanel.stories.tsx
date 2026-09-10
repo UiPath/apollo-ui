@@ -19,6 +19,7 @@ import { type CanvasHandleActionEvent, CanvasIcon } from '../../utils';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { CanvasPanelSurface } from '../FloatingCanvasPanel';
 import type { ListItem } from '../Toolbox';
 import { AddNodePanel, AddNodePanelEmptyMessage } from '.';
 import { AddNodeManager } from './AddNodeManager';
@@ -198,10 +199,13 @@ function createInitialNodes(): Node<BaseNodeData>[] {
 }
 
 /**
- * Standalone panel wrapper component.
+ * Frames panel content the way `FloatingCanvasPanel` would, for the stories
+ * that exercise the panel's *contents* (empty states, loading, search) without
+ * a canvas to anchor to. The chrome and the floating size envelope both come
+ * from the real component, so these stories track any change a consumer sees.
  *
- * `paddingTop` overrides the default 40px top offset — useful in stories that
- * also render a top-anchored `StoryInfoPanel` and need to clear it.
+ * `paddingTop` overrides the default top offset. Useful in stories that also
+ * render a top-anchored `StoryInfoPanel` and need to clear it.
  */
 function StandalonePanelWrapper({
   children,
@@ -219,18 +223,13 @@ function StandalonePanelWrapper({
         paddingTop,
       }}
     >
-      <div
-        style={{
-          width: '320px',
-          margin: '0 auto',
-          backgroundColor: 'var(--canvas-background-raised)',
-          border: '1px solid var(--canvas-border-de-emp)',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-        }}
-      >
+      {/* `w-fit` replaces the surface's `w-auto`, which shrink-to-fits only
+          because the real panel is absolutely positioned; in normal flow it
+          would fill the viewport. `scrollableContent` mirrors AddNodeManager:
+          the Toolbox owns its own virtualized scroll. */}
+      <CanvasPanelSurface className="mx-auto w-fit" scrollableContent={false}>
         {children}
-      </div>
+      </CanvasPanelSurface>
     </div>
   );
 }
@@ -558,17 +557,11 @@ function DocumentExtractionMessagesStory() {
         {DOCUMENT_EXTRACTION_MESSAGE_STATES.map((state) => (
           <section key={state.id} className="flex flex-col gap-2">
             <span className="text-xs font-semibold text-foreground-muted">{state.label}</span>
-            <div
-              style={{
-                width: '320px',
-                backgroundColor: 'var(--canvas-background-raised)',
-                border: '1px solid var(--canvas-border-de-emp)',
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              }}
-            >
+            {/* Fixed width rather than the surface's content-sized default:
+                these sit side by side and the message has no intrinsic width. */}
+            <CanvasPanelSurface className="w-[320px]">
               <DocumentExtractionMessagePanel state={state} />
-            </div>
+            </CanvasPanelSurface>
           </section>
         ))}
       </div>

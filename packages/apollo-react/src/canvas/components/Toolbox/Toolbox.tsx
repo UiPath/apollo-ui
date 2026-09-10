@@ -1,8 +1,9 @@
 import { useNavigationStack } from '@uipath/apollo-react/canvas/hooks';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
+import { cx } from '@uipath/apollo-react/canvas/utils';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSafeLingui } from '../../../i18n';
 import { useListRef } from 'react-window';
+import { useSafeLingui } from '../../../i18n';
 import {
   TOOLBOX_GAP,
   TOOLBOX_HEIGHT,
@@ -14,10 +15,26 @@ import { Header } from './Header';
 import { type ListItem, ListView, type ListViewHandle, type RenderItem } from './ListView';
 import { QuickActionsRow, type ToolboxQuickAction } from './QuickActionsRow';
 import { SearchBox } from './SearchBox';
-import { AnimatedContainer, AnimatedContent } from './Toolbox.styles';
 
 type AnimationDirection = 'forward' | 'back';
 
+// Drilling into a category enters from the right; going back enters from the
+// left. The class is removed once the transition window elapses, and adding it
+// back is what replays the animation.
+//
+// Known limitation: two navigations in the same direction inside that window
+// leave the class mounted, so `isTransitioning` never flips and the second list
+// appears without replaying the slide. Forcing a replay would mean keying the
+// animated wrapper per navigation, which remounts the virtualized list and
+// discards its scroll state, so the momentary missed slide is the better trade.
+const ENTER_ANIMATION_CLASS: Record<AnimationDirection, string> = {
+  forward: 'animate-slide-in-from-right',
+  back: 'animate-slide-in-from-left',
+};
+
+// Keep in sync with the animation duration of `animate-slide-in-from-*`
+// (apollo-wind's tailwind.utilities.css): the class is removed once this
+// elapses, so a shorter value would cut the slide off mid-flight.
 const TRANSITION_DURATION = 150;
 const SEARCH_BAR_INDEX = -1;
 
@@ -696,8 +713,13 @@ export function Toolbox<T>({
           activeDescendantId={activeDescendantId}
         />
 
-        <AnimatedContainer>
-          <AnimatedContent entering={isTransitioning} direction={animationDirection}>
+        <div className="relative flex min-h-[50px] flex-1 flex-col overflow-hidden">
+          <div
+            className={cx(
+              'flex min-h-[50px] flex-1 flex-col',
+              isTransitioning && ENTER_ANIMATION_CLASS[animationDirection]
+            )}
+          >
             <ListView
               ref={listViewRef}
               isLoading={awaitingChildren || searchLoading || loading}
@@ -714,8 +736,8 @@ export function Toolbox<T>({
               // search results, not a "more on the way" hint.
               loadingSkeleton={isSearching ? undefined : currentParentItem?.childrenLoading}
             />
-          </AnimatedContent>
-        </AnimatedContainer>
+          </div>
+        </div>
       </Column>
     </div>
   );

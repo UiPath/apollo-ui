@@ -1,3 +1,5 @@
+export type { CanvasPanelSurfaceProps } from './CanvasPanelSurface';
+export { CANVAS_PANEL_FLOATING_SIZE_CLASS, CanvasPanelSurface } from './CanvasPanelSurface';
 export type { CanvasPortalProps } from './CanvasPortal';
 export { CanvasPortal } from './CanvasPortal';
 export type { FloatingCanvasPanelProps } from './FloatingCanvasPanel';
