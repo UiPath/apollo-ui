@@ -274,7 +274,9 @@ describe('GuardrailValidatorForm', () => {
       // Options live behind the closed MultiSelect popover.
       expect(screen.queryByText('Option A')).not.toBeInTheDocument();
 
-      fireEvent.click(screen.getByRole('combobox', { name: /select options/i }));
+      // Named by the visible field label, not the placeholder: the renderer now associates
+      // the label with the combobox via htmlFor/id.
+      fireEvent.click(screen.getByRole('combobox', { name: 'Entities' }));
       fireEvent.click(await screen.findByText('Option A'));
 
       expect(onChange).toHaveBeenCalledWith([
