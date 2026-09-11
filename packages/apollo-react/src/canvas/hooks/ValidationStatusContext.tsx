@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useMemo } from 'react';
 import type { ValidationState } from '../types/validation';
 
 export interface ValidationStateContextValue {
@@ -9,14 +9,10 @@ export const ValidationStatusContext = React.createContext<ValidationStateContex
   getElementValidationState: () => undefined,
 });
 
+// Read during render (memoized on context identity) rather than setState in an
+// effect: value available on first render, one render per update instead of
+// two. See ExecutionStatusContext for the full rationale.
 export const useElementValidationStatus = (elementId: string): ValidationState | undefined => {
   const context = useContext(ValidationStatusContext);
-  const [validationState, setValidationState] = useState<ValidationState | undefined>();
-
-  useEffect(() => {
-    const state = context.getElementValidationState(elementId);
-    setValidationState(state);
-  }, [elementId, context]);
-
-  return validationState;
+  return useMemo(() => context.getElementValidationState(elementId), [elementId, context]);
 };

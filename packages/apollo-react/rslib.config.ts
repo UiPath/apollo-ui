@@ -53,6 +53,8 @@ export default defineConfig({
       index: [
         './src/**',
         '!./src/**/*.test.{ts,tsx}',
+        '!./src/**/*.bench.{ts,tsx}',
+        '!./src/**/*.perf-fixtures.{ts,tsx}',
         '!./src/**/*.stories.{ts,tsx}',
         '!./src/**/storybook-utils/**',
         '!./src/test/**',

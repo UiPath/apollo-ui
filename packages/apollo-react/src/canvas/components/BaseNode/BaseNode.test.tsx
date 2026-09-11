@@ -134,7 +134,8 @@ vi.mock('../../utils/icon-registry', () => ({
   getIcon: () => () => <div data-testid="node-icon">Icon</div>,
   CanvasIcon: ({ icon }: { icon: string }) => <span data-testid={`canvas-icon-${icon}`} />,
 }));
-vi.mock('../../utils/manifest-resolver', () => ({
+vi.mock('../../utils/manifest-resolver', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../utils/manifest-resolver')>()),
   resolveDisplay: (display: Record<string, unknown> | undefined) => ({
     label: 'Test Node',
     subLabel: 'Test SubLabel',
@@ -142,7 +143,14 @@ vi.mock('../../utils/manifest-resolver', () => ({
     icon: 'test-icon',
     ...display,
   }),
-  resolveHandles: () => [],
+  // Pass-through resolution: BaseNode now resolves every handle source
+  // (context override included), so the mock must preserve the input groups
+  // while normalizing `visible` to a boolean like the real resolver.
+  resolveHandles: (groups: HandleGroupManifest[]) =>
+    groups.map((group) => ({
+      ...group,
+      handles: group.handles.map((handle) => ({ ...handle, visible: handle.visible !== false })),
+    })),
 }));
 
 vi.mock('./NodeLabel', () => ({
@@ -301,6 +309,60 @@ describe('BaseNode', () => {
       };
       expect(opts.nodeHeight).toBe(160);
       expect(opts.nodeWidth).toBe(96); // getContainerWidth default for a square node
+    });
+  });
+
+  // The manifest path strips resolved groups to a field whitelist before they
+  // reach the handle renderers: manifest-declared extras (customPositionAndOffsets,
+  // boundary) were never honored, and honoring them is a separate feature
+  // decision. Runtime override configs keep every field (onAction, offsets, ...).
+  describe('Manifest handle field whitelist', () => {
+    type CapturedOpts = { handleConfigurations?: Array<Record<string, unknown>> };
+    const capturedConfigs = () =>
+      (mockUseButtonHandles.mock.calls.at(-1)?.[0] as CapturedOpts).handleConfigurations;
+
+    it('manifest handle groups pass only whitelisted fields to renderers', () => {
+      mockManifest.current = {
+        ...DEFAULT_MANIFEST,
+        handleConfiguration: [
+          {
+            position: Position.Right,
+            customPositionAndOffsets: { top: 12 },
+            boundary: 'inner',
+            handles: [{ id: 'out', type: 'source', handleType: 'output', unlistedExtra: 'x' }],
+          },
+        ],
+      };
+      render(<BaseNode {...defaultProps} />);
+
+      const groups = capturedConfigs()!;
+      expect(groups).toHaveLength(1);
+      expect(groups[0]).not.toHaveProperty('customPositionAndOffsets');
+      expect(groups[0]).not.toHaveProperty('boundary');
+      expect((groups[0]!.handles as Array<Record<string, unknown>>)[0]).not.toHaveProperty(
+        'unlistedExtra'
+      );
+      expect((groups[0]!.handles as Array<Record<string, unknown>>)[0]).toMatchObject({
+        id: 'out',
+        type: 'source',
+        handleType: 'output',
+      });
+    });
+
+    it('override handle groups keep their runtime fields', () => {
+      const onAction = vi.fn();
+      mockHandleConfigs.current = [
+        {
+          position: Position.Right,
+          customPositionAndOffsets: { top: 12 },
+          handles: [{ id: 'out', type: 'source', handleType: 'output', onAction }],
+        },
+      ] as unknown as HandleGroupManifest[];
+      render(<BaseNode {...defaultProps} />);
+
+      const groups = capturedConfigs()!;
+      expect(groups[0]).toHaveProperty('customPositionAndOffsets', { top: 12 });
+      expect((groups[0]!.handles as Array<Record<string, unknown>>)[0]!.onAction).toBe(onAction);
     });
   });
 
