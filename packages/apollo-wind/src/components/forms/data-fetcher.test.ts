@@ -1,12 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-  type AdapterRequest,
-  type AdapterResponse,
-  type DataAdapter,
   DataFetcher,
   DataSourceBuilder,
   DataTransformers,
   FetchAdapter,
+  type DataAdapter,
+  type AdapterRequest,
+  type AdapterResponse,
 } from './data-fetcher';
 import type { DataSource } from './form-schema';
 

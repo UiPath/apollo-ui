@@ -1,4 +1,4 @@
-import type { FieldMetadata, FormContext, FormPlugin } from './form-schema';
+import type { FormPlugin, FormContext, FieldMetadata } from './form-schema';
 
 /**
  * Example Plugins for the Metadata Form System

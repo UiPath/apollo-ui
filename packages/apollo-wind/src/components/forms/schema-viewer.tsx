@@ -1,8 +1,9 @@
-import { Check, Code2, Copy } from 'lucide-react';
 import { useState } from 'react';
+import { Copy, Check, Code2 } from 'lucide-react';
 import { toast } from 'sonner';
+import type { FormSchema } from './form-schema';
+import { schemaToJson } from './schema-serializer';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sheet,
   SheetContent,
@@ -11,8 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import type { FormSchema } from './form-schema';
-import { schemaToJson } from './schema-serializer';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SchemaViewerProps {
   schema: FormSchema;
