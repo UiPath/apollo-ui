@@ -53,16 +53,26 @@ cache rather than adopting a second one, and it is why the hook stays a `useStat
   A malformed payload arrives through `invalid` / `inputError` with `error` still `null`.
 - **zod does not cross the boundary.** The schema is private to `definitions-parse.ts`;
   `GuardrailDefinitionWire` is hand-written, and the two are pinned to each other by a
-  compile-time assignability check, a runtime key-set assertion and a source-level guard, so
-  the emitted `.d.ts` for this folder carries no schema types and consumers take no zod
-  dependency.
+  compile-time assignability check in `toWireDefinition` plus two tests (a key-set assertion
+  and a source-level import guard), so the emitted `.d.ts` for this folder carries no schema
+  types and consumers take no zod dependency.
 - **Enrichment is pure and exported.** `enrichGuardrailDefinitions(wire, { copy, hiddenValidators })`
   is React-free, so non-React and bridge callers use it directly.
   `EnrichedGuardrailDefinition extends GuardrailDefinition`, so its output feeds
   `GuardrailBuilder` with no mapping.
 - **Context and `hiddenValidators` are compared by content, not identity**, so a host can
   build them inline. (`useDiscoveryModels` compares the context by identity; an inline object
-  there refetches on every render and never settles.)
+  there refetches on every render and never settles.) `options.definitions` is the exception,
+  compared by identity because hashing a whole payload every render would cost more than it
+  saves: pass a stable reference (an SWR or react-query result already is).
+- **`loading` starts `true` when the hook is about to fetch**, so a host rendering
+  `loading ? <Spinner/> : <Empty/>` does not flash the empty state on first paint. It starts
+  `false` when the hook is disabled (`null` context, or `options.definitions` supplied), and
+  `refetch()` is a no-op in that state.
+- **A failed request keeps the previous results.** `error` is set and `definitions` still hold
+  the last good payload, so a transient 503 on a `refetch` does not empty a list the user is
+  looking at. Render on `error` first if you want it to replace the data. Disabling the hook
+  does clear the fetched state.
 - **`hiddenValidators` hides nothing by default** and never hides a BYO definition. Which
   validators a product exposes is an entitlement decision, so it stays with the caller: Flow
   passes `['prompt_injection']`, Agents passes nothing.
