@@ -411,7 +411,9 @@ export function GuardrailBuilder({
     ? {
         label: labels.saveAsNew,
         onClick: handleSaveAsNew,
-        disabled: !isDefinitionAvailable,
+        // `saveDisabled` gates saving, not one button: leaving it off the secondary action let
+        // a host that reported "saving disabled" still have `onSaveAsNew` fired.
+        disabled: !isDefinitionAvailable || hostSaveDisabled,
       }
     : undefined;
 

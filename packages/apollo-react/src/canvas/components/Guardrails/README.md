@@ -164,10 +164,28 @@ apollo-react's own pin, or Radix contexts and CSS duplicate.
 
 `GuardrailValidatorForm` is not a form renderer of its own: internally it is
 `buildGuardrailFormSchema(definitions, labels)` + the package's `MetadataForm`
-(`components/forms/`: `FormSchema` → `MetadataForm` → `field-renderer`), mounted through the
-controlled-host seam (`values` / `onValuesChange` / `errors` / `disableValidation` /
-`container="div"` / synchronous `components`). The public contract above is the adapter
-boundary — hosts never see the schema.
+(`components/forms/`: `FormSchema` → `MetadataForm` → `field-renderer`), mounted with
+`container="div"`. The public contract above is the adapter boundary — hosts never see the
+schema.
+
+`MetadataForm` owns its own state; it has no controlled-host props. An earlier revision of
+#1107 added some (`values`, `onValuesChange`, `errors`, `disableValidation`) and they were
+removed in review, because they existed to route around features the schema contract already
+declared. The translation from this family's controlled contract onto the primitive therefore
+lives in one named place, `useMetadataFormBridge`, which is a `FormPlugin` that:
+
+- registers the guardrail-owned custom components from the first paint (`FormPlugin.components`);
+- pushes host `parameters` in with `context.form.setValue`, structurally compared so an echo of
+  the form's own emission performs no write and focus/cursor survive;
+- pushes host `errors` in as `type: 'external'`, cleared only when the prop drops them;
+- reports user edits out through `onValueChange`, suppressed while the hook is itself writing.
+
+Validation is live rather than disabled: `buildGuardrailFormSchema` declares `required`/`min`/
+`max` with messages from the label catalog (so they translate), and the host's own predicates
+(`getRequiredEmptyParameterIds`, `getOutOfRangeParameterIds`) run alongside, reaching the form
+as external errors. Where the two disagree — a `text-list` of whitespace-only rows passes the
+array's `.min(1)` but counts as empty for the host — the host verdict is what the user sees;
+`guardrail-validator-form.test.tsx` pins that.
 
 How each parameter type maps:
 

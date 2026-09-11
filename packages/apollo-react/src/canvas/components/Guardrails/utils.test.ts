@@ -339,6 +339,44 @@ describe('getOutOfRangeParameterIds', () => {
       ])
     ).toEqual([]);
   });
+
+  describe('map-enum bounds', () => {
+    // `min`/`max` are documented for map-enum too ("For number / map-enum") and every row is
+    // edited as a number, so checking only the scalar type let an out-of-range map threshold
+    // through the host-side Save gate.
+    const mapDefs = [
+      { id: 'perEntity', type: 'map-enum', label: 'Per entity', required: false, min: 0, max: 1 },
+    ] as const;
+
+    it('flags a map whose row falls outside the range', () => {
+      expect(
+        getOutOfRangeParameterIds(mapDefs as never, [
+          { $parameterType: 'map-enum', id: 'perEntity', value: { Email: 0.5, Phone: 1.5 } },
+        ])
+      ).toEqual(['perEntity']);
+    });
+
+    it('reports the parameter once however many rows are out of range', () => {
+      expect(
+        getOutOfRangeParameterIds(mapDefs as never, [
+          { $parameterType: 'map-enum', id: 'perEntity', value: { Email: -1, Phone: 2 } },
+        ])
+      ).toEqual(['perEntity']);
+    });
+
+    it('accepts in-range rows, the bounds themselves, and an empty map', () => {
+      expect(
+        getOutOfRangeParameterIds(mapDefs as never, [
+          { $parameterType: 'map-enum', id: 'perEntity', value: { Email: 0, Phone: 1 } },
+        ])
+      ).toEqual([]);
+      expect(
+        getOutOfRangeParameterIds(mapDefs as never, [
+          { $parameterType: 'map-enum', id: 'perEntity', value: {} },
+        ])
+      ).toEqual([]);
+    });
+  });
 });
 
 describe('getRequiredEmptyParameterIds', () => {

@@ -103,27 +103,45 @@ export function dropEmptyOptionalParameters(
 }
 
 /**
- * Ids of number parameters whose value falls outside the definition's `min`/`max`.
+ * Ids of parameters whose value falls outside the definition's `min`/`max`.
  *
  * `min`/`max` reach the input as DOM attributes, which browsers only enforce on native form
  * submission — and this form has none, since the host owns saving. Without this check an
  * out-of-range value saves silently, so hosts should gate Save on it alongside
  * `getRequiredEmptyParameterIds`.
+ *
+ * Covers `map-enum` as well as `number`: the bounds are documented for both (each map row is
+ * edited as a number), and checking only the scalar let an out-of-range map threshold through.
+ * A map is reported once, by parameter id, however many of its rows are out of range — the id
+ * is what a host maps to an error message.
  */
 export function getOutOfRangeParameterIds(
   definitions: readonly GuardrailParameterDefinition[],
   parameters: readonly GuardrailValidatorParameter[]
 ): string[] {
+  const isOutOfRange = (value: number, paramDef: GuardrailParameterDefinition) =>
+    (paramDef.min != null && value < paramDef.min) ||
+    (paramDef.max != null && value > paramDef.max);
+
   const ids: string[] = [];
   for (const paramDef of definitions) {
-    if (paramDef.type !== 'number') continue;
+    if (paramDef.type !== 'number' && paramDef.type !== 'map-enum') continue;
     if (paramDef.min == null && paramDef.max == null) continue;
-    const param = parameters.find((p) => p.id === paramDef.id);
-    const value = param?.value;
-    if (typeof value !== 'number' || Number.isNaN(value)) continue;
+    const value = parameters.find((p) => p.id === paramDef.id)?.value;
+
+    if (paramDef.type === 'number') {
+      if (typeof value !== 'number' || Number.isNaN(value)) continue;
+      if (isOutOfRange(value, paramDef)) ids.push(paramDef.id);
+      continue;
+    }
+
+    if (value == null || typeof value !== 'object' || Array.isArray(value)) continue;
+    const entries = Object.values(value as Record<string, unknown>);
     if (
-      (paramDef.min != null && value < paramDef.min) ||
-      (paramDef.max != null && value > paramDef.max)
+      entries.some(
+        (entry) =>
+          typeof entry === 'number' && !Number.isNaN(entry) && isOutOfRange(entry, paramDef)
+      )
     ) {
       ids.push(paramDef.id);
     }
