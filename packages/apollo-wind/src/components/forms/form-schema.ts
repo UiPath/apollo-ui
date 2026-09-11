@@ -149,8 +149,12 @@ export interface ValidationConfig {
   maxFileSize?: number; // In bytes
   allowedTypes?: string[]; // MIME types or extensions like ".pdf", "image/*"
 
-  // Custom validation (jsep expression evaluated at runtime)
-  custom?: string; // Expression like "value.length > otherField"
+  // Custom validation (jsep expression evaluated at runtime).
+  // Single-field only: the scope is `{ value }`, this field's value. The converter builds one
+  // zod schema per field, so sibling values are not in scope here and a cross-field expression
+  // would silently read `undefined`. Cross-field logic belongs in `rules`, which RulesEngine
+  // evaluates against the whole form. Example: "value > 0 && value < 100".
+  custom?: string;
 
   // Error messages (optional overrides for each constraint)
   messages?: ValidationMessages;

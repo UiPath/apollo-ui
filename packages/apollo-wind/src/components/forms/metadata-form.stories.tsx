@@ -1294,7 +1294,11 @@ export const WithCompactStateViewer = {
  *
  * The `string-list` field type (repeated multiline rows with Add/Remove) and `tooltip` field
  * metadata, validated the way the schema already expresses it: `minItems: 1` for "at least
- * one row" and `pattern: '\\S'` for "not just whitespace" — no host-side re-implementation.
+ * one row" — no host-side re-implementation.
+ *
+ * Note the deliberate limit: `pattern` applies to whole string fields, not to the items of a
+ * list, so the schema cannot currently express "no whitespace-only row" and this example does
+ * accept `['   ']`. A host needing that today enforces it in a `FormPlugin`.
  *
  * A host that needs to observe or drive values does so with a `FormPlugin`
  * (`onValueChange` to read, `context.form.setValue`/`setError` to write), which is the seam

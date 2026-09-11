@@ -303,7 +303,10 @@ export function MetadataForm({
 
     node.addEventListener('keydown', swallowEnter);
     return () => node.removeEventListener('keydown', swallowEnter);
-  }, []);
+    // `container` is the dependency, not a lint appeasement: the wrapper div only exists in
+    // 'div' mode, so a form -> div switch would otherwise leave the listener uninstalled (the
+    // ref was null on mount) and let an ancestor form submit on Enter.
+  }, [container]);
 
   // Render based on form structure
   const renderContent = () => {
