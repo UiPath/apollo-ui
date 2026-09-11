@@ -52,11 +52,15 @@ export function validationConfigToZod(
   if (config.required) {
     const requiredMessage = config.messages?.required || 'This field is required';
 
-    // Strings: `.min(1)` accepts '   ', so required goes through the shared predicate that
+    // Strings: `.min(n)` accepts whitespace, so required goes through the shared predicate that
     // the conditional-required superRefine also uses — otherwise the same `required: true`
     // means different things depending on whether the field happens to carry rules. A
     // `.refine` rather than `.trim().min(1)`, which would mutate the submitted value.
-    if (isStringType(fieldType, customValueType) && !config.minLength) {
+    //
+    // Applied irrespective of `minLength`: gating on its absence left `{ required: true,
+    // minLength: 3 }` accepting '   ', since three spaces satisfy `.min(3)` — so declaring a
+    // length constraint silently turned the emptiness check off.
+    if (isStringType(fieldType, customValueType)) {
       schema = schema.refine((value) => !isEmptyFieldValue(value), { message: requiredMessage });
     }
     // Arrays: an empty array is a filled-in field to zod, so a required multiselect or
