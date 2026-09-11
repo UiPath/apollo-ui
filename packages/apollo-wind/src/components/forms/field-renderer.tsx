@@ -35,6 +35,7 @@ import type {
 } from './form-schema';
 import { hasOptions, isCustomField } from './form-schema';
 import { RulesEngine } from './rules-engine';
+import { StringListField } from './string-list-field';
 
 /**
  * Field Renderer - Connects metadata to actual UI components
@@ -277,7 +278,10 @@ export function FormFieldRenderer({
           name={field.name}
           control={control}
           defaultValue={field.defaultValue}
-          render={({ field: formField, fieldState: { error } }) => (
+          // `ref` is destructured away: custom components are plain function components
+          // (CustomFieldComponentProps declares no ref), and spreading the Controller's ref
+          // onto one triggers React's function-component ref warning.
+          render={({ field: { ref: _ref, ...formField }, fieldState: { error } }) => (
             <CustomComponent
               {...formField}
               {...field.componentProps}
@@ -338,8 +342,16 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'email':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Input
+            id={field.name}
             value={formField.value as string | undefined}
             onChange={(e) => formField.onChange(e.target.value)}
             onBlur={formField.onBlur}
@@ -348,6 +360,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             type={field.type}
             placeholder={field.placeholder}
             disabled={disabled}
+            aria-invalid={error ? true : undefined}
             aria-label={field.ariaLabel}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
@@ -358,8 +371,16 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'number':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Input
+            id={field.name}
             value={formField.value as number | undefined}
             onBlur={formField.onBlur}
             name={formField.name}
@@ -370,6 +391,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             step={field.step}
             placeholder={field.placeholder}
             disabled={disabled}
+            aria-invalid={error ? true : undefined}
             onChange={(e) => formField.onChange(parseFloat(e.target.value))}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
@@ -380,8 +402,16 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'textarea':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Textarea
+            id={field.name}
             value={formField.value as string | undefined}
             onChange={(e) => formField.onChange(e.target.value)}
             onBlur={formField.onBlur}
@@ -389,7 +419,9 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             ref={formField.ref as React.Ref<HTMLTextAreaElement>}
             placeholder={field.placeholder}
             disabled={disabled}
-            rows={field.rows || 4}
+            maxLength={field.maxLength}
+            aria-invalid={error ? true : undefined}
+            {...(field.minRows != null ? { minRows: field.minRows } : { rows: field.rows || 4 })}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
           <FormFieldError>{error}</FormFieldError>
@@ -399,13 +431,24 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'select':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Select
             value={formField.value as string | undefined}
             onValueChange={formField.onChange}
             disabled={disabled}
           >
-            <SelectTrigger aria-label={field.label}>
+            <SelectTrigger
+              id={field.name}
+              aria-label={field.label}
+              aria-invalid={error ? true : undefined}
+            >
               <SelectValue placeholder={field.placeholder || 'Select...'} />
             </SelectTrigger>
             <SelectContent>
@@ -428,8 +471,16 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'multiselect':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <MultiSelect
+            id={field.name}
             selected={(formField.value as string[]) || []}
             onChange={formField.onChange}
             options={options.map((opt) => ({
@@ -438,9 +489,10 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             }))}
             disabled={disabled}
             placeholder={field.placeholder || 'Select items...'}
-            emptyMessage="No items found."
-            searchPlaceholder="Search..."
+            emptyMessage={field.emptyMessage ?? 'No items found.'}
+            searchPlaceholder={field.searchPlaceholder ?? 'Search...'}
             maxSelected={field.maxSelected}
+            aria-invalid={error ? true : undefined}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
           <FormFieldError>{error}</FormFieldError>
@@ -455,10 +507,16 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
               checked={formField.value === true}
               onCheckedChange={(checked) => formField.onChange(checked === true)}
               disabled={disabled}
+              aria-invalid={error ? true : undefined}
               id={field.name}
             />
             <div className="space-y-1 leading-none">
-              <FormFieldLabel htmlFor={field.name} className="font-normal">
+              <FormFieldLabel
+                htmlFor={field.name}
+                tooltip={field.tooltip}
+                tooltipAriaLabel={field.tooltipAriaLabel}
+                className="font-normal"
+              >
                 {field.label}
               </FormFieldLabel>
               <FormFieldDescription>{field.description}</FormFieldDescription>
@@ -473,13 +531,22 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         <FormField>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <FormFieldLabel>{field.label}</FormFieldLabel>
+              <FormFieldLabel
+                htmlFor={field.name}
+                required={required}
+                tooltip={field.tooltip}
+                tooltipAriaLabel={field.tooltipAriaLabel}
+              >
+                {field.label}
+              </FormFieldLabel>
               <FormFieldDescription>{field.description}</FormFieldDescription>
             </div>
             <Switch
+              id={field.name}
               checked={formField.value === true}
               onCheckedChange={(checked) => formField.onChange(checked === true)}
               disabled={disabled}
+              aria-invalid={error ? true : undefined}
             />
           </div>
           <FormFieldError>{error}</FormFieldError>
@@ -489,11 +556,18 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'radio':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <RadioGroup
             value={formField.value as string | null | undefined}
             onValueChange={formField.onChange}
             disabled={disabled}
+            aria-invalid={error ? true : undefined}
           >
             {options.map((option) => (
               <div key={String(option.value)} className="flex items-center space-x-2">
@@ -527,7 +601,13 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'date':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <DatePicker
             value={formField.value as Date | undefined}
             onValueChange={formField.onChange}
@@ -542,7 +622,13 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'datetime':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <DateTimePicker
             value={formField.value as Date | undefined}
             onValueChange={formField.onChange}
@@ -558,8 +644,18 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'file':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <FileUpload
+            id={field.name}
+            ariaLabel={field.ariaLabel ?? field.label}
+            aria-invalid={error ? true : undefined}
             accept={field.accept}
             multiple={field.multiple}
             disabled={disabled}
@@ -572,6 +668,19 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
           <FormFieldDescription>{field.description}</FormFieldDescription>
           <FormFieldError>{error}</FormFieldError>
         </FormField>
+      );
+
+    case 'string-list':
+      return (
+        <StringListField
+          field={field}
+          value={formField.value as string[] | undefined}
+          onChange={formField.onChange}
+          onBlur={formField.onBlur}
+          error={error}
+          disabled={disabled}
+          required={required}
+        />
       );
 
     default:
@@ -629,7 +738,13 @@ function SliderField({ field, formField, error, disabled, required }: SliderFiel
   return (
     <FormField>
       <div className="flex justify-between">
-        <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+        <FormFieldLabel
+          required={required}
+          tooltip={field.tooltip}
+          tooltipAriaLabel={field.tooltipAriaLabel}
+        >
+          {field.label}
+        </FormFieldLabel>
         <span className="text-sm text-muted-foreground">{displayValue as React.ReactNode}</span>
       </div>
       <Slider
