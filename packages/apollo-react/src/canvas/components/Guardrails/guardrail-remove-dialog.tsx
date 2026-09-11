@@ -87,12 +87,16 @@ function ImpactList({
   return (
     <ul className="list-disc pl-5">
       {/* Keyed by index and value: neither list is reordered or filtered, and two tools can
-          carry the same display name, which a value-only key would warn about. */}
+          carry the same display name, which a value-only key would warn about. The kind
+          prefix is for the reader, not for React: the two maps are separate child arrays of
+          the one `<ul>`, and React scopes keys per array, so a tool named `Agent` at index 0
+          never collided with the `Agent` scope at index 0. Verified by spying on the key
+          warning, which stays silent for that case and fires for a real duplicate. */}
       {toolNames.map((name, index) => (
-        <li key={`${index}-${name}`}>{name}</li>
+        <li key={`tool-${index}-${name}`}>{name}</li>
       ))}
       {scopes.map((scope, index) => (
-        <li key={`${index}-${scope}`}>{formatScope ? formatScope(scope) : scope}</li>
+        <li key={`scope-${index}-${scope}`}>{formatScope ? formatScope(scope) : scope}</li>
       ))}
     </ul>
   );
