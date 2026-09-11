@@ -210,5 +210,9 @@
   "guardrails.builder.block-reason-required-error": "封鎖原因為必填欄位",
   "guardrails.builder.filter-fields-required-error": "必須選取欄位",
   "guardrails.builder.recipient-required-error": "收件者為必填欄位",
-  "guardrails.builder.action-app-required-error": "動作應用程式為必填欄位"
+  "guardrails.builder.action-app-required-error": "動作應用程式為必填欄位",
+  "guardrails.form.required-error": "值為必填項",
+  "guardrails.form.min-error": "必須至少為 {min}",
+  "guardrails.form.max-error": "最多為 {max}",
+  "guardrails.builder.parameter-out-of-range-error": "值超出範圍"
 }

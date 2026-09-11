@@ -210,5 +210,9 @@
   "guardrails.builder.block-reason-required-error": "Engelleme nedeni gereklidir",
   "guardrails.builder.filter-fields-required-error": "Alan seçimi gereklidir",
   "guardrails.builder.recipient-required-error": "Alıcı gereklidir",
-  "guardrails.builder.action-app-required-error": "Eylem uygulaması gereklidir"
+  "guardrails.builder.action-app-required-error": "Eylem uygulaması gereklidir",
+  "guardrails.form.required-error": "Değer gereklidir",
+  "guardrails.form.min-error": "En az {min} olmalıdır",
+  "guardrails.form.max-error": "En fazla {max} olmalıdır",
+  "guardrails.builder.parameter-out-of-range-error": "Değer aralık dışında"
 }

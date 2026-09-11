@@ -1114,6 +1114,34 @@ describe('GuardrailValidatorForm', () => {
 
       expect(await screen.findByRole('button', { name: '追加' })).toBeInTheDocument();
     });
+
+    // The resolver messages are the easiest strings to leave behind: apollo-wind has its own
+    // English fallbacks, so omitting `messages` fails silently rather than rendering a missing
+    // key. This asserts the translated text so a dropped catalog entry is a failing test.
+    it('resolves the resolver validation messages from the catalog, not wind English', async () => {
+      const defs: GuardrailParameterDefinition[] = [
+        {
+          id: 'threshold',
+          type: 'number',
+          label: 'Threshold',
+          required: false,
+          defaultValue: 0.5,
+          min: 0,
+          max: 1,
+        },
+      ];
+
+      render(
+        <ApI18nProvider component="canvas" locale="ja">
+          <GuardrailValidatorForm parameterDefinitions={defs} parameters={[]} onChange={() => {}} />
+        </ApI18nProvider>
+      );
+
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } });
+
+      expect(await screen.findByText('1 以下である必要があります')).toBeInTheDocument();
+      expect(screen.queryByText('Must be at most 1')).not.toBeInTheDocument();
+    });
   });
 
   describe('accessibility', () => {

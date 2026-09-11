@@ -215,5 +215,9 @@
   "guardrails.builder.block-reason-required-error": "Block reason is required",
   "guardrails.builder.filter-fields-required-error": "Fields selection is required",
   "guardrails.builder.recipient-required-error": "Recipient is required",
-  "guardrails.builder.action-app-required-error": "Action app is required"
+  "guardrails.builder.action-app-required-error": "Action app is required",
+  "guardrails.form.required-error": "Value is required",
+  "guardrails.form.min-error": "Must be at least {min}",
+  "guardrails.form.max-error": "Must be at most {max}",
+  "guardrails.builder.parameter-out-of-range-error": "Value is out of range"
 }

@@ -210,5 +210,9 @@
   "guardrails.builder.block-reason-required-error": "차단 이유는 필수입니다",
   "guardrails.builder.filter-fields-required-error": "필드를 선택해야 합니다",
   "guardrails.builder.recipient-required-error": "수신자는 필수입니다",
-  "guardrails.builder.action-app-required-error": "액션 앱은 필수입니다"
+  "guardrails.builder.action-app-required-error": "액션 앱은 필수입니다",
+  "guardrails.form.required-error": "값이 필요합니다",
+  "guardrails.form.min-error": "{min} 이상이어야 합니다",
+  "guardrails.form.max-error": "{max} 이하여야 합니다",
+  "guardrails.builder.parameter-out-of-range-error": "값이 범위를 벗어났습니다"
 }

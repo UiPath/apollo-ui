@@ -210,5 +210,9 @@
   "guardrails.builder.block-reason-required-error": "Blockierungsgrund ist erforderlich",
   "guardrails.builder.filter-fields-required-error": "Eine Feldauswahl ist erforderlich.",
   "guardrails.builder.recipient-required-error": "Empfänger ist erforderlich",
-  "guardrails.builder.action-app-required-error": "Aktions-App ist erforderlich"
+  "guardrails.builder.action-app-required-error": "Aktions-App ist erforderlich",
+  "guardrails.form.required-error": "Wert ist erforderlich",
+  "guardrails.form.min-error": "Muss mindestens {min} sein",
+  "guardrails.form.max-error": "Darf höchstens {max} sein",
+  "guardrails.builder.parameter-out-of-range-error": "Wert liegt außerhalb des gültigen Bereichs"
 }

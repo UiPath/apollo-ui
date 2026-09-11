@@ -210,5 +210,9 @@
   "guardrails.builder.block-reason-required-error": "Este necesar un motiv pentru blocare",
   "guardrails.builder.filter-fields-required-error": "Este necesară selectarea câmpurilor",
   "guardrails.builder.recipient-required-error": "Este necesar un destinatar",
-  "guardrails.builder.action-app-required-error": "Aplicația Action este necesară"
+  "guardrails.builder.action-app-required-error": "Aplicația Action este necesară",
+  "guardrails.form.required-error": "Valoarea este obligatorie",
+  "guardrails.form.min-error": "Trebuie să fie cel puțin {min}",
+  "guardrails.form.max-error": "Trebuie să fie cel mult {max}",
+  "guardrails.builder.parameter-out-of-range-error": "Valoarea este în afara intervalului"
 }

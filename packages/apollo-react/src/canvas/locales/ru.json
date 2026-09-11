@@ -4,5 +4,9 @@
   "sticky-note.formatting.strikethrough": "",
   "sticky-note.formatting.bullet-list": "",
   "sticky-note.formatting.numbered-list": "",
-  "sticky-note.formatting.toolbar": ""
+  "sticky-note.formatting.toolbar": "",
+  "guardrails.form.required-error": "Значение обязательно",
+  "guardrails.form.min-error": "Должно быть не менее {min}",
+  "guardrails.form.max-error": "Должно быть не более {max}",
+  "guardrails.builder.parameter-out-of-range-error": "Значение вне допустимого диапазона"
 }

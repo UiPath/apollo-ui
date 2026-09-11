@@ -210,5 +210,9 @@
   "guardrails.builder.block-reason-required-error": "La raison du blocage est requise",
   "guardrails.builder.filter-fields-required-error": "La sélection des champs est requise",
   "guardrails.builder.recipient-required-error": "Le destinataire est requis",
-  "guardrails.builder.action-app-required-error": "Une application Action est requise"
+  "guardrails.builder.action-app-required-error": "Une application Action est requise",
+  "guardrails.form.required-error": "La valeur est obligatoire",
+  "guardrails.form.min-error": "Doit être au minimum {min}",
+  "guardrails.form.max-error": "Doit être au maximum {max}",
+  "guardrails.builder.parameter-out-of-range-error": "La valeur est hors plage"
 }

@@ -223,7 +223,16 @@ export function resolveGuardrailFormLabels(
 // Reifies each ICU placeholder back into the `{{token}}` template convention: the
 // localized strings cross into plain-string template APIs (`formatGuardrailFormMessage`,
 // wind's `formatTemplate`) as data, while translators work with standard ICU placeholders.
-const TEMPLATE_TOKENS = { name: '{{name}}', label: '{{label}}', position: '{{position}}' };
+// Every token any message here interpolates must be listed: lingui substitutes an absent one
+// with the empty string, so a missing entry does not fail — it silently drops the value out of
+// the translated message ("Must be at most 1" renders as "Must be at most ").
+const TEMPLATE_TOKENS = {
+  name: '{{name}}',
+  label: '{{label}}',
+  position: '{{position}}',
+  min: '{{min}}',
+  max: '{{max}}',
+};
 
 /** Localized chrome strings of the validator form; per-string `overrides` always win. */
 export function useGuardrailFormLabels(

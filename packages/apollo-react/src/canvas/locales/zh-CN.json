@@ -210,5 +210,9 @@
   "guardrails.builder.block-reason-required-error": "阻止原因为必填项",
   "guardrails.builder.filter-fields-required-error": "“字段选择”为必填项",
   "guardrails.builder.recipient-required-error": "收件人为必填项",
-  "guardrails.builder.action-app-required-error": "操作应用程序为必填项"
+  "guardrails.builder.action-app-required-error": "操作应用程序为必填项",
+  "guardrails.form.required-error": "值为必填项",
+  "guardrails.form.min-error": "必须至少为 {min}",
+  "guardrails.form.max-error": "最多为 {max}",
+  "guardrails.builder.parameter-out-of-range-error": "值超出范围"
 }

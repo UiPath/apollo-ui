@@ -210,5 +210,9 @@
   "guardrails.builder.block-reason-required-error": "ブロックする理由は必須です。",
   "guardrails.builder.filter-fields-required-error": "フィールドの選択は必須です。",
   "guardrails.builder.recipient-required-error": "受信者は必須です。",
-  "guardrails.builder.action-app-required-error": "アクション アプリは必須です。"
+  "guardrails.builder.action-app-required-error": "アクション アプリは必須です。",
+  "guardrails.form.required-error": "値は必須です",
+  "guardrails.form.min-error": "{min} 以上である必要があります",
+  "guardrails.form.max-error": "{max} 以下である必要があります",
+  "guardrails.builder.parameter-out-of-range-error": "値が範囲外です"
 }

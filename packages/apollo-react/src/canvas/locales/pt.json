@@ -210,5 +210,9 @@
   "guardrails.builder.block-reason-required-error": "O motivo do bloqueio é obrigatório",
   "guardrails.builder.filter-fields-required-error": "A seleção de campos é obrigatória",
   "guardrails.builder.recipient-required-error": "O destinatário é obrigatório",
-  "guardrails.builder.action-app-required-error": "A aplicação Action é obrigatória"
+  "guardrails.builder.action-app-required-error": "A aplicação Action é obrigatória",
+  "guardrails.form.required-error": "O valor é obrigatório",
+  "guardrails.form.min-error": "Deve ser no mínimo {min}",
+  "guardrails.form.max-error": "Deve ser no máximo {max}",
+  "guardrails.builder.parameter-out-of-range-error": "O valor está fora do intervalo"
 }
