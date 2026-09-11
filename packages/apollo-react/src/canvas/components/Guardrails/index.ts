@@ -107,6 +107,7 @@ export type {
   GuardrailListItemState,
   GuardrailListStatus,
   GuardrailReorderMove,
+  GuardrailRowTooltipRenderer,
 } from './list-types';
 export type {
   GuardrailParameterDefinition,

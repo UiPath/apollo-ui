@@ -90,6 +90,15 @@ export interface GuardrailReorderMove {
   id: string;
 }
 
+/**
+ * Hover (and keyboard-focus) content for a row body. Return nothing to leave that row
+ * untooltipped, which is what lets a host tooltip some rows and not others.
+ *
+ * Declared here rather than inferred from the row's props so both `GuardrailListProps` and
+ * `GuardrailListRowProps` name the same type and autodocs show a signature.
+ */
+export type GuardrailRowTooltipRenderer = (item: GuardrailListItem) => ReactNode;
+
 /** Context handed to the `renderItemActions` slot (Agents' overflow menu). */
 export interface GuardrailListItemActionsContext {
   item: GuardrailListItem;
@@ -99,7 +108,11 @@ export interface GuardrailListItemActionsContext {
   index: number;
   /** Whether the list is read-only. */
   disabled: boolean;
-  /** The list's intents, already bound to this row. Absent when the host passed no handler. */
+  /**
+   * The list's intents, already bound to this row. Absent when the host passed no handler
+   * *or* the list is disabled, so a slot can render its own control without re-checking
+   * `disabled`.
+   */
   onEdit?: () => void;
   onRemove?: () => void;
   /** The default inline Edit / Remove buttons, so a slot can add to them instead of replacing. */

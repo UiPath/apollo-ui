@@ -190,9 +190,9 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
   | `hideHeader` | `false` | Agents owns the section title and its add affordance. |
   | `footer` | none | Agents' add affordance sits *below* the rows and swaps itself for an entitlement line, which the header-only `addSlot` cannot express. |
   | `emptyState` | the default line | Agents renders nothing when empty: pass `null`. An explicit `null` is honoured, so the check is for an absent prop, not a falsy value. |
-  | `rowActivatesEdit` | `false` | Agents opens the editor by clicking the row body. |
+  | `rowActivatesEdit` | `false` | Agents opens the editor by clicking the row body. The body becomes a `role="button"`, whose children ARIA treats as presentational, so the BYO notices and the description are named in its `aria-describedby`. The provider line, action badge and scopes stay presentational: a host that needs those announced should render them outside the activatable body. |
   | `renderItemActions` | inline buttons | Agents' actions are an overflow menu. The slot receives `defaultActions`, so it can add to them instead of replacing them. |
-  | `renderRowTooltip` | none | Agents hovers a combined description, provider and scopes tooltip over the row body. |
+  | `renderRowTooltip` | none | Agents hovers a combined description, provider and scopes tooltip over the row body. A tooltipped body that is not activatable gets `tabIndex={0}`, so the content opens on focus as well as hover. |
   | `formatScopes` / `formatAction` | raw values | Scope and action wording is product copy; return `null` to hide either line. |
   | `getItemId` | `id ?? name` | Flow keys rows by `id`, Agents by `name`. |
   | `getItemAdministration` | `'local'` | Governance-managed guardrails come from a different endpoint, so nothing on the record identifies them. |
@@ -205,10 +205,17 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
   and parent-bound modifiers, and a drag handle that is a real button: Agents' handle today is
   an `aria-hidden` icon carrying the listeners, so it cannot be reached from the keyboard.
   That is a fix, not a regression. With reorder off, or with a single row, no drag machinery
-  is mounted at all.
+  is mounted at all: the sensors are hooks, so they live in a `SortableRows` component
+  alongside the `DndContext` rather than in `GuardrailList`, where they would run for every
+  non-reorderable list.
 - `renderRowTooltip` brings its own `TooltipProvider`, because a row renders where none is
-  guaranteed. A tooltip anchored to a row body that is not activatable is pointer-only, so
-  anything a keyboard user needs belongs in the row itself.
+  guaranteed. The body it anchors to is focusable either way (`role="button"` when the row
+  activates edit, `tabIndex={0}` when it does not), so the tooltip is reachable by keyboard
+  and not pointer-only.
+- **Error text is `text-error`, not `text-destructive`.** The two resolve differently in
+  several `tailwind.consumer.css` theme blocks and wind's `FormFieldError` settled on
+  `text-error`. The BYO notices keep `role="alert"` rather than the family banner's
+  `role="status"`: Flow announces them on mount today and the shared row keeps that parity.
 
 ### Chips and notices
 

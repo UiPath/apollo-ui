@@ -120,6 +120,16 @@ describe('GuardrailListRow', () => {
 
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
+
+    it('tones the notice with `text-error`, the error-text token', () => {
+      renderRow(BYO_GUARDRAIL, {}, [{ validator: 'pii_detection', status: 'Available' }]);
+
+      // Not `text-destructive`: the two resolve differently in several theme blocks, and
+      // wind's own `FormFieldError` uses `text-error`.
+      const notice = screen.getByRole('alert');
+      expect(notice).toHaveClass('text-error');
+      expect(notice).not.toHaveClass('text-destructive');
+    });
   });
 
   describe('actions', () => {
@@ -208,6 +218,30 @@ describe('GuardrailListRow', () => {
       ).not.toBeInTheDocument();
     });
 
+    it('describes the activatable body with its notices and description', () => {
+      const described = { ...BYO_GUARDRAIL, description: 'Blocks prompt injection attempts.' };
+      renderRow(described, { onEdit: vi.fn(), rowActivatesEdit: true }, [
+        { validator: 'byo', status: 'Disabled', byoValidatorName: 'noma_prompt_injection' },
+      ]);
+
+      // ARIA treats a button's children as presentational, so without this the row is
+      // announced as its label alone and the reason it cannot run is silent.
+      const body = screen.getByRole('button', { name: 'Edit Noma prompt shield' });
+      const ids = body.getAttribute('aria-describedby')?.split(' ') ?? [];
+      expect(ids).toHaveLength(2);
+      const texts = ids.map((id) => document.getElementById(id)?.textContent);
+      expect(texts[0]).toContain('has been disabled');
+      expect(texts[1]).toBe('Blocks prompt injection attempts.');
+    });
+
+    it('names nothing when there is nothing to describe', () => {
+      renderRow(CUSTOM_GUARDRAIL, { onEdit: vi.fn(), rowActivatesEdit: true });
+
+      // No BYO notice and no description on this fixture.
+      const body = screen.getByRole('button', { name: 'Edit Blocked words' });
+      expect(body).not.toHaveAttribute('aria-describedby');
+    });
+
     it('keeps the row actions out of the activatable body, so no button nests in a button', async () => {
       const { container } = renderRow(PII_GUARDRAIL, {
         onEdit: vi.fn(),
@@ -227,6 +261,36 @@ describe('GuardrailListRow', () => {
     // Radix keeps the content unmounted until it opens; what matters here is that a row
     // brings its own provider, so mounting a tooltip outside one does not throw.
     expect(screen.getByText('PII detection 1')).toBeInTheDocument();
+  });
+
+  it('makes a tooltipped body focusable, so the tooltip is not pointer-only', () => {
+    const { container } = renderRow(PII_GUARDRAIL, {
+      renderRowTooltip: (item) => `About ${item.name}`,
+    });
+
+    // Radix opens on focus as well as hover, so focusability is the whole fix (WCAG 1.4.13).
+    expect(container.querySelector('[data-slot="guardrail-list-row"] > div')).toHaveAttribute(
+      'tabindex',
+      '0'
+    );
+  });
+
+  it('leaves an untooltipped, non-activatable body out of the tab order', () => {
+    const { container } = renderRow(PII_GUARDRAIL);
+
+    expect(container.querySelector('[data-slot="guardrail-list-row"] > div')).not.toHaveAttribute(
+      'tabindex'
+    );
+  });
+
+  it('capitalizes the raw action type but not host-localized output', () => {
+    const { unmount } = renderRow(PII_GUARDRAIL);
+    expect(screen.getByText('log')).toHaveClass('capitalize');
+    unmount();
+
+    // A localized string is already cased for its locale; `capitalize` would mangle it.
+    renderRow(PII_GUARDRAIL, { formatAction: () => 'protokollieren' });
+    expect(screen.getByText('protokollieren')).not.toHaveClass('capitalize');
   });
 
   it('renders the drag handle the list passes in', () => {

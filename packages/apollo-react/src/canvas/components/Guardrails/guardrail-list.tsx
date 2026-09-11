@@ -32,6 +32,7 @@ import type {
   GuardrailListItem,
   GuardrailListItemActionsContext,
   GuardrailReorderMove,
+  GuardrailRowTooltipRenderer,
 } from './list-types';
 
 const DND_MODIFIERS = [restrictToVerticalAxis, restrictToParentElement];
@@ -104,8 +105,8 @@ export interface GuardrailListProps {
   /** Rendered above the rows, e.g. `GuardrailStatusBanner` for a definitions load failure. */
   statusBanner?: ReactNode;
 
-  /** Hover content for a row's body. Return nothing to leave that row untooltipped. */
-  renderRowTooltip?: GuardrailListRowProps['renderRowTooltip'];
+  /** Hover and focus content for a row's body. See `GuardrailRowTooltipRenderer`. */
+  renderRowTooltip?: GuardrailRowTooltipRenderer;
   /** Replace a row's inline actions, e.g. with an overflow menu. */
   renderItemActions?: (ctx: GuardrailListItemActionsContext) => ReactNode;
   /** Localize a row's scopes line. Return `null` to hide it. Default: raw scopes, comma-joined. */
@@ -118,6 +119,44 @@ export interface GuardrailListProps {
 }
 
 type SortableRowProps = Omit<GuardrailListRowProps, 'handle'>;
+
+/**
+ * The drag machinery, mounted only while the list is reorderable.
+ *
+ * The sensors live here rather than in `GuardrailList` because `useSensor`/`useSensors` are
+ * hooks: in the parent they would run for every non-reorderable list too, which is most of
+ * them, and the claim that reorder-off mounts no drag machinery would be only nearly true.
+ */
+function SortableRows({
+  ids,
+  onDragEnd,
+  children,
+}: {
+  ids: string[];
+  onDragEnd: (event: DragEndEvent) => void;
+  children: ReactNode;
+}) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, POINTER_SENSOR_OPTIONS),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      modifiers={DND_MODIFIERS}
+      // The list lives in a properties panel that scrolls on its own; dnd-kit's auto-scroll
+      // fights it.
+      autoScroll={false}
+      onDragEnd={onDragEnd}
+    >
+      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+        {children}
+      </SortableContext>
+    </DndContext>
+  );
+}
 
 /**
  * A row inside a `DndContext`. Mounted only when the list is reorderable, so `useSortable`
@@ -214,11 +253,6 @@ export function GuardrailList({
 }: GuardrailListProps) {
   const labels = useGuardrailListLabels(labelOverrides);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, POINTER_SENSOR_OPTIONS),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
   const rows = useMemo(
     () => guardrails.map((item) => ({ item, id: getItemId(item) })),
     [guardrails, getItemId]
@@ -303,19 +337,9 @@ export function GuardrailList({
       <div className={cn('space-y-2', !unstyled && 'p-3')}>
         {statusBanner}
         {isReorderable ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            modifiers={DND_MODIFIERS}
-            // The list lives in a properties panel that scrolls on its own; dnd-kit's
-            // auto-scroll fights it.
-            autoScroll={false}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-              {content}
-            </SortableContext>
-          </DndContext>
+          <SortableRows ids={ids} onDragEnd={handleDragEnd}>
+            {content}
+          </SortableRows>
         ) : (
           content
         )}
