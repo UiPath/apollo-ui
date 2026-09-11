@@ -44,6 +44,7 @@ import {
 import type { GuardrailValidatorFormProps } from './types';
 import {
   dropEmptyOptionalParameters,
+  getOutOfRangeParameterIds,
   getRequiredEmptyParameterIds,
   syncMapEnumParameters,
 } from './utils';
@@ -210,14 +211,25 @@ export function GuardrailBuilder({
       }
     }
 
-    const emptyParamIds = getRequiredEmptyParameterIds(
+    // Both host-side predicates gate Save. Range matters because `min`/`max` reach the input
+    // only as DOM attributes, which browsers enforce on native submission — and this form has
+    // none, so without this a typed out-of-range threshold saved silently.
+    const parameterErrors: Record<string, string> = {};
+    for (const id of getRequiredEmptyParameterIds(
       definition.parameters,
       formData.validatorParameters
-    );
-    if (emptyParamIds.length > 0) {
-      e.parameters = Object.fromEntries(
-        emptyParamIds.map((id) => [id, labels.parameterRequiredError])
-      );
+    )) {
+      parameterErrors[id] = labels.parameterRequiredError;
+    }
+    for (const id of getOutOfRangeParameterIds(
+      definition.parameters,
+      formData.validatorParameters
+    )) {
+      // Required wins: an empty field is the more actionable message of the two.
+      parameterErrors[id] ??= labels.parameterOutOfRangeError;
+    }
+    if (Object.keys(parameterErrors).length > 0) {
+      e.parameters = parameterErrors;
     }
 
     for (const field of getGuardrailActionErrorFields(formData.action)) {

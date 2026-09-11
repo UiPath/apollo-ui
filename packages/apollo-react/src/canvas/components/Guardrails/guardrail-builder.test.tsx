@@ -221,6 +221,43 @@ describe('GuardrailBuilder', () => {
         ],
       });
 
+    // `min`/`max` reach the input only as DOM attributes, which browsers enforce on native
+    // submission — and this form has none, so before this gate a typed out-of-range value
+    // saved silently.
+    it('does not call onSave when a number param is outside its declared range', () => {
+      const onSave = vi.fn();
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={{
+            ...llmJudgeDefinition(),
+            parameters: [
+              {
+                id: 'threshold',
+                type: 'number',
+                label: 'Threshold',
+                required: false,
+                defaultValue: 0.5,
+                min: 0,
+                max: 1,
+              },
+            ],
+          }}
+          scope="Agent"
+          onSave={onSave}
+          onCancel={vi.fn()}
+        />
+      );
+
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } });
+      fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+      expect(onSave).not.toHaveBeenCalled();
+      expect(screen.getAllByText('Value is out of range').length).toBeGreaterThan(0);
+    });
+
     it('does not call onSave when a required text param is empty', () => {
       const onSave = vi.fn();
       render(

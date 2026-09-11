@@ -106,6 +106,8 @@ export interface GuardrailBuilderLabels {
   nameRequiredError: string;
   nameDuplicateError: string;
   parameterRequiredError: string;
+  /** Shown on a parameter whose value falls outside its declared `min`/`max`. */
+  parameterOutOfRangeError: string;
   scopesRequiredError: string;
   toolsRequiredError: string;
   blockReasonRequiredError: string;
@@ -167,6 +169,7 @@ export const GUARDRAIL_BUILDER_EN_LABELS: GuardrailBuilderLabels = {
   nameRequiredError: 'Guardrail name is required',
   nameDuplicateError: 'A guardrail with this name already exists',
   parameterRequiredError: 'Value is required',
+  parameterOutOfRangeError: 'Value is out of range',
   scopesRequiredError: 'At least one scope is required',
   toolsRequiredError: 'At least one tool is required',
   blockReasonRequiredError: 'Block reason is required',
@@ -422,6 +425,10 @@ export function useGuardrailBuilderLabels(
           parameterRequiredError: _({
             id: 'guardrails.builder.parameter-required-error',
             message: 'Value is required',
+          }),
+          parameterOutOfRangeError: _({
+            id: 'guardrails.builder.parameter-out-of-range-error',
+            message: 'Value is out of range',
           }),
           scopesRequiredError: _({
             id: 'guardrails.builder.scopes-required-error',
