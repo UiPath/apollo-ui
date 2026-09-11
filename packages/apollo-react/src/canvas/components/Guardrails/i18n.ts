@@ -230,6 +230,9 @@ export function resolveGuardrailFormLabels(
 // Every token any message here interpolates must be listed: lingui substitutes an absent one
 // with the empty string, so a missing entry does not fail — it silently drops the value out of
 // the translated message ("Must be at most 1" renders as "Must be at most ").
+//
+// One map for every label set: `toolName` is the remove dialog's, and passing it to the form
+// and builder strings, which never declare that placeholder, is inert.
 const TEMPLATE_TOKENS = {
   name: '{{name}}',
   label: '{{label}}',
