@@ -86,6 +86,41 @@ describe('validationConfigToZod', () => {
     });
   });
 
+  describe('required emptiness semantics', () => {
+    it('rejects whitespace-only strings without mutating the value', () => {
+      // z.string().min(1) accepts '   ', so the resolver used to disagree with the
+      // conditional-required superRefine. Both now share isEmptyFieldValue.
+      const schema = validationConfigToZod({ required: true }, 'text');
+      expect(schema.safeParse('   ').success).toBe(false);
+      expect(schema.safeParse('  ok  ')).toMatchObject({ success: true, data: '  ok  ' });
+    });
+
+    it('still honours an explicit minLength instead of the required check', () => {
+      const schema = validationConfigToZod({ required: true, minLength: 3 }, 'text');
+      expect(schema.safeParse('ab').success).toBe(false);
+      expect(schema.safeParse('abc').success).toBe(true);
+    });
+
+    it.each([
+      'string-list',
+      'multiselect',
+    ] as const)('keeps required effective for %s when minItems is explicitly 0', (fieldType) => {
+      const schema = validationConfigToZod({ required: true, minItems: 0 }, fieldType);
+      expect(schema.safeParse([]).success).toBe(false);
+      expect(schema.safeParse(['a']).success).toBe(true);
+    });
+
+    it('keeps required effective for a string-array custom field with minItems 0', () => {
+      const schema = validationConfigToZod(
+        { required: true, minItems: 0 },
+        'custom',
+        'string-array'
+      );
+      expect(schema.safeParse([]).success).toBe(false);
+      expect(schema.safeParse(['a']).success).toBe(true);
+    });
+  });
+
   describe('custom-field value shape', () => {
     it('enforces required once a custom field declares its value shape', () => {
       // Undeclared: z.any(), so required cannot be enforced — the documented default.
@@ -120,8 +155,15 @@ describe('validationConfigToZod', () => {
       if (!result.success) expect(result.error.issues[0].message).toBe('Too short');
     });
 
-    it('never blocks the user on an unparseable expression', () => {
-      const schema = validationConfigToZod({ custom: 'value.some(' }, 'text');
+    it.each([
+      ['unparseable', 'value.some('],
+      // These parse cleanly and then throw on the unsupported CallExpression, which the
+      // evaluator reports as `false` — indistinguishable from a failing check, so treating
+      // it as a failure would pin the field permanently invalid.
+      ['a call expression', 'value.some(x)'],
+      ['a member call', 'value.trim().length > 0'],
+    ])('does not enforce an expression the evaluator cannot handle (%s)', (_label, custom) => {
+      const schema = validationConfigToZod({ custom }, 'text');
       expect(schema.safeParse('anything').success).toBe(true);
     });
   });

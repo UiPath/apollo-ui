@@ -252,6 +252,7 @@ function serializeField(field: FieldMetadata): JsonObject {
     result.removeItemAriaLabel = field.removeItemAriaLabel;
   }
   if ('component' in field && field.component) result.component = field.component;
+  if ('valueType' in field && field.valueType) result.valueType = field.valueType;
   if ('componentProps' in field && field.componentProps) {
     result.componentProps = field.componentProps as JsonObject;
   }

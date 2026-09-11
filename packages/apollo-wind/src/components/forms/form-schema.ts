@@ -291,6 +291,9 @@ export interface StringListFieldMetadata extends BaseFieldMetadata {
   removeItemAriaLabel?: string;
 }
 
+/** Value shapes a `type: 'custom'` field can declare so metadata constraints apply to it. */
+export type CustomValueType = 'string' | 'number' | 'boolean' | 'string-array';
+
 export interface CustomFieldMetadata extends BaseFieldMetadata {
   type: 'custom';
   component: string;
@@ -300,7 +303,7 @@ export interface CustomFieldMetadata extends BaseFieldMetadata {
    * `required` (and `minItems` for lists) silently does nothing — declare it and the normal
    * metadata constraints apply to custom components like any other field.
    */
-  valueType?: 'string' | 'number' | 'boolean' | 'string-array';
+  valueType?: CustomValueType;
 }
 
 /**

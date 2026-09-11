@@ -507,6 +507,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
               checked={formField.value === true}
               onCheckedChange={(checked) => formField.onChange(checked === true)}
               disabled={disabled}
+              aria-invalid={error ? true : undefined}
               id={field.name}
             />
             <div className="space-y-1 leading-none">
@@ -545,6 +546,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
               checked={formField.value === true}
               onCheckedChange={(checked) => formField.onChange(checked === true)}
               disabled={disabled}
+              aria-invalid={error ? true : undefined}
             />
           </div>
           <FormFieldError>{error}</FormFieldError>
@@ -565,6 +567,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             value={formField.value as string | null | undefined}
             onValueChange={formField.onChange}
             disabled={disabled}
+            aria-invalid={error ? true : undefined}
           >
             {options.map((option) => (
               <div key={String(option.value)} className="flex items-center space-x-2">

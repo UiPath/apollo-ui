@@ -1,6 +1,8 @@
-import jsep from 'jsep';
 import { z } from 'zod';
-import type { FieldType, ValidationConfig } from './form-schema';
+import type { CustomValueType, FieldType, ValidationConfig } from './form-schema';
+
+export type { CustomValueType };
+
 import { RulesEngine } from './rules-engine';
 
 /**
@@ -48,20 +50,23 @@ export function validationConfigToZod(
 
   // Apply required/optional
   if (config.required) {
-    // For strings, also check for non-empty
+    const requiredMessage = config.messages?.required || 'This field is required';
+
+    // Strings: `.min(1)` accepts '   ', so required goes through the shared predicate that
+    // the conditional-required superRefine also uses — otherwise the same `required: true`
+    // means different things depending on whether the field happens to carry rules. A
+    // `.refine` rather than `.trim().min(1)`, which would mutate the submitted value.
     if (isStringType(fieldType, customValueType) && !config.minLength) {
-      schema = (schema as z.ZodString).min(
-        1,
-        config.messages?.required || 'This field is required'
-      );
+      schema = schema.refine((value) => !isEmptyFieldValue(value), { message: requiredMessage });
     }
-    // Same for arrays: an empty array is a filled-in field to zod, so a required
-    // multiselect/string-list would otherwise submit with nothing selected.
-    if (isArrayType(fieldType, customValueType) && config.minItems == null) {
-      schema = (schema as z.ZodArray<z.ZodTypeAny>).min(
-        1,
-        config.messages?.required || 'This field is required'
-      );
+    // Arrays: an empty array is a filled-in field to zod, so a required multiselect or
+    // string-list would otherwise submit with nothing selected. An explicit `minItems` below
+    // one is no effective constraint, so required still has to apply its own.
+    if (
+      isArrayType(fieldType, customValueType) &&
+      (config.minItems == null || config.minItems < 1)
+    ) {
+      schema = (schema as z.ZodArray<z.ZodTypeAny>).min(1, requiredMessage);
     }
     return applyCustomExpression(schema, config);
   }
@@ -73,27 +78,22 @@ export function validationConfigToZod(
  * `ValidationConfig.custom` — a jsep expression evaluated against `{ value }`. Declared and
  * serialized since the schema's first version but never enforced until now.
  *
- * The evaluator supports literals, identifiers, member access, and binary/unary/conditional
- * operators; it has no `CallExpression`, so `value.length > 0` works while `value.some(...)`
- * does not.
+ * The evaluator handles literals, identifiers, member access, and binary/unary/conditional
+ * operators. Anything else — notably calls, so `value.some(...)` and `value.trim().length > 0`
+ * — parses cleanly and then throws while evaluating. Treating that throw as "the check
+ * failed" would pin the field permanently invalid and log on every keystroke, so an
+ * expression the evaluator cannot handle is not enforced at all: a schema authoring mistake
+ * must not block the user.
  */
 function applyCustomExpression(schema: z.ZodTypeAny, config: ValidationConfig): z.ZodTypeAny {
   if (!config.custom) return schema;
   const expression = config.custom;
   const message = config.messages?.custom || 'This value is not valid';
 
-  // Parse once, here, rather than on every validation: the evaluator returns `false` for a
-  // malformed expression exactly as it does for a legitimately failing one, so a typo in a
-  // schema would otherwise make the field permanently unsubmittable. A schema authoring
-  // mistake should not block the user, so an unparseable expression is simply not enforced.
-  try {
-    jsep(expression);
-  } catch {
-    return schema;
-  }
-
   return schema.superRefine((value: unknown, ctx: z.RefinementCtx) => {
-    if (!RulesEngine.evaluateExpression(expression, { value })) {
+    const result = RulesEngine.tryEvaluateExpression(expression, { value });
+    if (!result.ok) return;
+    if (!result.value) {
       ctx.addIssue({ code: 'custom', message });
     }
   });
@@ -174,9 +174,6 @@ export function isEmptyFieldValue(value: unknown): boolean {
   if (Array.isArray(value)) return value.length === 0;
   return false;
 }
-
-/** Value shapes a `type: 'custom'` field can declare so metadata constraints apply to it. */
-export type CustomValueType = 'string' | 'number' | 'boolean' | 'string-array';
 
 function isStringType(fieldType: FieldType, customValueType?: CustomValueType): boolean {
   if (fieldType === 'custom') return customValueType === 'string';

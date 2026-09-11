@@ -145,6 +145,39 @@ describe('serializeSchema', () => {
       });
     });
 
+    it('preserves a custom field valueType and its new metadata', () => {
+      const schema: FormSchema = {
+        id: 'form',
+        title: 'Form',
+        sections: [
+          {
+            id: 's1',
+            fields: [
+              {
+                name: 'entities',
+                type: 'custom',
+                label: 'Entities',
+                component: 'entity-chips',
+                valueType: 'string-array',
+                tooltip: 'Which entities to detect.',
+                tooltipAriaLabel: 'About entities',
+                validation: { required: true },
+              } as FieldMetadata,
+            ],
+          },
+        ],
+      };
+
+      const [field] = serializeSchema(schema).sections[0].fields;
+      // Without valueType a round-tripped custom field validates as z.any(), where
+      // `required` silently does nothing.
+      expect(field).toMatchObject({
+        valueType: 'string-array',
+        tooltip: 'Which entities to detect.',
+        tooltipAriaLabel: 'About entities',
+      });
+    });
+
     it('serializes field with options', () => {
       const schema: FormSchema = {
         id: 'form',
