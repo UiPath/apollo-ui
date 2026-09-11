@@ -185,6 +185,22 @@ describe('GuardrailList', () => {
       expect(screen.queryByRole('button', { name: /^Reorder guardrail/ })).not.toBeInTheDocument();
     });
 
+    it('mounts no DndContext at all while reorder is off', () => {
+      const { rerender } = renderList({ onReorder: vi.fn(), reorderDisabled: true });
+
+      // `DndContext` announces drags through a live region it renders itself, so its absence
+      // is the observable half of "no drag machinery mounts". The other half is structural:
+      // the sensors are hooks, and they live in `SortableRows` next to the context rather
+      // than in `GuardrailList`, so they do not run for a non-reorderable list either.
+      expect(document.querySelector('[id^="DndLiveRegion"]')).toBeNull();
+
+      rerender(
+        <GuardrailList guardrails={GUARDRAILS} definitions={DEFINITIONS} onReorder={vi.fn()} />
+      );
+
+      expect(document.querySelector('[id^="DndLiveRegion"]')).not.toBeNull();
+    });
+
     it('follows `disabled` by default', () => {
       renderList({ onReorder: vi.fn(), disabled: true });
 

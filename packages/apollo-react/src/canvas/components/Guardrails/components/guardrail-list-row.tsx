@@ -16,6 +16,7 @@ import type {
   GuardrailListItem,
   GuardrailListItemActionsContext,
   GuardrailListItemState,
+  GuardrailRowTooltipRenderer,
 } from '../list-types';
 import { GuardrailStatusChip } from './guardrail-status-chip';
 
@@ -40,8 +41,8 @@ export interface GuardrailListRowProps
   onEdit?: (item: GuardrailListItem) => void;
   onRemove?: (item: GuardrailListItem) => void;
   renderItemActions?: (ctx: GuardrailListItemActionsContext) => React.ReactNode;
-  /** Hover content for the row body. Return nothing to leave the row untooltipped. */
-  renderRowTooltip?: (item: GuardrailListItem) => React.ReactNode;
+  /** Hover and focus content for the row body. See `GuardrailRowTooltipRenderer`. */
+  renderRowTooltip?: GuardrailRowTooltipRenderer;
   formatScopes?: (item: GuardrailListItem) => React.ReactNode;
   formatAction?: (item: GuardrailListItem) => React.ReactNode;
 }
@@ -142,29 +143,55 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
         })
       : defaultActions;
 
+    const tooltip = renderRowTooltip?.(item);
+    const activatable = rowActivatesEdit && handleEdit !== undefined;
+
+    // ARIA treats the children of a `role="button"` as presentational, so on an activatable row
+    // everything inside the body drops out of the accessibility tree and the row is announced
+    // as its label alone. `aria-describedby` puts the two things a screen reader cannot do
+    // without back, in reading order: the BYO notices (why this guardrail will not run) and the
+    // description. The provider line, action badge and scopes stay presentational; they are
+    // repeated metadata rather than a reason the row behaves differently, and naming all of
+    // them turns one announcement into a paragraph. Recorded in the README's `rowActivatesEdit`
+    // row so a host that needs them knows to render them outside the activatable body.
+    const bodyId = React.useId();
+    const byoDisabledId = `${bodyId}-byo-disabled`;
+    const byoUnavailableId = `${bodyId}-byo-unavailable`;
+    const descriptionId = `${bodyId}-description`;
+    const describedBy = activatable
+      ? [
+          state.byoDisabled ? byoDisabledId : undefined,
+          state.byoUnavailable ? byoUnavailableId : undefined,
+          item.description ? descriptionId : undefined,
+        ]
+          .filter(Boolean)
+          .join(' ')
+      : '';
+
     // Only the body carries the role: the handle and the actions are siblings, so an
     // activatable row never nests interactive controls inside a button.
-    const bodyProps =
-      rowActivatesEdit && handleEdit
-        ? {
-            role: 'button',
-            tabIndex: 0,
-            'aria-label': formatGuardrailFormMessage(labels.editRow, { name: item.name }),
-            onClick: handleEdit,
-            onKeyDown: (event: React.KeyboardEvent) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                handleEdit();
-              }
-            },
-          }
+    const bodyProps: React.HTMLAttributes<HTMLDivElement> = activatable
+      ? {
+          role: 'button',
+          tabIndex: 0,
+          'aria-label': formatGuardrailFormMessage(labels.editRow, { name: item.name }),
+          ...(describedBy ? { 'aria-describedby': describedBy } : {}),
+          onClick: handleEdit,
+          onKeyDown: (event: React.KeyboardEvent) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              handleEdit?.();
+            }
+          },
+        }
+      : // Not activatable, but tooltipped: Radix opens on focus as well as hover, so the body
+        // has to be focusable or the tooltip content is pointer-only (WCAG 1.4.13).
+        tooltip
+        ? { tabIndex: 0 }
         : {};
 
     const body = (
-      <div
-        className={cn('min-w-0 flex-1', rowActivatesEdit && handleEdit && 'cursor-pointer')}
-        {...bodyProps}
-      >
+      <div className={cn('min-w-0 flex-1', activatable && 'cursor-pointer')} {...bodyProps}>
         <div className="flex items-center gap-2">
           <span className="truncate text-sm font-medium">{item.name}</span>
           {previewChip && isBuiltInValidator && (
@@ -177,19 +204,33 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
           ))}
         </div>
         {/* Both notices are ungated: both products already show them, and a guardrail that
-              cannot run is not an opt-in detail. */}
+              cannot run is not an opt-in detail. `text-error` rather than `text-destructive`:
+              the two resolve differently in several `tailwind.consumer.css` theme blocks, and
+              wind's `FormFieldError` settled on `text-error` for error text. `role="alert"`
+              rather than the family banner's `role="status"`: Flow announces these on mount
+              today and the shared row keeps that parity. */}
         {state.byoDisabled && (
-          <div className="whitespace-normal break-words text-xs text-destructive" role="alert">
+          <div
+            id={byoDisabledId}
+            className="whitespace-normal break-words text-xs text-error"
+            role="alert"
+          >
             {labels.byoDisabledNotice}
           </div>
         )}
         {state.byoUnavailable && (
-          <div className="whitespace-normal break-words text-xs text-destructive" role="alert">
+          <div
+            id={byoUnavailableId}
+            className="whitespace-normal break-words text-xs text-error"
+            role="alert"
+          >
             {labels.byoUnavailableNotice}
           </div>
         )}
         {item.description && (
-          <div className="truncate text-xs text-muted-foreground">{item.description}</div>
+          <div id={descriptionId} className="truncate text-xs text-muted-foreground">
+            {item.description}
+          </div>
         )}
         {state.provider !== undefined && (
           <div className="truncate text-xs text-muted-foreground">
@@ -201,20 +242,23 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
             {actionContent && (
               <Badge
                 variant="secondary"
-                className="border-border bg-muted/60 text-[11px] capitalize text-muted-foreground"
+                className={cn(
+                  'border-border bg-muted/60 text-xs text-muted-foreground',
+                  // Only the raw `$actionType` needs casing help. Host-localized output is
+                  // already cased for its locale, and `capitalize` would mangle it.
+                  !formatAction && 'capitalize'
+                )}
               >
                 {actionContent}
               </Badge>
             )}
             {scopesContent && (
-              <span className="text-[11px] text-muted-foreground">{scopesContent}</span>
+              <span className="text-xs text-muted-foreground">{scopesContent}</span>
             )}
           </div>
         )}
       </div>
     );
-
-    const tooltip = renderRowTooltip?.(item);
 
     return (
       <div
