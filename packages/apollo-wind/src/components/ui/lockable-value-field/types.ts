@@ -107,6 +107,10 @@ export interface LockableValueFieldOption {
 }
 
 export interface LockableValueFieldMoreActions {
+  /** Removes the field itself from its parent collection. */
+  onDelete?: () => void;
+  /** Additional field-level actions rendered inside the More menu. */
+  children?: ReactNode;
   onClear?: () => void;
   onRefresh?: () => void;
 }
@@ -129,12 +133,16 @@ export interface LockableValueFieldProps {
    * Pass `null` to suppress the built-in toggle; omitting the prop preserves it.
    */
   leadingAddon?: ReactNode;
+  /** Optional classes for the leading addon container. */
+  leadingAddonClassName?: string;
   /**
    * Replaces the trailing fixed/expression menu with a consumer-provided action
    * for expression-capable field types. Pass `null` to suppress the built-in
    * menu; omitting the prop preserves it.
    */
   trailingAddon?: ReactNode;
+  /** Whether to show the fixed-value/expression action beside the input. */
+  showValueTypeAction?: boolean;
   /** Adds a field-level overflow menu beside the value control. */
   more?: LockableValueFieldMoreActions;
   /** Fixed value vs. JS expression. Defaults to 'fixed'. Ignored for types that don't support expressions. */

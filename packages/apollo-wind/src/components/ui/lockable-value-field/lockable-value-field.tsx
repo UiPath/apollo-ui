@@ -46,10 +46,11 @@ function MoreActionsMenu({
   more: LockableValueFieldMoreActions;
   locked: boolean;
 }) {
+  const onDelete = more.onDelete;
   const onClear = locked ? undefined : more.onClear;
   const onRefresh = more.onRefresh;
 
-  if (!onClear && !onRefresh) return null;
+  if (!onDelete && !onClear && !onRefresh && !more.children) return null;
 
   return (
     <DropdownMenu>
@@ -59,6 +60,13 @@ function MoreActionsMenu({
         </InputGroupButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
+        {more.children}
+        {onDelete && (
+          <DropdownMenuItem className="text-error focus:text-error" onClick={onDelete}>
+            <Trash2 />
+            Delete field
+          </DropdownMenuItem>
+        )}
         {onClear && (
           <DropdownMenuItem className="text-error focus:text-error" onClick={onClear}>
             <Trash2 />
@@ -96,7 +104,9 @@ export function LockableValueField({
   onLockedChange,
   showLock = true,
   leadingAddon,
+  leadingAddonClassName,
   trailingAddon,
+  showValueTypeAction = true,
   more,
   mode = 'fixed',
   onModeChange,
@@ -134,7 +144,9 @@ export function LockableValueField({
     effectiveMode === 'expression'
       ? `Write ${expressionArticle} ${fieldTypeLabel} expression`
       : `${typeMeta.label} value`;
-  const hasMoreActions = Boolean(more?.onRefresh || (!locked && more?.onClear));
+  const hasMoreActions = Boolean(
+    more?.children || more?.onDelete || more?.onRefresh || (!locked && more?.onClear)
+  );
 
   // Locked fields are read-only, not disabled — the raw control (switch, date
   // picker, select) has nothing left to do once editing is blocked, so it's
@@ -170,7 +182,7 @@ export function LockableValueField({
           )}
         >
           {(showLock || leadingAddon !== undefined) && leadingAddon !== null && (
-            <InputGroupAddon align="inline-start">
+            <InputGroupAddon align="inline-start" className={leadingAddonClassName}>
               {leadingAddon !== undefined
                 ? leadingAddon
                 : showLock && <LockToggleButton locked={locked} onLockedChange={onLockedChange} />}
@@ -289,34 +301,36 @@ export function LockableValueField({
                 trailingAddon
               ) : (
                 <>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <InputGroupButton
-                        icon
-                        size="3xs"
-                        disabled={!onModeChange}
-                        aria-label="Choose value type"
-                      >
-                        {effectiveMode === 'expression' ? <Code2 /> : <Type />}
-                      </InputGroupButton>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <ModeMenuItem
-                        icon={Type}
-                        label={typeMeta.fixedLabel}
-                        description={typeMeta.fixedDescription}
-                        active={effectiveMode === 'fixed'}
-                        onClick={() => onModeChange?.('fixed')}
-                      />
-                      <ModeMenuItem
-                        icon={Code2}
-                        label="Expression"
-                        description="Use a JS expression"
-                        active={effectiveMode === 'expression'}
-                        onClick={() => onModeChange?.('expression')}
-                      />
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {showValueTypeAction && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <InputGroupButton
+                          icon
+                          size="3xs"
+                          disabled={!onModeChange}
+                          aria-label="Choose value type"
+                        >
+                          {effectiveMode === 'expression' ? <Code2 /> : <Type />}
+                        </InputGroupButton>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <ModeMenuItem
+                          icon={Type}
+                          label={typeMeta.fixedLabel}
+                          description={typeMeta.fixedDescription}
+                          active={effectiveMode === 'fixed'}
+                          onClick={() => onModeChange?.('fixed')}
+                        />
+                        <ModeMenuItem
+                          icon={Code2}
+                          label="Expression"
+                          description="Use a JS expression"
+                          active={effectiveMode === 'expression'}
+                          onClick={() => onModeChange?.('expression')}
+                        />
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                   {hasMoreActions && more && <MoreActionsMenu more={more} locked={locked} />}
                 </>
               )}
@@ -326,7 +340,7 @@ export function LockableValueField({
       ) : (
         <InputGroup error={error} errorId={validationId}>
           {(showLock || leadingAddon !== undefined) && leadingAddon !== null && (
-            <InputGroupAddon align="inline-start">
+            <InputGroupAddon align="inline-start" className={leadingAddonClassName}>
               {leadingAddon !== undefined
                 ? leadingAddon
                 : showLock && <LockToggleButton locked={locked} onLockedChange={onLockedChange} />}
