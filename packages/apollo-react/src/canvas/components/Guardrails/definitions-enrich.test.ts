@@ -17,6 +17,7 @@ import {
   withGuardrailFolderMetadata,
 } from './definitions-enrich';
 import type { GuardrailDefinitionWire } from './definitions-wire';
+import { getOutOfRangeParameterIds, seedGuardrailParameters } from './utils';
 
 function enrichOne(wire: GuardrailDefinitionWire, copy?: GuardrailCopyTable) {
   const [definition] = enrichGuardrailDefinitions([wire], copy ? { copy } : undefined);
@@ -212,6 +213,41 @@ describe('enrichGuardrailDefinitions', () => {
       expect(param(judge, 'guardrailText')).toMatchObject({ maxLength: 4000 });
       expect(param(judge, 'positiveExamples')).toMatchObject({ maxItems: 5, maxLength: 1000 });
       expect(param(enrichOne(UNCURATED_WIRE), 'maxDriftScore')).not.toHaveProperty('min');
+    });
+
+    it('leaves synthesized map-enum bounds out of the enforced range check', () => {
+      // The rebase onto #1138's `d658731b` made `min`/`max` real constraints: the schema
+      // builder puts them in `validation` and the form runs `mode: 'onChange'`, and hosts gate
+      // Save on `getOutOfRangeParameterIds`. Both paths are *number*-only, so the 0..1 step 0.1
+      // this layer invents for an unbounded map-enum stays an editor hint and cannot reject a
+      // threshold map whose real range is something else (harmful content is 0..6). Widening
+      // either path to map-enum means revisiting that default first, which is what this pins.
+      const unbounded: GuardrailDefinitionWire = {
+        ...HARMFUL_CONTENT_WIRE,
+        parameters: HARMFUL_CONTENT_WIRE.parameters.map((p) =>
+          p.id === 'harmfulContentEntityThresholds'
+            ? { ...p, min: undefined, max: undefined, step: undefined }
+            : p
+        ),
+      };
+
+      for (const wire of [PII_DETECTION_WIRE, unbounded]) {
+        const enriched = enrichOne(wire);
+        expect(
+          getOutOfRangeParameterIds(
+            enriched.parameters,
+            seedGuardrailParameters(enriched.parameters)
+          )
+        ).toEqual([]);
+      }
+
+      // ...and the synthesized bounds really are the 0..1 ones, i.e. the assertion above is
+      // not vacuous because enrichment left the parameter bare.
+      expect(param(enrichOne(unbounded), 'harmfulContentEntityThresholds')).toMatchObject({
+        min: 0,
+        max: 1,
+        step: 0.1,
+      });
     });
 
     it('passes defaultValue through untouched, nulls included', () => {

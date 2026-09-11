@@ -103,6 +103,15 @@ function toParameterDefinition(
       definition.keySource = param.keySource;
       // The threshold maps arrive without bounds from some backends, and an unbounded
       // numeric editor for a 0..1 confidence score is a data-entry hazard.
+      //
+      // The 0..1 step 0.1 default is a **product assumption**, not a wire fact: it is PII
+      // detection's confidence range, and it is the only unbounded map the backend sends
+      // today. Harmful content is 0..6 step 2 and arrives with its bounds, so nothing is
+      // silently mislabelled. This holds only while these numbers stay editor hints:
+      // `buildFieldValidation` and `getOutOfRangeParameterIds` both look at `number`
+      // parameters only, so a map-enum is never rejected against them (pinned by a test in
+      // `definitions-enrich.test.ts`). Before widening either to map-enum, replace this
+      // default with something the backend states.
       definition.min = param.min ?? 0;
       definition.max = param.max ?? 1;
       definition.step = param.step ?? 0.1;

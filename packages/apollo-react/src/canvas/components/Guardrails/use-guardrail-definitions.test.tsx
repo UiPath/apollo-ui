@@ -41,7 +41,7 @@ describe('useGuardrailDefinitions', () => {
 
   describe('fetching', () => {
     it('loads, validates and enriches in one pass', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse(ALL_BUILT_IN_WIRE));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse(ALL_BUILT_IN_WIRE));
 
       const { result } = renderHook(() => useGuardrailDefinitions(ctxWith(fetchImpl)));
 
@@ -52,7 +52,7 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('calls the definitions endpoint under the host base URL', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse([]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([]));
 
       renderHook(() => useGuardrailDefinitions(ctxWith(fetchImpl)));
 
@@ -63,7 +63,7 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('trims a trailing slash off the base URL', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse([]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([]));
 
       renderHook(() =>
         useGuardrailDefinitions(ctxWith(fetchImpl, { baseUrl: 'https://example.test/' }))
@@ -76,7 +76,7 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('sends the tenant header both products already send', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse([]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([]));
 
       renderHook(() =>
         useGuardrailDefinitions(
@@ -95,7 +95,7 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('omits the auth header when the host relies on its session', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse([]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([]));
 
       renderHook(() => useGuardrailDefinitions(ctxWith(fetchImpl)));
 
@@ -104,7 +104,9 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('surfaces a transport failure without throwing', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse(null, { ok: false, status: 503 }));
+      const fetchImpl = vi.fn<typeof fetch>(async () =>
+        jsonResponse(null, { ok: false, status: 503 })
+      );
 
       const { result } = renderHook(() => useGuardrailDefinitions(ctxWith(fetchImpl)));
 
@@ -115,7 +117,7 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('surfaces a rejected request as an error', async () => {
-      const fetchImpl = vi.fn(async () => {
+      const fetchImpl = vi.fn<typeof fetch>(async () => {
         throw new Error('offline');
       });
 
@@ -125,7 +127,7 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('reports malformed definitions through `invalid`, not `error`', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse(RAW_PAYLOAD_WITH_NOISE));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse(RAW_PAYLOAD_WITH_NOISE));
 
       const { result } = renderHook(() => useGuardrailDefinitions(ctxWith(fetchImpl)));
 
@@ -136,7 +138,7 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('reports a non-array payload through `inputError`', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse({ items: [] }));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse({ items: [] }));
 
       const { result } = renderHook(() => useGuardrailDefinitions(ctxWith(fetchImpl)));
 
@@ -145,7 +147,7 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('refetches on demand', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse([PII_DETECTION_WIRE]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([PII_DETECTION_WIRE]));
       const { result } = renderHook(() => useGuardrailDefinitions(ctxWith(fetchImpl)));
       await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -157,7 +159,7 @@ describe('useGuardrailDefinitions', () => {
     it('fetches once for a context rebuilt inline on every render', async () => {
       // Regression: keying the effect off context identity made every response set state,
       // which rerendered, which built a new context, which fetched again, without end.
-      const fetchImpl = vi.fn(async () => jsonResponse([PII_DETECTION_WIRE]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([PII_DETECTION_WIRE]));
 
       const { result, rerender } = renderHook(() => useGuardrailDefinitions(ctxWith(fetchImpl)));
       await waitFor(() => expect(result.current.definitions).toHaveLength(1));
@@ -168,7 +170,7 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('refetches when the context contents actually change', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse([]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([]));
       const { rerender } = renderHook(
         ({ tenantId }: { tenantId: string }) =>
           useGuardrailDefinitions(ctxWith(fetchImpl, { tenantId })),
@@ -184,8 +186,18 @@ describe('useGuardrailDefinitions', () => {
       });
     });
 
+    it('reports loading on the very first render, before the effect runs', () => {
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([]));
+
+      const { result } = renderHook(() => useGuardrailDefinitions(ctxWith(fetchImpl)));
+
+      // A host rendering `loading ? <Spinner/> : <Empty/>` would otherwise flash the empty
+      // state for one paint, since the effect that sets `loading` runs after it.
+      expect(result.current.loading).toBe(true);
+    });
+
     it('aborts the in-flight request on unmount', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse([]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([]));
       const { unmount } = renderHook(() => useGuardrailDefinitions(ctxWith(fetchImpl)));
       await waitFor(() => expect(fetchImpl).toHaveBeenCalled());
       const signal = fetchImpl.mock.calls[0]?.[1]?.signal;
@@ -198,7 +210,7 @@ describe('useGuardrailDefinitions', () => {
 
   describe('disabled', () => {
     it('makes no request for a null context', () => {
-      const fetchImpl = vi.fn(async () => jsonResponse([]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([]));
 
       const { result } = renderHook(() =>
         useGuardrailDefinitions(null, { copy: GUARDRAIL_COPY_EN })
@@ -209,7 +221,7 @@ describe('useGuardrailDefinitions', () => {
     });
 
     it('clears previous results when the host disables it', async () => {
-      const fetchImpl = vi.fn(async () => jsonResponse([PII_DETECTION_WIRE]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([PII_DETECTION_WIRE]));
       const ctx = ctxWith(fetchImpl);
       const { result, rerender } = renderHook(
         ({ enabled }: { enabled: boolean }) => useGuardrailDefinitions(enabled ? ctx : null),
@@ -222,11 +234,26 @@ describe('useGuardrailDefinitions', () => {
       // A stale list behind a disabled picker is worse than an empty one.
       expect(result.current.definitions).toEqual([]);
     });
+
+    it('makes `refetch` a no-op while disabled', async () => {
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([BYO_WIRE]));
+
+      // Enabled transport, but a host payload supplied: a request here would be answered and
+      // then discarded, since `definitions` wins over the fetched state.
+      const { result } = renderHook(() =>
+        useGuardrailDefinitions(ctxWith(fetchImpl), { definitions: [PII_DETECTION_WIRE] })
+      );
+      result.current.refetch();
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(fetchImpl).not.toHaveBeenCalled();
+      expect(result.current.definitions[0]?.displayName).toBe('PII detection');
+    });
   });
 
   describe('definitions override', () => {
     it('parses and enriches a host-supplied payload without fetching', () => {
-      const fetchImpl = vi.fn(async () => jsonResponse([]));
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([]));
 
       const { result } = renderHook(() =>
         useGuardrailDefinitions(ctxWith(fetchImpl), { definitions: [PII_DETECTION_WIRE] })
