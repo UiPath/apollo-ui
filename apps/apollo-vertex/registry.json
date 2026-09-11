@@ -3361,6 +3361,72 @@
           "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx"
         }
       ]
+    },
+    {
+      "name": "ai-mark",
+      "type": "registry:ui",
+      "title": "AI Mark",
+      "description": "The AI mark: a filled four-pointed astroid star that paints with currentColor, or with the AI gradient when pointed at a referenced SVG gradient def.",
+      "files": [
+        {
+          "path": "registry/ai-mark/ai-mark.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "timeline",
+      "type": "registry:ui",
+      "title": "Timeline",
+      "description": "Activity timeline primitives: a variant-driven status marker and the connecting row layout for building AI and human activity trails.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@uipath/ai-mark"],
+      "cssVars": {
+        "theme": {
+          "color-success": "var(--success)",
+          "color-insight-400": "var(--insight-400)",
+          "color-insight-700": "var(--insight-700)"
+        },
+        "light": {
+          "success": "oklch(0.57 0.105 152)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-700": "oklch(0.48 0.17 277)",
+          "primary-50": "oklch(0.95 0.035 218)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        },
+        "dark": {
+          "success": "oklch(0.70 0.120 152)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-700": "oklch(0.48 0.17 277)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        }
+      },
+      "files": [
+        {
+          "path": "registry/timeline/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/timeline/index.ts"
+        },
+        {
+          "path": "registry/timeline/timeline-marker.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/timeline/timeline-marker.tsx"
+        },
+        {
+          "path": "registry/timeline/timeline-row-layout.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/timeline/timeline-row-layout.tsx"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,153 @@
+import { TimelineMarker } from '@/registry/timeline/timeline-marker'
+import { TimelineRowLayout } from '@/registry/timeline/timeline-row-layout'
+
+# Timeline
+
+Primitives for building an activity timeline: a status marker (the dot) and the row layout (the connecting line and dot slot a row sits in). Together they render a mixed trail of human and agent steps, without knowing anything about your domain.
+
+The marker takes a plain `variant`, so a solution maps its own states onto the shared set and keeps that mapping on its side. See [AI Toolkit](/guidelines/ai-toolkit#timeline-markers) for the color and expression principles this follows.
+
+## Markers
+
+Nine variants cover human and agent steps: people, completed steps, queued and suspended work, a spinning in-progress ring, and failed, cancelled, and done outcomes. Each comes in a full and a compact size.
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap items-center gap-4">
+  <TimelineMarker variant="user" initials="PV" />
+  <TimelineMarker variant="completed-user" />
+  <TimelineMarker variant="completed-ai" />
+  <TimelineMarker variant="ai-upcoming" />
+  <TimelineMarker variant="ai-suspended" />
+  <TimelineMarker variant="ai-progress" />
+  <TimelineMarker variant="ai-failed" />
+  <TimelineMarker variant="ai-cancelled" />
+  <TimelineMarker variant="ai-complete" />
+</div>
+
+The same variants, `compact`:
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap items-center gap-4">
+  <TimelineMarker variant="user" initials="PV" compact />
+  <TimelineMarker variant="completed-user" compact />
+  <TimelineMarker variant="completed-ai" compact />
+  <TimelineMarker variant="ai-upcoming" compact />
+  <TimelineMarker variant="ai-suspended" compact />
+  <TimelineMarker variant="ai-progress" compact />
+  <TimelineMarker variant="ai-failed" compact />
+  <TimelineMarker variant="ai-cancelled" compact />
+  <TimelineMarker variant="ai-complete" compact />
+</div>
+
+## In a row
+
+`TimelineRowLayout` draws the connecting line and holds the marker in its slot. Pass `isLast` on the final row so the line is dropped (full rows fade it out instead).
+
+<div className="p-4 border rounded-lg mt-4">
+  <ol className="max-w-sm">
+    <li>
+      <TimelineRowLayout isLast={false} marker={<TimelineMarker variant="ai-upcoming" />}>
+        <div className="pb-6">
+          <p className="text-sm font-medium text-foreground">Sync to ERP</p>
+          <p className="text-xs text-muted-foreground">Queued for the next run</p>
+        </div>
+      </TimelineRowLayout>
+    </li>
+    <li>
+      <TimelineRowLayout isLast={false} marker={<TimelineMarker variant="ai-progress" />}>
+        <div className="pb-6">
+          <p className="text-sm font-medium text-foreground">Posting entry</p>
+          <p className="text-xs text-muted-foreground">Writing to the ledger</p>
+        </div>
+      </TimelineRowLayout>
+    </li>
+    <li>
+      <TimelineRowLayout isLast={false} marker={<TimelineMarker variant="user" initials="PV" />}>
+        <div className="pb-6">
+          <p className="text-sm font-medium text-foreground">Approved</p>
+          <p className="text-xs text-muted-foreground">Peter Vachon</p>
+        </div>
+      </TimelineRowLayout>
+    </li>
+    <li>
+      <TimelineRowLayout isLast marker={<TimelineMarker variant="completed-ai" />}>
+        <div>
+          <p className="text-sm font-medium text-foreground">Agent reviewed</p>
+          <p className="text-xs text-muted-foreground">PO matched, terms verified</p>
+        </div>
+      </TimelineRowLayout>
+    </li>
+  </ol>
+</div>
+
+The compact layout tightens the gap and drops the trailing line:
+
+<div className="p-4 border rounded-lg mt-4">
+  <ol className="max-w-sm">
+    <li>
+      <TimelineRowLayout compact isLast={false} marker={<TimelineMarker variant="ai-progress" compact />}>
+        <div className="pb-4">
+          <p className="text-sm font-medium text-foreground">Posting entry</p>
+        </div>
+      </TimelineRowLayout>
+    </li>
+    <li>
+      <TimelineRowLayout compact isLast={false} marker={<TimelineMarker variant="user" initials="PV" compact />}>
+        <div className="pb-4">
+          <p className="text-sm font-medium text-foreground">Approved</p>
+        </div>
+      </TimelineRowLayout>
+    </li>
+    <li>
+      <TimelineRowLayout compact isLast marker={<TimelineMarker variant="completed-ai" compact />}>
+        <div>
+          <p className="text-sm font-medium text-foreground">Agent reviewed</p>
+        </div>
+      </TimelineRowLayout>
+    </li>
+  </ol>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/timeline
+```
+
+## Usage
+
+```tsx
+import { TimelineMarker, TimelineRowLayout } from "@/components/ui/timeline"
+```
+
+```tsx
+<ol>
+  {events.map((event, index) => (
+    <li key={event.id}>
+      <TimelineRowLayout
+        isLast={index === events.length - 1}
+        marker={<TimelineMarker variant={event.variant} initials={event.initials} />}
+      >
+        <p className="text-sm font-medium">{event.title}</p>
+      </TimelineRowLayout>
+    </li>
+  ))}
+</ol>
+```
+
+Keep the domain mapping on your side: convert your own state into a `TimelineMarkerVariant` before rendering, so the timeline stays free of domain concepts.
+
+## TimelineMarker props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `TimelineMarkerVariant` | — | Required. One of `user`, `completed-user`, `completed-ai`, `ai-upcoming`, `ai-suspended`, `ai-progress`, `ai-failed`, `ai-cancelled`, `ai-complete`. |
+| `initials` | `string` | `"?"` | Shown inside the `user` marker. Ignored by other variants. |
+| `compact` | `boolean` | `false` | Render the smaller size for dense trails. |
+
+## TimelineRowLayout props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `marker` | `ReactNode` | — | Required. The marker rendered in the dot slot, typically a `TimelineMarker`. |
+| `children` | `ReactNode` | — | Required. The row content beside the marker. |
+| `isLast` | `boolean` | — | Required. Drops the connecting line on the final row (full rows fade it out instead). |
+| `compact` | `boolean` | `false` | Tighten the gap and line spacing to match compact markers. |

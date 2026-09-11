@@ -64,6 +64,7 @@ export default {
   table: "Table",
   tabs: "Tabs",
   textarea: "Textarea",
+  timeline: "Timeline",
   toggle: "Toggle",
   "toggle-group": "Toggle Group",
   tooltip: "Tooltip",

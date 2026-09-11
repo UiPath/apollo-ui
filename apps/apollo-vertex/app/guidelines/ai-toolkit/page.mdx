@@ -6,6 +6,7 @@ import { AiMark } from './ai-mark'
 import { MarkUsage } from './mark-usage'
 import { Surfaces } from './surfaces'
 import { Examples } from './examples'
+import { TimelineMarkers } from './timeline-markers'
 import { Badge } from '@/registry/badge/badge'
 
 # Visual Expression <Badge status="ai" className="align-middle ml-2"><AiIcon className="size-3" />v1.1</Badge>
@@ -65,6 +66,16 @@ solid or glass, and a glow, an AI gradient shadow, can sit behind either. See th
 variant is experimental, shown here for exploration.
 
 <Surfaces />
+
+## Timeline markers
+
+The status dot for an activity timeline. Each marker takes a plain `variant`,
+so a solution maps its own domain states onto the shared set. The full nine
+variants cover human and agent steps: people, completed steps, queued and
+suspended work, a spinning in-progress ring, and failed, cancelled, and done
+outcomes. Every variant comes in a full and a compact size.
+
+<TimelineMarkers />
 
 ## Examples
 
