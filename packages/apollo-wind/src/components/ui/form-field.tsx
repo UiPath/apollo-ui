@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Label, RequiredIndicator } from '@/components/ui/label';
 import { cn } from '@/lib/index';
 
@@ -36,16 +37,38 @@ FormField.displayName = 'FormField';
 export interface FormFieldLabelProps extends React.ComponentPropsWithoutRef<typeof Label> {
   /** Appends the required indicator after the label text. */
   required?: boolean;
+  /**
+   * Appends an info-tooltip trigger after the label text and the required indicator.
+   * Requires an ancestor `TooltipProvider` (Radix throws without one).
+   */
+  tooltip?: React.ReactNode;
+  /** Accessible name of the tooltip trigger. Defaults to 'More information'. */
+  tooltipAriaLabel?: string;
 }
 
 /** Names the field. Pair with a control via `htmlFor`. */
 const FormFieldLabel = React.forwardRef<HTMLLabelElement, FormFieldLabelProps>(
-  ({ children, required = false, ...props }, ref) => (
-    <Label ref={ref} data-slot="form-field-label" {...props}>
-      {children}
-      {required && <RequiredIndicator />}
-    </Label>
-  )
+  ({ children, required = false, tooltip, tooltipAriaLabel, className, ...props }, ref) => {
+    const label = (
+      <Label ref={ref} data-slot="form-field-label" className={className} {...props}>
+        {children}
+        {required && <RequiredIndicator />}
+      </Label>
+    );
+
+    if (tooltip === undefined || tooltip === null || tooltip === false) return label;
+
+    // The trigger is a real <button>, and <label>'s content model forbids descendant
+    // labelable elements — nesting it would also make a click on the icon ambiguous with
+    // activating the labelled control. So it sits *beside* the label in an inline wrapper,
+    // which keeps the ref, `htmlFor` and styling on the label element itself.
+    return (
+      <span className="inline-flex items-center">
+        {label}
+        <InfoTooltip content={tooltip} aria-label={tooltipAriaLabel ?? 'More information'} />
+      </span>
+    );
+  }
 );
 FormFieldLabel.displayName = 'FormFieldLabel';
 
