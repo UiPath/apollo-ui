@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -47,6 +48,9 @@ interface ShellSidebarProps {
   variant?: "minimal";
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
+  onUserClick?: () => void;
+  userMenuAdditionalItems?: ReactNode;
+  avatarClassName?: string;
 }
 
 export const ShellSidebar = ({
@@ -55,6 +59,9 @@ export const ShellSidebar = ({
   variant,
   companyLogo,
   navItems,
+  onUserClick,
+  userMenuAdditionalItems,
+  avatarClassName,
 }: ShellSidebarProps) => {
   if (variant === "minimal") {
     return (
@@ -82,6 +89,9 @@ export const ShellSidebar = ({
             isCollapsed
             collapsedMenuSide="bottom"
             collapsedMenuAlign="end"
+            onUserClick={onUserClick}
+            additionalItems={userMenuAdditionalItems}
+            avatarClassName={avatarClassName}
           />
         </div>
       </header>
@@ -94,6 +104,9 @@ export const ShellSidebar = ({
       productName={productName}
       companyLogo={companyLogo}
       navItems={navItems}
+      onUserClick={onUserClick}
+      userMenuAdditionalItems={userMenuAdditionalItems}
+      avatarClassName={avatarClassName}
     />
   );
 };
@@ -103,6 +116,9 @@ interface SidebarNavProps {
   productName: string;
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
+  onUserClick?: () => void;
+  userMenuAdditionalItems?: ReactNode;
+  avatarClassName?: string;
 }
 
 function SidebarNav({
@@ -110,6 +126,9 @@ function SidebarNav({
   productName,
   companyLogo,
   navItems,
+  onUserClick,
+  userMenuAdditionalItems,
+  avatarClassName,
 }: SidebarNavProps) {
   const { t } = useTranslation();
   const { state, toggleSidebar } = useSidebar();
@@ -338,7 +357,12 @@ function SidebarNav({
       </SidebarContent>
 
       <SidebarFooter className="p-4 pt-0">
-        <UserProfile isCollapsed={isCollapsed} />
+        <UserProfile
+          isCollapsed={isCollapsed}
+          onUserClick={onUserClick}
+          additionalItems={userMenuAdditionalItems}
+          avatarClassName={avatarClassName}
+        />
       </SidebarFooter>
 
       <div

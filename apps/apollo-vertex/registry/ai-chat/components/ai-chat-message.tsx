@@ -2,7 +2,6 @@
 
 import type { ImagePart } from "@tanstack/ai";
 import type { TextPart, UIMessage } from "@tanstack/ai-client";
-import { imagePartToUrl } from "../content-parts";
 import { motion } from "framer-motion";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,6 +12,7 @@ import {
   ENTRANCE_EASE,
   ENTRANCE_INITIAL,
 } from "../animations";
+import { imagePartToUrl } from "../content-parts";
 import type { MessageFeedbackType } from "../types";
 import { AiChatImagePreview } from "./ai-chat-image-preview";
 import { AiChatMarkdown } from "./ai-chat-markdown";
@@ -38,6 +38,8 @@ interface AiChatMessageProps {
   onFeedback?: (type: MessageFeedbackType) => void;
   onRegenerate?: () => void;
   onEditMessage?: (content: string) => void;
+  /** Override the assistant markdown wrapper's classes (defaults to AiChatMarkdown's own). */
+  assistantMarkdownClassName?: string;
 }
 
 function getDisplayText(message: UIMessage): string {
@@ -60,6 +62,7 @@ export function AiChatMessage({
   onFeedback,
   onRegenerate,
   onEditMessage,
+  assistantMarkdownClassName,
 }: AiChatMessageProps) {
   const { t } = useTranslation();
   const isUser = message.role === "user";
@@ -199,7 +202,9 @@ export function AiChatMessage({
       <div className="group/message flex flex-col gap-3 flex-1 min-w-0">
         {displayContent && (
           <div className="max-w-[85%]">
-            <AiChatMarkdown>{displayContent}</AiChatMarkdown>
+            <AiChatMarkdown className={assistantMarkdownClassName}>
+              {displayContent}
+            </AiChatMarkdown>
           </div>
         )}
         {children && <div className="mt-2 flex flex-col gap-2">{children}</div>}

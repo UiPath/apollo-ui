@@ -10,6 +10,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
   type Ref,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState,
@@ -43,11 +44,29 @@ interface AiChatInputProps {
   onStop: () => void;
   isLoading: boolean;
   disabled?: boolean;
+  /** Gates the send action only, independent of `disabled`. The textarea
+   * (and attaching) stay usable while this is true, only the send button is
+   * blocked. For a flow that requires an attachment before sending but
+   * still needs typed text to be enterable, pair this with `disabled`
+   * left unset, rather than using `disabled` alone, which would block
+   * typing too. Additive: existing callers that only set `disabled` are
+   * unaffected, since this defaults to false. */
+  sendDisabled?: boolean;
   placeholder?: string;
   hasMessages?: boolean;
   acceptedFileTypes?: string;
   quotedText?: string | null;
   onClearQuote?: () => void;
+  /** Drops the outer top/side padding so the form's border aligns flush with
+   * an ancestor that already provides its own edge-to-edge chrome (e.g. the
+   * Teams resume band on Intake). The form itself is untouched. */
+  embedded?: boolean;
+  /** Fires with the current pending-file count whenever it changes (attach,
+   * remove, or clear on submit). Pending files otherwise stay entirely
+   * internal to this component; this is the one way a caller can react to
+   * attachment presence, e.g. to gate its own send affordance on a
+   * document-only flow, without owning file state itself. */
+  onPendingFilesChange?: (count: number) => void;
   ref?: Ref<AiChatInputHandle>;
 }
 
@@ -63,11 +82,14 @@ export function AiChatInput({
   onStop,
   isLoading,
   disabled = false,
+  sendDisabled = false,
   placeholder,
   hasMessages = false,
   acceptedFileTypes,
   quotedText,
   onClearQuote,
+  embedded = false,
+  onPendingFilesChange,
   ref,
 }: AiChatInputProps) {
   const { t } = useTranslation();
@@ -85,6 +107,11 @@ export function AiChatInput({
     clear: clearFiles,
   } = usePendingFiles();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    onPendingFilesChange?.(pendingFiles.length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingFiles.length]);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -122,7 +149,10 @@ export function AiChatInput({
   };
 
   const submitMessage = async () => {
-    if (!value.trim() && pendingFiles.length === 0) return;
+    if (!value.trim() && pendingFiles.length === 0) {
+      textareaRef.current?.focus();
+      return;
+    }
     const filesSnapshot = pendingFiles;
     setPreviewUrl(null);
     clearFiles();
@@ -237,9 +267,13 @@ export function AiChatInput({
           type="submit"
           variant="ghost"
           size="icon"
-          disabled={(!value.trim() && pendingFiles.length === 0) || disabled}
-          className="flex-shrink-0 text-white hover:text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ background: "var(--ai-gradient-strong)" }}
+          disabled={
+            (!value.trim() && pendingFiles.length === 0) ||
+            disabled ||
+            sendDisabled
+          }
+          className="flex-shrink-0 text-white hover:text-white hover:bg-transparent disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ backgroundImage: "var(--ai-gradient-strong)" }}
           aria-label={t("send")}
         >
           <ArrowUp className="size-5" aria-hidden="true" />
@@ -250,7 +284,7 @@ export function AiChatInput({
   );
 
   return (
-    <div className="relative z-10 mt-auto pt-3 px-4">
+    <div className={cn("relative z-10 mt-auto", !embedded && "pt-3 px-4")}>
       {attachmentsEnabled && (
         <>
           <input
@@ -280,7 +314,12 @@ export function AiChatInput({
           <form {...formProps}>
             {quoteChip}
             {pendingFilesChips}
-            <div className="flex items-end gap-2 pl-[8px] pr-[8px] pt-[4px] pb-[8px]">
+            <div
+              className={cn(
+                "flex items-end gap-2 pr-[8px] pt-[4px] pb-[8px]",
+                plusMenu ? "pl-[8px]" : "pl-[16px]",
+              )}
+            >
               {plusMenu}
               <textarea
                 ref={textareaRef}

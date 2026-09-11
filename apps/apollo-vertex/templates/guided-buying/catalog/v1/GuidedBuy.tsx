@@ -1,0 +1,106 @@
+"use client";
+
+import type { MessagePart, UIMessage } from "@tanstack/ai-client";
+import { AiChatThinking } from "@/registry/ai-chat/components/ai-chat-thinking";
+import { useConversation } from "./conversation-context";
+import {
+  MatchCarousel,
+  type MatchesOutput,
+  ReviewCta,
+  WorkbenchCta,
+} from "./MatchCarousel";
+import { RequestEnvelope } from "./RequestEnvelope";
+import { ServiceBridge } from "./ServiceBridge";
+import { ServicesBridge } from "./ServicesBridge";
+import type { CatalogItem } from "./types";
+
+interface GuidedBuyProps {
+  /** Configure with agent → the configurator (contract path). */
+  onConfigure: () => void;
+  /** Opens the shelf dock scoped to the selected card's item. */
+  onWhyNotThisClick?: (item: CatalogItem) => void;
+  /** Opens the shelf dock generically — the Shelf's "not finding what you're
+   * looking for?" entry point. */
+  onNotFindingClick?: () => void;
+  /** True after the P2 dock correction — Yoga card enters set-aside state. */
+  correctionMade?: boolean;
+  onYogaShowAnyway?: () => void;
+  /** Opens the ProductDetail overlay for a shelf card. */
+  onOpenDetail?: (item: CatalogItem) => void;
+}
+
+type ToolPart = MessagePart & { id: string; name: string; output: unknown };
+
+/**
+ * The guided Buy surface — what renders beneath the header anchor (BuyScaffold)
+ * once a request is made. Shows the active step's structured surface (envelope /
+ * service Bridge / results) for the latest agent turn only — no transcript. The
+ * ask affordance lives in the global Autopilot FAB, not here.
+ */
+export function GuidedBuy({
+  onConfigure,
+  onWhyNotThisClick,
+  onNotFindingClick,
+  correctionMade,
+  onYogaShowAnyway,
+  onOpenDetail,
+}: GuidedBuyProps) {
+  const { messages, status } = useConversation();
+
+  // The surface tracks the latest agent turn only — no transcript.
+  let lastAssistant: UIMessage | undefined;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === "assistant") {
+      lastAssistant = messages[i];
+      break;
+    }
+  }
+  const toolParts = (lastAssistant?.parts ?? []).filter(
+    (p): p is ToolPart => p.type === "tool-call",
+  );
+  const working = status === "submitted" || status === "streaming";
+
+  const renderSurface = (part: ToolPart) => {
+    switch (part.name) {
+      case "presentEnvelope":
+        return <RequestEnvelope />;
+      case "presentServiceBridge":
+        return <ServiceBridge onConfigure={onConfigure} />;
+      case "presentSourcingBridge":
+        return <ServicesBridge />;
+      case "presentMatches":
+        return (
+          <MatchCarousel
+            output={part.output as MatchesOutput}
+            correctionMade={correctionMade}
+            onWhyNotThisClick={onWhyNotThisClick}
+            onNotFindingClick={onNotFindingClick}
+            onYogaShowAnyway={onYogaShowAnyway}
+            onOpenDetail={onOpenDetail}
+          />
+        );
+      case "reviewCta":
+        return <ReviewCta />;
+      case "workbenchCta":
+        return <WorkbenchCta />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* The structured surface, presented directly (no bubble chrome). */}
+      {toolParts.length > 0 ? (
+        toolParts.map((part) => {
+          const surface = renderSurface(part);
+          return surface && <div key={part.id}>{surface}</div>;
+        })
+      ) : working ? (
+        <div className="flex justify-center py-6">
+          <AiChatThinking size={36} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
