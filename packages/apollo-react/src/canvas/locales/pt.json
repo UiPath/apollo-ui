@@ -284,5 +284,14 @@
   "guardrails.list.action-unknown": "Desconhecido",
   "guardrails.list.byo-disabled-notice": "A configuração desta barreira de proteção foi desativada e já não pode ser utilizada. Contacte o seu administrador para reativar a configuração ou substituir esta barreira de proteção antes de executar o agente.",
   "guardrails.list.byo-unavailable-notice": "A configuração desta barreira de proteção já não está disponível. Substitua-a antes de executar o agente.",
-  "guardrails.list.status-unauthorized": "Não autorizado"
+  "guardrails.list.status-unauthorized": "Não autorizado",
+  "guardrails.palette.list-aria-label": "Verificadores de integridade disponíveis",
+  "guardrails.palette.create-custom": "Barra de proteção personalizada",
+  "guardrails.palette.create-custom-description": "Criar uma barreira de proteção com regras personalizadas",
+  "guardrails.palette.empty": "Nenhuma barreira de proteção disponível",
+  "guardrails.palette.loading": "A carregar...",
+  "guardrails.palette.load-error": "Falha ao carregar validadores incorporados",
+  "guardrails.palette.uipath-group": "Barreiras de proteção UiPath",
+  "guardrails.palette.preview": "Pré-visualizar",
+  "guardrails.palette.status-unauthorized": "Não autorizado"
 }

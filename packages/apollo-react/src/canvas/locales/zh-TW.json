@@ -284,5 +284,14 @@
   "guardrails.list.action-unknown": "未知",
   "guardrails.list.byo-disabled-notice": "此護欄的組態已停用，無法再使用。請聯絡管理員以重新啟用組態或取代此護欄，然後再執行代理。",
   "guardrails.list.byo-unavailable-notice": "此護欄的組態不再可用。在執行代理程式之前取代它。",
-  "guardrails.list.status-unauthorized": "未經授權"
+  "guardrails.list.status-unauthorized": "未經授權",
+  "guardrails.palette.list-aria-label": "可用的護欄",
+  "guardrails.palette.create-custom": "自訂護欄",
+  "guardrails.palette.create-custom-description": "使用自訂規則建立護欄",
+  "guardrails.palette.empty": "沒有可用的護欄",
+  "guardrails.palette.loading": "正在載入...",
+  "guardrails.palette.load-error": "無法載入內建驗證器",
+  "guardrails.palette.uipath-group": "UiPath 護欄",
+  "guardrails.palette.preview": "預覽",
+  "guardrails.palette.status-unauthorized": "未經授權"
 }

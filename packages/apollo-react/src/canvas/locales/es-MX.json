@@ -284,5 +284,14 @@
   "guardrails.list.action-unknown": "Desconocido",
   "guardrails.list.byo-disabled-notice": "La configuración de esta protección se ha deshabilitado y ya no se puede utilizar. Comuníquese con el administrador para volver a habilitar la configuración o reemplazar esta protección antes de ejecutar el agente.",
   "guardrails.list.byo-unavailable-notice": "La configuración de esta protección ya no está disponible. Reemplácela antes de ejecutar el agente.",
-  "guardrails.list.status-unauthorized": "Sin autorizar"
+  "guardrails.list.status-unauthorized": "Sin autorizar",
+  "guardrails.palette.list-aria-label": "Medidas de seguridad disponibles",
+  "guardrails.palette.create-custom": "Medida de seguridad personalizada",
+  "guardrails.palette.create-custom-description": "Cree una medida de seguridad con reglas personalizadas",
+  "guardrails.palette.empty": "No hay protecciones disponibles",
+  "guardrails.palette.loading": "Cargando...",
+  "guardrails.palette.load-error": "Se produjo un error al cargar los validadores integrados",
+  "guardrails.palette.uipath-group": "Protecciones de UiPath",
+  "guardrails.palette.preview": "Vista previa",
+  "guardrails.palette.status-unauthorized": "Sin autorizar"
 }
