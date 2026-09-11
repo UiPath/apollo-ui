@@ -9,7 +9,6 @@ import { AutopilotChatSuggestions } from '../suggestions/chat-suggestions';
 const FREContainer = styled('div')(() => ({
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: token.Border.BorderRadiusL,
   position: 'absolute',
   bottom: 0,
   marginBottom: token.Spacing.SpacingL,
