@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
   AlignCenter,
@@ -11,7 +11,7 @@ import {
   StarHalf,
   Underline,
 } from 'lucide-react';
-
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,7 +30,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Toggle } from '@/components/ui/toggle';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib';
-import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { CustomFieldComponentProps, FormPlugin, FormSchema } from './form-schema';
 import { MetadataForm } from './metadata-form';
