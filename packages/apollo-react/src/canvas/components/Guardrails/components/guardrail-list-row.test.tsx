@@ -31,6 +31,19 @@ function renderRow(
   );
 }
 
+/**
+ * The row body, addressed structurally. With `rowActivatesEdit` it carries the same accessible
+ * name as the inline Edit button, because both are the same intent, so a role+name query would
+ * match two elements.
+ */
+function rowBody(container: HTMLElement): HTMLElement {
+  const body = container.querySelector<HTMLElement>(
+    '[data-slot="guardrail-list-row"] > div:not([data-slot="guardrail-list-row-actions"])'
+  );
+  if (body === null) throw new Error('the row rendered no body');
+  return body;
+}
+
 describe('GuardrailListRow', () => {
   it('renders the name, description, action and scopes', () => {
     renderRow();
@@ -136,8 +149,10 @@ describe('GuardrailListRow', () => {
     it('renders only the actions the host wired up', () => {
       renderRow(PII_GUARDRAIL, { onEdit: vi.fn() });
 
-      expect(screen.getByRole('button', { name: 'Edit guardrail' })).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Remove guardrail' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Edit PII detection 1' })).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Remove PII detection 1' })
+      ).not.toBeInTheDocument();
     });
 
     it('reports edit and remove intents with the row', () => {
@@ -145,8 +160,8 @@ describe('GuardrailListRow', () => {
       const onRemove = vi.fn();
       renderRow(PII_GUARDRAIL, { onEdit, onRemove });
 
-      fireEvent.click(screen.getByRole('button', { name: 'Edit guardrail' }));
-      fireEvent.click(screen.getByRole('button', { name: 'Remove guardrail' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Edit PII detection 1' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Remove PII detection 1' }));
 
       expect(onEdit).toHaveBeenCalledWith(PII_GUARDRAIL);
       expect(onRemove).toHaveBeenCalledWith(PII_GUARDRAIL);
@@ -156,7 +171,7 @@ describe('GuardrailListRow', () => {
       const onEdit = vi.fn();
       renderRow(PII_GUARDRAIL, { onEdit, onRemove: vi.fn(), disabled: true });
 
-      const edit = screen.getByRole('button', { name: 'Edit guardrail' });
+      const edit = screen.getByRole('button', { name: 'Edit PII detection 1' });
       expect(edit).toBeDisabled();
       fireEvent.click(edit);
       expect(onEdit).not.toHaveBeenCalled();
@@ -167,7 +182,9 @@ describe('GuardrailListRow', () => {
       renderRow(PII_GUARDRAIL, { onEdit: vi.fn(), index: 2, renderItemActions });
 
       expect(screen.getByRole('button', { name: 'More options' })).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Edit guardrail' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Edit PII detection 1' })
+      ).not.toBeInTheDocument();
       expect(renderItemActions).toHaveBeenCalledWith(
         expect.objectContaining({ item: PII_GUARDRAIL, id: 'g1', index: 2, disabled: false })
       );
@@ -184,25 +201,24 @@ describe('GuardrailListRow', () => {
         ),
       });
 
-      expect(screen.getByRole('button', { name: 'Edit guardrail' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Edit PII detection 1' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'More options' })).toBeInTheDocument();
     });
   });
 
   describe('rowActivatesEdit', () => {
     it('does not make the body activatable by default', () => {
-      renderRow(PII_GUARDRAIL, { onEdit: vi.fn() });
+      const { container } = renderRow(PII_GUARDRAIL, { onEdit: vi.fn() });
 
-      expect(
-        screen.queryByRole('button', { name: 'Edit PII detection 1' })
-      ).not.toBeInTheDocument();
+      expect(rowBody(container)).not.toHaveAttribute('role', 'button');
     });
 
     it('opens the editor on click and on Enter or Space', () => {
       const onEdit = vi.fn();
-      renderRow(PII_GUARDRAIL, { onEdit, rowActivatesEdit: true });
+      const { container } = renderRow(PII_GUARDRAIL, { onEdit, rowActivatesEdit: true });
 
-      const body = screen.getByRole('button', { name: 'Edit PII detection 1' });
+      const body = rowBody(container);
+      expect(body).toHaveAccessibleName('Edit PII detection 1');
       fireEvent.click(body);
       fireEvent.keyDown(body, { key: 'Enter' });
       fireEvent.keyDown(body, { key: ' ' });
@@ -211,22 +227,24 @@ describe('GuardrailListRow', () => {
     });
 
     it('stays inert while read-only', () => {
-      renderRow(PII_GUARDRAIL, { onEdit: vi.fn(), rowActivatesEdit: true, disabled: true });
+      const { container } = renderRow(PII_GUARDRAIL, {
+        onEdit: vi.fn(),
+        rowActivatesEdit: true,
+        disabled: true,
+      });
 
-      expect(
-        screen.queryByRole('button', { name: 'Edit PII detection 1' })
-      ).not.toBeInTheDocument();
+      expect(rowBody(container)).not.toHaveAttribute('role', 'button');
     });
 
     it('describes the activatable body with its notices and description', () => {
       const described = { ...BYO_GUARDRAIL, description: 'Blocks prompt injection attempts.' };
-      renderRow(described, { onEdit: vi.fn(), rowActivatesEdit: true }, [
+      const { container } = renderRow(described, { onEdit: vi.fn(), rowActivatesEdit: true }, [
         { validator: 'byo', status: 'Disabled', byoValidatorName: 'noma_prompt_injection' },
       ]);
 
       // ARIA treats a button's children as presentational, so without this the row is
       // announced as its label alone and the reason it cannot run is silent.
-      const body = screen.getByRole('button', { name: 'Edit Noma prompt shield' });
+      const body = rowBody(container);
       const ids = body.getAttribute('aria-describedby')?.split(' ') ?? [];
       expect(ids).toHaveLength(2);
       const texts = ids.map((id) => document.getElementById(id)?.textContent);
@@ -234,12 +252,55 @@ describe('GuardrailListRow', () => {
       expect(texts[1]).toBe('Blocks prompt injection attempts.');
     });
 
-    it('names nothing when there is nothing to describe', () => {
-      renderRow(CUSTOM_GUARDRAIL, { onEdit: vi.fn(), rowActivatesEdit: true });
+    it('describes it with the status and administration chips, ahead of the notices', () => {
+      // The chips are state that changes what activating the row does, unlike the provider
+      // line and the scopes, which stay presentational.
+      const described = { ...BYO_GUARDRAIL, description: 'Blocks prompt injection attempts.' };
+      const { container } = renderRow(
+        described,
+        {
+          onEdit: vi.fn(),
+          rowActivatesEdit: true,
+          statusChips: true,
+          previewChip: true,
+          administration: 'governance',
+        },
+        [{ validator: 'byo', status: 'Disabled', byoValidatorName: 'noma_prompt_injection' }]
+      );
 
-      // No BYO notice and no description on this fixture.
-      const body = screen.getByRole('button', { name: 'Edit Blocked words' });
-      expect(body).not.toHaveAttribute('aria-describedby');
+      const ids = rowBody(container).getAttribute('aria-describedby')?.split(' ') ?? [];
+      const texts = ids.map((id) => document.getElementById(id)?.textContent);
+      expect(texts).toEqual([
+        'Disabled',
+        'Governance managed',
+        expect.stringContaining('has been disabled'),
+        'Blocks prompt injection attempts.',
+      ]);
+    });
+
+    it('leaves the presentational metadata out of the description', () => {
+      const { container } = renderRow(BYO_GUARDRAIL, {
+        onEdit: vi.fn(),
+        rowActivatesEdit: true,
+        previewChip: true,
+      });
+
+      // Provider, action and scopes are repeated metadata; naming them turns one announcement
+      // into a paragraph. The lifecycle `Preview` chip is the same kind of thing.
+      const ids = rowBody(container).getAttribute('aria-describedby')?.split(' ') ?? [];
+      const texts = ids.map((id) => document.getElementById(id)?.textContent);
+      expect(texts).not.toContain('Preview');
+      expect(texts.join(' ')).not.toContain('Noma Security');
+    });
+
+    it('names nothing when there is nothing to describe', () => {
+      const { container } = renderRow(CUSTOM_GUARDRAIL, {
+        onEdit: vi.fn(),
+        rowActivatesEdit: true,
+      });
+
+      // No chips, no BYO notice and no description on this fixture.
+      expect(rowBody(container)).not.toHaveAttribute('aria-describedby');
     });
 
     it('keeps the row actions out of the activatable body, so no button nests in a button', async () => {
@@ -249,9 +310,26 @@ describe('GuardrailListRow', () => {
         rowActivatesEdit: true,
       });
 
-      const body = screen.getByRole('button', { name: 'Edit PII detection 1' });
-      expect(body.querySelector('button')).toBeNull();
+      expect(rowBody(container).querySelector('button')).toBeNull();
       expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('the action buttons name their row', () => {
+    it('interpolates the row name into both labels', () => {
+      // Every row ships the same two icons; without the name a screen-reader user tabbing the
+      // actions column cannot tell which row a button belongs to.
+      renderRow(BYO_GUARDRAIL, { onEdit: vi.fn(), onRemove: vi.fn() });
+
+      expect(screen.getByRole('button', { name: 'Edit Noma prompt shield' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Remove Noma prompt shield' })).toBeInTheDocument();
+    });
+
+    it('falls back to the generic labels when the row has no name', () => {
+      renderRow({ ...PII_GUARDRAIL, name: '  ' }, { onEdit: vi.fn(), onRemove: vi.fn() });
+
+      expect(screen.getByRole('button', { name: 'Edit guardrail' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Remove guardrail' })).toBeInTheDocument();
     });
   });
 

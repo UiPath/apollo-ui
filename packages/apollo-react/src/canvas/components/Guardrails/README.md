@@ -190,9 +190,9 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
   | `hideHeader` | `false` | Agents owns the section title and its add affordance. |
   | `footer` | none | Agents' add affordance sits *below* the rows and swaps itself for an entitlement line, which the header-only `addSlot` cannot express. |
   | `emptyState` | the default line | Agents renders nothing when empty: pass `null`. An explicit `null` is honoured, so the check is for an absent prop, not a falsy value. |
-  | `rowActivatesEdit` | `false` | Agents opens the editor by clicking the row body. The body becomes a `role="button"`, whose children ARIA treats as presentational, so the BYO notices and the description are named in its `aria-describedby`. The provider line, action badge and scopes stay presentational: a host that needs those announced should render them outside the activatable body. |
+  | `rowActivatesEdit` | `false` | Agents opens the editor by clicking the row body. The body becomes a `role="button"`, whose children ARIA treats as presentational, so the status and administration chips, the BYO notices and the description are named in its `aria-describedby`, in that reading order. The chips are state that changes what activating the row does. The lifecycle `Preview` chip, the provider line, the action badge and the scopes stay presentational: a host that needs those announced should render them outside the activatable body. |
   | `renderItemActions` | inline buttons | Agents' actions are an overflow menu. The slot receives `defaultActions`, so it can add to them instead of replacing them. |
-  | `renderRowTooltip` | none | Agents hovers a combined description, provider and scopes tooltip over the row body. A tooltipped body that is not activatable gets `tabIndex={0}`, so the content opens on focus as well as hover. |
+  | `renderRowTooltip` | none | Agents hovers a combined description, provider and scopes tooltip over the row body. A tooltipped body that is not activatable gets `tabIndex={0}`, so the content opens on focus as well as hover. On an activatable row the body's own `aria-describedby` wins over the open tooltip's, because Radix `Slot` lets the child's non-handler props override the slot's; that is the intended precedence, since the tooltip only repeats row metadata the row already announces. |
   | `formatScopes` / `formatAction` | raw values | Scope and action wording is product copy; return `null` to hide either line. |
   | `getItemId` | `id ?? name` | Flow keys rows by `id`, Agents by `name`. |
   | `getItemAdministration` | `'local'` | Governance-managed guardrails come from a different endpoint, so nothing on the record identifies them. |
@@ -212,6 +212,11 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
   guaranteed. The body it anchors to is focusable either way (`role="button"` when the row
   activates edit, `tabIndex={0}` when it does not), so the tooltip is reachable by keyboard
   and not pointer-only.
+- **Every row action names its row.** The Edit and Remove buttons are the same two icons on
+  every row, so a generic "Edit guardrail" leaves a screen-reader user tabbing the actions
+  column unable to tell which row they are on. Both take a `{{name}}` template (`editRow`,
+  `removeRow`), and the generic labels (`editItem`, `removeItem`) stay as the fallback for a
+  row with no name, where the template would announce "Edit ".
 - **Error text is `text-error`, not `text-destructive`.** The two resolve differently in
   several `tailwind.consumer.css` theme blocks and wind's `FormFieldError` settled on
   `text-error`. The BYO notices keep `role="alert"` rather than the family banner's
@@ -219,10 +224,12 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
 
 ### Chips and notices
 
-`GuardrailStatusChip` is `Badge`-based and reuses the chip family's pill geometry. It is
-deliberately **not** `GuardrailChip`, which wraps a Radix `Toggle`: these are read-only
-labels, and rendering them as toggles would put fake buttons in the tab order and misreport
-them to screen readers.
+`GuardrailStatusChip` is a `<span>` carrying wind's exported `badgeVariants` plus the chip
+family's pill geometry. Composed from the variants rather than the `Badge` component because
+`Badge` renders a `<div>`, and the palette entry places these chips inside its `<button>`,
+where flow content is invalid. It is deliberately **not** `GuardrailChip`, which wraps a Radix
+`Toggle`: these are read-only labels, and rendering them as toggles would put fake buttons in
+the tab order and misreport them to screen readers.
 
 `getGuardrailListChips` is the mapping, exported and pure. An `Available`, locally
 administered row chips nothing, which is the common case and keeps the list quiet.
