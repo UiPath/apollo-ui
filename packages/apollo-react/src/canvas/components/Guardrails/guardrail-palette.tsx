@@ -120,7 +120,12 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const entries = entryElements();
-    const current = entries.indexOf(document.activeElement as HTMLButtonElement);
+    // The focused entry comes off the event, not `document.activeElement`. Agents renders the
+    // family inside a shadow root, where `document.activeElement` retargets to the shadow
+    // *host*: the lookup would never match and every arrow key would be a silent no-op there.
+    // React delivers the un-retargeted target for an event raised in its own tree.
+    const focused: EventTarget = event.target;
+    const current = entries.indexOf(focused as HTMLButtonElement);
     if (current === -1) return;
 
     let next: number;

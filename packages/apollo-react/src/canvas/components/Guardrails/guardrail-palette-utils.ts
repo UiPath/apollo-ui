@@ -2,10 +2,14 @@ import { isByoGuardrailDefinition } from './definitions-enrich';
 import type { GuardrailPaletteDefinition, GuardrailPaletteGroup } from './palette-types';
 
 /**
- * Pure helpers behind `GuardrailPalette`. Exported because hosts need the same answers
- * outside the picker (a sidebar deciding whether it has anything to show, a telemetry
- * payload naming the chosen item), and because this is where both products' duplicated
- * grouping converges.
+ * Pure functions behind `GuardrailPalette`, callable outside React. Exported because hosts
+ * need the same answers outside the picker (a sidebar deciding whether it has anything to
+ * show, a telemetry payload naming the chosen item), and because this is where both products'
+ * duplicated grouping converges.
+ *
+ * "Callable outside React", not "React-free": the functions take no hooks and no context, but
+ * the module graph is not free of React. `isByoGuardrailDefinition` comes from
+ * `definitions-enrich`, which reaches `definitions-copy` and its `useSafeLingui`.
  */
 
 /**
