@@ -55,6 +55,10 @@ export default defineConfig({
         '!./src/**/*.test.{ts,tsx}',
         '!./src/**/*.stories.{ts,tsx}',
         '!./src/**/storybook-utils/**',
+        // Test-only, like `src/test/**`: fixtures are data for the suites, not API, and they
+        // reach for devDependencies (the dnd geometry helper needs `@testing-library/react`),
+        // so there is nothing to gain from publishing them.
+        '!./src/**/__fixtures__/**',
         '!./src/test/**',
         '!./src/icons/.cache',
         '!./src/**/*.md',

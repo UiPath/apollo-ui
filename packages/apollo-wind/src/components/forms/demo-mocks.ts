@@ -4,10 +4,10 @@
  */
 
 import {
-  DataFetcher,
-  type DataAdapter,
   type AdapterRequest,
   type AdapterResponse,
+  type DataAdapter,
+  DataFetcher,
 } from './data-fetcher';
 
 // ============================================================================
