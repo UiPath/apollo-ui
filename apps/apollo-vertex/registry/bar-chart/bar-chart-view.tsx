@@ -39,13 +39,29 @@ export interface BarChartRow {
 export interface BarChartProps {
   rows: BarChartRow[];
   series: BarChartSeries[];
+  /** Overrides the single-dimension label column's width percentage
+   * (default 25). A caller with longer labels than that width fits can
+   * widen it without every row's text truncating. */
+  dimensionWidthPct?: number;
+  /** Overrides the value column's width percentage (default 20). */
+  valueWidthPct?: number;
+  /** Overrides the percent column's width percentage (default 15). */
+  percentWidthPct?: number;
 }
 
 const BAR_SIZE = 20;
 const BAR_GAP = 4;
 const CATEGORY_GAP = 8;
+const DEFAULT_VALUE_WIDTH_PCT = 20;
+const DEFAULT_PERCENT_WIDTH_PCT = 15;
 
-export function BarChart({ rows, series }: BarChartProps) {
+export function BarChart({
+  rows,
+  series,
+  dimensionWidthPct: dimensionWidthPctOverride,
+  valueWidthPct = DEFAULT_VALUE_WIDTH_PCT,
+  percentWidthPct = DEFAULT_PERCENT_WIDTH_PCT,
+}: BarChartProps) {
   const dimensionKeys = rows[0]?.dimensions.map((d) => d.key) ?? [];
   const dimensionCount = dimensionKeys.length;
   const rechartsData: Array<RechartsBarData> = rows.map((row) => {
@@ -71,14 +87,15 @@ export function BarChart({ rows, series }: BarChartProps) {
   const singleDimensionWidthPct = 25;
   const maxDimensionWidthPct = 35;
   const dimensionWidthPct =
-    dimensionCount <= 1
+    dimensionWidthPctOverride ??
+    (dimensionCount <= 1
       ? singleDimensionWidthPct
-      : maxDimensionWidthPct / dimensionCount;
+      : maxDimensionWidthPct / dimensionCount);
   const dimensionCols: string[] = [];
   for (let i = 0; i < dimensionCount; i++) {
     dimensionCols.push(`minmax(0, ${dimensionWidthPct}%)`);
   }
-  const gridCols = `${dimensionCols.join(" ")} 1fr minmax(0, 20%) minmax(0, 15%)`;
+  const gridCols = `${dimensionCols.join(" ")} 1fr minmax(0, ${valueWidthPct}%) minmax(0, ${percentWidthPct}%)`;
 
   const chartConfig: ChartConfig = Object.fromEntries(
     series.map((s, index) => [
@@ -225,7 +242,10 @@ export function BarChart({ rows, series }: BarChartProps) {
                   }}
                 />
                 {rechartsData.map((row, index) => (
-                  <Cell key={row.__id} fill={PALETTE[index % PALETTE.length]} />
+                  <Cell
+                    key={row.__id}
+                    fill={series[0]?.color ?? PALETTE[index % PALETTE.length]}
+                  />
                 ))}
               </RechartsBar>
             ) : (

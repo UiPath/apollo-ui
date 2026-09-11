@@ -115,9 +115,9 @@ export function AiChatMessageActions({
       <div
         className={cn(
           "flex items-center gap-0.5 -ml-[7px] transition-opacity",
-          isLatest
-            ? "opacity-100"
-            : "opacity-0 group-hover/message:opacity-100 group-focus-within/message:opacity-100 has-[[data-state=delayed-open]]:opacity-100 has-[[data-state=instant-open]]:opacity-100",
+          // Hover-only (also revealed on keyboard focus / open tooltip) to cut
+          // persistent noise — including on the latest message.
+          "opacity-0 group-hover/message:opacity-100 group-focus-within/message:opacity-100 has-[[data-state=delayed-open]]:opacity-100 has-[[data-state=instant-open]]:opacity-100",
         )}
       >
         {content.trim() && <CopyToClipboardButton value={content} />}

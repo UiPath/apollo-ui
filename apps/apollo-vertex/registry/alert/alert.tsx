@@ -18,6 +18,7 @@ const alertVariants = cva(
       },
       status: {
         default: "",
+        success: "",
         warning: "",
         error: "",
       },
@@ -32,6 +33,11 @@ const alertVariants = cva(
         status: "default",
         visual: "outline",
         className: "border-badge [&>svg]:text-foreground",
+      },
+      {
+        status: "success",
+        visual: "outline",
+        className: "border-success [&>svg]:text-success",
       },
       {
         status: "warning",
@@ -51,6 +57,12 @@ const alertVariants = cva(
         visual: "tinted",
         className:
           "bg-badge/20 border-transparent text-foreground [&>svg]:text-foreground",
+      },
+      {
+        status: "success",
+        visual: "tinted",
+        className:
+          "bg-success/15 dark:bg-success/25 text-foreground [&>svg]:text-success",
       },
       {
         status: "warning",

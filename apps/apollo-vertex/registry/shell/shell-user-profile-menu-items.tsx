@@ -1,4 +1,12 @@
-import { Globe, LogOut, Monitor, Moon, Sun } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Globe,
+  LogOut,
+  Monitor,
+  Moon,
+  Sun,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
   DropdownMenuItem,
@@ -10,12 +18,22 @@ import {
 import type { SupportedLocale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useAuth } from "./shell-auth-provider";
-import { LANGUAGE_CHANGED_EVENT, LOCALE_OPTIONS } from "./shell-constants";
 import type { LanguageChangedEvent } from "./shell-constants";
+import { LANGUAGE_CHANGED_EVENT, LOCALE_OPTIONS } from "./shell-constants";
 import { Text } from "./shell-text";
 import { useTheme } from "./shell-theme-provider";
 
-export const UserProfileMenuItems = () => {
+interface UserProfileMenuItemsProps {
+  /** When set, a "Switch user" item appears at the top (e.g. demo seats). */
+  onSwitchUser?: () => void;
+  /** Optional extra items rendered after Switch user, before Toggle theme. */
+  additionalItems?: ReactNode;
+}
+
+export const UserProfileMenuItems = ({
+  onSwitchUser,
+  additionalItems,
+}: UserProfileMenuItemsProps) => {
   const { t, i18n } = useTranslation();
   const { logout } = useAuth();
   const { setTheme } = useTheme();
@@ -31,6 +49,21 @@ export const UserProfileMenuItems = () => {
 
   return (
     <>
+      {onSwitchUser && (
+        <>
+          <DropdownMenuItem onClick={onSwitchUser}>
+            <ArrowLeftRight className="w-4 h-4" />
+            <span>{t("switch_user")}</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+        </>
+      )}
+      {additionalItems != null && (
+        <>
+          {additionalItems}
+          <DropdownMenuSeparator />
+        </>
+      )}
       <DropdownMenuSub>
         <DropdownMenuSubTrigger>
           <Sun className="w-4 h-4 dark:hidden" />
