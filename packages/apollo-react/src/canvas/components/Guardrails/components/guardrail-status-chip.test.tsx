@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
+import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { GuardrailStatusChip } from './guardrail-status-chip';
 
@@ -15,6 +16,19 @@ describe('GuardrailStatusChip', () => {
     render(<GuardrailStatusChip>Disabled</GuardrailStatusChip>);
 
     expect(screen.getByText('Disabled')).toHaveClass('rounded-full');
+  });
+
+  it('renders a span carrying the badge classes, not a div', () => {
+    // wind's `Badge` renders a `<div>`, and the palette entry puts these chips inside its
+    // `<button>`, where flow content is invalid. Composing from the exported `badgeVariants`
+    // keeps the badge look in an element that may live there.
+    const ref = createRef<HTMLSpanElement>();
+    render(<GuardrailStatusChip ref={ref}>Unauthorized</GuardrailStatusChip>);
+
+    const chip = screen.getByText('Unauthorized');
+    expect(chip.tagName).toBe('SPAN');
+    expect(chip).toHaveClass('inline-flex', 'border-transparent');
+    expect(ref.current).toBe(chip);
   });
 
   it.each([
