@@ -35,6 +35,11 @@ export interface UseGuardrailDefinitionsOptions {
    * parsed and enriched instead. This is the seam that lets each product keep its own
    * transport (Agents' SWR, Flow studio and workbench's react-query, Flow vsix's
    * postMessage, which never fetches).
+   *
+   * Unlike the context and `hiddenValidators`, this is compared by **identity**: a payload is
+   * arbitrarily large, so hashing it every render would cost more than it saves. Pass a stable
+   * reference. SWR and react-query results already are; an inline literal re-parses and
+   * re-enriches on every render (no loop, but a new `definitions` array downstream each time).
    */
   definitions?: unknown;
   /**
@@ -80,6 +85,12 @@ type GuardrailDefinitionsRequest = Omit<GuardrailDefinitionsRequestContext, 'fet
  * host can build them inline at the call site. This is a deliberate departure from
  * `useDiscoveryModels`, which depends on context identity: there, an inline object refetches
  * on every render, and since every response sets state the loop never terminates.
+ * `options.definitions` is the exception and is compared by identity; see its own doc.
+ *
+ * A failed request sets `error` and **keeps the previous results**, so a transient 503 on a
+ * `refetch` does not empty a list the user is looking at. Hosts that want the error to replace
+ * the data should render on `error` first. Disabling the hook (`null` context, or switching to
+ * `options.definitions`) does clear the fetched state.
  */
 export function useGuardrailDefinitions(
   ctx: GuardrailDefinitionsRequestContext | null,
@@ -115,12 +126,18 @@ export function useGuardrailDefinitions(
   const enabled = provided === undefined && request !== null;
 
   const [fetched, setFetched] = useState<GuardrailDefinitionsParseResult>(EMPTY_RESULT);
-  const [loading, setLoading] = useState(false);
+  // `true` on the first render of an enabled hook: the effect below is about to fetch, and a
+  // host that renders `loading ? <Spinner/> : <Empty/>` would otherwise flash the empty state.
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<Error | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const load = useCallback(async () => {
-    if (request === null) return;
+    // Also the `refetch` we hand back, so it has to respect the disable path: with
+    // `options.definitions` supplied the result of a request would be discarded by `parsed`
+    // below, and with a `null` context there is nothing to request. (`enabled` implies
+    // `request !== null`; the second check is what narrows the type.)
+    if (!enabled || request === null) return;
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -160,7 +177,7 @@ export function useGuardrailDefinitions(
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [request]);
+  }, [enabled, request]);
 
   useEffect(() => {
     if (!enabled) {
