@@ -69,8 +69,10 @@ describe('the shared canvas catalog', () => {
 
   it('carries no palette message the source no longer declares', () => {
     // Every locale, not just English: a renamed id otherwise leaves twelve dead translations
-    // behind, and the harvest that produced them is a one-off script, not a pipeline.
-    const orphans = ['en', ...TRANSLATED_LOCALES].flatMap((locale) =>
+    // behind, and the harvest that produced them is a one-off script, not a pipeline. `ru` is
+    // scanned here although it is out of the coverage check below: deliberately empty is not
+    // licence to keep a stale id.
+    const orphans = ['en', 'ru', ...TRANSLATED_LOCALES].flatMap((locale) =>
       Object.keys(readCatalog(locale))
         .filter((id) => id.startsWith('guardrails.palette.'))
         .filter((id) => !(id in GUARDRAIL_PALETTE_EN_MESSAGES))

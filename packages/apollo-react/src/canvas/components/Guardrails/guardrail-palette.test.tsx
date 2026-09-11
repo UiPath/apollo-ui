@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -154,6 +154,33 @@ describe('GuardrailPalette', () => {
 
       fireEvent.keyDown(last, { key: 'Home' });
       expect(first).toHaveFocus();
+    });
+
+    it('rovers inside a shadow root, where document.activeElement is the host', () => {
+      // Agents renders the family in a shadow root (Pattern B). `document.activeElement` there
+      // is the host element, never the focused entry, so a handler that looks the entry up that
+      // way leaves Arrow/Home/End doing nothing in one of the two hosts.
+      const host = document.createElement('div');
+      document.body.appendChild(host);
+      const mount = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).appendChild(mount);
+
+      render(<GuardrailPalette ootbDefinitions={UIPATH_DEFINITIONS} onSelectOotb={vi.fn()} />, {
+        container: mount,
+      });
+
+      const shadow = within(mount);
+      const first = shadow.getByRole('button', { name: /PII detection/ });
+      const second = shadow.getByRole('button', { name: /Prompt attacks/ });
+
+      first.focus();
+      expect(document.activeElement).not.toBe(first);
+
+      fireEvent.keyDown(first, { key: 'ArrowDown' });
+      expect(host.shadowRoot?.activeElement).toBe(second);
+      expect(second.tabIndex).toBe(0);
+
+      host.remove();
     });
 
     it('reaches the unauthorized entry, which is the reason it is aria-disabled', () => {
