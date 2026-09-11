@@ -211,6 +211,8 @@ export function resolveGuardrailFormLabels(
 // Reifies each ICU placeholder back into the `{{token}}` template convention: the
 // localized strings cross into plain-string template APIs (`formatGuardrailFormMessage`,
 // wind's `formatTemplate`) as data, while translators work with standard ICU placeholders.
+// One map for every label set: `toolName` is the remove dialog's, and passing it to the form
+// and builder strings, which never declare that placeholder, is inert.
 const TEMPLATE_TOKENS = {
   name: '{{name}}',
   label: '{{label}}',

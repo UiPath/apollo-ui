@@ -64,6 +64,10 @@ export interface GuardrailRemoveDialogProps {
    * (`document.body` when there is none), pass an element to portal into it, or `'body'` to
    * force `document.body` even under a provider. Agents' dialog deliberately escapes its
    * shadow root today, which is what `'body'` preserves; Flow's stays in place.
+   *
+   * The union mirrors wind's own `PortalContainerOverride`, which the wind barrel does not
+   * export (it exports `PortalContainerProvider` and its props type only). Restating it is the
+   * only option today; keep the two in step, or get the type exported.
    */
   container?: HTMLElement | 'body' | null;
   labels?: Partial<GuardrailRemoveDialogLabels>;
@@ -82,11 +86,13 @@ function ImpactList({
 }) {
   return (
     <ul className="list-disc pl-5">
-      {toolNames.map((name) => (
-        <li key={name}>{name}</li>
+      {/* Keyed by index and value: neither list is reordered or filtered, and two tools can
+          carry the same display name, which a value-only key would warn about. */}
+      {toolNames.map((name, index) => (
+        <li key={`${index}-${name}`}>{name}</li>
       ))}
-      {scopes.map((scope) => (
-        <li key={scope}>{formatScope ? formatScope(scope) : scope}</li>
+      {scopes.map((scope, index) => (
+        <li key={`${index}-${scope}`}>{formatScope ? formatScope(scope) : scope}</li>
       ))}
     </ul>
   );
