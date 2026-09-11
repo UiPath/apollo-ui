@@ -283,6 +283,28 @@ export function MetadataForm({
     return { ...fromPlugins, ...customComponents };
   }, [plugins, customComponents]);
 
+  // Without an owning <form> the inputs still belong to whatever form the host wrapped us in,
+  // so Enter would trigger *its* implicit submission. Swallow it for single-line controls
+  // (textareas keep Enter for newlines, buttons keep it for activation). Bound natively rather
+  // than via onKeyDown: the wrapper is a passive container, not a widget, so it has no ARIA
+  // role to declare — and a11y linters rightly reject an interaction handler on a bare div.
+  const enterSwallowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = enterSwallowRef.current;
+    if (!node) return;
+
+    const swallowEnter = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter' || event.defaultPrevented) return;
+      const target = event.target as HTMLElement;
+      if (target instanceof HTMLInputElement && target.type !== 'button') {
+        event.preventDefault();
+      }
+    };
+
+    node.addEventListener('keydown', swallowEnter);
+    return () => node.removeEventListener('keydown', swallowEnter);
+  }, []);
+
   // Render based on form structure
   const renderContent = () => {
     if (stableSchema.steps) {
@@ -349,16 +371,7 @@ export function MetadataForm({
       // Without an owning <form> the inputs still belong to whatever form the host wrapped
       // us in, so Enter would trigger *its* implicit submission. Swallow it for single-line
       // controls (textareas keep Enter for newlines, buttons keep it for activation).
-      <div
-        className={className}
-        onKeyDown={(event) => {
-          if (event.key !== 'Enter' || event.defaultPrevented) return;
-          const target = event.target as HTMLElement;
-          if (target instanceof HTMLInputElement && target.type !== 'button') {
-            event.preventDefault();
-          }
-        }}
-      >
+      <div className={className} ref={enterSwallowRef}>
         {content}
       </div>
     ) : (
