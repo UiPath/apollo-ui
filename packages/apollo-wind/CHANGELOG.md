@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v2.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.48.1...@uipath/apollo-wind@2.49.0) (2026-09-11)
+
+### Features
+
+* **apollo-wind:** add directional slide-in animation utilities ([3322b9e](https://github.com/UiPath/apollo-ui/commit/3322b9e926aaebdc33ea1f9be0d424aba7d6ab6f))
+
+### Bug Fixes
+
+* **apollo-wind:** use foreground text for populated field triggers ([1475101](https://github.com/UiPath/apollo-ui/commit/1475101ab5252f142ab574e702f7e82b187c687a))
+
 ## [@uipath/apollo-wind-v2.48.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.48.0...@uipath/apollo-wind@2.48.1) (2026-09-10)
 
 ### Bug Fixes

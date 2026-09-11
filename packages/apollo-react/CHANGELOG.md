@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.44.2...@uipath/apollo-react@6.45.0) (2026-09-11)
+
+### Features
+
+* **apollo-react:** apply future styling to the canvas Toolbox ([23dee4c](https://github.com/UiPath/apollo-ui/commit/23dee4cad6b10c917619d3a18c39f8dc8d1c85bb))
+
+### Bug Fixes
+
+* **apollo-react:** float canvas panels above ReactFlow panel chrome ([3558249](https://github.com/UiPath/apollo-ui/commit/355824947ddfcc4fd3b680d4a5b3631773f4bc0f))
+
 ## [@uipath/apollo-react-v6.44.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.44.1...@uipath/apollo-react@6.44.2) (2026-09-10)
 
 ### Bug Fixes
