@@ -13,13 +13,12 @@ import type { EnrichedGuardrailDefinition } from './definitions-enrich';
 import { GuardrailPalette, type GuardrailPaletteProps } from './guardrail-palette';
 
 function renderPalette(props: Partial<GuardrailPaletteProps> = {}) {
-  return render(
-    <GuardrailPalette
-      ootbDefinitions={UIPATH_DEFINITIONS}
-      onSelectOotb={vi.fn()}
-      {...(props as GuardrailPaletteProps)}
-    />
-  );
+  const merged: GuardrailPaletteProps = {
+    ootbDefinitions: UIPATH_DEFINITIONS,
+    onSelectOotb: vi.fn(),
+    ...props,
+  };
+  return render(<GuardrailPalette {...merged} />);
 }
 
 const entries = () => screen.getAllByRole('button').map((item) => item.textContent);
@@ -119,6 +118,56 @@ describe('GuardrailPalette', () => {
       expect(item).toHaveAttribute('aria-disabled', 'true');
       fireEvent.click(item);
       expect(onSelectOotb).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('keyboard navigation', () => {
+    it('rovers the arrow keys across groups and keeps one tab stop', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, onCreateCustom: vi.fn() });
+
+      // create-custom, then two bring-your-own groups of one, then the two UiPath entries.
+      const items = screen.getAllByRole('button');
+      expect(items).toHaveLength(5);
+      const first = screen.getByRole('button', { name: /Custom guardrail/ });
+      const second = screen.getByRole('button', { name: /Acme policy check/ });
+      const last = screen.getByRole('button', { name: /Prompt attacks/ });
+      const tabStops = () => items.filter((item) => item.tabIndex === 0);
+
+      expect(tabStops()).toEqual([first]);
+
+      first.focus();
+      fireEvent.keyDown(first, { key: 'ArrowDown' });
+      expect(second).toHaveFocus();
+      // The tab stop follows focus, so leaving and re-entering the palette comes back here.
+      expect(tabStops()).toEqual([second]);
+
+      fireEvent.keyDown(second, { key: 'ArrowUp' });
+      expect(first).toHaveFocus();
+
+      // End and Home cross every group boundary, which is what a flat roving index buys.
+      fireEvent.keyDown(first, { key: 'End' });
+      expect(last).toHaveFocus();
+
+      // Clamped rather than wrapped.
+      fireEvent.keyDown(last, { key: 'ArrowDown' });
+      expect(last).toHaveFocus();
+
+      fireEvent.keyDown(last, { key: 'Home' });
+      expect(first).toHaveFocus();
+    });
+
+    it('reaches the unauthorized entry, which is the reason it is aria-disabled', () => {
+      renderPalette({ ootbDefinitions: [PII_DEFINITION, UNAUTHORIZED_DEFINITION] });
+
+      const available = screen.getByRole('button', { name: /PII detection/ });
+      const unauthorized = screen.getByRole('button', { name: /Harmful content/ });
+
+      available.focus();
+      fireEvent.keyDown(available, { key: 'ArrowDown' });
+
+      expect(unauthorized).toHaveAttribute('aria-disabled', 'true');
+      expect(unauthorized).toHaveFocus();
+      expect(unauthorized).toHaveTextContent('Unauthorized');
     });
   });
 

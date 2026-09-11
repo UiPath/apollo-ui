@@ -184,20 +184,39 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
 - **`Unauthorised` is offered, chipped and not choosable.** It is the only non-`Available`
   status that reaches a correctly filtered palette, and it is how a tenant discovers a
   validator it is not entitled to. The entry is `aria-disabled`, not `disabled`, so it keeps
-  its place in the tab order and a keyboard user reaches the chip that says why. Agents today
-  lets that entry through to the builder, which then refuses to save; Flow disables it in the
-  select, and that is the behaviour this ships.
+  its place in the roving focus order and a keyboard user reaches the chip that says why. Agents
+  today lets that entry through to the builder, which then refuses to save; Flow disables it in
+  the select, and that is the behaviour this ships.
+- **The palette is one tab stop, and Arrow/Home/End move inside it.** Roving `tabIndex`: exactly
+  one entry is tabbable, Tab enters the palette and Tab leaves it, ArrowDown / ArrowUp step
+  between entries across group boundaries, Home and End jump to the first and last, and the tab
+  stop follows focus so leaving and re-entering comes back where the user was. Movement is
+  clamped at the ends rather than wrapped. The create-custom entry is the first in that order,
+  and `aria-disabled` entries are *included*: reaching the `Unauthorised` chip is the point.
+  This is also why the picker is a list of real `<button>`s rather than wind's `Command`, whose
+  cmdk navigation skips `aria-disabled` items by construction, and why it is not a `Select`:
+  palette entries are one-shot actions, not a selection.
 - **`previewChip` defaults to `false`**, the same call as the list: product lifecycle is not a
   package concern. Both hosts hardcode the chip today and both pass the prop, then drop it at
   GA without a release here.
-- **`isLoading` renders a polite loading line and `error` a `GuardrailStatusBanner`.** Any
-  definitions that did arrive stay pickable under the banner, which is what a host with a
-  stale cache and a failed revalidation wants. `error` is shaped like
-  `useGuardrailDefinitions`' own `error`, so the hook's result destructures straight in.
+- **`isLoading` renders a polite loading line and `error` a `GuardrailStatusBanner`.** The
+  loading line is an `<output>`, for its implicit `role="status"`: a polite live region, and the
+  one native element that carries it without bringing styling of its own. Any definitions that
+  did arrive stay pickable under the banner, which is what a host with a stale cache and a
+  failed revalidation wants. `error` is shaped like `useGuardrailDefinitions`' own `error`, so
+  the hook's result destructures straight in.
 - **Definitions are generic.** `GuardrailPaletteDefinition` is the eight fields the palette
   reads; `EnrichedGuardrailDefinition` satisfies it, and so does a product's own definition
   type. The component is generic over it, so `onSelectOotb` hands back the object the host
   passed in, `parameters` and all, and there is nothing to look up again.
+
+- **Entry styling is wind's interactive-item idiom, not this family's chip idiom.**
+  `hover:bg-accent hover:text-accent-foreground` (wind `Button` ghost, `CommandItem` selected,
+  `DropdownMenuItem` focus), `disabled:opacity-50`, the leading icon on
+  `text-muted-foreground` like the rest of the family, and wind `Button`'s full focus ring:
+  `ring-offset-background` with `focus-visible:ring-2 focus-visible:ring-ring
+  focus-visible:ring-offset-2`. Hover is gated on the enabled branch rather than set for every
+  entry and undone on the disabled one, so there is no counter-rule to keep in step.
 
 ### What the palette is not
 

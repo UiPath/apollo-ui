@@ -37,6 +37,9 @@ export function getGuardrailPaletteItemId(definition: GuardrailPaletteDefinition
  * The unheaded case keeps payload order because that is the backend's own ordering, and a
  * single-group palette has nothing to disambiguate. Once folders appear, names sort so a
  * customer's folder does not reshuffle whenever the catalog does.
+ *
+ * Both sorts are `localeCompare()` with no locale argument, so the order follows the **runtime
+ * locale**, not the display language the strings were resolved in. Same as both products today.
  */
 export function groupGuardrailsForPalette<T extends GuardrailPaletteDefinition>(
   definitions: readonly T[],

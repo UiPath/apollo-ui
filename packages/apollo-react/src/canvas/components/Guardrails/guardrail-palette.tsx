@@ -1,6 +1,6 @@
 import { cn } from '@uipath/apollo-wind';
 import { FolderOpen, Loader2, Plus } from 'lucide-react';
-import { useMemo } from 'react';
+import { type FocusEvent, type KeyboardEvent, useId, useMemo, useRef, useState } from 'react';
 import { GuardrailPaletteItem } from './components/guardrail-palette-item';
 import { GuardrailStatusBanner } from './components/guardrail-status-banner';
 import { GuardrailStatusChip } from './components/guardrail-status-chip';
@@ -75,6 +75,9 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
   className,
 }: GuardrailPaletteProps<T>) {
   const labels = useGuardrailPaletteLabels(labelOverrides);
+  const headerIdPrefix = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [activeEntry, setActiveEntry] = useState(0);
 
   const groups = useMemo(
     () => groupGuardrailsForPalette(ootbDefinitions, labels.uipathGroup),
@@ -85,13 +88,85 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
   // still something to pick, and announcing "no guardrails available" above it contradicts it.
   const isEmpty = groups.length === 0 && onCreateCustom === undefined;
 
+  // Roving focus: the palette is one tab stop and Arrow/Home/End move inside it, so a keyboard
+  // user is not tabbed through the create-custom entry, six UiPath validators and every BYO
+  // group on the way past. Entries are `aria-disabled`, never `disabled`, so the arrow keys
+  // reach the `Unauthorised` one too and its chip stays readable. This is also why the palette
+  // is a list of buttons rather than wind's `Command`, whose cmdk navigation skips
+  // `aria-disabled` items by construction.
+  //
+  // The flat entry index runs create-custom first, then every group's definitions in order.
+  const groupOffsets = useMemo(() => {
+    let offset = onCreateCustom ? 1 : 0;
+    return groups.map((group) => {
+      const start = offset;
+      offset += group.definitions.length;
+      return start;
+    });
+  }, [groups, onCreateCustom]);
+
+  const entryCount =
+    (onCreateCustom ? 1 : 0) + groups.reduce((total, group) => total + group.definitions.length, 0);
+  // A catalog that shrank can leave the remembered entry past the end; falling back to the
+  // first one keeps the palette at exactly one tab stop rather than none.
+  const rovingEntry = activeEntry < entryCount ? activeEntry : 0;
+
+  const entryElements = () =>
+    Array.from(
+      rootRef.current?.querySelectorAll<HTMLButtonElement>(
+        '[data-slot="guardrail-palette-item"]'
+      ) ?? []
+    );
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const entries = entryElements();
+    const current = entries.indexOf(document.activeElement as HTMLButtonElement);
+    if (current === -1) return;
+
+    let next: number;
+    switch (event.key) {
+      case 'ArrowDown':
+        next = current + 1;
+        break;
+      case 'ArrowUp':
+        next = current - 1;
+        break;
+      case 'Home':
+        next = 0;
+        break;
+      case 'End':
+        next = entries.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    // Clamped, not wrapped: the ends of a short grouped list are a useful stop, and Home/End
+    // are the way to jump across it.
+    const target = Math.min(Math.max(next, 0), entries.length - 1);
+    setActiveEntry(target);
+    entries[target]?.focus();
+  };
+
+  // Focus can also arrive by click or by tabbing in; the tab stop follows it. React types the
+  // delegated target as the root element; focus actually lands on the entry inside it.
+  const handleFocus = (event: FocusEvent<HTMLDivElement>) => {
+    const focused: HTMLElement = event.target;
+    const index = entryElements().findIndex((entry) => entry === focused);
+    if (index !== -1) setActiveEntry(index);
+  };
+
   return (
     // biome-ignore lint/a11y/useSemanticElements: the region groups buttons, not form controls; <fieldset> would add form semantics and its own default box (same call as ProbeCard and wind's ButtonGroup)
     <div
+      ref={rootRef}
       data-slot="guardrail-palette"
       role="group"
       aria-label={labels.listAriaLabel}
       className={cn('flex flex-col gap-2', className)}
+      onKeyDown={handleKeyDown}
+      onFocus={handleFocus}
     >
       {error && <GuardrailStatusBanner tone="error" message={labels.loadError} />}
       {isLoading ? (
@@ -108,39 +183,50 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
               name={labels.createCustom}
               description={labels.createCustomDescription}
               icon={<Plus aria-hidden="true" />}
+              tabIndex={rovingEntry === 0 ? 0 : -1}
               onSelect={onCreateCustom}
             />
           )}
           {isEmpty && <p className="px-2 py-1 text-sm text-muted-foreground">{labels.empty}</p>}
-          {groups.map((group) => (
-            // biome-ignore lint/a11y/useSemanticElements: as above; the name is what tells a screen reader which folder an entry came from, since the heading is only adjacent text and two folders can hold the same validator
-            <div
-              key={group.key}
-              role="group"
-              aria-label={group.header ?? undefined}
-              className="flex flex-col gap-1"
-            >
-              {group.header !== null && (
-                <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-muted-foreground">
-                  {group.isByo && <FolderOpen className="size-3.5" aria-hidden="true" />}
-                  <span className="truncate">{group.header}</span>
-                </div>
-              )}
-              {group.definitions.map((definition) => (
-                <GuardrailPaletteItem
-                  key={getGuardrailPaletteItemId(definition)}
-                  name={definition.displayName}
-                  description={definition.description}
-                  chips={definitionChips(definition, labels, previewChip)}
-                  // The only status that reaches a correctly filtered palette: both products
-                  // drop `FeatureDisabled` and `Disabled` before rendering, and keep
-                  // `Unauthorised` so a tenant can see what it is not entitled to.
-                  disabled={definition.status === 'Unauthorised'}
-                  onSelect={() => onSelectOotb(definition)}
-                />
-              ))}
-            </div>
-          ))}
+          {groups.map((group, groupIndex) => {
+            const headerId = `${headerIdPrefix}-${groupIndex}`;
+            const groupOffset = groupOffsets[groupIndex] ?? 0;
+            return (
+              // biome-ignore lint/a11y/useSemanticElements: as above; the name is what tells a screen reader which folder an entry came from, since the heading is only adjacent text and two folders can hold the same validator
+              <div
+                key={group.key}
+                role="group"
+                // Named by the visible header rather than a copy of it in `aria-label`: one
+                // string, and a header the user can see is the one a screen reader announces.
+                aria-labelledby={group.header !== null ? headerId : undefined}
+                className="flex flex-col gap-1"
+              >
+                {group.header !== null && (
+                  <div
+                    id={headerId}
+                    className="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-muted-foreground"
+                  >
+                    {group.isByo && <FolderOpen className="size-3.5" aria-hidden="true" />}
+                    <span className="truncate">{group.header}</span>
+                  </div>
+                )}
+                {group.definitions.map((definition, definitionIndex) => (
+                  <GuardrailPaletteItem
+                    key={getGuardrailPaletteItemId(definition)}
+                    name={definition.displayName}
+                    description={definition.description}
+                    chips={definitionChips(definition, labels, previewChip)}
+                    // The only status that reaches a correctly filtered palette: both products
+                    // drop `FeatureDisabled` and `Disabled` before rendering, and keep
+                    // `Unauthorised` so a tenant can see what it is not entitled to.
+                    disabled={definition.status === 'Unauthorised'}
+                    tabIndex={rovingEntry === groupOffset + definitionIndex ? 0 : -1}
+                    onSelect={() => onSelectOotb(definition)}
+                  />
+                ))}
+              </div>
+            );
+          })}
         </>
       )}
     </div>
