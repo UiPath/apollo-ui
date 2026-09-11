@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "Réorganiser le garde-fou {name}",
   "guardrails.list.edit-item": "Modifier le garde-fou",
   "guardrails.list.remove-item": "Supprimer le garde-fou",
+  "guardrails.list.remove-row": "Supprimer {name}",
   "guardrails.list.preview": "Aperçu",
   "guardrails.list.provider": "Fournisseur",
   "guardrails.list.action-unknown": "Inconnu",

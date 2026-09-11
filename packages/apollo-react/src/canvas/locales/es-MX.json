@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "Reordenar la medida de seguridad {name}",
   "guardrails.list.edit-item": "Editar protección",
   "guardrails.list.remove-item": "Eliminar protección",
+  "guardrails.list.remove-row": "Eliminar {name}",
   "guardrails.list.preview": "Vista previa",
   "guardrails.list.provider": "Proveedor",
   "guardrails.list.action-unknown": "Desconocido",

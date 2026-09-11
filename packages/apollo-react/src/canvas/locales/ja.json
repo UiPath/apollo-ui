@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "ガードレール {name} を並べ替え",
   "guardrails.list.edit-item": "ガードレールを編集",
   "guardrails.list.remove-item": "ガードレールを削除",
+  "guardrails.list.remove-row": "{name} を削除",
   "guardrails.list.preview": "プレビュー",
   "guardrails.list.provider": "プロバイダー",
   "guardrails.list.action-unknown": "不明",

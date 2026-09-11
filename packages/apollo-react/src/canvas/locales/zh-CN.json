@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "重新排序防护机制 {name}",
   "guardrails.list.edit-item": "编辑防护机制",
   "guardrails.list.remove-item": "删除防护机制",
+  "guardrails.list.remove-row": "删除 {name}",
   "guardrails.list.preview": "预览",
   "guardrails.list.provider": "提供程序",
   "guardrails.list.action-unknown": "未知",

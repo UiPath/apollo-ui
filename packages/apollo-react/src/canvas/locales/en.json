@@ -286,6 +286,7 @@
   "guardrails.list.edit-item": "Edit guardrail",
   "guardrails.list.edit-row": "Edit {name}",
   "guardrails.list.remove-item": "Remove guardrail",
+  "guardrails.list.remove-row": "Remove {name}",
   "guardrails.list.preview": "Preview",
   "guardrails.list.provider": "Provider",
   "guardrails.list.action-unknown": "Unknown",

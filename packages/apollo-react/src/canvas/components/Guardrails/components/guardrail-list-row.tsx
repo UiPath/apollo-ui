@@ -88,6 +88,14 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
       : [];
     const isBuiltInValidator = item.$guardrailType === 'builtInValidator';
 
+    // Every row ships the same two icon buttons, so an unnamed one ("Edit guardrail") leaves a
+    // screen-reader user tabbing the actions column unable to tell which row they are on. The
+    // generic label is kept as the fallback for a row with no name, where the template would
+    // otherwise announce "Edit ".
+    const rowName = item.name.trim();
+    const nameRow = (template: string, generic: string) =>
+      rowName ? formatGuardrailFormMessage(template, { name: rowName }) : generic;
+
     const scopes = item.selector?.scopes ?? [];
     // Presence of the prop decides, never the value: a host hides the line by returning null
     // (Agents renders scopes in its own tooltip instead), which `??` would swallow.
@@ -105,7 +113,7 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
             size="3xs"
             icon
             disabled={disabled}
-            aria-label={labels.editItem}
+            aria-label={nameRow(labels.editRow, labels.editItem)}
             onClick={handleEdit}
           >
             <Pencil />
@@ -118,7 +126,7 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
             size="3xs"
             icon
             disabled={disabled}
-            aria-label={labels.removeItem}
+            aria-label={nameRow(labels.removeRow, labels.removeItem)}
             // Ghost restates its foreground under `future:` and again on hover, so the
             // destructive tint has to win in all four scopes or the button greys out the
             // moment the pointer lands on it.
@@ -148,18 +156,22 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
 
     // ARIA treats the children of a `role="button"` as presentational, so on an activatable row
     // everything inside the body drops out of the accessibility tree and the row is announced
-    // as its label alone. `aria-describedby` puts the two things a screen reader cannot do
-    // without back, in reading order: the BYO notices (why this guardrail will not run) and the
-    // description. The provider line, action badge and scopes stay presentational; they are
-    // repeated metadata rather than a reason the row behaves differently, and naming all of
-    // them turns one announcement into a paragraph. Recorded in the README's `rowActivatesEdit`
-    // row so a host that needs them knows to render them outside the activatable body.
+    // as its label alone. `aria-describedby` puts back what a screen reader cannot do without,
+    // in reading order: the status and administration chips (`Unauthorized`, `Disabled`,
+    // governance are state that changes what activating the row does), the BYO notices (why
+    // this guardrail will not run) and the description. The lifecycle `Preview` chip, the
+    // provider line, the action badge and the scopes stay presentational; they are repeated
+    // metadata rather than a reason the row behaves differently, and naming all of them turns
+    // one announcement into a paragraph. Recorded in the README's `rowActivatesEdit` row so a
+    // host that needs them knows to render them outside the activatable body.
     const bodyId = React.useId();
+    const chipId = (chip: string) => `${bodyId}-chip-${chip}`;
     const byoDisabledId = `${bodyId}-byo-disabled`;
     const byoUnavailableId = `${bodyId}-byo-unavailable`;
     const descriptionId = `${bodyId}-description`;
     const describedBy = activatable
       ? [
+          ...chips.map((chip) => chipId(chip.id)),
           state.byoDisabled ? byoDisabledId : undefined,
           state.byoUnavailable ? byoUnavailableId : undefined,
           item.description ? descriptionId : undefined,
@@ -174,7 +186,7 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
       ? {
           role: 'button',
           tabIndex: 0,
-          'aria-label': formatGuardrailFormMessage(labels.editRow, { name: item.name }),
+          'aria-label': nameRow(labels.editRow, labels.editItem),
           ...(describedBy ? { 'aria-describedby': describedBy } : {}),
           onClick: handleEdit,
           onKeyDown: (event: React.KeyboardEvent) => {
@@ -198,7 +210,7 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
             <GuardrailStatusChip tone="neutral">{labels.preview}</GuardrailStatusChip>
           )}
           {chips.map((chip) => (
-            <GuardrailStatusChip key={chip.id} tone={chip.tone}>
+            <GuardrailStatusChip key={chip.id} id={chipId(chip.id)} tone={chip.tone}>
               {chip.label}
             </GuardrailStatusChip>
           ))}
@@ -282,7 +294,9 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
         ) : (
           body
         )}
-        <div className="flex shrink-0 items-center gap-0">{actions}</div>
+        <div data-slot="guardrail-list-row-actions" className="flex shrink-0 items-center gap-0">
+          {actions}
+        </div>
       </div>
     );
   }

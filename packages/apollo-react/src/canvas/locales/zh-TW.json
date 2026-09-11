@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "重新排序護欄 {name}",
   "guardrails.list.edit-item": "編輯護欄",
   "guardrails.list.remove-item": "移除護欄",
+  "guardrails.list.remove-row": "移除 {name}",
   "guardrails.list.preview": "預覽",
   "guardrails.list.provider": "提供程式",
   "guardrails.list.action-unknown": "未知",

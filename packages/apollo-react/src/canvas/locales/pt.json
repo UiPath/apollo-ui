@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "Reordenar barreira de proteção {name}",
   "guardrails.list.edit-item": "Editar verificador de integridade",
   "guardrails.list.remove-item": "Remover verificador de integridade",
+  "guardrails.list.remove-row": "Remover {name}",
   "guardrails.list.preview": "Pré-visualizar",
   "guardrails.list.provider": "Fornecedor",
   "guardrails.list.action-unknown": "Desconhecido",

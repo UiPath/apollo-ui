@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "Reordonați limita de protecție {name}",
   "guardrails.list.edit-item": "Editați limita de protecție",
   "guardrails.list.remove-item": "Eliminați mecanismul de control",
+  "guardrails.list.remove-row": "Elimină {name}",
   "guardrails.list.preview": "Previzualizare",
   "guardrails.list.provider": "Furnizor",
   "guardrails.list.action-unknown": "Necunoscut",

@@ -162,10 +162,9 @@ describe('GuardrailList', () => {
       const onRemove = vi.fn();
       renderList({ onEdit, onRemove });
 
-      fireEvent.click(screen.getAllByRole('button', { name: 'Edit guardrail' })[0] as HTMLElement);
-      fireEvent.click(
-        screen.getAllByRole('button', { name: 'Remove guardrail' })[1] as HTMLElement
-      );
+      // Addressed by name rather than by index, which is what naming each row's actions buys.
+      fireEvent.click(screen.getByRole('button', { name: 'Edit PII detection 1' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Remove Noma prompt shield' }));
 
       expect(onEdit).toHaveBeenCalledWith(PII_GUARDRAIL);
       expect(onRemove).toHaveBeenCalledWith(BYO_GUARDRAIL);

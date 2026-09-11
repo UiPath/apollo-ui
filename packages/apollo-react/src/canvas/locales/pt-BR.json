@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "Reordenar proteção {name}",
   "guardrails.list.edit-item": "Editar diretriz",
   "guardrails.list.remove-item": "Remover diretriz",
+  "guardrails.list.remove-row": "Remover {name}",
   "guardrails.list.preview": "Visualizar",
   "guardrails.list.provider": "Provedor",
   "guardrails.list.action-unknown": "Desconhecido",

@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "가드레일 {name} 순서 변경",
   "guardrails.list.edit-item": "가드레일 편집",
   "guardrails.list.remove-item": "가드레일 제거",
+  "guardrails.list.remove-row": "{name} 제거",
   "guardrails.list.preview": "미리 보기",
   "guardrails.list.provider": "공급자",
   "guardrails.list.action-unknown": "알 수 없음",

@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "{name} tasarım ve uygulama kuralını yeniden sırala",
   "guardrails.list.edit-item": "Tasarım ve uygulama kuralını düzenle",
   "guardrails.list.remove-item": "Uygulama ve tasarım kuralını kaldır",
+  "guardrails.list.remove-row": "Kaldır: {name}",
   "guardrails.list.preview": "Önizleme",
   "guardrails.list.provider": "Sağlayıcı",
   "guardrails.list.action-unknown": "Bilinmiyor",

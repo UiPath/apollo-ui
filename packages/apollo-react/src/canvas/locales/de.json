@@ -279,6 +279,7 @@
   "guardrails.list.reorder-item": "Leitplanke {name} neu anordnen",
   "guardrails.list.edit-item": "Leitplanke bearbeiten",
   "guardrails.list.remove-item": "Leitplanke entfernen",
+  "guardrails.list.remove-row": "{name} entfernen",
   "guardrails.list.preview": "Vorschau",
   "guardrails.list.provider": "Provider",
   "guardrails.list.action-unknown": "Unbekannt",

@@ -447,12 +447,18 @@ export interface GuardrailListLabels {
   empty: string;
   /** Aria-label template of a row's drag handle: `{{name}}`. */
   reorderItem: string;
-  /** Aria-label of a row's edit button. */
+  /** Aria-label of a row's edit button, and the fallback for a row with no name. */
   editItem: string;
-  /** Aria-label template of the row body when `rowActivatesEdit` is set: `{{name}}`. */
+  /**
+   * Aria-label template of a row's edit button, and of the row body when `rowActivatesEdit`
+   * is set: `{{name}}`. Naming the row is what tells a screen reader which of a dozen
+   * identical buttons it is on.
+   */
   editRow: string;
-  /** Aria-label of a row's remove button. */
+  /** Aria-label of a row's remove button, and the fallback for a row with no name. */
   removeItem: string;
+  /** Aria-label template of a row's remove button: `{{name}}`. */
+  removeRow: string;
   /** Lifecycle badge on built-in-validator rows (rendered only with `previewChip`). */
   preview: string;
   /** Prefix of the BYO connector line, rendered as `{provider}: {connector}`. */
@@ -502,6 +508,11 @@ function buildGuardrailListLabels(_: ListTranslate): GuardrailListLabels {
       values: TEMPLATE_TOKENS,
     }),
     removeItem: _({ id: 'guardrails.list.remove-item', message: 'Remove guardrail' }),
+    removeRow: _({
+      id: 'guardrails.list.remove-row',
+      message: 'Remove {name}',
+      values: TEMPLATE_TOKENS,
+    }),
     preview: _({ id: 'guardrails.list.preview', message: 'Preview' }),
     provider: _({ id: 'guardrails.list.provider', message: 'Provider' }),
     actionUnknown: _({ id: 'guardrails.list.action-unknown', message: 'Unknown' }),
