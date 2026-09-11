@@ -133,6 +133,17 @@ describe('GuardrailRemoveDialog', () => {
     expect(onCancel).not.toHaveBeenCalled();
   });
 
+  it('styles the confirm button with the accent variant, not the destructive one', () => {
+    // Pinned because it shipped destructive and was changed back: both hosts reported the red
+    // as a regression against the blue accent they use for this action today. A reviewer
+    // reaching for `variant="destructive"` again should have to delete this test first.
+    render(<GuardrailRemoveDialog {...baseProps} />);
+
+    const remove = screen.getByRole('button', { name: 'Remove' });
+    expect(remove).toHaveClass('bg-primary');
+    expect(remove).not.toHaveClass('bg-destructive');
+  });
+
   it('cancels exactly once from the Cancel button', () => {
     const onConfirm = vi.fn();
     const onCancel = vi.fn();

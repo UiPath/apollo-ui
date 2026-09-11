@@ -175,6 +175,11 @@ import { GuardrailRemoveDialog } from '@uipath/apollo-react/canvas/guardrails';
   reports a cancel, which is why the confirm button is a wind `Button` rather than
   `AlertDialogAction`: Radix's action is a close button, so it drives `onOpenChange(false)` on
   top of the click. Flow's dialog reports both today.
+- **The confirm button takes the default accent variant, not `destructive`.** It shipped
+  destructive and was changed back: both products colour this action with the blue accent
+  today, and both reported the red as a regression when they tested the shared dialog. The
+  dialog carries the weight of the action through its title and impact lines instead. A test
+  pins the variant.
 - **Scopes arrive raw and localize through `formatScope`**, the same idiom as
   `GuardrailList`'s `formatScopes`. Scope vocabulary is product-owned; both products already
   hold the mapping, and an adapter that omits the callback renders `Llm` instead of

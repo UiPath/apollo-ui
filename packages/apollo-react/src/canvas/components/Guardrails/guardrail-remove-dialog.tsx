@@ -179,13 +179,16 @@ export function GuardrailRemoveDialog({
           {/* Cancel reports through `onOpenChange`, the one path Escape also takes, so a
               dismissal is reported exactly once however it happened. */}
           <AlertDialogCancel>{labels.cancel}</AlertDialogCancel>
-          {/* A plain destructive Button, not `AlertDialogAction`: Radix's action is a close
-              button, so it would drive `onOpenChange(false)` on top of the click and report a
-              cancel with every confirm. Flow's dialog does that today. `open` is controlled,
-              so nothing is lost by not closing from inside. */}
-          <Button variant="destructive" onClick={onConfirm}>
-            {labels.remove}
-          </Button>
+          {/* A plain Button, not `AlertDialogAction`: Radix's action is a close button, so it
+              would drive `onOpenChange(false)` on top of the click and report a cancel with
+              every confirm. Flow's dialog does that today. `open` is controlled, so nothing is
+              lost by not closing from inside.
+
+              The default (accent) variant, not `destructive`. This shipped destructive and
+              both hosts reported the red as a regression when they tested the flag on: neither
+              product colours a guardrail removal, both use the blue accent, and the dialog
+              already carries the weight through its title and impact lines. */}
+          <Button onClick={onConfirm}>{labels.remove}</Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
