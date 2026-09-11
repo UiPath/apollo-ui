@@ -37,6 +37,7 @@ export type {
   FormSchema,
   FormSection,
   FormStep,
+  StringListFieldMetadata,
 } from './components/forms/form-schema';
 export {
   hasMinMaxStep,
@@ -48,12 +49,15 @@ export { FormStateViewer } from './components/forms/form-state-viewer';
 // -----------------------------------------------------------------------------
 // Metadata Forms System
 // -----------------------------------------------------------------------------
-export { MetadataForm } from './components/forms/metadata-form';
+export type { MetadataFormProps } from './components/forms/metadata-form';
+export { MetadataForm, useWatch } from './components/forms/metadata-form';
 export {
   ExpressionBuilder,
   RuleBuilder,
   RulesEngine,
 } from './components/forms/rules-engine';
+export type { StringListFieldProps } from './components/forms/string-list-field';
+export { formatTemplate, StringListField } from './components/forms/string-list-field';
 // -----------------------------------------------------------------------------
 // Utility Components
 // -----------------------------------------------------------------------------
@@ -254,6 +258,8 @@ export {
   HoverCardContent,
   HoverCardTrigger,
 } from './components/ui/hover-card';
+export type { InfoTooltipProps } from './components/ui/info-tooltip';
+export { InfoTooltip } from './components/ui/info-tooltip';
 export type { InputProps } from './components/ui/input';
 // -----------------------------------------------------------------------------
 // Form Input Components

@@ -1,4 +1,4 @@
-import type { UseFormReturn, FieldValues } from 'react-hook-form';
+import type { FieldValues, UseFormReturn } from 'react-hook-form';
 
 /**
  * Core Schema Types for Apollo-Wind Metadata Forms
@@ -149,8 +149,12 @@ export interface ValidationConfig {
   maxFileSize?: number; // In bytes
   allowedTypes?: string[]; // MIME types or extensions like ".pdf", "image/*"
 
-  // Custom validation (jsep expression evaluated at runtime)
-  custom?: string; // Expression like "value.length > otherField"
+  // Custom validation (jsep expression evaluated at runtime).
+  // Single-field only: the scope is `{ value }`, this field's value. The converter builds one
+  // zod schema per field, so sibling values are not in scope here and a cross-field expression
+  // would silently read `undefined`. Cross-field logic belongs in `rules`, which RulesEngine
+  // evaluates against the whole form. Example: "value > 0 && value < 100".
+  custom?: string;
 
   // Error messages (optional overrides for each constraint)
   messages?: ValidationMessages;
@@ -171,6 +175,10 @@ interface BaseFieldMetadata {
   grid?: GridConfig;
   ariaLabel?: string;
   ariaDescribedBy?: string;
+  /** Info tooltip rendered next to the field label. */
+  tooltip?: string;
+  /** Accessible name of the tooltip trigger (default 'More information'). */
+  tooltipAriaLabel?: string;
 }
 
 // ============================================================================
@@ -188,6 +196,10 @@ export interface EmailFieldMetadata extends BaseFieldMetadata {
 export interface TextareaFieldMetadata extends BaseFieldMetadata {
   type: 'textarea';
   rows?: number;
+  /** Autosize floor in rows; takes precedence over `rows` when set. */
+  minRows?: number;
+  /** DOM maxLength character cap. */
+  maxLength?: number;
 }
 
 export interface NumberFieldMetadata extends BaseFieldMetadata {
@@ -206,6 +218,10 @@ export interface MultiSelectFieldMetadata extends BaseFieldMetadata {
   type: 'multiselect';
   options?: FieldOption[];
   maxSelected?: number;
+  /** Shown when the search matches nothing (default 'No items found.'). */
+  emptyMessage?: string;
+  /** Placeholder of the search input (default 'Search...'). */
+  searchPlaceholder?: string;
 }
 
 export interface RadioFieldMetadata extends BaseFieldMetadata {
@@ -262,10 +278,36 @@ export interface FileFieldMetadata extends BaseFieldMetadata {
   showPreview?: boolean;
 }
 
+export interface StringListFieldMetadata extends BaseFieldMetadata {
+  type: 'string-list';
+  /** Cap on how many rows can be added; the Add button hides at the cap. */
+  maxItems?: number;
+  /** Per-row character cap (DOM maxLength on each row's textarea). */
+  maxLength?: number;
+  /** Autosize floor for each row's textarea (default 2). */
+  minRows?: number;
+  /** Label of the Add button (default 'Add'). */
+  addItemLabel?: string;
+  /**
+   * Aria-label template of each row's remove button; `{{label}}` and `{{position}}` are
+   * interpolated (default 'Remove {{label}} {{position}}').
+   */
+  removeItemAriaLabel?: string;
+}
+
+/** Value shapes a `type: 'custom'` field can declare so metadata constraints apply to it. */
+export type CustomValueType = 'string' | 'number' | 'boolean' | 'string-array';
+
 export interface CustomFieldMetadata extends BaseFieldMetadata {
   type: 'custom';
   component: string;
   componentProps?: Record<string, unknown>;
+  /**
+   * Shape of the value the component owns. Without it the field validates as `z.any()`, so
+   * `required` (and `minItems` for lists) silently does nothing — declare it and the normal
+   * metadata constraints apply to custom components like any other field.
+   */
+  valueType?: CustomValueType;
 }
 
 /**
@@ -286,6 +328,7 @@ export type FieldMetadata =
   | DateFieldMetadata
   | DateTimeFieldMetadata
   | FileFieldMetadata
+  | StringListFieldMetadata
   | CustomFieldMetadata;
 
 /**
