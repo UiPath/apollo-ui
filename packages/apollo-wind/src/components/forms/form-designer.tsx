@@ -70,7 +70,13 @@ interface FieldTypeMetadata {
 }
 
 /**
- * Complete mapping of all supported field types
+ * The field types the designer can create and edit.
+ *
+ * Deliberately not the same set as `FieldType`: `string-list` is renderable and fully usable
+ * from a hand-written or programmatically built schema, but is absent here because the designer
+ * would also need settings UI for `maxItems` / `maxLength` / `minRows`. Adding a type to this
+ * list without that UI surfaces it in the type selector with its settings unreachable, which is
+ * worse than the omission — so add the settings and the entry together.
  */
 const FIELD_TYPE_METADATA: readonly FieldTypeMetadata[] = [
   {
