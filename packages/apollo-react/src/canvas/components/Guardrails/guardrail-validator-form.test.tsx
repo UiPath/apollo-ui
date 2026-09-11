@@ -817,6 +817,25 @@ describe('GuardrailValidatorForm', () => {
 
       expect(screen.getByText(REQUIRED_ERROR)).toBeInTheDocument();
     });
+
+    // Precedence pin. The resolver and the host predicate genuinely disagree here: a single
+    // whitespace row satisfies the array's `.min(1)` (length is 1) but counts as empty for
+    // `getRequiredEmptyParameterIds`, which trims every entry. RHF documents that `setError`
+    // "will not persist the associated input error if the input passes register's associated
+    // rules", so this pins which verdict the user actually sees rather than leaving it to
+    // whichever ran last.
+    it("a host 'required' error survives a value the resolver considers valid (whitespace-only row)", () => {
+      render(
+        <GuardrailValidatorForm
+          parameterDefinitions={[listDef({ required: true })]}
+          parameters={[{ $parameterType: 'text-list', id: 'positiveExamples', value: ['   '] }]}
+          onChange={() => {}}
+          errors={requiredErrors('positiveExamples')}
+        />
+      );
+
+      expect(screen.getByText(REQUIRED_ERROR)).toBeInTheDocument();
+    });
   });
 
   describe('boolean parameter', () => {

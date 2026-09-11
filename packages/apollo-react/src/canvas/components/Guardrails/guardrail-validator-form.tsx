@@ -181,14 +181,12 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
       [renderParameter, defsById, parameters, errors, updateParam, replaceParams]
     );
 
+    const formSchema = useMemo(() => ({ ...schema, mode: schemaMode }), [schema, schemaMode]);
+
     return (
       <div ref={ref} data-slot="guardrail-validator-form" className={cn('space-y-4', className)}>
         <GuardrailRenderParameterProvider value={bridgeContext}>
-          <MetadataForm
-            schema={useMemo(() => ({ ...schema, mode: schemaMode }), [schema, schemaMode])}
-            plugins={plugins}
-            container="div"
-          />
+          <MetadataForm schema={formSchema} plugins={plugins} container="div" />
         </GuardrailRenderParameterProvider>
       </div>
     );

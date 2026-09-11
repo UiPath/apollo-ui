@@ -1,3 +1,4 @@
+import { formatTemplate } from '@uipath/apollo-wind';
 import type { FieldMetadata, FormSchema } from '@uipath/apollo-wind';
 import type { GuardrailValidatorFormLabels } from './i18n';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from './types';
@@ -32,14 +33,38 @@ export interface BuildGuardrailFormSchemaOptions {
  * DOM attributes, but those only bind on native form submission, which this form never does —
  * declaring them here is what makes the range enforceable.
  */
-function buildFieldValidation(def: GuardrailParameterDefinition) {
-  const validation: { required?: boolean; min?: number; max?: number } = {};
-  if (def.required) validation.required = true;
-  if (def.type === 'number') {
-    if (def.min != null) validation.min = def.min;
-    if (def.max != null) validation.max = def.max;
+function buildFieldValidation(
+  def: GuardrailParameterDefinition,
+  labels: GuardrailValidatorFormLabels
+) {
+  const validation: {
+    required?: boolean;
+    min?: number;
+    max?: number;
+    messages?: { required?: string; min?: string; max?: string };
+  } = {};
+  const messages: { required?: string; min?: string; max?: string } = {};
+
+  if (def.required) {
+    validation.required = true;
+    messages.required = labels.requiredError;
   }
-  return Object.keys(validation).length > 0 ? validation : undefined;
+  if (def.type === 'number') {
+    if (def.min != null) {
+      validation.min = def.min;
+      messages.min = formatTemplate(labels.minError, { min: String(def.min) });
+    }
+    if (def.max != null) {
+      validation.max = def.max;
+      messages.max = formatTemplate(labels.maxError, { max: String(def.max) });
+    }
+  }
+
+  if (Object.keys(validation).length === 0) return undefined;
+  // Supplied unconditionally once any constraint exists: an omitted message is apollo-wind's
+  // hardcoded English, which is the one untranslated string this family would otherwise ship.
+  validation.messages = messages;
+  return validation;
 }
 
 /**
@@ -47,8 +72,9 @@ function buildFieldValidation(def: GuardrailParameterDefinition) {
  * seven parameter types map to first-class field types (`number`, `textarea`, `switch`,
  * `select`, `multiselect`/`string-list`); enum-lists small enough for the chip UX, `map-enum`
  * (keySource-driven rows), and host `renderParameter` overrides register as custom
- * components. `required` drives only the asterisk — the host owns validation, so the form is
- * mounted with `disableValidation`.
+ * components. `required`/`min`/`max` are enforced by MetadataForm's resolver (the controlled
+ * seam that once suppressed it was removed in review); the host's own predicate runs alongside
+ * it and reaches the form as `type: 'external'` errors through `useMetadataFormBridge`.
  */
 export function buildGuardrailFormSchema(
   definitions: GuardrailParameterDefinition[],
@@ -82,7 +108,7 @@ function buildGuardrailField(
     label: def.label,
     tooltip: def.tooltip,
     tooltipAriaLabel: labels.moreInformation,
-    validation: buildFieldValidation(def),
+    validation: buildFieldValidation(def, labels),
   };
 
   if (options?.overriddenIds?.has(def.id)) {

@@ -12,8 +12,8 @@ import { useEffect, useMemo, useRef } from 'react';
  *
  * Three jobs:
  *  - **register components** — `FormPlugin.components`, honoured from the first paint.
- *  - **push host values in** — per field, deep-equal guarded, so an echo of the form's own
- *    emission performs no write and focus/cursor survive.
+ *  - **push host values in** — per field, structurally compared (see `valuesEqual`), so an echo
+ *    of the form's own emission performs no write and focus/cursor survive.
  *  - **push host errors in** — as `type: 'external'`, re-applied from the prop (its source of
  *    truth) and cleared only when the prop drops them, so resolver errors are untouched.
  *
@@ -31,6 +31,37 @@ export interface MetadataFormBridgeOptions {
   components: FormPlugin['components'];
 }
 
+/**
+ * Structural comparison for a single field's value.
+ *
+ * Reference equality is not enough: the host rebuilds `enum-list`, `text-list` and `map-enum`
+ * values through `updateParam`, and the `values` record itself is rebuilt by a memo, so every
+ * echo of the form's own emission arrives as a fresh instance. Under `Object.is` the guard
+ * never holds for those types and `setValue` fires on each keystroke.
+ *
+ * apollo-wind has a `deepEqual`, but it is not part of that package's public export surface
+ * (only `cn` is re-exported from its root), so widening it is #1107's call to make rather than
+ * something to force from here. Guardrail parameter values are JSON-shaped — primitive,
+ * array-of-primitive, or a flat record — which this covers.
+ */
+function valuesEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+    return a.every((item, index) => valuesEqual(item, b[index]));
+  }
+
+  const aEntries = Object.entries(a as Record<string, unknown>);
+  const bRecord = b as Record<string, unknown>;
+  if (aEntries.length !== Object.keys(bRecord).length) return false;
+  return aEntries.every(
+    ([key, value]) =>
+      Object.hasOwn(bRecord, key) && valuesEqual(value, (bRecord as Record<string, unknown>)[key])
+  );
+}
+
 export function useMetadataFormBridge({
   values,
   errors,
@@ -42,6 +73,29 @@ export function useMetadataFormBridge({
   const onValueChangeRef = useRef(onValueChange);
   onValueChangeRef.current = onValueChange;
 
+  // A sync that arrives before `onFormInit` has to be replayed, not dropped: the effect below
+  // only re-runs when `values` changes again, so without this the update is lost for good.
+  // Reachable as soon as any schema gains `initialData` and MetadataForm's init goes async.
+  const pendingValuesRef = useRef<Record<string, unknown> | null>(null);
+
+  const syncValuesIn = (form: NonNullable<FormContext['form']>, next: Record<string, unknown>) => {
+    syncingRef.current = true;
+    try {
+      for (const [name, value] of Object.entries(next)) {
+        // Read through `getValues(name)` rather than indexing the whole-form snapshot: the
+        // paired `setValue(name, …)` is path-aware, so a flat lookup would never match a
+        // dotted field name. Guardrail parameter ids are flat today; this hook is not.
+        if (!valuesEqual(form.getValues(name), value)) {
+          form.setValue(name, value as never);
+        }
+      }
+    } finally {
+      syncingRef.current = false;
+    }
+  };
+  const syncValuesInRef = useRef(syncValuesIn);
+  syncValuesInRef.current = syncValuesIn;
+
   const plugins = useMemo<FormPlugin[]>(
     () => [
       {
@@ -49,6 +103,11 @@ export function useMetadataFormBridge({
         components,
         onFormInit: (context) => {
           formRef.current = context.form;
+          const pending = pendingValuesRef.current;
+          if (pending) {
+            pendingValuesRef.current = null;
+            syncValuesInRef.current(context.form, pending);
+          }
         },
         onValueChange: (name, value) => {
           if (syncingRef.current) return;
@@ -63,18 +122,11 @@ export function useMetadataFormBridge({
   // schema's own defaultValues already carry the initial parameters.
   useEffect(() => {
     const form = formRef.current;
-    if (!form) return;
-    const current = form.getValues();
-    syncingRef.current = true;
-    try {
-      for (const [name, value] of Object.entries(values)) {
-        if (!Object.is(current[name], value)) {
-          form.setValue(name, value as never);
-        }
-      }
-    } finally {
-      syncingRef.current = false;
+    if (!form) {
+      pendingValuesRef.current = values;
+      return;
     }
+    syncValuesInRef.current(form, values);
   }, [values]);
 
   // Errors in. Only entries this hook applied are cleared, so nothing else's errors are lost.

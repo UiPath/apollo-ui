@@ -20,6 +20,16 @@ export interface GuardrailValidatorFormLabels {
   addItem: string;
   /** Aria-label template of a text-list row's remove button: `{{label}}`, `{{position}}`. */
   removeItem: string;
+  /**
+   * Resolver messages for the constraints `buildGuardrailFormSchema` declares. Without these,
+   * apollo-wind falls back to its own hardcoded English, which would be the only untranslated
+   * string in an otherwise fully localized family.
+   */
+  requiredError: string;
+  /** Range message below the minimum; `{{min}}` is the declared bound. */
+  minError: string;
+  /** Range message above the maximum; `{{max}}` is the declared bound. */
+  maxError: string;
 }
 
 export const GUARDRAIL_FORM_EN_LABELS: GuardrailValidatorFormLabels = {
@@ -28,6 +38,9 @@ export const GUARDRAIL_FORM_EN_LABELS: GuardrailValidatorFormLabels = {
   enumListPlaceholder: 'Select options...',
   addItem: 'Add',
   removeItem: 'Remove {{label}} {{position}}',
+  requiredError: 'Value is required',
+  minError: 'Must be at least {{min}}',
+  maxError: 'Must be at most {{max}}',
 };
 
 /**
@@ -231,6 +244,20 @@ export function useGuardrailFormLabels(
           removeItem: _({
             id: 'guardrails.form.remove-item',
             message: 'Remove {label} {position}',
+            values: TEMPLATE_TOKENS,
+          }),
+          requiredError: _({
+            id: 'guardrails.form.required-error',
+            message: 'Value is required',
+          }),
+          minError: _({
+            id: 'guardrails.form.min-error',
+            message: 'Must be at least {min}',
+            values: TEMPLATE_TOKENS,
+          }),
+          maxError: _({
+            id: 'guardrails.form.max-error',
+            message: 'Must be at most {max}',
             values: TEMPLATE_TOKENS,
           }),
         },
