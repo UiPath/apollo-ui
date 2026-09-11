@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { serializeSchema, schemaToJson } from './schema-serializer';
-import type { FormSchema, FieldMetadata } from './form-schema';
+import { describe, expect, it } from 'vitest';
+import type { FieldMetadata, FormSchema } from './form-schema';
+import { schemaToJson, serializeSchema } from './schema-serializer';
 
 describe('serializeSchema', () => {
   describe('single-page form', () => {
@@ -142,6 +142,39 @@ describe('serializeSchema', () => {
         required: true,
         email: true,
         messages: { required: 'Email required' },
+      });
+    });
+
+    it('preserves a custom field valueType and its new metadata', () => {
+      const schema: FormSchema = {
+        id: 'form',
+        title: 'Form',
+        sections: [
+          {
+            id: 's1',
+            fields: [
+              {
+                name: 'entities',
+                type: 'custom',
+                label: 'Entities',
+                component: 'entity-chips',
+                valueType: 'string-array',
+                tooltip: 'Which entities to detect.',
+                tooltipAriaLabel: 'About entities',
+                validation: { required: true },
+              } as FieldMetadata,
+            ],
+          },
+        ],
+      };
+
+      const [field] = serializeSchema(schema).sections[0].fields;
+      // Without valueType a round-tripped custom field validates as z.any(), where
+      // `required` silently does nothing.
+      expect(field).toMatchObject({
+        valueType: 'string-array',
+        tooltip: 'Which entities to detect.',
+        tooltipAriaLabel: 'About entities',
       });
     });
 

@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { ValidationConfig } from './form-schema';
 import {
-  validationConfigToZod,
   buildZodSchemaFromFields,
   mergeValidationConfigs,
+  validationConfigToZod,
 } from './validation-converter';
-import type { ValidationConfig } from './form-schema';
 
 describe('validationConfigToZod', () => {
   describe('base schema by field type', () => {
@@ -86,6 +86,88 @@ describe('validationConfigToZod', () => {
     });
   });
 
+  describe('required emptiness semantics', () => {
+    it('rejects whitespace-only strings without mutating the value', () => {
+      // z.string().min(1) accepts '   ', so the resolver used to disagree with the
+      // conditional-required superRefine. Both now share isEmptyFieldValue.
+      const schema = validationConfigToZod({ required: true }, 'text');
+      expect(schema.safeParse('   ').success).toBe(false);
+      expect(schema.safeParse('  ok  ')).toMatchObject({ success: true, data: '  ok  ' });
+    });
+
+    it('still honours an explicit minLength instead of the required check', () => {
+      const schema = validationConfigToZod({ required: true, minLength: 3 }, 'text');
+      expect(schema.safeParse('ab').success).toBe(false);
+      expect(schema.safeParse('abc').success).toBe(true);
+    });
+
+    it.each([
+      'string-list',
+      'multiselect',
+    ] as const)('keeps required effective for %s when minItems is explicitly 0', (fieldType) => {
+      const schema = validationConfigToZod({ required: true, minItems: 0 }, fieldType);
+      expect(schema.safeParse([]).success).toBe(false);
+      expect(schema.safeParse(['a']).success).toBe(true);
+    });
+
+    it('keeps required effective for a string-array custom field with minItems 0', () => {
+      const schema = validationConfigToZod(
+        { required: true, minItems: 0 },
+        'custom',
+        'string-array'
+      );
+      expect(schema.safeParse([]).success).toBe(false);
+      expect(schema.safeParse(['a']).success).toBe(true);
+    });
+  });
+
+  describe('custom-field value shape', () => {
+    it('enforces required once a custom field declares its value shape', () => {
+      // Undeclared: z.any(), so required cannot be enforced — the documented default.
+      const untyped = validationConfigToZod({ required: true }, 'custom');
+      expect(untyped.safeParse(undefined).success).toBe(true);
+
+      const asString = validationConfigToZod({ required: true }, 'custom', 'string');
+      expect(asString.safeParse('x').success).toBe(true);
+      expect(asString.safeParse('').success).toBe(false);
+
+      const asList = validationConfigToZod({ required: true }, 'custom', 'string-array');
+      expect(asList.safeParse(['x']).success).toBe(true);
+      expect(asList.safeParse([]).success).toBe(false);
+    });
+
+    it('applies minItems to a declared list-shaped custom field', () => {
+      const schema = validationConfigToZod({ minItems: 2 }, 'custom', 'string-array');
+      expect(schema.safeParse(['a', 'b']).success).toBe(true);
+      expect(schema.safeParse(['a']).success).toBe(false);
+    });
+  });
+
+  describe('ValidationConfig.custom expression', () => {
+    it('enforces a jsep expression against the value', () => {
+      const schema = validationConfigToZod(
+        { custom: 'value.length > 2', messages: { custom: 'Too short' } },
+        'text'
+      );
+      expect(schema.safeParse('abc').success).toBe(true);
+      const result = schema.safeParse('ab');
+      expect(result.success).toBe(false);
+      if (!result.success) expect(result.error.issues[0].message).toBe('Too short');
+    });
+
+    it.each([
+      ['unparseable', 'value.some('],
+      // These parse cleanly and then throw on the unsupported CallExpression, which the
+      // evaluator reports as `false` — indistinguishable from a failing check, so treating
+      // it as a failure would pin the field permanently invalid.
+      ['a call expression', 'value.some(x)'],
+      ['a member call', 'value.trim().length > 0'],
+    ])('does not enforce an expression the evaluator cannot handle (%s)', (_label, custom) => {
+      const schema = validationConfigToZod({ custom }, 'text');
+      expect(schema.safeParse('anything').success).toBe(true);
+    });
+  });
+
   describe('required validation', () => {
     it('makes field required when config.required is true', () => {
       const schema = validationConfigToZod({ required: true }, 'text');
@@ -105,6 +187,28 @@ describe('validationConfigToZod', () => {
         // Zod v4 uses issues array
         expect(result.error.issues[0].message).toBe('Please fill this');
       }
+    });
+
+    it.each([
+      'string-list',
+      'multiselect',
+    ] as const)('rejects an empty array for a required %s', (fieldType) => {
+      const schema = validationConfigToZod({ required: true }, fieldType);
+      expect(schema.safeParse(['a']).success).toBe(true);
+      // An empty array is a present value to zod, so without the array branch a
+      // required field would submit with nothing selected.
+      expect(schema.safeParse([]).success).toBe(false);
+      expect(schema.safeParse(undefined).success).toBe(false);
+    });
+
+    it('leaves an explicit minItems in charge of the required array message', () => {
+      const schema = validationConfigToZod(
+        { required: true, minItems: 2, messages: { minItems: 'Pick two' } },
+        'string-list'
+      );
+      const result = schema.safeParse(['a']);
+      expect(result.success).toBe(false);
+      if (!result.success) expect(result.error.issues[0].message).toBe('Pick two');
     });
 
     it('makes field optional when config.required is false', () => {
