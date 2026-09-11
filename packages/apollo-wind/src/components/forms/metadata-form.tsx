@@ -131,7 +131,7 @@ export function MetadataForm({
     return sections.some((section) => section.fields.some((field) => field.tooltip !== undefined));
   }, [stableSchema]);
 
-  // Build Zod schema from metadata (skipped entirely when the host owns validation)
+  // Build Zod schema from metadata
   const zodSchema = useMemo(() => buildZodSchema(stableSchema), [stableSchema]);
 
   // Initialize React Hook Form
@@ -195,11 +195,8 @@ export function MetadataForm({
   const contextRef = useRef(context);
   contextRef.current = context;
 
-  const isInitializedRef = useRef(isInitialized);
-  isInitializedRef.current = isInitialized;
-
-  // Suppresses onValuesChange while the `values` sync-in effect writes fields — safe because
-  // react-hook-form notifies watch subscribers synchronously inside setValue.
+  // Suppresses the plugin fan-out while initialization's `reset` writes schema data — safe
+  // because react-hook-form notifies watch subscribers synchronously inside reset/setValue.
   const initializingRef = useRef(false);
 
   // valuesRef is written before the plugin fan-out: context.values must be current.
@@ -276,9 +273,6 @@ export function MetadataForm({
   // Stable reset callback
   const handleReset = useCallback(() => reset(), [reset]);
 
-  // Custom components from every source, available synchronously: the `components` prop and
-  // plugin `components` declarations from first render; `registerCustomComponent` entries win
-  // on name collisions once registered.
   // Custom components registered by plugins. `FormPlugin.components` is honoured from the
   // first render; `registerCustomComponent` entries win on name collisions once registered.
   const allCustomComponents = useMemo(() => {

@@ -1,9 +1,12 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FormField, FormFieldDescription, FormFieldError } from '@/components/ui/form-field';
-import { InfoTooltip } from '@/components/ui/info-tooltip';
-import { RequiredIndicator } from '@/components/ui/label';
+import {
+  FormField,
+  FormFieldDescription,
+  FormFieldError,
+  FormFieldLabel,
+} from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
 import type { StringListFieldMetadata } from './form-schema';
 
@@ -87,24 +90,13 @@ export function StringListField({
 
   return (
     <FormField data-slot="string-list-field">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">
-          {field.label}
-          {required && <RequiredIndicator />}
-          {field.tooltip && (
-            <InfoTooltip
-              content={field.tooltip}
-              aria-label={field.tooltipAriaLabel ?? 'More information'}
-            />
-          )}
-        </span>
-        {canAdd && (
-          <Button type="button" variant="ghost" size="2xs" onClick={addItem}>
-            <Plus />
-            {addItemLabel}
-          </Button>
-        )}
-      </div>
+      <FormFieldLabel
+        required={required}
+        tooltip={field.tooltip}
+        tooltipAriaLabel={field.tooltipAriaLabel}
+      >
+        {field.label}
+      </FormFieldLabel>
       <div className="grid gap-1.5">
         {items.map((item, index) => (
           <div key={rowIds[index] ?? index} className="flex items-start gap-2">
@@ -140,6 +132,14 @@ export function StringListField({
           </div>
         ))}
       </div>
+      {canAdd && (
+        <div>
+          <Button type="button" variant="text" size="2xs" onClick={addItem}>
+            <Plus />
+            {addItemLabel}
+          </Button>
+        </div>
+      )}
       <FormFieldDescription>{field.description}</FormFieldDescription>
       <FormFieldError>{error}</FormFieldError>
     </FormField>
