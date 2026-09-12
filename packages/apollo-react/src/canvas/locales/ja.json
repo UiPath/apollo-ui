@@ -150,5 +150,10 @@
   "canvas.node_mode_select.simulated_description": "LLM を使用して動的に応答を生成します。",
   "canvas.node_mode_select.simulated_label": "シミュレーション",
   "canvas.node_mode_select.static_description": "常に定義した値を返します。",
-  "canvas.node_mode_select.static_label": "静的モック"
+  "canvas.node_mode_select.static_label": "静的モック",
+  "canvas.node_property_panel.close": "閉じる",
+  "canvas.node_property_panel.name_placeholder": "名前",
+  "canvas.node_property_panel.description_placeholder": "説明",
+  "canvas.node_property_panel.node_name": "ノード名",
+  "canvas.node_property_panel.node_description": "ノードの説明"
 }
