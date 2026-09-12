@@ -24,20 +24,29 @@ export function BreakpointIndicator({ isActive = true }: BreakpointIndicatorProp
 
 interface ExecutionStartPointIndicatorProps {
   isActive?: boolean;
+  /** Default entry point renders solid; a secondary trigger renders as an outline. */
+  filled?: boolean;
 }
 
 export function ExecutionStartPointIndicator({
   isActive = true,
+  filled = true,
 }: ExecutionStartPointIndicatorProps) {
   if (!isActive) {
     return null;
   }
 
   return (
-    <div
-      className="w-4 h-4 rounded-full bg-blue-500 border border-blue-600 shadow-sm"
-      title="Execution Start Point"
-    />
+    <CanvasTooltip content={filled ? 'Default trigger' : 'Secondary trigger'} placement="bottom">
+      <span style={{ display: 'inline-flex' }}>
+        <CanvasIcon
+          icon="zap"
+          size={16}
+          color="var(--color-foreground-emp)"
+          fill={filled ? 'currentColor' : undefined}
+        />
+      </span>
+    </CanvasTooltip>
   );
 }
 
