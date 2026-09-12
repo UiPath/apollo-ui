@@ -150,5 +150,10 @@
   "canvas.node_mode_select.simulated_description": "LLM을 사용하여 동적으로 응답 생성",
   "canvas.node_mode_select.simulated_label": "시뮬레이션됨",
   "canvas.node_mode_select.static_description": "항상 정의한 값 반환",
-  "canvas.node_mode_select.static_label": "정적 모의 개체"
+  "canvas.node_mode_select.static_label": "정적 모의 개체",
+  "canvas.node_property_panel.close": "닫기",
+  "canvas.node_property_panel.name_placeholder": "이름",
+  "canvas.node_property_panel.description_placeholder": "설명",
+  "canvas.node_property_panel.node_name": "노드 이름",
+  "canvas.node_property_panel.node_description": "노드 설명"
 }

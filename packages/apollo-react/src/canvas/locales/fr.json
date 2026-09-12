@@ -150,5 +150,10 @@
   "canvas.node_mode_select.simulated_description": "Génère une réponse de manière dynamique à l’aide d’un LLM.",
   "canvas.node_mode_select.simulated_label": "Simulé",
   "canvas.node_mode_select.static_description": "Retourne toujours une valeur que vous avez définie.",
-  "canvas.node_mode_select.static_label": "Simulation statique"
+  "canvas.node_mode_select.static_label": "Simulation statique",
+  "canvas.node_property_panel.close": "Fermer",
+  "canvas.node_property_panel.name_placeholder": "Nom",
+  "canvas.node_property_panel.description_placeholder": "Description",
+  "canvas.node_property_panel.node_name": "Nom du nœud",
+  "canvas.node_property_panel.node_description": "Description du nœud"
 }

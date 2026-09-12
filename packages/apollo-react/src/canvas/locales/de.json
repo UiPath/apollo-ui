@@ -150,5 +150,10 @@
   "canvas.node_mode_select.simulated_description": "Antwort dynamisch mit einem LLM generieren",
   "canvas.node_mode_select.simulated_label": "Simuliert",
   "canvas.node_mode_select.static_description": "Immer einen von Ihnen definierten Wert zurückgeben",
-  "canvas.node_mode_select.static_label": "Statisches Pseudo-Objekt"
+  "canvas.node_mode_select.static_label": "Statisches Pseudo-Objekt",
+  "canvas.node_property_panel.close": "Schließen",
+  "canvas.node_property_panel.name_placeholder": "Name",
+  "canvas.node_property_panel.description_placeholder": "Beschreibung",
+  "canvas.node_property_panel.node_name": "Knotenname",
+  "canvas.node_property_panel.node_description": "Knotenbeschreibung"
 }

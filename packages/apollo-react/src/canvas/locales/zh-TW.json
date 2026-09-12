@@ -150,5 +150,10 @@
   "canvas.node_mode_select.simulated_description": "使用 LLM 動態產生回應",
   "canvas.node_mode_select.simulated_label": "已模擬",
   "canvas.node_mode_select.static_description": "一律傳回您定義的值",
-  "canvas.node_mode_select.static_label": "靜態模擬"
+  "canvas.node_mode_select.static_label": "靜態模擬",
+  "canvas.node_property_panel.close": "關閉",
+  "canvas.node_property_panel.name_placeholder": "名稱",
+  "canvas.node_property_panel.description_placeholder": "說明",
+  "canvas.node_property_panel.node_name": "節點名稱",
+  "canvas.node_property_panel.node_description": "節點說明"
 }

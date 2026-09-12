@@ -150,5 +150,10 @@
   "canvas.node_mode_select.simulated_description": "Gere uma resposta dinamicamente usando um LLM",
   "canvas.node_mode_select.simulated_label": "Simulado",
   "canvas.node_mode_select.static_description": "Sempre retorne um valor que você define",
-  "canvas.node_mode_select.static_label": "Simulação estática"
+  "canvas.node_mode_select.static_label": "Simulação estática",
+  "canvas.node_property_panel.close": "Fechar",
+  "canvas.node_property_panel.name_placeholder": "Nome",
+  "canvas.node_property_panel.description_placeholder": "Descrição",
+  "canvas.node_property_panel.node_name": "Nome do nó",
+  "canvas.node_property_panel.node_description": "Descrição do nó"
 }
