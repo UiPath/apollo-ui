@@ -150,5 +150,10 @@
   "canvas.node_mode_select.simulated_description": "Generați dinamic un răspuns folosind un LLM",
   "canvas.node_mode_select.simulated_label": "Simulat",
   "canvas.node_mode_select.static_description": "Returnați întotdeauna o valoare pe care o definiți",
-  "canvas.node_mode_select.static_label": "Simulare statică"
+  "canvas.node_mode_select.static_label": "Simulare statică",
+  "canvas.node_property_panel.close": "Închide",
+  "canvas.node_property_panel.name_placeholder": "Nume",
+  "canvas.node_property_panel.description_placeholder": "Descriere",
+  "canvas.node_property_panel.node_name": "Nume nod",
+  "canvas.node_property_panel.node_description": "Descriere nod"
 }
