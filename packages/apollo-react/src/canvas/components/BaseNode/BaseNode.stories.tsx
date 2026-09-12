@@ -31,6 +31,7 @@ import {
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import type { ValidationErrorSeverity } from '../../types/validation';
+import { ExecutionStartPointIndicator } from '../../utils/adornment-resolver';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
@@ -1500,7 +1501,8 @@ const ADORNMENT_ROWS = [
   { key: 'status-completed', label: 'Status: Completed (top-right)' },
   { key: 'status-inprogress', label: 'Status: InProgress (top-right)' },
   { key: 'status-failed', label: 'Status: Failed (top-right)' },
-  { key: 'start-point', label: 'Start Point (bottom-left)' },
+  { key: 'start-point', label: 'Default trigger (filled)' },
+  { key: 'start-point-secondary', label: 'Secondary trigger (outline)' },
   { key: 'mock-static', label: 'Custom: static mock (bottom-right)' },
   { key: 'mock-generated', label: 'Custom: generated mock (bottom-right)' },
   { key: 'all', label: 'All Adornments' },
@@ -1543,6 +1545,7 @@ function MockOutputIndicator({ variant }: { variant: keyof typeof MOCK_OUTPUT_VA
  * own this slot and decide what it renders.
  */
 const ADORNMENT_OVERRIDES: Record<string, NodeAdornments> = {
+  'start-point-secondary': { bottomLeft: <ExecutionStartPointIndicator filled={false} /> },
   'mock-static': { bottomRight: <MockOutputIndicator variant="static" /> },
   'mock-generated': { bottomRight: <MockOutputIndicator variant="generated" /> },
 };
@@ -1616,6 +1619,7 @@ function getAdornmentExecutionState(key: string) {
     case 'status-failed':
       return { status: 'Failed' as const };
     case 'start-point':
+    case 'start-point-secondary':
       return { status: 'None' as const, isExecutionStartPoint: true };
     case 'mock-static':
     case 'mock-generated':
