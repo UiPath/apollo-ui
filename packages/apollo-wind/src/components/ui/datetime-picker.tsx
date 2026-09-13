@@ -15,6 +15,10 @@ export interface DateTimePickerProps {
   placeholder?: string;
   className?: string;
   use12Hour?: boolean;
+  /** Id of the element naming this control, forwarded to the trigger button. */
+  'aria-labelledby'?: string;
+  /** Marks the trigger invalid, so the error is exposed on the control itself. */
+  'aria-invalid'?: boolean;
 }
 
 export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
@@ -26,6 +30,8 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
       placeholder = 'Pick a date and time',
       className,
       use12Hour = false,
+      'aria-labelledby': ariaLabelledBy,
+      'aria-invalid': ariaInvalid,
     },
     ref
   ) {
@@ -77,6 +83,8 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
         <PopoverTrigger asChild>
           <Button
             ref={ref}
+            aria-labelledby={ariaLabelledBy}
+            aria-invalid={ariaInvalid}
             variant="outline"
             className={cn(
               'w-full justify-start text-left font-normal [&>svg]:text-foreground-muted hover:[&>svg]:text-accent-foreground',
