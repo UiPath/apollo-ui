@@ -50,25 +50,33 @@ export type PromptEditorMode = 'edit' | 'preview';
 export interface PromptEditorToolbarActiveFormats {
   bold: boolean;
   italic: boolean;
+  /** Rich mode only — markdown has no underline syntax, so plain mode never offers it. */
+  underline: boolean;
   strikethrough: boolean;
   orderedList: boolean;
   bulletedList: boolean;
+  code: boolean;
 }
 
 export interface PromptEditorToolbarActionsRef {
   formatBold: () => void;
   formatItalic: () => void;
+  /** Rich mode only; a no-op in plain mode, where the Underline button never renders. */
+  formatUnderline: () => void;
   formatStrikethrough: () => void;
   formatNumberedList: () => void;
   formatBulletedList: () => void;
+  formatCode: () => void;
 }
 
 export type PromptEditorToolbarFormatAction =
   | 'bold'
   | 'bulletedList'
+  | 'code'
   | 'italic'
   | 'numberedList'
-  | 'strikethrough';
+  | 'strikethrough'
+  | 'underline';
 
 export interface PromptEditorTokenColorConfig {
   background: string;

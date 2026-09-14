@@ -34,9 +34,11 @@ export interface PromptEditorStrings {
   /** Formatting toolbar buttons */
   bold: string;
   italic: string;
+  underline: string;
   strikethrough: string;
   numberedList: string;
   bulletedList: string;
+  code: string;
   expand: string;
   /** `$`-trigger autocomplete menu */
   searchVariablesPlaceholder: string;
@@ -65,9 +67,11 @@ export const DEFAULT_PROMPT_EDITOR_STRINGS: PromptEditorStrings = {
   preview: 'Preview',
   bold: 'Bold',
   italic: 'Italic',
+  underline: 'Underline',
   strikethrough: 'Strikethrough',
   numberedList: 'Numbered List',
   bulletedList: 'Bulleted List',
+  code: 'Code',
   expand: 'Expand',
   searchVariablesPlaceholder: 'Search variables…',
   noVariablesFound: 'No variables found.',
