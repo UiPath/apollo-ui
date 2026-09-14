@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.49.0...@uipath/apollo-wind@2.50.0) (2026-09-14)
+
+### Features
+
+* **apollo-wind:** restyle the PromptEditor toolbar ([86a44bf](https://github.com/UiPath/apollo-ui/commit/86a44bfec441768647a1fb090139352facb0fc7d))
+
 ## [@uipath/apollo-wind-v2.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.48.1...@uipath/apollo-wind@2.49.0) (2026-09-11)
 
 ### Features
