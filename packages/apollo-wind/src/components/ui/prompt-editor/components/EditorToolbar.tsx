@@ -97,6 +97,10 @@ export const EditorToolbar = ({
 }: EditorToolbarProps) => {
   // Without the Edit/Preview switcher there is no preview state to guard against.
   const isEditMode = !showModeToggle || mode === 'edit';
+  // `trailing` only needs a group boundary when something actually precedes it. With both the mode
+  // toggle and Expand absent — the shape rich-mode hosts use — a separator would divide nothing and
+  // `justify-between` strands it at the group's left edge.
+  const trailingNeedsSeparator = showModeToggle || Boolean(onFullscreen);
 
   const handleFormat = (actionName: keyof PromptEditorToolbarActionsRef) => () => {
     if (!disabled && isEditMode) {
@@ -209,7 +213,12 @@ export const EditorToolbar = ({
             onClick={onFullscreen}
           />
         )}
-        {trailing}
+        {trailing && (
+          <>
+            {trailingNeedsSeparator && <ToolbarSeparator />}
+            {trailing}
+          </>
+        )}
       </div>
     </div>
   );
