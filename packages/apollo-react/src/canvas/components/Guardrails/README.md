@@ -18,12 +18,12 @@ derives it from the interaction it offers, so a host that wires up callbacks get
 affordances without styling anything. What differs between members is the element's role, and
 that decides the treatment:
 
-- **The element is itself a control** (the palette item, the centralized row, this list's
-  activatable row body): gate the hover on being enabled, and pair it with `cursor-pointer` and
-  an explicit `focus-visible` ring, the way wind's `Button` and `DropdownMenuItem` do.
-- **The element is a row that contains controls** (the list row, with its drag handle and its
-  actions): highlight unconditionally, the way wind's `TableRow` does, with no cursor change.
-  Focus belongs to the controls inside it.
+- **The element is itself a control** (the palette item, the centralized row, the guardrail
+  list's activatable row body): gate the hover on being enabled, and pair it with `cursor-pointer`
+  and an explicit `focus-visible` ring, the way wind's `Button` and `DropdownMenuItem` do.
+- **The element is a row that contains controls** (the guardrail list row, with its drag handle
+  and its actions): highlight unconditionally, the way wind's `TableRow` does, with no cursor
+  change. Focus belongs to the controls inside it.
 
 Use `accent` for the hover surface. Apollo maps `--accent` to `--surface-hover`, while `--muted`
 is `--surface-overlay`, the raised panel these sections usually sit on: hovering with `muted`
