@@ -1,6 +1,7 @@
-import type { ColumnDef } from "@tanstack/react-table";
-
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import {
+  DataTableColumnHeader,
+  type ColumnDef,
+} from "@/components/ui/data-table";
 import { FORMAT_TYPE_MAP } from "@/lib/constants";
 import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
 import type {

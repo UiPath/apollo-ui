@@ -1,6 +1,6 @@
 "use client";
 
-import type { Table as TanstackTable } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
 import { Columns3Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -20,13 +20,14 @@ import {
 
 import type { ColumnItem } from "./sortable-column-list";
 import { SortableColumnList } from "./sortable-column-list";
+import type { DataTableInstance } from "./data-table-features";
 
-interface DataTableViewOptionsProps<TData> {
-  table: TanstackTable<TData>;
+interface DataTableViewOptionsProps<TData extends RowData> {
+  table: DataTableInstance<TData>;
   className?: string;
 }
 
-function DataTableViewOptions<TData>({
+function DataTableViewOptions<TData extends RowData>({
   table,
   className,
 }: DataTableViewOptionsProps<TData>) {
@@ -36,7 +37,7 @@ function DataTableViewOptions<TData>({
     .getAllColumns()
     .filter((column) => column.accessorFn != null && column.getCanHide());
 
-  const currentOrder = table.getState().columnOrder;
+  const currentOrder = table.state.columnOrder;
 
   const orderedColumns = () => {
     if (!currentOrder || currentOrder.length === 0)

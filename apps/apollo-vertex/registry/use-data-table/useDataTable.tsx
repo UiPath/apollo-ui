@@ -1,18 +1,18 @@
 "use client";
 
+import type { ColumnDef } from "@/components/ui/data-table";
 import type {
-  ColumnDef,
   ColumnFiltersState,
+  RowData,
   RowSelectionState,
 } from "@tanstack/react-table";
 import { useState } from "react";
-
 import { useColumnVisibility } from "./useColumnVisibility";
 import { usePersistedColumnOrder } from "./usePersistedColumnOrder";
 import { usePersistedPageSize } from "./usePersistedPageSize";
 import { usePersistedSorting } from "./usePersistedSorting";
 
-export interface UseDataTableOptions<TData> {
+export interface UseDataTableOptions<TData extends RowData> {
   data: TData[];
   columns: ColumnDef<TData>[];
   isLoading?: boolean;
@@ -21,7 +21,7 @@ export interface UseDataTableOptions<TData> {
   defaultVisibleColumns?: string[];
 }
 
-export function useDataTable<TData>({
+export function useDataTable<TData extends RowData>({
   data,
   columns,
   isLoading = false,

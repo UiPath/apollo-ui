@@ -1,11 +1,12 @@
 "use client";
 
-import type { Column, SortDirection } from "@tanstack/react-table";
+import type { RowData, SortDirection } from "@tanstack/react-table";
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { DataTableColumn } from "./data-table-features";
 
 function SortIcon({ sortDirection }: { sortDirection: SortDirection | false }) {
   if (sortDirection === "asc") return <ArrowUpIcon className="size-3.5" />;
@@ -15,13 +16,13 @@ function SortIcon({ sortDirection }: { sortDirection: SortDirection | false }) {
   );
 }
 
-interface DataTableColumnHeaderProps<TData, TValue>
+interface DataTableColumnHeaderProps<TData extends RowData, TValue>
   extends React.HTMLAttributes<HTMLDivElement> {
-  column: Column<TData, TValue>;
+  column: DataTableColumn<TData, TValue>;
   title: string;
 }
 
-function DataTableColumnHeader<TData, TValue>({
+function DataTableColumnHeader<TData extends RowData, TValue>({
   column,
   title,
   className,

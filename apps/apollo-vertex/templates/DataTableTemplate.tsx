@@ -1,6 +1,6 @@
 "use client";
 
-import type { ColumnDef, ExpandedState } from "@tanstack/react-table";
+import type { ColumnDef, ExpandedState } from "@/components/ui/data-table";
 import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
@@ -172,8 +172,12 @@ const columns: ColumnDef<Payment>[] = [
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected()
+            ? true
+            : table.getIsSomePageRowsSelected() &&
+                !table.getIsAllPageRowsSelected()
+              ? "indeterminate"
+              : false
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"

@@ -3,14 +3,13 @@
 /* eslint-disable max-lines -- page-level view composition */
 import { Link } from "@tanstack/react-router";
 import type {
-  ColumnDef,
   ColumnFiltersState,
   ExpandedState,
   PaginationState,
   RowSelectionState,
   SortingState,
-  VisibilityState,
 } from "@tanstack/react-table";
+import type { ColumnDef, VisibilityState } from "@/components/ui/data-table";
 import {
   ChevronRightIcon,
   Play,
@@ -187,7 +186,7 @@ export const SolutionTestsView = ({
           checked={
             table.getIsAllRowsSelected()
               ? true
-              : table.getIsSomeRowsSelected()
+              : table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
                 ? "indeterminate"
                 : false
           }

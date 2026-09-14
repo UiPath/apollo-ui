@@ -1,9 +1,10 @@
 import {
   type ColumnDef,
   flexRender,
-  getCoreRowModel,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,6 +17,12 @@ import {
   TableRow as TableRowComponent,
 } from "@/components/ui/table";
 import type { PrimitiveValue } from "@/lib/charts-core";
+
+const tableChartFeatures = tableFeatures({
+  rowSortingFeature,
+});
+
+type TableChartFeatures = typeof tableChartFeatures;
 
 export interface TableChartColumn {
   id: string;
@@ -48,7 +55,9 @@ export function TableChart({
     sort ? [{ id: sort.field, desc: sort.direction === "desc" }] : [],
   );
 
-  const columnDefs = useMemo<ColumnDef<Record<string, PrimitiveValue>>[]>(
+  const columnDefs = useMemo<
+    ColumnDef<TableChartFeatures, Record<string, PrimitiveValue>>[]
+  >(
     () =>
       columns.map((column) => ({
         accessorFn: (row) => row[column.id],
@@ -97,10 +106,10 @@ export function TableChart({
     [columns, t],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableChartFeatures,
     data: rows,
     columns: columnDefs,
-    getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
     onSortingChange: (updater) => {
       const newSorting =
@@ -138,7 +147,7 @@ export function TableChart({
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRowComponent key={row.id}>
-                {row.getVisibleCells().map((cell) => (
+                {row.getAllCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>

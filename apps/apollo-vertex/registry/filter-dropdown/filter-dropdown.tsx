@@ -1,4 +1,3 @@
-import type { Column } from "@tanstack/react-table";
 import { CheckIcon, ChevronDownIcon, SearchIcon, XIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,7 @@ interface FilterDropdownOption {
   icon?: React.ComponentType<{ className?: string }>;
 }
 
-interface FilterDropdownProps<TData = unknown, TValue = unknown> {
+interface FilterDropdownProps {
   title: string;
   options: FilterDropdownOption[];
   className?: string;
@@ -31,7 +30,10 @@ interface FilterDropdownProps<TData = unknown, TValue = unknown> {
   multiSelect?: boolean;
 
   /** TanStack Table column integration (optional) */
-  column?: Column<TData, TValue>;
+  column?: {
+    getFilterValue: () => unknown;
+    setFilterValue: (value: unknown) => void;
+  };
 
   /** Standalone value — used when no column is provided */
   value?: string[] | string;
@@ -59,7 +61,7 @@ interface FilterDropdownProps<TData = unknown, TValue = unknown> {
 // Component
 // ---------------------------------------------------------------------------
 
-function FilterDropdown<TData, TValue>({
+function FilterDropdown({
   title,
   options,
   className,
@@ -74,7 +76,7 @@ function FilterDropdown<TData, TValue>({
   noResultsMessage = "No results found",
   align = "start",
   popoverWidth = "w-[220px]",
-}: FilterDropdownProps<TData, TValue>) {
+}: FilterDropdownProps) {
   // React Compiler compat: TanStack Table Column objects have stable references with mutable state.
   // codeql[js/unknown-directive] - valid React Compiler directive
   "use no memo";

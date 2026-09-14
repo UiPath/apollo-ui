@@ -84,7 +84,7 @@ jobs:
         run: |
           if [[ "$BASE_REF" == support/* ]]; then
             echo "Support branch detected - ignoring locked workspace deps"
-            pnpm exec check-dependency-version-consistency . --ignore-dep-pattern "^@uipath/"
+            pnpm exec check-dependency-version-consistency . --ignore-dep-pattern "^@uipath/" --ignore-dep @tanstack/react-table
           else
             pnpm check:dependencies
           fi

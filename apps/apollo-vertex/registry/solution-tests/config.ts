@@ -1,4 +1,4 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@/components/ui/data-table";
 import { DEFAULT_PASS_THRESHOLD } from "./constants";
 import type { EvaluatorRenderers } from "./evaluators/registry";
 import type { ProcessOutputRenderers } from "./outputs/registry";

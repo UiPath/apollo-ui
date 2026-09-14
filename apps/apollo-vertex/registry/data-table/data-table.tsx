@@ -1,37 +1,22 @@
 "use client";
 
 import {
-  type ColumnDef,
   type ColumnFiltersState,
+  type ColumnVisibilityState,
   type ExpandedState,
-  type FilterFn,
   flexRender,
-  getCoreRowModel,
-  getExpandedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   type OnChangeFn,
   type PaginationState,
   type Row,
   type RowData,
   type RowSelectionState,
   type SortingState,
-  type Table as TanstackTable,
+  type TableFeatures,
   type Updater,
-  type VisibilityState,
+  useTable,
 } from "@tanstack/react-table";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-
-declare module "@tanstack/react-table" {
-  // eslint-disable-next-line no-unused-vars -- TValue is required by the TanStack Table module augmentation signature
-  interface ColumnMeta<TData extends RowData, TValue> {
-    displayName?: string;
-    getFilterValue?: (value: unknown, row: Row<TData>) => string;
-    overflowVisible?: boolean;
-  }
-}
 
 import {
   Table,
@@ -41,8 +26,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useReactTableCompat } from "@/hooks/useReactTableCompat";
 import { cn } from "@/lib/utils";
+import {
+  dataTableFeatures,
+  type DataTableColumnDef,
+  type DataTableFilterFn,
+  type DataTableInstance,
+  type DataTableRow,
+} from "./data-table-features";
 import { DataTableExpandAllToggle } from "./data-table-expand-toggle";
 import { DataTablePagination } from "./data-table-pagination";
 import { DATA_TABLE_ROW_HEIGHT } from "./data-table-row";
@@ -53,11 +44,23 @@ import {
 import { DataTableSkeleton } from "./data-table-skeleton";
 import { DataTableToolbar } from "./data-table-toolbar";
 
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<
+    TFeatures extends TableFeatures,
+    TData extends RowData,
+    TValue,
+  > {
+    displayName?: string;
+    getFilterValue?: (value: TValue, row: Row<TFeatures, TData>) => string;
+    overflowVisible?: boolean;
+  }
+}
+
 const GLASS_CLASSES =
   "bg-white/55 border border-white/80 rounded-2xl backdrop-blur-sm shadow-[0_2px_16px_2px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:bg-white/[0.055] dark:border-white/[0.03] dark:shadow-[0_2px_16px_2px_rgba(0,0,0,0.2),inset_0_1px_0_0_rgba(255,255,255,0.04)]";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+interface DataTableProps<TData extends RowData> {
+  columns: DataTableColumnDef<TData>[];
   data: TData[];
   className?: string;
   isLoading?: boolean;
@@ -66,8 +69,8 @@ interface DataTableProps<TData, TValue> {
   onSortingChange: OnChangeFn<SortingState>;
   columnFilters: ColumnFiltersState;
   onColumnFiltersChange: OnChangeFn<ColumnFiltersState>;
-  columnVisibility: VisibilityState;
-  onColumnVisibilityChange: OnChangeFn<VisibilityState>;
+  columnVisibility: ColumnVisibilityState;
+  onColumnVisibilityChange: OnChangeFn<ColumnVisibilityState>;
   columnOrder: string[];
   onColumnOrderChange: OnChangeFn<string[]>;
   rowSelection?: RowSelectionState;
@@ -76,23 +79,27 @@ interface DataTableProps<TData, TValue> {
   onGlobalFilterChange: OnChangeFn<string>;
   pagination?: PaginationState;
   onPaginationChange?: OnChangeFn<PaginationState>;
-  getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string;
-  globalFilterFn?: FilterFn<TData>;
+  getRowId?: (
+    originalRow: TData,
+    index: number,
+    parent?: DataTableRow<TData>,
+  ) => string;
+  globalFilterFn?: DataTableFilterFn<TData>;
   enableSearch?: boolean;
   enableViewOptions?: boolean;
   enableColumnResizing?: boolean;
-  toolbarContent?: (table: TanstackTable<TData>) => React.ReactNode;
+  toolbarContent?: (table: DataTableInstance<TData>) => React.ReactNode;
   noResultsMessage?: React.ReactNode;
   stickyHeader?: boolean;
   expanded?: ExpandedState;
   onExpandedChange?: OnChangeFn<ExpandedState>;
-  renderExpandedRow?: (row: Row<TData>) => React.ReactNode;
+  renderExpandedRow?: (row: DataTableRow<TData>) => React.ReactNode;
   getRowClassName?: (row: TData) => string;
   skeletonColumnWidths?: string[];
   plain?: boolean;
 }
 
-function DataTable<TData, TValue>({
+function DataTable<TData extends RowData>({
   columns,
   data,
   className,
@@ -126,7 +133,7 @@ function DataTable<TData, TValue>({
   getRowClassName,
   skeletonColumnWidths,
   plain = false,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData>) {
   const { t } = useTranslation();
 
   const isRowSelectionEnabled = !!(rowSelection && onRowSelectionChange);
@@ -138,7 +145,8 @@ function DataTable<TData, TValue>({
     );
   };
 
-  const table = useReactTableCompat({
+  const table = useTable({
+    features: dataTableFeatures,
     data,
     columns,
     onSortingChange,
@@ -153,18 +161,9 @@ function DataTable<TData, TValue>({
       onGlobalFilterChange(updater);
       resetPageIndex();
     },
-    ...(isPaginationEnabled && {
-      onPaginationChange,
-      getPaginationRowModel: getPaginationRowModel(),
-    }),
+    ...(isPaginationEnabled && { onPaginationChange }),
     ...(onExpandedChange ? { onExpandedChange } : {}),
     ...(getRowId ? { getRowId } : {}),
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    ...(renderExpandedRow
-      ? { getExpandedRowModel: getExpandedRowModel() }
-      : {}),
     ...(globalFilterFn ? { globalFilterFn } : {}),
     ...(enableColumnResizing && {
       columnResizeMode: "onChange" as const,

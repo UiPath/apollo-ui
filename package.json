@@ -14,7 +14,7 @@
     "build:packages": "turbo run build --filter='./packages/*'",
     "build:apps": "turbo run build --filter='./apps/*'",
     "build:analyze": "turbo run build:analyze",
-    "check:dependencies": "check-dependency-version-consistency .",
+    "check:dependencies": "check-dependency-version-consistency . --ignore-dep @tanstack/react-table",
     "commit": "git-cz",
     "dev": "turbo run dev",
     "dev:chat": "turbo run dev --filter=@uipath/ap-chat",

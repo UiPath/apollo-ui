@@ -1,22 +1,23 @@
 "use client";
 
-import type { Table } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
 import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+import type { DataTableInstance } from "./data-table-features";
 import { DataTableSearch } from "./data-table-search";
 import { DataTableViewOptions } from "./data-table-view-options";
 
-interface DataTableToolbarProps<TData> {
-  table: Table<TData>;
+interface DataTableToolbarProps<TData extends RowData> {
+  table: DataTableInstance<TData>;
   className?: string;
   enableSearch?: boolean;
   enableViewOptions?: boolean;
   customContent?: React.ReactNode;
 }
 
-function DataTableToolbar<TData>({
+function DataTableToolbar<TData extends RowData>({
   table,
   className,
   enableSearch,

@@ -149,7 +149,7 @@ const columns = [
 | `title` | `string` | | Label shown on the trigger button |
 | `options` | `FilterDropdownOption[]` | | Array of `{ label, value, icon? }` |
 | `multiSelect` | `boolean` | `true` | Multi-select with checkboxes or single-select |
-| `column` | `Column<TData, TValue>` | | TanStack Table column for integrated filtering |
+| `column` | `{ getFilterValue, setFilterValue }` | | TanStack Table column for integrated filtering |
 | `value` | `string[] \| string` | | Controlled value for standalone usage |
 | `onChange` | `(value: string[] \| string) => void` | | Change handler for standalone usage |
 | `enableSearch` | `boolean \| "auto"` | `"auto"` | Show search input. `"auto"` shows it when options >= `searchThreshold` |

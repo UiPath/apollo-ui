@@ -25,7 +25,7 @@ npx shadcn@latest add @uipath/data-table
 
 This component requires the following dependencies:
 
-- `@tanstack/react-table` - Table state management and utilities
+- `@tanstack/react-table` v9 - Table state management and utilities
 - `lucide-react` - Icons
 - `table` - Base table primitives
 - `button` - Button component
@@ -251,8 +251,12 @@ const columns: ColumnDef<Payment>[] = [
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected()
+            ? true
+            : table.getIsSomePageRowsSelected() &&
+                !table.getIsAllPageRowsSelected()
+              ? "indeterminate"
+              : false
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
