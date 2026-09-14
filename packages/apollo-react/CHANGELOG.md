@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.45.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.1...@uipath/apollo-react@6.45.2) (2026-09-14)
+
+### Bug Fixes
+
+* **apollo-wind:** use an error-contrast token for the metadata-form tab badge ([c4399d8](https://github.com/UiPath/apollo-ui/commit/c4399d83ccafcdadde742e8b2cf1b242863e5701)), closes [#ffffff](https://github.com/UiPath/apollo-ui/issues/ffffff) [#09090b](https://github.com/UiPath/apollo-ui/issues/09090b)
+
 ## [@uipath/apollo-react-v6.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.0...@uipath/apollo-react@6.45.1) (2026-09-14)
 
 ### Bug Fixes

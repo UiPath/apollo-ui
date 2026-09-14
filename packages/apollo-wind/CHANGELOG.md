@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v2.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.50.0...@uipath/apollo-wind@2.51.0) (2026-09-14)
+
+### Features
+
+* **apollo-wind:** string-list field, tooltip metadata, and forms repairs ([7786df8](https://github.com/UiPath/apollo-ui/commit/7786df88acb0358066cf9e3e77a4f90169f4208c)), closes [#1138](https://github.com/UiPath/apollo-ui/issues/1138)
+
+### Bug Fixes
+
+* **apollo-wind:** use an error-contrast token for the metadata-form tab badge ([c4399d8](https://github.com/UiPath/apollo-ui/commit/c4399d83ccafcdadde742e8b2cf1b242863e5701)), closes [#ffffff](https://github.com/UiPath/apollo-ui/issues/ffffff) [#09090b](https://github.com/UiPath/apollo-ui/issues/09090b)
+
 ## [@uipath/apollo-wind-v2.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.49.0...@uipath/apollo-wind@2.50.0) (2026-09-14)
 
 ### Features
