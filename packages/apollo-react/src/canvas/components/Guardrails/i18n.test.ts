@@ -1,7 +1,11 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import {
+  findCatalogDrift,
+  findCatalogGaps,
+  findCatalogOrphans,
+  readCanvasCatalog,
+  TRANSLATED_LOCALES,
+} from './__fixtures__/catalog-coverage';
 import {
   formatGuardrailFormMessage,
   GUARDRAIL_LIST_EN_LABELS,
@@ -46,52 +50,36 @@ describe('GUARDRAIL_LIST_EN_LABELS', () => {
 });
 
 describe('the shared canvas catalog', () => {
-  // `src/canvas` uses no lingui macros, so `lingui extract` does not feed this catalog: the
-  // entries are hand-authored. This test is what `extract` would otherwise be doing, and it is
-  // the only thing standing between a new list string and an untranslatable one.
-  const localesDir = join(dirname(fileURLToPath(import.meta.url)), '../../locales');
-  const readCatalog = (locale: string): Record<string, string> =>
-    JSON.parse(readFileSync(join(localesDir, `${locale}.json`), 'utf8'));
-  const catalog = readCatalog('en');
-  const TRANSLATED_LOCALES = [
-    'de',
-    'es',
-    'es-MX',
-    'fr',
-    'ja',
-    'ko',
-    'pt',
-    'pt-BR',
-    'ro',
-    'tr',
-    'zh-CN',
-    'zh-TW',
-  ];
-
+  // The scans live in `__fixtures__/catalog-coverage`, shared with every other component's
+  // i18n test: the catalog is hand-authored and harvested from the two products, so each id
+  // prefix needs the same three checks and there is no pipeline to run them.
   it('carries every list message with the same English', () => {
-    const missing: string[] = [];
-    const drifted: string[] = [];
-    for (const [id, message] of Object.entries(GUARDRAIL_LIST_EN_MESSAGES)) {
-      if (!(id in catalog)) missing.push(id);
-      else if (catalog[id] !== message)
-        drifted.push(`${id}\n    src: ${message}\n    en:  ${catalog[id]}`);
-    }
-
-    expect({ missing, drifted }).toEqual({ missing: [], drifted: [] });
+    expect(findCatalogDrift(GUARDRAIL_LIST_EN_MESSAGES)).toEqual({ missing: [], drifted: [] });
   });
 
   it('carries no list message the source no longer declares', () => {
-    // Every catalog, not just English: a renamed id otherwise leaves twelve dead translations
-    // behind, and the harvest that produced them is a one-off script, not a pipeline. `ru` is
-    // scanned too, although it carries no list strings by design.
-    const orphans = ['en', 'ru', ...TRANSLATED_LOCALES].flatMap((locale) =>
-      Object.keys(readCatalog(locale))
-        .filter((id) => id.startsWith('guardrails.list.'))
-        .filter((id) => !(id in GUARDRAIL_LIST_EN_MESSAGES))
-        .map((id) => `${locale}: ${id}`)
+    expect(findCatalogOrphans(GUARDRAIL_LIST_EN_MESSAGES, 'guardrails.list.')).toEqual([]);
+  });
+
+  it('translates every list message except the five with no harvest source', () => {
+    // Harvesting is 1:1 from the two products' own catalogs, never machine translation, so an
+    // id neither product ships stays English in all twelve. Pinned rather than left out of the
+    // scan: these five are the known set, and a sixth landing untranslated fails here.
+    // `edit-row` is the sore one. Agents has a translated `guardrails.item.edit_aria_label`
+    // ("Edit {0}"), Flow has no bare "Edit {{name}}" at all, so taking it would break the
+    // both-products rule the rest of these ids follow.
+    const ENGLISH_ONLY = [
+      'guardrails.list.edit-row',
+      'guardrails.list.status-feature-disabled',
+      'guardrails.list.status-disabled',
+      'guardrails.list.status-unavailable',
+      'guardrails.list.administration-governance',
+    ];
+    const gaps = findCatalogGaps(GUARDRAIL_LIST_EN_MESSAGES).filter(
+      (gap) => !ENGLISH_ONLY.some((id) => gap.endsWith(`: ${id}`))
     );
 
-    expect(orphans).toEqual([]);
+    expect(gaps).toEqual([]);
   });
 
   it('translates the two per-row action templates everywhere they were harvested', () => {
@@ -100,10 +88,10 @@ describe('the shared canvas catalog', () => {
     // whose twelve translations agree; only the placeholder token was rewritten. `edit-row`
     // has no counterpart in either catalog and stays English-only, like the other four.
     const gaps = TRANSLATED_LOCALES.filter(
-      (locale) => !readCatalog(locale)['guardrails.list.remove-row']
+      (locale) => !readCanvasCatalog(locale)['guardrails.list.remove-row']
     );
 
     expect(gaps).toEqual([]);
-    expect(catalog['guardrails.list.remove-row']).toBe('Remove {name}');
+    expect(readCanvasCatalog('en')['guardrails.list.remove-row']).toBe('Remove {name}');
   });
 });
