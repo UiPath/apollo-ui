@@ -59,6 +59,10 @@ const UNDERLINE: TextMatchTransformer = {
   trigger: '>',
   replace: (node, match) => {
     const inner = $createTextNode(match[1]);
+    // Carry the bits an OUTER transformer already applied. `importTextTransformers` runs the
+    // outermost match first, so `**<u>x</u>**` reaches here already bold — a fresh node would
+    // silently drop the `**` on the next save.
+    inner.setFormat(node.getFormat());
     inner.toggleFormat('underline');
     node.replace(inner);
     // Returning it re-runs format matching, so inner `*italic*` survives.
@@ -162,6 +166,41 @@ const unescapeMarkdownLiterals = (markdown: string): string =>
   markdown.replace(/\\([*_`~\\])/g, '$1');
 
 /**
+ * `@lexical/markdown` deliberately stops transforming inside a code span (`canContainTransformableMarkdown`
+ * rejects code-formatted nodes), so a pill sentinel enclosed by backticks is never turned into a
+ * decorator. It would then reach export as literal text with no entry in the export-side side table
+ * and be dropped — silently deleting the user's variable reference. Rescue those runs afterwards:
+ * the pill is what matters, so it wins and the code formatting on that run is given up.
+ */
+function $rescuePillsFromCodeSpans(pills: PillRef[]): void {
+  for (const node of $getRoot().getAllTextNodes()) {
+    if (!node.hasFormat('code') || !PILL_SENTINEL_IMPORT.test(node.getTextContent())) {
+      continue;
+    }
+    const replacements = node
+      .getTextContent()
+      .split(PILL_SENTINEL_SPLIT)
+      .filter((part) => part !== '')
+      .map((part) => {
+        const match = PILL_SENTINEL_IMPORT.exec(part);
+        if (match && match[0] === part) {
+          const pill = pills[Number(match[1])];
+          return pill ? createTokenNodeForOption(pill) : $createTextNode('');
+        }
+        return $createTextNode(part);
+      });
+    if (replacements.length > 0) {
+      const [first, ...rest] = replacements;
+      node.replace(first);
+      rest.reduce((prev, next) => {
+        prev.insertAfter(next);
+        return next;
+      }, first);
+    }
+  }
+}
+
+/**
  * Editor state → tokens. Must be called inside `editor.read()`/`editor.update()`.
  * Formatted content serializes to markdown text tokens; pills come out as typed tokens.
  */
@@ -224,6 +263,7 @@ export function $setRichEditorTokensInternal(tokens: PromptEditorToken[]): void 
     root,
     /* shouldPreserveNewLines */ true
   );
+  $rescuePillsFromCodeSpans(pills);
 }
 
 /**

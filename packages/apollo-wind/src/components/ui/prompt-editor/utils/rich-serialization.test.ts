@@ -60,6 +60,26 @@ describe('rich-serialization', () => {
     it('keeps * list markers literal (0.42 imports only - bullets) — round-trip safe', () => {
       expect(normalizeRichTextTokens([text('* one\n* two')])).toEqual([text('* one\n* two')]);
     });
+
+    /** Underline exports OUTSIDE the emphasis markers, which is what the toolbar produces, so the
+     *  inverse nesting canonicalizes to it. The formats themselves are preserved — an earlier
+     *  revision dropped the outer marker entirely, which is the regression these pin. */
+    it('canonicalizes underline to the outermost position without losing the outer format', () => {
+      expect(normalizeRichTextTokens([text('**<u>hey</u>** first.')])).toEqual([
+        text('<u>**hey**</u> first.'),
+      ]);
+      expect(normalizeRichTextTokens([text('~~<u>hey</u>~~ first.')])).toEqual([
+        text('<u>~~hey~~</u> first.'),
+      ]);
+      expect(normalizeRichTextTokens([text('*<u>hey</u>* first.')])).toEqual([
+        text('<u>*hey*</u> first.'),
+      ]);
+    });
+
+    it('is stable after that one canonicalization', () => {
+      const once = normalizeRichTextTokens([text('**<u>hey</u>** first.')]);
+      expect(normalizeRichTextTokens(once)).toEqual(once);
+    });
   });
 
   describe('pill handling', () => {
@@ -76,6 +96,26 @@ describe('rich-serialization', () => {
     it('strips literal sentinel characters from incoming text so the side table cannot be corrupted', () => {
       const result = normalizeRichTextTokens([text('a\uE0000\uE001b')]);
       expect(result).toEqual([text('a0b')]);
+    });
+
+    /** `@lexical/markdown` refuses to transform inside a code span, so a sentinel enclosed by
+     *  backticks never becomes a decorator and used to be dropped on export — silently deleting the
+     *  variable. The pill wins; the code formatting on that run is given up. */
+    it('keeps a pill enclosed by a code span, giving up the code formatting', () => {
+      expect(normalizeRichTextTokens([text('`hi '), pill('vars.x'), text('`')])).toEqual([
+        text('hi '),
+        pill('vars.x'),
+      ]);
+      expect(normalizeRichTextTokens([text('` '), pill('vars.x'), text(' `')])).toEqual([
+        text(' '),
+        pill('vars.x'),
+        text(' '),
+      ]);
+    });
+
+    it('leaves code spans that do not enclose a pill alone', () => {
+      const tokens: PromptEditorToken[] = [text('`a` '), pill('vars.x'), text(' `b`')];
+      expect(normalizeRichTextTokens(tokens)).toEqual(tokens);
     });
 
     it('merges adjacent text output into single tokens', () => {
