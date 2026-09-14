@@ -59,6 +59,40 @@ describe('EditorToolbar', () => {
     expect(actions.formatCode).toHaveBeenCalledTimes(1);
   });
 
+  /** The trailing slot's separator is a GROUP boundary, so it only earns its place when a control
+   *  precedes it. Rich-mode hosts pass `showModeToggle={false}` and no `onFullscreen`, leaving the
+   *  trailing control alone in its group — a separator there divides nothing and `justify-between`
+   *  strands it at the group's left edge. */
+  describe('trailing separator', () => {
+    const countSeparators = () =>
+      document.querySelectorAll('[data-testid="editor-toolbar"] span.w-px:not([data-testid])')
+        .length;
+
+    it('is omitted when the trailing control is alone in its group', () => {
+      setup({
+        richText: true,
+        showModeToggle: false,
+        trailing: <button type="button">Mode</button>,
+      });
+      // Only the two boundaries inside the formatting cluster remain.
+      expect(countSeparators()).toBe(2);
+    });
+
+    it('is kept when the mode toggle precedes the trailing control', () => {
+      setup({ showModeToggle: true, trailing: <button type="button">Mode</button> });
+      expect(countSeparators()).toBe(3);
+    });
+
+    it('is kept when only Expand precedes the trailing control', () => {
+      setup({
+        showModeToggle: false,
+        onFullscreen: vi.fn(),
+        trailing: <button type="button">Mode</button>,
+      });
+      expect(countSeparators()).toBe(3);
+    });
+  });
+
   it('does not invoke formatting actions while previewing', async () => {
     const { actions, user } = setup({ mode: 'preview' });
     await user.click(screen.getByRole('button', { name: 'Code' }));
