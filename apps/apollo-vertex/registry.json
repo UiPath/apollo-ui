@@ -3046,7 +3046,7 @@
         "@tanstack/react-table@^8.21.0",
         "@tanstack/react-router",
         "@uipath/vs-core@^4.2.0",
-        "@uipath/uipath-typescript@^1.5.4",
+        "@uipath/uipath-typescript@^1.7.1",
         "react-i18next",
         "recharts@2.15.4",
         "sonner",
