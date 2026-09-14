@@ -1,8 +1,10 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import {
+  findCatalogDrift,
+  findCatalogGaps,
+  findCatalogOrphans,
+} from './__fixtures__/catalog-coverage';
 import { PII_ENTITY_OPTIONS } from './__fixtures__/definitions-wire.fixtures';
 import {
   CURATED_GUARDRAIL_VALIDATORS,
@@ -83,31 +85,29 @@ describe('GUARDRAIL_COPY_EN_MESSAGES', () => {
 });
 
 describe('the shared canvas catalog', () => {
-  // `src/canvas` uses no lingui macros, so `lingui extract` does not feed this catalog: the
-  // entries are hand-authored. This test is what `extract` would otherwise be doing, and it
-  // is the only thing standing between a new message and an untranslatable string.
-  const catalog: Record<string, string> = JSON.parse(
-    readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../locales/en.json'), 'utf8')
-  );
-
+  // The scans live in `__fixtures__/catalog-coverage`, shared with every other component's
+  // i18n test: the catalog is hand-authored and harvested, so each id prefix needs the same
+  // three checks and there is no pipeline to run them.
   it('carries every definition message with the same English', () => {
-    const missing: string[] = [];
-    const drifted: string[] = [];
-    for (const [id, message] of Object.entries(GUARDRAIL_COPY_EN_MESSAGES)) {
-      if (!(id in catalog)) missing.push(id);
-      else if (catalog[id] !== message)
-        drifted.push(`${id}\n    src: ${message}\n    en:  ${catalog[id]}`);
-    }
-
-    expect({ missing, drifted }).toEqual({ missing: [], drifted: [] });
+    expect(findCatalogDrift(GUARDRAIL_COPY_EN_MESSAGES)).toEqual({ missing: [], drifted: [] });
   });
 
   it('carries no definition message the source no longer declares', () => {
-    const orphans = Object.keys(catalog)
-      .filter((id) => id.startsWith('guardrails.definitions.'))
-      .filter((id) => !(id in GUARDRAIL_COPY_EN_MESSAGES));
+    expect(findCatalogOrphans(GUARDRAIL_COPY_EN_MESSAGES, 'guardrails.definitions.')).toEqual([]);
+  });
 
-    expect(orphans).toEqual([]);
+  it('translates every definition message in all twelve translated locales', () => {
+    // One harvest gap, pinned rather than hidden: neither product ships a translation for the
+    // Finnish passport entity, so it was harvested English-only. It is a gap to close with the
+    // products, not an accepted state, and anything *new* landing untranslated fails here.
+    const KNOWN_UNTRANSLATED = [
+      'guardrails.definitions.pii_detection.option.entities.FIPassportNumber',
+    ];
+    const gaps = findCatalogGaps(GUARDRAIL_COPY_EN_MESSAGES).filter(
+      (gap) => !KNOWN_UNTRANSLATED.some((id) => gap.endsWith(`: ${id}`))
+    );
+
+    expect(gaps).toEqual([]);
   });
 });
 
