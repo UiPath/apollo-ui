@@ -101,19 +101,17 @@ function toParameterDefinition(
       break;
     case 'map-enum':
       definition.keySource = param.keySource;
-      // The threshold maps arrive without bounds from some backends, and an unbounded
-      // numeric editor for a 0..1 confidence score is a data-entry hazard.
+      // Bounds only when the backend states them. This layer used to invent 0..1 for the
+      // threshold maps that arrive unbounded, which was safe while the bound was an editor
+      // hint nothing enforced. #1138's `getOutOfRangeParameterIds` now range-checks
+      // `map-enum` rows and hosts gate Save on it, so an invented bound would reject a
+      // threshold on a scale the backend never stated. It is enforcement, so the numbers
+      // have to be real.
       //
-      // The 0..1 step 0.1 default is a **product assumption**, not a wire fact: it is PII
-      // detection's confidence range, and it is the only unbounded map the backend sends
-      // today. Harmful content is 0..6 step 2 and arrives with its bounds, so nothing is
-      // silently mislabelled. This holds only while these numbers stay editor hints:
-      // `buildFieldValidation` and `getOutOfRangeParameterIds` both look at `number`
-      // parameters only, so a map-enum is never rejected against them (pinned by a test in
-      // `definitions-enrich.test.ts`). Before widening either to map-enum, replace this
-      // default with something the backend states.
-      definition.min = param.min ?? 0;
-      definition.max = param.max ?? 1;
+      // `step` stays a hint: neither `getOutOfRangeParameterIds` nor `buildFieldValidation`
+      // reads it, and without it the row spinners step by 1 through a 0..1 score.
+      if (param.min != null) definition.min = param.min;
+      if (param.max != null) definition.max = param.max;
       definition.step = param.step ?? 0.1;
       break;
     case 'number':
