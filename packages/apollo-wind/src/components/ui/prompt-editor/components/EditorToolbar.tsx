@@ -209,12 +209,7 @@ export const EditorToolbar = ({
             onClick={onFullscreen}
           />
         )}
-        {trailing && (
-          <>
-            <ToolbarSeparator />
-            {trailing}
-          </>
-        )}
+        {trailing}
       </div>
     </div>
   );
