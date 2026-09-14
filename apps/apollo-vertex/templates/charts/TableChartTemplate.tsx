@@ -1,7 +1,10 @@
 "use client";
 
-import { TableChart } from "@/components/ui/table-chart";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { TableChart } from "@/components/ui/table-chart";
+import { SpinnerWithChildren } from "@/lib/charts-core";
 
 const rows = [
   { department: "Marketing", headcount: 12, avgSalary: 58000, active: true },
@@ -14,40 +17,70 @@ const rows = [
 
 const numberFormat = new Intl.NumberFormat("en-US");
 
+function TableChartDemo() {
+  return (
+    <TableChart
+      columns={[
+        {
+          id: "department",
+          label: "Department",
+          align: "left",
+          format: String,
+        },
+        {
+          id: "headcount",
+          label: "Headcount",
+          align: "right",
+          format: (v) => numberFormat.format(Number(v)),
+        },
+        {
+          id: "avgSalary",
+          label: "Avg salary",
+          align: "right",
+          format: (v) => `$${numberFormat.format(Number(v))}`,
+        },
+        {
+          id: "active",
+          label: "Active",
+          align: "left",
+          format: (v) => (v ? "Yes" : "No"),
+        },
+      ]}
+      rows={rows}
+    />
+  );
+}
+
 export function TableChartTemplate() {
   return (
     <Card className="flex flex-col w-full h-[360px] gap-2 py-4">
       <CardContent className="flex-1 overflow-hidden p-0">
-        <TableChart
-          columns={[
-            {
-              id: "department",
-              label: "Department",
-              align: "left",
-              format: String,
-            },
-            {
-              id: "headcount",
-              label: "Headcount",
-              align: "right",
-              format: (v) => numberFormat.format(Number(v)),
-            },
-            {
-              id: "avgSalary",
-              label: "Avg salary",
-              align: "right",
-              format: (v) => `$${numberFormat.format(Number(v))}`,
-            },
-            {
-              id: "active",
-              label: "Active",
-              align: "left",
-              format: (v) => (v ? "Yes" : "No"),
-            },
-          ]}
-          rows={rows}
-        />
+        <TableChartDemo />
       </CardContent>
     </Card>
+  );
+}
+
+export function TableChartLoadingTemplate() {
+  const [loading, setLoading] = useState(true);
+
+  return (
+    <div className="space-y-3">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => setLoading((value) => !value)}
+      >
+        {loading ? "Show idle table" : "Show loading overlay"}
+      </Button>
+      <Card className="flex h-[360px] w-full flex-col gap-2 py-4">
+        <CardContent className="flex-1 overflow-hidden p-0">
+          <SpinnerWithChildren loading={loading}>
+            <TableChartDemo />
+          </SpinnerWithChildren>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

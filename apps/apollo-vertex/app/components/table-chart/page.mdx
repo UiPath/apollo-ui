@@ -1,11 +1,22 @@
-import { TableChartTemplate } from '@/templates/charts/TableChartTemplate';
+import {
+  TableChartLoadingTemplate,
+  TableChartTemplate,
+} from '@/templates/charts/TableChartTemplate';
 
 # Table Chart
 
-A sortable table of entity rows. Use for record-level views — no aggregation, just listing.
+A sortable table of entity rows. Use for record-level views. No aggregation, just listing.
 
 <div className="not-prose my-8">
   <TableChartTemplate />
+</div>
+
+## Refetch overlay
+
+`TableChartWithAdapter` wraps refetching views with `SpinnerWithChildren`. Content is dimmed with `opacity-30` and pointer events are blocked so sort and other controls do not fire.
+
+<div className="not-prose my-8">
+  <TableChartLoadingTemplate />
 </div>
 
 ## Installation
