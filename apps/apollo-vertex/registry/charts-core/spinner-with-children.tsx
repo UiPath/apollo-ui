@@ -12,13 +12,13 @@ export const SpinnerWithChildren = ({
   return (
     <div className="relative flex h-full w-full items-center">
       {loading && (
-        <div className="absolute z-[2] flex h-full w-full items-center justify-center">
+        <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center">
           <Spinner className="size-10" />
         </div>
       )}
       <div
         className={`flex h-full w-full items-center justify-center ${
-          loading ? "bg-background opacity-30" : ""
+          loading ? "pointer-events-none bg-background opacity-30" : ""
         }`}
       >
         {children}
