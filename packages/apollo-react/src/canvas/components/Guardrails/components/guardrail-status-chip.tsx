@@ -3,12 +3,16 @@ import * as React from 'react';
 import { GUARDRAIL_CHIP_GEOMETRY } from './guardrail-chip';
 
 export interface GuardrailStatusChipProps extends React.ComponentPropsWithoutRef<'span'> {
-  /** Maps onto the wind `Badge` variants: a neutral fact, a warning, or a blocking error. */
-  tone?: 'neutral' | 'warning' | 'error';
+  /**
+   * Maps onto the wind `Badge` variants: a neutral fact, a positive one, a warning, or a
+   * blocking error. `success` is the green both products already give the BYO origin chip.
+   */
+  tone?: 'neutral' | 'success' | 'warning' | 'error';
 }
 
 const TONE_VARIANT = {
   neutral: 'secondary',
+  success: 'success',
   warning: 'warning',
   error: 'error',
 } as const;

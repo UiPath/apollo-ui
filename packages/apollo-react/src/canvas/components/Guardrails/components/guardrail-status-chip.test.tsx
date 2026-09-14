@@ -33,6 +33,7 @@ describe('GuardrailStatusChip', () => {
 
   it.each([
     ['neutral', 'bg-secondary'],
+    ['success', 'bg-success-background'],
     ['warning', 'bg-warning-background'],
     ['error', 'bg-error-background'],
   ] as const)('maps the %s tone onto the badge variant', (tone, expected) => {
