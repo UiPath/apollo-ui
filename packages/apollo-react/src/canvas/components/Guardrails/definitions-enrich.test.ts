@@ -194,10 +194,14 @@ describe('enrichGuardrailDefinitions', () => {
   });
 
   describe('parameter constraints', () => {
-    it('gives an unbounded map-enum the 0..1 step 0.1 the thresholds need', () => {
+    it('gives an unbounded map-enum a step but no bounds', () => {
       const thresholds = param(enrichOne(PII_DETECTION_WIRE), 'entityThresholds');
 
-      expect(thresholds).toMatchObject({ keySource: 'entities', min: 0, max: 1, step: 0.1 });
+      expect(thresholds).toMatchObject({ keySource: 'entities', step: 0.1 });
+      // 0..1 used to be synthesized here from PII detection's confidence range. See the
+      // range-check test below for why a bound nobody states is no longer safe to invent.
+      expect(thresholds).not.toHaveProperty('min');
+      expect(thresholds).not.toHaveProperty('max');
     });
 
     it('keeps map-enum bounds the backend does send', () => {
@@ -215,13 +219,11 @@ describe('enrichGuardrailDefinitions', () => {
       expect(param(enrichOne(UNCURATED_WIRE), 'maxDriftScore')).not.toHaveProperty('min');
     });
 
-    it('leaves synthesized map-enum bounds out of the enforced range check', () => {
-      // The rebase onto #1138's `d658731b` made `min`/`max` real constraints: the schema
-      // builder puts them in `validation` and the form runs `mode: 'onChange'`, and hosts gate
-      // Save on `getOutOfRangeParameterIds`. Both paths are *number*-only, so the 0..1 step 0.1
-      // this layer invents for an unbounded map-enum stays an editor hint and cannot reject a
-      // threshold map whose real range is something else (harmful content is 0..6). Widening
-      // either path to map-enum means revisiting that default first, which is what this pins.
+    it('invents no map-enum bound for the enforced range check to act on', () => {
+      // #1138 widened `getOutOfRangeParameterIds` from `number` to `map-enum`: a row outside
+      // the parameter's `min`/`max` now reports the id, and hosts gate Save on it. So a bound
+      // this layer invented would block a save over a number the backend never stated. The
+      // unbounded map stays unbounded, and only the backend's own bounds are enforced.
       const unbounded: GuardrailDefinitionWire = {
         ...HARMFUL_CONTENT_WIRE,
         parameters: HARMFUL_CONTENT_WIRE.parameters.map((p) =>
@@ -241,13 +243,21 @@ describe('enrichGuardrailDefinitions', () => {
         ).toEqual([]);
       }
 
-      // ...and the synthesized bounds really are the 0..1 ones, i.e. the assertion above is
-      // not vacuous because enrichment left the parameter bare.
+      // ...and that is because enrichment left the bounds off, not because the check is
+      // blind to map-enum: the same map on the backend's own 0..6 does report.
       expect(param(enrichOne(unbounded), 'harmfulContentEntityThresholds')).toMatchObject({
-        min: 0,
-        max: 1,
         step: 0.1,
       });
+      const bounded = enrichOne(HARMFUL_CONTENT_WIRE);
+      expect(
+        getOutOfRangeParameterIds(bounded.parameters, [
+          {
+            id: 'harmfulContentEntityThresholds',
+            $parameterType: 'map-enum',
+            value: { Hate: 8 },
+          },
+        ])
+      ).toEqual(['harmfulContentEntityThresholds']);
     });
 
     it('passes defaultValue through untouched, nulls included', () => {
