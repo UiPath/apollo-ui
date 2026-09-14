@@ -28,7 +28,7 @@ export interface CentralizedGuardrailRowProps {
  * other in both products, so a row that is read-only should differ from an editable one in
  * what it offers, not in how it looks. The two differences are deliberate. This row's whole
  * body is one control (the list's affordances are a drag handle and per-row buttons instead),
- * so it carries the `px-1 py-1.5` hover box and the chevron; and every element is a `span`,
+ * so it carries the `p-1` hover box and the chevron; and every element is a `span`,
  * because flow content inside a `<button>` is invalid.
  */
 export function CentralizedGuardrailRow({
@@ -110,7 +110,7 @@ export function CentralizedGuardrailRow({
   );
 
   const className = cn(
-    'flex w-full items-center gap-2 rounded-md px-1 py-1.5 text-left',
+    'flex w-full items-center gap-2 rounded-md p-1 text-left',
     onSelect &&
       'cursor-pointer transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
   );
