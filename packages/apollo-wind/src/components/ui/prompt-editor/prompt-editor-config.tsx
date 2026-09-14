@@ -31,7 +31,6 @@ export interface PromptEditorStrings {
   /** Edit/Preview switcher */
   edit: string;
   preview: string;
-  editorModeLabel: string;
   /** Formatting toolbar buttons */
   bold: string;
   italic: string;
@@ -64,7 +63,6 @@ export interface PromptEditorStrings {
 export const DEFAULT_PROMPT_EDITOR_STRINGS: PromptEditorStrings = {
   edit: 'Edit',
   preview: 'Preview',
-  editorModeLabel: 'Editor mode',
   bold: 'Bold',
   italic: 'Italic',
   strikethrough: 'Strikethrough',

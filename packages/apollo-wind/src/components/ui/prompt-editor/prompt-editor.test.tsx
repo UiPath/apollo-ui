@@ -323,13 +323,13 @@ describe('PromptEditor', () => {
           showToolbar
           strings={{
             bold: 'Fett',
-            edit: 'Bearbeiten',
+            preview: 'Vorschau',
             numberedList: 'Nummerierte Liste',
           }}
         />
       );
       expect(screen.getByRole('button', { name: 'Fett' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Bearbeiten' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Vorschau' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Nummerierte Liste' })).toBeInTheDocument();
       // Unspecified keys keep the built-in English.
       expect(screen.getByRole('button', { name: 'Italic' })).toBeInTheDocument();
