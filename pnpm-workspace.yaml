@@ -22,9 +22,6 @@ minimumReleaseAgeExclude:
   - '@turbo/*'                    # 2.9.14 — platform binaries co-published with turbo (scope rename from turbo-*), same OIDC provenance ✓
   - '@esbuild/*'                  # 0.28.1 — platform binaries co-published with esbuild in the same OIDC release, vetted 2026-06-16
   - '@next/*'                     # 16.2.11 — swc platform binaries + env co-published with next in the same OIDC release
-  - 'qs@6.16.0'                   # 6.16.0 — GHSA-4mjr-xmp4-gh2g / GHSA-x5fp-wj9c-mxmx (moderate, array-limit bypass via bracket-key comma parsing + attacker-controlled isBuffer DoS; 6.15.4 patches only the former), vetted 2026-09-04: publisher (ljharb, long-time maintainer, unchanged) ✓, tag+diff (v6.15.3...v6.16.0: lib/parse + lib/stringify + lib/utils + THREAT_MODEL + tests) ✓, deps (side-channel, es-define-property — unchanged family) ✓, no install scripts ✓, integrity ✓ (no provenance, historically none)
-  - '@tiptap/core@3.30.4'         # 3.30.4 — GHSA-cp6q-959q-f8rh (moderate, mergeAttributes() __proto__ prototype pollution), vetted 2026-09-04: provenance ✓ (OIDC, GitHub Actions), tag+diff (v3.30.3...v3.30.4: core fix + changeset/workflow config) ✓, zero dependencies ✓, no install scripts ✓, integrity ✓ — extensions stay at apollo-react's ^3.19 range (peer on core >=3.30.4, pm ^3.19)
-  - '@tiptap/pm@3.30.4'           # 3.30.4 — no advisory; pulled to satisfy @tiptap/core@3.30.4's exact-version peer on @tiptap/pm (core ships in lockstep; 3.19.0 left the peer unmet), vetted 2026-09-04: provenance ✓ (npm attestation), prosemirror re-export bundle (deps are the 13 prosemirror-* packages only) ✓, no install scripts ✓, integrity ✓ — satisfies the extensions' ^3.19 peer range too
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 
