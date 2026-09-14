@@ -5,9 +5,9 @@ import {
   findCatalogOrphans,
 } from './__fixtures__/catalog-coverage';
 import {
+  CENTRALIZED_GUARDRAILS_EN_LABELS,
+  CENTRALIZED_GUARDRAILS_EN_MESSAGES,
   GUARDRAIL_BUILDER_EN_LABELS,
-  GUARDRAIL_CENTRALIZED_EN_LABELS,
-  GUARDRAIL_CENTRALIZED_EN_MESSAGES,
   GUARDRAIL_FORM_EN_LABELS,
   resolveCentralizedGuardrailsLabels,
   resolveGuardrailBuilderLabels,
@@ -46,7 +46,7 @@ const ENGLISH_ONLY_IDS = [
 
 describe('resolveCentralizedGuardrailsLabels', () => {
   it('returns the English defaults when there is nothing to merge', () => {
-    expect(resolveCentralizedGuardrailsLabels()).toEqual(GUARDRAIL_CENTRALIZED_EN_LABELS);
+    expect(resolveCentralizedGuardrailsLabels()).toEqual(CENTRALIZED_GUARDRAILS_EN_LABELS);
   });
 
   it('layers the catalog over the defaults and the overrides over both', () => {
@@ -57,7 +57,7 @@ describe('resolveCentralizedGuardrailsLabels', () => {
 
     expect(labels.title).toBe('Zentralisierte Leitplanken');
     expect(labels.provider).toBe('Provider (host)');
-    expect(labels.scopes).toBe(GUARDRAIL_CENTRALIZED_EN_LABELS.scopes);
+    expect(labels.scopes).toBe(CENTRALIZED_GUARDRAILS_EN_LABELS.scopes);
   });
 
   it('never lets an absent string blank a default', () => {
@@ -71,10 +71,10 @@ describe('resolveCentralizedGuardrailsLabels', () => {
   });
 
   it('keeps the English templates in the `{{token}}` convention the component formats', () => {
-    expect(GUARDRAIL_CENTRALIZED_EN_LABELS.policyCaption).toContain('{{policyName}}');
-    expect(GUARDRAIL_CENTRALIZED_EN_LABELS.viewDetails).toContain('{{name}}');
+    expect(CENTRALIZED_GUARDRAILS_EN_LABELS.policyCaption).toContain('{{policyName}}');
+    expect(CENTRALIZED_GUARDRAILS_EN_LABELS.viewDetails).toContain('{{name}}');
     // The catalogs store the ICU source instead, which is what translators receive.
-    expect(GUARDRAIL_CENTRALIZED_EN_MESSAGES['guardrails.centralized.policy-caption']).toContain(
+    expect(CENTRALIZED_GUARDRAILS_EN_MESSAGES['guardrails.centralized.policy-caption']).toContain(
       '{policyName}'
     );
   });
@@ -103,11 +103,11 @@ describe('the shared canvas catalog', () => {
   // i18n test: the catalog is hand-authored and harvested from the two products, so each id
   // prefix needs the same three checks and there is no pipeline to run them.
   const own = Object.fromEntries(
-    Object.entries(GUARDRAIL_CENTRALIZED_EN_MESSAGES).filter(([id]) => !REUSED_IDS.includes(id))
+    Object.entries(CENTRALIZED_GUARDRAILS_EN_MESSAGES).filter(([id]) => !REUSED_IDS.includes(id))
   );
 
   it('carries every centralized message with the same English', () => {
-    expect(findCatalogDrift(GUARDRAIL_CENTRALIZED_EN_MESSAGES)).toEqual({
+    expect(findCatalogDrift(CENTRALIZED_GUARDRAILS_EN_MESSAGES)).toEqual({
       missing: [],
       drifted: [],
     });
@@ -138,7 +138,7 @@ describe('the shared canvas catalog', () => {
   it('resolves the reused ids from the block that owns them, with identical English', () => {
     const reused: Record<string, string> = {};
     for (const id of REUSED_IDS) {
-      const message = GUARDRAIL_CENTRALIZED_EN_MESSAGES[id];
+      const message = CENTRALIZED_GUARDRAILS_EN_MESSAGES[id];
       expect(message).toBeDefined();
       reused[id] = message as string;
     }

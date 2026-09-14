@@ -650,14 +650,14 @@ const englishCentralizedTranslate: CentralizedTranslate = ({ message, values }) 
     : message;
 
 /** The English chrome strings, resolved without a lingui provider. */
-export const GUARDRAIL_CENTRALIZED_EN_LABELS: CentralizedGuardrailsLabels =
+export const CENTRALIZED_GUARDRAILS_EN_LABELS: CentralizedGuardrailsLabels =
   buildCentralizedGuardrailsLabels(englishCentralizedTranslate);
 
 /**
  * The same strings flattened to message id to the **ICU source message**, which is the form
  * the catalogs store: the parity test compares these against `locales/en.json` verbatim.
  */
-export const GUARDRAIL_CENTRALIZED_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+export const CENTRALIZED_GUARDRAILS_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
   (() => {
     const messages: Record<string, string> = {};
     buildCentralizedGuardrailsLabels((descriptor) => {
@@ -673,7 +673,7 @@ export function resolveCentralizedGuardrailsLabels(
   catalog?: Partial<CentralizedGuardrailsLabels>,
   overrides?: Partial<CentralizedGuardrailsLabels>
 ): CentralizedGuardrailsLabels {
-  return mergeLabels(GUARDRAIL_CENTRALIZED_EN_LABELS, catalog, overrides);
+  return mergeLabels(CENTRALIZED_GUARDRAILS_EN_LABELS, catalog, overrides);
 }
 
 /** Localized chrome strings of the centralized section; per-string `overrides` always win. */

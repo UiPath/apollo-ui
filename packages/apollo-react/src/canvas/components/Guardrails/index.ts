@@ -102,10 +102,10 @@ export type {
   GuardrailValidatorFormLabels,
 } from './i18n';
 export {
+  CENTRALIZED_GUARDRAILS_EN_LABELS,
+  CENTRALIZED_GUARDRAILS_EN_MESSAGES,
   formatGuardrailFormMessage,
   GUARDRAIL_BUILDER_EN_LABELS,
-  GUARDRAIL_CENTRALIZED_EN_LABELS,
-  GUARDRAIL_CENTRALIZED_EN_MESSAGES,
   GUARDRAIL_FORM_EN_LABELS,
   resolveCentralizedGuardrailsLabels,
   resolveGuardrailBuilderLabels,

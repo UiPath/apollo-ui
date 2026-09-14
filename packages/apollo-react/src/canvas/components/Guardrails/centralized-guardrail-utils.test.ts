@@ -13,13 +13,13 @@ import {
 } from './centralized-guardrail-utils';
 import type { CentralizedGuardrail, CentralizedGuardrailDefinition } from './centralized-types';
 import type { GuardrailCopyTable } from './definitions-copy';
-import { GUARDRAIL_CENTRALIZED_EN_LABELS } from './i18n';
+import { CENTRALIZED_GUARDRAILS_EN_LABELS } from './i18n';
 
 const FALLBACK_LABELS = {
-  enabled: GUARDRAIL_CENTRALIZED_EN_LABELS.parameterEnabled,
-  disabled: GUARDRAIL_CENTRALIZED_EN_LABELS.parameterDisabled,
-  entities: GUARDRAIL_CENTRALIZED_EN_LABELS.entitiesFallback,
-  thresholds: GUARDRAIL_CENTRALIZED_EN_LABELS.thresholdsFallback,
+  enabled: CENTRALIZED_GUARDRAILS_EN_LABELS.parameterEnabled,
+  disabled: CENTRALIZED_GUARDRAILS_EN_LABELS.parameterDisabled,
+  entities: CENTRALIZED_GUARDRAILS_EN_LABELS.entitiesFallback,
+  thresholds: CENTRALIZED_GUARDRAILS_EN_LABELS.thresholdsFallback,
 };
 
 const guardrail = (overrides: Partial<CentralizedGuardrail> = {}): CentralizedGuardrail => ({
@@ -391,7 +391,7 @@ describe('resolveCentralizedGuardrailParameters, BYO guardrails', () => {
 });
 
 describe('the label formatters', () => {
-  const labels = GUARDRAIL_CENTRALIZED_EN_LABELS;
+  const labels = CENTRALIZED_GUARDRAILS_EN_LABELS;
 
   it('names every scope and action both products close their sets to', () => {
     expect(

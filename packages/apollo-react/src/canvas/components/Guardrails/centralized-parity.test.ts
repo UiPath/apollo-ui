@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type CentralizedGuardrailsLabels, GUARDRAIL_CENTRALIZED_EN_LABELS } from './i18n';
+import { CENTRALIZED_GUARDRAILS_EN_LABELS, type CentralizedGuardrailsLabels } from './i18n';
 
 /**
  * Pins the centralized section's English against what each product ships today.
@@ -143,7 +143,7 @@ describe('centralized guardrails copy', () => {
     >) {
       if (hosts.agents === undefined || hosts.flow === undefined) continue;
       if (hosts.agents !== hosts.flow) continue;
-      const ours = GUARDRAIL_CENTRALIZED_EN_LABELS[label];
+      const ours = CENTRALIZED_GUARDRAILS_EN_LABELS[label];
       if (ours !== hosts.agents)
         invented.push(`${label}\n    both: ${hosts.agents}\n    ours: ${ours}`);
     }
@@ -155,7 +155,7 @@ describe('centralized guardrails copy', () => {
     const wrong: string[] = [];
     for (const divergence of EXPECTED_DIVERGENCES) {
       const chosen = HOST_COPY[divergence.label]?.[divergence.chosen];
-      const ours = GUARDRAIL_CENTRALIZED_EN_LABELS[divergence.label];
+      const ours = CENTRALIZED_GUARDRAILS_EN_LABELS[divergence.label];
       if (chosen !== ours) {
         wrong.push(`${divergence.label}\n    ${divergence.chosen}: ${chosen}\n    ours: ${ours}`);
       }
@@ -182,7 +182,7 @@ describe('centralized guardrails copy', () => {
 
   it('accounts for every string this component owns', () => {
     const unaccounted = (
-      Object.keys(GUARDRAIL_CENTRALIZED_EN_LABELS) as Array<keyof CentralizedGuardrailsLabels>
+      Object.keys(CENTRALIZED_GUARDRAILS_EN_LABELS) as Array<keyof CentralizedGuardrailsLabels>
     ).filter(
       (label) =>
         HOST_COPY[label] === undefined &&
@@ -197,7 +197,7 @@ describe('centralized guardrails copy', () => {
     for (const label of SINGLE_SOURCE) {
       const hosts = HOST_COPY[label];
       const only = hosts?.agents ?? hosts?.flow;
-      expect(GUARDRAIL_CENTRALIZED_EN_LABELS[label]).toBe(only);
+      expect(CENTRALIZED_GUARDRAILS_EN_LABELS[label]).toBe(only);
     }
   });
 });
