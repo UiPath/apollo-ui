@@ -213,6 +213,20 @@ describe('GuardrailListRow', () => {
       expect(rowBody(container)).not.toHaveAttribute('role', 'button');
     });
 
+    // Legacy tints the whole entry, so the hover sits on the row rather than on the body that
+    // carries the role: the handle and the actions are siblings of it. A row that does nothing
+    // when clicked must not advertise that it does.
+    it('tints the whole row on hover, and only when it is activatable', () => {
+      const row = (container: HTMLElement) =>
+        container.querySelector('[data-slot="guardrail-list-row"]');
+
+      const activatable = renderRow(PII_GUARDRAIL, { onEdit: vi.fn(), rowActivatesEdit: true });
+      expect(row(activatable.container)).toHaveClass('hover:bg-muted');
+
+      const plain = renderRow(PII_GUARDRAIL, { onEdit: vi.fn() });
+      expect(row(plain.container)).not.toHaveClass('hover:bg-muted');
+    });
+
     it('opens the editor on click and on Enter or Space', () => {
       const onEdit = vi.fn();
       const { container } = renderRow(PII_GUARDRAIL, { onEdit, rowActivatesEdit: true });

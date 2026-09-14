@@ -277,7 +277,14 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
         ref={ref}
         data-slot="guardrail-list-row"
         data-guardrail-id={id}
-        className={cn('flex items-center gap-2', className)}
+        className={cn(
+          'flex items-center gap-2',
+          // The whole row tints, not just the body: the handle and the actions are siblings of
+          // the activatable body, and legacy hovers the entire entry. The negative margin pairs
+          // with the padding so the tint extends past the content without moving it.
+          activatable && '-mx-1 rounded-md px-1 transition-colors hover:bg-muted',
+          className
+        )}
         {...props}
       >
         {handle}
