@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.0...@uipath/apollo-react@6.45.1) (2026-09-14)
+
+### Bug Fixes
+
+* **apollo-react:** keep tool call expanded while a response streams [JAR-9940] ([56d2f61](https://github.com/UiPath/apollo-ui/commit/56d2f61fcfda68cc952a25f4cee7ef210952984b))
+
 ## [@uipath/apollo-react-v6.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.44.2...@uipath/apollo-react@6.45.0) (2026-09-11)
 
 ### Features
