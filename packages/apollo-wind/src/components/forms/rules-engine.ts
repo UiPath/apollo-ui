@@ -123,12 +123,30 @@ export class RulesEngine {
    * - "total >= 100 ? 'discount' : 'regular'"
    */
   static evaluateExpression(expression: string, values: Record<string, unknown>): unknown {
+    const result = RulesEngine.tryEvaluateExpression(expression, values);
+    if (result.ok) return result.value;
+    console.error('Expression evaluation error:', result.error);
+    return false;
+  }
+
+  /**
+   * Like `evaluateExpression`, but reports *why* there is no value.
+   *
+   * `evaluateExpression` returns `false` both for an expression that legitimately evaluates
+   * to false and for one the evaluator cannot handle at all — `value.some(x)` parses fine and
+   * then throws on the unsupported `CallExpression`. Callers that treat falsey as "failed the
+   * check" would turn an unsupported expression into a permanently failing one, so they need
+   * to tell the two apart.
+   */
+  static tryEvaluateExpression(
+    expression: string,
+    values: Record<string, unknown>
+  ): { ok: true; value: unknown } | { ok: false; error: unknown } {
     try {
       const ast = jsep(expression);
-      return RulesEngine.evaluateNode(ast, values);
+      return { ok: true, value: RulesEngine.evaluateNode(ast, values) };
     } catch (error) {
-      console.error('Expression evaluation error:', error);
-      return false;
+      return { ok: false, error };
     }
   }
 

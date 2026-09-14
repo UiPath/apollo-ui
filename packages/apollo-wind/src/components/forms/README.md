@@ -3,6 +3,34 @@
 A powerful, enterprise-grade, metadata-driven form system built on **React Hook
 Form**, **Zod**, and **shadcn/ui** for the apollo-wind design system.
 
+## Ownership contract
+
+`MetadataForm` owns form state. Values live in react-hook-form, validation lives in the
+schema, and a host interacts through four things — and only these four:
+
+| Host need | Mechanism |
+| --- | --- |
+| Describe fields and their rules | `schema` (including `validation`, `rules`, `mode`) |
+| Observe or drive values | a `FormPlugin`: `onValueChange` to read, `context.form.setValue` to write |
+| Own a validation rule the schema cannot express | a plugin calling `context.form.setError` / `clearErrors` |
+| Replace the form's state wholesale (undo/redo, switching entity) | remount with a new `key` |
+
+There is deliberately no controlled-value prop. A second source of truth for values means
+two things can disagree about what the user typed, and every consumer then reimplements the
+reconciliation. `context.form` is the full `UseFormReturn`, so anything RHF can do, a plugin
+can do.
+
+**Reference hosts:** `NodePropertyPanel` (apollo-react) drives a schema-built form with
+plugins plus a reset key; flow-workbench's `ValidationPlugin` runs per-field AJV and an async
+worker, applying every result through `setError`/`clearErrors`, including checks AJV cannot
+model.
+
+**Validation that looks like it needs a host usually does not.** `required`, `pattern`,
+`minItems`/`maxItems`, `minLength`/`maxLength`, `min`/`max` and a jsep `custom` expression all
+live in `validation`. Custom components participate too, once the field declares its
+`valueType` — without it a `type: 'custom'` field validates as `z.any()`, where `required` is
+a no-op.
+
 ## 🎯 Key Features
 
 ### Core Capabilities
