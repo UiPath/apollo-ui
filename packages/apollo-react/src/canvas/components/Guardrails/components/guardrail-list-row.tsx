@@ -203,7 +203,17 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
         : {};
 
     const body = (
-      <div className={cn('min-w-0 flex-1', activatable && 'cursor-pointer')} {...bodyProps}>
+      <div
+        className={cn(
+          'min-w-0 flex-1',
+          // An element that is itself a control carries the cursor and its own focus ring; the
+          // row around it only highlights. Without this the body falls back to the UA outline,
+          // which is the one place this family treated keyboard users differently.
+          activatable &&
+            'cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+        )}
+        {...bodyProps}
+      >
         <div className="flex items-center gap-2">
           <span className="truncate text-sm font-medium">{item.name}</span>
           {previewChip && isBuiltInValidator && (
@@ -286,8 +296,10 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
           // and the 8px the stack puts between rows stays visible between two tinted boxes.
           // Ungated, because a row is a hover target whether or not clicking it opens the editor:
           // it is also what you aim the drag handle and the row actions at, and the centralized
-          // section's rows (#1161) highlight the same way.
-          '-mx-1 rounded-md p-1 transition-colors hover:bg-muted',
+          // section's rows (#1161) highlight the same way. `accent` is Apollo's hover surface
+          // (`--accent: var(--surface-hover)`); `muted` is `surface-overlay`, the panel the list
+          // usually sits on, which is why hovering with it barely showed.
+          '-mx-1 rounded-md p-1 transition-colors hover:bg-accent',
           className
         )}
         {...props}

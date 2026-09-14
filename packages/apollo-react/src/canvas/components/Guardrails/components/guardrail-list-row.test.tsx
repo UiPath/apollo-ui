@@ -62,10 +62,10 @@ describe('GuardrailListRow', () => {
       container.querySelector('[data-slot="guardrail-list-row"]');
 
     const plain = renderRow(PII_GUARDRAIL, { onEdit: vi.fn() });
-    expect(row(plain.container)).toHaveClass('hover:bg-muted');
+    expect(row(plain.container)).toHaveClass('hover:bg-accent');
 
     const activatable = renderRow(PII_GUARDRAIL, { onEdit: vi.fn(), rowActivatesEdit: true });
-    expect(row(activatable.container)).toHaveClass('hover:bg-muted');
+    expect(row(activatable.container)).toHaveClass('hover:bg-accent');
   });
 
   it('renders the BYO connector as the provider line', () => {
