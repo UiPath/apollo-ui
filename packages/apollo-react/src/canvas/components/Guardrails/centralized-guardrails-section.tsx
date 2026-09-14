@@ -51,7 +51,7 @@ export interface CentralizedGuardrailsSectionProps<
 function PolicyCaption({ template, policyName }: { template: string; policyName: string }) {
   const [before, after] = template.split('{{policyName}}');
   return (
-    <p className="pl-6 text-xs text-foreground-muted" data-slot="centralized-guardrails-policy">
+    <p className="pl-6 text-xs text-muted-foreground" data-slot="centralized-guardrails-policy">
       {before}
       <em>{policyName}</em>
       {/* A translation that dropped the token renders the name after the text rather than
@@ -100,9 +100,9 @@ export function CentralizedGuardrailsSection<
       className={cn(!unstyled && 'rounded-md border', className)}
     >
       {!hideHeader && (
-        <div className={cn('space-y-0.5 py-2', !unstyled && 'px-3')}>
+        <div className={cn('space-y-0.5', !unstyled && 'px-3 py-2')}>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="size-4 shrink-0 text-foreground-muted" />
+            <ShieldCheck className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <span className="text-sm font-medium">{labels.title}</span>
             <HoverCard openDelay={200}>
               <HoverCardTrigger asChild>
@@ -110,7 +110,7 @@ export function CentralizedGuardrailsSection<
                   variant="ghost"
                   size="3xs"
                   icon
-                  className="size-5 text-foreground-muted"
+                  className="size-5 text-muted-foreground"
                   aria-label={labels.info}
                 >
                   <Info />
@@ -135,7 +135,9 @@ export function CentralizedGuardrailsSection<
         </div>
       )}
 
-      <div className={cn('flex flex-col gap-3 pb-3', !unstyled && 'px-3')}>
+      {/* `space-y-2` and `p-3`, the same rhythm and padding as `GuardrailList`: both sections
+          render one above the other in both products. */}
+      <div className={cn('space-y-2', !unstyled && 'p-3')}>
         {guardrails.map((guardrail) => {
           const definition = findCentralizedByoDefinition(guardrail, definitions);
           const { name, description } = getCentralizedGuardrailDisplay(guardrail, {

@@ -34,7 +34,7 @@ export function CentralizedGuardrailParameters({
           row.kind === 'value' ? (
             <div key={row.id} className="space-y-0.5">
               <dt className="text-xs font-medium text-foreground">{row.label}</dt>
-              <dd className="text-sm text-foreground-muted">{row.value}</dd>
+              <dd className="text-sm text-muted-foreground">{row.value}</dd>
             </div>
           ) : (
             <div key={row.id} className="space-y-1">
@@ -47,7 +47,7 @@ export function CentralizedGuardrailParameters({
                       className="flex items-center justify-between gap-3 px-2 py-1.5 text-sm"
                     >
                       <span className="min-w-0 truncate">{threshold.label}</span>
-                      <span className="shrink-0 tabular-nums text-foreground-muted">
+                      <span className="shrink-0 tabular-nums text-muted-foreground">
                         {threshold.value ?? UNSET_THRESHOLD}
                       </span>
                     </li>

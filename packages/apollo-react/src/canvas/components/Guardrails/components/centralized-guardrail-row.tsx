@@ -23,6 +23,13 @@ export interface CentralizedGuardrailRowProps {
  * One centralized guardrail, as a summary. Everything here is also in the details view; the
  * row's job is to be scannable, which is why a broken configuration gets a chip next to the
  * name as well as the sentence that says what to do about it.
+ *
+ * Typography, spacing and tokens match `GuardrailListRow`: both sections render one above the
+ * other in both products, so a row that is read-only should differ from an editable one in
+ * what it offers, not in how it looks. The two differences are deliberate. This row's whole
+ * body is one control (the list's affordances are a drag handle and per-row buttons instead),
+ * so it carries the `px-1 py-1.5` hover box and the chevron; and every element is a `span`,
+ * because flow content inside a `<button>` is invalid.
  */
 export function CentralizedGuardrailRow({
   guardrail,
@@ -47,8 +54,8 @@ export function CentralizedGuardrailRow({
         <span className="sr-only">{formatGuardrailFormMessage(labels.viewDetails, { name })}</span>
       )}
       <span className="min-w-0 flex-1">
-        <span className="flex min-w-0 items-center gap-1.5">
-          <span className="truncate text-sm font-medium leading-none">{name}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-sm font-medium">{name}</span>
           <CentralizedGuardrailOriginChip isByo={guardrail.isByo} labels={labels} />
           {isConfigMissing && (
             <GuardrailStatusChip tone="error" className="shrink-0">
@@ -61,9 +68,12 @@ export function CentralizedGuardrailRow({
             </GuardrailStatusChip>
           )}
         </span>
+        {/* `text-error`, not `text-destructive`: the two resolve differently in several
+            `tailwind.consumer.css` theme blocks, and wind's `FormFieldError` and the list
+            row's BYO notices both settled on `text-error` for error text. */}
         {isConfigMissing && (
           <span
-            className="mt-1.5 block whitespace-normal break-words text-xs text-destructive"
+            className="block whitespace-normal break-words text-xs text-error"
             data-slot="centralized-guardrail-missing-config"
           >
             {labels.missingConfigMessage}
@@ -71,36 +81,36 @@ export function CentralizedGuardrailRow({
         )}
         {isConfigDisabled && (
           <span
-            className="mt-1.5 block whitespace-normal break-words text-xs text-destructive"
+            className="block whitespace-normal break-words text-xs text-error"
             data-slot="centralized-guardrail-disabled-config"
           >
             {labels.disabledConfigMessage}
           </span>
         )}
         {description && (
-          <span className="mt-1.5 block truncate text-xs leading-none text-foreground-muted">
-            {description}
-          </span>
+          <span className="block truncate text-xs text-muted-foreground">{description}</span>
         )}
         {providerName !== undefined && (
           <span
-            className="mt-1.5 block truncate text-xs leading-none text-foreground-muted"
+            className="block truncate text-xs text-muted-foreground"
             data-slot="centralized-guardrail-provider"
           >
             {labels.provider}: {providerName}
           </span>
         )}
-        <span className="mt-1.5 block truncate text-xs leading-none text-foreground-muted">
+        {/* The list row's metadata line sits on the same `mt-1` step, so the two stacks line
+            up when a policy section and a guardrail list are open together. */}
+        <span className="mt-1 block truncate text-xs text-muted-foreground">
           {labels.scopes}: {scopeNames.join(', ')} · {labels.executionStage}:{' '}
           {formatCentralizedExecutionStage(guardrail.executionStage, labels)}
         </span>
       </span>
-      {onSelect && <ChevronRight className="size-4 shrink-0 text-foreground-muted" />}
+      {onSelect && <ChevronRight className="size-4 shrink-0 text-muted-foreground" />}
     </>
   );
 
   const className = cn(
-    'flex w-full items-start gap-2 rounded-md px-1 py-1.5 text-left',
+    'flex w-full items-center gap-2 rounded-md px-1 py-1.5 text-left',
     onSelect &&
       'cursor-pointer transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
   );

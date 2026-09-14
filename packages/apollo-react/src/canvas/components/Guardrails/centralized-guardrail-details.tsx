@@ -44,7 +44,7 @@ function DetailField({ label, children }: { label: string; children: React.React
   return (
     <div className="space-y-0.5">
       <dt className="text-xs font-medium text-foreground">{label}</dt>
-      <dd className="text-sm text-foreground-muted">{children}</dd>
+      <dd className="text-sm text-muted-foreground">{children}</dd>
     </div>
   );
 }
