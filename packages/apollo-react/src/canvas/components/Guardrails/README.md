@@ -10,6 +10,24 @@ copy and `useGuardrailDefinitions`), `GuardrailBuilder` (the whole Add/Edit scre
 section, also rendered inside the builder), and `CentralizedGuardrailsSection` +
 `CentralizedGuardrailDetails` (the read-only governance guardrails a policy enforces).
 
+## Hover and focus, family-wide
+
+Hover is never a prop. No wind primitive takes one, and neither does anything here: a component
+derives it from the interaction it offers, so a host that wires up callbacks gets the right
+affordances without styling anything. What differs between members is the element's role, and
+that decides the treatment:
+
+- **The element is itself a control** (the palette item, the centralized row, the guardrail
+  list's activatable row body): gate the hover on being enabled, and pair it with `cursor-pointer`
+  and an explicit `focus-visible` ring, the way wind's `Button` and `DropdownMenuItem` do.
+- **The element is a row that contains controls** (the guardrail list row, with its drag handle
+  and its actions): highlight unconditionally, the way wind's `TableRow` does, with no cursor
+  change. Focus belongs to the controls inside it.
+
+Use `accent` for the hover surface. Apollo maps `--accent` to `--surface-hover`, while `--muted`
+is `--surface-overlay`, the raised panel these sections usually sit on: hovering with `muted`
+paints a row the colour of its own background and barely reads.
+
 ## Definitions layer
 
 Turns the `GET /api/execution/guardrails/definitions` payload into the

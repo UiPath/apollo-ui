@@ -112,7 +112,10 @@ export function CentralizedGuardrailRow({
   const className = cn(
     'flex w-full items-center gap-2 rounded-md p-1 text-left',
     onSelect &&
-      'cursor-pointer transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+      // `accent` is Apollo's hover surface (`--accent: var(--surface-hover)`), while `muted` is
+      // `surface-overlay`, the panel this section sits on. Shared with the list row in #1140 and
+      // the palette item in #1147; the family rule is in the README.
+      'cursor-pointer transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
   );
 
   // A row with nowhere to go is not a control. Both products render a disabled button there,
