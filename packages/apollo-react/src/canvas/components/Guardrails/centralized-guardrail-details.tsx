@@ -94,10 +94,12 @@ export function CentralizedGuardrailDetails<
   return (
     <div data-slot="centralized-guardrail-details" className={cn('space-y-4', className)}>
       {/* `note` rather than the primitive's `alert`: this is a standing explanation of the
-          whole view, not something that just happened. */}
+          whole view, not something that just happened. `mt-0` cancels the AlertDescription
+          top offset, which assumes an AlertTitle above it, and otherwise drops the text 4px
+          below the absolutely positioned icon. */}
       <Alert role="note">
         <Info />
-        <AlertDescription>{labels.managedMessage}</AlertDescription>
+        <AlertDescription className="mt-0">{labels.managedMessage}</AlertDescription>
       </Alert>
 
       {isConfigMissing && (
