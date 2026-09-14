@@ -187,7 +187,12 @@ function $rescuePillsFromCodeSpans(pills: PillRef[]): void {
           const pill = pills[Number(match[1])];
           return pill ? createTokenNodeForOption(pill) : $createTextNode('');
         }
-        return $createTextNode(part);
+        // Keep the code format on the surrounding text so the backticks survive. They close
+        // before the decorator and reopen after it, the same marker migration bold and italic
+        // already do around a pill -- a rewrite, but never a loss.
+        const text = $createTextNode(part);
+        text.setFormat(node.getFormat());
+        return text;
       });
     if (replacements.length > 0) {
       const [first, ...rest] = replacements;
