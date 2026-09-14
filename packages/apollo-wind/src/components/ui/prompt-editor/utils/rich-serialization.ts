@@ -6,6 +6,7 @@ import {
   BOLD_ITALIC_UNDERSCORE,
   BOLD_STAR,
   BOLD_UNDERSCORE,
+  INLINE_CODE,
   ITALIC_STAR,
   ITALIC_UNDERSCORE,
   ORDERED_LIST,
@@ -14,7 +15,14 @@ import {
   type Transformer,
   UNORDERED_LIST,
 } from '@lexical/markdown';
-import { $getRoot, createEditor, type TextNode } from 'lexical';
+import {
+  $createTextNode,
+  $getRoot,
+  $isTextNode,
+  createEditor,
+  type LexicalNode,
+  type TextNode,
+} from 'lexical';
 import { InputTokenNode, OutputTokenNode, ResourceTokenNode, StateTokenNode } from '../nodes';
 import { isPromptTokenNode, NODE_TYPE_TO_TOKEN_TYPE } from '../plugins/shared/token-nodes';
 import type { PromptEditorToken, PromptEditorTokenType } from '../types';
@@ -32,9 +40,44 @@ import { WORD_JOINER } from './serialization';
  *    `breaks: true`). Both conversions run with `shouldPreserveNewLines: true` so `a\nb` and
  *    `a\n\nb` each round-trip byte-identically instead of being rewritten into paragraph spacing.
  * 2. **Unknown markdown stays literal.** The transformer set is exactly the toolbar's feature set
- *    (bold/italic/strikethrough + ordered/bulleted lists). Headings, quotes, code, links, tables
- *    pass through as plain text, which is the round-trip-safe behavior.
+ *    (bold/italic/underline/strikethrough + lists + inline code). Headings, quotes, code fences,
+ *    links and tables pass through as plain text, which is the round-trip-safe behavior.
  */
+
+/**
+ * Underline has no markdown syntax, so it round-trips as literal `<u>` — a tag `marked` renders and
+ * the preview's DOMPurify allowlist already permits. `TextFormatTransformer` needs one symmetric
+ * marker, hence a text-match transformer keyed on the format bit instead.
+ *
+ * Accepted edge, like the literal-`*` case below: a typed `<u>` comes back as underline. The
+ * preview already renders it that way, so interpreting it keeps the two consistent.
+ */
+const UNDERLINE: TextMatchTransformer = {
+  dependencies: [],
+  importRegExp: /<u>(.*?)<\/u>/,
+  regExp: /<u>(.*?)<\/u>$/,
+  trigger: '>',
+  replace: (node, match) => {
+    const inner = $createTextNode(match[1]);
+    inner.toggleFormat('underline');
+    node.replace(inner);
+    // Returning it re-runs format matching, so inner `*italic*` survives.
+    return inner;
+  },
+  export: (node, _exportChildren, exportFormat) => {
+    if (!$isTextNode(node) || !node.hasFormat('underline')) {
+      return null;
+    }
+    // Inner emphasis splits a run across text nodes, so tag only the run's edges — otherwise
+    // `<u>an *italic* run</u>` exports as three `<u>` pairs.
+    const isUnderlined = (sibling: LexicalNode | null) =>
+      $isTextNode(sibling) && sibling.hasFormat('underline');
+    const open = isUnderlined(node.getPreviousSibling()) ? '' : '<u>';
+    const close = isUnderlined(node.getNextSibling()) ? '' : '</u>';
+    return `${open}${exportFormat(node, node.getTextContent())}${close}`;
+  },
+  type: 'text-match',
+};
 
 /** The toolbar's feature set. Underscore emphasis variants import legacy content; export emits star forms. */
 export const PROMPT_EDITOR_RICH_TRANSFORMERS: Transformer[] = [
@@ -47,6 +90,8 @@ export const PROMPT_EDITOR_RICH_TRANSFORMERS: Transformer[] = [
   ITALIC_STAR,
   ITALIC_UNDERSCORE,
   STRIKETHROUGH,
+  UNDERLINE,
+  INLINE_CODE,
 ];
 
 /** Lexical node classes rich mode registers beyond the plain editor's token nodes. */

@@ -1,4 +1,13 @@
-import { Bold, Italic, List, ListOrdered, Maximize2, Strikethrough } from 'lucide-react';
+import {
+  Bold,
+  Code,
+  Italic,
+  List,
+  ListOrdered,
+  Maximize2,
+  Strikethrough,
+  Underline,
+} from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib';
 import { DEFAULT_PROMPT_EDITOR_STRINGS, type PromptEditorStrings } from '../prompt-editor-config';
@@ -26,6 +35,8 @@ export interface EditorToolbarProps {
   strings?: PromptEditorStrings;
   /** Rich mode: which formats the selection carries — drives `aria-pressed` on the buttons. */
   activeFormats?: PromptEditorToolbarActiveFormats;
+  /** WYSIWYG mode. Gates Underline, which markdown has no marker for. */
+  richText?: boolean;
 }
 
 /**
@@ -82,6 +93,7 @@ export const EditorToolbar = ({
   trailing,
   strings = DEFAULT_PROMPT_EDITOR_STRINGS,
   activeFormats,
+  richText,
 }: EditorToolbarProps) => {
   // Without the Edit/Preview switcher there is no preview state to guard against.
   const isEditMode = !showModeToggle || mode === 'edit';
@@ -109,6 +121,15 @@ export const EditorToolbar = ({
         disabled={disabled || !isEditMode}
         onClick={handleFormat('formatItalic')}
       />
+      {richText && (
+        <ToolbarButton
+          icon={Underline}
+          pressed={activeFormats?.underline}
+          label={strings.underline}
+          disabled={disabled || !isEditMode}
+          onClick={handleFormat('formatUnderline')}
+        />
+      )}
       <ToolbarButton
         icon={Strikethrough}
         pressed={activeFormats?.strikethrough}
@@ -133,6 +154,16 @@ export const EditorToolbar = ({
         disabled={disabled || !isEditMode}
         onClick={handleFormat('formatBulletedList')}
       />
+
+      <ToolbarSeparator />
+
+      <ToolbarButton
+        icon={Code}
+        pressed={activeFormats?.code}
+        label={strings.code}
+        disabled={disabled || !isEditMode}
+        onClick={handleFormat('formatCode')}
+      />
     </>
   );
 
@@ -152,7 +183,7 @@ export const EditorToolbar = ({
         data-testid="editor-toolbar-separator"
         className="pointer-events-none absolute bottom-0 left-0 h-px w-full bg-border/40"
       />
-      {/* Left: formatting cluster (Bold/Italic/Strike) → list cluster (Numbered/Bullet). */}
+      {/* Left: text (Underline is rich-mode only) → lists → code. */}
       <div className="flex items-center gap-0.5 overflow-hidden">{formattingCluster}</div>
 
       {/* Right: mode toggle → Expand → trailing. */}

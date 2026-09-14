@@ -161,9 +161,9 @@ export const WithTrailingModeControl: Story = {
 };
 
 /**
- * WYSIWYG mode: formatting renders live while editing (real bold/strike and lists, no Edit/Preview
- * switcher: the editor IS the preview). Text tokens still carry markdown; try typing `**bold**` or
- * `- ` for a live markdown shortcut.
+ * WYSIWYG mode: formatting renders live while editing (real bold/underline/strike, inline code and
+ * lists, no Edit/Preview switcher: the editor IS the preview). Text tokens still carry markdown;
+ * try typing `**bold**`, `` `code` `` or `- `. Underline is offered only here, and persists as `<u>`.
  */
 export const RichText: Story = {
   args: {
@@ -174,7 +174,8 @@ export const RichText: Story = {
       { type: 'input', value: 'vars.firstName' },
       {
         type: 'text',
-        value: ',\n\nYour order:\n- item one\n- item two\n\nThanks, ~~the team~~ *us*',
+        value:
+          ',\n\nYour order:\n- item one\n- item two\n\nRun <u>`npm install`</u> first.\n\nThanks, ~~the team~~ *us*',
       },
     ],
     autoCompleteOptions: AUTOCOMPLETE_OPTIONS,

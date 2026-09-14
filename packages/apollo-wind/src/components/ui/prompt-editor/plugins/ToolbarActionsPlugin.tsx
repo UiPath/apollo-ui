@@ -31,9 +31,11 @@ interface ToolbarActionsPluginProps {
 const EMPTY_ACTIVE_FORMATS: PromptEditorToolbarActiveFormats = {
   bold: false,
   italic: false,
+  underline: false,
   strikethrough: false,
   orderedList: false,
   bulletedList: false,
+  code: false,
 };
 
 /** Which formats/list types the selection currently carries. Must run inside a read/update. */
@@ -47,9 +49,11 @@ const $readActiveFormats = (): PromptEditorToolbarActiveFormats => {
   return {
     bold: selection.hasFormat('bold'),
     italic: selection.hasFormat('italic'),
+    underline: selection.hasFormat('underline'),
     strikethrough: selection.hasFormat('strikethrough'),
     orderedList: listType === 'number',
     bulletedList: listType === 'bullet',
+    code: selection.hasFormat('code'),
   };
 };
 
@@ -59,9 +63,11 @@ const activeFormatsEqual = (
 ) =>
   a.bold === b.bold &&
   a.italic === b.italic &&
+  a.underline === b.underline &&
   a.strikethrough === b.strikethrough &&
   a.orderedList === b.orderedList &&
-  a.bulletedList === b.bulletedList;
+  a.bulletedList === b.bulletedList &&
+  a.code === b.code;
 
 /**
  * Wrap current selection with start/end markers (e.g., **bold**, *italic*, `code`).
@@ -196,9 +202,12 @@ export const ToolbarActionsPlugin = ({
       actionsRef.current = {
         formatBold: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold'),
         formatItalic: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic'),
+        formatUnderline: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline'),
         formatStrikethrough: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough'),
         formatNumberedList: () => toggleList('number'),
         formatBulletedList: () => toggleList('bullet'),
+        // Renders as a real <code>; serializes to backticks via INLINE_CODE.
+        formatCode: () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'code'),
       };
     } else {
       actionsRef.current = {
@@ -208,6 +217,8 @@ export const ToolbarActionsPlugin = ({
         formatItalic: () => {
           editor.update(() => wrapSelectionWithMarkers('*', '*'));
         },
+        // No markdown marker for underline, so the toolbar hides the button here.
+        formatUnderline: () => {},
         formatStrikethrough: () => {
           // GFM strikethrough — `marked` (preview renderer) honours it natively.
           editor.update(() => wrapSelectionWithMarkers('~~', '~~'));
@@ -217,6 +228,9 @@ export const ToolbarActionsPlugin = ({
         },
         formatBulletedList: () => {
           editor.update(() => insertLinePrefixForSelection(() => '- '));
+        },
+        formatCode: () => {
+          editor.update(() => wrapSelectionWithMarkers('`', '`'));
         },
       };
     }

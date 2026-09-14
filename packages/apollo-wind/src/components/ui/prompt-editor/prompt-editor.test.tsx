@@ -88,6 +88,18 @@ describe('PromptEditor', () => {
       expect(screen.getByTestId('editor-toolbar')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Bold' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Numbered List' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Code' })).toBeInTheDocument();
+    });
+
+    it('hides Underline in plain mode, where markdown has no marker for it', () => {
+      render(<PromptEditor showToolbar />);
+      expect(screen.queryByRole('button', { name: 'Underline' })).not.toBeInTheDocument();
+    });
+
+    it('renders Underline in rich mode', () => {
+      render(<PromptEditor showToolbar richText />);
+      expect(screen.getByRole('button', { name: 'Underline' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Code' })).toBeInTheDocument();
     });
 
     it('does not render the toolbar by default', () => {
@@ -538,6 +550,39 @@ describe('PromptEditor', () => {
       expect(screen.getByRole('textbox', { name: 'Body' }).textContent).not.toContain('**');
     });
 
+    it('renders <u> markup as underlined content, without showing the tags', async () => {
+      render(
+        <PromptEditor
+          ariaLabel="Body"
+          richText
+          initialValue={[{ type: 'text', value: 'an <u>underlined</u> word' }]}
+        />
+      );
+      await waitFor(() => {
+        const underline = document.querySelector('.prompt-editor-text-underline');
+        expect(underline).not.toBeNull();
+        expect(underline).toHaveTextContent('underlined');
+      });
+      expect(screen.getByRole('textbox', { name: 'Body' }).textContent).not.toContain('<u>');
+    });
+
+    it('renders backtick markdown as a real <code> element', async () => {
+      render(
+        <PromptEditor
+          ariaLabel="Body"
+          richText
+          initialValue={[{ type: 'text', value: 'run `ls -la` now' }]}
+        />
+      );
+      await waitFor(() => {
+        // Lexical emits <code><span class="prompt-editor-text-code">…</span></code>.
+        const code = document.querySelector('code .prompt-editor-text-code');
+        expect(code).not.toBeNull();
+        expect(code).toHaveTextContent('ls -la');
+      });
+      expect(screen.getByRole('textbox', { name: 'Body' }).textContent).not.toContain('`');
+    });
+
     it('renders list markdown as real list elements', async () => {
       render(
         <PromptEditor
@@ -592,6 +637,11 @@ describe('PromptEditor', () => {
         'aria-pressed',
         'false'
       );
+      expect(screen.getByRole('button', { name: 'Underline' })).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      );
+      expect(screen.getByRole('button', { name: 'Code' })).toHaveAttribute('aria-pressed', 'false');
     });
 
     it('falls back to the plain editor (with a warning) when multiline is false', () => {

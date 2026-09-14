@@ -417,7 +417,10 @@ const EditorInner = forwardRef(
           /* Rich-mode formatting — metrics mirror MarkdownPreview so editing matches rendering. */
           .prompt-editor-text-bold { font-weight: 700; }
           .prompt-editor-text-italic { font-style: italic; }
+          .prompt-editor-text-underline { text-decoration: underline; }
           .prompt-editor-text-strikethrough { text-decoration: line-through; }
+          .prompt-editor-text-underline-strikethrough { text-decoration: underline line-through; }
+          .prompt-editor-text-code { font-family: 'Fira Code', 'Consolas', monospace; font-size: 0.875em; padding: 0.15em 0.4em; border-radius: 4px; background-color: var(--color-muted); color: var(--color-foreground); }
           .prompt-editor-list-ul, .prompt-editor-list-ol { margin: 0.25em 0; padding-left: 1.5em; }
           .prompt-editor-list-ul { list-style-type: disc; }
           .prompt-editor-list-ol { list-style-type: decimal; }
@@ -623,7 +626,11 @@ export const PromptEditor = ({
               text: {
                 bold: 'prompt-editor-text-bold',
                 italic: 'prompt-editor-text-italic',
+                underline: 'prompt-editor-text-underline',
                 strikethrough: 'prompt-editor-text-strikethrough',
+                // Both use `text-decoration`; without this key only one would show.
+                underlineStrikethrough: 'prompt-editor-text-underline-strikethrough',
+                code: 'prompt-editor-text-code',
               },
               list: {
                 ul: 'prompt-editor-list-ul',
@@ -706,6 +713,7 @@ export const PromptEditor = ({
                 actionsRef={toolbarActionsRef}
                 onModeChange={handleModeChange}
                 onFullscreen={onFullscreen}
+                richText={richText}
                 showModeToggle={showModeToggle && !richText}
                 trailing={toolbarTrailing}
                 strings={strings}
