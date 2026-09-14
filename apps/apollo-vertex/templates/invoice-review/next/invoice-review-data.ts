@@ -59,7 +59,8 @@ export type InvoiceStatus =
   | "sent-for-approval"
   | "approved"
   | "rejected"
-  | "auto-approved";
+  | "auto-approved"
+  | "posted";
 
 export const STATUS_META: Record<
   InvoiceStatus,
@@ -71,6 +72,7 @@ export const STATUS_META: Record<
   approved: { label: "Approved", tone: "success" },
   rejected: { label: "Rejected", tone: "error" },
   "auto-approved": { label: "Auto-approved", tone: undefined },
+  posted: { label: "Posted", tone: "success" },
 };
 
 export type ExceptionScope =
@@ -210,6 +212,32 @@ export interface AgentStep {
   handoff?: boolean;
 }
 
+/** One check the agent ran and cleared, with the evidence it cleared on.
+ *  `evidence` always states the value the check saw; a check with nothing
+ *  worth stating is dropped rather than padded with "passed". */
+export interface ClearedCheck {
+  id: string;
+  label: string;
+  evidence: string;
+}
+
+/** Settled outcome for an invoice that needed no human decision: what it
+ *  posted as, when it pays, and the checks behind that. Present only when
+ *  `exceptions` is empty; its presence is what selects the cleared block. */
+export interface ClearedOutcome {
+  postedAs: string;
+  postedAsHref: string;
+  /** ISO */
+  postedOn: string;
+  paymentMethod: string;
+  /** ISO */
+  paymentDate: string;
+  paymentTerms: string;
+  /** null renders "No one": nothing was handed to a person. */
+  touchedBy: string | null;
+  checks: ClearedCheck[];
+}
+
 export interface InvoiceAssignee {
   name: string;
   initials: string;
@@ -230,6 +258,9 @@ export interface InvoiceReview {
   agentHistory: AgentStep[];
   /** ordered: invoice-level first, then by line, then loop-surfaced (append) */
   exceptions: InvoiceException[];
+  /** settled, no-action-needed outcome. Set only alongside an empty
+   *  `exceptions`; selects the cleared block in place of the decision block. */
+  cleared?: ClearedOutcome;
   /** what a re-check reports for this invoice; consumed once, then deduped */
   revalidation?: {
     cleared: string[];
@@ -1085,6 +1116,89 @@ const ACME_TAX: InvoiceException = {
 };
 
 const invoiceReviewMap: Record<string, InvoiceReview> = {
+  // 0. Cleared state: zero exceptions, no approval needed. The history runs
+  // straight through to Posted with no Escalated step and no handoff, so the
+  // column never renders a person marker.
+  "INV-70114": {
+    id: "INV-70114",
+    supplier: "Lakeside IT Supply",
+    vendorEmail: "billing@lakeside-it.example",
+    amount: "$6,995.00 USD",
+    due: "Oct 23, 2026",
+    poPill: { label: "PO-8471", tone: "neutral" },
+    assignee: REVIEWER,
+    status: "posted",
+    agentHistory: [
+      {
+        title: "Extracted",
+        sub: "22 fields read from the invoice PDF",
+        time: "9:04 AM",
+      },
+      {
+        title: "Matched",
+        sub: "PO-8471 and receipt GR-9930 located",
+        time: "9:04 AM",
+      },
+      {
+        title: "Validated",
+        sub: "Checked against Coupa: supplier, terms, totals",
+        time: "9:05 AM",
+      },
+      {
+        title: "Coded",
+        sub: "6820 IT equipment, cost center 4400",
+        time: "9:05 AM",
+      },
+      {
+        title: "Approved",
+        sub: "Within auto-approve limit, no review needed",
+        time: "9:06 AM",
+      },
+      { title: "Posted", sub: "BILL-4471 created in Coupa", time: "9:06 AM" },
+    ],
+    exceptions: [],
+    cleared: {
+      postedAs: "BILL-4471",
+      postedAsHref: "#",
+      postedOn: "2026-09-23",
+      paymentMethod: "ACH",
+      paymentDate: "2026-10-23",
+      paymentTerms: "Net 30",
+      touchedBy: null,
+      checks: [
+        {
+          id: "chk-supplier",
+          label: "Supplier",
+          evidence: "Lakeside IT Supply, matched to vendor V-2214",
+        },
+        {
+          id: "chk-match",
+          label: "Three-way match",
+          evidence: "PO-8471 and receipt GR-9930 agree on qty and price",
+        },
+        {
+          id: "chk-price",
+          label: "Price tolerance",
+          evidence: "$1,399.00 per unit against contract, 0% variance",
+        },
+        {
+          id: "chk-dupe",
+          label: "Duplicate check",
+          evidence: "No other invoice from this supplier at $6,995.00",
+        },
+        {
+          id: "chk-tax",
+          label: "Tax",
+          evidence: "$0.00, exempt under MN reseller certificate",
+        },
+        {
+          id: "chk-coding",
+          label: "Coding",
+          evidence: "6820 IT equipment, cost center 4400",
+        },
+      ],
+    },
+  },
   // 1. Loop hero: one Missing PO -> Link PO -> re-check surfaces 2 new issues.
   "INV-84471": {
     id: "INV-84471",

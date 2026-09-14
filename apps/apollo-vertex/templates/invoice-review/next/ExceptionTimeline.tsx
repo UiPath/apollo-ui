@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  ExternalLink,
   Pause,
   Pencil,
   UserRound,
@@ -18,6 +19,7 @@ import {
   type CSSProperties,
   type KeyboardEvent,
   type ReactNode,
+  type RefObject,
   useEffect,
   useMemo,
   useRef,
@@ -48,6 +50,7 @@ import {
   buildApproval,
   buildHold,
   buildResume,
+  type ClearedOutcome,
   type DetailCorrections,
   EXCEPTION_META,
   type ExceptionType,
@@ -301,7 +304,7 @@ function ChildRow({
   time,
   showTime = true,
 }: {
-  markerKind: "ai" | "reviewer";
+  markerKind: "ai" | "check" | "reviewer";
   primaryText: string;
   secondaryText?: string;
   time: string;
@@ -314,6 +317,14 @@ function ChildRow({
         style={{ background: "var(--ai-gradient-strong)" }}
       >
         <AiMark size={9} />
+      </span>
+    ) : markerKind === "check" ? (
+      // Muted, not success-green: these rows say "step done", which is as true
+      // of an escalation as of a posting. Green would assert the handoff
+      // succeeded. The parent block already carries the AI mark, so repeating
+      // it on every child adds nothing.
+      <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <Check className="size-2.5" />
       </span>
     ) : (
       <Avatar className="size-4 shrink-0">
@@ -350,10 +361,14 @@ function ChildRow({
 function AgentHistoryPeek({
   steps,
   bottomGap = ROW_GAP,
+  summary,
 }: {
   steps: AgentStep[];
   /** gap below the peek: 28px when a section node follows, else 20px */
   bottomGap?: string;
+  /** overrides the escalation summary. The cleared path never escalated, so it
+   *  counts steps and elapsed time instead of "checks cleared before". */
+  summary?: string;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -371,7 +386,7 @@ function AgentHistoryPeek({
           )}
         />
         <span className="text-sm font-medium text-foreground">
-          {steps.length} checks cleared before escalating
+          {summary ?? `${steps.length} checks cleared before escalating`}
         </span>
       </button>
       {open && (
@@ -379,7 +394,7 @@ function AgentHistoryPeek({
           {steps.map((step) => (
             <li key={step.title}>
               <ChildRow
-                markerKind="ai"
+                markerKind="check"
                 primaryText={step.title}
                 secondaryText={step.sub}
                 time={step.time}
@@ -395,6 +410,206 @@ function AgentHistoryPeek({
 // A slim history row on the rail: the shared single-line body under a marker.
 // Optionally expands to a plain detail (a disposition note), so a reviewer note
 // stays readable even before the log compresses into the completion peek.
+/** "9:04 AM" -> minutes past midnight. Null when the shape is unexpected, so
+ *  callers degrade rather than render NaN. */
+function parseClockMinutes(time: string): number | null {
+  const m = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(time.trim());
+  if (!m) return null;
+  const h = Number(m[1]) % 12;
+  return (h + (/pm/i.test(m[3]) ? 12 : 0)) * 60 + Number(m[2]);
+}
+
+/** Wall-clock span across an agent history, phrased for the cleared summary. */
+function elapsedLabel(steps: AgentStep[]): string {
+  const first = steps[0] && parseClockMinutes(steps[0].time);
+  const last =
+    steps[steps.length - 1] && parseClockMinutes(steps[steps.length - 1].time);
+  if (first == null || last == null || last < first) return "a few minutes";
+  const mins = last - first;
+  if (mins === 0) return "under a minute";
+  return `${mins} minute${mins === 1 ? "" : "s"}`;
+}
+
+const SHORT_MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/** ISO date -> "Sep 23". Parsed by hand: `new Date("2026-09-23")` is UTC
+ *  midnight and shifts a day back west of Greenwich. */
+function shortDate(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  return `${SHORT_MONTHS[Number(m[2]) - 1] ?? ""} ${Number(m[3])}`.trim();
+}
+
+// The locked display scale for a block headline: 22px / 500. Drift here is
+// invisible in review (bold vs medium at 22px reads as "big" either way), so a
+// dev-only probe fails loudly instead of waiting for a design pass.
+function useAssertHeadlineWeight(
+  ref: RefObject<HTMLElement | null>,
+  weight: "500" | "700" = "500",
+) {
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    const el = ref.current;
+    if (!el) return;
+    const { fontWeight, fontSize } = getComputedStyle(el);
+    if (fontWeight !== weight || fontSize !== "22px") {
+      console.error(
+        `[invoice-review] headline is ${fontSize}/${fontWeight}, expected 22px/${weight}:`,
+        el.textContent,
+      );
+    }
+  }, [ref, weight]);
+}
+
+/**
+ * Cleared end state: zero exceptions and nothing to approve. Replaces the
+ * decision block, keeps the Activity block above it.
+ *
+ * Marker is the solid completion check, not a person: this is a settled system
+ * outcome, and a reviewer avatar would claim a handoff that never happened. No tail (closed
+ * story, same as the approved terminal), no suggestion card, and no AI lockup
+ * on purpose. The block states a settled fact; it asks nothing of the reader,
+ * so it does not get the treatment reserved for things awaiting judgement.
+ */
+function ClearedBlock({
+  cleared,
+  po,
+  reducedMotion,
+}: {
+  cleared: ClearedOutcome;
+  po: string;
+  reducedMotion: boolean;
+}) {
+  const headlineRef = useRef<HTMLHeadingElement>(null);
+  // Bold here by design decision: the cleared statement is the page's anchor
+  // and carries more weight than the 500 the exception headline holds.
+  useAssertHeadlineWeight(headlineRef, "700");
+
+  return (
+    // "complete", not "agent": the existing solid completion marker (shared with
+    // the approved terminal). Still a system marker, not a person.
+    <TimelineRow marker="complete" className="pb-12" isLast>
+      <div
+        className={cn(
+          !reducedMotion && "animate-in fade-in-0 duration-200 ease-out",
+        )}
+      >
+        {/* Same eyebrow shell as "Needs your decision", minus the pager: there
+            is no queue to walk when nothing is open. */}
+        <div className="mb-4 flex min-h-7 items-center gap-1.5">
+          <span className="text-sm font-medium text-foreground">
+            No action needed
+          </span>
+        </div>
+        <h2
+          ref={headlineRef}
+          className="text-[22px] font-bold leading-[1.25] text-foreground"
+          style={{ letterSpacing: "-0.01em", textWrap: "balance" }}
+        >
+          Cleared without exceptions
+        </h2>
+        {/* Names the data effect, not the absence of work. */}
+        <p className="mt-1.5 max-w-prose text-sm leading-normal text-muted-foreground">
+          Matched to {po} and posted on {shortDate(cleared.postedOn)}. Payment
+          is scheduled for {shortDate(cleared.paymentDate)}.
+        </p>
+
+        {/* One card, two registers: the checks and where it landed are the
+            same receipt, so a single object contains both and a hairline (not a
+            second background) separates them. Solid, not glass: the feed pane
+            is transparent over a white page, so a 55% white fill with a white
+            border would cost the treatment and show none of it. */}
+        <Card
+          variant="glass"
+          className="mt-7 @container gap-0 overflow-hidden py-0"
+        >
+          <div className="px-4 py-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              Checks that cleared
+            </p>
+            <ul className="mt-1">
+              {cleared.checks.map((check) => (
+                <li
+                  key={check.id}
+                  className="flex items-start gap-3 border-b border-border py-2.5 last:border-b-0 @min-[560px]:items-center"
+                >
+                  {/* size-, not w-: width alone leaves lucide's intrinsic 24px
+                      height, so the tick's optical centre sat 5px below the
+                      label's. A square box lets items-center actually centre. */}
+                  <Check
+                    aria-hidden="true"
+                    className="mt-[3px] size-[15px] shrink-0 text-success @min-[560px]:mt-0"
+                  />
+                  {/* Stacked at the pane's real width (~409px, where the
+                      evidence cell is only 170px and every value wrapped).
+                      Container query, not a viewport breakpoint: this width is
+                      set by the three-panel layout, not by the window. */}
+                  <div className="min-w-0 flex-1 @min-[560px]:flex @min-[560px]:items-baseline @min-[560px]:gap-3">
+                    <span className="block text-sm text-foreground @min-[560px]:w-40 @min-[560px]:shrink-0">
+                      {check.label}
+                    </span>
+                    <span className="mt-0.5 block text-sm text-muted-foreground @min-[560px]:mt-0 @min-[560px]:min-w-0 @min-[560px]:flex-1">
+                      {check.evidence}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {/* Two columns, not three: at 409px a third column squeezed
+              "ACH · Net 30 · Oct 23" into a mid-value wrap. */}
+          <div className="border-t border-border px-4 py-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              Where it landed
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-3">
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">Posted as</p>
+                <a
+                  href={cleared.postedAsHref}
+                  className="mt-0.5 inline-flex items-center gap-1 text-sm text-foreground underline-offset-2 hover:underline"
+                >
+                  {cleared.postedAs}
+                  <ExternalLink
+                    aria-hidden="true"
+                    className="size-3 shrink-0"
+                  />
+                </a>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">Payment</p>
+                <p className="mt-0.5 text-sm text-foreground">
+                  {cleared.paymentMethod} · {cleared.paymentTerms} ·{" "}
+                  {shortDate(cleared.paymentDate)}
+                </p>
+              </div>
+              <div className="col-span-2 min-w-0">
+                <p className="text-xs text-muted-foreground">Touched by</p>
+                <p className="mt-0.5 text-sm text-foreground">
+                  {cleared.touchedBy ?? "No one"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </TimelineRow>
+  );
+}
+
 function EventRow({
   marker,
   label,
@@ -642,6 +857,8 @@ function LiveExceptionContent({
   revisionCount?: number;
 }) {
   const isJudgment = exception.suggestions.length === 0;
+  const headlineRef = useRef<HTMLHeadingElement>(null);
+  useAssertHeadlineWeight(headlineRef);
   // Each section fades and slides in a beat after the previous one.
   const stepClass = entering ? ENTER_STEP : undefined;
   const stepStyle = (i: number): CSSProperties | undefined =>
@@ -667,10 +884,12 @@ function LiveExceptionContent({
       {/* The single anchor: largest element. Everything else steps down from it
           via size and color. */}
       {/* Wraps freely; never truncates/ellipsizes on the stage. */}
-      {/* Focus/current anchor is bold; historical + terminal titles stay 500. */}
+      {/* Locked display scale: 22px / 500, the same weight every block
+          headline carries (historical, terminal, cleared). */}
       <h2
+        ref={headlineRef}
         className={cn(
-          "mt-3.5 text-[22px] font-bold leading-[1.25] text-foreground",
+          "mt-3.5 text-[22px] font-medium leading-[1.25] text-foreground",
           stepClass,
         )}
         style={{
@@ -2598,6 +2817,10 @@ export function ExceptionTimeline({
   const scrollToLive = () => {
     const c = containerRef.current;
     if (!c) return;
+    // A cleared invoice has no live block. Without one this falls through to
+    // scroll-to-bottom below, which on load hides the Activity block above the
+    // fold. Nothing is "latest" here, so stay where we are.
+    if (review.exceptions.length === 0) return;
     programmaticUntil.current = Date.now() + 700;
     const live = c.querySelector<HTMLElement>("[data-live]");
     if (!live) {
@@ -3596,6 +3819,10 @@ export function ExceptionTimeline({
   // passed), so it takes precedence over every other view. Same history shell as
   // held; the record is readable but the terminal has no actions.
   const rejectedView = disposition?.type === "rejected";
+  // Cleared: nothing was ever open and a settled outcome is recorded. Selected
+  // by data, and takes precedence over every disposition view because there is
+  // no decision underneath it to supersede.
+  const cleared = review.exceptions.length === 0 ? review.cleared : undefined;
 
   return (
     <div className="relative flex-1 overflow-hidden">
@@ -3606,9 +3833,26 @@ export function ExceptionTimeline({
         <ol ref={contentRef} className="w-full max-w-5xl">
           <AgentHistoryPeek
             steps={review.agentHistory}
-            bottomGap={!allDone && events.length === 0 ? SECTION_GAP : ROW_GAP}
+            bottomGap={
+              cleared || (!allDone && events.length === 0)
+                ? SECTION_GAP
+                : ROW_GAP
+            }
+            summary={
+              cleared
+                ? `${review.agentHistory.length} steps completed in ${elapsedLabel(
+                    review.agentHistory,
+                  )}`
+                : undefined
+            }
           />
-          {rejectedView ? (
+          {cleared ? (
+            <ClearedBlock
+              cleared={cleared}
+              po={review.poPill.label}
+              reducedMotion={reducedMotion}
+            />
+          ) : rejectedView ? (
             <>
               {/* Rejected supersedes whatever was underneath. Show the readable
                   history (peek when the loop had finished, else inline) then the

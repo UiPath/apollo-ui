@@ -185,7 +185,8 @@ type InvoiceStatus =
   | "sent-for-approval"
   | "flagged"
   | "on-hold"
-  | "waiting";
+  | "waiting"
+  | "posted";
 
 interface InvoiceTableRow {
   id: string;
@@ -219,13 +220,14 @@ interface InvoiceDetailData {
   /** Optional service period string, e.g. "Apr 1 – Jun 30, 2026". Shown in Details grid when present. */
   servicePeriod?: string;
   description: string;
-  exceptionTag: string;
-  exceptionTagStatus: "error" | "warning" | "info";
-  exceptionHeadline: string;
-  exceptionMetrics: { label: string; value: string; cls: string }[];
-  exceptionBody: string;
-  exceptionPrimaryAction: string;
-  exceptionSecondaryAction: string;
+  /** Absent on invoices that cleared with no exception. */
+  exceptionTag?: string;
+  exceptionTagStatus?: "error" | "warning" | "info";
+  exceptionHeadline?: string;
+  exceptionMetrics?: { label: string; value: string; cls: string }[];
+  exceptionBody?: string;
+  exceptionPrimaryAction?: string;
+  exceptionSecondaryAction?: string;
   lines: {
     description: string;
     /** Optional item sub-description shown below the title, truncated to 1 line. */
@@ -312,6 +314,63 @@ interface CommsMessage {
 }
 
 const detailDataMap: Record<string, InvoiceDetailData> = {
+  // Cleared: no exception fields at all. Details and Source render the record
+  // straight, with no tag and no alert.
+  "INV-70114": {
+    id: "INV-70114",
+    vendor: "Lakeside IT Supply",
+    vendorEmail: "billing@lakeside-it.example",
+    vendorAddress: "18 Harbour Road, Duluth, MN 55802",
+    amount: "$6,995.00 USD",
+    currency: "USD",
+    dueDate: "2026-10-23",
+    dueFormatted: "Oct 23, 2026",
+    documentDateFormatted: "Sep 23, 2026",
+    po: "PO-8471",
+    paymentTerms: "Net 30 · USD",
+    billTo: "Cobalt Ridge Automation Inc",
+    billAddress: "1 Vanderbilt Avenue, New York, NY 10017",
+    assignee: "Maria Chen",
+    assigneeInitials: "MC",
+    vat: "US-41-2214880",
+    description:
+      "Replacement laptops for the Duluth field service team. Five units against the standing hardware PO.",
+    lines: [
+      {
+        description: "Microsoft Surface Laptop 6",
+        shortDescription: "SKU-MSL6-16",
+        qty: 5,
+        amount: "$6,995.00",
+        unitPrice: "$1,399.00",
+        poQty: 5,
+      },
+    ],
+    linesTotal: "$6,995.00",
+    sourceFilename: "INV-70114.pdf",
+    sourceLines: [
+      "INVOICE",
+      "Invoice #: INV-70114",
+      "Date: September 23, 2026",
+      "Due: October 23, 2026",
+      "---",
+      "From:",
+      "Lakeside IT Supply",
+      "18 Harbour Road, Duluth, MN 55802",
+      "---",
+      "Bill to:",
+      "Cobalt Ridge Automation Inc",
+      "1 Vanderbilt Avenue, New York, NY 10017",
+      "---",
+      "PO: PO-8471",
+      "Terms: Net 30",
+      "---",
+      "1  Microsoft Surface Laptop 6  SKU-MSL6-16  Qty 5  @ $1,399.00  $6,995.00",
+      "---",
+      "Subtotal: $6,995.00",
+      "Tax: $0.00",
+      "Total: $6,995.00",
+    ],
+  },
   "INV-GRN-001": {
     id: "INV-GRN-001",
     vendor: "ACME Industrial",
@@ -1203,6 +1262,17 @@ const invoicesAuto: Invoice[] = [
 
 const invoiceTableData: InvoiceTableRow[] = [
   {
+    id: "INV-70114",
+    vendor: "Lakeside IT Supply",
+    amount: 6995,
+    currency: "USD",
+    dueDate: "2026-10-23",
+    exception: "none",
+    score: 0,
+    status: "posted",
+    assignee: "Maria Chen",
+  },
+  {
     id: "INV-GRN-001",
     vendor: "ACME Industrial",
     amount: 694,
@@ -1661,6 +1731,7 @@ const statusBadgeMap: Record<
   flagged: { label: "Flagged", status: "warning" },
   "on-hold": { label: "On hold", status: "warning" },
   waiting: { label: "Waiting", status: "info" },
+  posted: { label: "Posted", status: "success" },
 };
 
 const timeFilterOptions = [
@@ -2336,6 +2407,9 @@ function NavInvoiceItem({
   contacted?: boolean;
 }) {
   const isAuto = invoice.status === "done";
+  // Posted before the queue ever saw it: reads as a record, not an outcome the
+  // reviewer drove. Neutral dot, and never an exception chip (there are none).
+  const isPosted = !!getReview(invoice.id).cleared;
   const isCompleted = !!completion;
   // Parked (flag/hold) only applies when not already approved/rejected.
   const isParked = !isCompleted && !!parked;
@@ -2359,7 +2433,7 @@ function NavInvoiceItem({
   const dispTime =
     disposition?.time === "Just now" ? "just now" : disposition?.time;
   const summary =
-    isAuto || isCompleted || isApprovedDisp || isRejectedDisp
+    isAuto || isPosted || isCompleted || isApprovedDisp || isRejectedDisp
       ? null
       : getExceptionSummary(
           getReview(invoice.id),
@@ -2373,54 +2447,58 @@ function NavInvoiceItem({
   const isWaiting = !!summary && summary.openCount === 0 && waitingCount > 0;
   const isReady = !!summary && summary.openCount === 0 && waitingCount === 0;
 
-  const dotColor = isApprovedDisp
-    ? "bg-success"
-    : isRejectedDisp
-      ? "bg-destructive"
-      : isHeldDisp
-        ? "bg-muted-foreground"
-        : isCompleted
-          ? completion.type === "approved"
-            ? "bg-success"
-            : "bg-destructive"
-          : isParked
-            ? "bg-warning"
-            : isWaiting
-              ? "bg-info"
-              : isAuto || isReady
-                ? "bg-success"
-                : lead
-                  ? (TONE_DOT[exceptionMeta(lead).tone] ??
-                    "bg-muted-foreground")
-                  : "bg-muted-foreground";
-
-  const tagLabel = isApprovedDisp
-    ? `Approved · ${dispTime}`
-    : isRejectedDisp
-      ? rejectReason
-        ? `Rejected · ${rejectReason}`
-        : "Rejected"
-      : isHeldDisp
-        ? holdReason
-          ? `On hold · ${holdReason}`
-          : "On hold"
-        : isCompleted
-          ? completion.type === "approved"
-            ? "Approved"
-            : "Rejected"
-          : isParked
-            ? parked?.kind === "hold"
-              ? "On hold"
-              : "Flagged"
-            : isWaiting
-              ? `Waiting on ${waitingOn}`
-              : isAuto
-                ? "Done"
-                : isReady
-                  ? "Ready to approve"
+  const dotColor = isPosted
+    ? "bg-muted-foreground"
+    : isApprovedDisp
+      ? "bg-success"
+      : isRejectedDisp
+        ? "bg-destructive"
+        : isHeldDisp
+          ? "bg-muted-foreground"
+          : isCompleted
+            ? completion.type === "approved"
+              ? "bg-success"
+              : "bg-destructive"
+            : isParked
+              ? "bg-warning"
+              : isWaiting
+                ? "bg-info"
+                : isAuto || isReady
+                  ? "bg-success"
                   : lead
-                    ? exceptionMeta(lead).label
-                    : "";
+                    ? (TONE_DOT[exceptionMeta(lead).tone] ??
+                      "bg-muted-foreground")
+                    : "bg-muted-foreground";
+
+  const tagLabel = isPosted
+    ? "Cleared"
+    : isApprovedDisp
+      ? `Approved · ${dispTime}`
+      : isRejectedDisp
+        ? rejectReason
+          ? `Rejected · ${rejectReason}`
+          : "Rejected"
+        : isHeldDisp
+          ? holdReason
+            ? `On hold · ${holdReason}`
+            : "On hold"
+          : isCompleted
+            ? completion.type === "approved"
+              ? "Approved"
+              : "Rejected"
+            : isParked
+              ? parked?.kind === "hold"
+                ? "On hold"
+                : "Flagged"
+              : isWaiting
+                ? `Waiting on ${waitingOn}`
+                : isAuto
+                  ? "Done"
+                  : isReady
+                    ? "Ready to approve"
+                    : lead
+                      ? exceptionMeta(lead).label
+                      : "";
 
   return (
     <button
@@ -2620,8 +2698,11 @@ function LeftNav({
   // (every status), the rest are subsets; Done folds Approved + Rejected +
   // legacy Completed. (Rejected is disposition-driven, same cheap pattern as
   // Waiting/On hold; a dedicated Rejected tab can split out later.)
+  // Cleared/posted: settled by the agent with no decision to make. Terminal by
+  // data (not by disposition), so it lands in Done without a runtime event.
+  const isPosted = (id: string) => !!getReview(id).cleared;
   const isDoneOrApproved = (id: string) =>
-    isDone(id) || isApproved(id) || isRejected(id);
+    isDone(id) || isApproved(id) || isRejected(id) || isPosted(id);
   const allList = invoicesReview;
   const waitingList = invoicesReview.filter((inv) => isWaitingOnly(inv.id));
   const onHoldList = invoicesReview.filter((inv) => isHeld(inv.id));
@@ -3215,7 +3296,7 @@ function ExpandedB() {
 // ── Center content ────────────────────────────────────────────────────────────
 
 function MetricsRow({ className }: { className?: string }) {
-  const { exceptionMetrics } = useInvoiceDetail();
+  const { exceptionMetrics = [] } = useInvoiceDetail();
   return (
     <div className={cn("flex", className)}>
       {exceptionMetrics.map((col, i) => (
@@ -3242,7 +3323,7 @@ function generateDraftBody(data: InvoiceDetailData): string {
   const agreed = data.lines[0]?.agreed;
   const agreedLine = agreed
     ? `However, per Purchase Order ${data.po}, the agreed price is ${agreed}.\n\nIt appears the negotiated discount was not applied to this invoice. We kindly ask you to provide a corrected invoice reflecting the agreed price of ${agreed}.`
-    : data.exceptionBody;
+    : (data.exceptionBody ?? "");
   return `Dear Accounts team,\n\nWe are writing regarding Invoice ${data.id}. Upon review, we noticed that the line item "${lineDesc}" is listed at ${invoiced}. ${agreedLine}\n\nThank you for your prompt attention to this matter.\n\nKind regards,\n[Your name]`;
 }
 
@@ -3515,7 +3596,10 @@ function ActionBlock({
   confirmed: { kind: "flag" | "hold"; reason: string } | null;
 }) {
   const { exceptionTag, id, vendor, amount } = useInvoiceDetail();
-  const exceptionType = EXCEPTION_TYPE_BY_TAG[exceptionTag] ?? "none";
+  // No tag (cleared invoice) falls through to the default action set.
+  const exceptionType: ExceptionType = exceptionTag
+    ? (EXCEPTION_TYPE_BY_TAG[exceptionTag] ?? "none")
+    : "none";
   const actions = FINDINGS_ACTIONS[exceptionType] ?? ["approve", "flag"];
 
   const [drafting, setDrafting] = useState(false);
@@ -3876,24 +3960,28 @@ function ExceptionBlock({
     exceptionTagStatus,
     exceptionHeadline,
     exceptionBody,
-    exceptionMetrics,
+    exceptionMetrics = [],
   } = useInvoiceDetail();
   return (
     <div>
-      <div className="flex items-center gap-2 mb-4">
-        <Badge
-          status={exceptionTagStatus}
-          variant="secondary"
-          className="rounded-[4px] px-2.5 py-[3px]"
-        >
-          {exceptionTag}
-        </Badge>
-      </div>
+      {/* Cleared invoices carry no exception tag: render nothing rather than
+          an empty chip. */}
+      {exceptionTag && (
+        <div className="flex items-center gap-2 mb-4">
+          <Badge
+            status={exceptionTagStatus}
+            variant="secondary"
+            className="rounded-[4px] px-2.5 py-[3px]"
+          >
+            {exceptionTag}
+          </Badge>
+        </div>
+      )}
       <div className={cn(dimContent && "opacity-60 pointer-events-none")}>
         <h2
           className="font-bold leading-[1.2] tracking-tight text-foreground w-full mb-4 overflow-hidden line-clamp-2"
           style={{
-            fontSize: exceptionHeadline.length > 50 ? "28px" : "32px",
+            fontSize: (exceptionHeadline?.length ?? 0) > 50 ? "28px" : "32px",
             textWrap: "balance",
             maxWidth: "22ch",
           }}
@@ -6764,6 +6852,8 @@ function TopBarNext({
   }
   const tableRow = invoiceTableData.find((r) => r.id === d.id);
   const baseStatus: InvoiceStatus = tableRow?.status ?? "pending-review";
+  // Settled before review: no decision for the header to offer.
+  const isCleared = review.exceptions.length === 0 && !!review.cleared;
   const effectiveStatus: InvoiceStatus = approved
     ? "approved"
     : rejected || completion?.type === "rejected"
@@ -6839,6 +6929,7 @@ function TopBarNext({
           waitingCount={summary.waitingCount}
           approved={approved}
           rejected={rejected}
+          cleared={isCleared}
           onApprove={doApprove}
           onReject={doReject}
           onHold={doHold}

@@ -47,6 +47,9 @@ interface HeaderDecisionProps {
   waitingCount: number;
   approved?: boolean;
   rejected?: boolean;
+  /** Settled with no decision to carry: the face collapses and every action
+   *  (including "Mark as waiting") lives in the overflow. */
+  cleared?: boolean;
   onApprove: () => void;
   onReject: (reason: string, note?: string) => void;
   onHold: (reason: string, note?: string) => void;
@@ -59,6 +62,7 @@ export function HeaderDecision({
   waitingCount,
   approved,
   rejected,
+  cleared,
   onApprove,
   onReject,
   onHold,
@@ -74,10 +78,16 @@ export function HeaderDecision({
 
   // Face: shows "Approve" only when everything is resolved.
   const faceIsApprove = !locked && !gateOpen;
+  // Cleared has nothing to promote to a face: posting already happened, so a
+  // primary button would invent a decision. Icon-only trigger, actions inside.
+  const showFace = !cleared;
 
-  const approveSub = gateOpen
-    ? `${pendingCount} exception${pendingCount === 1 ? "" : "s"} open`
-    : "All checks passed";
+  const approveSub = cleared
+    ? "Already posted"
+    : gateOpen
+      ? `${pendingCount} exception${pendingCount === 1 ? "" : "s"} open`
+      : "All checks passed";
+  const approveDisabled = gateOpen || !!locked || !!cleared;
 
   const handleFaceClick = () => {
     if (locked) return;
@@ -89,7 +99,7 @@ export function HeaderDecision({
   };
 
   const handlePopoverApprove = () => {
-    if (gateOpen || locked) return;
+    if (approveDisabled) return;
     setPopoverOpen(false);
     onApprove();
   };
@@ -97,24 +107,28 @@ export function HeaderDecision({
   return (
     <>
       <ButtonGroup>
-        <Button
-          disabled={locked}
-          variant={faceIsApprove ? "default" : "outline"}
-          onClick={handleFaceClick}
-          className={cn(!faceIsApprove && "text-foreground")}
-        >
-          {faceIsApprove ? "Approve" : "Mark as waiting"}
-        </Button>
-        <ButtonGroupSeparator
-          className={faceIsApprove ? "bg-primary-600" : "bg-border"}
-        />
+        {showFace && (
+          <>
+            <Button
+              disabled={locked}
+              variant={faceIsApprove ? "default" : "outline"}
+              onClick={handleFaceClick}
+              className={cn(!faceIsApprove && "text-foreground")}
+            >
+              {faceIsApprove ? "Approve" : "Mark as waiting"}
+            </Button>
+            <ButtonGroupSeparator
+              className={faceIsApprove ? "bg-primary-600" : "bg-border"}
+            />
+          </>
+        )}
         <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
           <PopoverTrigger asChild>
             <Button
               disabled={locked}
-              variant={faceIsApprove ? "default" : "outline"}
+              variant={showFace && faceIsApprove ? "default" : "outline"}
               aria-label="More dispositions"
-              className={cn(!faceIsApprove && "text-foreground")}
+              className={cn(!(showFace && faceIsApprove) && "text-foreground")}
             >
               <ChevronDown className="size-4" />
             </Button>
@@ -123,11 +137,11 @@ export function HeaderDecision({
             {/* 1. Approve */}
             <button
               type="button"
-              disabled={gateOpen || locked}
+              disabled={approveDisabled}
               className={cn(
                 "flex w-full flex-col gap-0.5 rounded-sm px-3 py-2 text-left",
                 "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                gateOpen || locked
+                approveDisabled
                   ? "cursor-not-allowed opacity-50"
                   : "hover:bg-accent",
               )}
