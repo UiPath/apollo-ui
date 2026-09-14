@@ -280,9 +280,12 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
         className={cn(
           'flex items-center gap-2',
           // The whole row tints, not just the body: the handle and the actions are siblings of
-          // the activatable body, and legacy hovers the entire entry. The negative margin pairs
-          // with the padding so the tint extends past the content without moving it.
-          activatable && '-mx-1 rounded-md px-1 transition-colors hover:bg-muted',
+          // the body, and legacy highlights the entire entry. The negative margin pairs with the
+          // padding so the tint extends past the content without moving it. Ungated, because a
+          // row is a hover target whether or not clicking it opens the editor: it is also what
+          // you aim the drag handle and the row actions at, and the centralized section's rows
+          // (#1161) highlight the same way.
+          '-mx-1 rounded-md px-1 transition-colors hover:bg-muted',
           className
         )}
         {...props}
