@@ -22,8 +22,9 @@ const MARKDOWN_PREVIEW_STYLES = `
 .prompt-editor-preview h4, .prompt-editor-preview h5, .prompt-editor-preview h6 { font-size: 1em; font-weight: 600; margin: 0.4em 0 0.2em; line-height: 1.3; }
 .prompt-editor-preview p { margin: 0.25em 0; }
 .prompt-editor-preview u { text-decoration: underline; }
-.prompt-editor-preview code { font-family: 'Fira Code', 'Consolas', monospace; font-size: 0.875em; padding: 0.15em 0.4em; border-radius: 4px; background-color: var(--color-muted); color: var(--color-foreground); }
-.prompt-editor-preview pre { margin: 0.5em 0; padding: 0.75em 1em; border-radius: 6px; overflow-x: auto; background-color: var(--color-muted); color: var(--color-foreground); }
+/* Chip token, not --color-muted -- see the matching note in prompt-editor.tsx. */
+.prompt-editor-preview code { font-family: 'Fira Code', 'Consolas', monospace; font-size: 0.875em; padding: 0.15em 0.4em; border-radius: 4px; background-color: var(--color-chip-default-background); color: var(--color-foreground); }
+.prompt-editor-preview pre { margin: 0.5em 0; padding: 0.75em 1em; border-radius: 6px; overflow-x: auto; background-color: var(--color-chip-default-background); color: var(--color-foreground); }
 .prompt-editor-preview pre code { padding: 0; background: none; font-size: 0.85em; }
 .prompt-editor-preview blockquote { margin: 0.5em 0; padding: 0.25em 0.75em; border-left: 3px solid var(--color-border); color: var(--color-muted-foreground); }
 .prompt-editor-preview ul, .prompt-editor-preview ol { margin: 0.25em 0; padding-left: 1.5em; }

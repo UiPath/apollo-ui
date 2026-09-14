@@ -420,7 +420,9 @@ const EditorInner = forwardRef(
           .prompt-editor-text-underline { text-decoration: underline; }
           .prompt-editor-text-strikethrough { text-decoration: line-through; }
           .prompt-editor-text-underline-strikethrough { text-decoration: underline line-through; }
-          .prompt-editor-text-code { font-family: 'Fira Code', 'Consolas', monospace; font-size: 0.875em; padding: 0.15em 0.4em; border-radius: 4px; background-color: var(--color-muted); color: var(--color-foreground); }
+          /* Chip token, not --color-muted: wind aliases --muted onto --surface-overlay in the
+             future themes, i.e. what the shell paints itself with, so a muted chip is invisible. */
+          .prompt-editor-text-code { font-family: 'Fira Code', 'Consolas', monospace; font-size: 0.875em; padding: 0.15em 0.4em; border-radius: 4px; background-color: var(--color-chip-default-background); color: var(--color-foreground); }
           .prompt-editor-list-ul, .prompt-editor-list-ol { margin: 0.25em 0; padding-left: 1.5em; }
           .prompt-editor-list-ul { list-style-type: disc; }
           .prompt-editor-list-ol { list-style-type: decimal; }
