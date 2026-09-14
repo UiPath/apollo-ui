@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
+import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { FormPlugin, FormSchema } from './form-schema';
 import { MetadataForm } from './metadata-form';
@@ -961,5 +962,256 @@ describe('MetadataForm', () => {
       expect(await screen.findByRole('tab', { name: 'Parameters' })).toBeInTheDocument();
       expect(screen.queryByRole('tab', { name: 'Conditional' })).not.toBeInTheDocument();
     });
+  });
+});
+
+// ============================================================================
+// Plugin-driven hosts: the seam MetadataForm actually exposes
+// ============================================================================
+
+describe('plugin-driven hosts (the intended seam)', () => {
+  const hostSchema: FormSchema = {
+    id: 'host-form',
+    title: '',
+    actions: [],
+    sections: [
+      {
+        id: 'main',
+        fields: [
+          { name: 'name', type: 'text', label: 'Name', defaultValue: '' },
+          { name: 'note', type: 'text', label: 'Note', defaultValue: '' },
+        ],
+      },
+    ],
+  };
+
+  it('reports every user edit to a plugin, including the first keystroke', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    const plugin: FormPlugin = { name: 'host', onValueChange };
+
+    render(<MetadataForm schema={hostSchema} plugins={[plugin]} container="div" />);
+    await user.type(screen.getByLabelText('Name'), 'a');
+
+    // Previously gated behind mount-lifetime initialization, which swallowed this.
+    expect(onValueChange).toHaveBeenCalledWith('name', 'a', expect.anything());
+  });
+
+  it('lets a plugin write values through context.form', async () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      onFormInit: (context) => {
+        context.form.setValue('name', 'from-plugin');
+      },
+    };
+
+    render(<MetadataForm schema={hostSchema} plugins={[plugin]} container="div" />);
+    await waitFor(() => {
+      expect(screen.getByLabelText('Name')).toHaveValue('from-plugin');
+    });
+  });
+
+  it('lets a plugin own validation through context.form.setError', async () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      onValueChange: (name, value, context) => {
+        if (name === 'name' && !String(value).trim()) {
+          context.form.setError('name', { type: 'host', message: 'Name is required' });
+        } else {
+          context.form.clearErrors('name');
+        }
+      },
+    };
+
+    const user = userEvent.setup();
+    render(<MetadataForm schema={hostSchema} plugins={[plugin]} container="div" />);
+
+    await user.type(screen.getByLabelText('Name'), 'a');
+    await user.clear(screen.getByLabelText('Name'));
+    expect(await screen.findByText('Name is required')).toBeInTheDocument();
+  });
+
+  it('renders plugin-declared custom components on the first paint', () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      components: {
+        'host-field': ({ value }) => <div data-testid="host-field">{String(value ?? '')}</div>,
+      },
+    };
+    const schema: FormSchema = {
+      id: 'custom-form',
+      title: '',
+      actions: [],
+      sections: [
+        {
+          id: 'main',
+          fields: [
+            {
+              name: 'thing',
+              type: 'custom',
+              label: 'Thing',
+              component: 'host-field',
+              defaultValue: 'seeded',
+            },
+          ],
+        },
+      ],
+    };
+
+    // Synchronous: `FormPlugin.components` was declared but never read, so hosts had to
+    // register asynchronously and missed the first paint.
+    render(<MetadataForm schema={schema} plugins={[plugin]} container="div" />);
+    expect(screen.getByTestId('host-field')).toHaveTextContent('seeded');
+  });
+
+  it("container='div' renders no form element, and actions: [] renders no action row", () => {
+    const { container } = render(<MetadataForm schema={hostSchema} container="div" />);
+    expect(container.querySelector('form')).toBeNull();
+    expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument();
+  });
+
+  it("container='div' swallows Enter in inputs so an ancestor form cannot submit", async () => {
+    const user = userEvent.setup();
+    const hostSubmit = vi.fn((e: React.FormEvent) => e.preventDefault());
+
+    render(
+      <form onSubmit={hostSubmit}>
+        <MetadataForm schema={hostSchema} container="div" />
+      </form>
+    );
+
+    await user.click(screen.getByLabelText('Name'));
+    await user.keyboard('{Enter}');
+    expect(hostSubmit).not.toHaveBeenCalled();
+  });
+
+  it('mounts a TooltipProvider itself when the schema uses tooltip metadata', () => {
+    const withTooltip: FormSchema = {
+      id: 'tooltip-form',
+      title: '',
+      actions: [],
+      sections: [
+        {
+          id: 'main',
+          fields: [
+            {
+              name: 'endpoint',
+              type: 'text',
+              label: 'Endpoint',
+              defaultValue: '',
+              tooltip: 'The URL to call.',
+              tooltipAriaLabel: 'About the endpoint',
+            },
+          ],
+        },
+      ],
+    };
+
+    // Radix throws without a provider, so rendering bare is the assertion.
+    expect(() => render(<MetadataForm schema={withTooltip} container="div" />)).not.toThrow();
+    expect(screen.getByRole('button', { name: 'About the endpoint' })).toBeInTheDocument();
+  });
+});
+
+describe('string-list field', () => {
+  const stringListSchema: FormSchema = {
+    id: 'string-list-form',
+    title: '',
+    actions: [],
+    sections: [
+      {
+        id: 'main',
+        fields: [
+          {
+            name: 'phrases',
+            type: 'string-list',
+            label: 'Phrases',
+            defaultValue: ['first'],
+            maxItems: 2,
+            maxLength: 50,
+            addItemLabel: 'Add phrase',
+            removeItemAriaLabel: 'Remove {{label}} {{position}}',
+          },
+        ],
+      },
+    ],
+  };
+
+  it('renders rows from the value and appends an empty row on Add', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    const plugin: FormPlugin = { name: 'host', onValueChange };
+
+    render(<MetadataForm schema={stringListSchema} plugins={[plugin]} container="div" />);
+
+    expect(screen.getByLabelText('Phrases 1')).toHaveValue('first');
+
+    await user.click(screen.getByRole('button', { name: 'Add phrase' }));
+    expect(onValueChange).toHaveBeenCalledWith('phrases', ['first', ''], expect.anything());
+
+    // maxItems reached (2 rows) — the Add button hides.
+    expect(screen.queryByRole('button', { name: 'Add phrase' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Phrases 2')).toHaveValue('');
+  });
+
+  it('edits one row without touching siblings and removes by index', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    const plugin: FormPlugin = { name: 'host', onValueChange };
+
+    render(
+      <MetadataForm
+        schema={{
+          ...stringListSchema,
+          sections: [
+            {
+              id: 'main',
+              fields: [
+                {
+                  name: 'phrases',
+                  type: 'string-list',
+                  label: 'Phrases',
+                  defaultValue: ['one', 'two'],
+                },
+              ],
+            },
+          ],
+        }}
+        plugins={[plugin]}
+        container="div"
+      />
+    );
+
+    await user.type(screen.getByLabelText('Phrases 2'), '!');
+    expect(onValueChange).toHaveBeenLastCalledWith('phrases', ['one', 'two!'], expect.anything());
+
+    await user.click(screen.getByRole('button', { name: 'Remove Phrases 1' }));
+    expect(onValueChange).toHaveBeenLastCalledWith('phrases', ['two!'], expect.anything());
+  });
+
+  it('applies the per-row maxLength cap', () => {
+    render(<MetadataForm schema={stringListSchema} container="div" />);
+    expect(screen.getByLabelText('Phrases 1')).toHaveAttribute('maxlength', '50');
+  });
+
+  it('marks every row invalid when the list carries an error', async () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      onFormInit: (context) => {
+        context.form.setError('phrases', { type: 'host', message: 'Add at least one phrase.' });
+      },
+    };
+
+    render(<MetadataForm schema={stringListSchema} plugins={[plugin]} container="div" />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Phrases 1')).toHaveAttribute('aria-invalid', 'true');
+    });
+    expect(screen.getByText('Add at least one phrase.')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<MetadataForm schema={stringListSchema} container="div" />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

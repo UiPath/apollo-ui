@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollableTabsList, Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { deepEqual, get } from '@/lib';
 
 import { DataFetcher } from './data-fetcher';
@@ -25,14 +26,19 @@ import type {
   FormSection as FormSectionType,
 } from './form-schema';
 import { RulesEngine } from './rules-engine';
-import { validationConfigToZod } from './validation-converter';
+import { isEmptyFieldValue, validationConfigToZod } from './validation-converter';
+
+// Re-exported so packages composing MetadataForm's custom fields (e.g. apollo-react's
+// guardrails) subscribe through the same react-hook-form instance — a second RHF copy
+// would read a different FormProvider context and see no values.
+export { useWatch } from 'react-hook-form';
 
 /**
  * Core MetadataForm Component
  * Renders forms from JSON/object schema with full RHF integration
  */
 
-interface MetadataFormProps {
+export interface MetadataFormProps {
   schema: FormSchema;
   plugins?: FormPlugin[];
   onSubmit?: (data: unknown) => void | Promise<void>;
@@ -71,6 +77,14 @@ interface MetadataFormProps {
    * and uncontrolled mode. Pair it with `activeStepId` to persist the selection.
    */
   onActiveStepChange?: (stepId: string) => void;
+  /**
+   * Render a `<div>` instead of a `<form>` — for hosts that embed the form inside their own
+   * chrome and own submission. Enter is swallowed for single-line inputs so it cannot trigger
+   * the host form's implicit submission, and schema submit actions become plain buttons.
+   *
+   * Suppressing the action row is the schema's job, not this prop's: pass `actions: []`.
+   */
+  container?: 'form' | 'div';
 }
 
 // Stable default to prevent re-renders
@@ -87,6 +101,7 @@ export function MetadataForm({
   sectionVariant = 'card',
   activeStepId,
   onActiveStepChange,
+  container = 'form',
 }: MetadataFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [customComponents, setCustomComponents] = useState<
@@ -103,6 +118,18 @@ export function MetadataForm({
     schemaRef.current = schema;
     return schema;
   }, [schema]);
+
+  // Radix throws when a tooltip renders with no ancestor provider, and `tooltip` field
+  // metadata puts one inside the form — so the form supplies its own when the schema uses
+  // it. Scoped to schemas that need it: a provider only carries delay settings, and an
+  // unconditional one would silently override a host's own configuration.
+  const hasFieldTooltip = useMemo(() => {
+    const sections = [
+      ...(stableSchema.sections ?? []),
+      ...(stableSchema.steps ?? []).flatMap((step) => step.sections),
+    ];
+    return sections.some((section) => section.fields.some((field) => field.tooltip !== undefined));
+  }, [stableSchema]);
 
   // Build Zod schema from metadata
   const zodSchema = useMemo(() => buildZodSchema(stableSchema), [stableSchema]);
@@ -168,15 +195,20 @@ export function MetadataForm({
   const contextRef = useRef(context);
   contextRef.current = context;
 
-  const isInitializedRef = useRef(isInitialized);
-  isInitializedRef.current = isInitialized;
+  // Suppresses the plugin fan-out while initialization's `reset` writes schema data — safe
+  // because react-hook-form notifies watch subscribers synchronously inside reset/setValue.
+  const initializingRef = useRef(false);
 
   // valuesRef is written before the plugin fan-out: context.values must be current.
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       valuesRef.current = value as Record<string, unknown>;
 
-      if (!name || !isInitializedRef.current) return;
+      if (!name) return;
+
+      // Suppressed only while initialization's `reset` writes schema data — gating on the
+      // whole mount swallowed a plugin's first keystroke, since init resolves asynchronously.
+      if (initializingRef.current) return;
 
       pluginsRef.current.forEach((plugin) => {
         plugin.onValueChange?.(name, get(value, name), contextRef.current);
@@ -196,12 +228,20 @@ export function MetadataForm({
       // Load initial data
       if (stableSchema.initialData) {
         const data = await loadInitialData(stableSchema.initialData, contextRef.current);
-        reset(data);
+        initializingRef.current = true;
+        try {
+          reset(data);
+        } finally {
+          initializingRef.current = false;
+        }
       }
 
-      // Plugin initialization
+      // Plugin initialization. Only actually await a hook that returns a promise: awaiting a
+      // synchronous one defers `setIsInitialized` into a microtask, which lands outside
+      // React's act() scope and makes every synchronous host test emit an act warning.
       for (const plugin of plugins) {
-        await plugin.onFormInit?.(contextRef.current);
+        const result = plugin.onFormInit?.(contextRef.current);
+        if (result instanceof Promise) await result;
       }
 
       setIsInitialized(true);
@@ -233,6 +273,41 @@ export function MetadataForm({
   // Stable reset callback
   const handleReset = useCallback(() => reset(), [reset]);
 
+  // Custom components registered by plugins. `FormPlugin.components` is honoured from the
+  // first render; `registerCustomComponent` entries win on name collisions once registered.
+  const allCustomComponents = useMemo(() => {
+    const fromPlugins: Record<string, React.ComponentType<CustomFieldComponentProps>> = {};
+    for (const plugin of plugins) {
+      Object.assign(fromPlugins, plugin.components);
+    }
+    return { ...fromPlugins, ...customComponents };
+  }, [plugins, customComponents]);
+
+  // Without an owning <form> the inputs still belong to whatever form the host wrapped us in,
+  // so Enter would trigger *its* implicit submission. Swallow it for single-line controls
+  // (textareas keep Enter for newlines, buttons keep it for activation). Bound natively rather
+  // than via onKeyDown: the wrapper is a passive container, not a widget, so it has no ARIA
+  // role to declare — and a11y linters rightly reject an interaction handler on a bare div.
+  const enterSwallowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = enterSwallowRef.current;
+    if (!node) return;
+
+    const swallowEnter = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter' || event.defaultPrevented) return;
+      const target = event.target as HTMLElement;
+      if (target instanceof HTMLInputElement && target.type !== 'button') {
+        event.preventDefault();
+      }
+    };
+
+    node.addEventListener('keydown', swallowEnter);
+    return () => node.removeEventListener('keydown', swallowEnter);
+    // `container` is the dependency, not a lint appeasement: the wrapper div only exists in
+    // 'div' mode, so a form -> div switch would otherwise leave the listener uninstalled (the
+    // ref was null on mount) and let an ancestor form submit on Enter.
+  }, [container]);
+
   // Render based on form structure
   const renderContent = () => {
     if (stableSchema.steps) {
@@ -241,12 +316,13 @@ export function MetadataForm({
           <TabbedStepForm
             schema={stableSchema}
             context={context}
-            customComponents={customComponents}
+            customComponents={allCustomComponents}
             disabled={disabled}
             sectionVariant={sectionVariant}
             activeStepId={activeStepId}
             onActiveStepChange={onActiveStepChange}
             onReset={handleReset}
+            onSubmit={container === 'div' ? handleFormSubmit : undefined}
           />
         );
       }
@@ -256,9 +332,10 @@ export function MetadataForm({
           context={context}
           currentStep={currentStep}
           setCurrentStep={setCurrentStep}
-          customComponents={customComponents}
+          customComponents={allCustomComponents}
           disabled={disabled}
           sectionVariant={sectionVariant}
+          onSubmit={container === 'div' ? handleFormSubmit : undefined}
         />
       );
     }
@@ -267,25 +344,48 @@ export function MetadataForm({
       <SinglePageForm
         schema={stableSchema}
         context={context}
-        customComponents={customComponents}
+        customComponents={allCustomComponents}
         disabled={disabled}
         sectionVariant={sectionVariant}
       />
     );
   };
 
+  const content = (
+    <>
+      {renderContent()}
+
+      {/* Wizard forms own their navigation/Submit, and tabbed forms render
+          FormActions inside TabbedStepForm so it's suppressed when no tab is
+          visible. Only single-page forms render FormActions here. */}
+      {!stableSchema.steps && (
+        <FormActions
+          schema={stableSchema}
+          context={context}
+          onReset={handleReset}
+          onSubmit={container === 'div' ? handleFormSubmit : undefined}
+        />
+      )}
+    </>
+  );
+
+  const body =
+    container === 'div' ? (
+      // Without an owning <form> the inputs still belong to whatever form the host wrapped
+      // us in, so Enter would trigger *its* implicit submission. Swallow it for single-line
+      // controls (textareas keep Enter for newlines, buttons keep it for activation).
+      <div className={className} ref={enterSwallowRef}>
+        {content}
+      </div>
+    ) : (
+      <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
+        {content}
+      </form>
+    );
+
   return (
     <FormProvider {...form}>
-      <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
-        {renderContent()}
-
-        {/* Wizard forms own their navigation/Submit, and tabbed forms render
-            FormActions inside TabbedStepForm so it's suppressed when no tab is
-            visible. Only single-page forms render FormActions here. */}
-        {!stableSchema.steps && (
-          <FormActions schema={stableSchema} context={context} onReset={handleReset} />
-        )}
-      </form>
+      {hasFieldTooltip ? <TooltipProvider>{body}</TooltipProvider> : body}
     </FormProvider>
   );
 }
@@ -363,6 +463,8 @@ const SinglePageForm = React.memo(function SinglePageForm({
 interface MultiStepFormProps extends SinglePageFormProps {
   currentStep: number;
   setCurrentStep: (step: number) => void;
+  /** See `FormActionsProps.onSubmit` — supplied only for `container="div"`. */
+  onSubmit?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const MultiStepForm = React.memo(function MultiStepForm({
@@ -373,6 +475,7 @@ const MultiStepForm = React.memo(function MultiStepForm({
   customComponents,
   disabled,
   sectionVariant,
+  onSubmit,
 }: MultiStepFormProps) {
   const steps = schema.steps || [];
 
@@ -448,7 +551,7 @@ const MultiStepForm = React.memo(function MultiStepForm({
             Next
           </Button>
         ) : (
-          <Button type="submit" variant="default">
+          <Button type={onSubmit ? 'button' : 'submit'} onClick={onSubmit} variant="default">
             Submit
           </Button>
         )}
@@ -461,6 +564,8 @@ interface TabbedStepFormProps extends SinglePageFormProps {
   onReset: () => void;
   activeStepId?: string;
   onActiveStepChange?: (stepId: string) => void;
+  /** See `FormActionsProps.onSubmit` — supplied only for `container="div"`. */
+  onSubmit?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 function TabbedStepForm({
@@ -472,6 +577,7 @@ function TabbedStepForm({
   onReset,
   activeStepId,
   onActiveStepChange,
+  onSubmit,
 }: TabbedStepFormProps) {
   const steps = schema.steps || [];
 
@@ -654,7 +760,7 @@ function TabbedStepForm({
           );
         })}
       </Tabs>
-      <FormActions schema={schema} context={context} onReset={onReset} />
+      <FormActions schema={schema} context={context} onReset={onReset} onSubmit={onSubmit} />
     </>
   );
 }
@@ -795,12 +901,19 @@ interface FormActionsProps {
   schema: FormSchema;
   context: FormContext;
   onReset: () => void;
+  /**
+   * Supplied only for `container="div"`, where there is no owning <form>: submit actions
+   * render as plain buttons calling this instead of `type="submit"`, which would otherwise
+   * submit whatever ancestor form the host embedded us in.
+   */
+  onSubmit?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const FormActions = React.memo(function FormActions({
   schema,
   context,
   onReset,
+  onSubmit,
 }: FormActionsProps) {
   // context is a stable reference and this component is memoized, so it has to
   // subscribe to the submit state and condition fields it reads itself.
@@ -851,7 +964,8 @@ const FormActions = React.memo(function FormActions({
         return (
           <Button
             key={action.id}
-            type={action.type === 'submit' ? 'submit' : 'button'}
+            type={action.type === 'submit' && !onSubmit ? 'submit' : 'button'}
+            onClick={action.type === 'submit' && onSubmit ? onSubmit : undefined}
             variant={action.variant || 'default'}
             disabled={action.disabled || (action.type === 'submit' && isSubmitting)}
           >
@@ -937,7 +1051,11 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
         : undefined;
 
     // Convert to Zod schema using the converter
-    shape[field.name] = validationConfigToZod(validationConfig, field.type);
+    shape[field.name] = validationConfigToZod(
+      validationConfig,
+      field.type,
+      field.type === 'custom' ? field.valueType : undefined
+    );
   });
 
   const baseSchema = z.object(shape);
@@ -970,14 +1088,8 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
       const isRequired = ruleResult.required === true || staticRequired;
 
       if (isRequired) {
-        const value = values[name];
-        const isEmpty =
-          value === undefined ||
-          value === null ||
-          value === '' ||
-          (Array.isArray(value) && value.length === 0);
-
-        if (isEmpty) {
+        // Shared with the resolver's required check so the two paths cannot disagree.
+        if (isEmptyFieldValue(values[name])) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: customRequiredMessage || 'This field is required',

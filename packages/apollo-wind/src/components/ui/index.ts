@@ -23,9 +23,10 @@ export * from './drawer';
 export * from './dropdown-menu';
 export * from './editable-cell';
 export * from './empty-state';
-export * from './form-field';
 export * from './file-upload';
+export * from './form-field';
 export * from './hover-card';
+export * from './info-tooltip';
 export * from './input';
 export * from './input-group';
 export * from './label';
@@ -57,7 +58,6 @@ export * from './textarea';
 export * from './toggle';
 export * from './toggle-group';
 export * from './tooltip';
-export * from './variable-picker';
 export type {
   TreeViewIconMap,
   TreeViewItem,
@@ -67,3 +67,4 @@ export type {
   TreeViewSelectionMode,
 } from './tree-view';
 export { default as TreeView } from './tree-view';
+export * from './variable-picker';
