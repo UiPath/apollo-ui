@@ -99,17 +99,26 @@ describe('rich-serialization', () => {
     });
 
     /** `@lexical/markdown` refuses to transform inside a code span, so a sentinel enclosed by
-     *  backticks never becomes a decorator and used to be dropped on export — silently deleting the
-     *  variable. The pill wins; the code formatting on that run is given up. */
-    it('keeps a pill enclosed by a code span, giving up the code formatting', () => {
+     *  backticks never becomes a decorator and would be dropped on export — silently deleting the
+     *  variable. The rescue keeps both: the pill becomes a decorator and the surrounding text keeps
+     *  its code format, so the markers close before the pill and reopen after it. That is the same
+     *  migration bold already does (asserted alongside), i.e. a rewrite but never a loss. */
+    it('keeps both the pill and the code markers when a code span encloses a pill', () => {
       expect(normalizeRichTextTokens([text('`hi '), pill('vars.x'), text('`')])).toEqual([
-        text('hi '),
+        text('`hi` '),
         pill('vars.x'),
       ]);
-      expect(normalizeRichTextTokens([text('` '), pill('vars.x'), text(' `')])).toEqual([
-        text(' '),
+      expect(normalizeRichTextTokens([text('**hi '), pill('vars.x'), text('**')])).toEqual([
+        text('**hi** '),
         pill('vars.x'),
-        text(' '),
+      ]);
+    });
+
+    it('keeps a code span on each side of an enclosed pill', () => {
+      expect(normalizeRichTextTokens([text('`a '), pill('vars.x'), text(' b`')])).toEqual([
+        text('`a` '),
+        pill('vars.x'),
+        text(' `b`'),
       ]);
     });
 
