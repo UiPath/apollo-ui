@@ -1299,7 +1299,7 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
           className="rounded-lg bg-surface-overlay px-3 py-1.5 text-xs font-semibold"
         >
           Parameters{' '}
-          <span className="ml-1 rounded-full bg-error px-1.5 text-foreground-on-accent">1</span>
+          <span className="ml-1 rounded-full bg-error px-1.5 text-error-background">1</span>
         </button>
         <button type="button" className="px-3 py-1.5 text-xs text-foreground-muted">
           Error handling

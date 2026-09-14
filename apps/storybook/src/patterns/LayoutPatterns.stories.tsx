@@ -438,22 +438,14 @@ function CanvasViewport({
   );
 }
 
-function ValidationTabLabel({
-  label,
-  count,
-  inverseCount = false,
-}: {
-  label: string;
-  count?: number;
-  inverseCount?: boolean;
-}) {
+function ValidationTabLabel({ label, count }: { label: string; count?: number }) {
   if (!count) return <>{label}</>;
   return (
     <span className="inline-flex items-center gap-1.5">
       <span>{label}</span>
       <span
         title={`${count} issue${count === 1 ? '' : 's'}`}
-        className={`grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-foreground-on-accent ${inverseCount ? 'text-white' : ''}`}
+        className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-error-background"
       >
         <span aria-hidden="true">{count}</span>
         <span className="sr-only">{`${count} issue${count === 1 ? '' : 's'}`}</span>
@@ -1233,14 +1225,10 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                   scrollButtonClassName="size-6 hover:bg-surface-overlay"
                 >
                   <TabsTrigger value="parameters" className={INVENTORY_TAB_TRIGGER_CLASS}>
-                    <ValidationTabLabel label="Parameters" count={1} inverseCount={panelId === 1} />
+                    <ValidationTabLabel label="Parameters" count={1} />
                   </TabsTrigger>
                   <TabsTrigger value="error-handling" className={INVENTORY_TAB_TRIGGER_CLASS}>
-                    <ValidationTabLabel
-                      label="Error handling"
-                      count={2}
-                      inverseCount={panelId === 1}
-                    />
+                    <ValidationTabLabel label="Error handling" count={2} />
                   </TabsTrigger>
                   <TabsTrigger value="advanced" className={INVENTORY_TAB_TRIGGER_CLASS}>
                     Advanced

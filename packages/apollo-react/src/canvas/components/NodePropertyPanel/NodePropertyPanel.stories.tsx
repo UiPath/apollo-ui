@@ -1088,7 +1088,7 @@ function TabLabelWithError({ label, count }: { label: string; count: number }) {
       <span>{label}</span>
       <span
         title={`${count} issue${count === 1 ? '' : 's'}`}
-        className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-foreground-on-accent"
+        className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-error-background"
       >
         {count}
       </span>

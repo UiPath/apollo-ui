@@ -598,7 +598,7 @@ function TabbedStepForm({
                       role="img"
                       aria-label={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
                       title={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
-                      className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-foreground-on-accent"
+                      className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-error-background"
                     >
                       {errorCount}
                     </span>
