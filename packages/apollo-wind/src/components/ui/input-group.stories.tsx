@@ -136,7 +136,7 @@ export const WithLabel: Story = {
 
 export const WithInlineValidation: Story = {
   render: () => (
-    <div className="grid w-72 items-center gap-1.5">
+    <div className="grid w-72 items-center gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
       <Label htmlFor="group-node-name">Node name</Label>
       <InputGroup error="This node name is already in use. Enter a unique name before saving.">
         <InputGroupAddon align="inline-start">

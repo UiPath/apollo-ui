@@ -1,6 +1,7 @@
 import type { Meta } from '@storybook/react-vite';
 import { useState } from 'react';
 import { DateTimePicker } from './datetime-picker';
+import { Label } from './label';
 
 const meta = {
   title: 'Components/Core/DateTime Picker',
@@ -121,5 +122,25 @@ export const InForm = {
         )}
       </div>
     );
+  },
+};
+
+export const WithInlineValidation = {
+  render: () => (
+    <div className="grid w-[320px] gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
+      <Label htmlFor="datetime-picker-deadline">Deadline</Label>
+      <DateTimePicker
+        id="datetime-picker-deadline"
+        error="Choose a deadline that is later than the start time."
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inline validation stays beside the control so the issue and resolution are clear in context. The trigger exposes `aria-invalid` and associates the visible message with `aria-describedby` and `aria-errormessage` automatically.',
+      },
+    },
   },
 };

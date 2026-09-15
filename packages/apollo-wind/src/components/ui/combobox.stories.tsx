@@ -472,3 +472,41 @@ export const Examples = {
     );
   },
 };
+
+// ============================================================================
+// With Inline Validation
+// ============================================================================
+
+const caseStages: ComboboxItem[] = [
+  { value: 'intake', label: 'Intake' },
+  { value: 'review', label: 'Review' },
+  { value: 'approval', label: 'Approval' },
+  { value: 'closed', label: 'Closed' },
+];
+
+export const WithInlineValidation = {
+  name: 'With Inline Validation',
+  render: () => (
+    <div className="grid w-full max-w-sm items-center gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
+      <Label htmlFor="combobox-stage">Stage</Label>
+      <Combobox
+        id="combobox-stage"
+        items={caseStages}
+        value=""
+        placeholder="Select a stage"
+        searchPlaceholder="Search stages"
+        className="w-full"
+        error="Select a stage before assigning permissions."
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use `error` when the selection is required and nothing has been chosen yet. The trigger takes the same red stroke as Input and the message renders below it. Pass `id` so a `<label htmlFor>` names the field; without it the trigger falls back to an `aria-label`. ' +
+          'The trigger exposes `aria-invalid` and associates the visible message with `aria-describedby` and `aria-errormessage` automatically.',
+      },
+    },
+  },
+};

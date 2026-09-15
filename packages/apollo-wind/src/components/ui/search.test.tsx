@@ -183,3 +183,25 @@ describe('SearchWithSuggestions', () => {
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 });
+
+describe('Search inline validation', () => {
+  it('forwards error to the group so the field is marked invalid and described', () => {
+    render(
+      <Search aria-label="Search" value="ab" onChange={() => {}} error="Enter 3 characters." />
+    );
+    const input = screen.getByRole('searchbox');
+    const message = screen.getByText('Enter 3 characters.');
+
+    expect(message.id).toBeTruthy();
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', message.id);
+    expect(input).toHaveAttribute('aria-errormessage', message.id);
+    expect(message).toHaveClass('text-error');
+  });
+
+  it('uses errorId for the message when provided', () => {
+    render(<Search aria-label="Search" error="Required." errorId="q-error" />);
+    expect(screen.getByText('Required.')).toHaveAttribute('id', 'q-error');
+    expect(screen.getByRole('searchbox')).toHaveAttribute('aria-describedby', 'q-error');
+  });
+});

@@ -515,7 +515,10 @@ describe('PromptEditor', () => {
         />
       );
       const frame = container.querySelector('.prompt-editor-frame');
-      const message = container.querySelector('[data-slot="prompt-editor-error"]');
+      // FormFieldError's own data-slot is now canonical and can't be overridden by a
+      // caller's own value (see form-field.tsx), so this queries the shared marker rather
+      // than a component-specific one.
+      const message = container.querySelector('[data-slot="form-field-error"]');
       expect(frame).not.toBeNull();
       expect(message).not.toBeNull();
       // The ring wraps toolbar + body only — a frame containing the message drew the focus ring

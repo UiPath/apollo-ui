@@ -65,9 +65,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
           ref={ref}
         />
-        <FormFieldError id={validationId} data-slot="input-error" className="mt-1">
-          {error}
-        </FormFieldError>
+        <FormFieldError id={validationId}>{error}</FormFieldError>
       </>
     );
   }
