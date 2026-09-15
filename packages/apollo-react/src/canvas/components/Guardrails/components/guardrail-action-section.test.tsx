@@ -2,7 +2,11 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import { type GuardrailAction, GuardrailRecipientType } from '../builder-types';
-import { GUARDRAIL_BUILDER_EN_LABELS } from '../i18n';
+import {
+  GUARDRAIL_ACTION_EN_LABELS,
+  GUARDRAIL_ACTION_LABEL_KEYS,
+  GUARDRAIL_BUILDER_EN_LABELS,
+} from '../i18n';
 import { GuardrailActionSection } from './guardrail-action-section';
 
 const labels = GUARDRAIL_BUILDER_EN_LABELS;
@@ -117,5 +121,71 @@ describe('GuardrailActionSection', () => {
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  // Standalone use (the custom-rules builder path): everything but `action` and
+  // `onActionChange` is optional, and the builder's own call keeps passing full labels.
+  describe('standalone defaults', () => {
+    it('renders with no labels prop at all', async () => {
+      render(<GuardrailActionSection action={logAction} onActionChange={vi.fn()} />);
+
+      expect(screen.getByText('Action type')).toBeInTheDocument();
+      expect(screen.getByText('Severity level')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('combobox', { name: /action type/i }));
+      expect(await screen.findByRole('option', { name: 'Escalate' })).toBeInTheDocument();
+    });
+
+    it('takes a partial labels override and resolves the rest', () => {
+      render(
+        <GuardrailActionSection
+          action={logAction}
+          onActionChange={vi.fn()}
+          labels={{ actionTypeLabel: 'What happens next' }}
+        />
+      );
+
+      expect(screen.getByText('What happens next')).toBeInTheDocument();
+      expect(screen.getByText('Severity level')).toBeInTheDocument();
+    });
+
+    it('resolves the escalation labels standalone too', () => {
+      render(
+        <GuardrailActionSection
+          action={{
+            $actionType: 'escalate',
+            app: { id: '', version: '', name: '' },
+            recipient: { type: GuardrailRecipientType.StaticEmail, value: '' },
+          }}
+          onActionChange={vi.fn()}
+        />
+      );
+
+      expect(screen.getByText('Assign to')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Enter email address')).toBeInTheDocument();
+    });
+
+    it('merges className onto its root', () => {
+      const { container } = render(
+        <GuardrailActionSection
+          action={logAction}
+          onActionChange={vi.fn()}
+          className="border-t pt-3"
+        />
+      );
+
+      const root = container.querySelector('[data-slot="guardrail-action-section"]');
+      expect(root).toHaveClass('@container', 'border-t', 'pt-3');
+    });
+
+    it('takes its English from the builder block, id for id', () => {
+      // The action labels are a `Pick` of the builder's and resolve from the same
+      // `guardrails.builder.*` ids; this is what stops the two wordings drifting.
+      for (const key of GUARDRAIL_ACTION_LABEL_KEYS) {
+        expect(GUARDRAIL_ACTION_EN_LABELS[key]).toBe(GUARDRAIL_BUILDER_EN_LABELS[key]);
+      }
+      expect(Object.keys(GUARDRAIL_ACTION_EN_LABELS)).toHaveLength(
+        GUARDRAIL_ACTION_LABEL_KEYS.length
+      );
+    });
   });
 });

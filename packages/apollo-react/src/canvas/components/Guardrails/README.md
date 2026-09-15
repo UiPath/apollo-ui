@@ -6,8 +6,9 @@ entirely on `@uipath/apollo-wind` primitives and its `forms/` engine, strings on
 and is exported through the narrow `@uipath/apollo-react/canvas/guardrails` subpath (also
 re-exported from `./canvas`). Members: the definitions layer (wire types, parser, canonical
 copy and `useGuardrailDefinitions`), `GuardrailBuilder` (the whole Add/Edit screen),
-`GuardrailFormLayout` (the screen shell), and `GuardrailValidatorForm` (the validator
-parameter section, also rendered inside the builder).
+`GuardrailFormLayout` (the screen shell), `GuardrailValidatorForm` (the validator
+parameter section, also rendered inside the builder), and `GuardrailActionSection` +
+`EscalateActionFields` (the action and escalation half of it).
 
 ## Definitions layer
 
@@ -177,6 +178,79 @@ Contract highlights:
 `GuardrailFormLayout` is exported standalone for hosts composing their own screen: three
 modes (inline+hideHeader / inline with back-button header / modal Dialog), `secondaryAction`,
 `saveDisabled`, and a `footerStart` region.
+
+## GuardrailActionSection
+
+The action half of a guardrail: an action-type select plus the field that type needs. `log`
+takes a severity level, `block` a reason, `filter` a host-supplied field picker, and
+`escalate` expands into the full escalation layout, which `EscalateActionFields` owns
+(recipient type, recipient, action app).
+
+`GuardrailBuilder` renders it; both are also exported for hosts composing their own builder,
+which is the custom-rules path. Standalone, the section needs two props:
+
+```tsx
+import { GuardrailActionSection } from '@uipath/apollo-react/canvas/guardrails';
+
+const [action, setAction] = useState<GuardrailAction>({
+  $actionType: 'log',
+  severityLevel: 'Info',
+});
+
+<GuardrailActionSection action={action} onActionChange={setAction} />;
+```
+
+### Contract
+
+- **The callback is an intent, and it carries the whole next action.** Switching the type
+  emits a fresh default payload for it (`createDefaultGuardrailAction`), so the component
+  never holds a half-migrated action. Nothing else is stored here: no draft state, no
+  validation of its own, no flags, no telemetry.
+- **Errors are host-owned.** `errors: GuardrailActionErrors` is the action slice of
+  `GuardrailBuilderErrors` (`blockReason`, `filterFields`, `recipient`, `actionApp`);
+  `EscalateActionFields` takes the two it can show as `GuardrailEscalateActionErrors`. Each
+  message renders as soon as it is present, so a host that only wants errors after a save
+  attempt withholds the prop until then, which is what the builder's own `showErrors` gate
+  does.
+- **`labels` is optional and partial.** Anything omitted resolves from the canvas lingui
+  catalog through `useGuardrailActionLabels`. `GuardrailActionLabels` is a `Pick` of
+  `GuardrailBuilderLabels` resolved from the same `guardrails.builder.*` ids, so the standalone
+  and the builder paths cannot say different things; the builder keeps passing its full labels
+  object, which is accepted as an override bag.
+- **`filter` stays product territory.** The option appears only with `showFilter` (custom
+  guardrails), and the field picker is `filterContent`: field references are product-shaped
+  and this package never edits them.
+- **Asset recipients round-trip.** Types 4 and 6 display as their static siblings (3 and 5) in
+  the type select, so a value written by a host asset editor never blanks the selection.
+
+### Escalation slots
+
+The escalation target is a host capability in both products, so every part of it is a slot
+with a fallback:
+
+| Slot | Replaces | Fallback without it |
+| --- | --- | --- |
+| `renderRecipientSearch(ctx)` | the User/Group directory autosuggest | a plain input writing `value` and `displayName` |
+| `renderStaticRecipient(ctx)` | the email / group-name editor (types 3/4/5/6); return `undefined` to fall through | a plain input on `value`, or `assetName` for an asset recipient |
+| `renderAppPicker(ctx)` | the escalation action app picker | a localized "picker unavailable" note |
+| `escalateHelp` | content under the escalation grid | nothing |
+
+`escalateHelp` is a node, not a string: it is where a marketplace link goes, and product URLs
+never ship in this package. `ctx.onChange` on `renderStaticRecipient` replaces the recipient
+wholesale, which is how a host toggles between the static and asset variants of one kind.
+
+### Three layouts
+
+`EscalateActionFields` is exported because its layout is the part hosts compose differently:
+
+| Props | Renders |
+| --- | --- |
+| `actionTypeSelect` given (what the section passes) | the whole escalate grid: leading cell + three fields + `escalateHelp` |
+| `asGridItems` | the three cells as a fragment, for a grid the host owns. It places `escalateHelp` itself |
+| neither | the three fields stacked, with `escalateHelp` under them |
+
+`className` merges onto whichever root it renders, and is inert under `asGridItems`, which has
+no element of its own.
 
 ## GuardrailValidatorForm
 

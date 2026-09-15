@@ -181,6 +181,75 @@ export const GUARDRAIL_BUILDER_EN_LABELS: GuardrailBuilderLabels = {
   actionAppRequiredError: 'Action app is required',
 };
 
+/**
+ * The chrome strings `GuardrailActionSection` and `EscalateActionFields` read, for hosts that
+ * mount either on its own (the custom-rules builder path) rather than through
+ * `GuardrailBuilder`.
+ *
+ * A `Pick` of `GuardrailBuilderLabels` rather than a twin interface, and resolved from the
+ * same `guardrails.builder.*` ids: the two blocks name the same strings with the same
+ * English, so a twin would send one string to translators twice and let the two drift the
+ * moment either is revised. `GuardrailBuilder` keeps passing its own full labels object,
+ * which is assignable here.
+ */
+export const GUARDRAIL_ACTION_LABEL_KEYS = [
+  // Action section
+  'actionTypeLabel',
+  'actionLogLabel',
+  'actionBlockLabel',
+  'actionFilterLabel',
+  'actionEscalateLabel',
+  'severityLabel',
+  'severityInfoLabel',
+  'severityWarningLabel',
+  'severityErrorLabel',
+  'blockReasonLabel',
+  'blockReasonPlaceholder',
+  // Escalation
+  'assignToLabel',
+  'recipientUserLabel',
+  'recipientGroupLabel',
+  'recipientEmailLabel',
+  'recipientGroupNameLabel',
+  'recipientFallbackLabel',
+  'userSearchPlaceholder',
+  'groupSearchPlaceholder',
+  'emailPlaceholder',
+  'groupNamePlaceholder',
+  'actionAppLabel',
+  'appPickerUnavailable',
+] as const satisfies ReadonlyArray<keyof GuardrailBuilderLabels>;
+
+export type GuardrailActionLabelKey = (typeof GUARDRAIL_ACTION_LABEL_KEYS)[number];
+
+export type GuardrailActionLabels = Pick<GuardrailBuilderLabels, GuardrailActionLabelKey>;
+
+function pickGuardrailActionLabels(source: GuardrailBuilderLabels): GuardrailActionLabels {
+  const picked = {} as GuardrailActionLabels;
+  for (const key of GUARDRAIL_ACTION_LABEL_KEYS) picked[key] = source[key];
+  return picked;
+}
+
+export const GUARDRAIL_ACTION_EN_LABELS: GuardrailActionLabels = pickGuardrailActionLabels(
+  GUARDRAIL_BUILDER_EN_LABELS
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailActionLabels(
+  catalog?: Partial<GuardrailActionLabels>,
+  overrides?: Partial<GuardrailActionLabels>
+): GuardrailActionLabels {
+  const merged: GuardrailActionLabels = { ...GUARDRAIL_ACTION_EN_LABELS };
+  for (const source of [catalog, overrides]) {
+    if (!source) continue;
+    for (const key of GUARDRAIL_ACTION_LABEL_KEYS) {
+      const value = source[key];
+      if (value !== undefined) merged[key] = value;
+    }
+  }
+  return merged;
+}
+
 /** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
 export function resolveGuardrailBuilderLabels(
   catalog?: Partial<GuardrailBuilderLabels>,
@@ -470,5 +539,23 @@ export function useGuardrailBuilderLabels(
         overrides
       ),
     [_, overrides]
+  );
+}
+
+/**
+ * Localized chrome strings of the action section and its escalation fields; per-string
+ * `overrides` always win.
+ *
+ * Narrows the builder's own hook instead of re-declaring 23 of its `_()` calls, so the two
+ * cannot resolve the same id to different English. The extra lookups the rest of the builder
+ * block costs are catalog reads behind the same `useMemo`.
+ */
+export function useGuardrailActionLabels(
+  overrides?: Partial<GuardrailActionLabels>
+): GuardrailActionLabels {
+  const catalog = useGuardrailBuilderLabels();
+  return useMemo(
+    () => resolveGuardrailActionLabels(pickGuardrailActionLabels(catalog), overrides),
+    [catalog, overrides]
   );
 }

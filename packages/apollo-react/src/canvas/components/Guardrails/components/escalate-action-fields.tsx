@@ -1,6 +1,7 @@
 import {
   Alert,
   AlertDescription,
+  cn,
   FormField,
   FormFieldError,
   Input,
@@ -15,47 +16,65 @@ import {
 import { Info } from 'lucide-react';
 import { type ReactNode, useCallback, useId } from 'react';
 import {
-  type GuardrailAction,
   type GuardrailAppPickerContext,
+  type GuardrailEscalateAction,
+  type GuardrailEscalateActionErrors,
   type GuardrailEscalateRecipient,
   type GuardrailRecipientSearchContext,
   GuardrailRecipientType,
   type GuardrailStaticRecipientContext,
 } from '../builder-types';
-import type { GuardrailBuilderLabels } from '../i18n';
-
-type EscalateAction = Extract<GuardrailAction, { $actionType: 'escalate' }>;
+import { type GuardrailActionLabels, useGuardrailActionLabels } from '../i18n';
 
 export interface EscalateActionFieldsProps {
-  action: EscalateAction;
-  onChange: (action: EscalateAction) => void;
-  /** Leading grid cell (the Action type select); this component owns the full escalate layout. */
-  actionTypeSelect: ReactNode;
-  errors?: { recipient?: string; actionApp?: string };
-  labels: GuardrailBuilderLabels;
+  action: GuardrailEscalateAction;
+  onChange: (action: GuardrailEscalateAction) => void;
+  /**
+   * Leading grid cell (the Action type select). When provided, this component owns the full
+   * escalate layout; omit it to render the escalation fields on their own.
+   */
+  actionTypeSelect?: ReactNode;
+  /**
+   * Render the field cells as a fragment, for a surrounding grid to lay out. Ignored when
+   * `actionTypeSelect` is provided.
+   */
+  asGridItems?: boolean;
+  /** Host-owned validation messages; each renders as soon as it is present. */
+  errors?: GuardrailEscalateActionErrors;
+  /** Per-string overrides. Anything omitted resolves from the canvas lingui catalog. */
+  labels?: Partial<GuardrailActionLabels>;
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
   renderStaticRecipient?: (ctx: GuardrailStaticRecipientContext) => ReactNode | undefined;
   renderAppPicker?: (ctx: GuardrailAppPickerContext) => ReactNode;
   /** Rendered under the escalation grid (e.g. a marketplace help line). */
   escalateHelp?: ReactNode;
+  /** Ignored in the `asGridItems` layout, which renders no element of its own. */
+  className?: string;
 }
 
 /**
  * Escalation action fields: recipient type + recipient value + action-app picker. The
  * recipient autosuggest (User/Group) and the app picker are host capabilities injected via
  * render props; plain-input / unavailable-note fallbacks keep the form usable without them.
+ *
+ * Three layouts, one per way the hosts compose it: with `actionTypeSelect` it owns the whole
+ * escalate grid (what `GuardrailActionSection` passes), with `asGridItems` it emits the three
+ * cells for a surrounding grid, and with neither it stacks them.
  */
 export function EscalateActionFields({
   action,
   onChange,
   actionTypeSelect,
+  asGridItems = false,
   errors,
-  labels,
+  labels: labelOverrides,
   renderRecipientSearch,
   renderStaticRecipient,
   renderAppPicker,
   escalateHelp,
+  className,
 }: EscalateActionFieldsProps) {
+  const labels = useGuardrailActionLabels(labelOverrides);
   // Namespaced per instance — two builders can share a document (inline panels).
   const uid = useId();
 
@@ -266,12 +285,23 @@ export function EscalateActionFields({
     </>
   );
 
-  return (
-    <div data-slot="guardrail-escalate-fields" className="@container space-y-3">
-      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3 items-start">
-        {actionTypeSelect}
-        {fields}
+  if (actionTypeSelect) {
+    return (
+      <div data-slot="guardrail-escalate-fields" className={cn('@container space-y-3', className)}>
+        <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3 items-start">
+          {actionTypeSelect}
+          {fields}
+        </div>
+        {escalateHelp}
       </div>
+    );
+  }
+
+  if (asGridItems) return fields;
+
+  return (
+    <div data-slot="guardrail-escalate-fields" className={cn('space-y-3', className)}>
+      {fields}
       {escalateHelp}
     </div>
   );

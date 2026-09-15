@@ -1,12 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
-import { type GuardrailAction, GuardrailRecipientType } from '../builder-types';
+import type { GuardrailEscalateAction } from '../builder-types';
+import { GuardrailRecipientType } from '../builder-types';
 import { GUARDRAIL_BUILDER_EN_LABELS } from '../i18n';
 import { EscalateActionFields } from './escalate-action-fields';
 
 const labels = GUARDRAIL_BUILDER_EN_LABELS;
-type EscalateAction = Extract<GuardrailAction, { $actionType: 'escalate' }>;
+type EscalateAction = GuardrailEscalateAction;
 
 function makeAction(overrides?: Partial<EscalateAction>): EscalateAction {
   return {
@@ -364,5 +365,101 @@ describe('asset recipient variants', () => {
       ...action,
       recipient: { type: GuardrailRecipientType.AssetEmail, assetName: 'New' },
     });
+  });
+});
+
+// Standalone use (the custom-rules builder path): the leading grid cell and the labels are
+// both optional, and `asGridItems` hands the cells to a surrounding grid.
+describe('standalone layouts', () => {
+  it('renders the three fields stacked without an action type cell', () => {
+    const { container } = render(
+      <EscalateActionFields
+        action={makeAction()}
+        onChange={vi.fn()}
+        escalateHelp={<p>Marketplace help</p>}
+      />
+    );
+
+    const root = container.querySelector('[data-slot="guardrail-escalate-fields"]');
+    expect(root).toHaveClass('space-y-3');
+    expect(root).not.toHaveClass('@container');
+    // The three cells are the root's own children: no grid wrapper between them.
+    const cells = Array.from(root?.children ?? []).filter(
+      (el) => el.getAttribute('data-slot') === 'form-field'
+    );
+    expect(cells).toHaveLength(3);
+    expect(screen.getByText('Assign to')).toBeInTheDocument();
+    expect(screen.getByText('Marketplace help')).toBeInTheDocument();
+  });
+
+  it('emits bare cells for a surrounding grid with asGridItems', () => {
+    const { container } = render(
+      <EscalateActionFields
+        action={makeAction()}
+        onChange={vi.fn()}
+        asGridItems
+        className="ignored"
+        escalateHelp={<p>Marketplace help</p>}
+      />
+    );
+
+    expect(container.querySelector('[data-slot="guardrail-escalate-fields"]')).toBeNull();
+    expect(screen.getByText('Assign to')).toBeInTheDocument();
+    // The host owns the layout in this mode, so it also places the help line itself.
+    expect(screen.queryByText('Marketplace help')).not.toBeInTheDocument();
+  });
+
+  it('keeps the grid layout when both actionTypeSelect and asGridItems are given', () => {
+    const { container } = render(
+      <EscalateActionFields {...baseProps} action={makeAction()} onChange={vi.fn()} asGridItems />
+    );
+
+    expect(screen.getByTestId('action-type-cell')).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="guardrail-escalate-fields"]')).toHaveClass(
+      '@container'
+    );
+  });
+
+  it('renders with no labels prop at all', () => {
+    render(<EscalateActionFields action={makeAction()} onChange={vi.fn()} />);
+
+    expect(screen.getByText('Assign to')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search for a user...')).toBeInTheDocument();
+    expect(screen.getByText('Action App')).toBeInTheDocument();
+  });
+
+  it('takes a partial labels override and resolves the rest', () => {
+    render(
+      <EscalateActionFields
+        action={makeAction()}
+        onChange={vi.fn()}
+        labels={{ assignToLabel: 'Escalate to' }}
+      />
+    );
+
+    expect(screen.getByText('Escalate to')).toBeInTheDocument();
+    expect(screen.getByText('Action App')).toBeInTheDocument();
+  });
+
+  it('merges className onto its root', () => {
+    const { container } = render(
+      <EscalateActionFields
+        {...baseProps}
+        action={makeAction()}
+        onChange={vi.fn()}
+        className="pt-3"
+      />
+    );
+
+    expect(container.querySelector('[data-slot="guardrail-escalate-fields"]')).toHaveClass(
+      '@container',
+      'pt-3'
+    );
+  });
+
+  it('has no accessibility violations stacked', async () => {
+    const { container } = render(<EscalateActionFields action={makeAction()} onChange={vi.fn()} />);
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 });

@@ -58,6 +58,12 @@ export type GuardrailAction =
   | { $actionType: 'filter'; fields: unknown[] }
   | { $actionType: 'escalate'; app: GuardrailEscalateApp; recipient: GuardrailEscalateRecipient };
 
+/**
+ * The escalate arm of `GuardrailAction`, named so hosts rendering `EscalateActionFields` on
+ * its own have a type to hold their state in.
+ */
+export type GuardrailEscalateAction = Extract<GuardrailAction, { $actionType: 'escalate' }>;
+
 export type GuardrailDefinitionStatus =
   | 'Available'
   | 'FeatureDisabled'
@@ -113,6 +119,18 @@ export interface GuardrailBuilderErrors {
   /** Per-parameter messages keyed by parameter id. */
   parameters?: Record<string, string>;
 }
+
+/**
+ * The action section's slice of `GuardrailBuilderErrors`. Messages are host-owned: the
+ * section renders whichever of them is present and never derives one of its own.
+ */
+export type GuardrailActionErrors = Pick<
+  GuardrailBuilderErrors,
+  'blockReason' | 'filterFields' | 'recipient' | 'actionApp'
+>;
+
+/** The two of those the escalation fields surface. */
+export type GuardrailEscalateActionErrors = Pick<GuardrailActionErrors, 'recipient' | 'actionApp'>;
 
 /** Context handed to the `renderRecipientSearch` slot (user/group directory autosuggest). */
 export interface GuardrailRecipientSearchContext {
