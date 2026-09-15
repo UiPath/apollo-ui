@@ -212,6 +212,13 @@ const [action, setAction] = useState<GuardrailAction>({
   message renders as soon as it is present, so a host that only wants errors after a save
   attempt withholds the prop until then, which is what the builder's own `showErrors` gate
   does.
+- **A slot that takes an `error` owns rendering it.** All three escalation slots receive the
+  message in their context, and for a field a slot has claimed the component renders none of
+  its own, so `<Input error={ctx.error} />` inside a slot shows it once rather than twice. Every
+  built-in fallback routes the message through `Input`'s `error` prop, which also wires
+  `aria-describedby` / `aria-errormessage` / `aria-invalid`; the one exception is the
+  no-app-picker case, whose `FormFieldError` sits under the "picker unavailable" note because
+  the builder still gates Save on `actionApp` there.
 - **`labels` is optional and partial.** Anything omitted resolves from the canvas lingui
   catalog through `useGuardrailActionLabels`. `GuardrailActionLabels` is a `Pick` of
   `GuardrailBuilderLabels` resolved from the same `guardrails.builder.*` ids, so the standalone
@@ -230,10 +237,12 @@ with a fallback:
 
 | Slot | Replaces | Fallback without it |
 | --- | --- | --- |
-| `renderRecipientSearch(ctx)` | the User/Group directory autosuggest | a plain input writing `value` and `displayName` |
+| `renderRecipientSearch(ctx)` | the User/Group directory autosuggest | a plain input writing `value` and `displayName`, with the `recipient` message |
 | `renderStaticRecipient(ctx)` | the email / group-name editor (types 3/4/5/6); return `undefined` to fall through | a plain input on `value`, or `assetName` for an asset recipient |
-| `renderAppPicker(ctx)` | the escalation action app picker | a localized "picker unavailable" note |
+| `renderAppPicker(ctx)` | the escalation action app picker | a localized "picker unavailable" note plus the `actionApp` message |
 | `escalateHelp` | content under the escalation grid | nothing |
+
+Each of the first three receives `error` and, per the rule above, owns rendering it.
 
 `escalateHelp` is a node, not a string: it is where a marketplace link goes, and product URLs
 never ship in this package. `ctx.onChange` on `renderStaticRecipient` replaces the recipient
