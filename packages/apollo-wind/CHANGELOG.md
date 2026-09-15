@@ -1,3 +1,16 @@
+## [@uipath/apollo-wind-v2.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.51.0...@uipath/apollo-wind@2.52.0) (2026-09-15)
+
+### Features
+
+* **apollo-wind:** add Underline and Code to the PromptEditor toolbar ([7b3e5ff](https://github.com/UiPath/apollo-ui/commit/7b3e5ff8d208b3f9bf73eec61ec0a5c070db82ed))
+
+### Bug Fixes
+
+* **apollo-wind:** draw the trailing separator only when it divides something ([adb61f5](https://github.com/UiPath/apollo-ui/commit/adb61f571d9b94a6c0de120e0e40f3dea45b25df))
+* **apollo-wind:** give the inline-code chip a background that is not the surface ([50174fb](https://github.com/UiPath/apollo-ui/commit/50174fbfa55d32f17b7cb84a531c8552f158e99a))
+* **apollo-wind:** keep the code markers when rescuing a pill from a code span ([3b4dfcf](https://github.com/UiPath/apollo-ui/commit/3b4dfcfae0858bfb79122634176c7ceeb40226c9))
+* **apollo-wind:** preserve outer formats and pills around the new marks ([488bed2](https://github.com/UiPath/apollo-ui/commit/488bed2eac86c140b3fa7d875e8f92a3f56cbad2))
+
 ## [@uipath/apollo-wind-v2.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.50.0...@uipath/apollo-wind@2.51.0) (2026-09-14)
 
 ### Features

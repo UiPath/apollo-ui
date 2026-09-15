@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.14.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.14.0...@uipath/apollo-core@5.14.1) (2026-09-15)
+
+### Bug Fixes
+
+* **ci:** declare apollo-core's generated token files as build outputs ([2b37cda](https://github.com/UiPath/apollo-ui/commit/2b37cda26a3f29c23201f2d4e6fc236d28b6cb02))
+
 ## [@uipath/apollo-core-v5.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.13.1...@uipath/apollo-core@5.14.0) (2026-09-03)
 
 ### Features

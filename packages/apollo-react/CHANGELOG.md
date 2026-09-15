@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.45.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.2...@uipath/apollo-react@6.45.3) (2026-09-15)
+
+### Bug Fixes
+
+* **apollo-react:** add data-node-part to node label [MST-14013] ([9cdf52a](https://github.com/UiPath/apollo-ui/commit/9cdf52a8b306ba84eeb6f73314effd873e820357))
+
 ## [@uipath/apollo-react-v6.45.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.1...@uipath/apollo-react@6.45.2) (2026-09-14)
 
 ### Bug Fixes
