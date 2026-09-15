@@ -272,9 +272,11 @@ export function EscalateActionFields({
               {labels.actionAppLabel}
               <RequiredIndicator />
             </Label>
+            {/* `mt-0` cancels the AlertDescription top offset, which assumes an AlertTitle
+                above it and otherwise drops the text 4px below the icon. */}
             <Alert variant="info">
               <Info />
-              <AlertDescription>{labels.appPickerUnavailable}</AlertDescription>
+              <AlertDescription className="mt-0">{labels.appPickerUnavailable}</AlertDescription>
             </Alert>
             {/* The builder still gates Save on `actionApp` when no picker slot is supplied,
                 so without this the user is blocked with the reason rendered nowhere. */}
