@@ -1,11 +1,11 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  type AppColumnDef,
   DataTable,
   DataTableColumnHeader,
   dataTableFacetedFilterFn,
@@ -142,7 +142,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
-const columns: ColumnDef<ClinicalReviewRecord>[] = [
+const columns: AppColumnDef<ClinicalReviewRecord>[] = [
   {
     accessorKey: "patient",
     minSize: 220,

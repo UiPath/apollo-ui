@@ -1,10 +1,12 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import {
+  type AppColumnDef,
+  DataTableColumnHeader,
+} from "@/components/ui/data-table";
 // Import the dumb pieces directly (not the package barrel) so the demo's module
 // graph never pulls in the collection hooks (and their `@tanstack/react-db` /
 // vs-core deps) — same approach as the GroupMembershipGuard demo.
@@ -73,7 +75,7 @@ function SolutionTestsTemplateContent() {
     baselineJobsByTest.set(job.SolutionTestId, list);
   }
 
-  const subjectColumns: ColumnDef<SolutionTest>[] = [
+  const subjectColumns: AppColumnDef<SolutionTest>[] = [
     {
       accessorKey: "SubjectId",
       meta: { displayName: "Loan ID" },

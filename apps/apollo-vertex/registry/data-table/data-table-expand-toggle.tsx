@@ -1,13 +1,14 @@
 "use client";
 
-import type { Table as TanstackTable } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
 import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
+import type { AppTable } from "@/lib/tableFeatures";
 
-interface DataTableExpandAllToggleProps<TData> {
-  table: TanstackTable<TData>;
+interface DataTableExpandAllToggleProps<TData extends RowData> {
+  table: AppTable<TData>;
 }
 
 /**
@@ -15,7 +16,7 @@ interface DataTableExpandAllToggleProps<TData> {
  * and toggles the table's all-rows-expanded state, with distinct double-chevron
  * icons to set it apart from the per-row single-chevron expand controls.
  */
-function DataTableExpandAllToggle<TData>({
+function DataTableExpandAllToggle<TData extends RowData>({
   table,
 }: DataTableExpandAllToggleProps<TData>) {
   const { t } = useTranslation();

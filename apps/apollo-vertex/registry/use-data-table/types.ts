@@ -1,10 +1,11 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import type { AppColumnDef } from "@/lib/tableFeatures";
 
 export type EntityRecord = Record<string, unknown>;
 
-export type ColumnDefWithAccessorKey<T> = ColumnDef<T> & {
-  accessorKey: string;
-};
+export type ColumnDefWithAccessorKey<T extends Record<string, unknown>> =
+  AppColumnDef<T> & {
+    accessorKey: string;
+  };
 
 export interface Column {
   key: string;

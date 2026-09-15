@@ -1,14 +1,14 @@
 "use client";
 
-import type { OnChangeFn, VisibilityState } from "@tanstack/react-table";
+import type { ColumnVisibilityState, OnChangeFn } from "@tanstack/react-table";
 
 import { usePersistedColumns } from "./usePersistedColumns";
 
 const visibleColumnsToVisibilityState = (
   visibleColumns: string[],
   allColumnKeys: string[],
-): VisibilityState => {
-  const state: VisibilityState = {};
+): ColumnVisibilityState => {
+  const state: ColumnVisibilityState = {};
   for (const key of allColumnKeys) {
     if (!visibleColumns.includes(key)) {
       state[key] = false;
@@ -18,7 +18,7 @@ const visibleColumnsToVisibilityState = (
 };
 
 const visibilityStateToVisibleColumns = (
-  visibilityState: VisibilityState,
+  visibilityState: ColumnVisibilityState,
   allColumnKeys: string[],
 ): string[] => {
   // oxlint-disable-next-line typescript-eslint(no-unnecessary-boolean-literal-compare) -- undefined means visible; !== false is intentional
@@ -46,7 +46,7 @@ export function useColumnVisibility({
     allColumnKeys,
   );
 
-  const onColumnVisibilityChange: OnChangeFn<VisibilityState> = (
+  const onColumnVisibilityChange: OnChangeFn<ColumnVisibilityState> = (
     updaterOrValue,
   ) => {
     const newVisibility =
