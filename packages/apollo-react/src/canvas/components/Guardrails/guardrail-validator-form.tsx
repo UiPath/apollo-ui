@@ -1,0 +1,222 @@
+import { cn, MetadataForm } from '@uipath/apollo-wind';
+import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
+import { EnumListChipsField } from './components/enum-list-chips-field';
+import { MapEnumField } from './components/map-enum-field';
+import {
+  buildGuardrailFormSchema,
+  coerceGuardrailParameterValue,
+  GUARDRAIL_ENUM_LIST_CHIPS_COMPONENT,
+  GUARDRAIL_MAP_ENUM_COMPONENT,
+  GUARDRAIL_RENDER_PARAMETER_COMPONENT,
+} from './form-schema-builder';
+import { useGuardrailFormLabels } from './i18n';
+import { GuardrailRenderParameterProvider, RenderParameterBridge } from './render-parameter-bridge';
+import type {
+  GuardrailParameterDefinition,
+  GuardrailValidatorFormProps,
+  GuardrailValidatorParameter,
+} from './types';
+import { useMetadataFormBridge } from './use-metadata-form-bridge';
+
+const GUARDRAIL_CUSTOM_COMPONENTS = {
+  [GUARDRAIL_ENUM_LIST_CHIPS_COMPONENT]: EnumListChipsField,
+  [GUARDRAIL_MAP_ENUM_COMPONENT]: MapEnumField,
+  [GUARDRAIL_RENDER_PARAMETER_COMPONENT]: RenderParameterBridge,
+};
+
+const EMPTY_OVERRIDES: ReadonlySet<string> = new Set();
+
+/**
+ * Renders the configuration section of an OOTB guardrail validator: one editor per parameter
+ * definition, covering all seven parameter types (`number`, `text`, `boolean`, `enum`,
+ * `enum-list`, `text-list`, `map-enum`).
+ *
+ * Internally this is `buildGuardrailFormSchema` + the forms/ `MetadataForm` stack (see
+ * README, "Built on the forms/ MetadataForm stack"): five parameter types map onto
+ * first-class field types, while the chip-style enum-list, `map-enum`, and `renderParameter`
+ * overrides register as custom field components. Values stay fully controlled: the host owns
+ * them (`parameters` + `onChange`, echoed back synchronously).
+ *
+ * Validation is shared, not host-only. The schema declares `required`/`min`/`max` from the
+ * definitions and MetadataForm's resolver evaluates them on change, so a field can show an
+ * error with no `errors` entry — messages come from the label catalog, so they translate. The
+ * host still owns domain validation and the save-time gate (`errors` + `onClearError`);
+ * compute those with `getRequiredEmptyParameterIds` and `getOutOfRangeParameterIds` and gate
+ * Save on them, since they are authoritative where the two disagree (a `text-list` of
+ * whitespace-only rows satisfies the resolver but not the host predicate).
+ *
+ * A `type: 'custom'` field only gets resolver validation if it declares a `valueType`; see
+ * `customValueTypeFor`. `map-enum` has no counterpart shape, so its required check is the
+ * host's alone.
+ *
+ * That controlled contract is translated onto MetadataForm's
+ * plugin seam in one place — see `useMetadataFormBridge`. Parameters the host's `parameters` array
+ * carries without a matching definition (sidecars written via `onParametersChange`, e.g. a
+ * model picker's connection metadata) never enter the form and round-trip untouched.
+ */
+export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValidatorFormProps>(
+  (
+    {
+      parameterDefinitions,
+      parameters,
+      onChange,
+      errors,
+      onClearError,
+      renderParameter,
+      overrideParameterIds,
+      labels: labelOverrides,
+      className,
+    },
+    ref
+  ) => {
+    const labels = useGuardrailFormLabels(labelOverrides);
+
+    const defsById = useMemo(
+      () => new Map(parameterDefinitions.map((d) => [d.id, d])),
+      [parameterDefinitions]
+    );
+
+    // Host truth, read at emit time — the carrier for sidecar parameters and the base every
+    // upsert starts from, so untouched defaults never leak into the emitted array.
+    const parametersRef = useRef(parameters);
+    parametersRef.current = parameters;
+
+    const updateParam = useCallback(
+      (paramDef: GuardrailParameterDefinition, value: unknown) => {
+        onClearError?.(paramDef.id);
+        const current = parametersRef.current;
+        const existing = current.findIndex((p) => p.id === paramDef.id);
+        const newParam = {
+          $parameterType: paramDef.type,
+          id: paramDef.id,
+          value,
+        } as GuardrailValidatorParameter;
+        const newParams = [...current];
+        if (existing >= 0) {
+          newParams[existing] = newParam;
+        } else {
+          newParams.push(newParam);
+        }
+        onChange(newParams);
+      },
+      [onChange, onClearError]
+    );
+
+    const replaceParams = useCallback(
+      (paramId: string, next: GuardrailValidatorParameter[]) => {
+        onClearError?.(paramId);
+        onChange(next);
+      },
+      [onChange, onClearError]
+    );
+
+    // Which definitions the override claims.
+    //
+    // Declared is the supported path: `overrideParameterIds` answers the question without calling
+    // anything. The probe below is the deprecated fallback for hosts that have not adopted it —
+    // it invokes the host renderer once per definition on *every* render, with no-op callbacks,
+    // purely to test for undefined-fallthrough. That cost scales with parameter count and the
+    // host cannot see it happening, so it is documented on the public prop and removed once both
+    // consuming products declare their ids.
+    const declaredOverrideIds = useMemo(
+      () => (overrideParameterIds ? new Set(overrideParameterIds) : undefined),
+      [overrideParameterIds]
+    );
+
+    const probedOverrideIds = useMemo(() => {
+      if (declaredOverrideIds || !renderParameter) return EMPTY_OVERRIDES;
+      const ids = new Set<string>();
+      for (const def of parameterDefinitions) {
+        const entry = parameters.find((p) => p.id === def.id);
+        const node = renderParameter({
+          definition: def,
+          value: entry?.value,
+          error: errors?.[def.id],
+          parameters,
+          onValueChange: () => {},
+          onParametersChange: () => {},
+        });
+        if (node !== undefined) ids.add(def.id);
+      }
+      return ids;
+    }, [declaredOverrideIds, renderParameter, parameterDefinitions, parameters, errors]);
+
+    const overriddenIds = declaredOverrideIds ?? probedOverrideIds;
+
+    // A stored enum value missing from the option catalog stays visible as a synthetic option.
+    const enumSyntheticValues = useMemo(() => {
+      const map: Record<string, string> = {};
+      for (const def of parameterDefinitions) {
+        if (def.type !== 'enum') continue;
+        const entry = parameters.find((p) => p.id === def.id);
+        // Same class as the text-list guard: a persisted enum can arrive as null, and this
+        // component is also mounted standalone, where nothing has normalised the host's array.
+        const raw =
+          entry?.$parameterType === 'enum'
+            ? entry.value
+            : ((def.defaultValue as string | null) ?? '');
+        const value = typeof raw === 'string' ? raw : '';
+        if (value.length > 0 && !(def.options ?? []).includes(value)) {
+          map[def.id] = value;
+        }
+      }
+      return map;
+    }, [parameterDefinitions, parameters]);
+
+    // Frozen at mount so keystrokes never churn schema identity: it only seeds field
+    // defaultValues for the first paint. Later external changes arrive via `values`.
+    const [initialParameters] = useState(parameters);
+
+    const schema = useMemo(
+      () =>
+        buildGuardrailFormSchema(parameterDefinitions, labels, {
+          overriddenIds,
+          initialParameters,
+          enumSyntheticValues,
+        }),
+      [parameterDefinitions, labels, overriddenIds, initialParameters, enumSyntheticValues]
+    );
+
+    // parameters -> record: only ids with a definition enter the form; sidecars stay in
+    // parametersRef and round-trip untouched.
+    const values = useMemo(() => {
+      const record: Record<string, unknown> = {};
+      for (const p of parameters) {
+        if (defsById.has(p.id)) record[p.id] = p.value;
+      }
+      return record;
+    }, [parameters, defsById]);
+
+    const handleValueChange = useCallback(
+      (changedField: string, value: unknown) => {
+        const def = defsById.get(changedField);
+        if (!def) return;
+        updateParam(def, coerceGuardrailParameterValue(value, def));
+      },
+      [defsById, updateParam]
+    );
+
+    const { plugins, schemaMode } = useMetadataFormBridge({
+      values,
+      errors,
+      onValueChange: handleValueChange,
+      components: GUARDRAIL_CUSTOM_COMPONENTS,
+    });
+
+    const bridgeContext = useMemo(
+      () => ({ renderParameter, defsById, parameters, errors, updateParam, replaceParams }),
+      [renderParameter, defsById, parameters, errors, updateParam, replaceParams]
+    );
+
+    const formSchema = useMemo(() => ({ ...schema, mode: schemaMode }), [schema, schemaMode]);
+
+    return (
+      <div ref={ref} data-slot="guardrail-validator-form" className={cn('space-y-4', className)}>
+        <GuardrailRenderParameterProvider value={bridgeContext}>
+          <MetadataForm schema={formSchema} plugins={plugins} container="div" />
+        </GuardrailRenderParameterProvider>
+      </div>
+    );
+  }
+);
+GuardrailValidatorForm.displayName = 'GuardrailValidatorForm';
