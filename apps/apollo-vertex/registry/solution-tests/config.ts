@@ -1,4 +1,4 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import type { AppColumnDef } from "@/lib/tableFeatures";
 import { DEFAULT_PASS_THRESHOLD } from "./constants";
 import type { EvaluatorRenderers } from "./evaluators/registry";
 import type { ProcessOutputRenderers } from "./outputs/registry";
@@ -60,7 +60,7 @@ export type TrackSolutionTestEvent = UnionToIntersection<
 /** Per-vertical presentation config; everything else is hard-coded in `constants`. */
 export interface SolutionTestsConfig {
   /** Columns inserted between the Test Name and Version columns. */
-  subjectColumns?: ColumnDef<SolutionTest>[];
+  subjectColumns?: AppColumnDef<SolutionTest>[];
   /** When set, the test name links to its subject. */
   getSubjectHref?: (test: SolutionTest) => string | undefined;
   /** Opens a run's details. The host owns the route + navigation; the view
@@ -81,7 +81,7 @@ export interface SolutionTestsConfig {
 
 /** Config with defaults applied — what components read from context. */
 export interface ResolvedSolutionTestsConfig {
-  subjectColumns: ColumnDef<SolutionTest>[];
+  subjectColumns: AppColumnDef<SolutionTest>[];
   getSubjectHref?: (test: SolutionTest) => string | undefined;
   onOpenRun?: (run: SolutionTestRun) => void;
   subjectNoun?: { singular: string; plural: string };

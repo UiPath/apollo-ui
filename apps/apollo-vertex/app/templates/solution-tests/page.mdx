@@ -76,7 +76,7 @@ interface SolutionTestsProviderProps {
 
 interface SolutionTestsConfig {
   /** Columns inserted between Test Name and Version. Usually the only customization. */
-  subjectColumns?: ColumnDef<SolutionTest>[];
+  subjectColumns?: AppColumnDef<SolutionTest>[];
   /** Turns the test name into a link to its subject. */
   getSubjectHref?: (test: SolutionTest) => string | undefined;
   /** Opens a run's details page. The host owns the route and navigation: on that

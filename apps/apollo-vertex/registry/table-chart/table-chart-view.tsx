@@ -1,9 +1,12 @@
 import {
   type ColumnDef,
+  columnVisibilityFeature,
   flexRender,
-  getCoreRowModel,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  Subscribe,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,6 +19,12 @@ import {
   TableRow as TableRowComponent,
 } from "@/components/ui/table";
 import type { PrimitiveValue } from "@/lib/charts-core";
+
+const tableChartFeatures = tableFeatures({
+  rowSortingFeature,
+  columnVisibilityFeature,
+});
+type TableChartFeatures = typeof tableChartFeatures;
 
 export interface TableChartColumn {
   id: string;
@@ -48,41 +57,49 @@ export function TableChart({
     sort ? [{ id: sort.field, desc: sort.direction === "desc" }] : [],
   );
 
-  const columnDefs = useMemo<ColumnDef<Record<string, PrimitiveValue>>[]>(
+  const columnDefs = useMemo<
+    ColumnDef<TableChartFeatures, Record<string, PrimitiveValue>>[]
+  >(
     () =>
       columns.map((column) => ({
         accessorFn: (row) => row[column.id],
         id: column.id,
-        header: ({ column: tanstackColumn }) => {
-          const isSorted = tanstackColumn.getIsSorted();
-          const ariaLabel =
-            isSorted === "asc"
-              ? t("sort_by_column_sorted_ascending", { column: column.label })
-              : isSorted === "desc"
-                ? t("sort_by_column_sorted_descending", {
-                    column: column.label,
-                  })
-                : t("sort_by_column", { column: column.label });
-          return (
-            <button
-              type="button"
-              className={`flex items-center gap-2 cursor-pointer select-none hover:text-foreground ${
-                column.align === "right"
-                  ? "justify-end w-full"
-                  : "justify-start"
-              }`}
-              onClick={() => tanstackColumn.toggleSorting()}
-              aria-label={ariaLabel}
-            >
-              <span>{column.label}</span>
-              {isSorted && (
-                <span className="text-xs">
-                  {isSorted === "asc" ? "↑" : "↓"}
-                </span>
-              )}
-            </button>
-          );
-        },
+        header: ({ column: tanstackColumn }) => (
+          <Subscribe source={tanstackColumn.table.atoms.sorting}>
+            {() => {
+              const isSorted = tanstackColumn.getIsSorted();
+              const ariaLabel =
+                isSorted === "asc"
+                  ? t("sort_by_column_sorted_ascending", {
+                      column: column.label,
+                    })
+                  : isSorted === "desc"
+                    ? t("sort_by_column_sorted_descending", {
+                        column: column.label,
+                      })
+                    : t("sort_by_column", { column: column.label });
+              return (
+                <button
+                  type="button"
+                  className={`flex items-center gap-2 cursor-pointer select-none hover:text-foreground ${
+                    column.align === "right"
+                      ? "justify-end w-full"
+                      : "justify-start"
+                  }`}
+                  onClick={() => tanstackColumn.toggleSorting()}
+                  aria-label={ariaLabel}
+                >
+                  <span>{column.label}</span>
+                  {isSorted && (
+                    <span className="text-xs">
+                      {isSorted === "asc" ? "↑" : "↓"}
+                    </span>
+                  )}
+                </button>
+              );
+            }}
+          </Subscribe>
+        ),
         cell: ({ getValue }) => {
           const value = getValue<PrimitiveValue>();
           return (
@@ -97,10 +114,10 @@ export function TableChart({
     [columns, t],
   );
 
-  const table = useReactTable({
+  const table = useTable<TableChartFeatures, Record<string, PrimitiveValue>>({
+    features: tableChartFeatures,
     data: rows,
     columns: columnDefs,
-    getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
     onSortingChange: (updater) => {
       const newSorting =

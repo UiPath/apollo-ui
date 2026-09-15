@@ -1,8 +1,7 @@
-import type { ColumnDef } from "@tanstack/react-table";
-
 import { DataTableColumnHeader } from "@/components/ui/data-table";
 import { FORMAT_TYPE_MAP } from "@/lib/constants";
 import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
+import type { AppColumnDef } from "@/lib/tableFeatures";
 import type {
   Column,
   ColumnDefWithAccessorKey,
@@ -113,7 +112,7 @@ export function useEntityColumns<TRecord extends EntityRecord = EntityRecord>({
     : baseDefs;
 
   const extraDefs = extraColumns?.map((ec) => ec.definition) ?? [];
-  const columns: ColumnDef<TRecord>[] = [...overriddenDefs, ...extraDefs];
+  const columns: AppColumnDef<TRecord>[] = [...overriddenDefs, ...extraDefs];
 
   return { allColumns, allColumnKeys, columns };
 }

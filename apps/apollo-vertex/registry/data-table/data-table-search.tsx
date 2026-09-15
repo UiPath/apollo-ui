@@ -1,19 +1,20 @@
 "use client";
 
-import type { Table as TanstackTable } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
 import { SearchIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Input } from "@/components/ui/input";
+import type { AppTable } from "@/lib/tableFeatures";
 import { cn } from "@/lib/utils";
 
-interface DataTableSearchProps<TData> {
-  table: TanstackTable<TData>;
+interface DataTableSearchProps<TData extends RowData> {
+  table: AppTable<TData>;
   placeholder?: string;
   className?: string;
 }
 
-function DataTableSearch<TData>({
+function DataTableSearch<TData extends RowData>({
   table,
   placeholder,
   className,
@@ -24,7 +25,7 @@ function DataTableSearch<TData>({
       <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         placeholder={placeholder ?? t("search", { defaultValue: "Search..." })}
-        value={String(table.getState().globalFilter ?? "")}
+        value={String(table.state.globalFilter ?? "")}
         onChange={(e) => table.setGlobalFilter(e.target.value)}
         className="w-full sm:w-80 md:w-96 pl-9 border-0"
       />
