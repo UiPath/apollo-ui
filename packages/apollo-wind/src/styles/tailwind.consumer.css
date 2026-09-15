@@ -19,6 +19,11 @@
 :root {
   --radius: 0.75rem;
   /* 12px — base border-radius for buttons and UI elements */
+
+  /* Active pill-tab edge. Themes override this below; the default is a no-op
+     shadow so the box-shadow stack (focus ring included) stays valid when no
+     theme class is present. */
+  --tabs-active-shadow: 0 0 #0000;
 }
 
 /* Variant active when the component is inside a Future Dark or Light theme */
@@ -154,6 +159,11 @@ body.future-light, .future-light {
   --destructive-foreground: var(--foreground-on-accent);
   --border-de-emp: var(--border-subtle);
   --input: var(--border-subtle);
+
+  /* Classic themes mark the active pill tab with a 1px hairline in the same
+     color as input and panel borders, drawn in the shadow slot so consumer
+     shadow overrides keep working. The Future family clears it below. */
+  --tabs-active-shadow: 0 0 0 1px var(--input);
 }
 
 /* ── Classic light family — mapping divergences + element-scoped color-scheme ── */
@@ -161,6 +171,10 @@ body.light, .light:not(.react-flow),
 body.light-hc, .light-hc {
   --surface-muted: var(--color-background-gray);
   --warning: var(--color-warning-text);
+  /* Classic light's raised surface is the same white as the page, so the
+     shared --muted mapping renders with no contrast (e.g. Tabs track).
+     Use the overlay surface instead, matching the Future family mapping. */
+  --muted: var(--surface-overlay);
   color-scheme: light;
 }
 
@@ -199,6 +213,8 @@ body.future-light, .future-light {
   --destructive: var(--color-red-500);
   --destructive-foreground: var(--color-zinc-50);
   --input: var(--ap-wind-border);
+  /* Future is flat: the active pill is distinguished by surface alone, no edge or shadow */
+  --tabs-active-shadow: 0 0 #0000;
 
   /* Typography: Inter, shipped by apollo-core. Neither Inter nor noto-sans
      covers CJK, so the four bundled Noto CJK families are chained explicitly

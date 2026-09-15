@@ -355,6 +355,35 @@ describe('Tabs', () => {
     expect(tab).toHaveClass('custom-trigger');
   });
 
+  it('draws the active-state edge from the theme variable, not a fixed shadow', () => {
+    // Classic themes resolve --tabs-active-shadow to a hairline and the Future
+    // family to a no-op, so the trigger must not hardcode shadcn's shadow-sm.
+    render(<TabsExample />);
+
+    const tab = screen.getByRole('tab', { name: 'Tab 1' });
+    expect(tab).toHaveClass('data-[state=active]:shadow-(--tabs-active-shadow)');
+    expect(tab.className).not.toMatch(/data-\[state=active\]:shadow-sm\b/);
+  });
+
+  it('lets a same-variant shadow override replace the active-state edge', () => {
+    // The Line recipe in tabs.stories.tsx relies on this: a plain
+    // data-[state=active]:shadow-none must win over the default edge.
+    render(
+      <Tabs defaultValue="tab1">
+        <TabsList aria-label="Tabs">
+          <TabsTrigger value="tab1" className="shadow-none data-[state=active]:shadow-none">
+            Tab 1
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="tab1">Content 1</TabsContent>
+      </Tabs>
+    );
+
+    const tab = screen.getByRole('tab', { name: 'Tab 1' });
+    expect(tab).toHaveClass('data-[state=active]:shadow-none');
+    expect(tab).not.toHaveClass('data-[state=active]:shadow-(--tabs-active-shadow)');
+  });
+
   it('applies custom className to TabsContent', () => {
     const { container } = render(
       <Tabs defaultValue="tab1">

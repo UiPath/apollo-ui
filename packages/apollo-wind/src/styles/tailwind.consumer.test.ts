@@ -142,3 +142,72 @@ describe('future theme typography', () => {
     );
   });
 });
+
+describe('tabs theme tokens', () => {
+  // Declarations-level assertions: jsdom does not resolve custom properties
+  // through theme class selectors, so parse the blocks the browser would apply.
+  // The lookbehind rejects a selector line that continues a longer list (the
+  // shared six-theme block ends with the same two Future lines), so each
+  // family regex only matches a rule that starts with that family.
+  const blockBody = (selector: RegExp) =>
+    [...css.matchAll(new RegExp(`(?<!,\\s)${selector.source}\\s*\\{([^}]+)\\}`, 'g'))].map(
+      (m) => m[1]
+    );
+
+  const root = blockBody(/:root/)[0] ?? '';
+  const shared =
+    blockBody(
+      /body\.light,\s*\.light:not\(\.react-flow\),\s*body\.light-hc,\s*\.light-hc,\s*body\.dark,\s*\.dark:not\(\.react-flow\),\s*body\.dark-hc,\s*\.dark-hc,\s*body\.future-dark,\s*\.future-dark,\s*body\.future-light,\s*\.future-light/
+    )[0] ?? '';
+  const classicLight =
+    blockBody(/body\.light,\s*\.light:not\(\.react-flow\),\s*body\.light-hc,\s*\.light-hc/)[0] ??
+    '';
+  const classicDark =
+    blockBody(/body\.dark,\s*\.dark:not\(\.react-flow\),\s*body\.dark-hc,\s*\.dark-hc/)[0] ?? '';
+  const future =
+    blockBody(/body\.future-dark,\s*\.future-dark,\s*body\.future-light,\s*\.future-light/).find(
+      (b) => b.includes('--tabs-active-shadow')
+    ) ?? '';
+
+  it('finds every theme block', () => {
+    for (const block of [root, shared, classicLight, classicDark, future]) {
+      expect(block).not.toBe('');
+    }
+  });
+
+  it('declares the variable TabsTrigger consumes', () => {
+    const tabs = readFileSync(resolve(__dirname, '../components/ui/tabs.tsx'), 'utf8');
+    expect(tabs).toContain('data-[state=active]:shadow-(--tabs-active-shadow)');
+    expect(tabs).not.toContain('data-[state=active]:shadow-sm');
+  });
+
+  it('keeps the box-shadow stack valid with no theme class', () => {
+    // An unset variable would invalidate box-shadow, taking the focus ring
+    // with it. The root default is a transparent no-op shadow.
+    expect(root).toContain('--tabs-active-shadow: 0 0 #0000;');
+  });
+
+  it('outlines the active pill with the input border color in classic themes', () => {
+    // Same token as input and panel borders; drawn in the shadow slot so a
+    // consumer shadow-none override keeps working.
+    expect(shared).toContain('--tabs-active-shadow: 0 0 0 1px var(--input);');
+    expect(classicLight).not.toContain('--tabs-active-shadow');
+    expect(classicDark).not.toContain('--tabs-active-shadow');
+  });
+
+  it('renders the active pill flat in the Future family', () => {
+    expect(future).toContain('--tabs-active-shadow: 0 0 #0000;');
+  });
+
+  it('gives the classic light track contrast via the overlay surface', () => {
+    // apollo-core's classic light raised surface is the same white as the
+    // page, so the shared --muted mapping renders white on white there.
+    expect(shared).toContain('--muted: var(--surface-raised);');
+    expect(classicLight).toContain('--muted: var(--surface-overlay);');
+    expect(future).toContain('--muted: var(--surface-overlay);');
+  });
+
+  it('leaves the classic dark --muted mapping alone', () => {
+    expect(classicDark).not.toContain('--muted:');
+  });
+});
