@@ -16,10 +16,15 @@ export const BaseTextContainer = ({
   children,
 }: BaseTextContainerProps) => {
   if (shape === 'rectangle') {
-    return <div className="flex flex-1 min-w-0 flex-col items-start text-left">{children}</div>;
+    return (
+      <div data-node-part="label" className="flex flex-1 min-w-0 flex-col items-start text-left">
+        {children}
+      </div>
+    );
   }
   return (
     <div
+      data-node-part="label"
       className={cx(
         'absolute left-1/2 w-[150%] flex flex-col z-10 transition-transform duration-200',
         hasBottomHandles
