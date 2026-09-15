@@ -461,6 +461,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
         hovered={isHovered}
         shouldShowHandles={shouldShowHandles}
         showAddButton={showHandleAddButtons}
+        isLocked={!canEditNode}
         showNotches={shouldShowHandles}
         nodeWidth={containerWidth}
         nodeHeight={containerHeight}
@@ -659,6 +660,7 @@ type SharedHandleGroupProps = {
   hovered: boolean;
   shouldShowHandles: boolean;
   showAddButton: boolean;
+  isLocked: boolean;
   showNotches: boolean;
   nodeWidth: number;
   nodeHeight: number;
@@ -697,6 +699,7 @@ function HandleGroup({
   hovered,
   shouldShowHandles,
   showAddButton,
+  isLocked,
   showNotches,
   nodeWidth,
   nodeHeight,
@@ -738,6 +741,7 @@ function HandleGroup({
       selected={selected}
       hovered={hovered}
       showAddButton={showAddButton}
+      isLocked={isLocked}
       showNotches={showNotches}
       customPositionAndOffsets={group.customPositionAndOffsets}
       nodeWidth={nodeWidth}
