@@ -541,6 +541,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     selected: selected ?? false,
     hovered: isHovered,
     showAddButton: canEdit && !multipleNodesSelected && !isConnecting && !dragging,
+    isLocked: !canEdit,
     showNotches,
     // Deterministic geometry (not the measured props) so handles are grid-aligned from first render.
     nodeWidth: containerWidth,
