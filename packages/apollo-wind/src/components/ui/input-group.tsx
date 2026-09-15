@@ -183,7 +183,8 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, InputGroupInputProps>
 );
 InputGroupInput.displayName = 'InputGroupInput';
 
-export interface InputGroupTextareaProps extends Omit<TextareaProps, 'variant'> {}
+export interface InputGroupTextareaProps
+  extends Omit<TextareaProps, 'variant' | 'error' | 'errorId'> {}
 
 const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, InputGroupTextareaProps>(
   (

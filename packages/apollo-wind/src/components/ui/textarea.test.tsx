@@ -174,3 +174,37 @@ describe('Textarea', () => {
     });
   });
 });
+
+describe('Textarea inline validation', () => {
+  it('renders the message and wires aria attributes to it', () => {
+    render(<Textarea id="notes" error="Add at least 20 characters." />);
+    const textarea = screen.getByRole('textbox');
+    const message = screen.getByText('Add at least 20 characters.');
+
+    expect(textarea).toHaveAttribute('id', 'notes');
+    expect(textarea).toHaveAttribute('aria-invalid', 'true');
+    expect(textarea).toHaveAttribute('aria-describedby', 'notes-error');
+    expect(textarea).toHaveAttribute('aria-errormessage', 'notes-error');
+    expect(message).toHaveAttribute('id', 'notes-error');
+    expect(message).toHaveClass('text-xs', 'leading-4', 'text-error');
+  });
+
+  it('preserves an existing description alongside the validation message', () => {
+    render(
+      <>
+        <p id="notes-help">Visible to reviewers.</p>
+        <Textarea id="notes" aria-describedby="notes-help" error="Required." />
+      </>
+    );
+    expect(screen.getByRole('textbox')).toHaveAttribute(
+      'aria-describedby',
+      'notes-help notes-error'
+    );
+  });
+
+  it('keeps consumer aria-invalid when no error is passed', () => {
+    render(<Textarea aria-invalid />);
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.queryByRole('paragraph')).toBeNull();
+  });
+});

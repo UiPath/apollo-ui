@@ -123,3 +123,20 @@ describe('Button', () => {
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
   });
 });
+
+describe('Button invalid state', () => {
+  it('gives the outline variant the shared field error stroke', () => {
+    render(
+      <Button variant="outline" aria-invalid>
+        Pick one
+      </Button>
+    );
+    const button = screen.getByRole('button');
+    expect(button).toHaveAttribute('aria-invalid', 'true');
+    expect(button).toHaveClass(
+      'aria-invalid:border-error',
+      'future:aria-invalid:ring-1',
+      'future:aria-invalid:ring-error/40'
+    );
+  });
+});

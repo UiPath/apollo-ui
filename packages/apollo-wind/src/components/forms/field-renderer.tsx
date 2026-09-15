@@ -606,6 +606,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
       return (
         <FormField>
           <FormFieldLabel
+            htmlFor={field.name}
             required={required}
             tooltip={field.tooltip}
             tooltipAriaLabel={field.tooltipAriaLabel}
@@ -613,10 +614,12 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             {field.label}
           </FormFieldLabel>
           <DatePicker
+            id={field.name}
             value={formField.value as Date | undefined}
             onValueChange={formField.onChange}
             disabled={disabled}
             placeholder={field.placeholder}
+            aria-invalid={error ? true : undefined}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
           <FormFieldError>{error}</FormFieldError>

@@ -4,6 +4,7 @@ import { Upload, X } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib';
+import { FormFieldError } from './form-field';
 
 export interface FileUploadProps {
   /**
@@ -32,6 +33,13 @@ export interface FileUploadProps {
   /** External errors keyed by filename. Use this to set errors from outside (e.g., upload failures). */
   errors?: Record<string, string>;
   onBlur?: React.FocusEventHandler<HTMLFieldSetElement>;
+  /**
+   * Field-level feedback rendered immediately below the dropzone, for example
+   * "Attach at least one file". Per-file problems belong in `errors` instead.
+   */
+  error?: React.ReactNode;
+  /** Optional id for the inline validation message. */
+  errorId?: string;
   'aria-invalid'?: React.AriaAttributes['aria-invalid'];
   'aria-describedby'?: string;
   'aria-errormessage'?: string;
@@ -51,12 +59,21 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
       showPreview = false,
       errors,
       onBlur,
+      error,
+      errorId,
       'aria-invalid': ariaInvalid,
       'aria-describedby': ariaDescribedBy,
       'aria-errormessage': ariaErrorMessage,
     },
     ref
   ) {
+    const generatedId = React.useId();
+    const validationId = errorId ?? `${id ?? `file-upload-${generatedId.replace(/:/g, '')}`}-error`;
+    const describedBy = [ariaDescribedBy, error ? validationId : undefined]
+      .filter(Boolean)
+      .join(' ');
+    const resolvedAriaInvalid = error ? true : ariaInvalid;
+    const resolvedAriaErrorMessage = error ? validationId : ariaErrorMessage;
     const [files, setFiles] = React.useState<File[]>([]);
     const [isDragging, setIsDragging] = React.useState(false);
     const [fileErrors, setFileErrors] = React.useState<Map<number, string>>(new Map());
@@ -264,23 +281,25 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
           // accessible-name computation, so only set it when there's no id for a
           // consumer's label to target (same pattern as MultiSelect).
           aria-label={id ? undefined : (ariaLabel ?? 'File upload')}
-          aria-invalid={ariaInvalid}
-          aria-describedby={ariaDescribedBy}
-          aria-errormessage={ariaErrorMessage}
+          aria-invalid={resolvedAriaInvalid}
+          aria-describedby={describedBy || undefined}
+          aria-errormessage={resolvedAriaErrorMessage}
         />
         {/** biome-ignore lint/a11y/useSemanticElements: A div avoids invalid nested buttons when uploaded files have remove actions. */}
         <div
           role="button"
           aria-label={ariaLabel ?? 'File upload area'}
           aria-disabled={disabled}
-          aria-invalid={ariaInvalid}
-          aria-describedby={ariaDescribedBy}
-          aria-errormessage={ariaErrorMessage}
+          aria-invalid={resolvedAriaInvalid}
+          aria-describedby={describedBy || undefined}
+          aria-errormessage={resolvedAriaErrorMessage}
           tabIndex={disabled ? -1 : 0}
           className={cn(
             // Base styles (all themes)
             'relative flex w-full flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg px-4 py-6 cursor-pointer transition-colors',
             'text-foreground-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+            // Error state (same stroke as Input; Future keeps its 1px outer ring)
+            'aria-invalid:border-error aria-invalid:focus-visible:ring-error future:aria-invalid:border-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
             // Future Dark / Future Light overrides
             'future:rounded-xl future:border-border-subtle future:bg-surface-overlay future:hover:bg-surface-hover future:focus-visible:ring-offset-background',
             isDragging
@@ -316,6 +335,9 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
             </p>
           )}
         </div>
+        <FormFieldError id={validationId} data-slot="file-upload-error" className="mt-1">
+          {error}
+        </FormFieldError>
 
         {files.length > 0 && (
           <div className="mt-4 space-y-2">

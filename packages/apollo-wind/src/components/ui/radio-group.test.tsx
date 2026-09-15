@@ -267,3 +267,21 @@ describe('RadioGroup', () => {
     });
   });
 });
+
+describe('RadioGroup invalid state', () => {
+  it('exposes aria-invalid on the group and strokes every item from it', () => {
+    render(
+      <RadioGroup aria-invalid aria-label="Priority">
+        <RadioGroupItem value="low" aria-label="Low" />
+        <RadioGroupItem value="high" aria-label="High" />
+      </RadioGroup>
+    );
+    const group = screen.getByRole('radiogroup');
+    expect(group).toHaveAttribute('aria-invalid', 'true');
+    expect(group).toHaveClass('group/radio-group');
+    for (const radio of screen.getAllByRole('radio')) {
+      expect(radio).not.toHaveAttribute('aria-invalid');
+      expect(radio).toHaveClass('group-aria-invalid/radio-group:border-error');
+    }
+  });
+});

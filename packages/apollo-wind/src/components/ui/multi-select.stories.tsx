@@ -1,5 +1,6 @@
 import type { Meta } from '@storybook/react-vite';
 import * as React from 'react';
+import { Label } from './label';
 import { MultiSelect } from './multi-select';
 
 const meta = {
@@ -238,5 +239,38 @@ export const Interactive = {
         )}
       </div>
     );
+  },
+};
+
+export const WithInlineValidation = {
+  render: () => {
+    const [selected, setSelected] = React.useState<string[]>([]);
+    return (
+      <div className="grid w-[400px] gap-1.5">
+        <Label htmlFor="multi-select-stages">Stages</Label>
+        <MultiSelect
+          id="multi-select-stages"
+          options={[
+            { label: 'Intake', value: 'intake' },
+            { label: 'Review', value: 'review' },
+            { label: 'Approval', value: 'approval' },
+            { label: 'Closed', value: 'closed' },
+          ]}
+          selected={selected}
+          onChange={setSelected}
+          placeholder="Select stages"
+          error={selected.length === 0 ? 'Select at least one stage.' : undefined}
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Clear the error as soon as the selection satisfies the rule. ' +
+          'The trigger exposes `aria-invalid` and associates the visible message with `aria-describedby` and `aria-errormessage` automatically.',
+      },
+    },
   },
 };

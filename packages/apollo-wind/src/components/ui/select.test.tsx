@@ -336,3 +336,41 @@ describe('Select', () => {
     });
   });
 });
+
+describe('SelectTrigger inline validation', () => {
+  it('renders the message and wires aria attributes to it', () => {
+    render(
+      <Select>
+        <SelectTrigger id="connection" error="Select a connection.">
+          <SelectValue placeholder="Pick" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="a">A</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+    const trigger = screen.getByRole('combobox');
+    const message = screen.getByText('Select a connection.');
+
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', 'connection-error');
+    expect(trigger).toHaveAttribute('aria-errormessage', 'connection-error');
+    expect(message).toHaveAttribute('id', 'connection-error');
+    expect(message).toHaveClass('text-error');
+  });
+
+  it('renders no message without an error', () => {
+    render(
+      <Select>
+        <SelectTrigger id="connection">
+          <SelectValue placeholder="Pick" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="a">A</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-invalid');
+    expect(document.getElementById('connection-error')).toBeNull();
+  });
+});

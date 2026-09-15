@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/index';
+import { FormFieldError } from './form-field';
 
 export interface MultiSelectProps {
   /** Applied to the trigger button, so a `<label htmlFor>` pointing at it associates correctly. */
@@ -29,6 +30,13 @@ export interface MultiSelectProps {
   clearAllText?: string | ((count: number) => string);
   /** Called when the multi-select popover closes after being opened. */
   onBlur?: () => void;
+  /**
+   * Field-specific feedback rendered immediately below the trigger.
+   * Keep the message focused on what went wrong and how to resolve it.
+   */
+  error?: React.ReactNode;
+  /** Optional id for the inline validation message. */
+  errorId?: string;
   'aria-invalid'?: React.AriaAttributes['aria-invalid'];
   'aria-describedby'?: string;
   'aria-errormessage'?: string;
@@ -49,6 +57,8 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
       searchPlaceholder = 'Search...',
       clearAllText,
       onBlur,
+      error,
+      errorId,
       'aria-invalid': ariaInvalid,
       'aria-describedby': ariaDescribedBy,
       'aria-errormessage': ariaErrorMessage,
@@ -56,6 +66,12 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
     ref
   ) => {
     const [open, setOpen] = React.useState(false);
+    const generatedId = React.useId();
+    const validationId =
+      errorId ?? `${id ?? `multi-select-${generatedId.replace(/:/g, '')}`}-error`;
+    const describedBy = [ariaDescribedBy, error ? validationId : undefined]
+      .filter(Boolean)
+      .join(' ');
 
     const handleUnselect = (value: string) => {
       onChange(selected.filter((s) => s !== value));
@@ -91,9 +107,9 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              aria-invalid={ariaInvalid}
-              aria-describedby={ariaDescribedBy}
-              aria-errormessage={ariaErrorMessage}
+              aria-invalid={error ? true : ariaInvalid}
+              aria-describedby={describedBy || undefined}
+              aria-errormessage={error ? validationId : ariaErrorMessage}
               // aria-label always wins over a `<label htmlFor>` association in the
               // accessible-name computation, so only set it when there's no id for a
               // consumer's label to target -- otherwise the label's own text names
@@ -197,6 +213,9 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
             )}
           </PopoverContent>
         </Popover>
+        <FormFieldError id={validationId} data-slot="multi-select-error" className="mt-1">
+          {error}
+        </FormFieldError>
       </div>
     );
   }
