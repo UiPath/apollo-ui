@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.52.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.1...@uipath/apollo-wind@2.52.2) (2026-09-15)
+
+### Bug Fixes
+
+* **apollo-wind:** give pill tabs contrast in classic themes and flatten future ([51de415](https://github.com/UiPath/apollo-ui/commit/51de415b534b901928c95a146fa1ef993eeb3ee1))
+
 ## [@uipath/apollo-wind-v2.52.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.0...@uipath/apollo-wind@2.52.1) (2026-09-15)
 
 ### Bug Fixes
