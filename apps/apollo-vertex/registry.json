@@ -9,6 +9,7 @@
       "title": "Apollo Vertex Theme",
       "description": "Apollo Vertex design system tokens — colors, typography, spacing, shadows, and easing functions with light and dark mode support.",
       "dependencies": ["tw-animate-css"],
+      "css": { "@import \"tw-animate-css\"": {} },
       "registryDependencies": ["@uipath/font-inter"],
       "cssVars": {
         "theme": {
