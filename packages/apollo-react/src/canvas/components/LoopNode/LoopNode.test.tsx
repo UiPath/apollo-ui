@@ -5,6 +5,7 @@ import { ValidationErrorSeverity } from '../../types/validation';
 import type { LoopNodeData, LoopNodeExecutionCountState } from './LoopNode.types';
 
 const {
+  mockButtonHandles,
   mockExecutionState,
   mockGetContainerResizeMinimums,
   mockManifest,
@@ -12,6 +13,8 @@ const {
   mockReadOnlyNodeIds,
   mockValidationState,
 } = vi.hoisted(() => ({
+  // biome-ignore lint/suspicious/noExplicitAny: captures the handle group props for assertions
+  mockButtonHandles: vi.fn() as any,
   mockExecutionState: { current: undefined as unknown },
   mockGetContainerResizeMinimums: vi.fn(() => ({
     left: 410,
@@ -115,6 +118,13 @@ vi.mock('../BaseCanvas/SelectionStateContext', () => ({
 vi.mock('../BaseCanvas/ReadOnlyNodesContext', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../BaseCanvas/ReadOnlyNodesContext')>()),
   useIsNodeReadOnly: (nodeId: string) => mockReadOnlyNodeIds.current.has(nodeId),
+}));
+
+vi.mock('../ButtonHandle', () => ({
+  ButtonHandles: (props: Record<string, unknown>) => {
+    mockButtonHandles(props);
+    return null;
+  },
 }));
 
 vi.mock('../Toolbar', () => ({
@@ -417,6 +427,37 @@ describe('LoopNode localized labels', () => {
     renderLoopNode({ onAddFirstChild: vi.fn() });
 
     expect(screen.getByRole('button', { name: 'Add node to loop' })).toBeTruthy();
+  });
+});
+
+describe('LoopNode locked handles', () => {
+  const isLocked = () => mockButtonHandles.mock.calls.at(-1)?.[0]?.isLocked;
+
+  beforeEach(() => {
+    mockButtonHandles.mockClear();
+    mockManifest.current = {
+      display: { label: 'Loop', icon: 'repeat', shape: 'container' },
+      handleConfiguration: [
+        {
+          position: 'top',
+          handles: [{ id: 'tools', type: 'source', label: 'Tools', labelVisibility: 'hover' }],
+        },
+      ],
+    };
+  });
+
+  it('is unlocked in design mode', () => {
+    renderLoopNode({ selected: true });
+
+    expect(isLocked()).toBe(false);
+  });
+
+  it('is locked for a per-node lock in design mode', () => {
+    mockReadOnlyNodeIds.current = new Set([defaultProps.id]);
+
+    renderLoopNode({ selected: true });
+
+    expect(isLocked()).toBe(true);
   });
 });
 

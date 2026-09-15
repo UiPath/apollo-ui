@@ -323,6 +323,30 @@ describe('ButtonHandles', () => {
       expect(getLabelClass()).toContain('opacity-100');
     });
 
+    const queryAddButton = () => document.querySelector('[aria-label="Add node"]');
+
+    it('reserves the add button slot while the node is unlocked', () => {
+      render(<ButtonHandles handles={[hoverHandle]} nodeId="n" position={Position.Top} />);
+      expect(queryAddButton()).toBeDisabled();
+    });
+
+    it('drops the add button slot when the node is locked', () => {
+      render(<ButtonHandles handles={[hoverHandle]} nodeId="n" position={Position.Top} isLocked />);
+      expect(queryAddButton()).toBeNull();
+      expect(screen.getByText('Tools')).toBeInTheDocument();
+    });
+
+    it('drops the add button slot when the handle opts out of a button', () => {
+      render(
+        <ButtonHandles
+          handles={[{ ...hoverHandle, showButton: false }]}
+          nodeId="n"
+          position={Position.Top}
+        />
+      );
+      expect(queryAddButton()).toBeNull();
+    });
+
     it('keeps a default (always) label visible regardless of hover/selection', () => {
       const alwaysHandle: ButtonHandleConfig = {
         id: 'tool',
