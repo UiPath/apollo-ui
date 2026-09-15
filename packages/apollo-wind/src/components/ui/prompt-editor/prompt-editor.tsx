@@ -784,9 +784,7 @@ export const PromptEditor = ({
               </LexicalComposer>
             </div>
           </div>
-          <FormFieldError id={errorId} data-slot="prompt-editor-error" className="mt-1">
-            {error}
-          </FormFieldError>
+          <FormFieldError id={errorId}>{error}</FormFieldError>
         </div>
       </TooltipProvider>
     </PromptEditorConfigProvider>

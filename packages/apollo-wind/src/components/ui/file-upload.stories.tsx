@@ -163,3 +163,26 @@ export const WithExternalErrors = {
     );
   },
 };
+
+export const WithInlineValidation = {
+  render: () => (
+    <div className="grid w-[400px] gap-1.5">
+      <Label htmlFor="file-upload-evidence">Supporting documents</Label>
+      <FileUpload
+        id="file-upload-evidence"
+        ariaLabel="Supporting documents"
+        multiple
+        error="Attach at least one supporting document."
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use `error` for field-level rules such as a required attachment. Problems with individual files still belong in `errors`, keyed by filename. ' +
+          'The dropzone exposes `aria-invalid` and associates the visible message with `aria-describedby` and `aria-errormessage` automatically.',
+      },
+    },
+  },
+};

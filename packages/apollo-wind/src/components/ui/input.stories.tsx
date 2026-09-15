@@ -51,7 +51,7 @@ export const WithLabel = {
 
 export const WithInlineValidation: Story = {
   render: () => (
-    <div className="grid w-full max-w-sm items-center gap-1.5">
+    <div className="grid w-full max-w-sm items-center gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
       <Label htmlFor="node-name">Node name</Label>
       <Input
         id="node-name"

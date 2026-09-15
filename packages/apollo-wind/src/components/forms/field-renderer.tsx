@@ -361,10 +361,12 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             placeholder={field.placeholder}
             disabled={disabled}
             aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
             aria-label={field.ariaLabel}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -392,10 +394,12 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             placeholder={field.placeholder}
             disabled={disabled}
             aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
             onChange={(e) => formField.onChange(parseFloat(e.target.value))}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -421,10 +425,12 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             disabled={disabled}
             maxLength={field.maxLength}
             aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
             {...(field.minRows != null ? { minRows: field.minRows } : { rows: field.rows || 4 })}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -448,6 +454,8 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
               id={field.name}
               aria-label={field.label}
               aria-invalid={error ? true : undefined}
+              aria-describedby={error ? `${field.name}-error` : undefined}
+              aria-errormessage={error ? `${field.name}-error` : undefined}
             >
               <SelectValue placeholder={field.placeholder || 'Select...'} />
             </SelectTrigger>
@@ -464,7 +472,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             </SelectContent>
           </Select>
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -493,9 +501,11 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             searchPlaceholder={field.searchPlaceholder ?? 'Search...'}
             maxSelected={field.maxSelected}
             aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -508,6 +518,8 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
               onCheckedChange={(checked) => formField.onChange(checked === true)}
               disabled={disabled}
               aria-invalid={error ? true : undefined}
+              aria-describedby={error ? `${field.name}-error` : undefined}
+              aria-errormessage={error ? `${field.name}-error` : undefined}
               id={field.name}
             />
             <div className="space-y-1 leading-none">
@@ -522,7 +534,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
               <FormFieldDescription>{field.description}</FormFieldDescription>
             </div>
           </div>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -547,9 +559,11 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
               onCheckedChange={(checked) => formField.onChange(checked === true)}
               disabled={disabled}
               aria-invalid={error ? true : undefined}
+              aria-describedby={error ? `${field.name}-error` : undefined}
+              aria-errormessage={error ? `${field.name}-error` : undefined}
             />
           </div>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -572,6 +586,8 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             onValueChange={formField.onChange}
             disabled={disabled}
             aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
           >
             {options.map((option) => (
               <div key={String(option.value)} className="flex items-center space-x-2">
@@ -587,7 +603,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             ))}
           </RadioGroup>
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -606,6 +622,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
       return (
         <FormField>
           <FormFieldLabel
+            htmlFor={field.name}
             required={required}
             tooltip={field.tooltip}
             tooltipAriaLabel={field.tooltipAriaLabel}
@@ -613,13 +630,17 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             {field.label}
           </FormFieldLabel>
           <DatePicker
+            id={field.name}
             value={formField.value as Date | undefined}
             onValueChange={formField.onChange}
             disabled={disabled}
             placeholder={field.placeholder}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -637,6 +658,8 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
           <DateTimePicker
             aria-labelledby={`${field.name}-label`}
             aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
             value={formField.value as Date | undefined}
             onValueChange={formField.onChange}
             disabled={disabled}
@@ -644,7 +667,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             use12Hour={field.use12Hour}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -663,6 +686,8 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             id={field.name}
             ariaLabel={field.ariaLabel ?? field.label}
             aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
             accept={field.accept}
             multiple={field.multiple}
             disabled={disabled}
@@ -673,7 +698,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             }}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -761,6 +786,8 @@ function SliderField({ field, formField, error, disabled, required }: SliderFiel
       <Slider
         aria-labelledby={`${field.name}-label`}
         aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${field.name}-error` : undefined}
+        aria-errormessage={error ? `${field.name}-error` : undefined}
         value={[(displayValue as number) ?? field.min ?? 0]}
         onValueChange={(values) => formField.onChange(values[0])}
         min={field.min || 0}
@@ -769,7 +796,7 @@ function SliderField({ field, formField, error, disabled, required }: SliderFiel
         disabled={disabled}
       />
       <FormFieldDescription>{field.description}</FormFieldDescription>
-      <FormFieldError>{error}</FormFieldError>
+      <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
     </FormField>
   );
 }

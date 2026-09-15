@@ -8,6 +8,7 @@ import {
   useResolvedPortalContainer,
 } from '@/components/ui/portal-container';
 import { cn } from '@/lib/index';
+import { FormFieldError } from './form-field';
 
 const Select = (props: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>) => (
   <SelectPrimitive.Root data-slot="select" {...props} />
@@ -26,25 +27,69 @@ const SelectValue = React.forwardRef<
 >((props, ref) => <SelectPrimitive.Value ref={ref} data-slot="select-value" {...props} />);
 SelectValue.displayName = SelectPrimitive.Value.displayName;
 
+export interface SelectTriggerProps
+  extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> {
+  /**
+   * Field-specific feedback rendered immediately below the trigger.
+   * Keep the message focused on what went wrong and how to resolve it.
+   */
+  error?: React.ReactNode;
+  /** Optional id for the inline validation message. */
+  errorId?: string;
+}
+
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    data-slot="select-trigger"
-    className={cn(
-      'flex h-9 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-base transition-colors data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm [&>span]:line-clamp-1 future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:hover:bg-surface-hover future:px-4 future:gap-4 future:font-normal aria-invalid:border-error aria-invalid:focus-visible:ring-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-));
+  SelectTriggerProps
+>(
+  (
+    {
+      'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
+      'aria-invalid': ariaInvalid,
+      className,
+      children,
+      error,
+      errorId,
+      id,
+      ...props
+    },
+    ref
+  ) => {
+    const generatedId = React.useId();
+    const validationId = errorId ?? `${id ?? `select-${generatedId.replace(/:/g, '')}`}-error`;
+    const describedBy = [ariaDescribedBy, error ? validationId : undefined]
+      .filter(Boolean)
+      .join(' ');
+
+    return (
+      // A Fragment: the trigger stays whatever type it already was at this position on every
+      // render, so toggling `error` never remounts it (a conditional wrapper would swap
+      // element types and drop focus mid-interaction).
+      <>
+        <SelectPrimitive.Trigger
+          ref={ref}
+          id={id}
+          data-slot="select-trigger"
+          aria-describedby={describedBy || undefined}
+          aria-errormessage={error ? validationId : ariaErrorMessage}
+          aria-invalid={error ? true : ariaInvalid}
+          className={cn(
+            'flex h-9 w-full cursor-pointer items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-base transition-colors data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm [&>span]:line-clamp-1 future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:hover:bg-surface-hover future:px-4 future:gap-4 future:font-normal aria-invalid:border-error aria-invalid:focus-visible:ring-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
+            className
+          )}
+          {...props}
+        >
+          {children}
+          <SelectPrimitive.Icon asChild>
+            <ChevronDown className="h-4 w-4 opacity-50" />
+          </SelectPrimitive.Icon>
+        </SelectPrimitive.Trigger>
+        <FormFieldError id={validationId}>{error}</FormFieldError>
+      </>
+    );
+  }
+);
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectScrollUpButton = React.forwardRef<

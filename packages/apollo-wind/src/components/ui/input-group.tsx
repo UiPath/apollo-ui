@@ -54,9 +54,7 @@ const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
           )}
           {...props}
         />
-        <FormFieldError id={validationId} data-slot="input-group-error" className="mt-1">
-          {error}
-        </FormFieldError>
+        <FormFieldError id={validationId}>{error}</FormFieldError>
       </InputGroupValidationContext.Provider>
     );
   }
@@ -183,7 +181,8 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, InputGroupInputProps>
 );
 InputGroupInput.displayName = 'InputGroupInput';
 
-export interface InputGroupTextareaProps extends Omit<TextareaProps, 'variant'> {}
+export interface InputGroupTextareaProps
+  extends Omit<TextareaProps, 'variant' | 'error' | 'errorId'> {}
 
 const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, InputGroupTextareaProps>(
   (

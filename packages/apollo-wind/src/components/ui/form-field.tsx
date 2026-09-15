@@ -19,13 +19,27 @@ export type FormFieldProps = React.ComponentPropsWithoutRef<'div'>;
  * truncating. A `1fr` track still resolves to max-content when the host width
  * is indefinite, so shrink-to-fit hosts are unaffected. `className` is merged
  * last, so a consumer can still override with `grid-cols-2` or similar.
+ *
+ * A direct-child validation message's own top margin is cancelled here
+ * (`[&>[data-slot=form-field-error]]:mt-0`), since this stack's own `gap-1.5` already
+ * spaces it -- otherwise the two would add up. Scoped to this component rather than a
+ * bare `.gap-1.5` selector in global CSS: keeping it here means it compiles into
+ * Tailwind's layered output (so a consumer's own margin utility can still win, at
+ * (0,2,0) vs this rule's (0,1,0) within the same layer) and survives the field rhythm
+ * changing out from under an unrelated stylesheet. A hand-built `grid gap-1.5` stack
+ * that isn't `<FormField>` doesn't get this for free -- see `FieldExample` in
+ * apps/storybook's guidance-primitives.tsx for the pattern to reach for instead of
+ * reintroducing the cancellation ad hoc.
  */
 const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
   ({ children, className, ...props }, ref) => (
     <div
       ref={ref}
       data-slot="form-field"
-      className={cn('grid grid-cols-[minmax(0,1fr)] gap-1.5', className)}
+      className={cn(
+        'grid grid-cols-[minmax(0,1fr)] gap-1.5 [&>[data-slot=form-field-error]]:mt-0',
+        className
+      )}
       {...props}
     >
       {children}
@@ -104,11 +118,14 @@ const FormFieldError = React.forwardRef<HTMLParagraphElement, FormFieldErrorProp
     return (
       <p
         ref={ref}
-        data-slot="form-field-error"
         aria-live="polite"
         aria-atomic="true"
-        className={cn('text-xs leading-4 text-error', className)}
+        className={cn('text-xs leading-4 text-error mt-1.5', className)}
         {...props}
+        // Always the canonical marker, even if a caller's own `data-slot` slips in through
+        // `...props` -- FormField's gap-cancelling rule above depends on this exact value
+        // being the one, stable way to find "the validation message" from any ancestor.
+        data-slot="form-field-error"
       >
         {children}
       </p>

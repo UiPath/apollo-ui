@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Checkbox } from './checkbox';
+import { FormFieldError } from './form-field';
 import { Label } from './label';
-import { Row, Column } from './layout';
+import { Column, Row } from './layout';
 
 const meta = {
   title: 'Components/Core/Checkbox',
@@ -107,3 +108,28 @@ export const Group = {
     </Column>
   ),
 } satisfies Story;
+
+export const WithInlineValidation = {
+  render: () => (
+    <div className="grid gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="checkbox-terms"
+          aria-invalid
+          aria-describedby="checkbox-terms-error"
+          aria-errormessage="checkbox-terms-error"
+        />
+        <Label htmlFor="checkbox-terms">I accept the terms of use</Label>
+      </div>
+      <FormFieldError id="checkbox-terms-error">Accept the terms to continue.</FormFieldError>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Checkbox has no message slot of its own. Set `aria-invalid` for the red stroke and render `FormFieldError` below, pointing `aria-describedby` and `aria-errormessage` at its id.',
+      },
+    },
+  },
+};

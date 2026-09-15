@@ -246,3 +246,74 @@ describe('trigger icon color', () => {
     expect(trigger.querySelector(':scope > svg')).not.toBeNull();
   });
 });
+
+describe('DatePicker inline validation', () => {
+  it('renders the message and wires aria attributes to it', () => {
+    render(<DatePicker id="due" error="Select a due date." />);
+    const trigger = screen.getByRole('button');
+    const message = screen.getByText('Select a due date.');
+
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', 'due-error');
+    expect(trigger).toHaveAttribute('aria-errormessage', 'due-error');
+    expect(message).toHaveAttribute('id', 'due-error');
+    expect(message).toHaveClass('text-error');
+  });
+
+  it('lets a label name the trigger when an id is provided', () => {
+    render(
+      <>
+        <label htmlFor="due">Due date</label>
+        <DatePicker id="due" />
+      </>
+    );
+    expect(screen.getByRole('button', { name: 'Due date' })).toBeInTheDocument();
+  });
+
+  it('keeps the computed aria-label when nothing else names it', () => {
+    render(<DatePicker placeholder="Pick a date" />);
+    expect(screen.getByRole('button', { name: 'Pick a date' })).toBeInTheDocument();
+  });
+});
+
+describe('DateRangePicker inline validation', () => {
+  it('renders the message and wires aria attributes to it', () => {
+    render(<DateRangePicker id="window" error="Select a date range." />);
+    const trigger = screen.getByRole('button');
+    const message = screen.getByText('Select a date range.');
+
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', 'window-error');
+    expect(trigger).toHaveAttribute('aria-errormessage', 'window-error');
+    expect(message).toHaveAttribute('id', 'window-error');
+  });
+});
+describe('DatePicker remount safety', () => {
+  it('keeps the same trigger node and focus when an error appears', () => {
+    const { rerender } = render(<DatePicker id="due" />);
+    const before = screen.getByRole('button');
+    before.focus();
+    expect(before).toHaveFocus();
+
+    rerender(<DatePicker id="due" error="Select a due date." />);
+    const after = screen.getByRole('button');
+
+    expect(after).toBe(before);
+    expect(after).toHaveFocus();
+  });
+});
+
+describe('DateRangePicker remount safety', () => {
+  it('keeps the same trigger node and focus when an error appears', () => {
+    const { rerender } = render(<DateRangePicker id="window" />);
+    const before = screen.getByRole('button');
+    before.focus();
+    expect(before).toHaveFocus();
+
+    rerender(<DateRangePicker id="window" error="Select a date range." />);
+    const after = screen.getByRole('button');
+
+    expect(after).toBe(before);
+    expect(after).toHaveFocus();
+  });
+});

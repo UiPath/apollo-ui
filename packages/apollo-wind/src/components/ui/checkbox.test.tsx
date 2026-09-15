@@ -117,3 +117,16 @@ describe('Checkbox', () => {
     expect(checkbox).toHaveClass('focus-visible:ring-2');
   });
 });
+
+describe('Checkbox invalid state', () => {
+  it('takes the field error stroke when aria-invalid is set', () => {
+    render(<Checkbox aria-invalid aria-label="Terms" />);
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).toHaveAttribute('aria-invalid', 'true');
+    expect(checkbox).toHaveClass(
+      'aria-invalid:border-error',
+      'future:aria-invalid:border-error',
+      'future:aria-invalid:hover:border-error'
+    );
+  });
+});

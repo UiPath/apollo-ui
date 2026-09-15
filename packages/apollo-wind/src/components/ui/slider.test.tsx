@@ -199,3 +199,46 @@ describe('Slider', () => {
     expect(slider).toBeInTheDocument();
   });
 });
+
+describe('Slider invalid state', () => {
+  it('moves the invalid, description and label wiring onto the thumb, which owns role="slider"', () => {
+    render(
+      <>
+        <span id="retries-label">Retries</span>
+        <p id="retries-error">Retry count must be between 0 and 5.</p>
+        <Slider
+          aria-invalid
+          aria-labelledby="retries-label"
+          aria-describedby="retries-error"
+          aria-errormessage="retries-error"
+          defaultValue={[8]}
+          max={10}
+        />
+      </>
+    );
+    const thumb = screen.getByRole('slider', { name: 'Retries' });
+    expect(thumb).toHaveAttribute('aria-invalid', 'true');
+    expect(thumb).toHaveAttribute('aria-describedby', 'retries-error');
+    expect(thumb).toHaveAttribute('aria-errormessage', 'retries-error');
+    expect(thumb).toHaveClass('aria-invalid:border-error');
+    const root = thumb.closest('[data-slot="slider"]');
+    for (const attr of [
+      'aria-label',
+      'aria-invalid',
+      'aria-describedby',
+      'aria-errormessage',
+      'aria-labelledby',
+    ]) {
+      expect(root).not.toHaveAttribute(attr);
+    }
+  });
+});
+
+describe('Slider naming', () => {
+  it('puts aria-label on the thumb so the slider role has an accessible name', () => {
+    render(<Slider aria-label="Volume" defaultValue={[30]} />);
+    const thumb = screen.getByRole('slider', { name: 'Volume' });
+    expect(thumb).toHaveAttribute('aria-label', 'Volume');
+    expect(thumb.closest('[data-slot="slider"]')).not.toHaveAttribute('aria-label');
+  });
+});

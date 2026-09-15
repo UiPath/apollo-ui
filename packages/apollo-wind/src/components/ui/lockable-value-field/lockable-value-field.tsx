@@ -142,7 +142,12 @@ export function LockableValueField({
   const lockedDisplayValue = getLockedDisplayValue(fieldType, value, options);
 
   return (
-    <div className={cn('@container group flex flex-col gap-1.5', className)}>
+    <div
+      className={cn(
+        '@container group flex flex-col gap-1.5 [&>[data-slot=form-field-error]]:mt-0',
+        className
+      )}
+    >
       <FieldHeader
         label={label}
         fieldId={fieldId}

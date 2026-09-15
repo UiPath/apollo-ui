@@ -203,3 +203,38 @@ describe('DateTimePicker', () => {
     });
   });
 });
+
+describe('DateTimePicker inline validation', () => {
+  it('renders the message and wires aria attributes to it', () => {
+    render(<DateTimePicker id="deadline" error="Choose a later deadline." />);
+    const trigger = screen.getByRole('button');
+    const message = screen.getByText('Choose a later deadline.');
+
+    expect(trigger).toHaveAttribute('id', 'deadline');
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', 'deadline-error');
+    expect(trigger).toHaveAttribute('aria-errormessage', 'deadline-error');
+    expect(message).toHaveAttribute('id', 'deadline-error');
+    expect(message).toHaveClass('text-error');
+  });
+
+  it('still forwards a bare aria-invalid without rendering a message', () => {
+    render(<DateTimePicker aria-invalid />);
+    expect(screen.getByRole('button')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-describedby');
+  });
+});
+describe('DateTimePicker remount safety', () => {
+  it('keeps the same trigger node and focus when an error appears', () => {
+    const { rerender } = render(<DateTimePicker id="deadline" />);
+    const before = screen.getByRole('button');
+    before.focus();
+    expect(before).toHaveFocus();
+
+    rerender(<DateTimePicker id="deadline" error="Choose a later deadline." />);
+    const after = screen.getByRole('button');
+
+    expect(after).toBe(before);
+    expect(after).toHaveFocus();
+  });
+});

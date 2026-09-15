@@ -119,9 +119,12 @@ export function StringListField({
               disabled={disabled}
               aria-label={`${field.label} ${index + 1}`}
               // The error belongs to the list as a whole, so every row carries the invalid
-              // state: it drives Textarea's aria-invalid styling and gives assistive tech
-              // the signal that the FormFieldError text below is about these inputs.
+              // state and points at the same message id: it drives Textarea's aria-invalid
+              // styling and lets assistive tech announce the FormFieldError text below,
+              // regardless of which row is focused.
               aria-invalid={error ? true : undefined}
+              aria-describedby={error ? `${field.name}-error` : undefined}
+              aria-errormessage={error ? `${field.name}-error` : undefined}
               className="flex-1"
             />
             <Button
@@ -151,7 +154,7 @@ export function StringListField({
         </div>
       )}
       <FormFieldDescription>{field.description}</FormFieldDescription>
-      <FormFieldError>{error}</FormFieldError>
+      <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
     </FormField>
   );
 }

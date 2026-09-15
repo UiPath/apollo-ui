@@ -99,7 +99,10 @@ export function PanelField({
     : children;
 
   return (
-    <div className={cn('grid gap-1.5', className)} data-slot="panel-field">
+    <div
+      className={cn('grid gap-1.5 [&>[data-slot=form-field-error]]:mt-0', className)}
+      data-slot="panel-field"
+    >
       <PanelFieldLabel htmlFor={controlId} required={required}>
         {label}
       </PanelFieldLabel>

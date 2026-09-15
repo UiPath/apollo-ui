@@ -136,6 +136,7 @@ export {
   CollapsibleContent,
   CollapsibleTrigger,
 } from './components/ui/collapsible';
+export type { ComboboxItem, ComboboxProps } from './components/ui/combobox';
 export { Combobox } from './components/ui/combobox';
 export {
   Command,
@@ -171,7 +172,8 @@ export {
   DataTableColumnHeader,
   DataTableSelectColumn,
 } from './components/ui/data-table';
-export { DatePicker } from './components/ui/date-picker';
+export type { DatePickerProps, DateRangePickerProps } from './components/ui/date-picker';
+export { DatePicker, DateRangePicker } from './components/ui/date-picker';
 export type { DateTimePickerProps } from './components/ui/datetime-picker';
 export { DateTimePicker } from './components/ui/datetime-picker';
 // -----------------------------------------------------------------------------
@@ -241,6 +243,7 @@ export {
 } from './components/ui/editable-cell';
 export type { EmptyStateProps } from './components/ui/empty-state';
 export { EmptyState } from './components/ui/empty-state';
+export type { FileUploadProps } from './components/ui/file-upload';
 export { FileUpload } from './components/ui/file-upload';
 export type {
   FormFieldDescriptionProps,
@@ -391,6 +394,7 @@ export type {
   SearchWithSuggestionsProps,
 } from './components/ui/search';
 export { Search, SearchWithSuggestions } from './components/ui/search';
+export type { SelectTriggerProps } from './components/ui/select';
 export {
   Select,
   SelectContent,

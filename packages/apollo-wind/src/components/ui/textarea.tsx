@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { cn } from '@/lib/index';
+import { FormFieldError } from './form-field';
 
 export type TextareaProps = React.ComponentProps<'textarea'> & {
   /**
@@ -12,6 +13,13 @@ export type TextareaProps = React.ComponentProps<'textarea'> & {
    * up to `maxRows`, then scrolls.
    */
   maxRows?: number;
+  /**
+   * Field-specific feedback rendered immediately below the textarea.
+   * Keep the message focused on what went wrong and how to resolve it.
+   */
+  error?: React.ReactNode;
+  /** Optional id for the inline validation message. */
+  errorId?: string;
 };
 
 /** Coerce a row count to a positive integer, or `undefined` when unusable. */
@@ -48,7 +56,28 @@ function cssLength(value: string | number | undefined | null): string {
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, minRows, maxRows, onChange, style, ...props }, ref) => {
+  (
+    {
+      'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
+      'aria-invalid': ariaInvalid,
+      className,
+      error,
+      errorId,
+      id,
+      minRows,
+      maxRows,
+      onChange,
+      style,
+      ...props
+    },
+    ref
+  ) => {
+    const generatedId = React.useId();
+    const validationId = errorId ?? `${id ?? `textarea-${generatedId.replace(/:/g, '')}`}-error`;
+    const describedBy = [ariaDescribedBy, error ? validationId : undefined]
+      .filter(Boolean)
+      .join(' ');
     // Normalize + guard inverted bounds: a floor taller than the ceiling would trip the
     // manual-resize detector and permanently disable auto-sizing (min never exceeds max).
     const { effMinRows, effMaxRows } = React.useMemo(() => {
@@ -167,27 +196,41 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     }, [managed, effMaxRows, resize]);
 
     return (
-      <textarea
-        data-slot="textarea"
-        className={cn(
-          // Base styles (all themes)
-          'flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40 aria-invalid:focus-visible:ring-error md:text-sm',
-          // Future Dark / Future Light overrides
-          'future:rounded-xl future:border-0 future:bg-surface-overlay future:text-sm future:placeholder:text-foreground-muted future:placeholder:font-normal future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
-          // Fixed floor only in the unmanaged default; managed mode owns its min-height inline.
-          !managed && 'min-h-[80px]',
-          // Vertical resize handle (uncapped above; bounded below by the `minRows` floor).
-          managed && 'resize-y',
-          className
-        )}
-        ref={setRef}
-        style={style}
-        onChange={(event) => {
-          onChange?.(event);
-          resize();
-        }}
-        {...props}
-      />
+      // A Fragment, not a wrapper element: `InputGroup`'s `has-[>textarea]` layout selector
+      // needs the `<textarea>` to stay a direct child wherever this renders (InputGroupTextarea
+      // never passes `error`, so it always takes this same shape). A Fragment also keeps the
+      // element at this position stable across renders -- switching between a bare control and
+      // a wrapped one when `error` toggles would remount the textarea and drop focus/caret
+      // position mid-keystroke under validate-on-change. FormFieldError already renders nothing
+      // when `error` is falsy, so the bare-vs-message look is unaffected either way.
+      <>
+        <textarea
+          data-slot="textarea"
+          id={id}
+          aria-describedby={describedBy || undefined}
+          aria-errormessage={error ? validationId : ariaErrorMessage}
+          aria-invalid={error ? true : ariaInvalid}
+          className={cn(
+            // Base styles (all themes)
+            'flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40 aria-invalid:focus-visible:ring-error md:text-sm',
+            // Future Dark / Future Light overrides
+            'future:rounded-xl future:border-0 future:bg-surface-overlay future:text-sm future:placeholder:text-foreground-muted future:placeholder:font-normal future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
+            // Fixed floor only in the unmanaged default; managed mode owns its min-height inline.
+            !managed && 'min-h-[80px]',
+            // Vertical resize handle (uncapped above; bounded below by the `minRows` floor).
+            managed && 'resize-y',
+            className
+          )}
+          ref={setRef}
+          style={style}
+          onChange={(event) => {
+            onChange?.(event);
+            resize();
+          }}
+          {...props}
+        />
+        <FormFieldError id={validationId}>{error}</FormFieldError>
+      </>
     );
   }
 );
