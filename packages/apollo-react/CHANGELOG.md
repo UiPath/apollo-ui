@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.3...@uipath/apollo-react@6.46.0) (2026-09-15)
+
+### Features
+
+* **apollo-react:** guardrails component family under canvas ([8f81990](https://github.com/UiPath/apollo-ui/commit/8f81990d6529ecbb6a979e4266733a919c760141))
+
 ## [@uipath/apollo-react-v6.45.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.2...@uipath/apollo-react@6.45.3) (2026-09-15)
 
 ### Bug Fixes
