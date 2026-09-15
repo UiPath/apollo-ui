@@ -11,7 +11,9 @@ const RadioGroup = React.forwardRef<
   return (
     <RadioGroupPrimitive.Root
       data-slot="radio-group"
-      className={cn('grid gap-2', className)}
+      // Named group so items can pick up the group's aria-invalid state (set on the
+      // radiogroup, which is where ARIA allows it; individual radios do not take it).
+      className={cn('group/radio-group grid gap-2', className)}
       {...props}
       ref={ref}
     />
@@ -29,9 +31,9 @@ const RadioGroupItem = React.forwardRef<
       data-slot="radio-group-item"
       className={cn(
         // Base styles (all themes)
-        'aspect-square h-4 w-4 cursor-pointer rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'aspect-square h-4 w-4 cursor-pointer rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 group-aria-invalid/radio-group:border-error group-aria-invalid/radio-group:focus-visible:ring-error',
         // Future Dark / Future Light overrides
-        'future:border-border future:text-foreground future:hover:border-border-hover future:data-[state=checked]:border-foreground-muted',
+        'future:border-border future:text-foreground future:hover:border-border-hover future:data-[state=checked]:border-foreground-muted future:group-aria-invalid/radio-group:border-error',
         className
       )}
       {...props}

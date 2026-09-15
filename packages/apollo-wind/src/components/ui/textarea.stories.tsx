@@ -77,3 +77,24 @@ export const WithDescription = {
     </div>
   ),
 } satisfies Story;
+
+export const WithInlineValidation: Story = {
+  render: () => (
+    <div className="grid w-full max-w-sm gap-1.5">
+      <Label htmlFor="textarea-description">Description</Label>
+      <Textarea
+        id="textarea-description"
+        defaultValue="Approve invoice"
+        error="Describe the step in at least 20 characters so reviewers understand the intent."
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inline validation stays beside the control so the issue and resolution are clear in context. The textarea exposes `aria-invalid` and associates the visible message with `aria-describedby` and `aria-errormessage` automatically.',
+      },
+    },
+  },
+};

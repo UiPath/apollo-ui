@@ -152,3 +152,66 @@ describe('Combobox', () => {
     });
   });
 });
+
+describe('Combobox inline validation', () => {
+  it('renders the message and wires aria attributes to it', () => {
+    render(<Combobox id="stage" items={mockItems} error="Select a stage before saving." />);
+    const trigger = screen.getByRole('combobox');
+    const message = screen.getByText('Select a stage before saving.');
+
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', 'stage-error');
+    expect(trigger).toHaveAttribute('aria-errormessage', 'stage-error');
+    expect(message).toHaveAttribute('id', 'stage-error');
+    expect(message).toHaveClass('text-xs', 'leading-4', 'text-error');
+  });
+
+  it('generates a message id when none is provided', () => {
+    render(<Combobox items={mockItems} error="Required." />);
+    const trigger = screen.getByRole('combobox');
+    const message = screen.getByText('Required.');
+    expect(message.id).toBeTruthy();
+    expect(trigger).toHaveAttribute('aria-describedby', message.id);
+  });
+
+  it('preserves an existing description alongside the validation message', () => {
+    render(
+      <>
+        <p id="stage-help">Stages come from the case plan.</p>
+        <Combobox id="stage" items={mockItems} aria-describedby="stage-help" error="Required." />
+      </>
+    );
+    expect(screen.getByRole('combobox')).toHaveAttribute(
+      'aria-describedby',
+      'stage-help stage-error'
+    );
+  });
+
+  it('renders no message and stays valid without an error', () => {
+    render(<Combobox id="stage" items={mockItems} />);
+    const trigger = screen.getByRole('combobox');
+    expect(trigger).not.toHaveAttribute('aria-invalid');
+    expect(trigger).not.toHaveAttribute('aria-describedby');
+    expect(document.getElementById('stage-error')).toBeNull();
+  });
+
+  it('lets a label name the trigger when an id is provided', () => {
+    render(
+      <>
+        <label htmlFor="stage">Stage</label>
+        <Combobox id="stage" items={mockItems} />
+      </>
+    );
+    expect(screen.getByRole('combobox', { name: 'Stage' })).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations in the error state', async () => {
+    const { container } = render(
+      <>
+        <label htmlFor="stage">Stage</label>
+        <Combobox id="stage" items={mockItems} error="Select a stage." />
+      </>
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});

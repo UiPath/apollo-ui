@@ -666,3 +666,26 @@ describe('FileUpload', () => {
     });
   });
 });
+
+describe('FileUpload inline validation', () => {
+  it('renders the message and marks both the input and the dropzone invalid', () => {
+    render(<FileUpload id="evidence" ariaLabel="Evidence" error="Attach at least one document." />);
+    const dropzone = screen.getByRole('button', { name: 'Evidence' });
+    const input = document.getElementById('evidence') as HTMLInputElement;
+    const message = screen.getByText('Attach at least one document.');
+
+    expect(message).toHaveAttribute('id', 'evidence-error');
+    for (const el of [dropzone, input]) {
+      expect(el).toHaveAttribute('aria-invalid', 'true');
+      expect(el).toHaveAttribute('aria-describedby', 'evidence-error');
+      expect(el).toHaveAttribute('aria-errormessage', 'evidence-error');
+    }
+    expect(dropzone).toHaveClass('aria-invalid:border-error', 'future:aria-invalid:border-error');
+  });
+
+  it('renders no message without an error', () => {
+    render(<FileUpload id="evidence" ariaLabel="Evidence" />);
+    expect(screen.getByRole('button', { name: 'Evidence' })).not.toHaveAttribute('aria-invalid');
+    expect(document.getElementById('evidence-error')).toBeNull();
+  });
+});

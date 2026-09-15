@@ -1,4 +1,5 @@
 import type { Meta } from '@storybook/react-vite';
+import { FormFieldError } from './form-field';
 import { Label } from './label';
 import { Switch } from './switch';
 import { Row } from './layout';
@@ -46,4 +47,31 @@ export const Disabled = {
       <Label htmlFor="disabled">Disabled</Label>
     </Row>
   ),
+};
+
+export const WithInlineValidation = {
+  render: () => (
+    <div className="grid gap-1.5">
+      <Row>
+        <Switch
+          id="switch-notifications"
+          aria-invalid
+          aria-describedby="switch-notifications-error"
+          aria-errormessage="switch-notifications-error"
+        />
+        <Label htmlFor="switch-notifications">Send notifications</Label>
+      </Row>
+      <FormFieldError id="switch-notifications-error">
+        Turn on notifications to receive approval requests.
+      </FormFieldError>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Switch has no message slot of its own. Set `aria-invalid` for the red stroke and render `FormFieldError` below, pointing `aria-describedby` and `aria-errormessage` at its id.',
+      },
+    },
+  },
 };

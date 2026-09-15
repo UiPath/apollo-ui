@@ -510,6 +510,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
   );
   const [errorHandlingEnabled, setErrorHandlingEnabled] = useState(true);
   const [retryCount, setRetryCount] = useState('8');
+  const [stage, setStage] = useState('');
 
   return (
     <NodePropertyPanel
@@ -524,7 +525,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
       <Tabs defaultValue="parameters" className="flex h-full min-h-0 flex-col">
         <TabsList className="mx-3 h-auto justify-start gap-0.5 rounded-lg bg-transparent p-0.5">
           <TabsTrigger value="parameters" className="h-6 px-2.5 text-xs">
-            <ValidationTabLabel label="Parameters" count={1} />
+            <ValidationTabLabel label="Parameters" count={stage ? 1 : 2} />
           </TabsTrigger>
           <TabsTrigger value="error-handling" className="h-6 px-2.5 text-xs">
             <ValidationTabLabel label="Error handling" count={1} />
@@ -538,7 +539,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
           <div className="space-y-5">
             <Alert variant="destructive">
               <AlertCircle />
-              <AlertTitle>Resolve 2 issues before running this node</AlertTitle>
+              <AlertTitle>Resolve {stage ? 2 : 3} issues before running this node</AlertTitle>
               <AlertDescription>
                 Fix the highlighted fields in Parameters and Error handling before you run or
                 publish this workflow.
@@ -561,6 +562,26 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
                   <SelectItem value="gmail-personal">Gmail · Personal</SelectItem>
                 </SelectContent>
               </Select>
+            </section>
+
+            <section className="space-y-1.5">
+              <Label htmlFor="dap-validation-stage" className="text-xs text-foreground">
+                Case stage <RequiredIndicator />
+              </Label>
+              <Combobox
+                id="dap-validation-stage"
+                items={[
+                  { label: 'Intake', value: 'intake' },
+                  { label: 'Review', value: 'review' },
+                  { label: 'Approval', value: 'approval' },
+                ]}
+                value={stage}
+                onValueChange={setStage}
+                placeholder="Select a stage"
+                searchPlaceholder="Search stages"
+                className="h-9 w-full future:bg-surface-overlay text-xs"
+                error={stage ? undefined : 'Select the stage this email applies to.'}
+              />
             </section>
 
             <Separator />

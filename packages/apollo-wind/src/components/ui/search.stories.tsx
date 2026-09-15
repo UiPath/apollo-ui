@@ -191,3 +191,24 @@ export const Interactive = {
     );
   },
 };
+
+export const WithInlineValidation = {
+  render: () => (
+    <div className="w-[320px]">
+      <Search
+        aria-label="Search stages"
+        value="ab"
+        onChange={() => {}}
+        error="Enter at least 3 characters to search."
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inline validation stays beside the control so the issue and resolution are clear in context. The search field exposes `aria-invalid` and associates the visible message with `aria-describedby` and `aria-errormessage` automatically.',
+      },
+    },
+  },
+};

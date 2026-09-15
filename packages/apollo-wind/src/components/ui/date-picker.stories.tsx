@@ -86,3 +86,29 @@ export const DateRangeWithValue = {
     );
   },
 };
+
+export const WithInlineValidation = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <div className="grid w-[280px] gap-1.5">
+        <Label htmlFor="date-picker-due">Due date</Label>
+        <DatePicker id="date-picker-due" error="Select a due date before saving." />
+      </div>
+      <div className="grid w-[300px] gap-1.5">
+        <Label htmlFor="date-range-picker-window">Reporting window</Label>
+        <DateRangePicker
+          id="date-range-picker-window"
+          error="Select both a start and an end date."
+        />
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inline validation stays beside the control so the issue and resolution are clear in context. Both triggers expose `aria-invalid` and associate the visible message with `aria-describedby` and `aria-errormessage` automatically. `DatePicker` and `DateRangePicker` take the same `error` and `errorId` props.',
+      },
+    },
+  },
+};
