@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.52.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.0...@uipath/apollo-wind@2.52.1) (2026-09-15)
+
+### Bug Fixes
+
+* **apollo-wind:** fix resizable grip handle contrast across themes ([5b9785a](https://github.com/UiPath/apollo-ui/commit/5b9785aea584cad473d48c89039dbeb4592f0255))
+
 ## [@uipath/apollo-wind-v2.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.51.0...@uipath/apollo-wind@2.52.0) (2026-09-15)
 
 ### Features
