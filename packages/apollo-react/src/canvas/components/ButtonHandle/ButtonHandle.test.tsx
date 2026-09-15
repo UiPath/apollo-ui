@@ -323,6 +323,27 @@ describe('ButtonHandles', () => {
       expect(getLabelClass()).toContain('opacity-100');
     });
 
+    it('names the add button after its label on inward handles too, without a duplicate visual label', () => {
+      // Inward handles (connectionPosition !== position) render their own visual
+      // label via InwardHandleContent — HandleButton must still pick up the same
+      // text for its accessible name (via ariaLabel) without rendering a second,
+      // duplicate "Tools" label of its own.
+      render(
+        <ButtonHandles
+          handles={[hoverHandle]}
+          nodeId="n"
+          position={Position.Top}
+          connectionPosition={Position.Bottom}
+          hovered
+        />
+      );
+
+      expect(
+        screen.getByRole('button', { name: 'Add node from Tools handle' })
+      ).toBeInTheDocument();
+      expect(screen.getAllByText('Tools')).toHaveLength(1);
+    });
+
     it('keeps a default (always) label visible regardless of hover/selection', () => {
       const alwaysHandle: ButtonHandleConfig = {
         id: 'tool',

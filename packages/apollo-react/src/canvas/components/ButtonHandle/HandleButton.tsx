@@ -44,6 +44,7 @@ export const HandleButton = memo(
     label,
     labelIcon,
     labelBackgroundColor,
+    ariaLabel,
     portal,
   }: {
     visible?: boolean;
@@ -62,8 +63,16 @@ export const HandleButton = memo(
     label?: string;
     labelIcon?: React.ReactNode;
     labelBackgroundColor?: string;
+    /**
+     * Accessible name override, independent of the visual `label`. Use this when a
+     * caller already renders its own adjacent visual label (e.g. inward handles via
+     * `InwardHandleContent`) so this button doesn't ALSO render its own `InlineLabel`
+     * for the same text — pass `ariaLabel` instead of `label` in that case.
+     */
+    ariaLabel?: string;
     portal?: HandleButtonPortal;
   }) => {
+    const accessibleLabel = ariaLabel ?? label;
     const didDragRef = useRef(false);
     const teardownRef = useRef<(() => void) | null>(null);
 
@@ -143,7 +152,7 @@ export const HandleButton = memo(
       // accessibility tree so neither keyboard nor assistive tech reaches an invisible button.
       // `disabled:opacity-0` overrides the button's default `disabled:opacity-50`.
       <CanvasInlineButton
-        aria-label="Add node"
+        aria-label={accessibleLabel ? `Add node from ${accessibleLabel} handle` : 'Add node'}
         aria-hidden={visible ? undefined : true}
         disabled={visible ? undefined : true}
         onClick={handleClick}
@@ -160,7 +169,7 @@ export const HandleButton = memo(
     ) : (
       visible && (
         <CanvasInlineButton
-          aria-label="Add node"
+          aria-label={accessibleLabel ? `Add node from ${accessibleLabel} handle` : 'Add node'}
           onClick={handleClick}
           onPointerDown={handlePointerDown}
           onMouseEnter={onMouseEnter}
