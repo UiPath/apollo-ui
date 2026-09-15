@@ -171,6 +171,20 @@ body.dark-hc, .dark-hc {
   color-scheme: dark;
 }
 
+/* ResizableHandle's divider needs a resting background that matches its own
+   border-subtle-toned box in classic themes (see resizable.tsx). Exposed as a
+   variable, with an unset default falling back to --ap-wind-border, so a
+   consumer's own bg-* override (e.g. bg-transparent) still wins: cn()/
+   tailwind-merge can't dedupe a plain bg-* class against one scoped to an
+   arbitrary theme variant, so the variant class must stay a single, unvaried
+   bg-[var(...)] utility for consumer overrides to keep working. */
+body.light, .light:not(.react-flow),
+body.light-hc, .light-hc,
+body.dark, .dark:not(.react-flow),
+body.dark-hc, .dark-hc {
+  --resizable-handle-divider-bg: var(--border-subtle);
+}
+
 /* ── Future family — mapping divergences (color-scheme comes from core) ──── */
 body.future-dark, .future-dark,
 body.future-light, .future-light {
