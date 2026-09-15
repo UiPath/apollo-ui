@@ -17,6 +17,7 @@ export * from './Edges';
 export * from './ExecutionStatusIcon';
 export * from './FloatingCanvasPanel';
 export * from './GroupNode';
+export * from './Guardrails';
 export * from './HierarchicalCanvas';
 export * from './JsonTree';
 export * from './LoopNode';
