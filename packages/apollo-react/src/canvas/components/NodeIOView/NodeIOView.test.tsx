@@ -844,6 +844,23 @@ describe('NodeIOView', () => {
     expect(screen.getByText('2 items')).toBeInTheDocument();
   });
 
+  it('omits the preview item when showArrayItemTemplates is false', () => {
+    render(
+      <NodeIOView
+        schema={{
+          type: 'object',
+          properties: { tags: { type: 'array', items: { type: 'string' } } },
+        }}
+        value={{ tags: [] }}
+        showArrayItemTemplates={false}
+      />
+    );
+    // A runtime viewer shows only produced values, so an empty array stays empty.
+    expect(screen.getByText('tags')).toBeInTheDocument();
+    expect(screen.queryByText('item')).not.toBeInTheDocument();
+    expect(screen.getByText('0 items')).toBeInTheDocument();
+  });
+
   it('collapses row actions beyond the inline cap into an overflow menu', async () => {
     const mk = (n: number) => ({
       id: `a${n}`,

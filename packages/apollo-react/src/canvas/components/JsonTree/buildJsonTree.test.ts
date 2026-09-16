@@ -169,6 +169,82 @@ describe('buildJsonTree', () => {
     expect(tags.children?.[0]?.value).toBe('a');
   });
 
+  it('omits preview items entirely when showArrayItemTemplates is false', () => {
+    const schema: JsonSchema = {
+      type: 'object',
+      properties: {
+        tags: { type: 'array', items: { type: 'string' } },
+        rows: {
+          type: 'array',
+          items: { type: 'object', properties: { name: { type: 'string' } } },
+        },
+      },
+    };
+    const tree = buildJsonTree({ schema, showArrayItemTemplates: false });
+    expect(byKey(tree, 'tags').children).toHaveLength(0);
+    expect(byKey(tree, 'rows').children).toHaveLength(0);
+  });
+
+  it('omits the preview item for a present-but-empty array when opted out', () => {
+    const schema: JsonSchema = {
+      type: 'object',
+      properties: { tags: { type: 'array', items: { type: 'string' } } },
+    };
+    const tree = buildJsonTree({
+      schema,
+      value: { tags: [] },
+      showArrayItemTemplates: false,
+    });
+    expect(byKey(tree, 'tags').children).toHaveLength(0);
+  });
+
+  it('omits preview items nested under a real array item when opted out', () => {
+    const schema: JsonSchema = {
+      type: 'object',
+      properties: {
+        rows: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { tags: { type: 'array', items: { type: 'string' } } },
+          },
+        },
+      },
+    };
+    const tree = buildJsonTree({
+      schema,
+      value: { rows: [{}] },
+      showArrayItemTemplates: false,
+    });
+    const [row] = byKey(tree, 'rows').children!;
+    expect(byKey(row?.children, 'tags').children).toHaveLength(0);
+  });
+
+  it('keeps real array items regardless of showArrayItemTemplates', () => {
+    const schema: JsonSchema = {
+      type: 'object',
+      properties: { tags: { type: 'array', items: { type: 'string' } } },
+    };
+    for (const showArrayItemTemplates of [true, false]) {
+      const tree = buildJsonTree({
+        schema,
+        value: { tags: ['a', 'b'] },
+        showArrayItemTemplates,
+      });
+      const tags = byKey(tree, 'tags');
+      expect(tags.children).toHaveLength(2);
+      expect(tags.children?.map((c) => c.value)).toEqual(['a', 'b']);
+    }
+  });
+
+  it('omits the preview item for a schema-only array root when opted out', () => {
+    const tree = buildJsonTree({
+      schema: { type: 'array', items: { type: 'string' } },
+      showArrayItemTemplates: false,
+    });
+    expect(tree).toHaveLength(0);
+  });
+
   it('adds no preview item when the schema declares no items', () => {
     const schema: JsonSchema = {
       type: 'object',

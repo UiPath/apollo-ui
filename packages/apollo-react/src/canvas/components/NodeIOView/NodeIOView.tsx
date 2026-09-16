@@ -95,12 +95,13 @@ export function NodeIOView({
   onCopy,
   virtualized = false,
   defaultCollapsedDepth = 2,
+  showArrayItemTemplates = true,
   className,
 }: NodeIOViewProps) {
   const { _ } = useSafeLingui();
   const nodes = useMemo(
-    () => buildJsonTree({ schema, value, basePath }),
-    [schema, value, basePath]
+    () => buildJsonTree({ schema, value, basePath, showArrayItemTemplates }),
+    [schema, value, basePath, showArrayItemTemplates]
   );
   const containerPaths = useMemo(() => collectContainerPaths(nodes), [nodes]);
 

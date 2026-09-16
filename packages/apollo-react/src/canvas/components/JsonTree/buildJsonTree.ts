@@ -64,6 +64,8 @@ interface BuildNodeInput {
   required?: boolean;
   /** Node belongs to a schema-only array-item preview (see `isArrayItemTemplate`). */
   isTemplate?: boolean;
+  /** See `BuildJsonTreeOptions.showArrayItemTemplates`. Defaults to true. */
+  showArrayItemTemplates?: boolean;
 }
 
 function buildNode(input: BuildNodeInput): JsonTreeNode {
@@ -88,7 +90,8 @@ function buildNode(input: BuildNodeInput): JsonTreeNode {
       input.schema,
       input.segments,
       input.path,
-      input.isTemplate
+      input.isTemplate,
+      input.showArrayItemTemplates
     );
   } else if (type === 'array') {
     node.children = buildArrayChildren(
@@ -97,7 +100,8 @@ function buildNode(input: BuildNodeInput): JsonTreeNode {
       input.hasValue,
       input.segments,
       input.path,
-      input.isTemplate
+      input.isTemplate,
+      input.showArrayItemTemplates
     );
   }
 
@@ -111,6 +115,11 @@ function buildNode(input: BuildNodeInput): JsonTreeNode {
  * schema alone. This applies to both schema-only (value-less) arrays and
  * present-but-empty ones. The preview subtree is flagged `isArrayItemTemplate`
  * throughout via `isTemplate`.
+ *
+ * That synthesis suits an editor, which shows the declared shape of a value the
+ * user is still building. A runtime viewer (an execution or trace panel) must
+ * show only the values a run actually produced, and opts out with
+ * `showArrayItemTemplates: false`.
  */
 function buildArrayChildren(
   schema: JsonSchema | undefined,
@@ -118,7 +127,8 @@ function buildArrayChildren(
   hasValue: boolean,
   segments: PathSegment[],
   path: string,
-  isTemplate?: boolean
+  isTemplate?: boolean,
+  showArrayItemTemplates = true
 ): JsonTreeNode[] {
   const items = hasValue && Array.isArray(value) ? value : [];
   if (items.length > 0) {
@@ -131,10 +141,11 @@ function buildArrayChildren(
         value: item,
         hasValue: true,
         isTemplate,
+        showArrayItemTemplates,
       })
     );
   }
-  if (schema?.items) {
+  if (schema?.items && showArrayItemTemplates) {
     return [
       buildNode({
         key: '0',
@@ -143,6 +154,7 @@ function buildArrayChildren(
         schema: schema.items,
         hasValue: false,
         isTemplate: true,
+        showArrayItemTemplates,
       }),
     ];
   }
@@ -154,7 +166,8 @@ function buildObjectChildren(
   schema: JsonSchema | undefined,
   segments: PathSegment[],
   path: string,
-  isTemplate?: boolean
+  isTemplate?: boolean,
+  showArrayItemTemplates = true
 ): JsonTreeNode[] {
   const properties = schema?.properties ?? {};
   const required = new Set(schema?.required ?? []);
@@ -178,6 +191,7 @@ function buildObjectChildren(
         hasValue,
         required: required.has(key),
         isTemplate,
+        showArrayItemTemplates,
       })
     );
   }
@@ -195,6 +209,7 @@ function buildObjectChildren(
           schema: additional,
           value: childValue,
           hasValue: true,
+          showArrayItemTemplates,
         })
       );
     }
@@ -209,6 +224,12 @@ export interface BuildJsonTreeOptions {
   value?: JsonContainer;
   /** Prefix prepended to every path (e.g. a node id). Default: none. */
   basePath?: string;
+  /**
+   * Synthesizes a preview row for an array that declares `items` but has none,
+   * so the expected item shape stays visible. Default true. Pass false in a
+   * runtime viewer, which must show only the values a run produced.
+   */
+  showArrayItemTemplates?: boolean;
 }
 
 /**
@@ -219,7 +240,7 @@ export interface BuildJsonTreeOptions {
  * does not declare. Without a schema the tree is value-driven.
  */
 export function buildJsonTree(options: BuildJsonTreeOptions): JsonTreeNode[] {
-  const { schema, value, basePath = '' } = options;
+  const { schema, value, basePath = '', showArrayItemTemplates = true } = options;
 
   // The runtime value decides the root shape whenever one exists; the schema is
   // only consulted when the value is absent. Otherwise a stale array schema
@@ -228,10 +249,25 @@ export function buildJsonTree(options: BuildJsonTreeOptions): JsonTreeNode[] {
     value !== undefined ? Array.isArray(value) : !!schema && schemaDisplayType(schema) === 'array';
 
   if (rootIsArray) {
-    return buildArrayChildren(schema, value, value !== undefined, [], basePath);
+    return buildArrayChildren(
+      schema,
+      value,
+      value !== undefined,
+      [],
+      basePath,
+      undefined,
+      showArrayItemTemplates
+    );
   }
 
-  return buildObjectChildren(isJsonObject(value) ? value : undefined, schema, [], basePath);
+  return buildObjectChildren(
+    isJsonObject(value) ? value : undefined,
+    schema,
+    [],
+    basePath,
+    undefined,
+    showArrayItemTemplates
+  );
 }
 
 /**

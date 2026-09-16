@@ -103,5 +103,11 @@ export interface NodeIOViewProps {
   virtualized?: boolean;
   /** Containers at depth >= this start collapsed. Default 2 (top two levels open). */
   defaultCollapsedDepth?: number;
+  /**
+   * Shows a synthesized preview row for an array that declares `items` but has
+   * none. Default true. Pass false in a runtime viewer (an execution or trace
+   * panel), which must show only the values a run actually produced.
+   */
+  showArrayItemTemplates?: boolean;
   className?: string;
 }
