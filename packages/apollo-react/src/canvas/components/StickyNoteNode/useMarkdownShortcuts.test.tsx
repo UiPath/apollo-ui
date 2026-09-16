@@ -31,6 +31,16 @@ describe('useMarkdownShortcuts', () => {
     expect(hostKeyDown).not.toHaveBeenCalled();
   });
 
+  it('matches the strikethrough chord despite the uppercase key Shift reports', () => {
+    const { onFormat, hostKeyDown, textarea } = renderHarness();
+
+    // A real browser reports 'X', not 'x', while Shift is held.
+    fireEvent.keyDown(textarea, { key: 'X', metaKey: true, shiftKey: true });
+
+    expect(onFormat).toHaveBeenCalledTimes(1);
+    expect(hostKeyDown).not.toHaveBeenCalled();
+  });
+
   it('lets unhandled shortcuts reach the host', () => {
     const { onFormat, hostKeyDown, textarea } = renderHarness();
 
