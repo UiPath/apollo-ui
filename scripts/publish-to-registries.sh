@@ -26,6 +26,17 @@ if [ -z "${GH_NPM_REGISTRY_TOKEN:-}" ]; then
   exit 1
 fi
 
+# publishConfig.registry in package.json outranks the --<scope>:registry flags
+# below, so a package that sets it silently publishes both passes to the same
+# registry: the npm.org pass lands on the wrong host and the second pass then
+# dies on a 409. Refuse to run rather than publish somewhere unintended.
+pinned_registry=$(node -p "require('./package.json').publishConfig?.registry ?? ''")
+if [ -n "$pinned_registry" ]; then
+  echo "Error: package.json sets publishConfig.registry='${pinned_registry}'." >&2
+  echo "       It overrides this script's per-registry flags. Remove it." >&2
+  exit 1
+fi
+
 # Strip any registry-override or --tag flags from caller args.
 # Registry is fixed by this script; tag comes from TAG_NAME env var (validated above).
 filtered_args=()
