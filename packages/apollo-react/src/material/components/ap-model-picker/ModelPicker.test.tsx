@@ -140,6 +140,27 @@ describe('<ModelPicker>', () => {
     expect(screen.getByRole('button', { expanded: false })).toHaveAttribute('aria-invalid', 'true');
   });
 
+  it('marks the trigger required without the disallowed aria-required (PC-5049)', () => {
+    // aria-required is not an allowed attribute on role="button" (axe-core
+    // aria-allowed-attr, critical impact) — the trigger opens a listbox but
+    // isn't itself a textbox/combobox/listbox. Required-ness must instead
+    // reach assistive tech through the trigger's accessible name.
+    renderPicker(<ModelPicker models={MODELS} value={null} onChange={() => {}} required />);
+    const trigger = screen.getByRole('button', { expanded: false });
+    expect(trigger).not.toHaveAttribute('aria-required');
+    // The label's visually-hidden "required" span is picked up as part of
+    // the accessible name because the label is associated with the trigger
+    // via htmlFor/id.
+    expect(trigger).toHaveAccessibleName(/model.*required/i);
+  });
+
+  it('does not add the required wording to the trigger name when not required', () => {
+    renderPicker(<ModelPicker models={MODELS} value={null} onChange={() => {}} />);
+    const trigger = screen.getByRole('button', { expanded: false });
+    expect(trigger).not.toHaveAttribute('aria-required');
+    expect(trigger).toHaveAccessibleName(/^model$/i);
+  });
+
   it('renders the BYO edit action only when canManageByo is true', async () => {
     const user = userEvent.setup();
     const requestContext = {

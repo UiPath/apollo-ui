@@ -295,7 +295,7 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `value`               | `string \| null`                                      | Selected `modelId`.                                                                                                  |
 | `onChange`            | `(model: DiscoveryModel) => void`                     | Selection callback. Receives the full DTO.                                                                           |
 | `label`               | `string`                                              | Label above the trigger. Defaults to a localized "Model".                                                            |
-| `required`            | `boolean`                                             | Marks the field as required (`aria-required` + visual `*`).                                                          |
+| `required`            | `boolean`                                             | Marks the field as required (visual `*` + visually-hidden "required" text in the label's accessible name — not `aria-required`, which isn't allowed on the trigger's `role="button"`). |
 | `placeholder`         | `string`                                              | Placeholder when nothing's selected. Defaults to a localized "Select a model".                                       |
 | `disabled`            | `boolean`                                             | Disables the trigger.                                                                                                |
 | `invalid`             | `boolean`                                             | Renders the trigger border in error red (`aria-invalid`).                                                            |
@@ -337,12 +337,12 @@ Pass `models` to take over: the built-in fetch turns off and the picker renders 
 
 The picker implements the WAI-ARIA listbox pattern with keyboard input:
 
-- **Trigger** is `aria-haspopup="listbox"`, with `aria-controls` pointing at the popup, `aria-expanded`, `aria-invalid`, `aria-required`, and `aria-describedby` linking to the error message.
+- **Trigger** is `aria-haspopup="listbox"`, with `aria-controls` pointing at the popup, `aria-expanded`, `aria-invalid`, and `aria-describedby` linking to the error message. It does **not** carry `aria-required`: that attribute isn't allowed on `role="button"` per WAI-ARIA (axe-core's `aria-allowed-attr`, critical impact) — the trigger opens a listbox but isn't itself a `textbox`/`combobox`/`listbox`.
 - **Search input** is `aria-autocomplete="list"`, `aria-controls={listboxId}`, with `aria-activedescendant` updating to the highlighted option as the user navigates with `↑`/`↓` — DOM focus stays on the search.
 - **Listbox** has an `aria-label` ("Models" by default, localized).
 - **Each option** has a stable id (`{listboxId}-opt-{modelId}`), `role="option"`, and `aria-selected`.
 - **Loading / error / empty / result-count** announce via `role="status"` + `aria-live="polite"` and `role="alert"` for errors.
-- **Required asterisk** is `aria-hidden` (the input carries `aria-required`).
+- **Required asterisk** is `aria-hidden` (decorative only). Required-ness is instead carried by a visually-hidden "required" span next to it inside the `<label>`, which is associated with the trigger via `htmlFor`/`id` — so it's picked up as part of the trigger's accessible name.
 
 Keyboard:
 
