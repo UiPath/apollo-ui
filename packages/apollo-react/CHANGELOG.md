@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.47.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.3...@uipath/apollo-react@6.47.4) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-react:** match the sticky note strikethrough chord [MST-15305] ([207ee65](https://github.com/UiPath/apollo-ui/commit/207ee6558db2abb3c91ac6883fd77f38fa0c9deb))
+
 ## [@uipath/apollo-react-v6.47.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.2...@uipath/apollo-react@6.47.3) (2026-09-16)
 
 ### Bug Fixes

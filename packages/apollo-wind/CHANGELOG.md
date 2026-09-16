@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.52.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.2...@uipath/apollo-wind@2.52.3) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-wind:** stop prompt editor formatting shortcuts from reaching the host [MST-15305] ([7c8f241](https://github.com/UiPath/apollo-ui/commit/7c8f2416cf9ba3dcf8aee760656328336593643d))
+
 ## [@uipath/apollo-wind-v2.52.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.1...@uipath/apollo-wind@2.52.2) (2026-09-15)
 
 ### Bug Fixes
