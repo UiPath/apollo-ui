@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.46.0...@uipath/apollo-react@6.47.0) (2026-09-16)
+
+### Features
+
+* **apollo-ui-icons:** add the Maestro product marks with flat variants ([15f1ccf](https://github.com/UiPath/apollo-ui/commit/15f1ccf83d98b2fd9dbc41edac7305f21c0c0531)), closes [#66adff](https://github.com/UiPath/apollo-ui/issues/66adff) [#00489d](https://github.com/UiPath/apollo-ui/issues/00489d)
+
 ## [@uipath/apollo-react-v6.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.3...@uipath/apollo-react@6.46.0) (2026-09-15)
 
 ### Features
