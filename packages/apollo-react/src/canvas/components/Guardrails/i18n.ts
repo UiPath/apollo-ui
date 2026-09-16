@@ -4,6 +4,9 @@ import { useSafeLingui } from '../../../i18n';
 /**
  * The component's own chrome strings. Domain strings (parameter labels, tooltips, option
  * labels) are NOT localized here — they arrive pre-resolved on `GuardrailParameterDefinition`.
+ * Not localized *here* rather than not localized at all: the definitions layer
+ * (`definitions-copy.ts`) carries the built-in validators' own copy, in this same catalog. The
+ * split is by ownership - chrome belongs to the component, validator copy to its definition.
  *
  * Values may contain `{{placeholder}}` tokens; interpolate with `formatGuardrailFormMessage`.
  *
@@ -50,7 +53,8 @@ export const GUARDRAIL_FORM_EN_LABELS: GuardrailValidatorFormLabels = {
  * Chrome strings of the guardrail builder screen (labels, placeholders, buttons, banners,
  * and the builder's own validation messages — it gates its own Save, so the messages ship
  * with it; hosts override per string via `labels` or per field via `errors`). Domain strings
- * (`definition.displayName`, `usageNote`, `otherAppliedScopes` labels) stay pre-resolved.
+ * (`definition.displayName`, `usageNote`, `otherAppliedScopes` labels) stay pre-resolved,
+ * whether the host resolved them or `enrichGuardrailDefinitions` did.
  */
 export interface GuardrailBuilderLabels {
   /** Dialog/header title templates; `{{name}}` is the definition display name. */
