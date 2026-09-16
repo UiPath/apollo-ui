@@ -861,6 +861,27 @@ describe('NodeIOView', () => {
     expect(screen.getByText('0 items')).toBeInTheDocument();
   });
 
+  it('defers scrolling to the ancestor scroller given through scrollElement', () => {
+    const scroller = document.createElement('div');
+    const { container } = render(
+      <NodeIOView schema={SCHEMA} value={VALUE} virtualized scrollElement={scroller} />
+    );
+
+    // The prop reaches the tree: it grows to its content rather than opening a
+    // second scrollbar inside a layout that already scrolls as a whole.
+    const treeBox = container.querySelector('.overflow-x-clip') as HTMLElement;
+    expect(treeBox).not.toBeNull();
+    expect(treeBox.className).not.toContain('overflow-y-auto');
+    expect(treeBox.className).not.toContain('h-full');
+  });
+
+  it('scrolls in its own box when no scrollElement is given', () => {
+    const { container } = render(<NodeIOView schema={SCHEMA} value={VALUE} virtualized />);
+
+    expect(container.querySelector('.overflow-x-clip')).toBeNull();
+    expect(container.querySelector('.overflow-y-auto')).not.toBeNull();
+  });
+
   it('collapses row actions beyond the inline cap into an overflow menu', async () => {
     const mk = (n: number) => ({
       id: `a${n}`,

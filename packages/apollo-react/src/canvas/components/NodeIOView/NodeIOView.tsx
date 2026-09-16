@@ -94,6 +94,7 @@ export function NodeIOView({
   pathForCopy,
   onCopy,
   virtualized = false,
+  scrollElement,
   defaultCollapsedDepth = 2,
   showArrayItemTemplates = true,
   className,
@@ -270,6 +271,7 @@ export function NodeIOView({
               pathForCopy={pathForCopy}
               onCopy={onCopy}
               virtualized={virtualized}
+              scrollElement={scrollElement}
               // JsonTree shows its own "no match" text while a search or
               // filter is active; this only covers the genuinely-empty case.
               emptyMessage={emptyMessage}

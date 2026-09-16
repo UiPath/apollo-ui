@@ -101,6 +101,14 @@ export interface NodeIOViewProps {
   onCopy?: (event: CopyEvent) => void;
   /** Windows the schema tree's rows so only those in view mount. See `JsonTreeProps.virtualized`. */
   virtualized?: boolean;
+  /**
+   * The ancestor that scrolls this view. Pass it when the view is embedded in a
+   * layout that scrolls as a whole (e.g. a stacked details panel with one outer
+   * scroller) rather than one that gives the view a bounded height. Omit it and
+   * the tree scrolls itself, which requires a definite height on an ancestor.
+   * Takes effect with `virtualized`; see `JsonTreeProps.scrollElement`.
+   */
+  scrollElement?: HTMLElement | null;
   /** Containers at depth >= this start collapsed. Default 2 (top two levels open). */
   defaultCollapsedDepth?: number;
   /**
