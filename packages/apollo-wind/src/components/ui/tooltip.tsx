@@ -1,6 +1,11 @@
+'use client';
+
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import * as React from 'react';
-
+import {
+  type PortalContainerOverride,
+  useResolvedPortalContainer,
+} from '@/components/ui/portal-container';
 import { cn } from '@/lib';
 
 const TooltipProvider = (
@@ -19,9 +24,22 @@ const TooltipTrigger = React.forwardRef<
 >((props, ref) => <TooltipPrimitive.Trigger ref={ref} data-slot="tooltip-trigger" {...props} />);
 TooltipTrigger.displayName = TooltipPrimitive.Trigger.displayName;
 
-const TooltipPortal = (props: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Portal>) => (
-  <TooltipPrimitive.Portal data-slot="tooltip-portal" {...props} />
-);
+/**
+ * Resolves the container here rather than in `TooltipContent`: Tooltip is the one overlay whose
+ * portal is a sibling the consumer composes, not something `*Content` owns.
+ */
+const TooltipPortal = ({
+  container,
+  ...props
+}: Omit<React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Portal>, 'container'> & {
+  container?: PortalContainerOverride;
+}) => {
+  const resolvedContainer = useResolvedPortalContainer(container);
+  // `container` last: `props` is typed without it, but a JS caller could still smuggle one in.
+  return (
+    <TooltipPrimitive.Portal data-slot="tooltip-portal" {...props} container={resolvedContainer} />
+  );
+};
 TooltipPortal.displayName = 'TooltipPortal';
 
 const TooltipContent = React.forwardRef<
