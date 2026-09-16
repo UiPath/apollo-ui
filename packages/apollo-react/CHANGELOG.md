@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.47.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.1...@uipath/apollo-react@6.47.2) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-react:** remove hover recolor from the Data Fabric node icon ([05efad5](https://github.com/UiPath/apollo-ui/commit/05efad52b9c0a077b8e20b7d8cb7ec8d9dc29d31))
+
 ## [@uipath/apollo-react-v6.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.0...@uipath/apollo-react@6.47.1) (2026-09-16)
 
 ### Bug Fixes
