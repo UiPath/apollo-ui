@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.0...@uipath/apollo-react@6.47.1) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-react:** keep handle labels next to locked handles [MST-14066] ([8f2313a](https://github.com/UiPath/apollo-ui/commit/8f2313aafd121af41155812f69b8a0bd4cbde2a5))
+
 ## [@uipath/apollo-react-v6.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.46.0...@uipath/apollo-react@6.47.0) (2026-09-16)
 
 ### Features
