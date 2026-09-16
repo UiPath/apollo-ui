@@ -13,7 +13,7 @@ const meta: Meta<typeof PortalContainerProvider> = {
     docs: {
       description: {
         component:
-          'By default, Radix overlays (Popover, Select, DropdownMenu) portal their content into ' +
+          'By default, Radix overlays portal their content into ' +
           'document.body. That breaks inside shadow DOM or focus-trapped hosts, where body-level ' +
           'content escapes the root. PortalContainerProvider redirects those portals into its own ' +
           'subtree (or an explicit container you own), keeping overlay DOM inside the same root ' +
