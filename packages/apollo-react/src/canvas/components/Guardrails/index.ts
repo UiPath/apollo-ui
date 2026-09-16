@@ -67,17 +67,32 @@ export type { GuardrailBuilderProps } from './guardrail-builder';
 export { GuardrailBuilder } from './guardrail-builder';
 export type { GuardrailFormLayoutProps } from './guardrail-form-layout';
 export { GuardrailFormLayout } from './guardrail-form-layout';
+export type { GuardrailPaletteProps } from './guardrail-palette';
+export { GuardrailPalette } from './guardrail-palette';
+export {
+  getGuardrailPaletteItemId,
+  groupGuardrailsForPalette,
+} from './guardrail-palette-utils';
 export { GuardrailValidatorForm } from './guardrail-validator-form';
-export type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from './i18n';
+export type {
+  GuardrailBuilderLabels,
+  GuardrailPaletteLabels,
+  GuardrailValidatorFormLabels,
+} from './i18n';
 export {
   formatGuardrailFormMessage,
   GUARDRAIL_BUILDER_EN_LABELS,
   GUARDRAIL_FORM_EN_LABELS,
+  GUARDRAIL_PALETTE_EN_LABELS,
+  GUARDRAIL_PALETTE_EN_MESSAGES,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
+  resolveGuardrailPaletteLabels,
   useGuardrailBuilderLabels,
   useGuardrailFormLabels,
+  useGuardrailPaletteLabels,
 } from './i18n';
+export type { GuardrailPaletteDefinition, GuardrailPaletteGroup } from './palette-types';
 export type {
   GuardrailParameterDefinition,
   GuardrailParameterRenderContext,
