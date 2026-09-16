@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.47.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.2...@uipath/apollo-react@6.47.3) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-react:** stop sticky note markdown shortcuts from reaching the host ([d36fc03](https://github.com/UiPath/apollo-ui/commit/d36fc03aaa2e5877b270d7781ba1a68859a860bf))
+
 ## [@uipath/apollo-react-v6.47.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.1...@uipath/apollo-react@6.47.2) (2026-09-16)
 
 ### Bug Fixes
