@@ -6,10 +6,10 @@ entirely on `@uipath/apollo-wind` primitives and its `forms/` engine, strings on
 and is exported through the narrow `@uipath/apollo-react/canvas/guardrails` subpath (also
 re-exported from `./canvas`). Members: the definitions layer (wire types, parser, canonical
 copy and `useGuardrailDefinitions`), `GuardrailList` (the applied-guardrails section),
-`GuardrailBuilder` (the whole Add/Edit screen), `GuardrailFormLayout` (the screen shell),
-and `GuardrailValidatorForm` (the validator parameter section, also rendered inside the
-builder), plus the leaves the sections compose: `GuardrailStatusChip`,
-`GuardrailStatusBanner` and `MixedScopesBanner`.
+`GuardrailPalette` (the add-guardrail picker), `GuardrailBuilder` (the whole Add/Edit
+screen), `GuardrailFormLayout` (the screen shell), and `GuardrailValidatorForm` (the
+validator parameter section, also rendered inside the builder), plus the leaves the
+sections compose: `GuardrailStatusChip`, `GuardrailStatusBanner` and `MixedScopesBanner`.
 
 ## Hover and focus, family-wide
 
@@ -302,6 +302,114 @@ product already ships; the other five have no host equivalent and are newly writ
 from `chore(l10n): sync from Localization`, and until it runs `useSafeLingui` renders the
 English default, so nothing is missing on screen. The five newly written ids are the ones that
 need a real loc pass rather than a lookup.
+
+## GuardrailPalette
+
+The add-guardrail picker: the definitions a user may add, grouped, with an optional
+create-custom entry.
+
+```tsx
+import { GuardrailPalette } from '@uipath/apollo-react/canvas/guardrails';
+
+const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenantId });
+
+<GuardrailPalette
+  ootbDefinitions={addable}          // already filtered by the host
+  isLoading={loading}
+  error={error}
+  previewChip
+  onSelectOotb={openBuilderFor}
+  onCreateCustom={scope === 'Tool' ? openCustomBuilder : undefined}
+/>;
+```
+
+### Contract
+
+- **The host filters, the palette offers.** Feature flags, entitlements, `FeatureDisabled` /
+  `Disabled` removal and Tool-scope filtering never cross this boundary: both products
+  already filter before rendering, and both do it differently (Agents gates five per-validator
+  flags, Flow one `canvas.guardrails` flag plus a hidden-validator list). The palette offers
+  every definition it is given.
+- **Both callbacks are intents.** `onSelectOotb` reports the choice; the builder that opens
+  next, the unique default name it starts with and the telemetry stay host-side. No telemetry
+  ships in the package: the two products' event taxonomies do not overlap
+  (`guardrails.create_ootb_clicked` versus `GUARDRAILS_CREATE_OUT_OF_THE_BOX_CLICKED`) and
+  wrapping the callbacks is what both adapters do anyway.
+- **`onCreateCustom` is opt-in by presence, not by a boolean.** Flow offers custom guardrails
+  only for `scope === 'Tool'`, so it passes the prop conditionally. Agents keeps the affordance
+  in its own palette header, so it omits the prop and the picker renders no second one.
+- **Grouping is the rule both products already ship** (`groupGuardrailsForPalette`, exported
+  and pure): with no bring-your-own definitions, one unheaded group in payload order;
+  otherwise one group per BYO `folderPath ?? byoConnectorName`, sorted by that key, then a
+  trailing UiPath group, with display-name sorting inside every group. One deliberate
+  difference: an empty catalog produces **no** groups rather than one empty group, which is
+  what makes the empty line reachable. Flow's own empty state is guarded on
+  `groups.length === 0` and its implementation can never return that.
+- **Entry identity is `validator`, or `byoValidatorName:byoGuardrailConnectionId`**
+  (`getGuardrailPaletteItemId`). A BYO validator name is unique per *connection*, so two
+  connections can expose the same name; Flow keys BYO entries by name alone today and collides
+  in exactly that case. This is not the same question as `matchesGuardrailListDefinition`,
+  which resolves a *saved* guardrail and matches BYO on the name alone on purpose.
+- **`Unauthorised` is offered, chipped and not choosable.** It is the only non-`Available`
+  status that reaches a correctly filtered palette, and it is how a tenant discovers a
+  validator it is not entitled to. The entry is `aria-disabled`, not `disabled`, so it keeps
+  its place in the roving focus order and a keyboard user reaches the chip that says why. Agents
+  today lets that entry through to the builder, which then refuses to save; Flow disables it in
+  the select, and that is the behaviour this ships.
+- **The palette is one tab stop, and Arrow/Home/End move inside it.** Roving `tabIndex`: exactly
+  one entry is tabbable, Tab enters the palette and Tab leaves it, ArrowDown / ArrowUp step
+  between entries across group boundaries, Home and End jump to the first and last, and the tab
+  stop follows focus so leaving and re-entering comes back where the user was. Movement is
+  clamped at the ends rather than wrapped. The create-custom entry is the first in that order,
+  and `aria-disabled` entries are *included*: reaching the `Unauthorised` chip is the point.
+  This is also why the picker is a list of real `<button>`s rather than wind's `Command`, whose
+  cmdk navigation skips `aria-disabled` items by construction, and why it is not a `Select`:
+  palette entries are one-shot actions, not a selection.
+- **`previewChip` defaults to `false`**, the same call as the list: product lifecycle is not a
+  package concern. Both hosts hardcode the chip today and both pass the prop, then drop it at
+  GA without a release here.
+- **`isLoading` renders a polite loading line and `error` a `GuardrailStatusBanner`.** The
+  loading line is an `<output>`, for its implicit `role="status"`: a polite live region, and the
+  one native element that carries it without bringing styling of its own. Any definitions that
+  did arrive stay pickable under the banner, which is what a host with a stale cache and a
+  failed revalidation wants. `error` is shaped like `useGuardrailDefinitions`' own `error`, so
+  the hook's result destructures straight in.
+- **Definitions are generic.** `GuardrailPaletteDefinition` is the eight fields the palette
+  reads; `EnrichedGuardrailDefinition` satisfies it, and so does a product's own definition
+  type. The component is generic over it, so `onSelectOotb` hands back the object the host
+  passed in, `parameters` and all, and there is nothing to look up again.
+
+- **Entry styling is the family-wide control treatment** (see "Hover and focus,
+  family-wide"), not this family's chip idiom: wind's interactive-item classes with the
+  leading icon on `text-muted-foreground`, like the rest of the family.
+
+### What the palette is not
+
+Only the picker ships. The shell is host orchestration, because the two products disagree and
+both are right for their surface: Flow opens a 500px dialog, or an inline properties-panel
+overlay that renders the chosen builder underneath the picker; Agents takes over the whole
+sidebar with a back button and its own create affordance. Both are a handful of lines around
+this component (see the `InADialog` and `InAHostSidebar` stories), and a wrapper modelling
+both would be a worse contract than no wrapper. `existingGuardrails` is likewise not a palette
+concern: it exists so the *builder* can propose a unique default name.
+
+### Localization
+
+Chrome strings resolve through `useGuardrailPaletteLabels` (lingui, `guardrails.palette.*` ids
+in the shared canvas catalog); `labels` overrides any of them and wins over the catalog.
+Definition copy is not localized here: display names, descriptions and connector or folder
+names arrive resolved on the definitions, from the canonical copy table or the wire.
+
+All nine strings are harvested from the two products' own catalogs (eight from Flow's
+`addGuardrailPalette_*` i18next keys, `list-aria-label` from Agents' `guardrails.palette.*`
+lingui id), so the English is the wording both products already ship rather than something
+this package invented.
+
+**English only**, like the canonical copy above: the other thirteen catalogs get these ids
+from `chore(l10n): sync from Localization`, and until it runs `useSafeLingui` renders the
+English default, so nothing is missing on screen. One item for that loc pass comes with the
+harvest: the two products translate the word itself differently in German, "Leitplanke" in
+Flow against "Leitlinien" in Agents.
 
 ## GuardrailBuilder
 
