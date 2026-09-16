@@ -67,7 +67,7 @@ describe('getIcon', () => {
     // (there is no Lucide `LayersArrowUpRight`, so a miss here would degrade to Box).
     const svg = container.querySelector('svg.layers-arrow-up-right-icon');
     expect(svg).toBeInTheDocument();
-    // The two accent-on-hover arrow sub-paths are present.
-    expect(svg?.querySelectorAll('path.arrow')).toHaveLength(2);
+    // Layers glyph plus the navigate-out arrow, all inheriting `currentColor`.
+    expect(svg?.querySelectorAll('path')).toHaveLength(4);
   });
 });
