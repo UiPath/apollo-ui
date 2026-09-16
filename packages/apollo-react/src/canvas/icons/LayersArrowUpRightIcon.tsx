@@ -12,7 +12,6 @@ export const LayersArrowUpRightIcon = ({
 }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="layers-arrow-up-right-icon"
     width={w}
     height={h}
     viewBox="0 0 24 24"

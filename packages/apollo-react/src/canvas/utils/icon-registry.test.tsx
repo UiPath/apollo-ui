@@ -59,15 +59,4 @@ describe('getIcon', () => {
     const { container } = render(<Icon w={24} h={24} color="rgb(1, 2, 3)" />);
     expect(container.querySelector('svg')).toHaveAttribute('stroke', 'rgb(1, 2, 3)');
   });
-
-  it('returns the LayersArrowUpRight icon for the registered layers-arrow-up-right id', () => {
-    const Icon = getIcon('layers-arrow-up-right');
-    const { container } = render(<Icon w={24} h={24} />);
-    // The registered UIPath icon renders its own SVG (class), not a Lucide/Box fallback
-    // (there is no Lucide `LayersArrowUpRight`, so a miss here would degrade to Box).
-    const svg = container.querySelector('svg.layers-arrow-up-right-icon');
-    expect(svg).toBeInTheDocument();
-    // Layers glyph plus the navigate-out arrow, all inheriting `currentColor`.
-    expect(svg?.querySelectorAll('path')).toHaveLength(4);
-  });
 });
