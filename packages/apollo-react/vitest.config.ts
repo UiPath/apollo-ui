@@ -1,7 +1,12 @@
 import { fileURLToPath } from 'node:url';
 
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import { defaultExclude, defineConfig } from 'vitest/config';
+
+// Vitest 4 dropped `**/dist/**` from its default exclude, so build output that
+// matches a test or bench glob gets picked up alongside the sources it came
+// from. Keep dist out of both runners explicitly.
+const exclude = [...defaultExclude, '**/dist/**'];
 
 export default defineConfig({
   plugins: [
@@ -16,6 +21,10 @@ export default defineConfig({
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
     passWithNoTests: true,
+    exclude,
+    benchmark: {
+      exclude,
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],

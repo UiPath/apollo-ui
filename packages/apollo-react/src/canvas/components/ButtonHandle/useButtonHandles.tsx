@@ -2,10 +2,18 @@ import { useNodesData } from '@xyflow/react';
 import type { Position } from '@xyflow/system';
 import { useMemo } from 'react';
 import type { HandleGroupManifest } from '../../schema/node-definition';
-import { resolveHandles } from '../../utils/manifest-resolver';
+import { type ResolvedHandleGroup, resolveHandles } from '../../utils/manifest-resolver';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import type { HandleActionEvent, HandleMouseEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
+
+const EMPTY_DATA: Record<string, unknown> = {};
+
+// Sentinel id for the pre-resolved path: hook order must not change, so
+// useNodesData is still called, but pointing it at a never-existing id makes
+// the subscription inert (a failed map lookup, a stable null result, and no
+// re-render on any node-data change).
+const NO_SUBSCRIPTION_NODE_ID = '__apollo_pre_resolved_no_subscription__';
 
 export const useButtonHandles = ({
   handleConfigurations,
@@ -22,6 +30,7 @@ export const useButtonHandles = ({
   nodeWidth,
   nodeHeight,
   portalActions,
+  preResolved,
 }: {
   handleConfigurations: HandleGroupManifest[];
   shouldShowHandles: boolean;
@@ -36,6 +45,14 @@ export const useButtonHandles = ({
   nodeWidth?: number;
   nodeHeight?: number;
   portalActions?: boolean;
+
+  /**
+   * Set when `handleConfigurations` is already the output of `resolveHandles`
+   * (templates replaced, repeats expanded, visibility booleans resolved).
+   * Skips the hook's internal resolution pass and its node-data dependency,
+   * so the same configuration is never resolved twice per render.
+   */
+  preResolved?: boolean;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -56,7 +73,13 @@ export const useButtonHandles = ({
   }) => boolean;
 }) => {
   const connectedHandleIds = useConnectedHandles(nodeId);
-  const node = useNodesData(nodeId);
+  // Node data is only needed to resolve raw configurations; the pre-resolved
+  // path swaps in the sentinel so it carries no live data subscription.
+  const node = useNodesData(preResolved ? NO_SUBSCRIPTION_NODE_ID : nodeId);
+
+  // When the input is pre-resolved, node data is not read for resolution; a
+  // stable empty object keeps data changes from invalidating the memo below.
+  const dataForResolution = preResolved ? EMPTY_DATA : (node?.data ?? EMPTY_DATA);
 
   const handleElements = useMemo(() => {
     if (
@@ -66,7 +89,9 @@ export const useButtonHandles = ({
     )
       return <></>;
 
-    const resolvedHandles = resolveHandles(handleConfigurations, node?.data ?? {});
+    const resolvedHandles = preResolved
+      ? (handleConfigurations as unknown as ResolvedHandleGroup[])
+      : resolveHandles(handleConfigurations, dataForResolution);
 
     const elements = resolvedHandles.map((config, i) => {
       const groupVisible = shouldShowHandles && (config.visible ?? true);
@@ -120,7 +145,8 @@ export const useButtonHandles = ({
     nodeWidth,
     nodeHeight,
     portalActions,
-    node?.data,
+    dataForResolution,
+    preResolved,
   ]);
 
   return handleElements;

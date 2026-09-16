@@ -55,8 +55,20 @@ export interface NodeStatusContext {
   nodeId: string;
   executionState?: ExecutionState;
   validationState?: ValidationState;
+  /** Canvas mode ('design' | 'view' | ...); populated so toolbar resolution refreshes on mode change. */
+  mode?: string;
+  /**
+   * @deprecated Never populated. BaseNode/LoopNode no longer feed interaction
+   * state into toolbar/adornment resolution (it forced a full re-resolve on
+   * every connect gesture and selection change); interaction-dependent toolbar
+   * behavior lives in the toolbar offset/visibility props instead. Will be
+   * removed in a future major.
+   */
   isHovered?: boolean;
+  /** @deprecated Never populated; see `isHovered`. */
   isConnecting?: boolean;
+  /** @deprecated Never populated; see `isHovered`. */
   isSelected?: boolean;
+  /** @deprecated Never populated; see `isHovered`. */
   isDragging?: boolean;
 }

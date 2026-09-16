@@ -35,6 +35,10 @@
     "**/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx",
+    "**/*.bench.ts",
+    "**/*.bench.tsx",
+    "**/*.perf-fixtures.ts",
+    "**/*.perf-fixtures.tsx",
     "**/*.stories.ts",
     "**/*.stories.tsx"
   ],
