@@ -30,6 +30,7 @@ import { EditorRefPlugin } from './plugins/EditorRefPlugin';
 import { MultilinePlugin } from './plugins/MultilinePlugin';
 import { NodeSelectionFixPlugin } from './plugins/NodeSelectionFixPlugin';
 import { RenameTokensPlugin } from './plugins/RenameTokensPlugin';
+import { ShortcutContainmentPlugin } from './plugins/ShortcutContainmentPlugin';
 import { ToolbarActionsPlugin } from './plugins/ToolbarActionsPlugin';
 import { ValidateTokensPlugin } from './plugins/ValidateTokensPlugin';
 import { ValueSyncPlugin } from './plugins/ValueSyncPlugin';
@@ -519,6 +520,8 @@ const EditorInner = forwardRef(
         {richText && (
           <>
             <ListPlugin />
+            {/* Cmd/Ctrl+B / +I / +U are ours in rich mode; don't let the host act on them too. */}
+            <ShortcutContainmentPlugin />
             {/* Live markdown shortcuts: typing `**x**` bolds, `- ` starts a list, matching the
                 toolbar's feature set exactly (the transformer list is shared with serialization). */}
             <MarkdownShortcutPlugin transformers={PROMPT_EDITOR_RICH_TRANSFORMERS} />
