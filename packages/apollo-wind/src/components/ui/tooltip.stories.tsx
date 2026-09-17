@@ -466,7 +466,7 @@ export const Examples = {
                       Hover me
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">
+                  <TooltipContent side="bottom" className="!animate-none">
                     <p>This is a tooltip</p>
                   </TooltipContent>
                 </Tooltip>
