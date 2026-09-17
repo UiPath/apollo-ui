@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.4...@uipath/apollo-react@6.48.0) (2026-09-17)
+
+### Features
+
+* **apollo-wind:** extend inline validation to every field control ([8aebf94](https://github.com/UiPath/apollo-ui/commit/8aebf9458369dbb5c20420665bbb72376bc1bf2a))
+
 ## [@uipath/apollo-react-v6.47.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.3...@uipath/apollo-react@6.47.4) (2026-09-16)
 
 ### Bug Fixes

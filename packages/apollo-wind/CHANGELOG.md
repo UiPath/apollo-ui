@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.3...@uipath/apollo-wind@2.53.0) (2026-09-17)
+
+### Features
+
+* **apollo-wind:** extend inline validation to every field control ([8aebf94](https://github.com/UiPath/apollo-ui/commit/8aebf9458369dbb5c20420665bbb72376bc1bf2a))
+
 ## [@uipath/apollo-wind-v2.52.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.2...@uipath/apollo-wind@2.52.3) (2026-09-16)
 
 ### Bug Fixes
