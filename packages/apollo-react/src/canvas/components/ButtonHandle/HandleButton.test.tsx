@@ -292,32 +292,22 @@ describe('HandleButton mount & label visibility', () => {
     expect(button).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('names the add button after ariaLabel when a caller already renders its own visual label', () => {
+  it('names the add button after label but skips the visual InlineLabel when renderLabel is false', () => {
     // Inward handles (ButtonHandle.tsx) render their own adjacent label via
-    // InwardHandleContent, so they pass ariaLabel instead of label — this must
-    // still produce the specific accessible name without rendering a second,
-    // duplicate visual label from HandleButton's own InlineLabel.
-    render(
-      <HandleButton visible position={Position.Top} onAction={vi.fn()} ariaLabel="Escalations" />
-    );
-    expect(
-      screen.getByRole('button', { name: 'Add node from Escalations handle' })
-    ).toBeInTheDocument();
-    expect(screen.queryByText('Escalations')).toBeNull();
-  });
-
-  it('prefers ariaLabel over label when both are given', () => {
+    // InwardHandleContent, so they pass renderLabel={false} — label must still drive
+    // the accessible name without HandleButton ALSO rendering a duplicate visual label.
     render(
       <HandleButton
         visible
         position={Position.Top}
         onAction={vi.fn()}
-        label="Tools"
-        ariaLabel="Escalations"
+        label="Escalations"
+        renderLabel={false}
       />
     );
     expect(
       screen.getByRole('button', { name: 'Add node from Escalations handle' })
     ).toBeInTheDocument();
+    expect(screen.queryByText('Escalations')).toBeNull();
   });
 });

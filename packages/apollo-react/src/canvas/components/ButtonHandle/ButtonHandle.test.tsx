@@ -353,8 +353,8 @@ describe('ButtonHandles', () => {
     it('names the add button after its label on inward handles too, without a duplicate visual label', () => {
       // Inward handles (connectionPosition !== position) render their own visual
       // label via InwardHandleContent — HandleButton must still pick up the same
-      // text for its accessible name (via ariaLabel) without rendering a second,
-      // duplicate "Tools" label of its own.
+      // text for its accessible name (via label + renderLabel={false}) without
+      // rendering a second, duplicate "Tools" label of its own.
       render(
         <ButtonHandles
           handles={[hoverHandle]}
