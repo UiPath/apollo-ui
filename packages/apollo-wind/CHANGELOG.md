@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.53.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.53.0...@uipath/apollo-wind@2.53.1) (2026-09-17)
+
+### Bug Fixes
+
+* **apollo-wind:** disable tooltip enter animation in always-open Themes examples ([45286b8](https://github.com/UiPath/apollo-ui/commit/45286b8148517c712e26af4455ca7f0f92f8b9ea))
+* **apollo-wind:** ship Emphasized tooltip tokens and reduce text size ([046bc02](https://github.com/UiPath/apollo-ui/commit/046bc02e432f827bdfae056d4a14a180b72e374d))
+
 ## [@uipath/apollo-wind-v2.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.3...@uipath/apollo-wind@2.53.0) (2026-09-17)
 
 ### Features
