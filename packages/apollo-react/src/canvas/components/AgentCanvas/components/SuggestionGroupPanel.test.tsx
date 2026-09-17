@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { AgentFlowSuggestionGroup } from '../../../types';
@@ -48,10 +48,10 @@ describe('SuggestionGroupPanel', () => {
       />
     );
 
-    screen.getByRole('button', { name: 'Previous suggestion' }).click();
+    fireEvent.click(screen.getByRole('button', { name: 'Previous suggestion' }));
     expect(onNavigatePrevious).toHaveBeenCalledTimes(1);
 
-    screen.getByRole('button', { name: 'Next suggestion' }).click();
+    fireEvent.click(screen.getByRole('button', { name: 'Next suggestion' }));
     expect(onNavigateNext).toHaveBeenCalledTimes(1);
   });
 
