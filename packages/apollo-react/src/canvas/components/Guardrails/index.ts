@@ -31,6 +31,34 @@ export {
   getGuardrailSelectorErrorFields,
   initGuardrailBuilderFormData,
 } from './builder-utils';
+export type { CentralizedGuardrailDetailsProps } from './centralized-guardrail-details';
+export { CentralizedGuardrailDetails } from './centralized-guardrail-details';
+export type {
+  CentralizedGuardrailIdentity,
+  CentralizedParameterFallbackLabels,
+} from './centralized-guardrail-utils';
+export {
+  findCentralizedBuiltInDefinition,
+  findCentralizedByoDefinition,
+  formatCentralizedAction,
+  formatCentralizedExecutionStage,
+  formatCentralizedScope,
+  getApplicableCentralizedGuardrails,
+  getCentralizedGuardrailDisplay,
+  getCentralizedGuardrailItemId,
+  isCentralizedGuardrailConfigMissing,
+  resolveCentralizedGuardrailParameters,
+} from './centralized-guardrail-utils';
+export type { CentralizedGuardrailsSectionProps } from './centralized-guardrails-section';
+export { CentralizedGuardrailsSection } from './centralized-guardrails-section';
+export type {
+  CentralizedGuardrail,
+  CentralizedGuardrailActionType,
+  CentralizedGuardrailDefinition,
+  CentralizedGuardrailParameter,
+  CentralizedGuardrailParameterDefinition,
+  CentralizedGuardrailParameterRow,
+} from './centralized-types';
 export type { GuardrailChipProps } from './components/guardrail-chip';
 export { GuardrailChip, guardrailChipVariants } from './components/guardrail-chip';
 export type { GuardrailStatusBannerProps } from './components/guardrail-status-banner';
@@ -89,6 +117,7 @@ export type { GuardrailRemoveDialogProps } from './guardrail-remove-dialog';
 export { GuardrailRemoveDialog } from './guardrail-remove-dialog';
 export { GuardrailValidatorForm } from './guardrail-validator-form';
 export type {
+  CentralizedGuardrailsLabels,
   GuardrailBuilderLabels,
   GuardrailListLabels,
   GuardrailPaletteLabels,
@@ -96,6 +125,8 @@ export type {
   GuardrailValidatorFormLabels,
 } from './i18n';
 export {
+  CENTRALIZED_GUARDRAILS_EN_LABELS,
+  CENTRALIZED_GUARDRAILS_EN_MESSAGES,
   formatGuardrailFormMessage,
   GUARDRAIL_BUILDER_EN_LABELS,
   GUARDRAIL_FORM_EN_LABELS,
@@ -105,11 +136,13 @@ export {
   GUARDRAIL_PALETTE_EN_MESSAGES,
   GUARDRAIL_REMOVE_DIALOG_EN_LABELS,
   GUARDRAIL_REMOVE_DIALOG_EN_MESSAGES,
+  resolveCentralizedGuardrailsLabels,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
   resolveGuardrailPaletteLabels,
   resolveGuardrailRemoveDialogLabels,
+  useCentralizedGuardrailsLabels,
   useGuardrailBuilderLabels,
   useGuardrailFormLabels,
   useGuardrailListLabels,

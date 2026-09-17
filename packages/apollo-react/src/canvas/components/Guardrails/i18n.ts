@@ -244,6 +244,7 @@ const TEMPLATE_TOKENS = {
   min: '{{min}}',
   max: '{{max}}',
   toolName: '{{toolName}}',
+  policyName: '{{policyName}}',
 };
 
 /** Localized chrome strings of the validator form; per-string `overrides` always win. */
@@ -838,6 +839,203 @@ export function useGuardrailRemoveDialogLabels(
   const { _ } = useSafeLingui();
   return useMemo(
     () => resolveGuardrailRemoveDialogLabels(buildGuardrailRemoveDialogLabels(_), overrides),
+    [_, overrides]
+  );
+}
+
+/**
+ * Chrome strings of the centralized section and its details. Validator names and descriptions
+ * come from `definitions-copy.ts` or the connector.
+ */
+export interface CentralizedGuardrailsLabels {
+  /** Section heading. */
+  title: string;
+  /** Body of the section's info popover. */
+  info: string;
+  /** Link text inside the info popover; rendered only when the host passes `docsHref`. */
+  docsLink: string;
+  /** Caption under the heading; `{{policyName}}` is emphasized where it lands. */
+  policyCaption: string;
+  /** Accessible name of a row; `{{name}}` is the guardrail's display name. */
+  viewDetails: string;
+  // Row and detail fields
+  guardrailType: string;
+  policyField: string;
+  provider: string;
+  description: string;
+  noDescription: string;
+  executionStage: string;
+  scopes: string;
+  action: string;
+  configuration: string;
+  /** Advisory shown above the read-only details. */
+  managedMessage: string;
+  // Origin chips
+  originByo: string;
+  originUiPath: string;
+  // Configuration problems
+  statusUnavailable: string;
+  statusDisabled: string;
+  missingConfigMessage: string;
+  disabledConfigMessage: string;
+  // Scopes and actions
+  scopeAgent: string;
+  scopeLlm: string;
+  scopeTool: string;
+  actionBlock: string;
+  actionEscalate: string;
+  actionFilter: string;
+  actionLog: string;
+  // Execution stages
+  stagePre: string;
+  stagePost: string;
+  stageBoth: string;
+  // Configuration values
+  parameterEnabled: string;
+  parameterDisabled: string;
+  /** Fallback label for the entity list when no definition names it. */
+  entitiesFallback: string;
+  /** Fallback label for the threshold map when no definition names it. */
+  thresholdsFallback: string;
+}
+
+/** The subset of `useSafeLingui`'s translator the centralized labels need. */
+type CentralizedTranslate = (descriptor: {
+  id: string;
+  message: string;
+  values?: Record<string, string>;
+}) => string;
+
+// One builder holds every `_({ id, message })` call, so the English defaults, the flat record
+// the catalog test diffs and the runtime lingui path cannot drift. Same shape as
+// `definitions-copy.ts`.
+// Labels the builder or the list already declare reuse their ids, so the two cannot drift.
+function buildCentralizedGuardrailsLabels(_: CentralizedTranslate): CentralizedGuardrailsLabels {
+  return {
+    title: _({ id: 'guardrails.centralized.title', message: 'Centralized guardrails' }),
+    info: _({
+      id: 'guardrails.centralized.info',
+      message:
+        "Your organization's AI Trust Layer governance policy enforces these guardrails. You cannot edit them here.",
+    }),
+    docsLink: _({
+      id: 'guardrails.centralized.docs-link',
+      message: 'View centralized guardrails documentation',
+    }),
+    policyCaption: _({
+      id: 'guardrails.centralized.policy-caption',
+      message: 'Enforced by AI Trust Layer policy: {policyName}',
+      values: TEMPLATE_TOKENS,
+    }),
+    viewDetails: _({
+      id: 'guardrails.centralized.view-details',
+      message: 'View details for {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    guardrailType: _({ id: 'guardrails.builder.type-label', message: 'Guardrail type' }),
+    policyField: _({
+      id: 'guardrails.centralized.policy-field',
+      message: 'AI Trust Layer policy',
+    }),
+    provider: _({ id: 'guardrails.list.provider', message: 'Provider' }),
+    description: _({
+      id: 'guardrails.builder.description-label',
+      message: 'Guardrail description',
+    }),
+    noDescription: _({
+      id: 'guardrails.centralized.no-description',
+      message: 'No description available.',
+    }),
+    executionStage: _({
+      id: 'guardrails.centralized.execution-stage',
+      message: 'Execution stage',
+    }),
+    scopes: _({ id: 'guardrails.builder.scopes-label', message: 'Scopes' }),
+    action: _({ id: 'guardrails.centralized.action', message: 'Action' }),
+    configuration: _({ id: 'guardrails.centralized.configuration', message: 'Configuration' }),
+    managedMessage: _({
+      id: 'guardrails.centralized.managed-message',
+      message:
+        "Your organization's AI Trust Layer governance policy manages this configuration. You cannot edit it here.",
+    }),
+    originByo: _({ id: 'guardrails.list.byo', message: 'BYO' }),
+    originUiPath: _({ id: 'guardrails.centralized.origin-uipath', message: 'UiPath managed' }),
+    statusUnavailable: _({ id: 'guardrails.list.status-unavailable', message: 'Unavailable' }),
+    statusDisabled: _({ id: 'guardrails.list.status-disabled', message: 'Disabled' }),
+    missingConfigMessage: _({
+      id: 'guardrails.centralized.missing-config-message',
+      message:
+        "This guardrail's configuration could not be found — it may have been deleted. Contact your administrator to fix the AI Trust Layer policy.",
+    }),
+    disabledConfigMessage: _({
+      id: 'guardrails.centralized.disabled-config-message',
+      message:
+        "This guardrail's configuration has been disabled. Contact your administrator to re-enable it.",
+    }),
+    scopeAgent: _({ id: 'guardrails.builder.scope-agent-label', message: 'Agent' }),
+    scopeLlm: _({ id: 'guardrails.builder.scope-llm-label', message: 'LLM calls' }),
+    scopeTool: _({ id: 'guardrails.builder.scope-tool-label', message: 'Tools' }),
+    actionBlock: _({ id: 'guardrails.builder.action-block-label', message: 'Block' }),
+    actionEscalate: _({ id: 'guardrails.builder.action-escalate-label', message: 'Escalate' }),
+    actionFilter: _({ id: 'guardrails.builder.action-filter-label', message: 'Filter' }),
+    actionLog: _({ id: 'guardrails.builder.action-log-label', message: 'Log' }),
+    stagePre: _({ id: 'guardrails.centralized.stage-pre', message: 'Pre-execution' }),
+    stagePost: _({ id: 'guardrails.centralized.stage-post', message: 'Post-execution' }),
+    stageBoth: _({ id: 'guardrails.centralized.stage-both', message: 'Pre & post-execution' }),
+    parameterEnabled: _({ id: 'guardrails.centralized.parameter-enabled', message: 'Enabled' }),
+    parameterDisabled: _({ id: 'guardrails.centralized.parameter-disabled', message: 'Disabled' }),
+    entitiesFallback: _({
+      id: 'guardrails.centralized.entities-fallback',
+      message: 'Entities to detect',
+    }),
+    thresholdsFallback: _({
+      id: 'guardrails.centralized.thresholds-fallback',
+      message: 'Detection thresholds',
+    }),
+  };
+}
+
+// Resolves a descriptor the way lingui does with `values: TEMPLATE_TOKENS`, so the English
+// defaults carry the same `{{token}}` convention as a translated catalog entry.
+const englishCentralizedTranslate: CentralizedTranslate = ({ message, values }) =>
+  values
+    ? message.replace(/\{(\w+)\}/g, (match, token: string) => values[token] ?? match)
+    : message;
+
+/** The English chrome strings, resolved without a lingui provider. */
+export const CENTRALIZED_GUARDRAILS_EN_LABELS: CentralizedGuardrailsLabels =
+  buildCentralizedGuardrailsLabels(englishCentralizedTranslate);
+
+/**
+ * The same strings flattened to message id to ICU source message, the form the catalogs store:
+ * the i18n test compares these against `locales/en.json` verbatim.
+ */
+export const CENTRALIZED_GUARDRAILS_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+  (() => {
+    const messages: Record<string, string> = {};
+    buildCentralizedGuardrailsLabels((descriptor) => {
+      messages[descriptor.id] = descriptor.message;
+      return descriptor.message;
+    });
+    return messages;
+  })()
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveCentralizedGuardrailsLabels(
+  catalog?: Partial<CentralizedGuardrailsLabels>,
+  overrides?: Partial<CentralizedGuardrailsLabels>
+): CentralizedGuardrailsLabels {
+  return mergeLabels(CENTRALIZED_GUARDRAILS_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the centralized section; per-string `overrides` always win. */
+export function useCentralizedGuardrailsLabels(
+  overrides?: Partial<CentralizedGuardrailsLabels>
+): CentralizedGuardrailsLabels {
+  const { _ } = useSafeLingui();
+  return useMemo(
+    () => resolveCentralizedGuardrailsLabels(buildCentralizedGuardrailsLabels(_), overrides),
     [_, overrides]
   );
 }
