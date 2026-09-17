@@ -828,8 +828,12 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                 component="span"
                 sx={{
                   position: 'absolute',
-                  width: 1,
-                  height: 1,
+                  // MUI's sx sizing transform treats any numeric width/height <= 1 as a
+                  // percentage (1 -> '100%'), not a pixel value — an unstyled numeric 1 here
+                  // would make this "hidden" span stretch to fill its positioned ancestor
+                  // instead of collapsing to the intended 1x1px box. Explicit px strings only.
+                  width: '1px',
+                  height: '1px',
                   padding: 0,
                   margin: '-1px',
                   overflow: 'hidden',
