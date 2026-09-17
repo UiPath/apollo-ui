@@ -348,7 +348,7 @@ export const Examples = {
   name: 'Examples',
   render: () => (
     <TooltipProvider>
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 px-8 py-6">
         {/* Toolbar */}
         <div>
           <p className="text-sm font-medium mb-3">Toolbar</p>
@@ -440,6 +440,102 @@ export const Examples = {
                 <p>Select items to delete</p>
               </TooltipContent>
             </Tooltip>
+          </div>
+        </div>
+
+        {/* Themes (Current) */}
+        <div>
+          <p className="text-sm font-medium mb-3">Themes (Current)</p>
+          <div className="flex items-start gap-4 overflow-x-auto pb-2">
+            {[
+              { theme: 'light', label: 'Light' },
+              { theme: 'dark', label: 'Dark' },
+              { theme: 'light-hc', label: 'Light HC' },
+              { theme: 'dark-hc', label: 'Dark HC' },
+              { theme: 'future-light', label: 'Future Light' },
+              { theme: 'future-dark', label: 'Future Dark' },
+            ].map(({ theme, label }) => (
+              <div
+                key={theme}
+                className={`${theme} flex flex-shrink-0 flex-col items-center gap-6 rounded-xl border border-border bg-surface p-8`}
+              >
+                <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                <Tooltip defaultOpen>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      Hover me
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>This is a tooltip</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Themes Iteration 2 (Aligned) */}
+        <div>
+          <p className="text-sm font-medium mb-3">Themes Iteration 2 (Aligned)</p>
+          <div className="flex items-start gap-4 overflow-x-auto pb-2">
+            {[
+              { theme: 'light', label: 'Light' },
+              { theme: 'dark', label: 'Dark' },
+              { theme: 'light-hc', label: 'Light HC' },
+              { theme: 'dark-hc', label: 'Dark HC' },
+              { theme: 'future-light', label: 'Future Light' },
+              { theme: 'future-dark', label: 'Future Dark' },
+            ].map(({ theme, label }) => (
+              <div
+                key={theme}
+                className={`${theme} flex flex-shrink-0 flex-col items-center gap-6 rounded-xl border border-border bg-surface p-8`}
+              >
+                <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                <Tooltip defaultOpen>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      Hover me
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="bg-popover text-popover-foreground border-border">
+                    <p>This is a tooltip</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Themes Iteration 3 (Emphasized) */}
+        <div>
+          <p className="text-sm font-medium mb-3">Themes Iteration 3 (Emphasized)</p>
+          <div className="flex items-start gap-4 overflow-x-auto pb-2">
+            {[
+              { theme: 'light', label: 'Light' },
+              { theme: 'dark', label: 'Dark' },
+              { theme: 'light-hc', label: 'Light HC' },
+              { theme: 'dark-hc', label: 'Dark HC' },
+              { theme: 'future-light', label: 'Future Light' },
+              { theme: 'future-dark', label: 'Future Dark' },
+            ].map(({ theme, label }) => (
+              <div
+                key={theme}
+                className={`${theme} flex flex-shrink-0 flex-col items-center gap-6 rounded-xl border border-border bg-surface p-8`}
+              >
+                <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                <Tooltip defaultOpen>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      Hover me
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="bg-accent text-accent-foreground border-border">
+                    <p>This is a tooltip</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            ))}
           </div>
         </div>
       </div>
