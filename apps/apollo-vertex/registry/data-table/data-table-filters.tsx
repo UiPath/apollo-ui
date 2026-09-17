@@ -1,7 +1,9 @@
-import type { Row, RowData } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
 
-export const dataTableGlobalFilterFn = (
-  row: Row<RowData>,
+import type { AppRow } from "@/lib/tableFeatures";
+
+export const dataTableGlobalFilterFn = <TData extends RowData>(
+  row: AppRow<TData>,
   _columnId: string,
   filterValue: string,
 ): boolean => {
@@ -23,8 +25,8 @@ export const dataTableGlobalFilterFn = (
   });
 };
 
-export const dataTableFacetedFilterFn = (
-  row: Row<RowData>,
+export const dataTableFacetedFilterFn = <TData extends RowData>(
+  row: AppRow<TData>,
   columnId: string,
   filterValue: unknown,
 ): boolean => {

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Table as TanstackTable } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -17,24 +17,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { AppTable } from "@/lib/tableFeatures";
 import { cn } from "@/lib/utils";
 
-interface DataTablePaginationProps<TData> {
-  table: TanstackTable<TData>;
+interface DataTablePaginationProps<TData extends RowData> {
+  table: AppTable<TData>;
   paginationSizes?: number[];
   className?: string;
 }
 
-function DataTablePagination<TData>({
+function DataTablePagination<TData extends RowData>({
   table,
   paginationSizes = [10, 25, 50, 100],
   className,
 }: DataTablePaginationProps<TData>) {
-  // React Compiler compat: TanStack Table objects have stable references with mutable state.
-  // codeql[js/unknown-directive] - valid React Compiler directive
-  "use no memo";
   const { t } = useTranslation();
-  const { pageIndex, pageSize } = table.getState().pagination;
+  const { pageIndex, pageSize } = table.state.pagination;
   const totalRows = table.getFilteredRowModel().rows.length;
   const pageCount = table.getPageCount();
   const canPreviousPage = pageIndex > 0;

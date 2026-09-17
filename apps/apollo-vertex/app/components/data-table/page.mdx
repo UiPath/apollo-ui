@@ -39,7 +39,7 @@ This component requires the following dependencies:
 ```tsx
 "use client"
 
-import type { ColumnDef } from "@/components/ui/data-table"
+import type { AppColumnDef } from "@/components/ui/data-table"
 import { DataTableColumnHeader } from "@/components/ui/data-table"
 
 type Payment = {
@@ -49,7 +49,7 @@ type Payment = {
   email: string
 }
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: AppColumnDef<Payment>[] = [
   {
     accessorKey: "status",
     header: ({ column }) => (
@@ -181,7 +181,7 @@ export default function PaymentsPage({ data }: { data: Payment[] }) {
 | Option | Type | Description |
 | --- | --- | --- |
 | `data` | `TData[]` | The data array to display |
-| `columns` | `ColumnDef<TData>[]` | TanStack Table column definitions |
+| `columns` | `AppColumnDef<TData>[]` | TanStack Table column definitions |
 | `storageKey` | `string` | Key used to persist state in `localStorage` |
 | `isLoading` | `boolean` | Optional loading state (default: `false`) |
 | `defaultColumnOrder` | `string[]` | Initial column order (defaults to column definition order) |
@@ -245,7 +245,7 @@ Add a selection column using the `Checkbox` component:
 ```tsx
 import { Checkbox } from "@/components/ui/checkbox"
 
-const columns: ColumnDef<Payment>[] = [
+const columns: AppColumnDef<Payment>[] = [
   {
     id: "select",
     header: ({ table }) => (

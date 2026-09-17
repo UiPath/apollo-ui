@@ -1,15 +1,17 @@
 export type {
-  ColumnDef,
   ColumnFiltersState,
+  ColumnVisibilityState,
   ExpandedState,
   OnChangeFn,
   PaginationState,
-  Row,
   RowSelectionState,
   SortingState,
-  Table as TanstackTable,
-  VisibilityState,
 } from "@tanstack/react-table";
+export type {
+  AppColumnDef,
+  AppRow,
+  AppTable as TanstackTable,
+} from "@/lib/tableFeatures";
 export type { DataTableProps } from "./data-table";
 export { DataTable } from "./data-table";
 export { DataTableColumnHeader } from "./data-table-column-header";
