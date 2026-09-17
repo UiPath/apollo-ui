@@ -185,20 +185,32 @@ export const GUARDRAIL_BUILDER_EN_LABELS: GuardrailBuilderLabels = {
   actionAppRequiredError: 'Action app is required',
 };
 
+// One merge for every label set: English defaults, then the catalog, then the host's
+// overrides, skipping `undefined` so a partial source never blanks a string.
+function mergeLabels<T extends object>(
+  defaults: T,
+  catalog?: Partial<T>,
+  overrides?: Partial<T>
+): T {
+  const merged: T = { ...defaults };
+  for (const source of [catalog, overrides]) {
+    if (!source) continue;
+    for (const key of Object.keys(merged) as Array<keyof T>) {
+      const value = source[key];
+      // `Partial<T>[keyof T]` is `T[keyof T] | undefined`; TS cannot follow the narrowing
+      // through a generic index, hence the assertion.
+      if (value !== undefined) merged[key] = value as T[keyof T];
+    }
+  }
+  return merged;
+}
+
 /** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
 export function resolveGuardrailBuilderLabels(
   catalog?: Partial<GuardrailBuilderLabels>,
   overrides?: Partial<GuardrailBuilderLabels>
 ): GuardrailBuilderLabels {
-  const merged: GuardrailBuilderLabels = { ...GUARDRAIL_BUILDER_EN_LABELS };
-  for (const source of [catalog, overrides]) {
-    if (!source) continue;
-    for (const key of Object.keys(merged) as Array<keyof GuardrailBuilderLabels>) {
-      const value = source[key];
-      if (value !== undefined) merged[key] = value;
-    }
-  }
-  return merged;
+  return mergeLabels(GUARDRAIL_BUILDER_EN_LABELS, catalog, overrides);
 }
 
 /** Interpolate `{{token}}` placeholders in a catalog message. Unknown tokens are left as-is. */
@@ -216,15 +228,7 @@ export function resolveGuardrailFormLabels(
   catalog?: Partial<GuardrailValidatorFormLabels>,
   overrides?: Partial<GuardrailValidatorFormLabels>
 ): GuardrailValidatorFormLabels {
-  const merged: GuardrailValidatorFormLabels = { ...GUARDRAIL_FORM_EN_LABELS };
-  for (const source of [catalog, overrides]) {
-    if (!source) continue;
-    for (const key of Object.keys(merged) as Array<keyof GuardrailValidatorFormLabels>) {
-      const value = source[key];
-      if (value !== undefined) merged[key] = value;
-    }
-  }
-  return merged;
+  return mergeLabels(GUARDRAIL_FORM_EN_LABELS, catalog, overrides);
 }
 
 // Reifies each ICU placeholder back into the `{{token}}` template convention: the
@@ -239,6 +243,7 @@ const TEMPLATE_TOKENS = {
   position: '{{position}}',
   min: '{{min}}',
   max: '{{max}}',
+  toolName: '{{toolName}}',
 };
 
 /** Localized chrome strings of the validator form; per-string `overrides` always win. */
@@ -473,6 +478,110 @@ export function useGuardrailBuilderLabels(
         },
         overrides
       ),
+    [_, overrides]
+  );
+}
+
+/**
+ * Chrome strings of the remove-guardrail confirmation dialog. Domain values stay out: the
+ * guardrail and tool names are user data, and scopes arrive raw for the host's `formatScope`.
+ *
+ * Values may contain `{{placeholder}}` tokens; interpolate with `formatGuardrailFormMessage`.
+ */
+export interface GuardrailRemoveDialogLabels {
+  title: string;
+  /** The question itself; `{{name}}` is the guardrail name. */
+  confirmPrompt: string;
+  /** Heading above what a full removal also takes the guardrail off. */
+  alsoApplicable: string;
+  /** Scoped-removal line; `{{toolName}}` is the tool being detached. */
+  removedForTool: string;
+  /** Heading above what survives a scoped removal. */
+  stillApplicable: string;
+  /** Aria-label of the corner close button. */
+  close: string;
+  cancel: string;
+  remove: string;
+}
+
+/** The subset of `useSafeLingui`'s translator the remove-dialog labels need. */
+type RemoveDialogTranslate = (descriptor: {
+  id: string;
+  message: string;
+  values?: Record<string, string>;
+}) => string;
+
+// One builder holds every `_({ id, message })` call, so the English defaults, the flat record
+// the catalog test diffs and the runtime lingui path cannot drift, and `lingui extract` still
+// sees static calls. Same shape as `definitions-copy.ts`.
+function buildGuardrailRemoveDialogLabels(_: RemoveDialogTranslate): GuardrailRemoveDialogLabels {
+  return {
+    title: _({ id: 'guardrails.remove-dialog.title', message: 'Remove guardrail' }),
+    confirmPrompt: _({
+      id: 'guardrails.remove-dialog.confirm-prompt',
+      message: 'Please, confirm you’d like to remove "{name}" guardrail',
+      values: TEMPLATE_TOKENS,
+    }),
+    alsoApplicable: _({
+      id: 'guardrails.remove-dialog.also-applicable',
+      message: 'This guardrail is also applicable to:',
+    }),
+    removedForTool: _({
+      id: 'guardrails.remove-dialog.removed-for-tool',
+      message: 'The guardrail will be removed for tool "{toolName}".',
+      values: TEMPLATE_TOKENS,
+    }),
+    stillApplicable: _({
+      id: 'guardrails.remove-dialog.still-applicable',
+      message: 'It will still be applicable to:',
+    }),
+    close: _({ id: 'guardrails.remove-dialog.close', message: 'Close' }),
+    cancel: _({ id: 'guardrails.remove-dialog.cancel', message: 'Cancel' }),
+    remove: _({ id: 'guardrails.remove-dialog.remove', message: 'Remove' }),
+  };
+}
+
+// Resolves a descriptor the way lingui does with `values: TEMPLATE_TOKENS`, so the English
+// defaults carry the same `{{token}}` convention as a translated catalog entry.
+const englishRemoveDialogTranslate: RemoveDialogTranslate = ({ message, values }) =>
+  values
+    ? message.replace(/\{(\w+)\}/g, (match, token: string) => values[token] ?? match)
+    : message;
+
+/** The English chrome strings, resolved without a lingui provider. */
+export const GUARDRAIL_REMOVE_DIALOG_EN_LABELS: GuardrailRemoveDialogLabels =
+  buildGuardrailRemoveDialogLabels(englishRemoveDialogTranslate);
+
+/**
+ * The same strings flattened to message id to the **ICU source message**, which is the form
+ * the catalogs store: the parity test compares these against `locales/en.json` verbatim.
+ */
+export const GUARDRAIL_REMOVE_DIALOG_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+  (() => {
+    const messages: Record<string, string> = {};
+    buildGuardrailRemoveDialogLabels((descriptor) => {
+      messages[descriptor.id] = descriptor.message;
+      return descriptor.message;
+    });
+    return messages;
+  })()
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailRemoveDialogLabels(
+  catalog?: Partial<GuardrailRemoveDialogLabels>,
+  overrides?: Partial<GuardrailRemoveDialogLabels>
+): GuardrailRemoveDialogLabels {
+  return mergeLabels(GUARDRAIL_REMOVE_DIALOG_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the remove dialog; per-string `overrides` always win. */
+export function useGuardrailRemoveDialogLabels(
+  overrides?: Partial<GuardrailRemoveDialogLabels>
+): GuardrailRemoveDialogLabels {
+  const { _ } = useSafeLingui();
+  return useMemo(
+    () => resolveGuardrailRemoveDialogLabels(buildGuardrailRemoveDialogLabels(_), overrides),
     [_, overrides]
   );
 }
