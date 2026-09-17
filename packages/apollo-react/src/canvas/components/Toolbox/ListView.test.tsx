@@ -314,6 +314,11 @@ describe('ListView', () => {
 
       const badge = screen.getByTestId('list-item-badge');
       expect(badge).toHaveTextContent('TRIGGER');
+      // The row is a button, whose content model is phrasing content only, so
+      // the badge has to stay an inline element rather than Wind's <Badge>,
+      // which renders a div.
+      expect(badge.tagName).toBe('SPAN');
+      expect(badge.closest('button')).not.toBeNull();
     });
 
     it('should render a divider before items flagged with dividerBefore', () => {
@@ -681,15 +686,17 @@ describe('ListView', () => {
       expect(iconContainer).toHaveStyle({ background: 'rgb(3,2,1)' });
     });
 
-    it('should default to a transparent icon background when the item has no color', () => {
+    it('should paint no icon background when the item has no color', () => {
       const items: ListItem[] = [
         { id: 'item-1', name: 'Item 1', data: {}, icon: { name: 'star' } },
       ];
 
       render(<ListView {...defaultProps} items={items} />);
 
+      // The tile only paints a background when the item declares one, so a
+      // colorless item leaves the inline background unset.
       const iconContainer = screen.getByTestId('list-item-icon');
-      expect(getComputedStyle(iconContainer).backgroundColor).toBe('transparent');
+      expect(iconContainer.style.background).toBe('');
     });
   });
 

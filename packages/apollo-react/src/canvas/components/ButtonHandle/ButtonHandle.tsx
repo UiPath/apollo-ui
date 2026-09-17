@@ -52,6 +52,7 @@ type ButtonHandleProps = {
   /** When the label is shown. `hover` keeps the add button mounted so the label never reflows. */
   labelVisibility?: HandleLabelVisibility;
   showButton?: boolean;
+  isLocked?: boolean;
   selected?: boolean;
   index?: number; // 0-based index of this handle on the edge
   total?: number; // Total number of handles on this edge
@@ -79,6 +80,7 @@ const ButtonHandleBase = ({
   labelVisible,
   labelVisibility,
   showButton = true,
+  isLocked = false,
   selected = false,
   index = 0,
   total = 1,
@@ -174,7 +176,7 @@ const ButtonHandleBase = ({
   const resolvedLabelVisible = labelVisible ?? visible;
   // When the label is hover-gated, keep the add button mounted (opacity-toggled)
   // so the flex stack never reflows and the label doesn't jump as the button appears.
-  const keepButtonMounted = labelVisibility === 'hover';
+  const keepButtonMounted = labelVisibility === 'hover' && !isLocked;
 
   const {
     width: handleWidth,
@@ -417,6 +419,7 @@ const ButtonHandlesBase = ({
   hovered = false,
   visible = true,
   showAddButton = true,
+  isLocked = false,
   showNotches = true,
   customPositionAndOffsets,
   shouldShowAddButtonFn = ({ showAddButton, selected, hovered }) =>
@@ -433,6 +436,7 @@ const ButtonHandlesBase = ({
   hovered?: boolean;
   visible?: boolean;
   showAddButton?: boolean;
+  isLocked?: boolean;
   showNotches?: boolean;
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
   nodeWidth?: number;
@@ -500,6 +504,7 @@ const ButtonHandlesBase = ({
             visible={handleVisible}
             labelVisible={labelVisible}
             showButton={finalSelected && handleVisible && handle.showButton}
+            isLocked={isLocked || handle.showButton === false}
             onAction={handle.onAction}
             onMouseEnter={handle.onMouseEnter}
             onMouseLeave={handle.onMouseLeave}

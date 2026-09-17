@@ -1,3 +1,153 @@
+## [@uipath/apollo-wind-v2.52.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.2...@uipath/apollo-wind@2.52.3) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-wind:** stop prompt editor formatting shortcuts from reaching the host [MST-15305] ([7c8f241](https://github.com/UiPath/apollo-ui/commit/7c8f2416cf9ba3dcf8aee760656328336593643d))
+
+## [@uipath/apollo-wind-v2.52.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.1...@uipath/apollo-wind@2.52.2) (2026-09-15)
+
+### Bug Fixes
+
+* **apollo-wind:** give pill tabs contrast in classic themes and flatten future ([51de415](https://github.com/UiPath/apollo-ui/commit/51de415b534b901928c95a146fa1ef993eeb3ee1))
+
+## [@uipath/apollo-wind-v2.52.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.0...@uipath/apollo-wind@2.52.1) (2026-09-15)
+
+### Bug Fixes
+
+* **apollo-wind:** fix resizable grip handle contrast across themes ([5b9785a](https://github.com/UiPath/apollo-ui/commit/5b9785aea584cad473d48c89039dbeb4592f0255))
+
+## [@uipath/apollo-wind-v2.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.51.0...@uipath/apollo-wind@2.52.0) (2026-09-15)
+
+### Features
+
+* **apollo-wind:** add Underline and Code to the PromptEditor toolbar ([7b3e5ff](https://github.com/UiPath/apollo-ui/commit/7b3e5ff8d208b3f9bf73eec61ec0a5c070db82ed))
+
+### Bug Fixes
+
+* **apollo-wind:** draw the trailing separator only when it divides something ([adb61f5](https://github.com/UiPath/apollo-ui/commit/adb61f571d9b94a6c0de120e0e40f3dea45b25df))
+* **apollo-wind:** give the inline-code chip a background that is not the surface ([50174fb](https://github.com/UiPath/apollo-ui/commit/50174fbfa55d32f17b7cb84a531c8552f158e99a))
+* **apollo-wind:** keep the code markers when rescuing a pill from a code span ([3b4dfcf](https://github.com/UiPath/apollo-ui/commit/3b4dfcfae0858bfb79122634176c7ceeb40226c9))
+* **apollo-wind:** preserve outer formats and pills around the new marks ([488bed2](https://github.com/UiPath/apollo-ui/commit/488bed2eac86c140b3fa7d875e8f92a3f56cbad2))
+
+## [@uipath/apollo-wind-v2.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.50.0...@uipath/apollo-wind@2.51.0) (2026-09-14)
+
+### Features
+
+* **apollo-wind:** string-list field, tooltip metadata, and forms repairs ([7786df8](https://github.com/UiPath/apollo-ui/commit/7786df88acb0358066cf9e3e77a4f90169f4208c)), closes [#1138](https://github.com/UiPath/apollo-ui/issues/1138)
+
+### Bug Fixes
+
+* **apollo-wind:** use an error-contrast token for the metadata-form tab badge ([c4399d8](https://github.com/UiPath/apollo-ui/commit/c4399d83ccafcdadde742e8b2cf1b242863e5701)), closes [#ffffff](https://github.com/UiPath/apollo-ui/issues/ffffff) [#09090b](https://github.com/UiPath/apollo-ui/issues/09090b)
+
+## [@uipath/apollo-wind-v2.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.49.0...@uipath/apollo-wind@2.50.0) (2026-09-14)
+
+### Features
+
+* **apollo-wind:** restyle the PromptEditor toolbar ([86a44bf](https://github.com/UiPath/apollo-ui/commit/86a44bfec441768647a1fb090139352facb0fc7d))
+
+## [@uipath/apollo-wind-v2.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.48.1...@uipath/apollo-wind@2.49.0) (2026-09-11)
+
+### Features
+
+* **apollo-wind:** add directional slide-in animation utilities ([3322b9e](https://github.com/UiPath/apollo-ui/commit/3322b9e926aaebdc33ea1f9be0d424aba7d6ab6f))
+
+### Bug Fixes
+
+* **apollo-wind:** use foreground text for populated field triggers ([1475101](https://github.com/UiPath/apollo-ui/commit/1475101ab5252f142ab574e702f7e82b187c687a))
+
+## [@uipath/apollo-wind-v2.48.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.48.0...@uipath/apollo-wind@2.48.1) (2026-09-10)
+
+### Bug Fixes
+
+* **apollo-wind:** correct Drawer card description in gallery ([663bfe3](https://github.com/UiPath/apollo-ui/commit/663bfe3b3128ad56432e9c48e5dc3de72c269035))
+* **apollo-wind:** correct Drawer link and add missing components to gallery ([5694476](https://github.com/UiPath/apollo-ui/commit/5694476f66a16c5b7cde7f9231bc5c5a46cdd21a))
+
+## [@uipath/apollo-wind-v2.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.2...@uipath/apollo-wind@2.48.0) (2026-09-09)
+
+### Features
+
+* **apollo-wind:** align modal takeover and run actions ([55b555d](https://github.com/UiPath/apollo-ui/commit/55b555d5a7c390d1a34cb638c9ca78aa223c9f29))
+
+## [@uipath/apollo-wind-v2.47.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.1...@uipath/apollo-wind@2.47.2) (2026-09-07)
+
+### Bug Fixes
+
+* **apollo-wind:** idiomatic slot assertion in the placeholder test ([9c712de](https://github.com/UiPath/apollo-ui/commit/9c712dec45a1b3ea289ab4acd12da83141fe5432))
+* **apollo-wind:** tag the PromptEditor placeholder with a data-slot ([55cf1bb](https://github.com/UiPath/apollo-ui/commit/55cf1bb54e0d4feda3ee2292da7d5b13116ce3ec))
+
+## [@uipath/apollo-wind-v2.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.0...@uipath/apollo-wind@2.47.1) (2026-09-04)
+
+### Performance Improvements
+
+* **apollo-wind:** re-render only the edited field in MetadataForm ([e46a6f5](https://github.com/UiPath/apollo-ui/commit/e46a6f553e3e895e73bacc4eaba49d9b56e450bf))
+
+## [@uipath/apollo-wind-v2.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.46.0...@uipath/apollo-wind@2.47.0) (2026-09-04)
+
+### Features
+
+* **apollo-wind:** add PromptEditor extension points for host integration ([4267f49](https://github.com/UiPath/apollo-ui/commit/4267f49578c5efb25ef5db47e25ad2c55f3f37a7))
+* **apollo-wind:** WYSIWYG rich mode for PromptEditor ([005cab0](https://github.com/UiPath/apollo-ui/commit/005cab0f96e2d7f062f8b648ee26e4b4f670006a))
+
+### Bug Fixes
+
+* **apollo-wind:** frame-level focus ring and persistent pill selection ([040b733](https://github.com/UiPath/apollo-ui/commit/040b733aa54146de2ab4becd31e35565aafa424c))
+* **apollo-wind:** hoist a stray mid-file import and drop story em dashes ([823cd89](https://github.com/UiPath/apollo-ui/commit/823cd89ea0f8d88e07776c6e9cf1808a51455a87))
+* **apollo-wind:** input-matching focus ring + host-controlled preview pills ([11626f8](https://github.com/UiPath/apollo-ui/commit/11626f863d06612dd3d30e934373d4c3dd06537d))
+* **apollo-wind:** keep the validation message outside the focus frame ([abf5514](https://github.com/UiPath/apollo-ui/commit/abf551448a725477182e34fb4086e1dcf87ded8a))
+* **apollo-wind:** localize remaining PromptEditor strings, review nits ([c357f10](https://github.com/UiPath/apollo-ui/commit/c357f10f015eba67fa1dd93a4f0631d6cf28456e))
+* **apollo-wind:** localize the invalid-chip tooltip copy ([0dcfe19](https://github.com/UiPath/apollo-ui/commit/0dcfe19a4a1f9e89398a85c0beb5c5e82d927d4b))
+* **apollo-wind:** pointer cursor on prompt-editor toolbar buttons ([523ebbf](https://github.com/UiPath/apollo-ui/commit/523ebbfbe3fd0a34d404f76bc7fc4524db4b8bad))
+* **apollo-wind:** tighten free-form path syntax, respect preview without a toolbar ([ef68b43](https://github.com/UiPath/apollo-ui/commit/ef68b43b64e04fe935cfaf885d75b9dfa3ed6322))
+
+## [@uipath/apollo-wind-v2.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.45.1...@uipath/apollo-wind@2.46.0) (2026-09-03)
+
+### Features
+
+* **apollo-wind:** add text button variant ([35e243d](https://github.com/UiPath/apollo-ui/commit/35e243d43124ddb3d58a322f7b059a8fd8e7d9d9))
+
+## [@uipath/apollo-wind-v2.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.45.0...@uipath/apollo-wind@2.45.1) (2026-09-03)
+
+### Bug Fixes
+
+* **apollo-wind:** pin FormField's grid column so truncating controls ellipsize ([4aaaf53](https://github.com/UiPath/apollo-ui/commit/4aaaf53861e0c7e62a945176eb4381f6e0a2ee0f))
+* **apollo-wind:** render Label as inline-block so vertical margins apply ([7e84f4e](https://github.com/UiPath/apollo-ui/commit/7e84f4e57cd7465fd57a8f335d9e613b9716e4a2))
+
+## [@uipath/apollo-wind-v2.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.44.0...@uipath/apollo-wind@2.45.0) (2026-09-03)
+
+### Features
+
+* **apollo-wind:** declare Inter font tokens for future themes ([709fdde](https://github.com/UiPath/apollo-ui/commit/709fdde60a7b82f9639b16c2c2bd860fd692e732))
+
+## [@uipath/apollo-wind-v2.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.43.1...@uipath/apollo-wind@2.44.0) (2026-09-02)
+
+### Features
+
+* **apollo-wind:** polish field and inventory patterns ([6e31fb1](https://github.com/UiPath/apollo-ui/commit/6e31fb134f38d6916fdd7d4d84d8cd1713585e26))
+
+## [@uipath/apollo-wind-v2.43.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.43.0...@uipath/apollo-wind@2.43.1) (2026-09-01)
+
+### Bug Fixes
+
+* **apollo-wind:** removes sr-only default text for required indicator ([75a2745](https://github.com/UiPath/apollo-ui/commit/75a2745818542cb8aa178f782ee08bdcde6d1332))
+
+## [@uipath/apollo-wind-v2.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.42.0...@uipath/apollo-wind@2.43.0) (2026-09-01)
+
+### Features
+
+* **apollo-wind:** align panel controls and field states ([e48d6d9](https://github.com/UiPath/apollo-ui/commit/e48d6d9bbc73546da0cf4d388e958dd1335e2530))
+
+### Bug Fixes
+
+* **apollo-wind:** align combobox story backgrounds ([df82d43](https://github.com/UiPath/apollo-ui/commit/df82d437e6342e10ce7a6f13b1fcf2c17e03fea4))
+* **apollo-wind:** align combobox story focus states ([dbfd940](https://github.com/UiPath/apollo-ui/commit/dbfd940f2705ad463ea71395b1f4515c5f6fb244))
+* **apollo-wind:** align combobox story surfaces ([03a5db9](https://github.com/UiPath/apollo-ui/commit/03a5db9d44e1b426e91adf59727498c3ef391b4f))
+* **apollo-wind:** extend prompt errors across toolbar ([f8799df](https://github.com/UiPath/apollo-ui/commit/f8799df7e395f6e23110ee7cf313133c3978d06c))
+* **apollo-wind:** preserve dropdown validation semantics ([d29216a](https://github.com/UiPath/apollo-ui/commit/d29216a25e4a6d287874a2f44caff992d3041fd6))
+* **apollo-wind:** preserve intrinsic icon button sizing ([ea9a534](https://github.com/UiPath/apollo-ui/commit/ea9a534bcb9e04cc74bc6bcccb2813cc670e3115))
+* **apollo-wind:** preserve prompt editor error focus state ([c0cd386](https://github.com/UiPath/apollo-ui/commit/c0cd386a676cacbb77a99208769f6bafa09182ae))
+* **apollo-wind:** preserve prompt validation in preview ([52785f4](https://github.com/UiPath/apollo-ui/commit/52785f4ef7fe7bb9da22979567a9add127254a58))
+* **apollo-wind:** use native prompt editor aria prop ([1d369f4](https://github.com/UiPath/apollo-ui/commit/1d369f4ef6cee267e291ba3d23d53d902cc2fd57))
+
 ## [@uipath/apollo-wind-v2.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.41.0...@uipath/apollo-wind@2.42.0) (2026-08-31)
 
 ### Features

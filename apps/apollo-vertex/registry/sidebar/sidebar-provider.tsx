@@ -52,6 +52,12 @@ export function useSidebar() {
   return context;
 }
 
+/**
+ * This provider only *writes* `sidebar_state`. Reading it back is the consumer's
+ * job: a server component passes the cookie in as `defaultOpen`, and an app with
+ * no server render has to read it on the client and do the same. Without that,
+ * `defaultOpen` always wins and the collapsed state does not survive a reload.
+ */
 export function SidebarProvider({
   defaultOpen = true,
   open: openProp,
@@ -81,7 +87,7 @@ export function SidebarProvider({
     }
 
     // eslint-disable-next-line unicorn/no-document-cookie -- Standard shadcn pattern for persisting sidebar state
-    document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+    document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}; samesite=lax`;
   }
 
   // Resolve CSS width values to pixels, accounting for style overrides from consumers

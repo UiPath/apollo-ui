@@ -19,6 +19,11 @@
 :root {
   --radius: 0.75rem;
   /* 12px — base border-radius for buttons and UI elements */
+
+  /* Active pill-tab edge. Themes override this below; the default is a no-op
+     shadow so the box-shadow stack (focus ring included) stays valid when no
+     theme class is present. */
+  --tabs-active-shadow: 0 0 #0000;
 }
 
 /* Variant active when the component is inside a Future Dark or Light theme */
@@ -154,6 +159,11 @@ body.future-light, .future-light {
   --destructive-foreground: var(--foreground-on-accent);
   --border-de-emp: var(--border-subtle);
   --input: var(--border-subtle);
+
+  /* Classic themes mark the active pill tab with a 1px hairline in the same
+     color as input and panel borders, drawn in the shadow slot so consumer
+     shadow overrides keep working. The Future family clears it below. */
+  --tabs-active-shadow: 0 0 0 1px var(--input);
 }
 
 /* ── Classic light family — mapping divergences + element-scoped color-scheme ── */
@@ -161,6 +171,10 @@ body.light, .light:not(.react-flow),
 body.light-hc, .light-hc {
   --surface-muted: var(--color-background-gray);
   --warning: var(--color-warning-text);
+  /* Classic light's raised surface is the same white as the page, so the
+     shared --muted mapping renders with no contrast (e.g. Tabs track).
+     Use the overlay surface instead, matching the Future family mapping. */
+  --muted: var(--surface-overlay);
   color-scheme: light;
 }
 
@@ -169,6 +183,20 @@ body.dark, .dark:not(.react-flow),
 body.dark-hc, .dark-hc {
   --surface-hover: var(--color-background-gray);
   color-scheme: dark;
+}
+
+/* ResizableHandle's divider needs a resting background that matches its own
+   border-subtle-toned box in classic themes (see resizable.tsx). Exposed as a
+   variable, with an unset default falling back to --ap-wind-border, so a
+   consumer's own bg-* override (e.g. bg-transparent) still wins: cn()/
+   tailwind-merge can't dedupe a plain bg-* class against one scoped to an
+   arbitrary theme variant, so the variant class must stay a single, unvaried
+   bg-[var(...)] utility for consumer overrides to keep working. */
+body.light, .light:not(.react-flow),
+body.light-hc, .light-hc,
+body.dark, .dark:not(.react-flow),
+body.dark-hc, .dark-hc {
+  --resizable-handle-divider-bg: var(--border-subtle);
 }
 
 /* ── Future family — mapping divergences (color-scheme comes from core) ──── */
@@ -185,6 +213,46 @@ body.future-light, .future-light {
   --destructive: var(--color-red-500);
   --destructive-foreground: var(--color-zinc-50);
   --input: var(--ap-wind-border);
+  /* Future is flat: the active pill is distinguished by surface alone, no edge or shadow */
+  --tabs-active-shadow: 0 0 #0000;
+
+  /* Typography: Inter, shipped by apollo-core. Neither Inter nor noto-sans
+     covers CJK, so the four bundled Noto CJK families are chained explicitly
+     to keep ja/ko/zh resolving. Mono tokens untouched. */
+  --font-sans: Inter, noto-sans, "Noto Sans JP", "Noto Sans KR", "Noto Sans SC",
+    "Noto Sans TC", system-ui, sans-serif;
+  --font-normal: var(--font-sans);
+  --font-title: var(--font-sans);
+  --font-hero-bold-family: var(--font-sans);
+  --font-hero-family: var(--font-sans);
+  --font-header-1-bold-family: var(--font-sans);
+  --font-header-1-family: var(--font-sans);
+  --font-header-2-bold-family: var(--font-sans);
+  --font-header-2-family: var(--font-sans);
+  --font-header-3-bold-family: var(--font-sans);
+  --font-header-3-family: var(--font-sans);
+  --font-header-4-bold-family: var(--font-sans);
+  --font-header-4-family: var(--font-sans);
+  --font-l-bold-family: var(--font-sans);
+  --font-l-family: var(--font-sans);
+  --font-m-bold-family: var(--font-sans);
+  --font-m-family: var(--font-sans);
+  --font-link-family: var(--font-sans);
+  --font-s-bold-family: var(--font-sans);
+  --font-s-family: var(--font-sans);
+  --font-xs-bold-family: var(--font-sans);
+  --font-xs-family: var(--font-sans);
+  --font-brand-h-4-family: var(--font-sans);
+  --font-brand-l-family: var(--font-sans);
+  --font-brand-m-family: var(--font-sans);
+}
+
+/* Preflight pins --default-font-family at :root, so the theme class must set
+   font-family itself. Class doubled to outrank apollo's legacy Angular bundle,
+   which injects `.apollo-design { font-family: noto-sans }` (0,1,0) at runtime. */
+body.future-dark.future-dark, .future-dark.future-dark,
+body.future-light.future-light, .future-light.future-light {
+  font-family: var(--font-sans);
 }
 
 /* ── Future gradients (theme-specific stops, no core counterpart yet) ────── */

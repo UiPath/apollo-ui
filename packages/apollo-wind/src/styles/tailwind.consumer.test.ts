@@ -2,7 +2,12 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+import { fontFamily } from '../foundation/Future/typography';
+
 const css = readFileSync(resolve(__dirname, './tailwind.consumer.css'), 'utf8');
+
+/** Strips quotes and collapses whitespace so a TS stack and a CSS stack compare. */
+const normalize = (stack: string) => stack.replace(/["']/g, '').replace(/\s+/g, ' ').trim();
 
 const DARK_VARIANT =
   '@custom-variant dark (&:is(.dark:not(.react-flow), .dark-hc, .future-dark, .dark:not(.react-flow) *, .dark-hc *, .future-dark *));';
@@ -80,5 +85,129 @@ describe('dark variant selector behaviour', () => {
 
   it('stays off with no theme class', () => {
     expect(matches('<span id="target"></span>')).toBe(false);
+  });
+});
+
+describe('future theme typography', () => {
+  const block =
+    /body\.future-dark,\s*\.future-dark,\s*body\.future-light,\s*\.future-light\s*\{([^}]+)\}/g;
+  const typography =
+    [...css.matchAll(block)].map((m) => m[1]).find((b) => b.includes('--font-sans')) ?? '';
+
+  it('finds the future theme block', () => {
+    expect(typography).not.toBe('');
+  });
+
+  it('chains Inter through noto-sans to the bundled Noto CJK families', () => {
+    // Neither Inter nor noto-sans covers CJK, so ja/ko/zh depend on
+    // these four families being reachable. See apollo-core src/fonts/{JP,KR,SC,TC}.
+    expect(typography).toMatch(
+      /--font-sans:\s*Inter,\s*noto-sans,\s*"Noto Sans JP",\s*"Noto Sans KR",\s*"Noto Sans SC",\s*"Noto Sans TC",\s*system-ui,\s*sans-serif;/
+    );
+  });
+
+  it('points every apollo-core sans token at --font-sans', () => {
+    // Derived from apollo-core so a new token there fails here instead of
+    // silently keeping the old stack.
+    const core = readFileSync(
+      resolve(__dirname, '../../../apollo-core/src/tokens/css/variables.css'),
+      'utf8'
+    );
+    const sans = new Set(
+      [...core.matchAll(/--(font-(?:[a-z0-9-]+-family|normal|title))\s*:/g)]
+        .map((m) => m[1])
+        .filter((t) => !t.startsWith('font-mono'))
+    );
+
+    expect(sans.size).toBeGreaterThan(20);
+    for (const token of sans) {
+      expect(typography).toContain(`--${token}: var(--font-sans);`);
+    }
+  });
+
+  it('leaves monospace tokens alone', () => {
+    expect(typography).not.toContain('--font-mono');
+  });
+
+  it('keeps typography.ts fontFamily.base in sync with --font-sans', () => {
+    const cssStack = /--font-sans:\s*([^;]+);/.exec(typography)?.[1];
+
+    expect(normalize(fontFamily.base)).toBe(normalize(cssStack ?? ''));
+  });
+
+  it('sets font-family in a repeated-class rule that outranks .apollo-design', () => {
+    expect(typography).not.toMatch(/\n\s*font-family:/);
+    expect(css).toMatch(
+      /body\.future-dark\.future-dark,\s*\.future-dark\.future-dark,\s*body\.future-light\.future-light,\s*\.future-light\.future-light\s*\{\s*font-family:\s*var\(--font-sans\);\s*\}/
+    );
+  });
+});
+
+describe('tabs theme tokens', () => {
+  // Declarations-level assertions: jsdom does not resolve custom properties
+  // through theme class selectors, so parse the blocks the browser would apply.
+  // The lookbehind rejects a selector line that continues a longer list (the
+  // shared six-theme block ends with the same two Future lines), so each
+  // family regex only matches a rule that starts with that family.
+  const blockBody = (selector: RegExp) =>
+    [...css.matchAll(new RegExp(`(?<!,\\s)${selector.source}\\s*\\{([^}]+)\\}`, 'g'))].map(
+      (m) => m[1]
+    );
+
+  const root = blockBody(/:root/)[0] ?? '';
+  const shared =
+    blockBody(
+      /body\.light,\s*\.light:not\(\.react-flow\),\s*body\.light-hc,\s*\.light-hc,\s*body\.dark,\s*\.dark:not\(\.react-flow\),\s*body\.dark-hc,\s*\.dark-hc,\s*body\.future-dark,\s*\.future-dark,\s*body\.future-light,\s*\.future-light/
+    )[0] ?? '';
+  const classicLight =
+    blockBody(/body\.light,\s*\.light:not\(\.react-flow\),\s*body\.light-hc,\s*\.light-hc/)[0] ??
+    '';
+  const classicDark =
+    blockBody(/body\.dark,\s*\.dark:not\(\.react-flow\),\s*body\.dark-hc,\s*\.dark-hc/)[0] ?? '';
+  const future =
+    blockBody(/body\.future-dark,\s*\.future-dark,\s*body\.future-light,\s*\.future-light/).find(
+      (b) => b.includes('--tabs-active-shadow')
+    ) ?? '';
+
+  it('finds every theme block', () => {
+    for (const block of [root, shared, classicLight, classicDark, future]) {
+      expect(block).not.toBe('');
+    }
+  });
+
+  it('declares the variable TabsTrigger consumes', () => {
+    const tabs = readFileSync(resolve(__dirname, '../components/ui/tabs.tsx'), 'utf8');
+    expect(tabs).toContain('data-[state=active]:shadow-(--tabs-active-shadow)');
+    expect(tabs).not.toContain('data-[state=active]:shadow-sm');
+  });
+
+  it('keeps the box-shadow stack valid with no theme class', () => {
+    // An unset variable would invalidate box-shadow, taking the focus ring
+    // with it. The root default is a transparent no-op shadow.
+    expect(root).toContain('--tabs-active-shadow: 0 0 #0000;');
+  });
+
+  it('outlines the active pill with the input border color in classic themes', () => {
+    // Same token as input and panel borders; drawn in the shadow slot so a
+    // consumer shadow-none override keeps working.
+    expect(shared).toContain('--tabs-active-shadow: 0 0 0 1px var(--input);');
+    expect(classicLight).not.toContain('--tabs-active-shadow');
+    expect(classicDark).not.toContain('--tabs-active-shadow');
+  });
+
+  it('renders the active pill flat in the Future family', () => {
+    expect(future).toContain('--tabs-active-shadow: 0 0 #0000;');
+  });
+
+  it('gives the classic light track contrast via the overlay surface', () => {
+    // apollo-core's classic light raised surface is the same white as the
+    // page, so the shared --muted mapping renders white on white there.
+    expect(shared).toContain('--muted: var(--surface-raised);');
+    expect(classicLight).toContain('--muted: var(--surface-overlay);');
+    expect(future).toContain('--muted: var(--surface-overlay);');
+  });
+
+  it('leaves the classic dark --muted mapping alone', () => {
+    expect(classicDark).not.toContain('--muted:');
   });
 });

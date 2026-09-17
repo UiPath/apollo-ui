@@ -10,8 +10,8 @@ import {
 import {
   createInputTokenNode,
   createOutputTokenNode,
-  createStateTokenNode,
   createResourceTokenNode,
+  createStateTokenNode,
 } from '../nodes';
 import type { PromptEditorAutoCompleteOption } from '../types';
 

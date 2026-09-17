@@ -21,10 +21,17 @@ function PopoverContent({
   className,
   align = "center",
   sideOffset = 4,
+  // Portaled content sits outside an enclosing dialog's focus scope, which then reclaims
+  // focus from it; `portal={false}` keeps it inside so nested inputs stay usable.
+  portal = true,
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+}: React.ComponentProps<typeof PopoverPrimitive.Content> & {
+  portal?: boolean;
+}) {
+  const Wrapper = portal ? PopoverPrimitive.Portal : React.Fragment;
+
   return (
-    <PopoverPrimitive.Portal>
+    <Wrapper>
       <PopoverPrimitive.Content
         data-slot="popover-content"
         align={align}
@@ -35,7 +42,7 @@ function PopoverContent({
         )}
         {...props}
       />
-    </PopoverPrimitive.Portal>
+    </Wrapper>
   );
 }
 

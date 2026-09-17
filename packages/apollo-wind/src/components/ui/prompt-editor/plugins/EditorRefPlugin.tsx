@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import type { LexicalEditor } from 'lexical';
+import { useEffect, useRef } from 'react';
 
 export const EditorRefPlugin = ({ onRef }: { onRef: (editor: LexicalEditor) => void }) => {
   const [editor] = useLexicalComposerContext();

@@ -1,3 +1,133 @@
+## [@uipath/apollo-react-v6.47.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.3...@uipath/apollo-react@6.47.4) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-react:** match the sticky note strikethrough chord [MST-15305] ([207ee65](https://github.com/UiPath/apollo-ui/commit/207ee6558db2abb3c91ac6883fd77f38fa0c9deb))
+
+## [@uipath/apollo-react-v6.47.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.2...@uipath/apollo-react@6.47.3) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-react:** stop sticky note markdown shortcuts from reaching the host ([d36fc03](https://github.com/UiPath/apollo-ui/commit/d36fc03aaa2e5877b270d7781ba1a68859a860bf))
+
+## [@uipath/apollo-react-v6.47.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.1...@uipath/apollo-react@6.47.2) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-react:** remove hover recolor from the Data Fabric node icon ([05efad5](https://github.com/UiPath/apollo-ui/commit/05efad52b9c0a077b8e20b7d8cb7ec8d9dc29d31))
+
+## [@uipath/apollo-react-v6.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.0...@uipath/apollo-react@6.47.1) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-react:** keep handle labels next to locked handles [MST-14066] ([8f2313a](https://github.com/UiPath/apollo-ui/commit/8f2313aafd121af41155812f69b8a0bd4cbde2a5))
+
+## [@uipath/apollo-react-v6.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.46.0...@uipath/apollo-react@6.47.0) (2026-09-16)
+
+### Features
+
+* **apollo-ui-icons:** add the Maestro product marks with flat variants ([15f1ccf](https://github.com/UiPath/apollo-ui/commit/15f1ccf83d98b2fd9dbc41edac7305f21c0c0531)), closes [#66adff](https://github.com/UiPath/apollo-ui/issues/66adff) [#00489d](https://github.com/UiPath/apollo-ui/issues/00489d)
+
+## [@uipath/apollo-react-v6.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.3...@uipath/apollo-react@6.46.0) (2026-09-15)
+
+### Features
+
+* **apollo-react:** guardrails component family under canvas ([8f81990](https://github.com/UiPath/apollo-ui/commit/8f81990d6529ecbb6a979e4266733a919c760141))
+
+## [@uipath/apollo-react-v6.45.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.2...@uipath/apollo-react@6.45.3) (2026-09-15)
+
+### Bug Fixes
+
+* **apollo-react:** add data-node-part to node label [MST-14013] ([9cdf52a](https://github.com/UiPath/apollo-ui/commit/9cdf52a8b306ba84eeb6f73314effd873e820357))
+
+## [@uipath/apollo-react-v6.45.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.1...@uipath/apollo-react@6.45.2) (2026-09-14)
+
+### Bug Fixes
+
+* **apollo-wind:** use an error-contrast token for the metadata-form tab badge ([c4399d8](https://github.com/UiPath/apollo-ui/commit/c4399d83ccafcdadde742e8b2cf1b242863e5701)), closes [#ffffff](https://github.com/UiPath/apollo-ui/issues/ffffff) [#09090b](https://github.com/UiPath/apollo-ui/issues/09090b)
+
+## [@uipath/apollo-react-v6.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.45.0...@uipath/apollo-react@6.45.1) (2026-09-14)
+
+### Bug Fixes
+
+* **apollo-react:** keep tool call expanded while a response streams [JAR-9940] ([56d2f61](https://github.com/UiPath/apollo-ui/commit/56d2f61fcfda68cc952a25f4cee7ef210952984b))
+
+## [@uipath/apollo-react-v6.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.44.2...@uipath/apollo-react@6.45.0) (2026-09-11)
+
+### Features
+
+* **apollo-react:** apply future styling to the canvas Toolbox ([23dee4c](https://github.com/UiPath/apollo-ui/commit/23dee4cad6b10c917619d3a18c39f8dc8d1c85bb))
+
+### Bug Fixes
+
+* **apollo-react:** float canvas panels above ReactFlow panel chrome ([3558249](https://github.com/UiPath/apollo-ui/commit/355824947ddfcc4fd3b680d4a5b3631773f4bc0f))
+
+## [@uipath/apollo-react-v6.44.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.44.1...@uipath/apollo-react@6.44.2) (2026-09-10)
+
+### Bug Fixes
+
+* **apollo-react:** wrap node description input ([a26912f](https://github.com/UiPath/apollo-ui/commit/a26912f7f7cbeb7a972a169f16fe04a1232cb7a9))
+
+## [@uipath/apollo-react-v6.44.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.44.0...@uipath/apollo-react@6.44.1) (2026-09-10)
+
+### Bug Fixes
+
+* **apollo-react:** flatten large JsonTree values without a spread [MST-15023] ([cd29366](https://github.com/UiPath/apollo-ui/commit/cd29366dedfba9be747bc9556162a08bce6c78df))
+* **apollo-react:** subscribe the virtualized JsonTree to its own scroll box [MST-15023] ([870fc2f](https://github.com/UiPath/apollo-ui/commit/870fc2f1c17a3867a659b498d05c00e50fa3081d))
+
+## [@uipath/apollo-react-v6.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.43.0...@uipath/apollo-react@6.44.0) (2026-09-10)
+
+### Features
+
+* **apollo-react:** add disabled and wrap to EditableText ([6e9f8dd](https://github.com/UiPath/apollo-ui/commit/6e9f8dd518ce494492558edd356f41f645219eda))
+
+## [@uipath/apollo-react-v6.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.42.0...@uipath/apollo-react@6.43.0) (2026-09-09)
+
+### Features
+
+* **apollo-wind:** align modal takeover and run actions ([55b555d](https://github.com/UiPath/apollo-ui/commit/55b555d5a7c390d1a34cb638c9ca78aa223c9f29))
+
+## [@uipath/apollo-react-v6.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.41.0...@uipath/apollo-react@6.42.0) (2026-09-07)
+
+### Features
+
+* **apollo-react:** virtualize JsonTree rows behind an opt-in prop ([3f98d39](https://github.com/UiPath/apollo-ui/commit/3f98d3964c862e9a23b788e5e52cc8142c164126))
+
+## [@uipath/apollo-react-v6.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.40.0...@uipath/apollo-react@6.41.0) (2026-09-03)
+
+### Features
+
+* **apollo-wind:** add text button variant ([35e243d](https://github.com/UiPath/apollo-ui/commit/35e243d43124ddb3d58a322f7b059a8fd8e7d9d9))
+
+## [@uipath/apollo-react-v6.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.39.1...@uipath/apollo-react@6.40.0) (2026-09-03)
+
+### Features
+
+* **apollo-react:** inline-editable node name and description ([9bb7a7d](https://github.com/UiPath/apollo-ui/commit/9bb7a7daf47ed0118f287b3715b7fcc556d56ea8))
+
+## [@uipath/apollo-react-v6.39.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.39.0...@uipath/apollo-react@6.39.1) (2026-09-03)
+
+### Bug Fixes
+
+* **apollo-react:** use MUI CSS classes for color variants ([359d66c](https://github.com/UiPath/apollo-ui/commit/359d66c1c04acffc02f2711361c385dc3c7d5542))
+
+## [@uipath/apollo-react-v6.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.38.0...@uipath/apollo-react@6.39.0) (2026-09-02)
+
+### Features
+
+* **apollo-wind:** polish field and inventory patterns ([6e31fb1](https://github.com/UiPath/apollo-ui/commit/6e31fb134f38d6916fdd7d4d84d8cd1713585e26))
+
+## [@uipath/apollo-react-v6.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.37.0...@uipath/apollo-react@6.38.0) (2026-09-01)
+
+### Features
+
+* **apollo-wind:** align panel controls and field states ([e48d6d9](https://github.com/UiPath/apollo-ui/commit/e48d6d9bbc73546da0cf4d388e958dd1335e2530))
+
+### Bug Fixes
+
+* **apollo-wind:** align combobox story surfaces ([03a5db9](https://github.com/UiPath/apollo-ui/commit/03a5db9d44e1b426e91adf59727498c3ef391b4f))
+* **apollo-wind:** preserve intrinsic icon button sizing ([ea9a534](https://github.com/UiPath/apollo-ui/commit/ea9a534bcb9e04cc74bc6bcccb2813cc670e3115))
+
 ## [@uipath/apollo-react-v6.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.36.1...@uipath/apollo-react@6.37.0) (2026-08-31)
 
 ### Features

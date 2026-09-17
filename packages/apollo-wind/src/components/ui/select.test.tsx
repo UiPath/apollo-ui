@@ -313,4 +313,26 @@ describe('Select', () => {
       });
     });
   });
+
+  // SelectTrigger is not Button-based: Radix's data-placeholder already mutes the
+  // empty state in every theme. A future:text-foreground here would outrank it.
+  describe('value vs placeholder color', () => {
+    it('mutes the empty state through data-placeholder, not a blanket class', () => {
+      render(<SelectExample />);
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toHaveAttribute('data-placeholder');
+      expect(trigger).toHaveClass('data-[placeholder]:text-muted-foreground');
+      expect(trigger).not.toHaveClass('future:text-muted-foreground');
+      expect(trigger).not.toHaveClass('future:text-foreground');
+    });
+
+    it('drops data-placeholder once a value is selected', async () => {
+      const user = userEvent.setup();
+      render(<SelectExample />);
+      const trigger = screen.getByRole('combobox');
+      await user.click(trigger);
+      await user.click(await screen.findByRole('option', { name: 'Apple' }));
+      await waitFor(() => expect(trigger).not.toHaveAttribute('data-placeholder'));
+    });
+  });
 });

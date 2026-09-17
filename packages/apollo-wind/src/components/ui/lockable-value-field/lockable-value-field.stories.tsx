@@ -115,6 +115,44 @@ export const Default: Story = {
   render: () => <DefaultDemo />,
 };
 
+function MoreActionsDemo() {
+  const fieldId = 'lockable-value-field-more-actions';
+  const [value, setValue] = useState('Invoice value');
+  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
+
+  return (
+    <div className="w-80">
+      <LockableValueField
+        id={fieldId}
+        label={<Label htmlFor={fieldId}>Value</Label>}
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        mode={mode}
+        onModeChange={setMode}
+        showAiAssist={false}
+        more={{
+          onClear: () => setValue(''),
+          onRefresh: () => setValue('Refreshed value'),
+        }}
+      />
+    </div>
+  );
+}
+
+export const MoreActions: Story = {
+  name: 'Value field with more actions',
+  render: () => <MoreActionsDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Adds a field-level overflow menu beside the value type control for actions such as clearing the value or forcing a refresh.',
+      },
+    },
+  },
+};
+
 function ExpressionValueFieldDemo() {
   const fieldId = useId();
   const [value, setValue] = useState('');

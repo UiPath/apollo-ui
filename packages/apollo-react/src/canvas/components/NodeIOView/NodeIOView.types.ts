@@ -99,6 +99,8 @@ export interface NodeIOViewProps {
   pathForCopy?: (path: string) => string;
   /** Called after something is copied to the clipboard. */
   onCopy?: (event: CopyEvent) => void;
+  /** Windows the schema tree's rows so only those in view mount. See `JsonTreeProps.virtualized`. */
+  virtualized?: boolean;
   /** Containers at depth >= this start collapsed. Default 2 (top two levels open). */
   defaultCollapsedDepth?: number;
   className?: string;

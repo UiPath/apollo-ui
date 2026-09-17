@@ -25,7 +25,7 @@ describe('CanvasTakeoverModal', () => {
     expect(onExpandedChange).toHaveBeenCalledWith(true);
   });
 
-  it('requests close from Escape, the close button, and the backdrop', () => {
+  it('requests close from Escape and the close button', () => {
     const onOpenChange = vi.fn();
     render(
       <CanvasTakeoverModal open title="Modal" onOpenChange={onOpenChange}>
@@ -35,9 +35,7 @@ describe('CanvasTakeoverModal', () => {
 
     fireEvent.keyDown(document, { key: 'Escape' });
     fireEvent.click(screen.getByRole('button', { name: 'Close modal' }));
-    fireEvent.mouseDown(screen.getByTestId('canvas-takeover-backdrop'));
-
-    expect(onOpenChange).toHaveBeenCalledTimes(3);
+    expect(onOpenChange).toHaveBeenCalledTimes(2);
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 

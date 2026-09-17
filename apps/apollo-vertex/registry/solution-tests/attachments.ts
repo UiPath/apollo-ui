@@ -29,7 +29,7 @@ export async function fetchAttachment(
   if (!solution) return null;
   const entities = new Entities(solution.api.sdk.core);
   const blob = await entities.downloadAttachment(
-    entityId,
+    { id: entityId },
     recordId,
     field,
     scope,

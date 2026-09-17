@@ -11,7 +11,7 @@ describe('PanelChrome', () => {
     );
 
     const content = screen.getByTestId('content').parentElement;
-    expect(content).toHaveStyle({ overflowY: 'auto' });
+    expect(content).toHaveClass('overflow-y-auto');
   });
 
   it('disables content scrolling when scrollableContent is false', () => {
@@ -22,6 +22,6 @@ describe('PanelChrome', () => {
     );
 
     const content = screen.getByTestId('content').parentElement;
-    expect(content).toHaveStyle({ overflowY: 'hidden' });
+    expect(content).toHaveClass('overflow-y-hidden');
   });
 });

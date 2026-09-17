@@ -19,6 +19,7 @@ describe('Button', () => {
     render(<Button>Default</Button>);
     const button = screen.getByRole('button');
     expect(button).toHaveClass('bg-primary');
+    expect(button).not.toHaveClass('w-full');
   });
 
   it('applies destructive variant classes', () => {
@@ -31,6 +32,12 @@ describe('Button', () => {
     render(<Button variant="outline">Outline</Button>);
     const button = screen.getByRole('button');
     expect(button).toHaveClass('border');
+  });
+
+  it('applies text variant classes', () => {
+    render(<Button variant="text">Text</Button>);
+    const button = screen.getByRole('button');
+    expect(button).toHaveClass('text-primary hover:text-primary-hover');
   });
 
   it('applies text size classes', () => {

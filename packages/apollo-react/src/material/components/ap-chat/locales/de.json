@@ -17,6 +17,8 @@
   "autopilot-chat.message.actions.copy": "Kopieren",
   "autopilot-chat.message.code-block-copy": "Kopieren",
   "autopilot-chat.history.delete": "Löschen",
+  "autopilot-chat.history.rename": "Chat umbenennen",
+  "autopilot-chat.history.rename-input": "Chatname",
   "autopilot-chat.dropzone.overlay-title": "Legen Sie Ihre Dateien hier ab, um sie Ihrer Aufforderung hinzuzufügen.",
   "autopilot-chat.message.expand": "Erweitern",
   "autopilot-chat.header.actions.expand": "Erweitern",

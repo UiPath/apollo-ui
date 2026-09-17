@@ -2,7 +2,6 @@ import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
 
-import type { SupportedLocale } from '../../../../../i18n';
 import { ApToolCall } from '../../../ap-tool-call';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
@@ -28,40 +27,49 @@ import { AutopilotChatMarkdownRenderer } from './markdown/markdown';
 import { AutopilotChatSources } from './sources/chat-sources';
 import { ApolloChatTreeRenderer } from './tree/tree-renderer';
 
-const getApolloMessageRenderers = (locale: SupportedLocale) => [
+const ToolCallMessageRenderer = ({ message }: { message: AutopilotChatMessage }) => {
+  const { locale } = useLocale();
+
+  if (!message.meta.span && !message.meta.input && !message.meta.toolName) {
+    return null;
+  }
+  return (
+    <ApToolCall
+      span={message.meta.span}
+      toolName={message.meta.toolName}
+      input={message.meta.input}
+      output={message.meta.output}
+      isError={message.meta.isError}
+      startTime={message.meta.startTime}
+      endTime={message.meta.endTime}
+      displayMode={message.meta.displayMode}
+      locale={locale}
+    />
+  );
+};
+
+const ChatTreeMessageRenderer = ({ message }: { message: AutopilotChatMessage }) => {
+  if (!message.meta?.span) {
+    return null;
+  }
+  return <ApolloChatTreeRenderer span={message.meta.span} />;
+};
+
+// Must stay at module scope: `component` is used as an element type, and React reconciles those
+// by reference, so rebuilding this list per render remounts the subtree and wipes ApToolCall's
+// expanded state.
+const APOLLO_MESSAGE_RENDERERS = [
   {
     name: DEFAULT_MESSAGE_RENDERER,
     component: AutopilotChatMarkdownRenderer,
   },
   {
     name: AGENTS_TOOL_CALL_RENDERER,
-    component: ({ message }: { message: AutopilotChatMessage }) => {
-      if (!message.meta.span && !message.meta.input && !message.meta.toolName) {
-        return null;
-      }
-      return (
-        <ApToolCall
-          span={message.meta.span}
-          toolName={message.meta.toolName}
-          input={message.meta.input}
-          output={message.meta.output}
-          isError={message.meta.isError}
-          startTime={message.meta.startTime}
-          endTime={message.meta.endTime}
-          displayMode={message.meta.displayMode}
-          locale={locale}
-        />
-      );
-    },
+    component: ToolCallMessageRenderer,
   },
   {
     name: APOLLO_CHAT_TREE_RENDERER,
-    component: ({ message }: { message: AutopilotChatMessage }) => {
-      if (!message.meta?.span) {
-        return null;
-      }
-      return <ApolloChatTreeRenderer span={message.meta.span} />;
-    },
+    component: ChatTreeMessageRenderer,
   },
 ];
 
@@ -200,14 +208,12 @@ function AutopilotChatMessageContentComponent({
   containerRef: HTMLDivElement | null;
 }) {
   const chatService = useChatService();
-  const { locale } = useLocale();
 
   if (!message.content && !message.contentParts && !message.attachments) {
     return null;
   }
 
   if (!chatService.getMessageRenderer(message.widget)) {
-    const APOLLO_MESSAGE_RENDERERS = getApolloMessageRenderers(locale);
     const ApolloMessageRenderer = APOLLO_MESSAGE_RENDERERS.find(
       (renderer) => renderer.name === message.widget
     )?.component;

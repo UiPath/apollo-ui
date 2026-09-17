@@ -1,3 +1,15 @@
+## [@uipath/apollo-core-v5.14.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.14.0...@uipath/apollo-core@5.14.1) (2026-09-15)
+
+### Bug Fixes
+
+* **ci:** declare apollo-core's generated token files as build outputs ([2b37cda](https://github.com/UiPath/apollo-ui/commit/2b37cda26a3f29c23201f2d4e6fc236d28b6cb02))
+
+## [@uipath/apollo-core-v5.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.13.1...@uipath/apollo-core@5.14.0) (2026-09-03)
+
+### Features
+
+* **apollo-core:** bundle Inter variable font (latin, latin-ext) ([2826f36](https://github.com/UiPath/apollo-ui/commit/2826f36adeb153357d9704b1cc2f021ab6808a17))
+
 ## [@uipath/apollo-core-v5.13.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.13.0...@uipath/apollo-core@5.13.1) (2026-08-25)
 
 ### Bug Fixes

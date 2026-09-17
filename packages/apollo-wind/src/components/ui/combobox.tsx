@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,13 +57,17 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(funct
           aria-expanded={open}
           aria-label={selectedItem ? selectedItem.label : placeholder}
           className={cn(
-            'w-[280px] justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:hover:bg-surface-hover future:font-normal future:text-muted-foreground',
+            'w-[280px] justify-between future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
             className
           )}
           disabled={disabled}
         >
-          {selectedItem ? selectedItem.label : placeholder}
-          <ChevronsUpDown className="opacity-50" />
+          {selectedItem ? (
+            selectedItem.label
+          ) : (
+            <span className="text-foreground-muted">{placeholder}</span>
+          )}
+          <ChevronDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0">

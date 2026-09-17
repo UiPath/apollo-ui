@@ -28,6 +28,7 @@ export function FieldHeader({
   onRequiredChange,
   compact,
   showFieldActions,
+  showAiAssist,
   value,
   onValueChange,
   variables,
@@ -43,6 +44,7 @@ export function FieldHeader({
   onRequiredChange?: (required: boolean) => void;
   compact?: boolean;
   showFieldActions: boolean;
+  showAiAssist: boolean;
   value: string;
   onValueChange?: (value: string) => void;
   variables: LockableValueFieldOption[];
@@ -161,52 +163,54 @@ export function FieldHeader({
             )}
             {showFieldActions && (
               <>
-                <Popover>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          aria-label="AI assist"
-                          className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                {showAiAssist && (
+                  <Popover>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label="AI assist"
+                            className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                          >
+                            <Sparkles size={12} />
+                          </button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Generate with AI</TooltipContent>
+                    </Tooltip>
+                    <PopoverContent align="end" className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label
+                          htmlFor={promptId}
+                          className="text-xs font-medium text-foreground-muted"
                         >
-                          <Sparkles size={12} />
-                        </button>
-                      </PopoverTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Generate with AI</TooltipContent>
-                  </Tooltip>
-                  <PopoverContent align="end" className="space-y-3">
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor={promptId}
-                        className="text-xs font-medium text-foreground-muted"
+                          Describe what you want
+                        </Label>
+                        <Textarea
+                          id={promptId}
+                          rows={3}
+                          value={aiPrompt}
+                          onChange={(e) => setAiPrompt(e.target.value)}
+                          placeholder="Display a value from the previous step"
+                          className="resize-none text-sm"
+                        />
+                      </div>
+                      <span className="block text-[11px] text-foreground-subtle">
+                        Output: {typeMeta.label}
+                        {typeMeta.supportsExpression ? ' expression' : ' value'}
+                      </span>
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        disabled={!onGenerateWithAi}
+                        onClick={() => onGenerateWithAi?.(aiPrompt)}
                       >
-                        Describe what you want
-                      </Label>
-                      <Textarea
-                        id={promptId}
-                        rows={3}
-                        value={aiPrompt}
-                        onChange={(e) => setAiPrompt(e.target.value)}
-                        placeholder="Display a value from the previous step"
-                        className="resize-none text-sm"
-                      />
-                    </div>
-                    <span className="block text-[11px] text-foreground-subtle">
-                      Output: {typeMeta.label}
-                      {typeMeta.supportsExpression ? ' expression' : ' value'}
-                    </span>
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      disabled={!onGenerateWithAi}
-                      onClick={() => onGenerateWithAi?.(aiPrompt)}
-                    >
-                      Generate
-                    </Button>
-                  </PopoverContent>
-                </Popover>
+                        Generate
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                )}
                 <VariablePicker
                   disabled={variables.length === 0 || !onValueChange}
                   items={[

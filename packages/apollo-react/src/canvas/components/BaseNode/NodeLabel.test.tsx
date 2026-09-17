@@ -598,6 +598,44 @@ describe('NodeLabel', () => {
       expect(screen.getByText('Test Node')).toBeInTheDocument();
     });
 
+    it('should default the edit placeholders to Name and Description', async () => {
+      const user = userEvent.setup();
+      render(<NodeLabel {...defaultProps} />);
+
+      await user.dblClick(screen.getByText('Test Node'));
+
+      expect(screen.getByRole('textbox', { name: 'Edit node name' })).toHaveAttribute(
+        'placeholder',
+        'Name'
+      );
+      expect(screen.getByRole('textbox', { name: 'Edit node description' })).toHaveAttribute(
+        'placeholder',
+        'Description'
+      );
+    });
+
+    it('should use the caller placeholders when provided', async () => {
+      const user = userEvent.setup();
+      render(
+        <NodeLabel
+          {...defaultProps}
+          labelPlaceholder="HTTP Request"
+          subLabelPlaceholder="HTTP Request"
+        />
+      );
+
+      await user.dblClick(screen.getByText('Test Node'));
+
+      expect(screen.getByRole('textbox', { name: 'Edit node name' })).toHaveAttribute(
+        'placeholder',
+        'HTTP Request'
+      );
+      expect(screen.getByRole('textbox', { name: 'Edit node description' })).toHaveAttribute(
+        'placeholder',
+        'HTTP Request'
+      );
+    });
+
     it('should apply horizontal padding to the edit inputs regardless of background color', async () => {
       const user = userEvent.setup();
       render(<NodeLabel {...defaultProps} />);

@@ -1,6 +1,6 @@
 "use client";
 
-/* eslint-disable max-lines -- compound component with collapsible actions */
+/* oxlint-disable max-lines -- compound component with collapsible actions */
 import { cva, type VariantProps } from "class-variance-authority";
 import { ArrowLeft, MoreHorizontal } from "lucide-react";
 import * as React from "react";
@@ -128,7 +128,6 @@ const pageHeaderTitleVariants = cva(
 interface PageHeaderTitleProps
   extends React.ComponentProps<"h1">,
     VariantProps<typeof pageHeaderTitleVariants> {
-  /** Override the rendered element (default: `"h1"`). Props are typed as `h1` attributes. */
   as?: React.ElementType;
 }
 
@@ -178,9 +177,7 @@ function PageHeaderContent({ className, ...props }: PageHeaderContentProps) {
       data-slot="page-header-content"
       className={cn(
         "flex items-center gap-4 min-w-0",
-        // Wrapped row: full width, evenly distributed
         "order-3 basis-full justify-evenly",
-        // Grid row: placed in middle column by source order
         "@3xl:order-none @3xl:gap-0 @3xl:justify-evenly",
         className,
       )}
@@ -279,13 +276,9 @@ function PageHeaderActionsOverflow({
   );
 }
 
-// --- Collapsible Actions ---
-
 interface CollapsibleAction {
   key: string;
-  /** The inline button shown when there is room */
   button: React.ReactNode;
-  /** The dropdown menu item shown when the button overflows */
   menuItem: React.ReactNode;
 }
 
@@ -293,9 +286,7 @@ interface PageHeaderCollapsibleActionsProps {
   /** Actions that collapse into the overflow dropdown when space is tight.
    *  Ordered by priority — first item stays visible the longest. */
   items: CollapsibleAction[];
-  /** Content that always lives in the overflow dropdown (e.g. rename, delete). */
   overflowContent?: React.ReactNode;
-  /** Minimum width (px) reserved for the nav/title area. @default 200 */
   navMinWidth?: number;
 }
 
@@ -357,7 +348,9 @@ function PageHeaderCollapsibleActions({
         let remaining = space;
         let n = 0;
         for (let i = 0; i < rulerItems.length && i < currentItems.length; i++) {
-          const w = rulerItems[i].offsetWidth + (n > 0 ? gap : 0);
+          const rulerItem = rulerItems[i];
+          if (!rulerItem) break;
+          const w = rulerItem.offsetWidth + (n > 0 ? gap : 0);
           if (remaining < w) break;
           remaining -= w;
           n++;
@@ -365,8 +358,6 @@ function PageHeaderCollapsibleActions({
         return n;
       };
 
-      // In grid mode, the actions column has a fixed width from the grid template,
-      // so we measure it directly. In flex mode, calculate from total header width.
       const isGrid = getComputedStyle(header).display === "grid";
       const baseAvailable =
         isGrid && actionsContainer

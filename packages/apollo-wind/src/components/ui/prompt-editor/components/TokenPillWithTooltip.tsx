@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useLexicalNodeSelection } from '@lexical/react/useLexicalNodeSelection';
 import { $createNodeSelection, $setSelection, type NodeKey } from 'lexical';
+import { useCallback, useMemo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { TokenPill, type TokenPillProps } from './TokenPill';
+import { usePromptEditorConfig } from '../prompt-editor-config';
 import { getPromptEditorTokenTypeLabel } from '../types';
+import { TokenPill, type TokenPillProps } from './TokenPill';
 
 export interface TokenPillWithTooltipProps extends TokenPillProps {
   /** Lexical node key for the underlying decorator — drives `NodeSelection` click-to-focus. */
@@ -21,7 +22,8 @@ export const TokenPillWithTooltip = ({ nodeKey, ...props }: TokenPillWithTooltip
   // Pull primitives off props so the memo deps below stay stable (a fresh `props` bag is created on
   // every parent render even when its contents are unchanged).
   const { value: pillValue, tokenType, readonly, diffType, isInvalid, onRemove } = props;
-  const typeLabel = getPromptEditorTokenTypeLabel(tokenType);
+  const { strings } = usePromptEditorConfig();
+  const typeLabel = getPromptEditorTokenTypeLabel(tokenType, strings);
 
   const [editor] = useLexicalComposerContext();
   // Only `isSelected` from the hook — its `setSelected(true)` *adds* to the current NodeSelection,
@@ -76,10 +78,9 @@ export const TokenPillWithTooltip = ({ nodeKey, ...props }: TokenPillWithTooltip
       <TooltipContent side="top" align="start">
         {isInvalid ? (
           <div className="flex w-[280px] flex-col gap-1 text-xs">
-            <div className="font-medium">Variable not found</div>
+            <div className="font-medium">{strings.invalidTokenTitle}</div>
             <div className="break-words opacity-80">
-              {pillValue} isn&apos;t available in this scope. Fix or remove this reference before
-              publishing.
+              {strings.invalidTokenDescription.replace('{path}', pillValue)}
             </div>
           </div>
         ) : (

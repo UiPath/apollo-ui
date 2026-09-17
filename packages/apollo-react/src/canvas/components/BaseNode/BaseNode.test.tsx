@@ -611,6 +611,33 @@ describe('BaseNode', () => {
     });
   });
 
+  describe('Locked handles', () => {
+    const isLocked = () => mockUseButtonHandles.mock.calls.at(-1)?.[0]?.isLocked;
+
+    it('is unlocked in design mode', () => {
+      render(<BaseNode {...defaultProps} />);
+      expect(isLocked()).toBe(false);
+    });
+
+    it('is locked in canvas-wide readonly', () => {
+      mockMode.current = 'readonly';
+      render(<BaseNode {...defaultProps} />);
+      expect(isLocked()).toBe(true);
+    });
+
+    it('is locked for a per-node lock in design mode', () => {
+      mockReadOnlyNodeIds.current = new Set([defaultProps.id]);
+      render(<BaseNode {...defaultProps} selected={true} />);
+      expect(isLocked()).toBe(true);
+    });
+
+    it('stays unlocked while connecting, so the label does not shift mid-gesture', () => {
+      mockIsConnecting.current = true;
+      render(<BaseNode {...defaultProps} selected={true} />);
+      expect(isLocked()).toBe(false);
+    });
+  });
+
   // A node listed in BaseCanvas `readOnlyNodeIds` loses its editing affordances
   // even while the canvas is in design mode: add buttons and label editing are
   // hidden, and the toolbar stays mounted with every action disabled.

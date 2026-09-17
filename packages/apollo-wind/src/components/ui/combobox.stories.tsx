@@ -1,6 +1,7 @@
 import type { Meta } from '@storybook/react-vite';
-import { Check, ChevronsUpDown, Loader2, X } from 'lucide-react';
+import { Check, ChevronDown, Loader2, X } from 'lucide-react';
 import * as React from 'react';
+import { cn } from '../../lib';
 import { Badge } from './badge';
 import { Button } from './button';
 import { Combobox, ComboboxItem } from './combobox';
@@ -14,7 +15,6 @@ import {
 } from './command';
 import { Label } from './label';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
-import { cn } from '../../lib';
 
 const meta: Meta<typeof Combobox> = {
   title: 'Components/Core/Combobox',
@@ -95,10 +95,14 @@ function MultiSelectCombobox() {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[320px] justify-between future:rounded-xl future:border-0 future:bg-surface-raised future:hover:bg-surface-overlay future:font-normal future:text-muted-foreground"
+            className="w-[320px] justify-between future:gap-4 future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background"
           >
-            {selected.length > 0 ? `${selected.length} selected` : 'Select frameworks...'}
-            <ChevronsUpDown className="opacity-50" />
+            {selected.length > 0 ? (
+              `${selected.length} selected`
+            ) : (
+              <span className="text-foreground-muted">Select frameworks...</span>
+            )}
+            <ChevronDown className="opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[320px] p-0">
@@ -182,7 +186,7 @@ function CustomDisplayCombobox() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[320px] justify-between future:rounded-xl future:border-0 future:bg-surface-raised future:hover:bg-surface-overlay future:font-normal future:text-muted-foreground"
+          className="w-[320px] justify-between future:gap-4 future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background"
         >
           {selected ? (
             <span className="flex items-center gap-2">
@@ -190,9 +194,9 @@ function CustomDisplayCombobox() {
               <span>{selected.label}</span>
             </span>
           ) : (
-            'Select issue type...'
+            <span className="text-foreground-muted">Select issue type...</span>
           )}
-          <ChevronsUpDown className="opacity-50" />
+          <ChevronDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[320px] p-0">
@@ -284,10 +288,14 @@ function AsyncCombobox() {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[280px] justify-between future:rounded-xl future:border-0 future:bg-surface-raised future:hover:bg-surface-overlay future:font-normal future:text-muted-foreground"
+            className="w-[280px] justify-between future:gap-4 future:rounded-xl future:border-0 future:bg-surface-overlay future:font-normal future:text-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background"
           >
-            {selected ? selected.label : 'Search libraries...'}
-            <ChevronsUpDown className="opacity-50" />
+            {selected ? (
+              selected.label
+            ) : (
+              <span className="text-foreground-muted">Search libraries...</span>
+            )}
+            <ChevronDown className="opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[280px] p-0">

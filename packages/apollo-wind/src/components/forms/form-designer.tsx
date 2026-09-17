@@ -1,20 +1,35 @@
-import { useState, useMemo, useEffect } from 'react';
-import type {
-  FormSchema,
-  FieldMetadata,
-  FieldRule,
-  FieldCondition,
-  DataSource,
-  FieldType,
-  FormPlugin,
-  ValidationConfig,
-} from './form-schema';
-import { schemaToJson } from './schema-serializer';
-import { MetadataForm } from './metadata-form';
+import {
+  AlertTriangle,
+  Asterisk,
+  Ban,
+  ChevronRight,
+  Code,
+  Database,
+  Eye,
+  EyeOff,
+  GitBranch,
+  GripVertical,
+  Layers,
+  MoveDown,
+  MoveUp,
+  Plus,
+  Settings,
+  Trash2,
+  View,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label, RequiredIndicator } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Grid } from '@/components/ui/layout/grid';
 import {
   Select,
   SelectContent,
@@ -22,37 +37,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
-import {
-  Trash2,
-  Plus,
-  MoveUp,
-  MoveDown,
-  Eye,
-  EyeOff,
-  Code,
-  Database,
-  GitBranch,
-  Layers,
-  ChevronRight,
-  GripVertical,
-  Settings,
-  AlertTriangle,
-  Asterisk,
-  Ban,
-  View,
-} from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Grid } from '@/components/ui/layout/grid';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import type {
+  DataSource,
+  FieldCondition,
+  FieldMetadata,
+  FieldRule,
+  FieldType,
+  FormPlugin,
+  FormSchema,
+  ValidationConfig,
+} from './form-schema';
+import { MetadataForm } from './metadata-form';
+import { schemaToJson } from './schema-serializer';
 
 /**
  * Enhanced Form Designer Component
@@ -70,7 +70,13 @@ interface FieldTypeMetadata {
 }
 
 /**
- * Complete mapping of all supported field types
+ * The field types the designer can create and edit.
+ *
+ * Deliberately not the same set as `FieldType`: `string-list` is renderable and fully usable
+ * from a hand-written or programmatically built schema, but is absent here because the designer
+ * would also need settings UI for `maxItems` / `maxLength` / `minRows`. Adding a type to this
+ * list without that UI surfaces it in the type selector with its settings unreachable, which is
+ * worse than the omission — so add the settings and the entry together.
  */
 const FIELD_TYPE_METADATA: readonly FieldTypeMetadata[] = [
   {

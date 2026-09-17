@@ -1,11 +1,11 @@
-import * as React from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon, Clock } from 'lucide-react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib';
 
 export interface DateTimePickerProps {
@@ -15,6 +15,10 @@ export interface DateTimePickerProps {
   placeholder?: string;
   className?: string;
   use12Hour?: boolean;
+  /** Id of the element naming this control, forwarded to the trigger button. */
+  'aria-labelledby'?: string;
+  /** Marks the trigger invalid, so the error is exposed on the control itself. */
+  'aria-invalid'?: boolean;
 }
 
 export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
@@ -26,6 +30,8 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
       placeholder = 'Pick a date and time',
       className,
       use12Hour = false,
+      'aria-labelledby': ariaLabelledBy,
+      'aria-invalid': ariaInvalid,
     },
     ref
   ) {
@@ -65,7 +71,8 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     };
 
     const formatDisplayValue = () => {
-      if (!selectedDate) return placeholder;
+      // Placeholder is rendered by the caller; this only narrows for format().
+      if (!selectedDate) return null;
       const datePart = format(selectedDate, 'PPP');
       const timePart = format(selectedDate, use12Hour ? 'hh:mm a' : 'HH:mm');
       return `${datePart} at ${timePart}`;
@@ -76,16 +83,22 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
         <PopoverTrigger asChild>
           <Button
             ref={ref}
+            aria-labelledby={ariaLabelledBy}
+            aria-invalid={ariaInvalid}
             variant="outline"
             className={cn(
-              'w-full justify-start text-left font-normal',
-              !selectedDate && 'text-muted-foreground',
+              'w-full justify-start text-left font-normal [&>svg]:text-foreground-muted hover:[&>svg]:text-accent-foreground',
+              'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
               className
             )}
             disabled={disabled}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {formatDisplayValue()}
+            {selectedDate ? (
+              formatDisplayValue()
+            ) : (
+              <span className="text-foreground-muted">{placeholder}</span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
 import { Marked } from 'marked';
 import { useMemo } from 'react';
+import { usePromptEditorConfig } from '../prompt-editor-config';
 import { type PromptEditorToken } from '../types';
 import { buildTokenIconSvgMarkup } from './token-icon-markup';
 
@@ -20,8 +21,10 @@ const MARKDOWN_PREVIEW_STYLES = `
 .prompt-editor-preview h3 { font-size: 1.1em; font-weight: 600; margin: 0.4em 0 0.2em; line-height: 1.3; }
 .prompt-editor-preview h4, .prompt-editor-preview h5, .prompt-editor-preview h6 { font-size: 1em; font-weight: 600; margin: 0.4em 0 0.2em; line-height: 1.3; }
 .prompt-editor-preview p { margin: 0.25em 0; }
-.prompt-editor-preview code { font-family: 'Fira Code', 'Consolas', monospace; font-size: 0.875em; padding: 0.15em 0.4em; border-radius: 4px; background-color: var(--color-muted); color: var(--color-foreground); }
-.prompt-editor-preview pre { margin: 0.5em 0; padding: 0.75em 1em; border-radius: 6px; overflow-x: auto; background-color: var(--color-muted); color: var(--color-foreground); }
+.prompt-editor-preview u { text-decoration: underline; }
+/* Chip token, not --color-muted -- see the matching note in prompt-editor.tsx. */
+.prompt-editor-preview code { font-family: 'Fira Code', 'Consolas', monospace; font-size: 0.875em; padding: 0.15em 0.4em; border-radius: 4px; background-color: var(--color-chip-default-background); color: var(--color-foreground); }
+.prompt-editor-preview pre { margin: 0.5em 0; padding: 0.75em 1em; border-radius: 6px; overflow-x: auto; background-color: var(--color-chip-default-background); color: var(--color-foreground); }
 .prompt-editor-preview pre code { padding: 0; background: none; font-size: 0.85em; }
 .prompt-editor-preview blockquote { margin: 0.5em 0; padding: 0.25em 0.75em; border-left: 3px solid var(--color-border); color: var(--color-muted-foreground); }
 .prompt-editor-preview ul, .prompt-editor-preview ol { margin: 0.25em 0; padding-left: 1.5em; }
@@ -40,9 +43,22 @@ const MARKDOWN_PREVIEW_STYLES = `
 .prompt-editor-preview .token-pill svg { display: block; flex-shrink: 0; color: var(--color-info-icon); width: 14px; height: 14px; }
 `;
 
+/** Host override for a variable pill's preview rendering (icon markup and/or label). */
+export interface MarkdownPreviewTokenOverride {
+  /** Raw SVG markup for the leading icon (sanitized through the same DOMPurify allowlist). */
+  iconSvg?: string;
+  /** Label text (HTML-escaped before insertion). Defaults to the token's value. */
+  label?: string;
+}
+
 export interface MarkdownPreviewProps {
   tokens: PromptEditorToken[];
   minRows?: number;
+  /**
+   * Per-token pill override so preview pills can match the host's edit-mode pills (e.g. flow shows
+   * the variable's TYPE icon and `$`-prefixed path, not the token-role icon / raw value).
+   */
+  previewToken?: (token: PromptEditorToken) => MarkdownPreviewTokenOverride | undefined;
 }
 
 /**
@@ -155,14 +171,18 @@ const escapeHtml = (str: string): string =>
  * text is the verbatim `token.value` (full path) so authors always see the path they're referencing;
  * the leading icon is chosen by token type to match what the editor renders in edit mode.
  */
-const tokensToMarkdownWithPills = (tokens: PromptEditorToken[]): string => {
+const tokensToMarkdownWithPills = (
+  tokens: PromptEditorToken[],
+  previewToken?: MarkdownPreviewProps['previewToken']
+): string => {
   let md = '';
   for (const token of tokens) {
     if (token.type === 'text') {
       md += token.value;
     } else {
-      const iconSvg = buildTokenIconSvgMarkup(token.type);
-      md += `<span class="token-pill">${iconSvg}${escapeHtml(token.value)}</span>`;
+      const override = previewToken?.(token);
+      const iconSvg = override?.iconSvg ?? buildTokenIconSvgMarkup(token.type);
+      md += `<span class="token-pill">${iconSvg}${escapeHtml(override?.label ?? token.value)}</span>`;
     }
   }
   return md;
@@ -170,7 +190,6 @@ const tokensToMarkdownWithPills = (tokens: PromptEditorToken[]): string => {
 
 const LINE_HEIGHT = 20;
 const VERTICAL_PADDING = 8;
-const EMPTY_MESSAGE = 'Nothing to preview';
 
 /**
  * Renders the prompt tokens as sanitized markdown for preview mode.
@@ -180,14 +199,16 @@ const EMPTY_MESSAGE = 'Nothing to preview';
  * stale/unknown tokens as invalid — preview does not receive the option set and so does not reflect
  * token validity. Switch to edit mode to see validation state.
  */
-export const MarkdownPreview = ({ tokens, minRows = 4 }: MarkdownPreviewProps) => {
+export const MarkdownPreview = ({ tokens, minRows = 4, previewToken }: MarkdownPreviewProps) => {
+  const { strings } = usePromptEditorConfig();
+  const emptyMessage = strings.nothingToPreview;
   const html = useMemo(() => {
     if (tokens.length === 0)
-      return `<p class="prompt-editor-preview-empty">${escapeHtml(EMPTY_MESSAGE)}</p>`;
-    const md = tokensToMarkdownWithPills(tokens);
+      return `<p class="prompt-editor-preview-empty">${escapeHtml(emptyMessage)}</p>`;
+    const md = tokensToMarkdownWithPills(tokens, previewToken);
     const rawHtml = marked.parse(md) as string;
     return DOMPurify.sanitize(rawHtml, PURIFY_CONFIG);
-  }, [tokens]);
+  }, [tokens, previewToken, emptyMessage]);
 
   return (
     <>

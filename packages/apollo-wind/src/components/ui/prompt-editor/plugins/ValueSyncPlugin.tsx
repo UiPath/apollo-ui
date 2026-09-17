@@ -1,8 +1,12 @@
-import { useEffect, useRef } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $addUpdateTag, type LexicalEditor, SKIP_DOM_SELECTION_TAG } from 'lexical';
+import { useEffect, useRef } from 'react';
 import type { PromptEditorToken } from '../types';
-import { areTokensEqual, $getEditorTokensInternal, $setEditorTokensInternal } from '../utils';
+import { $getEditorTokensInternal, $setEditorTokensInternal, areTokensEqual } from '../utils';
+import {
+  $getRichEditorTokensInternal,
+  $setRichEditorTokensInternal,
+} from '../utils/rich-serialization';
 
 const getDeepActiveElement = (rootElement: HTMLElement): Element | null => {
   const rootNode = rootElement.getRootNode();
@@ -29,14 +33,19 @@ export const ValueSyncPlugin = ({
   editorRef,
   lastEmittedValueRef,
   isSyncingRef,
+  richText,
 }: {
   value: PromptEditorToken[] | undefined;
   editorRef: React.MutableRefObject<LexicalEditor | null>;
   lastEmittedValueRef?: React.MutableRefObject<PromptEditorToken[] | null>;
   isSyncingRef?: React.MutableRefObject<boolean>;
+  /** WYSIWYG mode: read/write through the markdown-aware serializers so a sync can't flatten rich state. */
+  richText?: boolean;
 }) => {
   const [editor] = useLexicalComposerContext();
   const lastValueRef = useRef<PromptEditorToken[] | undefined>(value);
+  const $getTokens = richText ? $getRichEditorTokensInternal : $getEditorTokensInternal;
+  const $setTokens = richText ? $setRichEditorTokensInternal : $setEditorTokensInternal;
 
   useEffect(() => {
     // Only skip when uncontrolled (undefined). An empty array is a valid controlled value and must
@@ -54,7 +63,7 @@ export const ValueSyncPlugin = ({
       return;
     }
 
-    const currentTokens = editorRef.current?.getEditorState().read($getEditorTokensInternal);
+    const currentTokens = editorRef.current?.getEditorState().read($getTokens);
     if (currentTokens && areTokensEqual(currentTokens, value)) {
       lastValueRef.current = value;
       return;
@@ -70,7 +79,7 @@ export const ValueSyncPlugin = ({
       editor.update(
         () => {
           if (shouldSkipDomSelection) $addUpdateTag(SKIP_DOM_SELECTION_TAG);
-          $setEditorTokensInternal(value);
+          $setTokens(value);
         },
         {
           discrete: true,
@@ -85,7 +94,7 @@ export const ValueSyncPlugin = ({
       if (isSyncingRef) isSyncingRef.current = false;
       console.error('ValueSyncPlugin: Error syncing value to editor', error);
     }
-  }, [editor, value, editorRef, lastEmittedValueRef, isSyncingRef]);
+  }, [editor, value, editorRef, lastEmittedValueRef, isSyncingRef, $getTokens, $setTokens]);
 
   return null;
 };

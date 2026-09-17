@@ -9,7 +9,8 @@
       "title": "Apollo Vertex Theme",
       "description": "Apollo Vertex design system tokens — colors, typography, spacing, shadows, and easing functions with light and dark mode support.",
       "dependencies": ["tw-animate-css"],
-      "registryDependencies": ["font-inter"],
+      "css": { "@import \"tw-animate-css\"": {} },
+      "registryDependencies": ["@uipath/font-inter"],
       "cssVars": {
         "theme": {
           "radius-sm": "calc(var(--radius) - 4px)",
@@ -154,7 +155,7 @@
           "insight-700": "oklch(0.48 0.17 277)",
           "insight-800": "oklch(0.38 0.13 278)",
           "insight-900": "oklch(0.30 0.10 278)",
-          "font-sans": "Inter, ui-sans-serif, sans-serif, system-ui",
+          "font-sans": "'Inter Variable', Inter, ui-sans-serif, sans-serif, system-ui",
           "font-serif": "IBM Plex Serif, ui-serif, serif",
           "font-mono": "IBM Plex Mono, ui-monospace, monospace",
           "radius": "0.625rem",
@@ -186,9 +187,9 @@
           "ease-in-out-quint": "cubic-bezier(0.86, 0, 0.07, 1)",
           "ease-in-out-expo": "cubic-bezier(1, 0, 0, 1)",
           "ease-in-out-circ": "cubic-bezier(0.785, 0.135, 0.15, 0.86)",
-          "--info-fg": "oklch(0.49 0.12 210)",
-          "--success-fg": "oklch(0.46 0.10 152)",
-          "--destructive-fg": "oklch(0.50 0.14 18)",
+          "info-fg": "oklch(0.49 0.12 210)",
+          "success-fg": "oklch(0.46 0.10 152)",
+          "destructive-fg": "oklch(0.50 0.14 18)",
           "ai-chat": "oklch(0.985 0.002 260)",
           "ai-chat-foreground": "oklch(0.2394 0.0455 252.45)",
           "ai-chat-accent": "oklch(0.64 0.115 208)",
@@ -276,7 +277,7 @@
           "insight-700": "oklch(0.48 0.17 277)",
           "insight-800": "oklch(0.38 0.13 278)",
           "insight-900": "oklch(0.30 0.10 278)",
-          "font-sans": "Inter, ui-sans-serif, sans-serif, system-ui",
+          "font-sans": "'Inter Variable', Inter, ui-sans-serif, sans-serif, system-ui",
           "font-serif": "IBM Plex Serif, ui-serif, serif",
           "font-mono": "IBM Plex Mono, ui-monospace, monospace",
           "radius": "0.625rem",
@@ -329,7 +330,7 @@
       "title": "Inter Font",
       "description": "Inter font configuration for Apollo Vertex. Sets --font-sans CSS variable.",
       "font": {
-        "family": "Inter",
+        "family": "'Inter Variable', Inter, ui-sans-serif, sans-serif, system-ui",
         "provider": "google",
         "import": "Inter",
         "variable": "--font-sans",
@@ -1658,7 +1659,7 @@
       "title": "Button Group",
       "description": "Groups multiple buttons together.",
       "dependencies": ["@radix-ui/react-slot"],
-      "registryDependencies": ["separator"],
+      "registryDependencies": ["@uipath/separator"],
       "files": [
         {
           "path": "registry/button-group/button-group.tsx",
@@ -1746,7 +1747,12 @@
       "type": "registry:ui",
       "title": "Combobox",
       "description": "An autocomplete input with a filterable list, supporting single and multi-select with badges.",
-      "registryDependencies": ["badge", "button", "command", "popover"],
+      "registryDependencies": [
+        "@uipath/badge",
+        "@uipath/button",
+        "@uipath/command",
+        "@uipath/popover"
+      ],
       "dependencies": ["react-i18next"],
       "files": [
         {
@@ -1761,7 +1767,7 @@
       "title": "Command",
       "description": "A command menu for searching and executing commands.",
       "dependencies": ["cmdk"],
-      "registryDependencies": ["dialog"],
+      "registryDependencies": ["@uipath/dialog"],
       "files": [
         {
           "path": "registry/command/command.tsx",
@@ -1775,7 +1781,11 @@
       "title": "Confidence Signal",
       "description": "A signal-bar chip that communicates AI confidence (high/medium/low/unknown) without a raw score, with an optional popover for factor breakdowns and required next steps.",
       "dependencies": ["framer-motion", "lucide-react", "react-i18next"],
-      "registryDependencies": ["button", "popover", "tooltip"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/popover",
+        "@uipath/tooltip"
+      ],
       "cssVars": {
         "theme": {
           "color-success": "var(--success)",
@@ -1994,7 +2004,7 @@
       "type": "registry:ui",
       "title": "Field",
       "description": "A form field component with label, input, and description.",
-      "registryDependencies": ["label", "separator"],
+      "registryDependencies": ["@uipath/label", "@uipath/separator"],
       "files": [{ "path": "registry/field/field.tsx", "type": "registry:ui" }]
     },
     {
@@ -2046,7 +2056,11 @@
       "type": "registry:ui",
       "title": "Input Group",
       "description": "Groups input elements with addons and buttons.",
-      "registryDependencies": ["button", "input", "textarea"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/input",
+        "@uipath/textarea"
+      ],
       "files": [
         {
           "path": "registry/input-group/input-group.tsx",
@@ -2073,7 +2087,7 @@
       "title": "Item",
       "description": "A list item component for displaying content in lists.",
       "dependencies": ["@radix-ui/react-slot"],
-      "registryDependencies": ["separator"],
+      "registryDependencies": ["@uipath/separator"],
       "files": [{ "path": "registry/item/item.tsx", "type": "registry:ui" }]
     },
     {
@@ -2109,7 +2123,11 @@
       "type": "registry:ui",
       "title": "Metric Card",
       "description": "Displays a labeled metric with value, optional trend indicator, and percentage change badge.",
-      "registryDependencies": ["@uipath/card", "@uipath/badge", "skeleton"],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/badge",
+        "@uipath/skeleton"
+      ],
       "files": [
         {
           "path": "registry/metric-card/metric-card.tsx",
@@ -2127,7 +2145,7 @@
         "lucide-react",
         "@radix-ui/react-dialog"
       ],
-      "registryDependencies": ["button"],
+      "registryDependencies": ["@uipath/button"],
       "files": [
         {
           "path": "registry/onboarding-tour-joyride/index.ts",
@@ -2306,14 +2324,14 @@
         "@uipath/vs-core@^4.2.0"
       ],
       "registryDependencies": [
-        "button",
-        "tooltip",
-        "avatar",
-        "dropdown-menu",
-        "skeleton",
-        "sidebar",
-        "spinner",
-        "collapsible"
+        "@uipath/button",
+        "@uipath/tooltip",
+        "@uipath/avatar",
+        "@uipath/dropdown-menu",
+        "@uipath/skeleton",
+        "@uipath/sidebar",
+        "@uipath/spinner",
+        "@uipath/collapsible"
       ],
       "cssVars": {
         "theme": {
@@ -2530,13 +2548,13 @@
         "react-i18next"
       ],
       "registryDependencies": [
-        "button",
-        "input",
-        "separator",
-        "sheet",
-        "skeleton",
-        "tooltip",
-        "use-mobile"
+        "@uipath/button",
+        "@uipath/input",
+        "@uipath/separator",
+        "@uipath/sheet",
+        "@uipath/skeleton",
+        "@uipath/tooltip",
+        "@uipath/use-mobile"
       ],
       "files": [
         {
@@ -2703,14 +2721,14 @@
       "description": "A composition-first form built on TanStack Form and Zod with Apollo-bound field components and translatable validation errors.",
       "dependencies": ["@tanstack/react-form", "zod", "react-i18next"],
       "registryDependencies": [
-        "button",
-        "checkbox",
-        "field",
-        "input",
-        "radio-group",
-        "select",
-        "switch",
-        "textarea"
+        "@uipath/button",
+        "@uipath/checkbox",
+        "@uipath/field",
+        "@uipath/input",
+        "@uipath/radio-group",
+        "@uipath/select",
+        "@uipath/switch",
+        "@uipath/textarea"
       ],
       "files": [
         {
@@ -2901,7 +2919,7 @@
       "title": "Toggle Group",
       "description": "A set of two-state buttons that can be toggled on or off.",
       "dependencies": ["@radix-ui/react-toggle-group"],
-      "registryDependencies": ["toggle"],
+      "registryDependencies": ["@uipath/toggle"],
       "files": [
         {
           "path": "registry/toggle-group/toggle-group.tsx",
@@ -2933,7 +2951,11 @@
         "lucide-react",
         "react-i18next"
       ],
-      "registryDependencies": ["button", "popover", "@uipath/calendar"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/popover",
+        "@uipath/calendar"
+      ],
       "files": [
         {
           "path": "registry/date-picker/date-picker.tsx",
@@ -3025,7 +3047,7 @@
         "@tanstack/react-table@^8.21.0",
         "@tanstack/react-router",
         "@uipath/vs-core@^4.2.0",
-        "@uipath/uipath-typescript@^1.5.4",
+        "@uipath/uipath-typescript@^1.7.1",
         "react-i18next",
         "recharts@2.15.4",
         "sonner",
@@ -3338,6 +3360,82 @@
           "path": "registry/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx"
+        }
+      ]
+    },
+    {
+      "name": "ai-mark",
+      "type": "registry:ui",
+      "title": "AI Mark",
+      "description": "The AI mark: a filled four-pointed astroid star that paints with the AI gradient, or with currentColor when variant is solid.",
+      "cssVars": {
+        "light": {
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        },
+        "dark": {
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        }
+      },
+      "files": [
+        {
+          "path": "registry/ai-mark/ai-mark.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "timeline",
+      "type": "registry:ui",
+      "title": "Timeline",
+      "description": "Activity timeline primitives: a variant-driven status marker and the connecting row layout for building AI and human activity trails.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@uipath/ai-mark"],
+      "cssVars": {
+        "theme": {
+          "color-success": "var(--success)",
+          "color-insight-400": "var(--insight-400)",
+          "color-insight-700": "var(--insight-700)"
+        },
+        "light": {
+          "success": "oklch(0.57 0.105 152)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-700": "oklch(0.48 0.17 277)",
+          "primary-50": "oklch(0.95 0.035 218)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        },
+        "dark": {
+          "success": "oklch(0.70 0.120 152)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-700": "oklch(0.48 0.17 277)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        }
+      },
+      "files": [
+        {
+          "path": "registry/timeline/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/timeline/index.ts"
+        },
+        {
+          "path": "registry/timeline/timeline-marker.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/timeline/timeline-marker.tsx"
+        },
+        {
+          "path": "registry/timeline/timeline-row-layout.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/timeline/timeline-row-layout.tsx"
         }
       ]
     }

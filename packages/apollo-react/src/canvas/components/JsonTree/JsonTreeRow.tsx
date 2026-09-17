@@ -28,6 +28,9 @@ import { ScalarValueCell, valueColorClass } from './ScalarValueCell';
 // editing, which would otherwise let the row collapse to the badge height.
 const ROW_CLASS =
   'group flex min-h-7 cursor-default items-center gap-1.5 py-1 pr-1 transition hover:bg-surface-overlay';
+/** `min-h-7` above (1.75rem) in px at the default root size: the virtualizer's estimate
+ *  until each row is measured, so a different root size costs accuracy but not correctness. */
+export const ROW_MIN_HEIGHT_PX = 28;
 
 // Wrapper for a value cell. `flex-1` lets it fill the space between the key
 // and the row actions, `min-w-8` keeps a sliver of it legible when squeezed.
