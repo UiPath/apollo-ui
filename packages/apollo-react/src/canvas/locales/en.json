@@ -310,5 +310,13 @@
   "guardrails.palette.load-error": "Failed to load built-in validators",
   "guardrails.palette.uipath-group": "UiPath guardrails",
   "guardrails.palette.preview": "Preview",
-  "guardrails.palette.status-unauthorized": "Unauthorized"
+  "guardrails.palette.status-unauthorized": "Unauthorized",
+  "guardrails.remove-dialog.title": "Remove guardrail",
+  "guardrails.remove-dialog.confirm-prompt": "Please, confirm you’d like to remove \"{name}\" guardrail",
+  "guardrails.remove-dialog.also-applicable": "This guardrail is also applicable to:",
+  "guardrails.remove-dialog.removed-for-tool": "The guardrail will be removed for tool \"{toolName}\".",
+  "guardrails.remove-dialog.still-applicable": "It will still be applicable to:",
+  "guardrails.remove-dialog.close": "Close",
+  "guardrails.remove-dialog.cancel": "Cancel",
+  "guardrails.remove-dialog.remove": "Remove"
 }
