@@ -6,8 +6,27 @@ entirely on `@uipath/apollo-wind` primitives and its `forms/` engine, strings on
 and is exported through the narrow `@uipath/apollo-react/canvas/guardrails` subpath (also
 re-exported from `./canvas`). Members: the definitions layer (wire types, parser, canonical
 copy and `useGuardrailDefinitions`), `GuardrailBuilder` (the whole Add/Edit screen),
-`GuardrailFormLayout` (the screen shell), and `GuardrailValidatorForm` (the validator
-parameter section, also rendered inside the builder).
+`GuardrailFormLayout` (the screen shell), `GuardrailValidatorForm` (the validator parameter
+section, also rendered inside the builder), and `CentralizedGuardrailsSection` +
+`CentralizedGuardrailDetails` (the read-only governance guardrails a policy enforces).
+
+## Hover and focus, family-wide
+
+Hover is never a prop. No wind primitive takes one, and neither does anything here: a component
+derives it from the interaction it offers, so a host that wires up callbacks gets the right
+affordances without styling anything. What differs between members is the element's role, and
+that decides the treatment:
+
+- **The element is itself a control** (the palette item, the centralized row, the guardrail
+  list's activatable row body): gate the hover on being enabled, and pair it with `cursor-pointer`
+  and an explicit `focus-visible` ring, the way wind's `Button` and `DropdownMenuItem` do.
+- **The element is a row that contains controls** (the guardrail list row, with its drag handle
+  and its actions): highlight unconditionally, the way wind's `TableRow` does, with no cursor
+  change. Focus belongs to the controls inside it.
+
+Use `accent` for the hover surface. Apollo maps `--accent` to `--surface-hover`, while `--muted`
+is `--surface-overlay`, the raised panel these sections usually sit on: hovering with `muted`
+paints a row the colour of its own background and barely reads.
 
 ## Definitions layer
 
@@ -147,6 +166,99 @@ can diff their remaining local tables against it in CI while they migrate off th
 > `src/canvas/locales/en.json` with the same English, and no catalog keeps a
 > `guardrails.definitions.*` id the source has dropped. The second scans all fourteen files,
 > so a rename cannot leave the sync's translations behind as dead entries.
+
+## CentralizedGuardrailsSection
+
+The read-only list of guardrails an organization's AI Trust Layer governance policy enforces
+on an agent, and `CentralizedGuardrailDetails`, the content behind a row.
+
+```tsx
+import {
+  CentralizedGuardrailDetails,
+  CentralizedGuardrailsSection,
+  getApplicableCentralizedGuardrails,
+} from '@uipath/apollo-react/canvas/guardrails';
+
+<CentralizedGuardrailsSection
+  guardrails={getApplicableCentralizedGuardrails(policy.centralizedGuardrails, {
+    isConversational,
+  })}
+  policyName={policy.policyName}
+  definitions={definitions}        // undefined while the catalog is loading
+  docsHref={CENTRALIZED_GUARDRAILS_DOCS}
+  onSelect={openDetails}           // the host opens its own dialog or panel
+/>;
+```
+
+Contract highlights:
+
+- **Governance guardrails are their own record.** `CentralizedGuardrail` mirrors both
+  products' policy schemas: no `id`, `scopes` at the top level rather than under a
+  `selector`, and `action` as a bare discriminator rather than an object. It is deliberately
+  not a variant of `GuardrailBuilderValue`. `executionStage` stays `string` because both
+  products parse it as one; `action` is the closed four-value union both close it to, and a
+  TypeScript string enum member assigns to its literal, so Agents' `ActionType` fits.
+- **Props, never contexts.** Both products hold the policy and the definitions in a context of
+  their own (`useGovernance`, `GuardrailDefinitionsContext`, `useAiTrustLayerGovernancePolicy`);
+  passing them in is what lets one component serve both.
+- **The host filters, the component renders.** `getApplicableCentralizedGuardrails` is the
+  predicate for the agent kind being edited, exported so no host rewrites it. An empty
+  `guardrails` renders nothing; `emptyState` overrides that, and an explicit `null` is
+  honoured.
+- **`definitions` is optional, and `undefined` means "not loaded yet".** That is what keeps a
+  row from claiming a configuration was deleted while the catalog is still in flight. An
+  empty array means it loaded and the configuration really is gone.
+- **Scopes, actions and execution stages default to the family's own labels**, with
+  `formatScope` / `formatAction` to override. Every one of those strings already existed in
+  the canvas catalog, so defaulting removes a prop an adapter can forget for a visible
+  regression (`Llm` instead of "LLM calls").
+- **A broken BYO configuration gets a chip and a sentence.** The chip (`Configuration
+  missing` / `Configuration disabled`) makes the row findable in a long policy; the sentence
+  under it, which both products already show, says what to do about it.
+- **The row's accessible name is its own text.** Both products put an `aria-label` on it,
+  which overrides the content and hides the description, the provider and the
+  broken-configuration message from screen readers entirely.
+- **Layout knobs for both hosts**: `unstyled` drops the card border and padding, `hideHeader`
+  drops the heading, info popover and policy caption. Agents nests the section in its own
+  `SectionAccordion` and uses both.
+- **`docsHref` is opt-in.** Product documentation URLs never ship in this package.
+
+### CentralizedGuardrailDetails
+
+The details **content**, not a shell: Agents opens a dialog and Flow pushes a panel overlay,
+each with its own header, breadcrumb and dismissal, so the surrounding chrome stays host
+orchestration. The `Details in a dialog` and `Details in a panel overlay` stories show both.
+
+```tsx
+<CentralizedGuardrailDetails
+  guardrail={selected}
+  policyName={policy.policyName}
+  definitions={definitions}
+/>;
+```
+
+- **One configuration renderer for both origins.** A BYO guardrail states its configuration
+  as connector parameters and a built-in as `entities` / `entityThresholds`.
+  `resolveCentralizedGuardrailParameters` lifts the built-in fields onto the parameter shape
+  so one resolver covers both, and a threshold map absorbs its `keySource` list into its key
+  column.
+- **Labels and entity names come from the matching definition**, so a centralized guardrail
+  names its entities the way the guardrail editor names them ("US Social Security Number
+  (SSN)", not `USSocialSecurityNumber`) and each validator names its own configuration
+  ("Severity thresholds" for harmful content, "Detection thresholds" for PII). With no
+  definition matched it falls back to generic labels and raw values, which is what both
+  products render today.
+- **A read-only value is text, not a disabled input.** The family's parameter editors are the
+  MetadataForm stack and have no read-only mode, and these values arrive as untyped wire data
+  rather than `GuardrailValidatorParameter`s. A disabled input, which is how Flow renders this
+  today, is also worse than text: it cannot be focused, so its content is not selectable, not
+  copyable and skipped by a screen reader.
+
+Both components resolve a built-in validator's name and description from the canonical copy
+table (see *Definitions layer*), never from the definitions array: a policy can enforce a
+validator this tenant is not entitled to and therefore has no definition for. A BYO
+guardrail's description comes from its connector definition and never from the curated table,
+since a connector may expose a validator id a built-in also uses.
 
 ## GuardrailBuilder
 
