@@ -85,11 +85,14 @@ export {
   getGuardrailPaletteItemId,
   groupGuardrailsForPalette,
 } from './guardrail-palette-utils';
+export type { GuardrailRemoveDialogProps } from './guardrail-remove-dialog';
+export { GuardrailRemoveDialog } from './guardrail-remove-dialog';
 export { GuardrailValidatorForm } from './guardrail-validator-form';
 export type {
   GuardrailBuilderLabels,
   GuardrailListLabels,
   GuardrailPaletteLabels,
+  GuardrailRemoveDialogLabels,
   GuardrailValidatorFormLabels,
 } from './i18n';
 export {
@@ -100,14 +103,18 @@ export {
   GUARDRAIL_LIST_EN_MESSAGES,
   GUARDRAIL_PALETTE_EN_LABELS,
   GUARDRAIL_PALETTE_EN_MESSAGES,
+  GUARDRAIL_REMOVE_DIALOG_EN_LABELS,
+  GUARDRAIL_REMOVE_DIALOG_EN_MESSAGES,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
   resolveGuardrailPaletteLabels,
+  resolveGuardrailRemoveDialogLabels,
   useGuardrailBuilderLabels,
   useGuardrailFormLabels,
   useGuardrailListLabels,
   useGuardrailPaletteLabels,
+  useGuardrailRemoveDialogLabels,
 } from './i18n';
 export type {
   GuardrailListAdministration,

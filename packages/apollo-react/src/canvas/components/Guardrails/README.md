@@ -6,10 +6,11 @@ entirely on `@uipath/apollo-wind` primitives and its `forms/` engine, strings on
 and is exported through the narrow `@uipath/apollo-react/canvas/guardrails` subpath (also
 re-exported from `./canvas`). Members: the definitions layer (wire types, parser, canonical
 copy and `useGuardrailDefinitions`), `GuardrailList` (the applied-guardrails section),
-`GuardrailPalette` (the add-guardrail picker), `GuardrailBuilder` (the whole Add/Edit
-screen), `GuardrailFormLayout` (the screen shell), and `GuardrailValidatorForm` (the
-validator parameter section, also rendered inside the builder), plus the leaves the
-sections compose: `GuardrailStatusChip`, `GuardrailStatusBanner` and `MixedScopesBanner`.
+`GuardrailPalette` (the add-guardrail picker), `GuardrailRemoveDialog` (the removal
+confirmation), `GuardrailBuilder` (the whole Add/Edit screen), `GuardrailFormLayout` (the
+screen shell), and `GuardrailValidatorForm` (the validator parameter section, also rendered
+inside the builder), plus the leaves the sections compose: `GuardrailStatusChip`,
+`GuardrailStatusBanner` and `MixedScopesBanner`.
 
 ## Hover and focus, family-wide
 
@@ -410,6 +411,97 @@ from `chore(l10n): sync from Localization`, and until it runs `useSafeLingui` re
 English default, so nothing is missing on screen. One item for that loc pass comes with the
 harvest: the two products translate the word itself differently in German, "Leitplanke" in
 Flow against "Leitlinien" in Agents.
+
+## GuardrailRemoveDialog
+
+The confirmation step before a guardrail is removed, with the impact of the removal spelled
+out.
+
+```tsx
+import { GuardrailRemoveDialog } from '@uipath/apollo-react/canvas/guardrails';
+
+<GuardrailRemoveDialog
+  open={pending !== null}
+  guardrailName={pending?.name ?? ''}
+  toolName={currentToolName}          // the tool the removal was requested from
+  remainingToolNames={remainingTools} // what survives a scoped removal
+  remainingScopes={remainingScopes}
+  formatScope={scopeLabel}            // 'Llm' -> 'LLM calls'
+  onConfirm={applyRemoval}
+  onCancel={() => setPending(null)}
+/>;
+```
+
+### Contract
+
+- **The impact is structured props, not a slot.** There are exactly two situations and both
+  products already describe both: `affectedToolNames` / `affectedScopes` are what a **full**
+  removal also takes the guardrail off ("This guardrail is also applicable to:"), and
+  `remainingToolNames` / `remainingScopes` are what survives a **tool-scoped** removal ("It
+  will still be applicable to:"). Flow computes them from one guardrail plus an
+  `isToolOnAgent` flag; that branch converges here by filling one pair or the other. Pass
+  neither pair and the dialog is the question on its own. All four default to empty.
+- **Deciding which removal is happening stays host-side**, along with the unwind. The two
+  products disagree about it in ways that are theirs to keep: Agents strips the tool from
+  `matchNames`, then drops the `Tool` scope, then deletes; Flow calls
+  `removeToolFromGuardrail`. The component only renders the description of the outcome.
+- **`toolName` names the tool in the scoped-removal line**, and only alongside something
+  remaining: with nothing left the guardrail is gone everywhere, and naming one tool would
+  misdescribe it. Both products already behave that way.
+- **`onConfirm` and `onCancel` are intents.** Neither closes the dialog: `open` is controlled,
+  so the write, the telemetry event and the close all stay with the host. `onCancel` covers the
+  Cancel button, Escape and the corner close button when it is on, and fires **once** per
+  dismissal. Confirming
+  never also reports a cancel, which is why the confirm button is a plain wind `Button` and not a
+  `DialogClose`: a close would drive `onOpenChange(false)` on top of the click. Flow's dialog
+  reports both today, because it uses `AlertDialogAction`.
+- **Built on wind's `Dialog`, not `AlertDialog`.** `AlertDialog` carries `role="alertdialog"` and
+  focuses its cancel control for free, but it has no corner close button and no way to add
+  backdrop dismissal: Radix prevents outside interaction *after* spreading consumer props, so
+  neither is reachable, so offering a close button at all would have meant a hand-rolled one
+  against the grain of the primitive. `GuardrailFormLayout` is already a wind `Dialog` with one.
+  What the switch costs is made back explicitly: `onOpenAutoFocus` puts initial focus on Cancel,
+  and the description still carries the whole impact through `aria-describedby`.
+- **`showCloseButton` is opt-in**, and renders the corner close button wired through the same
+  `onCancel` path as Escape. Off by default so adopting the dialog never adds a control a product
+  did not have: Agents asks for it, Flow leaves it off. Wind's own built-in one is always
+  suppressed, because its accessible name is a hardcoded English "Close" and every other string
+  here is localized. Ours is last in the DOM, so a keyboard user reaches the decision before the
+  escape hatch.
+- **`closeOnBackdropClick` defaults to `false`.** A confirmation is a decision and a stray click
+  should not discard it; Escape and Cancel always dismiss. Wind's prop of the same name only
+  applies to `variant="takeover"`, so the guard here is `onPointerDownOutside`.
+- **The confirm button takes the default accent variant, not `destructive`.** Both products
+  colour this action with the accent today and both read a red Remove as a regression when
+  they tested the shared dialog; the dialog carries the weight of the action through its title
+  and impact lines instead. A test pins the variant.
+- **Scopes arrive raw and localize through `formatScope`**, the same idiom as
+  `GuardrailList`'s `formatScopes`. Scope vocabulary is product-owned; both products already
+  hold the mapping, and an adapter that omits the callback renders `Llm` instead of
+  `LLM calls`. Pass only the scopes worth listing: both products drop `Tool` when the
+  remaining tools are listed by name.
+- **The whole impact is the accessible description**, not just the first sentence, so the dialog
+  announces what the removal costs rather than only its question. Focus opens on Cancel, the least
+  destructive control, and Tab is trapped inside.
+- **`container` picks the portal target**: omit it to inherit the nearest wind
+  `PortalContainerProvider`, pass an element to portal into it, or `'body'` to force
+  `document.body` even under a provider. Agents' dialog deliberately escapes its shadow root
+  today, which is what `'body'` preserves; Flow's stays in place.
+
+### Localization
+
+Chrome strings resolve through `useGuardrailRemoveDialogLabels` (lingui,
+`guardrails.remove-dialog.*` ids in the shared canvas catalog); `labels` overrides any of them
+and wins over the catalog. Domain values are not localized here: the guardrail and tool names
+are user data, and scopes go through `formatScope`.
+
+Seven of the eight strings are harvested from the two products' own catalogs, where the English
+already matched in both, so nothing here is wording this package invented. The eighth, `close`,
+comes from Agents' `common.close`; its own dialog labels that button with a hardcoded `"close"`.
+
+**English only**, like the rest of the family: the other thirteen catalogs get these ids from
+`chore(l10n): sync from Localization`, and until it runs `useSafeLingui` renders the English
+default, so nothing is missing on screen.
 
 ## GuardrailBuilder
 
