@@ -4,6 +4,8 @@ import {
   CENTRALIZED_GUARDRAILS_EN_LABELS,
   CENTRALIZED_GUARDRAILS_EN_MESSAGES,
   formatGuardrailFormMessage,
+  GUARDRAIL_ACTION_EN_LABELS,
+  GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
   GUARDRAIL_FORM_EN_LABELS,
   GUARDRAIL_LIST_EN_LABELS,
@@ -13,6 +15,7 @@ import {
   GUARDRAIL_REMOVE_DIALOG_EN_LABELS,
   GUARDRAIL_REMOVE_DIALOG_EN_MESSAGES,
   resolveCentralizedGuardrailsLabels,
+  resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
@@ -41,6 +44,44 @@ const REUSED_IDS = [
   'guardrails.list.status-unavailable',
   'guardrails.list.status-disabled',
 ];
+
+describe('resolveGuardrailActionLabels', () => {
+  it('returns the English defaults when there is nothing to merge', () => {
+    expect(resolveGuardrailActionLabels()).toEqual(GUARDRAIL_ACTION_EN_LABELS);
+  });
+
+  it('layers the catalog over the defaults and the overrides over both', () => {
+    const labels = resolveGuardrailActionLabels(
+      { actionTypeLabel: 'Aktionstyp', severityLabel: 'Schweregrad' },
+      { severityLabel: 'Stufe' }
+    );
+
+    expect(labels.actionTypeLabel).toBe('Aktionstyp');
+    expect(labels.severityLabel).toBe('Stufe');
+    expect(labels.assignToLabel).toBe(GUARDRAIL_ACTION_EN_LABELS.assignToLabel);
+  });
+
+  it('never lets an absent string blank a default', () => {
+    const labels = resolveGuardrailActionLabels(
+      { actionTypeLabel: undefined },
+      { severityLabel: undefined }
+    );
+
+    expect(labels.actionTypeLabel).toBe('Action type');
+    expect(labels.severityLabel).toBe('Severity level');
+  });
+});
+
+describe('GUARDRAIL_ACTION_EN_LABELS', () => {
+  it('takes its English from the builder block, id for id', () => {
+    for (const key of GUARDRAIL_ACTION_LABEL_KEYS) {
+      expect(GUARDRAIL_ACTION_EN_LABELS[key]).toBe(GUARDRAIL_BUILDER_EN_LABELS[key]);
+    }
+    expect(Object.keys(GUARDRAIL_ACTION_EN_LABELS)).toHaveLength(
+      GUARDRAIL_ACTION_LABEL_KEYS.length
+    );
+  });
+});
 
 describe('resolveGuardrailListLabels', () => {
   it('returns the English defaults when there is nothing to merge', () => {

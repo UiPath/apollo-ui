@@ -1,11 +1,14 @@
 export type {
   GuardrailAction,
+  GuardrailActionErrors,
   GuardrailAppPickerContext,
   GuardrailBuilderErrors,
   GuardrailBuilderSlots,
   GuardrailBuilderValue,
   GuardrailDefinition,
   GuardrailDefinitionStatus,
+  GuardrailEscalateAction,
+  GuardrailEscalateActionErrors,
   GuardrailEscalateApp,
   GuardrailEscalateRecipient,
   GuardrailRecipientSearchContext,
@@ -59,6 +62,10 @@ export type {
   CentralizedGuardrailParameterDefinition,
   CentralizedGuardrailParameterRow,
 } from './centralized-types';
+export type { EscalateActionFieldsProps } from './components/escalate-action-fields';
+export { EscalateActionFields } from './components/escalate-action-fields';
+export type { GuardrailActionSectionProps } from './components/guardrail-action-section';
+export { GuardrailActionSection } from './components/guardrail-action-section';
 export type { GuardrailChipProps } from './components/guardrail-chip';
 export { GuardrailChip, guardrailChipVariants } from './components/guardrail-chip';
 export type { GuardrailStatusBannerProps } from './components/guardrail-status-banner';
@@ -118,6 +125,8 @@ export { GuardrailRemoveDialog } from './guardrail-remove-dialog';
 export { GuardrailValidatorForm } from './guardrail-validator-form';
 export type {
   CentralizedGuardrailsLabels,
+  GuardrailActionLabelKey,
+  GuardrailActionLabels,
   GuardrailBuilderLabels,
   GuardrailListLabels,
   GuardrailPaletteLabels,
@@ -128,6 +137,8 @@ export {
   CENTRALIZED_GUARDRAILS_EN_LABELS,
   CENTRALIZED_GUARDRAILS_EN_MESSAGES,
   formatGuardrailFormMessage,
+  GUARDRAIL_ACTION_EN_LABELS,
+  GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
   GUARDRAIL_FORM_EN_LABELS,
   GUARDRAIL_LIST_EN_LABELS,
@@ -137,12 +148,14 @@ export {
   GUARDRAIL_REMOVE_DIALOG_EN_LABELS,
   GUARDRAIL_REMOVE_DIALOG_EN_MESSAGES,
   resolveCentralizedGuardrailsLabels,
+  resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
   resolveGuardrailPaletteLabels,
   resolveGuardrailRemoveDialogLabels,
   useCentralizedGuardrailsLabels,
+  useGuardrailActionLabels,
   useGuardrailBuilderLabels,
   useGuardrailFormLabels,
   useGuardrailListLabels,

@@ -213,6 +213,64 @@ export function resolveGuardrailBuilderLabels(
   return mergeLabels(GUARDRAIL_BUILDER_EN_LABELS, catalog, overrides);
 }
 
+/**
+ * The chrome strings `GuardrailActionSection` and `EscalateActionFields` read, for hosts that
+ * mount either on its own rather than through `GuardrailBuilder`.
+ *
+ * A `Pick` over the builder's own keys, resolved from the same `guardrails.builder.*` ids, so
+ * the two paths cannot word the same string differently. `GuardrailBuilderLabels` is therefore
+ * accepted wherever these are.
+ */
+export const GUARDRAIL_ACTION_LABEL_KEYS = [
+  // Action section
+  'actionTypeLabel',
+  'actionLogLabel',
+  'actionBlockLabel',
+  'actionFilterLabel',
+  'actionEscalateLabel',
+  'severityLabel',
+  'severityInfoLabel',
+  'severityWarningLabel',
+  'severityErrorLabel',
+  'blockReasonLabel',
+  'blockReasonPlaceholder',
+  // Escalation
+  'assignToLabel',
+  'recipientUserLabel',
+  'recipientGroupLabel',
+  'recipientEmailLabel',
+  'recipientGroupNameLabel',
+  'recipientFallbackLabel',
+  'userSearchPlaceholder',
+  'groupSearchPlaceholder',
+  'emailPlaceholder',
+  'groupNamePlaceholder',
+  'actionAppLabel',
+  'appPickerUnavailable',
+] as const satisfies ReadonlyArray<keyof GuardrailBuilderLabels>;
+
+export type GuardrailActionLabelKey = (typeof GUARDRAIL_ACTION_LABEL_KEYS)[number];
+
+export type GuardrailActionLabels = Pick<GuardrailBuilderLabels, GuardrailActionLabelKey>;
+
+function pickGuardrailActionLabels(source: GuardrailBuilderLabels): GuardrailActionLabels {
+  const picked = {} as GuardrailActionLabels;
+  for (const key of GUARDRAIL_ACTION_LABEL_KEYS) picked[key] = source[key];
+  return picked;
+}
+
+export const GUARDRAIL_ACTION_EN_LABELS: GuardrailActionLabels = pickGuardrailActionLabels(
+  GUARDRAIL_BUILDER_EN_LABELS
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailActionLabels(
+  catalog?: Partial<GuardrailActionLabels>,
+  overrides?: Partial<GuardrailActionLabels>
+): GuardrailActionLabels {
+  return mergeLabels(GUARDRAIL_ACTION_EN_LABELS, catalog, overrides);
+}
+
 /** Interpolate `{{token}}` placeholders in a catalog message. Unknown tokens are left as-is. */
 export function formatGuardrailFormMessage(
   template: string,
@@ -480,6 +538,17 @@ export function useGuardrailBuilderLabels(
         overrides
       ),
     [_, overrides]
+  );
+}
+
+/** Localized chrome strings of the action section and its escalation fields; `overrides` win. */
+export function useGuardrailActionLabels(
+  overrides?: Partial<GuardrailActionLabels>
+): GuardrailActionLabels {
+  const catalog = useGuardrailBuilderLabels();
+  return useMemo(
+    () => resolveGuardrailActionLabels(pickGuardrailActionLabels(catalog), overrides),
+    [catalog, overrides]
   );
 }
 
