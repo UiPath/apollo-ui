@@ -1,11 +1,19 @@
-import { render, renderHook, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import * as React from 'react';
 import { describe, expect, it } from 'vitest';
 import { AlertDialog, AlertDialogContent, AlertDialogTitle } from './alert-dialog';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from './context-menu';
 import { Dialog, DialogContent, DialogTitle } from './dialog';
+import { Drawer, DrawerContent, DrawerTitle } from './drawer';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { PortalContainerProvider, useResolvedPortalContainer } from './portal-container';
 import { Sheet, SheetContent, SheetTitle } from './sheet';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipProvider, TooltipTrigger } from './tooltip';
 
 describe('useResolvedPortalContainer', () => {
   const provided = document.createElement('div');
@@ -152,7 +160,7 @@ describe.each([
   ['AlertDialog', AlertDialog, AlertDialogContent, AlertDialogTitle],
 ] as const)('%s portal container', (_name, Root, Content, Title) => {
   const renderOverlay = (
-    props: { container?: HTMLElement | 'body' | null } = {},
+    props: { container?: Element | DocumentFragment | 'body' | null } = {},
     provider = true
   ) => {
     const overlay = (
@@ -207,6 +215,183 @@ describe.each([
       const content = screen.getByText('Title');
       expect(document.body.contains(content)).toBe(true);
       expect(screen.getByTestId('host').contains(content)).toBe(false);
+    });
+  });
+});
+
+/**
+ * `TooltipContent` deliberately takes no `container`: it renders no portal of its own, so accepting
+ * one would double-portal when composed inside `TooltipPortal`.
+ */
+describe('Tooltip portal container', () => {
+  const renderTooltip = (
+    props: { container?: Element | DocumentFragment | 'body' | null; forceMount?: true } = {},
+    provider = true
+  ) => {
+    const overlay = (
+      <TooltipProvider>
+        {/* Closed for the forceMount case, so that test proves forceMount and not `open`. */}
+        <Tooltip open={!props.forceMount}>
+          <TooltipTrigger>Trigger</TooltipTrigger>
+          <TooltipPortal {...props}>
+            {/* Queried by testid: Radix also renders a visually-hidden copy of the text. */}
+            <TooltipContent data-testid="hint">Hint</TooltipContent>
+          </TooltipPortal>
+        </Tooltip>
+      </TooltipProvider>
+    );
+    return render(
+      <div data-testid="host">
+        {provider ? <PortalContainerProvider>{overlay}</PortalContainerProvider> : overlay}
+      </div>
+    );
+  };
+
+  it('portals into the in-tree boundary of the ambient provider', async () => {
+    renderTooltip();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('host').contains(screen.getByTestId('hint'))).toBe(true);
+    });
+  });
+
+  it('portals to document.body when no provider is mounted', async () => {
+    renderTooltip({}, false);
+
+    await waitFor(() => {
+      const content = screen.getByTestId('hint');
+      expect(document.body.contains(content)).toBe(true);
+      expect(screen.getByTestId('host').contains(content)).toBe(false);
+    });
+  });
+
+  it('honors an explicit container override', async () => {
+    const target = document.createElement('div');
+    document.body.appendChild(target);
+
+    renderTooltip({ container: target });
+
+    await waitFor(() => {
+      expect(target.contains(screen.getByTestId('hint'))).toBe(true);
+    });
+    target.remove();
+  });
+
+  it("forces document.body with container='body', even under a provider", async () => {
+    renderTooltip({ container: 'body' });
+
+    await waitFor(() => {
+      const content = screen.getByTestId('hint');
+      expect(document.body.contains(content)).toBe(true);
+      expect(screen.getByTestId('host').contains(content)).toBe(false);
+    });
+  });
+
+  it('inherits the provider (not body) when container={null}', async () => {
+    renderTooltip({ container: null });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('host').contains(screen.getByTestId('hint'))).toBe(true);
+    });
+  });
+
+  it('still forwards forceMount, the one prop the container Omit could have eaten', async () => {
+    renderTooltip({ forceMount: true });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('host').contains(screen.getByTestId('hint'))).toBe(true);
+    });
+  });
+
+  it('portals into a ShadowRoot passed directly, the case the host actually has', async () => {
+    // `PortalContainerOverride` admits DocumentFragment for this; a shadow root is the target the
+    // whole feature exists for, and it used not to typecheck.
+    const shadowHost = document.body.appendChild(document.createElement('div'));
+    const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+
+    renderTooltip({ container: shadowRoot });
+
+    await waitFor(() => {
+      expect(shadowRoot.querySelector('[data-testid="hint"]')).not.toBeNull();
+    });
+    shadowHost.remove();
+  });
+});
+
+/**
+ * ContextMenu and Drawer own their portal inside `*Content`, like Dialog/Sheet/AlertDialog, but
+ * were left out of that fix — so they portalled to `document.body` regardless of the provider.
+ */
+describe('ContextMenu portal container', () => {
+  const openMenu = (provider = true) => {
+    const overlay = (
+      <ContextMenu>
+        <ContextMenuTrigger>Right-click</ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem data-testid="entry">Entry</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+    );
+    const result = render(
+      <div data-testid="host">
+        {provider ? <PortalContainerProvider>{overlay}</PortalContainerProvider> : overlay}
+      </div>
+    );
+    // ContextMenu has no `open` prop — it opens on the contextmenu event.
+    fireEvent.contextMenu(screen.getByText('Right-click'));
+    return result;
+  };
+
+  it('portals into the in-tree boundary of the ambient provider', async () => {
+    openMenu();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('host').contains(screen.getByTestId('entry'))).toBe(true);
+    });
+  });
+
+  it('portals to document.body when no provider is mounted', async () => {
+    openMenu(false);
+
+    await waitFor(() => {
+      const entry = screen.getByTestId('entry');
+      expect(document.body.contains(entry)).toBe(true);
+      expect(screen.getByTestId('host').contains(entry)).toBe(false);
+    });
+  });
+});
+
+describe('Drawer portal container', () => {
+  const renderDrawer = (provider = true) => {
+    const overlay = (
+      <Drawer open>
+        <DrawerContent>
+          <DrawerTitle data-testid="entry">Title</DrawerTitle>
+        </DrawerContent>
+      </Drawer>
+    );
+    return render(
+      <div data-testid="host">
+        {provider ? <PortalContainerProvider>{overlay}</PortalContainerProvider> : overlay}
+      </div>
+    );
+  };
+
+  it('portals into the in-tree boundary of the ambient provider', async () => {
+    renderDrawer();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('host').contains(screen.getByTestId('entry'))).toBe(true);
+    });
+  });
+
+  it('portals to document.body when no provider is mounted', async () => {
+    renderDrawer(false);
+
+    await waitFor(() => {
+      const entry = screen.getByTestId('entry');
+      expect(document.body.contains(entry)).toBe(true);
+      expect(screen.getByTestId('host').contains(entry)).toBe(false);
     });
   });
 });

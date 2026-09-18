@@ -329,7 +329,10 @@ export {
   PopoverContent,
   PopoverTrigger,
 } from './components/ui/popover';
-export type { PortalContainerProviderProps } from './components/ui/portal-container';
+export type {
+  PortalContainerOverride,
+  PortalContainerProviderProps,
+} from './components/ui/portal-container';
 export { PortalContainerProvider } from './components/ui/portal-container';
 export { Progress } from './components/ui/progress';
 export type {

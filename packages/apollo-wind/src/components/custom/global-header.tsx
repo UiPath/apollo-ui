@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useResolvedPortalContainer } from '@/components/ui/portal-container';
 import { Sheet, SheetOverlay, SheetPortal, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib';
 
@@ -316,6 +317,7 @@ export function MaestroHeader({
 
   // Internal drawer state — only relevant when menuContent is provided
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const resolvedPortalContainer = useResolvedPortalContainer();
 
   return (
     <>
@@ -357,7 +359,9 @@ export function MaestroHeader({
       {/* App-launcher menu — slides in from left, below the header */}
       {menuContent && (
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-          <SheetPortal>
+          {/* Resolved here, not in `SheetPortal`: `SheetContent` already resolves, and a second
+              layer would turn its `container='body'` back into the ambient provider. */}
+          <SheetPortal container={resolvedPortalContainer}>
             {/* Overlay starts below the 48px header */}
             <SheetOverlay className="top-12" />
             <SheetPrimitive.Content
