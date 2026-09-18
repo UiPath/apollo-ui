@@ -66,8 +66,10 @@ export type GuardrailDefinitionStatus =
 
 /**
  * The display-ready definition of an OOTB guardrail validator. `displayName` and `usageNote`
- * arrive pre-resolved (host-localized); `parameters` reuses the validator-form definition
- * type.
+ * arrive pre-resolved - either from the host's own table or from
+ * `enrichGuardrailDefinitions`, which resolves the built-in validators from the shared canvas
+ * catalog; the builder renders what it is handed either way. `parameters` reuses the
+ * validator-form definition type.
  */
 export interface GuardrailDefinition {
   validator: string;
@@ -75,7 +77,7 @@ export interface GuardrailDefinition {
   allowedScopes: GuardrailScope[];
   parameters: GuardrailParameterDefinition[];
   status: GuardrailDefinitionStatus;
-  /** Pre-localized informational note rendered above the form. */
+  /** Pre-resolved informational note rendered above the form. */
   usageNote?: React.ReactNode;
   /** Present for bring-your-own guardrail definitions; stamped onto saved values. */
   byoValidatorName?: string;
