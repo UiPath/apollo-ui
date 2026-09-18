@@ -18,7 +18,8 @@ export function MixedScopesBanner({ otherAppliedScopes, labels }: MixedScopesBan
   return (
     <Alert variant="info" data-slot="guardrail-mixed-scopes-banner">
       <AlertCircle />
-      <AlertDescription>
+      {/* `mt-0` like `GuardrailStatusBanner`: wind's `AlertDescription` assumes a title above it. */}
+      <AlertDescription className="mt-0">
         <p>{labels.mixedScopesAlsoApplied}</p>
         {/* Keys are prefixed by source: both lists render as siblings of one <ul>, and a tool
             may legitimately be named after a scope ("Agent", "Tools"), which would otherwise

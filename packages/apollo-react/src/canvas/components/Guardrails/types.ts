@@ -21,14 +21,16 @@ export type GuardrailParameterType = GuardrailValidatorParameter['$parameterType
 /**
  * The flat, display-ready definition of one configurable guardrail parameter.
  *
- * `label`, `tooltip` and `optionLabels` arrive pre-resolved (already localized by the host):
- * catalog/domain strings such as PII entity names belong to the products, not to this
- * component. Only the component's own chrome strings are localized here (see i18n.ts).
+ * `label`, `tooltip` and `optionLabels` arrive pre-resolved: this component resolves nothing
+ * and renders what it is handed. Two things can produce them, and the form cannot tell which
+ * did - the host's own table, or `enrichGuardrailDefinitions`, which resolves the built-in
+ * validators from the shared canvas catalog (see the definitions layer in README.md). The
+ * component's own chrome strings are separate and localized in i18n.ts.
  */
 export interface GuardrailParameterDefinition {
   id: string;
   type: GuardrailParameterType;
-  /** Pre-resolved, host-localized display label. */
+  /** Pre-resolved display label; the form does no lookup of its own. */
   label: string;
   required: boolean;
   defaultValue: unknown;
