@@ -118,4 +118,75 @@ describe('GuardrailActionSection', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
+
+  describe('standalone defaults', () => {
+    it('renders with no labels prop at all', async () => {
+      render(<GuardrailActionSection action={logAction} onActionChange={vi.fn()} />);
+
+      expect(screen.getByText('Action type')).toBeInTheDocument();
+      expect(screen.getByText('Severity level')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('combobox', { name: /action type/i }));
+      expect(await screen.findByRole('option', { name: 'Escalate' })).toBeInTheDocument();
+    });
+
+    it('takes a partial labels override and resolves the rest', () => {
+      render(
+        <GuardrailActionSection
+          action={logAction}
+          onActionChange={vi.fn()}
+          labels={{ actionTypeLabel: 'What happens next' }}
+        />
+      );
+
+      expect(screen.getByText('What happens next')).toBeInTheDocument();
+      expect(screen.getByText('Severity level')).toBeInTheDocument();
+    });
+
+    it('resolves the escalation labels standalone too', () => {
+      render(
+        <GuardrailActionSection
+          action={{
+            $actionType: 'escalate',
+            app: { id: '', version: '', name: '' },
+            recipient: { type: GuardrailRecipientType.StaticEmail, value: '' },
+          }}
+          onActionChange={vi.fn()}
+        />
+      );
+
+      expect(screen.getByText('Assign to')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Enter email address')).toBeInTheDocument();
+    });
+
+    it('merges className onto its root', () => {
+      const { container } = render(
+        <GuardrailActionSection
+          action={logAction}
+          onActionChange={vi.fn()}
+          className="border-t pt-3"
+        />
+      );
+
+      const root = container.querySelector('[data-slot="guardrail-action-section"]');
+      expect(root).toHaveClass('@container', 'border-t', 'pt-3');
+    });
+
+    it('keeps its root slot and className on the escalate branch', () => {
+      const { container } = render(
+        <GuardrailActionSection
+          action={{
+            $actionType: 'escalate',
+            app: { id: '', version: '', name: '' },
+            recipient: { type: GuardrailRecipientType.StaticEmail, value: '' },
+          }}
+          onActionChange={vi.fn()}
+          className="border-t pt-3"
+        />
+      );
+
+      const root = container.querySelector('[data-slot="guardrail-action-section"]');
+      expect(root).toHaveClass('border-t', 'pt-3');
+      expect(root?.firstElementChild).toHaveAttribute('data-slot', 'guardrail-escalate-fields');
+    });
+  });
 });

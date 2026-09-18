@@ -58,6 +58,9 @@ export type GuardrailAction =
   | { $actionType: 'filter'; fields: unknown[] }
   | { $actionType: 'escalate'; app: GuardrailEscalateApp; recipient: GuardrailEscalateRecipient };
 
+/** The escalate arm of `GuardrailAction`, for hosts holding one in their own state. */
+export type GuardrailEscalateAction = Extract<GuardrailAction, { $actionType: 'escalate' }>;
+
 export type GuardrailDefinitionStatus =
   | 'Available'
   | 'FeatureDisabled'
@@ -116,6 +119,15 @@ export interface GuardrailBuilderErrors {
   parameters?: Record<string, string>;
 }
 
+/** The action section's slice of `GuardrailBuilderErrors`; every message is host-owned. */
+export type GuardrailActionErrors = Pick<
+  GuardrailBuilderErrors,
+  'blockReason' | 'filterFields' | 'recipient' | 'actionApp'
+>;
+
+/** The two of those the escalation fields can show. */
+export type GuardrailEscalateActionErrors = Pick<GuardrailActionErrors, 'recipient' | 'actionApp'>;
+
 /** Context handed to the `renderRecipientSearch` slot (user/group directory autosuggest). */
 export interface GuardrailRecipientSearchContext {
   kind: 'user' | 'group';
@@ -123,6 +135,11 @@ export interface GuardrailRecipientSearchContext {
   displayValue: string;
   /** Localized placeholder for the current kind. */
   placeholder: string;
+  /**
+   * Id of the field's `<label>` element. Name the control with `aria-labelledby={ctx.labelId}`:
+   * the label points at the built-in input only, so without it a slot's control is unnamed.
+   */
+  labelId: string;
   /** Whether the recipient currently fails validation (style the input accordingly). */
   invalid: boolean;
   /**
@@ -157,6 +174,8 @@ export interface GuardrailStaticRecipientContext {
   recipient: GuardrailEscalateRecipient;
   /** Localized field label for the kind. */
   label: string;
+  /** Id of the field's `<label>` element; name the control with `aria-labelledby`. */
+  labelId: string;
   /** Whether the recipient currently fails validation (style the control accordingly). */
   invalid: boolean;
   /** Validation message to surface, if any. */
