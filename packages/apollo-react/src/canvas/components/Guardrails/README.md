@@ -4,9 +4,240 @@ Shared UI for the UiPath Guardrails experience, consumed by Flow (flow-workbench
 later stage, Agents (`frontend-sw`). Lives in apollo-react next to canvas — MUI-free, built
 entirely on `@uipath/apollo-wind` primitives and its `forms/` engine, strings on lingui —
 and is exported through the narrow `@uipath/apollo-react/canvas/guardrails` subpath (also
-re-exported from `./canvas`). Members: `GuardrailBuilder` (the whole Add/Edit screen),
-`GuardrailFormLayout` (the screen shell), and `GuardrailValidatorForm` (the validator
-parameter section, also rendered inside the builder).
+re-exported from `./canvas`). Members: the definitions layer (wire types, parser, canonical
+copy and `useGuardrailDefinitions`), `GuardrailRemoveDialog` (the removal confirmation),
+`GuardrailBuilder` (the whole Add/Edit screen), `GuardrailFormLayout` (the screen shell), and
+`GuardrailValidatorForm` (the validator parameter section, also rendered inside the builder).
+
+## Definitions layer
+
+Turns the `GET /api/execution/guardrails/definitions` payload into the
+`GuardrailDefinition`s the builder renders. Three pure steps and one hook over them:
+
+```
+unknown payload → parseGuardrailDefinitions → enrichGuardrailDefinitions → GuardrailBuilder
+                       (zod, private)          (canonical copy on lingui)
+                                    useGuardrailDefinitions composes all three
+```
+
+```tsx
+import { useGuardrailDefinitions } from '@uipath/apollo-react/canvas/guardrails';
+
+const { definitions, invalid, loading, error, refetch } = useGuardrailDefinitions({
+  baseUrl: `/${orgName}/${tenantName}/agents_`, // omit for same-origin
+  tenantId,
+});
+```
+
+Three host shapes, all supported:
+
+| Host | Call |
+| --- | --- |
+| Owns no transport | `useGuardrailDefinitions({ baseUrl, tenantId })` |
+| Already has SWR or React Query | `useGuardrailDefinitions(null, { definitions: data })` |
+| Never fetches (Flow's vsix, over postMessage) | `useGuardrailDefinitions(null, { definitions: fromMessage })` |
+
+`options.definitions` wins over the context: when it is present no request is made at all, and
+the value is parsed and enriched instead. That is the seam that lets a product keep its own
+cache rather than adopting a second one, and it is why the hook stays a `useState` plus
+`fetch` plus `AbortController` (the `useDiscoveryModels` idiom) instead of a query library.
+
+### Contract
+
+- **The parser never throws.** `parseGuardrailDefinitions(unknown)` returns
+  `{ definitions, invalid, inputError? }`. A payload that is not an array sets `inputError`;
+  an individual definition that fails validation is dropped whole and listed in `invalid`,
+  which is what both products already do entry by entry. Unknown keys are stripped. Surface
+  `invalid` as a status banner, never as an error page: the other definitions are fine.
+- **Transport errors and data errors are different channels.** `error` is a failed request.
+  A malformed payload arrives through `invalid` / `inputError` with `error` still `null`.
+- **zod does not cross the boundary.** The schema is private to `definitions-parse.ts`;
+  `GuardrailDefinitionWire` is hand-written, and the two are pinned to each other by a
+  compile-time assignability check in `toWireDefinition` plus two tests (a key-set assertion
+  and a source-level import guard), so the emitted `.d.ts` for this folder carries no schema
+  types and consumers take no zod dependency.
+- **Enrichment is pure and exported.** `enrichGuardrailDefinitions(wire, { copy, hiddenValidators })`
+  is React-free, so non-React and bridge callers use it directly.
+  `EnrichedGuardrailDefinition extends GuardrailDefinition`, so its output feeds
+  `GuardrailBuilder` with no mapping.
+- **Context and `hiddenValidators` are compared by content, not identity**, so a host can
+  build them inline. (`useDiscoveryModels` compares the context by identity; an inline object
+  there refetches on every render and never settles.) `options.definitions` is the exception,
+  compared by identity because hashing a whole payload every render would cost more than it
+  saves: pass a stable reference (an SWR or react-query result already is).
+- **`loading` starts `true` when the hook is about to fetch**, so a host rendering
+  `loading ? <Spinner/> : <Empty/>` does not flash the empty state on first paint. It starts
+  `false` when the hook is disabled (`null` context, or `options.definitions` supplied), and
+  `refetch()` is a no-op in that state.
+- **A failed request keeps the previous results.** `error` is set and `definitions` still hold
+  the last good payload, so a transient 503 on a `refetch` does not empty a list the user is
+  looking at. Render on `error` first if you want it to replace the data. Disabling the hook
+  does clear the fetched state.
+- **`hiddenValidators` hides nothing by default** and never hides a BYO definition. Which
+  validators a product exposes is an entitlement decision, so it stays with the caller: Flow
+  passes `['prompt_injection']`, Agents passes nothing.
+- **BYO folder placement stays host-side.** Resolving it needs each product's connections API
+  (Agents pages `fetchResources`, Flow calls `getConnectionById`), so the hook does not reach
+  for it. Stamp the result on afterwards:
+
+  ```ts
+  const withFolders = withGuardrailFolderMetadata(definitions, (id) => connections.get(id));
+  ```
+
+### Canonical copy
+
+The display copy for the six built-in validators lives here, as lingui messages in the shared
+canvas catalog, rather than in each product's own table. Both products get the same wording,
+and the strings enter the real localization pipeline instead of a host-side constant.
+
+**English only, like every other string in this package.** The other thirteen catalogs get
+these ids from `chore(l10n): sync from Localization`, which appends new keys every week or
+two. Until it runs, `useSafeLingui` renders the English default, so nothing is missing on
+screen. Do not hand-write translations here.
+
+This narrows, deliberately, the rule the family shipped with in #1138: that domain copy never
+ships in this package. The rule still holds for copy this package cannot know, which is why
+wire copy wins at parameter level and a BYO definition takes no curated copy at all. What
+moved is the six validators both products had already transcribed by hand, where keeping two
+copies in sync is what produced `finNationalId` in one product and `fiNationalId` in the
+other. The components are unchanged: they still resolve nothing and render what they are
+handed, so a host that would rather keep its own table simply does not call
+`enrichGuardrailDefinitions`.
+
+Message ids use the raw wire values, never a transcribed slug:
+
+```
+guardrails.definitions.<validator>.display-name | .description | .usage-note
+guardrails.definitions.<validator>.param.<paramId>.label | .tooltip
+guardrails.definitions.<validator>.option.<paramId>.<RawWireValue>
+```
+
+Transcribing is exactly how the two products ended up keying the same Finland entity as
+`finNationalId` and `fiNationalId`; `USSocialSecurityNumber` is the value we persist, so it is
+also the id.
+
+Copy precedence, unchanged from what both products already do:
+
+| level | non-BYO | BYO |
+| --- | --- | --- |
+| display name | curated, wire, `validator` | wire, `validator` |
+| description | curated, wire, `''` | wire, `''` |
+| usage note | curated only | none |
+| parameter label | **wire**, curated, humanized id | wire, humanized id |
+| parameter tooltip | **wire**, curated | wire |
+| option labels | curated merged under wire | wire only |
+
+Curated wins at definition level because that table is what product and localization review;
+wire wins at parameter level because a BYO manifest and a newly shipped backend parameter
+describe themselves. A BYO definition takes no curated copy at any level, even when its
+validator id collides with a UiPath one.
+
+Where the two products' English differed, the choice is declared with a reason in
+`definitions-parity.test.ts` (17 entries) and asserted against both products' transcribed
+copy in `__fixtures__/host-copy-baselines.ts`. That suite fails on an undeclared difference,
+a stale declaration, or a third wording we invented, so the table cannot quietly drift from
+the products it is meant to replace.
+
+`GUARDRAIL_COPY_EN` is the English table the pure layer defaults to;
+`GUARDRAIL_COPY_EN_MESSAGES` is the same copy flattened to id-to-English, exported so hosts
+can diff their remaining local tables against it in CI while they migrate off them.
+
+> `src/canvas` uses no lingui macros, so `lingui extract` does not feed this catalog: its
+> English entries are hand-authored. Two tests do what extraction would: every message reaches
+> `src/canvas/locales/en.json` with the same English, and no catalog keeps a
+> `guardrails.definitions.*` id the source has dropped. The second scans all fourteen files,
+> so a rename cannot leave the sync's translations behind as dead entries.
+
+## GuardrailRemoveDialog
+
+The confirmation step before a guardrail is removed, with the impact of the removal spelled
+out.
+
+```tsx
+import { GuardrailRemoveDialog } from '@uipath/apollo-react/canvas/guardrails';
+
+<GuardrailRemoveDialog
+  open={pending !== null}
+  guardrailName={pending?.name ?? ''}
+  toolName={currentToolName}          // the tool the removal was requested from
+  remainingToolNames={remainingTools} // what survives a scoped removal
+  remainingScopes={remainingScopes}
+  formatScope={scopeLabel}            // 'Llm' -> 'LLM calls'
+  onConfirm={applyRemoval}
+  onCancel={() => setPending(null)}
+/>;
+```
+
+### Contract
+
+- **The impact is structured props, not a slot.** There are exactly two situations and both
+  products already describe both: `affectedToolNames` / `affectedScopes` are what a **full**
+  removal also takes the guardrail off ("This guardrail is also applicable to:"), and
+  `remainingToolNames` / `remainingScopes` are what survives a **tool-scoped** removal ("It
+  will still be applicable to:"). Flow computes them from one guardrail plus an
+  `isToolOnAgent` flag; that branch converges here by filling one pair or the other. Pass
+  neither pair and the dialog is the question on its own. All four default to empty.
+- **Deciding which removal is happening stays host-side**, along with the unwind. The two
+  products disagree about it in ways that are theirs to keep: Agents strips the tool from
+  `matchNames`, then drops the `Tool` scope, then deletes; Flow calls
+  `removeToolFromGuardrail`. The component only renders the description of the outcome.
+- **`toolName` names the tool in the scoped-removal line**, and only alongside something
+  remaining: with nothing left the guardrail is gone everywhere, and naming one tool would
+  misdescribe it. Both products already behave that way.
+- **`onConfirm` and `onCancel` are intents.** Neither closes the dialog: `open` is controlled,
+  so the write, the telemetry event and the close all stay with the host. `onCancel` covers the
+  Cancel button, Escape and the corner close button when it is on, and fires **once** per
+  dismissal. Confirming
+  never also reports a cancel, which is why the confirm button is a plain wind `Button` and not a
+  `DialogClose`: a close would drive `onOpenChange(false)` on top of the click. Flow's dialog
+  reports both today, because it uses `AlertDialogAction`.
+- **Built on wind's `Dialog`, not `AlertDialog`.** `AlertDialog` carries `role="alertdialog"` and
+  focuses its cancel control for free, but it has no corner close button and no way to add
+  backdrop dismissal: Radix prevents outside interaction *after* spreading consumer props, so
+  neither is reachable, so offering a close button at all would have meant a hand-rolled one
+  against the grain of the primitive. `GuardrailFormLayout` is already a wind `Dialog` with one.
+  What the switch costs is made back explicitly: `onOpenAutoFocus` puts initial focus on Cancel,
+  and the description still carries the whole impact through `aria-describedby`.
+- **`showCloseButton` is opt-in**, and renders the corner close button wired through the same
+  `onCancel` path as Escape. Off by default so adopting the dialog never adds a control a product
+  did not have: Agents asks for it, Flow leaves it off. Wind's own built-in one is always
+  suppressed, because its accessible name is a hardcoded English "Close" and every other string
+  here is localized. Ours is last in the DOM, so a keyboard user reaches the decision before the
+  escape hatch.
+- **`closeOnBackdropClick` defaults to `false`.** A confirmation is a decision and a stray click
+  should not discard it; Escape and Cancel always dismiss. Wind's prop of the same name only
+  applies to `variant="takeover"`, so the guard here is `onPointerDownOutside`.
+- **The confirm button takes the default accent variant, not `destructive`.** Both products
+  colour this action with the accent today and both read a red Remove as a regression when
+  they tested the shared dialog; the dialog carries the weight of the action through its title
+  and impact lines instead. A test pins the variant.
+- **Scopes arrive raw and localize through `formatScope`**, the same idiom as
+  `GuardrailList`'s `formatScopes`. Scope vocabulary is product-owned; both products already
+  hold the mapping, and an adapter that omits the callback renders `Llm` instead of
+  `LLM calls`. Pass only the scopes worth listing: both products drop `Tool` when the
+  remaining tools are listed by name.
+- **The whole impact is the accessible description**, not just the first sentence, so the dialog
+  announces what the removal costs rather than only its question. Focus opens on Cancel, the least
+  destructive control, and Tab is trapped inside.
+- **`container` picks the portal target**: omit it to inherit the nearest wind
+  `PortalContainerProvider`, pass an element to portal into it, or `'body'` to force
+  `document.body` even under a provider. Agents' dialog deliberately escapes its shadow root
+  today, which is what `'body'` preserves; Flow's stays in place.
+
+### Localization
+
+Chrome strings resolve through `useGuardrailRemoveDialogLabels` (lingui,
+`guardrails.remove-dialog.*` ids in the shared canvas catalog); `labels` overrides any of them
+and wins over the catalog. Domain values are not localized here: the guardrail and tool names
+are user data, and scopes go through `formatScope`.
+
+Seven of the eight strings are harvested from the two products' own catalogs, where the English
+already matched in both, so nothing here is wording this package invented. The eighth, `close`,
+comes from Agents' `common.close`; its own dialog labels that button with a hardcoded `"close"`.
+
+**English only**, like the rest of the family: the other thirteen catalogs get these ids from
+`chore(l10n): sync from Localization`, and until it runs `useSafeLingui` renders the English
+default, so nothing is missing on screen.
 
 ## GuardrailBuilder
 
@@ -21,7 +252,7 @@ import { GuardrailBuilder } from '@uipath/apollo-react/canvas/guardrails';
 <GuardrailBuilder
   open
   inline
-  definition={definition}          // GuardrailDefinition (display-ready, host-localized strings)
+  definition={definition}          // GuardrailDefinition (display-ready; see Definitions layer)
   scope="Agent"                    // scope selector renders only for 'Agent'
   guardrail={existing}             // edit mode; omit to create
   defaultName={uniqueName}
@@ -119,8 +350,12 @@ state and exposes a plugin seam, so the translation lives in one named place,
   They are also what fills the dialog on a failed Save, since the resolver is still held back at
   that instant — so keep computing them even though the resolver covers `required`/`min`/`max`.
 - **Definitions arrive pre-resolved.** `label`, `tooltip` and `optionLabels` are display
-  strings the host already localized; domain copy (PII entity names, validator descriptions)
-  never ships in this package.
+  strings; this form resolves nothing and renders what it is handed. Two things can produce
+  them: the host's own table, or the package's own [definitions layer](#definitions-layer),
+  whose `enrichGuardrailDefinitions` resolves the six built-in validators from the shared
+  canvas catalog. Domain copy for a validator this package has not learned (a BYO manifest, a
+  newly shipped backend parameter) still belongs to whoever ships it, and reaches the form the
+  same way.
 - **No product types cross the boundary.** `GuardrailValidatorParameter` structurally mirrors
   the wire shape both products persist, so host unions assign cleanly in both directions.
 - **Per-parameter override.** `renderParameter(ctx)` replaces the editor for any parameter
@@ -154,8 +389,8 @@ const cleaned = dropEmptyOptionalParameters(
 
 The component's own chrome strings (placeholders, Add, aria labels) localize through the
 package's standard lingui setup: `useSafeLingui` with explicit `guardrails.*` ids and English
-defaults, translations in the shared canvas catalog (`src/canvas/locales/*.json`, 13 locales
-translated; `ru` falls back to English per key). Without a lingui provider the components
+defaults, translations in the shared canvas catalog (`src/canvas/locales/*.json`, delivered by
+the l10n sync; `ru` falls back to English per key). Without a lingui provider the components
 render the English defaults — mount `ApI18nProvider component="canvas"` (from
 `@uipath/apollo-react/i18n`) for translations. `labels` overrides individual strings and wins
 over the catalog. The resolver's own messages (`requiredError`, `minError`, `maxError`) are
