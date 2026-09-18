@@ -4,6 +4,9 @@ import { useSafeLingui } from '../../../i18n';
 /**
  * The component's own chrome strings. Domain strings (parameter labels, tooltips, option
  * labels) are NOT localized here — they arrive pre-resolved on `GuardrailParameterDefinition`.
+ * Not localized *here* rather than not localized at all: the definitions layer
+ * (`definitions-copy.ts`) carries the built-in validators' own copy, in this same catalog. The
+ * split is by ownership - chrome belongs to the component, validator copy to its definition.
  *
  * Values may contain `{{placeholder}}` tokens; interpolate with `formatGuardrailFormMessage`.
  *
@@ -50,7 +53,8 @@ export const GUARDRAIL_FORM_EN_LABELS: GuardrailValidatorFormLabels = {
  * Chrome strings of the guardrail builder screen (labels, placeholders, buttons, banners,
  * and the builder's own validation messages — it gates its own Save, so the messages ship
  * with it; hosts override per string via `labels` or per field via `errors`). Domain strings
- * (`definition.displayName`, `usageNote`, `otherAppliedScopes` labels) stay pre-resolved.
+ * (`definition.displayName`, `usageNote`, `otherAppliedScopes` labels) stay pre-resolved,
+ * whether the host resolved them or `enrichGuardrailDefinitions` did.
  */
 export interface GuardrailBuilderLabels {
   /** Dialog/header title templates; `{{name}}` is the definition display name. */
@@ -180,6 +184,72 @@ export const GUARDRAIL_BUILDER_EN_LABELS: GuardrailBuilderLabels = {
   recipientRequiredError: 'Recipient is required',
   actionAppRequiredError: 'Action app is required',
 };
+
+/**
+ * The chrome strings `GuardrailActionSection` and `EscalateActionFields` read, for hosts that
+ * mount either on its own rather than through `GuardrailBuilder`.
+ *
+ * A `Pick` over the builder's own keys, resolved from the same `guardrails.builder.*` ids, so
+ * the two paths cannot word the same string differently. `GuardrailBuilderLabels` is therefore
+ * accepted wherever these are.
+ */
+export const GUARDRAIL_ACTION_LABEL_KEYS = [
+  // Action section
+  'actionTypeLabel',
+  'actionLogLabel',
+  'actionBlockLabel',
+  'actionFilterLabel',
+  'actionEscalateLabel',
+  'severityLabel',
+  'severityInfoLabel',
+  'severityWarningLabel',
+  'severityErrorLabel',
+  'blockReasonLabel',
+  'blockReasonPlaceholder',
+  // Escalation
+  'assignToLabel',
+  'recipientUserLabel',
+  'recipientGroupLabel',
+  'recipientEmailLabel',
+  'recipientGroupNameLabel',
+  'recipientFallbackLabel',
+  'userSearchPlaceholder',
+  'groupSearchPlaceholder',
+  'emailPlaceholder',
+  'groupNamePlaceholder',
+  'actionAppLabel',
+  'appPickerUnavailable',
+] as const satisfies ReadonlyArray<keyof GuardrailBuilderLabels>;
+
+export type GuardrailActionLabelKey = (typeof GUARDRAIL_ACTION_LABEL_KEYS)[number];
+
+export type GuardrailActionLabels = Pick<GuardrailBuilderLabels, GuardrailActionLabelKey>;
+
+function pickGuardrailActionLabels(source: GuardrailBuilderLabels): GuardrailActionLabels {
+  const picked = {} as GuardrailActionLabels;
+  for (const key of GUARDRAIL_ACTION_LABEL_KEYS) picked[key] = source[key];
+  return picked;
+}
+
+export const GUARDRAIL_ACTION_EN_LABELS: GuardrailActionLabels = pickGuardrailActionLabels(
+  GUARDRAIL_BUILDER_EN_LABELS
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailActionLabels(
+  catalog?: Partial<GuardrailActionLabels>,
+  overrides?: Partial<GuardrailActionLabels>
+): GuardrailActionLabels {
+  const merged: GuardrailActionLabels = { ...GUARDRAIL_ACTION_EN_LABELS };
+  for (const source of [catalog, overrides]) {
+    if (!source) continue;
+    for (const key of GUARDRAIL_ACTION_LABEL_KEYS) {
+      const value = source[key];
+      if (value !== undefined) merged[key] = value;
+    }
+  }
+  return merged;
+}
 
 /** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
 export function resolveGuardrailBuilderLabels(
@@ -470,5 +540,16 @@ export function useGuardrailBuilderLabels(
         overrides
       ),
     [_, overrides]
+  );
+}
+
+/** Localized chrome strings of the action section and its escalation fields; `overrides` win. */
+export function useGuardrailActionLabels(
+  overrides?: Partial<GuardrailActionLabels>
+): GuardrailActionLabels {
+  const catalog = useGuardrailBuilderLabels();
+  return useMemo(
+    () => resolveGuardrailActionLabels(pickGuardrailActionLabels(catalog), overrides),
+    [catalog, overrides]
   );
 }

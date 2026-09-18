@@ -4,9 +4,150 @@ Shared UI for the UiPath Guardrails experience, consumed by Flow (flow-workbench
 later stage, Agents (`frontend-sw`). Lives in apollo-react next to canvas — MUI-free, built
 entirely on `@uipath/apollo-wind` primitives and its `forms/` engine, strings on lingui —
 and is exported through the narrow `@uipath/apollo-react/canvas/guardrails` subpath (also
-re-exported from `./canvas`). Members: `GuardrailBuilder` (the whole Add/Edit screen),
-`GuardrailFormLayout` (the screen shell), and `GuardrailValidatorForm` (the validator
-parameter section, also rendered inside the builder).
+re-exported from `./canvas`). Members: the definitions layer (wire types, parser, canonical
+copy and `useGuardrailDefinitions`), `GuardrailBuilder` (the whole Add/Edit screen),
+`GuardrailFormLayout` (the screen shell), `GuardrailValidatorForm` (the validator
+parameter section, also rendered inside the builder), and `GuardrailActionSection` +
+`EscalateActionFields` (the action and escalation half of it).
+
+## Definitions layer
+
+Turns the `GET /api/execution/guardrails/definitions` payload into the
+`GuardrailDefinition`s the builder renders. Three pure steps and one hook over them:
+
+```
+unknown payload → parseGuardrailDefinitions → enrichGuardrailDefinitions → GuardrailBuilder
+                       (zod, private)          (canonical copy on lingui)
+                                    useGuardrailDefinitions composes all three
+```
+
+```tsx
+import { useGuardrailDefinitions } from '@uipath/apollo-react/canvas/guardrails';
+
+const { definitions, invalid, loading, error, refetch } = useGuardrailDefinitions({
+  baseUrl: `/${orgName}/${tenantName}/agents_`, // omit for same-origin
+  tenantId,
+});
+```
+
+Three host shapes, all supported:
+
+| Host | Call |
+| --- | --- |
+| Owns no transport | `useGuardrailDefinitions({ baseUrl, tenantId })` |
+| Already has SWR or React Query | `useGuardrailDefinitions(null, { definitions: data })` |
+| Never fetches (Flow's vsix, over postMessage) | `useGuardrailDefinitions(null, { definitions: fromMessage })` |
+
+`options.definitions` wins over the context: when it is present no request is made at all, and
+the value is parsed and enriched instead. That is the seam that lets a product keep its own
+cache rather than adopting a second one, and it is why the hook stays a `useState` plus
+`fetch` plus `AbortController` (the `useDiscoveryModels` idiom) instead of a query library.
+
+### Contract
+
+- **The parser never throws.** `parseGuardrailDefinitions(unknown)` returns
+  `{ definitions, invalid, inputError? }`. A payload that is not an array sets `inputError`;
+  an individual definition that fails validation is dropped whole and listed in `invalid`,
+  which is what both products already do entry by entry. Unknown keys are stripped. Surface
+  `invalid` as a status banner, never as an error page: the other definitions are fine.
+- **Transport errors and data errors are different channels.** `error` is a failed request.
+  A malformed payload arrives through `invalid` / `inputError` with `error` still `null`.
+- **zod does not cross the boundary.** The schema is private to `definitions-parse.ts`;
+  `GuardrailDefinitionWire` is hand-written, and the two are pinned to each other by a
+  compile-time assignability check in `toWireDefinition` plus two tests (a key-set assertion
+  and a source-level import guard), so the emitted `.d.ts` for this folder carries no schema
+  types and consumers take no zod dependency.
+- **Enrichment is pure and exported.** `enrichGuardrailDefinitions(wire, { copy, hiddenValidators })`
+  is React-free, so non-React and bridge callers use it directly.
+  `EnrichedGuardrailDefinition extends GuardrailDefinition`, so its output feeds
+  `GuardrailBuilder` with no mapping.
+- **Context and `hiddenValidators` are compared by content, not identity**, so a host can
+  build them inline. (`useDiscoveryModels` compares the context by identity; an inline object
+  there refetches on every render and never settles.) `options.definitions` is the exception,
+  compared by identity because hashing a whole payload every render would cost more than it
+  saves: pass a stable reference (an SWR or react-query result already is).
+- **`loading` starts `true` when the hook is about to fetch**, so a host rendering
+  `loading ? <Spinner/> : <Empty/>` does not flash the empty state on first paint. It starts
+  `false` when the hook is disabled (`null` context, or `options.definitions` supplied), and
+  `refetch()` is a no-op in that state.
+- **A failed request keeps the previous results.** `error` is set and `definitions` still hold
+  the last good payload, so a transient 503 on a `refetch` does not empty a list the user is
+  looking at. Render on `error` first if you want it to replace the data. Disabling the hook
+  does clear the fetched state.
+- **`hiddenValidators` hides nothing by default** and never hides a BYO definition. Which
+  validators a product exposes is an entitlement decision, so it stays with the caller: Flow
+  passes `['prompt_injection']`, Agents passes nothing.
+- **BYO folder placement stays host-side.** Resolving it needs each product's connections API
+  (Agents pages `fetchResources`, Flow calls `getConnectionById`), so the hook does not reach
+  for it. Stamp the result on afterwards:
+
+  ```ts
+  const withFolders = withGuardrailFolderMetadata(definitions, (id) => connections.get(id));
+  ```
+
+### Canonical copy
+
+The display copy for the six built-in validators lives here, as lingui messages in the shared
+canvas catalog, rather than in each product's own table. Both products get the same wording,
+and the strings enter the real localization pipeline instead of a host-side constant.
+
+**English only, like every other string in this package.** The other thirteen catalogs get
+these ids from `chore(l10n): sync from Localization`, which appends new keys every week or
+two. Until it runs, `useSafeLingui` renders the English default, so nothing is missing on
+screen. Do not hand-write translations here.
+
+This narrows, deliberately, the rule the family shipped with in #1138: that domain copy never
+ships in this package. The rule still holds for copy this package cannot know, which is why
+wire copy wins at parameter level and a BYO definition takes no curated copy at all. What
+moved is the six validators both products had already transcribed by hand, where keeping two
+copies in sync is what produced `finNationalId` in one product and `fiNationalId` in the
+other. The components are unchanged: they still resolve nothing and render what they are
+handed, so a host that would rather keep its own table simply does not call
+`enrichGuardrailDefinitions`.
+
+Message ids use the raw wire values, never a transcribed slug:
+
+```
+guardrails.definitions.<validator>.display-name | .description | .usage-note
+guardrails.definitions.<validator>.param.<paramId>.label | .tooltip
+guardrails.definitions.<validator>.option.<paramId>.<RawWireValue>
+```
+
+Transcribing is exactly how the two products ended up keying the same Finland entity as
+`finNationalId` and `fiNationalId`; `USSocialSecurityNumber` is the value we persist, so it is
+also the id.
+
+Copy precedence, unchanged from what both products already do:
+
+| level | non-BYO | BYO |
+| --- | --- | --- |
+| display name | curated, wire, `validator` | wire, `validator` |
+| description | curated, wire, `''` | wire, `''` |
+| usage note | curated only | none |
+| parameter label | **wire**, curated, humanized id | wire, humanized id |
+| parameter tooltip | **wire**, curated | wire |
+| option labels | curated merged under wire | wire only |
+
+Curated wins at definition level because that table is what product and localization review;
+wire wins at parameter level because a BYO manifest and a newly shipped backend parameter
+describe themselves. A BYO definition takes no curated copy at any level, even when its
+validator id collides with a UiPath one.
+
+Where the two products' English differed, the choice is declared with a reason in
+`definitions-parity.test.ts` (17 entries) and asserted against both products' transcribed
+copy in `__fixtures__/host-copy-baselines.ts`. That suite fails on an undeclared difference,
+a stale declaration, or a third wording we invented, so the table cannot quietly drift from
+the products it is meant to replace.
+
+`GUARDRAIL_COPY_EN` is the English table the pure layer defaults to;
+`GUARDRAIL_COPY_EN_MESSAGES` is the same copy flattened to id-to-English, exported so hosts
+can diff their remaining local tables against it in CI while they migrate off them.
+
+> `src/canvas` uses no lingui macros, so `lingui extract` does not feed this catalog: its
+> English entries are hand-authored. Two tests do what extraction would: every message reaches
+> `src/canvas/locales/en.json` with the same English, and no catalog keeps a
+> `guardrails.definitions.*` id the source has dropped. The second scans all fourteen files,
+> so a rename cannot leave the sync's translations behind as dead entries.
 
 ## GuardrailBuilder
 
@@ -21,7 +162,7 @@ import { GuardrailBuilder } from '@uipath/apollo-react/canvas/guardrails';
 <GuardrailBuilder
   open
   inline
-  definition={definition}          // GuardrailDefinition (display-ready, host-localized strings)
+  definition={definition}          // GuardrailDefinition (display-ready; see Definitions layer)
   scope="Agent"                    // scope selector renders only for 'Agent'
   guardrail={existing}             // edit mode; omit to create
   defaultName={uniqueName}
@@ -52,6 +193,86 @@ Contract highlights:
 `GuardrailFormLayout` is exported standalone for hosts composing their own screen: three
 modes (inline+hideHeader / inline with back-button header / modal Dialog), `secondaryAction`,
 `saveDisabled`, and a `footerStart` region.
+
+## GuardrailActionSection
+
+The action half of a guardrail: an action-type select plus the field that type needs. `log`
+takes a severity level, `block` a reason, `filter` a host-supplied field picker, and
+`escalate` expands into the escalation layout that `EscalateActionFields` owns (recipient
+type, recipient, action app).
+
+`GuardrailBuilder` renders it. Both are also exported for hosts that build their own editor,
+where the section needs two props:
+
+```tsx
+import { GuardrailActionSection } from '@uipath/apollo-react/canvas/guardrails';
+
+const [action, setAction] = useState<GuardrailAction>({
+  $actionType: 'log',
+  severityLevel: 'Info',
+});
+
+<GuardrailActionSection action={action} onActionChange={setAction} />;
+```
+
+### Contract
+
+- **`onActionChange` carries the whole next action.** Switching the type emits a fresh default
+  payload for it (`createDefaultGuardrailAction`), so no half-migrated action exists. The
+  component stores nothing else: no draft state, no validation of its own.
+- **Errors are host-owned.** `GuardrailActionErrors` is the action slice of
+  `GuardrailBuilderErrors` (`blockReason`, `filterFields`, `recipient`, `actionApp`);
+  `EscalateActionFields` takes the two it can show as `GuardrailEscalateActionErrors`. Each
+  renders as soon as it is present, so a host that surfaces errors only after a save attempt
+  withholds the prop until then.
+- **A slot that receives an `error` owns rendering it**, so `<Input error={ctx.error} />` in a
+  slot shows the message once. The built-in fallbacks pass it to `Input`, which also wires
+  `aria-describedby` / `aria-errormessage` / `aria-invalid`. The exception is the
+  no-app-picker note, which carries its own `FormFieldError` because Save is still gated on
+  `actionApp`.
+- **`labels` is optional and partial**, resolved from the canvas lingui catalog through
+  `useGuardrailActionLabels`. `GuardrailActionLabels` is a `Pick` over the builder's keys and
+  reads the same `guardrails.builder.*` ids, so a full `GuardrailBuilderLabels` is accepted
+  here and neither path can word a string differently.
+- **`filter` stays product territory.** The option appears only with `showFilter` (custom
+  guardrails) and its field picker is `filterContent`: field references are product-shaped and
+  this package never edits them.
+- **Asset recipients round-trip.** Types 4 and 6 display as their static siblings (3 and 5) in
+  the type select, so a value written by a host asset editor never blanks the selection.
+
+### Escalation slots
+
+The escalation target is a host capability in both products, so every part of it is a slot
+with a fallback:
+
+| Slot | Replaces | Fallback without it |
+| --- | --- | --- |
+| `renderRecipientSearch(ctx)` | the User/Group directory autosuggest | an input on `value` + `displayName` |
+| `renderStaticRecipient(ctx)` | the email / group-name editor (types 3/4/5/6); return `undefined` to fall through, `null` to render nothing | an input on `value`, or `assetName` for an asset recipient |
+| `renderAppPicker(ctx)` | the escalation action app picker | a localized "picker unavailable" note |
+| `escalateHelp` | content under the escalation grid | nothing |
+
+`escalateHelp` is a node rather than a string because it is where a marketplace link goes, and
+product URLs never ship in this package. `ctx.onChange` on `renderStaticRecipient` replaces the
+recipient wholesale, which is how a host swaps the static and asset variants of one kind.
+
+The field's `<label>` points at the built-in input, so a slot must name its own control with
+`aria-labelledby={ctx.labelId}`. A control with no `error` prop of its own has to render
+`ctx.error` beside it, inside what the slot returns; nothing else renders it.
+
+### Three layouts
+
+`EscalateActionFields` is separately exported because its layout is what hosts compose
+differently:
+
+| Props | Renders |
+| --- | --- |
+| `actionTypeSelect` (what the section passes) | the whole escalate grid: leading cell, three fields, `escalateHelp` |
+| `asGridItems` | the three cells as a fragment, for a grid the host owns and where it places `escalateHelp` |
+| neither | the three fields stacked, `escalateHelp` under them |
+
+`className` merges onto whichever root it renders, and has no effect under `asGridItems`, which
+renders no element of its own.
 
 ## GuardrailValidatorForm
 
@@ -119,8 +340,12 @@ state and exposes a plugin seam, so the translation lives in one named place,
   They are also what fills the dialog on a failed Save, since the resolver is still held back at
   that instant — so keep computing them even though the resolver covers `required`/`min`/`max`.
 - **Definitions arrive pre-resolved.** `label`, `tooltip` and `optionLabels` are display
-  strings the host already localized; domain copy (PII entity names, validator descriptions)
-  never ships in this package.
+  strings; this form resolves nothing and renders what it is handed. Two things can produce
+  them: the host's own table, or the package's own [definitions layer](#definitions-layer),
+  whose `enrichGuardrailDefinitions` resolves the six built-in validators from the shared
+  canvas catalog. Domain copy for a validator this package has not learned (a BYO manifest, a
+  newly shipped backend parameter) still belongs to whoever ships it, and reaches the form the
+  same way.
 - **No product types cross the boundary.** `GuardrailValidatorParameter` structurally mirrors
   the wire shape both products persist, so host unions assign cleanly in both directions.
 - **Per-parameter override.** `renderParameter(ctx)` replaces the editor for any parameter
@@ -154,8 +379,8 @@ const cleaned = dropEmptyOptionalParameters(
 
 The component's own chrome strings (placeholders, Add, aria labels) localize through the
 package's standard lingui setup: `useSafeLingui` with explicit `guardrails.*` ids and English
-defaults, translations in the shared canvas catalog (`src/canvas/locales/*.json`, 13 locales
-translated; `ru` falls back to English per key). Without a lingui provider the components
+defaults, translations in the shared canvas catalog (`src/canvas/locales/*.json`, delivered by
+the l10n sync; `ru` falls back to English per key). Without a lingui provider the components
 render the English defaults — mount `ApI18nProvider component="canvas"` (from
 `@uipath/apollo-react/i18n`) for translations. `labels` overrides individual strings and wins
 over the catalog. The resolver's own messages (`requiredError`, `minError`, `maxError`) are

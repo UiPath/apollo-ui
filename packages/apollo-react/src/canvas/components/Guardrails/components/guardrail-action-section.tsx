@@ -1,4 +1,5 @@
 import {
+  cn,
   FormField,
   FormFieldError,
   Input,
@@ -13,33 +14,46 @@ import {
 import { type ReactNode, useId } from 'react';
 import type {
   GuardrailAction,
+  GuardrailActionErrors,
   GuardrailAppPickerContext,
   GuardrailRecipientSearchContext,
   GuardrailStaticRecipientContext,
 } from '../builder-types';
 import { createDefaultGuardrailAction } from '../builder-utils';
-import type { GuardrailBuilderLabels } from '../i18n';
+import { type GuardrailActionLabels, useGuardrailActionLabels } from '../i18n';
 import { EscalateActionFields } from './escalate-action-fields';
 
 export interface GuardrailActionSectionProps {
   action: GuardrailAction;
+  /** Receives the whole next action; switching the type resets the payload. */
   onActionChange: (action: GuardrailAction) => void;
   /** Whether to include 'filter' as an option (custom guardrails only) */
   showFilter?: boolean;
   /** Content rendered as the second grid column when $actionType === 'filter' */
   filterContent?: ReactNode;
-  errors?: { blockReason?: string; filterFields?: string; recipient?: string; actionApp?: string };
-  labels: GuardrailBuilderLabels;
+  /** Validation messages; each renders as soon as it is present. */
+  errors?: GuardrailActionErrors;
+  /** Per-string overrides; anything omitted resolves from the canvas lingui catalog. */
+  labels?: Partial<GuardrailActionLabels>;
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
+  /**
+   * Replace the editor for static/asset recipients (types 3/4/5/6). Return `undefined` to
+   * fall through to the built-in plain input.
+   */
   renderStaticRecipient?: (ctx: GuardrailStaticRecipientContext) => ReactNode | undefined;
   renderAppPicker?: (ctx: GuardrailAppPickerContext) => ReactNode;
+  /** Rendered under the escalation grid (e.g. a marketplace help line). */
   escalateHelp?: ReactNode;
+  className?: string;
 }
 
 /**
  * Action section of the guardrail builder: a 2-column grid of action-type select + the
  * type-dependent secondary field. Switching the type resets the action payload. Escalate
- * expands into the full escalation layout.
+ * expands into the full escalation layout (`EscalateActionFields`).
+ *
+ * Rendered inside `GuardrailBuilder`, and usable on its own with `action` and `onActionChange`
+ * alone: labels come from the catalog and every slot has a fallback.
  */
 export function GuardrailActionSection({
   action,
@@ -47,12 +61,14 @@ export function GuardrailActionSection({
   showFilter = false,
   filterContent,
   errors,
-  labels,
+  labels: labelOverrides,
   renderRecipientSearch,
   renderStaticRecipient,
   renderAppPicker,
   escalateHelp,
+  className,
 }: GuardrailActionSectionProps) {
+  const labels = useGuardrailActionLabels(labelOverrides);
   // Namespaced per instance — two builders can share a document (inline panels).
   const uid = useId();
 
@@ -93,12 +109,13 @@ export function GuardrailActionSection({
         renderStaticRecipient={renderStaticRecipient}
         renderAppPicker={renderAppPicker}
         escalateHelp={escalateHelp}
+        className={className}
       />
     );
   }
 
   return (
-    <div className="@container">
+    <div data-slot="guardrail-action-section" className={cn('@container', className)}>
       <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
         {actionTypeSelect}
 
