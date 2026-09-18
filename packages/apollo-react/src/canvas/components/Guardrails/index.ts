@@ -1,11 +1,14 @@
 export type {
   GuardrailAction,
+  GuardrailActionErrors,
   GuardrailAppPickerContext,
   GuardrailBuilderErrors,
   GuardrailBuilderSlots,
   GuardrailBuilderValue,
   GuardrailDefinition,
   GuardrailDefinitionStatus,
+  GuardrailEscalateAction,
+  GuardrailEscalateActionErrors,
   GuardrailEscalateApp,
   GuardrailEscalateRecipient,
   GuardrailRecipientSearchContext,
@@ -31,6 +34,10 @@ export {
   getGuardrailSelectorErrorFields,
   initGuardrailBuilderFormData,
 } from './builder-utils';
+export type { EscalateActionFieldsProps } from './components/escalate-action-fields';
+export { EscalateActionFields } from './components/escalate-action-fields';
+export type { GuardrailActionSectionProps } from './components/guardrail-action-section';
+export { GuardrailActionSection } from './components/guardrail-action-section';
 export type { GuardrailChipProps } from './components/guardrail-chip';
 export { GuardrailChip, guardrailChipVariants } from './components/guardrail-chip';
 export type { GuardrailStatusChipProps } from './components/guardrail-status-chip';
@@ -68,13 +75,22 @@ export { GuardrailBuilder } from './guardrail-builder';
 export type { GuardrailFormLayoutProps } from './guardrail-form-layout';
 export { GuardrailFormLayout } from './guardrail-form-layout';
 export { GuardrailValidatorForm } from './guardrail-validator-form';
-export type { GuardrailBuilderLabels, GuardrailValidatorFormLabels } from './i18n';
+export type {
+  GuardrailActionLabelKey,
+  GuardrailActionLabels,
+  GuardrailBuilderLabels,
+  GuardrailValidatorFormLabels,
+} from './i18n';
 export {
   formatGuardrailFormMessage,
+  GUARDRAIL_ACTION_EN_LABELS,
+  GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
   GUARDRAIL_FORM_EN_LABELS,
+  resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
+  useGuardrailActionLabels,
   useGuardrailBuilderLabels,
   useGuardrailFormLabels,
 } from './i18n';
