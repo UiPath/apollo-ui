@@ -323,7 +323,31 @@ describe('ButtonHandles', () => {
       expect(getLabelClass()).toContain('opacity-100');
     });
 
-    const queryAddButton = () => document.querySelector('[aria-label="Add node"]');
+    it('names the add button after its label on inward handles too, without a duplicate visual label', () => {
+      // Inward handles (connectionPosition !== position) render their own visual
+      // label via InwardHandleContent — HandleButton must still pick up the same
+      // text for its accessible name (via label + renderLabel={false}) without
+      // rendering a second, duplicate "Tools" label of its own.
+      render(
+        <ButtonHandles
+          handles={[hoverHandle]}
+          nodeId="n"
+          position={Position.Top}
+          connectionPosition={Position.Bottom}
+          hovered
+        />
+      );
+
+      expect(
+        screen.getByRole('button', { name: 'Add node from Tools handle' })
+      ).toBeInTheDocument();
+      expect(screen.getAllByText('Tools')).toHaveLength(1);
+    });
+
+    // Prefix match, not an exact "Add node" match: the label-uniqueness fix above means an
+    // outward handle with a `label` (like hoverHandle's "Tools") now renders
+    // `aria-label="Add node from Tools handle"` instead of the bare generic "Add node".
+    const queryAddButton = () => document.querySelector('[aria-label^="Add node"]');
 
     it('reserves the add button slot while the node is unlocked', () => {
       render(<ButtonHandles handles={[hoverHandle]} nodeId="n" position={Position.Top} />);

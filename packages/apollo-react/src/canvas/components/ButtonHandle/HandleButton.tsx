@@ -44,6 +44,7 @@ export const HandleButton = memo(
     label,
     labelIcon,
     labelBackgroundColor,
+    renderLabel = true,
     portal,
   }: {
     visible?: boolean;
@@ -59,11 +60,20 @@ export const HandleButton = memo(
     onMouseEnter?: () => void;
     onMouseLeave?: () => void;
     handleRef?: React.RefObject<HTMLDivElement | null>;
+    /** Single source of truth for both the accessible name (`Add node from {label} handle`) and, when `renderLabel` is true, the visual `InlineLabel` text. */
     label?: string;
     labelIcon?: React.ReactNode;
     labelBackgroundColor?: string;
+    /**
+     * Set to `false` when a caller already renders its own adjacent visual label for
+     * `label` (e.g. inward handles via `InwardHandleContent`), so this button's own
+     * `InlineLabel` doesn't duplicate it. `label` still drives the accessible name
+     * either way — this only controls the visual copy.
+     */
+    renderLabel?: boolean;
     portal?: HandleButtonPortal;
   }) => {
+    const accessibleName = label ? `Add node from ${label} handle` : 'Add node';
     const didDragRef = useRef(false);
     const teardownRef = useRef<(() => void) | null>(null);
 
@@ -143,7 +153,7 @@ export const HandleButton = memo(
       // accessibility tree so neither keyboard nor assistive tech reaches an invisible button.
       // `disabled:opacity-0` overrides the button's default `disabled:opacity-50`.
       <CanvasInlineButton
-        aria-label="Add node"
+        aria-label={accessibleName}
         aria-hidden={visible ? undefined : true}
         disabled={visible ? undefined : true}
         onClick={handleClick}
@@ -160,7 +170,7 @@ export const HandleButton = memo(
     ) : (
       visible && (
         <CanvasInlineButton
-          aria-label="Add node"
+          aria-label={accessibleName}
           onClick={handleClick}
           onPointerDown={handlePointerDown}
           onMouseEnter={onMouseEnter}
@@ -175,7 +185,7 @@ export const HandleButton = memo(
         className={cx('absolute flex items-center pointer-events-none', BUTTON_POSITION[position])}
       >
         {addButton}
-        {label && (
+        {label && renderLabel && (
           <InlineLabel
             label={label}
             labelIcon={labelIcon}
@@ -186,7 +196,9 @@ export const HandleButton = memo(
       </div>
     );
 
-    const shouldRenderPortal = Boolean(keepButtonMounted || visible || (label && labelVisible));
+    const shouldRenderPortal = Boolean(
+      keepButtonMounted || visible || (label && renderLabel && labelVisible)
+    );
 
     if (portal) {
       if (!shouldRenderPortal) {
