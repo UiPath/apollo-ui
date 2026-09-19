@@ -217,6 +217,7 @@
   "projects": "项目",
   "recent_activity": "最近的活动",
   "recent_invoices": "最近的发票",
+  "remove": "删除",
   "remove_file": "删除 {{name}}",
   "remove_from_expected_result": "从基线中删除",
   "remove_quoted_text": "移除引号内的文本",
