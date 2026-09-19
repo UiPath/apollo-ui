@@ -15,4 +15,6 @@ export interface ApBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: BadgeSize;
   /** Status/semantic color variant (default: default) */
   status?: StatusTypes;
+  /** Optional leading element, sized by the badge. Decorative: give the badge a title or aria-label if it carries meaning. */
+  icon?: React.ReactElement;
 }
