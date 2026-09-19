@@ -10,6 +10,37 @@ interface StyledBadgeProps {
   badgeStatus?: StatusTypes;
 }
 
+/**
+ * One step per size on the token scale, so a badge can sit beside 12px body text without the caller
+ * overriding the component: 16/10, 20/12, 24/14.
+ */
+const SIZE_METRICS: Record<
+  BadgeSize,
+  { height: string; fontSize: string; lineHeight: string; padding: string; labelPadding: string }
+> = {
+  [BadgeSize.SMALL]: {
+    height: token.Spacing.SpacingBase,
+    fontSize: token.FontFamily.FontXsSize,
+    lineHeight: token.FontFamily.FontSLineHeight,
+    padding: `${token.Padding.PadXs} ${token.Padding.PadL}`,
+    labelPadding: '0',
+  },
+  [BadgeSize.MEDIUM]: {
+    height: token.Spacing.SpacingM,
+    fontSize: token.FontFamily.FontSSize,
+    lineHeight: token.FontFamily.FontSLineHeight,
+    padding: `${token.Padding.PadXs} ${token.Padding.PadL}`,
+    labelPadding: '0',
+  },
+  [BadgeSize.LARGE]: {
+    height: token.Spacing.SpacingL,
+    fontSize: token.FontFamily.FontMSize,
+    lineHeight: token.FontFamily.FontMLineHeight,
+    padding: `${token.Padding.PadS} ${token.Padding.PadL}`,
+    labelPadding: `${token.Spacing.SpacingMicro} ${token.Spacing.SpacingS}`,
+  },
+};
+
 const StyledBadge = styled(Chip, {
   shouldForwardProp: (prop) => prop !== 'badgeSize' && prop !== 'badgeStatus',
 })<StyledBadgeProps>(({ badgeSize, badgeStatus }) => {
@@ -38,23 +69,18 @@ const StyledBadge = styled(Chip, {
       textColor = 'var(--color-foreground)';
   }
 
+  const metrics = SIZE_METRICS[badgeSize ?? BadgeSize.SMALL] ?? SIZE_METRICS[BadgeSize.SMALL];
+
   return {
     backgroundColor,
     color: textColor,
     fontWeight: token.FontFamily.FontWeightSemibold,
-    height: badgeSize === 'small' ? token.Spacing.SpacingBase : token.Spacing.SpacingL,
-    fontSize: badgeSize === 'small' ? token.FontFamily.FontXsSize : token.FontFamily.FontMSize,
-    lineHeight:
-      badgeSize === 'small' ? token.FontFamily.FontSLineHeight : token.FontFamily.FontMLineHeight,
-    padding:
-      badgeSize === 'small'
-        ? `${token.Padding.PadXs} ${token.Padding.PadL}`
-        : `${token.Padding.PadS} ${token.Padding.PadL}`,
+    height: metrics.height,
+    fontSize: metrics.fontSize,
+    lineHeight: metrics.lineHeight,
+    padding: metrics.padding,
 
-    '.MuiChip-label': {
-      padding:
-        badgeSize === 'small' ? '0' : `${token.Spacing.SpacingMicro} ${token.Spacing.SpacingS}`,
-    },
+    '.MuiChip-label': { padding: metrics.labelPadding },
 
     '&.MuiChip-root:hover': {
       backgroundColor,
