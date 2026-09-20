@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.53.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.53.1...@uipath/apollo-wind@2.53.2) (2026-09-20)
+
+### Bug Fixes
+
+* **apollo-wind:** resolve the portal container in Tooltip, ContextMenu and Drawer ([3ff195c](https://github.com/UiPath/apollo-ui/commit/3ff195ca9da67314bf6dbcd112dbf8b67a8b7ed6)), closes [#1038](https://github.com/UiPath/apollo-ui/issues/1038)
+
 ## [@uipath/apollo-wind-v2.53.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.53.0...@uipath/apollo-wind@2.53.1) (2026-09-17)
 
 ### Bug Fixes
