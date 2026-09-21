@@ -97,7 +97,7 @@ export const BaseContainer = ({
       isSelected && !drawnByOutline && 'outline outline-2 outline-foreground-accent-muted',
       interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
       interactionState === 'drag' &&
-        cn('cursor-grabbing', shadow && 'shadow-(--canvas-node-shadow-lifted)'),
+        cn('cursor-grabbing', shadow && !drawnByOutline && 'shadow-(--canvas-node-shadow-lifted)'),
       // Decorative stacked layer for drillable / collapsed nodes. Purely visual:
       // a ::before pseudo inherits the container's radius/size, sits behind at
       // -z-10, and is offset down so only a thin arc peeks out below the card.

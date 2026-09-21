@@ -592,6 +592,56 @@ describe('NodeLabel', () => {
       expect(subLabelInput).toHaveAttribute('rows', '2');
     });
 
+    // The wide-card layout is shared by `rectangle` and the three DMN shapes. Without coverage
+    // these could silently fall back to the centred circle/square layout.
+    describe.each(['rectangle', 'stadium', 'clipped', 'document'] as const)(
+      'wide shape: %s',
+      (shape) => {
+        it('left-aligns the label and lets it fill the card', () => {
+          render(<NodeLabel {...defaultProps} shape={shape} />);
+
+          expect(screen.getByTestId('node-label')).toHaveClass('w-full', 'text-left');
+          expect(screen.getByTestId('node-label')).not.toHaveClass('line-clamp-3');
+        });
+
+        it('clamps the sub-label to two lines rather than five', () => {
+          render(<NodeLabel {...defaultProps} shape={shape} />);
+
+          expect(screen.getByTestId('node-sublabel')).toHaveClass('line-clamp-2');
+          expect(screen.getByTestId('node-sublabel')).not.toHaveClass('line-clamp-5');
+        });
+
+        it('stacks the text block to the start rather than centring it', () => {
+          const { container } = render(<NodeLabel {...defaultProps} shape={shape} />);
+
+          expect(container.querySelector('[data-node-part="label"]')).toHaveClass('items-start');
+        });
+
+        it('uses the wide row limits while editing', async () => {
+          const user = userEvent.setup();
+          render(<NodeLabel {...defaultProps} shape={shape} />);
+
+          await user.dblClick(screen.getByTestId('node-label'));
+
+          expect(screen.getByRole('textbox', { name: 'Edit node name' })).toHaveAttribute('rows', '1');
+          expect(screen.getByRole('textbox', { name: 'Edit node description' })).toHaveAttribute(
+            'rows',
+            '2'
+          );
+        });
+      }
+    );
+
+    describe.each(['circle', 'square'] as const)('narrow shape: %s', (shape) => {
+      it('keeps the centred layout and the deeper clamp', () => {
+        const { container } = render(<NodeLabel {...defaultProps} shape={shape} />);
+
+        expect(screen.getByTestId('node-label')).toHaveClass('line-clamp-3');
+        expect(screen.getByTestId('node-sublabel')).toHaveClass('line-clamp-5');
+        expect(container.querySelector('[data-node-part="label"]')).not.toHaveClass('items-start');
+      });
+    });
+
     it('should render with hasBottomHandles prop', () => {
       render(<NodeLabel {...defaultProps} hasBottomHandles />);
 
