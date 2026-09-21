@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Trash2 } from 'lucide-react';
-import { useId, useRef, useState } from 'react';
+import { useId, useState } from 'react';
 import { Label, RequiredIndicator } from '../label';
 import { LockableValueField } from './lockable-value-field';
 import { FIELD_TYPE_META, type LockableFieldType, type LockableValueFieldMode } from './types';
@@ -377,51 +377,6 @@ export const InlineValidation: Story = {
     },
   },
 };
-
-/**
- * Matches the inline-editable title pattern the Form HITL quick-form
- * builder passes into `label`: click the text to edit it, blur or press
- * Enter/Escape to commit.
- */
-function InlineEditableLabel({
-  title,
-  onTitleChange,
-  required,
-}: {
-  title: string;
-  onTitleChange: (title: string) => void;
-  required: boolean;
-}) {
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  return editing ? (
-    <input
-      ref={inputRef}
-      value={title}
-      onChange={(e) => onTitleChange(e.target.value)}
-      onBlur={() => setEditing(false)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === 'Escape') setEditing(false);
-      }}
-      className="min-w-0 flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
-      // biome-ignore lint/a11y/noAutofocus: only mounts in response to the user's own click on the label, not on page load
-      autoFocus
-    />
-  ) : (
-    <button
-      type="button"
-      onClick={() => {
-        setEditing(true);
-        setTimeout(() => inputRef.current?.select(), 0);
-      }}
-      className="truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-    >
-      {title}
-      {required && <RequiredIndicator />}
-    </button>
-  );
-}
 
 function ResponsiveDemo() {
   const fullWidthId = useId();
