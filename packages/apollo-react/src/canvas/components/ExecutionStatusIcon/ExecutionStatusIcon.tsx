@@ -18,9 +18,8 @@ export function getExecutionStatusColor(status: string | undefined): string {
     case 'Warning':
       return 'var(--color-warning-icon)';
     case 'Cancelled':
-      return 'var(--color-error-icon)';
     case 'UserCancelled':
-      return 'var(--color-info-icon)';
+      return 'var(--color-icon-default)';
     case 'Failed':
       return 'var(--color-error-icon)';
     case 'Terminated':
@@ -99,9 +98,11 @@ export function ExecutionStatusIcon({
         return <CanvasIcon icon="circle-alert" size={size} color={color} />;
       case 'Terminated':
         return <CanvasIcon icon="circle-x" size={size} color={color} />;
+      // Cancel reads as one concept on the canvas: both variants share the slash glyph and
+      // the muted color. Who cancelled is surfaced in the details panel, not the node icon.
       case 'Cancelled':
       case 'UserCancelled':
-        return <CanvasIcon icon="circle-stop" size={size} color={color} />;
+        return <CanvasIcon icon="circle-slash" size={size} color={color} />;
       case 'NotExecuted':
         return <CanvasIcon icon="circle-dashed" size={size} color={color} />;
       case 'EarlyExit':

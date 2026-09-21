@@ -520,7 +520,7 @@ function ReadonlyStory() {
       createStickyNote(
         'sticky-info',
         'pink',
-        '## Execution States\n\nThese states show in **readonly mode** when edges represent execution flow.\n\n**States:**\n- **InProgress**: Animated dot moving along edge\n- **Completed**: Green edge\n- **Failed**: Red edge\n- **Paused**: Orange edge\n- **Cancelled**: Red edge\n\nEdge colors are determined by target node execution status.',
+        '## Execution States\n\nThese states show in **readonly mode** when edges represent execution flow.\n\n**States:**\n- **InProgress**: Animated dot moving along edge\n- **Completed**: Green edge\n- **Failed**: Red edge\n- **Paused**: Orange edge\n- **Cancelled** / **UserCancelled**: Gray edge, both share the stroke color\n\nEdge colors are determined by target node execution status.',
         { x: 100, y: 80 },
         { width: 400, height: 320 }
       ),

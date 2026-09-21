@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { getIterationStatusColor, LoopNodeExecutionCount } from './LoopNodeExecutionCount';
-import type { LoopNodeExecutionCountState } from './LoopNode.types';
 import { ElementStatusValues } from '../../types/execution';
+import type { LoopNodeExecutionCountState } from './LoopNode.types';
+import { getIterationStatusColor, LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 
 vi.mock('../../utils/icon-registry', () => ({
   CanvasIcon: ({ icon }: { icon: string }) => <span data-testid={`canvas-icon-${icon}`} />,
@@ -44,6 +44,7 @@ describe('getIterationStatusColor', () => {
     ['InProgress', '#f59e0b'],
     ['Paused', '#a855f7'],
     ['Cancelled', '#94a3b8'],
+    ['UserCancelled', '#94a3b8'],
     [undefined, 'currentColor'],
     ['Unknown', 'currentColor'],
   ])('returns correct color for status %s', (status, expected) => {

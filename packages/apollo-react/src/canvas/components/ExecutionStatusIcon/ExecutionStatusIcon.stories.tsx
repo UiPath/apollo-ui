@@ -55,8 +55,16 @@ export const Default: Story = {
           { status: 'Completed', label: 'Completed', description: 'Successfully finished' },
           { status: 'Failed', label: 'Failed', description: 'Execution failed' },
           { status: 'Paused', label: 'Paused', description: 'Temporarily stopped' },
-          { status: 'Cancelled', label: 'Cancelled', description: 'Execution cancelled' },
-          { status: 'UserCancelled', label: 'User Cancelled', description: 'Stopped by user' },
+          {
+            status: 'Cancelled',
+            label: 'Cancelled',
+            description: 'Cancelled at engine or instance level',
+          },
+          {
+            status: 'UserCancelled',
+            label: 'User Cancelled',
+            description: 'One element stopped by an operator. Retryable',
+          },
           { status: 'Terminated', label: 'Terminated', description: 'Forcefully stopped' },
           { status: 'NotExecuted', label: 'Not Executed', description: 'Not yet started' },
           { status: 'Warning', label: 'Warning', description: 'Needs attention' },

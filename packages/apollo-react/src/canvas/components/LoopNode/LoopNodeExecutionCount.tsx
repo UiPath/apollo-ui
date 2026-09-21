@@ -21,6 +21,7 @@ export function getIterationStatusColor(status: ElementStatusValues | undefined)
     case ElementStatusValues.Paused:
       return '#a855f7';
     case ElementStatusValues.Cancelled:
+    case ElementStatusValues.UserCancelled:
       return '#94a3b8';
     default:
       return 'currentColor';
