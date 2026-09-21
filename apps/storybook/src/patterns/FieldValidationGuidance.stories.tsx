@@ -471,7 +471,8 @@ function FieldValidationGuidancePage({ globalTheme }: { globalTheme: string }) {
         <SectionTitle>Coverage</SectionTitle>
         <SectionDescription>
           Which controls take <InlineCode>error</InlineCode> directly, and which ones expect you to
-          render the message. Each link opens the component story for the error state.
+          render the message. Each link opens the component story for the error state. For which
+          field types each control supports today, see the Field Type Guidance page.
         </SectionDescription>
         <CoverageTable />
       </section>

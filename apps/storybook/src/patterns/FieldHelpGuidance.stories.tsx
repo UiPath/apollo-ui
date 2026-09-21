@@ -217,6 +217,10 @@ function FieldHelpGuidancePage({ globalTheme }: { globalTheme: string }) {
             Confirm terminology, icon, placement, touch behavior, and component ownership with
             design before engineering implementation.
           </p>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Before adding help copy for a new field, check the Field Type Guidance page to confirm
+            the type is supported and see which control it renders through.
+          </p>
         </div>
       </section>
     </GuidancePage>
