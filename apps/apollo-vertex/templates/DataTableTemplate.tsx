@@ -1,6 +1,6 @@
 "use client";
 
-import type { ColumnDef, ExpandedState } from "@tanstack/react-table";
+import type { ExpandedState } from "@tanstack/react-table";
 import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  type AppColumnDef,
   DataTable,
   DataTableColumnHeader,
   dataTableFacetedFilterFn,
@@ -165,7 +166,7 @@ const statusFilterOptions: FilterDropdownOption[] = [
   { label: "Failed", value: "failed" },
 ];
 
-const columns: ColumnDef<Payment>[] = [
+const columns: AppColumnDef<Payment>[] = [
   {
     id: "select",
     size: 50,

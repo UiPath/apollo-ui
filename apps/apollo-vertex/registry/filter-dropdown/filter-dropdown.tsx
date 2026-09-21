@@ -1,4 +1,4 @@
-import type { Column } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
 import { CheckIcon, ChevronDownIcon, SearchIcon, XIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import type { AppColumn } from "@/lib/tableFeatures";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -22,7 +23,10 @@ interface FilterDropdownOption {
   icon?: React.ComponentType<{ className?: string }>;
 }
 
-interface FilterDropdownProps<TData = unknown, TValue = unknown> {
+interface FilterDropdownProps<
+  TData extends RowData = RowData,
+  TValue = unknown,
+> {
   title: string;
   options: FilterDropdownOption[];
   className?: string;
@@ -31,7 +35,7 @@ interface FilterDropdownProps<TData = unknown, TValue = unknown> {
   multiSelect?: boolean;
 
   /** TanStack Table column integration (optional) */
-  column?: Column<TData, TValue>;
+  column?: AppColumn<TData, TValue>;
 
   /** Standalone value — used when no column is provided */
   value?: string[] | string;
@@ -59,7 +63,7 @@ interface FilterDropdownProps<TData = unknown, TValue = unknown> {
 // Component
 // ---------------------------------------------------------------------------
 
-function FilterDropdown<TData, TValue>({
+function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
   title,
   options,
   className,
@@ -75,9 +79,6 @@ function FilterDropdown<TData, TValue>({
   align = "start",
   popoverWidth = "w-[220px]",
 }: FilterDropdownProps<TData, TValue>) {
-  // React Compiler compat: TanStack Table Column objects have stable references with mutable state.
-  // codeql[js/unknown-directive] - valid React Compiler directive
-  "use no memo";
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
