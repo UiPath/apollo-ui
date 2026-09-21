@@ -1,6 +1,6 @@
 import { forwardRef, memo, useCallback, useEffect, useRef, useState } from 'react';
 import { NODE_TEXT_BOTTOM_OFFSET, NODE_TEXT_BOTTOM_OFFSET_WITH_HANDLES } from '../../constants';
-import type { NodeShape } from '../../schema';
+import { isWideNodeShape, type NodeShape } from '../../schema';
 import { cx } from '../../utils/CssUtil';
 import { CanvasTooltip } from '../CanvasTooltip';
 
@@ -15,7 +15,7 @@ export const BaseTextContainer = ({
   shape,
   children,
 }: BaseTextContainerProps) => {
-  if (shape === 'rectangle') {
+  if (isWideNodeShape(shape)) {
     return (
       <div data-node-part="label" className="flex flex-1 min-w-0 flex-col items-start text-left">
         {children}
@@ -87,7 +87,7 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
       className={cx(
         'text-center text-sm leading-[18px] font-semibold text-foreground overflow-hidden',
         backgroundColor && 'px-1.5 py-0.5 rounded-sm',
-        shape === 'rectangle'
+        isWideNodeShape(shape)
           ? 'w-full text-left whitespace-nowrap text-ellipsis'
           : 'wrap-break-word line-clamp-3',
         className
@@ -126,7 +126,7 @@ const SubHeader = forwardRef<HTMLDivElement, SubHeaderProps>(
       onDoubleClick={onDoubleClick}
       className={cx(
         'text-center text-xs leading-[18px] text-foreground-muted wrap-break-word overflow-hidden whitespace-pre-line',
-        shape === 'rectangle' ? 'w-full text-left line-clamp-2' : 'line-clamp-5',
+        isWideNodeShape(shape) ? 'w-full text-left line-clamp-2' : 'line-clamp-5',
         className
       )}
       style={style}
@@ -180,7 +180,7 @@ const EditableLabel = forwardRef<HTMLTextAreaElement, EditableLabelProps>(
         variant === 'subtext'
           ? 'text-xs leading-[18px] font-normal mb-0'
           : 'text-sm leading-[18px] font-semibold mb-0.5',
-        shape === 'rectangle' ? 'field-sizing-fixed w-full' : 'field-sizing-content text-center',
+        isWideNodeShape(shape) ? 'field-sizing-fixed w-full' : 'field-sizing-content text-center',
         backgroundColor && 'py-0.5'
       )}
       style={backgroundColor ? { backgroundColor } : undefined}
@@ -359,7 +359,7 @@ const NodeLabelInternal = ({
   // Rectangle nodes render the label inside the node body, so a top-placed
   // tooltip sits above the node. Other shapes render the label below the node,
   // where a top-placed tooltip would overlap the node itself, so place it below.
-  const tooltipPlacement = shape === 'rectangle' ? 'top' : 'bottom';
+  const tooltipPlacement = isWideNodeShape(shape) ? 'top' : 'bottom';
 
   return (
     <BaseTextContainer hasBottomHandles={hasBottomHandles} shape={shape}>
@@ -375,7 +375,7 @@ const NodeLabelInternal = ({
             variant="normal"
             backgroundColor={labelBackgroundColor}
             placeholder={labelPlaceholder}
-            rows={shape === 'rectangle' ? 1 : undefined}
+            rows={isWideNodeShape(shape) ? 1 : undefined}
             aria-label="Edit node name"
           />
           <EditableLabel
@@ -387,7 +387,7 @@ const NodeLabelInternal = ({
             shape={shape}
             variant="subtext"
             placeholder={subLabelPlaceholder}
-            rows={shape === 'rectangle' ? 2 : undefined}
+            rows={isWideNodeShape(shape) ? 2 : undefined}
             aria-label="Edit node description"
           />
         </>

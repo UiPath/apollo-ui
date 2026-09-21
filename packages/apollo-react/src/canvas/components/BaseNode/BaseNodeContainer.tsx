@@ -1,9 +1,10 @@
 import { cn } from '@uipath/apollo-wind';
 import { useMemo } from 'react';
-import type { NodeShape } from '../../schema';
+import { isSilhouetteNodeShape, isWideNodeShape, type NodeShape } from '../../schema';
 import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { ValidationErrorSeverity } from '../../types/validation';
+import { BaseNodeSilhouette } from './BaseNodeSilhouette';
 
 export const getStatusBorder = (
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType
@@ -71,18 +72,28 @@ export const BaseContainer = ({
     const statusBorder = getStatusBorder(activeStatus);
     const hasStatusBorder = statusBorder.length > 0;
 
+    // A silhouette shape draws its own fill and outline, so the container drops both rather than
+    // showing a rectangle behind the SVG.
+    const drawnBySilhouette = isSilhouetteNodeShape(shape);
+
     return cn(
-      'relative flex items-center cursor-pointer bg-surface-overlay border border-border',
-      'w-(--node-w) h-(--node-h) rounded-(--node-radius)',
+      'relative flex items-center cursor-pointer',
+      drawnBySilhouette
+        ? 'bg-transparent border-0'
+        : cn(
+            'bg-surface-overlay border border-border',
+            shape === 'stadium' ? 'rounded-full' : 'rounded-(--node-radius)'
+          ),
+      'w-(--node-w) h-(--node-h)',
       'outline-offset-0 transition-[box-shadow,border-color] duration-150',
-      shadow && 'shadow-(--canvas-node-shadow-rest)',
-      shape === 'rectangle'
+      shadow && !drawnBySilhouette && 'shadow-(--canvas-node-shadow-rest)',
+      isWideNodeShape(shape)
         ? 'flex-row justify-start gap-3 p-(--node-gap)'
         : 'flex-col justify-center',
       hasFooter && 'flex-wrap',
       statusBorder,
-      shadow && isHovered && 'shadow-(--canvas-node-shadow-hover)',
-      isHovered && !hasStatusBorder && 'border-border-hover',
+      shadow && !drawnBySilhouette && isHovered && 'shadow-(--canvas-node-shadow-hover)',
+      isHovered && !hasStatusBorder && !drawnBySilhouette && 'border-border-hover',
       isSelected && 'outline outline-2 outline-foreground-accent-muted',
       interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
       interactionState === 'drag' &&
@@ -107,6 +118,7 @@ export const BaseContainer = ({
       style={background ? { background } : undefined}
       aria-busy={loading || undefined}
     >
+      {isSilhouetteNodeShape(shape) && <BaseNodeSilhouette shape={shape} />}
       {children}
     </div>
   );

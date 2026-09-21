@@ -60,3 +60,65 @@ describe('BaseContainer shadow opt-out', () => {
     expect(container).toHaveClass('cursor-grabbing');
   });
 });
+
+describe('DMN shapes', () => {
+  it('rounds a stadium fully, rather than by the node radius', () => {
+    render(
+      <BaseContainer shape="stadium">
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    const container = screen.getByTestId('base-container');
+
+    expect(container).toHaveClass('rounded-full');
+    expect(container).not.toHaveClass('rounded-(--node-radius)');
+    expect(screen.queryByTestId('base-node-silhouette')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    'clipped',
+    'document',
+  ] as const)('draws %s as a silhouette instead of a bordered box', (shape) => {
+    render(
+      <BaseContainer shape={shape}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    const container = screen.getByTestId('base-container');
+
+    // The silhouette carries the fill and outline, so the container must not draw a second one.
+    expect(container).toHaveClass('border-0');
+    expect(container).not.toHaveClass('border-border');
+    expect(screen.getByTestId('base-node-silhouette')).toBeInTheDocument();
+  });
+
+  it.each([
+    'stadium',
+    'clipped',
+    'document',
+  ] as const)('lays %s out as a wide card, like a rectangle', (shape) => {
+    render(
+      <BaseContainer shape={shape}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-container')).toHaveClass('flex-row');
+  });
+
+  it('leaves the existing shapes alone', () => {
+    render(
+      <BaseContainer shape="rectangle">
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    const container = screen.getByTestId('base-container');
+
+    expect(container).toHaveClass('rounded-(--node-radius)');
+    expect(container).toHaveClass('border-border');
+    expect(screen.queryByTestId('base-node-silhouette')).not.toBeInTheDocument();
+  });
+});
