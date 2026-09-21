@@ -41,8 +41,22 @@ export interface UseGuardrailDefinitionsOptions {
    * Non-BYO validators to hide. Compared by content, so an inline array literal is fine.
    */
   hiddenValidators?: readonly string[];
-  /** Override the lingui-backed copy table, e.g. to pin English in a test. */
+  /**
+   * Override the lingui-backed copy table, e.g. to pin English in a test.
+   *
+   * Compared by **identity**, like `definitions`: an inline table re-enriches every render.
+   */
   copy?: GuardrailCopyTable;
+  /**
+   * Whether the hook may fetch. Defaults to `true`.
+   *
+   * `definitions: undefined` cannot say which of two things the host means - "you fetch
+   * this" or "mine has not resolved yet" - and the hook used to read it as the first, so a
+   * host wiring `definitions: swr.data` fired a second request through the whole of SWR's
+   * loading window. Say it explicitly instead: `enabled: !swr.isLoading`. A disabled hook
+   * makes no request and reports neither results nor error, exactly like a `null` context.
+   */
+  enabled?: boolean;
 }
 
 export interface UseGuardrailDefinitionsResult {
@@ -83,6 +97,11 @@ type GuardrailDefinitionsRequest = Omit<GuardrailDefinitionsRequestContext, 'fet
  * `AbortController`, no query library. A `null` context disables the hook and clears its
  * state, which with `options.definitions` is the pure "enrich what I already have" path.
  *
+ * Three things disable it, and all three clear its fetched state: a `null` context,
+ * `options.definitions`, and `options.enabled: false`. A host whose own payload arrives
+ * asynchronously wants the last of those while it waits, or the hook treats the gap as its
+ * own cue to fetch.
+ *
  * The context and `hiddenValidators` are compared by **content**, so a host can build them
  * inline. That departs from `useDiscoveryModels`, which keys off context identity: an inline
  * object there refetches every render and, since every response sets state, never settles.
@@ -95,7 +114,12 @@ export function useGuardrailDefinitions(
   ctx: GuardrailDefinitionsRequestContext | null,
   options: UseGuardrailDefinitionsOptions = {}
 ): UseGuardrailDefinitionsResult {
-  const { definitions: provided, hiddenValidators, copy: copyOverride } = options;
+  const {
+    definitions: provided,
+    hiddenValidators,
+    copy: copyOverride,
+    enabled: enabledOption = true,
+  } = options;
 
   const linguiCopy = useGuardrailDefinitionCopy();
   const copy = copyOverride ?? linguiCopy;
@@ -120,8 +144,9 @@ export function useGuardrailDefinitions(
   const fetchRef = useRef(ctx?.fetch);
   fetchRef.current = ctx?.fetch;
 
-  // A host-provided payload replaces the request entirely rather than racing it.
-  const enabled = provided === undefined && request !== null;
+  // A host-provided payload replaces the request entirely rather than racing it, and
+  // `enabled: false` covers the window before that payload exists.
+  const enabled = enabledOption && provided === undefined && request !== null;
 
   // Results are stamped with the request that produced them, and read back only when that
   // stamp still matches. Without it a tenant switch keeps showing the previous tenant's
@@ -132,7 +157,10 @@ export function useGuardrailDefinitions(
   const [inFlight, setInFlight] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  const isCurrent = settled.key === requestKey;
+  // Gated on `enabled`, not on the stamp alone: the stamp is built from the context, so
+  // disabling through `definitions` or `enabled` leaves it matching and a settled result -
+  // in practice a settled *error* - stayed readable behind a hook that is no longer fetching.
+  const isCurrent = enabled && settled.key === requestKey;
   const fetched = isCurrent ? settled.result : EMPTY_RESULT;
   const error = isCurrent ? settled.error : null;
 

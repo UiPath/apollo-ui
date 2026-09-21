@@ -308,6 +308,63 @@ describe('useGuardrailDefinitions', () => {
       expect(result.current.definitions).toEqual([]);
     });
 
+    it('drops a settled error when the host supplies a payload of its own', async () => {
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse(null, { ok: false }));
+      const ctx = ctxWith(fetchImpl);
+      const { result, rerender } = renderHook(
+        ({ definitions }: { definitions?: unknown }) =>
+          useGuardrailDefinitions(ctx, { definitions, copy: GUARDRAIL_COPY_EN }),
+        { initialProps: {} as { definitions?: unknown } }
+      );
+      await waitFor(() => expect(result.current.error).not.toBeNull());
+
+      // The stamp is built from the context, which has not changed, so the settled error
+      // stays addressable unless the disable is what clears it. A host rendering
+      // `error ? <Banner/> : <List/>` showed a transport failure over a good payload.
+      rerender({ definitions: [PII_DETECTION_WIRE] });
+
+      expect(result.current.error).toBeNull();
+      expect(result.current.definitions[0]?.displayName).toBe('PII detection');
+    });
+
+    it('makes no request while `enabled` is false', async () => {
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([PII_DETECTION_WIRE]));
+      const ctx = ctxWith(fetchImpl);
+      const { result, rerender } = renderHook(
+        ({ enabled }: { enabled: boolean }) => useGuardrailDefinitions(ctx, { enabled }),
+        { initialProps: { enabled: false } }
+      );
+
+      expect(fetchImpl).not.toHaveBeenCalled();
+      expect(result.current).toMatchObject({ definitions: [], loading: false, error: null });
+
+      rerender({ enabled: true });
+      await waitFor(() => expect(result.current.definitions).toHaveLength(1));
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not fetch through a host loading window that `enabled` covers', async () => {
+      const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([PII_DETECTION_WIRE]));
+      const ctx = ctxWith(fetchImpl);
+
+      // The SWR shape: `data` is undefined until it resolves, and the context stays live
+      // throughout. Without `enabled` the hook reads that gap as its own cue to fetch.
+      const { result, rerender } = renderHook(
+        ({ data }: { data?: unknown }) =>
+          useGuardrailDefinitions(ctx, {
+            definitions: data,
+            enabled: data !== undefined,
+            copy: GUARDRAIL_COPY_EN,
+          }),
+        { initialProps: {} as { data?: unknown } }
+      );
+
+      rerender({ data: [PII_DETECTION_WIRE] });
+
+      expect(fetchImpl).not.toHaveBeenCalled();
+      expect(result.current.definitions[0]?.displayName).toBe('PII detection');
+    });
+
     it('makes `refetch` a no-op while disabled', async () => {
       const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([BYO_WIRE]));
 
