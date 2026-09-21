@@ -647,7 +647,9 @@ export const PluggableRouter: Story = {
 };
 
 /** One row per execution status worth distinguishing visually. `None` and
- * `Terminated`/`UserCancelled` reuse colors already shown, so they're omitted. */
+ * `Terminated` reuse colors already shown, so they're omitted. `Cancelled` stands
+ * in for both cancel variants: they share one muted stroke, and the node icon is the
+ * same circle-slash for both. */
 const EXECUTION_STATES = [
   ElementStatusValues.InProgress,
   ElementStatusValues.Completed,

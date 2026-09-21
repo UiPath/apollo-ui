@@ -39,6 +39,11 @@ export const getExecutionStatusBorder = (executionStatus?: string) => {
       `;
     }
     case 'Cancelled':
+    case 'UserCancelled':
+      return css`
+        border-color: var(--canvas-icon-default);
+        animation: ${pulseAnimation('--canvas-icon-default')} 2s infinite;
+      `;
     case 'Failed':
     case 'Terminated':
     case 'ERROR':

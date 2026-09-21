@@ -22,6 +22,8 @@ export const getStatusBorder = (
     case 'update':
       return 'border-warning animate-glow [--glow-color:var(--warning)]';
     case 'Cancelled':
+    case 'UserCancelled':
+      return 'border-icon-default animate-glow [--glow-color:var(--color-icon-default)]';
     case 'Failed':
     case 'Terminated':
     case 'ERROR':

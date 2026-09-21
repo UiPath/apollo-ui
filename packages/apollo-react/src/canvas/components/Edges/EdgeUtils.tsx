@@ -5,7 +5,9 @@ export const edgeTargetStatusToEdgeColor: {
   [key in ElementStatus | ValidationErrorSeverity]: string;
 } = {
   ActionNeeded: 'var(--canvas-warning-icon)',
-  Cancelled: 'var(--canvas-error-icon)',
+  // Cancel is a settled, neutral outcome, not an error. Both cancel variants share this
+  // muted stroke, matching the muted circle-slash the node icon renders for either one.
+  Cancelled: 'var(--canvas-icon-default)',
   Completed: 'var(--canvas-success-icon)',
   CRITICAL: 'var(--canvas-error-icon)',
   ERROR: 'var(--canvas-error-icon)',
@@ -16,7 +18,7 @@ export const edgeTargetStatusToEdgeColor: {
   Paused: 'var(--canvas-warning-icon)',
   Terminated: 'var(--canvas-error-icon)',
   Warning: 'var(--canvas-warning-icon)',
-  UserCancelled: 'var(--canvas-info-icon)',
+  UserCancelled: 'var(--canvas-icon-default)',
   WARNING: 'var(--canvas-warning-icon)',
   None: 'var(--canvas-border)',
 };

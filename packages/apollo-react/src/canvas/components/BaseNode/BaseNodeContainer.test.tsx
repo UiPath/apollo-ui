@@ -269,3 +269,44 @@ it('paints the outline behind the node content, not over it', () => {
   // without a negative z-index the fill hides the icon and label underneath it.
   expect(screen.getByTestId('base-node-outline')).toHaveClass('-z-10');
 });
+
+describe('BaseContainer cancel status treatment', () => {
+  // Both cancel variants get the same border + glow the other statuses get, in muted gray
+  // rather than error red. --color-icon-default is declared outside apollo-wind's
+  // `@theme inline` block, so unlike --color-foreground-muted it resolves at runtime.
+  it.each([
+    'Cancelled',
+    'UserCancelled',
+  ] as const)('gives %s a muted glowing border rather than the error one', (status) => {
+    render(
+      <BaseContainer executionStatus={status}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    const container = screen.getByTestId('base-container');
+
+    expect(container).toHaveClass('border-icon-default');
+    expect(container).toHaveClass('animate-glow');
+    expect(container).toHaveClass('[--glow-color:var(--color-icon-default)]');
+    expect(container).not.toHaveClass('border-error');
+  });
+
+  it.each([
+    'Cancelled',
+    'UserCancelled',
+  ] as const)('gives %s the same muted glow on an outlined shape', (status) => {
+    render(
+      <BaseContainer shape="clipped" executionStatus={status}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    const outline = screen.getByTestId('base-node-outline').querySelector('path');
+
+    expect(outline).toHaveClass('stroke-icon-default');
+    expect(outline).toHaveClass('animate-glow');
+    expect(outline).toHaveClass('[--glow-color:var(--color-icon-default)]');
+    expect(outline).not.toHaveClass('stroke-error');
+  });
+});

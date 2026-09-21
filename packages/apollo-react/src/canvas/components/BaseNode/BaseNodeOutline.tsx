@@ -68,6 +68,8 @@ export const getStatusStroke = (
     case 'update':
       return 'stroke-warning animate-glow [--glow-color:var(--warning)]';
     case 'Cancelled':
+    case 'UserCancelled':
+      return 'stroke-icon-default animate-glow [--glow-color:var(--color-icon-default)]';
     case 'Failed':
     case 'Terminated':
     case 'ERROR':
