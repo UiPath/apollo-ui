@@ -103,6 +103,28 @@ export function humanizeGuardrailParameterId(id: string): string {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
+/**
+ * Read a curated map keyed by a **raw wire id**. The validator table is already guarded with
+ * `Object.hasOwn` in `enrichOne`, and every map nested under it needs the same guard for the
+ * same reason: `paramLabels['constructor']` answers with a function off the prototype, which
+ * then lands in `label` and reaches React as a child. The value check covers a host-supplied
+ * table that is not the shape its type claims.
+ */
+function ownCopyEntry<T>(
+  table: Record<string, T> | undefined,
+  key: string,
+  isValid: (value: unknown) => value is T
+): T | undefined {
+  if (table === undefined || !Object.hasOwn(table, key)) return undefined;
+  const value = table[key];
+  return isValid(value) ? value : undefined;
+}
+
+const isCopyString = (value: unknown): value is string => typeof value === 'string';
+
+const isCopyRecord = (value: unknown): value is Record<string, string> =>
+  typeof value === 'object' && value !== null;
+
 function toParameterDefinition(
   param: GuardrailParameterDefinitionWire,
   curated: GuardrailValidatorCopy | undefined
@@ -113,15 +135,17 @@ function toParameterDefinition(
     // Wire wins at parameter level: a BYO manifest and a newly shipped backend parameter
     // describe themselves, and only they know their own copy.
     label:
-      param.displayName ?? curated?.paramLabels[param.id] ?? humanizeGuardrailParameterId(param.id),
+      param.displayName ??
+      ownCopyEntry(curated?.paramLabels, param.id, isCopyString) ??
+      humanizeGuardrailParameterId(param.id),
     required: param.required,
     defaultValue: param.defaultValue,
   };
 
-  const tooltip = param.description ?? curated?.paramTooltips?.[param.id];
+  const tooltip = param.description ?? ownCopyEntry(curated?.paramTooltips, param.id, isCopyString);
   if (tooltip !== undefined) definition.tooltip = tooltip;
 
-  const curatedOptionLabels = curated?.optionLabels?.[param.id];
+  const curatedOptionLabels = ownCopyEntry(curated?.optionLabels, param.id, isCopyRecord);
   const wireOptionLabels =
     param.type === 'enum' || param.type === 'enum-list' ? param.optionLabels : undefined;
   if (curatedOptionLabels !== undefined || wireOptionLabels !== undefined) {

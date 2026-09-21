@@ -219,26 +219,35 @@ export function parseGuardrailDefinitions(input: unknown): GuardrailDefinitionsP
   const definitions: GuardrailDefinitionWire[] = [];
   const invalid: GuardrailDefinitionParseIssue[] = [];
 
-  input.forEach((entry: unknown, index: number) => {
+  // An index loop rather than `forEach`: `Array.isArray` says this is an array, not that its
+  // `forEach` is still the native one, and the callback form reads each element *before* the
+  // guarded block. Both are ways for a hostile payload to escape a never-throws contract, and
+  // `length` on a genuine array is the one read that cannot be trapped.
+  for (let index = 0; index < input.length; index += 1) {
     // A hostile payload must not be able to take a host panel down, so even an unexpected
-    // throw degrades to a dropped definition. `readValidator` is inside the try as well: it
-    // reads `entry.validator` a second time, and a throwing getter there would escape a
-    // function whose whole contract is that it never throws.
+    // throw degrades to a dropped definition. The element read and `readValidator` are both
+    // inside the try: an index or a `validator` backed by a throwing getter would otherwise
+    // escape a function whose whole contract is that it never throws.
     let message: string;
     let validator: string | undefined;
+    let parsed = false;
     try {
+      const entry: unknown = input[index];
       const result = definitionSchema.safeParse(entry);
       if (result.success) {
         definitions.push(toWireDefinition(result.data));
-        return;
+        parsed = true;
+        message = '';
+      } else {
+        message = describeIssues(result.error);
+        validator = readValidator(entry);
       }
-      message = describeIssues(result.error);
-      validator = readValidator(entry);
     } catch (error: unknown) {
       message = error instanceof Error ? error.message : String(error);
     }
+    if (parsed) continue;
     invalid.push(validator === undefined ? { index, message } : { index, validator, message });
-  });
+  }
 
   return { definitions, invalid };
 }
