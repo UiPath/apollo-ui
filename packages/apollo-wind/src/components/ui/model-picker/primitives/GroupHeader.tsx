@@ -99,7 +99,7 @@ export const GroupHeader: React.FC<GroupHeaderProps> = ({
       <span
         className={cn(
           'flex-auto font-bold tracking-wide text-foreground-muted uppercase',
-          dense ? 'text-[9px] leading-[1.2]' : 'text-[11px] leading-[1.2]'
+          dense ? 'text-[10px] leading-tight' : 'text-[11px] leading-tight'
         )}
       >
         {label}

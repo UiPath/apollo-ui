@@ -88,7 +88,7 @@ export const PickerSearchInput: React.FC<PickerSearchInputProps> = ({
         aria-label={ariaLabel ?? placeholder}
         className={cn(
           'min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-foreground-subtle',
-          dense ? 'text-[13px]' : 'text-[13.5px]'
+          dense ? 'text-xs' : 'text-sm'
         )}
         data-testid={dataTestId}
         onChange={(e) => onChange(e.target.value)}

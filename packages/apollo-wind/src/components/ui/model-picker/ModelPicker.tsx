@@ -714,7 +714,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
               </div>
             )}
             {effectiveError && !effectiveLoading && (
-              <div className="px-4 py-4 text-center text-[13px] text-error" role="alert">
+              <div className="px-4 py-4 text-center text-sm text-error" role="alert">
                 {effectiveError.message}
               </div>
             )}
@@ -722,7 +722,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
               // biome-ignore lint/a11y/useSemanticElements: a live status region, not an <output>.
               <div
                 aria-live="polite"
-                className="py-6 text-center text-[13px] text-foreground-muted"
+                className="py-6 text-center text-sm text-foreground-muted"
                 role="status"
               >
                 {query.trim() ? labels.emptyNoMatch(query.trim()) : labels.emptyNoModels}
@@ -842,7 +842,7 @@ const GroupBySegmented: React.FC<GroupBySegmentedProps> = ({ value, onChange, la
           <button
             aria-pressed={active}
             className={cn(
-              'cursor-pointer rounded-md px-2.5 py-1.5 text-[12.5px] leading-[1.2] font-semibold transition-colors',
+              'cursor-pointer rounded-md px-2.5 py-1.5 text-xs leading-tight font-semibold transition-colors',
               'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
               active
                 ? 'bg-popover text-brand shadow-sm'
@@ -902,10 +902,8 @@ const UseCustomModelFooter: React.FC<UseCustomModelFooterProps> = ({
       <Plus className="size-[18px]" />
     </span>
     <span className="flex min-w-0 flex-col">
-      <span className="text-[13.5px] leading-[1.3] font-semibold">
-        {labels.useCustomModelTitle}
-      </span>
-      <span className="text-xs leading-[1.3] font-normal text-foreground-muted">
+      <span className="text-sm leading-snug font-semibold">{labels.useCustomModelTitle}</span>
+      <span className="text-xs leading-snug font-normal text-foreground-muted">
         {labels.useCustomModelSubtitle}
       </span>
     </span>
