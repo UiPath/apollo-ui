@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v6.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.48.0...@uipath/apollo-react@6.49.0) (2026-09-21)
+
+### Features
+
+* **apollo-react:** shared guardrail definitions layer and useGuardrailDefinitions [AL-574] ([708eac1](https://github.com/UiPath/apollo-ui/commit/708eac180238524c8bcfd87fcc04b9162299841c)), closes [#1140](https://github.com/UiPath/apollo-ui/issues/1140) [#1147](https://github.com/UiPath/apollo-ui/issues/1147) [#1161](https://github.com/UiPath/apollo-ui/issues/1161)
+
+### Bug Fixes
+
+* **apollo-react:** add an enabled option to useGuardrailDefinitions [AL-574] ([7892925](https://github.com/UiPath/apollo-ui/commit/7892925fb202a138b5c2070b5ad7d7c4ababe991))
+* **apollo-react:** harden the guardrail definitions trust boundary [AL-574] ([aeef21f](https://github.com/UiPath/apollo-ui/commit/aeef21f6b10c272d4c47c5fe38e4bed5d3e9a4ba))
+
 ## [@uipath/apollo-react-v6.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.47.4...@uipath/apollo-react@6.48.0) (2026-09-17)
 
 ### Features
