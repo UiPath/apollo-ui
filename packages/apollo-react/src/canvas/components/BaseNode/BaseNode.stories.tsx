@@ -401,19 +401,19 @@ const shapeRows = [
     shape: 'stadium',
     value: "'stadium'",
     example: 'dmn.inputData',
-    use: 'DMN input data — a rectangle with fully rounded ends',
+    use: 'DMN input data: a rectangle with fully rounded ends',
   },
   {
     shape: 'clipped',
     value: "'clipped'",
     example: 'dmn.businessKnowledgeModel',
-    use: 'DMN business knowledge model — a rectangle with its leading corners clipped',
+    use: 'DMN business knowledge model: a rectangle with its leading corners clipped',
   },
   {
     shape: 'document',
     value: "'document'",
     example: 'dmn.knowledgeSource',
-    use: 'DMN knowledge source — a rectangle with a wavy bottom edge',
+    use: 'DMN knowledge source: a rectangle with a wavy bottom edge',
   },
 ] as const;
 
@@ -431,16 +431,20 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
       title="Shapes"
       description={
         <>
-          BaseNode supports three shapes: <strong className="text-foreground">circle</strong>,{' '}
-          <strong className="text-foreground">square</strong>, and{' '}
-          <strong className="text-foreground">rectangle</strong>. Shape is set via{' '}
+          BaseNode supports six shapes: <strong className="text-foreground">circle</strong>,{' '}
+          <strong className="text-foreground">square</strong>,{' '}
+          <strong className="text-foreground">rectangle</strong>,{' '}
+          <strong className="text-foreground">stadium</strong>,{' '}
+          <strong className="text-foreground">clipped</strong>, and{' '}
+          <strong className="text-foreground">document</strong>. The last three are DMN outlines and
+          lay out as wide cards, exactly like a rectangle. Shape is set via{' '}
           <StoryCode>display.shape</StoryCode> in the node data and controls both the rendered
           outline and the icon crop. Use the shape that best communicates the node's role to the
           user.
         </>
       }
     >
-      <StoryPreview description="The three shapes rendered side by side in their default (NotExecuted) state.">
+      <StoryPreview description="Every shape rendered in its default (NotExecuted) state.">
         <ShapesCanvas />
       </StoryPreview>
 
@@ -483,6 +487,45 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
             code="'rectangle'"
             description="Agents and complex nodes that need more horizontal space for labels or internal layout."
           />
+          <StoryCard
+            preview={
+              <div className="flex h-12 w-40 items-center gap-3 rounded-full border-2 border-border bg-surface-raised px-3">
+                <div className="h-6 w-6 flex-shrink-0 rounded bg-muted" />
+                <div className="h-1.5 w-16 rounded-full bg-muted" />
+              </div>
+            }
+            title="Stadium"
+            code="'stadium'"
+            description="DMN input data. A wide card with fully rounded ends, for a value supplied to a decision from outside the model."
+          />
+          <StoryCard
+            preview={
+              <div
+                className="flex h-12 w-40 items-center gap-3 border-2 border-border bg-surface-raised px-3"
+                style={{ clipPath: 'polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 70%, 0 30%)' }}
+              >
+                <div className="h-6 w-6 flex-shrink-0 rounded bg-muted" />
+                <div className="h-1.5 w-16 rounded-full bg-muted" />
+              </div>
+            }
+            title="Clipped"
+            code="'clipped'"
+            description="DMN business knowledge model. A wide card with its two leading corners cut, for reusable decision logic."
+          />
+          <StoryCard
+            preview={
+              <div
+                className="flex h-12 w-40 items-center gap-3 border-2 border-border bg-surface-raised px-3"
+                style={{ clipPath: 'polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%)' }}
+              >
+                <div className="h-6 w-6 flex-shrink-0 rounded bg-muted" />
+                <div className="h-1.5 w-16 rounded-full bg-muted" />
+              </div>
+            }
+            title="Document"
+            code="'document'"
+            description="DMN knowledge source. A wide card with a wavy bottom edge, for the authority a decision is governed by."
+          />
         </div>
 
         <StorySpecTable columns={shapeColumns} rows={shapeRows} />
@@ -507,7 +550,7 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
     version: '1.0.0',
     display: {
       label: 'My Node',
-      shape: 'square', // 'circle' | 'square' | 'rectangle'
+      shape: 'square', // 'circle' | 'square' | 'rectangle' | 'stadium' | 'clipped' | 'document'
     },
   },
 })`}

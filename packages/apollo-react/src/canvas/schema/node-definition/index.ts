@@ -31,11 +31,11 @@ export {
   nodeManifestSchema,
   nodeRuntimeConstraintsManifestSchema,
 } from './node-manifest';
-export type { NodeShape, SilhouetteNodeShape, WideNodeShape } from './shape';
+export type { NodeShape, OutlineDrawnNodeShape, WideNodeShape } from './shape';
 export {
-  isSilhouetteNodeShape,
+  isOutlineDrawnShape,
   isWideNodeShape,
   nodeShapeSchema,
-  SILHOUETTE_NODE_SHAPES,
+  OUTLINE_DRAWN_NODE_SHAPES,
   WIDE_NODE_SHAPES,
 } from './shape';

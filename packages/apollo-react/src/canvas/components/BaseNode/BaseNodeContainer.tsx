@@ -1,10 +1,10 @@
 import { cn } from '@uipath/apollo-wind';
 import { useMemo } from 'react';
-import { isSilhouetteNodeShape, isWideNodeShape, type NodeShape } from '../../schema';
+import { isOutlineDrawnShape, isWideNodeShape, type NodeShape } from '../../schema';
 import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { ValidationErrorSeverity } from '../../types/validation';
-import { BaseNodeSilhouette } from './BaseNodeSilhouette';
+import { BaseNodeOutline } from './BaseNodeOutline';
 
 export const getStatusBorder = (
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType
@@ -72,13 +72,13 @@ export const BaseContainer = ({
     const statusBorder = getStatusBorder(activeStatus);
     const hasStatusBorder = statusBorder.length > 0;
 
-    // A silhouette shape draws its own fill and outline, so the container drops both rather than
+    // A outline shape draws its own fill and outline, so the container drops both rather than
     // showing a rectangle behind the SVG.
-    const drawnBySilhouette = isSilhouetteNodeShape(shape);
+    const drawnByOutline = isOutlineDrawnShape(shape);
 
     return cn(
       'relative flex items-center cursor-pointer',
-      drawnBySilhouette
+      drawnByOutline
         ? 'bg-transparent border-0'
         : cn(
             'bg-surface-overlay border border-border',
@@ -86,15 +86,15 @@ export const BaseContainer = ({
           ),
       'w-(--node-w) h-(--node-h)',
       'outline-offset-0 transition-[box-shadow,border-color] duration-150',
-      shadow && !drawnBySilhouette && 'shadow-(--canvas-node-shadow-rest)',
+      shadow && !drawnByOutline && 'shadow-(--canvas-node-shadow-rest)',
       isWideNodeShape(shape)
         ? 'flex-row justify-start gap-3 p-(--node-gap)'
         : 'flex-col justify-center',
       hasFooter && 'flex-wrap',
-      statusBorder,
-      shadow && !drawnBySilhouette && isHovered && 'shadow-(--canvas-node-shadow-hover)',
-      isHovered && !hasStatusBorder && !drawnBySilhouette && 'border-border-hover',
-      isSelected && 'outline outline-2 outline-foreground-accent-muted',
+      !drawnByOutline && statusBorder,
+      shadow && !drawnByOutline && isHovered && 'shadow-(--canvas-node-shadow-hover)',
+      isHovered && !hasStatusBorder && !drawnByOutline && 'border-border-hover',
+      isSelected && !drawnByOutline && 'outline outline-2 outline-foreground-accent-muted',
       interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
       interactionState === 'drag' &&
         cn('cursor-grabbing', shadow && 'shadow-(--canvas-node-shadow-lifted)'),
@@ -118,7 +118,14 @@ export const BaseContainer = ({
       style={background ? { background } : undefined}
       aria-busy={loading || undefined}
     >
-      {isSilhouetteNodeShape(shape) && <BaseNodeSilhouette shape={shape} />}
+      {isOutlineDrawnShape(shape) && (
+        <BaseNodeOutline
+          shape={shape}
+          isSelected={isSelected}
+          isHovered={isHovered}
+          status={activeStatus}
+        />
+      )}
       {children}
     </div>
   );
