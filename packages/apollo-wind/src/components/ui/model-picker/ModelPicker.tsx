@@ -561,17 +561,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       [labels, homeGeography, recommendedModelIds, previewModelIds, badgesFor, customTagsFor]
     );
 
-    // In Category view the section header *is* the Recommended/Preview label,
-    // so repeating it on rows inside *that* section is noise. `OptionList`
-    // narrows this to rows whose own group matches the kind, so a Recommended
-    // model filed under Custom Models (BYO) keeps its chip. Provider/flat views
-    // pass nothing — there the header carries no lifecycle signal at all.
-    // Trigger chips are unaffected.
-    const rowHideTagKinds = React.useMemo<readonly string[] | undefined>(
-      () => (activeGroupBy === 'subscription' ? ['recommended', 'preview'] : undefined),
-      [activeGroupBy]
-    );
-
     // Row actions: respect the slot override, otherwise gate the default
     // edit action by the resolved BYO-management permission and wire it
     // to the LLM-configurations page — the edit form directly when the
@@ -749,7 +738,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                   collapsedGroups={collapsedGroups}
                   groupCounts={groupCounts}
                   hideGroupHeaders={!showGroupHeaders || activeGroupBy === 'flat'}
-                  hideTagKinds={rowHideTagKinds}
                   id={listboxId}
                   onGroupToggle={toggleGroup}
                   onSelect={choose}

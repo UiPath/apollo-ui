@@ -60,6 +60,8 @@ export interface OptionListProps {
    * keeps its chip, because that section says nothing about lifecycle.
    *
    * Tags are still derived by `deriveModelTags`; this only affects rendering.
+   *
+   * Opt-in: `ModelPicker` passes nothing, so every chip renders everywhere.
    */
   hideTagKinds?: readonly string[];
   /**
