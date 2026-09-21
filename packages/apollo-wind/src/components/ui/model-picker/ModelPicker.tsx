@@ -17,7 +17,7 @@ import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib';
 import type { ModelBadgeKind } from './badges';
-import { DELETE_CONFIRM, defaultTranslator, type PickerTranslator } from './i18n';
+import { type ModelPickerLabels, resolveLabels } from './labels';
 import { FolderSwitcher, type FolderSwitcherFolder } from './primitives/FolderSwitcher';
 import { defaultRowActions } from './primitives/ModelOptionRow';
 import { GroupedOptionList, optionDomId, VirtualOptionList } from './primitives/OptionList';
@@ -26,21 +26,8 @@ import { PickerSearchInput } from './primitives/PickerSearchInput';
 import { PickerTrigger } from './primitives/PickerTrigger';
 import type { DiscoveryModel, ModelTag } from './types';
 import { useModelPickerState } from './useModelPickerState';
-import {
-  buildLlmConfigurationsUrl,
-  type LlmConfigurationsLinkOptions,
-  type PlatformRequestContext,
-  platformNavigation,
-  useByoConnectionNames,
-  useCanManageByo,
-  useDeleteByoConfiguration,
-  usePlatformDiscoveryModels,
-  useUserFolders,
-} from './usePlatformAccess';
 import type { DeriveModelTagsContext, GroupStrategy } from './utils';
 import { resolveHomeGeography } from './utils';
-
-const EMPTY_MODELS: DiscoveryModel[] = [];
 
 export type ModelPickerVariant = 'searchable' | 'virtualized';
 
@@ -117,13 +104,10 @@ export interface ModelPickerSlots {
 export interface ModelPickerProps {
   /**
    * The catalog to render, typically from the LLM Gateway Discovery API.
-   * Optional when a `requestContext` (with `userId`) is provided: the
-   * picker then fetches Discovery itself — including refetching when the
-   * folder selection changes and after a BYO delete — so products need no
-   * catalog plumbing at all. Pass `models` to override with a host-owned
-   * fetch.
+   * The picker fetches nothing — see `usePlatformDiscoveryModels` for the
+   * standard fetch, or supply your own.
    */
-  models?: DiscoveryModel[];
+  models: DiscoveryModel[];
   /** Selected `modelId`, or `null`/`undefined` for no selection. */
   value?: string | null;
   /**
@@ -271,24 +255,6 @@ export interface ModelPickerProps {
    */
   onUseCustomModel?: () => void;
   /**
-   * Auth + routing context for the picker's built-in platform calls —
-   * the folder list (`enableFolders`) and the org-admin check
-   * (`canManageByo` unset) — and for the default add/edit navigation
-   * into the AI Trust Layer LLM-configurations pages. Pass a **stable
-   * (memoized) object** — the internal hooks refetch when its identity
-   * changes.
-   */
-  requestContext?: PlatformRequestContext;
-  /**
-   * Turn on folder scoping. The picker fetches the current user's
-   * Orchestrator folders itself (via `requestContext`) and renders the
-   * toolbar folder switcher — the product only decides *whether*
-   * folders apply to its surface. Wire `onFolderChange` and re-fetch
-   * Discovery with the new `folderKey` when the selection changes.
-   * Default: `false`.
-   */
-  enableFolders?: boolean;
-  /**
    * Test/storybook override for the folder list. When set, the picker
    * skips its internal folder fetch and renders these instead.
    * Production hosts should prefer `enableFolders` + `requestContext`.
@@ -347,22 +313,17 @@ export interface ModelPickerProps {
    */
   onDeleteModel?: (model: DiscoveryModel) => void | Promise<void>;
   /**
-   * Fired after a BYO model is successfully deleted, whether the picker or
-   * `onDeleteModel` performed it. The catalog has already been refetched.
-   *
-   * Use it to reconcile host state the picker cannot know about — most
-   * importantly, to pick a replacement when the deleted model was the
-   * current selection (the picker does not choose one for you, since what
-   * to fall back to is a product decision).
+   * Edit activation for a BYO row. Rendered only when `canManageByo` is true.
+   * The host decides where it leads — `buildLlmConfigurationsUrl` builds the
+   * AI Trust Layer deep link if that is the destination you want.
    */
-  onModelDeleted?: (model: DiscoveryModel) => void | Promise<void>;
+  onEditModel?: (model: DiscoveryModel) => void;
   /**
-   * Translator for the picker's own strings. apollo-wind ships no i18n
-   * library, so the default renders the English source text. Supply a
-   * shim over the host's i18n (a Lingui `i18n` instance satisfies this
-   * shape structurally; a react-i18next host wraps `t`) to localize.
+   * Overrides for the strings the picker renders. Anything omitted falls back
+   * to `DEFAULT_MODEL_PICKER_LABELS`, so an unlocalized host still shows real
+   * English rather than raw keys.
    */
-  translator?: PickerTranslator;
+  labels?: Partial<ModelPickerLabels>;
   /** Extensibility slots. See `ModelPickerSlots`. */
   slots?: ModelPickerSlots;
   /** Rendered as `data-testid` on the picker's root element. */
@@ -405,8 +366,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       customTagVariants,
       canManageByo,
       onUseCustomModel,
-      requestContext,
-      enableFolders = false,
       folders,
       folder: folderProp,
       onFolderChange,
@@ -416,25 +375,23 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       showGroupHeaders = true,
       popupContainer,
       onDeleteModel,
-      onModelDeleted,
-      translator,
+      onEditModel,
+      labels: labelOverrides,
       slots,
       testId,
     },
     forwardedRef
   ) {
-    // apollo-wind ships no i18n: `defaultTranslator` renders each
+    // apollo-wind ships no labels: `defaultTranslator` renders each
     // descriptor's English source text, and a host localizes by passing
     // its own translator. A design-system component must never throw or
     // render raw keys in a host that supplies nothing.
-    const i18n = translator ?? defaultTranslator;
-    const _ = React.useCallback<PickerTranslator['_']>((d) => i18n._(d), [i18n]);
+    const labels = React.useMemo(() => resolveLabels(labelOverrides), [labelOverrides]);
 
-    const defaultLabel = _({ id: 'modelPicker.label.default', message: 'Model' });
+    const defaultLabel = labels.fieldLabel;
     const resolvedLabel = label ?? defaultLabel;
     const labelHidden = label === null;
-    const resolvedPlaceholder =
-      placeholder ?? _({ id: 'modelPicker.placeholder.selectAModel', message: 'Select a model' });
+    const resolvedPlaceholder = placeholder ?? labels.placeholder;
 
     // BYO sits at the top of both views and starts expanded — collapsing
     // it by default would hide the most-requested section. The header
@@ -454,91 +411,42 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       [folderIsControlled, onFolderChange]
     );
 
-    // Catalog: host-supplied `models`, or fetched from Discovery by the
-    // picker itself when only a `requestContext` is provided.
-    const selfFetchCtx = !models && requestContext ? requestContext : null;
-    const {
-      models: fetchedModels,
-      loading: discoveryLoading,
-      error: discoveryError,
-      refetch: refetchDiscovery,
-    } = usePlatformDiscoveryModels(selfFetchCtx, folder ?? null);
-    const catalog = models ?? fetchedModels ?? EMPTY_MODELS;
-    const effectiveLoading = (loading ?? false) || discoveryLoading;
+    const catalog = models;
+    const effectiveLoading = loading ?? false;
 
     // Deleting a BYO configuration removes it for every consumer in the
-    // tenant, so the picker always confirms first. In self-fetch mode it
-    // then issues the DELETE itself — it already holds the credentials and
-    // org/tenant path that route needs — and refetches. `onDeleteModel`
-    // overrides that for hosts who must own the request.
-    const { deleteConfiguration } = useDeleteByoConfiguration(selfFetchCtx);
+    // tenant, so the picker always confirms first. Confirming is presentation;
+    // the request itself belongs to the host, which owns the credentials.
     const [pendingDelete, setPendingDelete] = React.useState<DiscoveryModel | null>(null);
     const [deleteError, setDeleteError] = React.useState<Error | null>(null);
-    const canSelfDelete = !onDeleteModel && !!selfFetchCtx;
     const handleDeleteModel = React.useMemo(() => {
-      if (!onDeleteModel && !canSelfDelete) return undefined;
+      if (!onDeleteModel) return undefined;
       return (m: DiscoveryModel) => {
         setDeleteError(null);
         setPendingDelete(m);
       };
-    }, [onDeleteModel, canSelfDelete]);
+    }, [onDeleteModel]);
     const confirmPendingDelete = React.useCallback(async () => {
       const model = pendingDelete;
       setPendingDelete(null);
-      if (!model) return;
+      if (!model || !onDeleteModel) return;
       try {
-        if (onDeleteModel) {
-          await onDeleteModel(model);
-        } else {
-          const configurationId = model.byomDetails?.byoConfigurationId;
-          // Rows without a configuration id never render the action, so this
-          // is unreachable in practice — but deleting "nothing" must not look
-          // like success to the host.
-          if (!configurationId)
-            throw new Error('This custom model has no configuration to delete.');
-          await deleteConfiguration(configurationId);
-        }
+        await onDeleteModel(model);
       } catch (err) {
-        setDeleteError(err instanceof Error ? err : new Error(String(err)));
-        return;
-      }
-      try {
-        // Awaited so the host reacts to a refreshed catalog, not the one that
-        // still lists the model it just deleted.
-        if (selfFetchCtx) await refetchDiscovery();
-        await onModelDeleted?.(model);
-      } catch (err) {
-        // The delete itself succeeded, but this runs from an onClick whose
-        // promise nobody holds — a throwing host callback would otherwise be
-        // an unhandled rejection with no trace of why nothing happened.
+        // This runs from an onClick whose promise nobody holds — a throwing
+        // host callback would otherwise be an unhandled rejection with no
+        // trace of why nothing happened.
         setDeleteError(err instanceof Error ? err : new Error(String(err)));
       }
-    }, [
-      pendingDelete,
-      onDeleteModel,
-      onModelDeleted,
-      deleteConfiguration,
-      selfFetchCtx,
-      refetchDiscovery,
-    ]);
-    const effectiveError = error ?? deleteError ?? discoveryError;
+    }, [pendingDelete, onDeleteModel]);
+    const effectiveError = error ?? deleteError;
 
-    // BYO rows without a host-supplied `byoConnectionLabel` get their
-    // Integration Service connection name resolved by the picker itself.
-    // Policy-blocked models are never rendered (same as the platform BFFs).
-    // Which modalities a product offers is the product's call — pass `filter`
-    // (see `isTextGenerationModel` for the common chat-only case).
-    const connectionNames = useByoConnectionNames(catalog, requestContext ?? null);
     const effectiveModels = React.useMemo(() => {
-      const allowed = catalog.filter((m) => !m.isBlockedByPolicy);
-      if (connectionNames.size === 0) return allowed;
-      return allowed.map((m) => {
-        if (m.byoConnectionLabel) return m;
-        const id = m.byomDetails?.integrationServiceConnectionId;
-        const name = id ? connectionNames.get(id) : undefined;
-        return name ? { ...m, byoConnectionLabel: name } : m;
-      });
-    }, [catalog, connectionNames]);
+      // The one opinion the component keeps: a policy-blocked model is a
+      // governance verdict, not a rendering preference, and must never be
+      // offered no matter who fetched the row.
+      return catalog.filter((m) => !m.isBlockedByPolicy);
+    }, [catalog]);
 
     const state = useModelPickerState({
       models: effectiveModels,
@@ -550,7 +458,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       previewModelIds,
       filter,
       initiallyCollapsedGroups,
-      i18n,
+      labels,
     });
     const {
       open,
@@ -613,48 +521,11 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       [selected, closePopup]
     );
 
-    // BYO management: an explicit `canManageByo` prop wins; otherwise
-    // the picker checks whether the user is an organization admin via
-    // `requestContext` (failing closed while loading / on error) — the
-    // same gate the portal puts on the AI Trust Layer admin pages the
-    // affordances navigate to.
-    const { canManage: isOrgAdmin } = useCanManageByo(
-      canManageByo === undefined && requestContext ? requestContext : null
-    );
-    const effectiveCanManageByo = canManageByo ?? isOrgAdmin ?? false;
-
-    // Folder list: fetched internally when the product opts in via
-    // `enableFolders`, unless a test/storybook override supplies the
-    // list directly through `folders`.
-    const { folders: fetchedFolders } = useUserFolders(
-      enableFolders && !folders && requestContext ? requestContext : null
-    );
-    const effectiveFolders = folders ?? (enableFolders ? fetchedFolders : undefined);
-
-    // Numeric folder id for the add/edit deep-links. Prefer the selected
-    // folder; when none is selected (e.g. "All folders"), fall back to the
-    // first available folder so the affordances still deep-link into a
-    // concrete folder's add/edit page instead of dead-ending on the
-    // configurations list.
-    const selectedFolderNumericId = React.useMemo(
-      () =>
-        effectiveFolders?.find((f) => f.id === folder)?.numericId ??
-        effectiveFolders?.find((f) => f.numericId != null)?.numericId,
-      [effectiveFolders, folder]
-    );
-    const navigateToLlmConfigurations = React.useMemo(() => {
-      if (!requestContext) return undefined;
-      return (link: Omit<LlmConfigurationsLinkOptions, 'folderNumericId'>) => {
-        const url = buildLlmConfigurationsUrl(requestContext, {
-          ...link,
-          folderNumericId: selectedFolderNumericId,
-        });
-        // Always a new tab: the picker is embedded in a product surface and
-        // navigating it away to the AI Trust Layer admin pages would unload
-        // the user's in-progress work.
-        platformNavigation.openInNewTab(url);
-      };
-    }, [requestContext, selectedFolderNumericId]);
+    // BYO management is the host's judgement — it knows its own authorization
+    // model. `useCanManageByo` is exported for hosts that want the platform's
+    // org-admin rule; the component just honours the answer.
+    const effectiveCanManageByo = canManageByo ?? false;
+    const effectiveFolders = folders;
 
     // Dev-time guard: duplicate folder ids silently break the switcher's
     // selection highlight. Warn once per list change. `typeof process`
@@ -685,14 +556,14 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     const homeGeography = resolveHomeGeography(homeRegion);
     const tagContext = React.useMemo<DeriveModelTagsContext>(
       () => ({
-        i18n,
+        labels,
         homeRegion: homeGeography,
         recommendedModelIds,
         previewModelIds,
         badgesFor,
         customTagsFor,
       }),
-      [i18n, homeGeography, recommendedModelIds, previewModelIds, badgesFor, customTagsFor]
+      [labels, homeGeography, recommendedModelIds, previewModelIds, badgesFor, customTagsFor]
     );
 
     // In Category view the section header *is* the Recommended/Preview label,
@@ -713,34 +584,10 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     const renderRowActions = React.useMemo(() => {
       if (slots?.optionActions) return slots.optionActions;
       if (!effectiveCanManageByo) return () => null;
-      const onEdit = navigateToLlmConfigurations
-        ? (model: DiscoveryModel) =>
-            navigateToLlmConfigurations({
-              intent: 'edit',
-              configurationId: model.byomDetails?.byoConfigurationId,
-            })
-        : undefined;
-      if (!onEdit && !handleDeleteModel) return () => null;
-      return (m: DiscoveryModel) => {
-        // When the picker owns the DELETE it needs a configuration id to
-        // target, so rows lacking one get edit only. A host-supplied
-        // handler may know another way, so it always gets the action.
-        const deletable =
-          handleDeleteModel && (onDeleteModel || !!m.byomDetails?.byoConfigurationId);
-        return defaultRowActions(m, {
-          i18n,
-          onEdit,
-          onDelete: deletable ? handleDeleteModel : undefined,
-        });
-      };
-    }, [
-      slots?.optionActions,
-      effectiveCanManageByo,
-      navigateToLlmConfigurations,
-      handleDeleteModel,
-      onDeleteModel,
-      i18n,
-    ]);
+      if (!onEditModel && !handleDeleteModel) return () => null;
+      return (m: DiscoveryModel) =>
+        defaultRowActions(m, { labels, onEdit: onEditModel, onDelete: handleDeleteModel });
+    }, [slots?.optionActions, effectiveCanManageByo, onEditModel, handleDeleteModel, labels]);
 
     // Footer: explicit slot override (including `null`) wins; otherwise
     // the default "Use custom model" CTA appears when the user may manage
@@ -751,15 +598,11 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         return slots.popupFooter ? slots.popupFooter(slotCtx) : null;
       }
       if (!effectiveCanManageByo) return null;
-      const activate =
-        onUseCustomModel ??
-        (navigateToLlmConfigurations
-          ? () => navigateToLlmConfigurations({ intent: 'add' })
-          : undefined);
+      const activate = onUseCustomModel;
       return (
         <UseCustomModelFooter
           disabled={!activate}
-          i18n={i18n}
+          labels={labels}
           onActivate={() => {
             // Navigate first, then close: opening the new tab must happen
             // synchronously within the click gesture or the browser blocks it
@@ -769,15 +612,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           }}
         />
       );
-    }, [
-      slots,
-      effectiveCanManageByo,
-      onUseCustomModel,
-      navigateToLlmConfigurations,
-      slotCtx,
-      closePopup,
-      i18n,
-    ]);
+    }, [slots, effectiveCanManageByo, onUseCustomModel, slotCtx, closePopup, labels]);
 
     // A stored value that hasn't resolved *yet* is not missing, it is pending:
     // render it as plain text so opening a saved form doesn't flash "Select a
@@ -834,14 +669,9 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                   inputRef={searchRef}
                   leading={
                     slots?.searchLeading?.() ??
-                    (effectiveFolders &&
-                    effectiveFolders.length > 0 &&
-                    (onFolderChange || selfFetchCtx) ? (
+                    (effectiveFolders && effectiveFolders.length > 0 ? (
                       <FolderSwitcher
-                        allFoldersLabel={
-                          allFoldersLabel ??
-                          _({ id: 'modelPicker.folderSwitcher.allFolders', message: 'All folders' })
-                        }
+                        allFoldersLabel={allFoldersLabel ?? labels.allFolders}
                         container={popupContainer}
                         folders={effectiveFolders}
                         onChange={handleFolderChange}
@@ -855,13 +685,14 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                     setActiveIndex(0);
                   }}
                   onKeyDown={onSearchKeyDown}
-                  placeholder={_({
-                    id: 'modelPicker.search.placeholder',
-                    message: 'Search models',
-                  })}
+                  placeholder={labels.searchPlaceholder}
                   trailing={
                     allowGroupingChange ? (
-                      <GroupBySegmented i18n={i18n} onChange={setGroupBy} value={activeGroupBy} />
+                      <GroupBySegmented
+                        labels={labels}
+                        onChange={setGroupBy}
+                        value={activeGroupBy}
+                      />
                     ) : undefined
                   }
                   value={query}
@@ -879,7 +710,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
             {effectiveLoading && (
               // biome-ignore lint/a11y/useSemanticElements: a live status region, not an <output>.
               <div
-                aria-label={_({ id: 'modelPicker.loading.label', message: 'Loading models' })}
+                aria-label={labels.loading}
                 aria-live="polite"
                 className="flex justify-center py-6 text-foreground-muted"
                 role="status"
@@ -899,13 +730,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                 className="py-6 text-center text-[13px] text-foreground-muted"
                 role="status"
               >
-                {query.trim()
-                  ? _({
-                      id: 'modelPicker.empty.noMatch',
-                      message: 'No models match "{query}".',
-                      values: { query: query.trim() },
-                    })
-                  : _({ id: 'modelPicker.empty.noModels', message: 'No models available.' })}
+                {query.trim() ? labels.emptyNoMatch(query.trim()) : labels.emptyNoModels}
               </div>
             )}
             {/*
@@ -917,23 +742,15 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
             <div aria-atomic="true" aria-live="polite" className="sr-only">
               {!effectiveLoading && !effectiveError && filtered.length > 0
                 ? filtered.length === 1
-                  ? _({
-                      id: 'modelPicker.count.one',
-                      message: '{n} model',
-                      values: { n: filtered.length },
-                    })
-                  : _({
-                      id: 'modelPicker.count.many',
-                      message: '{n} models',
-                      values: { n: filtered.length },
-                    })
+                  ? labels.resultCount(filtered.length)
+                  : labels.resultCount(filtered.length)
                 : ''}
             </div>
             {!effectiveLoading && !effectiveError && filtered.length > 0 && (
               <>
                 <List
                   activeIndex={activeIndex}
-                  aria-label={_({ id: 'modelPicker.listbox.label', message: 'Models' })}
+                  aria-label={labels.listboxLabel}
                   collapsedGroups={collapsedGroups}
                   groupCounts={groupCounts}
                   hideGroupHeaders={!showGroupHeaders || activeGroupBy === 'flat'}
@@ -967,26 +784,21 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         >
           <AlertDialogContent container={popupContainer}>
             <AlertDialogHeader>
-              <AlertDialogTitle>{_(DELETE_CONFIRM.title)}</AlertDialogTitle>
+              <AlertDialogTitle>{labels.deleteConfirmTitle}</AlertDialogTitle>
               <AlertDialogDescription>
-                {_({
-                  ...DELETE_CONFIRM.message,
-                  values: {
-                    name: pendingDelete
-                      ? (pendingDelete.displayName ?? pendingDelete.modelName)
-                      : '',
-                  },
-                })}
+                {labels.deleteConfirmMessage(
+                  pendingDelete ? (pendingDelete.displayName ?? pendingDelete.modelName) : ''
+                )}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               {/* Focus lands on the safe action for a destructive confirm. */}
-              <AlertDialogCancel autoFocus>{_(DELETE_CONFIRM.cancel)}</AlertDialogCancel>
+              <AlertDialogCancel autoFocus>{labels.deleteConfirmCancel}</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-error-background text-error hover:bg-error-background/80"
                 onClick={confirmPendingDelete}
               >
-                {_(DELETE_CONFIRM.confirm)}
+                {labels.deleteConfirmConfirm}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -1008,23 +820,23 @@ ModelPicker.displayName = 'ModelPicker';
 interface GroupBySegmentedProps {
   value: GroupStrategy;
   onChange: (next: GroupStrategy) => void;
-  i18n: PickerTranslator;
+  labels: ModelPickerLabels;
 }
 
-const GroupBySegmented: React.FC<GroupBySegmentedProps> = ({ value, onChange, i18n }) => {
+const GroupBySegmented: React.FC<GroupBySegmentedProps> = ({ value, onChange, labels }) => {
   const groupByOptions: Array<{ key: GroupStrategy; label: string }> = [
     {
       key: 'subscription',
-      label: i18n._({ id: 'modelPicker.groupBy.category', message: 'Category' }),
+      label: labels.groupByCategory,
     },
-    { key: 'vendor', label: i18n._({ id: 'modelPicker.groupBy.provider', message: 'Provider' }) },
+    { key: 'vendor', label: labels.groupByProvider },
   ];
   return (
     // A `role="group"` of toggle buttons rather than a radiogroup: the
     // control changes how the list is ordered, it does not select a value.
     // biome-ignore lint/a11y/useSemanticElements: a toolbar grouping, not a <fieldset>.
     <div
-      aria-label={i18n._({ id: 'modelPicker.groupBy.ariaLabel', message: 'Group models by' })}
+      aria-label={labels.groupByAriaLabel}
       className="inline-flex gap-[3px] rounded-lg bg-surface-raised p-[3px]"
       data-slot="model-picker-group-by"
       role="group"
@@ -1035,7 +847,7 @@ const GroupBySegmented: React.FC<GroupBySegmentedProps> = ({ value, onChange, i1
           <button
             aria-pressed={active}
             className={cn(
-              'rounded-md px-2.5 py-1.5 text-[12.5px] leading-[1.2] font-semibold transition-colors',
+              'cursor-pointer rounded-md px-2.5 py-1.5 text-[12.5px] leading-[1.2] font-semibold transition-colors',
               'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
               active
                 ? 'bg-popover text-brand shadow-sm'
@@ -1071,31 +883,25 @@ interface UseCustomModelFooterProps {
    * surfaces a tooltip explaining why.
    */
   disabled?: boolean;
-  i18n: PickerTranslator;
+  labels: ModelPickerLabels;
 }
 
 const UseCustomModelFooter: React.FC<UseCustomModelFooterProps> = ({
   onActivate,
   disabled,
-  i18n,
+  labels,
 }) => (
   <button
     className={cn(
-      'flex w-full items-center justify-start gap-3 px-4 py-3 text-left text-brand transition-colors',
+      'flex w-full cursor-pointer items-center justify-start gap-3 px-4 py-3 text-left text-brand transition-colors',
       'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
+      'disabled:cursor-default',
       disabled ? 'opacity-55' : 'hover:bg-surface-hover'
     )}
     data-slot="model-picker-use-custom-model"
     disabled={disabled}
     onClick={disabled ? undefined : onActivate}
-    title={
-      disabled
-        ? i18n._({
-            id: 'modelPicker.useCustomModel.disabledHint',
-            message: 'Pass onUseCustomModel or a requestContext to the picker to wire this action.',
-          })
-        : undefined
-    }
+    title={disabled ? labels.useCustomModelDisabledHint : undefined}
     type="button"
   >
     <span className="flex size-[30px] shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
@@ -1103,13 +909,10 @@ const UseCustomModelFooter: React.FC<UseCustomModelFooterProps> = ({
     </span>
     <span className="flex min-w-0 flex-col">
       <span className="text-[13.5px] leading-[1.3] font-semibold">
-        {i18n._({ id: 'modelPicker.useCustomModel.title', message: 'Use custom model' })}
+        {labels.useCustomModelTitle}
       </span>
       <span className="text-xs leading-[1.3] font-normal text-foreground-muted">
-        {i18n._({
-          id: 'modelPicker.useCustomModel.subtitle',
-          message: 'Bring a model from your own connection',
-        })}
+        {labels.useCustomModelSubtitle}
       </span>
     </span>
   </button>

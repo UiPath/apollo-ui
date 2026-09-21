@@ -4,7 +4,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import * as React from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib';
-import type { PickerTranslator } from '../i18n';
+import { DEFAULT_MODEL_PICKER_LABELS, type ModelPickerLabels } from '../labels';
 import { ModelTagChip } from '../ModelTagChip';
 import type { DiscoveryModel } from '../types';
 import { type DeriveModelTagsContext, deriveModelTags } from '../utils';
@@ -270,11 +270,8 @@ ModelOptionRow.displayName = 'ModelOptionRow';
 export function defaultRowActions(
   model: DiscoveryModel,
   options: {
-    /**
-     * Translator. When provided, tooltips localize; when omitted,
-     * English source strings are used.
-     */
-    i18n?: PickerTranslator;
+    /** Strings for the action tooltips. Defaults to English. */
+    labels?: ModelPickerLabels;
     /** Edit activation — the picker navigates to the configuration page. */
     onEdit?: (model: DiscoveryModel) => void;
     /**
@@ -284,19 +281,15 @@ export function defaultRowActions(
     onDelete?: (model: DiscoveryModel) => void;
   } = {}
 ): React.ReactNode {
-  const { i18n, onEdit, onDelete } = options;
+  const { labels = DEFAULT_MODEL_PICKER_LABELS, onEdit, onDelete } = options;
   if (!onEdit && !onDelete) return null;
   const isByo =
     model.modelSubscriptionType === 'BYOMAdded' ||
     model.modelSubscriptionType === 'BYOMReplacedAlternative' ||
     model.modelSubscriptionType === 'BYOMReplacedLikeForLike';
   if (!isByo) return null;
-  const editTitle = i18n
-    ? i18n._({ id: 'modelPicker.row.editConfiguration', message: 'Edit configuration' })
-    : 'Edit configuration';
-  const deleteTitle = i18n
-    ? i18n._({ id: 'modelPicker.row.deleteConfiguration', message: 'Delete configuration' })
-    : 'Delete configuration';
+  const editTitle = labels.editConfiguration;
+  const deleteTitle = labels.deleteConfiguration;
   return (
     // Own provider so `defaultRowActions` works standalone; Radix nests
     // providers harmlessly when the host already mounts one.
@@ -306,7 +299,7 @@ export function defaultRowActions(
           <TooltipTrigger asChild>
             <button
               aria-label={editTitle}
-              className="rounded p-1 text-inherit hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="cursor-pointer rounded p-1 text-inherit hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               onClick={() => onEdit(model)}
               type="button"
             >
@@ -321,7 +314,7 @@ export function defaultRowActions(
           <TooltipTrigger asChild>
             <button
               aria-label={deleteTitle}
-              className="rounded p-1 text-inherit hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="cursor-pointer rounded p-1 text-inherit hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               onClick={() => onDelete(model)}
               type="button"
             >

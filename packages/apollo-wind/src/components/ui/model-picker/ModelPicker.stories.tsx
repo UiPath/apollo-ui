@@ -248,14 +248,11 @@ const Controlled = (args: React.ComponentProps<typeof ModelPicker>) => {
     args.value ?? 'anthropic.claude-sonnet-4-6-20260301-v1:0'
   );
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        padding: 32,
-        boxSizing: 'border-box',
-        background: '#f4f5f7',
-      }}
-    >
+    // `bg-background`, not a hardcoded colour: these stories carried Apollo's
+    // light-theme page grey over from the apollo-react original, which left the
+    // trigger sitting on a light ground under the dark themes while its text
+    // followed the theme — white on near-white.
+    <div className="min-h-screen bg-background p-8">
       <div style={{ maxWidth: 640, width: '100%' }}>
         <ModelPicker
           {...args}
@@ -602,14 +599,11 @@ const ControlledWithFolderScope = (args: React.ComponentProps<typeof ModelPicker
     [folder]
   );
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        padding: 32,
-        boxSizing: 'border-box',
-        background: '#f4f5f7',
-      }}
-    >
+    // `bg-background`, not a hardcoded colour: these stories carried Apollo's
+    // light-theme page grey over from the apollo-react original, which left the
+    // trigger sitting on a light ground under the dark themes while its text
+    // followed the theme — white on near-white.
+    <div className="min-h-screen bg-background p-8">
       <div style={{ maxWidth: 640, width: '100%' }}>
         <ModelPicker
           {...args}
@@ -669,14 +663,11 @@ const ControlledWithCustomModelCta = (args: React.ComponentProps<typeof ModelPic
     []
   );
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        padding: 32,
-        boxSizing: 'border-box',
-        background: '#f4f5f7',
-      }}
-    >
+    // `bg-background`, not a hardcoded colour: these stories carried Apollo's
+    // light-theme page grey over from the apollo-react original, which left the
+    // trigger sitting on a light ground under the dark themes while its text
+    // followed the theme — white on near-white.
+    <div className="min-h-screen bg-background p-8">
       <div style={{ maxWidth: 640, width: '100%' }}>
         <ModelPicker
           {...args}
@@ -732,14 +723,11 @@ export const WithUseCustomModelCta: Story = {
 const ControlledSelectingSubstitutedModel = (args: React.ComponentProps<typeof ModelPicker>) => {
   const [value, setValue] = useState<string | null>('uipath-gpt-5-2025-08-07');
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        padding: 32,
-        boxSizing: 'border-box',
-        background: '#f4f5f7',
-      }}
-    >
+    // `bg-background`, not a hardcoded colour: these stories carried Apollo's
+    // light-theme page grey over from the apollo-react original, which left the
+    // trigger sitting on a light ground under the dark themes while its text
+    // followed the theme — white on near-white.
+    <div className="min-h-screen bg-background p-8">
       <div style={{ maxWidth: 640, width: '100%' }}>
         <ModelPicker
           {...args}
@@ -884,14 +872,11 @@ const ControlledKitchenSink = (args: React.ComponentProps<typeof ModelPicker>) =
   );
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        padding: 32,
-        boxSizing: 'border-box',
-        background: '#f4f5f7',
-      }}
-    >
+    // `bg-background`, not a hardcoded colour: these stories carried Apollo's
+    // light-theme page grey over from the apollo-react original, which left the
+    // trigger sitting on a light ground under the dark themes while its text
+    // followed the theme — white on near-white.
+    <div className="min-h-screen bg-background p-8">
       <div style={{ maxWidth: 640, width: '100%' }}>
         <ModelPicker
           {...args}
@@ -959,14 +944,11 @@ export const KitchenSink: Story = {
 const ControlledUnknownModel = (args: React.ComponentProps<typeof ModelPicker>) => {
   const [value, setValue] = useState<string | null>('org-default-gpt-3-5-deprecated');
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        padding: 32,
-        boxSizing: 'border-box',
-        background: '#f4f5f7',
-      }}
-    >
+    // `bg-background`, not a hardcoded colour: these stories carried Apollo's
+    // light-theme page grey over from the apollo-react original, which left the
+    // trigger sitting on a light ground under the dark themes while its text
+    // followed the theme — white on near-white.
+    <div className="min-h-screen bg-background p-8">
       <div style={{ maxWidth: 640, width: '100%' }}>
         <ModelPicker
           {...args}

@@ -3,8 +3,7 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Shield } from 'lucide-react';
 import React, { useEffect, useMemo, useRef } from 'react';
-import type { PickerTranslator } from '../i18n';
-import { GROUP_LABELS } from '../i18n';
+import { DEFAULT_MODEL_PICKER_LABELS, type ModelPickerLabels } from '../labels';
 import type { DiscoveryModel } from '../types';
 import type { DeriveModelTagsContext } from '../utils';
 import { GroupHeader } from './GroupHeader';
@@ -96,36 +95,23 @@ function groupLeadingIcon(groupKey: string): React.ReactNode {
   return null;
 }
 
-const GROUP_HINT_DESCRIPTORS = {
-  recommended: GROUP_LABELS.recommendedHint,
-  preview: GROUP_LABELS.previewHint,
-  byo: GROUP_LABELS.byoHint,
-  more: GROUP_LABELS.moreHint,
-  deprecating: GROUP_LABELS.deprecatingHint,
-} as const;
+const GROUP_HINT_KEYS = {
+  recommended: 'recommendedGroupHint',
+  preview: 'previewGroupHint',
+  byo: 'byoGroupHint',
+  more: 'moreGroupHint',
+  deprecating: 'deprecatingGroupHint',
+} as const satisfies Record<string, keyof ModelPickerLabels>;
 
-/** Localized tooltip hint for a built-in group; unknown keys get none. */
-function groupHint(groupKey: string, i18n?: PickerTranslator): string | undefined {
-  const desc = GROUP_HINT_DESCRIPTORS[groupKey as keyof typeof GROUP_HINT_DESCRIPTORS];
-  if (!desc) return undefined;
-  return i18n ? i18n._(desc) : desc.message;
+/** Tooltip hint for a built-in group; unknown keys get none. */
+function groupHint(groupKey: string, labels: ModelPickerLabels): string | undefined {
+  const key = GROUP_HINT_KEYS[groupKey as keyof typeof GROUP_HINT_KEYS];
+  return key ? labels[key] : undefined;
 }
 
-/** Localized "{n} model(s)" label; undefined when there's no i18n so
- *  GroupHeader falls back to its English ternary via `count`. */
-function countLabel(n: number | undefined, i18n?: PickerTranslator): string | undefined {
-  if (n == null || !i18n) return undefined;
-  return n === 1
-    ? i18n._({
-        id: 'modelPicker.count.one',
-        message: '{n} model',
-        values: { n },
-      })
-    : i18n._({
-        id: 'modelPicker.count.many',
-        message: '{n} models',
-        values: { n },
-      });
+/** The "{n} models" count on a section header. */
+function countLabel(n: number | undefined, labels: ModelPickerLabels): string | undefined {
+  return n == null ? undefined : labels.modelCount(n);
 }
 
 /**
@@ -163,6 +149,7 @@ export const GroupedOptionList: React.FC<OptionListProps> = ({
   onGroupToggle,
   'aria-label': ariaLabel = 'Models',
 }) => {
+  const labels = tagContext?.labels ?? DEFAULT_MODEL_PICKER_LABELS;
   let lastGroupKey: string | undefined;
   let headerCount = 0;
   // Compute counts up front when the parent didn't supply them — useful
@@ -200,9 +187,9 @@ export const GroupedOptionList: React.FC<OptionListProps> = ({
             {showHeader && (
               <GroupHeader
                 label={opt.groupLabel}
-                hint={groupHint(opt.groupKey, tagContext?.i18n)}
+                hint={groupHint(opt.groupKey, labels)}
                 count={derivedCounts[opt.groupKey]}
-                countLabel={countLabel(derivedCounts[opt.groupKey], tagContext?.i18n)}
+                countLabel={countLabel(derivedCounts[opt.groupKey], labels)}
                 dense={dense}
                 isFirst={isFirstHeader}
                 leadingIcon={groupLeadingIcon(opt.groupKey)}
@@ -255,6 +242,7 @@ export const VirtualOptionList: React.FC<OptionListProps> = ({
   onGroupToggle,
   'aria-label': ariaLabel = 'Models',
 }) => {
+  const labels = tagContext?.labels ?? DEFAULT_MODEL_PICKER_LABELS;
   type Row =
     | {
         kind: 'header';
@@ -348,9 +336,9 @@ export const VirtualOptionList: React.FC<OptionListProps> = ({
               <div key={row.key} style={baseStyle}>
                 <GroupHeader
                   label={row.label}
-                  hint={groupHint(row.groupKey, tagContext?.i18n)}
+                  hint={groupHint(row.groupKey, labels)}
                   count={row.count}
-                  countLabel={countLabel(row.count, tagContext?.i18n)}
+                  countLabel={countLabel(row.count, labels)}
                   dense={dense}
                   isFirst={row.isFirst}
                   leadingIcon={groupLeadingIcon(row.groupKey)}

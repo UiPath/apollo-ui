@@ -3,7 +3,7 @@
 import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '@/lib';
-import { defaultTranslator } from '../i18n';
+import { DEFAULT_MODEL_PICKER_LABELS } from '../labels';
 import { ModelTagChip } from '../ModelTagChip';
 import type { DiscoveryModel } from '../types';
 import { type DeriveModelTagsContext, deriveModelTags } from '../utils';
@@ -108,8 +108,8 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
     },
     ref
   ) {
-    const translator = tagContext?.i18n ?? defaultTranslator;
-    const effectiveCtx: DeriveModelTagsContext = tagContext ?? { i18n: translator };
+    const labels = tagContext?.labels ?? DEFAULT_MODEL_PICKER_LABELS;
+    const effectiveCtx: DeriveModelTagsContext = tagContext ?? { labels };
     const inlineTags = selected
       ? deriveModelTags(selected, effectiveCtx).filter((t) => !hideTagKinds?.includes(t.kind))
       : [];
@@ -132,10 +132,16 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
         aria-haspopup="listbox"
         aria-invalid={invalid ? true : undefined}
         className={cn(
-          'flex min-h-11 w-full items-center justify-start gap-3 rounded-md border bg-surface px-3 py-2 text-left text-foreground transition-colors',
-          'hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-          'disabled:pointer-events-none disabled:opacity-50',
-          invalid ? 'border-error ring-error/40' : 'border-border',
+          // Lifted verbatim from `Input` (default variant, default size) so the
+          // picker reads as a field rather than a button, and so the two cannot
+          // drift apart. `min-h-9` rather than `h-9`: identical at rest, but a
+          // tall `slots.triggerExtra` grows the row instead of being clipped.
+          'flex min-h-9 w-full cursor-pointer items-center justify-start gap-3 rounded-md border border-input bg-transparent px-3 py-1 text-left text-sm text-foreground transition-colors',
+          'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+          'disabled:cursor-not-allowed disabled:opacity-50',
+          // Attribute-driven, like `Input` — the trigger already sets aria-invalid.
+          'aria-invalid:border-error aria-invalid:focus-visible:ring-error',
+          'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:py-2 future:text-sm future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
           className
         )}
         data-slot="model-picker-trigger"
@@ -148,9 +154,7 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
         <span className="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5">
           {selected ? (
             <>
-              <span className="max-w-full truncate text-sm font-semibold text-foreground">
-                {primary}
-              </span>
+              <span className="max-w-full truncate text-foreground">{primary}</span>
               {inlineTags.map((t) => (
                 // `flex items-center` for the same reason as the option rows:
                 // a block wrapper baseline-aligns the inline-flex chip inside
@@ -161,23 +165,16 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
               ))}
             </>
           ) : pendingValue ? (
-            <span className="max-w-full truncate text-sm font-semibold text-foreground">
-              {pendingValue}
-            </span>
+            <span className="max-w-full truncate text-foreground">{pendingValue}</span>
           ) : unknownValue ? (
             <span
-              className="max-w-full truncate text-sm font-semibold text-error"
-              title={translator._({
-                id: 'modelPicker.trigger.unknownValueTooltip',
-                message:
-                  '"{value}" is no longer available in this catalog. Pick a replacement to ensure your workflow continues to run.',
-                values: { value: unknownValue },
-              })}
+              className="max-w-full truncate text-error"
+              title={labels.unknownValueTooltip(unknownValue)}
             >
               {unknownValue}
             </span>
           ) : (
-            <span className="text-sm text-foreground-subtle">{placeholder}</span>
+            <span className="text-foreground-subtle">{placeholder}</span>
           )}
         </span>
         {extra && (

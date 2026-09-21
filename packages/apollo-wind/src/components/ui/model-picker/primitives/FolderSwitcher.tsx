@@ -71,7 +71,7 @@ export const FolderSwitcher: React.FC<FolderSwitcherProps> = ({
     <DropdownMenu modal={false} onOpenChange={setOpen} open={open}>
       <DropdownMenuTrigger asChild>
         <button
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-popover px-3 py-1.5 text-xs leading-4 font-semibold text-brand hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-popover px-3 py-1.5 text-xs leading-4 font-semibold text-brand hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           data-slot="model-picker-folder-switcher"
           type="button"
         >

@@ -8,23 +8,26 @@
  * localized once, centrally.
  *
  * Adding a badge is a design-system PR: one entry below plus its
- * `msg()` descriptor in `i18n.ts`. The pool starts with the cost tiers
+ * entry in `labels.ts`. The pool starts with the cost tiers
  * (Basic / Standard / Premium).
  *
  * `customTagsFor` remains as an escape hatch for experiments, but the
  * expectation is that anything worth shipping graduates into the pool.
  */
 
-import { BADGE_LABELS, type PickerMessage } from './i18n';
+import type { StaticLabelKey } from './labels';
 
 /** Kinds available in the pool. Grows by design-system PR. */
 export type ModelBadgeKind = 'cost-basic' | 'cost-standard' | 'cost-premium';
 
 export interface ModelBadgeDefinition {
-  /** Localized chip label. */
-  label: PickerMessage;
-  /** Optional localized tooltip. */
-  tooltip?: PickerMessage;
+  /**
+   * Which label the chip renders. A key rather than a string, so the pool
+   * stays declarative and the host's `labels` supply the wording.
+   */
+  label: StaticLabelKey;
+  /** Optional tooltip, same indirection. */
+  tooltip?: StaticLabelKey;
   /**
    * Semantic chip variant (`mini | info-mini | success-mini |
    * warning-mini | error-mini`). These are the same tokens the
@@ -41,18 +44,18 @@ export interface ModelBadgeDefinition {
  */
 export const MODEL_BADGES: Record<ModelBadgeKind, ModelBadgeDefinition> = {
   'cost-basic': {
-    label: BADGE_LABELS.costBasic,
-    tooltip: BADGE_LABELS.costTooltip,
+    label: 'costBasic',
+    tooltip: 'costTooltip',
     variant: 'mini',
   },
   'cost-standard': {
-    label: BADGE_LABELS.costStandard,
-    tooltip: BADGE_LABELS.costTooltip,
+    label: 'costStandard',
+    tooltip: 'costTooltip',
     variant: 'mini',
   },
   'cost-premium': {
-    label: BADGE_LABELS.costPremium,
-    tooltip: BADGE_LABELS.costTooltip,
+    label: 'costPremium',
+    tooltip: 'costTooltip',
     variant: 'mini',
   },
 };

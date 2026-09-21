@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { PickerTranslator } from './i18n';
+import type { ModelPickerLabels } from './labels';
 
 import type { AnnotatedModel } from './primitives/OptionList';
 import type { DiscoveryModel } from './types';
@@ -54,7 +54,7 @@ export interface UseModelPickerStateOptions {
    * hints render in the host's active locale. Omit only when the host
    * supplies no translator (tests, isolated primitives).
    */
-  i18n?: PickerTranslator;
+  labels?: ModelPickerLabels;
 }
 
 export interface UseModelPickerStateResult {
@@ -135,7 +135,7 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     previewModelIds,
     filter,
     initiallyCollapsedGroups,
-    i18n,
+    labels,
   } = opts;
 
   // React-owned id: stable across SSR/hydration and concurrent renders,
@@ -168,7 +168,7 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     const groups = groupModels(visibleModels, groupBy, {
       recommendedModelIds,
       previewModelIds,
-      i18n,
+      labels,
     });
     return groups.flatMap((g) =>
       g.models.map((m) => ({
@@ -177,7 +177,7 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
         groupLabel: g.label,
       }))
     );
-  }, [visibleModels, groupBy, recommendedModelIds, previewModelIds, i18n]);
+  }, [visibleModels, groupBy, recommendedModelIds, previewModelIds, labels]);
 
   const filtered = useMemo(
     () => filterModels(annotated, query) as AnnotatedModel[],
