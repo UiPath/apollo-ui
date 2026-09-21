@@ -152,7 +152,10 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
                 {primary}
               </span>
               {inlineTags.map((t) => (
-                <span className="shrink-0" key={`${t.kind}-${t.label}`}>
+                // `flex items-center` for the same reason as the option rows:
+                // a block wrapper baseline-aligns the inline-flex chip inside
+                // an inherited line box and lifts it off the title's centre.
+                <span className="flex shrink-0 items-center" key={`${t.kind}-${t.label}`}>
                   <ModelTagChip disableTooltip tag={t} variants={tagVariants} />
                 </span>
               ))}

@@ -930,3 +930,45 @@ describe('<ModelPicker> label suppression', () => {
     expect(screen.getByRole('button', { name: 'Model' })).toBeInTheDocument();
   });
 });
+
+/*
+ * Added in the wind port (no apollo-react counterpart).
+ *
+ * The chips are inline-flex Badges. Wrapped in a *block* span they generate a
+ * line box of the inherited line-height (~21px) around a 16px chip and get
+ * baseline-aligned inside it, so `items-center` on the row centres the wrapper
+ * rather than the chip and every chip floats ~3px above the model name. The
+ * wrappers must stay flex containers; these guard the class that fixes it.
+ */
+describe('<ModelPicker> chip alignment', () => {
+  const tagged: DiscoveryModel[] = [
+    {
+      modelId: 'gpt-4o',
+      modelName: 'gpt-4o',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'UiPathOwned',
+      isPreview: true,
+    },
+  ];
+
+  it('wraps a row chip in a flex container, not a block span', async () => {
+    const user = userEvent.setup();
+    // Provider view keeps the Preview chip on the row (Category view would
+    // suppress it as redundant with the section header).
+    renderPicker(<ModelPicker groupBy="vendor" models={tagged} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    const chip = within(screen.getByRole('option', { name: /gpt-4o/ })).getByText('Preview');
+    const wrapper = chip.closest('[data-slot="model-picker-tag"]')?.parentElement;
+    expect(wrapper).toHaveClass('flex', 'items-center');
+  });
+
+  it('wraps a trigger chip in a flex container, not a block span', () => {
+    renderPicker(<ModelPicker models={tagged} value="gpt-4o" />);
+
+    const trigger = screen.getByRole('button', { expanded: false });
+    const chip = within(trigger).getByText('Preview');
+    const wrapper = chip.closest('[data-slot="model-picker-tag"]')?.parentElement;
+    expect(wrapper).toHaveClass('flex', 'items-center');
+  });
+});
