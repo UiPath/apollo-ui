@@ -335,13 +335,13 @@ function ShapesCanvas() {
         },
       }),
       createNode({
-        id: 'shape-stadium',
+        id: 'shape-pill',
         type: 'uipath.agent',
         position: { x: 560, y: 240 },
         data: {
           nodeType: 'uipath.agent',
           version: '1.0.0',
-          display: { label: 'Stadium', subLabel: 'DMN input data', shape: 'stadium' },
+          display: { label: 'Pill', subLabel: 'DMN input data', shape: 'pill' },
         },
       }),
       createNode({
@@ -398,8 +398,8 @@ const shapeRows = [
     use: 'Agents and wide nodes that need more horizontal label space',
   },
   {
-    shape: 'stadium',
-    value: "'stadium'",
+    shape: 'pill',
+    value: "'pill'",
     example: 'dmn.inputData',
     use: 'DMN input data: a rectangle with fully rounded ends',
   },
@@ -434,7 +434,7 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
           BaseNode supports six shapes: <strong className="text-foreground">circle</strong>,{' '}
           <strong className="text-foreground">square</strong>,{' '}
           <strong className="text-foreground">rectangle</strong>,{' '}
-          <strong className="text-foreground">stadium</strong>,{' '}
+          <strong className="text-foreground">pill</strong>,{' '}
           <strong className="text-foreground">clipped</strong>, and{' '}
           <strong className="text-foreground">document</strong>. The last three are DMN outlines and
           lay out as wide cards, exactly like a rectangle. Shape is set via{' '}
@@ -494,8 +494,8 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
                 <div className="h-1.5 w-16 rounded-full bg-muted" />
               </div>
             }
-            title="Stadium"
-            code="'stadium'"
+            title="Pill"
+            code="'pill'"
             description="DMN input data. A wide card with fully rounded ends, for a value supplied to a decision from outside the model."
           />
           <StoryCard
@@ -553,7 +553,7 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
     version: '1.0.0',
     display: {
       label: 'My Node',
-      shape: 'square', // 'circle' | 'square' | 'rectangle' | 'stadium' | 'clipped' | 'document'
+      shape: 'square', // 'circle' | 'square' | 'rectangle' | 'pill' | 'clipped' | 'document'
     },
   },
 })`}

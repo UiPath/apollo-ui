@@ -9,7 +9,7 @@ export const nodeShapeSchema = z.enum([
   'container',
   // DMN outlines. Each lays out like `rectangle` and differs only in outline, so a canvas
   // adopting one keeps the toolbar, handles, label placement and badges it already had.
-  'stadium',
+  'pill',
   'clipped',
   'document',
 ]);
@@ -17,7 +17,7 @@ export const nodeShapeSchema = z.enum([
 export type NodeShape = z.infer<typeof nodeShapeSchema>;
 
 /** Shapes that lay out as a wide card with the icon beside the label. */
-export const WIDE_NODE_SHAPES = ['rectangle', 'stadium', 'clipped', 'document'] as const;
+export const WIDE_NODE_SHAPES = ['rectangle', 'pill', 'clipped', 'document'] as const;
 
 export type WideNodeShape = (typeof WIDE_NODE_SHAPES)[number];
 

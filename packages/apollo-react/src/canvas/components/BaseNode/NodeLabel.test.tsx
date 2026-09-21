@@ -596,7 +596,7 @@ describe('NodeLabel', () => {
     // these could silently fall back to the centred circle/square layout.
     describe.each([
       'rectangle',
-      'stadium',
+      'pill',
       'clipped',
       'document',
     ] as const)('wide shape: %s', (shape) => {
