@@ -363,9 +363,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     const effectiveW = hasFooter ? DEFAULT_NODE_SIZE : containerWidth;
 
     const innerBasis = Math.min(effectiveH, effectiveW);
-    // A stadium's ends are fully round, so a rounded-square icon tile reads as a mistake inside it.
+    // A pill's ends are fully round, so a rounded-square icon tile reads as a mistake inside it.
     const innerRadius =
-      displayShape === 'stadium' ? '9999px' : getRadius(innerBasis, NODE_INNER_RADIUS_RATIO);
+      displayShape === 'pill' ? '9999px' : getRadius(innerBasis, NODE_INNER_RADIUS_RATIO);
 
     // Uniform gap: derive a fixed gap from the reference (smallest) dimension
     // so spacing is consistent on all sides regardless of aspect ratio.

@@ -63,9 +63,9 @@ describe('BaseContainer shadow opt-out', () => {
 });
 
 describe('DMN shapes', () => {
-  it('rounds a stadium fully, rather than by the node radius', () => {
+  it('rounds a pill fully, rather than by the node radius', () => {
     render(
-      <BaseContainer shape="stadium">
+      <BaseContainer shape="pill">
         <span>content</span>
       </BaseContainer>
     );
@@ -96,7 +96,7 @@ describe('DMN shapes', () => {
   });
 
   it.each([
-    'stadium',
+    'pill',
     'clipped',
     'document',
   ] as const)('lays %s out as a wide card, like a rectangle', (shape) => {
@@ -161,7 +161,7 @@ describe('outline shapes carry their own state', () => {
 
   it('still draws the rectangular ring for shapes that have a border', () => {
     render(
-      <BaseContainer shape="stadium" isSelected>
+      <BaseContainer shape="pill" isSelected>
         <span>content</span>
       </BaseContainer>
     );
@@ -172,29 +172,59 @@ describe('outline shapes carry their own state', () => {
 });
 
 describe('outline geometry stays inside the node box', () => {
-  // A control point below `bottom` put the curve outside the SVG, where it was clipped and its
-  // drop-shadow rendered as a dark lobe under the node.
-  it.each(['clipped', 'document'] as const)('keeps every %s coordinate within the box', (shape) => {
-    const [width, height] = [288, 96];
+  const [WIDTH, HEIGHT] = [288, 96];
 
-    const numbers =
-      pathFor(shape, width, height)
-        .match(/-?\d+(\.\d+)?/g)
-        ?.map(Number) ?? [];
-    // Coordinates alternate x, y after each command letter; check both bounds generously.
-    expect(numbers.length).toBeGreaterThan(0);
-    expect(Math.min(...numbers)).toBeGreaterThanOrEqual(0);
-    expect(Math.max(...numbers)).toBeLessThanOrEqual(width);
+  /**
+   * Coordinate pairs from a path, read by each command's own arity.
+   *
+   * A flat number list cannot be split into x/y pairs: `H` carries one x, `V` one y, and `C`
+   * three pairs. Assuming alternation checks the wrong axis and lets an out-of-bounds y through.
+   */
+  const pointsOf = (path: string) => {
+    const points: { x?: number; y?: number }[] = [];
+    for (const [, command, rawArgs] of path.matchAll(/([MLHVC])([^A-Za-z]*)/g)) {
+      const args = rawArgs
+        .trim()
+        .split(/[\s,]+/)
+        .filter(Boolean)
+        .map(Number);
+      if (command === 'H') points.push(...args.map((x) => ({ x })));
+      else if (command === 'V') points.push(...args.map((y) => ({ y })));
+      else for (let i = 0; i + 1 < args.length; i += 2) points.push({ x: args[i], y: args[i + 1] });
+    }
+    return points;
+  };
+
+  it('reads H, V and C coordinates by their own arity', () => {
+    expect(pointsOf('M1 2 H10 V20 C3 4 5 6 7 8')).toEqual([
+      { x: 1, y: 2 },
+      { x: 10 },
+      { y: 20 },
+      { x: 3, y: 4 },
+      { x: 5, y: 6 },
+      { x: 7, y: 8 },
+    ]);
   });
 
-  it('keeps the document wave above the bottom edge', () => {
-    const height = 96;
-    const ys = pathFor('document', 288, height)
-      .split(/[A-Z]/)
-      .flatMap((segment) => segment.trim().split(/\s+/).filter(Boolean).map(Number))
-      .filter((_, index) => index % 2 === 1);
+  it.each(['clipped', 'document'] as const)('keeps every %s coordinate within the box', (shape) => {
+    const points = pointsOf(pathFor(shape, WIDTH, HEIGHT));
 
-    expect(Math.max(...ys)).toBeLessThanOrEqual(height);
+    expect(points.length).toBeGreaterThan(0);
+    for (const { x, y } of points) {
+      if (x !== undefined) expect(x).toBeGreaterThanOrEqual(0);
+      if (x !== undefined) expect(x).toBeLessThanOrEqual(WIDTH);
+      if (y !== undefined) expect(y).toBeGreaterThanOrEqual(0);
+      // The wave once reached past `bottom`, where it was clipped and cast a lobe of shadow.
+      if (y !== undefined) expect(y).toBeLessThanOrEqual(HEIGHT);
+    }
+  });
+
+  it('catches a y that escapes the bottom edge', () => {
+    const escaping = pointsOf('M0 0 H288 V84 C216 108 72 72 0 84 Z');
+
+    expect(Math.max(...escaping.flatMap(({ y }) => (y === undefined ? [] : [y])))).toBeGreaterThan(
+      HEIGHT
+    );
   });
 });
 
