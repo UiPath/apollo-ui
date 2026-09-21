@@ -118,7 +118,13 @@ export const ModelTagChip: React.FC<ModelTagChipProps> = ({
       // The token doubles as a className so hosts can still target a
       // specific kind, matching the apollo-react picker's contract.
       className={cn(
-        'h-4 gap-0.5 border-transparent px-1.5 py-0 text-[10px] leading-4 font-semibold',
+        'h-4 gap-0.5 px-1.5 py-0 text-[10px] leading-4 font-semibold',
+        // The neutral pill's fill is `--secondary`, which resolves to
+        // `--surface-overlay` — the same value a host may paint the field
+        // with, and then the chip disappears into its own ground. An edge
+        // keeps it a pill on any surface. The semantic variants carry their
+        // own contrast and stay borderless.
+        variantToken === 'mini' ? 'border-border' : 'border-transparent',
         variantToken
       )}
       data-slot="model-picker-tag"

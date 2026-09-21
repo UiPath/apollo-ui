@@ -572,3 +572,42 @@ describe('<ModelPicker> trigger chrome', () => {
     expect(trigger).not.toHaveClass('border-error');
   });
 });
+
+/*
+ * Added in the wind port (no apollo-react counterpart).
+ *
+ * The neutral chip's fill is `--secondary`, which resolves to
+ * `--surface-overlay`. A host that paints the field with that same value —
+ * Flow's properties panel does — left the chip invisible on the trigger while
+ * it still read fine in the popup, whose ground is `--popover`. An edge makes
+ * the pill legible on any surface.
+ */
+describe('<ModelPicker> chip legibility', () => {
+  const costed: DiscoveryModel[] = [
+    {
+      modelId: 'gpt-4o',
+      modelName: 'gpt-4o',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'UiPathOwned',
+      modelDetails: { costDetails: { flatCosts: { inputTokenCost: 50 } } },
+    },
+  ];
+
+  it('gives the neutral chip an edge so it survives a matching ground', () => {
+    renderPicker(<ModelPicker models={costed} value="gpt-4o" />);
+
+    const chip = within(screen.getByRole('button', { expanded: false })).getByText('Basic');
+    const pill = chip.closest('[data-slot="model-picker-tag"]');
+    expect(pill).toHaveClass('border-border');
+    expect(pill).not.toHaveClass('border-transparent');
+  });
+
+  it('leaves the semantic chips borderless — their fill already contrasts', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="vendor" models={[{ ...costed[0], isPreview: true }]} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    const preview = within(screen.getByRole('listbox')).getByText('Preview');
+    expect(preview.closest('[data-slot="model-picker-tag"]')).toHaveClass('border-transparent');
+  });
+});

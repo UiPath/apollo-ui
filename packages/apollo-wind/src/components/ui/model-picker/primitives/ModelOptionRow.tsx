@@ -172,8 +172,8 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
         <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
           <span
             className={cn(
-              'min-w-0 flex-[0_1_auto] truncate leading-[1.3] font-semibold text-foreground',
-              dense ? 'text-[13px]' : 'text-sm'
+              'min-w-0 flex-[0_1_auto] truncate leading-snug font-semibold text-foreground',
+              dense ? 'text-xs' : 'text-sm'
             )}
           >
             {primary}
@@ -232,7 +232,7 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           {contextLabel && (
-            <span className="text-[11px] leading-[1.2] text-foreground-muted">{contextLabel}</span>
+            <span className="text-[11px] leading-tight text-foreground-muted">{contextLabel}</span>
           )}
           {meta}
         </div>

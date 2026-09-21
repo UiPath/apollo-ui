@@ -91,7 +91,7 @@ export const FolderSwitcher: React.FC<FolderSwitcherProps> = ({
       <DropdownMenuContent align="start" className="min-w-[200px]" container={container}>
         {showAllFolders && (
           <>
-            <DropdownMenuItem onSelect={() => onChange(null)}>
+            <DropdownMenuItem className="cursor-pointer" onSelect={() => onChange(null)}>
               <LayoutGrid className="size-3.5 text-foreground-muted" />
               {allFoldersLabel}
             </DropdownMenuItem>
@@ -99,7 +99,7 @@ export const FolderSwitcher: React.FC<FolderSwitcherProps> = ({
           </>
         )}
         {folders.map((f) => (
-          <DropdownMenuItem key={f.id} onSelect={() => onChange(f.id)}>
+          <DropdownMenuItem className="cursor-pointer" key={f.id} onSelect={() => onChange(f.id)}>
             <Folder className="size-3.5 text-foreground-muted" />
             {f.label}
           </DropdownMenuItem>
