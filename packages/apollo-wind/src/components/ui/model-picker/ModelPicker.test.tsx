@@ -540,10 +540,13 @@ describe('<ModelPicker> trigger chrome', () => {
       'min-h-9',
       'px-3',
       'py-1',
-      'md:text-sm'
+      // Flat `text-sm`, not Input's `text-base md:text-sm`: the picker often
+      // lives in a narrow side panel, where the responsive pair resolves to
+      // 16px and the model name towers over every other field on the page.
+      'text-sm'
     );
     // Not the button treatment it had before.
-    expect(trigger).not.toHaveClass('bg-surface', 'min-h-11', 'py-2');
+    expect(trigger).not.toHaveClass('bg-surface', 'min-h-11', 'py-2', 'text-base');
   });
 
   it('rings on pointer focus, not only keyboard focus', () => {
