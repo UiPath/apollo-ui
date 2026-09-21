@@ -1,0 +1,932 @@
+import { cleanup, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import type React from 'react';
+import { describe, expect, it, vi } from 'vitest';
+
+import { ModelPicker } from './ModelPicker';
+import type { DiscoveryModel } from './types';
+import { platformNavigation } from './usePlatformAccess';
+import { isTextGenerationModel } from './utils';
+
+/**
+ * Render helper. No translator on purpose: the picker falls back to
+ * `defaultTranslator`, which formats each descriptor's English source
+ * text — the picker must work in a host that wires up no i18n at all.
+ */
+function renderPicker(ui: React.ReactElement) {
+  return render(ui);
+}
+
+const MODELS: DiscoveryModel[] = [
+  {
+    modelId: 'anthropic.claude-sonnet-4-6',
+    modelName: 'anthropic.claude-sonnet-4-6',
+    vendor: 'AnthropicClaude',
+    modelSubscriptionType: 'UiPathOwned',
+  },
+  {
+    modelId: 'gpt-4o',
+    modelName: 'gpt-4o',
+    vendor: 'OpenAi',
+    modelSubscriptionType: 'UiPathOwned',
+    isPreview: true,
+  },
+  {
+    modelId: 'byo-cigna-gpt-4o',
+    modelName: 'gpt-4o',
+    vendor: 'OpenAi',
+    modelSubscriptionType: 'BYOMAdded',
+    byoConnectionLabel: 'CignaSandbox',
+  },
+];
+
+describe('<ModelPicker>', () => {
+  it('renders the trigger with the selected model name', () => {
+    renderPicker(
+      <ModelPicker models={MODELS} value="anthropic.claude-sonnet-4-6" onChange={() => {}} />
+    );
+    expect(screen.getByText('anthropic.claude-sonnet-4-6')).toBeInTheDocument();
+  });
+
+  it('disambiguates two BYO rows with the same model name by valueConnectionId', async () => {
+    const user = userEvent.setup();
+    const models: DiscoveryModel[] = [
+      {
+        modelId: 'byo-gpt-4o-acme',
+        modelName: 'gpt-4o',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'BYOMAdded',
+        byomDetails: { integrationServiceConnectionId: 'conn-acme' },
+        byoConnectionLabel: 'Acme Azure',
+      },
+      {
+        modelId: 'byo-gpt-4o-cigna',
+        modelName: 'gpt-4o',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'BYOMAdded',
+        byomDetails: { integrationServiceConnectionId: 'conn-cigna' },
+        byoConnectionLabel: 'Cigna Sandbox',
+      },
+    ];
+
+    // Without valueConnectionId, `value="gpt-4o"` matches the first row (Acme).
+    renderPicker(<ModelPicker models={models} value="gpt-4o" onChange={() => {}} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const acmeRow = await screen.findByRole('option', { name: /Acme Azure/i });
+    expect(acmeRow).toHaveAttribute('aria-selected', 'true');
+
+    cleanup();
+
+    // With valueConnectionId="conn-cigna", the Cigna row is selected instead.
+    renderPicker(
+      <ModelPicker
+        models={models}
+        value="gpt-4o"
+        valueConnectionId="conn-cigna"
+        onChange={() => {}}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const cignaRow = await screen.findByRole('option', { name: /Cigna Sandbox/i });
+    expect(cignaRow).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('renders the Discovery displayName as the friendly label', () => {
+    const models = MODELS.map((m) =>
+      m.modelId === 'anthropic.claude-sonnet-4-6' ? { ...m, displayName: 'Sonnet From DTO' } : m
+    );
+    renderPicker(
+      <ModelPicker models={models} value="anthropic.claude-sonnet-4-6" onChange={() => {}} />
+    );
+    expect(screen.getByText('Sonnet From DTO')).toBeInTheDocument();
+  });
+
+  it('opens on click and fires onChange when a row is picked', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderPicker(<ModelPicker models={MODELS} value={null} onChange={onChange} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    // Listbox should now exist with an accessible name.
+    const listbox = await screen.findByRole('listbox', { name: /models/i });
+    expect(listbox).toBeInTheDocument();
+    // Click an option. There are two `gpt-4o` rows (the hosted one and a
+    // BYO clone) — pick the hosted one by its option role + selected/active
+    // state walk via the modelName id.
+    const option = within(listbox).getByRole('option', { name: /^gpt-4o$/ });
+    await user.click(option);
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0][0].modelId).toBe('gpt-4o');
+  });
+
+  it('keeps rendering a selection the host filter excluded', () => {
+    renderPicker(
+      <ModelPicker
+        models={MODELS}
+        value="gpt-4o"
+        onChange={() => {}}
+        filter={(m) => m.vendor !== 'OpenAi'}
+      />
+    );
+    // The stored selection resolves from the raw catalog, so the trigger
+    // shows the model instead of a blank placeholder (README §1).
+    expect(screen.getByText('gpt-4o')).toBeInTheDocument();
+  });
+
+  it('falls back to "unknown model" treatment when value does not match catalog', () => {
+    renderPicker(<ModelPicker models={MODELS} value="some-retired-model" onChange={() => {}} />);
+    expect(screen.getByText('some-retired-model')).toBeInTheDocument();
+    // Trigger should be aria-invalid.
+    expect(screen.getByRole('button', { expanded: false })).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('renders the BYO edit action only when canManageByo is true', async () => {
+    const user = userEvent.setup();
+    const requestContext = {
+      token: 't',
+      tenantName: 'DefaultTenant',
+      tenantId: 'tenant-guid',
+    };
+    const { rerender } = renderPicker(
+      <ModelPicker
+        models={MODELS}
+        value={null}
+        onChange={() => {}}
+        canManageByo={false}
+        requestContext={requestContext}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    // BYO is the first group (top of Category view) and expanded by
+    // default, so rows are visible without an extra click.
+    await screen.findByRole('listbox');
+    // Viewer: no edit button on the BYO row.
+    expect(screen.queryByRole('button', { name: /edit configuration/i })).toBeNull();
+
+    rerender(
+      <ModelPicker
+        models={MODELS}
+        value={null}
+        onChange={() => {}}
+        canManageByo
+        requestContext={requestContext}
+      />
+    );
+    // After flipping canManageByo on, the edit action renders. There is
+    // deliberately no delete: removal lives on the configurations page.
+    expect(await screen.findByRole('button', { name: /edit configuration/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /remove/i })).toBeNull();
+    // Footer CTA also appears.
+    expect(screen.getByText(/use custom model/i)).toBeInTheDocument();
+  });
+
+  it('navigates to the LLM-configurations pages in a new tab (add CTA + row edit)', async () => {
+    const user = userEvent.setup();
+    const assign = vi.spyOn(platformNavigation, 'openInNewTab').mockImplementation(() => {});
+    try {
+      renderPicker(
+        <ModelPicker
+          models={MODELS}
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            tenantId: 'tenant-guid',
+            requestingProduct: 'agents',
+            requestingFeature: 'design-eval-deploy',
+          }}
+          enableFolders
+          folders={[{ id: 'folder-key', label: 'Shared', numericId: 2241521 }]}
+          folder="folder-key"
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+
+      // Row edit: no configuration id on the DTO yet, so it falls back
+      // to the configurations list scoped to tenant + folder.
+      await user.click(await screen.findByRole('button', { name: /edit configuration/i }));
+      expect(assign).toHaveBeenLastCalledWith(
+        'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations' +
+          '?tenantId=tenant-guid&folderId=2241521'
+      );
+
+      // Footer CTA: deep-links to the add form, pre-populated with the
+      // picker's product/feature.
+      await user.click(screen.getByText(/use custom model/i));
+      expect(assign).toHaveBeenLastCalledWith(
+        'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations' +
+          '/tenant-guid/2241521/add?product=agents&feature=design-eval-deploy'
+      );
+    } finally {
+      assign.mockRestore();
+    }
+  });
+
+  it('Use custom model CTA closes the popup and calls onUseCustomModel', async () => {
+    const user = userEvent.setup();
+    const onUseCustomModel = vi.fn();
+    renderPicker(
+      <ModelPicker
+        models={MODELS}
+        value={null}
+        onChange={() => {}}
+        canManageByo
+        onUseCustomModel={onUseCustomModel}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const cta = await screen.findByText(/use custom model/i);
+    await user.click(cta);
+    expect(onUseCustomModel).toHaveBeenCalledTimes(1);
+    // Popup is closed.
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('keyboard navigation: ArrowDown moves activedescendant, Enter selects, Escape closes', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderPicker(<ModelPicker models={MODELS} value={null} onChange={onChange} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const search = await screen.findByRole('combobox');
+    // Initial active descendant is set on open.
+    expect(search).toHaveAttribute('aria-activedescendant');
+    const firstActive = search.getAttribute('aria-activedescendant');
+    // Move down.
+    await user.keyboard('{ArrowDown}');
+    expect(search.getAttribute('aria-activedescendant')).not.toBe(firstActive);
+    // Pick.
+    await user.keyboard('{Enter}');
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to the first folder for the add deep-link when none is selected', async () => {
+    const user = userEvent.setup();
+    const assign = vi.spyOn(platformNavigation, 'openInNewTab').mockImplementation(() => {});
+    try {
+      renderPicker(
+        <ModelPicker
+          models={MODELS}
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            tenantId: 'tenant-guid',
+            requestingProduct: 'agents',
+            requestingFeature: 'design-eval-deploy',
+          }}
+          enableFolders
+          folders={[{ id: 'folder-key', label: 'Shared', numericId: 2241521 }]}
+          // No `folder` selected ("All folders") — should still deep-link
+          // /add using the first available folder, not fall back to the list.
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      await user.click(screen.getByText(/use custom model/i));
+      expect(assign).toHaveBeenLastCalledWith(
+        'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations' +
+          '/tenant-guid/2241521/add?product=agents&feature=design-eval-deploy'
+      );
+    } finally {
+      assign.mockRestore();
+    }
+  });
+
+  it('delete row action asks for confirmation before invoking onDeleteModel', async () => {
+    const user = userEvent.setup();
+    const onDeleteModel = vi.fn();
+    renderPicker(
+      <ModelPicker
+        models={MODELS}
+        value={null}
+        onChange={() => {}}
+        canManageByo
+        onDeleteModel={onDeleteModel}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const deleteButton = await screen.findByRole('button', { name: /delete configuration/i });
+
+    // Cancel: nothing happens.
+    await user.click(deleteButton);
+    await user.click(await screen.findByRole('button', { name: /cancel/i }));
+    expect(onDeleteModel).not.toHaveBeenCalled();
+
+    // Confirm: the host handler runs with the BYO row. Opening the dialog
+    // closes the popup, so reopen it once the dialog's aria-hidden lifts.
+    await user.click(await screen.findByRole('button', { expanded: false }));
+    await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+    await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+    expect(onDeleteModel).toHaveBeenCalledTimes(1);
+    expect(onDeleteModel.mock.calls[0][0]).toMatchObject({ modelSubscriptionType: 'BYOMAdded' });
+  });
+
+  it('deletes the BYO configuration itself when no onDeleteModel is supplied', async () => {
+    const user = userEvent.setup();
+    const onModelDeleted = vi.fn();
+    // Discovery on mount, then the DELETE, then the post-delete refetch.
+    const fetchMock = vi.fn().mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'DELETE'
+        ? Promise.resolve({ ok: true, json: async () => ({}) })
+        : Promise.resolve({
+            ok: true,
+            json: async () => [
+              {
+                modelId: 'byo-acme-gpt-4o',
+                modelName: 'gpt-4o',
+                vendor: 'OpenAi',
+                modelSubscriptionType: 'BYOMAdded',
+                byomDetails: { byoConfigurationId: 'cfg-9' },
+              },
+            ],
+          })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          onModelDeleted={onModelDeleted}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+      await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+
+      const deleteCall = fetchMock.mock.calls.find(([, init]) => init?.method === 'DELETE');
+      expect(deleteCall?.[0]).toBe(
+        'https://cloud.local/org-guid/tenant-guid/llmgateway_/api/byo/product/llm-configurations/cfg-9'
+      );
+      expect(deleteCall?.[1]).toMatchObject({
+        headers: expect.objectContaining({ Authorization: 'Bearer t' }),
+      });
+      expect(onModelDeleted).toHaveBeenCalledTimes(1);
+      expect(onModelDeleted.mock.calls[0][0]).toMatchObject({ modelId: 'byo-acme-gpt-4o' });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('surfaces a failed delete and does not report it as deleted', async () => {
+    const user = userEvent.setup();
+    const onModelDeleted = vi.fn();
+    const fetchMock = vi.fn().mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'DELETE'
+        ? Promise.resolve({
+            ok: false,
+            status: 409,
+            json: async () => ({ Message: 'Configuration is in use.' }),
+          })
+        : Promise.resolve({
+            ok: true,
+            json: async () => [
+              {
+                modelId: 'byo-acme-gpt-4o',
+                modelName: 'gpt-4o',
+                vendor: 'OpenAi',
+                modelSubscriptionType: 'BYOMAdded',
+                byomDetails: { byoConfigurationId: 'cfg-9' },
+              },
+            ],
+          })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          onModelDeleted={onModelDeleted}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+      await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+
+      // The gateway's own message reaches the user, and the host is not told
+      // a model went away when it did not.
+      expect(await screen.findByText(/configuration is in use/i)).toBeInTheDocument();
+      expect(onModelDeleted).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('surfaces a throwing onModelDeleted instead of swallowing it', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'DELETE'
+        ? Promise.resolve({ ok: true, json: async () => ({}) })
+        : Promise.resolve({
+            ok: true,
+            json: async () => [
+              {
+                modelId: 'byo-acme-gpt-4o',
+                modelName: 'gpt-4o',
+                vendor: 'OpenAi',
+                modelSubscriptionType: 'BYOMAdded',
+                byomDetails: { byoConfigurationId: 'cfg-9' },
+              },
+            ],
+          })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          onModelDeleted={() => {
+            throw new Error('host reconciliation blew up');
+          }}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
+      await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+
+      // The click handler's promise is floating, so without this the host's
+      // throw would vanish as an unhandled rejection.
+      expect(await screen.findByText(/host reconciliation blew up/i)).toBeInTheDocument();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('offers no delete action on a BYO row with no configuration id to target', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          modelId: 'byo-acme-gpt-4o',
+          modelName: 'gpt-4o',
+          vendor: 'OpenAi',
+          modelSubscriptionType: 'BYOMAdded',
+        },
+      ],
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+          }}
+        />
+      );
+      await user.click(await screen.findByRole('button', { expanded: false }));
+      await screen.findByText('gpt-4o');
+      expect(screen.queryByRole('button', { name: /delete configuration/i })).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('deep-links the edit form when the DTO carries byomDetails.byoConfigurationId', async () => {
+    const user = userEvent.setup();
+    const assign = vi.spyOn(platformNavigation, 'openInNewTab').mockImplementation(() => {});
+    try {
+      const models: DiscoveryModel[] = MODELS.map((m) =>
+        m.modelSubscriptionType === 'BYOMAdded'
+          ? {
+              ...m,
+              byomDetails: {
+                availableOperationCodes: [],
+                integrationServiceConnectionId: 'conn-1',
+                defaultModel: 'gpt-4o',
+                byoConfigurationId: 'cfg-123',
+              },
+            }
+          : m
+      );
+      renderPicker(
+        <ModelPicker
+          models={models}
+          value={null}
+          onChange={() => {}}
+          canManageByo
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            tenantId: 'tenant-guid',
+            requestingProduct: 'agents',
+            requestingFeature: 'design-eval-deploy',
+          }}
+          enableFolders
+          folders={[{ id: 'folder-key', label: 'Shared', numericId: 2241521 }]}
+          folder="folder-key"
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /edit configuration/i }));
+      expect(assign).toHaveBeenLastCalledWith(
+        'https://cloud.local/acme/portal_/admin/ai-trust-layer/llm-configurations' +
+          '/tenant-guid/2241521/edit/cfg-123'
+      );
+    } finally {
+      assign.mockRestore();
+    }
+  });
+
+  it('resolves BYO connection names from Integration Service when the DTO lacks a label', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'conn-1', name: 'Acme Azure OpenAI' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const models: DiscoveryModel[] = [
+        ...MODELS,
+        {
+          modelId: 'byo-acme-gpt-4o',
+          modelName: 'gpt-4o',
+          vendor: 'OpenAi',
+          modelSubscriptionType: 'BYOMAdded',
+          byomDetails: { integrationServiceConnectionId: 'conn-1' },
+        },
+      ];
+      renderPicker(
+        <ModelPicker
+          models={models}
+          value={null}
+          onChange={() => {}}
+          canManageByo={false}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+          }}
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      expect(await screen.findByText('Acme Azure OpenAI')).toBeInTheDocument();
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://cloud.local/acme/DefaultTenant/connections_/api/v1/Connections/conn-1',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer t' }),
+        })
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('does not look up connections whose DTO already carries a host-supplied label', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const models: DiscoveryModel[] = [
+        {
+          modelId: 'byo-cigna-gpt-4o',
+          modelName: 'gpt-4o',
+          vendor: 'OpenAi',
+          modelSubscriptionType: 'BYOMAdded',
+          byoConnectionLabel: 'CignaSandbox',
+          byomDetails: { integrationServiceConnectionId: 'conn-1' },
+        },
+      ];
+      renderPicker(
+        <ModelPicker
+          models={models}
+          value={null}
+          onChange={() => {}}
+          canManageByo={false}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+          }}
+        />
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('never renders policy-blocked models', async () => {
+    const user = userEvent.setup();
+    renderPicker(
+      <ModelPicker
+        models={[...MODELS, { ...MODELS[0]!, modelId: 'blocked-model', isBlockedByPolicy: true }]}
+        value={null}
+        onChange={() => {}}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    await screen.findByRole('listbox');
+    expect(screen.queryByText('blocked-model')).toBeNull();
+  });
+
+  it('fetches the Discovery catalog itself when models is omitted', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          modelId: 'gpt-6-mini',
+          modelName: 'gpt-6-mini',
+          displayName: 'GPT-6 mini',
+          vendor: 'OpenAi',
+          modelSubscriptionType: 'UiPathOwned',
+        },
+      ],
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo={false}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            organizationId: 'org-guid',
+            tenantId: 'tenant-guid',
+            requestingProduct: 'agents',
+            requestingFeature: 'agents-prompt',
+            userId: 'user-1',
+          }}
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      expect(await screen.findByText('GPT-6 mini')).toBeInTheDocument();
+      // Canonical GUID route: origin only — baseUrl's org-name path is dropped.
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://cloud.local/org-guid/tenant-guid/llmgateway_/api/discovery',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer t',
+            'X-UiPath-LlmGateway-RequestingProduct': 'agents',
+            'X-UiPath-LlmGateway-RequestingFeature': 'agents-prompt',
+            'X-UiPath-LlmGateway-UserId': 'user-1',
+          }),
+        })
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('self-fetch mode refetches Discovery scoped to the folder picked in the switcher', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => [] });
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      renderPicker(
+        <ModelPicker
+          value={null}
+          onChange={() => {}}
+          canManageByo={false}
+          requestContext={{
+            token: 't',
+            baseUrl: 'https://cloud.local/acme',
+            tenantName: 'DefaultTenant',
+            userId: 'user-1',
+          }}
+          enableFolders
+          folders={[{ id: 'folder-key', label: 'Shared', numericId: 1 }]}
+        />
+      );
+      await user.click(screen.getByRole('button', { expanded: false }));
+      await user.click(await screen.findByRole('button', { name: /all folders/i }));
+      await user.click(await screen.findByRole('menuitem', { name: /shared/i }));
+
+      const discoveryCalls = fetchMock.mock.calls.filter(([url]) =>
+        String(url).endsWith('/llmgateway_/api/discovery')
+      );
+      expect(discoveryCalls.length).toBe(2);
+      expect(discoveryCalls[1][1]).toEqual(
+        expect.objectContaining({
+          headers: expect.objectContaining({ 'X-UiPath-FolderKey': 'folder-key' }),
+        })
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('<ModelPicker> catalog scoping', () => {
+  const NON_CHAT_MODELS: DiscoveryModel[] = [
+    ...MODELS,
+    {
+      modelId: 'text-embedding-3-large',
+      modelName: 'text-embedding-3-large',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'UiPathOwned',
+      apiFlavor: 'OpenAiEmbeddings',
+    },
+    {
+      modelId: 'gpt-realtime',
+      modelName: 'gpt-realtime',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'UiPathOwned',
+      modelType: 'Realtime',
+    },
+  ];
+
+  // Which modalities a product offers is the product's call: an indexing or
+  // context-grounding surface picks embeddings from the same catalog.
+  it('renders embeddings and realtime models when the host does not filter them', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker models={NON_CHAT_MODELS} value={null} onChange={() => {}} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const listbox = await screen.findByRole('listbox');
+    expect(within(listbox).getByText('text-embedding-3-large')).toBeInTheDocument();
+    expect(within(listbox).getByText('gpt-realtime')).toBeInTheDocument();
+  });
+
+  it('drops them when the host opts into isTextGenerationModel', async () => {
+    const user = userEvent.setup();
+    renderPicker(
+      <ModelPicker
+        models={NON_CHAT_MODELS}
+        value={null}
+        onChange={() => {}}
+        filter={isTextGenerationModel}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const listbox = await screen.findByRole('listbox');
+    expect(within(listbox).queryByText('text-embedding-3-large')).toBeNull();
+    expect(within(listbox).queryByText('gpt-realtime')).toBeNull();
+    expect(within(listbox).getByText('anthropic.claude-sonnet-4-6')).toBeInTheDocument();
+  });
+
+  it('resolves the selection by modelName when it differs from modelId', () => {
+    const models: DiscoveryModel[] = [
+      {
+        modelId: 'byo-row-guid',
+        modelName: 'my-custom-gpt',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'BYOMAdded',
+      },
+    ];
+    renderPicker(<ModelPicker models={models} value="my-custom-gpt" onChange={() => {}} />);
+    expect(screen.getByText('my-custom-gpt')).toBeInTheDocument();
+    expect(screen.getByRole('button', { expanded: false })).not.toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
+  });
+
+  it('accepts a raw OMS region name as homeRegion for out-of-region chips', async () => {
+    const user = userEvent.setup();
+    const models: DiscoveryModel[] = [
+      {
+        modelId: 'us-hosted',
+        modelName: 'us-hosted',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'UiPathOwned',
+        routingDetails: { geography: 'US' },
+      },
+      {
+        modelId: 'ja-hosted',
+        modelName: 'ja-hosted',
+        vendor: 'OpenAi',
+        modelSubscriptionType: 'UiPathOwned',
+        routingDetails: { geography: 'JA' },
+      },
+    ];
+    renderPicker(
+      <ModelPicker models={models} value={null} onChange={() => {}} homeRegion="Japan" />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+    const listbox = await screen.findByRole('listbox');
+    // homeRegion "Japan" resolves to JA: the US-routed model is out of
+    // region, the JA-routed one is home.
+    expect(within(listbox).getByText(/out of region \(US\)/i)).toBeInTheDocument();
+    expect(within(listbox).queryByText(/out of region \(JA\)/i)).toBeNull();
+  });
+});
+
+/*
+ * Added in the wind port (no apollo-react counterpart).
+ *
+ * A host whose catalog arrives asynchronously renders one frame with a stored
+ * `value` and no models. Treating that as "unknown model" flashed the field
+ * red — and showing the placeholder instead read as "your saved model is
+ * gone" — on every form open.
+ */
+describe('<ModelPicker> pending selection', () => {
+  it('renders a stored value as plain text while the catalog is loading', () => {
+    renderPicker(<ModelPicker loading models={[]} value="gpt-4o" />);
+
+    const trigger = screen.getByRole('button', { expanded: false });
+    expect(trigger).toHaveTextContent('gpt-4o');
+    // Not an error state: the catalog simply has not arrived yet.
+    expect(trigger).not.toHaveAttribute('aria-invalid');
+  });
+
+  it('treats the same value as unknown once the catalog has loaded without it', () => {
+    renderPicker(<ModelPicker models={MODELS} value="gpt-4o-not-in-catalog" />);
+
+    const trigger = screen.getByRole('button', { expanded: false });
+    expect(trigger).toHaveTextContent('gpt-4o-not-in-catalog');
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+  });
+});
+
+/*
+ * Added in the wind port (no apollo-react counterpart).
+ *
+ * Category view suppresses the Recommended/Preview chip inside the matching
+ * section, where it only repeats the header. Applying that by kind alone also
+ * stripped the chip from a recommended model filed under Custom Models (BYO),
+ * whose header says nothing about lifecycle.
+ */
+describe('<ModelPicker> redundant chip suppression', () => {
+  const byoRecommended: DiscoveryModel[] = [
+    {
+      modelId: 'byo-recommended',
+      modelName: 'byo-recommended',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'BYOMAdded',
+      isRecommended: true,
+      byomDetails: { integrationServiceConnectionId: 'conn-1' },
+    },
+    {
+      modelId: 'hosted-recommended',
+      modelName: 'hosted-recommended',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'UiPathOwned',
+      isRecommended: true,
+    },
+  ];
+
+  it('keeps the Recommended chip on a BYO row but drops it inside the Recommended section', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="subscription" models={byoRecommended} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    const byoRow = screen.getByRole('option', { name: /byo-recommended/ });
+    const hostedRow = screen.getByRole('option', { name: /hosted-recommended/ });
+
+    expect(within(byoRow).getByText('Recommended')).toBeInTheDocument();
+    expect(within(hostedRow).queryByText('Recommended')).toBeNull();
+  });
+});
+
+/*
+ * Added in the wind port (no apollo-react counterpart).
+ *
+ * Hosts that already label the field — a guardrail parameter row, a table
+ * cell — previously had to hide the picker's own label with CSS.
+ */
+describe('<ModelPicker> label suppression', () => {
+  it('renders no visible label when label is null, keeping an accessible name', () => {
+    renderPicker(<ModelPicker ariaLabel="Judge model" label={null} models={MODELS} />);
+
+    expect(screen.queryByText('Model')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Judge model' })).toBeInTheDocument();
+  });
+
+  it('falls back to the default accessible name when none is given', () => {
+    renderPicker(<ModelPicker label={null} models={MODELS} />);
+
+    expect(screen.getByRole('button', { name: 'Model' })).toBeInTheDocument();
+  });
+});

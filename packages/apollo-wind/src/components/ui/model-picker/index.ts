@@ -1,0 +1,86 @@
+// Apollo's shared LLM model picker, built on the UiPath LLM Gateway
+// Discovery API. The headless layer (types, utils, badges, state and
+// platform hooks) is a faithful port of apollo-react's `ap-model-picker`;
+// only the presentation layer is rewritten on wind primitives.
+
+export type { ModelBadgeDefinition, ModelBadgeKind } from './badges';
+// Badge pool
+export { MODEL_BADGES } from './badges';
+// i18n contract — apollo-wind ships no i18n library, so the picker
+// resolves its strings through a host-supplied translator.
+export type { PickerMessage, PickerTranslator } from './i18n';
+export { defaultTranslator } from './i18n';
+export type {
+  ModelPickerChangeHandler,
+  ModelPickerProps,
+  ModelPickerSlotContext,
+  ModelPickerSlots,
+  ModelPickerVariant,
+} from './ModelPicker';
+export { ModelPicker } from './ModelPicker';
+export type { ModelTagChipProps } from './ModelTagChip';
+// Tag chip
+export { ModelTagChip } from './ModelTagChip';
+export type { FolderSwitcherFolder, FolderSwitcherProps } from './primitives/FolderSwitcher';
+// Primitives — exported so teams can compose their own pickers without forking.
+export { FolderSwitcher } from './primitives/FolderSwitcher';
+export type { GroupHeaderProps } from './primitives/GroupHeader';
+export { GroupHeader } from './primitives/GroupHeader';
+export type { ModelOptionRowProps } from './primitives/ModelOptionRow';
+export { defaultRowActions, ModelOptionRow } from './primitives/ModelOptionRow';
+export type { AnnotatedModel, OptionListProps } from './primitives/OptionList';
+export { GroupedOptionList, optionDomId, VirtualOptionList } from './primitives/OptionList';
+export type { PickerPopupProps } from './primitives/PickerPopup';
+export { PickerPopup } from './primitives/PickerPopup';
+export type { PickerSearchInputProps } from './primitives/PickerSearchInput';
+export { PickerSearchInput } from './primitives/PickerSearchInput';
+export type { PickerTriggerProps } from './primitives/PickerTrigger';
+export { PickerTrigger } from './primitives/PickerTrigger';
+// Types
+export type {
+  ByomDetails,
+  CostTier,
+  DeprecationDetails,
+  DiscoveryModel,
+  DiscoveryRequestContext,
+  ModelCostDetails,
+  ModelDetails,
+  ModelGeography,
+  ModelGroup,
+  ModelSubscriptionType,
+  ModelTag,
+  ModelTagKind,
+  ModelVendor,
+  RoutingDetails,
+} from './types';
+export type { UseDiscoveryModelsResult } from './useDiscoveryModels';
+// Data hooks
+export { useDiscoveryModels } from './useDiscoveryModels';
+export type { UseModelPickerStateOptions, UseModelPickerStateResult } from './useModelPickerState';
+// State controller (for teams building custom pickers from the primitives)
+export { useModelPickerState } from './useModelPickerState';
+export type {
+  PlatformRequestContext,
+  PlatformToken,
+  UseCanManageByoResult,
+  UseDeleteByoConfigurationResult,
+  UseUserFoldersResult,
+} from './usePlatformAccess';
+export {
+  useByoConnectionNames,
+  useCanManageByo,
+  useDeleteByoConfiguration,
+  usePlatformDiscoveryModels,
+  useUserFolders,
+} from './usePlatformAccess';
+export type { DeriveModelTagsContext, GroupModelsContext, GroupStrategy } from './utils';
+// Utilities
+export {
+  defaultCostTier,
+  deriveModelTags,
+  filterModels,
+  getSubstitutionTarget,
+  groupModels,
+  isTextGenerationModel,
+  resolveHomeGeography,
+} from './utils';
