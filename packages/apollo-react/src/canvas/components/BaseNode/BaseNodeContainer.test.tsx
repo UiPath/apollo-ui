@@ -171,6 +171,36 @@ describe('outline shapes carry their own state', () => {
   });
 });
 
+describe('an outlined node is lifted like every other node', () => {
+  const outline = () => screen.getByTestId('base-node-outline');
+
+  it.each([
+    ['rest', {}, 'rest'],
+    ['hover', { isHovered: true }, 'hover'],
+    ['drag', { interactionState: 'drag' as const }, 'lifted'],
+  ])('uses the canvas elevation token on %s', (_name, props, token) => {
+    render(
+      <BaseContainer shape="document" {...props}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    // The canvas tokens, not tailwind's generic drop-shadows: those are a few percent black and
+    // are invisible against a dark canvas, while every other node is lifted by these.
+    expect(outline()).toHaveClass(`[filter:var(--canvas-node-filter-${token})]`);
+  });
+
+  it('casts nothing when the node is asked not to', () => {
+    render(
+      <BaseContainer shape="document" shadow={false}>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(outline().className).not.toMatch(/canvas-node-filter/);
+  });
+});
+
 describe('outline geometry stays inside the node box', () => {
   const [WIDTH, HEIGHT] = [288, 96];
 

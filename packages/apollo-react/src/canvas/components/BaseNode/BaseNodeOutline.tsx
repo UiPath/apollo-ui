@@ -82,9 +82,16 @@ export const getStatusStroke = (
 /**
  * The container's `box-shadow` is cast by its rectangular box, not by this outline, so the shadow
  * is drawn here as a filter that follows the drawn path instead.
+ *
+ * The canvas elevation tokens, not tailwind's generic drop-shadows: those are a few percent black
+ * and vanish on a dark canvas, while every other node is lifted by `--canvas-node-shadow-*`.
  */
-const outlineShadow = (isDragging?: boolean, isHovered?: boolean) =>
-  isDragging ? 'drop-shadow-lg' : isHovered ? 'drop-shadow-md' : 'drop-shadow-sm';
+const outlineShadow = (isDragging?: boolean, isHovered?: boolean) => {
+  if (isDragging) return '[filter:var(--canvas-node-filter-lifted)]';
+  return isHovered
+    ? '[filter:var(--canvas-node-filter-hover)]'
+    : '[filter:var(--canvas-node-filter-rest)]';
+};
 
 interface BaseNodeOutlineProps {
   shape: OutlineDrawnNodeShape;
