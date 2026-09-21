@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { BaseContainer } from './BaseNodeContainer';
+import { pathFor } from './BaseNodeOutline';
 
 describe('BaseContainer status border hover treatment', () => {
   it('preserves a resolved status border while hovered', () => {
@@ -167,5 +168,32 @@ describe('outline shapes carry their own state', () => {
 
     // tailwind-merge folds the bare `outline` utility into `outline-2`.
     expect(screen.getByTestId('base-container')).toHaveClass('outline-2');
+  });
+});
+
+describe('outline geometry stays inside the node box', () => {
+  // A control point below `bottom` put the curve outside the SVG, where it was clipped and its
+  // drop-shadow rendered as a dark lobe under the node.
+  it.each(['clipped', 'document'] as const)('keeps every %s coordinate within the box', (shape) => {
+    const [width, height] = [288, 96];
+
+    const numbers =
+      pathFor(shape, width, height)
+        .match(/-?\d+(\.\d+)?/g)
+        ?.map(Number) ?? [];
+    // Coordinates alternate x, y after each command letter; check both bounds generously.
+    expect(numbers.length).toBeGreaterThan(0);
+    expect(Math.min(...numbers)).toBeGreaterThanOrEqual(0);
+    expect(Math.max(...numbers)).toBeLessThanOrEqual(width);
+  });
+
+  it('keeps the document wave above the bottom edge', () => {
+    const height = 96;
+    const ys = pathFor('document', 288, height)
+      .split(/[A-Z]/)
+      .flatMap((segment) => segment.trim().split(/\s+/).filter(Boolean).map(Number))
+      .filter((_, index) => index % 2 === 1);
+
+    expect(Math.max(...ys)).toBeLessThanOrEqual(height);
   });
 });

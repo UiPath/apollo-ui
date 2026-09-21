@@ -10,7 +10,7 @@ import type { ValidationErrorSeverity } from '../../types/validation';
 const EDGE = 0.5;
 /** How deep a corner cut or a bottom wave reaches, as a share of node height. */
 const CUT_RATIO = 0.28;
-const WAVE_RATIO = 0.16;
+const WAVE_RATIO = 0.12;
 
 /**
  * Paths in the node's own pixel space.
@@ -19,7 +19,7 @@ const WAVE_RATIO = 0.16;
  * 100x40 box becomes a shallow diagonal once scaled to a 288x96 node, and a wave's control points
  * distort with it. Generating from the real box keeps both true at any size.
  */
-const pathFor = (shape: OutlineDrawnNodeShape, width: number, height: number): string => {
+export const pathFor = (shape: OutlineDrawnNodeShape, width: number, height: number): string => {
   const right = width - EDGE;
   const bottom = height - EDGE;
 
@@ -28,9 +28,11 @@ const pathFor = (shape: OutlineDrawnNodeShape, width: number, height: number): s
     return `M${cut} ${EDGE} H${right} V${bottom} H${cut} L${EDGE} ${bottom - cut} V${cut + EDGE} Z`;
   }
 
-  const wave = Math.min(height * WAVE_RATIO, 14);
+  // Both control points stay inside the box. Reaching below `bottom` put the curve outside the
+  // SVG, where it was clipped and its drop-shadow rendered as a dark lobe under the node.
+  const wave = Math.min(height * WAVE_RATIO, 12);
   const crest = bottom - wave;
-  return `M${EDGE} ${EDGE} H${right} V${crest} C${width * 0.66} ${bottom + wave * 0.5} ${width * 0.34} ${crest - wave} ${EDGE} ${crest} Z`;
+  return `M${EDGE} ${EDGE} H${right} V${crest} C${width * 0.75} ${bottom} ${width * 0.25} ${crest - wave} ${EDGE} ${crest} Z`;
 };
 
 /** The stroke counterpart of `getStatusBorder`, which paints nothing without a border. */
