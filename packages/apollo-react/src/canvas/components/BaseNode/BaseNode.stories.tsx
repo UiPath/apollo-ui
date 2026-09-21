@@ -334,6 +334,36 @@ function ShapesCanvas() {
           display: { label: 'Rectangle', subLabel: 'Agent', shape: 'rectangle' },
         },
       }),
+      createNode({
+        id: 'shape-stadium',
+        type: 'uipath.agent',
+        position: { x: 560, y: 240 },
+        data: {
+          nodeType: 'uipath.agent',
+          version: '1.0.0',
+          display: { label: 'Stadium', subLabel: 'DMN input data', shape: 'stadium' },
+        },
+      }),
+      createNode({
+        id: 'shape-clipped',
+        type: 'uipath.agent',
+        position: { x: 560, y: 360 },
+        data: {
+          nodeType: 'uipath.agent',
+          version: '1.0.0',
+          display: { label: 'Clipped', subLabel: 'DMN knowledge model', shape: 'clipped' },
+        },
+      }),
+      createNode({
+        id: 'shape-document',
+        type: 'uipath.agent',
+        position: { x: 560, y: 480 },
+        data: {
+          nodeType: 'uipath.agent',
+          version: '1.0.0',
+          display: { label: 'Document', subLabel: 'DMN knowledge source', shape: 'document' },
+        },
+      }),
     ],
     []
   );
@@ -366,6 +396,24 @@ const shapeRows = [
     value: "'rectangle'",
     example: 'uipath.agent',
     use: 'Agents and wide nodes that need more horizontal label space',
+  },
+  {
+    shape: 'stadium',
+    value: "'stadium'",
+    example: 'dmn.inputData',
+    use: 'DMN input data — a rectangle with fully rounded ends',
+  },
+  {
+    shape: 'clipped',
+    value: "'clipped'",
+    example: 'dmn.businessKnowledgeModel',
+    use: 'DMN business knowledge model — a rectangle with its leading corners clipped',
+  },
+  {
+    shape: 'document',
+    value: "'document'",
+    example: 'dmn.knowledgeSource',
+    use: 'DMN knowledge source — a rectangle with a wavy bottom edge',
   },
 ] as const;
 
