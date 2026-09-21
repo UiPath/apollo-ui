@@ -179,11 +179,16 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
             {primary}
           </span>
           {inlineTags.map((t) => (
-            // Long chips (notably the "Routes to …" substitution chip) may
-            // exceed the available width; let them shrink and ellipsize
-            // rather than overflow into the context column.
+            // `flex items-center` is load-bearing, not cosmetic: the chip is an
+            // inline-flex Badge, so a block wrapper would generate a line box of
+            // the inherited line-height (~21px) around a 16px chip and
+            // baseline-align it, parking every chip ~3px above the title.
+            //
+            // `min-w-0 shrink overflow-hidden` lets a long chip (notably the
+            // "Routes to …" substitution chip) ellipsize rather than overflow
+            // into the context column.
             <span
-              className="min-w-0 shrink overflow-hidden [&_[data-slot=model-picker-tag]]:max-w-full [&_[data-slot=model-picker-tag]]:truncate"
+              className="flex min-w-0 shrink items-center overflow-hidden [&_[data-slot=model-picker-tag]]:max-w-full [&_[data-slot=model-picker-tag]]:truncate"
               key={`${t.kind}-${t.label}`}
             >
               <ModelTagChip tag={t} variants={tagVariants} />
