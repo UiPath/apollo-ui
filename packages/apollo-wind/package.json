@@ -120,6 +120,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tailwindcss/postcss": "^4.1.17",
     "@tanstack/react-table": "^8.21.3",
+    "@tanstack/react-virtual": "^3.14.3",
     "@uipath/apollo-core": "workspace:*",
     "autoprefixer": "^10.4.22",
     "class-variance-authority": "^0.7.1",

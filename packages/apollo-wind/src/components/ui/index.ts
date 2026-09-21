@@ -32,6 +32,7 @@ export * from './input-group';
 export * from './label';
 export * from './layout';
 export * from './lockable-value-field';
+export * from './model-picker';
 export * from './multi-select';
 export * from './pagination';
 export * from './popover';
