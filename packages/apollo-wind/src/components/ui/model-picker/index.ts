@@ -6,10 +6,10 @@
 export type { ModelBadgeDefinition, ModelBadgeKind } from './badges';
 // Badge pool
 export { MODEL_BADGES } from './badges';
-// i18n contract — apollo-wind ships no i18n library, so the picker
-// resolves its strings through a host-supplied translator.
-export type { PickerMessage, PickerTranslator } from './i18n';
-export { defaultTranslator } from './i18n';
+// Strings. The picker renders what it is given; these are the English
+// defaults it falls back to, and the contract for overriding them.
+export type { ModelPickerLabels, StaticLabelKey } from './labels';
+export { DEFAULT_MODEL_PICKER_LABELS, formatContextWindow, resolveLabels } from './labels';
 export type {
   ModelPickerChangeHandler,
   ModelPickerProps,

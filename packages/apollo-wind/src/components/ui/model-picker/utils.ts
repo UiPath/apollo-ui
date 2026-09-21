@@ -1,7 +1,7 @@
 import { MODEL_BADGES, type ModelBadgeKind } from './badges';
-import type { PickerTranslator } from './i18n';
+import type { ModelPickerLabels } from './labels';
 
-import { GROUP_LABELS, TAG_LABELS, tr } from './i18n';
+import { DEFAULT_MODEL_PICKER_LABELS } from './labels';
 import type { CostTier, DiscoveryModel, ModelGroup, ModelTag } from './types';
 
 const RECOMMENDED_SUBSCRIPTION = 'UiPathOwned';
@@ -18,7 +18,7 @@ export interface DeriveModelTagsContext {
    * back to the message descriptors' English source strings — useful
    * for tests and standalone primitive composition.
    */
-  i18n?: PickerTranslator;
+  labels?: ModelPickerLabels;
   /** User's home region — used to flag out-of-region models. */
   homeRegion?: string;
   /**
@@ -155,14 +155,9 @@ export function deriveModelTags(
   context: DeriveModelTagsContext = {}
 ): ModelTag[] {
   const tags: ModelTag[] = [];
-  // Resolve a message descriptor against the (optional) i18n instance.
-  // When no instance is supplied (tests, primitive composition) we
-  // fall back to the descriptor's source English message so the chip
-  // still renders something legible.
-  const localize = (desc: { id: string; message?: string }): string => {
-    if (context.i18n) return tr(context.i18n, desc);
-    return desc.message ?? desc.id;
-  };
+  // Standalone callers (tests, primitive composition) get the English
+  // defaults, so a chip always renders something legible.
+  const labels = context.labels ?? DEFAULT_MODEL_PICKER_LABELS;
 
   // `preview` and `out-of-region` apply only to UiPath-hosted models:
   //   - Preview: UiPath controls the GA lifecycle for hosted models. For BYO,
@@ -188,8 +183,8 @@ export function deriveModelTags(
   if (isRecommended) {
     tags.push({
       kind: 'recommended',
-      label: localize(TAG_LABELS.recommended),
-      tooltip: localize(TAG_LABELS.recommendedTooltip),
+      label: labels.recommendedTag,
+      tooltip: labels.recommendedTagTooltip,
     });
   }
 
@@ -200,7 +195,7 @@ export function deriveModelTags(
       ? listMatchesModel(context.previewModelIds, model)
       : !!model.isPreview;
   if (!isByo && isPreview) {
-    tags.push({ kind: 'preview', label: localize(TAG_LABELS.preview) });
+    tags.push({ kind: 'preview', label: labels.previewTag });
   }
 
   // A "substitution" is when the gateway is actively routing traffic to a
@@ -216,52 +211,24 @@ export function deriveModelTags(
   //     transparently routed somewhere else.
   const substitutionTarget = getSubstitutionTarget(model);
   if (substitutionTarget) {
-    // Dynamic strings need the i18n.t API so values interpolate into
-    // the translation. The descriptor's English source is used as the
-    // fallback when no i18n instance is supplied.
     tags.push({
       kind: 'substituted',
-      label: context.i18n
-        ? context.i18n._({
-            id: 'modelPicker.tag.substituted.label',
-            message: 'Routes to {target}',
-            values: { target: substitutionTarget },
-          })
-        : `Routes to ${substitutionTarget}`,
-      tooltip: context.i18n
-        ? context.i18n._({
-            id: 'modelPicker.tag.substituted.tooltip',
-            message:
-              'This model is retired. Your traffic is currently being routed to {target}. Update your configuration to make this explicit.',
-            values: { target: substitutionTarget },
-          })
-        : `This model is retired. Your traffic is currently being routed to ${substitutionTarget}. Update your configuration to make this explicit.`,
+      label: labels.substitutedTag(substitutionTarget),
+      tooltip: labels.substitutedTagTooltip(substitutionTarget),
     });
   } else if (model.deprecationDetails?.usageEndDate) {
     const date = formatDate(model.deprecationDetails.usageEndDate);
     tags.push({
       kind: 'deprecating',
-      label: context.i18n
-        ? context.i18n._({
-            id: 'modelPicker.tag.deprecating.label',
-            message: 'Deprecating {date}',
-            values: { date },
-          })
-        : `Deprecating ${date}`,
+      label: labels.deprecatingTag(date),
       tooltip: model.deprecationDetails.replacedBy
-        ? context.i18n
-          ? context.i18n._({
-              id: 'modelPicker.tag.deprecating.tooltip',
-              message: 'Will be replaced by {replacement}',
-              values: { replacement: model.deprecationDetails.replacedBy },
-            })
-          : `Will be replaced by ${model.deprecationDetails.replacedBy}`
+        ? labels.deprecatingTagTooltip(model.deprecationDetails.replacedBy)
         : undefined,
     });
   }
 
   if (isByo) {
-    tags.push({ kind: 'custom', label: localize(TAG_LABELS.custom) });
+    tags.push({ kind: 'custom', label: labels.customTag });
   }
 
   if (!isByo) {
@@ -270,20 +237,8 @@ export function deriveModelTags(
     if (geo && home && geo !== 'GLOBAL' && geo !== home) {
       tags.push({
         kind: 'out-of-region',
-        label: context.i18n
-          ? context.i18n._({
-              id: 'modelPicker.tag.outOfRegion.label',
-              message: 'Out of region ({geography})',
-              values: { geography: geo },
-            })
-          : `Out of region (${geo})`,
-        tooltip: context.i18n
-          ? context.i18n._({
-              id: 'modelPicker.tag.outOfRegion.tooltip',
-              message: 'Routes traffic outside {homeRegion}',
-              values: { homeRegion: home },
-            })
-          : `Routes traffic outside ${home}`,
+        label: labels.outOfRegionTag(geo),
+        tooltip: labels.outOfRegionTagTooltip(home),
       });
     }
   }
@@ -308,8 +263,8 @@ export function deriveModelTags(
     if (!def) continue;
     tags.push({
       kind,
-      label: localize(def.label),
-      tooltip: def.tooltip ? localize(def.tooltip) : undefined,
+      label: labels[def.label],
+      tooltip: def.tooltip ? labels[def.tooltip] : undefined,
       variant: def.variant,
     });
   }
@@ -426,7 +381,7 @@ export interface GroupModelsContext {
    * in the active locale; otherwise they fall back to English source
    * strings.
    */
-  i18n?: PickerTranslator;
+  labels?: ModelPickerLabels;
 }
 
 function buildSubscriptionMatchers(ctx: GroupModelsContext): Array<{
@@ -447,10 +402,7 @@ function buildSubscriptionMatchers(ctx: GroupModelsContext): Array<{
           !m.deprecationDetails?.usageEndDate));
   const isPreview = (m: DiscoveryModel): boolean =>
     ctx.previewModelIds !== undefined ? listMatchesModel(ctx.previewModelIds, m) : !!m.isPreview;
-  const localize = (desc: { id: string; message?: string }): string => {
-    if (ctx.i18n) return tr(ctx.i18n, desc);
-    return desc.message ?? desc.id;
-  };
+  const labels = ctx.labels ?? DEFAULT_MODEL_PICKER_LABELS;
   // Category view ordering: BYO first, then UiPath-hosted lifecycle.
   // Customers who bring their own connections expect them up front, not
   // buried below the hosted catalog. The matchers below are also the
@@ -458,14 +410,14 @@ function buildSubscriptionMatchers(ctx: GroupModelsContext): Array<{
   return [
     {
       key: 'byo',
-      label: localize(GROUP_LABELS.byo),
-      hint: localize(GROUP_LABELS.byoHint),
+      label: labels.byoGroup,
+      hint: labels.byoGroupHint,
       match: (m) => isByoModel(m),
     },
     {
       key: 'recommended',
-      label: localize(GROUP_LABELS.recommended),
-      hint: localize(GROUP_LABELS.recommendedHint),
+      label: labels.recommendedGroup,
+      hint: labels.recommendedGroupHint,
       // Deprecating wins over Recommended/Preview: a model with a usage
       // end date must surface in the Deprecating section (README:
       // "Deprecating last"), whatever else the DTO says about it.
@@ -473,27 +425,27 @@ function buildSubscriptionMatchers(ctx: GroupModelsContext): Array<{
     },
     {
       key: 'preview',
-      label: localize(GROUP_LABELS.preview),
-      hint: localize(GROUP_LABELS.previewHint),
+      label: labels.previewGroup,
+      hint: labels.previewGroupHint,
       // Preview only applies to UiPath-hosted models. BYO already
       // matched above, so this branch will not see BYO models.
       match: (m) => isPreview(m) && !isByoModel(m) && !m.deprecationDetails?.usageEndDate,
     },
     {
       key: 'more',
-      label: localize(GROUP_LABELS.more),
-      hint: localize(GROUP_LABELS.moreHint),
+      label: labels.moreGroup,
+      hint: labels.moreGroupHint,
       match: (m) => !isByoModel(m) && !m.deprecationDetails?.usageEndDate,
     },
     {
       key: 'deprecating',
-      label: localize(GROUP_LABELS.deprecating),
-      hint: localize(GROUP_LABELS.deprecatingHint),
+      label: labels.deprecatingGroup,
+      hint: labels.deprecatingGroupHint,
       match: (m) => !!m.deprecationDetails?.usageEndDate,
     },
     {
       key: 'shared',
-      label: localize(GROUP_LABELS.other),
+      label: labels.otherGroup,
       match: () => true,
     },
   ];
@@ -504,13 +456,10 @@ export function groupModels(
   strategy: GroupStrategy = 'subscription',
   context: GroupModelsContext = {}
 ): ModelGroup[] {
-  const localize = (desc: { id: string; message?: string }): string => {
-    if (context.i18n) return tr(context.i18n, desc);
-    return desc.message ?? desc.id;
-  };
+  const labels = context.labels ?? DEFAULT_MODEL_PICKER_LABELS;
 
   if (strategy === 'flat') {
-    return [{ key: 'all', label: localize(GROUP_LABELS.allModels), models }];
+    return [{ key: 'all', label: labels.allModelsGroup, models }];
   }
 
   if (strategy === 'vendor') {
@@ -534,7 +483,7 @@ export function groupModels(
     if (byo.length) {
       groups.push({
         key: 'byo',
-        label: localize(GROUP_LABELS.byo),
+        label: labels.byoGroup,
         models: byo,
       });
     }

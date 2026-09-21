@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { defaultTranslator } from './i18n';
+import { DEFAULT_MODEL_PICKER_LABELS } from './labels';
 
 import type { DiscoveryModel } from './types';
 import {
@@ -446,15 +446,15 @@ describe('filterModels', () => {
 });
 
 describe('i18n resolution', () => {
-  it('resolves tag labels through the supplied translator', () => {
+  it('resolves tag labels through the supplied labels', () => {
     const tags = deriveModelTags(model({ modelId: 'a' }), {
       recommendedModelIds: ['a'],
-      i18n: defaultTranslator,
+      labels: DEFAULT_MODEL_PICKER_LABELS,
     });
     expect(tags.find((t) => t.kind === 'recommended')?.label).toBe('Recommended');
   });
 
-  it('falls back to source English when no translator is supplied', () => {
+  it('falls back to the English defaults when no labels are supplied', () => {
     const tags = deriveModelTags(model({ modelId: 'a' }), {
       recommendedModelIds: ['a'],
     });

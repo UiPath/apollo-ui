@@ -6,36 +6,37 @@ This is a port of apollo-react's Material `ap-model-picker` onto wind primitives
 
 It renders a labeled trigger that opens a popup with a built-in folder switcher, a search field, a Category ⇆ Provider grouping pill, grouped sections — Custom Models (BYO) always first — and a "Use custom model" footer for users who can manage BYO.
 
-The picker owns its data: given a `requestContext` it fetches the Discovery catalog, the folder list, BYO connection names, and the org-admin check itself. Your code owns only the `value`. (Every fetch can be overridden by the matching prop — `models`, `folders`, `canManageByo` — for hosts with their own data layer.)
+The picker owns no data and no strings: it renders the `models`, `folders`, `labels` and callbacks you hand it. The platform calls it used to make are exported as hooks you compose yourself — see [Quick start](#quick-start).
 
 ---
 
 ## Quick start
 
+The picker renders what you give it and fetches nothing:
+
 ```tsx
-import { ModelPicker } from '@uipath/apollo-wind';
+import { ModelPicker, usePlatformDiscoveryModels } from '@uipath/apollo-wind';
 
-const requestContext = React.useMemo(() => ({
-  token: () => getAccessToken(),    // getter → never goes stale
-  baseUrl,                          // 'https://cloud.uipath.com/acme'
-  tenantName,
-  tenantId,                         // tenant GUID (admin-page deep links)
-  userId,                           // token's `sub` claim (Discovery user scoping)
-  requestingProduct: 'agents',
-  requestingFeature: 'design-eval-deploy',
-}), [baseUrl, tenantName, tenantId, userId]);
-
+const { models, loading, error } = usePlatformDiscoveryModels(requestContext, folder);
 const [value, setValue] = React.useState<string | null>(null);
 
 <ModelPicker
+  models={models ?? []}
   value={value}
   onChange={(model) => setValue(model.modelId)}
-  requestContext={requestContext}
-  enableFolders
+  loading={loading}
+  error={error}
 />
 ```
 
-That's the whole integration: the picker fetches Discovery (`{baseUrl}/{tenantName}/llmgateway_/api/discovery`), refetches when the user switches folders, resolves BYO connection names, gates the BYO affordances on the org-admin check, and renders its own loading/error states. The rest of this document covers the per-product customization surface.
+`usePlatformDiscoveryModels` is the standard LLM Gateway fetch, exported alongside the component
+for hosts that want it — but nothing in the picker depends on it. A host with its own data layer
+(SWR, React Query, Redux, a postMessage bridge) passes `models` from wherever it likes.
+
+The same split applies to every other platform concern: `useUserFolders` for the folder list,
+`useCanManageByo` for the org-admin check, `useDeleteByoConfiguration` for BYO deletes, and
+`buildLlmConfigurationsUrl` for the AI Trust Layer deep links. Compose the ones you need; the
+picker takes their results as props.
 
 ---
 
@@ -86,7 +87,7 @@ Display names travel on the Discovery DTO, like Recommended. Product teams autho
 
 **Products cannot rename models.** There is deliberately no name prop: the same model reads identically in every product surface, and a wrong or missing name is fixed once, centrally, not patched per product. Models without an authored name fall back to the raw `modelName`. Search matches display names as well as technical ids.
 
-**BYO connection names.** BYO rows render a disambiguating caption from `byoConnectionLabel`. When the DTO doesn't carry one (Discovery serves only `byomDetails.integrationServiceConnectionId`), the picker resolves the connection's display name itself via `GET {baseUrl}/{tenantName}/connections_/api/v1/Connections/{id}` — one request per distinct connection, cached for the component's lifetime; a host-supplied `byoConnectionLabel` always wins and suppresses the lookup. If the user cannot read a connection, its row simply renders without a caption.
+**BYO connection names.** BYO rows render a disambiguating caption from `byoConnectionLabel`. Discovery serves only `byomDetails.integrationServiceConnectionId`, so the host resolves the name — `useByoConnectionNames` does it (one request per distinct connection, cached for its lifetime) and is exported for that purpose. A row without a label simply renders without a caption.
 
 ### 3. Badges from the Apollo pool
 
@@ -176,67 +177,57 @@ A host-supplied `badgesFor` takes over entirely — return your own pool kinds t
 
 ### 6. BYO management
 
-BYO management affordances — the edit row action and the "Use custom model" footer — appear only for **organization administrators**, the same gate the Automation Cloud portal puts on the AI Trust Layer admin pages these affordances navigate to. Pass a `requestContext` and the picker runs the check:
+The BYO affordances — the row actions and the "Use custom model" footer — render when
+`canManageByo` is true. The picker does not decide who may manage BYO, and does not perform the
+actions; it renders them and calls you.
 
 ```tsx
-const requestContext = React.useMemo(() => ({
-  token,
-  baseUrl,                          // origin + org prefix, e.g. 'https://cloud.uipath.com/acme'
-  tenantName,                       // path segment for platform routes
-  tenantId,                         // tenant GUID (admin-page deep links)
-  requestingProduct: 'agents',      // pre-populates the add-configuration form
-  requestingFeature: 'design-eval-deploy',
-}), [token, baseUrl, tenantName, tenantId]);
+const { canManage } = useCanManageByo(requestContext); // or your own authorization model
 
-<ModelPicker models={models} requestContext={requestContext} />
+<ModelPicker
+  models={models}
+  canManageByo={canManage ?? false}
+  onEditModel={(m) =>
+    platformNavigation.openInNewTab(
+      buildLlmConfigurationsUrl(requestContext, { intent: 'edit', configurationId: m.byomDetails?.byoConfigurationId })
+    )
+  }
+  onDeleteModel={async (m) => {
+    await deleteConfiguration(m.byomDetails!.byoConfigurationId!);
+    await refetch();
+  }}
+  onUseCustomModel={() => openMyWizard()}
+/>
 ```
 
-Under the hood: `GET {baseUrl}/portal_/api/organization/UserOrganizationInfo` — org admin means `accountRoleType` is `ACCOUNT_ADMIN` or `ACCOUNT_OWNER` (the portal's own `isOrgAdminSelector` rule). The check **fails closed**: affordances stay hidden while loading, on error, and while re-checking after the context changes. It is a client-side affordance gate only; the configurations pages and APIs enforce authorization server-side.
-
-**Default navigation.** With a `requestContext` in place the affordances work with zero extra wiring — both lead to the AI Trust Layer LLM-configurations surface (`{baseUrl}/portal_/admin/ai-trust-layer/llm-configurations`):
-
-- The **"Use custom model" footer** opens the *add configuration* form, deep-linked to `/{tenantId}/{folderId}/add` and pre-populated via `?product=&feature=` from `requestingProduct`/`requestingFeature`. The folder id is the switcher's current selection, or — when none is selected ("All folders") — the first available folder, matching the configurations page's own default. Only when no folders exist does it fall back to the configurations list.
-- The **edit row action** (BYO rows only) opens the configuration's *edit* form when the model carries `byomDetails.byoConfigurationId` (served by Discovery on UiPath/Arima#2659); when absent it lands on the configurations list scoped to the tenant + folder.
-- The **delete row action** (BYO rows only) is owned by the picker in self-fetch mode. It renders a delete icon next to edit on BYO rows that carry a `byoConfigurationId`, confirms first (a built-in dialog naming the configuration), then issues the platform call itself:
-
-  ```
-  DELETE {gateway}/api/byo/product/llm-configurations/{byoConfigurationId}
-  ```
-
-  It reuses the credentials and org/tenant path it already holds for Discovery, refetches the catalog, and reports failures in its own error surface (the gateway's message, verbatim). Products do **not** implement this request.
-
-  Pass `onModelDeleted` to react afterwards. Its one real job is reconciling state the picker cannot see — above all, choosing a replacement when the deleted model was the current selection. The picker deliberately does not choose one for you:
-
-  ```tsx
-  <ModelPicker
-    requestContext={ctx}
-    value={selected}
-    onChange={setSelected}
-    onModelDeleted={(model) => {
-      if (model.modelName === selected) setSelected(nextDefault());
-    }}
-  />
-  ```
-
-  `onDeleteModel` remains as an opt-out for hosts that must route the call elsewhere — the picker then confirms, calls it, and refetches, but issues no request of its own. With a host-owned `models` list there is no request context to delete with, so `onDeleteModel` is the only way to surface a delete action at all.
-
-These navigations always open the AI Trust Layer pages in a new browser tab - the picker is embedded in a product surface, and navigating it away would unload the user's in-progress work. `onUseCustomModel` overrides the footer's default navigation (e.g. an in-app wizard), and `slots.optionActions` overrides the row actions. Products with their own authorization model can pass `canManageByo` (`true`/`false`); when set, no admin check request is made.
+- **Delete is confirmed for you.** Removing a BYO configuration affects everyone in the tenant,
+  so the picker always shows a confirm dialog naming the configuration before calling
+  `onDeleteModel`. If your handler rejects, the message surfaces in the picker's own error
+  region rather than vanishing into a floating promise.
+- **`onEditModel` and `onUseCustomModel` have no default destination.** The footer still renders
+  without `onUseCustomModel`, as a disabled hint, so the affordance is discoverable while you
+  wire it.
+- `useCanManageByo` implements the platform's rule — `accountRoleType` of `ACCOUNT_ADMIN` or
+  `ACCOUNT_OWNER`, the same gate the portal puts on the AI Trust Layer pages — and fails closed.
+  Products with their own authorization model simply pass their own boolean.
 
 ### 7. Folder scoping
 
-Set `enableFolders` and the picker fetches the current user's Orchestrator folders (via the same `requestContext`), renders the toolbar switcher, owns the selection, and refetches Discovery scoped to the picked folder (`X-UiPath-FolderKey`). Your product only decides whether folder scoping applies to its surface:
+Pass `folders` and the toolbar shows a scope switcher; own the selection with `folder` +
+`onFolderChange` and refetch your catalog with the new folder key.
 
 ```tsx
-<ModelPicker requestContext={requestContext} enableFolders />
+const { folders } = useUserFolders(requestContext);
+const [folder, setFolder] = React.useState<string | null>(null);
+const { models } = usePlatformDiscoveryModels(requestContext, folder);
+
+<ModelPicker models={models ?? []} folders={folders} folder={folder} onFolderChange={setFolder} />
 ```
 
-Pass `folder` + `onFolderChange` to control the selection instead (e.g. when the host owns the catalog via `models` and refetches itself).
-
-Under the hood: `GET {baseUrl}/{tenantName}/orchestrator_/api/FoldersNavigation/GetFoldersForCurrentUser` (the same call the Automation Cloud portal makes). Folder ids are Orchestrator folder **Keys** (GUIDs). Personal-workspace folders (`FolderType === 'Personal'`) are always excluded — a personal workspace is not a meaningful scope for shared model configurations; a host that really needs one can supply it via the `folders` prop.
-
-The picker prepends an "All folders" sentinel automatically; picking it selects `null` — Discovery is refetched without a `folderKey`, returning the union of all folders the user can see.
-
-For tests and Storybook, the `folders` prop overrides the internal fetch with a static list.
+`useUserFolders` calls `GET {baseUrl}/{tenantName}/orchestrator_/api/FoldersNavigation/GetFoldersForCurrentUser`
+and drops personal workspaces — a personal workspace is not a meaningful scope for shared model
+configurations. Folder ids are Orchestrator folder **Keys** (GUIDs). The picker prepends the
+"All folders" sentinel itself; picking it reports `null`.
 
 ### 8. View toggle (Category ⇆ Provider)
 
@@ -293,7 +284,7 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 
 | Prop                  | Type                                                  | Description                                                                                                          |
 | --------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `models`              | `DiscoveryModel[]`                                    | The catalog. Required.                                                                                               |
+| `models`              | `DiscoveryModel[]`                                    | **Required.** The catalog to render. The picker fetches nothing.                                                     |
 | `value`               | `string \| null`                                      | Selected `modelId`.                                                                                                  |
 | `onChange`            | `(model: DiscoveryModel) => void`                     | Selection callback. Receives the full DTO.                                                                           |
 | `label`               | `string`                                              | Label above the trigger. Defaults to a localized "Model".                                                            |
@@ -314,28 +305,31 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `badgesFor`           | `(m) => readonly ModelBadgeKind[]`                    | Stamp badges from the Apollo badge pool (see §3; cost badges in §5).                                                 |
 | `customTagsFor`       | `(m) => readonly ModelTag[]`                          | Escape hatch: free-form chips for one-offs pending a pool addition. Prefer `badgesFor`.                              |
 | `customTagVariants`   | `Record<string, string>`                              | Chip variant lookup for new tag kinds (`mini`, `info-mini`, …).                                                     |
-| `requestContext`      | `PlatformRequestContext`                              | Auth/routing for the picker's built-in platform calls (org-admin check + folder fetch) and the default add/edit navigation. Pass a memoized object. |
-| `canManageByo`        | `boolean`                                             | Explicit override for BYO management. When unset and `requestContext` is provided, the picker checks whether the user is an organization admin. |
-| `onUseCustomModel`    | `() => void`                                          | Overrides the footer CTA's default navigation to the LLM-configurations add page. Picker closes itself first.        |
-| `enableFolders`       | `boolean`                                             | Turn on folder scoping — the picker fetches the user's Orchestrator folders via `requestContext`. Default `false`.   |
-| `folders`             | `readonly { id; label }[]`                            | Test/storybook override for the folder list (skips the internal fetch).                                              |
+| `canManageByo`        | `boolean`                                             | Show the BYO row actions and footer CTA. Your authorization model decides; `useCanManageByo` implements the platform's. |
+| `onUseCustomModel`    | `() => void`                                          | Footer CTA activation. Without it the CTA renders as a disabled hint.                                                |
+| `onEditModel`         | `(model: DiscoveryModel) => void`                     | Edit activation on a BYO row. No default destination — `buildLlmConfigurationsUrl` builds the AI Trust Layer link.   |
+| `folders`             | `readonly { id; label }[]`                            | Folders for the toolbar switcher. The switcher renders when this is non-empty.                                       |
 | `folder`              | `string \| null`                                      | Selected folder id (Orchestrator folder Key), or `null` for "All folders".                                           |
 | `onFolderChange`      | `(next: string \| null) => void`                      | Folder change callback. Re-fetch your catalog with the new `folderKey`.                                              |
 | `allFoldersLabel`     | `string`                                              | Override the "All folders" sentinel label.                                                                           |
 | `showGroupHeaders`    | `boolean`                                             | Default `true`. Set `false` for a flat list (grouping is still applied to ordering).                                 |
 | `popupContainer`      | `Element \| DocumentFragment \| 'body' \| null`         | Portal target for the popup. Defaults to the nearest `PortalContainerProvider`, then `document.body`.                 |
-| `translator`          | `PickerTranslator`                                    | Resolves the picker's own strings. Defaults to English source text. See [Internationalization](#internationalization). |
+| `labels`              | `Partial<ModelPickerLabels>`                          | String overrides, merged over `DEFAULT_MODEL_PICKER_LABELS`. See [Internationalization](#internationalization).       |
 | `slots`               | `ModelPickerSlots`                                    | Escape hatches. See above.                                                                                           |
 
 ---
 
 ## Data flow
 
-With only a `requestContext`, the picker fetches Discovery itself over the platform route (`{baseUrl}/{tenantName}/llmgateway_/api/discovery`, headers `X-UiPath-LlmGateway-RequestingProduct`/`-RequestingFeature`/`-UserId`, plus `X-UiPath-FolderKey` when a folder is selected) — exposed as `usePlatformDiscoveryModels` for hosts that want the same fetch outside the picker.
+There isn't one. The picker is a pure function of its props: `models`, `folders`,
+`canManageByo`, `loading`, `error`, and the callbacks. Everything platform-shaped lives in the
+exported hooks (`usePlatformDiscoveryModels`, `useUserFolders`, `useCanManageByo`,
+`useDeleteByoConfiguration`, `useByoConnectionNames`, `useDiscoveryModels`) which a host composes
+itself — see [Quick start](#quick-start).
 
-Pass `models` to take over: the built-in fetch turns off and the picker renders exactly what you give it (SWR, React Query, Redux, or `useDiscoveryModels` — the direct-gateway flavor with internal account/tenant headers).
-
----
+The one opinion the component keeps is dropping `isBlockedByPolicy` rows: that is an org-wide
+governance verdict, not a rendering preference, and it must not be offered no matter who fetched
+the row. Everything else about which models appear is yours, via `filter`.
 
 ## Accessibility
 
@@ -367,32 +361,35 @@ Overlays (the popup, the folder menu, tooltips, the delete confirm) portal to `d
 
 ## Internationalization
 
-apollo-wind ships no i18n library and no catalogs: strings are the host's to translate. Every user-visible string is declared once in `i18n.ts` as a `PickerMessage` — `{ id, message, values? }` — keyed under the `modelPicker.*` namespace, the same ids the apollo-react picker uses.
-
-By default the picker resolves them with `defaultTranslator`, which renders each descriptor's English `message` and interpolates `{name}`-style placeholders. A host localizes by passing a `translator`:
+The picker holds no i18n machinery. Every user-visible string is a field on `ModelPickerLabels`,
+and anything you omit falls back to `DEFAULT_MODEL_PICKER_LABELS` — so an unlocalized host
+renders real English rather than raw keys.
 
 ```tsx
-// react-i18next
-const { t } = useTranslation('canvas');
-const translator = React.useMemo(
-  () => ({ _: (m) => t(m.id, { defaultValue: m.message, ...m.values }) }),
+const { t } = useTranslation('myNamespace');
+const labels = React.useMemo(
+  () => ({
+    fieldLabel: t('model_field_label', 'Model'),
+    searchPlaceholder: t('model_search_placeholder', 'Search models'),
+    resultCount: (n: number) => t('model_resultCount', { defaultValue: '{{count}} models', count: n }),
+  }),
   [t]
 );
 
-<ModelPicker translator={translator} ... />
-```
-
-```tsx
-// Lingui — an `I18n` instance already satisfies the contract structurally
-const { i18n } = useLingui();
-<ModelPicker translator={i18n} ... />
+<ModelPicker labels={labels} models={models} />
 ```
 
 Notes:
 
-- **Pass a stable reference** (`useMemo`), or the picker re-derives chips and groups on every render.
-- **A missing key must not throw.** Whatever translator you pass should fall back to the descriptor's `message`; the `defaultValue` in the react-i18next example above does exactly that.
-- `PickerMessage.message` is optional so the shape stays structurally compatible with Lingui's `MessageDescriptor`; a descriptor without one falls back to its `id`.
+- **Interpolated strings are functions**, not templates — `deprecatingTag: (date) => …`,
+  `resultCount: (n) => …`, `contextWindow: (tokens) => …`. A translator controls word order,
+  which a `{placeholder}` cannot express in every language.
+- **Pass a stable reference** (`useMemo`): the picker re-derives chips and groups when `labels`
+  changes identity.
+- Strings that used to be built in code are fields too: the context column (`1M context`) and
+  the section count (`3 models`). `formatContextWindow` is exported if you only want to
+  translate the suffix and keep the rounding.
+- `resolveLabels(partial)` is exported for standalone use of the primitives.
 
 ## Performance
 
@@ -400,7 +397,7 @@ Notes:
 - Option rows are memoized (`React.memo` + stable handlers): moving the keyboard highlight or hovering re-renders only the two rows whose `active` flag changed, not the whole list.
 - The `searchable` variant auto-switches to the virtualized renderer above 120 visible options, so large catalogs stay smooth without configuration. Pass `variant="virtualized"` to force it.
 - The forwarded `ref` points at the trigger button — call `ref.current?.focus()` after a failed form submit to move the user to the field.
-- Pass **stable references** for `filter`, `badgesFor`, `customTagsFor` (wrap in `useCallback`) and for `requestContext` (wrap in `useMemo`). The picker re-derives chips / re-fetches when these change identity.
+- Pass **stable references** for `filter`, `badgesFor`, `customTagsFor` (wrap in `useCallback`) and for `labels` (wrap in `useMemo`). The picker re-derives chips and groups when these change identity.
 
 ---
 
@@ -415,8 +412,8 @@ model-picker/
 ├── badges.ts                    — the Apollo badge pool (MODEL_BADGES)
 ├── utils.ts                     — deriveModelTags, groupModels, filterModels
 ├── useModelPickerState.ts       — state controller hook
-├── useDiscoveryModels.ts        — optional Discovery API hook
-├── usePlatformAccess.ts         — folder list + BYO entitlement hooks
+├── useDiscoveryModels.ts        — Discovery API hook (composition kit)
+├── usePlatformAccess.ts         — folders, BYO entitlement, delete, deep links
 ├── ModelPicker.tsx              — the picker
 ├── ModelPicker.test.tsx         — unit tests
 ├── ModelPicker.stories.tsx      — Storybook stories
@@ -431,17 +428,19 @@ model-picker/
     └── GroupHeader.tsx          — section header
 ```
 
-Everything above `ModelPicker.tsx` in that list is headless and shared with the apollo-react original; `ModelPicker.tsx`, `ModelTagChip.tsx` and `primitives/` are the wind rewrite.
+`useDiscoveryModels.ts` and `usePlatformAccess.ts` are the composition kit — exported for hosts, used by nothing in the component itself.
 
 ## Differences from the apollo-react picker
 
 The prop surface and behaviour match, with three deliberate exceptions:
 
-1. **`translator` replaces Lingui.** See [Internationalization](#internationalization). The apollo-react exports `loadModelPickerMessages` / `MODEL_PICKER_LOCALES` / `resolveModelPickerLocale` have no equivalent here — there are no bundled catalogs to load.
-2. **No `disablePortal`.** Mount a `PortalContainerProvider` instead; it redirects every overlay in the subtree, not just this one.
-3. **No `ApModelPicker` alias.** apollo-wind does not use the `Ap` prefix.
+1. **It is presentation-only.** No `requestContext`, no self-fetch, no self-delete: `models` is required and the platform calls are exported hooks a host composes. The apollo-react component still owns its data.
+2. **`labels` replaces Lingui.** See [Internationalization](#internationalization). `loadModelPickerMessages` / `MODEL_PICKER_LOCALES` / `resolveModelPickerLocale` have no equivalent — there are no bundled catalogs.
+3. **No `disablePortal`.** Mount a `PortalContainerProvider` instead; it redirects every overlay in the subtree, not just this one.
+4. **No `ApModelPicker` alias.** apollo-wind does not use the `Ap` prefix.
+5. **The trigger wears `Input`'s chrome**, so it sits flush with the text fields around it.
 
-`ModelPicker.test.tsx`, `usePlatformAccess.test.tsx` and `primitives/FolderSwitcher.test.tsx` are byte-identical to the apollo-react originals (98 tests), which is what keeps the two implementations honest.
+The prop-driven tests still track the apollo-react originals closely; the self-fetch and self-delete cases retired with the behaviour, and `usePlatformAccess.test.tsx` covers the hooks directly.
 
 ## Storybook
 
