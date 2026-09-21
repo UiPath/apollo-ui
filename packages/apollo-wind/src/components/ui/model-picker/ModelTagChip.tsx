@@ -118,13 +118,24 @@ export const ModelTagChip: React.FC<ModelTagChipProps> = ({
       // The token doubles as a className so hosts can still target a
       // specific kind, matching the apollo-react picker's contract.
       className={cn(
-        'h-4 gap-0.5 px-1.5 py-0 text-[10px] leading-4 font-semibold',
-        // The neutral pill's fill is `--secondary`, which resolves to
-        // `--surface-overlay` — the same value a host may paint the field
-        // with, and then the chip disappears into its own ground. An edge
-        // keeps it a pill on any surface. The semantic variants carry their
-        // own contrast and stay borderless.
-        variantToken === 'mini' ? 'border-border' : 'border-transparent',
+        // `pointer-events-none`: these chips are labels, not controls. Every
+        // `Badge` variant ships a `hover:bg-<fill>/80`, because a Badge is
+        // sometimes a clickable filter — here that is a false affordance, and
+        // on the neutral chip an actively harmful one: the hover class is a
+        // separate tailwind-merge key, so it survives the fill override below
+        // and snaps the chip back to the surface colour it must not use.
+        // Ignoring the pointer drops the whole hover state in one move,
+        // whatever the variant, and lets a wrapping tooltip trigger still see
+        // the hover.
+        'h-4 gap-0.5 border-transparent px-1.5 py-0 text-[10px] leading-4 font-semibold pointer-events-none',
+        // The neutral pill is tinted from the *text* colour, not filled with a
+        // surface token. `secondary` resolves to `--surface-overlay`, which is
+        // exactly what Input/Select/Combobox paint fields with under the future
+        // themes — so a neutral chip on a field was guaranteed to vanish into
+        // its own ground. A foreground tint contrasts with whatever is behind
+        // it, on any surface and in any theme. The semantic variants carry
+        // their own contrast and keep their fills.
+        variantToken === 'mini' && 'bg-foreground/10',
         variantToken
       )}
       data-slot="model-picker-tag"

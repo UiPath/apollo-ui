@@ -576,11 +576,10 @@ describe('<ModelPicker> trigger chrome', () => {
 /*
  * Added in the wind port (no apollo-react counterpart).
  *
- * The neutral chip's fill is `--secondary`, which resolves to
- * `--surface-overlay`. A host that paints the field with that same value —
- * Flow's properties panel does — left the chip invisible on the trigger while
- * it still read fine in the popup, whose ground is `--popover`. An edge makes
- * the pill legible on any surface.
+ * `secondary` resolves to `--surface-overlay`, which is exactly what
+ * Input/Select/Combobox paint fields with under the future themes — so a
+ * neutral chip sitting on a field was guaranteed to vanish into its own
+ * ground. Tinting from the foreground instead contrasts with any surface.
  */
 describe('<ModelPicker> chip legibility', () => {
   const costed: DiscoveryModel[] = [
@@ -593,21 +592,66 @@ describe('<ModelPicker> chip legibility', () => {
     },
   ];
 
-  it('gives the neutral chip an edge so it survives a matching ground', () => {
+  it('tints the neutral chip from the foreground, never from a surface token', () => {
     renderPicker(<ModelPicker models={costed} value="gpt-4o" />);
 
     const chip = within(screen.getByRole('button', { expanded: false })).getByText('Basic');
     const pill = chip.closest('[data-slot="model-picker-tag"]');
-    expect(pill).toHaveClass('border-border');
-    expect(pill).not.toHaveClass('border-transparent');
+    expect(pill).toHaveClass('bg-foreground/10');
+    // Not a surface fill, which is what collided with the field ground.
+    expect(pill).not.toHaveClass('bg-secondary');
+    // And no border — the tint alone carries it.
+    expect(pill).toHaveClass('border-transparent');
   });
 
-  it('leaves the semantic chips borderless — their fill already contrasts', async () => {
+  it('leaves the semantic chips on their own fills', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="vendor" models={[{ ...costed[0], isPreview: true }]} />);
     await user.click(screen.getByRole('button', { expanded: false }));
 
     const preview = within(screen.getByRole('listbox')).getByText('Preview');
-    expect(preview.closest('[data-slot="model-picker-tag"]')).toHaveClass('border-transparent');
+    const pill = preview.closest('[data-slot="model-picker-tag"]');
+    expect(pill).not.toHaveClass('bg-foreground/10');
+    expect(pill).toHaveClass('border-transparent');
+  });
+});
+
+/*
+ * Added in the wind port (no apollo-react counterpart).
+ *
+ * `Badge` ships a `hover:bg-<fill>/80` on every variant, for the case where a
+ * badge is a clickable filter. These chips are labels, so that hover is a
+ * false affordance — and on the neutral chip a harmful one, since the hover
+ * class is a separate tailwind-merge key that survives the fill override and
+ * restores the surface colour the chip must not use.
+ */
+describe('<ModelPicker> chips are inert', () => {
+  it('does not react to the pointer', () => {
+    renderPicker(<ModelPicker models={MODELS} value="anthropic.claude-sonnet-4-6" />);
+
+    const pill = within(screen.getByRole('button', { expanded: false }))
+      .getByText('Recommended')
+      .closest('[data-slot="model-picker-tag"]');
+    expect(pill).toHaveClass('pointer-events-none');
+  });
+});
+
+/*
+ * Guards the one risk in making the chips inert: the tooltip lives on a
+ * wrapping trigger, so the pointer must still reach it through the chip.
+ */
+describe('<ModelPicker> chip tooltips', () => {
+  it('still opens a chip tooltip even though the chip ignores the pointer', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="vendor" models={MODELS} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    // Recommended carries a tooltip; the chip itself is pointer-events-none.
+    const chip = within(screen.getByRole('listbox')).getAllByText('Recommended')[0];
+    await user.hover(chip.closest('[data-slot="model-picker-tag"]')!.parentElement!);
+
+    expect(
+      await screen.findAllByText('Based on evaluation runs for this product')
+    ).not.toHaveLength(0);
   });
 });
