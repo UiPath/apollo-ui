@@ -1,3 +1,18 @@
+## [@uipath/apollo-react-v6.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.50.0...@uipath/apollo-react@6.51.0) (2026-09-21)
+
+### Features
+
+* **apollo-react:** add DMN node shapes to BaseNode ([6b92466](https://github.com/UiPath/apollo-ui/commit/6b92466c688638121f05e3eaac6c6f8a600ff626))
+
+### Bug Fixes
+
+* **apollo-react:** address review on the DMN node shapes ([0086823](https://github.com/UiPath/apollo-ui/commit/008682399f01a73996c2a9a03c43e13acb422bd5))
+* **apollo-react:** draw node outlines in real pixel space ([d64f0e7](https://github.com/UiPath/apollo-ui/commit/d64f0e70b18266426083ca55734abcef05f001b6))
+* **apollo-react:** keep the document wave inside the node box ([783e0db](https://github.com/UiPath/apollo-ui/commit/783e0dbc6245ca39788dcc104470117997bf00f5))
+* **apollo-react:** lift an outlined node with the canvas elevation tokens ([5ef4f1b](https://github.com/UiPath/apollo-ui/commit/5ef4f1b8ebd70b6efc27154438eb769dd3f90eb0))
+* **apollo-react:** match the DMN reference shapes ([80d519d](https://github.com/UiPath/apollo-ui/commit/80d519d44bd68f58b25c0f2147ff48e4ae566643))
+* **apollo-react:** paint the node outline behind its content ([96c48e6](https://github.com/UiPath/apollo-ui/commit/96c48e6210d2f35c61fb209981209ae95580a554))
+
 ## [@uipath/apollo-react-v6.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.49.0...@uipath/apollo-react@6.50.0) (2026-09-21)
 
 ### Features
