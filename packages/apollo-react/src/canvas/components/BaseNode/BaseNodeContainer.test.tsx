@@ -73,13 +73,13 @@ describe('DMN shapes', () => {
 
     expect(container).toHaveClass('rounded-full');
     expect(container).not.toHaveClass('rounded-(--node-radius)');
-    expect(screen.queryByTestId('base-node-silhouette')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('base-node-outline')).not.toBeInTheDocument();
   });
 
   it.each([
     'clipped',
     'document',
-  ] as const)('draws %s as a silhouette instead of a bordered box', (shape) => {
+  ] as const)('draws %s as a outline instead of a bordered box', (shape) => {
     render(
       <BaseContainer shape={shape}>
         <span>content</span>
@@ -88,10 +88,10 @@ describe('DMN shapes', () => {
 
     const container = screen.getByTestId('base-container');
 
-    // The silhouette carries the fill and outline, so the container must not draw a second one.
+    // The outline carries the fill and outline, so the container must not draw a second one.
     expect(container).toHaveClass('border-0');
     expect(container).not.toHaveClass('border-border');
-    expect(screen.getByTestId('base-node-silhouette')).toBeInTheDocument();
+    expect(screen.getByTestId('base-node-outline')).toBeInTheDocument();
   });
 
   it.each([
@@ -119,6 +119,53 @@ describe('DMN shapes', () => {
 
     expect(container).toHaveClass('rounded-(--node-radius)');
     expect(container).toHaveClass('border-border');
-    expect(screen.queryByTestId('base-node-silhouette')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('base-node-outline')).not.toBeInTheDocument();
+  });
+});
+
+describe('outline shapes carry their own state', () => {
+  const outline = () => screen.getByTestId('base-node-outline').querySelector('path');
+
+  it('does not draw a rectangular selection ring around a non-rectangular shape', () => {
+    render(
+      <BaseContainer shape="document" isSelected>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-container')).not.toHaveClass('outline-2');
+    expect(outline()).toHaveClass('stroke-foreground-accent-muted');
+  });
+
+  it('shows hover on the outline, since a borderless container cannot', () => {
+    render(
+      <BaseContainer shape="clipped" isHovered>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(outline()).toHaveClass('stroke-border-hover');
+  });
+
+  it('paints status on the outline rather than a border that is not there', () => {
+    render(
+      <BaseContainer shape="clipped" executionStatus="Failed">
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    expect(screen.getByTestId('base-container')).not.toHaveClass('border-error');
+    expect(outline()).toHaveClass('stroke-error');
+  });
+
+  it('still draws the rectangular ring for shapes that have a border', () => {
+    render(
+      <BaseContainer shape="stadium" isSelected>
+        <span>content</span>
+      </BaseContainer>
+    );
+
+    // tailwind-merge folds the bare `outline` utility into `outline-2`.
+    expect(screen.getByTestId('base-container')).toHaveClass('outline-2');
   });
 });
