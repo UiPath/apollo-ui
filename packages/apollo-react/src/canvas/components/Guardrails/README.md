@@ -37,6 +37,11 @@ Three host shapes, all supported:
 | Already has SWR or React Query | `useGuardrailDefinitions(null, { definitions: data })` |
 | Never fetches (Flow's vsix, over postMessage) | `useGuardrailDefinitions(null, { definitions: fromMessage })` |
 
+Keep the context `null` in the last two rows. A host that passes a live context *and* an
+asynchronous `definitions` has a window where its own payload is still `undefined`, which the
+hook would otherwise read as its cue to fetch; `enabled: !isLoading` closes that window when
+the context has to stay live.
+
 `options.definitions` wins over the context: when it is present no request is made at all, and
 the value is parsed and enriched instead. That is the seam that lets a product keep its own
 cache rather than adopting a second one, and it is why the hook stays a `useState` plus
