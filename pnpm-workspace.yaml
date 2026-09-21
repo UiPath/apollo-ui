@@ -21,7 +21,7 @@ minimumReleaseAgeExclude:
   - '@uipath/*'                   # permanent — own scope, always installable immediately
   - '@turbo/*'                    # 2.9.14 — platform binaries co-published with turbo (scope rename from turbo-*), same OIDC provenance ✓
   - '@esbuild/*'                  # 0.28.1 — platform binaries co-published with esbuild in the same OIDC release, vetted 2026-06-16
-  - '@next/*'                     # 16.2.11 — swc platform binaries + env co-published with next in the same OIDC release
+  - '@next/*'                     # 16.3.4 — swc platform binaries + env co-published with next in the same OIDC release
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 
@@ -32,7 +32,7 @@ overrides:
   tmp: "^0.2.6"
   picomatch: ">=4.0.4"
   postcss: "^8.5.23"                    # GHSA-r28c-9q8g-f849 (high, sourceMappingURL path traversal; patched 8.5.18) + GHSA-fxqj-rqcc-2cmp (moderate, incomplete fix of the above; patched 8.5.23) — vetted 2026-08-06: provenance ✓, publisher (OIDC, approver ai) ✓, tag+diff ✓, integrity ✓ (resolves 8.5.23; 8.5.24-8.5.26 still quarantined and carry unrelated list.split/BOM changes)
-  hono: "^4.12.34"                      # GHSA-88fw-hqm2-52qc (high)/rv63/wwfh/j6c9/wgpf + GHSA-xgm2-5f3f-mvvc/hvrm-45r6-mjfj/w62v-xxxg-mg59 (moderate, fixed 4.12.27) + GHSA-8j4g-w8fx-2239 (moderate, ReDoS in CORS middleware; patched 4.12.34) — vetted 2026-08-06; transitive via @modelcontextprotocol/sdk (resolves 4.12.34; 4.13.0 still quarantined)
+  hono: "4.13.5"                        # GHSA-88fw-hqm2-52qc (high)/rv63/wwfh/j6c9/wgpf + GHSA-xgm2-5f3f-mvvc/hvrm-45r6-mjfj/w62v-xxxg-mg59 + GHSA-8j4g-w8fx-2239 (moderate) + GHSA-crvj-82cr-hjcx (query parser reads past URL fragment) / GHSA-g6gw-c38x-mqfc (parseBody dot-notation memory exhaustion) / GHSA-gqvv-2mrq-wpjv (toSSG path traversal, incomplete fix of CVE-2026-39408) — all patched 4.13.5; transitive via @modelcontextprotocol/sdk. Pinned exact: 4.13.6/4.13.7 are unvetted. Vetted 2026-09-21: provenance ✓, publisher (OIDC, approver yusukebe) ✓, tag+notes ✓, integrity ✓
   "@hono/node-server": "^2.0.10"        # GHSA-frvp-7c67-39w9 (moderate, Windows serve-static path traversal; no 1.x patch) + GHSA-9mqv-5hh9-4cgg (moderate, WebSocket handshake memory-leak DoS; patched 2.0.10) — @modelcontextprotocol/sdk still pins ^1.19.9; v2 public API unchanged (Node 20+ only), vetted 2026-07-24
   dompurify: ">=3.4.13"                 # GHSA-vxr8-fq34-vvx9/gvmj/x4vx/rp9w/r47g/hpcv/76mc + GHSA-cmwh-pvxp-8882 + GHSA-c2j3-45gr-mqc4 + GHSA-55q2-fjhq-7xh7 (moderate, IN_PLACE hook-removal XSS; patched 3.4.13), vetted 2026-08-11; monaco-editor pins exact 3.2.7
   # Audit batch vetted 2026-09-04 (pnpm audit failures on PR #1121's fresh CI run — new advisories, all transitives)
@@ -40,12 +40,12 @@ overrides:
   fast-uri: "^3.1.6"                    # GHSA-5jgf-p345-68v8/f65p/fph4/jqff (high, host confusion + SSRF) — ajv transitive, kept on the 3.x line ajv expects (4.x has its own unpatched-in-range advisories); quarantine exemption above
   sanitize-html: ">=2.17.7"             # GHSA-g8qq-57p8-ggw5 (moderate, stored XSS via SVG SMIL URI-list) — 2.17.7 published 2026-08-13 (aged)
   qs: ">=6.16.0"                        # GHSA-4mjr-xmp4-gh2g + GHSA-x5fp-wj9c-mxmx (moderate) — quarantine exemption above
-  "@tiptap/core": ">=3.30.4"            # GHSA-cp6q-959q-f8rh (moderate, mergeAttributes __proto__ pollution) — ap-chat dep, within apollo-react's ^3.19 range; quarantine exemption above
-  "@tiptap/pm": ">=3.30.4"              # no advisory — @tiptap/core@3.30.4 peers on @tiptap/pm 3.30.4 exactly (lockstep releases); quarantine exemption above
+  "@tiptap/core": "3.30.5"              # GHSA-cp6q-959q-f8rh (moderate, mergeAttributes __proto__ pollution) + GHSA-j95f-988m-3j2f (high, quadratic ReDoS in block/inline Markdown attribute parsing; patched 3.30.5) — ap-chat dep, within apollo-react's ^3.19 range. Pinned exact: >=3.30.5 would reach 3.31.x (unvetted minor). Vetted 2026-09-21: provenance ✓, publisher (OIDC) ✓, tag v3.30.5 + diff (regex parser replaced with a tokenizer, tests added) ✓, integrity ✓
+  "@tiptap/pm": "3.30.5"                # no advisory — @tiptap/core peers on @tiptap/pm at the same exact version (lockstep releases); vetted 2026-09-21: provenance ✓, publisher (OIDC) ✓, integrity ✓
   "@xmldom/xmldom": ">=0.9.12"          # GHSA-6gmq-8vp8-gcm6 (moderate) — quarantine exemption above
   fflate: ">=0.8.3"                     # GHSA-px8p-9vwx-vf98 (moderate) — 0.8.3 published 2026-05-16 (aged)
   postcss-selector-parser: ">=7.1.3"    # GHSA-w9m9-85wc-3x92 (low) — 7.1.3 published 2026-06-11 (aged)
-  sharp: "^0.35.0"                      # GHSA-f88m-g3jw-g9cj (high, libvips CVE-2026-33327/33328/35590/35591) — next@16.2.11 pins ^0.34.5 (0.x caret excludes 0.35); next canary already on ^0.35.3, vetted 2026-07-24
+  sharp: "^0.35.4"                      # GHSA-f88m-g3jw-g9cj (high, libvips CVE-2026-33327/33328/35590/35591) + GHSA-rgj7-g3m4-5g8c (high, libheif GHSA-g89c-p67h-r497 / GHSA-2jg2-4ch7-h545 RCE; patched 0.35.4 via sharp-libvips 1.3.3) — next pins ^0.34.5 (0.x caret excludes 0.35). Vetted 2026-09-21: provenance ✓, publisher (OIDC) ✓, tag v0.35.4 + notes ✓, integrity ✓, no dep changes
   js-yaml: ">=5.2.2"                   # GHSA-h67p-54hq-rp68 (moderate) + GHSA-pm4m-ph32-ghv5 (high, flow-collection parsing DoS; patched 5.2.2) — transitive via @commitlint/load>cosmiconfig; vetted 2026-07-28
   markdown-it: ">=14.1.2"              # GHSA-6v5v-wf23-fmfq (moderate) — transitive via storybook toolchain
   "@babel/core": ">=7.29.1"            # GHSA-4x5r-pxfx-6jf8 (low) — transitive via storybook/babel transform
@@ -56,6 +56,10 @@ overrides:
   "@opentelemetry/core": "^2.8.0"       # GHSA-8988-4f7v-96qf (moderate) — @uipath/core-telemetry pins sdk-logs ^0.204.0 which pins core/resources exactly 2.1.0; bump upstream to drop
   "@opentelemetry/resources": "^2.8.0"  # lockstep with core 2.8.0 (sdk-logs/resources pin core exactly at 2.1.0)
   valibot: "^1.4.2"                     # GHSA-5qjj-4xww-7phc (moderate, flatten() throws on inherited Object property names; patched 1.4.2) — @storybook/mcp & @storybook/addon-mcp pin exact 1.2.0 (even latest 0.7.0/0.8.0 still do), no parent fix as of 2026-07-28; vetted 2026-07-28: provenance ✓, publisher (OIDC) ✓, tag+diff (#1522 by fabian-hiller) ✓, integrity ✓
+  # Audit batch vetted 2026-09-21 (all transitives; provenance/publisher/tag+diff/integrity checked per package)
+  "svgo@>=3.0.0 <4": "^3.3.5"           # GHSA-w27v-7q3p-w38r (high, removeScripts namespace/control-char bypass) + GHSA-4vpr-x523-8j87 (moderate, foreignObject sanitization) — v3 backport; transitive via @svgr/webpack>@svgr/plugin-svgo (^3.0.2)
+  "svgo@>=4.0.0": "^4.1.0"              # same two advisories on the v4 line (no 4.0.x patch) — transitive via cssnano>postcss-svgo (^4.0.0); 4.1.0 also bumps sax 1.6.1 / css-what ^7 / css-select ^6 (all long-aged, maintainers unchanged)
+  colord: "2.9.4"                       # GHSA-2wm5-q62r-hmrv (moderate, quadratic backtracking rejecting oversized malformed color strings) — transitive via cssnano>postcss-colormin (^2.9.3) and stylelint (^2.9.3). Pinned exact: ^2.9.4 would reach 2.10.0 (feature release, unvetted). No npm provenance on any colord release (classic token publish); publisher omgovich unchanged since 2021 and fix commit 8701808 "reject malformed color strings in linear time" (#141) matches the advisory
 # packageExtensions (moved from package.json#pnpm for the same reason)
 packageExtensions:
   "@tanstack/ai":
