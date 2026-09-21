@@ -270,6 +270,49 @@ describe('enrichGuardrailDefinitions', () => {
     });
   });
 
+  describe('prototype-named ids', () => {
+    // `validator` and every parameter id are raw wire strings, so a payload can name one
+    // after an `Object.prototype` member. The curated maps are plain objects, and an
+    // unguarded lookup answers with the inherited function, which then reaches React as a
+    // label. Each curated map needs the own-property guard the validator table already has.
+    it.each([
+      'constructor',
+      'toString',
+      'valueOf',
+      'hasOwnProperty',
+    ])('falls back to the humanized id for a parameter named %j', (id) => {
+      const [enriched] = enrichGuardrailDefinitions([
+        {
+          ...PII_DETECTION_WIRE,
+          parameters: [{ id, type: 'boolean', required: false, defaultValue: false }],
+        },
+      ]);
+
+      const [parameter] = enriched?.parameters ?? [];
+      expect(typeof parameter?.label).toBe('string');
+      expect(parameter?.label).toBe(humanizeGuardrailParameterId(id));
+      expect(parameter?.tooltip).toBeUndefined();
+      expect(parameter?.optionLabels).toBeUndefined();
+    });
+
+    it('does not let a __proto__ parameter id reach the label', () => {
+      const [enriched] = enrichGuardrailDefinitions([
+        {
+          ...PII_DETECTION_WIRE,
+          parameters: [{ id: '__proto__', type: 'boolean', required: false, defaultValue: false }],
+        },
+      ]);
+
+      expect(typeof enriched?.parameters[0]?.label).toBe('string');
+    });
+
+    it('still reads a curated entry the table genuinely owns', () => {
+      const [enriched] = enrichGuardrailDefinitions([PII_DETECTION_WIRE]);
+
+      expect(enriched?.parameters[0]?.label).toBe('Entities to detect');
+    });
+  });
+
   describe('hiddenValidators', () => {
     it('hides nothing by default', () => {
       const result = enrichGuardrailDefinitions([PROMPT_INJECTION_WIRE, PII_DETECTION_WIRE]);

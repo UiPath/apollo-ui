@@ -228,10 +228,14 @@ export function useGuardrailDefinitions(
 
   useEffect(() => {
     if (!enabled) {
-      // Only the in-flight flag needs clearing; the results are already unreachable, since
-      // their stamp cannot match a disabled hook's request.
       abortRef.current?.abort();
       setInFlight(false);
+      // Cleared, not merely made unreachable by the `enabled` gate on `isCurrent`. A hook
+      // disabled through `definitions` or `enabled` keeps its context, so re-enabling it
+      // matches the old stamp again: the previous catalog would reappear with
+      // `loading: false` before the fresh request lands, and the same-key branch in `load`
+      // would then keep it for good if that request failed.
+      setSettled((prev) => (prev === NOTHING_SETTLED ? prev : NOTHING_SETTLED));
       return undefined;
     }
     load();

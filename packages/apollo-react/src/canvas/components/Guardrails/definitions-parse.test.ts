@@ -313,3 +313,55 @@ describe('zod boundary', () => {
     expect(Object.keys(result.definitions[0] ?? {}).sort()).toEqual(Object.keys(everyField).sort());
   });
 });
+
+describe('hostile payloads', () => {
+  // `Array.isArray` says the input is an array; it does not say the array behaves. The
+  // never-throws contract has to hold for the traversal itself, not only for each entry.
+  it('reports an entry whose index is backed by a throwing getter', () => {
+    const payload: unknown[] = [];
+    Object.defineProperty(payload, 0, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        throw new Error('boom');
+      },
+    });
+    payload.length = 1;
+
+    const result = parseGuardrailDefinitions(payload);
+
+    expect(result.definitions).toEqual([]);
+    expect(result.invalid).toEqual([{ index: 0, message: 'boom' }]);
+  });
+
+  it('ignores a shadowed forEach on the payload', () => {
+    const payload: unknown[] = [PROMPT_INJECTION_WIRE];
+    Object.defineProperty(payload, 'forEach', {
+      configurable: true,
+      value: () => {
+        throw new Error('not the native forEach');
+      },
+    });
+
+    const result = parseGuardrailDefinitions(payload);
+
+    expect(result.definitions).toHaveLength(1);
+    expect(result.invalid).toEqual([]);
+  });
+
+  it('keeps the good entries around a hostile one', () => {
+    const payload: unknown[] = [PROMPT_INJECTION_WIRE, null, PROMPT_INJECTION_WIRE];
+    Object.defineProperty(payload, 1, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        throw new Error('boom');
+      },
+    });
+
+    const result = parseGuardrailDefinitions(payload);
+
+    expect(result.definitions).toHaveLength(2);
+    expect(result.invalid.map((issue) => issue.index)).toEqual([1]);
+  });
+});

@@ -365,6 +365,55 @@ describe('useGuardrailDefinitions', () => {
       expect(result.current.definitions[0]?.displayName).toBe('PII detection');
     });
 
+    it('does not resurface the old catalog when the same context is re-enabled', async () => {
+      const fetchImpl = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(jsonResponse([PII_DETECTION_WIRE]))
+        .mockResolvedValueOnce(jsonResponse([PROMPT_INJECTION_WIRE]));
+      const ctx = ctxWith(fetchImpl);
+      const { result, rerender } = renderHook(
+        ({ enabled }: { enabled: boolean }) =>
+          useGuardrailDefinitions(ctx, { enabled, copy: GUARDRAIL_COPY_EN }),
+        { initialProps: { enabled: true } }
+      );
+      await waitFor(() => expect(result.current.definitions).toHaveLength(1));
+
+      rerender({ enabled: false });
+      expect(result.current.definitions).toEqual([]);
+
+      // The context never changed, so the old stamp matches again the moment the hook is
+      // re-enabled. Without clearing the settled result the previous catalog reappears here
+      // with `loading: false`, and a failed refresh would keep it for good.
+      rerender({ enabled: true });
+      expect(result.current.definitions).toEqual([]);
+      expect(result.current.loading).toBe(true);
+
+      await waitFor(() => expect(result.current.definitions).toHaveLength(1));
+      expect(result.current.definitions[0]?.validator).toBe('prompt_injection');
+    });
+
+    it('does not keep a pre-disable catalog when the re-enabled request fails', async () => {
+      const fetchImpl = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(jsonResponse([PII_DETECTION_WIRE]))
+        .mockResolvedValueOnce(jsonResponse(null, { ok: false }));
+      const ctx = ctxWith(fetchImpl);
+      const { result, rerender } = renderHook(
+        ({ enabled }: { enabled: boolean }) =>
+          useGuardrailDefinitions(ctx, { enabled, copy: GUARDRAIL_COPY_EN }),
+        { initialProps: { enabled: true } }
+      );
+      await waitFor(() => expect(result.current.definitions).toHaveLength(1));
+
+      rerender({ enabled: false });
+      rerender({ enabled: true });
+      await waitFor(() => expect(result.current.error).not.toBeNull());
+
+      // "Keep the previous results" is only ever right for a refetch of the same live
+      // request, never across a disable.
+      expect(result.current.definitions).toEqual([]);
+    });
+
     it('makes `refetch` a no-op while disabled', async () => {
       const fetchImpl = vi.fn<typeof fetch>(async () => jsonResponse([BYO_WIRE]));
 

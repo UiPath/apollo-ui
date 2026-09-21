@@ -26,9 +26,10 @@ import { useSafeLingui } from '../../../i18n';
  * `finNationalId` and `fiNationalId`.
  *
  * One builder holds every message, so the English source, the flat record hosts diff in CI
- * and the runtime lingui path cannot drift, and `lingui extract` still sees static calls.
- * Where the two products' English differed, the choice and its reason are recorded in
- * `definitions-parity.test.ts`.
+ * and the runtime lingui path cannot drift. Nothing here is extracted: `src/canvas` uses no
+ * lingui macros, and `locales/en.json` is hand-authored against this builder and pinned by
+ * `definitions-parity.test.ts` (see `__fixtures__/catalog-coverage.ts`). Where the two
+ * products' English differed, the choice and its reason are recorded in that same test.
  */
 
 /** Curated copy for one validator. Absent entries fall back to the wire, then to the id. */
