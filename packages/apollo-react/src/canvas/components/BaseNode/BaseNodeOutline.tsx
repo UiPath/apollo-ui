@@ -8,9 +8,14 @@ import type { ValidationErrorSeverity } from '../../types/validation';
 
 /** Inset so the stroke sits inside the box rather than half-outside it. */
 const EDGE = 0.5;
-/** How deep a corner cut or a bottom wave reaches, as a share of node height. */
-const CUT_RATIO = 0.28;
-const WAVE_RATIO = 0.12;
+/**
+ * How deep a corner cut or a bottom wave reaches, as a share of node height.
+ *
+ * Proportioned after the shapes DMN editors draw: a corner cut about a third of the height, and
+ * a wave about a sixth of it troughing a fifth of the way across.
+ */
+const CUT_RATIO = 0.32;
+const WAVE_RATIO = 0.16;
 
 /**
  * Paths in the node's own pixel space.
@@ -24,15 +29,26 @@ export const pathFor = (shape: OutlineDrawnNodeShape, width: number, height: num
   const bottom = height - EDGE;
 
   if (shape === 'clipped') {
-    const cut = Math.min(height * CUT_RATIO, 16);
-    return `M${cut} ${EDGE} H${right} V${bottom} H${cut} L${EDGE} ${bottom - cut} V${cut + EDGE} Z`;
+    // DMN cuts diagonally opposite corners — top-left and bottom-right — leaving the other two
+    // square. Cutting both leading corners instead reads as a tag or an arrow.
+    const cut = Math.min(height * CUT_RATIO, 18);
+    return `M${cut} ${EDGE} H${right} V${bottom - cut} L${right - cut} ${bottom} H${EDGE} V${cut} Z`;
   }
 
-  // Both control points stay inside the box. Reaching below `bottom` put the curve outside the
-  // SVG, where it was clipped and its drop-shadow rendered as a dark lobe under the node.
-  const wave = Math.min(height * WAVE_RATIO, 12);
+  // Two segments: a long fall from the right into a trough about a fifth of the way across, then
+  // a short rise to the left edge, which finishes lower than the right. Every control point stays
+  // at or above `bottom` — reaching past it put the curve outside the SVG, where it was clipped
+  // and its drop-shadow showed as a lobe beneath the node.
+  const wave = Math.min(height * WAVE_RATIO, 14);
   const crest = bottom - wave;
-  return `M${EDGE} ${EDGE} H${right} V${crest} C${width * 0.75} ${bottom} ${width * 0.25} ${crest - wave} ${EDGE} ${crest} Z`;
+  return [
+    `M${EDGE} ${EDGE}`,
+    `H${right}`,
+    `V${crest}`,
+    `C${width * 0.66} ${crest} ${width * 0.45} ${bottom} ${width * 0.2} ${bottom}`,
+    `C${width * 0.1} ${bottom} ${width * 0.04} ${bottom - wave * 0.5} ${EDGE} ${bottom - wave * 0.8}`,
+    'Z',
+  ].join(' ');
 };
 
 /** The stroke counterpart of `getStatusBorder`, which paints nothing without a border. */

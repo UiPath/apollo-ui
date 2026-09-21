@@ -407,7 +407,7 @@ const shapeRows = [
     shape: 'clipped',
     value: "'clipped'",
     example: 'dmn.businessKnowledgeModel',
-    use: 'DMN business knowledge model: a rectangle with its leading corners clipped',
+    use: 'DMN business knowledge model: a rectangle with diagonally opposite corners clipped',
   },
   {
     shape: 'document',
@@ -502,7 +502,10 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
             preview={
               <div
                 className="flex h-12 w-40 items-center gap-3 border-2 border-border bg-surface-raised px-3"
-                style={{ clipPath: 'polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 70%, 0 30%)' }}
+                style={{
+                  clipPath:
+                    'polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px)',
+                }}
               >
                 <div className="h-6 w-6 flex-shrink-0 rounded bg-muted" />
                 <div className="h-1.5 w-16 rounded-full bg-muted" />
@@ -510,7 +513,7 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
             }
             title="Clipped"
             code="'clipped'"
-            description="DMN business knowledge model. A wide card with its two leading corners cut, for reusable decision logic."
+            description="DMN business knowledge model. A wide card with diagonally opposite corners cut, for reusable decision logic."
           />
           <StoryCard
             preview={
