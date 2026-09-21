@@ -522,7 +522,7 @@ describe('<ModelPicker> chip alignment', () => {
  * that made it read as a button before.
  */
 describe('<ModelPicker> trigger chrome', () => {
-  it('wears the same chrome as a text input', () => {
+  it('wears the same chrome as the other dropdowns', () => {
     renderPicker(<ModelPicker models={MODELS} />);
 
     const trigger = screen.getByRole('button', { expanded: false });
@@ -532,10 +532,20 @@ describe('<ModelPicker> trigger chrome', () => {
       'min-h-9',
       'px-3',
       'py-1',
-      'text-sm'
+      'md:text-sm'
     );
     // Not the button treatment it had before.
     expect(trigger).not.toHaveClass('bg-surface', 'min-h-11', 'py-2');
+  });
+
+  it('rings on pointer focus, not only keyboard focus', () => {
+    renderPicker(<ModelPicker models={MODELS} />);
+
+    // `focus-visible` alone never fires for a mouse click, so the field
+    // showed no ring when clicked. SelectTrigger carries both; so must this.
+    const trigger = screen.getByRole('button', { expanded: false });
+    expect(trigger).toHaveClass('focus:ring-2', 'focus:ring-ring');
+    expect(trigger).toHaveClass('focus-visible:ring-2', 'focus-visible:ring-ring');
   });
 
   it('shows a pointer cursor on the collapsed field and on the grouping toggle', async () => {

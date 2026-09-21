@@ -132,16 +132,19 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
         aria-haspopup="listbox"
         aria-invalid={invalid ? true : undefined}
         className={cn(
-          // Lifted verbatim from `Input` (default variant, default size) so the
-          // picker reads as a field rather than a button, and so the two cannot
-          // drift apart. `min-h-9` rather than `h-9`: identical at rest, but a
-          // tall `slots.triggerExtra` grows the row instead of being clipped.
-          'flex min-h-9 w-full cursor-pointer items-center justify-start gap-3 rounded-md border border-input bg-transparent px-3 py-1 text-left text-sm text-foreground transition-colors',
+          // Lifted from `SelectTrigger` so the picker matches the other
+          // dropdowns rather than approximating them. `min-h-9` rather than
+          // `h-9`: identical at rest, but a tall `slots.triggerExtra` grows
+          // the row instead of being clipped.
+          'flex min-h-9 w-full cursor-pointer items-center justify-start gap-3 rounded-md border border-input bg-transparent px-3 py-1 text-left text-base text-foreground transition-colors md:text-sm',
+          // Both variants, as Select has them: `focus-visible` alone never
+          // fires for a pointer click, so clicking the field showed no ring.
+          'focus:ring-2 focus:ring-ring focus:outline-none',
           'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
           'disabled:cursor-not-allowed disabled:opacity-50',
-          // Attribute-driven, like `Input` — the trigger already sets aria-invalid.
+          // Attribute-driven, like the other fields — the trigger already sets aria-invalid.
           'aria-invalid:border-error aria-invalid:focus-visible:ring-error',
-          'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:py-2 future:text-sm future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
+          'future:h-10 future:gap-4 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:py-2 future:text-sm future:font-normal future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
           className
         )}
         data-slot="model-picker-trigger"
