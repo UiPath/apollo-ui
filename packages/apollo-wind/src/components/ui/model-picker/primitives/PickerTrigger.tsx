@@ -135,8 +135,11 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
           // Lifted from `SelectTrigger` so the picker matches the other
           // dropdowns rather than approximating them. `min-h-9` rather than
           // `h-9`: identical at rest, but a tall `slots.triggerExtra` grows
-          // the row instead of being clipped.
-          'flex min-h-9 w-full cursor-pointer items-center justify-start gap-3 rounded-md border border-input bg-transparent px-3 py-1 text-left text-base text-foreground transition-colors md:text-sm',
+          // the row instead of being clipped. One deviation: flat `text-sm`
+          // instead of Select's `text-base md:text-sm`, because the picker
+          // often sits in a narrow side panel where that pair resolves to 16px
+          // and the model name dwarfs the fields around it.
+          'flex min-h-9 w-full cursor-pointer items-center justify-start gap-3 rounded-md border border-input bg-transparent px-3 py-1 text-left text-sm text-foreground transition-colors',
           // Both variants, as Select has them: `focus-visible` alone never
           // fires for a pointer click, so clicking the field showed no ring.
           'focus:ring-2 focus:ring-ring focus:outline-none',
