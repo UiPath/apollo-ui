@@ -1,30 +1,39 @@
 import { cn } from '@uipath/apollo-wind';
-import { memo } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
+import { DEFAULT_NODE_SIZE, DEFAULT_RECTANGLE_NODE_WIDTH } from '../../constants';
 import type { OutlineDrawnNodeShape } from '../../schema';
 import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { ValidationErrorSeverity } from '../../types/validation';
 
-/**
- * Outlines that a border-radius cannot express, drawn as an SVG behind the node's content.
- *
- * `clipped` and `document` are DMN's business-knowledge-model and knowledge-source shapes. A
- * `clip-path` would cut the container's own border away with it, so the container goes
- * borderless for these and the outline carries fill and stroke instead. That means hover,
- * selection and status have to be drawn here too — on a borderless container the `border-*`
- * classes those normally use paint nothing.
- */
-const PATHS: Record<OutlineDrawnNodeShape, string> = {
-  clipped: 'M12 0.5 H99.5 V39.5 H12 L0.5 28 V12 Z',
-  document: 'M0.5 0.5 H99.5 V33 C75 45 25 21 0.5 33 Z',
-};
+/** Inset so the stroke sits inside the box rather than half-outside it. */
+const EDGE = 0.5;
+/** How deep a corner cut or a bottom wave reaches, as a share of node height. */
+const CUT_RATIO = 0.28;
+const WAVE_RATIO = 0.16;
 
 /**
- * The stroke counterpart of `getStatusBorder`, which paints nothing without a border.
+ * Paths in the node's own pixel space.
  *
- * Mirrors its colours and keeps the glow, so a status reads the same on an outlined node as on a
- * bordered one.
+ * Deliberately measured rather than drawn in a fixed viewBox and stretched: a 45° corner cut in a
+ * 100x40 box becomes a shallow diagonal once scaled to a 288x96 node, and a wave's control points
+ * distort with it. Generating from the real box keeps both true at any size.
  */
+const pathFor = (shape: OutlineDrawnNodeShape, width: number, height: number): string => {
+  const right = width - EDGE;
+  const bottom = height - EDGE;
+
+  if (shape === 'clipped') {
+    const cut = Math.min(height * CUT_RATIO, 16);
+    return `M${cut} ${EDGE} H${right} V${bottom} H${cut} L${EDGE} ${bottom - cut} V${cut + EDGE} Z`;
+  }
+
+  const wave = Math.min(height * WAVE_RATIO, 14);
+  const crest = bottom - wave;
+  return `M${EDGE} ${EDGE} H${right} V${crest} C${width * 0.66} ${bottom + wave * 0.5} ${width * 0.34} ${crest - wave} ${EDGE} ${crest} Z`;
+};
+
+/** The stroke counterpart of `getStatusBorder`, which paints nothing without a border. */
 export const getStatusStroke = (
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType
 ): string => {
@@ -52,27 +61,72 @@ export const getStatusStroke = (
   }
 };
 
+/**
+ * The container's `box-shadow` is cast by its rectangular box, not by this outline, so the shadow
+ * is drawn here as a filter that follows the drawn path instead.
+ */
+const outlineShadow = (isDragging?: boolean, isHovered?: boolean) =>
+  isDragging ? 'drop-shadow-lg' : isHovered ? 'drop-shadow-md' : 'drop-shadow-sm';
+
 interface BaseNodeOutlineProps {
   shape: OutlineDrawnNodeShape;
   isSelected?: boolean;
   isHovered?: boolean;
+  isDragging?: boolean;
+  shadow?: boolean;
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType;
 }
 
+/**
+ * Outlines that a border-radius cannot express, drawn as an SVG behind the node's content.
+ *
+ * `clipped` and `document` are DMN's business-knowledge-model and knowledge-source shapes. A
+ * `clip-path` would cut the container's own border away with it, so the container goes borderless
+ * for these and this carries fill, stroke and shadow — which means hover, selection and status
+ * have to be drawn here too.
+ */
 export const BaseNodeOutline = memo(
-  ({ shape, isSelected, isHovered, status }: BaseNodeOutlineProps) => {
+  ({ shape, isSelected, isHovered, isDragging, shadow, status }: BaseNodeOutlineProps) => {
+    const ref = useRef<SVGSVGElement>(null);
+    // Seeded with the wide-card default so the shape is drawn even before it is measured, and in
+    // any environment without a ResizeObserver. Measurement refines it.
+    const [box, setBox] = useState({
+      width: DEFAULT_RECTANGLE_NODE_WIDTH,
+      height: DEFAULT_NODE_SIZE,
+    });
+
+    useEffect(() => {
+      const element = ref.current;
+      if (!element) return;
+
+      const measure = () => {
+        const { clientWidth, clientHeight } = element;
+        if (clientWidth > 0 && clientHeight > 0)
+          setBox({ width: clientWidth, height: clientHeight });
+      };
+      measure();
+
+      if (typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver(measure);
+      observer.observe(element);
+      return () => observer.disconnect();
+    }, []);
+
     const statusStroke = getStatusStroke(status);
 
     return (
       <svg
+        ref={ref}
         aria-hidden
         data-testid="base-node-outline"
-        className="pointer-events-none absolute inset-0 h-full w-full"
-        viewBox="0 0 100 40"
-        preserveAspectRatio="none"
+        className={cn(
+          'pointer-events-none absolute inset-0 h-full w-full transition-[filter] duration-150',
+          shadow && outlineShadow(isDragging, isHovered)
+        )}
+        viewBox={`0 0 ${box.width} ${box.height}`}
       >
         <path
-          d={PATHS[shape]}
+          d={pathFor(shape, box.width, box.height)}
           className={cn(
             'fill-surface-overlay transition-[stroke,stroke-width] duration-150',
             statusStroke ||
@@ -83,7 +137,6 @@ export const BaseNodeOutline = memo(
                   : 'stroke-border')
           )}
           strokeWidth={isSelected ? 2 : 1}
-          vectorEffect="non-scaling-stroke"
         />
       </svg>
     );
