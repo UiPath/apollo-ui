@@ -93,10 +93,9 @@ export interface ModelPickerSlots {
    */
   optionMeta?: (model: DiscoveryModel) => React.ReactNode;
   /**
-   * Per-row right-aligned actions. The default renders an edit action
-   * for BYO models (only when `canManageByo` resolves true and a
-   * `requestContext` provides the navigation target). Pass null to
-   * suppress.
+   * Per-row right-aligned actions. The default renders edit/delete on BYO
+   * rows when `canManageByo` is true and the matching handler is wired.
+   * Pass null to suppress.
    */
   optionActions?: (model: DiscoveryModel) => React.ReactNode;
 }
@@ -228,16 +227,15 @@ export interface ModelPickerProps {
    */
   customTagVariants?: Record<string, string>;
   /**
-   * Explicit override for BYO management affordances (edit row action
-   * + "Use custom model" footer CTA).
+   * Whether to show the BYO management affordances (row actions +
+   * "Use custom model" footer CTA).
    *
-   * **Leave it unset** and pass `requestContext` instead: the picker
-   * then checks whether the current user is an **organization
-   * administrator** — the same signal the Experiences portal uses to
-   * gate the AI Trust Layer admin pages these affordances navigate to.
-   * Set `true`/`false` only when your product has its own
-   * authorization model. With neither an override nor a
-   * `requestContext`, affordances stay hidden.
+   * Your authorization model decides. `useCanManageByo` implements the
+   * platform's rule — organization administrator, the same signal the
+   * portal uses to gate the AI Trust Layer admin pages — and is exported
+   * for hosts that want it. Set this directly when your product has its own
+   * authorization model. Defaults to false, so the affordances stay hidden
+   * until a host opts in.
    *
    * A product that wants different actions can still override via
    * `slots.optionActions`; a different footer can replace the default
@@ -245,21 +243,18 @@ export interface ModelPickerProps {
    */
   canManageByo?: boolean;
   /**
-   * Override for the default "Use custom model" footer CTA action.
-   * When unset and a `requestContext` is provided, activating the CTA
-   * navigates to the AI Trust Layer LLM-configurations page — straight
-   * to the add form (pre-populated with `requestingProduct` /
-   * `requestingFeature`) when the tenant GUID and a concrete folder
-   * are known, otherwise to the configurations list. The picker closes
-   * itself before navigating/calling.
+   * Activation for the "Use custom model" footer CTA. There is no default
+   * destination — `buildLlmConfigurationsUrl` builds the AI Trust Layer
+   * add-form link if that is where you want it to lead. Without this the
+   * CTA still renders, as a disabled hint, so the affordance stays
+   * discoverable. The picker closes itself before calling.
    */
   onUseCustomModel?: () => void;
   /**
-   * Test/storybook override for the folder list. When set, the picker
-   * skips its internal folder fetch and renders these instead.
-   * Production hosts should prefer `enableFolders` + `requestContext`.
-   * Include `numericId` when the default add/edit navigation should
-   * deep-link into a folder's LLM-configurations pages.
+   * Folders for the toolbar scope switcher, which renders when this is
+   * non-empty. `useUserFolders` fetches the user's Orchestrator folders if
+   * that is the list you want. Include `numericId` when your own add/edit
+   * navigation deep-links into a folder's LLM-configurations pages.
    */
   folders?: readonly FolderSwitcherFolder[];
   /**
@@ -876,11 +871,10 @@ const GroupBySegmented: React.FC<GroupBySegmentedProps> = ({ value, onChange, la
 interface UseCustomModelFooterProps {
   onActivate: () => void;
   /**
-   * Render the CTA as a static (non-tappable) hint when neither
-   * `onUseCustomModel` nor a `requestContext` (for the default
-   * LLM-configurations navigation) is wired. The CTA still shows so
-   * the BYO affordance is visible — it just doesn't act on click and
-   * surfaces a tooltip explaining why.
+   * Render the CTA as a static (non-tappable) hint when
+   * `onUseCustomModel` is not wired. The CTA still shows so the BYO
+   * affordance is visible — it just doesn't act on click and surfaces a
+   * tooltip explaining why.
    */
   disabled?: boolean;
   labels: ModelPickerLabels;
