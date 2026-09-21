@@ -108,10 +108,9 @@ describe('<ModelPicker>', () => {
     // Listbox should now exist with an accessible name.
     const listbox = await screen.findByRole('listbox', { name: /models/i });
     expect(listbox).toBeInTheDocument();
-    // Click an option. There are two `gpt-4o` rows (the hosted one and a
-    // BYO clone) — pick the hosted one by its option role + selected/active
-    // state walk via the modelName id.
-    const option = within(listbox).getByRole('option', { name: /^gpt-4o$/ });
+    // Click an option. There are two `gpt-4o` rows (the hosted one and a BYO
+    // clone); the hosted one is the Preview, the clone names its connection.
+    const option = within(listbox).getByRole('option', { name: /^gpt-4oPreview$/ });
     await user.click(option);
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange.mock.calls[0][0].modelId).toBe('gpt-4o');
@@ -413,12 +412,14 @@ describe('<ModelPicker> pending selection', () => {
 /*
  * Added in the wind port (no apollo-react counterpart).
  *
- * Category view suppresses the Recommended/Preview chip inside the matching
- * section, where it only repeats the header. Applying that by kind alone also
- * stripped the chip from a recommended model filed under Custom Models (BYO),
- * whose header says nothing about lifecycle.
+ * Category view once hid the Recommended/Preview chip inside the matching
+ * section, on the theory that it only repeated the header. In practice it read
+ * as a bug — the same model gained and lost its chip depending on the grouping,
+ * and the trigger kept a chip the row had dropped. Chips now render everywhere;
+ * `OptionList`'s `hideTagKinds` survives as an opt-in for hosts that compose
+ * their own list.
  */
-describe('<ModelPicker> redundant chip suppression', () => {
+describe('<ModelPicker> chips are not suppressed by grouping', () => {
   const byoRecommended: DiscoveryModel[] = [
     {
       modelId: 'byo-recommended',
@@ -437,7 +438,7 @@ describe('<ModelPicker> redundant chip suppression', () => {
     },
   ];
 
-  it('keeps the Recommended chip on a BYO row but drops it inside the Recommended section', async () => {
+  it('keeps the Recommended chip inside the Recommended section, not just on a BYO row', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="subscription" models={byoRecommended} />);
     await user.click(screen.getByRole('button', { expanded: false }));
@@ -446,7 +447,16 @@ describe('<ModelPicker> redundant chip suppression', () => {
     const hostedRow = screen.getByRole('option', { name: /hosted-recommended/ });
 
     expect(within(byoRow).getByText('Recommended')).toBeInTheDocument();
-    expect(within(hostedRow).queryByText('Recommended')).toBeNull();
+    expect(within(hostedRow).getByText('Recommended')).toBeInTheDocument();
+  });
+
+  it('shows the same chips whichever grouping is active', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="vendor" models={byoRecommended} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    const hostedRow = screen.getByRole('option', { name: /hosted-recommended/ });
+    expect(within(hostedRow).getByText('Recommended')).toBeInTheDocument();
   });
 });
 
@@ -493,8 +503,6 @@ describe('<ModelPicker> chip alignment', () => {
 
   it('wraps a row chip in a flex container, not a block span', async () => {
     const user = userEvent.setup();
-    // Provider view keeps the Preview chip on the row (Category view would
-    // suppress it as redundant with the section header).
     renderPicker(<ModelPicker groupBy="vendor" models={tagged} />);
     await user.click(screen.getByRole('button', { expanded: false }));
 
