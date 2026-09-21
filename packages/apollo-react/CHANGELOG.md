@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.49.0...@uipath/apollo-react@6.50.0) (2026-09-21)
+
+### Features
+
+* **apollo-react:** guardrail list section [AL-575] ([7205775](https://github.com/UiPath/apollo-ui/commit/7205775cac91cc875efaa3bdeb33be4cc374c260)), closes [#6275](https://github.com/UiPath/apollo-ui/issues/6275) [#1139](https://github.com/UiPath/apollo-ui/issues/1139) [apollo-ui#1147](https://github.com/UiPath/apollo-ui/issues/1147) [apollo-ui#1161](https://github.com/UiPath/apollo-ui/issues/1161)
+
 ## [@uipath/apollo-react-v6.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.48.0...@uipath/apollo-react@6.49.0) (2026-09-21)
 
 ### Features
