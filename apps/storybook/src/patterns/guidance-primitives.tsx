@@ -6,19 +6,23 @@ import { cn } from '@/lib';
 
 /**
  * Shared building blocks for the long-form guidance pages under Apollo Wind/Forms
- * (Field Help Guidance, Field Validation Guidance). Keep additions presentational so every page reads the same.
+ * (Field Help Guidance, Field Validation Guidance, Field Type Guidance). Keep additions
+ * presentational so every page reads the same.
  */
 
 export function GuidancePage({
   globalTheme,
   title,
   intro,
+  maxWidth = 'max-w-3xl',
   children,
 }: {
   globalTheme: string;
   title: string;
   /** Rendered inside a `<p>`, so plain text only -- not a place for block-level markup. */
   intro: string;
+  /** Table-heavy pages (e.g. Field Type Guidance) need more room than the default prose width. */
+  maxWidth?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -26,7 +30,7 @@ export function GuidancePage({
       className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}
       style={{ fontFamily: fontFamily.base }}
     >
-      <main className="mx-auto max-w-3xl p-8">
+      <main className={cn('mx-auto p-8', maxWidth)}>
         <header>
           <h1 className="text-[2rem] font-bold tracking-tight text-foreground">{title}</h1>
           <p className="mt-2 text-base leading-7 text-muted-foreground">{intro}</p>
