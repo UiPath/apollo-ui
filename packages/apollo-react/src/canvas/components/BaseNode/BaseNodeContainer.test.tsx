@@ -197,3 +197,15 @@ describe('outline geometry stays inside the node box', () => {
     expect(Math.max(...ys)).toBeLessThanOrEqual(height);
   });
 });
+
+it('paints the outline behind the node content, not over it', () => {
+  render(
+    <BaseContainer shape="document">
+      <span>content</span>
+    </BaseContainer>
+  );
+
+  // An absolutely positioned element paints above in-flow content whatever the DOM order, so
+  // without a negative z-index the fill hides the icon and label underneath it.
+  expect(screen.getByTestId('base-node-outline')).toHaveClass('-z-10');
+});

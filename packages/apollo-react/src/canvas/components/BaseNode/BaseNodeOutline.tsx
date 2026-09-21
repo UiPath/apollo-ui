@@ -138,7 +138,10 @@ export const BaseNodeOutline = memo(
         aria-hidden
         data-testid="base-node-outline"
         className={cn(
-          'pointer-events-none absolute inset-0 h-full w-full transition-[filter] duration-150',
+          // `-z-10` matters: an absolutely positioned element paints above in-flow content
+          // whatever the DOM order, so without it this opaque fill covers the node's icon and
+          // label — and a label nobody can see is a label nobody can double-click to edit.
+          'pointer-events-none absolute inset-0 -z-10 h-full w-full transition-[filter] duration-150',
           shadow && outlineShadow(isDragging, isHovered)
         )}
         viewBox={`0 0 ${box.width} ${box.height}`}
