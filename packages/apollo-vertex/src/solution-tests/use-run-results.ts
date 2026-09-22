@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Run results for a run: the live list plus the writes that act on a result —
@@ -7,24 +7,20 @@
  * `UiPathSTRunResults` collection; adopt/update go through the injected actions.
  */
 
-import { useLiveQuery } from "@tanstack/react-db";
-import { useMutation } from "@tanstack/react-query";
-import { useSolution } from "@uipath/vs-core";
-import { fetchAttachment } from "./attachments";
-import { ENTITY } from "./constants";
+import { useLiveQuery } from '@tanstack/react-db';
+import { useMutation } from '@tanstack/react-query';
+import { useSolution } from '@uipath/vs-core';
+import { fetchAttachment } from './attachments';
+import { ENTITY } from './constants';
 import {
   useSolutionTestsActions,
   useSolutionTestsConfig,
   useSolutionTestsContext,
-} from "./context";
-import type { AttachmentFetcher, MutationHook } from "./mutations";
-import { JobRole } from "./types";
-import type {
-  ResultAttachmentField,
-  SolutionTestJob,
-  SolutionTestRunResult,
-} from "./types";
-import { useSolutionTestCollection } from "./use-solution-test-collection";
+} from './context';
+import type { AttachmentFetcher, MutationHook } from './mutations';
+import { JobRole } from './types';
+import type { ResultAttachmentField, SolutionTestJob, SolutionTestRunResult } from './types';
+import { useSolutionTestCollection } from './use-solution-test-collection';
 
 export interface UseRunResultsResult {
   results: SolutionTestRunResult[];
@@ -38,7 +34,7 @@ export interface UseRunResultsResult {
  */
 function isBaselineJobResult(
   result: SolutionTestRunResult,
-  jobsById: Map<string, SolutionTestJob>,
+  jobsById: Map<string, SolutionTestJob>
 ): boolean {
   const jobId = result.SolutionTestJobId;
   if (jobId == null) return true;
@@ -53,11 +49,11 @@ export function useRunResults(runId: string): UseRunResultsResult {
   const jobsCollection = useSolutionTestCollection(ENTITY.jobs);
   const { data, isReady: resultsReady } = useLiveQuery(
     (q) => q.from({ results: resultsCollection }),
-    [resultsCollection],
+    [resultsCollection]
   );
   const { data: jobsData, isReady: jobsReady } = useLiveQuery(
     (q) => q.from({ jobs: jobsCollection }),
-    [jobsCollection],
+    [jobsCollection]
   );
   // The role filter needs both collections. Until both are ready, stay loading
   // so entry-point results never flash before the jobs join resolves.
@@ -77,7 +73,7 @@ export function useAdoptJob(): MutationHook<string> {
   const { track } = useSolutionTestsConfig();
   return useMutation({
     mutationFn: (resultId: string) => actions.adoptJob(resultId),
-    onMutate: (resultId) => track?.("VS.SolutionTest.JobAdopted", { resultId }),
+    onMutate: (resultId) => track?.('VS.SolutionTest.JobAdopted', { resultId }),
   });
 }
 
@@ -87,8 +83,7 @@ export function useUpdateBaseline(): MutationHook<string> {
   const { track } = useSolutionTestsConfig();
   return useMutation({
     mutationFn: (resultId: string) => actions.updateBaseline(resultId),
-    onMutate: (resultId) =>
-      track?.("VS.SolutionTest.BaselineUpdated", { resultId }),
+    onMutate: (resultId) => track?.('VS.SolutionTest.BaselineUpdated', { resultId }),
   });
 }
 
@@ -102,13 +97,7 @@ export function useResultAttachment(): AttachmentFetcher<
     fetch: (resultId: string, field: ResultAttachmentField) => {
       const entityId = solution?.api.entityIds?.[ENTITY.runResults];
       if (!entityId) return Promise.resolve(null);
-      return fetchAttachment(
-        solution,
-        entityId,
-        resultId,
-        field,
-        attachmentScope?.(),
-      );
+      return fetchAttachment(solution, entityId, resultId, field, attachmentScope?.());
     },
   };
 }

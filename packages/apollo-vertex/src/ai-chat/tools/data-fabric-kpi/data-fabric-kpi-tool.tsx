@@ -1,42 +1,39 @@
-"use client";
+'use client';
 
-import { toolDefinition } from "@tanstack/ai";
-import { DateTime } from "luxon";
-import { z } from "zod";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
-import { KpiChartCard } from "../../charts/kpi-chart-card";
-import { ToolResolutionError } from "../../charts/tool-resolution-error";
+import { toolDefinition } from '@tanstack/ai';
+import { DateTime } from 'luxon';
+import { z } from 'zod';
+import { dataFabricAdapter } from '@/lib/data-fabric-adapter';
+import { KpiChartCard } from '../../charts/kpi-chart-card';
+import { ToolResolutionError } from '../../charts/tool-resolution-error';
 import {
   buildMetricEntry,
   metricSchema,
   resolveMultiMetric,
   resolveSingleMetric,
-} from "../data-fabric/util/chart-helpers";
+} from '../data-fabric/util/chart-helpers';
 import {
   collectQualifiedFields,
   type DataFabricToolContext,
   generateEntityFieldsDocs,
-} from "../data-fabric/util/entities";
-import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
-import { joinSchema } from "../data-fabric/util/joins";
+} from '../data-fabric/util/entities';
+import { filterSchema, resolveFilters } from '../data-fabric/util/filters';
+import { joinSchema } from '../data-fabric/util/joins';
 
 const dataFabricKpiInput = z.object({
-  entityName: z.string().describe("Data Fabric entity name to query"),
+  entityName: z.string().describe('Data Fabric entity name to query'),
   metric: metricSchema.optional(),
-  filters: z
-    .array(filterSchema)
-    .optional()
-    .describe("Optional filters to narrow down results."),
+  filters: z.array(filterSchema).optional().describe('Optional filters to narrow down results.'),
   joins: z
     .array(joinSchema)
     .optional()
     .describe(
-      "Join other entities. Use EntityName.Field format for the metric field when joining.",
+      'Join other entities. Use EntityName.Field format for the metric field when joining.'
     ),
 });
 
 const dataFabricKpiDef = toolDefinition({
-  name: "data_fabric_kpi",
+  name: 'data_fabric_kpi',
   description:
     "Render a single KPI value (a scalar metric) from a Data Fabric entity. Use for 'how many', 'total', 'average', 'max', 'min' style questions that boil down to one number. Supports optional metric (default COUNT), filters, and joins.",
   inputSchema: dataFabricKpiInput,
@@ -86,18 +83,11 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const entity = context.entities[entityName];
     if (!entity) {
-      return (
-        <ToolResolutionError
-          failure={{ reason: "unknown_entity", entity: entityName }}
-        />
-      );
+      return <ToolResolutionError failure={{ reason: 'unknown_entity', entity: entityName }} />;
     }
 
     const qualifiedFields = isMultiEntity
-      ? collectQualifiedFields(
-          [entityName, ...joins.map((j) => j.entity)],
-          context.entities,
-        )
+      ? collectQualifiedFields([entityName, ...joins.map((j) => j.entity)], context.entities)
       : null;
 
     const resolvedMetric = qualifiedFields
@@ -117,19 +107,19 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const normalizedFilters = qualifiedFields
       ? resolveFilters(filters, {
-          mode: "multi",
+          mode: 'multi',
           primaryEntity: entityName,
           qualifiedFields,
         })
       : resolveFilters(filters, {
-          mode: "single",
+          mode: 'single',
           validFields: entity.fields.map((f) => f.name),
         });
 
     const configuration = {
       id,
       name: entityName,
-      type: "kpi" as const,
+      type: 'kpi' as const,
       metrics: [metricEntry.id],
       filters: normalizedFilters,
       ...(qualifiedFields &&
@@ -146,11 +136,7 @@ ${generateEntityFieldsDocs(context.entities)}`;
     });
 
     return (
-      <KpiChartCard
-        configuration={configuration}
-        dataModel={dataModel}
-        dataAdapter={adapter}
-      />
+      <KpiChartCard configuration={configuration} dataModel={dataModel} dataAdapter={adapter} />
     );
   }
 

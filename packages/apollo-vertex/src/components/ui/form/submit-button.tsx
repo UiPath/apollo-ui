@@ -1,13 +1,10 @@
-"use client";
+'use client';
 
-import type * as React from "react";
-import { Button } from "@/components/ui/button";
-import { useFormContext } from "./form-context";
+import type * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { useFormContext } from './form-context';
 
-type SubmitButtonProps = Omit<
-  React.ComponentProps<typeof Button>,
-  "type" | "disabled"
->;
+type SubmitButtonProps = Omit<React.ComponentProps<typeof Button>, 'type' | 'disabled'>;
 
 function SubmitButton({ children, ...props }: SubmitButtonProps) {
   const form = useFormContext();

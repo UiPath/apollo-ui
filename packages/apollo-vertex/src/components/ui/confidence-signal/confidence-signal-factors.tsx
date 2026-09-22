@@ -1,10 +1,7 @@
-"use client";
+'use client';
 
-import { cn } from "@/lib/utils";
-import {
-  type ConfidenceFactor,
-  FACTOR_STATUS_CLASS,
-} from "./confidence-signal-levels";
+import { cn } from '@/lib/utils';
+import { type ConfidenceFactor, FACTOR_STATUS_CLASS } from './confidence-signal-levels';
 
 function ConfidenceSignalFactorRow({ factor }: { factor: ConfidenceFactor }) {
   return (
@@ -12,10 +9,8 @@ function ConfidenceSignalFactorRow({ factor }: { factor: ConfidenceFactor }) {
       <span className="text-xs text-muted-foreground">{factor.label}</span>
       <span
         className={cn(
-          "text-xs font-medium",
-          factor.status
-            ? FACTOR_STATUS_CLASS[factor.status]
-            : "text-foreground",
+          'text-xs font-medium',
+          factor.status ? FACTOR_STATUS_CLASS[factor.status] : 'text-foreground'
         )}
       >
         {factor.value}
@@ -30,10 +25,7 @@ function ConfidenceSignalFactors({ factors }: { factors: ConfidenceFactor[] }) {
       {factors.map((factor) => (
         // Labels are not guaranteed unique, so pair label with value: two rows
         // that match on both are indistinguishable to the reader anyway.
-        <ConfidenceSignalFactorRow
-          key={`${factor.label}:${factor.value}`}
-          factor={factor}
-        />
+        <ConfidenceSignalFactorRow key={`${factor.label}:${factor.value}`} factor={factor} />
       ))}
     </div>
   );

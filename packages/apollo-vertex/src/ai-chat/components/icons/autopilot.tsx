@@ -1,16 +1,11 @@
-import * as React from "react";
+import * as React from 'react';
 
-interface AutopilotIconProps
-  extends Omit<React.SVGProps<SVGSVGElement>, "width" | "height"> {
+interface AutopilotIconProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   size?: string | number;
   ref?: React.Ref<SVGSVGElement>;
 }
 
-export function AutopilotIcon({
-  size = 24,
-  ref,
-  ...props
-}: AutopilotIconProps) {
+export function AutopilotIcon({ size = 24, ref, ...props }: AutopilotIconProps) {
   return (
     <svg
       ref={ref}

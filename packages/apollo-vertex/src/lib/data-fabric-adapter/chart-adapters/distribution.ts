@@ -1,60 +1,53 @@
-import { queryOptions } from "@tanstack/react-query";
-import { z } from "zod";
-import { assert } from "@/lib/asserts/assert";
-import { assertDefined } from "@/lib/asserts/assert-defined";
+import { queryOptions } from '@tanstack/react-query';
+import { z } from 'zod';
+import { assert } from '@/lib/asserts/assert';
+import { assertDefined } from '@/lib/asserts/assert-defined';
 import {
   type DataAdapter,
   type DistributionChartData,
   mapConfigFilterToFilterValues,
   niceNumbers,
-} from "@/lib/charts-core";
-import type { DataFabricQueryRequest } from "../schemas/query-schema";
-import { buildNumericBins, createNumericBinning } from "../utils/binning-utils";
-import { fetchDateBinnedData } from "../utils/fetch-date-binned-data";
-import { mapFilterValuesToDataFabricFilterGroup } from "../utils/filter-group";
-import { mapMetricToDataFabricAggregate } from "../utils/metric-aggregate";
-import { type DataFabricClient, dataFabricQuery } from "../utils/query";
+} from '@/lib/charts-core';
+import type { DataFabricQueryRequest } from '../schemas/query-schema';
+import { buildNumericBins, createNumericBinning } from '../utils/binning-utils';
+import { fetchDateBinnedData } from '../utils/fetch-date-binned-data';
+import { mapFilterValuesToDataFabricFilterGroup } from '../utils/filter-group';
+import { mapMetricToDataFabricAggregate } from '../utils/metric-aggregate';
+import { type DataFabricClient, dataFabricQuery } from '../utils/query';
 
 export const dataFabricDistributionChartAdapter = (
   client: DataFabricClient,
-  entityName: string,
-): DataAdapter["charts"]["distribution"] => {
+  entityName: string
+): DataAdapter['charts']['distribution'] => {
   return (configuration, dataModel) => {
     const dimensionId = assertDefined(
       configuration.dimensions[0],
-      "Distribution chart must have at least one dimension",
+      'Distribution chart must have at least one dimension'
     );
     const dimension = assertDefined(
       dataModel.dimensions.find((d) => d.id === dimensionId),
-      `Dimension ${dimensionId} not found in dataModel`,
+      `Dimension ${dimensionId} not found in dataModel`
     );
     assert(
-      dimension.type === "datetime" || dimension.type === "numeric",
-      "Dimension type must be datetime or numeric",
+      dimension.type === 'datetime' || dimension.type === 'numeric',
+      'Dimension type must be datetime or numeric'
     );
 
     const firstMetricId = assertDefined(
       configuration.metrics[0],
-      "At least one metric is required",
+      'At least one metric is required'
     );
     const firstMetric = assertDefined(
       dataModel.metrics.find((m) => m.id === firstMetricId),
-      `Metric ${firstMetricId} not found in dataModel`,
+      `Metric ${firstMetricId} not found in dataModel`
     );
     const aggregate = mapMetricToDataFabricAggregate(firstMetric);
-    const filters = (configuration.filters ?? []).map((f) =>
-      mapConfigFilterToFilterValues(f),
-    );
+    const filters = (configuration.filters ?? []).map((f) => mapConfigFilterToFilterValues(f));
 
-    return queryOptions<
-      DistributionChartData,
-      Error,
-      DistributionChartData,
-      string[]
-    >({
+    return queryOptions<DistributionChartData, Error, DistributionChartData, string[]>({
       queryKey: [
         entityName,
-        "distribution",
+        'distribution',
         dimensionId,
         JSON.stringify(filters),
         JSON.stringify(aggregate),
@@ -62,7 +55,7 @@ export const dataFabricDistributionChartAdapter = (
         JSON.stringify(configuration.from),
       ],
       queryFn: async () => {
-        if (dimension.type === "datetime") {
+        if (dimension.type === 'datetime') {
           const result = await fetchDateBinnedData({
             client,
             entityName,
@@ -82,7 +75,7 @@ export const dataFabricDistributionChartAdapter = (
               z
                 .number()
                 .nullable()
-                .parse(r[aggregate.alias] ?? null) ?? 0,
+                .parse(r[aggregate.alias] ?? null) ?? 0
           );
 
           return { values, bins: result.bins };
@@ -92,8 +85,8 @@ export const dataFabricDistributionChartAdapter = (
 
         const minMaxBody: DataFabricQueryRequest = {
           aggregates: [
-            { function: "MIN", field: dimensionId, alias: "min" },
-            { function: "MAX", field: dimensionId, alias: "max" },
+            { function: 'MIN', field: dimensionId, alias: 'min' },
+            { function: 'MAX', field: dimensionId, alias: 'max' },
           ],
           filterGroup: baseFilterGroup,
           joins: configuration.joins,
@@ -104,7 +97,7 @@ export const dataFabricDistributionChartAdapter = (
           client,
           entityName,
           minMaxBody,
-          "Failed to fetch min/max",
+          'Failed to fetch min/max'
         );
 
         const row = minMaxBodyResult.value[0];
@@ -130,11 +123,11 @@ export const dataFabricDistributionChartAdapter = (
           joins: configuration.joins,
           from: configuration.from,
           filterGroup: {
-            logicalOperator: "and",
+            logicalOperator: 'and',
             queryFilters: [
               ...existingFilters,
-              { fieldName: dimensionId, operator: ">=", value: String(minVal) },
-              { fieldName: dimensionId, operator: "<=", value: String(maxVal) },
+              { fieldName: dimensionId, operator: '>=', value: String(minVal) },
+              { fieldName: dimensionId, operator: '<=', value: String(maxVal) },
             ],
           },
           sortOptions: [{ fieldName: dimensionId, isDescending: false }],
@@ -146,19 +139,17 @@ export const dataFabricDistributionChartAdapter = (
           client,
           entityName,
           requestBody,
-          "Failed to fetch distribution data",
+          'Failed to fetch distribution data'
         );
 
         const rows = dataResult.value;
-        const numericBinValues = rows.map((r) =>
-          z.number().parse(r[dimensionId]),
-        );
+        const numericBinValues = rows.map((r) => z.number().parse(r[dimensionId]));
         const values = rows.map(
           (r) =>
             z
               .number()
               .nullable()
-              .parse(r[aggregate.alias] ?? null) ?? 0,
+              .parse(r[aggregate.alias] ?? null) ?? 0
         );
 
         return {

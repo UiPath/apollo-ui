@@ -1,1 +1,1 @@
-export type MessageFeedbackType = "positive" | "negative";
+export type MessageFeedbackType = 'positive' | 'negative';

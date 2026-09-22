@@ -1,4 +1,4 @@
-import type { DataModelField } from "../chart-models";
+import type { DataModelField } from '../chart-models';
 
 interface BaseFilter {
   display: string;
@@ -6,11 +6,11 @@ interface BaseFilter {
 }
 
 export interface ListFilter extends BaseFilter {
-  type: "list";
+  type: 'list';
   field: DataModelField;
 }
 
 export interface PeriodFilter extends BaseFilter {
-  type: "period";
+  type: 'period';
   field: DataModelField;
 }

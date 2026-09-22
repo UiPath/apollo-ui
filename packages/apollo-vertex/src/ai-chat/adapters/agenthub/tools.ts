@@ -1,13 +1,10 @@
-import { convertSchemaToJsonSchema, type AnyClientTool } from "@tanstack/ai";
-import type { AgentHubVendor } from "./types";
+import { convertSchemaToJsonSchema, type AnyClientTool } from '@tanstack/ai';
+import type { AgentHubVendor } from './types';
 
-export function buildToolDefinitions(
-  tools: ReadonlyArray<AnyClientTool>,
-  vendor: AgentHubVendor,
-) {
-  if (vendor === "anthropic") {
+export function buildToolDefinitions(tools: ReadonlyArray<AnyClientTool>, vendor: AgentHubVendor) {
+  if (vendor === 'anthropic') {
     return tools.map((t) => ({
-      type: "custom" as const,
+      type: 'custom' as const,
       name: t.name,
       description: t.description,
       input_schema: convertSchemaToJsonSchema(t.inputSchema),

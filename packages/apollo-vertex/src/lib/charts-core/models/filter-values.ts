@@ -1,19 +1,19 @@
-import type { DateTime } from "luxon";
+import type { DateTime } from 'luxon';
 
-type FilterType = "range" | "list" | "search" | "period";
+type FilterType = 'range' | 'list' | 'search' | 'period';
 
 interface BaseFilter {
   type: FilterType;
 }
 
 export interface PeriodFilterValues extends BaseFilter {
-  type: "period";
+  type: 'period';
   field: string;
   range: { min: DateTime; max: DateTime; inclusive?: boolean };
 }
 
 export interface NumberRangeFilterValues extends BaseFilter {
-  type: "range";
+  type: 'range';
   field: string;
   range:
     | { min: number; max?: number; inclusive?: boolean }
@@ -21,30 +21,30 @@ export interface NumberRangeFilterValues extends BaseFilter {
 }
 
 export interface StringSearchFilterValues extends BaseFilter {
-  type: "search";
+  type: 'search';
   field: string;
   pattern: string;
-  searchFilterType: "default" | "startsWith" | "endsWith";
+  searchFilterType: 'default' | 'startsWith' | 'endsWith';
 }
 
 interface ListFilterBase extends BaseFilter {
-  type: "list";
+  type: 'list';
   field: string;
   invert?: boolean;
 }
 
 export interface StringListFilterValues extends ListFilterBase {
-  valueType: "string";
+  valueType: 'string';
   values: (string | null)[];
 }
 
 export interface BooleanListFilterValues extends ListFilterBase {
-  valueType: "boolean";
+  valueType: 'boolean';
   values: (boolean | null)[];
 }
 
 export interface NumberListFilterValues extends ListFilterBase {
-  valueType: "number";
+  valueType: 'number';
   values: (number | null)[];
 }
 

@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { BaseChartConfigurationSchema } from "./base-chart-configuration";
+import { z } from 'zod';
+import { BaseChartConfigurationSchema } from './base-chart-configuration';
 
 export const KpiChartConfigurationSchema = BaseChartConfigurationSchema.extend({
-  type: z.literal("kpi"),
+  type: z.literal('kpi'),
   metrics: z.array(z.string()),
 });
 

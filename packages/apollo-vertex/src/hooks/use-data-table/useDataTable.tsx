@@ -1,16 +1,12 @@
-"use client";
+'use client';
 
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  RowSelectionState,
-} from "@tanstack/react-table";
-import { useState } from "react";
+import type { ColumnDef, ColumnFiltersState, RowSelectionState } from '@tanstack/react-table';
+import { useState } from 'react';
 
-import { useColumnVisibility } from "./useColumnVisibility";
-import { usePersistedColumnOrder } from "./usePersistedColumnOrder";
-import { usePersistedPageSize } from "./usePersistedPageSize";
-import { usePersistedSorting } from "./usePersistedSorting";
+import { useColumnVisibility } from './useColumnVisibility';
+import { usePersistedColumnOrder } from './usePersistedColumnOrder';
+import { usePersistedPageSize } from './usePersistedPageSize';
+import { usePersistedSorting } from './usePersistedSorting';
 
 export interface UseDataTableOptions<TData> {
   data: TData[];
@@ -31,7 +27,7 @@ export function useDataTable<TData>({
 }: UseDataTableOptions<TData>) {
   const allColumnKeys = columns
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- tanstack ColumnDef doesn't expose accessorKey in its type union
-    .map((col) => ("accessorKey" in col ? (col.accessorKey as string) : col.id))
+    .map((col) => ('accessorKey' in col ? (col.accessorKey as string) : col.id))
     .filter((key): key is string => key != null);
 
   const defaultColumnOrder = defaultColumnOrderProp ?? allColumnKeys;
@@ -52,7 +48,7 @@ export function useDataTable<TData>({
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
   const { pagination, onPaginationChange } = usePersistedPageSize({
     storageKey,
   });

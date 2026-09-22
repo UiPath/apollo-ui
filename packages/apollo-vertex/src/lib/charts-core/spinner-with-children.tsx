@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from "react";
-import { Spinner } from "@/components/ui/spinner";
+import type { PropsWithChildren } from 'react';
+import { Spinner } from '@/components/ui/spinner';
 
 interface CenteredSpinnerProps {
   loading: boolean;
@@ -18,7 +18,7 @@ export const SpinnerWithChildren = ({
       )}
       <div
         className={`flex h-full w-full items-center justify-center ${
-          loading ? "bg-background opacity-30" : ""
+          loading ? 'bg-background opacity-30' : ''
         }`}
       >
         {children}

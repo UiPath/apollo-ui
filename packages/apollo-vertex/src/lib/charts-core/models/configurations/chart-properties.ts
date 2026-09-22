@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const SortStateSchema = z.object({
   field: z.string(),
-  direction: z.enum(["asc", "desc"]),
+  direction: z.enum(['asc', 'desc']),
 });
 
 const NullableSortStateSchema = SortStateSchema.nullable();

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { useId } from "react";
+import { motion } from 'framer-motion';
+import { useId } from 'react';
 
 interface AiChatThinkingProps {
   size?: number;
@@ -33,27 +33,23 @@ const VIEWBOX_CENTER = 12;
 const PULSE_TRANSITION_ON = {
   opacity: {
     duration: PULSE_DURATION,
-    ease: "easeInOut" as const,
+    ease: 'easeInOut' as const,
     delay: FORWARD_DURATION * 0.5,
     repeat: Number.POSITIVE_INFINITY,
-    repeatType: "loop" as const,
+    repeatType: 'loop' as const,
   },
   scale: {
     duration: PULSE_DURATION,
-    ease: "easeInOut" as const,
+    ease: 'easeInOut' as const,
     delay: FORWARD_DURATION * 0.5,
     repeat: Number.POSITIVE_INFINITY,
-    repeatType: "loop" as const,
+    repeatType: 'loop' as const,
   },
 };
 
 const PULSE_TRANSITION_OFF = { duration: REVERSE_DURATION * 0.8, ease: EASE };
 
-export function AiChatThinking({
-  size = 32,
-  className,
-  isThinking = true,
-}: AiChatThinkingProps) {
+export function AiChatThinking({ size = 32, className, isThinking = true }: AiChatThinkingProps) {
   const gradientId = useId();
 
   // Framer Motion's x/y on SVG elements are applied as CSS translate in CSS pixels.
@@ -64,7 +60,7 @@ export function AiChatThinking({
 
   return (
     <div
-      className={`relative inline-block ${className ?? ""}`}
+      className={`relative inline-block ${className ?? ''}`}
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
@@ -72,14 +68,14 @@ export function AiChatThinking({
       <motion.div
         className="absolute rounded-full pointer-events-none"
         style={{
-          top: "50%",
-          left: "50%",
-          width: "55%",
-          height: "55%",
-          marginTop: "-27.5%",
-          marginLeft: "-27.5%",
+          top: '50%',
+          left: '50%',
+          width: '55%',
+          height: '55%',
+          marginTop: '-27.5%',
+          marginLeft: '-27.5%',
           background:
-            "radial-gradient(circle, rgba(108,90,239,0.4) 0%, rgba(105,199,221,0.18) 55%, transparent 75%)",
+            'radial-gradient(circle, rgba(108,90,239,0.4) 0%, rgba(105,199,221,0.18) 55%, transparent 75%)',
         }}
         initial={{ opacity: 0, scale: 0.7 }}
         animate={
@@ -107,27 +103,19 @@ export function AiChatThinking({
             y2="0.5"
             gradientUnits="objectBoundingBox"
           >
-            <stop
-              offset="8.79%"
-              style={{ stopColor: "var(--ai-gradient-start, #6C5AEF)" }}
-            />
-            <stop
-              offset="91.48%"
-              style={{ stopColor: "var(--ai-gradient-end, #69C7DD)" }}
-            />
+            <stop offset="8.79%" style={{ stopColor: 'var(--ai-gradient-start, #6C5AEF)' }} />
+            <stop offset="91.48%" style={{ stopColor: 'var(--ai-gradient-end, #69C7DD)' }} />
           </linearGradient>
         </defs>
 
         {/* Large sparkle — slow rotation (180°), fades out in place */}
         <motion.g
           style={{
-            transformBox: "fill-box",
-            transformOrigin: "center",
+            transformBox: 'fill-box',
+            transformOrigin: 'center',
           }}
           initial={{ opacity: 1, rotate: 0 }}
-          animate={
-            isThinking ? { opacity: 0, rotate: 180 } : { opacity: 1, rotate: 0 }
-          }
+          animate={isThinking ? { opacity: 0, rotate: 180 } : { opacity: 1, rotate: 0 }}
           transition={{
             duration: isThinking ? FORWARD_DURATION : REVERSE_DURATION,
             ease: EASE,
@@ -142,8 +130,8 @@ export function AiChatThinking({
         {/* Small sparkle — fast independent rotation (720°), translates to center, scales up, fades out */}
         <motion.g
           style={{
-            transformBox: "fill-box",
-            transformOrigin: "center",
+            transformBox: 'fill-box',
+            transformOrigin: 'center',
           }}
           initial={{ opacity: 1, rotate: 0, x: 0, y: 0, scale: 1 }}
           animate={
@@ -171,8 +159,8 @@ export function AiChatThinking({
         {/* Circle pulse wrapper — infinite breathing in steady state */}
         <motion.g
           style={{
-            transformBox: "fill-box",
-            transformOrigin: "center",
+            transformBox: 'fill-box',
+            transformOrigin: 'center',
           }}
           initial={{ scale: 1 }}
           animate={isThinking ? { scale: [1, 1.15, 1] } : { scale: 1 }}
@@ -180,10 +168,10 @@ export function AiChatThinking({
             isThinking
               ? {
                   duration: PULSE_DURATION,
-                  ease: "easeInOut",
+                  ease: 'easeInOut',
                   delay: FORWARD_DURATION,
                   repeat: Number.POSITIVE_INFINITY,
-                  repeatType: "loop",
+                  repeatType: 'loop',
                 }
               : { duration: REVERSE_DURATION, ease: EASE }
           }
@@ -195,13 +183,11 @@ export function AiChatThinking({
             r={CIRCLE_RADIUS}
             fill={`url(#${gradientId})`}
             style={{
-              transformBox: "fill-box",
-              transformOrigin: "center",
+              transformBox: 'fill-box',
+              transformOrigin: 'center',
             }}
             initial={{ scale: 0, opacity: 0 }}
-            animate={
-              isThinking ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }
-            }
+            animate={isThinking ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
             transition={{
               duration: isThinking ? FORWARD_DURATION : REVERSE_DURATION,
               ease: EASE,

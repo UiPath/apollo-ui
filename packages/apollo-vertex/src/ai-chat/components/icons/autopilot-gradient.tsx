@@ -1,16 +1,12 @@
-import * as React from "react";
+import * as React from 'react';
 
 interface AutopilotGradientIconProps
-  extends Omit<React.SVGProps<SVGSVGElement>, "width" | "height" | "fill"> {
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height' | 'fill'> {
   size?: string | number;
   ref?: React.Ref<SVGSVGElement>;
 }
 
-export function AutopilotGradientIcon({
-  size = 24,
-  ref,
-  ...props
-}: AutopilotGradientIconProps) {
+export function AutopilotGradientIcon({ size = 24, ref, ...props }: AutopilotGradientIconProps) {
   const gradientId = React.useId();
   return (
     <svg
@@ -31,14 +27,8 @@ export function AutopilotGradientIcon({
           y2="0.5"
           gradientUnits="objectBoundingBox"
         >
-          <stop
-            offset="8.79%"
-            style={{ stopColor: "var(--ai-gradient-start, #6C5AEF)" }}
-          />
-          <stop
-            offset="91.48%"
-            style={{ stopColor: "var(--ai-gradient-end, #69C7DD)" }}
-          />
+          <stop offset="8.79%" style={{ stopColor: 'var(--ai-gradient-start, #6C5AEF)' }} />
+          <stop offset="91.48%" style={{ stopColor: 'var(--ai-gradient-end, #69C7DD)' }} />
         </linearGradient>
       </defs>
       <g transform="translate(-1.74 -1.19) scale(1.1)">

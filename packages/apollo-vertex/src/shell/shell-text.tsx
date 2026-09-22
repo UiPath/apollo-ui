@@ -1,16 +1,10 @@
-import { Trans, useTranslation } from "react-i18next";
-import type { TranslationKey } from "./shell-translation-key";
+import { Trans, useTranslation } from 'react-i18next';
+import type { TranslationKey } from './shell-translation-key';
 
 export const Text = ({ value }: { value: TranslationKey }) => {
   const { t } = useTranslation();
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     return t(value);
   }
-  return (
-    <Trans
-      i18nKey={value.i18nKey}
-      values={value.values}
-      components={value.components}
-    />
-  );
+  return <Trans i18nKey={value.i18nKey} values={value.values} components={value.components} />;
 };

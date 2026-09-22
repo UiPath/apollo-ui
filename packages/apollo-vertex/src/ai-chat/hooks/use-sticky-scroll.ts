@@ -1,9 +1,5 @@
-import {
-  useEventListener,
-  useMergedRef,
-  useResizeObserver,
-} from "@mantine/hooks";
-import { useEffect, useRef, useState, type RefCallback, type RefObject } from "react";
+import { useEventListener, useMergedRef, useResizeObserver } from '@mantine/hooks';
+import { useEffect, useRef, useState, type RefCallback, type RefObject } from 'react';
 
 export function useStickyScroll(): {
   attachScrollListeners: RefCallback<HTMLDivElement>;
@@ -62,15 +58,11 @@ export function useStickyScroll(): {
     scrollElement.current = node;
   }
 
-  const wheelRef = useEventListener("wheel", handleWheel, { passive: true });
-  const scrollListenerRef = useEventListener("scroll", handleScroll, {
+  const wheelRef = useEventListener('wheel', handleWheel, { passive: true });
+  const scrollListenerRef = useEventListener('scroll', handleScroll, {
     passive: true,
   });
-  const attachScrollListeners = useMergedRef(
-    storeRef,
-    wheelRef,
-    scrollListenerRef,
-  );
+  const attachScrollListeners = useMergedRef(storeRef, wheelRef, scrollListenerRef);
 
   const [contentRef, contentRect] = useResizeObserver();
 

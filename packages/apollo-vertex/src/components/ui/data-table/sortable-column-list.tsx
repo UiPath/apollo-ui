@@ -6,15 +6,15 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+} from '@dnd-kit/sortable';
 
-import { SortableColumnItem } from "./sortable-column-item";
+import { SortableColumnItem } from './sortable-column-item';
 
 interface ColumnItem {
   id: string;
@@ -41,7 +41,7 @@ function SortableColumnList({
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    }),
+    })
   );
 
   const columnIds = columns.map((col) => col.id);
@@ -56,11 +56,7 @@ function SortableColumnList({
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={columnIds} strategy={verticalListSortingStrategy}>
         {columns.map((column) => (
           <SortableColumnItem

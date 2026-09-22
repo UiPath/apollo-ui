@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { toolDefinition } from "@tanstack/ai";
-import { DateTime } from "luxon";
-import { z } from "zod";
-import { assert } from "@/lib/asserts/assert";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
-import { BarChartCard } from "../../charts/bar-chart-card";
-import { ToolResolutionError } from "../../charts/tool-resolution-error";
+import { toolDefinition } from '@tanstack/ai';
+import { DateTime } from 'luxon';
+import { z } from 'zod';
+import { assert } from '@/lib/asserts/assert';
+import { dataFabricAdapter } from '@/lib/data-fabric-adapter';
+import { BarChartCard } from '../../charts/bar-chart-card';
+import { ToolResolutionError } from '../../charts/tool-resolution-error';
 import {
   buildMultiMetricDataModel,
   dedupeMetrics,
@@ -17,60 +17,54 @@ import {
   resolveMultiMetric,
   resolveSingleDimension,
   resolveSingleMetric,
-} from "../data-fabric/util/chart-helpers";
+} from '../data-fabric/util/chart-helpers';
 import {
   collectQualifiedFields,
   type DataFabricToolContext,
   generateEntityFieldsDocs,
-} from "../data-fabric/util/entities";
-import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
-import { joinSchema } from "../data-fabric/util/joins";
-import type { ResolverFailure } from "../data-fabric/util/resolver-result";
+} from '../data-fabric/util/entities';
+import { filterSchema, resolveFilters } from '../data-fabric/util/filters';
+import { joinSchema } from '../data-fabric/util/joins';
+import type { ResolverFailure } from '../data-fabric/util/resolver-result';
 
-const BAR_DIMENSION_TYPES = ["string"] as const;
+const BAR_DIMENSION_TYPES = ['string'] as const;
 
 const dataFabricBarInput = z.object({
-  entityName: z.string().describe("Data Fabric entity name to query"),
+  entityName: z.string().describe('Data Fabric entity name to query'),
   dimension: z
     .string()
     .describe(
-      "Categorical (string) field name to break the metrics down by — one bar (or grouped cluster, with multiple metrics) per distinct value. When joining, use EntityName.Field format.",
+      'Categorical (string) field name to break the metrics down by — one bar (or grouped cluster, with multiple metrics) per distinct value. When joining, use EntityName.Field format.'
     ),
   metrics: z
     .array(metricSchema)
     .min(1)
     .refine(
       (metrics) => {
-        const keys = new Set(
-          metrics.map((m) => `${m.aggregation}|${m.field ?? ""}`),
-        );
+        const keys = new Set(metrics.map((m) => `${m.aggregation}|${m.field ?? ''}`));
         return keys.size === metrics.length;
       },
       {
-        message:
-          "Metrics must have distinct (aggregation, field) pairs — pick distinct metrics.",
-      },
+        message: 'Metrics must have distinct (aggregation, field) pairs — pick distinct metrics.',
+      }
     )
     .optional()
     .describe(
-      "One or more metrics to plot. With one metric, each category gets one bar. With multiple metrics, each category gets a grouped cluster (one bar per metric). Omit entirely for the default single COUNT of records per category.",
+      'One or more metrics to plot. With one metric, each category gets one bar. With multiple metrics, each category gets a grouped cluster (one bar per metric). Omit entirely for the default single COUNT of records per category.'
     ),
-  filters: z
-    .array(filterSchema)
-    .optional()
-    .describe("Optional filters to narrow down results."),
+  filters: z.array(filterSchema).optional().describe('Optional filters to narrow down results.'),
   joins: z
     .array(joinSchema)
     .optional()
     .describe(
-      "Join other entities. Use EntityName.Field format for the dimension and metric fields when joining.",
+      'Join other entities. Use EntityName.Field format for the dimension and metric fields when joining.'
     ),
 });
 
 const dataFabricBarDef = toolDefinition({
-  name: "data_fabric_bar",
+  name: 'data_fabric_bar',
   description:
-    "Render a bar chart from a Data Fabric entity, breaking one or more metrics down by a categorical (string) dimension. With multiple metrics, renders grouped bars (one cluster per category). Supports optional metrics (default single COUNT), filters, and joins.",
+    'Render a bar chart from a Data Fabric entity, breaking one or more metrics down by a categorical (string) dimension. With multiple metrics, renders grouped bars (one cluster per category). Supports optional metrics (default single COUNT), filters, and joins.',
   inputSchema: dataFabricBarInput,
   outputSchema: dataFabricBarInput,
   metadata: { skipFollowUp: true },
@@ -121,27 +115,15 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const entity = context.entities[entityName];
     if (!entity) {
-      return (
-        <ToolResolutionError
-          failure={{ reason: "unknown_entity", entity: entityName }}
-        />
-      );
+      return <ToolResolutionError failure={{ reason: 'unknown_entity', entity: entityName }} />;
     }
 
     const qualifiedFields = isMultiEntity
-      ? collectQualifiedFields(
-          [entityName, ...joins.map((j) => j.entity)],
-          context.entities,
-        )
+      ? collectQualifiedFields([entityName, ...joins.map((j) => j.entity)], context.entities)
       : null;
 
     const resolvedDimension = qualifiedFields
-      ? resolveMultiDimension(
-          entityName,
-          dimension,
-          qualifiedFields,
-          BAR_DIMENSION_TYPES,
-        )
+      ? resolveMultiDimension(entityName, dimension, qualifiedFields, BAR_DIMENSION_TYPES)
       : resolveSingleDimension(entity, dimension, BAR_DIMENSION_TYPES);
 
     if (!resolvedDimension.ok) {
@@ -153,9 +135,7 @@ ${generateEntityFieldsDocs(context.entities)}`;
         ? resolveMultiMetric(entityName, input, qualifiedFields)
         : resolveSingleMetric(entity, input);
 
-    const resolutions = metrics?.length
-      ? metrics.map((m) => resolveOne(m))
-      : [resolveOne()];
+    const resolutions = metrics?.length ? metrics.map((m) => resolveOne(m)) : [resolveOne()];
 
     const resolvedMetrics: ResolvedMetric[] = [];
     const metricFailures: ResolverFailure[] = [];
@@ -172,10 +152,7 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     if (uniqueMetrics.length === 0) {
       const firstFailure = metricFailures[0];
-      assert(
-        firstFailure != null,
-        "bar tool: empty resolved metrics but no recorded failures",
-      );
+      assert(firstFailure != null, 'bar tool: empty resolved metrics but no recorded failures');
       return <ToolResolutionError failure={firstFailure} />;
     }
 
@@ -188,19 +165,19 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const normalizedFilters = qualifiedFields
       ? resolveFilters(filters, {
-          mode: "multi",
+          mode: 'multi',
           primaryEntity: entityName,
           qualifiedFields,
         })
       : resolveFilters(filters, {
-          mode: "single",
+          mode: 'single',
           validFields: entity.fields.map((f) => f.name),
         });
 
     const configuration = {
       id,
       name: entityName,
-      type: "bar" as const,
+      type: 'bar' as const,
       dimensions: [resolvedDimension.value.id],
       metrics: dataModel.metrics.map((m) => m.id),
       filters: normalizedFilters,
@@ -218,11 +195,7 @@ ${generateEntityFieldsDocs(context.entities)}`;
     });
 
     return (
-      <BarChartCard
-        configuration={configuration}
-        dataModel={dataModel}
-        dataAdapter={adapter}
-      />
+      <BarChartCard configuration={configuration} dataModel={dataModel} dataAdapter={adapter} />
     );
   }
 

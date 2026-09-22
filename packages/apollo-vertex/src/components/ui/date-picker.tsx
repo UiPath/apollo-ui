@@ -1,16 +1,12 @@
-"use client";
+'use client';
 
-import { DateTime } from "luxon";
-import { ChevronDownIcon } from "lucide-react";
-import * as React from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { DateTime } from 'luxon';
+import { ChevronDownIcon } from 'lucide-react';
+import * as React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface DatePickerProps {
   value?: Date;
@@ -31,18 +27,13 @@ export function DatePicker({ value, onValueChanged }: DatePickerProps) {
           {value ? (
             DateTime.fromJSDate(value).toLocaleString(DateTime.DATE_FULL)
           ) : (
-            <span>{t("pick_a_date")}</span>
+            <span>{t('pick_a_date')}</span>
           )}
           <ChevronDownIcon />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={value}
-          onSelect={onValueChanged}
-          defaultMonth={value}
-        />
+        <Calendar mode="single" selected={value} onSelect={onValueChanged} defaultMonth={value} />
       </PopoverContent>
     </Popover>
   );

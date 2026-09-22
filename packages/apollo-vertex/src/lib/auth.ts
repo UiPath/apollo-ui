@@ -1,46 +1,43 @@
-import { useQueryClient } from "@tanstack/react-query";
-import PKCEChallenge from "pkce-challenge";
-import { toast } from "sonner";
-import { z } from "zod";
+import { useQueryClient } from '@tanstack/react-query';
+import PKCEChallenge from 'pkce-challenge';
+import { toast } from 'sonner';
+import { z } from 'zod';
 
-export const TOKEN_QUERY_KEY = ["auth", "token"] as const;
+export const TOKEN_QUERY_KEY = ['auth', 'token'] as const;
 
 function generateRandomString(length: number): string {
-  const charset =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const randomValues = new Uint8Array(length);
   crypto.getRandomValues(randomValues);
   return Array.from(randomValues)
     .map((x) => charset[x % charset.length])
-    .join("");
+    .join('');
 }
 
 export const STORAGE_KEYS = {
-  TOKEN: "uipath_token",
-  CODE_VERIFIER: "uipath_code_verifier",
-  STATE: "uipath_state",
-  AUTH_RETURN_TO: "auth_return_to",
-  LOGOUT_RETURN_TO: "logout_return_to",
+  TOKEN: 'uipath_token',
+  CODE_VERIFIER: 'uipath_code_verifier',
+  STATE: 'uipath_state',
+  AUTH_RETURN_TO: 'auth_return_to',
+  LOGOUT_RETURN_TO: 'logout_return_to',
 } as const;
 
 // The Coded App host serves the root shell for any path that is not an explicit
 // file, so a hard navigation to a bare route path renders the docs home. Map it
 // to its "/index.html" form on Coded App builds; no-op in dev.
 export function toCodedAppFilePath(path: string): string {
-  if (process.env.NEXT_PUBLIC_APOLLO_CODED_APP !== "1") return path;
-  const trimmed = path.replace(/\/+$/, "");
-  const lastSegment = trimmed.slice(trimmed.lastIndexOf("/") + 1);
+  if (process.env.NEXT_PUBLIC_APOLLO_CODED_APP !== '1') return path;
+  const trimmed = path.replace(/\/+$/, '');
+  const lastSegment = trimmed.slice(trimmed.lastIndexOf('/') + 1);
   // Already an explicit file (e.g. ".../index.html"); leave it alone.
-  if (lastSegment.includes(".")) return path;
+  if (lastSegment.includes('.')) return path;
   return `${trimmed}/index.html`;
 }
 
 // Same-origin absolute path only; rejects protocol-relative ("//") and
 // backslash ("/\\") forms that window.location resolves off-origin.
 function isSafeReturnPath(value: string): boolean {
-  return (
-    value.startsWith("/") && !value.startsWith("//") && !value.startsWith("/\\")
-  );
+  return value.startsWith('/') && !value.startsWith('//') && !value.startsWith('/\\');
 }
 
 // Resolve a stored return path (from sessionStorage) into a safe navigation
@@ -49,7 +46,7 @@ function isSafeReturnPath(value: string): boolean {
 // file form for Coded App builds.
 export function resolveReturnPath(stored: string | null): string {
   const codedAppPath = process.env.NEXT_PUBLIC_APOLLO_CODED_APP_PATH;
-  const fallback = codedAppPath ? `/${codedAppPath}` : "/";
+  const fallback = codedAppPath ? `/${codedAppPath}` : '/';
   const path = stored && isSafeReturnPath(stored) ? stored : fallback;
   return toCodedAppFilePath(path);
 }
@@ -66,15 +63,13 @@ const TokenDataSchema = TokenResponseSchema.extend({
   expiresAt: z.number(),
 });
 
-const getTokenEndpoint = (baseUrl: string) =>
-  `${baseUrl}/identity_/connect/token`;
-const getAuthorizationEndpoint = (baseUrl: string) =>
-  `${baseUrl}/identity_/connect/authorize`;
+const getTokenEndpoint = (baseUrl: string) => `${baseUrl}/identity_/connect/token`;
+const getAuthorizationEndpoint = (baseUrl: string) => `${baseUrl}/identity_/connect/authorize`;
 const getRedirectUri = (redirectPath?: string) => {
   if (redirectPath) {
     return `${window.location.origin}${redirectPath}`;
   }
-  return window.location.pathname === "/"
+  return window.location.pathname === '/'
     ? window.location.origin
     : `${window.location.origin}${window.location.pathname}`;
 };
@@ -102,9 +97,9 @@ const clearTokenData = (): void => {
 
 const fetchTokenData = async (baseUrl: string, body?: URLSearchParams) => {
   const response = await fetch(getTokenEndpoint(baseUrl), {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
     body,
   });
@@ -125,10 +120,10 @@ const fetchTokenData = async (baseUrl: string, body?: URLSearchParams) => {
 const refreshAccessToken = (
   refreshToken: string,
   clientId: string,
-  baseUrl: string,
+  baseUrl: string
 ): Promise<TokenData> => {
   const body = new URLSearchParams({
-    grant_type: "refresh_token",
+    grant_type: 'refresh_token',
     refresh_token: refreshToken,
     client_id: clientId,
   });
@@ -139,18 +134,14 @@ const refreshAccessToken = (
 const refreshTokenIfNeeded = async (
   tokenData: TokenData,
   clientId: string,
-  baseUrl: string,
+  baseUrl: string
 ): Promise<string | null> => {
   if (!tokenData.refresh_token) {
     return null;
   }
 
   try {
-    const newTokenData = await refreshAccessToken(
-      tokenData.refresh_token,
-      clientId,
-      baseUrl,
-    );
+    const newTokenData = await refreshAccessToken(tokenData.refresh_token, clientId, baseUrl);
     saveTokenData(newTokenData);
     return newTokenData.access_token;
   } catch {
@@ -164,10 +155,10 @@ const exchangeCodeForToken = (
   codeVerifier: string,
   clientId: string,
   baseUrl: string,
-  redirectPath?: string,
+  redirectPath?: string
 ): Promise<TokenData> => {
   const body = new URLSearchParams({
-    grant_type: "authorization_code",
+    grant_type: 'authorization_code',
     code,
     redirect_uri: getRedirectUri(redirectPath),
     client_id: clientId,
@@ -180,12 +171,12 @@ const exchangeCodeForToken = (
 const handleOAuthCallback = async (
   clientId: string,
   baseUrl: string,
-  redirectPath?: string,
+  redirectPath?: string
 ): Promise<void> => {
   const params = new URLSearchParams(window.location.search);
-  const code = params.get("code");
-  const state = params.get("state");
-  const error = params.get("error");
+  const code = params.get('code');
+  const state = params.get('state');
+  const error = params.get('error');
 
   if (error) {
     throw new Error(`OAuth error: ${error}`);
@@ -197,12 +188,12 @@ const handleOAuthCallback = async (
 
   const storedState = sessionStorage.getItem(STORAGE_KEYS.STATE);
   if (state !== storedState) {
-    throw new Error("State mismatch");
+    throw new Error('State mismatch');
   }
 
   const codeVerifier = sessionStorage.getItem(STORAGE_KEYS.CODE_VERIFIER);
   if (!codeVerifier) {
-    throw new Error("Code verifier not found");
+    throw new Error('Code verifier not found');
   }
 
   try {
@@ -211,7 +202,7 @@ const handleOAuthCallback = async (
       codeVerifier,
       clientId,
       baseUrl,
-      redirectPath,
+      redirectPath
     );
     sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
     sessionStorage.removeItem(STORAGE_KEYS.STATE);
@@ -223,8 +214,7 @@ const handleOAuthCallback = async (
   } catch (authError) {
     clearTokenData();
     sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
-    const message =
-      authError instanceof Error ? authError.message : "Unknown error";
+    const message = authError instanceof Error ? authError.message : 'Unknown error';
     toast.error(`Authentication failed: ${message}`);
     throw authError;
   }
@@ -234,10 +224,10 @@ export const ensureValidToken = async (
   queryClient: ReturnType<typeof useQueryClient>,
   clientId: string,
   baseUrl: string,
-  redirectPath?: string,
+  redirectPath?: string
 ): Promise<string | null> => {
   const params = new URLSearchParams(window.location.search);
-  const isInOAuthCallback = params.has("code") && params.has("state");
+  const isInOAuthCallback = params.has('code') && params.has('state');
 
   if (isInOAuthCallback) {
     try {
@@ -278,7 +268,7 @@ export const login = async (
   clientId: string,
   scope: string,
   baseUrl: string,
-  redirectPath?: string,
+  redirectPath?: string
 ): Promise<void> => {
   const pkce = await PKCEChallenge();
   const state = generateRandomString(32);
@@ -287,28 +277,23 @@ export const login = async (
   sessionStorage.setItem(STORAGE_KEYS.STATE, state);
 
   if (redirectPath && window.location.pathname !== redirectPath) {
-    sessionStorage.setItem(
-      STORAGE_KEYS.AUTH_RETURN_TO,
-      window.location.pathname,
-    );
+    sessionStorage.setItem(STORAGE_KEYS.AUTH_RETURN_TO, window.location.pathname);
   }
 
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: getRedirectUri(redirectPath),
-    response_type: "code",
+    response_type: 'code',
     scope: scope,
     state,
     code_challenge: pkce.code_challenge,
-    code_challenge_method: "S256",
+    code_challenge_method: 'S256',
   });
 
   window.location.href = `${getAuthorizationEndpoint(baseUrl)}?${params.toString()}`;
 };
 
-export const logout = (
-  queryClient: ReturnType<typeof useQueryClient>,
-): void => {
+export const logout = (queryClient: ReturnType<typeof useQueryClient>): void => {
   clearTokenData();
   sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
   sessionStorage.removeItem(STORAGE_KEYS.STATE);

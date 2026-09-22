@@ -2,9 +2,9 @@
 // non-nullable (DateTime<true>). Apollo dashboarding ships this ambient
 // declaration; we mirror it so chart code can consume Interval.start/.end
 // without per-call null checks.
-import "luxon";
+import 'luxon';
 
-declare module "luxon" {
+declare module 'luxon' {
   interface TSSettings {
     throwOnInvalid: true;
   }

@@ -1,11 +1,9 @@
-"use client";
+'use client';
 
-import { useTranslation } from "react-i18next";
-import { normalizeErrors } from "./field-utils";
+import { useTranslation } from 'react-i18next';
+import { normalizeErrors } from './field-utils';
 
-export function useTranslatedErrors(
-  errors: ReadonlyArray<unknown>,
-): Array<{ message: string }> {
+export function useTranslatedErrors(errors: ReadonlyArray<unknown>): Array<{ message: string }> {
   const { t } = useTranslation();
 
   return normalizeErrors(errors).map((error) => ({

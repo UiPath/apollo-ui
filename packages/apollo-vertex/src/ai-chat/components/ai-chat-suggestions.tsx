@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { cn } from "@/lib/utils";
-import type { ChoiceOption } from "../tools/choices";
+import { cn } from '@/lib/utils';
+import type { ChoiceOption } from '../tools/choices';
 
 interface AiChatSuggestionsProps {
   prompt?: string;
@@ -9,11 +9,7 @@ interface AiChatSuggestionsProps {
   onSelect: (option: ChoiceOption) => void;
 }
 
-export function AiChatSuggestions({
-  prompt,
-  options,
-  onSelect,
-}: AiChatSuggestionsProps) {
+export function AiChatSuggestions({ prompt, options, onSelect }: AiChatSuggestionsProps) {
   return (
     <div className="space-y-2">
       {prompt && <p className="text-sm text-muted-foreground">{prompt}</p>}
@@ -23,8 +19,8 @@ export function AiChatSuggestions({
             key={option.id}
             type="button"
             className={cn(
-              "h-auto py-2 px-3 text-left max-w-full text-sm rounded-lg border transition-colors hover:opacity-80",
-              option.recommended && "border-2 border-primary",
+              'h-auto py-2 px-3 text-left max-w-full text-sm rounded-lg border transition-colors hover:opacity-80',
+              option.recommended && 'border-2 border-primary'
             )}
             onClick={() => onSelect(option)}
           >

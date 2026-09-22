@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { ArrowLeft, Lightbulb } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
-import { useId } from "react";
-import type { TooltipRenderProps } from "react-joyride";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { ArrowLeft, Lightbulb } from 'lucide-react';
+import type { ComponentProps, ReactNode } from 'react';
+import { useId } from 'react';
+import type { TooltipRenderProps } from 'react-joyride';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface OnboardingTourJoyridePopoverData {
   /** Step title */
@@ -24,7 +24,7 @@ interface OnboardingTourJoyridePopoverData {
   nextLabel?: string;
 }
 
-interface OnboardingTourJoyridePopoverCardProps extends ComponentProps<"div"> {
+interface OnboardingTourJoyridePopoverCardProps extends ComponentProps<'div'> {
   /** Step title */
   title: string;
   /** Step body content */
@@ -48,11 +48,11 @@ interface OnboardingTourJoyridePopoverCardProps extends ComponentProps<"div"> {
   /** Custom label for the next button */
   nextLabel?: string;
   /** Props to spread on back button (from Joyride) */
-  backButtonProps?: ComponentProps<"button">;
+  backButtonProps?: ComponentProps<'button'>;
   /** Props to spread on primary button (from Joyride) */
-  primaryButtonProps?: ComponentProps<"button">;
+  primaryButtonProps?: ComponentProps<'button'>;
   /** Props to spread on skip button (from Joyride) */
-  skipButtonProps?: ComponentProps<"button">;
+  skipButtonProps?: ComponentProps<'button'>;
 }
 
 /**
@@ -84,14 +84,14 @@ function OnboardingTourJoyridePopoverCard({
     <div
       data-slot="onboarding-tour-joyride-popover"
       {...rootProps}
-      className={cn("relative", className)}
+      className={cn('relative', className)}
     >
       {/* Gradient glow background */}
       <div
         className="absolute inset-0 rounded-xl pointer-events-none blur-xl"
         style={{
           background:
-            "linear-gradient(112.44deg, rgba(108, 90, 239, 0.2) 31.16%, rgba(18, 203, 123, 0.1) 106.82%)",
+            'linear-gradient(112.44deg, rgba(108, 90, 239, 0.2) 31.16%, rgba(18, 203, 123, 0.1) 106.82%)',
         }}
       />
 
@@ -103,42 +103,30 @@ function OnboardingTourJoyridePopoverCard({
       >
         {/* Progress bars */}
         <div className="flex gap-1.5 mb-5">
-          {Array.from({ length: totalSteps }, (_, i) => `step-${i}`).map(
-            (key, index) => (
-              <div
-                key={key}
-                className={cn(
-                  "h-1 flex-1 rounded-full transition-colors",
-                  index <= currentStep ? "bg-primary" : "bg-muted",
-                )}
-              />
-            ),
-          )}
+          {Array.from({ length: totalSteps }, (_, i) => `step-${i}`).map((key, index) => (
+            <div
+              key={key}
+              className={cn(
+                'h-1 flex-1 rounded-full transition-colors',
+                index <= currentStep ? 'bg-primary' : 'bg-muted'
+              )}
+            />
+          ))}
         </div>
 
         {/* Title */}
-        <h3
-          id={titleId}
-          className="text-lg font-semibold text-foreground mb-2 leading-snug"
-        >
+        <h3 id={titleId} className="text-lg font-semibold text-foreground mb-2 leading-snug">
           {title}
         </h3>
 
         {/* Body */}
-        <div className="text-sm text-muted-foreground mb-4 leading-relaxed">
-          {body}
-        </div>
+        <div className="text-sm text-muted-foreground mb-4 leading-relaxed">{body}</div>
 
         {/* Tip section */}
         {tip && (
           <div className="flex items-start gap-2.5 mb-4">
-            <Lightbulb
-              className="w-4 h-4 text-muted-foreground mt-1 shrink-0"
-              strokeWidth={1.5}
-            />
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {tip}
-            </p>
+            <Lightbulb className="w-4 h-4 text-muted-foreground mt-1 shrink-0" strokeWidth={1.5} />
+            <p className="text-sm text-muted-foreground leading-relaxed">{tip}</p>
           </div>
         )}
 
@@ -155,12 +143,8 @@ function OnboardingTourJoyridePopoverCard({
                 <ArrowLeft />
               </Button>
             )}
-            <Button
-              {...(primaryButtonProps ?? { onClick: onNext })}
-              className="px-8"
-              autoFocus
-            >
-              {isLastStep ? "Done" : (nextLabel ?? "Next")}
+            <Button {...(primaryButtonProps ?? { onClick: onNext })} className="px-8" autoFocus>
+              {isLastStep ? 'Done' : (nextLabel ?? 'Next')}
             </Button>
           </div>
 
@@ -170,7 +154,7 @@ function OnboardingTourJoyridePopoverCard({
               variant="link"
               className="text-muted-foreground"
             >
-              {"Skip tour"}
+              {'Skip tour'}
             </Button>
           )}
         </div>
@@ -181,21 +165,19 @@ function OnboardingTourJoyridePopoverCard({
 
 type OnboardingTourJoyridePopoverProps = TooltipRenderProps;
 
-function readPopoverData(
-  value: unknown,
-): Partial<OnboardingTourJoyridePopoverData> {
-  if (value === null || typeof value !== "object") return {};
+function readPopoverData(value: unknown): Partial<OnboardingTourJoyridePopoverData> {
+  if (value === null || typeof value !== 'object') return {};
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- narrowed to `object`; cast to index by string key
   const v = value as Record<string, unknown>;
   const result: Partial<OnboardingTourJoyridePopoverData> = {};
-  if (typeof v.title === "string") result.title = v.title;
-  if (typeof v.tip === "string") result.tip = v.tip;
-  if (typeof v.nextLabel === "string") result.nextLabel = v.nextLabel;
-  if (typeof v.currentStep === "number") result.currentStep = v.currentStep;
-  if (typeof v.totalSteps === "number") result.totalSteps = v.totalSteps;
-  if (typeof v.showBack === "boolean") result.showBack = v.showBack;
+  if (typeof v.title === 'string') result.title = v.title;
+  if (typeof v.tip === 'string') result.tip = v.tip;
+  if (typeof v.nextLabel === 'string') result.nextLabel = v.nextLabel;
+  if (typeof v.currentStep === 'number') result.currentStep = v.currentStep;
+  if (typeof v.totalSteps === 'number') result.totalSteps = v.totalSteps;
+  if (typeof v.showBack === 'boolean') result.showBack = v.showBack;
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- ReactNode is a broad union; we trust the provider to stash valid nodes
-  if ("body" in v) result.body = v.body as ReactNode;
+  if ('body' in v) result.body = v.body as ReactNode;
   return result;
 }
 
@@ -216,7 +198,7 @@ function OnboardingTourJoyridePopover({
   return (
     <OnboardingTourJoyridePopoverCard
       {...tooltipProps}
-      title={data.title ?? ""}
+      title={data.title ?? ''}
       body={data.body ?? null}
       tip={data.tip}
       currentStep={data.currentStep ?? 0}

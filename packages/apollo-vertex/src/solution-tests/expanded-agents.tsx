@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import type { SolutionTest, SolutionTestJob } from "./types";
-import { useSolutionTestsConfig } from "./context";
-import { useBaselineJobs, useJobExpectedOutput } from "./hooks";
-import { ExpandedAgentsView } from "./expanded-agents-view";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import type { SolutionTest, SolutionTestJob } from './types';
+import { useSolutionTestsConfig } from './context';
+import { useBaselineJobs, useJobExpectedOutput } from './hooks';
+import { ExpandedAgentsView } from './expanded-agents-view';
 
 interface ExpandedAgentsProps {
   test: SolutionTest;
@@ -23,19 +23,15 @@ export const ExpandedAgents = ({ test }: ExpandedAgentsProps) => {
   const [openJob, setOpenJob] = useState<SolutionTestJob | null>(null);
 
   const { data, isFetching, isFetched } = useQuery({
-    queryKey: ["solution-tests", "expected-output", openJob?.Id],
-    queryFn: () => expectedOutput.fetch(openJob?.Id ?? ""),
+    queryKey: ['solution-tests', 'expected-output', openJob?.Id],
+    queryFn: () => expectedOutput.fetch(openJob?.Id ?? ''),
     enabled: openJob != null,
   });
 
   // The open job has no expected output once its fetch resolves empty.
-  const noOutputJobIds = new Set(
-    openJob && isFetched && data == null ? [openJob.Id] : [],
-  );
+  const noOutputJobIds = new Set(openJob && isFetched && data == null ? [openJob.Id] : []);
 
-  const viewing = openJob
-    ? { job: openJob, data: data ?? null, loading: isFetching }
-    : null;
+  const viewing = openJob ? { job: openJob, data: data ?? null, loading: isFetching } : null;
 
   return (
     <ExpandedAgentsView
@@ -45,7 +41,7 @@ export const ExpandedAgents = ({ test }: ExpandedAgentsProps) => {
       noOutputJobIds={noOutputJobIds}
       viewing={viewing}
       onViewExpected={(job) => {
-        track?.("VS.SolutionTest.RawOutputViewed", {
+        track?.('VS.SolutionTest.RawOutputViewed', {
           processName: job.ProcessName,
         });
         setOpenJob(job);

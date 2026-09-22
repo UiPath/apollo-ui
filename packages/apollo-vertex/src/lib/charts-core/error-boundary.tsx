@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import { useTranslation } from "react-i18next";
+import type { ReactNode } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+import { useTranslation } from 'react-i18next';
 
 function Fallback({
   error,
@@ -13,10 +13,10 @@ function Fallback({
   const message = error instanceof Error ? error.message : String(error);
   return (
     <div role="alert">
-      <p>{t("chart_render_failed_title")}</p>
-      <pre style={{ color: "red" }}>{message}</pre>
+      <p>{t('chart_render_failed_title')}</p>
+      <pre style={{ color: 'red' }}>{message}</pre>
       <button type="button" onClick={resetErrorBoundary}>
-        {t("try_again")}
+        {t('try_again')}
       </button>
     </div>
   );

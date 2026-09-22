@@ -1,4 +1,4 @@
-declare module "@tanstack/react-db" {
+declare module '@tanstack/react-db' {
   // Minimal stand-ins for @tanstack/db (re-exported by react-db). The phantom
   // `__row` carries the row type through the query builder so `useLiveQuery`
   // infers it from a typed `q.from({...})` source.
@@ -8,7 +8,7 @@ declare module "@tanstack/react-db" {
     // transaction's `isPersisted.promise` resolves once the write is committed.
     update(
       id: string,
-      callback: (draft: T) => void,
+      callback: (draft: T) => void
     ): { isPersisted: { promise: Promise<unknown> } };
     // `utils.refetch()` re-pulls the source so the collection reflects writes
     // made out of band (e.g. through a backend trigger rather than the
@@ -32,7 +32,7 @@ declare module "@tanstack/react-db" {
   interface UntypedQueryResult {
     readonly __untyped?: true;
     where(
-      predicate: (refs: Record<string, Record<string, unknown>>) => Expression,
+      predicate: (refs: Record<string, Record<string, unknown>>) => Expression
     ): UntypedQueryResult;
   }
   interface QueryBuilder {
@@ -44,24 +44,21 @@ declare module "@tanstack/react-db" {
   export function eq(field: unknown, value: unknown): Expression;
 
   // Filter operator: matches rows whose `field` value is one of `values`.
-  export function inArray(
-    field: unknown,
-    values: readonly unknown[],
-  ): Expression;
+  export function inArray(field: unknown, values: readonly unknown[]): Expression;
 
   export function useLiveQuery<T>(
     queryFn: (
-      q: QueryBuilder,
+      q: QueryBuilder
     ) => Collection<T> | QueryResult<T> | UntypedQueryResult | undefined | null,
-    deps?: Array<unknown>,
+    deps?: Array<unknown>
   ): { data: T[] | undefined; isLoading: boolean; isReady: boolean };
 }
 
-declare module "@uipath/proteus-client" {
+declare module '@uipath/proteus-client' {
   export enum FeatureFlagKind {
-    Boolean = "Boolean",
-    String = "String",
-    Number = "Number",
+    Boolean = 'Boolean',
+    String = 'String',
+    Number = 'Number',
   }
 
   export type FlagConfig = {
@@ -88,7 +85,7 @@ declare module "@uipath/proteus-client" {
   }): ProteusInstance<TFlag>;
 }
 
-declare module "@uipath/vs-core" {
+declare module '@uipath/vs-core' {
   export interface Group {
     id: string;
     name: string;
@@ -106,7 +103,7 @@ declare module "@uipath/vs-core" {
     api: {
       // Authenticated UiPath SDK client; passed to @uipath/uipath-typescript
       // service constructors (e.g. attachment downloads).
-      sdk: { core: import("@uipath/uipath-typescript/core").UiPath };
+      sdk: { core: import('@uipath/uipath-typescript/core').UiPath };
       // Resolved DataFabric id (GUID) per registered entity, keyed by entity name.
       entityIds: Record<string, string>;
       collections: {
@@ -115,8 +112,7 @@ declare module "@uipath/vs-core" {
         // (UiPathSTTests, UiPathSTBatchRuns, …). A given collection may be absent.
         solutionTests: Record<
           string,
-          | import("@tanstack/react-db").Collection<Record<string, unknown>>
-          | undefined
+          import('@tanstack/react-db').Collection<Record<string, unknown>> | undefined
         >;
         identity: {
           groups: unknown;
@@ -127,7 +123,7 @@ declare module "@uipath/vs-core" {
         // Resolves each requested groupId to whether `userId` is a member.
         checkGroupMembership: (
           userId: string,
-          groupIds: string[],
+          groupIds: string[]
         ) => Promise<Record<string, boolean>>;
       };
     };

@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import type { Table as TanstackTable } from "@tanstack/react-table";
+import type { Table as TanstackTable } from '@tanstack/react-table';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
-} from "lucide-react";
-import { useTranslation } from "react-i18next";
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 interface DataTablePaginationProps<TData> {
   table: TanstackTable<TData>;
@@ -32,7 +32,7 @@ function DataTablePagination<TData>({
 }: DataTablePaginationProps<TData>) {
   // React Compiler compat: TanStack Table objects have stable references with mutable state.
   // codeql[js/unknown-directive] - valid React Compiler directive
-  "use no memo";
+  'use no memo';
   const { t } = useTranslation();
   const { pageIndex, pageSize } = table.getState().pagination;
   const totalRows = table.getFilteredRowModel().rows.length;
@@ -43,30 +43,25 @@ function DataTablePagination<TData>({
   return (
     <div
       data-slot="data-table-pagination"
-      className={cn(
-        "flex items-center justify-between px-2 flex-wrap gap-2",
-        className,
-      )}
+      className={cn('flex items-center justify-between px-2 flex-wrap gap-2', className)}
     >
       <div className="text-muted-foreground flex-1 text-sm">
         {table.options.enableRowSelection &&
-          t("rows_selected", {
+          t('rows_selected', {
             selected: table.getFilteredSelectedRowModel().rows.length,
             total: totalRows,
-            defaultValue: "{{selected}} of {{total}} row(s) selected.",
+            defaultValue: '{{selected}} of {{total}} row(s) selected.',
           })}
       </div>
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">
-            {t("rows_per_page", { defaultValue: "Rows per page" })}
+            {t('rows_per_page', { defaultValue: 'Rows per page' })}
           </p>
           <Select
-            value={paginationSizes.includes(pageSize) ? `${pageSize}` : "all"}
+            value={paginationSizes.includes(pageSize) ? `${pageSize}` : 'all'}
             onValueChange={(value) => {
-              table.setPageSize(
-                value === "all" ? Number.MAX_SAFE_INTEGER : Number(value),
-              );
+              table.setPageSize(value === 'all' ? Number.MAX_SAFE_INTEGER : Number(value));
             }}
           >
             <SelectTrigger size="sm" className="w-[80px]">
@@ -78,15 +73,13 @@ function DataTablePagination<TData>({
                   {size}
                 </SelectItem>
               ))}
-              <SelectItem value="all">
-                {t("all", { defaultValue: "All" })}
-              </SelectItem>
+              <SelectItem value="all">{t('all', { defaultValue: 'All' })}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          {t("page", { defaultValue: "Page" })} {pageIndex + 1}{" "}
-          {t("of", { defaultValue: "of" })} {pageCount}
+          {t('page', { defaultValue: 'Page' })} {pageIndex + 1} {t('of', { defaultValue: 'of' })}{' '}
+          {pageCount}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -97,7 +90,7 @@ function DataTablePagination<TData>({
             disabled={!canPreviousPage}
           >
             <span className="sr-only">
-              {t("go_to_first_page", { defaultValue: "Go to first page" })}
+              {t('go_to_first_page', { defaultValue: 'Go to first page' })}
             </span>
             <ChevronsLeftIcon />
           </Button>
@@ -108,8 +101,8 @@ function DataTablePagination<TData>({
             disabled={!canPreviousPage}
           >
             <span className="sr-only">
-              {t("go_to_previous_page", {
-                defaultValue: "Go to previous page",
+              {t('go_to_previous_page', {
+                defaultValue: 'Go to previous page',
               })}
             </span>
             <ChevronLeftIcon />
@@ -121,7 +114,7 @@ function DataTablePagination<TData>({
             disabled={!canNextPage}
           >
             <span className="sr-only">
-              {t("go_to_next_page", { defaultValue: "Go to next page" })}
+              {t('go_to_next_page', { defaultValue: 'Go to next page' })}
             </span>
             <ChevronRightIcon />
           </Button>
@@ -133,7 +126,7 @@ function DataTablePagination<TData>({
             disabled={!canNextPage}
           >
             <span className="sr-only">
-              {t("go_to_last_page", { defaultValue: "Go to last page" })}
+              {t('go_to_last_page', { defaultValue: 'Go to last page' })}
             </span>
             <ChevronsRightIcon />
           </Button>

@@ -1,2 +1,2 @@
-export { dataFabricAdapter } from "./adapter";
-export { dataFabricContract } from "./contract";
+export { dataFabricAdapter } from './adapter';
+export { dataFabricContract } from './contract';

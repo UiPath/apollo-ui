@@ -1,5 +1,5 @@
-import type { PropsWithChildren, ReactNode } from "react";
-import { useFeatureFlag } from "./use-feature-flag";
+import type { PropsWithChildren, ReactNode } from 'react';
+import { useFeatureFlag } from './use-feature-flag';
 
 interface FeatureFlagGuardProps {
   featureFlag: string;

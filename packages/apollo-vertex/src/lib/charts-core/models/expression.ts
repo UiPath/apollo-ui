@@ -1,21 +1,21 @@
-import type { DataModelField } from "./field";
-import type { FilterValues } from "./filter-values";
+import type { DataModelField } from './field';
+import type { FilterValues } from './filter-values';
 
 export type AggregationKind =
-  | "ANY"
-  | "DISTINCT_COUNT"
-  | "COUNT"
-  | "AVERAGE"
-  | "MIN"
-  | "MAX"
-  | "PERCENTAGE"
-  | "SUM"
-  | "PERCENTILE"
-  | "MEDIAN";
+  | 'ANY'
+  | 'DISTINCT_COUNT'
+  | 'COUNT'
+  | 'AVERAGE'
+  | 'MIN'
+  | 'MAX'
+  | 'PERCENTAGE'
+  | 'SUM'
+  | 'PERCENTILE'
+  | 'MEDIAN';
 
 export interface DataModelAggregate {
   id?: string;
-  type: "aggregate";
+  type: 'aggregate';
   aggregation: AggregationKind;
   argument: DataModelField;
   filters?: FilterValues[];

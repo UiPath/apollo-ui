@@ -1,6 +1,6 @@
-import { emptyArray } from "../empty-array";
+import { emptyArray } from '../empty-array';
 
-import { MAX_BINS, NICE_NUMBER_CATEGORIES, TARGET_BINS } from "./constants";
+import { MAX_BINS, NICE_NUMBER_CATEGORIES, TARGET_BINS } from './constants';
 
 export function niceNumbers({ min, max }: { min: number; max: number }) {
   let bestBinSize = 1;
@@ -13,12 +13,10 @@ export function niceNumbers({ min, max }: { min: number; max: number }) {
   const startOrderOfMagnitude = Math.trunc(Math.log10(range / MAX_BINS)) - 1;
   const endOrderOfMagnitude = Math.ceil(Math.log10(range * 10));
   const factorSteps = endOrderOfMagnitude - startOrderOfMagnitude;
-  const factors = emptyArray(factorSteps).map(
-    (_, idx) => 10 ** (idx + startOrderOfMagnitude),
-  );
+  const factors = emptyArray(factorSteps).map((_, idx) => 10 ** (idx + startOrderOfMagnitude));
 
   const binSizes = factors.flatMap((factor) =>
-    NICE_NUMBER_CATEGORIES.map((category) => category * factor),
+    NICE_NUMBER_CATEGORIES.map((category) => category * factor)
   );
 
   for (const binSize of binSizes) {

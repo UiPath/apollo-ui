@@ -1,39 +1,39 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AnimatePresence, motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { sidebarSpring } from "./shell-animations";
-import { UserProfileMenuItems } from "./shell-user-profile-menu-items";
-import { useUser } from "./shell-user-provider";
+} from '@/components/ui/dropdown-menu';
+import { sidebarSpring } from './shell-animations';
+import { UserProfileMenuItems } from './shell-user-profile-menu-items';
+import { useUser } from './shell-user-provider';
 
 interface UserProfileProps {
   isCollapsed: boolean;
-  collapsedMenuSide?: "top" | "right" | "bottom" | "left";
-  collapsedMenuAlign?: "start" | "center" | "end";
+  collapsedMenuSide?: 'top' | 'right' | 'bottom' | 'left';
+  collapsedMenuAlign?: 'start' | 'center' | 'end';
 }
 
 export const UserProfile = ({
   isCollapsed,
-  collapsedMenuSide = "top",
-  collapsedMenuAlign = "start",
+  collapsedMenuSide = 'top',
+  collapsedMenuAlign = 'start',
 }: UserProfileProps) => {
   const { t } = useTranslation();
   const { user } = useUser();
   const userInitials = user
     ? user.name
-        .split(" ")
+        .split(' ')
         .map((n: string) => n[0])
-        .join("")
+        .join('')
         .toUpperCase()
         .slice(0, 2)
-    : "U";
-  const firstName = user?.first_name ?? t("business_user");
-  const lastName = user?.last_name ?? "";
+    : 'U';
+  const firstName = user?.first_name ?? t('business_user');
+  const lastName = user?.last_name ?? '';
 
   return (
     <AnimatePresence mode="wait">
@@ -64,11 +64,9 @@ export const UserProfile = ({
           >
             <div className="flex flex-col gap-2 p-2">
               <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium">
-                  {user?.name ?? t("business_user")}
-                </span>
+                <span className="text-sm font-medium">{user?.name ?? t('business_user')}</span>
                 <span className="text-xs opacity-60">
-                  {user?.email ?? t("user_email_placeholder")}
+                  {user?.email ?? t('user_email_placeholder')}
                 </span>
               </div>
             </div>
@@ -99,7 +97,7 @@ export const UserProfile = ({
                   {firstName} {lastName}
                 </span>
                 <span className="text-xs text-sidebar-foreground/70 truncate">
-                  {user?.email ?? t("user_email_placeholder")}
+                  {user?.email ?? t('user_email_placeholder')}
                 </span>
               </div>
             </motion.button>

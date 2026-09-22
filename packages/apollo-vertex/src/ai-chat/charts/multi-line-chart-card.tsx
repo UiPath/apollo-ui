@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { Card, CardContent } from "@/components/ui/card";
-import { MultiLineChartWithAdapter } from "@/components/ui/multi-line-chart";
+import { Card, CardContent } from '@/components/ui/card';
+import { MultiLineChartWithAdapter } from '@/components/ui/multi-line-chart';
 import type {
   ChartDataModel,
   DataAdapter,
   DatetimeModelField,
   MultiLineChartConfiguration,
-} from "@/lib/charts-core";
+} from '@/lib/charts-core';
 
 interface MultiLineChartCardProps {
   configuration: MultiLineChartConfiguration;

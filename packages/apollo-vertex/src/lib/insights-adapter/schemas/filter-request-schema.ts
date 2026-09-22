@@ -1,15 +1,15 @@
-import { z } from "zod";
-import { FilterFragmentSchema } from "./filter-fragment-schema";
+import { z } from 'zod';
+import { FilterFragmentSchema } from './filter-fragment-schema';
 
 const TableFragmentSchema = z.object({
-  kind: z.literal("tableWith"),
+  kind: z.literal('tableWith'),
   table: z.string(),
   invert: z.boolean().optional(),
   filters: z.array(FilterFragmentSchema),
 });
 
 const MainTableSchema = z.object({
-  kind: z.literal("primarykey"),
+  kind: z.literal('primarykey'),
   table: z.string(),
 });
 

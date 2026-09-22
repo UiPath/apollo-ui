@@ -1,13 +1,13 @@
-import type { Interval } from "luxon";
-import type { MetricExpression } from "./models/expression";
+import type { Interval } from 'luxon';
+import type { MetricExpression } from './models/expression';
 import type {
   DatetimeModelField,
   DataModelField,
   DataModelFieldType,
   NumericOrDatetimeModelField,
   StringModelField,
-} from "./models/field";
-import type { PrimitiveValue } from "./models/primitive-value";
+} from './models/field';
+import type { PrimitiveValue } from './models/primitive-value';
 
 export type {
   DataModelField,
@@ -24,9 +24,7 @@ export interface DataModelMetric {
   expression: MetricExpression;
 }
 
-export interface ChartDataModel<
-  TField extends DataModelField = DataModelField,
-> {
+export interface ChartDataModel<TField extends DataModelField = DataModelField> {
   id: string;
   dimensions: TField[];
   metrics: DataModelMetric[];

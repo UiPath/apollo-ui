@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import type { ContentPart } from "@tanstack/ai";
-import { ArrowUp, CircleStop, Paperclip, X } from "lucide-react";
+import type { ContentPart } from '@tanstack/ai';
+import { ArrowUp, CircleStop, Paperclip, X } from 'lucide-react';
 import {
   type ChangeEvent,
   type ClipboardEvent,
@@ -13,28 +13,21 @@ import {
   useImperativeHandle,
   useRef,
   useState,
-} from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+} from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import {
-  pendingFilesToContentParts,
-  usePendingFiles,
-} from "../hooks/use-pending-files";
-import { AiChatImagePreview } from "./ai-chat-image-preview";
-import { AiChatInputGlow } from "./ai-chat-input-glow";
-import { AiChatPendingFiles } from "./ai-chat-pending-files";
+} from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { pendingFilesToContentParts, usePendingFiles } from '../hooks/use-pending-files';
+import { AiChatImagePreview } from './ai-chat-image-preview';
+import { AiChatInputGlow } from './ai-chat-input-glow';
+import { AiChatPendingFiles } from './ai-chat-pending-files';
 
 interface AiChatInputProps {
   value: string;
@@ -74,7 +67,7 @@ export function AiChatInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
-  const displayPlaceholder = placeholder ?? t("shell_input_placeholder");
+  const displayPlaceholder = placeholder ?? t('shell_input_placeholder');
 
   const attachmentsEnabled = !!acceptedFileTypes;
 
@@ -95,7 +88,7 @@ export function AiChatInput({
     if (!hasMessages) return;
     const el = textareaRef.current;
     if (!el) return;
-    el.style.height = "auto";
+    el.style.height = 'auto';
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
   };
 
@@ -107,13 +100,13 @@ export function AiChatInput({
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) addFiles(e.target.files);
     // reset so picking the same file twice in a row still fires onChange
-    e.target.value = "";
+    e.target.value = '';
   };
 
   const handlePaste = (e: ClipboardEvent<HTMLTextAreaElement>) => {
     if (!attachmentsEnabled) return;
     const files = Array.from(e.clipboardData.items)
-      .filter((item) => item.kind === "file")
+      .filter((item) => item.kind === 'file')
       .map((item) => item.getAsFile())
       .filter((f): f is File => f !== null);
     if (files.length === 0) return;
@@ -128,7 +121,7 @@ export function AiChatInput({
     clearFiles();
     requestAnimationFrame(() => {
       const el = textareaRef.current;
-      if (el) el.style.height = "auto";
+      if (el) el.style.height = 'auto';
     });
     const parts = await pendingFilesToContentParts(filesSnapshot);
     onSubmit(parts);
@@ -140,20 +133,19 @@ export function AiChatInput({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       void submitMessage();
     }
   };
 
   const focusedStyle: CSSProperties = {
-    borderColor: "transparent",
+    borderColor: 'transparent',
     backgroundImage:
-      "linear-gradient(var(--background), var(--background)), var(--ai-gradient-strong)",
-    backgroundOrigin: "border-box",
-    backgroundClip: "padding-box, border-box",
-    boxShadow:
-      "0 0 0 3px color-mix(in oklch, var(--muted-foreground) 10%, transparent)",
+      'linear-gradient(var(--background), var(--background)), var(--ai-gradient-strong)',
+    backgroundOrigin: 'border-box',
+    backgroundClip: 'padding-box, border-box',
+    boxShadow: '0 0 0 3px color-mix(in oklch, var(--muted-foreground) 10%, transparent)',
   };
 
   const formProps = {
@@ -163,16 +155,12 @@ export function AiChatInput({
       if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false);
     },
     className:
-      "relative flex flex-col rounded-lg border-2 border-input transition-colors bg-background",
+      'relative flex flex-col rounded-lg border-2 border-input transition-colors bg-background',
     ...(focused && { style: focusedStyle }),
   };
 
   const pendingFilesChips = attachmentsEnabled ? (
-    <AiChatPendingFiles
-      files={pendingFiles}
-      onRemove={removeFile}
-      onPreview={setPreviewUrl}
-    />
+    <AiChatPendingFiles files={pendingFiles} onRemove={removeFile} onPreview={setPreviewUrl} />
   ) : null;
 
   const quoteChip = quotedText ? (
@@ -185,7 +173,7 @@ export function AiChatInput({
           size="icon-xs"
           onClick={onClearQuote}
           className="shrink-0 hover:bg-ai-chat-border"
-          aria-label={t("remove_quoted_text")}
+          aria-label={t('remove_quoted_text')}
         >
           <X aria-hidden="true" />
         </Button>
@@ -201,14 +189,14 @@ export function AiChatInput({
           variant="ghost"
           size="icon"
           className="flex-shrink-0 hover:bg-ai-chat-muted text-ai-chat-muted-foreground"
-          aria-label={t("add_attachment")}
+          aria-label={t('add_attachment')}
         >
           <Paperclip aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" side="top">
         <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
-          {t("upload_files")}
+          {t('upload_files')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -223,12 +211,12 @@ export function AiChatInput({
           size="icon"
           className="flex-shrink-0"
           onClick={onStop}
-          aria-label={t("stop")}
+          aria-label={t('stop')}
         >
           <CircleStop className="size-5 text-foreground" aria-hidden="true" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{t("stop")}</TooltipContent>
+      <TooltipContent>{t('stop')}</TooltipContent>
     </Tooltip>
   ) : (
     <Tooltip>
@@ -239,13 +227,13 @@ export function AiChatInput({
           size="icon"
           disabled={(!value.trim() && pendingFiles.length === 0) || disabled}
           className="flex-shrink-0 text-white hover:text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ background: "var(--ai-gradient-strong)" }}
-          aria-label={t("send")}
+          style={{ background: 'var(--ai-gradient-strong)' }}
+          aria-label={t('send')}
         >
           <ArrowUp className="size-5" aria-hidden="true" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{t("send")}</TooltipContent>
+      <TooltipContent>{t('send')}</TooltipContent>
     </Tooltip>
   );
 
@@ -261,16 +249,13 @@ export function AiChatInput({
             hidden
             onChange={handleFileSelect}
           />
-          <AiChatImagePreview
-            url={previewUrl}
-            onClose={() => setPreviewUrl(null)}
-          />
+          <AiChatImagePreview url={previewUrl} onClose={() => setPreviewUrl(null)} />
         </>
       )}
       <div className="relative">
         <div
           className={`absolute pointer-events-none transition-opacity duration-500 -top-14 -left-12 -right-12 -bottom-16 ${
-            hasMessages || focused ? "opacity-0" : "opacity-100"
+            hasMessages || focused ? 'opacity-0' : 'opacity-100'
           }`}
           aria-hidden="true"
         >
@@ -315,8 +300,8 @@ export function AiChatInput({
             />
             <div
               className={cn(
-                "flex items-center px-[8px] pb-[8px]",
-                plusMenu ? "justify-between" : "justify-end",
+                'flex items-center px-[8px] pb-[8px]',
+                plusMenu ? 'justify-between' : 'justify-end'
               )}
             >
               {plusMenu}

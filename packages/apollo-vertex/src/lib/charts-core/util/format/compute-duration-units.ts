@@ -1,12 +1,12 @@
-import type { Duration } from "luxon";
-import type { DurationUnit } from "./duration-unit";
-import { highestDurationUnit } from "./highest-duration-unit";
+import type { Duration } from 'luxon';
+import type { DurationUnit } from './duration-unit';
+import { highestDurationUnit } from './highest-duration-unit';
 
 export const computeDurationUnits = (
   value: Duration,
-  units: DurationUnit[] = [],
+  units: DurationUnit[] = []
 ): DurationUnit[] => {
-  const isNegative = value.shiftTo("seconds").seconds < 0;
+  const isNegative = value.shiftTo('seconds').seconds < 0;
   const absValue = isNegative ? value.negate() : value;
 
   const highestUnit = highestDurationUnit(absValue);
@@ -17,7 +17,7 @@ export const computeDurationUnits = (
     .normalize();
 
   const newUnits = [...units, highestUnit];
-  if (valueLeft.as("seconds") < 1) {
+  if (valueLeft.as('seconds') < 1) {
     return newUnits;
   }
 

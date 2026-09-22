@@ -1,51 +1,48 @@
-import type { FilterValues } from "@/lib/charts-core";
+import type { FilterValues } from '@/lib/charts-core';
 import type {
   FilterFragment,
   ListFilterFragment,
   PeriodFilterFragment,
   RangeFilterFragment,
   SearchFilterFragment,
-} from "../schemas/filter-fragment-schema";
-import type { FilterRequest } from "../schemas/filter-request-schema";
+} from '../schemas/filter-fragment-schema';
+import type { FilterRequest } from '../schemas/filter-request-schema';
 
 function mapFilterValueToFragment(filterValue: FilterValues): FilterFragment {
   switch (filterValue.type) {
-    case "list":
+    case 'list':
       return {
         values: filterValue.values,
-        kind: "values",
+        kind: 'values',
         dimension: filterValue.field,
-        type:
-          filterValue.valueType === "number"
-            ? "numeric"
-            : filterValue.valueType,
+        type: filterValue.valueType === 'number' ? 'numeric' : filterValue.valueType,
         invert: filterValue.invert ?? false,
       } satisfies ListFilterFragment;
-    case "search":
+    case 'search':
       return {
         pattern: filterValue.pattern,
         filterType: filterValue.searchFilterType,
-        kind: "search",
+        kind: 'search',
         dimension: filterValue.field,
-        type: "string",
+        type: 'string',
         invert: false,
       } satisfies SearchFilterFragment;
-    case "period":
+    case 'period':
       return {
-        kind: "range",
+        kind: 'range',
         dimension: filterValue.field,
-        type: "datetime",
+        type: 'datetime',
         range: {
           inclusive: filterValue.range.inclusive ?? false,
-          start: filterValue.range.min.toISO() ?? "",
-          end: filterValue.range.max.toISO() ?? "",
+          start: filterValue.range.min.toISO() ?? '',
+          end: filterValue.range.max.toISO() ?? '',
         },
       } satisfies PeriodFilterFragment;
-    case "range":
+    case 'range':
       return {
-        kind: "range",
+        kind: 'range',
         dimension: filterValue.field,
-        type: "numeric",
+        type: 'numeric',
         range: {
           inclusive: filterValue.range.inclusive ?? false,
           ...(filterValue.range.min != null && {
@@ -59,15 +56,13 @@ function mapFilterValueToFragment(filterValue: FilterValues): FilterFragment {
   }
 }
 
-export function mapFilterValuesToFragments(
-  filterValues: FilterValues[],
-): FilterFragment[] {
+export function mapFilterValuesToFragments(filterValues: FilterValues[]): FilterFragment[] {
   return filterValues.map((f) => mapFilterValueToFragment(f));
 }
 
 export function mapFilterValuesToFilterRequest(
   filterValues: FilterValues[],
-  filterTableId?: string,
+  filterTableId?: string
 ): FilterRequest[][] {
   const filters = mapFilterValuesToFragments(filterValues);
   if (filters.length === 0) {
@@ -81,7 +76,7 @@ export function mapFilterValuesToFilterRequest(
   return [
     [
       {
-        kind: "tableWith",
+        kind: 'tableWith',
         table: filterTableId,
         filters,
       },

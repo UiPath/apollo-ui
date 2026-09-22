@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useTranslation } from "react-i18next";
-import { Info, Square } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Spinner } from "@/components/ui/spinner";
+import { useTranslation } from 'react-i18next';
+import { Info, Square } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Spinner } from '@/components/ui/spinner';
 import {
   Table,
   TableHeader,
@@ -12,13 +12,13 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
-import type { SolutionTest, SolutionTestRun } from "./types";
-import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
-import { defaultRunStatusLabels } from "./constants";
-import { runStatusBadgeMap } from "./status-maps";
-import { isRunDone } from "./utils";
-import { UserMessagesIcon } from "./user-messages-view";
+} from '@/components/ui/table';
+import type { SolutionTest, SolutionTestRun } from './types';
+import { renderValueOrEmptyState } from '@/lib/renderValueOrEmptyState';
+import { defaultRunStatusLabels } from './constants';
+import { runStatusBadgeMap } from './status-maps';
+import { isRunDone } from './utils';
+import { UserMessagesIcon } from './user-messages-view';
 
 export interface ExpandedRunTestsViewProps {
   runs: SolutionTestRun[];
@@ -43,12 +43,12 @@ export const ExpandedRunTestsView = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="px-3 py-2">{t("test_name")}</TableHead>
-              <TableHead className="px-3 py-2">{t("score")}</TableHead>
-              <TableHead className="px-3 py-2">{t("agents_passed")}</TableHead>
-              <TableHead className="px-3 py-2">{t("status")}</TableHead>
+              <TableHead className="px-3 py-2">{t('test_name')}</TableHead>
+              <TableHead className="px-3 py-2">{t('score')}</TableHead>
+              <TableHead className="px-3 py-2">{t('agents_passed')}</TableHead>
+              <TableHead className="px-3 py-2">{t('status')}</TableHead>
               <TableHead className="w-6 px-1 py-2" />
-              <TableHead className="px-3 py-2">{t("actions")}</TableHead>
+              <TableHead className="px-3 py-2">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -64,24 +64,19 @@ export const ExpandedRunTestsView = ({
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => onOpenDetails(run)}
                 >
-                  <TableCell className="px-3 py-2">
-                    {test?.TestName ?? subjectId}
-                  </TableCell>
+                  <TableCell className="px-3 py-2">{test?.TestName ?? subjectId}</TableCell>
                   <TableCell className="px-3 py-2 font-medium">
                     {renderValueOrEmptyState(run.TestRunScore, {
-                      type: "number",
-                      options: { style: "percent", maximumFractionDigits: 0 },
+                      type: 'number',
+                      options: { style: 'percent', maximumFractionDigits: 0 },
                     })}
                   </TableCell>
                   <TableCell className="px-3 py-2">
                     {`${run.JobsPassed ?? 0}/${run.JobsTotal ?? 0}`}
                   </TableCell>
                   <TableCell className="px-3 py-2">
-                    <Badge
-                      variant="secondary"
-                      status={runStatusBadgeMap[run.Status] ?? "info"}
-                    >
-                      {defaultRunStatusLabels[run.Status] ?? "Unknown"}
+                    <Badge variant="secondary" status={runStatusBadgeMap[run.Status] ?? 'info'}>
+                      {defaultRunStatusLabels[run.Status] ?? 'Unknown'}
                     </Badge>
                   </TableCell>
                   <TableCell className="w-6 px-1 py-2">
@@ -98,7 +93,7 @@ export const ExpandedRunTestsView = ({
                         }}
                       >
                         <Info className="size-3" />
-                        {t("details")}
+                        {t('details')}
                       </Button>
                     ) : (
                       <Button
@@ -115,7 +110,7 @@ export const ExpandedRunTestsView = ({
                         ) : (
                           <Square className="size-3" />
                         )}
-                        {t("force_stop")}
+                        {t('force_stop')}
                       </Button>
                     )}
                   </TableCell>

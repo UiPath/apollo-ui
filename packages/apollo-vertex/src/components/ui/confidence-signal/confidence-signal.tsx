@@ -1,32 +1,23 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useTranslation } from "react-i18next";
+import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { SignalBars } from "./confidence-signal-bars";
-import { ConfidenceSignalChip } from "./confidence-signal-chip";
-import { ConfidenceSignalCta } from "./confidence-signal-cta";
-import { ConfidenceSignalFactors } from "./confidence-signal-factors";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { SignalBars } from './confidence-signal-bars';
+import { ConfidenceSignalChip } from './confidence-signal-chip';
+import { ConfidenceSignalCta } from './confidence-signal-cta';
+import { ConfidenceSignalFactors } from './confidence-signal-factors';
 import {
   type ConfidenceCta,
   type ConfidenceFactor,
   LEVEL_CONFIG,
-} from "./confidence-signal-levels";
+} from './confidence-signal-levels';
 
-interface ConfidenceSignalBaseProps
-  extends Omit<React.ComponentProps<"button">, "children"> {
+interface ConfidenceSignalBaseProps extends Omit<React.ComponentProps<'button'>, 'children'> {
   /** icon only ("min"), icon + short label ("med"), icon + full label ("max") */
-  variant?: "min" | "med" | "max";
+  variant?: 'min' | 'med' | 'max';
   /** Explanation shown on hover and in the popover. Defaults to a per-level explanation. */
   explanation?: string;
   /** Factor breakdown shown in the popover body. */
@@ -39,9 +30,9 @@ interface ConfidenceSignalBaseProps
 
 export type ConfidenceSignalProps = ConfidenceSignalBaseProps &
   (
-    | { level: "high" | "unknown"; nextStep?: ConfidenceCta }
+    | { level: 'high' | 'unknown'; nextStep?: ConfidenceCta }
     // "medium" and "low" must always give the user a next step.
-    | { level: "medium" | "low"; nextStep: ConfidenceCta }
+    | { level: 'medium' | 'low'; nextStep: ConfidenceCta }
   );
 
 /**
@@ -51,7 +42,7 @@ export type ConfidenceSignalProps = ConfidenceSignalBaseProps &
  */
 function ConfidenceSignal({
   level,
-  variant = "med",
+  variant = 'med',
   explanation,
   factors,
   explainCta,
@@ -69,19 +60,16 @@ function ConfidenceSignal({
     defaultValue: config.labelText,
   });
   const resolvedExplanation =
-    explanation ??
-    t(config.explanationKey, { defaultValue: config.explanationText });
+    explanation ?? t(config.explanationKey, { defaultValue: config.explanationText });
   // "min" is icon-only, so it carries no visible label.
   const label = {
-    min: "",
+    min: '',
     med: t(config.shortLabelKey, { defaultValue: config.shortLabelText }),
     max: accessibleLabel,
   }[variant];
 
   const hasDetails =
-    Boolean(factors && factors.length > 0) ||
-    Boolean(explainCta) ||
-    Boolean(nextStep);
+    Boolean(factors && factors.length > 0) || Boolean(explainCta) || Boolean(nextStep);
 
   const chip = (
     <ConfidenceSignalChip
@@ -101,9 +89,7 @@ function ConfidenceSignal({
       <TooltipTrigger asChild>
         {hasDetails ? <PopoverTrigger asChild>{chip}</PopoverTrigger> : chip}
       </TooltipTrigger>
-      <TooltipContent className="max-w-56">
-        {resolvedExplanation}
-      </TooltipContent>
+      <TooltipContent className="max-w-56">{resolvedExplanation}</TooltipContent>
     </Tooltip>
   );
 
@@ -125,23 +111,17 @@ function ConfidenceSignal({
           <span className="shrink-0 text-muted-foreground">
             <SignalBars level={level} />
           </span>
-          <span className="text-sm font-medium text-foreground">
-            {accessibleLabel}
-          </span>
+          <span className="text-sm font-medium text-foreground">{accessibleLabel}</span>
         </div>
 
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          {resolvedExplanation}
-        </p>
+        <p className="text-xs leading-relaxed text-muted-foreground">{resolvedExplanation}</p>
 
-        {factors && factors.length > 0 && (
-          <ConfidenceSignalFactors factors={factors} />
-        )}
+        {factors && factors.length > 0 && <ConfidenceSignalFactors factors={factors} />}
 
         {explainCta && <ConfidenceSignalCta cta={explainCta} />}
 
         {nextStep && (
-          <div className={explainCta ? "border-t border-border pt-3" : ""}>
+          <div className={explainCta ? 'border-t border-border pt-3' : ''}>
             <ConfidenceSignalCta cta={nextStep} />
           </div>
         )}
@@ -155,4 +135,4 @@ export type {
   ConfidenceCta,
   ConfidenceFactor,
   ConfidenceLevel,
-} from "./confidence-signal-levels";
+} from './confidence-signal-levels';

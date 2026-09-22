@@ -1,8 +1,8 @@
-import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
-import { useDeferredValue } from "react";
-import { useTranslation } from "react-i18next";
-import { assert } from "@/lib/asserts/assert";
-import { assertDefined } from "@/lib/asserts/assert-defined";
+import { useIsFetching, useSuspenseQuery } from '@tanstack/react-query';
+import { useDeferredValue } from 'react';
+import { useTranslation } from 'react-i18next';
+import { assert } from '@/lib/asserts/assert';
+import { assertDefined } from '@/lib/asserts/assert-defined';
 import {
   binLabel,
   type ChartDataModel,
@@ -13,13 +13,10 @@ import {
   getChartRange,
   type MultiLineChartConfiguration,
   SpinnerWithChildren,
-} from "@/lib/charts-core";
-import {
-  MultiLineChart,
-  type MultiLineChartSeries,
-} from "./multi-line-chart-view";
+} from '@/lib/charts-core';
+import { MultiLineChart, type MultiLineChartSeries } from './multi-line-chart-view';
 
-const DEFAULT_COLORS = ["#0d47a1", "#fb8c00"];
+const DEFAULT_COLORS = ['#0d47a1', '#fb8c00'];
 
 export interface MultiLineChartWithAdapterProps {
   configuration: MultiLineChartConfiguration;
@@ -57,7 +54,7 @@ function MultiLineChartResolver({
   const query = dataAdapter.charts.multiLine(configuration, dataModel);
   const deferredQuery = dataAdapter.charts.multiLine(
     deferrableProps.configuration,
-    deferrableProps.dataModel,
+    deferrableProps.dataModel
   );
 
   const isFetching = useIsFetching(query) > 0;
@@ -65,20 +62,20 @@ function MultiLineChartResolver({
 
   const dimensionId = assertDefined(
     configuration.dimensions[0],
-    "Multi line chart must have at least one dimension",
+    'Multi line chart must have at least one dimension'
   );
   const dimension = assertDefined(
     dataModel.dimensions.find((d) => d.id === dimensionId),
-    `Dimension ${dimensionId} not found in dataModel`,
+    `Dimension ${dimensionId} not found in dataModel`
   );
 
-  assert(dimension.type === "datetime", "Dimension type must be datetime");
+  assert(dimension.type === 'datetime', 'Dimension type must be datetime');
 
   const metrics = configuration.metrics
     .map((id) => dataModel.metrics.find((m) => m.id === id))
     .filter((m): m is NonNullable<typeof m> => m != null);
 
-  assertDefined(metrics[0], "Primary metric is required");
+  assertDefined(metrics[0], 'Primary metric is required');
 
   const chartRange = getChartRange({ type: dimension.type, bins });
 
@@ -100,23 +97,16 @@ function MultiLineChartResolver({
   });
 
   const series: MultiLineChartSeries[] = metrics.map((metric, idx) => {
-    const total = (seriesByMetricId[metric.id] ?? []).reduce(
-      (sum, v) => sum + v,
-      0,
-    );
-    const color =
-      DEFAULT_COLORS[idx % DEFAULT_COLORS.length] ??
-      DEFAULT_COLORS[0] ??
-      "#000";
+    const total = (seriesByMetricId[metric.id] ?? []).reduce((sum, v) => sum + v, 0);
+    const color = DEFAULT_COLORS[idx % DEFAULT_COLORS.length] ?? DEFAULT_COLORS[0] ?? '#000';
     return {
       id: metric.id,
       label: metric.display,
       color,
-      axis: idx === 0 ? "left" : "right",
-      formatValue: (value: number) =>
-        formatMetricValue(language, value, metric.expression),
+      axis: idx === 0 ? 'left' : 'right',
+      formatValue: (value: number) => formatMetricValue(language, value, metric.expression),
       totalText: formatMetricValue(language, total, metric.expression),
-      totalLabel: t("total_metric", { metric: metric.display }),
+      totalLabel: t('total_metric', { metric: metric.display }),
     };
   });
 

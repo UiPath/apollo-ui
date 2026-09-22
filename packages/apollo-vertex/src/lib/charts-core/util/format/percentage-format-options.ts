@@ -1,3 +1,3 @@
 export interface PercentageFormatOptions {
-  notation?: "compact" | "minimal";
+  notation?: 'compact' | 'minimal';
 }

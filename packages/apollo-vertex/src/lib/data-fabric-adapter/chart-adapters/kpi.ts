@@ -1,37 +1,35 @@
-import { queryOptions } from "@tanstack/react-query";
-import { z } from "zod";
-import { assertDefined } from "@/lib/asserts/assert-defined";
+import { queryOptions } from '@tanstack/react-query';
+import { z } from 'zod';
+import { assertDefined } from '@/lib/asserts/assert-defined';
 import {
   type DataAdapter,
   type KpiChartData,
   mapConfigFilterToFilterValues,
-} from "@/lib/charts-core";
-import type { DataFabricQueryRequest } from "../schemas/query-schema";
-import { mapMetricToDataFabricAggregate } from "../utils/metric-aggregate";
-import { type DataFabricClient, dataFabricQuery } from "../utils/query";
-import { createDataFabricChartQueryOptions } from "../utils/query-options";
+} from '@/lib/charts-core';
+import type { DataFabricQueryRequest } from '../schemas/query-schema';
+import { mapMetricToDataFabricAggregate } from '../utils/metric-aggregate';
+import { type DataFabricClient, dataFabricQuery } from '../utils/query';
+import { createDataFabricChartQueryOptions } from '../utils/query-options';
 
 export const dataFabricKpiChartAdapter = (
   client: DataFabricClient,
-  entityName: string,
-): DataAdapter["charts"]["kpi"] => {
+  entityName: string
+): DataAdapter['charts']['kpi'] => {
   return (configuration, dataModel) => {
     const firstMetricId = assertDefined(
       configuration.metrics[0],
-      "KPI chart must have at least one metric",
+      'KPI chart must have at least one metric'
     );
     const firstMetric = assertDefined(
       dataModel.metrics.find((m) => m.id === firstMetricId),
-      `Metric ${firstMetricId} not found in dataModel`,
+      `Metric ${firstMetricId} not found in dataModel`
     );
     const aggregate = mapMetricToDataFabricAggregate(firstMetric);
 
     const baseRequestBody = createDataFabricChartQueryOptions({
       selectedFields: [],
       sortBy: null,
-      filters: (configuration.filters ?? []).map((f) =>
-        mapConfigFilterToFilterValues(f),
-      ),
+      filters: (configuration.filters ?? []).map((f) => mapConfigFilterToFilterValues(f)),
     });
 
     const { selectedFields: _ignored, ...rest } = baseRequestBody;
@@ -43,13 +41,13 @@ export const dataFabricKpiChartAdapter = (
     };
 
     return queryOptions<KpiChartData, Error, KpiChartData, string[]>({
-      queryKey: [entityName, "kpi", JSON.stringify(requestBody)],
+      queryKey: [entityName, 'kpi', JSON.stringify(requestBody)],
       queryFn: async () => {
         const body = await dataFabricQuery(
           client,
           entityName,
           requestBody,
-          "Failed to fetch KPI data",
+          'Failed to fetch KPI data'
         );
 
         const value =

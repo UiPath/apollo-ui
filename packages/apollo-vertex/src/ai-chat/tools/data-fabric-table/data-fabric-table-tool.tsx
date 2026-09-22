@@ -1,77 +1,66 @@
-"use client";
+'use client';
 
-import { toolDefinition } from "@tanstack/ai";
-import { DateTime } from "luxon";
-import { z } from "zod";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
-import { TableChartCard } from "../../charts/table-chart-card";
-import { ToolResolutionError } from "../../charts/tool-resolution-error";
+import { toolDefinition } from '@tanstack/ai';
+import { DateTime } from 'luxon';
+import { z } from 'zod';
+import { dataFabricAdapter } from '@/lib/data-fabric-adapter';
+import { TableChartCard } from '../../charts/table-chart-card';
+import { ToolResolutionError } from '../../charts/tool-resolution-error';
 import {
   collectQualifiedFields,
   type DataFabricToolContext,
   type Entity,
   generateEntityFieldsDocs,
-} from "../data-fabric/util/entities";
-import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
-import { joinSchema } from "../data-fabric/util/joins";
+} from '../data-fabric/util/entities';
+import { filterSchema, resolveFilters } from '../data-fabric/util/filters';
+import { joinSchema } from '../data-fabric/util/joins';
 import {
   buildMultiEntityDataModel,
   buildTableDataModel,
   validateDimensions,
-} from "./table-data-model";
+} from './table-data-model';
 
 const dataFabricTableInput = z.object({
-  entityName: z.string().describe("Data Fabric entity name to query"),
-  dimensions: z
-    .array(z.string())
-    .min(1)
-    .describe("Field names to display as table columns."),
-  filters: z
-    .array(filterSchema)
-    .optional()
-    .describe("Optional filters to narrow down results."),
+  entityName: z.string().describe('Data Fabric entity name to query'),
+  dimensions: z.array(z.string()).min(1).describe('Field names to display as table columns.'),
+  filters: z.array(filterSchema).optional().describe('Optional filters to narrow down results.'),
   joins: z
     .array(joinSchema)
     .optional()
     .describe(
-      "Join other entities. Use EntityName.Field format for dimensions and join conditions when joining.",
+      'Join other entities. Use EntityName.Field format for dimensions and join conditions when joining.'
     ),
 });
 
 const dataFabricTableDef = toolDefinition({
-  name: "data_fabric_table",
+  name: 'data_fabric_table',
   description:
-    "Display data from a Data Fabric entity as a table. Call this when the user wants to see data, view records, or display information about entities. Supports optional filters (list, search, range — including datetime ranges) to narrow results. Only use fields that exist for the chosen entity.",
+    'Display data from a Data Fabric entity as a table. Call this when the user wants to see data, view records, or display information about entities. Supports optional filters (list, search, range — including datetime ranges) to narrow results. Only use fields that exist for the chosen entity.',
   inputSchema: dataFabricTableInput,
   outputSchema: dataFabricTableInput,
   metadata: { skipFollowUp: true },
 });
 
-export const dataFabricTableClient = dataFabricTableDef.client(
-  (input) => input,
-);
+export const dataFabricTableClient = dataFabricTableDef.client((input) => input);
 
 type BuildResult =
   | {
-      mode: "single";
+      mode: 'single';
       validDimensions: string[];
       dataModel: ReturnType<typeof buildTableDataModel>;
       fieldNames: string[];
     }
   | {
-      mode: "multi";
+      mode: 'multi';
       validDimensions: string[];
       dataModel: ReturnType<typeof buildMultiEntityDataModel>;
       qualifiedFields: ReturnType<typeof collectQualifiedFields>;
     };
 
-function buildSingleEntityResult(
-  entity: Entity,
-  dimensions: string[],
-): BuildResult {
+function buildSingleEntityResult(entity: Entity, dimensions: string[]): BuildResult {
   const fieldNames = entity.fields.map((f) => f.name);
   return {
-    mode: "single",
+    mode: 'single',
     validDimensions: validateDimensions(dimensions, fieldNames),
     dataModel: buildTableDataModel(entity),
     fieldNames,
@@ -82,28 +71,21 @@ function buildMultiEntityResult(
   primaryEntity: string,
   dimensions: string[],
   joins: { entity: string }[],
-  entities: Record<string, Entity>,
+  entities: Record<string, Entity>
 ): BuildResult {
   const allEntityNames = [primaryEntity, ...joins.map((j) => j.entity)];
   const qualifiedFields = collectQualifiedFields(allEntityNames, entities);
 
   const normalizedDimensions = dimensions.map((d) =>
-    d.includes(".") ? d : `${primaryEntity}.${d}`,
+    d.includes('.') ? d : `${primaryEntity}.${d}`
   );
 
-  const validDimensions = validateDimensions(
-    normalizedDimensions,
-    qualifiedFields.keys(),
-  );
+  const validDimensions = validateDimensions(normalizedDimensions, qualifiedFields.keys());
 
   return {
-    mode: "multi",
+    mode: 'multi',
     validDimensions,
-    dataModel: buildMultiEntityDataModel(
-      primaryEntity,
-      validDimensions,
-      qualifiedFields,
-    ),
+    dataModel: buildMultiEntityDataModel(primaryEntity, validDimensions, qualifiedFields),
     qualifiedFields,
   };
 }
@@ -134,20 +116,13 @@ Only use joins when the user explicitly asks to combine data from multiple entit
 ## Entity Reference
 ${generateEntityFieldsDocs(context.entities)}`;
 
-  function renderTable(
-    output: z.infer<typeof dataFabricTableInput>,
-    id: string,
-  ) {
+  function renderTable(output: z.infer<typeof dataFabricTableInput>, id: string) {
     const { entityName, dimensions, filters, joins } = output;
     const isMultiEntity = joins != null && joins.length > 0;
 
     const entity = context.entities[entityName];
     if (!entity) {
-      return (
-        <ToolResolutionError
-          failure={{ reason: "unknown_entity", entity: entityName }}
-        />
-      );
+      return <ToolResolutionError failure={{ reason: 'unknown_entity', entity: entityName }} />;
     }
 
     const result = isMultiEntity
@@ -158,33 +133,33 @@ ${generateEntityFieldsDocs(context.entities)}`;
       return (
         <ToolResolutionError
           failure={{
-            reason: "table_no_valid_fields",
+            reason: 'table_no_valid_fields',
             entity: entityName,
-            fields: dimensions.join(", "),
+            fields: dimensions.join(', '),
           }}
         />
       );
     }
 
     const normalizedFilters =
-      result.mode === "multi"
+      result.mode === 'multi'
         ? resolveFilters(filters, {
-            mode: "multi",
+            mode: 'multi',
             primaryEntity: entityName,
             qualifiedFields: result.qualifiedFields,
           })
         : resolveFilters(filters, {
-            mode: "single",
+            mode: 'single',
             validFields: result.fieldNames,
           });
 
     const configuration = {
       id,
       name: entityName,
-      type: "table" as const,
+      type: 'table' as const,
       dimensions: result.validDimensions,
       filters: normalizedFilters,
-      ...(result.mode === "multi" &&
+      ...(result.mode === 'multi' &&
         joins && {
           from: { entity: entityName, alias: entityName },
           joins: joins.map((j) => ({ ...j, alias: j.entity })),

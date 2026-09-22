@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
-import { Suspense } from "react";
-import { Spinner } from "@/components/ui/spinner";
-import { ErrorBoundaryWithFallback } from "./error-boundary";
+import type { ReactNode } from 'react';
+import { Suspense } from 'react';
+import { Spinner } from '@/components/ui/spinner';
+import { ErrorBoundaryWithFallback } from './error-boundary';
 
 interface ChartLoadingBoundaryProps<TConfiguration, TDataModel> {
   configuration: TConfiguration;

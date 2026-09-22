@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Solution tests: the live test list plus the writes that act on tests —
@@ -6,14 +6,14 @@
  * collection; run/delete go through the injected trigger actions.
  */
 
-import { useLiveQuery } from "@tanstack/react-db";
-import { useMutation } from "@tanstack/react-query";
-import { useSolution } from "@uipath/vs-core";
-import { ENTITY } from "./constants";
-import { useSolutionTestsActions, useSolutionTestsConfig } from "./context";
-import type { MutationHook } from "./mutations";
-import type { SolutionTest } from "./types";
-import { useSolutionTestCollection } from "./use-solution-test-collection";
+import { useLiveQuery } from '@tanstack/react-db';
+import { useMutation } from '@tanstack/react-query';
+import { useSolution } from '@uipath/vs-core';
+import { ENTITY } from './constants';
+import { useSolutionTestsActions, useSolutionTestsConfig } from './context';
+import type { MutationHook } from './mutations';
+import type { SolutionTest } from './types';
+import { useSolutionTestCollection } from './use-solution-test-collection';
 
 export interface UseSolutionTestsResult {
   tests: SolutionTest[];
@@ -23,16 +23,13 @@ export interface UseSolutionTestsResult {
 /** Live list of solution tests. */
 export function useSolutionTests(): UseSolutionTestsResult {
   const collection = useSolutionTestCollection(ENTITY.tests);
-  const { data, isLoading } = useLiveQuery(
-    (q) => q.from({ tests: collection }),
-    [collection],
-  );
+  const { data, isLoading } = useLiveQuery((q) => q.from({ tests: collection }), [collection]);
   return { tests: data ?? [], isLoading };
 }
 
 /** Which run a `useRunTests` mutation represents; lets callers tell a single
  * bulk-selected run apart from a single-row run (both carry one `testId`). */
-export type RunTestsMode = "all" | "test" | "selected";
+export type RunTestsMode = 'all' | 'test' | 'selected';
 
 /** Run the given tests (all active tests when `testIds` is omitted). */
 export function useRunTests(): MutationHook<{
@@ -46,7 +43,7 @@ export function useRunTests(): MutationHook<{
       actions.runTests(testIds),
     // Track the user action on trigger (not success) — we want intent, not outcome.
     onMutate: ({ testIds, mode }) =>
-      track?.("VS.SolutionTest.Run", { mode, testCount: testIds?.length ?? 0 }),
+      track?.('VS.SolutionTest.Run', { mode, testCount: testIds?.length ?? 0 }),
   });
 }
 
@@ -60,7 +57,7 @@ export function useCreateTest(): MutationHook<string> {
       await actions.createTest(subjectId);
       await testsCollection.utils.refetch();
     },
-    onMutate: (subjectId) => track?.("VS.SolutionTest.Created", { subjectId }),
+    onMutate: (subjectId) => track?.('VS.SolutionTest.Created', { subjectId }),
   });
 }
 
@@ -77,16 +74,10 @@ export function useToggleTestActive(): MutationHook<{
   const solution = useSolution();
   const { track } = useSolutionTestsConfig();
   return useMutation({
-    mutationFn: async ({
-      testId,
-      isActive,
-    }: {
-      testId: string;
-      isActive: boolean;
-    }) => {
+    mutationFn: async ({ testId, isActive }: { testId: string; isActive: boolean }) => {
       const collection = solution?.api.collections.solutionTests[ENTITY.tests];
       if (!collection) {
-        throw new Error("Solution Tests collection is unavailable.");
+        throw new Error('Solution Tests collection is unavailable.');
       }
       const transaction = collection.update(testId, (draft) => {
         draft.IsActive = isActive;
@@ -94,7 +85,7 @@ export function useToggleTestActive(): MutationHook<{
       await transaction.isPersisted.promise;
     },
     onMutate: ({ testId, isActive }) =>
-      track?.("VS.SolutionTest.ActiveToggled", { testId, isActive }),
+      track?.('VS.SolutionTest.ActiveToggled', { testId, isActive }),
   });
 }
 
@@ -107,11 +98,8 @@ export function useDeleteTest(): MutationHook<string> {
   return useMutation({
     mutationFn: async (testId: string) => {
       await actions.deleteTest(testId);
-      await Promise.all([
-        testsCollection.utils.refetch(),
-        jobsCollection.utils.refetch(),
-      ]);
+      await Promise.all([testsCollection.utils.refetch(), jobsCollection.utils.refetch()]);
     },
-    onMutate: (testId) => track?.("VS.SolutionTest.Deleted", { testId }),
+    onMutate: (testId) => track?.('VS.SolutionTest.Deleted', { testId }),
   });
 }

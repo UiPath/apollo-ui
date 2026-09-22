@@ -21,10 +21,7 @@ export function MetricColumn({
   barGap,
 }: MetricColumnProps) {
   return (
-    <div
-      className="min-w-0 overflow-hidden"
-      style={{ height: `${chartHeightPx}px` }}
-    >
+    <div className="min-w-0 overflow-hidden" style={{ height: `${chartHeightPx}px` }}>
       {rows.map((row) => (
         <div
           key={`${keyPrefix}-${row.id}`}

@@ -1,4 +1,4 @@
-import { Duration } from "luxon";
+import { Duration } from 'luxon';
 
 export const NICE_NUMBER_CATEGORIES = [1, 2, 3, 4, 5, 25];
 

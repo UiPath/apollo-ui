@@ -1,11 +1,11 @@
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { GripVerticalIcon } from "lucide-react";
-import type * as React from "react";
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVerticalIcon } from 'lucide-react';
+import type * as React from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 
 interface SortableColumnItemProps {
   id: string;
@@ -20,14 +20,9 @@ function SortableColumnItem({
   isVisible,
   onToggleVisibility,
 }: SortableColumnItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -39,9 +34,9 @@ function SortableColumnItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm",
-        "hover:bg-accent transition-colors",
-        isDragging && "bg-accent opacity-50",
+        'flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+        'hover:bg-accent transition-colors',
+        isDragging && 'bg-accent opacity-50'
       )}
     >
       <Button
@@ -55,10 +50,7 @@ function SortableColumnItem({
         <GripVerticalIcon className="size-4" />
       </Button>
       <label className="flex flex-1 cursor-pointer items-center gap-2">
-        <Checkbox
-          checked={isVisible}
-          onCheckedChange={(value) => onToggleVisibility(!!value)}
-        />
+        <Checkbox checked={isVisible} onCheckedChange={(value) => onToggleVisibility(!!value)} />
         <span className="select-none">{displayName}</span>
       </label>
     </div>

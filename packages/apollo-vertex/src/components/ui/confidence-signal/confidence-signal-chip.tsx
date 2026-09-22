@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import type * as React from "react";
+import type * as React from 'react';
 
-import { cn } from "@/lib/utils";
-import { SignalBars } from "./confidence-signal-bars";
-import { type ConfidenceLevel, LEVEL_CONFIG } from "./confidence-signal-levels";
+import { cn } from '@/lib/utils';
+import { SignalBars } from './confidence-signal-bars';
+import { type ConfidenceLevel, LEVEL_CONFIG } from './confidence-signal-levels';
 
 export interface ConfidenceSignalChipProps
-  extends Omit<React.ComponentProps<"button">, "children"> {
+  extends Omit<React.ComponentProps<'button'>, 'children'> {
   level: ConfidenceLevel;
   /** Visible label. Omit for the icon-only (`min`) variant. */
   label?: string;
@@ -31,10 +31,10 @@ function ConfidenceSignalChip({
   return (
     <button
       className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        'inline-flex items-center gap-1.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
         LEVEL_CONFIG[level].textClass,
-        interactive && "cursor-pointer",
-        className,
+        interactive && 'cursor-pointer',
+        className
       )}
       // Before the spread, so a caller can supply a more contextual label
       // ("Confidence for Acme Health Plan: high") without losing the default.

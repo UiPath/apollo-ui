@@ -1,9 +1,5 @@
-import type {
-  ContentPart,
-  ContentPartDataSource,
-  ImagePart,
-} from "@tanstack/ai";
-import { useCallback, useEffect, useRef, useState } from "react";
+import type { ContentPart, ContentPartDataSource, ImagePart } from '@tanstack/ai';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface PendingFile {
   uid: string;
@@ -15,7 +11,7 @@ export interface PendingFile {
 }
 
 function makePendingFile(file: File): PendingFile {
-  const isImage = file.type.startsWith("image/");
+  const isImage = file.type.startsWith('image/');
   return {
     uid: crypto.randomUUID(),
     name: file.name,
@@ -35,7 +31,7 @@ export function usePendingFiles() {
       for (const url of liveUrlsRef.current) URL.revokeObjectURL(url);
       liveUrlsRef.current.clear();
     },
-    [],
+    []
   );
 
   const revoke = (url: string) => {
@@ -75,37 +71,33 @@ export function usePendingFiles() {
 function readAsDataSource(file: File): Promise<ContentPartDataSource> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.addEventListener("load", () => {
+    reader.addEventListener('load', () => {
       const result = reader.result;
-      if (typeof result !== "string") {
-        reject(new Error("Expected data URL from FileReader"));
+      if (typeof result !== 'string') {
+        reject(new Error('Expected data URL from FileReader'));
         return;
       }
       // Strip the "data:<mime>;base64," prefix — ContentPartDataSource.value
       // stores the bare base64 payload and ContentPartDataSource.mimeType separately.
-      const base64 = result.slice(result.indexOf(",") + 1);
-      resolve({ type: "data", value: base64, mimeType: file.type });
+      const base64 = result.slice(result.indexOf(',') + 1);
+      resolve({ type: 'data', value: base64, mimeType: file.type });
     });
-    reader.addEventListener("error", () =>
-      reject(reader.error ?? new Error("File read failed")),
-    );
+    reader.addEventListener('error', () => reject(reader.error ?? new Error('File read failed')));
     reader.readAsDataURL(file);
   });
 }
 
 async function fileToContentPart(file: File): Promise<ContentPart | null> {
-  if (file.type.startsWith("image/")) {
+  if (file.type.startsWith('image/')) {
     const source = await readAsDataSource(file);
-    return { type: "image", source } satisfies ImagePart;
+    return { type: 'image', source } satisfies ImagePart;
   }
   return null;
 }
 
 export async function pendingFilesToContentParts(
-  files: ReadonlyArray<PendingFile>,
+  files: ReadonlyArray<PendingFile>
 ): Promise<ContentPart[]> {
-  const parts = await Promise.all(
-    files.map((pf) => fileToContentPart(pf.file)),
-  );
+  const parts = await Promise.all(files.map((pf) => fileToContentPart(pf.file)));
   return parts.filter((p): p is ContentPart => p !== null);
 }

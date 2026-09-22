@@ -1,6 +1,6 @@
-import type { AnyClientTool } from "@tanstack/ai";
+import type { AnyClientTool } from '@tanstack/ai';
 
-export type AgentHubVendor = "openai" | "anthropic";
+export type AgentHubVendor = 'openai' | 'anthropic';
 
 export interface AgentHubAdapterConfig {
   baseUrl: string;

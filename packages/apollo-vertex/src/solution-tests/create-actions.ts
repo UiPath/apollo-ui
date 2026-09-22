@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Builds the Solution Tests write actions: `run` hits the `run_solution_tests`
@@ -7,13 +7,9 @@
  * header and echoed in the body for backend RBAC.
  */
 
-import type { SolutionTestsActions } from "./actions";
-import {
-  AUTOMATION_FUNCTION_PATH,
-  AUTOMATION_FUNCTIONS_SLUG,
-  RUN_TESTS_SLUG,
-} from "./constants";
-import { extractFailure, SolutionTestActionError } from "./errors";
+import type { SolutionTestsActions } from './actions';
+import { AUTOMATION_FUNCTION_PATH, AUTOMATION_FUNCTIONS_SLUG, RUN_TESTS_SLUG } from './constants';
+import { extractFailure, SolutionTestActionError } from './errors';
 
 export interface SolutionTestActionDeps {
   /** Base URL each action slug is appended to (no trailing slash). */
@@ -21,45 +17,37 @@ export interface SolutionTestActionDeps {
   getToken: () => Promise<string | null> | string | null;
 }
 
-export function createSolutionTestActions(
-  deps: SolutionTestActionDeps,
-): SolutionTestsActions {
+export function createSolutionTestActions(deps: SolutionTestActionDeps): SolutionTestsActions {
   const { triggerBaseUrl, getToken } = deps;
 
   async function invokeTrigger(
     slug: string,
-    buildBody: (token: string) => Record<string, unknown>,
+    buildBody: (token: string) => Record<string, unknown>
   ): Promise<void> {
     const token = await getToken();
-    if (!token) throw new Error("No access token available.");
+    if (!token) throw new Error('No access token available.');
 
     let response: Response;
     try {
       response = await fetch(`${triggerBaseUrl}/${slug}`, {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
         body: JSON.stringify(buildBody(token)),
       });
     } catch (error) {
       // The request never reached the server (offline/DNS/CORS).
-      throw error instanceof Error
-        ? error
-        : new Error("Network request failed.");
+      throw error instanceof Error ? error : new Error('Network request failed.');
     }
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(
-        `API trigger returned ${response.status}: ${text.slice(0, 300)}`,
-      );
+      throw new Error(`API trigger returned ${response.status}: ${text.slice(0, 300)}`);
     }
-    const data: unknown = response.headers
-      .get("content-type")
-      ?.includes("application/json")
+    const data: unknown = response.headers.get('content-type')?.includes('application/json')
       ? await response.json().catch(() => null)
       : null;
     const failure = extractFailure(data);
@@ -69,7 +57,7 @@ export function createSolutionTestActions(
   // automation-functions RPC router; the token goes in the body's `_auth` envelope.
   function callFn(path: string, body: Record<string, unknown>): Promise<void> {
     return invokeTrigger(AUTOMATION_FUNCTIONS_SLUG, (token) => ({
-      method: "POST",
+      method: 'POST',
       path,
       body: { ...body, _auth: { userToken: token } },
     }));

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useFeatureFlagProvider } from "./feature-flag-provider";
+import { useEffect, useState } from 'react';
+import { useFeatureFlagProvider } from './feature-flag-provider';
 
 export function useFeatureFlag(key: string): boolean {
   const provider = useFeatureFlagProvider();

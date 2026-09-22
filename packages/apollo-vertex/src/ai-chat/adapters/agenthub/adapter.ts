@@ -1,51 +1,29 @@
-import {
-  type AnyClientTool,
-  EventType,
-  type ModelMessage,
-  type StreamChunk,
-} from "@tanstack/ai";
-import type {
-  ConnectConnectionAdapter,
-  ToolCallPart,
-  UIMessage,
-} from "@tanstack/ai-client";
-import { fetchAgentHubStream } from "./stream";
-import type { AgentHubAdapterConfig } from "./types";
+import { type AnyClientTool, EventType, type ModelMessage, type StreamChunk } from '@tanstack/ai';
+import type { ConnectConnectionAdapter, ToolCallPart, UIMessage } from '@tanstack/ai-client';
+import { fetchAgentHubStream } from './stream';
+import type { AgentHubAdapterConfig } from './types';
 
-export type { AgentHubAdapterConfig, AgentHubVendor } from "./types";
+export type { AgentHubAdapterConfig, AgentHubVendor } from './types';
 
-function isUIMessages(
-  messages: Array<UIMessage> | Array<ModelMessage>,
-): messages is UIMessage[] {
+function isUIMessages(messages: Array<UIMessage> | Array<ModelMessage>): messages is UIMessage[] {
   const first = messages[0];
-  return first != null && "parts" in first;
+  return first != null && 'parts' in first;
 }
 
 function collectSkipFollowUpToolNames(
-  tools: ReadonlyArray<AnyClientTool> | undefined,
+  tools: ReadonlyArray<AnyClientTool> | undefined
 ): Set<string> {
-  return new Set(
-    (tools ?? [])
-      .filter((t) => t.metadata?.skipFollowUp === true)
-      .map((t) => t.name),
-  );
+  return new Set((tools ?? []).filter((t) => t.metadata?.skipFollowUp === true).map((t) => t.name));
 }
 
-function shouldSkipFollowUp(
-  messages: UIMessage[],
-  skipFollowUpToolNames: Set<string>,
-): boolean {
+function shouldSkipFollowUp(messages: UIMessage[], skipFollowUpToolNames: Set<string>): boolean {
   const last = messages.at(-1);
-  if (!last || last.role !== "assistant") return false;
+  if (!last || last.role !== 'assistant') return false;
 
-  const toolCalls = last.parts.filter(
-    (p): p is ToolCallPart => p.type === "tool-call",
-  );
+  const toolCalls = last.parts.filter((p): p is ToolCallPart => p.type === 'tool-call');
   return (
     toolCalls.length > 0 &&
-    toolCalls.every(
-      (tc) => tc.output != null && skipFollowUpToolNames.has(tc.name),
-    )
+    toolCalls.every((tc) => tc.output != null && skipFollowUpToolNames.has(tc.name))
   );
 }
 
@@ -58,7 +36,7 @@ async function* emptyStream(): AsyncIterable<StreamChunk> {
   yield {
     type: EventType.TEXT_MESSAGE_START,
     messageId,
-    role: "assistant",
+    role: 'assistant',
     timestamp: Date.now(),
   };
   yield {
@@ -71,13 +49,11 @@ async function* emptyStream(): AsyncIterable<StreamChunk> {
     runId,
     threadId,
     timestamp: Date.now(),
-    finishReason: "stop",
+    finishReason: 'stop',
   };
 }
 
-export function createAgentHubConnection(
-  config: AgentHubAdapterConfig,
-): ConnectConnectionAdapter {
+export function createAgentHubConnection(config: AgentHubAdapterConfig): ConnectConnectionAdapter {
   const skipFollowUpToolNames = collectSkipFollowUpToolNames(config.tools);
 
   return {
@@ -86,9 +62,7 @@ export function createAgentHubConnection(
         return fetchAgentHubStream(config, [], abortSignal);
       }
       if (!isUIMessages(messages)) {
-        throw new Error(
-          "AgentHub adapter requires UIMessages, received ModelMessages",
-        );
+        throw new Error('AgentHub adapter requires UIMessages, received ModelMessages');
       }
 
       if (shouldSkipFollowUp(messages, skipFollowUpToolNames)) {

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { toolDefinition } from "@tanstack/ai";
-import { DateTime } from "luxon";
-import { z } from "zod";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
-import { LineChartCard } from "../../charts/line-chart-card";
-import { ToolResolutionError } from "../../charts/tool-resolution-error";
+import { toolDefinition } from '@tanstack/ai';
+import { DateTime } from 'luxon';
+import { z } from 'zod';
+import { dataFabricAdapter } from '@/lib/data-fabric-adapter';
+import { LineChartCard } from '../../charts/line-chart-card';
+import { ToolResolutionError } from '../../charts/tool-resolution-error';
 import {
   buildDataModel,
   metricSchema,
@@ -13,41 +13,38 @@ import {
   resolveMultiMetric,
   resolveSingleDimension,
   resolveSingleMetric,
-} from "../data-fabric/util/chart-helpers";
+} from '../data-fabric/util/chart-helpers';
 import {
   collectQualifiedFields,
   type DataFabricToolContext,
   generateEntityFieldsDocs,
-} from "../data-fabric/util/entities";
-import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
-import { joinSchema } from "../data-fabric/util/joins";
+} from '../data-fabric/util/entities';
+import { filterSchema, resolveFilters } from '../data-fabric/util/filters';
+import { joinSchema } from '../data-fabric/util/joins';
 
-const LINE_DIMENSION_TYPES = ["datetime"] as const;
+const LINE_DIMENSION_TYPES = ['datetime'] as const;
 
 const dataFabricLineInput = z.object({
-  entityName: z.string().describe("Data Fabric entity name to query"),
+  entityName: z.string().describe('Data Fabric entity name to query'),
   dimension: z
     .string()
     .describe(
-      "Datetime field name to bin the time axis by. When joining, use EntityName.Field format.",
+      'Datetime field name to bin the time axis by. When joining, use EntityName.Field format.'
     ),
   metric: metricSchema.optional(),
-  filters: z
-    .array(filterSchema)
-    .optional()
-    .describe("Optional filters to narrow down results."),
+  filters: z.array(filterSchema).optional().describe('Optional filters to narrow down results.'),
   joins: z
     .array(joinSchema)
     .optional()
     .describe(
-      "Join other entities. Use EntityName.Field format for the dimension and metric field when joining.",
+      'Join other entities. Use EntityName.Field format for the dimension and metric field when joining.'
     ),
 });
 
 const dataFabricLineDef = toolDefinition({
-  name: "data_fabric_line",
+  name: 'data_fabric_line',
   description:
-    "Render a line chart from a Data Fabric entity, plotting a metric over a datetime dimension. Supports optional metric (default COUNT), filters, and joins.",
+    'Render a line chart from a Data Fabric entity, plotting a metric over a datetime dimension. Supports optional metric (default COUNT), filters, and joins.',
   inputSchema: dataFabricLineInput,
   outputSchema: dataFabricLineInput,
   metadata: { skipFollowUp: true },
@@ -94,27 +91,15 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const entity = context.entities[entityName];
     if (!entity) {
-      return (
-        <ToolResolutionError
-          failure={{ reason: "unknown_entity", entity: entityName }}
-        />
-      );
+      return <ToolResolutionError failure={{ reason: 'unknown_entity', entity: entityName }} />;
     }
 
     const qualifiedFields = isMultiEntity
-      ? collectQualifiedFields(
-          [entityName, ...joins.map((j) => j.entity)],
-          context.entities,
-        )
+      ? collectQualifiedFields([entityName, ...joins.map((j) => j.entity)], context.entities)
       : null;
 
     const resolvedDimension = qualifiedFields
-      ? resolveMultiDimension(
-          entityName,
-          dimension,
-          qualifiedFields,
-          LINE_DIMENSION_TYPES,
-        )
+      ? resolveMultiDimension(entityName, dimension, qualifiedFields, LINE_DIMENSION_TYPES)
       : resolveSingleDimension(entity, dimension, LINE_DIMENSION_TYPES);
 
     if (!resolvedDimension.ok) {
@@ -138,21 +123,21 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const normalizedFilters = qualifiedFields
       ? resolveFilters(filters, {
-          mode: "multi",
+          mode: 'multi',
           primaryEntity: entityName,
           qualifiedFields,
         })
       : resolveFilters(filters, {
-          mode: "single",
+          mode: 'single',
           validFields: entity.fields.map((f) => f.name),
         });
 
     const configuration = {
       id,
       name: entityName,
-      type: "line" as const,
+      type: 'line' as const,
       dimensions: [resolvedDimension.value.id],
-      metrics: [dataModel.metrics[0]?.id ?? ""],
+      metrics: [dataModel.metrics[0]?.id ?? ''],
       filters: normalizedFilters,
       ...(qualifiedFields &&
         joins && {
@@ -168,11 +153,7 @@ ${generateEntityFieldsDocs(context.entities)}`;
     });
 
     return (
-      <LineChartCard
-        configuration={configuration}
-        dataModel={dataModel}
-        dataAdapter={adapter}
-      />
+      <LineChartCard configuration={configuration} dataModel={dataModel} dataAdapter={adapter} />
     );
   }
 

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Resolve a typed Solution Tests collection by entity name. The entity name
@@ -6,16 +6,16 @@
  * outside a SolutionProvider or when the named collection is not registered.
  */
 
-import type { Collection } from "@tanstack/react-db";
-import { useSolution } from "@uipath/vs-core";
-import { ENTITY } from "./constants";
+import type { Collection } from '@tanstack/react-db';
+import { useSolution } from '@uipath/vs-core';
+import { ENTITY } from './constants';
 import type {
   SolutionTest,
   SolutionTestBatchRun,
   SolutionTestJob,
   SolutionTestRun,
   SolutionTestRunResult,
-} from "./types";
+} from './types';
 
 /** Row type stored in each Solution Tests collection, keyed by its entity name. */
 type SolutionTestRow = {
@@ -27,13 +27,11 @@ type SolutionTestRow = {
 };
 
 export function useSolutionTestCollection<K extends keyof SolutionTestRow>(
-  entity: K,
+  entity: K
 ): Collection<SolutionTestRow[K]> {
   const solution = useSolution();
   if (!solution) {
-    throw new Error(
-      "useSolutionTestCollection must be used within a SolutionProvider.",
-    );
+    throw new Error('useSolutionTestCollection must be used within a SolutionProvider.');
   }
   const selected = solution.api.collections.solutionTests[entity];
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion

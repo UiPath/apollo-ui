@@ -1,20 +1,20 @@
-import { DateTime, type Interval } from "luxon";
-import { z } from "zod";
+import { DateTime, type Interval } from 'luxon';
+import { z } from 'zod';
 import {
   type FilterValues,
   type FromConfig,
   type JoinConfig,
   niceDurationNumbers,
-} from "@/lib/charts-core";
-import type { DataFabricQueryRequest } from "../schemas/query-schema";
+} from '@/lib/charts-core';
+import type { DataFabricQueryRequest } from '../schemas/query-schema';
 import {
   buildIntervalsFromDateBins,
   createDateBinning,
   durationToDateBinUnit,
-} from "./binning-utils";
-import { mapFilterValuesToDataFabricFilterGroup } from "./filter-group";
-import type { DataFabricAggregate } from "./metric-aggregate";
-import { type DataFabricClient, dataFabricQuery } from "./query";
+} from './binning-utils';
+import { mapFilterValuesToDataFabricFilterGroup } from './filter-group';
+import type { DataFabricAggregate } from './metric-aggregate';
+import { type DataFabricClient, dataFabricQuery } from './query';
 
 type DataModelAggregate = DataFabricAggregate;
 
@@ -46,8 +46,8 @@ export async function fetchDateBinnedData({
 
   const minMaxBody: DataFabricQueryRequest = {
     aggregates: [
-      { function: "MIN", field: dimensionId, alias: "min" },
-      { function: "MAX", field: dimensionId, alias: "max" },
+      { function: 'MIN', field: dimensionId, alias: 'min' },
+      { function: 'MAX', field: dimensionId, alias: 'max' },
     ],
     filterGroup: baseFilterGroup,
     joins,
@@ -58,12 +58,12 @@ export async function fetchDateBinnedData({
     client,
     entityName,
     minMaxBody,
-    "Failed to fetch min/max",
+    'Failed to fetch min/max'
   );
 
   const row = minMaxResult.value[0];
   if (!row) {
-    throw new Error("Min/max query returned no results");
+    throw new Error('Min/max query returned no results');
   }
 
   const minStr = z
@@ -75,11 +75,11 @@ export async function fetchDateBinnedData({
     .nullable()
     .parse(row.max ?? null);
   if (!minStr || !maxStr) {
-    throw new Error("Min/max query returned null values");
+    throw new Error('Min/max query returned null values');
   }
 
-  const min = DateTime.fromISO(minStr, { zone: "utc" });
-  const max = DateTime.fromISO(maxStr, { zone: "utc" });
+  const min = DateTime.fromISO(minStr, { zone: 'utc' });
+  const max = DateTime.fromISO(maxStr, { zone: 'utc' });
 
   if (min.equals(max)) return null;
 
@@ -99,17 +99,17 @@ export async function fetchDateBinnedData({
     joins,
     from,
     filterGroup: {
-      logicalOperator: "and",
+      logicalOperator: 'and',
       queryFilters: [
         ...existingFilters,
         {
           fieldName: dimensionId,
-          operator: ">=",
+          operator: '>=',
           value: minIso,
         },
         {
           fieldName: dimensionId,
-          operator: "<=",
+          operator: '<=',
           value: maxIso,
         },
       ],
@@ -123,7 +123,7 @@ export async function fetchDateBinnedData({
     client,
     entityName,
     requestBody,
-    "Failed to fetch binned data",
+    'Failed to fetch binned data'
   );
 
   const rows = dataResult.value;

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Metadata fields are nullish: IXP emits null for all of them on an unextracted
 // value, and the payload must still validate.

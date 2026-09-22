@@ -1,13 +1,8 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { jwtDecode } from "jwt-decode";
-import {
-  createContext,
-  type FC,
-  type PropsWithChildren,
-  useContext,
-} from "react";
-import { z } from "zod";
-import { ensureValidToken, login, logout, TOKEN_QUERY_KEY } from "@/lib/auth";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { jwtDecode } from 'jwt-decode';
+import { createContext, type FC, type PropsWithChildren, useContext } from 'react';
+import { z } from 'zod';
+import { ensureValidToken, login, logout, TOKEN_QUERY_KEY } from '@/lib/auth';
 
 export interface AuthContextValue {
   user: UserInfo | null;
@@ -32,9 +27,7 @@ const JwtPayloadSchema = z.object({
 });
 
 const decodeJWT = (token: string): UserInfo | null => {
-  const { data: payload, success } = JwtPayloadSchema.safeParse(
-    jwtDecode(token),
-  );
+  const { data: payload, success } = JwtPayloadSchema.safeParse(jwtDecode(token));
 
   if (!success) {
     return null;
@@ -75,19 +68,14 @@ interface UseAccessTokenProps {
   redirectPath?: string;
 }
 
-export const useAccessToken = ({
-  clientId,
-  baseUrl,
-  redirectPath,
-}: UseAccessTokenProps) => {
+export const useAccessToken = ({ clientId, baseUrl, redirectPath }: UseAccessTokenProps) => {
   const queryClient = useQueryClient();
 
   const { data: token, isLoading } = useQuery({
     queryKey: TOKEN_QUERY_KEY,
-    queryFn: () =>
-      ensureValidToken(queryClient, clientId, baseUrl, redirectPath),
+    queryFn: () => ensureValidToken(queryClient, clientId, baseUrl, redirectPath),
     refetchInterval: 60 * 1000,
-    enabled: typeof window !== "undefined",
+    enabled: typeof window !== 'undefined',
   });
 
   return { accessToken: token ?? null, isLoading };
@@ -100,9 +88,13 @@ interface ShellAuthProviderProps {
   redirectPath?: string;
 }
 
-export const ShellAuthProvider: FC<
-  PropsWithChildren<ShellAuthProviderProps>
-> = ({ children, clientId, scope, baseUrl, redirectPath }) => {
+export const ShellAuthProvider: FC<PropsWithChildren<ShellAuthProviderProps>> = ({
+  children,
+  clientId,
+  scope,
+  baseUrl,
+  redirectPath,
+}) => {
   const queryClient = useQueryClient();
   const { accessToken, isLoading } = useAccessToken({
     clientId,
@@ -121,7 +113,5 @@ export const ShellAuthProvider: FC<
     accessToken,
   };
 
-  return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };

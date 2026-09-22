@@ -1,8 +1,8 @@
-import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
-import { useDeferredValue } from "react";
-import { useTranslation } from "react-i18next";
-import { assert } from "@/lib/asserts/assert";
-import { assertDefined } from "@/lib/asserts/assert-defined";
+import { useIsFetching, useSuspenseQuery } from '@tanstack/react-query';
+import { useDeferredValue } from 'react';
+import { useTranslation } from 'react-i18next';
+import { assert } from '@/lib/asserts/assert';
+import { assertDefined } from '@/lib/asserts/assert-defined';
 import {
   binLabel,
   type ChartDataModel,
@@ -13,8 +13,8 @@ import {
   getChartRange,
   type NumericOrDatetimeModelField,
   SpinnerWithChildren,
-} from "@/lib/charts-core";
-import { DistributionChart } from "./distribution-chart-view";
+} from '@/lib/charts-core';
+import { DistributionChart } from './distribution-chart-view';
 
 export interface DistributionChartWithAdapterProps {
   configuration: DistributionChartConfiguration;
@@ -51,7 +51,7 @@ function DistributionChartResolver({
   const query = dataAdapter.charts.distribution(configuration, dataModel);
   const deferredQuery = dataAdapter.charts.distribution(
     deferrableProps.configuration,
-    deferrableProps.dataModel,
+    deferrableProps.dataModel
   );
 
   const isFetching = useIsFetching(query) > 0;
@@ -59,24 +59,21 @@ function DistributionChartResolver({
 
   const dimensionId = assertDefined(
     configuration.dimensions[0],
-    "Distribution chart dimension is required",
+    'Distribution chart dimension is required'
   );
   const dimension = assertDefined(
     dataModel.dimensions.find((d) => d.id === dimensionId),
-    `Dimension ${dimensionId} not found in dataModel`,
+    `Dimension ${dimensionId} not found in dataModel`
   );
-  const metricId = assertDefined(
-    configuration.metrics[0],
-    "Distribution chart metric is required",
-  );
+  const metricId = assertDefined(configuration.metrics[0], 'Distribution chart metric is required');
   const metric = assertDefined(
     dataModel.metrics.find((m) => m.id === metricId),
-    `Metric ${metricId} not found in dataModel`,
+    `Metric ${metricId} not found in dataModel`
   );
 
   assert(
-    dimension.type === "datetime" || dimension.type === "numeric",
-    "Dimension type must be datetime or numeric",
+    dimension.type === 'datetime' || dimension.type === 'numeric',
+    'Dimension type must be datetime or numeric'
   );
 
   const chartRange = getChartRange({ type: dimension.type, bins });
@@ -97,9 +94,7 @@ function DistributionChartResolver({
       <DistributionChart
         data={data}
         seriesLabel={metric.display}
-        formatValue={(value) =>
-          formatMetricValue(language, value, metric.expression)
-        }
+        formatValue={(value) => formatMetricValue(language, value, metric.expression)}
       />
     </SpinnerWithChildren>
   );

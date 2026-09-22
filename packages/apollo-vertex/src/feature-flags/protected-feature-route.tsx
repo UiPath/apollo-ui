@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from "react";
-import { useFeatureFlag } from "./use-feature-flag";
+import type { PropsWithChildren } from 'react';
+import { useFeatureFlag } from './use-feature-flag';
 
 interface ProtectedFeatureRouteProps {
   feature: string;

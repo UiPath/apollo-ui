@@ -1,35 +1,29 @@
-import type { z } from "zod";
-import type { BaseChartConfigurationSchema } from "./models/configurations/base-chart-configuration";
-import type { FilterValues } from "./models/filter-values";
+import type { z } from 'zod';
+import type { BaseChartConfigurationSchema } from './models/configurations/base-chart-configuration';
+import type { FilterValues } from './models/filter-values';
 
 export type ConfigFilter = NonNullable<
-  z.infer<typeof BaseChartConfigurationSchema>["filters"]
+  z.infer<typeof BaseChartConfigurationSchema>['filters']
 >[number];
 
-export function mapConfigFilterToFilterValues(
-  filter: ConfigFilter,
-): FilterValues {
-  if (
-    filter.type === "range" &&
-    "valueType" in filter &&
-    filter.valueType === "datetime"
-  ) {
+export function mapConfigFilterToFilterValues(filter: ConfigFilter): FilterValues {
+  if (filter.type === 'range' && 'valueType' in filter && filter.valueType === 'datetime') {
     return {
-      type: "period",
+      type: 'period',
       field: filter.field,
       range: filter.range,
     };
   }
-  if (filter.type === "range") {
+  if (filter.type === 'range') {
     return {
-      type: "range",
+      type: 'range',
       field: filter.field,
       range: filter.range,
     };
   }
-  if (filter.type === "search") {
+  if (filter.type === 'search') {
     return {
-      type: "search",
+      type: 'search',
       field: filter.field,
       pattern: filter.pattern,
       searchFilterType: filter.searchFilterType,

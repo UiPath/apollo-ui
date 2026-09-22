@@ -1,25 +1,20 @@
-import { Link } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "framer-motion";
-import { PanelLeft } from "lucide-react";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { useSidebar } from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import type { CompanyLogo } from "./shell";
+import { Link } from '@tanstack/react-router';
+import { AnimatePresence, motion } from 'framer-motion';
+import { PanelLeft } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { useSidebar } from '@/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import type { CompanyLogo } from './shell';
 import {
   fastFadeTransition,
   iconHoverScale,
   scaleVariants,
   textFadeVariants,
-} from "./shell-animations";
-import { CompanyLogoIcon } from "./shell-company-logo";
+} from './shell-animations';
+import { CompanyLogoIcon } from './shell-company-logo';
 
 interface CompanyProps {
   companyName: string;
@@ -34,18 +29,14 @@ interface CollapsedLogoProps {
   onExpand: () => void;
 }
 
-function CollapsedLogo({
-  companyLogo,
-  sidebarHovered,
-  onExpand,
-}: CollapsedLogoProps) {
+function CollapsedLogo({ companyLogo, sidebarHovered, onExpand }: CollapsedLogoProps) {
   const { t } = useTranslation();
   const [buttonHovered, setButtonHovered] = useState(false);
   const isCustomLogo = companyLogo?.isCustom ?? false;
   const panelBgClass = isCustomLogo
-    ? "bg-white border border-border"
-    : "bg-[oklch(0.6533_0.2227_34.41)]";
-  const iconColorClass = isCustomLogo ? "text-black" : "text-white";
+    ? 'bg-white border border-border'
+    : 'bg-[oklch(0.6533_0.2227_34.41)]';
+  const iconColorClass = isCustomLogo ? 'text-black' : 'text-white';
 
   return (
     <TooltipProvider>
@@ -60,12 +51,10 @@ function CollapsedLogo({
           >
             <motion.div
               className={cn(
-                "w-8 h-8 rounded-md flex items-center justify-center shrink-0 overflow-hidden",
-                panelBgClass,
+                'w-8 h-8 rounded-md flex items-center justify-center shrink-0 overflow-hidden',
+                panelBgClass
               )}
-              animate={
-                buttonHovered ? { scale: iconHoverScale.scale } : { scale: 1 }
-              }
+              animate={buttonHovered ? { scale: iconHoverScale.scale } : { scale: 1 }}
               transition={{ duration: 0.2 }}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -94,7 +83,7 @@ function CollapsedLogo({
             </motion.div>
           </button>
         </TooltipTrigger>
-        <TooltipContent side="right">{t("open_sidebar")}</TooltipContent>
+        <TooltipContent side="right">{t('open_sidebar')}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -108,19 +97,19 @@ export const Company = ({
 }: CompanyProps) => {
   const { t } = useTranslation();
   const { state, toggleSidebar } = useSidebar();
-  const isCollapsed = state === "collapsed";
+  const isCollapsed = state === 'collapsed';
 
   const isCustomLogo = companyLogo?.isCustom ?? false;
   const logoBgClass = isCustomLogo
-    ? "bg-white border border-border"
-    : "bg-[oklch(0.6533_0.2227_34.41)]";
+    ? 'bg-white border border-border'
+    : 'bg-[oklch(0.6533_0.2227_34.41)]';
 
   const iconElement = (
     <Link
       to="/"
       className={cn(
-        "w-8 h-8 rounded-md flex items-center justify-center shrink-0 overflow-hidden",
-        logoBgClass,
+        'w-8 h-8 rounded-md flex items-center justify-center shrink-0 overflow-hidden',
+        logoBgClass
       )}
     >
       <CompanyLogoIcon companyLogo={companyLogo} />
@@ -193,9 +182,7 @@ export const Company = ({
                     <PanelLeft className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  {t("close_sidebar")}
-                </TooltipContent>
+                <TooltipContent side="bottom">{t('close_sidebar')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </motion.div>

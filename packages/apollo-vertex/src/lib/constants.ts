@@ -1,12 +1,12 @@
-export const ENTITY_TABLE_STORAGE_PREFIX = "entity-table-";
-export const ENTITY_TABLE_COLUMNS_STORAGE_PREFIX = "entity-table-columns-";
+export const ENTITY_TABLE_STORAGE_PREFIX = 'entity-table-';
+export const ENTITY_TABLE_COLUMNS_STORAGE_PREFIX = 'entity-table-columns-';
 
 export const STALE_TIME_MS = 5 * 60 * 1000;
 
-export const FORMAT_TYPE_MAP: Record<string, "date" | "datetime" | "number"> = {
-  DATE: "date",
-  DATETIME_WITH_TZ: "datetime",
-  DECIMAL: "number",
+export const FORMAT_TYPE_MAP: Record<string, 'date' | 'datetime' | 'number'> = {
+  DATE: 'date',
+  DATETIME_WITH_TZ: 'datetime',
+  DECIMAL: 'number',
 };
 
 export interface DateFormatOptions extends Intl.DateTimeFormatOptions {
@@ -14,17 +14,17 @@ export interface DateFormatOptions extends Intl.DateTimeFormatOptions {
 }
 
 export const DEFAULT_DATE_FORMAT_OPTIONS: DateFormatOptions = {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
   hideEmptyTime: true,
 };
 
 export const DEFAULT_DATETIME_FORMAT_OPTIONS: DateFormatOptions = {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  hourCycle: "h23",
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
 };

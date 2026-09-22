@@ -1,4 +1,4 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from '@tanstack/react-table';
 
 export type EntityRecord = Record<string, unknown>;
 
@@ -26,6 +26,6 @@ export interface VssEntity {
 
 export interface ExtraColumn<TRecord extends EntityRecord = EntityRecord> {
   column: Column;
-  position: "start" | "end";
+  position: 'start' | 'end';
   definition: ColumnDefWithAccessorKey<TRecord>;
 }

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import type { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -9,17 +9,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 export const FieldGroupHeading = ({ children }: { children: ReactNode }) => (
-  <h5 className="mb-1 text-xs font-semibold text-muted-foreground">
-    {children}
-  </h5>
+  <h5 className="mb-1 text-xs font-semibold text-muted-foreground">{children}</h5>
 );
 
 export interface FieldTableColumn {
   label: string;
-  align?: "left" | "right";
+  align?: 'left' | 'right';
 }
 
 // Columns + children (rather than row data) so the comparison and output views
@@ -38,10 +36,7 @@ export const FieldTable = ({
           {columns.map((col) => (
             <TableHead
               key={col.label}
-              className={cn(
-                "h-8 px-2 text-xs",
-                col.align === "right" && "text-right",
-              )}
+              className={cn('h-8 px-2 text-xs', col.align === 'right' && 'text-right')}
             >
               {col.label}
             </TableHead>
@@ -53,29 +48,27 @@ export const FieldTable = ({
   </div>
 );
 
-export const FieldRow = ({ children }: { children: ReactNode }) => (
-  <TableRow>{children}</TableRow>
-);
+export const FieldRow = ({ children }: { children: ReactNode }) => <TableRow>{children}</TableRow>;
 
 export const FieldCell = ({
   children,
   muted = false,
-  align = "left",
+  align = 'left',
   className,
 }: {
   children: ReactNode;
   muted?: boolean;
-  align?: "left" | "right";
+  align?: 'left' | 'right';
   className?: string;
 }) => (
   <TableCell
     className={cn(
       // align-top (overriding TableCell's align-middle) keeps a multi-line
       // value aligned with its field name in the adjacent cell.
-      "px-2 py-1 align-top whitespace-normal break-words",
-      muted && "text-muted-foreground",
-      align === "right" && "text-right",
-      className,
+      'px-2 py-1 align-top whitespace-normal break-words',
+      muted && 'text-muted-foreground',
+      align === 'right' && 'text-right',
+      className
     )}
   >
     {children}

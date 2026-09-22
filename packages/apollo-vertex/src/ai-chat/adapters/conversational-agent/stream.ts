@@ -1,6 +1,6 @@
-import { EventType, type StreamChunk } from "@tanstack/ai";
-import type { SessionStream } from "@uipath/uipath-typescript/conversational-agent";
-import { MessageRole } from "@uipath/uipath-typescript/conversational-agent";
+import { EventType, type StreamChunk } from '@tanstack/ai';
+import type { SessionStream } from '@uipath/uipath-typescript/conversational-agent';
+import { MessageRole } from '@uipath/uipath-typescript/conversational-agent';
 
 interface StreamQueue {
   push: (chunk: StreamChunk) => void;
@@ -38,8 +38,7 @@ function createStreamQueue(): StreamQueue {
       return {
         next(): Promise<IteratorResult<StreamChunk>> {
           const buffered = buffer.shift();
-          if (buffered)
-            return Promise.resolve({ value: buffered, done: false });
+          if (buffered) return Promise.resolve({ value: buffered, done: false });
           if (done)
             // eslint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- iterator protocol: value is ignored when done
             return Promise.resolve({ value: null as never, done: true });
@@ -58,7 +57,7 @@ function createStreamQueue(): StreamQueue {
 export function bridgeExchange(
   session: SessionStream,
   userText: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): AsyncIterable<StreamChunk> {
   const queue = createStreamQueue();
   const runId = crypto.randomUUID();
@@ -87,7 +86,7 @@ export function bridgeExchange(
     queue.push({
       type: EventType.TEXT_MESSAGE_START,
       messageId,
-      role: "assistant",
+      role: 'assistant',
       timestamp: Date.now(),
     });
 
@@ -98,7 +97,7 @@ export function bridgeExchange(
         queue.push({
           type: EventType.TEXT_MESSAGE_CONTENT,
           messageId,
-          delta: chunk.data ?? "",
+          delta: chunk.data ?? '',
           timestamp: Date.now(),
         });
       });
@@ -118,7 +117,7 @@ export function bridgeExchange(
       type: EventType.RUN_FINISHED,
       runId,
       threadId,
-      finishReason: "stop",
+      finishReason: 'stop',
       timestamp: Date.now(),
     });
     finishRun();
@@ -129,7 +128,7 @@ export function bridgeExchange(
     queue.push({
       type: EventType.RUN_ERROR,
       runId,
-      message: err.message ?? "Exchange error",
+      message: err.message ?? 'Exchange error',
       timestamp: Date.now(),
     });
     finishRun();
@@ -141,19 +140,19 @@ export function bridgeExchange(
       queue.push({
         type: EventType.RUN_ERROR,
         runId,
-        message: err.message ?? "Session error",
+        message: err.message ?? 'Session error',
         timestamp: Date.now(),
       });
       finishRun();
       queue.finish();
-    }),
+    })
   );
 
   cleanups.push(
     session.onSessionEnd(() => {
       finishRun();
       queue.finish();
-    }),
+    })
   );
 
   void exchange.sendMessageWithContentPart({
@@ -168,7 +167,7 @@ export function bridgeExchange(
         type: EventType.RUN_FINISHED,
         runId,
         threadId,
-        finishReason: "stop",
+        finishReason: 'stop',
         timestamp: Date.now(),
       });
       finishRun();
@@ -177,8 +176,8 @@ export function bridgeExchange(
     if (signal.aborted) {
       onAbort();
     } else {
-      signal.addEventListener("abort", onAbort, { once: true });
-      cleanups.push(() => signal.removeEventListener("abort", onAbort));
+      signal.addEventListener('abort', onAbort, { once: true });
+      cleanups.push(() => signal.removeEventListener('abort', onAbort));
     }
   }
 

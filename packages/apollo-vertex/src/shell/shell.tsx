@@ -1,13 +1,13 @@
-import type { LucideIcon } from "lucide-react";
-import type { FC, PropsWithChildren } from "react";
-import { useContext } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AuthContext, useAuth } from "./shell-auth-provider";
-import { ShellLayout } from "./shell-layout";
-import { LocaleProvider } from "./shell-locale-provider";
-import { ShellLogin } from "./shell-login";
-import type { TranslationKey } from "./shell-translation-key";
-import { ShellUserProvider } from "./shell-user-provider";
+import type { LucideIcon } from 'lucide-react';
+import type { FC, PropsWithChildren } from 'react';
+import { useContext } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AuthContext, useAuth } from './shell-auth-provider';
+import { ShellLayout } from './shell-layout';
+import { LocaleProvider } from './shell-locale-provider';
+import { ShellLogin } from './shell-login';
+import type { TranslationKey } from './shell-translation-key';
+import { ShellUserProvider } from './shell-user-provider';
 
 export interface CompanyLogo {
   url: string;
@@ -31,7 +31,7 @@ export interface ShellNavItem {
 export interface ApolloShellProps extends PropsWithChildren {
   companyName: string;
   productName: string;
-  variant?: "minimal";
+  variant?: 'minimal';
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
   loginDescription?: string;

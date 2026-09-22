@@ -1,7 +1,7 @@
-import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
-import { useDeferredValue } from "react";
-import { useTranslation } from "react-i18next";
-import { assertNumberOrNull } from "@/lib/asserts/assert-number-or-null";
+import { useIsFetching, useSuspenseQuery } from '@tanstack/react-query';
+import { useDeferredValue } from 'react';
+import { useTranslation } from 'react-i18next';
+import { assertNumberOrNull } from '@/lib/asserts/assert-number-or-null';
 import {
   type BarChartConfiguration,
   type BarChartData,
@@ -13,13 +13,9 @@ import {
   formatPercentage,
   SpinnerWithChildren,
   type StringModelField,
-} from "@/lib/charts-core";
-import {
-  BarChart,
-  type BarChartRow,
-  type BarChartSeries,
-} from "./bar-chart-view";
-import { COLORS } from "./util/colors";
+} from '@/lib/charts-core';
+import { BarChart, type BarChartRow, type BarChartSeries } from './bar-chart-view';
+import { COLORS } from './util/colors';
 
 export interface BarChartWithAdapterProps {
   configuration: BarChartConfiguration;
@@ -43,11 +39,7 @@ export function BarChartWithAdapter({
   );
 }
 
-function BarChartResolver({
-  configuration,
-  dataModel,
-  dataAdapter,
-}: BarChartWithAdapterProps) {
+function BarChartResolver({ configuration, dataModel, dataAdapter }: BarChartWithAdapterProps) {
   const {
     i18n: { language },
   } = useTranslation();
@@ -60,7 +52,7 @@ function BarChartResolver({
   const query = dataAdapter.charts.bar(configuration, dataModel);
   const deferredQuery = deferrableProps.dataAdapter.charts.bar(
     deferrableProps.configuration,
-    deferrableProps.dataModel,
+    deferrableProps.dataModel
   );
 
   const isFetching = useIsFetching(query) > 0;
@@ -76,32 +68,27 @@ function BarChartResolver({
   const totalsByMetricId = Object.fromEntries(
     metrics.map((m) => [
       m.id,
-      dataset.reduce(
-        (sum, row) =>
-          sum + (assertNumberOrNull(row[m.id], "Metric value") ?? 0),
-        0,
-      ),
-    ]),
+      dataset.reduce((sum, row) => sum + (assertNumberOrNull(row[m.id], 'Metric value') ?? 0), 0),
+    ])
   );
 
   const rows: BarChartRow[] = dataset.map((row, rowIdx) => {
     const rowDimensions = dimensions.map((d) => ({
       key: d.id,
-      label: format(language, row[d.id], d.type) ?? "",
+      label: format(language, row[d.id], d.type) ?? '',
     }));
     const values: Record<string, number> = {};
     const formattedValues: Record<string, string> = {};
     const formattedPercents: Record<string, string> = {};
     for (const m of metrics) {
-      const v = assertNumberOrNull(row[m.id], "Metric value") ?? 0;
+      const v = assertNumberOrNull(row[m.id], 'Metric value') ?? 0;
       values[m.id] = v;
       formattedValues[m.id] = formatMetricValue(language, v, m.expression);
       const total = totalsByMetricId[m.id] ?? 0;
-      formattedPercents[m.id] =
-        total === 0 ? "" : formatPercentage(language, v / total);
+      formattedPercents[m.id] = total === 0 ? '' : formatPercentage(language, v / total);
     }
     return {
-      id: `${rowIdx}-${rowDimensions.map((d) => d.label).join("|")}`,
+      id: `${rowIdx}-${rowDimensions.map((d) => d.label).join('|')}`,
       dimensions: rowDimensions,
       values,
       formattedValues,

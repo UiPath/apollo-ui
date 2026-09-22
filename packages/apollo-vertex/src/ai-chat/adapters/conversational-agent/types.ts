@@ -1,4 +1,4 @@
-import type { UiPath } from "@uipath/uipath-typescript/core";
+import type { UiPath } from '@uipath/uipath-typescript/core';
 
 export interface ConversationalAgentAdapterConfig {
   sdk: UiPath;

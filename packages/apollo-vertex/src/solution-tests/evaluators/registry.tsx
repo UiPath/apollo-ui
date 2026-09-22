@@ -1,20 +1,16 @@
-"use client";
+'use client';
 
-import type { ComponentType, ReactNode } from "react";
-import type { z } from "zod";
-import type { SolutionTestRunResult } from "../types";
-import {
-  GenericEvaluatorDetailsSchema,
-  GenericEvaluatorResult,
-} from "./generic-evaluator-result";
-import { IxpExtractionResult } from "./ixp-extraction/ixp-extraction-result";
-import { IxpDetailsSchema } from "./ixp-extraction/schema";
+import type { ComponentType, ReactNode } from 'react';
+import type { z } from 'zod';
+import type { SolutionTestRunResult } from '../types';
+import { GenericEvaluatorDetailsSchema, GenericEvaluatorResult } from './generic-evaluator-result';
+import { IxpExtractionResult } from './ixp-extraction/ixp-extraction-result';
+import { IxpDetailsSchema } from './ixp-extraction/schema';
 
 // Built-in evaluator ids — mirror the evaluator runner's wire contract.
-export const JSON_SIMILARITY_EVALUATOR_ID = "uipath-json-similarity";
-export const LLM_JUDGE_EVALUATOR_ID =
-  "uipath-llm-judge-output-semantic-similarity";
-export const IXP_EXTRACTION_EVALUATOR_ID = "uipath-ixp-document-extraction";
+export const JSON_SIMILARITY_EVALUATOR_ID = 'uipath-json-similarity';
+export const LLM_JUDGE_EVALUATOR_ID = 'uipath-llm-judge-output-semantic-similarity';
+export const IXP_EXTRACTION_EVALUATOR_ID = 'uipath-ixp-document-extraction';
 
 export interface EvaluatorRenderArgs {
   evaluatorId: string;
@@ -26,10 +22,9 @@ export interface EvaluatorRenderArgs {
   result: SolutionTestRunResult;
 }
 
-export type EvaluatorResultProps<TDetails = unknown> = Omit<
-  EvaluatorRenderArgs,
-  "rawDetails"
-> & { evaluatorDetails: TDetails };
+export type EvaluatorResultProps<TDetails = unknown> = Omit<EvaluatorRenderArgs, 'rawDetails'> & {
+  evaluatorDetails: TDetails;
+};
 
 export type EvaluatorRenderer = (args: EvaluatorRenderArgs) => ReactNode;
 
@@ -40,7 +35,7 @@ export type EvaluatorRenderers = Record<string, EvaluatorRenderer>;
 export function makeRenderer<TDetails, TExtra extends object>(
   schema: z.ZodType<TDetails>,
   Component: ComponentType<EvaluatorResultProps<TDetails> & TExtra>,
-  bound: TExtra,
+  bound: TExtra
 ): EvaluatorRenderer {
   return ({ rawDetails, ...rest }: EvaluatorRenderArgs): ReactNode => {
     const parsed = schema.safeParse(rawDetails);
@@ -51,9 +46,7 @@ export function makeRenderer<TDetails, TExtra extends object>(
 
 /** The generic card; reuse for a custom evaluator that keeps the
  * `{score, justification}` contract, binding an optional display `label`. */
-export function genericRenderer(
-  options: { label?: string } = {},
-): EvaluatorRenderer {
+export function genericRenderer(options: { label?: string } = {}): EvaluatorRenderer {
   return makeRenderer(GenericEvaluatorDetailsSchema, GenericEvaluatorResult, {
     label: options.label,
   });
@@ -63,23 +56,15 @@ export function genericRenderer(
 export const GENERIC_RENDERER: EvaluatorRenderer = genericRenderer();
 
 const EVALUATOR_RENDERERS: EvaluatorRenderers = {
-  [JSON_SIMILARITY_EVALUATOR_ID]: genericRenderer({ label: "JSON Similarity" }),
-  [LLM_JUDGE_EVALUATOR_ID]: genericRenderer({ label: "LLM Judge" }),
-  [IXP_EXTRACTION_EVALUATOR_ID]: makeRenderer(
-    IxpDetailsSchema,
-    IxpExtractionResult,
-    {},
-  ),
+  [JSON_SIMILARITY_EVALUATOR_ID]: genericRenderer({ label: 'JSON Similarity' }),
+  [LLM_JUDGE_EVALUATOR_ID]: genericRenderer({ label: 'LLM Judge' }),
+  [IXP_EXTRACTION_EVALUATOR_ID]: makeRenderer(IxpDetailsSchema, IxpExtractionResult, {}),
 };
 
 /** Precedence: vertical renderers > built-ins > generic fallback. */
 export function resolveEvaluatorRenderer(
   evaluatorId: string,
-  verticalRenderers?: EvaluatorRenderers,
+  verticalRenderers?: EvaluatorRenderers
 ): EvaluatorRenderer {
-  return (
-    verticalRenderers?.[evaluatorId] ??
-    EVALUATOR_RENDERERS[evaluatorId] ??
-    GENERIC_RENDERER
-  );
+  return verticalRenderers?.[evaluatorId] ?? EVALUATOR_RENDERERS[evaluatorId] ?? GENERIC_RENDERER;
 }

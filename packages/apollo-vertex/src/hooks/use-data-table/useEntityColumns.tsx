@@ -1,58 +1,49 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from '@tanstack/react-table';
 
-import { DataTableColumnHeader } from "@/components/ui/data-table";
-import { FORMAT_TYPE_MAP } from "@/lib/constants";
-import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
+import { DataTableColumnHeader } from '@/components/ui/data-table';
+import { FORMAT_TYPE_MAP } from '@/lib/constants';
+import { renderValueOrEmptyState } from '@/lib/renderValueOrEmptyState';
 import type {
   Column,
   ColumnDefWithAccessorKey,
   EntityRecord,
   ExtraColumn,
   VssEntity,
-} from "./types";
+} from './types';
 
 function mergeExtraColumns<TRecord extends EntityRecord>(
   columns: Column[],
-  extraColumns?: ExtraColumn<TRecord>[],
+  extraColumns?: ExtraColumn<TRecord>[]
 ): Column[] {
   if (!extraColumns || extraColumns.length === 0) return columns;
 
-  const start = extraColumns
-    .filter((ec) => ec.position === "start")
-    .map((ec) => ec.column);
-  const end = extraColumns
-    .filter((ec) => ec.position === "end")
-    .map((ec) => ec.column);
+  const start = extraColumns.filter((ec) => ec.position === 'start').map((ec) => ec.column);
+  const end = extraColumns.filter((ec) => ec.position === 'end').map((ec) => ec.column);
 
   return [...start, ...columns, ...end];
 }
 
-export interface UseEntityColumnsOptions<
-  TRecord extends EntityRecord = EntityRecord,
-> {
+export interface UseEntityColumnsOptions<TRecord extends EntityRecord = EntityRecord> {
   entity: VssEntity;
   systemFields?: string[];
   columnOrder?: string[];
   extraColumns?: ExtraColumn<TRecord>[];
   columnOverrides?: Record<
     string,
-    (
-      baseDef: ColumnDefWithAccessorKey<TRecord>,
-    ) => ColumnDefWithAccessorKey<TRecord>
+    (baseDef: ColumnDefWithAccessorKey<TRecord>) => ColumnDefWithAccessorKey<TRecord>
   >;
 }
 
 export function useEntityColumns<TRecord extends EntityRecord = EntityRecord>({
   entity,
-  systemFields = ["Id"],
+  systemFields = ['Id'],
   columnOrder: columnOrderProp,
   extraColumns,
   columnOverrides,
 }: UseEntityColumnsOptions<TRecord>) {
   const visibleFields =
-    entity.fields?.filter(
-      (field) => !field.isHiddenField && !systemFields.includes(field.name),
-    ) ?? [];
+    entity.fields?.filter((field) => !field.isHiddenField && !systemFields.includes(field.name)) ??
+    [];
 
   const baseColumns = visibleFields.map((field) => ({
     key: field.name,
@@ -75,16 +66,13 @@ export function useEntityColumns<TRecord extends EntityRecord = EntityRecord>({
 
   const baseDefs: ColumnDefWithAccessorKey<TRecord>[] =
     entity.fields
-      ?.filter(
-        (field) => !field.isHiddenField && !systemFields.includes(field.name),
-      )
+      ?.filter((field) => !field.isHiddenField && !systemFields.includes(field.name))
       .map((field) => {
         const accessorKey = field.name;
         const formatType = FORMAT_TYPE_MAP[field.fieldDataType.name];
 
         const formatValue = formatType
-          ? (value: unknown) =>
-              renderValueOrEmptyState(value, { type: formatType })
+          ? (value: unknown) => renderValueOrEmptyState(value, { type: formatType })
           : (value: unknown) => renderValueOrEmptyState(value);
 
         return {
@@ -98,9 +86,7 @@ export function useEntityColumns<TRecord extends EntityRecord = EntityRecord>({
             ...(formatType ? { getFilterValue: formatValue } : {}),
           },
           cell: ({ getValue }) => (
-            <div className="max-w-[200px] truncate">
-              {formatValue(getValue())}
-            </div>
+            <div className="max-w-[200px] truncate">{formatValue(getValue())}</div>
           ),
         };
       }) ?? [];

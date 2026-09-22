@@ -5,22 +5,22 @@ import {
   BarChart as RechartsBarChart,
   XAxis,
   YAxis,
-} from "recharts";
+} from 'recharts';
 import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import { BarLabel } from "./bar-label";
-import { MetricColumn } from "./metric-column";
-import { COLORS, PALETTE } from "./util/colors";
-import { getBarColor } from "./util/get-bar-color";
+} from '@/components/ui/chart';
+import { BarLabel } from './bar-label';
+import { MetricColumn } from './metric-column';
+import { COLORS, PALETTE } from './util/colors';
+import { getBarColor } from './util/get-bar-color';
 import {
   isRechartsBarData,
   type LabelListContentProps,
   type RechartsBarData,
-} from "./util/recharts-bar-data";
+} from './util/recharts-bar-data';
 
 export interface BarChartSeries {
   id: string;
@@ -52,8 +52,8 @@ export function BarChart({ rows, series }: BarChartProps) {
     const entry: RechartsBarData = {
       __category: row.dimensions
         .map((d) => d.label)
-        .filter((v) => v !== "")
-        .join(" • "),
+        .filter((v) => v !== '')
+        .join(' • '),
       __id: row.id,
       __formatted: row.formattedValues,
     };
@@ -64,21 +64,18 @@ export function BarChart({ rows, series }: BarChartProps) {
   });
 
   const seriesCount = series.length;
-  const bandPx =
-    seriesCount * BAR_SIZE + (seriesCount - 1) * BAR_GAP + CATEGORY_GAP;
+  const bandPx = seriesCount * BAR_SIZE + (seriesCount - 1) * BAR_GAP + CATEGORY_GAP;
   const chartHeightPx = rechartsData.length * bandPx;
 
   const singleDimensionWidthPct = 25;
   const maxDimensionWidthPct = 35;
   const dimensionWidthPct =
-    dimensionCount <= 1
-      ? singleDimensionWidthPct
-      : maxDimensionWidthPct / dimensionCount;
+    dimensionCount <= 1 ? singleDimensionWidthPct : maxDimensionWidthPct / dimensionCount;
   const dimensionCols: string[] = [];
   for (let i = 0; i < dimensionCount; i++) {
     dimensionCols.push(`minmax(0, ${dimensionWidthPct}%)`);
   }
-  const gridCols = `${dimensionCols.join(" ")} 1fr minmax(0, 20%) minmax(0, 15%)`;
+  const gridCols = `${dimensionCols.join(' ')} 1fr minmax(0, 20%) minmax(0, 15%)`;
 
   const chartConfig: ChartConfig = Object.fromEntries(
     series.map((s, index) => [
@@ -87,30 +84,27 @@ export function BarChart({ rows, series }: BarChartProps) {
         label: s.label,
         color: s.color ?? COLORS[index % COLORS.length] ?? COLORS[0],
       },
-    ]),
+    ])
   );
 
   const valueColumnRows = rows.map((row) => ({
     id: row.id,
     cells: series.map((s) => ({
       id: s.id,
-      text: row.formattedValues[s.id] ?? "",
+      text: row.formattedValues[s.id] ?? '',
     })),
   }));
   const percentColumnRows = rows.map((row) => ({
     id: row.id,
     cells: series.map((s) => ({
       id: s.id,
-      text: row.formattedPercents[s.id] ?? "",
+      text: row.formattedPercents[s.id] ?? '',
     })),
   }));
 
   return (
     <div className="w-full h-full overflow-y-auto select-none [&_*]:pointer-events-auto p-2">
-      <div
-        className="grid gap-x-2 items-start"
-        style={{ gridTemplateColumns: gridCols }}
-      >
+      <div className="grid gap-x-2 items-start" style={{ gridTemplateColumns: gridCols }}>
         {dimensionKeys.map((dimKey, dimIdx) => (
           <div
             key={dimKey}
@@ -118,7 +112,7 @@ export function BarChart({ rows, series }: BarChartProps) {
             style={{ height: `${chartHeightPx}px` }}
           >
             {rows.map((row) => {
-              const label = row.dimensions[dimIdx]?.label ?? "";
+              const label = row.dimensions[dimIdx]?.label ?? '';
               return (
                 <div
                   key={`${row.id}-${dimKey}`}
@@ -165,19 +159,14 @@ export function BarChart({ rows, series }: BarChartProps) {
                   nameKey="__category"
                   labelFormatter={String}
                   formatter={(value, name, item, _index, payload) => {
-                    const seriesIndex = series.findIndex(
-                      (s) => s.label === name,
-                    );
+                    const seriesIndex = series.findIndex((s) => s.label === name);
                     const matched = series[seriesIndex];
                     if (!matched) {
                       // oxlint-disable-next-line typescript-eslint(no-unsafe-return) -- recharts payload is untyped
-                      return value ?? "";
+                      return value ?? '';
                     }
-                    const payloadObj = isRechartsBarData(payload)
-                      ? payload
-                      : null;
-                    const formatted =
-                      payloadObj?.__formatted[matched.id] ?? String(value);
+                    const payloadObj = isRechartsBarData(payload) ? payload : null;
+                    const formatted = payloadObj?.__formatted[matched.id] ?? String(value);
                     const indicatorColor = getBarColor({
                       seriesCount,
                       seriesIndex,
@@ -196,9 +185,7 @@ export function BarChart({ rows, series }: BarChartProps) {
                           }}
                         />
                         <div className="flex flex-1 justify-between items-center leading-none">
-                          <span className="text-muted-foreground">
-                            {matched.label}
-                          </span>
+                          <span className="text-muted-foreground">{matched.label}</span>
                           <span className="text-foreground font-mono font-medium tabular-nums">
                             {formatted}
                           </span>
@@ -211,16 +198,12 @@ export function BarChart({ rows, series }: BarChartProps) {
               cursor={false}
             />
             {seriesCount === 1 ? (
-              <RechartsBar dataKey={series[0]?.label ?? ""} barSize={BAR_SIZE}>
+              <RechartsBar dataKey={series[0]?.label ?? ''} barSize={BAR_SIZE}>
                 <LabelList
                   content={(props: LabelListContentProps) => {
-                    const payload = isRechartsBarData(props.payload)
-                      ? props.payload
-                      : null;
+                    const payload = isRechartsBarData(props.payload) ? props.payload : null;
                     const formatted =
-                      payload && series[0]
-                        ? (payload.__formatted[series[0].id] ?? "")
-                        : "";
+                      payload && series[0] ? (payload.__formatted[series[0].id] ?? '') : '';
                     return <BarLabel {...props} formatted={formatted} />;
                   }}
                 />
@@ -238,10 +221,8 @@ export function BarChart({ rows, series }: BarChartProps) {
                 >
                   <LabelList
                     content={(props: LabelListContentProps) => {
-                      const payload = isRechartsBarData(props.payload)
-                        ? props.payload
-                        : null;
-                      const formatted = payload?.__formatted[s.id] ?? "";
+                      const payload = isRechartsBarData(props.payload) ? props.payload : null;
+                      const formatted = payload?.__formatted[s.id] ?? '';
                       return <BarLabel {...props} formatted={formatted} />;
                     }}
                   />

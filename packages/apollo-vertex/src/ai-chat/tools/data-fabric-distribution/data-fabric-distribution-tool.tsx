@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { toolDefinition } from "@tanstack/ai";
-import { DateTime } from "luxon";
-import { z } from "zod";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
-import { DistributionChartCard } from "../../charts/distribution-chart-card";
-import { ToolResolutionError } from "../../charts/tool-resolution-error";
+import { toolDefinition } from '@tanstack/ai';
+import { DateTime } from 'luxon';
+import { z } from 'zod';
+import { dataFabricAdapter } from '@/lib/data-fabric-adapter';
+import { DistributionChartCard } from '../../charts/distribution-chart-card';
+import { ToolResolutionError } from '../../charts/tool-resolution-error';
 import {
   buildDataModel,
   metricSchema,
@@ -13,55 +13,48 @@ import {
   resolveMultiMetric,
   resolveSingleDimension,
   resolveSingleMetric,
-} from "../data-fabric/util/chart-helpers";
+} from '../data-fabric/util/chart-helpers';
 import {
   collectQualifiedFields,
   type DataFabricToolContext,
   generateEntityFieldsDocs,
-} from "../data-fabric/util/entities";
-import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
-import { joinSchema } from "../data-fabric/util/joins";
+} from '../data-fabric/util/entities';
+import { filterSchema, resolveFilters } from '../data-fabric/util/filters';
+import { joinSchema } from '../data-fabric/util/joins';
 
-const DISTRIBUTION_DIMENSION_TYPES = ["numeric", "datetime"] as const;
+const DISTRIBUTION_DIMENSION_TYPES = ['numeric', 'datetime'] as const;
 
 const dataFabricDistributionInput = z.object({
-  entityName: z.string().describe("Data Fabric entity name to query"),
+  entityName: z.string().describe('Data Fabric entity name to query'),
   dimension: z
     .string()
     .describe(
-      "Field name to bin by. Must be a numeric or datetime field. When joining, use EntityName.Field format.",
+      'Field name to bin by. Must be a numeric or datetime field. When joining, use EntityName.Field format.'
     ),
   metric: metricSchema.optional(),
-  filters: z
-    .array(filterSchema)
-    .optional()
-    .describe("Optional filters to narrow down results."),
+  filters: z.array(filterSchema).optional().describe('Optional filters to narrow down results.'),
   joins: z
     .array(joinSchema)
     .optional()
     .describe(
-      "Join other entities. Use EntityName.Field format for the dimension and metric field when joining.",
+      'Join other entities. Use EntityName.Field format for the dimension and metric field when joining.'
     ),
 });
 
 const dataFabricDistributionDef = toolDefinition({
-  name: "data_fabric_distribution",
+  name: 'data_fabric_distribution',
   description:
-    "Render a distribution (histogram) chart from a Data Fabric entity, binning a numeric or datetime field. Supports optional metric (default COUNT), filters, and joins.",
+    'Render a distribution (histogram) chart from a Data Fabric entity, binning a numeric or datetime field. Supports optional metric (default COUNT), filters, and joins.',
   inputSchema: dataFabricDistributionInput,
   outputSchema: dataFabricDistributionInput,
   metadata: { skipFollowUp: true },
 });
 
-export const dataFabricDistributionClient = dataFabricDistributionDef.client(
-  (input) => input,
-);
+export const dataFabricDistributionClient = dataFabricDistributionDef.client((input) => input);
 
 type DistributionInput = z.infer<typeof dataFabricDistributionInput>;
 
-export function createDataFabricDistributionTool(
-  context: DataFabricToolContext,
-) {
+export function createDataFabricDistributionTool(context: DataFabricToolContext) {
   const today = DateTime.now().toISODate();
   const toolPrompt = `You have a "data_fabric_distribution" tool.
 Use it to render a distribution (histogram) chart binning a single numeric or datetime field.
@@ -100,27 +93,15 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const entity = context.entities[entityName];
     if (!entity) {
-      return (
-        <ToolResolutionError
-          failure={{ reason: "unknown_entity", entity: entityName }}
-        />
-      );
+      return <ToolResolutionError failure={{ reason: 'unknown_entity', entity: entityName }} />;
     }
 
     const qualifiedFields = isMultiEntity
-      ? collectQualifiedFields(
-          [entityName, ...joins.map((j) => j.entity)],
-          context.entities,
-        )
+      ? collectQualifiedFields([entityName, ...joins.map((j) => j.entity)], context.entities)
       : null;
 
     const resolvedDimension = qualifiedFields
-      ? resolveMultiDimension(
-          entityName,
-          dimension,
-          qualifiedFields,
-          DISTRIBUTION_DIMENSION_TYPES,
-        )
+      ? resolveMultiDimension(entityName, dimension, qualifiedFields, DISTRIBUTION_DIMENSION_TYPES)
       : resolveSingleDimension(entity, dimension, DISTRIBUTION_DIMENSION_TYPES);
 
     if (!resolvedDimension.ok) {
@@ -144,21 +125,21 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const normalizedFilters = qualifiedFields
       ? resolveFilters(filters, {
-          mode: "multi",
+          mode: 'multi',
           primaryEntity: entityName,
           qualifiedFields,
         })
       : resolveFilters(filters, {
-          mode: "single",
+          mode: 'single',
           validFields: entity.fields.map((f) => f.name),
         });
 
     const configuration = {
       id,
       name: entityName,
-      type: "distribution" as const,
+      type: 'distribution' as const,
       dimensions: [resolvedDimension.value.id],
-      metrics: [dataModel.metrics[0]?.id ?? ""],
+      metrics: [dataModel.metrics[0]?.id ?? ''],
       filters: normalizedFilters,
       ...(qualifiedFields &&
         joins && {

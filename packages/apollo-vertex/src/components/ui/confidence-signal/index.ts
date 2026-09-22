@@ -1,1 +1,1 @@
-export * from "./confidence-signal";
+export * from './confidence-signal';

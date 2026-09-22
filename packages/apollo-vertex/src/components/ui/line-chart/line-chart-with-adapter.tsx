@@ -1,8 +1,8 @@
-import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
-import { useDeferredValue } from "react";
-import { useTranslation } from "react-i18next";
-import { assert } from "@/lib/asserts/assert";
-import { assertDefined } from "@/lib/asserts/assert-defined";
+import { useIsFetching, useSuspenseQuery } from '@tanstack/react-query';
+import { useDeferredValue } from 'react';
+import { useTranslation } from 'react-i18next';
+import { assert } from '@/lib/asserts/assert';
+import { assertDefined } from '@/lib/asserts/assert-defined';
 import {
   binLabel,
   type ChartDataModel,
@@ -13,8 +13,8 @@ import {
   getChartRange,
   type LineChartConfiguration,
   SpinnerWithChildren,
-} from "@/lib/charts-core";
-import { LineChart } from "./line-chart-view";
+} from '@/lib/charts-core';
+import { LineChart } from './line-chart-view';
 
 export interface LineChartWithAdapterProps {
   configuration: LineChartConfiguration;
@@ -38,11 +38,7 @@ export function LineChartWithAdapter({
   );
 }
 
-function LineChartResolver({
-  configuration,
-  dataModel,
-  dataAdapter,
-}: LineChartWithAdapterProps) {
+function LineChartResolver({ configuration, dataModel, dataAdapter }: LineChartWithAdapterProps) {
   const {
     i18n: { language },
   } = useTranslation();
@@ -51,7 +47,7 @@ function LineChartResolver({
   const query = dataAdapter.charts.line(configuration, dataModel);
   const deferredQuery = dataAdapter.charts.line(
     deferrableProps.configuration,
-    deferrableProps.dataModel,
+    deferrableProps.dataModel
   );
 
   const isFetching = useIsFetching(query) > 0;
@@ -59,22 +55,22 @@ function LineChartResolver({
 
   const dimensionId = assertDefined(
     configuration.dimensions[0],
-    "Line chart must have at least one dimension",
+    'Line chart must have at least one dimension'
   );
   const dimension = assertDefined(
     dataModel.dimensions.find((d) => d.id === dimensionId),
-    `Dimension ${dimensionId} not found in dataModel`,
+    `Dimension ${dimensionId} not found in dataModel`
   );
   const metricId = assertDefined(
     configuration.metrics[0],
-    "Line chart must have at least one metric",
+    'Line chart must have at least one metric'
   );
   const metric = assertDefined(
     dataModel.metrics.find((m) => m.id === metricId),
-    `Metric ${metricId} not found in dataModel`,
+    `Metric ${metricId} not found in dataModel`
   );
 
-  assert(dimension.type === "datetime", "Dimension type must be datetime");
+  assert(dimension.type === 'datetime', 'Dimension type must be datetime');
 
   const chartRange = getChartRange({ type: dimension.type, bins });
 
@@ -94,9 +90,7 @@ function LineChartResolver({
       <LineChart
         data={data}
         seriesLabel={metric.display}
-        formatValue={(value) =>
-          formatMetricValue(language, value, metric.expression)
-        }
+        formatValue={(value) => formatMetricValue(language, value, metric.expression)}
       />
     </SpinnerWithChildren>
   );

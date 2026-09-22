@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { BaseChartConfigurationSchema } from "./base-chart-configuration";
+import { z } from 'zod';
+import { BaseChartConfigurationSchema } from './base-chart-configuration';
 
 export const BarChartConfigurationSchema = BaseChartConfigurationSchema.extend({
-  type: z.literal("bar"),
+  type: z.literal('bar'),
   dimensions: z.array(z.string()),
   metrics: z.array(z.string()),
 });

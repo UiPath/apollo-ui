@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useTranslation } from "react-i18next";
-import { Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from 'react-i18next';
+import { Eye } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -12,11 +12,11 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
-import { SolutionTestStatus } from "./types";
-import type { SolutionTest, SolutionTestJob } from "./types";
-import { ProcessResultsViewerDialog } from "./process-results-viewer-dialog";
-import { ProcessOutputView } from "./outputs/process-output-view";
+} from '@/components/ui/table';
+import { SolutionTestStatus } from './types';
+import type { SolutionTest, SolutionTestJob } from './types';
+import { ProcessResultsViewerDialog } from './process-results-viewer-dialog';
+import { ProcessOutputView } from './outputs/process-output-view';
 
 export interface ExpandedAgentsViewProps {
   test: SolutionTest;
@@ -49,11 +49,8 @@ export const ExpandedAgentsView = ({
             <Skeleton className="h-3 w-16" />
             <Skeleton className="h-3 w-16" />
           </div>
-          {["row-0", "row-1", "row-2"].map((rowKey) => (
-            <div
-              key={rowKey}
-              className="border-b last:border-0 px-3 py-3 grid grid-cols-3 gap-3"
-            >
+          {['row-0', 'row-1', 'row-2'].map((rowKey) => (
+            <div key={rowKey} className="border-b last:border-0 px-3 py-3 grid grid-cols-3 gap-3">
               <Skeleton className="h-4 w-32" />
               <Skeleton className="h-4 w-12" />
               <Skeleton className="h-8 w-28" />
@@ -68,7 +65,7 @@ export const ExpandedAgentsView = ({
     return (
       <div className="p-6">
         <Alert variant="destructive">
-          <AlertDescription>{t("test_creation_failed")}</AlertDescription>
+          <AlertDescription>{t('test_creation_failed')}</AlertDescription>
         </Alert>
       </div>
     );
@@ -77,7 +74,7 @@ export const ExpandedAgentsView = ({
   if (baselines.length === 0) {
     return (
       <div className="p-6 text-center text-sm text-muted-foreground">
-        {t("no_agents_configured")}
+        {t('no_agents_configured')}
       </div>
     );
   }
@@ -88,9 +85,9 @@ export const ExpandedAgentsView = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="px-3 py-2">{t("agent_name")}</TableHead>
-              <TableHead className="px-3 py-2">{t("version")}</TableHead>
-              <TableHead className="px-3 py-2">{t("actions")}</TableHead>
+              <TableHead className="px-3 py-2">{t('agent_name')}</TableHead>
+              <TableHead className="px-3 py-2">{t('version')}</TableHead>
+              <TableHead className="px-3 py-2">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -100,12 +97,12 @@ export const ExpandedAgentsView = ({
                 <TableRow key={job.Id}>
                   <TableCell className="px-3 py-2">{job.ProcessName}</TableCell>
                   <TableCell className="px-3 py-2 text-muted-foreground">
-                    {job.ProcessVersion ?? "-"}
+                    {job.ProcessVersion ?? '-'}
                   </TableCell>
                   <TableCell className="px-3 py-2">
                     {hasNoOutput ? (
                       <span className="text-sm text-muted-foreground">
-                        {t("agent_has_no_expected_output")}
+                        {t('agent_has_no_expected_output')}
                       </span>
                     ) : (
                       <Button
@@ -117,7 +114,7 @@ export const ExpandedAgentsView = ({
                         }}
                       >
                         <Eye className="size-3" />
-                        {t("view_expected")}
+                        {t('view_expected')}
                       </Button>
                     )}
                   </TableCell>
@@ -132,7 +129,7 @@ export const ExpandedAgentsView = ({
         <ProcessResultsViewerDialog
           open
           onClose={onCloseViewer}
-          title={t("expected_output_for", { name: viewing.job.ProcessName })}
+          title={t('expected_output_for', { name: viewing.job.ProcessName })}
           data={viewing.data}
           loading={viewing.loading}
           renderData={(data) => (

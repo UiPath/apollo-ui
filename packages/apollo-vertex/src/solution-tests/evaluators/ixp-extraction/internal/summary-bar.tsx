@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useTranslation } from "react-i18next";
-import { Badge } from "@/components/ui/badge";
+import { useTranslation } from 'react-i18next';
+import { Badge } from '@/components/ui/badge';
 
 /** Top-level verdict tally across all compared documents. */
 export const SummaryBar = ({
@@ -16,16 +16,16 @@ export const SummaryBar = ({
   const { t } = useTranslation();
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Badge status={different > 0 ? "error" : "success"} variant="secondary">
-        {t("ixp_count_different", { count: different })}
+      <Badge status={different > 0 ? 'error' : 'success'} variant="secondary">
+        {t('ixp_count_different', { count: different })}
       </Badge>
       {semanticallySame > 0 && (
         <Badge status="warning" variant="secondary">
-          {t("ixp_count_semantically_same", { count: semanticallySame })}
+          {t('ixp_count_semantically_same', { count: semanticallySame })}
         </Badge>
       )}
       <Badge status="info" variant="secondary">
-        {t("ixp_count_identical", { count: identical })}
+        {t('ixp_count_identical', { count: identical })}
       </Badge>
     </div>
   );

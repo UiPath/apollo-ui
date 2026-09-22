@@ -1,18 +1,18 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /** The three-way per-field verdict the IXP evaluator emits. */
 export const IxpVerdict = {
-  Identical: "identical",
-  SemanticallySame: "semantically_same",
-  Different: "different",
+  Identical: 'identical',
+  SemanticallySame: 'semantically_same',
+  Different: 'different',
 } as const;
 export type IxpVerdictValue = (typeof IxpVerdict)[keyof typeof IxpVerdict];
 
 /** Per-document comparison status. */
 export const IxpDocStatus = {
-  Compared: "compared",
-  MissingInActual: "missing_in_actual",
-  NewInActual: "new_in_actual",
+  Compared: 'compared',
+  MissingInActual: 'missing_in_actual',
+  NewInActual: 'new_in_actual',
 } as const;
 
 const ProvenanceSchema = z.object({
@@ -32,7 +32,7 @@ const FieldSchema = z.object({
   expected: z.array(z.unknown()),
   actual: z.array(z.unknown()),
   verdict: z.string(),
-  verdict_reason: z.string().optional().default(""),
+  verdict_reason: z.string().optional().default(''),
 });
 
 const DocumentSchema = z.object({

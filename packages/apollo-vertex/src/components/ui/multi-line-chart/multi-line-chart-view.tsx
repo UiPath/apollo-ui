@@ -1,22 +1,16 @@
-import {
-  Label,
-  Line,
-  LineChart as RechartsLineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Label, Line, LineChart as RechartsLineChart, XAxis, YAxis } from 'recharts';
 import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from '@/components/ui/chart';
 
 export interface MultiLineChartSeries {
   id: string;
   label: string;
   color: string;
-  axis: "left" | "right";
+  axis: 'left' | 'right';
   formatValue: (value: number) => string;
   totalText: string;
   totalLabel: string;
@@ -29,11 +23,11 @@ export interface MultiLineChartProps {
 }
 
 export function MultiLineChart({ data, xKey, series }: MultiLineChartProps) {
-  const left = series.find((s) => s.axis === "left");
-  const right = series.find((s) => s.axis === "right");
+  const left = series.find((s) => s.axis === 'left');
+  const right = series.find((s) => s.axis === 'right');
 
   const config: ChartConfig = Object.fromEntries(
-    series.map((s) => [s.id, { label: s.label, color: s.color }]),
+    series.map((s) => [s.id, { label: s.label, color: s.color }])
   );
 
   return (
@@ -43,7 +37,7 @@ export function MultiLineChart({ data, xKey, series }: MultiLineChartProps) {
         {left && (
           <YAxis
             yAxisId="left"
-            domain={["dataMin", "dataMax"]}
+            domain={['dataMin', 'dataMax']}
             tickFormatter={(value) => left.formatValue(Number(value))}
             padding={{ top: 20, bottom: 20 }}
           >
@@ -75,7 +69,7 @@ export function MultiLineChart({ data, xKey, series }: MultiLineChartProps) {
           <YAxis
             yAxisId="right"
             orientation="right"
-            domain={["dataMin", "dataMax"]}
+            domain={['dataMin', 'dataMax']}
             tickFormatter={(value) => right.formatValue(Number(value))}
             padding={{ top: 20, bottom: 20 }}
           >
@@ -109,13 +103,9 @@ export function MultiLineChart({ data, xKey, series }: MultiLineChartProps) {
               className="max-w-[240px]"
               labelFormatter={String}
               formatter={(value, name) => {
-                const matched = series.find(
-                  (s) => s.label === name || s.id === name,
-                );
-                const formatted = matched
-                  ? matched.formatValue(Number(value))
-                  : String(value);
-                const indicatorColor = matched?.color ?? "var(--color-primary)";
+                const matched = series.find((s) => s.label === name || s.id === name);
+                const formatted = matched ? matched.formatValue(Number(value)) : String(value);
+                const indicatorColor = matched?.color ?? 'var(--color-primary)';
                 return (
                   <>
                     <div

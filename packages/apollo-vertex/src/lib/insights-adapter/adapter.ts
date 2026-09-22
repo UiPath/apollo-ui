@@ -1,19 +1,15 @@
-import { queryOptions } from "@tanstack/react-query";
-import { initClient } from "@ts-rest/core";
-import { z } from "zod";
-import {
-  type DataAdapter,
-  type ListFilter,
-  PrimitiveValueSchema,
-} from "@/lib/charts-core";
-import { insightsBarChartAdapter } from "./chart-adapters/bar";
-import { insightsDistributionChartAdapter } from "./chart-adapters/distribution";
-import { insightsKpiChartAdapter } from "./chart-adapters/kpi";
-import { insightsLineChartAdapter } from "./chart-adapters/line";
-import { insightsMultiLineChartAdapter } from "./chart-adapters/multi-line";
-import { insightsTableChartAdapter } from "./chart-adapters/table";
-import { insightsContract } from "./contract";
-import { type InsightsClient, insightsQuery } from "./utils/query";
+import { queryOptions } from '@tanstack/react-query';
+import { initClient } from '@ts-rest/core';
+import { z } from 'zod';
+import { type DataAdapter, type ListFilter, PrimitiveValueSchema } from '@/lib/charts-core';
+import { insightsBarChartAdapter } from './chart-adapters/bar';
+import { insightsDistributionChartAdapter } from './chart-adapters/distribution';
+import { insightsKpiChartAdapter } from './chart-adapters/kpi';
+import { insightsLineChartAdapter } from './chart-adapters/line';
+import { insightsMultiLineChartAdapter } from './chart-adapters/multi-line';
+import { insightsTableChartAdapter } from './chart-adapters/table';
+import { insightsContract } from './contract';
+import { type InsightsClient, insightsQuery } from './utils/query';
 
 interface InsightsAdapterProps {
   baseUrl: string;
@@ -55,7 +51,7 @@ export const insightsAdapter = ({
                 groupBy: [filter.field.id],
                 aggregates: [],
               },
-              "Failed to fetch filter values",
+              'Failed to fetch filter values'
             );
 
             const values = response[filter.field.id]?.values ?? [];

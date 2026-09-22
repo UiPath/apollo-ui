@@ -1,12 +1,9 @@
-import { z } from "zod";
-import { BaseChartConfigurationSchema } from "./base-chart-configuration";
+import { z } from 'zod';
+import { BaseChartConfigurationSchema } from './base-chart-configuration';
 
-export const TableChartConfigurationSchema =
-  BaseChartConfigurationSchema.extend({
-    type: z.literal("table"),
-    dimensions: z.array(z.string()),
-  });
+export const TableChartConfigurationSchema = BaseChartConfigurationSchema.extend({
+  type: z.literal('table'),
+  dimensions: z.array(z.string()),
+});
 
-export type TableChartConfiguration = z.infer<
-  typeof TableChartConfigurationSchema
->;
+export type TableChartConfiguration = z.infer<typeof TableChartConfigurationSchema>;

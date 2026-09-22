@@ -1,9 +1,9 @@
-import { AlertCircle, AlertTriangle, Info } from "lucide-react";
-import { z } from "zod";
+import { AlertCircle, AlertTriangle, Info } from 'lucide-react';
+import { z } from 'zod';
 
 export const UserMessageItemSchema = z.object({
   key: z.string(),
-  category: z.enum(["Error", "Warning", "Info"]),
+  category: z.enum(['Error', 'Warning', 'Info']),
   details: z.record(z.string(), z.string()),
   timestamp: z.string(),
   message: z.string(),
@@ -13,7 +13,7 @@ export type UserMessageItem = z.infer<typeof UserMessageItemSchema>;
 
 export function parseUserMessages(messages: unknown): UserMessageItem[] {
   let value: unknown = messages;
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     try {
       value = JSON.parse(value);
     } catch {
@@ -29,17 +29,15 @@ export function parseUserMessages(messages: unknown): UserMessageItem[] {
   return items;
 }
 
-const SEVERITY_ORDER: Record<UserMessageItem["category"], number> = {
+const SEVERITY_ORDER: Record<UserMessageItem['category'], number> = {
   Error: 2,
   Warning: 1,
   Info: 0,
 };
 
-export function worstSeverity(
-  messages: UserMessageItem[],
-): UserMessageItem["category"] | null {
+export function worstSeverity(messages: UserMessageItem[]): UserMessageItem['category'] | null {
   if (messages.length === 0) return null;
-  let worst: UserMessageItem["category"] = messages[0].category;
+  let worst: UserMessageItem['category'] = messages[0].category;
   for (const msg of messages) {
     if (SEVERITY_ORDER[msg.category] > SEVERITY_ORDER[worst]) {
       worst = msg.category;
@@ -55,14 +53,13 @@ export const severityIcons = {
 } as const;
 
 export const severityColors = {
-  Error: "text-destructive",
-  Warning: "text-warning",
-  Info: "text-info",
+  Error: 'text-destructive',
+  Warning: 'text-warning',
+  Info: 'text-info',
 } as const;
 
 export const categoryBorderStyles = {
-  Error:
-    "border-l-destructive bg-destructive/10 dark:bg-destructive/25 text-foreground",
-  Warning: "border-l-warning bg-warning/15 dark:bg-warning/25 text-foreground",
-  Info: "border-l-info bg-info/15 dark:bg-info/25 text-foreground",
+  Error: 'border-l-destructive bg-destructive/10 dark:bg-destructive/25 text-foreground',
+  Warning: 'border-l-warning bg-warning/15 dark:bg-warning/25 text-foreground',
+  Info: 'border-l-info bg-info/15 dark:bg-info/25 text-foreground',
 } as const;

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { toolDefinition } from "@tanstack/ai";
-import { DateTime } from "luxon";
-import { z } from "zod";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
-import { MultiLineChartCard } from "../../charts/multi-line-chart-card";
-import { ToolResolutionError } from "../../charts/tool-resolution-error";
+import { toolDefinition } from '@tanstack/ai';
+import { DateTime } from 'luxon';
+import { z } from 'zod';
+import { dataFabricAdapter } from '@/lib/data-fabric-adapter';
+import { MultiLineChartCard } from '../../charts/multi-line-chart-card';
+import { ToolResolutionError } from '../../charts/tool-resolution-error';
 import {
   buildMultiMetricDataModel,
   dedupeMetrics,
@@ -15,24 +15,24 @@ import {
   resolveMultiMetric,
   resolveSingleDimension,
   resolveSingleMetric,
-} from "../data-fabric/util/chart-helpers";
+} from '../data-fabric/util/chart-helpers';
 import {
   collectQualifiedFields,
   type DataFabricToolContext,
   generateEntityFieldsDocs,
-} from "../data-fabric/util/entities";
-import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
-import { joinSchema } from "../data-fabric/util/joins";
-import type { ResolverFailure } from "../data-fabric/util/resolver-result";
+} from '../data-fabric/util/entities';
+import { filterSchema, resolveFilters } from '../data-fabric/util/filters';
+import { joinSchema } from '../data-fabric/util/joins';
+import type { ResolverFailure } from '../data-fabric/util/resolver-result';
 
-const MULTI_LINE_DIMENSION_TYPES = ["datetime"] as const;
+const MULTI_LINE_DIMENSION_TYPES = ['datetime'] as const;
 
 const dataFabricMultiLineInput = z.object({
-  entityName: z.string().describe("Data Fabric entity name to query"),
+  entityName: z.string().describe('Data Fabric entity name to query'),
   dimension: z
     .string()
     .describe(
-      "Datetime field name to bin the time axis by. When joining, use EntityName.Field format.",
+      'Datetime field name to bin the time axis by. When joining, use EntityName.Field format.'
     ),
   metrics: z
     .array(metricSchema)
@@ -40,43 +40,36 @@ const dataFabricMultiLineInput = z.object({
     .max(2)
     .refine(
       (metrics) => {
-        const keys = new Set(
-          metrics.map((m) => `${m.aggregation}|${m.field ?? ""}`),
-        );
+        const keys = new Set(metrics.map((m) => `${m.aggregation}|${m.field ?? ''}`));
         return keys.size === metrics.length;
       },
       {
         message:
-          "Metrics must have distinct (aggregation, field) pairs — pick two different metrics to compare.",
-      },
+          'Metrics must have distinct (aggregation, field) pairs — pick two different metrics to compare.',
+      }
     )
     .describe(
-      "Exactly two metrics with distinct (aggregation, field) pairs, plotted as separate lines on a shared time axis. The first metric uses the left Y axis; the second uses the right.",
+      'Exactly two metrics with distinct (aggregation, field) pairs, plotted as separate lines on a shared time axis. The first metric uses the left Y axis; the second uses the right.'
     ),
-  filters: z
-    .array(filterSchema)
-    .optional()
-    .describe("Optional filters to narrow down results."),
+  filters: z.array(filterSchema).optional().describe('Optional filters to narrow down results.'),
   joins: z
     .array(joinSchema)
     .optional()
     .describe(
-      "Join other entities. Use EntityName.Field format for the dimension and metric fields when joining.",
+      'Join other entities. Use EntityName.Field format for the dimension and metric fields when joining.'
     ),
 });
 
 const dataFabricMultiLineDef = toolDefinition({
-  name: "data_fabric_multi_line",
+  name: 'data_fabric_multi_line',
   description:
-    "Render a multi-line chart from a Data Fabric entity, plotting exactly two metrics over a datetime dimension on a shared X axis (one per Y axis: left and right). Use when the user wants to compare two metrics over time.",
+    'Render a multi-line chart from a Data Fabric entity, plotting exactly two metrics over a datetime dimension on a shared X axis (one per Y axis: left and right). Use when the user wants to compare two metrics over time.',
   inputSchema: dataFabricMultiLineInput,
   outputSchema: dataFabricMultiLineInput,
   metadata: { skipFollowUp: true },
 });
 
-export const dataFabricMultiLineClient = dataFabricMultiLineDef.client(
-  (input) => input,
-);
+export const dataFabricMultiLineClient = dataFabricMultiLineDef.client((input) => input);
 
 type MultiLineInput = z.infer<typeof dataFabricMultiLineInput>;
 
@@ -125,27 +118,15 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const entity = context.entities[entityName];
     if (!entity) {
-      return (
-        <ToolResolutionError
-          failure={{ reason: "unknown_entity", entity: entityName }}
-        />
-      );
+      return <ToolResolutionError failure={{ reason: 'unknown_entity', entity: entityName }} />;
     }
 
     const qualifiedFields = isMultiEntity
-      ? collectQualifiedFields(
-          [entityName, ...joins.map((j) => j.entity)],
-          context.entities,
-        )
+      ? collectQualifiedFields([entityName, ...joins.map((j) => j.entity)], context.entities)
       : null;
 
     const resolvedDimension = qualifiedFields
-      ? resolveMultiDimension(
-          entityName,
-          dimension,
-          qualifiedFields,
-          MULTI_LINE_DIMENSION_TYPES,
-        )
+      ? resolveMultiDimension(entityName, dimension, qualifiedFields, MULTI_LINE_DIMENSION_TYPES)
       : resolveSingleDimension(entity, dimension, MULTI_LINE_DIMENSION_TYPES);
 
     if (!resolvedDimension.ok) {
@@ -173,11 +154,7 @@ ${generateEntityFieldsDocs(context.entities)}`;
       if (firstFailure) {
         return <ToolResolutionError failure={firstFailure} />;
       }
-      return (
-        <ToolResolutionError
-          failure={{ reason: "multi_line_too_few_metrics" }}
-        />
-      );
+      return <ToolResolutionError failure={{ reason: 'multi_line_too_few_metrics' }} />;
     }
 
     const dataModel = buildMultiMetricDataModel({
@@ -189,19 +166,19 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const normalizedFilters = qualifiedFields
       ? resolveFilters(filters, {
-          mode: "multi",
+          mode: 'multi',
           primaryEntity: entityName,
           qualifiedFields,
         })
       : resolveFilters(filters, {
-          mode: "single",
+          mode: 'single',
           validFields: entity.fields.map((f) => f.name),
         });
 
     const configuration = {
       id,
       name: entityName,
-      type: "multi_line" as const,
+      type: 'multi_line' as const,
       dimensions: [resolvedDimension.value.id],
       metrics: dataModel.metrics.map((m) => m.id),
       filters: normalizedFilters,

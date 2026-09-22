@@ -1,2 +1,2 @@
-export { insightsAdapter } from "./adapter";
-export { insightsContract } from "./contract";
+export { insightsAdapter } from './adapter';
+export { insightsContract } from './contract';

@@ -1,4 +1,4 @@
-import { RunStatus } from "./types";
+import { RunStatus } from './types';
 
 export function isRunDone(status: number): boolean {
   return status !== RunStatus.Pending && status !== RunStatus.Running;
@@ -8,12 +8,12 @@ export function isRunDone(status: number): boolean {
  *  0. Segments that aren't strictly numeric (e.g. "1-beta") are skipped, so
  *  annotated/pre-release versions compare equal and show no glyph. */
 export function compareVersions(a: string, b: string): number {
-  const pa = a.split(".");
-  const pb = b.split(".");
+  const pa = a.split('.');
+  const pb = b.split('.');
   const len = Math.max(pa.length, pb.length);
   for (let i = 0; i < len; i++) {
-    const na = Number(pa[i] ?? "0");
-    const nb = Number(pb[i] ?? "0");
+    const na = Number(pa[i] ?? '0');
+    const nb = Number(pb[i] ?? '0');
     if (Number.isNaN(na) || Number.isNaN(nb) || na === nb) continue;
     return na > nb ? 1 : -1;
   }
@@ -21,7 +21,7 @@ export function compareVersions(a: string, b: string): number {
 }
 
 function isNumericVersion(v: string): boolean {
-  return v.split(".").every((seg) => seg !== "" && !Number.isNaN(Number(seg)));
+  return v.split('.').every((seg) => seg !== '' && !Number.isNaN(Number(seg)));
 }
 
 export interface VersionDelta {
@@ -35,10 +35,9 @@ export interface VersionDelta {
 // 2); non-numeric tags can't, so they fall back to a plain string equality check.
 export function versionDelta(
   baseline?: string | number | null,
-  actual?: string | number | null,
+  actual?: string | number | null
 ): VersionDelta {
-  if (baseline == null || actual == null)
-    return { changed: false, direction: 0 };
+  if (baseline == null || actual == null) return { changed: false, direction: 0 };
   const b = String(baseline);
   const a = String(actual);
   if (isNumericVersion(a) && isNumericVersion(b)) {
@@ -50,13 +49,13 @@ export function versionDelta(
 
 export function hasAutoPass(evaluatorResults: unknown): boolean {
   let parsed = evaluatorResults;
-  if (typeof parsed === "string") {
+  if (typeof parsed === 'string') {
     try {
       parsed = JSON.parse(parsed);
     } catch {
       return false;
     }
   }
-  if (typeof parsed !== "object" || parsed === null) return false;
-  return Object.prototype.hasOwnProperty.call(parsed, "auto_pass");
+  if (typeof parsed !== 'object' || parsed === null) return false;
+  return Object.hasOwn(parsed, 'auto_pass');
 }

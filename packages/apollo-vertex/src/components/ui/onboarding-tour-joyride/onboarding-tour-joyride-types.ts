@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 interface TourStep<TCondition extends string = string> {
   /** Unique step identifier */
@@ -12,7 +12,7 @@ interface TourStep<TCondition extends string = string> {
   /** Optional tip/note to display */
   tip?: string;
   /** Popover placement relative to target */
-  placement?: "top" | "bottom" | "left" | "right";
+  placement?: 'top' | 'bottom' | 'left' | 'right';
   /** Condition key that must be true before this step can be reached */
   waitFor?: TCondition;
   /** Custom label for the Next button */
@@ -20,7 +20,7 @@ interface TourStep<TCondition extends string = string> {
   /** Callback when this step becomes active */
   onEnter?: () => void;
   /** Step rendering type. 'modal' renders a welcome modal. Default: 'popover' */
-  type?: "popover" | "modal";
+  type?: 'popover' | 'modal';
   /** Image URL for modal-type steps */
   image?: string;
 }

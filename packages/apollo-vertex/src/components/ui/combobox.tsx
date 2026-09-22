@@ -1,15 +1,10 @@
-"use client";
+'use client';
 
-import {
-  AlertTriangleIcon,
-  CheckIcon,
-  ChevronsUpDownIcon,
-  XIcon,
-} from "lucide-react";
-import * as React from "react";
-import { useTranslation } from "react-i18next";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { AlertTriangleIcon, CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react';
+import * as React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Badge } from '@/components/ui/badge';
+import { buttonVariants } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -17,13 +12,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 interface ComboboxContextValue {
   open: boolean;
@@ -37,7 +28,7 @@ const ComboboxContext = React.createContext<ComboboxContextValue | null>(null);
 function useComboboxContext() {
   const context = React.use(ComboboxContext);
   if (!context) {
-    throw new Error("Combobox components must be used within a <Combobox />");
+    throw new Error('Combobox components must be used within a <Combobox />');
   }
   return context;
 }
@@ -60,9 +51,7 @@ function Combobox({
   children,
 }: ComboboxProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
-  const [uncontrolledValue, setUncontrolledValue] = React.useState<string[]>(
-    [],
-  );
+  const [uncontrolledValue, setUncontrolledValue] = React.useState<string[]>([]);
 
   const isValueControlled = controlledValue != null;
   const open = controlledOpen ?? uncontrolledOpen;
@@ -96,7 +85,7 @@ function Combobox({
   );
 }
 
-interface ComboboxTriggerProps extends React.ComponentProps<"div"> {
+interface ComboboxTriggerProps extends React.ComponentProps<'div'> {
   placeholder?: string;
 }
 
@@ -104,11 +93,11 @@ function ComboboxTrigger({
   className,
   placeholder,
   children,
-  "aria-invalid": ariaInvalid,
+  'aria-invalid': ariaInvalid,
   ...props
 }: ComboboxTriggerProps) {
   const { open } = useComboboxContext();
-  const isInvalid = ariaInvalid === "true" || ariaInvalid === true;
+  const isInvalid = ariaInvalid === 'true' || ariaInvalid === true;
 
   return (
     <PopoverTrigger asChild>
@@ -120,18 +109,16 @@ function ComboboxTrigger({
         aria-haspopup="listbox"
         aria-invalid={ariaInvalid}
         className={cn(
-          buttonVariants({ variant: "outline" }),
-          "w-full justify-between font-normal",
-          !children && "text-muted-foreground",
-          className,
+          buttonVariants({ variant: 'outline' }),
+          'w-full justify-between font-normal',
+          !children && 'text-muted-foreground',
+          className
         )}
         {...props}
       >
         {children ?? <span className="truncate">{placeholder}</span>}
         <span className="ml-auto flex items-center gap-1">
-          {isInvalid && (
-            <AlertTriangleIcon className="size-4 shrink-0 text-destructive" />
-          )}
+          {isInvalid && <AlertTriangleIcon className="size-4 shrink-0 text-destructive" />}
           <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
         </span>
       </div>
@@ -139,21 +126,15 @@ function ComboboxTrigger({
   );
 }
 
-interface ComboboxContentProps
-  extends React.ComponentProps<typeof PopoverContent> {
+interface ComboboxContentProps extends React.ComponentProps<typeof PopoverContent> {
   filter?: (value: string, search: string, keywords?: string[]) => number;
 }
 
-function ComboboxContent({
-  className,
-  children,
-  filter,
-  ...props
-}: ComboboxContentProps) {
+function ComboboxContent({ className, children, filter, ...props }: ComboboxContentProps) {
   return (
     <PopoverContent
       data-slot="combobox-content"
-      className={cn("w-(--radix-popover-trigger-width) p-0", className)}
+      className={cn('w-(--radix-popover-trigger-width) p-0', className)}
       {...props}
     >
       <Command filter={filter}>{children}</Command>
@@ -171,11 +152,7 @@ type ComboboxListProps = React.ComponentProps<typeof CommandList>;
 
 function ComboboxList({ className, ...props }: ComboboxListProps) {
   return (
-    <CommandList
-      data-slot="combobox-list"
-      className={cn("max-h-[300px]", className)}
-      {...props}
-    />
+    <CommandList data-slot="combobox-list" className={cn('max-h-[300px]', className)} {...props} />
   );
 }
 
@@ -191,22 +168,12 @@ function ComboboxGroup({ ...props }: ComboboxGroupProps) {
   return <CommandGroup data-slot="combobox-group" {...props} />;
 }
 
-interface ComboboxItemProps
-  extends Omit<React.ComponentProps<typeof CommandItem>, "onSelect"> {
+interface ComboboxItemProps extends Omit<React.ComponentProps<typeof CommandItem>, 'onSelect'> {
   value: string;
 }
 
-function ComboboxItem({
-  className,
-  value: itemValue,
-  children,
-  ...props
-}: ComboboxItemProps) {
-  const {
-    value: selectedValues,
-    multiple,
-    onValueChange,
-  } = useComboboxContext();
+function ComboboxItem({ className, value: itemValue, children, ...props }: ComboboxItemProps) {
+  const { value: selectedValues, multiple, onValueChange } = useComboboxContext();
   const isSelected = selectedValues.includes(itemValue);
 
   function handleSelect() {
@@ -227,24 +194,19 @@ function ComboboxItem({
       className={cn(className)}
       {...props}
     >
-      <CheckIcon
-        className={cn(
-          "size-4 shrink-0",
-          isSelected ? "opacity-100" : "opacity-0",
-        )}
-      />
+      <CheckIcon className={cn('size-4 shrink-0', isSelected ? 'opacity-100' : 'opacity-0')} />
       {children}
     </CommandItem>
   );
 }
 
-type ComboboxBadgeListProps = React.ComponentProps<"div">;
+type ComboboxBadgeListProps = React.ComponentProps<'div'>;
 
 function ComboboxBadgeList({ className, ...props }: ComboboxBadgeListProps) {
   return (
     <div
       data-slot="combobox-badge-list"
-      className={cn("flex flex-wrap gap-1", className)}
+      className={cn('flex flex-wrap gap-1', className)}
       {...props}
     />
   );
@@ -269,8 +231,7 @@ function ComboboxBadge({
     e.preventDefault();
     e.stopPropagation();
     const handler =
-      onRemove ??
-      (() => onValueChange(selectedValues.filter((v) => v !== itemValue)));
+      onRemove ?? (() => onValueChange(selectedValues.filter((v) => v !== itemValue)));
     handler();
   }
 
@@ -278,7 +239,7 @@ function ComboboxBadge({
     <Badge
       data-slot="combobox-badge"
       variant="secondary"
-      className={cn("gap-1 pr-1", className)}
+      className={cn('gap-1 pr-1', className)}
       {...props}
     >
       {children}
@@ -287,12 +248,10 @@ function ComboboxBadge({
         data-slot="combobox-badge-remove"
         className="rounded-full p-0.5 hover:bg-foreground/20"
         onClick={handleRemove}
-        onKeyDown={(e) =>
-          (e.key === "Enter" || e.key === " ") && handleRemove(e)
-        }
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleRemove(e)}
       >
         <XIcon className="size-3" />
-        <span className="sr-only">{t("remove")}</span>
+        <span className="sr-only">{t('remove')}</span>
       </button>
     </Badge>
   );

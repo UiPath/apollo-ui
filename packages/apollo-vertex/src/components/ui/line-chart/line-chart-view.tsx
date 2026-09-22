@@ -1,10 +1,10 @@
-import { Line, LineChart as RechartsLineChart, XAxis, YAxis } from "recharts";
+import { Line, LineChart as RechartsLineChart, XAxis, YAxis } from 'recharts';
 import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from '@/components/ui/chart';
 
 export interface LineChartProps {
   data: Array<{ x: string; y: number }>;
@@ -17,7 +17,7 @@ export function LineChart({
   data,
   seriesLabel,
   formatValue,
-  color = "var(--color-primary)",
+  color = 'var(--color-primary)',
 }: LineChartProps) {
   const config: ChartConfig = {
     y: { label: seriesLabel, color },
@@ -25,10 +25,7 @@ export function LineChart({
 
   return (
     <ChartContainer config={config} className="aspect-auto h-full w-full">
-      <RechartsLineChart
-        data={data}
-        margin={{ top: 16, right: 16, bottom: 16, left: 0 }}
-      >
+      <RechartsLineChart data={data} margin={{ top: 16, right: 16, bottom: 16, left: 0 }}>
         <XAxis
           dataKey="x"
           tickLine={false}
@@ -39,7 +36,7 @@ export function LineChart({
         />
         <YAxis
           type="number"
-          domain={["auto", "auto"]}
+          domain={['auto', 'auto']}
           tickLine={false}
           axisLine={false}
           tickFormatter={(value) => formatValue(Number(value))}

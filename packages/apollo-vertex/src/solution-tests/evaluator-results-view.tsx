@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Fragment } from "react";
-import { z } from "zod";
-import { useSolutionTestsConfig } from "./context";
-import { resolveEvaluatorRenderer } from "./evaluators/registry";
-import type { SolutionTestRunResult } from "./types";
+import { Fragment } from 'react';
+import { z } from 'zod';
+import { useSolutionTestsConfig } from './context';
+import { resolveEvaluatorRenderer } from './evaluators/registry';
+import type { SolutionTestRunResult } from './types';
 
 /** The `EvaluatorResults` attachment is untrusted wire data, so it's validated
  * at the fetch boundary via `parseEvaluatorResults`. Each value's `details`
@@ -12,7 +12,7 @@ import type { SolutionTestRunResult } from "./types";
  * evaluator's schema. */
 const EvaluatorResultsSchema = z.record(
   z.string(),
-  z.object({ score: z.number().optional(), details: z.unknown().optional() }),
+  z.object({ score: z.number().optional(), details: z.unknown().optional() })
 );
 export type EvaluatorResults = z.infer<typeof EvaluatorResultsSchema>;
 
@@ -23,7 +23,7 @@ export function parseEvaluatorResults(data: unknown): EvaluatorResults | null {
   if (data == null) return null;
 
   let raw: unknown = data;
-  if (typeof raw === "string") {
+  if (typeof raw === 'string') {
     try {
       raw = JSON.parse(raw) as unknown;
     } catch {
@@ -58,7 +58,7 @@ export const EvaluatorResultsView = ({
         <Fragment key={evaluatorId}>
           {resolveEvaluatorRenderer(
             evaluatorId,
-            evaluatorRenderers,
+            evaluatorRenderers
           )({
             evaluatorId,
             score: evaluator.score,

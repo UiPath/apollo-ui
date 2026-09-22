@@ -1,4 +1,4 @@
-const TOUR_STORAGE_KEY = "onboarding-tour-completed";
+const TOUR_STORAGE_KEY = 'onboarding-tour-completed';
 
 function loadCompletedTours(): string[] {
   try {
@@ -6,7 +6,7 @@ function loadCompletedTours(): string[] {
     if (!data) return [];
     const parsed: unknown = JSON.parse(data);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item): item is string => typeof item === "string");
+    return parsed.filter((item): item is string => typeof item === 'string');
   } catch {
     return [];
   }

@@ -3,8 +3,8 @@ export {
   type TableChartColumn,
   type TableChartProps,
   type TableChartSort,
-} from "./table-chart-view";
+} from './table-chart-view';
 export {
   TableChartWithAdapter,
   type TableChartWithAdapterProps,
-} from "./table-chart-with-adapter";
+} from './table-chart-with-adapter';

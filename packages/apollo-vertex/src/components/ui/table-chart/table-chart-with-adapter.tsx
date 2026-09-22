@@ -1,6 +1,6 @@
-import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
-import { useDeferredValue } from "react";
-import { useTranslation } from "react-i18next";
+import { useIsFetching, useSuspenseQuery } from '@tanstack/react-query';
+import { useDeferredValue } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ChartLoadingBoundary,
   type DataAdapter,
@@ -12,12 +12,8 @@ import {
   type TableChartState,
   type TableDataModel,
   type TableDataModelField,
-} from "@/lib/charts-core";
-import {
-  TableChart,
-  type TableChartColumn,
-  type TableChartSort,
-} from "./table-chart-view";
+} from '@/lib/charts-core';
+import { TableChart, type TableChartColumn, type TableChartSort } from './table-chart-view';
 
 const DEFAULT_TABLE_STATE: TableChartState = { sortBy: null };
 
@@ -70,7 +66,7 @@ function TableChartResolver({
   const deferredQuery = deferrableProps.dataAdapter.charts.table(
     deferrableProps.configuration,
     deferrableProps.dataModel,
-    deferrableProps.state,
+    deferrableProps.state
   );
 
   const isFetching = useIsFetching(query) > 0;
@@ -84,8 +80,7 @@ function TableChartResolver({
     id: field.id,
     label: field.display,
     align: dataTypeAlignment(field),
-    format: (value) =>
-      value == null ? "" : (format(language, value, field.type) ?? ""),
+    format: (value) => (value == null ? '' : (format(language, value, field.type) ?? '')),
   }));
 
   const sort: TableChartSort | null = state.sortBy
@@ -101,9 +96,7 @@ function TableChartResolver({
         onSortChange={(next) =>
           onStateChange?.({
             ...state,
-            sortBy: next
-              ? { field: next.field, direction: next.direction }
-              : null,
+            sortBy: next ? { field: next.field, direction: next.direction } : null,
           })
         }
       />

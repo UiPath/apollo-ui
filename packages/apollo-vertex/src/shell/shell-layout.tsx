@@ -1,26 +1,22 @@
-import { type CSSProperties, type PropsWithChildren, useId } from "react";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import type { CompanyLogo, ShellNavItem } from "./shell";
-import { ShellSidebar } from "./shell-sidebar";
-import { useTheme } from "./shell-theme-provider";
+import { type CSSProperties, type PropsWithChildren, useId } from 'react';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import type { CompanyLogo, ShellNavItem } from './shell';
+import { ShellSidebar } from './shell-sidebar';
+import { useTheme } from './shell-theme-provider';
 
 /* oxlint-disable typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties not in React.CSSProperties */
 const SIDEBAR_WIDTHS = {
-  "--sidebar-width": "280px",
-  "--sidebar-width-icon": "4rem",
+  '--sidebar-width': '280px',
+  '--sidebar-width-icon': '4rem',
 } as CSSProperties;
 /* oxlint-enable typescript-eslint(no-unsafe-type-assertion) */
 
-const GRADIENT_BLUR = "blur(149.643px)";
+const GRADIENT_BLUR = 'blur(149.643px)';
 
 interface ShellLayoutProps {
   companyName: string;
   productName: string;
-  variant?: "minimal";
+  variant?: 'minimal';
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
 }
@@ -34,8 +30,7 @@ function DarkGradientBackground() {
       <div
         className="absolute inset-0"
         style={{
-          background:
-            "linear-gradient(135deg, rgba(99, 102, 241, 0.02) 0%, transparent 60%)",
+          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.02) 0%, transparent 60%)',
         }}
       />
 
@@ -43,12 +38,12 @@ function DarkGradientBackground() {
       <div
         className="absolute"
         style={{
-          top: "-10%",
-          left: "-15%",
-          width: "70%",
-          height: "35%",
-          borderRadius: "30% 70% 65% 35% / 60% 30% 70% 40%",
-          background: "rgba(99, 102, 241, 0.03)",
+          top: '-10%',
+          left: '-15%',
+          width: '70%',
+          height: '35%',
+          borderRadius: '30% 70% 65% 35% / 60% 30% 70% 40%',
+          background: 'rgba(99, 102, 241, 0.03)',
           filter: GRADIENT_BLUR,
         }}
       />
@@ -57,14 +52,14 @@ function DarkGradientBackground() {
       <div
         className="absolute"
         style={{
-          top: "25%",
-          left: "20%",
-          width: "65%",
-          height: "30%",
-          borderRadius: "25% 75% 60% 40% / 50% 35% 65% 50%",
-          background: "rgba(122, 74, 198, 0.025)",
+          top: '25%',
+          left: '20%',
+          width: '65%',
+          height: '30%',
+          borderRadius: '25% 75% 60% 40% / 50% 35% 65% 50%',
+          background: 'rgba(122, 74, 198, 0.025)',
           filter: GRADIENT_BLUR,
-          transform: "rotate(-8deg)",
+          transform: 'rotate(-8deg)',
         }}
       />
 
@@ -72,21 +67,18 @@ function DarkGradientBackground() {
       <div
         className="absolute"
         style={{
-          bottom: "-12%",
-          right: "-10%",
-          width: "60%",
-          height: "28%",
-          borderRadius: "65% 35% 30% 70% / 40% 60% 40% 60%",
-          background: "rgba(34, 211, 238, 0.015)",
+          bottom: '-12%',
+          right: '-10%',
+          width: '60%',
+          height: '28%',
+          borderRadius: '65% 35% 30% 70% / 40% 60% 40% 60%',
+          background: 'rgba(34, 211, 238, 0.015)',
           filter: GRADIENT_BLUR,
         }}
       />
 
       {/* Grain texture */}
-      <svg
-        aria-hidden="true"
-        className="absolute inset-0 w-full h-full opacity-[0.04]"
-      >
+      <svg aria-hidden="true" className="absolute inset-0 w-full h-full opacity-[0.04]">
         <defs>
           <filter id={filterId}>
             <feTurbulence
@@ -112,7 +104,7 @@ function LightGradientBackground() {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(135deg, rgba(165, 180, 252, 0.05) 0%, rgba(196, 241, 249, 0.03) 100%)",
+            'linear-gradient(135deg, rgba(165, 180, 252, 0.05) 0%, rgba(196, 241, 249, 0.03) 100%)',
         }}
       />
 
@@ -120,12 +112,12 @@ function LightGradientBackground() {
       <div
         className="absolute"
         style={{
-          top: "-10%",
-          left: "-15%",
-          width: "70%",
-          height: "35%",
-          borderRadius: "30% 70% 65% 35% / 60% 30% 70% 40%",
-          background: "rgba(165, 180, 252, 0.07)",
+          top: '-10%',
+          left: '-15%',
+          width: '70%',
+          height: '35%',
+          borderRadius: '30% 70% 65% 35% / 60% 30% 70% 40%',
+          background: 'rgba(165, 180, 252, 0.07)',
           filter: GRADIENT_BLUR,
         }}
       />
@@ -134,14 +126,14 @@ function LightGradientBackground() {
       <div
         className="absolute"
         style={{
-          top: "25%",
-          left: "20%",
-          width: "65%",
-          height: "30%",
-          borderRadius: "25% 75% 60% 40% / 50% 35% 65% 50%",
-          background: "rgba(196, 167, 231, 0.06)",
+          top: '25%',
+          left: '20%',
+          width: '65%',
+          height: '30%',
+          borderRadius: '25% 75% 60% 40% / 50% 35% 65% 50%',
+          background: 'rgba(196, 167, 231, 0.06)',
           filter: GRADIENT_BLUR,
-          transform: "rotate(-8deg)",
+          transform: 'rotate(-8deg)',
         }}
       />
 
@@ -149,12 +141,12 @@ function LightGradientBackground() {
       <div
         className="absolute"
         style={{
-          bottom: "-12%",
-          right: "-10%",
-          width: "60%",
-          height: "28%",
-          borderRadius: "65% 35% 30% 70% / 40% 60% 40% 60%",
-          background: "rgba(147, 230, 241, 0.05)",
+          bottom: '-12%',
+          right: '-10%',
+          width: '60%',
+          height: '28%',
+          borderRadius: '65% 35% 30% 70% / 40% 60% 40% 60%',
+          background: 'rgba(147, 230, 241, 0.05)',
           filter: GRADIENT_BLUR,
         }}
       />
@@ -164,7 +156,7 @@ function LightGradientBackground() {
 
 function GradientBackground() {
   const theme = useTheme();
-  if (theme.resolvedTheme === "dark") {
+  if (theme.resolvedTheme === 'dark') {
     return <DarkGradientBackground />;
   }
   return <LightGradientBackground />;
@@ -178,7 +170,7 @@ export function ShellLayout({
   companyLogo,
   navItems,
 }: PropsWithChildren<ShellLayoutProps>) {
-  if (variant === "minimal") {
+  if (variant === 'minimal') {
     return (
       <div className="h-screen overflow-hidden flex flex-col bg-background dark:bg-sidebar">
         <main className="flex-1 flex flex-col overflow-hidden relative">
@@ -190,9 +182,7 @@ export function ShellLayout({
             companyLogo={companyLogo}
             navItems={navItems}
           />
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {children}
-          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar">{children}</div>
         </main>
       </div>
     );

@@ -1,16 +1,16 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Card, type CardProps } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from '@/components/ui/badge';
+import { Card, type CardProps } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface MetricCardProps extends React.ComponentProps<"div"> {
+interface MetricCardProps extends React.ComponentProps<'div'> {
   label: string;
   value: string | number;
-  trend?: "up" | "down" | "neutral";
+  trend?: 'up' | 'down' | 'neutral';
   percentage?: number;
   isLowerBetter?: boolean;
-  variant?: CardProps["variant"];
+  variant?: CardProps['variant'];
 }
 
 function MetricCard({
@@ -19,26 +19,17 @@ function MetricCard({
   trend,
   percentage,
   isLowerBetter = false,
-  variant = "default",
+  variant = 'default',
   className,
   ...props
 }: MetricCardProps) {
-  const showTrend =
-    trend != null &&
-    trend !== "neutral" &&
-    percentage != null &&
-    percentage !== 0;
-  const isPositiveTrend = isLowerBetter ? trend === "down" : trend === "up";
-  const sign = trend === "up" ? "+" : "-";
-  const badgeStatus = isPositiveTrend ? "success" : "error";
+  const showTrend = trend != null && trend !== 'neutral' && percentage != null && percentage !== 0;
+  const isPositiveTrend = isLowerBetter ? trend === 'down' : trend === 'up';
+  const sign = trend === 'up' ? '+' : '-';
+  const badgeStatus = isPositiveTrend ? 'success' : 'error';
 
   return (
-    <Card
-      data-slot="metric-card"
-      variant={variant}
-      className={className}
-      {...props}
-    >
+    <Card data-slot="metric-card" variant={variant} className={className} {...props}>
       <div data-slot="metric-card-content" className="flex flex-col gap-1 p-6">
         <p
           data-slot="metric-card-label"
@@ -64,22 +55,13 @@ function MetricCard({
   );
 }
 
-interface MetricCardSkeletonProps extends React.ComponentProps<"div"> {
-  variant?: CardProps["variant"];
+interface MetricCardSkeletonProps extends React.ComponentProps<'div'> {
+  variant?: CardProps['variant'];
 }
 
-function MetricCardSkeleton({
-  variant = "default",
-  className,
-  ...props
-}: MetricCardSkeletonProps) {
+function MetricCardSkeleton({ variant = 'default', className, ...props }: MetricCardSkeletonProps) {
   return (
-    <Card
-      data-slot="metric-card"
-      variant={variant}
-      className={className}
-      {...props}
-    >
+    <Card data-slot="metric-card" variant={variant} className={className} {...props}>
       <div data-slot="metric-card-content" className="flex flex-col gap-1 p-6">
         <Skeleton className="h-4 w-28" />
         <div className="flex items-center gap-4">

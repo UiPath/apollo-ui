@@ -1,4 +1,4 @@
-import type { DataModelField } from "./models/field";
+import type { DataModelField } from './models/field';
 
 export type TableDataModelField = DataModelField;
 

@@ -1,13 +1,13 @@
-import { DateTime, Interval } from "luxon";
-import { assert } from "@/lib/asserts/assert";
-import { assertDefined } from "@/lib/asserts/assert-defined";
-import { adaptiveBinFormatting } from "../binning/adaptive-bin-formatting";
-import { binLabelFormatSetting } from "./bin-label-format-setting";
-import { format } from "./format";
+import { DateTime, Interval } from 'luxon';
+import { assert } from '@/lib/asserts/assert';
+import { assertDefined } from '@/lib/asserts/assert-defined';
+import { adaptiveBinFormatting } from '../binning/adaptive-bin-formatting';
+import { binLabelFormatSetting } from './bin-label-format-setting';
+import { format } from './format';
 
 interface BinLabelProps {
   locale: Intl.LocalesArgument;
-  type: "duration" | "numeric" | "datetime";
+  type: 'duration' | 'numeric' | 'datetime';
   bin: {
     start: number | DateTime;
     end: number | DateTime;
@@ -16,24 +16,18 @@ interface BinLabelProps {
   isCompact?: boolean;
 }
 
-export const binLabel = ({
-  locale,
-  bin,
-  type,
-  chartRange,
-  isCompact = false,
-}: BinLabelProps) => {
+export const binLabel = ({ locale, bin, type, chartRange, isCompact = false }: BinLabelProps) => {
   const { start, end } = bin;
 
-  if (type === "datetime" && isCompact) {
-    assert(start instanceof DateTime, "Min must be a DateTime");
-    assert(end instanceof DateTime, "Max must be a DateTime");
+  if (type === 'datetime' && isCompact) {
+    assert(start instanceof DateTime, 'Min must be a DateTime');
+    assert(end instanceof DateTime, 'Max must be a DateTime');
 
     const interval = Interval.fromDateTimes(start, end);
     return adaptiveBinFormatting(
       locale,
       interval,
-      assertDefined(chartRange, "Chart range is required"),
+      assertDefined(chartRange, 'Chart range is required')
     );
   }
 

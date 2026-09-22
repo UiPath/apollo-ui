@@ -21,4 +21,4 @@ export {
   useFormContext,
   useTranslatedErrors,
   withForm,
-} from "./form";
+} from './form';

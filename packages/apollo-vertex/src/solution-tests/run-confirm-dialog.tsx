@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 interface RunConfirmDialogProps {
   open: boolean;
@@ -35,14 +35,12 @@ export const RunConfirmDialog = ({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("are_you_sure")}</DialogTitle>
-          <DialogDescription>
-            {t("confirm_run_tests_description")}
-          </DialogDescription>
+          <DialogTitle>{t('are_you_sure')}</DialogTitle>
+          <DialogDescription>{t('confirm_run_tests_description')}</DialogDescription>
         </DialogHeader>
         <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={onCancel}>
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button variant="warning" onClick={onConfirm}>
             {confirmLabel}

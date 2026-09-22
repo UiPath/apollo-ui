@@ -1,17 +1,12 @@
-"use client";
+'use client';
 
-import { useTextSelection } from "@mantine/hooks";
-import { AnimatePresence, motion } from "framer-motion";
-import type { RefObject } from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import {
-  POP_ANIMATE,
-  POP_EXIT,
-  POP_INITIAL,
-  POP_TRANSITION,
-} from "../animations";
-import { AutopilotIcon } from "./icons/autopilot";
+import { useTextSelection } from '@mantine/hooks';
+import { AnimatePresence, motion } from 'framer-motion';
+import type { RefObject } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { POP_ANIMATE, POP_EXIT, POP_INITIAL, POP_TRANSITION } from '../animations';
+import { AutopilotIcon } from './icons/autopilot';
 
 const EDGE_PADDING_X = 80;
 const MENU_OFFSET_Y = 8;
@@ -29,14 +24,9 @@ interface MenuState {
 
 function deriveMenuState(
   selection: Selection | null,
-  container: HTMLElement | null,
+  container: HTMLElement | null
 ): MenuState | null {
-  if (
-    !container ||
-    !selection ||
-    selection.isCollapsed ||
-    selection.rangeCount === 0
-  ) {
+  if (!container || !selection || selection.isCollapsed || selection.rangeCount === 0) {
     return null;
   }
   const text = selection.toString().trim();
@@ -48,27 +38,17 @@ function deriveMenuState(
   const rangeRect = range.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
 
-  const x =
-    rangeRect.left +
-    rangeRect.width / 2 -
-    containerRect.left +
-    container.scrollLeft;
+  const x = rangeRect.left + rangeRect.width / 2 - containerRect.left + container.scrollLeft;
   const y = rangeRect.top - containerRect.top + container.scrollTop;
 
   return {
     text,
-    x: Math.min(
-      Math.max(x, EDGE_PADDING_X),
-      container.clientWidth - EDGE_PADDING_X,
-    ),
+    x: Math.min(Math.max(x, EDGE_PADDING_X), container.clientWidth - EDGE_PADDING_X),
     y: y - MENU_OFFSET_Y,
   };
 }
 
-export function AiChatSelectionMenu({
-  onAskAi,
-  containerRef,
-}: AiChatSelectionMenuProps) {
+export function AiChatSelectionMenu({ onAskAi, containerRef }: AiChatSelectionMenuProps) {
   const { t } = useTranslation();
   const selection = useTextSelection();
   const menu = deriveMenuState(selection, containerRef?.current ?? null);
@@ -95,10 +75,10 @@ export function AiChatSelectionMenu({
               selection?.removeAllRanges();
             }}
             className="rounded-full text-white shadow-lg hover:opacity-90 hover:text-white"
-            style={{ background: "var(--ai-gradient-strong)" }}
+            style={{ background: 'var(--ai-gradient-strong)' }}
           >
             <AutopilotIcon size={14} aria-hidden="true" />
-            {t("ask_ai")}
+            {t('ask_ai')}
           </Button>
         </motion.div>
       )}

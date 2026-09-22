@@ -1,25 +1,23 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions } from '@tanstack/react-query';
 import {
   type DataAdapter,
   mapConfigFilterToFilterValues,
   mapResponseToChartData,
-} from "@/lib/charts-core";
-import { type DataFabricClient, dataFabricQuery } from "../utils/query";
-import { createDataFabricChartQueryOptions } from "../utils/query-options";
-import { mapDataFabricResponseToChartData } from "../utils/response-data-mapper";
+} from '@/lib/charts-core';
+import { type DataFabricClient, dataFabricQuery } from '../utils/query';
+import { createDataFabricChartQueryOptions } from '../utils/query-options';
+import { mapDataFabricResponseToChartData } from '../utils/response-data-mapper';
 
 export const dataFabricTableChartAdapter = (
   client: DataFabricClient,
-  entityName: string,
-): DataAdapter["charts"]["table"] => {
+  entityName: string
+): DataAdapter['charts']['table'] => {
   return (configuration, _dataModel, state) => {
     const dimensionIds = configuration.dimensions;
     const requestBody = createDataFabricChartQueryOptions({
       selectedFields: dimensionIds,
       sortBy: state.sortBy,
-      filters: (configuration.filters ?? []).map((f) =>
-        mapConfigFilterToFilterValues(f),
-      ),
+      filters: (configuration.filters ?? []).map((f) => mapConfigFilterToFilterValues(f)),
     });
 
     const fullRequestBody = {
@@ -29,19 +27,16 @@ export const dataFabricTableChartAdapter = (
     };
 
     return queryOptions({
-      queryKey: [entityName, "query", JSON.stringify(fullRequestBody)],
+      queryKey: [entityName, 'query', JSON.stringify(fullRequestBody)],
       queryFn: async () => {
         const body = await dataFabricQuery(
           client,
           entityName,
           fullRequestBody,
-          "Failed to fetch table data",
+          'Failed to fetch table data'
         );
 
-        const columnOriented = mapDataFabricResponseToChartData(
-          body,
-          dimensionIds,
-        );
+        const columnOriented = mapDataFabricResponseToChartData(body, dimensionIds);
         return mapResponseToChartData({
           data: columnOriented,
           dimensions: dimensionIds,

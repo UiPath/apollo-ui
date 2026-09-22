@@ -1,15 +1,15 @@
-import { initContract } from "@ts-rest/core";
-import { z } from "zod";
-import { DataQueryResponseSchema } from "@/lib/charts-core";
-import { InsightsQueryRequestSchema } from "./schemas/query-schema";
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+import { DataQueryResponseSchema } from '@/lib/charts-core';
+import { InsightsQueryRequestSchema } from './schemas/query-schema';
 
 const c = initContract();
 
 export const insightsContract = c.router(
   {
     query: {
-      method: "POST",
-      path: "/standalone-query/:sourceType",
+      method: 'POST',
+      path: '/standalone-query/:sourceType',
       responses: {
         200: DataQueryResponseSchema,
         400: z.object({
@@ -24,5 +24,5 @@ export const insightsContract = c.router(
   },
   {
     strictStatusCodes: true,
-  },
+  }
 );

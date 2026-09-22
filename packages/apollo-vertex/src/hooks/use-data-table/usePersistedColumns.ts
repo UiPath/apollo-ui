@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useLocalStorage } from "@mantine/hooks";
-import { ENTITY_TABLE_COLUMNS_STORAGE_PREFIX } from "@/lib/constants";
+import { useLocalStorage } from '@mantine/hooks';
+import { ENTITY_TABLE_COLUMNS_STORAGE_PREFIX } from '@/lib/constants';
 
 export interface UsePersistedColumnsProps {
   storageKey: string;

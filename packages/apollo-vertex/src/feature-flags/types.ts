@@ -1,7 +1,7 @@
 import type {
   FeatureFlagValues as ProteusFeatureFlagValues,
   FlagMapping,
-} from "@uipath/proteus-client";
+} from '@uipath/proteus-client';
 
 export type FeatureFlagUserContext = {
   userId: string;

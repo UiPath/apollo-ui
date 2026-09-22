@@ -1,6 +1,6 @@
-import { assertDefined } from "@/lib/asserts/assert-defined";
-import { COLORS, PALETTE } from "./colors";
-import type { RechartsBarData } from "./recharts-bar-data";
+import { assertDefined } from '@/lib/asserts/assert-defined';
+import { COLORS, PALETTE } from './colors';
+import type { RechartsBarData } from './recharts-bar-data';
 
 interface GetBarColorParams {
   seriesCount: number;
@@ -21,17 +21,11 @@ export function getBarColor({
   const payloadFill = item.payload?.fill;
 
   if (seriesCount === 1) {
-    const rowIndex = rechartsData.findIndex(
-      (row) => row.__id === payload?.__id,
-    );
-    const fallbackColor =
-      PALETTE[rowIndex >= 0 ? rowIndex % PALETTE.length : 0];
-    return assertDefined(
-      itemColor ?? payloadFill ?? fallbackColor,
-      "Bar color",
-    );
+    const rowIndex = rechartsData.findIndex((row) => row.__id === payload?.__id);
+    const fallbackColor = PALETTE[rowIndex >= 0 ? rowIndex % PALETTE.length : 0];
+    return assertDefined(itemColor ?? payloadFill ?? fallbackColor, 'Bar color');
   }
 
   const fallbackColor = COLORS[seriesIndex % COLORS.length];
-  return assertDefined(itemColor ?? payloadFill ?? fallbackColor, "Bar color");
+  return assertDefined(itemColor ?? payloadFill ?? fallbackColor, 'Bar color');
 }

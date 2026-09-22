@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { AlertTriangle } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import type { ToolResolutionFailure } from "../tools/data-fabric/util/resolver-result";
+import { AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import type { ToolResolutionFailure } from '../tools/data-fabric/util/resolver-result';
 
 export interface ToolResolutionErrorProps {
   failure: ToolResolutionFailure;
@@ -22,7 +22,7 @@ export function ToolResolutionError({ failure }: ToolResolutionErrorProps) {
           aria-hidden="true"
         />
         <div className="min-w-0 flex-1 space-y-1">
-          <p className="font-medium">{t("chart_render_failed_title")}</p>
+          <p className="font-medium">{t('chart_render_failed_title')}</p>
           <p className="text-muted-foreground">{t(reason, params)}</p>
         </div>
       </div>

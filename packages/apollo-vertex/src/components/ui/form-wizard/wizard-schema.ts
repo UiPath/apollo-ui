@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 export interface WizardStepDef<TValues> {
   id: string;
@@ -10,7 +10,7 @@ export interface WizardStepDef<TValues> {
 
 export function getVisibleSteps<TValues>(
   steps: ReadonlyArray<WizardStepDef<TValues>>,
-  values: TValues,
+  values: TValues
 ): Array<WizardStepDef<TValues>> {
   return steps.filter((step) => step.condition?.(values) ?? true);
 }

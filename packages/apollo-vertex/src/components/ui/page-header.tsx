@@ -1,47 +1,42 @@
-"use client";
+'use client';
 
 /* oxlint-disable max-lines -- compound component with collapsible actions */
-import { cva, type VariantProps } from "class-variance-authority";
-import { ArrowLeft, MoreHorizontal } from "lucide-react";
-import * as React from "react";
+import { cva, type VariantProps } from 'class-variance-authority';
+import { ArrowLeft, MoreHorizontal } from 'lucide-react';
+import * as React from 'react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
-const pageHeaderVariants = cva("", {
+const pageHeaderVariants = cva('', {
   variants: {
     size: {
       default: [
-        "flex flex-wrap items-center gap-4 py-4 px-4 sm:px-6 lg:px-8 min-h-[92px] transition-[padding] duration-300 ease-in-out",
-        "@3xl:grid @3xl:grid-cols-[1fr_auto] @3xl:py-0",
-        "@3xl:has-[[data-slot=page-header-content]]:grid-cols-[3fr_6fr_3fr]",
-      ].join(" "),
-      content: "flex flex-col gap-3 pt-[10px] pb-4",
+        'flex flex-wrap items-center gap-4 py-4 px-4 sm:px-6 lg:px-8 min-h-[92px] transition-[padding] duration-300 ease-in-out',
+        '@3xl:grid @3xl:grid-cols-[1fr_auto] @3xl:py-0',
+        '@3xl:has-[[data-slot=page-header-content]]:grid-cols-[3fr_6fr_3fr]',
+      ].join(' '),
+      content: 'flex flex-col gap-3 pt-[10px] pb-4',
     },
   },
   defaultVariants: {
-    size: "default",
+    size: 'default',
   },
 });
 
 interface PageHeaderProps
-  extends React.ComponentProps<"div">,
+  extends React.ComponentProps<'div'>,
     VariantProps<typeof pageHeaderVariants> {
   bordered?: boolean;
 }
 
-function PageHeader({
-  className,
-  size,
-  bordered = false,
-  ...props
-}: PageHeaderProps) {
+function PageHeader({ className, size, bordered = false, ...props }: PageHeaderProps) {
   return (
     <div className="@container shrink-0">
       <div
@@ -49,8 +44,8 @@ function PageHeader({
         data-size={size}
         className={cn(
           pageHeaderVariants({ size }),
-          bordered && "border-b border-border",
-          className,
+          bordered && 'border-b border-border',
+          className
         )}
         {...props}
       />
@@ -58,16 +53,13 @@ function PageHeader({
   );
 }
 
-type PageHeaderNavProps = React.ComponentProps<"div">;
+type PageHeaderNavProps = React.ComponentProps<'div'>;
 
 function PageHeaderNav({ className, ...props }: PageHeaderNavProps) {
   return (
     <div
       data-slot="page-header-nav"
-      className={cn(
-        "flex items-center gap-3 min-w-0 flex-1 order-1 @3xl:order-none",
-        className,
-      )}
+      className={cn('flex items-center gap-3 min-w-0 flex-1 order-1 @3xl:order-none', className)}
       {...props}
     />
   );
@@ -75,18 +67,14 @@ function PageHeaderNav({ className, ...props }: PageHeaderNavProps) {
 
 type PageHeaderBackButtonProps = React.ComponentProps<typeof Button>;
 
-function PageHeaderBackButton({
-  className,
-  children,
-  ...props
-}: PageHeaderBackButtonProps) {
+function PageHeaderBackButton({ className, children, ...props }: PageHeaderBackButtonProps) {
   return (
     <Button
       data-slot="page-header-back"
       variant="secondary"
       size="icon-lg"
       aria-label="Go back"
-      className={cn("shrink-0", className)}
+      className={cn('shrink-0', className)}
       {...props}
     >
       {children ?? <ArrowLeft className="size-5" />}
@@ -94,39 +82,35 @@ function PageHeaderBackButton({
   );
 }
 
-type PageHeaderTitleGroupProps = React.ComponentProps<"div">;
+type PageHeaderTitleGroupProps = React.ComponentProps<'div'>;
 
-function PageHeaderTitleGroup({
-  className,
-  ...props
-}: PageHeaderTitleGroupProps) {
+function PageHeaderTitleGroup({ className, ...props }: PageHeaderTitleGroupProps) {
   return (
     <div
       data-slot="page-header-title-group"
-      className={cn("flex flex-col min-w-0", className)}
+      className={cn('flex flex-col min-w-0', className)}
       {...props}
     />
   );
 }
 
 const pageHeaderTitleVariants = cva(
-  "font-bold text-foreground w-full min-w-[80px] truncate transition-[font-size,line-height,letter-spacing] duration-300 ease-in-out",
+  'font-bold text-foreground w-full min-w-[80px] truncate transition-[font-size,line-height,letter-spacing] duration-300 ease-in-out',
   {
     variants: {
       size: {
-        default:
-          "text-base leading-5 @5xl:text-2xl @5xl:leading-8 @5xl:tracking-tight",
-        lg: "text-2xl leading-8 tracking-tight",
+        default: 'text-base leading-5 @5xl:text-2xl @5xl:leading-8 @5xl:tracking-tight',
+        lg: 'text-2xl leading-8 tracking-tight',
       },
     },
     defaultVariants: {
-      size: "default",
+      size: 'default',
     },
-  },
+  }
 );
 
 interface PageHeaderTitleProps
-  extends React.ComponentProps<"h1">,
+  extends React.ComponentProps<'h1'>,
     VariantProps<typeof pageHeaderTitleVariants> {
   as?: React.ElementType;
 }
@@ -135,13 +119,13 @@ function PageHeaderTitle({
   className,
   size,
   children,
-  as: Comp = "h1",
+  as: Comp = 'h1',
   ...props
 }: PageHeaderTitleProps) {
   return (
     <Comp
       data-slot="page-header-title"
-      {...(typeof children === "string" && { title: children })}
+      {...(typeof children === 'string' && { title: children })}
       className={cn(pageHeaderTitleVariants({ size }), className)}
       {...props}
     >
@@ -150,18 +134,14 @@ function PageHeaderTitle({
   );
 }
 
-type PageHeaderDescriptionProps = React.ComponentProps<"p">;
+type PageHeaderDescriptionProps = React.ComponentProps<'p'>;
 
-function PageHeaderDescription({
-  className,
-  children,
-  ...props
-}: PageHeaderDescriptionProps) {
+function PageHeaderDescription({ className, children, ...props }: PageHeaderDescriptionProps) {
   return (
     <p
       data-slot="page-header-description"
-      {...(typeof children === "string" && { title: children })}
-      className={cn("text-xs text-muted-foreground truncate", className)}
+      {...(typeof children === 'string' && { title: children })}
+      className={cn('text-xs text-muted-foreground truncate', className)}
       {...props}
     >
       {children}
@@ -169,62 +149,55 @@ function PageHeaderDescription({
   );
 }
 
-type PageHeaderContentProps = React.ComponentProps<"div">;
+type PageHeaderContentProps = React.ComponentProps<'div'>;
 
 function PageHeaderContent({ className, ...props }: PageHeaderContentProps) {
   return (
     <div
       data-slot="page-header-content"
       className={cn(
-        "flex items-center gap-4 min-w-0",
-        "order-3 basis-full justify-evenly",
-        "@3xl:order-none @3xl:gap-0 @3xl:justify-evenly",
-        className,
+        'flex items-center gap-4 min-w-0',
+        'order-3 basis-full justify-evenly',
+        '@3xl:order-none @3xl:gap-0 @3xl:justify-evenly',
+        className
       )}
       {...props}
     />
   );
 }
 
-type PageHeaderFieldProps = React.ComponentProps<"div">;
+type PageHeaderFieldProps = React.ComponentProps<'div'>;
 
 function PageHeaderField({ className, ...props }: PageHeaderFieldProps) {
   return (
     <div
       data-slot="page-header-field"
-      className={cn("flex flex-col min-w-0", className)}
+      className={cn('flex flex-col min-w-0', className)}
       {...props}
     />
   );
 }
 
-type PageHeaderFieldLabelProps = React.ComponentProps<"p">;
+type PageHeaderFieldLabelProps = React.ComponentProps<'p'>;
 
-function PageHeaderFieldLabel({
-  className,
-  ...props
-}: PageHeaderFieldLabelProps) {
+function PageHeaderFieldLabel({ className, ...props }: PageHeaderFieldLabelProps) {
   return (
     <p
       data-slot="page-header-field-label"
-      className={cn("text-xs text-muted-foreground truncate", className)}
+      className={cn('text-xs text-muted-foreground truncate', className)}
       {...props}
     />
   );
 }
 
-type PageHeaderFieldValueProps = React.ComponentProps<"p">;
+type PageHeaderFieldValueProps = React.ComponentProps<'p'>;
 
-function PageHeaderFieldValue({
-  className,
-  children,
-  ...props
-}: PageHeaderFieldValueProps) {
+function PageHeaderFieldValue({ className, children, ...props }: PageHeaderFieldValueProps) {
   return (
     <p
       data-slot="page-header-field-value"
-      {...(typeof children === "string" && { title: children })}
-      className={cn("text-sm font-medium text-foreground truncate", className)}
+      {...(typeof children === 'string' && { title: children })}
+      className={cn('text-sm font-medium text-foreground truncate', className)}
       {...props}
     >
       {children}
@@ -232,24 +205,23 @@ function PageHeaderFieldValue({
   );
 }
 
-type PageHeaderActionsProps = React.ComponentProps<"div">;
+type PageHeaderActionsProps = React.ComponentProps<'div'>;
 
 function PageHeaderActions({ className, ...props }: PageHeaderActionsProps) {
   return (
     <div
       data-slot="page-header-actions"
       className={cn(
-        "flex items-center gap-4 shrink-0 ml-auto order-2",
-        "@3xl:order-none @3xl:ml-0 @3xl:justify-end",
-        className,
+        'flex items-center gap-4 shrink-0 ml-auto order-2',
+        '@3xl:order-none @3xl:ml-0 @3xl:justify-end',
+        className
       )}
       {...props}
     />
   );
 }
 
-interface PageHeaderActionsOverflowProps
-  extends React.ComponentProps<typeof Button> {
+interface PageHeaderActionsOverflowProps extends React.ComponentProps<typeof Button> {
   children: React.ReactNode;
 }
 
@@ -264,7 +236,7 @@ function PageHeaderActionsOverflow({
         <Button
           variant="ghost"
           size="icon"
-          className={cn("shrink-0", className)}
+          className={cn('shrink-0', className)}
           aria-label="More actions"
           {...triggerProps}
         >
@@ -303,7 +275,7 @@ function PageHeaderCollapsibleActions({
 
   const itemsRef = React.useRef(items);
   itemsRef.current = items;
-  const itemKeys = items.map((i) => i.key).join(",");
+  const itemKeys = items.map((i) => i.key).join(',');
 
   React.useEffect(() => {
     setVisibleCount(null);
@@ -319,12 +291,9 @@ function PageHeaderCollapsibleActions({
       const headerWidth = header.clientWidth;
       const headerStyle = getComputedStyle(header);
       const headerPadding =
-        Number.parseFloat(headerStyle.paddingLeft) +
-        Number.parseFloat(headerStyle.paddingRight);
+        Number.parseFloat(headerStyle.paddingLeft) + Number.parseFloat(headerStyle.paddingRight);
 
-      const actionsContainer = container.closest<HTMLElement>(
-        '[data-slot="page-header-actions"]',
-      );
+      const actionsContainer = container.closest<HTMLElement>('[data-slot="page-header-actions"]');
       let fixedWidth = 0;
       if (actionsContainer) {
         for (const child of Array.from(actionsContainer.children)) {
@@ -334,15 +303,11 @@ function PageHeaderCollapsibleActions({
         }
       }
 
-      const trigger = container.querySelector<HTMLElement>(
-        "[data-overflow-trigger]",
-      );
+      const trigger = container.querySelector<HTMLElement>('[data-overflow-trigger]');
       const measuredTriggerWidth = trigger ? trigger.offsetWidth + gap : 0;
       const estimatedTriggerWidth = 36 + gap;
 
-      const rulerItems = Array.from(
-        ruler.querySelectorAll<HTMLElement>("[data-ruler-item]"),
-      );
+      const rulerItems = Array.from(ruler.querySelectorAll<HTMLElement>('[data-ruler-item]'));
 
       const fitCount = (space: number) => {
         let remaining = space;
@@ -358,7 +323,7 @@ function PageHeaderCollapsibleActions({
         return n;
       };
 
-      const isGrid = getComputedStyle(header).display === "grid";
+      const isGrid = getComputedStyle(header).display === 'grid';
       const baseAvailable =
         isGrid && actionsContainer
           ? actionsContainer.clientWidth - fixedWidth
@@ -397,7 +362,7 @@ function PageHeaderCollapsibleActions({
     <div
       ref={containerRef}
       className="contents"
-      style={hasMeasured ? {} : { visibility: "hidden" }}
+      style={hasMeasured ? {} : { visibility: 'hidden' }}
     >
       {/* Hidden ruler — measures natural button widths without affecting layout */}
       <div
@@ -435,9 +400,7 @@ function PageHeaderCollapsibleActions({
             {overflowItems.map((item) => (
               <React.Fragment key={item.key}>{item.menuItem}</React.Fragment>
             ))}
-            {overflowItems.length > 0 && overflowContent && (
-              <DropdownMenuSeparator />
-            )}
+            {overflowItems.length > 0 && overflowContent && <DropdownMenuSeparator />}
             {overflowContent}
           </DropdownMenuContent>
         </DropdownMenu>

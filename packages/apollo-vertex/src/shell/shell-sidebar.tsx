@@ -1,13 +1,9 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Link, useLocation } from '@tanstack/react-router';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Sidebar,
   SidebarContent,
@@ -22,29 +18,25 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
-import type { CompanyLogo, ShellNavItem } from "./shell";
-import {
-  fastFadeTransition,
-  iconHoverScale,
-  textFadeVariants,
-} from "./shell-animations";
-import { Company } from "./shell-company";
-import { MinimalCompany } from "./shell-minimal-company";
-import { MinimalNavItem } from "./shell-minimal-nav-item";
-import { Text } from "./shell-text";
-import { UserProfile } from "./shell-user-profile";
+} from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
+import type { CompanyLogo, ShellNavItem } from './shell';
+import { fastFadeTransition, iconHoverScale, textFadeVariants } from './shell-animations';
+import { Company } from './shell-company';
+import { MinimalCompany } from './shell-minimal-company';
+import { MinimalNavItem } from './shell-minimal-nav-item';
+import { Text } from './shell-text';
+import { UserProfile } from './shell-user-profile';
 
 const activeNavClass =
-  "text-sidebar-foreground/85 hover:text-sidebar-foreground data-[active=true]:text-primary-700 dark:data-[active=true]:text-primary-400 data-[active=true]:font-semibold data-[active=true]:bg-primary-100/40 dark:data-[active=true]:bg-primary-900/30";
+  'text-sidebar-foreground/85 hover:text-sidebar-foreground data-[active=true]:text-primary-700 dark:data-[active=true]:text-primary-400 data-[active=true]:font-semibold data-[active=true]:bg-primary-100/40 dark:data-[active=true]:bg-primary-900/30';
 const navButtonClass = `font-medium ${activeNavClass}`;
 const subButtonClass = activeNavClass;
 
 interface ShellSidebarProps {
   companyName: string;
   productName: string;
-  variant?: "minimal";
+  variant?: 'minimal';
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
 }
@@ -56,7 +48,7 @@ export const ShellSidebar = ({
   companyLogo,
   navItems,
 }: ShellSidebarProps) => {
-  if (variant === "minimal") {
+  if (variant === 'minimal') {
     return (
       <header className="relative flex items-center justify-between px-4 sm:px-6 lg:px-8 py-6 transition-[padding] duration-300 ease-in-out">
         <MinimalCompany
@@ -68,21 +60,13 @@ export const ShellSidebar = ({
         {navItems.length > 0 && (
           <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-muted dark:bg-[oklch(0.24_0.033_254)] rounded-full p-1.5 overflow-x-auto scrollbar-thin">
             {navItems.map((item) => (
-              <MinimalNavItem
-                key={item.path}
-                to={item.path}
-                label={item.label}
-              />
+              <MinimalNavItem key={item.path} to={item.path} label={item.label} />
             ))}
           </nav>
         )}
 
         <div className="flex items-center gap-2">
-          <UserProfile
-            isCollapsed
-            collapsedMenuSide="bottom"
-            collapsedMenuAlign="end"
-          />
+          <UserProfile isCollapsed collapsedMenuSide="bottom" collapsedMenuAlign="end" />
         </div>
       </header>
     );
@@ -105,16 +89,11 @@ interface SidebarNavProps {
   navItems: ShellNavItem[];
 }
 
-function SidebarNav({
-  companyName,
-  productName,
-  companyLogo,
-  navItems,
-}: SidebarNavProps) {
+function SidebarNav({ companyName, productName, companyLogo, navItems }: SidebarNavProps) {
   const { t } = useTranslation();
   const { state, toggleSidebar } = useSidebar();
   const { pathname } = useLocation();
-  const isCollapsed = state === "collapsed";
+  const isCollapsed = state === 'collapsed';
   const [sidebarHovered, setSidebarHovered] = useState(false);
 
   const handleMouseEnter = () => {
@@ -163,8 +142,8 @@ function SidebarNav({
   };
 
   const isActive = (path: string) => {
-    if (path === "/") {
-      return pathname === "/";
+    if (path === '/') {
+      return pathname === '/';
     }
     return pathname === path || pathname.startsWith(`${path}/`);
   };
@@ -173,8 +152,8 @@ function SidebarNav({
     return item.subItems?.some((sub) => isActive(sub.path)) ?? false;
   };
 
-  const getTooltipText = (label: ShellNavItem["label"]): string => {
-    if (typeof label === "string") return t(label);
+  const getTooltipText = (label: ShellNavItem['label']): string => {
+    if (typeof label === 'string') return t(label);
     return t(label.i18nKey, label.values);
   };
 
@@ -224,9 +203,7 @@ function SidebarNav({
                           >
                             <motion.span
                               className="inline-flex items-center justify-center shrink-0"
-                              {...(isCollapsed
-                                ? { whileHover: iconHoverScale }
-                                : {})}
+                              {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
                             >
                               <Icon className="size-4 shrink-0" />
                             </motion.span>
@@ -258,8 +235,8 @@ function SidebarNav({
                                 >
                                   <ChevronDown
                                     className={cn(
-                                      "size-4 transition-transform duration-200",
-                                      isExpanded && "rotate-180",
+                                      'size-4 transition-transform duration-200',
+                                      isExpanded && 'rotate-180'
                                     )}
                                   />
                                 </motion.div>
@@ -277,8 +254,8 @@ function SidebarNav({
                                     asChild
                                     isActive={subActive}
                                     className={cn(
-                                      "cursor-pointer whitespace-nowrap",
-                                      subButtonClass,
+                                      'cursor-pointer whitespace-nowrap',
+                                      subButtonClass
                                     )}
                                   >
                                     <Link to={subItem.path}>
@@ -306,9 +283,7 @@ function SidebarNav({
                       <Link to={item.path}>
                         <motion.span
                           className="inline-flex items-center justify-center shrink-0"
-                          {...(isCollapsed
-                            ? { whileHover: iconHoverScale }
-                            : {})}
+                          {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
                         >
                           <Icon className="size-4 shrink-0" />
                         </motion.span>
@@ -344,8 +319,7 @@ function SidebarNav({
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          boxShadow:
-            "inset -1px 0 0 0 color-mix(in srgb, var(--color-border) 50%, transparent)",
+          boxShadow: 'inset -1px 0 0 0 color-mix(in srgb, var(--color-border) 50%, transparent)',
         }}
       />
     </Sidebar>

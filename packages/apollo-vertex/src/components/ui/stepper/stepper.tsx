@@ -1,37 +1,30 @@
-"use client";
+'use client';
 
-import { cva, type VariantProps } from "class-variance-authority";
-import { type ComponentProps, useMemo } from "react";
-import { cn } from "@/lib/utils";
-import { StepperContext, type StepperOrientation } from "./stepper-context";
+import { cva, type VariantProps } from 'class-variance-authority';
+import { type ComponentProps, useMemo } from 'react';
+import { cn } from '@/lib/utils';
+import { StepperContext, type StepperOrientation } from './stepper-context';
 
-const stepperVariants = cva("flex w-full", {
+const stepperVariants = cva('flex w-full', {
   variants: {
     orientation: {
-      horizontal: "flex-row items-center",
-      vertical: "flex-col",
+      horizontal: 'flex-row items-center',
+      vertical: 'flex-col',
     },
   },
   defaultVariants: {
-    orientation: "horizontal",
+    orientation: 'horizontal',
   },
 });
 
-interface StepperProps
-  extends ComponentProps<"ol">,
-    VariantProps<typeof stepperVariants> {
+interface StepperProps extends ComponentProps<'ol'>, VariantProps<typeof stepperVariants> {
   activeStep: number;
 }
 
-function Stepper({
-  className,
-  activeStep,
-  orientation = "horizontal",
-  ...props
-}: StepperProps) {
+function Stepper({ className, activeStep, orientation = 'horizontal', ...props }: StepperProps) {
   const value = useMemo(
-    () => ({ activeStep, orientation: orientation ?? "horizontal" }),
-    [activeStep, orientation],
+    () => ({ activeStep, orientation: orientation ?? 'horizontal' }),
+    [activeStep, orientation]
   );
 
   return (
@@ -54,13 +47,13 @@ export {
   StepperContent,
   StepperDescription,
   StepperTitle,
-} from "./stepper-content";
-export { StepperIndicator } from "./stepper-indicator";
+} from './stepper-content';
+export { StepperIndicator } from './stepper-indicator';
 export {
   StepperItem,
   type StepperItemProps,
   stepperItemVariants,
-} from "./stepper-item";
-export { StepperSeparator } from "./stepper-separator";
-export { StepperTrigger } from "./stepper-trigger";
-export type { StepperItemState, StepperOrientation } from "./stepper-context";
+} from './stepper-item';
+export { StepperSeparator } from './stepper-separator';
+export { StepperTrigger } from './stepper-trigger';
+export type { StepperItemState, StepperOrientation } from './stepper-context';

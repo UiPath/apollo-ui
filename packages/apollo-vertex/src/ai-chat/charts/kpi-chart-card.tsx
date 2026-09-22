@@ -1,12 +1,8 @@
-"use client";
+'use client';
 
-import { Card, CardContent } from "@/components/ui/card";
-import { KpiChartWithAdapter } from "@/components/ui/kpi-chart";
-import type {
-  DataAdapter,
-  KpiChartConfiguration,
-  KpiDataModel,
-} from "@/lib/charts-core";
+import { Card, CardContent } from '@/components/ui/card';
+import { KpiChartWithAdapter } from '@/components/ui/kpi-chart';
+import type { DataAdapter, KpiChartConfiguration, KpiDataModel } from '@/lib/charts-core';
 
 interface KpiChartCardProps {
   configuration: KpiChartConfiguration;
@@ -14,11 +10,7 @@ interface KpiChartCardProps {
   dataAdapter: DataAdapter;
 }
 
-export function KpiChartCard({
-  configuration,
-  dataModel,
-  dataAdapter,
-}: KpiChartCardProps) {
+export function KpiChartCard({ configuration, dataModel, dataAdapter }: KpiChartCardProps) {
   return (
     <Card className="w-fit min-w-[180px] gap-0 p-0">
       <CardContent className="p-0 [&>div>div>div]:!p-3">

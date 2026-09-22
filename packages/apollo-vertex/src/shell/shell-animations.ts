@@ -1,5 +1,5 @@
 export const sidebarSpring = {
-  type: "spring",
+  type: 'spring',
   stiffness: 400,
   damping: 30,
   mass: 0.5,

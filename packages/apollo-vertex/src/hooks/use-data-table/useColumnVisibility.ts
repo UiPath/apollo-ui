@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import type { OnChangeFn, VisibilityState } from "@tanstack/react-table";
+import type { OnChangeFn, VisibilityState } from '@tanstack/react-table';
 
-import { usePersistedColumns } from "./usePersistedColumns";
+import { usePersistedColumns } from './usePersistedColumns';
 
 const visibleColumnsToVisibilityState = (
   visibleColumns: string[],
-  allColumnKeys: string[],
+  allColumnKeys: string[]
 ): VisibilityState => {
   const state: VisibilityState = {};
   for (const key of allColumnKeys) {
@@ -19,7 +19,7 @@ const visibleColumnsToVisibilityState = (
 
 const visibilityStateToVisibleColumns = (
   visibilityState: VisibilityState,
-  allColumnKeys: string[],
+  allColumnKeys: string[]
 ): string[] => {
   // oxlint-disable-next-line typescript-eslint(no-unnecessary-boolean-literal-compare) -- undefined means visible; !== false is intentional
   return allColumnKeys.filter((key) => visibilityState[key] !== false);
@@ -41,21 +41,12 @@ export function useColumnVisibility({
     availableColumns: allColumnKeys,
   });
 
-  const columnVisibility = visibleColumnsToVisibilityState(
-    visibleColumns,
-    allColumnKeys,
-  );
+  const columnVisibility = visibleColumnsToVisibilityState(visibleColumns, allColumnKeys);
 
-  const onColumnVisibilityChange: OnChangeFn<VisibilityState> = (
-    updaterOrValue,
-  ) => {
+  const onColumnVisibilityChange: OnChangeFn<VisibilityState> = (updaterOrValue) => {
     const newVisibility =
-      typeof updaterOrValue === "function"
-        ? updaterOrValue(columnVisibility)
-        : updaterOrValue;
-    setVisibleColumns(
-      visibilityStateToVisibleColumns(newVisibility, allColumnKeys),
-    );
+      typeof updaterOrValue === 'function' ? updaterOrValue(columnVisibility) : updaterOrValue;
+    setVisibleColumns(visibilityStateToVisibleColumns(newVisibility, allColumnKeys));
   };
 
   return { columnVisibility, onColumnVisibilityChange };

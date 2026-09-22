@@ -1,4 +1,4 @@
-import type { LabelListContentProps } from "./util/recharts-bar-data";
+import type { LabelListContentProps } from './util/recharts-bar-data';
 
 interface BarLabelProps extends LabelListContentProps {
   formatted: string;

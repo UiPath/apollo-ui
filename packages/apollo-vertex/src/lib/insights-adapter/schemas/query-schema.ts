@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { AggregateFragmentSchema } from "./aggregate-fragment-schema";
-import { FilterRequestSchema } from "./filter-request-schema";
+import { z } from 'zod';
+import { AggregateFragmentSchema } from './aggregate-fragment-schema';
+import { FilterRequestSchema } from './filter-request-schema';
 
 export const InsightsQueryRequestSchema = z.object({
   filters: z.array(z.array(FilterRequestSchema)),
@@ -10,15 +10,15 @@ export const InsightsQueryRequestSchema = z.object({
     .array(
       z.object({
         field: z.string(),
-        direction: z.enum(["asc", "desc"]),
-      }),
+        direction: z.enum(['asc', 'desc']),
+      })
     )
     .optional(),
   binning: z
     .object({
       bins: z.array(z.union([z.string(), z.number()])),
       dimension: z.string(),
-      extraBins: z.enum(["none", "null"]),
+      extraBins: z.enum(['none', 'null']),
     })
     .optional(),
   stacks: z

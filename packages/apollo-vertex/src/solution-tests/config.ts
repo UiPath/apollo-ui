@@ -1,8 +1,8 @@
-import type { ColumnDef } from "@tanstack/react-table";
-import { DEFAULT_PASS_THRESHOLD } from "./constants";
-import type { EvaluatorRenderers } from "./evaluators/registry";
-import type { ProcessOutputRenderers } from "./outputs/registry";
-import type { SolutionTest, SolutionTestRun } from "./types";
+import type { ColumnDef } from '@tanstack/react-table';
+import { DEFAULT_PASS_THRESHOLD } from './constants';
+import type { EvaluatorRenderers } from './evaluators/registry';
+import type { ProcessOutputRenderers } from './outputs/registry';
+import type { SolutionTest, SolutionTestRun } from './types';
 
 /**
  * Telemetry events the Solution Tests actions emit, with payloads. The template
@@ -11,35 +11,33 @@ import type { SolutionTest, SolutionTestRun } from "./types";
  * an intersection) so a generic tracker's `Map[K]` indexing keeps working.
  */
 export interface SolutionTestEventMap {
-  "VS.SolutionTest.Run": {
-    mode: "all" | "test" | "selected";
+  'VS.SolutionTest.Run': {
+    mode: 'all' | 'test' | 'selected';
     testCount: number;
   };
-  "VS.SolutionTest.Created": { subjectId: string };
-  "VS.SolutionTest.ActiveToggled": { testId: string; isActive: boolean };
-  "VS.SolutionTest.Deleted": { testId: string };
-  "VS.SolutionTest.BatchForceStopped": { batchId: string };
-  "VS.SolutionTest.RunForceStopped": { runId: string };
-  "VS.SolutionTest.JobAdopted": { resultId: string };
-  "VS.SolutionTest.BaselineUpdated": { resultId: string };
-  "VS.SolutionTest.BaselineRemoved": { baselineId: string };
+  'VS.SolutionTest.Created': { subjectId: string };
+  'VS.SolutionTest.ActiveToggled': { testId: string; isActive: boolean };
+  'VS.SolutionTest.Deleted': { testId: string };
+  'VS.SolutionTest.BatchForceStopped': { batchId: string };
+  'VS.SolutionTest.RunForceStopped': { runId: string };
+  'VS.SolutionTest.JobAdopted': { resultId: string };
+  'VS.SolutionTest.BaselineUpdated': { resultId: string };
+  'VS.SolutionTest.BaselineRemoved': { baselineId: string };
 
   // UI interactions (no server request) — user navigation and output inspection.
-  "VS.SolutionTest.TabViewed": { tab: "cases" | "runs" };
-  "VS.SolutionTest.TestExpanded": { testId: string };
-  "VS.SolutionTest.BatchExpanded": { batchId: string };
-  "VS.SolutionTest.RunDetailsOpened": { runId: string };
-  "VS.SolutionTest.ResultViewed": { resultId: string };
-  "VS.SolutionTest.RawOutputViewed": { processName: string };
+  'VS.SolutionTest.TabViewed': { tab: 'cases' | 'runs' };
+  'VS.SolutionTest.TestExpanded': { testId: string };
+  'VS.SolutionTest.BatchExpanded': { batchId: string };
+  'VS.SolutionTest.RunDetailsOpened': { runId: string };
+  'VS.SolutionTest.ResultViewed': { resultId: string };
+  'VS.SolutionTest.RawOutputViewed': { processName: string };
 }
 
 export type SolutionTestEventName = keyof SolutionTestEventMap;
 
-type UnionToIntersection<U> = (
-  U extends unknown
-    ? (arg: U) => void
-    : never
-) extends (arg: infer I) => void
+type UnionToIntersection<U> = (U extends unknown ? (arg: U) => void : never) extends (
+  arg: infer I
+) => void
   ? I
   : never;
 
@@ -50,10 +48,7 @@ type UnionToIntersection<U> = (
  */
 export type TrackSolutionTestEvent = UnionToIntersection<
   {
-    [K in SolutionTestEventName]: (
-      event: K,
-      properties: SolutionTestEventMap[K],
-    ) => void;
+    [K in SolutionTestEventName]: (event: K, properties: SolutionTestEventMap[K]) => void;
   }[SolutionTestEventName]
 >;
 
@@ -93,9 +88,7 @@ export interface ResolvedSolutionTestsConfig {
   track?: TrackSolutionTestEvent;
 }
 
-export function resolveConfig(
-  config: SolutionTestsConfig = {},
-): ResolvedSolutionTestsConfig {
+export function resolveConfig(config: SolutionTestsConfig = {}): ResolvedSolutionTestsConfig {
   return {
     subjectColumns: config.subjectColumns ?? [],
     getSubjectHref: config.getSubjectHref,

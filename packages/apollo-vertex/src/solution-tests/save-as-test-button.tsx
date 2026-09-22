@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Check, FlaskConical } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { Check, FlaskConical } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 
 interface SaveAsTestButtonProps {
   isSaved: boolean;
@@ -34,7 +34,7 @@ export const SaveAsTestButton = ({
       ) : (
         <FlaskConical className="size-4" />
       )}
-      {isSaved ? t("saved_as_solution_test") : t("save_as_solution_test")}
+      {isSaved ? t('saved_as_solution_test') : t('save_as_solution_test')}
     </Button>
   );
 };

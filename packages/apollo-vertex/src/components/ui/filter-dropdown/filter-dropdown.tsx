@@ -1,16 +1,12 @@
-import type { Column } from "@tanstack/react-table";
-import { CheckIcon, ChevronDownIcon, SearchIcon, XIcon } from "lucide-react";
-import { type ReactNode, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import type { Column } from '@tanstack/react-table';
+import { CheckIcon, ChevronDownIcon, SearchIcon, XIcon } from 'lucide-react';
+import { type ReactNode, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,7 +35,7 @@ interface FilterDropdownProps<TData = unknown, TValue = unknown> {
   onChange?: (value: string[] | string) => void;
 
   /** Show search input: true = always, false = never, "auto" = when options exceed searchThreshold (default: "auto") */
-  enableSearch?: boolean | "auto";
+  enableSearch?: boolean | 'auto';
   /** Number of options before search auto-appears (default: 8) */
   searchThreshold?: number;
   /** Placeholder for search input */
@@ -50,7 +46,7 @@ interface FilterDropdownProps<TData = unknown, TValue = unknown> {
   noResultsMessage?: ReactNode;
 
   /** PopoverContent alignment */
-  align?: "start" | "center" | "end";
+  align?: 'start' | 'center' | 'end';
   /** PopoverContent width class */
   popoverWidth?: string;
 }
@@ -67,28 +63,27 @@ function FilterDropdown<TData, TValue>({
   column,
   value: valueProp,
   onChange: onChangeProp,
-  enableSearch = "auto",
+  enableSearch = 'auto',
   searchThreshold = 8,
-  searchPlaceholder = "Search...",
+  searchPlaceholder = 'Search...',
   noOptionsMessage,
-  noResultsMessage = "No results found",
-  align = "start",
-  popoverWidth = "w-[220px]",
+  noResultsMessage = 'No results found',
+  align = 'start',
+  popoverWidth = 'w-[220px]',
 }: FilterDropdownProps<TData, TValue>) {
   // React Compiler compat: TanStack Table Column objects have stable references with mutable state.
   // codeql[js/unknown-directive] - valid React Compiler directive
-  "use no memo";
+  'use no memo';
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const showSearch =
-    enableSearch === true ||
-    (enableSearch === "auto" && options.length >= searchThreshold);
+    enableSearch === true || (enableSearch === 'auto' && options.length >= searchThreshold);
 
   // Clear search when popover closes
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
-    if (!nextOpen) setSearchQuery("");
+    if (!nextOpen) setSearchQuery('');
   };
 
   // --- Read selected values ---
@@ -97,14 +92,14 @@ function FilterDropdown<TData, TValue>({
       const filterValue = column.getFilterValue();
       if (multiSelect) {
         return Array.isArray(filterValue)
-          ? filterValue.filter((v): v is string => typeof v === "string")
+          ? filterValue.filter((v): v is string => typeof v === 'string')
           : [];
       }
-      if (Array.isArray(filterValue) && typeof filterValue[0] === "string") {
+      if (Array.isArray(filterValue) && typeof filterValue[0] === 'string') {
         return [filterValue[0]];
       }
-      if (typeof filterValue === "string") return [filterValue];
-      if (typeof filterValue === "number") return [String(filterValue)];
+      if (typeof filterValue === 'string') return [filterValue];
+      if (typeof filterValue === 'number') return [String(filterValue)];
       return [];
     }
     if (valueProp != null) {
@@ -130,7 +125,7 @@ function FilterDropdown<TData, TValue>({
       if (multiSelect) {
         (onChangeProp as (v: string[]) => void)(next);
       } else {
-        (onChangeProp as (v: string) => void)(next[0] ?? "");
+        (onChangeProp as (v: string) => void)(next[0] ?? '');
       }
     }
   };
@@ -155,9 +150,7 @@ function FilterDropdown<TData, TValue>({
   // --- Filtered options (search) ---
   const filteredOptions =
     showSearch && searchQuery
-      ? options.filter((o) =>
-          o.label.toLowerCase().includes(searchQuery.toLowerCase()),
-        )
+      ? options.filter((o) => o.label.toLowerCase().includes(searchQuery.toLowerCase()))
       : options;
 
   // --- Trigger label ---
@@ -182,21 +175,12 @@ function FilterDropdown<TData, TValue>({
     <div data-slot="filter-dropdown" className={className}>
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 justify-between gap-2 font-normal"
-          >
-            <span className="shrink-0 text-sm font-medium">
-              {getTriggerLabel()}
-            </span>
+          <Button variant="ghost" size="sm" className="h-9 justify-between gap-2 font-normal">
+            <span className="shrink-0 text-sm font-medium">{getTriggerLabel()}</span>
             <ChevronDownIcon className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent
-          align={align}
-          className={cn(popoverWidth, "overflow-hidden p-0")}
-        >
+        <PopoverContent align={align} className={cn(popoverWidth, 'overflow-hidden p-0')}>
           {/* Search */}
           {showSearch && (
             <div className="p-2 pb-1">
@@ -211,7 +195,7 @@ function FilterDropdown<TData, TValue>({
                 {searchQuery && (
                   <button
                     type="button"
-                    onClick={() => setSearchQuery("")}
+                    onClick={() => setSearchQuery('')}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     <XIcon className="h-3.5 w-3.5" />
@@ -237,7 +221,7 @@ function FilterDropdown<TData, TValue>({
                       className="flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
                       onClick={handleClearAll}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
+                        if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
                           handleClearAll();
                         }
@@ -248,7 +232,7 @@ function FilterDropdown<TData, TValue>({
                         className="pointer-events-none"
                         tabIndex={-1}
                       />
-                      {"All"}
+                      {'All'}
                     </div>
                     <Separator className="my-1" />
                   </>
@@ -269,15 +253,15 @@ function FilterDropdown<TData, TValue>({
                           : handleSingleSelect(option.value)
                       }
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
+                        if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
                           if (multiSelect) handleMultiToggle(option.value);
                           else handleSingleSelect(option.value);
                         }
                       }}
                       className={cn(
-                        "flex w-full cursor-default items-center rounded-sm py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
-                        multiSelect ? "gap-2 px-2" : "relative gap-2 pl-2 pr-8",
+                        'flex w-full cursor-default items-center rounded-sm py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
+                        multiSelect ? 'gap-2 px-2' : 'relative gap-2 pl-2 pr-8'
                       )}
                     >
                       {multiSelect && (
@@ -287,9 +271,7 @@ function FilterDropdown<TData, TValue>({
                           tabIndex={-1}
                         />
                       )}
-                      {option.icon && (
-                        <option.icon className="size-4 text-muted-foreground" />
-                      )}
+                      {option.icon && <option.icon className="size-4 text-muted-foreground" />}
                       <span className="truncate">{option.label}</span>
                       {!multiSelect && isSelected && (
                         <CheckIcon className="absolute right-2 size-4" />

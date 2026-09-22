@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from 'framer-motion';
 
-import { cn } from "@/lib/utils";
-import { type ConfidenceLevel, LEVEL_CONFIG } from "./confidence-signal-levels";
+import { cn } from '@/lib/utils';
+import { type ConfidenceLevel, LEVEL_CONFIG } from './confidence-signal-levels';
 
 // ---------------------------------------------------------------------------
 // Signal bars icon — three rounded pills, graduated height, left to right.
@@ -23,8 +23,8 @@ const ACQUIRE_STAGGER = 0.09;
 // SVG rects scale from their own box, anchored at the baseline, so the bars
 // grow upward out of the track instead of from their centre.
 const BAR_TRANSFORM_ORIGIN = {
-  transformBox: "fill-box",
-  transformOrigin: "bottom",
+  transformBox: 'fill-box',
+  transformOrigin: 'bottom',
 } as const;
 
 function SignalBars({
@@ -50,22 +50,14 @@ function SignalBars({
       viewBox="0 0 24 18"
       fill="none"
       overflow="visible"
-      className={cn("shrink-0", className)}
+      className={cn('shrink-0', className)}
       aria-hidden="true"
     >
       {/* Track bars sit behind the animation so the icon's full shape is
           visible before the value resolves, avoiding a layout shift. */}
       {animate &&
         BAR_HEIGHTS.map((h, i) => (
-          <rect
-            key={`track-${h}`}
-            x={9 * i}
-            y={18 - h}
-            width={6}
-            height={h}
-            rx={3}
-            fill={faded}
-          />
+          <rect key={`track-${h}`} x={9 * i} y={18 - h} width={6} height={h} rx={3} fill={faded} />
         ))}
       {BAR_HEIGHTS.map((h, i) => (
         <motion.rect
@@ -85,7 +77,7 @@ function SignalBars({
                   duration: ACQUIRE_DURATION,
                   times: ACQUIRE_TIMES,
                   delay: i * ACQUIRE_STAGGER,
-                  ease: "easeInOut" as const,
+                  ease: 'easeInOut' as const,
                 },
               }
             : {})}

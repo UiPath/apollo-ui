@@ -1,9 +1,9 @@
-import { initContract } from "@ts-rest/core";
-import { z } from "zod";
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
 import {
   DataFabricQueryRequestSchema,
   DataFabricQueryResponseSchema,
-} from "./schemas/query-schema";
+} from './schemas/query-schema';
 
 const c = initContract();
 
@@ -19,8 +19,8 @@ const queryErrorResponse = z.object({
 export const dataFabricContract = c.router(
   {
     query: {
-      method: "POST",
-      path: "/v2/EntityService/:entityName/query",
+      method: 'POST',
+      path: '/v2/EntityService/:entityName/query',
       responses: {
         200: DataFabricQueryResponseSchema,
         400: queryErrorResponse,
@@ -33,5 +33,5 @@ export const dataFabricContract = c.router(
   },
   {
     strictStatusCodes: true,
-  },
+  }
 );

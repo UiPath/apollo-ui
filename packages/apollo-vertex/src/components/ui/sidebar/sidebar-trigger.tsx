@@ -1,17 +1,13 @@
-"use client";
+'use client';
 
-import { PanelLeftIcon } from "lucide-react";
-import * as React from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useSidebar } from "./sidebar-provider";
+import { PanelLeftIcon } from 'lucide-react';
+import * as React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useSidebar } from './sidebar-provider';
 
-function SidebarTrigger({
-  className,
-  onClick,
-  ...props
-}: React.ComponentProps<typeof Button>) {
+function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
   const { t } = useTranslation();
   const { toggleSidebar } = useSidebar();
 
@@ -22,8 +18,8 @@ function SidebarTrigger({
       variant="ghost"
       size="icon"
       className={cn(
-        "size-7 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:hover:bg-sidebar-accent dark:hover:text-sidebar-accent-foreground",
-        className,
+        'size-7 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:hover:bg-sidebar-accent dark:hover:text-sidebar-accent-foreground',
+        className
       )}
       onClick={(event) => {
         onClick?.(event);
@@ -32,7 +28,7 @@ function SidebarTrigger({
       {...props}
     >
       <PanelLeftIcon />
-      <span className="sr-only">{t("toggle_sidebar")}</span>
+      <span className="sr-only">{t('toggle_sidebar')}</span>
     </Button>
   );
 }

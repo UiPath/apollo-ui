@@ -1,27 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import {
   FieldCell,
   FieldGroupHeading,
   FieldRow,
   FieldTable,
-} from "../../../ixp/shared/field-table";
-import { formatFieldValues } from "../../../ixp/shared/format-values";
-import { IxpVerdict, type IxpField } from "../schema";
-import { VerdictBadge } from "./verdict-badge";
+} from '../../../ixp/shared/field-table';
+import { formatFieldValues } from '../../../ixp/shared/format-values';
+import { IxpVerdict, type IxpField } from '../schema';
+import { VerdictBadge } from './verdict-badge';
 
 /** One field group within a document: a heading + a table of fields. Identical
  * fields are hidden behind a toggle so the changes stand out. */
-export const FieldGroup = ({
-  group,
-  fields,
-}: {
-  group: string;
-  fields: IxpField[];
-}) => {
+export const FieldGroup = ({ group, fields }: { group: string; fields: IxpField[] }) => {
   const { t } = useTranslation();
   const [showUnchanged, setShowUnchanged] = useState(false);
 
@@ -35,10 +29,10 @@ export const FieldGroup = ({
       {visible.length > 0 && (
         <FieldTable
           columns={[
-            { label: t("ixp_field") },
-            { label: t("ixp_baseline") },
-            { label: t("ixp_new") },
-            { label: t("ixp_verdict"), align: "right" },
+            { label: t('ixp_field') },
+            { label: t('ixp_baseline') },
+            { label: t('ixp_new') },
+            { label: t('ixp_verdict'), align: 'right' },
           ]}
         >
           {visible.map((f, i) => (
@@ -69,8 +63,8 @@ export const FieldGroup = ({
           className="mt-1 h-auto p-0 text-xs text-muted-foreground"
         >
           {showUnchanged
-            ? t("ixp_hide_unchanged")
-            : t("ixp_show_unchanged", { count: identicalCount })}
+            ? t('ixp_hide_unchanged')
+            : t('ixp_show_unchanged', { count: identicalCount })}
         </Button>
       )}
     </div>

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useId } from "react";
+import { useId } from 'react';
 
 interface AiMarkProps {
   size?: number;
   className?: string;
   /** "gradient" paints the self-contained AI gradient; "solid" paints with currentColor. */
-  variant?: "gradient" | "solid";
+  variant?: 'gradient' | 'solid';
 }
 
 /**
@@ -15,13 +15,9 @@ interface AiMarkProps {
  * default, or with the AI gradient when `variant="gradient"`. The gradient is
  * self-contained via a `useId`-scoped def, so no external gradient def is needed.
  */
-export function AiMark({
-  size = 24,
-  className,
-  variant = "solid",
-}: AiMarkProps) {
+export function AiMark({ size = 24, className, variant = 'solid' }: AiMarkProps) {
   const gradientId = useId();
-  const fill = variant === "gradient" ? `url(#${gradientId})` : "currentColor";
+  const fill = variant === 'gradient' ? `url(#${gradientId})` : 'currentColor';
 
   return (
     <svg
@@ -32,7 +28,7 @@ export function AiMark({
       className={className}
       aria-hidden="true"
     >
-      {variant === "gradient" && (
+      {variant === 'gradient' && (
         <defs>
           <linearGradient
             id={gradientId}

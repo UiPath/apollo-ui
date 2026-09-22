@@ -4,32 +4,32 @@ interface BaseField {
 }
 
 interface NumericField extends BaseField {
-  type: "numeric";
+  type: 'numeric';
 }
 
 interface StringField extends BaseField {
-  type: "string";
+  type: 'string';
 }
 
 interface DateTimeField extends BaseField {
-  type: "datetime";
+  type: 'datetime';
 }
 
 interface PercentageField extends BaseField {
-  type: "percentage";
+  type: 'percentage';
 }
 
 interface DurationField extends BaseField {
-  type: "duration";
+  type: 'duration';
 }
 
 interface CurrencyField extends BaseField {
-  type: "currency";
+  type: 'currency';
   format?: { currency: string };
 }
 
 interface BooleanField extends BaseField {
-  type: "boolean";
+  type: 'boolean';
   format?: { trueDisplay: string; falseDisplay: string };
 }
 
@@ -42,11 +42,8 @@ export type DataModelField =
   | CurrencyField
   | BooleanField;
 
-export type DataModelFieldType = DataModelField["type"];
+export type DataModelFieldType = DataModelField['type'];
 
-export type DatetimeModelField = Extract<DataModelField, { type: "datetime" }>;
-export type StringModelField = Extract<DataModelField, { type: "string" }>;
-export type NumericOrDatetimeModelField = Extract<
-  DataModelField,
-  { type: "numeric" | "datetime" }
->;
+export type DatetimeModelField = Extract<DataModelField, { type: 'datetime' }>;
+export type StringModelField = Extract<DataModelField, { type: 'string' }>;
+export type NumericOrDatetimeModelField = Extract<DataModelField, { type: 'numeric' | 'datetime' }>;

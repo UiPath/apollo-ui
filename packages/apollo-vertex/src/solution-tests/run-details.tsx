@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@/components/ui/empty";
-import { useSolutionTestsConfig } from "./context";
+} from '@/components/ui/empty';
+import { useSolutionTestsConfig } from './context';
 import {
   useAdoptJob,
   useBaselineJobs,
@@ -22,64 +22,49 @@ import {
   useSolutionTestRuns,
   useSolutionTests,
   useUpdateBaseline,
-} from "./hooks";
-import type { ExpandedRowData } from "./result-expanded-content";
-import { RunDetailsView, type BaselineJobMap } from "./run-details-view";
-import { RunResultStatus, type SolutionTestRunResult } from "./types";
+} from './hooks';
+import type { ExpandedRowData } from './result-expanded-content';
+import { RunDetailsView, type BaselineJobMap } from './run-details-view';
+import { RunResultStatus, type SolutionTestRunResult } from './types';
 
-type ResultAttachments = Omit<ExpandedRowData, "loading">;
+type ResultAttachments = Omit<ExpandedRowData, 'loading'>;
 
 /** Download the attachment slots relevant to a result's status. Missing or
  *  failed slots resolve to null; irrelevant statuses fetch nothing. */
 async function fetchResultAttachments(
   result: SolutionTestRunResult,
   attachment: ReturnType<typeof useResultAttachment>,
-  showDebug: boolean,
+  showDebug: boolean
 ): Promise<ResultAttachments> {
   const status = result.Status;
 
   // The debug view renders every slot, so it needs the full fetch.
-  if (
-    showDebug ||
-    status === RunResultStatus.Passed ||
-    status === RunResultStatus.Failed
-  ) {
-    const [expected, expectedInput, actual, actualInput, evalResults] =
-      await Promise.allSettled([
-        attachment.fetch(result.Id, "ExpectedOutput"),
-        attachment.fetch(result.Id, "ExpectedInput"),
-        attachment.fetch(result.Id, "ActualOutput"),
-        attachment.fetch(result.Id, "ActualInput"),
-        attachment.fetch(result.Id, "EvaluatorResults"),
-      ]);
+  if (showDebug || status === RunResultStatus.Passed || status === RunResultStatus.Failed) {
+    const [expected, expectedInput, actual, actualInput, evalResults] = await Promise.allSettled([
+      attachment.fetch(result.Id, 'ExpectedOutput'),
+      attachment.fetch(result.Id, 'ExpectedInput'),
+      attachment.fetch(result.Id, 'ActualOutput'),
+      attachment.fetch(result.Id, 'ActualInput'),
+      attachment.fetch(result.Id, 'EvaluatorResults'),
+    ]);
     return {
-      expected: expected.status === "fulfilled" ? expected.value : null,
-      expectedInput:
-        expectedInput.status === "fulfilled" ? expectedInput.value : null,
-      actual: actual.status === "fulfilled" ? actual.value : null,
-      actualInput:
-        actualInput.status === "fulfilled" ? actualInput.value : null,
-      evaluatorResults:
-        evalResults.status === "fulfilled" ? evalResults.value : null,
+      expected: expected.status === 'fulfilled' ? expected.value : null,
+      expectedInput: expectedInput.status === 'fulfilled' ? expectedInput.value : null,
+      actual: actual.status === 'fulfilled' ? actual.value : null,
+      actualInput: actualInput.status === 'fulfilled' ? actualInput.value : null,
+      evaluatorResults: evalResults.status === 'fulfilled' ? evalResults.value : null,
     };
   }
 
   if (status === RunResultStatus.Missing) {
     return {
-      expected: await attachment
-        .fetch(result.Id, "ExpectedOutput")
-        .catch(() => null),
+      expected: await attachment.fetch(result.Id, 'ExpectedOutput').catch(() => null),
     };
   }
 
-  if (
-    status === RunResultStatus.NoBaseline ||
-    status === RunResultStatus.Error
-  ) {
+  if (status === RunResultStatus.NoBaseline || status === RunResultStatus.Error) {
     return {
-      actual: await attachment
-        .fetch(result.Id, "ActualOutput")
-        .catch(() => null),
+      actual: await attachment.fetch(result.Id, 'ActualOutput').catch(() => null),
     };
   }
 
@@ -106,11 +91,10 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
 
   const run = runs.find((r) => r.Id === runId);
   const test = run && tests.find((x) => x.Id === run.SolutionTestId);
-  const subjectLabel =
-    test?.TestName ?? test?.SubjectId ?? run?.SolutionTestId ?? "";
+  const subjectLabel = test?.TestName ?? test?.SubjectId ?? run?.SolutionTestId ?? '';
 
   const { results, isLoading } = useRunResults(runId);
-  const { jobs: baselines } = useBaselineJobs(run?.SolutionTestId ?? "");
+  const { jobs: baselines } = useBaselineJobs(run?.SolutionTestId ?? '');
 
   const attachment = useResultAttachment();
   const adopt = useAdoptJob();
@@ -120,36 +104,24 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
   const baselineJobMap = useMemo<BaselineJobMap>(
     () =>
       new Map(
-        baselines.map((b) => [
-          b.ProcessName,
-          { id: b.Id, sourceRunResultId: b.SourceRunResultId },
-        ]),
+        baselines.map((b) => [b.ProcessName, { id: b.Id, sourceRunResultId: b.SourceRunResultId }])
       ),
-    [baselines],
+    [baselines]
   );
 
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
 
   // Per-row pending derives from each write mutation's in-flight variables.
   const adoptingResultId = adopt.isPending ? (adopt.variables ?? null) : null;
-  const updatingResultId = updateBaseline.isPending
-    ? (updateBaseline.variables ?? null)
-    : null;
-  const removingBaselineId = removeBaseline.isPending
-    ? (removeBaseline.variables ?? null)
-    : null;
+  const updatingResultId = updateBaseline.isPending ? (updateBaseline.variables ?? null) : null;
+  const removingBaselineId = removeBaseline.isPending ? (removeBaseline.variables ?? null) : null;
 
-  const selectedResult =
-    results.find((r) => r.Id === selectedResultId) ?? results[0];
+  const selectedResult = results.find((r) => r.Id === selectedResultId) ?? results[0];
 
   // Selected-agent attachments, cached per result id so revisiting an agent is
   // instant and the fetch tracks the selection without manual effects/state.
   const attachments = useQuery({
-    queryKey: [
-      "solution-test-result-attachments",
-      selectedResult?.Id,
-      showDebug,
-    ],
+    queryKey: ['solution-test-result-attachments', selectedResult?.Id, showDebug],
     enabled: !!selectedResult,
     queryFn: () =>
       selectedResult
@@ -179,14 +151,12 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
     return (
       <Empty className="h-full min-h-[600px]">
         <EmptyHeader>
-          <EmptyTitle>{t("run_unavailable")}</EmptyTitle>
-          <EmptyDescription>
-            {t("run_unavailable_description")}
-          </EmptyDescription>
+          <EmptyTitle>{t('run_unavailable')}</EmptyTitle>
+          <EmptyDescription>{t('run_unavailable_description')}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={onBack}>
-            {t("back")}
+            {t('back')}
           </Button>
         </EmptyContent>
       </Empty>
@@ -210,32 +180,26 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
         // Only a genuine selection change is a "view" — re-clicking the shown
         // agent should not re-emit.
         if (id !== selectedResult?.Id) {
-          track?.("VS.SolutionTest.ResultViewed", { resultId: id });
+          track?.('VS.SolutionTest.ResultViewed', { resultId: id });
         }
         setSelectedResultId(id);
       }}
       onAdopt={(id) =>
         adopt.mutate(id, {
-          onSuccess: () => toast.success(t("agent_adopted_successfully")),
-          onError: (err) =>
-            toast.error(`${t("failed_to_adopt_agent")}: ${err.message}`),
+          onSuccess: () => toast.success(t('agent_adopted_successfully')),
+          onError: (err) => toast.error(`${t('failed_to_adopt_agent')}: ${err.message}`),
         })
       }
       onUpdateBaseline={(id) =>
         updateBaseline.mutate(id, {
-          onSuccess: () => toast.success(t("baseline_updated_successfully")),
-          onError: (err) =>
-            toast.error(`${t("failed_to_update_baseline")}: ${err.message}`),
+          onSuccess: () => toast.success(t('baseline_updated_successfully')),
+          onError: (err) => toast.error(`${t('failed_to_update_baseline')}: ${err.message}`),
         })
       }
       onRemoveBaseline={(id) =>
         removeBaseline.mutate(id, {
-          onSuccess: () =>
-            toast.success(t("agent_removed_from_expected_results")),
-          onError: (err) =>
-            toast.error(
-              `${t("failed_to_remove_agent_baseline")}: ${err.message}`,
-            ),
+          onSuccess: () => toast.success(t('agent_removed_from_expected_results')),
+          onError: (err) => toast.error(`${t('failed_to_remove_agent_baseline')}: ${err.message}`),
         })
       }
     />

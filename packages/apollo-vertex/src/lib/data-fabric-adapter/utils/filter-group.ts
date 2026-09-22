@@ -1,33 +1,26 @@
-import { DateTime } from "luxon";
-import type { z } from "zod";
-import type { FilterValues } from "@/lib/charts-core";
-import type {
-  DataFabricQueryFilterSchema,
-  DataFabricQueryRequest,
-} from "../schemas/query-schema";
+import { DateTime } from 'luxon';
+import type { z } from 'zod';
+import type { FilterValues } from '@/lib/charts-core';
+import type { DataFabricQueryFilterSchema, DataFabricQueryRequest } from '../schemas/query-schema';
 
 type DataFabricQueryFilter = z.infer<typeof DataFabricQueryFilterSchema>;
 
 function toFilterValue(value: unknown): string | number | boolean | null {
-  if (value instanceof DateTime) return value.toISO() ?? "";
-  if (
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
-  )
+  if (value instanceof DateTime) return value.toISO() ?? '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
     return value;
   return null;
 }
 
 export function mapFilterValuesToDataFabricFilterGroup(
-  filters: FilterValues[],
-): DataFabricQueryRequest["filterGroup"] | undefined {
+  filters: FilterValues[]
+): DataFabricQueryRequest['filterGroup'] | undefined {
   if (filters.length === 0) return;
 
   const queryFilters: DataFabricQueryFilter[] = filters.flatMap(
     (filter): DataFabricQueryFilter[] => {
       switch (filter.type) {
-        case "list": {
+        case 'list': {
           const fieldName = filter.field;
           const values = filter.values;
           const invert = !!filter.invert;
@@ -35,7 +28,7 @@ export function mapFilterValuesToDataFabricFilterGroup(
           if (values.length === 0) return [];
 
           if (values.length === 1) {
-            const operator: "=" | "!=" = invert ? "!=" : "=";
+            const operator: '=' | '!=' = invert ? '!=' : '=';
             return [
               {
                 fieldName,
@@ -50,7 +43,7 @@ export function mapFilterValuesToDataFabricFilterGroup(
               .filter((v): v is string | number | boolean => v != null)
               .map((value) => ({
                 fieldName,
-                operator: "!=" as const,
+                operator: '!=' as const,
                 value,
               }));
           }
@@ -58,18 +51,18 @@ export function mapFilterValuesToDataFabricFilterGroup(
           return [
             {
               fieldName,
-              operator: "in" as const,
+              operator: 'in' as const,
               value: JSON.stringify(values.filter((v) => v != null)),
             },
           ];
         }
-        case "search": {
+        case 'search': {
           const operator =
-            filter.searchFilterType === "startsWith"
-              ? "startswith"
-              : filter.searchFilterType === "endsWith"
-                ? "endswith"
-                : "contains";
+            filter.searchFilterType === 'startsWith'
+              ? 'startswith'
+              : filter.searchFilterType === 'endsWith'
+                ? 'endswith'
+                : 'contains';
           return [
             {
               fieldName: filter.field,
@@ -78,7 +71,7 @@ export function mapFilterValuesToDataFabricFilterGroup(
             },
           ];
         }
-        case "period": {
+        case 'period': {
           const minIso = filter.range.min.toISO();
           const maxIso = filter.range.max.toISO();
 
@@ -88,7 +81,7 @@ export function mapFilterValuesToDataFabricFilterGroup(
               : [
                   {
                     fieldName: filter.field,
-                    operator: ">=",
+                    operator: '>=',
                     value: minIso,
                   } satisfies DataFabricQueryFilter,
                 ]),
@@ -97,13 +90,13 @@ export function mapFilterValuesToDataFabricFilterGroup(
               : [
                   {
                     fieldName: filter.field,
-                    operator: "<=",
+                    operator: '<=',
                     value: maxIso,
                   } satisfies DataFabricQueryFilter,
                 ]),
           ];
         }
-        case "range": {
+        case 'range': {
           const minVal = toFilterValue(filter.range.min);
           const maxVal = toFilterValue(filter.range.max);
           return [
@@ -112,7 +105,7 @@ export function mapFilterValuesToDataFabricFilterGroup(
               : [
                   {
                     fieldName: filter.field,
-                    operator: ">=",
+                    operator: '>=',
                     value: minVal,
                   } satisfies DataFabricQueryFilter,
                 ]),
@@ -121,7 +114,7 @@ export function mapFilterValuesToDataFabricFilterGroup(
               : [
                   {
                     fieldName: filter.field,
-                    operator: "<=",
+                    operator: '<=',
                     value: maxVal,
                   } satisfies DataFabricQueryFilter,
                 ]),
@@ -131,13 +124,13 @@ export function mapFilterValuesToDataFabricFilterGroup(
           return [];
         }
       }
-    },
+    }
   );
 
   if (queryFilters.length === 0) return;
 
   return {
-    logicalOperator: "and",
+    logicalOperator: 'and',
     queryFilters,
   };
 }

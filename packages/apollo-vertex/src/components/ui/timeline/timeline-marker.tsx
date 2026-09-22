@@ -1,18 +1,18 @@
-import { Check, CircleAlert, UserCheck } from "lucide-react";
-import type { ReactNode } from "react";
-import { AiMark } from "@/components/ui/ai-mark";
-import { cn } from "@/lib/utils";
+import { Check, CircleAlert, UserCheck } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { AiMark } from '@/components/ui/ai-mark';
+import { cn } from '@/lib/utils';
 
 export type TimelineMarkerVariant =
-  | "user"
-  | "completed-user"
-  | "completed-ai"
-  | "ai-upcoming"
-  | "ai-suspended"
-  | "ai-progress"
-  | "ai-failed"
-  | "ai-cancelled"
-  | "ai-complete";
+  | 'user'
+  | 'completed-user'
+  | 'completed-ai'
+  | 'ai-upcoming'
+  | 'ai-suspended'
+  | 'ai-progress'
+  | 'ai-failed'
+  | 'ai-cancelled'
+  | 'ai-complete';
 
 export interface TimelineMarkerProps {
   variant: TimelineMarkerVariant;
@@ -32,9 +32,9 @@ function MarkerCircle({
   return (
     <div
       className={cn(
-        "grid shrink-0 place-items-center rounded-full",
-        compact ? "size-4" : "size-7",
-        className,
+        'grid shrink-0 place-items-center rounded-full',
+        compact ? 'size-4' : 'size-7',
+        className
       )}
     >
       {children}
@@ -43,57 +43,50 @@ function MarkerCircle({
 }
 
 // oxlint-disable-next-line complexity consistent-return -- switch is exhaustive over TimelineMarkerVariant
-export function TimelineMarker({
-  variant,
-  initials,
-  compact = false,
-}: TimelineMarkerProps) {
+export function TimelineMarker({ variant, initials, compact = false }: TimelineMarkerProps) {
   const markSize = compact ? 9 : 14;
 
   switch (variant) {
-    case "completed-ai":
-    case "completed-user":
+    case 'completed-ai':
+    case 'completed-user':
       return (
-        <MarkerCircle
-          compact={compact}
-          className="bg-success/10 text-success shadow-sm"
-        >
-          {variant === "completed-ai" ? (
+        <MarkerCircle compact={compact} className="bg-success/10 text-success shadow-sm">
+          {variant === 'completed-ai' ? (
             <AiMark size={markSize} variant="gradient" />
           ) : (
-            <UserCheck className={compact ? "size-3" : "size-4"} />
+            <UserCheck className={compact ? 'size-3' : 'size-4'} />
           )}
         </MarkerCircle>
       );
 
-    case "user":
+    case 'user':
       return (
         <MarkerCircle
           compact={compact}
           className={cn(
-            "bg-muted font-medium text-muted-foreground shadow-sm",
-            compact ? "text-[9px]" : "text-xs",
+            'bg-muted font-medium text-muted-foreground shadow-sm',
+            compact ? 'text-[9px]' : 'text-xs'
           )}
         >
-          {initials ?? "?"}
+          {initials ?? '?'}
         </MarkerCircle>
       );
 
-    case "ai-upcoming":
-    case "ai-suspended":
+    case 'ai-upcoming':
+    case 'ai-suspended':
       return (
         <MarkerCircle
           compact={compact}
           className={cn(
-            "border-2 border-insight-400/80 bg-background",
-            variant === "ai-upcoming" && "border-dotted",
+            'border-2 border-insight-400/80 bg-background',
+            variant === 'ai-upcoming' && 'border-dotted'
           )}
         >
           <AiMark size={markSize} variant="gradient" />
         </MarkerCircle>
       );
 
-    case "ai-progress":
+    case 'ai-progress':
       return (
         <MarkerCircle
           compact={compact}
@@ -104,7 +97,7 @@ export function TimelineMarker({
             className="absolute inset-0 animate-spin rounded-full motion-reduce:animate-none"
             style={{
               background:
-                "conic-gradient(from 0deg, var(--ai-gradient-end) 0deg, var(--ai-gradient-start) 72deg, var(--insight-700) 150deg, transparent 220deg, var(--ai-gradient-end) 360deg)",
+                'conic-gradient(from 0deg, var(--ai-gradient-end) 0deg, var(--ai-gradient-start) 72deg, var(--insight-700) 150deg, transparent 220deg, var(--ai-gradient-end) 360deg)',
             }}
           />
           <div className="relative grid size-full place-items-center rounded-full bg-background">
@@ -113,7 +106,7 @@ export function TimelineMarker({
         </MarkerCircle>
       );
 
-    case "ai-failed":
+    case 'ai-failed':
       return (
         <MarkerCircle
           compact={compact}
@@ -127,17 +120,14 @@ export function TimelineMarker({
         </MarkerCircle>
       );
 
-    case "ai-cancelled":
+    case 'ai-cancelled':
       return (
-        <MarkerCircle
-          compact={compact}
-          className="bg-muted text-muted-foreground shadow-sm"
-        >
+        <MarkerCircle compact={compact} className="bg-muted text-muted-foreground shadow-sm">
           <AiMark size={markSize} variant="solid" />
         </MarkerCircle>
       );
 
-    case "ai-complete":
+    case 'ai-complete':
       return compact ? (
         <MarkerCircle
           compact

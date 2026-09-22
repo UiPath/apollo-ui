@@ -1,7 +1,7 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const JoinConfigSchema = z.object({
-  type: z.enum(["INNER", "LEFT"]),
+  type: z.enum(['INNER', 'LEFT']),
   entity: z.string(),
   alias: z.string().optional(),
   on: z.object({
@@ -16,7 +16,7 @@ export const FromConfigSchema = z.object({
 });
 
 export interface JoinConfig {
-  type: "INNER" | "LEFT";
+  type: 'INNER' | 'LEFT';
   entity: string;
   alias?: string;
   on: {

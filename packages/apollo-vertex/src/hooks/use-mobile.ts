@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 
 const MOBILE_BREAKPOINT = 768;
 const MOBILE_QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`;
@@ -13,8 +13,8 @@ function mobileQuery() {
 
 function subscribe(onStoreChange: () => void) {
   const mql = mobileQuery();
-  mql.addEventListener("change", onStoreChange);
-  return () => mql.removeEventListener("change", onStoreChange);
+  mql.addEventListener('change', onStoreChange);
+  return () => mql.removeEventListener('change', onStoreChange);
 }
 
 function getSnapshot() {

@@ -1,19 +1,15 @@
-"use client";
+'use client';
 
-import { useTranslation } from "react-i18next";
-import { Info } from "lucide-react";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
+import { useTranslation } from 'react-i18next';
+import { Info } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import {
   parseUserMessages,
   worstSeverity,
   severityIcons,
   severityColors,
   categoryBorderStyles,
-} from "./user-messages";
+} from './user-messages';
 
 export const UserMessagesView = ({ messages }: { messages: unknown }) => {
   const { t } = useTranslation();
@@ -32,7 +28,7 @@ export const UserMessagesView = ({ messages }: { messages: unknown }) => {
           // warnings); the message text disambiguates them.
           <div
             key={`${msg.key}-${msg.timestamp}-${msg.message}`}
-            className={`rounded-md border-l-4 p-3 text-sm ${categoryBorderStyles[msg.category] ?? "bg-muted/50"}`}
+            className={`rounded-md border-l-4 p-3 text-sm ${categoryBorderStyles[msg.category] ?? 'bg-muted/50'}`}
           >
             {displayText}
           </div>
@@ -55,7 +51,7 @@ export const UserMessagesIcon = ({ messages }: { messages: unknown }) => {
     <Tooltip>
       <TooltipTrigger
         type="button"
-        aria-label={t("view_messages")}
+        aria-label={t('view_messages')}
         className="inline-flex items-center"
       >
         <Icon className={`size-3.5 ${colorClass}`} />
@@ -65,17 +61,14 @@ export const UserMessagesIcon = ({ messages }: { messages: unknown }) => {
           {parsed.map((msg) => {
             // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- runtime message key isn't in the typed i18n catalog
             const translated = t(msg.key as never, msg.details);
-            const displayText =
-              translated === msg.key ? msg.message : translated;
+            const displayText = translated === msg.key ? msg.message : translated;
             const MIcon = severityIcons[msg.category] ?? Info;
             return (
               <div
                 key={`${msg.key}-${msg.timestamp}-${msg.message}`}
                 className="flex items-start gap-1.5"
               >
-                <MIcon
-                  className={`mt-0.5 size-3 shrink-0 ${severityColors[msg.category] ?? ""}`}
-                />
+                <MIcon className={`mt-0.5 size-3 shrink-0 ${severityColors[msg.category] ?? ''}`} />
                 <span className="text-xs">{displayText}</span>
               </div>
             );

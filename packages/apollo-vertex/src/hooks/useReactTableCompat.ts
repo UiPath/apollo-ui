@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { type Table, useReactTable } from "@tanstack/react-table";
+import { type Table, useReactTable } from '@tanstack/react-table';
 
 /**
  * React Compiler compatibility wrapper for useReactTable.
@@ -14,11 +14,11 @@ import { type Table, useReactTable } from "@tanstack/react-table";
  * @see https://github.com/facebook/react/pull/31820
  */
 export function useReactTableCompat<TData>(
-  options: Parameters<typeof useReactTable<TData>>[0],
+  options: Parameters<typeof useReactTable<TData>>[0]
 ): Table<TData> {
   // eslint-disable-next-line no-warning-comments
   // TODO: Remove after upgrading to @tanstack/react-table v9 (React Compiler compatible)
   // codeql[js/unknown-directive] - valid React Compiler directive
-  "use no memo";
+  'use no memo';
   return { ...useReactTable(options) } as Table<TData>;
 }

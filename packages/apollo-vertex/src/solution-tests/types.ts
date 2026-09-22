@@ -17,8 +17,7 @@ export const SolutionTestStatus = {
   Error: 2,
 } as const;
 
-export type SolutionTestStatusValue =
-  (typeof SolutionTestStatus)[keyof typeof SolutionTestStatus];
+export type SolutionTestStatusValue = (typeof SolutionTestStatus)[keyof typeof SolutionTestStatus];
 
 export const RunStatus = {
   Pending: 0,
@@ -41,8 +40,7 @@ export const RunResultStatus = {
   Aborted: 6,
 } as const;
 
-export type RunResultStatusValue =
-  (typeof RunResultStatus)[keyof typeof RunResultStatus];
+export type RunResultStatusValue = (typeof RunResultStatus)[keyof typeof RunResultStatus];
 
 export const JobRole = {
   EntryPoint: 0,
@@ -126,7 +124,7 @@ export interface SolutionTestRunResult {
 // User messages
 // ============================================================================
 
-export type { UserMessageItem } from "./user-messages";
+export type { UserMessageItem } from './user-messages';
 
 // ============================================================================
 // Attachments
@@ -134,8 +132,8 @@ export type { UserMessageItem } from "./user-messages";
 
 /** Per-result attachment slots surfaced in the run-details dialog. */
 export type ResultAttachmentField =
-  | "ExpectedOutput"
-  | "ExpectedInput"
-  | "ActualOutput"
-  | "ActualInput"
-  | "EvaluatorResults";
+  | 'ExpectedOutput'
+  | 'ExpectedInput'
+  | 'ActualOutput'
+  | 'ActualInput'
+  | 'EvaluatorResults';

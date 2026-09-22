@@ -1,4 +1,4 @@
 export {
   createDataFabricKpiTool,
   dataFabricKpiClient,
-} from "./data-fabric-kpi-tool";
+} from './data-fabric-kpi-tool';

@@ -1,8 +1,8 @@
 export {
   DistributionChart,
   type DistributionChartProps,
-} from "./distribution-chart-view";
+} from './distribution-chart-view';
 export {
   DistributionChartWithAdapter,
   type DistributionChartWithAdapterProps,
-} from "./distribution-chart-with-adapter";
+} from './distribution-chart-with-adapter';

@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
-import { Skeleton } from "@/components/ui/skeleton";
+import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 interface ProcessResultsViewerDialogProps {
   open: boolean;
@@ -40,12 +40,12 @@ export const ProcessResultsViewerDialog = ({
     >
       <DialogContent
         className="max-h-[90vh] overflow-hidden"
-        style={{ width: "56rem", maxWidth: "90vw" }}
+        style={{ width: '56rem', maxWidth: '90vw' }}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="sr-only">
-            {t("process_results_viewer_description")}
+            {t('process_results_viewer_description')}
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-auto rounded-md border bg-muted/50 p-4">
@@ -62,7 +62,7 @@ export const ProcessResultsViewerDialog = ({
             renderData(data)
           ) : (
             <pre className="whitespace-pre-wrap break-words text-xs">
-              {typeof data === "string" ? data : JSON.stringify(data, null, 2)}
+              {typeof data === 'string' ? data : JSON.stringify(data, null, 2)}
             </pre>
           )}
         </div>

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { FileText, X } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import type { PendingFile } from "../hooks/use-pending-files";
+import { FileText, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import type { PendingFile } from '../hooks/use-pending-files';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -17,11 +17,7 @@ export interface AiChatPendingFilesProps {
   onPreview: (url: string) => void;
 }
 
-export function AiChatPendingFiles({
-  files,
-  onRemove,
-  onPreview,
-}: AiChatPendingFilesProps) {
+export function AiChatPendingFiles({ files, onRemove, onPreview }: AiChatPendingFilesProps) {
   const { t } = useTranslation();
   if (files.length === 0) return null;
   return (
@@ -30,9 +26,7 @@ export function AiChatPendingFiles({
         const label = (
           <>
             <span className="max-w-[120px] truncate">{pf.name}</span>
-            <span className="text-ai-chat-muted-foreground">
-              {formatFileSize(pf.size)}
-            </span>
+            <span className="text-ai-chat-muted-foreground">{formatFileSize(pf.size)}</span>
           </>
         );
         return (
@@ -46,7 +40,7 @@ export function AiChatPendingFiles({
                 variant="ghost"
                 onClick={() => pf.thumbnailUrl && onPreview(pf.thumbnailUrl)}
                 className="h-auto p-0 gap-1.5 hover:bg-transparent font-normal text-xs text-ai-chat-foreground"
-                aria-label={t("preview_file", { name: pf.name })}
+                aria-label={t('preview_file', { name: pf.name })}
               >
                 <img
                   src={pf.thumbnailUrl}
@@ -69,7 +63,7 @@ export function AiChatPendingFiles({
               variant="ghost"
               size="icon-xs"
               onClick={() => onRemove(pf.uid)}
-              aria-label={t("remove_file", { name: pf.name })}
+              aria-label={t('remove_file', { name: pf.name })}
             >
               <X aria-hidden="true" />
             </Button>

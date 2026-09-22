@@ -1,4 +1,4 @@
 export {
   createDataFabricLineTool,
   dataFabricLineClient,
-} from "./data-fabric-line-tool";
+} from './data-fabric-line-tool';

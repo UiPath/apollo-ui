@@ -1,10 +1,10 @@
-import type { BaseFormatOptions } from "./base-format-options";
-import { MAX_FRACTIONAL_DIGITS } from "./constants";
+import type { BaseFormatOptions } from './base-format-options';
+import { MAX_FRACTIONAL_DIGITS } from './constants';
 
 export const formatNumber = (
   locale: Intl.LocalesArgument,
   value: number,
-  settings: BaseFormatOptions = {},
+  settings: BaseFormatOptions = {}
 ) => {
   const { notation } = settings;
 
@@ -12,7 +12,7 @@ export const formatNumber = (
     notation,
     maximumFractionDigits: MAX_FRACTIONAL_DIGITS,
     minimumFractionDigits: MAX_FRACTIONAL_DIGITS,
-    trailingZeroDisplay: "stripIfInteger",
+    trailingZeroDisplay: 'stripIfInteger',
   }).format(value);
 
   return formattedValue;

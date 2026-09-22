@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import "highlight.js/styles/github.min.css";
+import 'highlight.js/styles/github.min.css';
 
 // Dark-mode override: github-dark-dimmed palette scoped to `.dark`
 const DARK_HLJS_STYLE = `
@@ -57,42 +57,38 @@ const DARK_HLJS_STYLE = `
 }
 `;
 
-import { useClipboard } from "@mantine/hooks";
-import hljs from "highlight.js/lib/core";
-import bash from "highlight.js/lib/languages/bash";
-import css from "highlight.js/lib/languages/css";
-import javascript from "highlight.js/lib/languages/javascript";
-import json from "highlight.js/lib/languages/json";
-import python from "highlight.js/lib/languages/python";
-import sql from "highlight.js/lib/languages/sql";
-import typescript from "highlight.js/lib/languages/typescript";
-import xml from "highlight.js/lib/languages/xml";
-import { Check, Copy } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { useClipboard } from '@mantine/hooks';
+import hljs from 'highlight.js/lib/core';
+import bash from 'highlight.js/lib/languages/bash';
+import css from 'highlight.js/lib/languages/css';
+import javascript from 'highlight.js/lib/languages/javascript';
+import json from 'highlight.js/lib/languages/json';
+import python from 'highlight.js/lib/languages/python';
+import sql from 'highlight.js/lib/languages/sql';
+import typescript from 'highlight.js/lib/languages/typescript';
+import xml from 'highlight.js/lib/languages/xml';
+import { Check, Copy } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
-hljs.registerLanguage("javascript", javascript);
-hljs.registerLanguage("js", javascript);
-hljs.registerLanguage("typescript", typescript);
-hljs.registerLanguage("ts", typescript);
-hljs.registerLanguage("tsx", typescript);
-hljs.registerLanguage("jsx", javascript);
-hljs.registerLanguage("python", python);
-hljs.registerLanguage("py", python);
-hljs.registerLanguage("bash", bash);
-hljs.registerLanguage("sh", bash);
-hljs.registerLanguage("shell", bash);
-hljs.registerLanguage("json", json);
-hljs.registerLanguage("css", css);
-hljs.registerLanguage("html", xml);
-hljs.registerLanguage("xml", xml);
-hljs.registerLanguage("sql", sql);
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('js', javascript);
+hljs.registerLanguage('typescript', typescript);
+hljs.registerLanguage('ts', typescript);
+hljs.registerLanguage('tsx', typescript);
+hljs.registerLanguage('jsx', javascript);
+hljs.registerLanguage('python', python);
+hljs.registerLanguage('py', python);
+hljs.registerLanguage('bash', bash);
+hljs.registerLanguage('sh', bash);
+hljs.registerLanguage('shell', bash);
+hljs.registerLanguage('json', json);
+hljs.registerLanguage('css', css);
+hljs.registerLanguage('html', xml);
+hljs.registerLanguage('xml', xml);
+hljs.registerLanguage('sql', sql);
 
 interface AiChatCodeBlockProps {
   children: string;
@@ -115,11 +111,7 @@ export function AiChatCodeBlock({ children, language }: AiChatCodeBlockProps) {
     }
   }, [highlightedHtml]);
 
-  const copyLabel = copied
-    ? t("copied")
-    : error
-      ? t("copy_failed")
-      : t("copy_code");
+  const copyLabel = copied ? t('copied') : error ? t('copy_failed') : t('copy_code');
 
   return (
     <>
@@ -137,20 +129,15 @@ export function AiChatCodeBlock({ children, language }: AiChatCodeBlockProps) {
                 type="button"
                 onClick={() => copy(children)}
                 className={cn(
-                  "ml-auto size-6 inline-flex items-center justify-center rounded-md transition-opacity hover:bg-ai-chat-border",
-                  copied
-                    ? "opacity-100"
-                    : "opacity-0 group-hover/codeblock:opacity-100",
+                  'ml-auto size-6 inline-flex items-center justify-center rounded-md transition-opacity hover:bg-ai-chat-border',
+                  copied ? 'opacity-100' : 'opacity-0 group-hover/codeblock:opacity-100'
                 )}
                 aria-label={copyLabel}
               >
                 {copied ? (
                   <Check className="size-3 text-success" aria-hidden="true" />
                 ) : (
-                  <Copy
-                    className="size-3 text-ai-chat-muted-foreground"
-                    aria-hidden="true"
-                  />
+                  <Copy className="size-3 text-ai-chat-muted-foreground" aria-hidden="true" />
                 )}
               </button>
             </TooltipTrigger>

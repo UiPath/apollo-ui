@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
-import type { SolutionTest, SolutionTestRun } from "./types";
-import { useSolutionTestsConfig } from "./context";
-import { useForceStopRun } from "./hooks";
-import { ExpandedRunTestsView } from "./expanded-run-tests-view";
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import type { SolutionTest, SolutionTestRun } from './types';
+import { useSolutionTestsConfig } from './context';
+import { useForceStopRun } from './hooks';
+import { ExpandedRunTestsView } from './expanded-run-tests-view';
 
 interface ExpandedRunTestsProps {
   runs: SolutionTestRun[];
@@ -19,9 +19,7 @@ export const ExpandedRunTests = ({ runs, tests }: ExpandedRunTestsProps) => {
   const { track, onOpenRun } = useSolutionTestsConfig();
   const forceStopRun = useForceStopRun();
 
-  const stoppingRunId = forceStopRun.isPending
-    ? (forceStopRun.variables ?? null)
-    : null;
+  const stoppingRunId = forceStopRun.isPending ? (forceStopRun.variables ?? null) : null;
 
   return (
     <ExpandedRunTestsView
@@ -31,13 +29,13 @@ export const ExpandedRunTests = ({ runs, tests }: ExpandedRunTestsProps) => {
       onOpenDetails={(run) => {
         // No host navigation wired up — don't track an open that can't happen.
         if (!onOpenRun) return;
-        track?.("VS.SolutionTest.RunDetailsOpened", { runId: run.Id });
+        track?.('VS.SolutionTest.RunDetailsOpened', { runId: run.Id });
         onOpenRun(run);
       }}
       onForceStop={(runId) =>
         forceStopRun.mutate(runId, {
-          onSuccess: () => toast.success(t("force_stop_initiated")),
-          onError: () => toast.error(t("failed_to_force_stop_run")),
+          onSuccess: () => toast.success(t('force_stop_initiated')),
+          onError: () => toast.error(t('failed_to_force_stop_run')),
         })
       }
     />

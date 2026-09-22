@@ -1,9 +1,6 @@
-import type { FlagMapping } from "@uipath/proteus-client";
-import { initializeProteus } from "@uipath/proteus-client";
-import type {
-  FeatureFlagProviderConfig,
-  FeatureFlagUserContext,
-} from "./types";
+import type { FlagMapping } from '@uipath/proteus-client';
+import { initializeProteus } from '@uipath/proteus-client';
+import type { FeatureFlagProviderConfig, FeatureFlagUserContext } from './types';
 
 type CreateProteusProviderOptions<TFlag extends string> = {
   appName: string;
@@ -12,7 +9,7 @@ type CreateProteusProviderOptions<TFlag extends string> = {
 };
 
 export function createProteusProvider<TFlag extends string>(
-  options: CreateProteusProviderOptions<TFlag>,
+  options: CreateProteusProviderOptions<TFlag>
 ): FeatureFlagProviderConfig<TFlag> {
   const instance = initializeProteus({
     appName: options.appName,
@@ -23,10 +20,7 @@ export function createProteusProvider<TFlag extends string>(
   let isInitialized = false;
 
   // Track wrapper functions so we can unsubscribe the correct reference
-  const wrapperMap = new WeakMap<
-    (value: boolean) => void,
-    (value: unknown) => void
-  >();
+  const wrapperMap = new WeakMap<(value: boolean) => void, (value: unknown) => void>();
 
   function getWrapper(cb: (value: boolean) => void): (value: unknown) => void {
     let wrapper = wrapperMap.get(cb);

@@ -1,14 +1,10 @@
-"use client";
+'use client';
 
-import { motion, useReducedMotion } from "framer-motion";
-import type { CSSProperties } from "react";
-import { useTranslation } from "react-i18next";
-import {
-  ENTRANCE_ANIMATE,
-  ENTRANCE_EASE,
-  ENTRANCE_INITIAL,
-} from "../animations";
-import { AiChatThinking } from "./ai-chat-thinking";
+import { motion, useReducedMotion } from 'framer-motion';
+import type { CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ENTRANCE_ANIMATE, ENTRANCE_EASE, ENTRANCE_INITIAL } from '../animations';
+import { AiChatThinking } from './ai-chat-thinking';
 
 const ENTRANCE_DURATION = 0.5;
 // Text appears after the icon's morph completes (FORWARD_DURATION in AiChatThinking is 0.8s) plus a small gap
@@ -33,18 +29,18 @@ const TEXT_OVERLAP_PX = -7;
 export function AiChatLoading() {
   const { t } = useTranslation();
   const prefersReducedMotion = useReducedMotion();
-  const thinkingLabel = t("thinking");
+  const thinkingLabel = t('thinking');
 
   const shimmerStyle: CSSProperties = prefersReducedMotion
     ? {}
     : {
-        display: "inline-block",
+        display: 'inline-block',
         backgroundImage: `linear-gradient(90deg, var(--muted-foreground) 0%, var(--muted-foreground) 30%, var(--ai-gradient-start, #6C5AEF) 42%, var(--foreground) 50%, var(--muted-foreground) 58%, var(--muted-foreground) 70%, var(--muted-foreground) 100%)`,
-        backgroundSize: "200% 100%",
-        backgroundClip: "text",
-        WebkitBackgroundClip: "text",
-        color: "transparent",
-        animation: "ap-chat-loading-shimmer 2.4s linear infinite",
+        backgroundSize: '200% 100%',
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        color: 'transparent',
+        animation: 'ap-chat-loading-shimmer 2.4s linear infinite',
       };
 
   return (
@@ -77,10 +73,7 @@ export function AiChatLoading() {
           className="flex items-center"
           style={{ marginLeft: TEXT_OVERLAP_PX }}
         >
-          <span
-            className="text-sm font-medium leading-snug whitespace-nowrap"
-            style={shimmerStyle}
-          >
+          <span className="text-sm font-medium leading-snug whitespace-nowrap" style={shimmerStyle}>
             {`${thinkingLabel}\u2026`}
           </span>
         </motion.div>

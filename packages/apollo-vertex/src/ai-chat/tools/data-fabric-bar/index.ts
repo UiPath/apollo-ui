@@ -1,4 +1,4 @@
 export {
   createDataFabricBarTool,
   dataFabricBarClient,
-} from "./data-fabric-bar-tool";
+} from './data-fabric-bar-tool';

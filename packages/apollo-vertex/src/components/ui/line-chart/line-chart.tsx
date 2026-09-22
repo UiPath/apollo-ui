@@ -1,5 +1,5 @@
-export { LineChart, type LineChartProps } from "./line-chart-view";
+export { LineChart, type LineChartProps } from './line-chart-view';
 export {
   LineChartWithAdapter,
   type LineChartWithAdapterProps,
-} from "./line-chart-with-adapter";
+} from './line-chart-with-adapter';

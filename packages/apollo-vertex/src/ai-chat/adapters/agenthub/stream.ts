@@ -1,10 +1,10 @@
-import { EventType, type StreamChunk } from "@tanstack/ai";
-import type { UIMessage } from "@tanstack/ai-client";
-import { EventSourceParserStream } from "eventsource-parser/stream";
-import { z } from "zod/v4";
-import { toNormalizedMessages } from "./messages";
-import { buildToolDefinitions } from "./tools";
-import type { AgentHubAdapterConfig } from "./types";
+import { EventType, type StreamChunk } from '@tanstack/ai';
+import type { UIMessage } from '@tanstack/ai-client';
+import { EventSourceParserStream } from 'eventsource-parser/stream';
+import { z } from 'zod/v4';
+import { toNormalizedMessages } from './messages';
+import { buildToolDefinitions } from './tools';
+import type { AgentHubAdapterConfig } from './types';
 
 declare global {
   interface ReadableStream<R> {
@@ -15,19 +15,15 @@ declare global {
 export async function* fetchAgentHubStream(
   config: AgentHubAdapterConfig,
   messages: UIMessage[],
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): AsyncIterable<StreamChunk> {
   const token =
-    typeof config.accessToken === "function"
-      ? config.accessToken()
-      : config.accessToken;
-  if (!token) throw new Error("Not authenticated");
+    typeof config.accessToken === 'function' ? config.accessToken() : config.accessToken;
+  if (!token) throw new Error('Not authenticated');
 
   const url = `${config.baseUrl}/chat/completions`;
   const systemPrompt =
-    typeof config.systemPrompt === "function"
-      ? config.systemPrompt()
-      : config.systemPrompt;
+    typeof config.systemPrompt === 'function' ? config.systemPrompt() : config.systemPrompt;
 
   const body: Record<string, unknown> = {
     model: config.model.name,
@@ -38,16 +34,16 @@ export async function* fetchAgentHubStream(
   };
 
   if (config.tools && config.tools.length > 0) {
-    body["tools"] = buildToolDefinitions(config.tools, config.model.vendor);
-    body["tool_choice"] = { type: "auto" };
+    body['tools'] = buildToolDefinitions(config.tools, config.model.vendor);
+    body['tool_choice'] = { type: 'auto' };
   }
 
   const response = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
-      "X-UiPath-LlmGateway-NormalizedApi-ModelName": config.model.name,
+      'X-UiPath-LlmGateway-NormalizedApi-ModelName': config.model.name,
     },
     body: JSON.stringify(body),
     signal,
@@ -58,7 +54,7 @@ export async function* fetchAgentHubStream(
     throw new Error(`AgentHub API error: ${response.status} - ${error}`);
   }
 
-  if (!response.body) throw new Error("No response body");
+  if (!response.body) throw new Error('No response body');
 
   yield* toStreamChunks(response.body);
 }
@@ -92,24 +88,24 @@ const OpenAIChatStreamChunkSchema = z.object({
                   arguments: z.string().optional(),
                 })
                 .optional(),
-            }),
+            })
           )
           .optional(),
       }),
-    }),
+    })
   ),
 });
 
 type OpenAIChatStreamChunk = z.infer<typeof OpenAIChatStreamChunkSchema>;
 
 type ToolCallDelta = NonNullable<
-  OpenAIChatStreamChunk["choices"][number]["delta"]["tool_calls"]
+  OpenAIChatStreamChunk['choices'][number]['delta']['tool_calls']
 >[number];
 
 function* handleToolCallDelta(
   tc: ToolCallDelta,
   toolCalls: Map<number, { id: string; name: string; arguments: string }>,
-  parentMessageId: string,
+  parentMessageId: string
 ): Generator<StreamChunk> {
   const idx = tc.index ?? 0;
   const fn = tc.function;
@@ -129,8 +125,8 @@ function* handleToolCallDelta(
   }
 
   const id = tc.id ?? crypto.randomUUID();
-  const name = fn?.name ?? "";
-  toolCalls.set(idx, { id, name, arguments: fn?.arguments ?? "" });
+  const name = fn?.name ?? '';
+  toolCalls.set(idx, { id, name, arguments: fn?.arguments ?? '' });
   yield {
     type: EventType.TOOL_CALL_START,
     toolCallId: id,
@@ -149,9 +145,7 @@ function* handleToolCallDelta(
   }
 }
 
-async function* toStreamChunks(
-  body: ReadableStream<Uint8Array>,
-): AsyncIterable<StreamChunk> {
+async function* toStreamChunks(body: ReadableStream<Uint8Array>): AsyncIterable<StreamChunk> {
   const messageId = crypto.randomUUID();
   const runId = crypto.randomUUID();
   const threadId = crypto.randomUUID();
@@ -160,15 +154,12 @@ async function* toStreamChunks(
   yield {
     type: EventType.TEXT_MESSAGE_START,
     messageId,
-    role: "assistant",
+    role: 'assistant',
     timestamp: Date.now(),
   };
 
   let finishReason: string | null = null;
-  const toolCalls = new Map<
-    number,
-    { id: string; name: string; arguments: string }
-  >();
+  const toolCalls = new Map<number, { id: string; name: string; arguments: string }>();
 
   const eventStream = body
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- TextDecoderStream is a TransformStream<Uint8Array, string> but TS lib types are wider
@@ -176,7 +167,7 @@ async function* toStreamChunks(
     .pipeThrough(new EventSourceParserStream());
 
   for await (const event of eventStream) {
-    if (event.data === "[DONE]") break;
+    if (event.data === '[DONE]') break;
 
     let json: unknown;
     try {
@@ -230,7 +221,7 @@ async function* toStreamChunks(
     }
     yield {
       type: EventType.CUSTOM,
-      name: "tool-input-available",
+      name: 'tool-input-available',
       value: {
         toolCallId: tc.id,
         toolName: tc.name,
@@ -249,6 +240,6 @@ async function* toStreamChunks(
     runId,
     threadId,
     timestamp: Date.now(),
-    finishReason: finishReason === "tool_calls" ? "tool_calls" : "stop",
+    finishReason: finishReason === 'tool_calls' ? 'tool_calls' : 'stop',
   };
 }

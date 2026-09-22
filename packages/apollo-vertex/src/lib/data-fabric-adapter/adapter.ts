@@ -1,19 +1,15 @@
-import { queryOptions } from "@tanstack/react-query";
-import { initClient } from "@ts-rest/core";
-import { z } from "zod";
-import {
-  type DataAdapter,
-  type ListFilter,
-  PrimitiveValueSchema,
-} from "@/lib/charts-core";
-import { dataFabricBarChartAdapter } from "./chart-adapters/bar";
-import { dataFabricDistributionChartAdapter } from "./chart-adapters/distribution";
-import { dataFabricKpiChartAdapter } from "./chart-adapters/kpi";
-import { dataFabricLineChartAdapter } from "./chart-adapters/line";
-import { dataFabricMultiLineChartAdapter } from "./chart-adapters/multi-line";
-import { dataFabricTableChartAdapter } from "./chart-adapters/table";
-import { dataFabricContract } from "./contract";
-import { dataFabricQuery } from "./utils/query";
+import { queryOptions } from '@tanstack/react-query';
+import { initClient } from '@ts-rest/core';
+import { z } from 'zod';
+import { type DataAdapter, type ListFilter, PrimitiveValueSchema } from '@/lib/charts-core';
+import { dataFabricBarChartAdapter } from './chart-adapters/bar';
+import { dataFabricDistributionChartAdapter } from './chart-adapters/distribution';
+import { dataFabricKpiChartAdapter } from './chart-adapters/kpi';
+import { dataFabricLineChartAdapter } from './chart-adapters/line';
+import { dataFabricMultiLineChartAdapter } from './chart-adapters/multi-line';
+import { dataFabricTableChartAdapter } from './chart-adapters/table';
+import { dataFabricContract } from './contract';
+import { dataFabricQuery } from './utils/query';
 
 interface DataFabricAdapterProps {
   baseUrl: string;
@@ -54,12 +50,10 @@ export const dataFabricAdapter = ({
                 selectedFields: [filter.field.id],
                 top: 1000,
               },
-              "Failed to fetch filter values",
+              'Failed to fetch filter values'
             );
 
-            const values = [
-              ...new Set(response.value.map((row) => row[filter.field.id])),
-            ];
+            const values = [...new Set(response.value.map((row) => row[filter.field.id]))];
             return z.array(PrimitiveValueSchema).parse(values);
           },
         });

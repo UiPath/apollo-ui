@@ -1,10 +1,10 @@
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from '@/components/ui/chart';
 
 export interface DistributionChartProps {
   data: Array<{ x: string; y: number }>;
@@ -17,7 +17,7 @@ export function DistributionChart({
   data,
   seriesLabel,
   formatValue,
-  color = "var(--color-primary)",
+  color = 'var(--color-primary)',
 }: DistributionChartProps) {
   const config: ChartConfig = {
     y: { label: seriesLabel, color },
@@ -27,13 +27,7 @@ export function DistributionChart({
     <ChartContainer config={config} className="aspect-auto h-[250px] w-full">
       <BarChart accessibilityLayer data={data} margin={{ right: 16, top: 16 }}>
         <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="x"
-          tickLine={false}
-          tickMargin={8}
-          minTickGap={32}
-          axisLine
-        />
+        <XAxis dataKey="x" tickLine={false} tickMargin={8} minTickGap={32} axisLine />
         <YAxis
           type="number"
           tickLine={false}

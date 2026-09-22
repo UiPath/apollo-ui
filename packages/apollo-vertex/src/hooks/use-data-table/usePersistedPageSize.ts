@@ -1,18 +1,16 @@
-"use client";
+'use client';
 
-import type { OnChangeFn, PaginationState } from "@tanstack/react-table";
-import { useState } from "react";
+import type { OnChangeFn, PaginationState } from '@tanstack/react-table';
+import { useState } from 'react';
 
-import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
-import { useLocalStorage } from "@mantine/hooks";
+import { ENTITY_TABLE_STORAGE_PREFIX } from '@/lib/constants';
+import { useLocalStorage } from '@mantine/hooks';
 
 export interface UsePersistedPageSizeOptions {
   storageKey: string;
 }
 
-export function usePersistedPageSize({
-  storageKey,
-}: UsePersistedPageSizeOptions) {
+export function usePersistedPageSize({ storageKey }: UsePersistedPageSizeOptions) {
   const [pageSize, setPageSize] = useLocalStorage<number>({
     key: `${ENTITY_TABLE_STORAGE_PREFIX}page-size-${storageKey}`,
     defaultValue: 10,
@@ -23,9 +21,7 @@ export function usePersistedPageSize({
 
   const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
     const newPagination =
-      typeof updaterOrValue === "function"
-        ? updaterOrValue(pagination)
-        : updaterOrValue;
+      typeof updaterOrValue === 'function' ? updaterOrValue(pagination) : updaterOrValue;
     setPageIndex(newPagination.pageIndex);
     if (newPagination.pageSize !== pageSize) {
       setPageSize(newPagination.pageSize);

@@ -1,35 +1,28 @@
-"use client";
+'use client';
 
-import type { Table as TanstackTable } from "@tanstack/react-table";
-import { Columns3Icon } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import type { Table as TanstackTable } from '@tanstack/react-table';
+import { Columns3Icon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-import type { ColumnItem } from "./sortable-column-list";
-import { SortableColumnList } from "./sortable-column-list";
+import type { ColumnItem } from './sortable-column-list';
+import { SortableColumnList } from './sortable-column-list';
 
 interface DataTableViewOptionsProps<TData> {
   table: TanstackTable<TData>;
   className?: string;
 }
 
-function DataTableViewOptions<TData>({
-  table,
-  className,
-}: DataTableViewOptionsProps<TData>) {
+function DataTableViewOptions<TData>({ table, className }: DataTableViewOptionsProps<TData>) {
   const { t } = useTranslation();
 
   const allReorderableColumns = table
@@ -39,8 +32,7 @@ function DataTableViewOptions<TData>({
   const currentOrder = table.getState().columnOrder;
 
   const orderedColumns = () => {
-    if (!currentOrder || currentOrder.length === 0)
-      return allReorderableColumns;
+    if (!currentOrder || currentOrder.length === 0) return allReorderableColumns;
     const orderMap = new Map(currentOrder.map((id, index) => [id, index]));
     return [...allReorderableColumns].toSorted((a, b) => {
       const aIdx = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER;
@@ -80,24 +72,19 @@ function DataTableViewOptions<TData>({
                 variant="ghost"
                 size="icon"
                 className="ml-auto"
-                aria-label={t("toggle_columns", {
-                  defaultValue: "Toggle columns",
+                aria-label={t('toggle_columns', {
+                  defaultValue: 'Toggle columns',
                 })}
               >
                 <Columns3Icon />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
-          <TooltipContent>
-            {t("toggle_columns", { defaultValue: "Toggle columns" })}
-          </TooltipContent>
+          <TooltipContent>{t('toggle_columns', { defaultValue: 'Toggle columns' })}</TooltipContent>
         </Tooltip>
-        <DropdownMenuContent
-          align="end"
-          className="min-w-[220px] overflow-hidden"
-        >
+        <DropdownMenuContent align="end" className="min-w-[220px] overflow-hidden">
           <DropdownMenuLabel>
-            {t("toggle_columns", { defaultValue: "Toggle columns" })}
+            {t('toggle_columns', { defaultValue: 'Toggle columns' })}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <SortableColumnList

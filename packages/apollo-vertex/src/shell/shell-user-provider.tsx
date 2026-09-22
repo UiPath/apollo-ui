@@ -5,8 +5,8 @@ import {
   useContext,
   useEffect,
   useState,
-} from "react";
-import { useAuth } from "./shell-auth-provider";
+} from 'react';
+import { useAuth } from './shell-auth-provider';
 
 export interface User {
   id: string;
@@ -25,7 +25,7 @@ interface UserContextValue {
 export const useUser = () => {
   const context = useContext(UserContext);
   if (context == null) {
-    throw new Error("useUser must be used within a UserProvider");
+    throw new Error('useUser must be used within a UserProvider');
   }
   return context;
 };
@@ -39,13 +39,13 @@ export const ShellUserProvider: FC<PropsWithChildren> = ({ children }) => {
   useEffect(() => {
     if (authUser) {
       // Map auth user to UserProvider's User interface
-      const nameParts = authUser.name.trim().split(" ");
+      const nameParts = authUser.name.trim().split(' ');
       setUser({
         id: authUser.sub,
         name: authUser.name,
         email: authUser.email,
         first_name: nameParts[0] ?? authUser.name,
-        last_name: nameParts.slice(1).join(" "),
+        last_name: nameParts.slice(1).join(' '),
       });
     } else {
       setUser(null);

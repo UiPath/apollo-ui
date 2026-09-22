@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { AnimatePresence, motion } from "framer-motion";
-import * as React from "react";
+import { AnimatePresence, motion } from 'framer-motion';
+import * as React from 'react';
 
 const edgeFadeVariants = {
   initial: { opacity: 0 },
@@ -30,13 +30,13 @@ function useScrollShadow() {
     };
 
     update();
-    el.addEventListener("scroll", update, { passive: true });
+    el.addEventListener('scroll', update, { passive: true });
     const observer = new ResizeObserver(update);
     observer.observe(el);
 
     return () => {
       cancelAnimationFrame(rafId);
-      el.removeEventListener("scroll", update);
+      el.removeEventListener('scroll', update);
       observer.disconnect();
     };
   }
@@ -49,10 +49,7 @@ interface DataTableScrollShadowProps {
   canScrollRight: boolean;
 }
 
-function DataTableScrollShadow({
-  canScrollLeft,
-  canScrollRight,
-}: DataTableScrollShadowProps) {
+function DataTableScrollShadow({ canScrollLeft, canScrollRight }: DataTableScrollShadowProps) {
   return (
     <AnimatePresence>
       {canScrollLeft && (

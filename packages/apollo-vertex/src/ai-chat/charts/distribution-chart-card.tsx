@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { Card, CardContent } from "@/components/ui/card";
-import { DistributionChartWithAdapter } from "@/components/ui/distribution-chart";
+import { Card, CardContent } from '@/components/ui/card';
+import { DistributionChartWithAdapter } from '@/components/ui/distribution-chart';
 import type {
   ChartDataModel,
   DataAdapter,
   DistributionChartConfiguration,
   NumericOrDatetimeModelField,
-} from "@/lib/charts-core";
+} from '@/lib/charts-core';
 
 interface DistributionChartCardProps {
   configuration: DistributionChartConfiguration;

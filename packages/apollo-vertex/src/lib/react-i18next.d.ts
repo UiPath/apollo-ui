@@ -1,5 +1,5 @@
-import type { ComponentType, ReactElement } from "react";
-import type en from "../locales/en.json";
+import type { ComponentType, ReactElement } from 'react';
+import type en from '../locales/en.json';
 
 type ValidKeys = keyof typeof en;
 
@@ -22,10 +22,10 @@ type TranslationFn = <TKey extends ValidKeys>(
   key: TKey,
   values?:
     | Expand<InterpolateValuesOfKey<TKey>>
-    | Record<string, string | number | boolean | null | string[]>,
+    | Record<string, string | number | boolean | null | string[]>
 ) => string;
 
-declare module "react-i18next" {
+declare module 'react-i18next' {
   export type ParseKeys = ValidKeys;
   // react-i18next's native <Trans> is generic over ParseKeys and expands each
   // key into a per-key interpolation-values union; across the full key set that

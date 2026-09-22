@@ -1,9 +1,5 @@
-import { z } from "zod";
-import {
-  FromConfigSchema,
-  JoinConfigSchema,
-  PrimitiveValueSchema,
-} from "@/lib/charts-core";
+import { z } from 'zod';
+import { FromConfigSchema, JoinConfigSchema, PrimitiveValueSchema } from '@/lib/charts-core';
 
 const DataFabricSortOptionSchema = z.object({
   fieldName: z.string(),
@@ -13,18 +9,18 @@ const DataFabricSortOptionSchema = z.object({
 export const DataFabricQueryFilterSchema = z.object({
   fieldName: z.string(),
   operator: z.enum([
-    "=",
-    "!=",
-    ">",
-    "<",
-    ">=",
-    "<=",
-    "in",
-    "not in",
-    "contains",
-    "not contains",
-    "startswith",
-    "endswith",
+    '=',
+    '!=',
+    '>',
+    '<',
+    '>=',
+    '<=',
+    'in',
+    'not in',
+    'contains',
+    'not contains',
+    'startswith',
+    'endswith',
   ]),
   value: z.union([
     z.string(),
@@ -36,26 +32,26 @@ export const DataFabricQueryFilterSchema = z.object({
 });
 
 const DataFabricFilterGroupSchema = z.object({
-  logicalOperator: z.enum(["and", "or"]),
+  logicalOperator: z.enum(['and', 'or']),
   queryFilters: z.array(DataFabricQueryFilterSchema),
 });
 
 const DataFabricAggregateRequestSchema = z.object({
-  function: z.enum(["COUNT", "SUM", "AVG", "MIN", "MAX"]),
+  function: z.enum(['COUNT', 'SUM', 'AVG', 'MIN', 'MAX']),
   field: z.string(),
   alias: z.string().optional(),
 });
 
-const DataFabricBinningRequestSchema = z.discriminatedUnion("type", [
+const DataFabricBinningRequestSchema = z.discriminatedUnion('type', [
   z.object({
     fieldName: z.string(),
-    type: z.literal("Numeric"),
+    type: z.literal('Numeric'),
     numericBinSize: z.number().positive(),
   }),
   z.object({
     fieldName: z.string(),
-    type: z.literal("Date"),
-    dateBinUnit: z.enum(["Year", "Quarter", "Month", "Week", "Day", "Hour"]),
+    type: z.literal('Date'),
+    dateBinUnit: z.enum(['Year', 'Quarter', 'Month', 'Week', 'Day', 'Hour']),
   }),
 ]);
 
@@ -77,12 +73,6 @@ export const DataFabricQueryResponseSchema = z.object({
   value: z.array(z.record(z.string(), PrimitiveValueSchema)),
 });
 
-export type DataFabricQueryRequest = z.infer<
-  typeof DataFabricQueryRequestSchema
->;
-export type DataFabricQueryResponse = z.infer<
-  typeof DataFabricQueryResponseSchema
->;
-export type DataFabricBinningRequest = z.infer<
-  typeof DataFabricBinningRequestSchema
->;
+export type DataFabricQueryRequest = z.infer<typeof DataFabricQueryRequestSchema>;
+export type DataFabricQueryResponse = z.infer<typeof DataFabricQueryResponseSchema>;
+export type DataFabricBinningRequest = z.infer<typeof DataFabricBinningRequestSchema>;

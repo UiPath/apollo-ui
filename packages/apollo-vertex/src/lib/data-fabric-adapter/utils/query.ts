@@ -1,15 +1,9 @@
-import type { InitClientReturn } from "@ts-rest/core";
-import type { dataFabricContract } from "../contract";
-import type {
-  DataFabricQueryRequest,
-  DataFabricQueryResponse,
-} from "../schemas/query-schema";
-import { throwDataFabricError } from "./throw-error";
+import type { InitClientReturn } from '@ts-rest/core';
+import type { dataFabricContract } from '../contract';
+import type { DataFabricQueryRequest, DataFabricQueryResponse } from '../schemas/query-schema';
+import { throwDataFabricError } from './throw-error';
 
-export type DataFabricClient = InitClientReturn<
-  typeof dataFabricContract,
-  { baseUrl: string }
->;
+export type DataFabricClient = InitClientReturn<typeof dataFabricContract, { baseUrl: string }>;
 
 type QueryResponse =
   | { status: 200; body: DataFabricQueryResponse }
@@ -19,7 +13,7 @@ export async function dataFabricQuery(
   client: DataFabricClient,
   entityName: string,
   body: DataFabricQueryRequest,
-  errorMessage: string,
+  errorMessage: string
 ): Promise<DataFabricQueryResponse> {
   // oxlint's tsgolint can't resolve ts-rest's InitClientReturn generic, so it
   // sees client.query as `error`-typed; the cast restores the real shape.

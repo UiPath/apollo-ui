@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Attachment reads for the Solution Tests view. The expected/actual outputs and
@@ -9,8 +9,8 @@
  * injection needed).
  */
 
-import type { useSolution } from "@uipath/vs-core";
-import { Entities } from "@uipath/uipath-typescript/entities";
+import type { useSolution } from '@uipath/vs-core';
+import { Entities } from '@uipath/uipath-typescript/entities';
 
 type Solution = ReturnType<typeof useSolution>;
 
@@ -24,16 +24,11 @@ export async function fetchAttachment(
   entityId: string,
   recordId: string,
   field: string,
-  scope?: { folderKey?: string },
+  scope?: { folderKey?: string }
 ): Promise<unknown> {
   if (!solution) return null;
   const entities = new Entities(solution.api.sdk.core);
-  const blob = await entities.downloadAttachment(
-    { id: entityId },
-    recordId,
-    field,
-    scope,
-  );
+  const blob = await entities.downloadAttachment({ id: entityId }, recordId, field, scope);
   const text = await blob.text();
   try {
     return JSON.parse(text);

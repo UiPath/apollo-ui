@@ -5,7 +5,7 @@ export interface FormatBooleanOptions {
 
 export const formatBoolean = (
   value: boolean,
-  { trueLabel = "True", falseLabel = "False" }: FormatBooleanOptions = {},
+  { trueLabel = 'True', falseLabel = 'False' }: FormatBooleanOptions = {}
 ) => {
   return value ? trueLabel : falseLabel;
 };

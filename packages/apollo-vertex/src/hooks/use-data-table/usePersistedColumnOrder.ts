@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import type { OnChangeFn } from "@tanstack/react-table";
+import type { OnChangeFn } from '@tanstack/react-table';
 
-import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
-import { useLocalStorage } from "@mantine/hooks";
+import { ENTITY_TABLE_STORAGE_PREFIX } from '@/lib/constants';
+import { useLocalStorage } from '@mantine/hooks';
 
 export interface UsePersistedColumnOrderOptions {
   storageKey: string;
@@ -21,9 +21,7 @@ export function usePersistedColumnOrder({
 
   const onColumnOrderChange: OnChangeFn<string[]> = (updaterOrValue) => {
     const newOrder =
-      typeof updaterOrValue === "function"
-        ? updaterOrValue(columnOrder)
-        : updaterOrValue;
+      typeof updaterOrValue === 'function' ? updaterOrValue(columnOrder) : updaterOrValue;
     setColumnOrder(newOrder);
   };
 

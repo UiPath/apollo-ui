@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
 /** Provides the view's presentation config + trigger-backed write actions. */
 
-import { createContext, useContext, useMemo, type ReactNode } from "react";
-import type { SolutionTestsActions } from "./actions";
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import type { SolutionTestsActions } from './actions';
 import {
   resolveConfig,
   type ResolvedSolutionTestsConfig,
   type SolutionTestsConfig,
-} from "./config";
-import { createSolutionTestActions } from "./create-actions";
+} from './config';
+import { createSolutionTestActions } from './create-actions';
 
 interface SolutionTestsContextValue {
   config: ResolvedSolutionTestsConfig;
@@ -17,9 +17,7 @@ interface SolutionTestsContextValue {
   attachmentScope?: () => { folderKey?: string };
 }
 
-const SolutionTestsContext = createContext<SolutionTestsContextValue | null>(
-  null,
-);
+const SolutionTestsContext = createContext<SolutionTestsContextValue | null>(null);
 
 interface SolutionTestsProviderProps {
   config?: SolutionTestsConfig;
@@ -44,21 +42,15 @@ export const SolutionTestsProvider = ({
       actions: createSolutionTestActions({ triggerBaseUrl, getToken }),
       attachmentScope,
     }),
-    [config, triggerBaseUrl, getToken, attachmentScope],
+    [config, triggerBaseUrl, getToken, attachmentScope]
   );
-  return (
-    <SolutionTestsContext.Provider value={value}>
-      {children}
-    </SolutionTestsContext.Provider>
-  );
+  return <SolutionTestsContext.Provider value={value}>{children}</SolutionTestsContext.Provider>;
 };
 
 export function useSolutionTestsContext(): SolutionTestsContextValue {
   const ctx = useContext(SolutionTestsContext);
   if (!ctx) {
-    throw new Error(
-      "useSolutionTestsContext must be used within a SolutionTestsProvider",
-    );
+    throw new Error('useSolutionTestsContext must be used within a SolutionTestsProvider');
   }
   return ctx;
 }

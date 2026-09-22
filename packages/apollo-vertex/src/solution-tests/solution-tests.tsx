@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Smart container for the Solution Tests view. Reads the collection-backed
@@ -8,13 +8,13 @@
  * The dumb `SolutionTestsView` owns all rendering; this file owns all data.
  */
 
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
-import { normalizeTab, type SolutionTestsTab } from "./tabs";
-import { RunStatus } from "./types";
-import type { SolutionTest, SolutionTestBatchRun } from "./types";
+import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+import { normalizeTab, type SolutionTestsTab } from './tabs';
+import { RunStatus } from './types';
+import type { SolutionTest, SolutionTestBatchRun } from './types';
 import {
   useSolutionTests,
   useSolutionTestBatchRuns,
@@ -23,18 +23,12 @@ import {
   useToggleTestActive,
   useDeleteTest,
   useForceStopBatch,
-} from "./hooks";
-import {
-  SolutionTestsView,
-  type RunConfirmTarget,
-} from "./solution-tests-view";
-import { ExpandedAgents } from "./expanded-agents";
-import { ExpandedRunTests } from "./expanded-run-tests";
+} from './hooks';
+import { SolutionTestsView, type RunConfirmTarget } from './solution-tests-view';
+import { ExpandedAgents } from './expanded-agents';
+import { ExpandedRunTests } from './expanded-run-tests';
 
-function getRunsForBatch(
-  batchId: string,
-  allRuns: ReturnType<typeof useSolutionTestRuns>["runs"],
-) {
+function getRunsForBatch(batchId: string, allRuns: ReturnType<typeof useSolutionTestRuns>['runs']) {
   return allRuns.filter((r) => r.RunBatchId === batchId);
 }
 
@@ -55,19 +49,12 @@ export const SolutionTests = () => {
   // Per-run pending derives from the in-flight mutation's `mode`, which
   // disambiguates a single-row run from a bulk run of one selected test (both
   // carry exactly one `testId`).
-  const runMode = runTests.isPending
-    ? (runTests.variables?.mode ?? null)
-    : null;
-  const runningAll = runMode === "all";
-  const runningSelected = runMode === "selected";
-  const runningTestId =
-    runMode === "test" ? (runTests.variables?.testIds?.[0] ?? null) : null;
-  const togglingTestId = toggleActive.isPending
-    ? (toggleActive.variables?.testId ?? null)
-    : null;
-  const forceStoppingBatchId = forceStopBatch.isPending
-    ? (forceStopBatch.variables ?? null)
-    : null;
+  const runMode = runTests.isPending ? (runTests.variables?.mode ?? null) : null;
+  const runningAll = runMode === 'all';
+  const runningSelected = runMode === 'selected';
+  const runningTestId = runMode === 'test' ? (runTests.variables?.testIds?.[0] ?? null) : null;
+  const togglingTestId = toggleActive.isPending ? (toggleActive.variables?.testId ?? null) : null;
+  const forceStoppingBatchId = forceStopBatch.isPending ? (forceStopBatch.variables ?? null) : null;
 
   // Active tab is synced to the `?tab=` search param so it survives reloads
   // and is shareable.
@@ -78,14 +65,14 @@ export const SolutionTests = () => {
   const navigate = useNavigate();
   const onTabChange = (tab: SolutionTestsTab) => {
     void navigate({
-      to: ".",
+      to: '.',
       search: (prev: Record<string, unknown>) => ({ ...prev, tab }),
       replace: true,
     });
   };
 
   const hasActiveRuns = batchRuns.some(
-    (r) => r.Status === RunStatus.Pending || r.Status === RunStatus.Running,
+    (r) => r.Status === RunStatus.Pending || r.Status === RunStatus.Running
   );
 
   return (
@@ -110,75 +97,63 @@ export const SolutionTests = () => {
         if (!runConfirm) return;
         setRunConfirm(null);
 
-        if (runConfirm.mode === "all") {
+        if (runConfirm.mode === 'all') {
           runTests.mutate(
-            { mode: "all" },
+            { mode: 'all' },
             {
-              onSuccess: () => toast.success(t("all_tests_triggered")),
-              onError: (err) =>
-                toast.error(err.message || t("failed_to_run_tests")),
-            },
+              onSuccess: () => toast.success(t('all_tests_triggered')),
+              onError: (err) => toast.error(err.message || t('failed_to_run_tests')),
+            }
           );
           return;
         }
 
-        if (runConfirm.mode === "selected") {
+        if (runConfirm.mode === 'selected') {
           runTests.mutate(
-            { testIds: runConfirm.testIds, mode: "selected" },
+            { testIds: runConfirm.testIds, mode: 'selected' },
             {
-              onSuccess: () => toast.success(t("selected_tests_triggered")),
-              onError: (err) =>
-                toast.error(err.message || t("failed_to_run_tests")),
-            },
+              onSuccess: () => toast.success(t('selected_tests_triggered')),
+              onError: (err) => toast.error(err.message || t('failed_to_run_tests')),
+            }
           );
           return;
         }
 
         runTests.mutate(
-          { testIds: [runConfirm.testId], mode: "test" },
+          { testIds: [runConfirm.testId], mode: 'test' },
           {
-            onSuccess: () => toast.success(t("test_triggered")),
-            onError: (err) =>
-              toast.error(err.message || t("failed_to_run_test")),
-          },
+            onSuccess: () => toast.success(t('test_triggered')),
+            onError: (err) => toast.error(err.message || t('failed_to_run_test')),
+          }
         );
       }}
       onToggleActive={(testId, newValue) =>
         toggleActive.mutate(
           { testId, isActive: newValue },
           {
-            onSuccess: () =>
-              toast.success(newValue ? t("test_enabled") : t("test_disabled")),
-            onError: (err) =>
-              toast.error(err.message || t("failed_to_toggle_test")),
-          },
+            onSuccess: () => toast.success(newValue ? t('test_enabled') : t('test_disabled')),
+            onError: (err) => toast.error(err.message || t('failed_to_toggle_test')),
+          }
         )
       }
       onDeleteTest={(testId) => {
         deleteTest.mutate(testId, {
           onSuccess: () => {
-            toast.success(t("test_deleted"));
+            toast.success(t('test_deleted'));
             setDeleteConfirmId(null);
           },
-          onError: (err) =>
-            toast.error(err.message || t("failed_to_delete_test")),
+          onError: (err) => toast.error(err.message || t('failed_to_delete_test')),
         });
       }}
       onForceStopBatch={(batchId) =>
         forceStopBatch.mutate(batchId, {
-          onSuccess: () => toast.success(t("force_stop_initiated")),
-          onError: (err) =>
-            toast.error(err.message || t("failed_to_force_stop_batch")),
+          onSuccess: () => toast.success(t('force_stop_initiated')),
+          onError: (err) => toast.error(err.message || t('failed_to_force_stop_batch')),
         })
       }
-      renderExpandedTest={(test: SolutionTest) => (
-        <ExpandedAgents test={test} />
-      )}
+      renderExpandedTest={(test: SolutionTest) => <ExpandedAgents test={test} />}
       renderExpandedRun={(batch: SolutionTestBatchRun) => (
-        <ExpandedRunTests
-          runs={getRunsForBatch(batch.Id, allRuns)}
-          tests={tests}
-        />
+        <ExpandedRunTests runs={getRunsForBatch(batch.Id, allRuns)} tests={tests} />
       )}
     />
   );

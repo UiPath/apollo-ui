@@ -1,39 +1,39 @@
-import { DateTime } from "luxon";
-import { isDateOnly } from "./is-date-only";
+import { DateTime } from 'luxon';
+import { isDateOnly } from './is-date-only';
 
 export interface OverrideTimeOptions {
-  year?: "numeric";
-  month?: "short" | "long";
-  day?: "numeric";
-  hour?: "numeric" | "2-digit";
-  minute?: "numeric" | "2-digit";
-  second?: "2-digit";
-  hourCycle?: "h23" | "h12";
-  timeStyle?: "short";
-  weekday?: "long" | "short";
+  year?: 'numeric';
+  month?: 'short' | 'long';
+  day?: 'numeric';
+  hour?: 'numeric' | '2-digit';
+  minute?: 'numeric' | '2-digit';
+  second?: '2-digit';
+  hourCycle?: 'h23' | 'h12';
+  timeStyle?: 'short';
+  weekday?: 'long' | 'short';
   fractionalSecondDigits?: 3 | undefined;
   hideEmptyTime?: boolean;
 }
 
 const commonOptions: OverrideTimeOptions = {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
   fractionalSecondDigits: 3,
 };
 
 const applicationDataOptions: OverrideTimeOptions = {
   ...commonOptions,
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hourCycle: "h23",
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
 };
 
 export const formatDate = (
   locale: Intl.LocalesArgument,
   value: string | DateTime,
-  options?: OverrideTimeOptions,
+  options?: OverrideTimeOptions
 ) => {
   const formatOptions = options ?? applicationDataOptions;
 
@@ -52,6 +52,6 @@ export const formatDate = (
 
   return Intl.DateTimeFormat(locale, {
     ...resultingOptions,
-    timeZone: "UTC",
+    timeZone: 'UTC',
   }).format(date.toJSDate());
 };

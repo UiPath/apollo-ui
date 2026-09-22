@@ -1,26 +1,26 @@
-import { MAX_FRACTIONAL_DIGITS } from "./constants";
-import type { PercentageFormatOptions } from "./percentage-format-options";
+import { MAX_FRACTIONAL_DIGITS } from './constants';
+import type { PercentageFormatOptions } from './percentage-format-options';
 
 const formatPercentageImpl = (
   locale: Intl.LocalesArgument,
   value: number,
-  settings: PercentageFormatOptions = {},
+  settings: PercentageFormatOptions = {}
 ) => {
   const { notation } = settings;
 
-  if (notation === "minimal") {
+  if (notation === 'minimal') {
     return Intl.NumberFormat(locale, {
-      style: "percent",
+      style: 'percent',
       maximumFractionDigits: 0,
-      notation: "compact",
+      notation: 'compact',
     }).format(value);
   }
 
   return Intl.NumberFormat(locale, {
-    style: "percent",
+    style: 'percent',
     maximumFractionDigits: MAX_FRACTIONAL_DIGITS,
     minimumFractionDigits: MAX_FRACTIONAL_DIGITS,
-    trailingZeroDisplay: "stripIfInteger",
+    trailingZeroDisplay: 'stripIfInteger',
     notation,
   }).format(value);
 };
@@ -28,7 +28,7 @@ const formatPercentageImpl = (
 export const formatPercentage = (
   locale: Intl.LocalesArgument,
   value: number,
-  settings: PercentageFormatOptions = {},
+  settings: PercentageFormatOptions = {}
 ) => {
   const isExactlyZero = value === 0;
   const isExactlyOne = value === 1;

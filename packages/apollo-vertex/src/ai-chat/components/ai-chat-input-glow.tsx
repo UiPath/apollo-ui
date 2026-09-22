@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useId } from "react";
+import { useId } from 'react';
 
 interface AiChatInputGlowProps {
   className?: string;
@@ -14,7 +14,7 @@ export function AiChatInputGlow({ className }: AiChatInputGlowProps) {
     <svg
       viewBox="0 0 561 176"
       preserveAspectRatio="none"
-      className={`w-full h-full overflow-visible ${className ?? ""}`}
+      className={`w-full h-full overflow-visible ${className ?? ''}`}
       aria-hidden="true"
     >
       <defs>
@@ -29,11 +29,8 @@ export function AiChatInputGlow({ className }: AiChatInputGlowProps) {
           y2="19.642"
           gradientUnits="userSpaceOnUse"
         >
-          <stop style={{ stopColor: "var(--ai-gradient-end, #69C7DD)" }} />
-          <stop
-            offset="1"
-            style={{ stopColor: "var(--ai-gradient-start, #6C5AEF)" }}
-          />
+          <stop style={{ stopColor: 'var(--ai-gradient-end, #69C7DD)' }} />
+          <stop offset="1" style={{ stopColor: 'var(--ai-gradient-start, #6C5AEF)' }} />
         </linearGradient>
       </defs>
       <path

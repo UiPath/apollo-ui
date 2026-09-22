@@ -2,30 +2,21 @@
  * Converts TanStack AI messages (UIMessage or ModelMessage) into the
  * AgentHub normalized wire format.
  */
-import type { ImagePart } from "@tanstack/ai";
-import type {
-  TextPart,
-  ToolCallPart,
-  ToolResultPart,
-  UIMessage,
-} from "@tanstack/ai-client";
-import { imagePartToUrl } from "../../content-parts";
-import type { AgentHubVendor } from "./types";
+import type { ImagePart } from '@tanstack/ai';
+import type { TextPart, ToolCallPart, ToolResultPart, UIMessage } from '@tanstack/ai-client';
+import { imagePartToUrl } from '../../content-parts';
+import type { AgentHubVendor } from './types';
 
 type MultimodalPart =
-  | { type: "text"; text: string }
+  | { type: 'text'; text: string }
   | {
-      type: "image_url";
-      image_url: { url: string; detail?: "auto" | "low" | "high" };
+      type: 'image_url';
+      image_url: { url: string; detail?: 'auto' | 'low' | 'high' };
     };
 
 interface NormalizedMessage {
-  role: "system" | "user" | "assistant" | "tool";
-  content:
-    | string
-    | null
-    | { result: string; call_id: string }
-    | MultimodalPart[];
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content: string | null | { result: string; call_id: string } | MultimodalPart[];
   tool_calls?: {
     id: string;
     name: string;
@@ -33,22 +24,15 @@ interface NormalizedMessage {
   }[];
 }
 
-function parseToolInput(
-  input: unknown,
-  argumentsJson: string,
-): Record<string, unknown> {
+function parseToolInput(input: unknown, argumentsJson: string): Record<string, unknown> {
   // Prefer pre-parsed input if it's a plain object
-  if (input != null && typeof input === "object" && !Array.isArray(input)) {
+  if (input != null && typeof input === 'object' && !Array.isArray(input)) {
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- `input` is narrowed to non-null, non-array object; Record is the only way to represent this
     return input as Record<string, unknown>;
   }
   try {
     const parsed: unknown = JSON.parse(argumentsJson);
-    if (
-      typeof parsed === "object" &&
-      parsed !== null &&
-      !Array.isArray(parsed)
-    ) {
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
       // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- same narrowing as above; TS can't infer Record from typeof checks
       return parsed as Record<string, unknown>;
     }
@@ -60,7 +44,7 @@ function parseToolInput(
 
 function toToolResultMessage(part: ToolResultPart): NormalizedMessage {
   return {
-    role: "tool",
+    role: 'tool',
     content: { result: part.content, call_id: part.toolCallId },
   };
 }
@@ -69,7 +53,7 @@ function normalizeToolCallMessage(
   textContent: string,
   toolCallParts: ToolCallPart[],
   toolResultParts: ToolResultPart[],
-  isAnthropic: boolean,
+  isAnthropic: boolean
 ): NormalizedMessage[] {
   const resultCallIds = new Set(toolResultParts.map((p) => p.toolCallId));
 
@@ -80,8 +64,8 @@ function normalizeToolCallMessage(
   }));
 
   const assistantMessage: NormalizedMessage = {
-    role: "assistant",
-    content: textContent || (isAnthropic ? "tool_call" : null),
+    role: 'assistant',
+    content: textContent || (isAnthropic ? 'tool_call' : null),
     tool_calls: toolCalls,
   };
 
@@ -92,10 +76,9 @@ function normalizeToolCallMessage(
   const syntheticResults: NormalizedMessage[] = toolCallParts
     .filter((tc) => !resultCallIds.has(tc.id))
     .map((tc) => ({
-      role: "tool" as const,
+      role: 'tool' as const,
       content: {
-        result:
-          tc.output == null ? "Displayed to user." : JSON.stringify(tc.output),
+        result: tc.output == null ? 'Displayed to user.' : JSON.stringify(tc.output),
         call_id: tc.id,
       },
     }));
@@ -103,30 +86,16 @@ function normalizeToolCallMessage(
   return [assistantMessage, ...matchedResults, ...syntheticResults];
 }
 
-function normalizeMessage(
-  msg: UIMessage,
-  isAnthropic: boolean,
-): NormalizedMessage[] {
-  const textParts = msg.parts.filter((p): p is TextPart => p.type === "text");
-  const imageParts = msg.parts.filter(
-    (p): p is ImagePart => p.type === "image",
-  );
-  const toolCallParts = msg.parts.filter(
-    (p): p is ToolCallPart => p.type === "tool-call",
-  );
-  const toolResultParts = msg.parts.filter(
-    (p): p is ToolResultPart => p.type === "tool-result",
-  );
+function normalizeMessage(msg: UIMessage, isAnthropic: boolean): NormalizedMessage[] {
+  const textParts = msg.parts.filter((p): p is TextPart => p.type === 'text');
+  const imageParts = msg.parts.filter((p): p is ImagePart => p.type === 'image');
+  const toolCallParts = msg.parts.filter((p): p is ToolCallPart => p.type === 'tool-call');
+  const toolResultParts = msg.parts.filter((p): p is ToolResultPart => p.type === 'tool-result');
 
-  const textContent = textParts.map((p) => p.content).join("");
+  const textContent = textParts.map((p) => p.content).join('');
 
   if (toolCallParts.length > 0) {
-    return normalizeToolCallMessage(
-      textContent,
-      toolCallParts,
-      toolResultParts,
-      isAnthropic,
-    );
+    return normalizeToolCallMessage(textContent, toolCallParts, toolResultParts, isAnthropic);
   }
 
   if (toolResultParts.length > 0) {
@@ -135,10 +104,10 @@ function normalizeMessage(
 
   if (imageParts.length > 0) {
     const content: MultimodalPart[] = [];
-    if (textContent) content.push({ type: "text", text: textContent });
+    if (textContent) content.push({ type: 'text', text: textContent });
     for (const ip of imageParts) {
       content.push({
-        type: "image_url",
+        type: 'image_url',
         image_url: { url: imagePartToUrl(ip) },
       });
     }
@@ -151,8 +120,8 @@ function normalizeMessage(
 
   // User messages should always have content; send empty as fallback.
   // Skip empty assistant messages (no text, no tool calls, no tool results).
-  if (msg.role === "user") {
-    return [{ role: "user", content: "" }];
+  if (msg.role === 'user') {
+    return [{ role: 'user', content: '' }];
   }
 
   return [];
@@ -161,16 +130,13 @@ function normalizeMessage(
 export function toNormalizedMessages(
   messages: UIMessage[],
   systemPrompt: string | undefined,
-  vendor: AgentHubVendor,
+  vendor: AgentHubVendor
 ): NormalizedMessage[] {
-  const isAnthropic = vendor === "anthropic";
+  const isAnthropic = vendor === 'anthropic';
 
   const system: NormalizedMessage[] = systemPrompt
-    ? [{ role: "system", content: systemPrompt }]
+    ? [{ role: 'system', content: systemPrompt }]
     : [];
 
-  return [
-    ...system,
-    ...messages.flatMap((msg) => normalizeMessage(msg, isAnthropic)),
-  ];
+  return [...system, ...messages.flatMap((msg) => normalizeMessage(msg, isAnthropic))];
 }

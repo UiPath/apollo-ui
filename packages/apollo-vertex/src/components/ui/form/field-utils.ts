@@ -1,4 +1,4 @@
-import type * as React from "react";
+import type * as React from 'react';
 
 export interface FieldOption {
   label: React.ReactNode;
@@ -8,31 +8,22 @@ export interface FieldOption {
 export const descriptionId = (name: string) => `${name}-description`;
 export const errorId = (name: string) => `${name}-error`;
 
-export function fieldDescribedBy(
-  name: string,
-  hasDescription: boolean,
-  hasError: boolean,
-): string {
-  return [
-    hasDescription ? descriptionId(name) : null,
-    hasError ? errorId(name) : null,
-  ]
+export function fieldDescribedBy(name: string, hasDescription: boolean, hasError: boolean): string {
+  return [hasDescription ? descriptionId(name) : null, hasError ? errorId(name) : null]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 }
 
-export function normalizeErrors(
-  errors: ReadonlyArray<unknown>,
-): Array<{ message: string }> {
+export function normalizeErrors(errors: ReadonlyArray<unknown>): Array<{ message: string }> {
   return errors.flatMap((error) => {
-    if (typeof error === "string") {
+    if (typeof error === 'string') {
       return [{ message: error }];
     }
     if (
-      typeof error === "object" &&
+      typeof error === 'object' &&
       error !== null &&
-      "message" in error &&
-      typeof error.message === "string"
+      'message' in error &&
+      typeof error.message === 'string'
     ) {
       return [{ message: error.message }];
     }

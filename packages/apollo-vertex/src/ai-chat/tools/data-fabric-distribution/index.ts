@@ -1,4 +1,4 @@
 export {
   createDataFabricDistributionTool,
   dataFabricDistributionClient,
-} from "./data-fabric-distribution-tool";
+} from './data-fabric-distribution-tool';

@@ -1,4 +1,4 @@
 export {
   createDataFabricTableTool,
   dataFabricTableClient,
-} from "./data-fabric-table-tool";
+} from './data-fabric-table-tool';

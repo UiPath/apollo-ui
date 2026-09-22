@@ -1,16 +1,14 @@
-import type { DataQueryResponse } from "@/lib/charts-core";
-import type { DataFabricQueryResponse } from "../schemas/query-schema";
+import type { DataQueryResponse } from '@/lib/charts-core';
+import type { DataFabricQueryResponse } from '../schemas/query-schema';
 
 export function mapDataFabricResponseToChartData(
   response: DataFabricQueryResponse,
-  fieldIds: string[],
+  fieldIds: string[]
 ): DataQueryResponse {
   const { value: rows } = response;
   const columnKeys = [
     ...fieldIds,
-    ...(rows[0]
-      ? Object.keys(rows[0]).filter((k) => !fieldIds.includes(k))
-      : []),
+    ...(rows[0] ? Object.keys(rows[0]).filter((k) => !fieldIds.includes(k)) : []),
   ];
   const result: DataQueryResponse = {};
 

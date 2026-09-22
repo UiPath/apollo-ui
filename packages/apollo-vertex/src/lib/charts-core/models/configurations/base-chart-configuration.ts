@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { FromConfigSchema, JoinConfigSchema } from "../join-schema";
-import { ChartTypeSchema } from "./chart-type-schema";
-import { FilterValuesSchema } from "./filter-values-schema";
+import { z } from 'zod';
+import { FromConfigSchema, JoinConfigSchema } from '../join-schema';
+import { ChartTypeSchema } from './chart-type-schema';
+import { FilterValuesSchema } from './filter-values-schema';
 
 export const BaseChartConfigurationSchema = z.object({
   id: z.string(),

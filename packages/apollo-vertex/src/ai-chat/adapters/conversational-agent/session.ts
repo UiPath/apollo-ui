@@ -1,8 +1,8 @@
 import {
   ConversationalAgent,
   type SessionStream,
-} from "@uipath/uipath-typescript/conversational-agent";
-import type { ConversationalAgentAdapterConfig } from "./types";
+} from '@uipath/uipath-typescript/conversational-agent';
+import type { ConversationalAgentAdapterConfig } from './types';
 
 export class SessionManager {
   private readonly config: ConversationalAgentAdapterConfig;
@@ -53,13 +53,10 @@ export class SessionManager {
     const { agentId, folderId } = this.config;
     const currentSessionId = this.sessionId;
 
-    const conversation = await this.conversationalAgent.conversations.create(
-      agentId,
-      folderId,
-    );
+    const conversation = await this.conversationalAgent.conversations.create(agentId, folderId);
 
     if (currentSessionId !== this.sessionId) {
-      throw new Error("Session creation aborted (manager was disposed)");
+      throw new Error('Session creation aborted (manager was disposed)');
     }
 
     this.conversationId = conversation.id;
@@ -68,9 +65,7 @@ export class SessionManager {
 
     const ready = await new Promise<SessionStream>((resolve, reject) => {
       session.onSessionStarted(() => resolve(session));
-      session.onErrorStart((err) =>
-        reject(new Error(err.message ?? "Session failed to start")),
-      );
+      session.onErrorStart((err) => reject(new Error(err.message ?? 'Session failed to start')));
     });
 
     this.session = ready;

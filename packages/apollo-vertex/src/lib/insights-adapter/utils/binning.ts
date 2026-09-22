@@ -1,10 +1,5 @@
-import {
-  type DateTime,
-  type DateTimeUnit,
-  type Duration,
-  Interval,
-} from "luxon";
-import { niceDurationNumbers, niceNumbers } from "@/lib/charts-core";
+import { type DateTime, type DateTimeUnit, type Duration, Interval } from 'luxon';
+import { niceDurationNumbers, niceNumbers } from '@/lib/charts-core';
 
 export interface NumericBin {
   start: number;
@@ -12,13 +7,13 @@ export interface NumericBin {
 }
 
 function findHighestUnit(duration: Duration): DateTimeUnit {
-  if (duration.years > 0) return "year";
-  if (duration.months > 0) return "month";
-  if (duration.days > 0) return "day";
-  if (duration.hours > 0) return "hour";
-  if (duration.minutes > 0) return "minute";
-  if (duration.seconds > 0) return "second";
-  return "millisecond";
+  if (duration.years > 0) return 'year';
+  if (duration.months > 0) return 'month';
+  if (duration.days > 0) return 'day';
+  if (duration.hours > 0) return 'hour';
+  if (duration.minutes > 0) return 'minute';
+  if (duration.seconds > 0) return 'second';
+  return 'millisecond';
 }
 
 function createDatetimeBins({
@@ -46,13 +41,7 @@ function createDatetimeBins({
   return bins;
 }
 
-export function calculateDatetimeBins({
-  min,
-  max,
-}: {
-  min: DateTime;
-  max: DateTime;
-}): Interval[] {
+export function calculateDatetimeBins({ min, max }: { min: DateTime; max: DateTime }): Interval[] {
   if (min.equals(max)) {
     return [Interval.fromDateTimes(min, max)];
   }
@@ -68,13 +57,7 @@ export function calculateDatetimeBins({
   });
 }
 
-export function calculateNumericBins({
-  min,
-  max,
-}: {
-  min: number;
-  max: number;
-}): NumericBin[] {
+export function calculateNumericBins({ min, max }: { min: number; max: number }): NumericBin[] {
   if (min === max) {
     return [{ start: min, end: max }];
   }
@@ -88,10 +71,8 @@ export function calculateNumericBins({
   }));
 }
 
-export function findBinCutoffPoints(
-  bins: Array<Interval | NumericBin>,
-): number[] {
+export function findBinCutoffPoints(bins: Array<Interval | NumericBin>): number[] {
   return bins
     .filter((_, idx) => idx < bins.length - 1)
-    .map(({ end }) => (typeof end === "number" ? end : end.toMillis()));
+    .map(({ end }) => (typeof end === 'number' ? end : end.toMillis()));
 }

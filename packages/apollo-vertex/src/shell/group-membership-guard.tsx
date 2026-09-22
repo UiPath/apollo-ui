@@ -1,10 +1,7 @@
-import type { PropsWithChildren } from "react";
-import { useAuth } from "./shell-auth-provider";
-import {
-  MembershipDenied,
-  VerifyingMembership,
-} from "./group-membership-screens";
-import { useIsGroupMember } from "./use-is-group-member";
+import type { PropsWithChildren } from 'react';
+import { useAuth } from './shell-auth-provider';
+import { MembershipDenied, VerifyingMembership } from './group-membership-screens';
+import { useIsGroupMember } from './use-is-group-member';
 
 export interface GroupMembershipGuardProps {
   groupIds: string[];
@@ -24,13 +21,7 @@ export const GroupMembershipGuard = ({
   }
 
   if (!isMember) {
-    return (
-      <MembershipDenied
-        user={user}
-        onLogout={logout}
-        description={deniedDescription}
-      />
-    );
+    return <MembershipDenied user={user} onLogout={logout} description={deniedDescription} />;
   }
 
   return children;
