@@ -40,5 +40,28 @@ describe('package.json public API', () => {
     expect(pkg.exports['./components/ui/*']).toBeUndefined();
     expect(pkg.peerDependencies.react).toBe('>=19.0.0');
     expect(pkg.peerDependencies['react-dom']).toBe('>=19.0.0');
+    expect(pkg.dependencies?.['@tanstack/react-db']).toBeUndefined();
+    expect(pkg.peerDependencies['@tanstack/react-db']).toBe('*');
+    expect(pkg.peerDependenciesMeta['@tanstack/react-db'].optional).toBe(true);
+  });
+});
+
+describe('solution-tests light barrel', () => {
+  it('re-exports presentational run-details symbols without vs-core', async () => {
+    const dts = await readFile(
+      join(packageRoot, 'dist/solution-tests/index.d.ts'),
+      'utf8'
+    );
+    const js = await readFile(
+      join(packageRoot, 'dist/solution-tests/index.js'),
+      'utf8'
+    );
+    expect(dts).toMatch(/RunConfirmTarget/);
+    expect(dts).toMatch(/RunDetailsView/);
+    expect(dts).toMatch(/BaselineJobMap/);
+    expect(js).toMatch(/RunDetailsView/);
+    expect(js).not.toMatch(/@uipath\/vs-core/);
+    expect(js).not.toMatch(/@tanstack\/react-db/);
+    expect(js).not.toMatch(/from ["']\.\/hooks/);
   });
 });

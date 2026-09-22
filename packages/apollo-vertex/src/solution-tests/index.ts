@@ -17,7 +17,15 @@
  */
 
 export { SolutionTestsView } from './solution-tests-view';
-export type { SolutionTestsViewProps } from './solution-tests-view';
+export type {
+  SolutionTestsViewProps,
+  RunConfirmTarget,
+} from './solution-tests-view';
+export { RunDetailsView } from './run-details-view';
+export type {
+  BaselineJobMap,
+  RunDetailsViewProps,
+} from './run-details-view';
 export { SaveAsTestButton } from './save-as-test-button';
 export { SolutionTestActionError } from './errors';
 export type { ActionFailure } from './errors';
