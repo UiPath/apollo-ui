@@ -83,6 +83,15 @@ export interface OptionListProps {
 
 const BYO_GROUP_KEY = 'byo';
 
+/**
+ * Which sections can collapse. One rule for both renderers and for the
+ * keyboard handler in `useModelPickerState`, so a key in `collapsedGroups`
+ * never hides rows in one renderer and not the other. Today: BYO only.
+ */
+export function isCollapsibleGroup(groupKey: string): boolean {
+  return groupKey === BYO_GROUP_KEY;
+}
+
 // Design-spec scroll height for the dropdown's list region.
 const DEFAULT_LIST_MAX_HEIGHT = 362;
 
@@ -182,7 +191,7 @@ export const GroupedOptionList: React.FC<OptionListProps> = ({
         // BYO is the only currently collapsible group. The parent owns
         // the open/closed state via `collapsedGroups`; we just consult
         // it here to skip rendering rows + flip the header chevron.
-        const isCollapsible = opt.groupKey === BYO_GROUP_KEY;
+        const isCollapsible = isCollapsibleGroup(opt.groupKey);
         const isCollapsed = isCollapsible && (collapsedGroups?.has(opt.groupKey) ?? false);
         return (
           <React.Fragment key={opt.modelId}>
@@ -270,7 +279,8 @@ export const VirtualOptionList: React.FC<OptionListProps> = ({
       for (const o of options) counts[o.groupKey] = (counts[o.groupKey] ?? 0) + 1;
     }
     options.forEach((opt, i) => {
-      const collapsed = collapsedGroups?.has(opt.groupKey) ?? false;
+      const collapsed =
+        isCollapsibleGroup(opt.groupKey) && (collapsedGroups?.has(opt.groupKey) ?? false);
       if (!hideGroupHeaders && opt.groupKey !== lastGroupKey) {
         out.push({
           kind: 'header',
@@ -332,7 +342,7 @@ export const VirtualOptionList: React.FC<OptionListProps> = ({
             transform: `translateY(${vi.start}px)`,
           };
           if (row.kind === 'header') {
-            const isCollapsible = row.groupKey === BYO_GROUP_KEY;
+            const isCollapsible = isCollapsibleGroup(row.groupKey);
             const isCollapsed = isCollapsible && (collapsedGroups?.has(row.groupKey) ?? false);
             return (
               <div key={row.key} style={baseStyle}>

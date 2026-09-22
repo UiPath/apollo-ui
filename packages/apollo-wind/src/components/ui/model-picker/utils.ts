@@ -65,7 +65,7 @@ export interface DeriveModelTagsContext {
  * otherwise. Drives the BYO section and the chips that only make sense
  * for UiPath-hosted models (Preview, Out-of-region).
  */
-const isByoModel = (m: DiscoveryModel) =>
+export const isByoModel = (m: DiscoveryModel) =>
   m.modelSubscriptionType === 'BYOMAdded' ||
   m.modelSubscriptionType === 'BYOMReplacedAlternative' ||
   m.modelSubscriptionType === 'BYOMReplacedLikeForLike' ||
@@ -359,9 +359,14 @@ function formatDate(iso: string): string {
   // to the raw value instead.
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
+  // A date-only value ("2026-09-01") parses as UTC midnight; formatting it
+  // in a western local zone lands on the previous day and can shift the
+  // month. Format those in UTC. Full timestamps keep the local zone.
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(iso);
   return date.toLocaleDateString(undefined, {
     month: 'short',
     year: 'numeric',
+    ...(dateOnly ? { timeZone: 'UTC' } : {}),
   });
 }
 

@@ -157,6 +157,18 @@ describe('groupModels (Category view ordering)', () => {
 });
 
 describe('deriveModelTags', () => {
+  it('formats a date-only usageEndDate in UTC so the month never shifts', () => {
+    // "2026-09-01" parses as UTC midnight; formatted in a western zone it is
+    // still August. The label must read the calendar date as written.
+    const tags = deriveModelTags(model({ deprecationDetails: { usageEndDate: '2026-09-01' } }), {});
+    const expected = new Date(Date.UTC(2026, 8, 1)).toLocaleDateString(undefined, {
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+    expect(tags.find((t) => t.kind === 'deprecating')?.label).toContain(expected);
+  });
+
   it('emits Recommended chip when Model_hub list includes the model', () => {
     const tags = deriveModelTags(model({ modelId: 'a' }), {
       recommendedModelIds: ['a'],

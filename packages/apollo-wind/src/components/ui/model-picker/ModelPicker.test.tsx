@@ -741,20 +741,94 @@ describe('<ModelPicker> review follow-ups', () => {
     }
   });
 
-  it('collapses and expands the active row’s section with the arrow keys', async () => {
+  it('collapses and expands the Custom Models section with the arrow keys', async () => {
     const user = userEvent.setup();
-    renderPicker(<ModelPicker groupBy="vendor" models={MODELS} />);
+    // Category view lists BYO first, so the initial highlight sits on a BYO row.
+    renderPicker(<ModelPicker groupBy="subscription" models={MODELS} />);
     await user.click(screen.getByRole('button', { expanded: false }));
 
     const before = screen.getAllByRole('option').length;
     expect(before).toBeGreaterThan(0);
 
-    // Focus stays on the search input; the active row names the section.
     await user.keyboard('{ArrowLeft}');
     expect(screen.getAllByRole('option').length).toBeLessThan(before);
 
-    await user.keyboard('{ArrowRight}');
+    // Re-expanding needs the highlight back on the section, which the
+    // collapse moved off; header click is the pointer path, ArrowRight the
+    // keyboard one once a BYO row is active again.
+    await user.click(screen.getByText('Custom Models (BYO)'));
     expect(screen.getAllByRole('option')).toHaveLength(before);
+  });
+
+  it('does not collapse sections the renderers cannot collapse', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="vendor" models={MODELS} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    const before = screen.getAllByRole('option').length;
+    // Provider view still lists BYO first; step onto a hosted row.
+    await user.keyboard('{ArrowDown}');
+    await user.keyboard('{ArrowLeft}');
+    // Vendor sections have no chevron; the key must not edit state the
+    // grouped renderer ignores but the virtualized one would honour.
+    expect(screen.getAllByRole('option')).toHaveLength(before);
+  });
+
+  it('moves the highlight off a row hidden by a collapse', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderPicker(<ModelPicker groupBy="subscription" models={MODELS} onChange={onChange} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    await user.keyboard('{ArrowLeft}');
+
+    // activedescendant must name a rendered option, not the hidden BYO row…
+    const activeId = screen.getByRole('combobox').getAttribute('aria-activedescendant');
+    expect(activeId).toBeTruthy();
+    expect(document.getElementById(activeId!)).toHaveAttribute('role', 'option');
+    // …and Enter must select something the user can see.
+    await user.keyboard('{Enter}');
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0][0].modelSubscriptionType).toBe('UiPathOwned');
+  });
+
+  it('keeps row action buttons out of the tab order', async () => {
+    const user = userEvent.setup();
+    renderPicker(
+      <ModelPicker canManageByo models={MODELS} onDeleteModel={vi.fn()} onEditModel={vi.fn()} />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    const edit = screen.getAllByRole('button', { name: 'Edit configuration' })[0];
+    const del = screen.getAllByRole('button', { name: 'Delete configuration' })[0];
+    expect(edit).toHaveAttribute('tabindex', '-1');
+    expect(del).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('edits the active BYO row on Shift+Enter and asks to delete it on Delete', async () => {
+    const user = userEvent.setup();
+    const onEditModel = vi.fn();
+    const onChange = vi.fn();
+    renderPicker(
+      <ModelPicker
+        canManageByo
+        groupBy="subscription"
+        models={MODELS}
+        onChange={onChange}
+        onDeleteModel={vi.fn()}
+        onEditModel={onEditModel}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    // Initial highlight is the BYO row (Category view lists BYO first).
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(onEditModel).toHaveBeenCalledTimes(1);
+    expect(onEditModel.mock.calls[0][0].modelId).toBe('byo-cigna-gpt-4o');
+    expect(onChange).not.toHaveBeenCalled();
+
+    await user.keyboard('{Delete}');
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
   });
 
   it('composes a consumer onClick with the one Radix injects', async () => {

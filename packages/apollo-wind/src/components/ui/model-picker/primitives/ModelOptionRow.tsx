@@ -7,7 +7,7 @@ import { cn } from '@/lib';
 import { DEFAULT_MODEL_PICKER_LABELS, type ModelPickerLabels } from '../labels';
 import { ModelTagChip } from '../ModelTagChip';
 import type { DiscoveryModel } from '../types';
-import { type DeriveModelTagsContext, deriveModelTags } from '../utils';
+import { type DeriveModelTagsContext, deriveModelTags, isByoModel } from '../utils';
 
 export interface ModelOptionRowProps {
   model: DiscoveryModel;
@@ -276,11 +276,9 @@ export function defaultRowActions(
 ): React.ReactNode {
   const { labels = DEFAULT_MODEL_PICKER_LABELS, onEdit, onDelete } = options;
   if (!onEdit && !onDelete) return null;
-  const isByo =
-    model.modelSubscriptionType === 'BYOMAdded' ||
-    model.modelSubscriptionType === 'BYOMReplacedAlternative' ||
-    model.modelSubscriptionType === 'BYOMReplacedLikeForLike';
-  if (!isByo) return null;
+  // Same predicate grouping and tagging use, so a row filed under Custom
+  // Models by its `byomDetails` alone still gets its actions.
+  if (!isByoModel(model)) return null;
   const editTitle = labels.editConfiguration;
   const deleteTitle = labels.deleteConfiguration;
   return (
@@ -294,6 +292,9 @@ export function defaultRowActions(
               aria-label={editTitle}
               className="cursor-pointer rounded p-1 text-inherit hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               onClick={() => onEdit(model)}
+              // Not a tab stop: an interactive child of `role="option"` breaks
+              // the activedescendant model. Keyboard path is Shift+Enter.
+              tabIndex={-1}
               type="button"
             >
               <Pencil className="size-3.5" />
@@ -309,6 +310,8 @@ export function defaultRowActions(
               aria-label={deleteTitle}
               className="cursor-pointer rounded p-1 text-inherit hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               onClick={() => onDelete(model)}
+              // Keyboard path is Delete on an empty search.
+              tabIndex={-1}
               type="button"
             >
               <Trash2 className="size-3.5" />

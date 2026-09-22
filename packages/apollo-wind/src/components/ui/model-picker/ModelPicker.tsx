@@ -27,7 +27,7 @@ import { PickerTrigger } from './primitives/PickerTrigger';
 import type { DiscoveryModel, ModelTag } from './types';
 import { useModelPickerState } from './useModelPickerState';
 import type { DeriveModelTagsContext, GroupStrategy } from './utils';
-import { resolveHomeGeography } from './utils';
+import { isByoModel, resolveHomeGeography } from './utils';
 
 export type ModelPickerVariant = 'searchable' | 'virtualized';
 
@@ -522,6 +522,39 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     const effectiveCanManageByo = canManageByo ?? false;
     const effectiveFolders = folders;
 
+    // The row's edit/delete icons are not tab stops (interactive children of
+    // `role="option"` break the activedescendant model), so the keyboard
+    // reaches the same actions from the search field: Shift+Enter edits the
+    // active BYO row, Delete on an empty search asks to delete it. Everything
+    // else falls through to the listbox navigation.
+    const handleSearchKeyDown = React.useCallback(
+      (e: React.KeyboardEvent) => {
+        const active = filtered[activeIndex];
+        if (active && effectiveCanManageByo && isByoModel(active)) {
+          if (e.key === 'Enter' && e.shiftKey && onEditModel) {
+            e.preventDefault();
+            onEditModel(active);
+            return;
+          }
+          if (e.key === 'Delete' && query === '' && handleDeleteModel) {
+            e.preventDefault();
+            handleDeleteModel(active);
+            return;
+          }
+        }
+        onSearchKeyDown(e);
+      },
+      [
+        filtered,
+        activeIndex,
+        effectiveCanManageByo,
+        onEditModel,
+        query,
+        handleDeleteModel,
+        onSearchKeyDown,
+      ]
+    );
+
     // Dev-time guard: duplicate folder ids silently break the switcher's
     // selection highlight. Warn once per list change. `typeof process`
     // keeps this safe in browsers that don't shim Node globals.
@@ -669,7 +702,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                     setQuery(next);
                     setActiveIndex(0);
                   }}
-                  onKeyDown={onSearchKeyDown}
+                  onKeyDown={handleSearchKeyDown}
                   placeholder={labels.searchPlaceholder}
                   trailing={
                     allowGroupingChange ? (

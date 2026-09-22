@@ -148,7 +148,38 @@ describe('<GroupedOptionList>', () => {
   });
 });
 
+describe('collapsible sections', () => {
+  it('ignores collapsedGroups keys for sections that cannot collapse, in the virtualized renderer', () => {
+    render(
+      <VirtualOptionList
+        activeIndex={0}
+        collapsedGroups={new Set(['recommended'])}
+        id="lb"
+        onSelect={() => {}}
+        options={OPTIONS}
+      />
+    );
+    // Same rule as the grouped renderer: only BYO collapses, so a stray key
+    // must not make a section vanish in one renderer and not the other.
+    expect(screen.getByRole('option', { name: /model-rec/ })).toBeInTheDocument();
+  });
+});
+
 describe('defaultRowActions', () => {
+  it('renders actions for a BYO row identified by metadata alone', () => {
+    // No subscription type; `byomDetails` is what files it under Custom
+    // Models, and the actions must agree with the grouping.
+    const node = defaultRowActions(
+      opt({
+        modelSubscriptionType: undefined,
+        byomDetails: { integrationServiceConnectionId: 'c1' },
+      }),
+      { onEdit: () => {} }
+    );
+    render(<div>{node}</div>);
+    expect(screen.getByRole('button', { name: 'Edit configuration' })).toBeInTheDocument();
+  });
+
   it('returns null for hosted (non-BYO) models', () => {
     expect(defaultRowActions(opt({}), { onEdit: () => {} })).toBeNull();
   });
