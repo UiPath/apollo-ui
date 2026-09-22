@@ -1,5 +1,10 @@
 import { Button } from "@uipath/apollo-vertex";
-import { Card, CardContent, CardHeader, CardTitle } from "@uipath/apollo-vertex";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@uipath/apollo-vertex";
 
 export function MyTemplate() {
   return (

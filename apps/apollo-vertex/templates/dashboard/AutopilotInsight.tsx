@@ -1,7 +1,12 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@uipath/apollo-vertex";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@uipath/apollo-vertex";
 
 interface AutopilotInsightProps {
   onClose: () => void;

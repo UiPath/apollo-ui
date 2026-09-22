@@ -8,15 +8,11 @@
       "type": "registry:theme",
       "title": "Apollo Vertex Theme",
       "description": "Apollo Vertex design system tokens — colors, typography, spacing, shadows, and easing functions with light and dark mode support.",
-      "dependencies": [
-        "tw-animate-css"
-      ],
+      "dependencies": ["tw-animate-css"],
       "css": {
         "@import \"tw-animate-css\"": {}
       },
-      "registryDependencies": [
-        "@uipath/font-inter"
-      ],
+      "registryDependencies": ["@uipath/font-inter"],
       "cssVars": {
         "theme": {
           "radius-sm": "calc(var(--radius) - 4px)",
@@ -340,9 +336,7 @@
         "provider": "google",
         "import": "Inter",
         "variable": "--font-sans",
-        "subsets": [
-          "latin"
-        ],
+        "subsets": ["latin"],
         "dependency": "@fontsource-variable/inter"
       }
     },
@@ -351,9 +345,7 @@
       "type": "registry:ui",
       "title": "Accordion",
       "description": "A vertically stacked set of interactive headings that reveal content.",
-      "dependencies": [
-        "@radix-ui/react-accordion"
-      ],
+      "dependencies": ["@radix-ui/react-accordion"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/accordion.tsx",
@@ -375,9 +367,7 @@
         "react-i18next",
         "zod"
       ],
-      "registryDependencies": [
-        "@uipath/spinner"
-      ],
+      "registryDependencies": ["@uipath/spinner"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/lib/asserts/assert.ts",
@@ -688,9 +678,7 @@
         "luxon",
         "zod"
       ],
-      "registryDependencies": [
-        "@uipath/charts-core"
-      ],
+      "registryDependencies": ["@uipath/charts-core"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/adapter.ts",
@@ -796,9 +784,7 @@
         "luxon",
         "zod"
       ],
-      "registryDependencies": [
-        "@uipath/charts-core"
-      ],
+      "registryDependencies": ["@uipath/charts-core"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/lib/insights-adapter/adapter.ts",
@@ -907,10 +893,7 @@
       "type": "registry:ui",
       "title": "Line Chart",
       "description": "A time-series line chart over a datetime dimension.",
-      "dependencies": [
-        "@tanstack/react-query@^5.90.0",
-        "recharts@2.15.4"
-      ],
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/charts-core",
@@ -939,10 +922,7 @@
       "type": "registry:ui",
       "title": "Multi-Line Chart",
       "description": "Two metrics on a shared datetime axis with independent Y axes.",
-      "dependencies": [
-        "@tanstack/react-query@^5.90.0",
-        "recharts@2.15.4"
-      ],
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/chart",
@@ -971,10 +951,7 @@
       "type": "registry:ui",
       "title": "Bar Chart",
       "description": "A metric broken down by a categorical dimension.",
-      "dependencies": [
-        "@tanstack/react-query@^5.90.0",
-        "recharts@2.15.4"
-      ],
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/charts-core",
@@ -1028,10 +1005,7 @@
       "type": "registry:ui",
       "title": "Distribution Chart",
       "description": "A histogram over a numeric or datetime dimension.",
-      "dependencies": [
-        "@tanstack/react-query@^5.90.0",
-        "recharts@2.15.4"
-      ],
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/charts-core",
@@ -1060,13 +1034,8 @@
       "type": "registry:ui",
       "title": "KPI Chart",
       "description": "A single scalar metric (count, sum, average, min, max).",
-      "dependencies": [
-        "@tanstack/react-query@^5.90.0"
-      ],
-      "registryDependencies": [
-        "@uipath/card",
-        "@uipath/charts-core"
-      ],
+      "dependencies": ["@tanstack/react-query@^5.90.0"],
+      "registryDependencies": ["@uipath/card", "@uipath/charts-core"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/kpi-chart/kpi-chart-view.tsx",
@@ -1561,9 +1530,7 @@
       "type": "registry:ui",
       "title": "Alert Dialog",
       "description": "A modal dialog that interrupts the user with important content.",
-      "dependencies": [
-        "@radix-ui/react-alert-dialog"
-      ],
+      "dependencies": ["@radix-ui/react-alert-dialog"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/alert-dialog.tsx",
@@ -1577,9 +1544,7 @@
       "type": "registry:ui",
       "title": "Aspect Ratio",
       "description": "Displays content within a desired ratio.",
-      "dependencies": [
-        "@radix-ui/react-aspect-ratio"
-      ],
+      "dependencies": ["@radix-ui/react-aspect-ratio"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/aspect-ratio.tsx",
@@ -1593,9 +1558,7 @@
       "type": "registry:ui",
       "title": "Avatar",
       "description": "An image element with a fallback for representing the user.",
-      "dependencies": [
-        "@radix-ui/react-avatar"
-      ],
+      "dependencies": ["@radix-ui/react-avatar"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/avatar.tsx",
@@ -1609,9 +1572,7 @@
       "type": "registry:ui",
       "title": "Badge",
       "description": "Displays a badge or a component that looks like a badge.",
-      "dependencies": [
-        "@radix-ui/react-slot"
-      ],
+      "dependencies": ["@radix-ui/react-slot"],
       "cssVars": {
         "theme": {
           "color-badge": "var(--badge)",
@@ -1675,10 +1636,7 @@
       "type": "registry:ui",
       "title": "Breadcrumb",
       "description": "Displays the path to the current resource using a hierarchy of links.",
-      "dependencies": [
-        "@radix-ui/react-slot",
-        "react-i18next"
-      ],
+      "dependencies": ["@radix-ui/react-slot", "react-i18next"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/breadcrumb.tsx",
@@ -1692,9 +1650,7 @@
       "type": "registry:ui",
       "title": "Button",
       "description": "Displays a button or a component that looks like a button.",
-      "dependencies": [
-        "@radix-ui/react-slot"
-      ],
+      "dependencies": ["@radix-ui/react-slot"],
       "cssVars": {
         "theme": {
           "color-success": "var(--success)",
@@ -1743,12 +1699,8 @@
       "type": "registry:ui",
       "title": "Button Group",
       "description": "Groups multiple buttons together.",
-      "dependencies": [
-        "@radix-ui/react-slot"
-      ],
-      "registryDependencies": [
-        "@uipath/separator"
-      ],
+      "dependencies": ["@radix-ui/react-slot"],
+      "registryDependencies": ["@uipath/separator"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/button-group.tsx",
@@ -1796,10 +1748,7 @@
       "type": "registry:ui",
       "title": "Carousel",
       "description": "A carousel with motion and swipe built using Embla.",
-      "dependencies": [
-        "embla-carousel-react",
-        "react-i18next"
-      ],
+      "dependencies": ["embla-carousel-react", "react-i18next"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/carousel.tsx",
@@ -1813,10 +1762,7 @@
       "type": "registry:ui",
       "title": "Chart",
       "description": "Beautiful charts using Recharts with consistent theming.",
-      "dependencies": [
-        "recharts@2.15.4",
-        "lucide-react"
-      ],
+      "dependencies": ["recharts@2.15.4", "lucide-react"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/chart.tsx",
@@ -1830,9 +1776,7 @@
       "type": "registry:ui",
       "title": "Checkbox",
       "description": "A control that allows the user to toggle between checked and not checked.",
-      "dependencies": [
-        "@radix-ui/react-checkbox"
-      ],
+      "dependencies": ["@radix-ui/react-checkbox"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/checkbox.tsx",
@@ -1846,9 +1790,7 @@
       "type": "registry:ui",
       "title": "Collapsible",
       "description": "An interactive component which expands/collapses a panel.",
-      "dependencies": [
-        "@radix-ui/react-collapsible"
-      ],
+      "dependencies": ["@radix-ui/react-collapsible"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/collapsible.tsx",
@@ -1868,9 +1810,7 @@
         "@uipath/command",
         "@uipath/popover"
       ],
-      "dependencies": [
-        "react-i18next"
-      ],
+      "dependencies": ["react-i18next"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/combobox.tsx",
@@ -1884,12 +1824,8 @@
       "type": "registry:ui",
       "title": "Command",
       "description": "A command menu for searching and executing commands.",
-      "dependencies": [
-        "cmdk"
-      ],
-      "registryDependencies": [
-        "@uipath/dialog"
-      ],
+      "dependencies": ["cmdk"],
+      "registryDependencies": ["@uipath/dialog"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/command.tsx",
@@ -1903,11 +1839,7 @@
       "type": "registry:ui",
       "title": "Confidence Signal",
       "description": "A signal-bar chip that communicates AI confidence (high/medium/low/unknown) without a raw score, with an optional popover for factor breakdowns and required next steps.",
-      "dependencies": [
-        "framer-motion",
-        "lucide-react",
-        "react-i18next"
-      ],
+      "dependencies": ["framer-motion", "lucide-react", "react-i18next"],
       "registryDependencies": [
         "@uipath/button",
         "@uipath/popover",
@@ -1966,9 +1898,7 @@
       "type": "registry:ui",
       "title": "Context Menu",
       "description": "Displays a menu located at the pointer, triggered by a right-click.",
-      "dependencies": [
-        "@radix-ui/react-context-menu"
-      ],
+      "dependencies": ["@radix-ui/react-context-menu"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/context-menu.tsx",
@@ -2085,10 +2015,7 @@
       "type": "registry:ui",
       "title": "Dialog",
       "description": "A modal dialog that appears in front of app content.",
-      "dependencies": [
-        "@radix-ui/react-dialog",
-        "react-i18next"
-      ],
+      "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/dialog.tsx",
@@ -2102,10 +2029,7 @@
       "type": "registry:ui",
       "title": "Drawer",
       "description": "A drawer component that slides in from the edge of the screen.",
-      "dependencies": [
-        "vaul",
-        "@radix-ui/react-dialog"
-      ],
+      "dependencies": ["vaul", "@radix-ui/react-dialog"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/drawer.tsx",
@@ -2119,9 +2043,7 @@
       "type": "registry:ui",
       "title": "Dropdown Menu",
       "description": "Displays a menu to the user triggered by a button.",
-      "dependencies": [
-        "@radix-ui/react-dropdown-menu"
-      ],
+      "dependencies": ["@radix-ui/react-dropdown-menu"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/dropdown-menu.tsx",
@@ -2148,13 +2070,8 @@
       "type": "registry:ui",
       "title": "Feedback Vote Widget",
       "description": "A thumbs up/down feedback control with an optional comment textarea, designed for the UiPath Platform Feedback API.",
-      "dependencies": [
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@uipath/button",
-        "@uipath/textarea"
-      ],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@uipath/button", "@uipath/textarea"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/feedback-vote-widget.tsx",
@@ -2168,10 +2085,7 @@
       "type": "registry:ui",
       "title": "Field",
       "description": "A form field component with label, input, and description.",
-      "registryDependencies": [
-        "@uipath/label",
-        "@uipath/separator"
-      ],
+      "registryDependencies": ["@uipath/label", "@uipath/separator"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/field.tsx",
@@ -2185,10 +2099,7 @@
       "type": "registry:ui",
       "title": "Filter Dropdown",
       "description": "A versatile filter dropdown with multi-select, single-select, search, and optional TanStack Table column integration.",
-      "dependencies": [
-        "@tanstack/react-table@^8.21.0",
-        "lucide-react"
-      ],
+      "dependencies": ["@tanstack/react-table@^8.21.0", "lucide-react"],
       "registryDependencies": [
         "@uipath/button",
         "@uipath/checkbox",
@@ -2214,9 +2125,7 @@
       "type": "registry:ui",
       "title": "Hover Card",
       "description": "For sighted users to preview content available behind a link.",
-      "dependencies": [
-        "@radix-ui/react-hover-card"
-      ],
+      "dependencies": ["@radix-ui/react-hover-card"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/hover-card.tsx",
@@ -2261,9 +2170,7 @@
       "type": "registry:ui",
       "title": "Input OTP",
       "description": "A one-time password input component.",
-      "dependencies": [
-        "input-otp"
-      ],
+      "dependencies": ["input-otp"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/input-otp.tsx",
@@ -2277,12 +2184,8 @@
       "type": "registry:ui",
       "title": "Item",
       "description": "A list item component for displaying content in lists.",
-      "dependencies": [
-        "@radix-ui/react-slot"
-      ],
-      "registryDependencies": [
-        "@uipath/separator"
-      ],
+      "dependencies": ["@radix-ui/react-slot"],
+      "registryDependencies": ["@uipath/separator"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/item.tsx",
@@ -2309,9 +2212,7 @@
       "type": "registry:ui",
       "title": "Label",
       "description": "Renders an accessible label associated with controls.",
-      "dependencies": [
-        "@radix-ui/react-label"
-      ],
+      "dependencies": ["@radix-ui/react-label"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/label.tsx",
@@ -2325,9 +2226,7 @@
       "type": "registry:ui",
       "title": "Menubar",
       "description": "A horizontally stacked menu bar with dropdown submenus.",
-      "dependencies": [
-        "@radix-ui/react-menubar"
-      ],
+      "dependencies": ["@radix-ui/react-menubar"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/menubar.tsx",
@@ -2364,9 +2263,7 @@
         "lucide-react",
         "@radix-ui/react-dialog"
       ],
-      "registryDependencies": [
-        "@uipath/button"
-      ],
+      "registryDependencies": ["@uipath/button"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/onboarding-tour-joyride/index.ts",
@@ -2395,9 +2292,7 @@
       "type": "registry:ui",
       "title": "Navigation Menu",
       "description": "A navigation menu with dropdown support.",
-      "dependencies": [
-        "@radix-ui/react-navigation-menu"
-      ],
+      "dependencies": ["@radix-ui/react-navigation-menu"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/navigation-menu.tsx",
@@ -2411,9 +2306,7 @@
       "type": "registry:ui",
       "title": "Pagination",
       "description": "Pagination with page navigation, next and previous links.",
-      "dependencies": [
-        "react-i18next"
-      ],
+      "dependencies": ["react-i18next"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/pagination.tsx",
@@ -2427,14 +2320,8 @@
       "type": "registry:ui",
       "title": "Page Header",
       "description": "A compound page header with back button, title, metadata fields, and collapsible action buttons that overflow into a dropdown.",
-      "dependencies": [
-        "class-variance-authority",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@uipath/button",
-        "@uipath/dropdown-menu"
-      ],
+      "dependencies": ["class-variance-authority", "lucide-react"],
+      "registryDependencies": ["@uipath/button", "@uipath/dropdown-menu"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/page-header.tsx",
@@ -2448,9 +2335,7 @@
       "type": "registry:ui",
       "title": "Popover",
       "description": "Displays rich content in a portal, triggered by a button.",
-      "dependencies": [
-        "@radix-ui/react-popover"
-      ],
+      "dependencies": ["@radix-ui/react-popover"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/popover.tsx",
@@ -2464,9 +2349,7 @@
       "type": "registry:ui",
       "title": "Progress",
       "description": "Displays an indicator showing the completion progress of a task.",
-      "dependencies": [
-        "@radix-ui/react-progress"
-      ],
+      "dependencies": ["@radix-ui/react-progress"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/progress.tsx",
@@ -2480,9 +2363,7 @@
       "type": "registry:ui",
       "title": "Radio Group",
       "description": "A set of checkable buttons where no more than one can be checked.",
-      "dependencies": [
-        "@radix-ui/react-radio-group"
-      ],
+      "dependencies": ["@radix-ui/react-radio-group"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/radio-group.tsx",
@@ -2496,9 +2377,7 @@
       "type": "registry:ui",
       "title": "Resizable",
       "description": "Accessible resizable panel groups and layouts.",
-      "dependencies": [
-        "react-resizable-panels@^4.7.3"
-      ],
+      "dependencies": ["react-resizable-panels@^4.7.3"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/resizable.tsx",
@@ -2512,9 +2391,7 @@
       "type": "registry:ui",
       "title": "Scroll Area",
       "description": "Augments native scroll functionality for custom, cross-browser styling.",
-      "dependencies": [
-        "@radix-ui/react-scroll-area"
-      ],
+      "dependencies": ["@radix-ui/react-scroll-area"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/scroll-area.tsx",
@@ -2528,9 +2405,7 @@
       "type": "registry:ui",
       "title": "Select",
       "description": "Displays a list of options for the user to pick from.",
-      "dependencies": [
-        "@radix-ui/react-select"
-      ],
+      "dependencies": ["@radix-ui/react-select"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/select.tsx",
@@ -2544,9 +2419,7 @@
       "type": "registry:ui",
       "title": "Separator",
       "description": "Visually or semantically separates content.",
-      "dependencies": [
-        "@radix-ui/react-separator"
-      ],
+      "dependencies": ["@radix-ui/react-separator"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/separator.tsx",
@@ -2560,10 +2433,7 @@
       "type": "registry:ui",
       "title": "Sheet",
       "description": "Extends the Dialog component to display content that slides in.",
-      "dependencies": [
-        "@radix-ui/react-dialog",
-        "react-i18next"
-      ],
+      "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/sheet.tsx",
@@ -2835,10 +2705,7 @@
         "@tanstack/react-db",
         "@uipath/vs-core@^4.2.0"
       ],
-      "registryDependencies": [
-        "@uipath/use-data-table",
-        "@uipath/data-table"
-      ],
+      "registryDependencies": ["@uipath/use-data-table", "@uipath/data-table"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/hooks/use-data-table/useEntityDataTable.tsx",
@@ -3034,9 +2901,7 @@
       "type": "registry:ui",
       "title": "Slider",
       "description": "An input where the user selects a value from within a given range.",
-      "dependencies": [
-        "@radix-ui/react-slider"
-      ],
+      "dependencies": ["@radix-ui/react-slider"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/slider.tsx",
@@ -3050,10 +2915,7 @@
       "type": "registry:ui",
       "title": "Sonner",
       "description": "An opinionated toast component for React.",
-      "dependencies": [
-        "sonner",
-        "next-themes"
-      ],
+      "dependencies": ["sonner", "next-themes"],
       "cssVars": {
         "theme": {
           "color-info": "var(--info)",
@@ -3084,9 +2946,7 @@
       "type": "registry:ui",
       "title": "Spinner",
       "description": "A loading spinner component.",
-      "dependencies": [
-        "class-variance-authority"
-      ],
+      "dependencies": ["class-variance-authority"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/spinner.tsx",
@@ -3100,9 +2960,7 @@
       "type": "registry:ui",
       "title": "Switch",
       "description": "A control that allows the user to toggle between on and off.",
-      "dependencies": [
-        "@radix-ui/react-switch"
-      ],
+      "dependencies": ["@radix-ui/react-switch"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/switch.tsx",
@@ -3129,9 +2987,7 @@
       "type": "registry:ui",
       "title": "Tabs",
       "description": "A set of layered sections of content shown one at a time.",
-      "dependencies": [
-        "@radix-ui/react-tabs"
-      ],
+      "dependencies": ["@radix-ui/react-tabs"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/tabs.tsx",
@@ -3145,11 +3001,7 @@
       "type": "registry:ui",
       "title": "Form",
       "description": "A composition-first form built on TanStack Form and Zod with Apollo-bound field components and translatable validation errors.",
-      "dependencies": [
-        "@tanstack/react-form",
-        "zod",
-        "react-i18next"
-      ],
+      "dependencies": ["@tanstack/react-form", "zod", "react-i18next"],
       "registryDependencies": [
         "@uipath/button",
         "@uipath/checkbox",
@@ -3233,10 +3085,7 @@
       "type": "registry:ui",
       "title": "Stepper",
       "description": "A composable step indicator for multi-step flows with horizontal and vertical orientations and active, completed, and inactive states.",
-      "dependencies": [
-        "class-variance-authority",
-        "lucide-react"
-      ],
+      "dependencies": ["class-variance-authority", "lucide-react"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/stepper/index.ts",
@@ -3344,9 +3193,7 @@
       "type": "registry:ui",
       "title": "Toggle",
       "description": "A two-state button that can be either on or off.",
-      "dependencies": [
-        "@radix-ui/react-toggle"
-      ],
+      "dependencies": ["@radix-ui/react-toggle"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/toggle.tsx",
@@ -3360,12 +3207,8 @@
       "type": "registry:ui",
       "title": "Toggle Group",
       "description": "A set of two-state buttons that can be toggled on or off.",
-      "dependencies": [
-        "@radix-ui/react-toggle-group"
-      ],
-      "registryDependencies": [
-        "@uipath/toggle"
-      ],
+      "dependencies": ["@radix-ui/react-toggle-group"],
+      "registryDependencies": ["@uipath/toggle"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/toggle-group.tsx",
@@ -3379,9 +3222,7 @@
       "type": "registry:ui",
       "title": "Tooltip",
       "description": "A popup that displays information related to an element.",
-      "dependencies": [
-        "@radix-ui/react-tooltip"
-      ],
+      "dependencies": ["@radix-ui/react-tooltip"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/tooltip.tsx",
@@ -3419,9 +3260,7 @@
       "type": "registry:ui",
       "title": "Calendar",
       "description": "A calendar component.",
-      "dependencies": [
-        "react-day-picker"
-      ],
+      "dependencies": ["react-day-picker"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/components/ui/calendar.tsx",
@@ -3435,9 +3274,7 @@
       "type": "registry:lib",
       "title": "Feature Flag Provider",
       "description": "Generic feature flag provider with Proteus SDK integration, reactive listeners, and environment-based switching.",
-      "dependencies": [
-        "@uipath/proteus-client"
-      ],
+      "dependencies": ["@uipath/proteus-client"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/feature-flags/types.ts",
@@ -3461,9 +3298,7 @@
       "type": "registry:hook",
       "title": "useFeatureFlag",
       "description": "React hook that reads a feature flag value and reactively updates when the flag changes.",
-      "registryDependencies": [
-        "@uipath/feature-flag-provider"
-      ],
+      "registryDependencies": ["@uipath/feature-flag-provider"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/feature-flags/use-feature-flag.ts",
@@ -3477,9 +3312,7 @@
       "type": "registry:ui",
       "title": "FeatureFlagGuard",
       "description": "Wrapper component that conditionally renders children based on a feature flag value.",
-      "registryDependencies": [
-        "@uipath/use-feature-flag"
-      ],
+      "registryDependencies": ["@uipath/use-feature-flag"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/feature-flags/feature-flag-guard.tsx",
@@ -3493,9 +3326,7 @@
       "type": "registry:ui",
       "title": "ProtectedFeatureRoute",
       "description": "Route-level guard that throws an error when a feature flag is disabled.",
-      "registryDependencies": [
-        "@uipath/use-feature-flag"
-      ],
+      "registryDependencies": ["@uipath/use-feature-flag"],
       "files": [
         {
           "path": "../../packages/apollo-vertex/src/feature-flags/protected-feature-route.tsx",
@@ -3867,12 +3698,8 @@
       "type": "registry:ui",
       "title": "Timeline",
       "description": "Activity timeline primitives: a variant-driven status marker and the connecting row layout for building AI and human activity trails.",
-      "dependencies": [
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@uipath/ai-mark"
-      ],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@uipath/ai-mark"],
       "cssVars": {
         "theme": {
           "color-success": "var(--success)",

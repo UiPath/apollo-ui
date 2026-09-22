@@ -6,10 +6,7 @@ import {
   type FieldMetaData,
 } from "@uipath/uipath-typescript/entities";
 import { STALE_TIME_MS } from "@uipath/apollo-vertex";
-import type {
-  Entity,
-  EntityField,
-} from "@uipath/apollo-vertex/ai-chat";
+import type { Entity, EntityField } from "@uipath/apollo-vertex/ai-chat";
 
 interface UseDataFabricEntitiesOptions {
   entities: Entities;

@@ -3,7 +3,12 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Badge } from "@uipath/apollo-vertex";
 import { Button } from "@uipath/apollo-vertex";
-import { Card, CardContent, CardHeader, CardTitle } from "@uipath/apollo-vertex";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@uipath/apollo-vertex";
 import {
   PageHeader,
   PageHeaderActions,

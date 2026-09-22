@@ -10,7 +10,12 @@ import {
   XCircle,
 } from "lucide-react";
 import { Badge } from "@uipath/apollo-vertex";
-import { Card, CardContent, CardHeader, CardTitle } from "@uipath/apollo-vertex";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@uipath/apollo-vertex";
 import { Progress } from "@uipath/apollo-vertex";
 import {
   Table,

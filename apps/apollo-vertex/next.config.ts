@@ -41,7 +41,10 @@ function vertexPackageAliases(): Record<string, string> {
     ["@uipath/apollo-vertex/solution-tests", ["solution-tests", "index"]],
     ["@uipath/apollo-vertex/solution-tests/data", ["solution-tests", "data"]],
     ["@uipath/apollo-vertex/feature-flags", ["feature-flags", "index"]],
-    ["@uipath/apollo-vertex/feature-flags/proteus", ["feature-flags", "proteus"]],
+    [
+      "@uipath/apollo-vertex/feature-flags/proteus",
+      ["feature-flags", "proteus"],
+    ],
     ["@uipath/apollo-vertex/ai-chat", ["ai-chat", "index"]],
     ["@uipath/apollo-vertex/charts", ["charts", "index"]],
   ];

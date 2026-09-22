@@ -4,7 +4,12 @@ import { AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@uipath/apollo-vertex";
-import { Card, CardContent, CardHeader, CardTitle } from "@uipath/apollo-vertex";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@uipath/apollo-vertex";
 import { Progress } from "@uipath/apollo-vertex";
 import {
   Table,

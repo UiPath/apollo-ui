@@ -5,7 +5,12 @@ import { Button } from "@uipath/apollo-vertex";
 import { Card } from "@uipath/apollo-vertex";
 import { Input } from "@uipath/apollo-vertex";
 import { Label } from "@uipath/apollo-vertex";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@uipath/apollo-vertex";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@uipath/apollo-vertex";
 import { themes } from "../../../themes";
 
 const CUSTOM_THEME_STORAGE_KEY = "apollo-vertex-custom-theme";

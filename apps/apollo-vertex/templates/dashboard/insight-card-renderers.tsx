@@ -2,11 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { Badge } from "@uipath/apollo-vertex";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@uipath/apollo-vertex";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@uipath/apollo-vertex";
 import type { InsightCardContent } from "./glow-config";
 import { useDashboardData } from "./dashboard-data-context";
 import type { InsightCardData } from "./dashboard-data";
