@@ -19,6 +19,7 @@ describe('Button', () => {
     render(<Button>Default</Button>);
     const button = screen.getByRole('button');
     expect(button).toHaveClass('bg-primary');
+    expect(button).not.toHaveClass('w-full');
   });
 
   it('applies destructive variant classes', () => {
@@ -31,6 +32,12 @@ describe('Button', () => {
     render(<Button variant="outline">Outline</Button>);
     const button = screen.getByRole('button');
     expect(button).toHaveClass('border');
+  });
+
+  it('applies text variant classes', () => {
+    render(<Button variant="text">Text</Button>);
+    const button = screen.getByRole('button');
+    expect(button).toHaveClass('text-primary hover:text-primary-hover');
   });
 
   it('applies text size classes', () => {
@@ -114,5 +121,22 @@ describe('Button', () => {
     const ref = { current: null };
     render(<Button ref={ref}>Button</Button>);
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
+  });
+});
+
+describe('Button invalid state', () => {
+  it('gives the outline variant the shared field error stroke', () => {
+    render(
+      <Button variant="outline" aria-invalid>
+        Pick one
+      </Button>
+    );
+    const button = screen.getByRole('button');
+    expect(button).toHaveAttribute('aria-invalid', 'true');
+    expect(button).toHaveClass(
+      'aria-invalid:border-error',
+      'future:aria-invalid:ring-1',
+      'future:aria-invalid:ring-error/40'
+    );
   });
 });

@@ -167,11 +167,11 @@ export const TooltipWithRichContent = {
           <TooltipContent className="w-64 p-3">
             <div className="space-y-2">
               <p className="text-sm font-medium">Rate Limiting</p>
-              <p className="text-xs text-foreground-inverse/70">
+              <p className="text-xs text-accent-foreground/70">
                 Your current plan allows 1,000 requests per minute. Exceeding this limit will result
                 in 429 errors.
               </p>
-              <div className="flex items-center gap-1 text-xs text-foreground-inverse/70">
+              <div className="flex items-center gap-1 text-xs text-accent-foreground/70">
                 <Keyboard className="h-3 w-3" />
                 Press ⌘K to view full docs
               </div>
@@ -189,10 +189,10 @@ export const TooltipWithRichContent = {
           <TooltipContent className="w-56 p-3">
             <div className="space-y-2">
               <p className="text-sm font-medium">Storage Usage</p>
-              <div className="h-1.5 w-full rounded-full bg-foreground-inverse/15">
+              <div className="h-1.5 w-full rounded-full bg-accent-foreground/15">
                 <div className="h-full w-3/4 rounded-full bg-primary" />
               </div>
-              <p className="text-xs text-foreground-inverse/70">7.5 GB of 10 GB used</p>
+              <p className="text-xs text-accent-foreground/70">7.5 GB of 10 GB used</p>
             </div>
           </TooltipContent>
         </Tooltip>
@@ -232,7 +232,7 @@ export const TooltipWithDifferentContent = {
           <TooltipContent>
             <div className="flex items-center gap-2">
               <span>Save</span>
-              <kbd className="rounded border border-foreground-inverse/20 bg-foreground-inverse/10 px-1.5 py-0.5 text-[10px] font-mono">
+              <kbd className="rounded border border-accent-foreground/20 bg-accent-foreground/10 px-1.5 py-0.5 text-[10px] font-mono">
                 ⌘S
               </kbd>
             </div>
@@ -348,7 +348,7 @@ export const Examples = {
   name: 'Examples',
   render: () => (
     <TooltipProvider>
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 px-8 py-6">
         {/* Toolbar */}
         <div>
           <p className="text-sm font-medium mb-3">Toolbar</p>
@@ -379,7 +379,7 @@ export const Examples = {
                     <div className="flex items-center gap-2">
                       <span>{item.label}</span>
                       {item.shortcut && (
-                        <kbd className="rounded border border-foreground-inverse/20 bg-foreground-inverse/10 px-1.5 py-0.5 text-[10px] font-mono">
+                        <kbd className="rounded border border-accent-foreground/20 bg-accent-foreground/10 px-1.5 py-0.5 text-[10px] font-mono">
                           {item.shortcut}
                         </kbd>
                       )}
@@ -440,6 +440,38 @@ export const Examples = {
                 <p>Select items to delete</p>
               </TooltipContent>
             </Tooltip>
+          </div>
+        </div>
+
+        {/* Themes */}
+        <div>
+          <p className="text-sm font-medium mb-3">Themes</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-14">
+            {[
+              { theme: 'light', label: 'Light' },
+              { theme: 'dark', label: 'Dark' },
+              { theme: 'light-hc', label: 'Light HC' },
+              { theme: 'dark-hc', label: 'Dark HC' },
+              { theme: 'future-light', label: 'Future Light' },
+              { theme: 'future-dark', label: 'Future Dark' },
+            ].map(({ theme, label }) => (
+              <div
+                key={theme}
+                className={`${theme} flex flex-col items-center gap-4 rounded-xl border border-border bg-surface p-4 sm:p-6`}
+              >
+                <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                <Tooltip defaultOpen>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      Hover me
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="!animate-none">
+                    <p>This is a tooltip</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            ))}
           </div>
         </div>
       </div>

@@ -2,6 +2,10 @@
 
 import * as React from 'react';
 import { Drawer as DrawerPrimitive } from 'vaul';
+import {
+  type PortalContainerOverride,
+  useResolvedPortalContainer,
+} from '@/components/ui/portal-container';
 import { cn } from '@/lib';
 
 const Drawer = (props: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
@@ -41,24 +45,29 @@ DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DrawerPortal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      data-slot="drawer-content"
-      className={cn(
-        'fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background',
-        className
-      )}
-      {...props}
-    >
-      <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
-      {children}
-    </DrawerPrimitive.Content>
-  </DrawerPortal>
-));
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
+    container?: PortalContainerOverride;
+  }
+>(({ className, children, container, ...props }, ref) => {
+  const resolvedContainer = useResolvedPortalContainer(container);
+  return (
+    <DrawerPortal container={resolvedContainer}>
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        ref={ref}
+        data-slot="drawer-content"
+        className={cn(
+          'fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background',
+          className
+        )}
+        {...props}
+      >
+        <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
+        {children}
+      </DrawerPrimitive.Content>
+    </DrawerPortal>
+  );
+});
 DrawerContent.displayName = 'DrawerContent';
 
 const DrawerHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (

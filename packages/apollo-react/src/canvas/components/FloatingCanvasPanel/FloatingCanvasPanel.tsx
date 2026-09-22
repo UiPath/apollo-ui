@@ -1,19 +1,16 @@
 import type { Placement } from '@floating-ui/react';
 import { ViewportPortal } from '@uipath/apollo-react/canvas/xyflow/react';
-import { cn } from '@uipath/apollo-wind';
 import type { CSSProperties, ReactNode } from 'react';
 import { useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { CanvasPanelSurface } from './CanvasPanelSurface';
 import { CanvasPortal } from './CanvasPortal';
-import { PanelChrome } from './PanelChrome';
 import { type AnchorRect, useFloatingPosition } from './useFloatingPosition';
-
-const PANEL_BASE_CLASS =
-  'text-(--canvas-foreground) bg-(--canvas-background-raised) border border-(--canvas-border-de-emp) text-sm flex flex-col transition-opacity duration-200 ease-in-out';
 
 /**
  * Design ceiling for the floating panel height (px). Mirrors the `max-h-[600px]`
- * utility in {@link PANEL_FLOATING_CLASS}; keep the two in sync. The viewport
+ * utility in `CANVAS_PANEL_FLOATING_SIZE_CLASS` (CanvasPanelSurface); keep the two in
+ * sync. The viewport
  * cap from the `size` middleware is clamped to this so the panel never exceeds
  * the intended ceiling on tall viewports.
  */
@@ -27,12 +24,6 @@ const PANEL_FLOATING_MAX_HEIGHT = 600;
  * the floor keeps it usable and lets `shift` reposition it into view instead.
  */
 const PANEL_FLOATING_MIN_HEIGHT = 100;
-
-const PANEL_FLOATING_CLASS =
-  'rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.12)] w-auto min-w-[280px] max-w-none h-auto max-h-[600px]';
-
-const PANEL_PINNED_CLASS =
-  'rounded-none shadow-none w-[320px] min-w-[320px] max-w-[320px] h-screen max-h-screen';
 
 export type FloatingCanvasPanelProps = {
   // Anchor/floating
@@ -115,11 +106,6 @@ export function FloatingCanvasPanel({
       fallbackPlacement,
     });
 
-  const panelClassName = useMemo(
-    () => cn(PANEL_BASE_CLASS, isPinned ? PANEL_PINNED_CLASS : PANEL_FLOATING_CLASS),
-    [isPinned]
-  );
-
   // Viewport-aware ceiling derived from the `size` middleware. The inline
   // `maxHeight` overrides the `max-h-[600px]` class, so it's clamped to the
   // design ceiling to keep the panel from exceeding 600px on tall viewports.
@@ -133,6 +119,18 @@ export function FloatingCanvasPanel({
       ['--floating-available-height' as string]: `${occupiedHeight}px`,
     };
   }, [isPinned, availableHeight]);
+
+  const chromeProps = {
+    title,
+    header,
+    headerActions,
+    onClose,
+    scrollKey,
+    scrollableContent,
+    onPointerEnter: onMouseEnter,
+    onPointerLeave: onMouseLeave,
+    children,
+  };
 
   if (!open || !computedAnchor) return null;
 
@@ -183,10 +181,10 @@ export function FloatingCanvasPanel({
     const screenPosition = getScreenSpacePosition();
 
     const fixedContent = (
-      <div
-        className={cn('nodrag nopan nowheel', panelClassName)}
-        onPointerEnter={onMouseEnter}
-        onPointerLeave={onMouseLeave}
+      <CanvasPanelSurface
+        {...chromeProps}
+        isPinned={isPinned}
+        className="nodrag nopan nowheel"
         style={{
           position: 'fixed',
           ...screenPosition,
@@ -194,18 +192,7 @@ export function FloatingCanvasPanel({
           zIndex: 1100,
           pointerEvents: 'auto',
         }}
-      >
-        <PanelChrome
-          title={title}
-          header={header}
-          headerActions={headerActions}
-          onClose={onClose}
-          scrollKey={scrollKey}
-          scrollableContent={scrollableContent}
-        >
-          {children}
-        </PanelChrome>
-      </div>
+      />
     );
 
     return portalToBody ? (
@@ -216,11 +203,11 @@ export function FloatingCanvasPanel({
   }
 
   const panelContent = (
-    <div
+    <CanvasPanelSurface
+      {...chromeProps}
       ref={refs.setFloating}
-      className={cn('nodrag nopan nowheel', panelClassName)}
-      onPointerEnter={onMouseEnter}
-      onPointerLeave={onMouseLeave}
+      isPinned={isPinned}
+      className="nodrag nopan nowheel"
       style={{
         ...(isPinned ? {} : floatingStyles),
         ...sizingStyle,
@@ -230,18 +217,7 @@ export function FloatingCanvasPanel({
         zIndex: 1100,
         pointerEvents: 'auto',
       }}
-    >
-      <PanelChrome
-        title={title}
-        header={header}
-        headerActions={headerActions}
-        onClose={onClose}
-        scrollKey={scrollKey}
-        scrollableContent={scrollableContent}
-      >
-        {children}
-      </PanelChrome>
-    </div>
+    />
   );
 
   return (

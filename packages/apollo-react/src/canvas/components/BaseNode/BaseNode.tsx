@@ -25,7 +25,7 @@ import {
 } from '../../constants';
 import { useNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
-import type { NodeShape } from '../../schema';
+import { isWideNodeShape, type NodeShape } from '../../schema';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import { CanvasIcon, getIcon } from '../../utils/icon-registry';
@@ -62,7 +62,7 @@ import { NodeLabel } from './NodeLabel';
 const NEVER_SHOW_ADD_BUTTON = () => false;
 
 const getContainerWidth = (shape: NodeShape | undefined, width: number | undefined) => {
-  const defaultWidth = shape === 'rectangle' ? DEFAULT_RECTANGLE_NODE_WIDTH : DEFAULT_NODE_SIZE;
+  const defaultWidth = isWideNodeShape(shape) ? DEFAULT_RECTANGLE_NODE_WIDTH : DEFAULT_NODE_SIZE;
   if (width && width !== DEFAULT_NODE_SIZE && width !== DEFAULT_RECTANGLE_NODE_WIDTH) {
     return width;
   }
@@ -106,6 +106,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     executionStatusOverride,
     labelTooltip,
     labelBackgroundColor,
+    labelPlaceholder,
+    subLabelPlaceholder,
     footerVariant,
     footerComponent,
     subLabelComponent,
@@ -361,14 +363,16 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     const effectiveW = hasFooter ? DEFAULT_NODE_SIZE : containerWidth;
 
     const innerBasis = Math.min(effectiveH, effectiveW);
-    const innerRadius = getRadius(innerBasis, NODE_INNER_RADIUS_RATIO);
+    // A pill's ends are fully round, so a rounded-square icon tile reads as a mistake inside it.
+    const innerRadius =
+      displayShape === 'pill' ? '9999px' : getRadius(innerBasis, NODE_INNER_RADIUS_RATIO);
 
     // Uniform gap: derive a fixed gap from the reference (smallest) dimension
     // so spacing is consistent on all sides regardless of aspect ratio.
-    // Circles and rectangles keep the inner shape square (based on innerBasis).
+    // Circles and wide cards keep the inner shape square (based on innerBasis).
     // Square nodes let the inner shape grow with the container.
     const gap = innerBasis * (1 - NODE_INNER_SHAPE_RATIO);
-    const keepSquare = displayShape === 'circle' || displayShape === 'rectangle';
+    const keepSquare = displayShape === 'circle' || isWideNodeShape(displayShape);
     const innerW = keepSquare ? innerBasis - gap : effectiveW - gap;
     const innerH = keepSquare ? innerBasis - gap : effectiveH - gap;
 
@@ -539,6 +543,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     selected: selected ?? false,
     hovered: isHovered,
     showAddButton: canEdit && !multipleNodesSelected && !isConnecting && !dragging,
+    isLocked: !canEdit,
     showNotches,
     // Deterministic geometry (not the measured props) so handles are grid-aligned from first render.
     nodeWidth: containerWidth,
@@ -696,6 +701,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           subLabel={displaySubLabel}
           labelTooltip={displayLabelTooltip}
           labelBackgroundColor={displayLabelBackgroundColor}
+          labelPlaceholder={labelPlaceholder}
+          subLabelPlaceholder={subLabelPlaceholder}
           shape={displayShape}
           hasBottomHandles={hasVisibleBottomHandles}
           selected={selected}

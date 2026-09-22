@@ -24,6 +24,18 @@ describe('Label', () => {
     expect(results).toHaveNoViolations();
   });
 
+  it('is inline-block so a vertical margin from a space-y-* wrapper lands', () => {
+    render(<Label>Email</Label>);
+    expect(screen.getByText('Email')).toHaveClass('inline-block');
+  });
+
+  it('lets a consumer swap the display', () => {
+    render(<Label className="flex items-center gap-2">Email</Label>);
+    const label = screen.getByText('Email');
+    expect(label).toHaveClass('flex');
+    expect(label).not.toHaveClass('inline-block');
+  });
+
   it('applies the default treatment', () => {
     render(<Label>Email</Label>);
     expect(screen.getByText('Email')).toHaveClass('text-xs', 'font-medium', 'text-foreground');
@@ -106,7 +118,7 @@ describe('RequiredIndicator', () => {
     expect(indicator).not.toHaveClass('text-error');
   });
 
-  it('hides the asterisk glyph from assistive tech but announces it via sr-only text', () => {
+  it('hides the asterisk glyph from assistive tech and has no sr label by default', () => {
     render(
       <Label htmlFor="name">
         Name
@@ -114,7 +126,7 @@ describe('RequiredIndicator', () => {
       </Label>
     );
     expect(screen.getByText('*')).toHaveAttribute('aria-hidden', 'true');
-    expect(screen.getByText('(required)')).toHaveClass('sr-only');
+    expect(screen.queryByText('(required)')).not.toBeInTheDocument();
   });
 
   it('lets a localized surface supply its own announced text', () => {
@@ -133,7 +145,7 @@ describe('RequiredIndicator', () => {
       <div>
         <Label htmlFor="name">
           Name
-          <RequiredIndicator />
+          <RequiredIndicator srLabel="(required)" />
         </Label>
         <Input id="name" />
       </div>

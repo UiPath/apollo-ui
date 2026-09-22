@@ -313,4 +313,96 @@ describe('Select', () => {
       });
     });
   });
+
+  // SelectTrigger is not Button-based: Radix's data-placeholder already mutes the
+  // empty state in every theme. A future:text-foreground here would outrank it.
+  describe('value vs placeholder color', () => {
+    it('mutes the empty state through data-placeholder, not a blanket class', () => {
+      render(<SelectExample />);
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toHaveAttribute('data-placeholder');
+      expect(trigger).toHaveClass('data-[placeholder]:text-muted-foreground');
+      expect(trigger).not.toHaveClass('future:text-muted-foreground');
+      expect(trigger).not.toHaveClass('future:text-foreground');
+    });
+
+    it('drops data-placeholder once a value is selected', async () => {
+      const user = userEvent.setup();
+      render(<SelectExample />);
+      const trigger = screen.getByRole('combobox');
+      await user.click(trigger);
+      await user.click(await screen.findByRole('option', { name: 'Apple' }));
+      await waitFor(() => expect(trigger).not.toHaveAttribute('data-placeholder'));
+    });
+  });
+});
+
+describe('SelectTrigger inline validation', () => {
+  it('renders the message and wires aria attributes to it', () => {
+    render(
+      <Select>
+        <SelectTrigger id="connection" error="Select a connection.">
+          <SelectValue placeholder="Pick" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="a">A</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+    const trigger = screen.getByRole('combobox');
+    const message = screen.getByText('Select a connection.');
+
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', 'connection-error');
+    expect(trigger).toHaveAttribute('aria-errormessage', 'connection-error');
+    expect(message).toHaveAttribute('id', 'connection-error');
+    expect(message).toHaveClass('text-error');
+  });
+
+  it('renders no message without an error', () => {
+    render(
+      <Select>
+        <SelectTrigger id="connection">
+          <SelectValue placeholder="Pick" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="a">A</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-invalid');
+    expect(document.getElementById('connection-error')).toBeNull();
+  });
+});
+describe('SelectTrigger remount safety', () => {
+  it('keeps the same trigger node and focus when an error appears', () => {
+    const { rerender } = render(
+      <Select>
+        <SelectTrigger id="connection">
+          <SelectValue placeholder="Pick" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="a">A</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+    const before = screen.getByRole('combobox');
+    before.focus();
+    expect(before).toHaveFocus();
+
+    rerender(
+      <Select>
+        <SelectTrigger id="connection" error="Select a connection.">
+          <SelectValue placeholder="Pick" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="a">A</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+    const after = screen.getByRole('combobox');
+
+    expect(after).toBe(before);
+    expect(after).toHaveFocus();
+  });
 });

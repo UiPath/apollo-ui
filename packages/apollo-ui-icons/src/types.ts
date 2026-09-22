@@ -821,6 +821,14 @@ export type IconName =
   | 'MLSkills'
   | 'Machine'
   | 'Maestro'
+  | 'MaestroAutomate'
+  | 'MaestroAutomateFlat'
+  | 'MaestroBpmn'
+  | 'MaestroBpmnFlat'
+  | 'MaestroCase'
+  | 'MaestroCaseFlat'
+  | 'MaestroFlow'
+  | 'MaestroFlowFlat'
   | 'Mailchimp'
   | 'Manufacturing'
   | 'Marketo'
@@ -2145,6 +2153,14 @@ export const iconNames: readonly IconName[] = [
   'MLSkills',
   'Machine',
   'Maestro',
+  'MaestroAutomate',
+  'MaestroAutomateFlat',
+  'MaestroBpmn',
+  'MaestroBpmnFlat',
+  'MaestroCase',
+  'MaestroCaseFlat',
+  'MaestroFlow',
+  'MaestroFlowFlat',
   'Mailchimp',
   'Manufacturing',
   'Marketo',

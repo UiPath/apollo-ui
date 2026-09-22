@@ -1,8 +1,12 @@
-import { cx } from '@uipath/apollo-react/canvas/utils';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@uipath/apollo-wind';
 import { memo, useEffect, useRef } from 'react';
 
 import { CanvasIcon } from '../../utils/icon-registry';
-import { StyledSearchForm } from './SearchBox.styles';
 
 interface SearchBoxProps {
   value: string;
@@ -48,42 +52,49 @@ export const SearchBox = memo(function SearchBox({
   };
 
   return (
-    <StyledSearchForm
+    // The form wrapper only swallows Enter, so a Toolbox embedded in a
+    // consumer's form can't submit it from the search field.
+    <form
       autoComplete="off"
-      className="searchbox-form"
+      className="w-full"
       onSubmit={(e) => e.preventDefault()}
+      data-testid="toolbox-search"
     >
-      <div className={cx(`searchbox-container`, { 'has-value': !!value })}>
-        <span className="searchbox-icon">
+      {/* One step below Wind's stock field height in both theme families: the
+          picker stacks quick actions, a title and the field above the list, so
+          the roomier default costs list rows the panel can't spare. */}
+      <InputGroup className="h-8 future:h-9">
+        <InputGroupAddon align="inline-start">
           <CanvasIcon icon="search" size={16} />
-        </span>
-        <input
+        </InputGroupAddon>
+        <InputGroupInput
           ref={inputRef}
           autoComplete="off"
           type="text"
           role="combobox"
           aria-controls="toolbox-listbox"
           aria-expanded={true}
-          className="searchbox-input"
+          aria-activedescendant={activeDescendantId}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onNavigationKeyDown}
-          aria-activedescendant={activeDescendantId}
         />
         {value && (
-          <button
-            ref={clearButtonRef}
-            type="button"
-            className="searchbox-clear"
-            aria-label={clearButtonAriaLabel}
-            onClick={clear}
-            onKeyDown={handleClearButtonKeyDown}
-          >
-            <CanvasIcon icon="x" size={16} />
-          </button>
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton
+              ref={clearButtonRef}
+              icon
+              size="3xs"
+              aria-label={clearButtonAriaLabel}
+              onClick={clear}
+              onKeyDown={handleClearButtonKeyDown}
+            >
+              <CanvasIcon icon="x" size={16} />
+            </InputGroupButton>
+          </InputGroupAddon>
         )}
-      </div>
-    </StyledSearchForm>
+      </InputGroup>
+    </form>
   );
 });

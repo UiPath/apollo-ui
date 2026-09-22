@@ -1,5 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ChevronRight, Download, Loader2, Mail, Plus, Settings, Trash2 } from 'lucide-react';
+import {
+  ChevronRight,
+  Download,
+  Loader2,
+  Mail,
+  Plus,
+  Settings,
+  Trash2,
+  Upload,
+} from 'lucide-react';
 import { Button } from './button';
 
 const meta = {
@@ -12,13 +21,16 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
+      options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link', 'text'],
     },
     size: {
       control: 'select',
       options: ['lg', 'default', 'sm', 'xs', '2xs', '3xs', '4xs'],
     },
     icon: {
+      control: 'boolean',
+    },
+    disabled: {
       control: 'boolean',
     },
   },
@@ -69,10 +81,19 @@ export const Link: Story = {
   },
 };
 
-export const Disabled: Story = {
+export const LinkAsAnchor: Story = {
+  name: 'Link as anchor',
+  render: () => (
+    <Button asChild variant="link" size="2xs">
+      <a href="/documentation">View documentation</a>
+    </Button>
+  ),
+};
+
+export const Text: Story = {
   args: {
-    children: 'Disabled',
-    disabled: true,
+    children: 'Text',
+    variant: 'text',
   },
 };
 
@@ -88,8 +109,8 @@ export const WithIcon: Story = {
         Download
       </Button>
       <Button size="sm">
-        <Plus />
-        Add item
+        <Upload />
+        Upload
       </Button>
       <Button size="xs">
         <Settings />
@@ -111,11 +132,23 @@ export const WithIcon: Story = {
         <Settings />
         Settings
       </Button>
+      <Button variant="text" size="xs">
+        <Plus />
+        Add item
+      </Button>
     </div>
   ),
 };
 
-const variants = ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'] as const;
+const variants = [
+  'default',
+  'destructive',
+  'outline',
+  'secondary',
+  'ghost',
+  'link',
+  'text',
+] as const;
 const sizes = ['lg', 'default', 'sm', 'xs', '2xs', '3xs', '4xs'] as const;
 
 export const VariantSizeMatrix: Story = {

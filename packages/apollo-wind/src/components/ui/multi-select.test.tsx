@@ -236,4 +236,60 @@ describe('MultiSelect', () => {
     render(<MultiSelect ref={ref} options={mockOptions} selected={[]} onChange={onChange} />);
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
+
+  describe('value vs placeholder color', () => {
+    it('mutes the placeholder via its own span', () => {
+      render(
+        <MultiSelect
+          options={mockOptions}
+          selected={[]}
+          onChange={vi.fn()}
+          placeholder="Select frameworks..."
+        />
+      );
+      const placeholder = screen.getByText('Select frameworks...');
+      expect(placeholder.tagName).toBe('SPAN');
+      expect(placeholder).toHaveClass('text-foreground-muted');
+    });
+
+    it('overrides the outline variant so the trigger is not globally muted', () => {
+      render(<MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />);
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toHaveClass('future:text-foreground');
+      expect(trigger).not.toHaveClass('future:text-muted-foreground');
+    });
+  });
+});
+
+describe('MultiSelect inline validation', () => {
+  const options = [
+    { label: 'Intake', value: 'intake' },
+    { label: 'Review', value: 'review' },
+  ];
+
+  it('renders the message and wires aria attributes to it', () => {
+    render(
+      <MultiSelect
+        id="stages"
+        options={options}
+        selected={[]}
+        onChange={() => {}}
+        error="Select at least one stage."
+      />
+    );
+    const trigger = screen.getByRole('combobox');
+    const message = screen.getByText('Select at least one stage.');
+
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', 'stages-error');
+    expect(trigger).toHaveAttribute('aria-errormessage', 'stages-error');
+    expect(message).toHaveAttribute('id', 'stages-error');
+    expect(message).toHaveClass('text-error');
+  });
+
+  it('still forwards a bare aria-invalid without rendering a message', () => {
+    render(<MultiSelect options={options} selected={[]} onChange={() => {}} aria-invalid />);
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-describedby');
+  });
 });

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from '../dialog';
 import { VARIABLE_DRAG_MIME } from './plugins/VariableDropPlugin';
 import { PromptEditor } from './prompt-editor';
 import type { PromptEditorAutoCompleteOption, PromptEditorMode, PromptEditorToken } from './types';
@@ -57,6 +58,15 @@ export const Default: Story = {
   },
 };
 
+export const WithInlineValidation: Story = {
+  name: 'With inline validation',
+  args: {
+    placeholder: 'Write your prompt…',
+    ariaLabel: 'Prompt',
+    error: 'Enter a prompt before continuing.',
+  },
+};
+
 export const SingleLine: Story = {
   args: {
     multiline: false,
@@ -79,6 +89,97 @@ export const WithToolbar: Story = {
     initialValue: SAMPLE_VALUE,
     autoCompleteOptions: AUTOCOMPLETE_OPTIONS,
     ariaLabel: 'Prompt',
+  },
+};
+
+/**
+ * Expandable toolbar: the Expand button renders only when `onFullscreen` is supplied, and sits
+ * beside the mode toggle at the right end. Expanding is the host's job: the editor only reports
+ * the click, so this story stands in a modal where a host would mount its own fullscreen surface.
+ */
+export const WithFullscreen: Story = {
+  render: () => {
+    const FullscreenExample = () => {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <PromptEditor
+            showToolbar
+            ariaLabel="Prompt"
+            initialValue={SAMPLE_VALUE}
+            autoCompleteOptions={AUTOCOMPLETE_OPTIONS}
+            onFullscreen={() => setOpen(true)}
+          />
+          <Modal open={open} onOpenChange={setOpen}>
+            <ModalContent>
+              <ModalHeader>
+                <ModalTitle>Fullscreen view shown here</ModalTitle>
+                <ModalDescription>
+                  `onFullscreen` fired. A host renders its own fullscreen editor at this point.
+                </ModalDescription>
+              </ModalHeader>
+            </ModalContent>
+          </Modal>
+        </>
+      );
+    };
+    return <FullscreenExample />;
+  },
+};
+
+/**
+ * Widget-style toolbar: no Edit/Preview switcher, formatting cluster left-aligned, and a
+ * consumer-supplied control (here a "T" value-mode button) right-aligned via `toolbarTrailing`.
+ */
+export const WithTrailingModeControl: Story = {
+  args: {
+    showToolbar: true,
+    showModeToggle: false,
+    toolbarTrailing: (
+      <button
+        type="button"
+        aria-label="Value mode"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 28,
+          height: 28,
+          borderRadius: 4,
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'var(--color-muted-foreground)',
+        }}
+      >
+        T
+      </button>
+    ),
+    initialValue: SAMPLE_VALUE,
+    autoCompleteOptions: AUTOCOMPLETE_OPTIONS,
+    ariaLabel: 'Body',
+  },
+};
+
+/**
+ * WYSIWYG mode: formatting renders live while editing (real bold/underline/strike, inline code and
+ * lists, no Edit/Preview switcher: the editor IS the preview). Text tokens still carry markdown;
+ * try typing `**bold**`, `` `code` `` or `- `. Underline is offered only here, and persists as `<u>`.
+ */
+export const RichText: Story = {
+  args: {
+    richText: true,
+    showToolbar: true,
+    initialValue: [
+      { type: 'text', value: '**Hello** ' },
+      { type: 'input', value: 'vars.firstName' },
+      {
+        type: 'text',
+        value:
+          ',\n\nYour order:\n- item one\n- item two\n\nRun <u>`npm install`</u> first.\n\nThanks, ~~the team~~ *us*',
+      },
+    ],
+    autoCompleteOptions: AUTOCOMPLETE_OPTIONS,
+    ariaLabel: 'Body',
   },
 };
 
@@ -151,7 +252,7 @@ export const Controlled: Story = {
 
 /**
  * Variable drag-drop. The chips above the editor are the drag *source* (the consumer's
- * responsibility) — each sets the variable path on `dataTransfer` under `VARIABLE_DRAG_MIME` on
+ * responsibility): each sets the variable path on `dataTransfer` under `VARIABLE_DRAG_MIME` on
  * drag start. Dropping one onto the editor inserts a token at the drop point via `mapVarDropToToken`.
  * Drag a chip into the editor to try it.
  */
@@ -160,10 +261,20 @@ export const WithVariableDragDrop: Story = {
     const DragDropExample = () => {
       const [value, setValue] = useState<PromptEditorToken[]>([]);
       const mapVarDropToToken = (path: string): PromptEditorAutoCompleteOption =>
-        AUTOCOMPLETE_OPTIONS.find((o) => o.value === path) ?? { type: 'input', value: path };
+        AUTOCOMPLETE_OPTIONS.find((o) => o.value === path) ?? {
+          type: 'input',
+          value: path,
+        };
       return (
         <div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 8,
+              marginBottom: 12,
+            }}
+          >
             {AUTOCOMPLETE_OPTIONS.map((o) => (
               // biome-ignore lint/a11y/noStaticElementInteractions: demo drag source for the story; real consumers own the (accessible) drag affordance.
               <span

@@ -25,11 +25,26 @@ export interface SearchProps extends Omit<InputGroupInputProps, 'onChange'> {
   showClearButton?: boolean;
   variant?: InputGroupProps['variant'];
   size?: InputGroupProps['size'];
+  /** Field-specific feedback rendered immediately below the search field. */
+  error?: React.ReactNode;
+  /** Optional id for the inline validation message. */
+  errorId?: string;
 }
 
 const Search = React.forwardRef<HTMLInputElement, SearchProps>(
   (
-    { className, value, onChange, onClear, showClearButton = true, variant, size, ...props },
+    {
+      className,
+      value,
+      onChange,
+      onClear,
+      showClearButton = true,
+      variant,
+      size,
+      error,
+      errorId,
+      ...props
+    },
     ref
   ) => {
     const handleClear = () => {
@@ -38,7 +53,7 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
     };
 
     return (
-      <InputGroup data-slot="search" variant={variant} size={size}>
+      <InputGroup data-slot="search" variant={variant} size={size} error={error} errorId={errorId}>
         <InputGroupAddon align="inline-start">
           <SearchIcon className="text-muted-foreground" />
         </InputGroupAddon>

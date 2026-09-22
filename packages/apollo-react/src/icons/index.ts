@@ -819,6 +819,14 @@ export { LookupDataTable, default as LookupDataTableIcon } from './LookupDataTab
 export { MLSkills, default as MLSkillsIcon } from './MLSkills';
 export { Machine, default as MachineIcon } from './Machine';
 export { Maestro, default as MaestroIcon } from './Maestro';
+export { MaestroAutomate, default as MaestroAutomateIcon } from './MaestroAutomate';
+export { MaestroAutomateFlat, default as MaestroAutomateFlatIcon } from './MaestroAutomateFlat';
+export { MaestroBpmn, default as MaestroBpmnIcon } from './MaestroBpmn';
+export { MaestroBpmnFlat, default as MaestroBpmnFlatIcon } from './MaestroBpmnFlat';
+export { MaestroCase, default as MaestroCaseIcon } from './MaestroCase';
+export { MaestroCaseFlat, default as MaestroCaseFlatIcon } from './MaestroCaseFlat';
+export { MaestroFlow, default as MaestroFlowIcon } from './MaestroFlow';
+export { MaestroFlowFlat, default as MaestroFlowFlatIcon } from './MaestroFlowFlat';
 export { Mailchimp, default as MailchimpIcon } from './Mailchimp';
 export { Manufacturing, default as ManufacturingIcon } from './Manufacturing';
 export { Marketo, default as MarketoIcon } from './Marketo';

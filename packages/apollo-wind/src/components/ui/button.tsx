@@ -12,12 +12,13 @@ const buttonVariants = cva(
         default: 'bg-primary text-primary-foreground hover:bg-primary/90',
         destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         outline:
-          'border border-input bg-background hover:bg-accent hover:text-accent-foreground future:border-border-subtle future:text-muted-foreground future:hover:text-foreground',
+          'border border-input bg-background hover:bg-accent hover:text-accent-foreground future:border-border-subtle future:text-muted-foreground future:hover:text-foreground aria-invalid:border-error aria-invalid:focus-visible:ring-error future:aria-invalid:border-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-secondary/80 future:text-muted-foreground future:hover:text-foreground',
         ghost:
           'hover:bg-accent hover:text-accent-foreground future:text-muted-foreground future:hover:text-foreground',
         link: 'text-primary underline-offset-4 hover:underline future:text-muted-foreground future:hover:text-foreground',
+        text: 'text-primary hover:text-primary-hover',
       },
       size: {
         lg: 'h-11 px-8',

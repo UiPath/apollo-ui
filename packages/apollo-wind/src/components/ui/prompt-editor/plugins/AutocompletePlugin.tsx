@@ -13,7 +13,10 @@ import {
   type LexicalEditor,
 } from 'lexical';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { PromptEditorAutocompleteMenu } from '../components/PromptEditorAutocompleteMenu';
+import {
+  PromptEditorAutocompleteMenu,
+  type PromptEditorAutocompleteMenuProps,
+} from '../components/PromptEditorAutocompleteMenu';
 import type { PromptEditorAutoCompleteOption } from '../types';
 import {
   inferTokenTypeFromPath,
@@ -70,7 +73,18 @@ const getCaretRectForEditor = (editor: LexicalEditor): DOMRect => {
  * the Lexical editor: trigger detection, dismissal sentinel, free-form Enter fallback after
  * dismissal, and refocusing the editor when the picker closes.
  */
-export const AutocompletePlugin = ({ options }: { options: PromptEditorAutoCompleteOption[] }) => {
+export const AutocompletePlugin = ({
+  options,
+  renderMenu,
+}: {
+  options: PromptEditorAutoCompleteOption[];
+  /**
+   * Replace the built-in cmdk menu with a consumer-supplied one (e.g. a schema-aware variable
+   * picker). Receives the exact props the built-in menu would get; the consumer's menu owns search
+   * and keyboard navigation while open and reports back through `onSelect`/`onClose`.
+   */
+  renderMenu?: (props: PromptEditorAutocompleteMenuProps) => React.ReactNode;
+}) => {
   const [editor] = useLexicalComposerContext();
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | VirtualAnchorElement | null>(null);
@@ -78,12 +92,18 @@ export const AutocompletePlugin = ({ options }: { options: PromptEditorAutoCompl
   // with whatever the user has already typed (e.g. `$vars.start.` → search seeded with `vars.start.`).
   const [query, setQuery] = useState('');
 
-  const triggerInfoRef = useRef<{ triggerIndex: number; nodeKey: string } | null>(null);
+  const triggerInfoRef = useRef<{
+    triggerIndex: number;
+    nodeKey: string;
+  } | null>(null);
   // Snapshot of the last `$` position the picker was dismissed for. Used to suppress reopening when
   // the user clicks back to the same `$` after dismissing — gives them a window to Backspace it
   // without the picker re-grabbing focus. Reset whenever the editor's text content changes (any new
   // typing means the user re-engaged the trigger flow).
-  const dismissedTriggerRef = useRef<{ triggerIndex: number; nodeKey: string } | null>(null);
+  const dismissedTriggerRef = useRef<{
+    triggerIndex: number;
+    nodeKey: string;
+  } | null>(null);
   const optionsRef = useRef(options);
 
   const openRef = useRef(open);
@@ -210,7 +230,10 @@ export const AutocompletePlugin = ({ options }: { options: PromptEditorAutoCompl
    */
   const openPickerForTrigger = useCallback(
     (trigger: { triggerIndex: number; query: string }, anchorNodeKey: string) => {
-      triggerInfoRef.current = { triggerIndex: trigger.triggerIndex, nodeKey: anchorNodeKey };
+      triggerInfoRef.current = {
+        triggerIndex: trigger.triggerIndex,
+        nodeKey: anchorNodeKey,
+      };
       setQuery(trigger.query);
 
       try {
@@ -292,7 +315,10 @@ export const AutocompletePlugin = ({ options }: { options: PromptEditorAutoCompl
           // `$` — either way they want a window to Backspace without the picker grabbing focus.
           if (
             shouldSuppressOpenForDismissed(
-              { triggerIndex: trigger.triggerIndex, nodeKey: anchorNode.getKey() },
+              {
+                triggerIndex: trigger.triggerIndex,
+                nodeKey: anchorNode.getKey(),
+              },
               dismissedTriggerRef.current
             )
           ) {
@@ -346,15 +372,16 @@ export const AutocompletePlugin = ({ options }: { options: PromptEditorAutoCompl
     [commitChip]
   );
 
-  return (
-    <PromptEditorAutocompleteMenu
-      open={open}
-      anchorEl={anchorEl}
-      initialSearch={query}
-      options={options}
-      onSelect={handleVariablePickerSelect}
-      onCommitFreeForm={handleVariablePickerSelect}
-      onClose={() => closeMenu(true)}
-    />
-  );
+  const menuProps: PromptEditorAutocompleteMenuProps = {
+    open,
+    anchorEl,
+    initialSearch: query,
+    options,
+    onSelect: handleVariablePickerSelect,
+    onCommitFreeForm: handleVariablePickerSelect,
+    onClose: () => closeMenu(true),
+  };
+
+  if (renderMenu) return <>{renderMenu(menuProps)}</>;
+  return <PromptEditorAutocompleteMenu {...menuProps} />;
 };

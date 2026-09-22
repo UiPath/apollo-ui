@@ -179,3 +179,141 @@ describe('DateRangePicker', () => {
     });
   });
 });
+
+describe('value vs placeholder color', () => {
+  it('mutes the DatePicker placeholder via its own span', () => {
+    render(<DatePicker placeholder="Pick a date" />);
+    const placeholder = screen.getByText('Pick a date');
+    expect(placeholder.tagName).toBe('SPAN');
+    expect(placeholder).toHaveClass('text-foreground-muted');
+  });
+
+  it('mutes the DateRangePicker placeholder via its own span', () => {
+    render(<DateRangePicker placeholder="Pick a date range" />);
+    const placeholder = screen.getByText('Pick a date range');
+    expect(placeholder.tagName).toBe('SPAN');
+    expect(placeholder).toHaveClass('text-foreground-muted');
+  });
+
+  it('renders a selected date at full strength', () => {
+    render(<DatePicker value={new Date(2024, 5, 15)} />);
+    const trigger = screen.getByRole('button');
+    expect(trigger).toHaveTextContent(/June 15/);
+    expect(trigger.querySelector('.text-foreground-muted')).toBeNull();
+  });
+
+  // A range with only `from` set still renders a value, so the trigger must not
+  // fall back to the placeholder colour.
+  it('renders a partial range at full strength', () => {
+    render(<DateRangePicker value={{ from: new Date(2024, 5, 15), to: undefined }} />);
+    const trigger = screen.getByRole('button');
+    expect(trigger).toHaveTextContent(/Jun 15/);
+    expect(trigger.querySelector('.text-foreground-muted')).toBeNull();
+  });
+
+  // The outline Button variant mutes its own text in Future themes, so each
+  // trigger has to override it rather than rely on removing the class.
+  it.each([
+    ['DatePicker', <DatePicker key="d" />],
+    ['DateRangePicker', <DateRangePicker key="r" />],
+  ])('overrides the outline variant on %s', (_name, element) => {
+    render(element);
+    const trigger = screen.getByRole('button');
+    expect(trigger).toHaveClass('future:text-foreground');
+    expect(trigger).not.toHaveClass('future:text-muted-foreground');
+  });
+});
+
+describe('trigger icon color', () => {
+  it.each([
+    ['DatePicker', <DatePicker key="d" />],
+    ['DateRangePicker', <DateRangePicker key="r" />],
+  ])('mutes the %s icon and brightens it on hover', (_name, element) => {
+    render(element);
+    const trigger = screen.getByRole('button');
+    expect(trigger).toHaveClass('[&>svg]:text-foreground-muted');
+    expect(trigger).toHaveClass('hover:[&>svg]:text-accent-foreground');
+  });
+
+  // The [&>svg] selector only matches a direct child, so wrapping the icon
+  // would silently drop both rules.
+  it.each([
+    ['DatePicker', <DatePicker key="d" />],
+    ['DateRangePicker', <DateRangePicker key="r" />],
+  ])('keeps the %s icon a direct child of the trigger', (_name, element) => {
+    render(element);
+    const trigger = screen.getByRole('button');
+    expect(trigger.querySelector(':scope > svg')).not.toBeNull();
+  });
+});
+
+describe('DatePicker inline validation', () => {
+  it('renders the message and wires aria attributes to it', () => {
+    render(<DatePicker id="due" error="Select a due date." />);
+    const trigger = screen.getByRole('button');
+    const message = screen.getByText('Select a due date.');
+
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', 'due-error');
+    expect(trigger).toHaveAttribute('aria-errormessage', 'due-error');
+    expect(message).toHaveAttribute('id', 'due-error');
+    expect(message).toHaveClass('text-error');
+  });
+
+  it('lets a label name the trigger when an id is provided', () => {
+    render(
+      <>
+        <label htmlFor="due">Due date</label>
+        <DatePicker id="due" />
+      </>
+    );
+    expect(screen.getByRole('button', { name: 'Due date' })).toBeInTheDocument();
+  });
+
+  it('keeps the computed aria-label when nothing else names it', () => {
+    render(<DatePicker placeholder="Pick a date" />);
+    expect(screen.getByRole('button', { name: 'Pick a date' })).toBeInTheDocument();
+  });
+});
+
+describe('DateRangePicker inline validation', () => {
+  it('renders the message and wires aria attributes to it', () => {
+    render(<DateRangePicker id="window" error="Select a date range." />);
+    const trigger = screen.getByRole('button');
+    const message = screen.getByText('Select a date range.');
+
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', 'window-error');
+    expect(trigger).toHaveAttribute('aria-errormessage', 'window-error');
+    expect(message).toHaveAttribute('id', 'window-error');
+  });
+});
+describe('DatePicker remount safety', () => {
+  it('keeps the same trigger node and focus when an error appears', () => {
+    const { rerender } = render(<DatePicker id="due" />);
+    const before = screen.getByRole('button');
+    before.focus();
+    expect(before).toHaveFocus();
+
+    rerender(<DatePicker id="due" error="Select a due date." />);
+    const after = screen.getByRole('button');
+
+    expect(after).toBe(before);
+    expect(after).toHaveFocus();
+  });
+});
+
+describe('DateRangePicker remount safety', () => {
+  it('keeps the same trigger node and focus when an error appears', () => {
+    const { rerender } = render(<DateRangePicker id="window" />);
+    const before = screen.getByRole('button');
+    before.focus();
+    expect(before).toHaveFocus();
+
+    rerender(<DateRangePicker id="window" error="Select a date range." />);
+    const after = screen.getByRole('button');
+
+    expect(after).toBe(before);
+    expect(after).toHaveFocus();
+  });
+});

@@ -5,7 +5,7 @@
  * no measured size yet (creation, layout).
  */
 
-import type { NodeShape } from '../schema/node-definition';
+import { isWideNodeShape, type NodeShape } from '../schema/node-definition';
 import { DEFAULT_CONTAINER_HEIGHT, DEFAULT_CONTAINER_WIDTH } from './container';
 
 /**
@@ -30,7 +30,7 @@ export const getExpandedSize = (shape?: NodeShape): { width: number; height: num
   }
 
   return {
-    width: shape === 'rectangle' ? EXPANDED_RECTANGLE_WIDTH : COLLAPSED_NODE_SIZE,
+    width: isWideNodeShape(shape) ? EXPANDED_RECTANGLE_WIDTH : COLLAPSED_NODE_SIZE,
     height: COLLAPSED_NODE_SIZE,
   };
 };

@@ -163,4 +163,78 @@ describe('DateTimePicker', () => {
       expect(screen.getByRole('button', { name: 'Done' })).toBeDisabled();
     });
   });
+
+  describe('value vs placeholder color', () => {
+    it('mutes the placeholder via its own span', () => {
+      render(<DateTimePicker placeholder="Pick a date and time" />);
+      const placeholder = screen.getByText('Pick a date and time');
+      expect(placeholder.tagName).toBe('SPAN');
+      expect(placeholder).toHaveClass('text-foreground-muted');
+    });
+
+    it('renders a selected value at full strength', () => {
+      const { container } = render(<DateTimePicker value={new Date(2024, 5, 15, 14, 30)} />);
+      expect(screen.getByRole('button')).toHaveTextContent(/June 15/);
+      expect(container.querySelector('.text-foreground-muted')).toBeNull();
+    });
+
+    it('overrides the outline variant so the trigger is not globally muted', () => {
+      render(<DateTimePicker />);
+      const trigger = screen.getByRole('button');
+      expect(trigger).toHaveClass('future:text-foreground');
+      expect(trigger).not.toHaveClass('future:text-muted-foreground');
+    });
+  });
+
+  describe('trigger icon color', () => {
+    it('mutes the icon and brightens it on hover', () => {
+      render(<DateTimePicker />);
+      const trigger = screen.getByRole('button');
+      expect(trigger).toHaveClass('[&>svg]:text-foreground-muted');
+      expect(trigger).toHaveClass('hover:[&>svg]:text-accent-foreground');
+    });
+
+    // The [&>svg] selector only matches a direct child, so wrapping the icon
+    // would silently drop both rules.
+    it('keeps the icon a direct child of the trigger', () => {
+      render(<DateTimePicker />);
+      const trigger = screen.getByRole('button');
+      expect(trigger.querySelector(':scope > svg')).not.toBeNull();
+    });
+  });
+});
+
+describe('DateTimePicker inline validation', () => {
+  it('renders the message and wires aria attributes to it', () => {
+    render(<DateTimePicker id="deadline" error="Choose a later deadline." />);
+    const trigger = screen.getByRole('button');
+    const message = screen.getByText('Choose a later deadline.');
+
+    expect(trigger).toHaveAttribute('id', 'deadline');
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+    expect(trigger).toHaveAttribute('aria-describedby', 'deadline-error');
+    expect(trigger).toHaveAttribute('aria-errormessage', 'deadline-error');
+    expect(message).toHaveAttribute('id', 'deadline-error');
+    expect(message).toHaveClass('text-error');
+  });
+
+  it('still forwards a bare aria-invalid without rendering a message', () => {
+    render(<DateTimePicker aria-invalid />);
+    expect(screen.getByRole('button')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-describedby');
+  });
+});
+describe('DateTimePicker remount safety', () => {
+  it('keeps the same trigger node and focus when an error appears', () => {
+    const { rerender } = render(<DateTimePicker id="deadline" />);
+    const before = screen.getByRole('button');
+    before.focus();
+    expect(before).toHaveFocus();
+
+    rerender(<DateTimePicker id="deadline" error="Choose a later deadline." />);
+    const after = screen.getByRole('button');
+
+    expect(after).toBe(before);
+    expect(after).toHaveFocus();
+  });
 });

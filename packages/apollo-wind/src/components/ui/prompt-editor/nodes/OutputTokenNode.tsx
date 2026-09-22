@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import {
   $applyNodeReplacement,
   DecoratorNode,
@@ -10,7 +9,8 @@ import {
   type SerializedLexicalNode,
   type Spread,
 } from 'lexical';
-import { TokenPillWithTooltip } from '../components/TokenPillWithTooltip';
+import type { ReactNode } from 'react';
+import { TokenPillSlot } from '../components/TokenPillSlot';
 import type { PromptEditorDiffType } from '../types';
 
 export type SerializedOutputTokenNode = Spread<{ value: string }, SerializedLexicalNode>;
@@ -109,7 +109,7 @@ export class OutputTokenNode extends DecoratorNode<ReactNode> {
   decorate(editor: LexicalEditor): ReactNode {
     const readonly = !editor.isEditable();
     return (
-      <TokenPillWithTooltip
+      <TokenPillSlot
         value={this.__value}
         tokenType="output"
         nodeKey={this.getKey()}

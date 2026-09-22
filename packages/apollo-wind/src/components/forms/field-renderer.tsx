@@ -35,6 +35,7 @@ import type {
 } from './form-schema';
 import { hasOptions, isCustomField } from './form-schema';
 import { RulesEngine } from './rules-engine';
+import { StringListField } from './string-list-field';
 
 /**
  * Field Renderer - Connects metadata to actual UI components
@@ -211,22 +212,26 @@ export function FormFieldRenderer({
     });
   }, [field.rules, field.validation?.required, getValues, watchedRuleDependentValues]);
 
+  // Tracked apart from inlineOptions so a field whose options go away clears to [].
+  const isOptionsField = hasOptions(field);
+  const inlineOptions = isOptionsField ? field.options : undefined;
+
   // Sync inline options when field.options changes (for fields without dataSource)
   useEffect(() => {
     if (field.dataSource) return; // Skip if using dataSource
-    if (!hasOptions(field)) return;
+    if (!isOptionsField) return;
 
-    const inlineOptions = field.options || [];
+    const nextOptions = inlineOptions || [];
     setFieldState((prev) => {
-      if (deepEqual(prev.options, inlineOptions)) {
+      if (deepEqual(prev.options, nextOptions)) {
         return prev;
       }
       return {
         ...prev,
-        options: inlineOptions,
+        options: nextOptions,
       };
     });
-  }, [field]);
+  }, [field.dataSource, isOptionsField, inlineOptions]);
 
   // Fetch data source options (re-fetches when dependent fields change)
   // biome-ignore lint/correctness/useExhaustiveDependencies: watchedDataSourceValues triggers re-fetch when dependent field values change (cascading dropdowns)
@@ -273,7 +278,10 @@ export function FormFieldRenderer({
           name={field.name}
           control={control}
           defaultValue={field.defaultValue}
-          render={({ field: formField, fieldState: { error } }) => (
+          // `ref` is destructured away: custom components are plain function components
+          // (CustomFieldComponentProps declares no ref), and spreading the Controller's ref
+          // onto one triggers React's function-component ref warning.
+          render={({ field: { ref: _ref, ...formField }, fieldState: { error } }) => (
             <CustomComponent
               {...formField}
               {...field.componentProps}
@@ -334,8 +342,16 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'email':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Input
+            id={field.name}
             value={formField.value as string | undefined}
             onChange={(e) => formField.onChange(e.target.value)}
             onBlur={formField.onBlur}
@@ -344,18 +360,29 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             type={field.type}
             placeholder={field.placeholder}
             disabled={disabled}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
             aria-label={field.ariaLabel}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
     case 'number':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Input
+            id={field.name}
             value={formField.value as number | undefined}
             onBlur={formField.onBlur}
             name={formField.name}
@@ -366,18 +393,29 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             step={field.step}
             placeholder={field.placeholder}
             disabled={disabled}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
             onChange={(e) => formField.onChange(parseFloat(e.target.value))}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
     case 'textarea':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Textarea
+            id={field.name}
             value={formField.value as string | undefined}
             onChange={(e) => formField.onChange(e.target.value)}
             onBlur={formField.onBlur}
@@ -385,23 +423,40 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             ref={formField.ref as React.Ref<HTMLTextAreaElement>}
             placeholder={field.placeholder}
             disabled={disabled}
-            rows={field.rows || 4}
+            maxLength={field.maxLength}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
+            {...(field.minRows != null ? { minRows: field.minRows } : { rows: field.rows || 4 })}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
     case 'select':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <Select
             value={formField.value as string | undefined}
             onValueChange={formField.onChange}
             disabled={disabled}
           >
-            <SelectTrigger aria-label={field.label}>
+            <SelectTrigger
+              id={field.name}
+              aria-label={field.label}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? `${field.name}-error` : undefined}
+              aria-errormessage={error ? `${field.name}-error` : undefined}
+            >
               <SelectValue placeholder={field.placeholder || 'Select...'} />
             </SelectTrigger>
             <SelectContent>
@@ -417,15 +472,23 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             </SelectContent>
           </Select>
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
     case 'multiselect':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <MultiSelect
+            id={field.name}
             selected={(formField.value as string[]) || []}
             onChange={formField.onChange}
             options={options.map((opt) => ({
@@ -434,12 +497,15 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             }))}
             disabled={disabled}
             placeholder={field.placeholder || 'Select items...'}
-            emptyMessage="No items found."
-            searchPlaceholder="Search..."
+            emptyMessage={field.emptyMessage ?? 'No items found.'}
+            searchPlaceholder={field.searchPlaceholder ?? 'Search...'}
             maxSelected={field.maxSelected}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -451,16 +517,24 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
               checked={formField.value === true}
               onCheckedChange={(checked) => formField.onChange(checked === true)}
               disabled={disabled}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? `${field.name}-error` : undefined}
+              aria-errormessage={error ? `${field.name}-error` : undefined}
               id={field.name}
             />
             <div className="space-y-1 leading-none">
-              <FormFieldLabel htmlFor={field.name} className="font-normal">
+              <FormFieldLabel
+                htmlFor={field.name}
+                tooltip={field.tooltip}
+                tooltipAriaLabel={field.tooltipAriaLabel}
+                className="font-normal"
+              >
                 {field.label}
               </FormFieldLabel>
               <FormFieldDescription>{field.description}</FormFieldDescription>
             </div>
           </div>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -469,27 +543,51 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         <FormField>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <FormFieldLabel>{field.label}</FormFieldLabel>
+              <FormFieldLabel
+                htmlFor={field.name}
+                required={required}
+                tooltip={field.tooltip}
+                tooltipAriaLabel={field.tooltipAriaLabel}
+              >
+                {field.label}
+              </FormFieldLabel>
               <FormFieldDescription>{field.description}</FormFieldDescription>
             </div>
             <Switch
+              id={field.name}
               checked={formField.value === true}
               onCheckedChange={(checked) => formField.onChange(checked === true)}
               disabled={disabled}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? `${field.name}-error` : undefined}
+              aria-errormessage={error ? `${field.name}-error` : undefined}
             />
           </div>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
     case 'radio':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          {/* The option labels name individual radios; without this the group itself has no
+              accessible name, so a screen reader never announces what is being chosen. */}
+          <FormFieldLabel
+            id={`${field.name}-label`}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <RadioGroup
+            aria-labelledby={`${field.name}-label`}
             value={formField.value as string | null | undefined}
             onValueChange={formField.onChange}
             disabled={disabled}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
           >
             {options.map((option) => (
               <div key={String(option.value)} className="flex items-center space-x-2">
@@ -505,7 +603,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             ))}
           </RadioGroup>
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
@@ -523,23 +621,45 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
     case 'date':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <DatePicker
+            id={field.name}
             value={formField.value as Date | undefined}
             onValueChange={formField.onChange}
             disabled={disabled}
             placeholder={field.placeholder}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
     case 'datetime':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            id={`${field.name}-label`}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <DateTimePicker
+            aria-labelledby={`${field.name}-label`}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
             value={formField.value as Date | undefined}
             onValueChange={formField.onChange}
             disabled={disabled}
@@ -547,15 +667,27 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             use12Hour={field.use12Hour}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
       );
 
     case 'file':
       return (
         <FormField>
-          <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+          <FormFieldLabel
+            htmlFor={field.name}
+            required={required}
+            tooltip={field.tooltip}
+            tooltipAriaLabel={field.tooltipAriaLabel}
+          >
+            {field.label}
+          </FormFieldLabel>
           <FileUpload
+            id={field.name}
+            ariaLabel={field.ariaLabel ?? field.label}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${field.name}-error` : undefined}
+            aria-errormessage={error ? `${field.name}-error` : undefined}
             accept={field.accept}
             multiple={field.multiple}
             disabled={disabled}
@@ -566,8 +698,22 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             }}
           />
           <FormFieldDescription>{field.description}</FormFieldDescription>
-          <FormFieldError>{error}</FormFieldError>
+          <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
         </FormField>
+      );
+
+    case 'string-list':
+      return (
+        <StringListField
+          field={field}
+          inputRef={formField.ref as React.Ref<HTMLTextAreaElement>}
+          value={formField.value as string[] | undefined}
+          onChange={formField.onChange}
+          onBlur={formField.onBlur}
+          error={error}
+          disabled={disabled}
+          required={required}
+        />
       );
 
     default:
@@ -625,10 +771,23 @@ function SliderField({ field, formField, error, disabled, required }: SliderFiel
   return (
     <FormField>
       <div className="flex justify-between">
-        <FormFieldLabel required={required}>{field.label}</FormFieldLabel>
+        <FormFieldLabel
+          id={`${field.name}-label`}
+          required={required}
+          tooltip={field.tooltip}
+          tooltipAriaLabel={field.tooltipAriaLabel}
+        >
+          {field.label}
+        </FormFieldLabel>
         <span className="text-sm text-muted-foreground">{displayValue as React.ReactNode}</span>
       </div>
+      {/* Radix renders the thumb as the role=slider element, so the name and invalid state
+          have to be put on it explicitly — a neighbouring <label> reaches neither. */}
       <Slider
+        aria-labelledby={`${field.name}-label`}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${field.name}-error` : undefined}
+        aria-errormessage={error ? `${field.name}-error` : undefined}
         value={[(displayValue as number) ?? field.min ?? 0]}
         onValueChange={(values) => formField.onChange(values[0])}
         min={field.min || 0}
@@ -637,7 +796,7 @@ function SliderField({ field, formField, error, disabled, required }: SliderFiel
         disabled={disabled}
       />
       <FormFieldDescription>{field.description}</FormFieldDescription>
-      <FormFieldError>{error}</FormFieldError>
+      <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
     </FormField>
   );
 }

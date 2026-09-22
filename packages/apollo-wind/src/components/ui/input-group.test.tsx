@@ -144,6 +144,18 @@ describe('InputGroup', () => {
     expect(screen.getByPlaceholderText('Notes')).toBeInTheDocument();
   });
 
+  it('keeps the textarea a direct child of the group, so `has-[>textarea]` still matches', () => {
+    render(
+      <InputGroup data-testid="group">
+        <InputGroupTextarea placeholder="Notes" />
+      </InputGroup>
+    );
+    const group = screen.getByTestId('group');
+    const textarea = screen.getByPlaceholderText('Notes');
+    expect(textarea.parentElement).toBe(group);
+    expect(group).toHaveClass('has-[>textarea]:h-auto');
+  });
+
   it('renders InputGroupText content', () => {
     render(
       <InputGroup>

@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { mergeRegister } from '@lexical/utils';
 import {
@@ -13,6 +12,7 @@ import {
   type ParagraphNode,
   TextNode,
 } from 'lexical';
+import { useEffect, useRef } from 'react';
 
 const collapseParagraphs = () => {
   const root = $getRoot();

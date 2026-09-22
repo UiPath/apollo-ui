@@ -31,6 +31,47 @@ describe('DropdownMenu', () => {
       expect(screen.getByText('Open Menu')).toBeInTheDocument();
     });
 
+    it('associates validation feedback with a field trigger', () => {
+      render(
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            field
+            error="Choose a connection"
+            errorId="connection-error"
+            aria-describedby="field-help"
+          >
+            Open Menu
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Action</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+      const trigger = screen.getByRole('button', { name: 'Open Menu' });
+      expect(trigger).toHaveAttribute('aria-invalid', 'true');
+      expect(trigger).toHaveAttribute('aria-errormessage', 'connection-error');
+      expect(trigger).toHaveAttribute('aria-describedby', 'field-help connection-error');
+      expect(trigger.className).toContain('future:h-10');
+      expect(trigger.className).toContain('ring-1');
+    });
+
+    it('preserves an existing error message reference without an error id', () => {
+      render(
+        <DropdownMenu>
+          <DropdownMenuTrigger error="Choose a connection" aria-errormessage="existing-error">
+            Open Menu
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Action</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+      expect(screen.getByRole('button', { name: 'Open Menu' })).toHaveAttribute(
+        'aria-errormessage',
+        'existing-error'
+      );
+    });
+
     it('shows menu on click', async () => {
       const user = userEvent.setup();
       render(

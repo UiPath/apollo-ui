@@ -154,3 +154,12 @@ describe('Switch', () => {
     });
   });
 });
+
+describe('Switch invalid state', () => {
+  it('takes the field error stroke when aria-invalid is set', () => {
+    render(<Switch aria-invalid aria-label="Notifications" />);
+    const toggle = screen.getByRole('switch');
+    expect(toggle).toHaveAttribute('aria-invalid', 'true');
+    expect(toggle).toHaveClass('aria-invalid:border-error');
+  });
+});

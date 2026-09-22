@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { FormField, FormFieldDescription, FormFieldError, FormFieldLabel } from './form-field';
+import { TooltipProvider } from './tooltip';
 
 describe('FormField', () => {
   it('composes the field anatomy without any form context', () => {
@@ -19,6 +20,30 @@ describe('FormField', () => {
     expect(screen.getByText('The URL to call.')).toBeInTheDocument();
     expect(screen.getByText('Endpoint is required.')).toBeInTheDocument();
   });
+
+  it('pins the column so a truncating control cannot widen the field', () => {
+    render(<FormField data-testid="field" />);
+    expect(screen.getByTestId('field')).toHaveClass('grid', 'grid-cols-[minmax(0,1fr)]');
+  });
+
+  it('lets a consumer override the column template', () => {
+    render(<FormField data-testid="field" className="grid-cols-2" />);
+    const field = screen.getByTestId('field');
+    expect(field).toHaveClass('grid-cols-2');
+    expect(field).not.toHaveClass('grid-cols-[minmax(0,1fr)]');
+  });
+
+  it("cancels a direct-child message's own margin itself, not via a global stylesheet rule", () => {
+    // This class is what makes a validation message rendered as a Fragment sibling of its
+    // control (Input, Select, Combobox, ...) show one gap instead of the grid gap and the
+    // message's own margin stacking. Keeping the rule here, rather than in a bare
+    // `.gap-1\.5` selector in global CSS, is load-bearing: Tailwind compiles a component's
+    // own className usage into its layered utilities output, so a consumer's own margin
+    // utility can still compete on specificity. An unlayered global rule cannot be
+    // outranked by anything in the cascade, regardless of specificity.
+    render(<FormField data-testid="field" />);
+    expect(screen.getByTestId('field')).toHaveClass('[&>[data-slot=form-field-error]]:mt-0');
+  });
 });
 
 describe('FormFieldLabel', () => {
@@ -30,6 +55,42 @@ describe('FormFieldLabel', () => {
   it('omits the indicator by default', () => {
     render(<FormFieldLabel>Endpoint</FormFieldLabel>);
     expect(screen.queryByText('*')).not.toBeInTheDocument();
+  });
+
+  it('renders the info tooltip trigger after the required indicator', () => {
+    render(
+      <TooltipProvider>
+        <FormFieldLabel required tooltip="The URL to call." tooltipAriaLabel="About the endpoint">
+          Endpoint
+        </FormFieldLabel>
+      </TooltipProvider>
+    );
+    const trigger = screen.getByRole('button', { name: 'About the endpoint' });
+    expect(trigger).toBeInTheDocument();
+    // Order matters: label text, then the asterisk, then the tooltip trigger.
+    expect(screen.getByText('*').compareDocumentPosition(trigger)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+    // ...and the trigger must not be a <label> descendant: <button> is labelable, which
+    // <label>'s content model forbids and which makes clicking it ambiguous with
+    // activating the labelled control.
+    expect(trigger.closest('label')).toBeNull();
+  });
+
+  it('defaults the tooltip trigger name and renders none without a tooltip', () => {
+    const { rerender } = render(
+      <TooltipProvider>
+        <FormFieldLabel tooltip="The URL to call.">Endpoint</FormFieldLabel>
+      </TooltipProvider>
+    );
+    expect(screen.getByRole('button', { name: 'More information' })).toBeInTheDocument();
+
+    rerender(
+      <TooltipProvider>
+        <FormFieldLabel>Endpoint</FormFieldLabel>
+      </TooltipProvider>
+    );
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });
 
@@ -60,5 +121,12 @@ describe('FormFieldError', () => {
   it('renders nothing without children', () => {
     const { container } = render(<FormFieldError />);
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('carries its own top margin standalone, and the canonical data-slot even if overridden', () => {
+    render(<FormFieldError data-slot="something-else">Required.</FormFieldError>);
+    const error = screen.getByText('Required.');
+    expect(error).toHaveClass('mt-1.5');
+    expect(error).toHaveAttribute('data-slot', 'form-field-error');
   });
 });

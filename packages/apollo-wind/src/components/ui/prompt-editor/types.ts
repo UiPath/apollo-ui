@@ -46,20 +46,37 @@ export interface PromptEditorAutoCompleteOption {
 
 export type PromptEditorMode = 'edit' | 'preview';
 
+/** Which formats are active at the selection (rich mode) — drives the toolbar's pressed states. */
+export interface PromptEditorToolbarActiveFormats {
+  bold: boolean;
+  italic: boolean;
+  /** Rich mode only — markdown has no underline syntax, so plain mode never offers it. */
+  underline: boolean;
+  strikethrough: boolean;
+  orderedList: boolean;
+  bulletedList: boolean;
+  code: boolean;
+}
+
 export interface PromptEditorToolbarActionsRef {
   formatBold: () => void;
   formatItalic: () => void;
+  /** Rich mode only; a no-op in plain mode, where the Underline button never renders. */
+  formatUnderline: () => void;
   formatStrikethrough: () => void;
   formatNumberedList: () => void;
   formatBulletedList: () => void;
+  formatCode: () => void;
 }
 
 export type PromptEditorToolbarFormatAction =
   | 'bold'
   | 'bulletedList'
+  | 'code'
   | 'italic'
   | 'numberedList'
-  | 'strikethrough';
+  | 'strikethrough'
+  | 'underline';
 
 export interface PromptEditorTokenColorConfig {
   background: string;
@@ -90,17 +107,29 @@ export const getPromptEditorTokenColors = (): Record<
   },
 });
 
-/** Human-readable label for a token type, used in the chip's hover tooltip. */
-export const getPromptEditorTokenTypeLabel = (type: PromptEditorTokenType): string => {
+/** The token-type label subset of `PromptEditorStrings` (structural, to avoid a config↔types cycle). */
+export interface PromptEditorTokenTypeLabels {
+  tokenTypeInput: string;
+  tokenTypeOutput: string;
+  tokenTypeState: string;
+  tokenTypeResource: string;
+}
+
+/** Human-readable label for a token type, used in the chip's hover tooltip. Pass the editor's
+ *  `strings` to localize; the English defaults apply otherwise. */
+export const getPromptEditorTokenTypeLabel = (
+  type: PromptEditorTokenType,
+  labels?: PromptEditorTokenTypeLabels
+): string => {
   switch (type) {
     case 'input':
-      return 'Input variable';
+      return labels?.tokenTypeInput ?? 'Input variable';
     case 'output':
-      return 'Output variable';
+      return labels?.tokenTypeOutput ?? 'Output variable';
     case 'state':
-      return 'State variable';
+      return labels?.tokenTypeState ?? 'State variable';
     case 'resource':
-      return 'Resource';
+      return labels?.tokenTypeResource ?? 'Resource';
     default:
       return 'Text';
   }

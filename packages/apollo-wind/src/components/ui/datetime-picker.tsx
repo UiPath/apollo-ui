@@ -1,20 +1,35 @@
-import * as React from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon, Clock } from 'lucide-react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib';
+import { FormFieldError } from './form-field';
 
 export interface DateTimePickerProps {
+  /** Applied to the trigger button, so a `<label htmlFor>` pointing at it associates correctly. */
+  id?: string;
   value?: Date;
   onValueChange?: (date: Date | undefined) => void;
   disabled?: boolean;
   placeholder?: string;
   className?: string;
   use12Hour?: boolean;
+  /**
+   * Field-specific feedback rendered immediately below the trigger.
+   * Keep the message focused on what went wrong and how to resolve it.
+   */
+  error?: React.ReactNode;
+  /** Optional id for the inline validation message. */
+  errorId?: string;
+  /** Id of the element naming this control, forwarded to the trigger button. */
+  'aria-labelledby'?: string;
+  'aria-invalid'?: React.AriaAttributes['aria-invalid'];
+  'aria-describedby'?: string;
+  'aria-errormessage'?: string;
 }
 
 export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
@@ -26,10 +41,23 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
       placeholder = 'Pick a date and time',
       className,
       use12Hour = false,
+      id,
+      error,
+      errorId,
+      'aria-labelledby': ariaLabelledBy,
+      'aria-invalid': ariaInvalid,
+      'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
     },
     ref
   ) {
     const [open, setOpen] = React.useState(false);
+    const generatedId = React.useId();
+    const validationId =
+      errorId ?? `${id ?? `datetime-picker-${generatedId.replace(/:/g, '')}`}-error`;
+    const describedBy = [ariaDescribedBy, error ? validationId : undefined]
+      .filter(Boolean)
+      .join(' ');
     const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
     const [timeValue, setTimeValue] = React.useState<string>(
       value ? format(value, use12Hour ? 'hh:mm a' : 'HH:mm') : ''
@@ -65,64 +93,82 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     };
 
     const formatDisplayValue = () => {
-      if (!selectedDate) return placeholder;
+      // Placeholder is rendered by the caller; this only narrows for format().
+      if (!selectedDate) return null;
       const datePart = format(selectedDate, 'PPP');
       const timePart = format(selectedDate, use12Hour ? 'hh:mm a' : 'HH:mm');
       return `${datePart} at ${timePart}`;
     };
 
     return (
-      <Popover data-slot="datetime-picker" open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            ref={ref}
-            variant="outline"
-            className={cn(
-              'w-full justify-start text-left font-normal',
-              !selectedDate && 'text-muted-foreground',
-              className
-            )}
-            disabled={disabled}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {formatDisplayValue()}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="p-3 space-y-3">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={handleDateSelect}
-              initialFocus
-            />
-            <div className="border-t pt-3 space-y-2">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Time
-              </Label>
-              <Input type="time" value={timeValue} onChange={handleTimeChange} className="w-full" />
+      <>
+        <Popover data-slot="datetime-picker" open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              ref={ref}
+              id={id}
+              aria-labelledby={ariaLabelledBy}
+              aria-describedby={describedBy || undefined}
+              aria-errormessage={error ? validationId : ariaErrorMessage}
+              aria-invalid={error ? true : ariaInvalid}
+              variant="outline"
+              className={cn(
+                'w-full justify-start text-left font-normal [&>svg]:text-foreground-muted hover:[&>svg]:text-accent-foreground',
+                'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
+                className
+              )}
+              disabled={disabled}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {selectedDate ? (
+                formatDisplayValue()
+              ) : (
+                <span className="text-foreground-muted">{placeholder}</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <div className="p-3 space-y-3">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                initialFocus
+              />
+              <div className="border-t pt-3 space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Time
+                </Label>
+                <Input
+                  type="time"
+                  value={timeValue}
+                  onChange={handleTimeChange}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedDate(undefined);
+                    setTimeValue('');
+                    onValueChange?.(undefined);
+                    setOpen(false);
+                  }}
+                >
+                  Clear
+                </Button>
+                <Button className="w-full" onClick={() => setOpen(false)} disabled={!selectedDate}>
+                  Done
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  setSelectedDate(undefined);
-                  setTimeValue('');
-                  onValueChange?.(undefined);
-                  setOpen(false);
-                }}
-              >
-                Clear
-              </Button>
-              <Button className="w-full" onClick={() => setOpen(false)} disabled={!selectedDate}>
-                Done
-              </Button>
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+          </PopoverContent>
+        </Popover>
+        <FormFieldError id={validationId}>{error}</FormFieldError>
+      </>
     );
   }
 );

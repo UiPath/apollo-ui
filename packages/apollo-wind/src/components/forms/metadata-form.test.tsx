@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
+import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { FormPlugin, FormSchema } from './form-schema';
 import { MetadataForm } from './metadata-form';
@@ -332,6 +333,371 @@ describe('MetadataForm', () => {
         expect(screen.getByText('Step 1')).toBeInTheDocument();
       });
     });
+
+    it('skips a single hidden step and lands on the next visible one', async () => {
+      const user = userEvent.setup();
+      const schema: FormSchema = {
+        id: 'skip-single',
+        title: 'Skip Single',
+        steps: [
+          {
+            id: 'step-1',
+            title: 'Visible Step 1',
+            sections: [
+              { id: 's1', fields: [{ name: 'f1', type: 'text', label: 'F1', defaultValue: '' }] },
+            ],
+          },
+          {
+            id: 'step-2',
+            title: 'Hidden Step',
+            // Condition that never matches — "ghost" field will always be undefined
+            conditions: [{ when: 'ghost', is: 'never' }],
+            sections: [
+              { id: 's2', fields: [{ name: 'f2', type: 'text', label: 'F2', defaultValue: '' }] },
+            ],
+          },
+          {
+            id: 'step-3',
+            title: 'Visible Step 3',
+            sections: [
+              { id: 's3', fields: [{ name: 'f3', type: 'text', label: 'F3', defaultValue: '' }] },
+            ],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} />);
+      expect(screen.getByText('Visible Step 1')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /next/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText('Visible Step 3')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Hidden Step')).not.toBeInTheDocument();
+    });
+
+    it('skips multiple consecutive hidden steps in one jump', async () => {
+      const user = userEvent.setup();
+      const schema: FormSchema = {
+        id: 'skip-multi',
+        title: 'Skip Multi',
+        steps: [
+          {
+            id: 'step-1',
+            title: 'Start',
+            sections: [
+              { id: 's1', fields: [{ name: 'f1', type: 'text', label: 'F1', defaultValue: '' }] },
+            ],
+          },
+          {
+            id: 'step-2',
+            title: 'Hidden A',
+            conditions: [{ when: 'ghost', is: 'never' }],
+            sections: [
+              { id: 's2', fields: [{ name: 'f2', type: 'text', label: 'F2', defaultValue: '' }] },
+            ],
+          },
+          {
+            id: 'step-3',
+            title: 'Hidden B',
+            conditions: [{ when: 'ghost', is: 'never' }],
+            sections: [
+              { id: 's3', fields: [{ name: 'f3', type: 'text', label: 'F3', defaultValue: '' }] },
+            ],
+          },
+          {
+            id: 'step-4',
+            title: 'End',
+            sections: [
+              { id: 's4', fields: [{ name: 'f4', type: 'text', label: 'F4', defaultValue: '' }] },
+            ],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} />);
+      expect(screen.getByText('Start')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /next/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText('End')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Hidden A')).not.toBeInTheDocument();
+      expect(screen.queryByText('Hidden B')).not.toBeInTheDocument();
+    });
+
+    it('renders nothing when all remaining steps are hidden (no way back)', async () => {
+      const user = userEvent.setup();
+      const schema: FormSchema = {
+        id: 'all-hidden',
+        title: 'All Hidden',
+        steps: [
+          {
+            id: 'step-1',
+            title: 'Only Visible',
+            sections: [
+              { id: 's1', fields: [{ name: 'f1', type: 'text', label: 'F1', defaultValue: '' }] },
+            ],
+          },
+          {
+            id: 'step-2',
+            title: 'Hidden Last',
+            conditions: [{ when: 'ghost', is: 'never' }],
+            sections: [
+              { id: 's2', fields: [{ name: 'f2', type: 'text', label: 'F2', defaultValue: '' }] },
+            ],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} />);
+      expect(screen.getByText('Only Visible')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /next/i }));
+
+      await waitFor(() => {
+        // The hidden step's title should never appear
+        expect(screen.queryByText('Hidden Last')).not.toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('Only Visible')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /previous/i })).not.toBeInTheDocument();
+    });
+  });
+
+  describe('plugin hooks', () => {
+    // Written before plugins run, not after: otherwise a plugin lifting state to
+    // a parent persists the previous keystroke.
+    it('sees the just-changed value in context.values, not the previous one', async () => {
+      const user = userEvent.setup();
+      const seen: Array<Record<string, unknown>> = [];
+      const observer: FormPlugin = {
+        name: 'observer',
+        onValueChange: (_fieldName, _value, context) => {
+          seen.push({ ...context.values });
+        },
+      };
+      const schema: FormSchema = {
+        id: 'plugin-values',
+        title: 'Plugin Values',
+        sections: [
+          {
+            id: 's',
+            fields: [
+              {
+                name: 'letters',
+                type: 'text',
+                label: 'Letters',
+                placeholder: 'Letters',
+                defaultValue: '',
+              },
+            ],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} plugins={[observer]} />);
+      await user.type(screen.getByPlaceholderText('Letters'), 'abc');
+
+      await waitFor(() => {
+        expect(seen.length).toBe(3);
+      });
+
+      expect(seen.map((values) => values.letters)).toEqual(['a', 'ab', 'abc']);
+    });
+
+    it('passes the changed value for a dot-path field name', async () => {
+      const user = userEvent.setup();
+      const seen: Array<[string, unknown]> = [];
+      const observer: FormPlugin = {
+        name: 'observer',
+        onValueChange: (fieldName, value) => {
+          seen.push([fieldName, value]);
+        },
+      };
+      const schema: FormSchema = {
+        id: 'nested-plugin',
+        title: 'Nested Plugin',
+        sections: [
+          {
+            id: 's',
+            fields: [
+              {
+                name: 'inputs.url',
+                type: 'text',
+                label: 'URL',
+                placeholder: 'URL',
+                defaultValue: '',
+              },
+            ],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} plugins={[observer]} />);
+      await user.type(screen.getByPlaceholderText('URL'), 'ab');
+
+      await waitFor(() => {
+        expect(seen.length).toBe(2);
+      });
+      expect(seen).toEqual([
+        ['inputs.url', 'a'],
+        ['inputs.url', 'ab'],
+      ]);
+    });
+  });
+
+  describe('form actions', () => {
+    it('disables the submit action and shows its loading label while submitting', async () => {
+      const user = userEvent.setup();
+      let release: () => void = () => {};
+      const onSubmit = () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+        });
+      const schema: FormSchema = {
+        id: 'submitting',
+        title: 'Submitting',
+        sections: [
+          { id: 's', fields: [{ name: 'a', type: 'text', label: 'A', defaultValue: 'x' }] },
+        ],
+        actions: [{ id: 'submit', type: 'submit', label: 'Save', loading: true }],
+      };
+
+      render(<MetadataForm schema={schema} onSubmit={onSubmit} />);
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Loading...' })).toBeDisabled();
+      });
+
+      release();
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
+      });
+    });
+
+    it('re-evaluates action conditions as values change', async () => {
+      const user = userEvent.setup();
+      const schema: FormSchema = {
+        id: 'action-conditions',
+        title: 'Action Conditions',
+        sections: [
+          { id: 's', fields: [{ name: 'showExtra', type: 'checkbox', label: 'Show extra' }] },
+        ],
+        actions: [
+          { id: 'submit', type: 'submit', label: 'Submit' },
+          {
+            id: 'extra',
+            type: 'custom',
+            label: 'Extra',
+            conditions: [{ when: 'showExtra', is: true }],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} />);
+      expect(screen.queryByRole('button', { name: 'Extra' })).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('checkbox'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Extra' })).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('reactive conditions', () => {
+    // One click = one change, and SinglePageForm has no other subscription to
+    // ride on, so a missing values subscription fails here.
+    it('re-evaluates section conditions as values change', async () => {
+      const user = userEvent.setup();
+      const schema: FormSchema = {
+        id: 'reactive-sections',
+        title: 'Reactive Sections',
+        sections: [
+          {
+            id: 'trigger',
+            fields: [{ name: 'showMore', type: 'checkbox', label: 'Show more' }],
+          },
+          {
+            id: 'more',
+            title: 'More Details',
+            conditions: [{ when: 'showMore', is: true }],
+            fields: [{ name: 'notes', type: 'text', label: 'Notes', defaultValue: '' }],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} />);
+      expect(screen.queryByText('More Details')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('checkbox'));
+
+      await waitFor(() => {
+        expect(screen.getByText('More Details')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('checkbox'));
+
+      await waitFor(() => {
+        expect(screen.queryByText('More Details')).not.toBeInTheDocument();
+      });
+    });
+
+    // Multi-character on purpose: TabbedStepForm's useFormState re-renders when
+    // isDirty first flips, so a single change passes even without a subscription.
+    it('re-evaluates step conditions as values change (tabs)', async () => {
+      const user = userEvent.setup();
+      const schema: FormSchema = {
+        id: 'reactive-tabs',
+        title: 'Reactive Tabs',
+        steps: [
+          {
+            id: 'general',
+            title: 'General',
+            sections: [
+              {
+                id: 'g',
+                fields: [
+                  {
+                    name: 'mode',
+                    type: 'text',
+                    label: 'Mode',
+                    placeholder: 'Enter mode',
+                    defaultValue: '',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'advanced',
+            title: 'Advanced',
+            conditions: [{ when: 'mode', is: 'expert' }],
+            sections: [{ id: 'a', fields: [{ name: 'tuning', type: 'text', label: 'Tuning' }] }],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} stepVariant="tabs" />);
+      expect(screen.queryByRole('tab', { name: 'Advanced' })).not.toBeInTheDocument();
+
+      await user.type(screen.getByPlaceholderText('Enter mode'), 'expert');
+
+      await waitFor(() => {
+        expect(screen.getByRole('tab', { name: 'Advanced' })).toBeInTheDocument();
+      });
+
+      // Already dirty, so no formState flag moves on this edit either.
+      await user.type(screen.getByPlaceholderText('Enter mode'), '!');
+
+      await waitFor(() => {
+        expect(screen.queryByRole('tab', { name: 'Advanced' })).not.toBeInTheDocument();
+      });
+    });
   });
 
   describe('tabbed multi-step form (stepVariant="tabs")', () => {
@@ -596,5 +962,256 @@ describe('MetadataForm', () => {
       expect(await screen.findByRole('tab', { name: 'Parameters' })).toBeInTheDocument();
       expect(screen.queryByRole('tab', { name: 'Conditional' })).not.toBeInTheDocument();
     });
+  });
+});
+
+// ============================================================================
+// Plugin-driven hosts: the seam MetadataForm actually exposes
+// ============================================================================
+
+describe('plugin-driven hosts (the intended seam)', () => {
+  const hostSchema: FormSchema = {
+    id: 'host-form',
+    title: '',
+    actions: [],
+    sections: [
+      {
+        id: 'main',
+        fields: [
+          { name: 'name', type: 'text', label: 'Name', defaultValue: '' },
+          { name: 'note', type: 'text', label: 'Note', defaultValue: '' },
+        ],
+      },
+    ],
+  };
+
+  it('reports every user edit to a plugin, including the first keystroke', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    const plugin: FormPlugin = { name: 'host', onValueChange };
+
+    render(<MetadataForm schema={hostSchema} plugins={[plugin]} container="div" />);
+    await user.type(screen.getByLabelText('Name'), 'a');
+
+    // Previously gated behind mount-lifetime initialization, which swallowed this.
+    expect(onValueChange).toHaveBeenCalledWith('name', 'a', expect.anything());
+  });
+
+  it('lets a plugin write values through context.form', async () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      onFormInit: (context) => {
+        context.form.setValue('name', 'from-plugin');
+      },
+    };
+
+    render(<MetadataForm schema={hostSchema} plugins={[plugin]} container="div" />);
+    await waitFor(() => {
+      expect(screen.getByLabelText('Name')).toHaveValue('from-plugin');
+    });
+  });
+
+  it('lets a plugin own validation through context.form.setError', async () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      onValueChange: (name, value, context) => {
+        if (name === 'name' && !String(value).trim()) {
+          context.form.setError('name', { type: 'host', message: 'Name is required' });
+        } else {
+          context.form.clearErrors('name');
+        }
+      },
+    };
+
+    const user = userEvent.setup();
+    render(<MetadataForm schema={hostSchema} plugins={[plugin]} container="div" />);
+
+    await user.type(screen.getByLabelText('Name'), 'a');
+    await user.clear(screen.getByLabelText('Name'));
+    expect(await screen.findByText('Name is required')).toBeInTheDocument();
+  });
+
+  it('renders plugin-declared custom components on the first paint', () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      components: {
+        'host-field': ({ value }) => <div data-testid="host-field">{String(value ?? '')}</div>,
+      },
+    };
+    const schema: FormSchema = {
+      id: 'custom-form',
+      title: '',
+      actions: [],
+      sections: [
+        {
+          id: 'main',
+          fields: [
+            {
+              name: 'thing',
+              type: 'custom',
+              label: 'Thing',
+              component: 'host-field',
+              defaultValue: 'seeded',
+            },
+          ],
+        },
+      ],
+    };
+
+    // Synchronous: `FormPlugin.components` was declared but never read, so hosts had to
+    // register asynchronously and missed the first paint.
+    render(<MetadataForm schema={schema} plugins={[plugin]} container="div" />);
+    expect(screen.getByTestId('host-field')).toHaveTextContent('seeded');
+  });
+
+  it("container='div' renders no form element, and actions: [] renders no action row", () => {
+    const { container } = render(<MetadataForm schema={hostSchema} container="div" />);
+    expect(container.querySelector('form')).toBeNull();
+    expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument();
+  });
+
+  it("container='div' swallows Enter in inputs so an ancestor form cannot submit", async () => {
+    const user = userEvent.setup();
+    const hostSubmit = vi.fn((e: React.FormEvent) => e.preventDefault());
+
+    render(
+      <form onSubmit={hostSubmit}>
+        <MetadataForm schema={hostSchema} container="div" />
+      </form>
+    );
+
+    await user.click(screen.getByLabelText('Name'));
+    await user.keyboard('{Enter}');
+    expect(hostSubmit).not.toHaveBeenCalled();
+  });
+
+  it('mounts a TooltipProvider itself when the schema uses tooltip metadata', () => {
+    const withTooltip: FormSchema = {
+      id: 'tooltip-form',
+      title: '',
+      actions: [],
+      sections: [
+        {
+          id: 'main',
+          fields: [
+            {
+              name: 'endpoint',
+              type: 'text',
+              label: 'Endpoint',
+              defaultValue: '',
+              tooltip: 'The URL to call.',
+              tooltipAriaLabel: 'About the endpoint',
+            },
+          ],
+        },
+      ],
+    };
+
+    // Radix throws without a provider, so rendering bare is the assertion.
+    expect(() => render(<MetadataForm schema={withTooltip} container="div" />)).not.toThrow();
+    expect(screen.getByRole('button', { name: 'About the endpoint' })).toBeInTheDocument();
+  });
+});
+
+describe('string-list field', () => {
+  const stringListSchema: FormSchema = {
+    id: 'string-list-form',
+    title: '',
+    actions: [],
+    sections: [
+      {
+        id: 'main',
+        fields: [
+          {
+            name: 'phrases',
+            type: 'string-list',
+            label: 'Phrases',
+            defaultValue: ['first'],
+            maxItems: 2,
+            maxLength: 50,
+            addItemLabel: 'Add phrase',
+            removeItemAriaLabel: 'Remove {{label}} {{position}}',
+          },
+        ],
+      },
+    ],
+  };
+
+  it('renders rows from the value and appends an empty row on Add', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    const plugin: FormPlugin = { name: 'host', onValueChange };
+
+    render(<MetadataForm schema={stringListSchema} plugins={[plugin]} container="div" />);
+
+    expect(screen.getByLabelText('Phrases 1')).toHaveValue('first');
+
+    await user.click(screen.getByRole('button', { name: 'Add phrase' }));
+    expect(onValueChange).toHaveBeenCalledWith('phrases', ['first', ''], expect.anything());
+
+    // maxItems reached (2 rows) — the Add button hides.
+    expect(screen.queryByRole('button', { name: 'Add phrase' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Phrases 2')).toHaveValue('');
+  });
+
+  it('edits one row without touching siblings and removes by index', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    const plugin: FormPlugin = { name: 'host', onValueChange };
+
+    render(
+      <MetadataForm
+        schema={{
+          ...stringListSchema,
+          sections: [
+            {
+              id: 'main',
+              fields: [
+                {
+                  name: 'phrases',
+                  type: 'string-list',
+                  label: 'Phrases',
+                  defaultValue: ['one', 'two'],
+                },
+              ],
+            },
+          ],
+        }}
+        plugins={[plugin]}
+        container="div"
+      />
+    );
+
+    await user.type(screen.getByLabelText('Phrases 2'), '!');
+    expect(onValueChange).toHaveBeenLastCalledWith('phrases', ['one', 'two!'], expect.anything());
+
+    await user.click(screen.getByRole('button', { name: 'Remove Phrases 1' }));
+    expect(onValueChange).toHaveBeenLastCalledWith('phrases', ['two!'], expect.anything());
+  });
+
+  it('applies the per-row maxLength cap', () => {
+    render(<MetadataForm schema={stringListSchema} container="div" />);
+    expect(screen.getByLabelText('Phrases 1')).toHaveAttribute('maxlength', '50');
+  });
+
+  it('marks every row invalid when the list carries an error', async () => {
+    const plugin: FormPlugin = {
+      name: 'host',
+      onFormInit: (context) => {
+        context.form.setError('phrases', { type: 'host', message: 'Add at least one phrase.' });
+      },
+    };
+
+    render(<MetadataForm schema={stringListSchema} plugins={[plugin]} container="div" />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Phrases 1')).toHaveAttribute('aria-invalid', 'true');
+    });
+    expect(screen.getByText('Add at least one phrase.')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<MetadataForm schema={stringListSchema} container="div" />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

@@ -156,3 +156,28 @@ export const Scrollable = {
     </Select>
   ),
 };
+
+export const WithInlineValidation = {
+  render: () => (
+    <div className="grid w-full max-w-sm items-center gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
+      <Label htmlFor="select-connection">Connection</Label>
+      <Select>
+        <SelectTrigger id="select-connection" error="Select a connection before running this node.">
+          <SelectValue placeholder="Select a connection" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="finance">Gmail: Finance operations</SelectItem>
+          <SelectItem value="personal">Gmail: Personal</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inline validation stays beside the control so the issue and resolution are clear in context. `SelectTrigger` exposes `aria-invalid` and associates the visible message with `aria-describedby` and `aria-errormessage` automatically.',
+      },
+    },
+  },
+};

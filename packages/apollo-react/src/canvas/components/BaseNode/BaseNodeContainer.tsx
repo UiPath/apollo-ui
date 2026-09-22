@@ -1,9 +1,10 @@
 import { cn } from '@uipath/apollo-wind';
 import { useMemo } from 'react';
-import type { NodeShape } from '../../schema';
+import { isOutlineDrawnShape, isWideNodeShape, type NodeShape } from '../../schema';
 import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { ValidationErrorSeverity } from '../../types/validation';
+import { BaseNodeOutline } from './BaseNodeOutline';
 
 export const getStatusBorder = (
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType
@@ -71,22 +72,32 @@ export const BaseContainer = ({
     const statusBorder = getStatusBorder(activeStatus);
     const hasStatusBorder = statusBorder.length > 0;
 
+    // A outline shape draws its own fill and outline, so the container drops both rather than
+    // showing a rectangle behind the SVG.
+    const drawnByOutline = isOutlineDrawnShape(shape);
+
     return cn(
-      'relative flex items-center cursor-pointer bg-surface-overlay border border-border',
-      'w-(--node-w) h-(--node-h) rounded-(--node-radius)',
+      'relative flex items-center cursor-pointer',
+      drawnByOutline
+        ? 'bg-transparent border-0'
+        : cn(
+            'bg-surface-overlay border border-border',
+            shape === 'pill' ? 'rounded-full' : 'rounded-(--node-radius)'
+          ),
+      'w-(--node-w) h-(--node-h)',
       'outline-offset-0 transition-[box-shadow,border-color] duration-150',
-      shadow && 'shadow-(--canvas-node-shadow-rest)',
-      shape === 'rectangle'
+      shadow && !drawnByOutline && 'shadow-(--canvas-node-shadow-rest)',
+      isWideNodeShape(shape)
         ? 'flex-row justify-start gap-3 p-(--node-gap)'
         : 'flex-col justify-center',
       hasFooter && 'flex-wrap',
-      statusBorder,
-      shadow && isHovered && 'shadow-(--canvas-node-shadow-hover)',
-      isHovered && !hasStatusBorder && 'border-border-hover',
-      isSelected && 'outline outline-2 outline-foreground-accent-muted',
+      !drawnByOutline && statusBorder,
+      shadow && !drawnByOutline && isHovered && 'shadow-(--canvas-node-shadow-hover)',
+      isHovered && !hasStatusBorder && !drawnByOutline && 'border-border-hover',
+      isSelected && !drawnByOutline && 'outline outline-2 outline-foreground-accent-muted',
       interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
       interactionState === 'drag' &&
-        cn('cursor-grabbing', shadow && 'shadow-(--canvas-node-shadow-lifted)'),
+        cn('cursor-grabbing', shadow && !drawnByOutline && 'shadow-(--canvas-node-shadow-lifted)'),
       // Decorative stacked layer for drillable / collapsed nodes. Purely visual:
       // a ::before pseudo inherits the container's radius/size, sits behind at
       // -z-10, and is offset down so only a thin arc peeks out below the card.
@@ -107,6 +118,16 @@ export const BaseContainer = ({
       style={background ? { background } : undefined}
       aria-busy={loading || undefined}
     >
+      {isOutlineDrawnShape(shape) && (
+        <BaseNodeOutline
+          shape={shape}
+          isSelected={isSelected}
+          isHovered={isHovered}
+          isDragging={interactionState === 'drag'}
+          shadow={shadow}
+          status={activeStatus}
+        />
+      )}
       {children}
     </div>
   );

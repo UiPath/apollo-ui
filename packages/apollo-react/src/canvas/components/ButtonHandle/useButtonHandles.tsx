@@ -17,6 +17,7 @@ export const useButtonHandles = ({
   selected,
   hovered,
   showAddButton,
+  isLocked,
   showNotches,
   shouldShowAddButtonFn,
   nodeWidth,
@@ -32,6 +33,7 @@ export const useButtonHandles = ({
   handleMouseEnter?: (event: HandleMouseEvent) => void;
   handleMouseLeave?: (event: HandleMouseEvent) => void;
   showAddButton?: boolean;
+  isLocked?: boolean;
   showNotches?: boolean;
   nodeWidth?: number;
   nodeHeight?: number;
@@ -93,6 +95,7 @@ export const useButtonHandles = ({
           selected={selected}
           hovered={hovered}
           showAddButton={showAddButton}
+          isLocked={isLocked}
           showNotches={showNotches}
           customPositionAndOffsets={config.customPositionAndOffsets}
           shouldShowAddButtonFn={shouldShowAddButtonFn}
@@ -115,6 +118,7 @@ export const useButtonHandles = ({
     handleMouseLeave,
     nodeId,
     showAddButton,
+    isLocked,
     showNotches,
     shouldShowAddButtonFn,
     nodeWidth,

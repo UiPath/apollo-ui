@@ -63,7 +63,7 @@ export function JsonContainerEditor({
   };
 
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
+    <div className={cn('flex flex-col gap-1.5 [&>[data-slot=form-field-error]]:mt-0', className)}>
       {renderCodeEditor ? (
         renderCodeEditor({
           value: raw,

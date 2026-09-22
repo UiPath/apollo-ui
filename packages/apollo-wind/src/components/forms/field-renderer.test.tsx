@@ -569,5 +569,108 @@ describe('FormFieldRenderer', () => {
       // No error message should be displayed
       expect(screen.queryByText(/required|error/i)).not.toBeInTheDocument();
     });
+
+    it('associates a text field with its error via aria-describedby and aria-errormessage', () => {
+      const field: FieldMetadata = {
+        name: 'text_field',
+        type: 'text',
+        label: 'Text Field',
+      };
+
+      render(
+        <FormWrapperWithError fieldName="text_field" errorMessage="Enter a value">
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapperWithError>
+      );
+
+      const input = screen.getByRole('textbox');
+      const message = screen.getByText('Enter a value');
+      expect(input).toHaveAttribute('aria-describedby', 'text_field-error');
+      expect(input).toHaveAttribute('aria-errormessage', 'text_field-error');
+      expect(message).toHaveAttribute('id', 'text_field-error');
+    });
+
+    it('associates a select field with its error via aria-describedby and aria-errormessage', async () => {
+      const field: FieldMetadata = {
+        name: 'select_field',
+        type: 'select',
+        label: 'Select Field',
+        options: [{ label: 'One', value: '1' }],
+      };
+
+      render(
+        <FormWrapperWithError fieldName="select_field" errorMessage="Choose an option">
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapperWithError>
+      );
+
+      const trigger = screen.getByRole('combobox');
+      const message = screen.getByText('Choose an option');
+      expect(trigger).toHaveAttribute('aria-describedby', 'select_field-error');
+      expect(trigger).toHaveAttribute('aria-errormessage', 'select_field-error');
+      expect(message).toHaveAttribute('id', 'select_field-error');
+    });
+
+    it('associates a checkbox field with its error via aria-describedby and aria-errormessage', () => {
+      const field: FieldMetadata = {
+        name: 'checkbox_field',
+        type: 'checkbox',
+        label: 'Checkbox Field',
+      };
+
+      render(
+        <FormWrapperWithError fieldName="checkbox_field" errorMessage="Accept to continue">
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapperWithError>
+      );
+
+      const checkbox = screen.getByRole('checkbox');
+      const message = screen.getByText('Accept to continue');
+      expect(checkbox).toHaveAttribute('aria-describedby', 'checkbox_field-error');
+      expect(checkbox).toHaveAttribute('aria-errormessage', 'checkbox_field-error');
+      expect(message).toHaveAttribute('id', 'checkbox_field-error');
+    });
+
+    it('associates a date field with its error via aria-describedby and aria-errormessage', () => {
+      const field: FieldMetadata = {
+        name: 'date_field',
+        type: 'date',
+        label: 'Date Field',
+      };
+
+      render(
+        <FormWrapperWithError fieldName="date_field" errorMessage="Select a date">
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapperWithError>
+      );
+
+      const trigger = screen.getByRole('button');
+      const message = screen.getByText('Select a date');
+      expect(trigger).toHaveAttribute('aria-describedby', 'date_field-error');
+      expect(trigger).toHaveAttribute('aria-errormessage', 'date_field-error');
+      expect(message).toHaveAttribute('id', 'date_field-error');
+    });
+
+    it('associates every row of a string-list field with the same error id', () => {
+      const field: FieldMetadata = {
+        name: 'list_field',
+        type: 'string-list',
+        label: 'List Field',
+        defaultValue: ['First item'],
+      };
+
+      render(
+        <FormWrapperWithError fieldName="list_field" errorMessage="Add at least one item">
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapperWithError>
+      );
+
+      const message = screen.getByText('Add at least one item');
+      expect(message).toHaveAttribute('id', 'list_field-error');
+      for (const textbox of screen.getAllByRole('textbox')) {
+        expect(textbox).toHaveAttribute('aria-describedby', 'list_field-error');
+        expect(textbox).toHaveAttribute('aria-errormessage', 'list_field-error');
+      }
+    });
   });
 });

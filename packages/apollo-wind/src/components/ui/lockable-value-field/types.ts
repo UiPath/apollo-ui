@@ -106,6 +106,11 @@ export interface LockableValueFieldOption {
   value: string;
 }
 
+export interface LockableValueFieldMoreActions {
+  onClear?: () => void;
+  onRefresh?: () => void;
+}
+
 export interface LockableValueFieldProps {
   /** Current field value. Encoding depends on fieldType (e.g. multi-select is a JSON array string). */
   value?: string;
@@ -117,6 +122,8 @@ export interface LockableValueFieldProps {
   locked?: boolean;
   /** Called when the user toggles the lock. */
   onLockedChange?: (locked: boolean) => void;
+  /** Whether the built-in lock control renders. Defaults to true. */
+  showLock?: boolean;
   /**
    * Replaces the leading lock toggle with a semantic prefix such as `=`.
    * Pass `null` to suppress the built-in toggle; omitting the prop preserves it.
@@ -128,6 +135,8 @@ export interface LockableValueFieldProps {
    * menu; omitting the prop preserves it.
    */
   trailingAddon?: ReactNode;
+  /** Adds a field-level overflow menu beside the value control. */
+  more?: LockableValueFieldMoreActions;
   /** Fixed value vs. JS expression. Defaults to 'fixed'. Ignored for types that don't support expressions. */
   mode?: LockableValueFieldMode;
   /** Called when the user switches modes. */
@@ -175,6 +184,8 @@ export interface LockableValueFieldProps {
   controlsVisibility?: 'visible' | 'hover';
   /** Whether the AI-assist and Insert-variable actions render at all. Set to false for read-only reviewer contexts where field configuration isn't editable. Defaults to true. */
   showFieldActions?: boolean;
+  /** Whether the Generate with AI action renders. Defaults to true. */
+  showAiAssist?: boolean;
   /** Options for 'single-select' / 'multi-select' field types. Defaults to a small set of demo options. */
   options?: LockableValueFieldOption[];
   /** Called with the entered prompt when the user clicks Generate in the AI-assist popover. */

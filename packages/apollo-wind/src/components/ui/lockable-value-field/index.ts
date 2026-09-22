@@ -2,6 +2,7 @@ export { LockableValueField } from './lockable-value-field';
 export type {
   LockableFieldType,
   LockableValueFieldMode,
+  LockableValueFieldMoreActions,
   LockableValueFieldOption,
   LockableValueFieldProps,
 } from './types';

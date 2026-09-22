@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
 
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './resizable';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './resizable';
 
 const BasicResizable = ({ withHandle = false }: { withHandle?: boolean }) => (
   <ResizablePanelGroup orientation="horizontal">
@@ -143,6 +143,85 @@ describe('Resizable', () => {
       );
 
       expect(screen.getByText('Collapsible')).toBeInTheDocument();
+    });
+  });
+
+  describe('Theme contrast (classic themes)', () => {
+    it('marks hover/active state as authoritative over the classic-theme background overrides', () => {
+      const { container } = render(<BasicResizable />);
+      const separator = container.querySelector('[data-separator]');
+      expect(separator).toHaveClass('data-[separator=hover]:bg-primary!');
+      expect(separator).toHaveClass('data-[separator=active]:bg-primary!');
+    });
+
+    it('marks the grip box hover/active state as authoritative over its classic-theme background overrides', () => {
+      const { container } = render(<BasicResizable withHandle />);
+      const grip = container.querySelector('[data-separator] > div');
+      expect(grip).toHaveClass('group-data-[separator=hover]:bg-primary!');
+      expect(grip).toHaveClass('group-data-[separator=active]:bg-primary!');
+    });
+
+    it('scopes the grip/icon light/dark overrides away from React Flow color-mode wrappers', () => {
+      const { container } = render(<BasicResizable withHandle />);
+      const grip = container.querySelector('[data-separator] > div');
+      const icon = container.querySelector('svg');
+
+      for (const el of [grip, icon]) {
+        const cls = el?.getAttribute('class') ?? '';
+        expect(cls).not.toMatch(/\[\.light_&\]/);
+        expect(cls).not.toMatch(/\[\.dark_&\]/);
+      }
+
+      expect(grip).toHaveClass('[.light:not(.react-flow)_&]:bg-border-subtle');
+      expect(grip).toHaveClass('[.dark:not(.react-flow)_&]:bg-foreground-subtle');
+      expect(icon).toHaveClass('[.light:not(.react-flow)_&]:text-foreground-emp');
+      expect(icon).toHaveClass('[.dark:not(.react-flow)_&]:text-foreground-inverse');
+    });
+
+    it('keeps the divider background on a single unvaried utility so a consumer className can still override it', () => {
+      const { container } = render(
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel defaultSize="50%">
+            <div>Panel 1</div>
+          </ResizablePanel>
+          <ResizableHandle className="bg-transparent" />
+          <ResizablePanel defaultSize="50%">
+            <div>Panel 2</div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      );
+      const separator = container.querySelector('[data-separator]');
+      const cls = separator?.getAttribute('class') ?? '';
+
+      // The theme-specific divider color must live behind a CSS variable on a
+      // plain bg-[var(...)] utility, not an arbitrary theme variant, so
+      // tailwind-merge can dedupe it against a consumer's own bg-* override
+      // (regression: overlay handles in Flow.stories.tsx pass bg-transparent
+      // to hide the divider).
+      expect(cls).toContain('bg-transparent');
+      expect(cls).not.toMatch(/bg-\[var\(--resizable-handle-divider-bg/);
+    });
+
+    it('gives the light-hc and dark-hc icon overrides their own class (not react-flow-scoped, since ReactFlow never emits these classes)', () => {
+      const { container } = render(<BasicResizable withHandle />);
+      const icon = container.querySelector('svg');
+      expect(icon).toHaveClass('[.light-hc_&]:text-foreground-inverse');
+      expect(icon).toHaveClass('[.dark-hc_&]:text-foreground-inverse');
+    });
+
+    it.each([
+      'light',
+      'dark',
+      'light-hc',
+      'dark-hc',
+    ])('renders a grip icon with a theme-specific color class inside a "%s" wrapper', (theme) => {
+      const { container } = render(
+        <div className={theme}>
+          <BasicResizable withHandle />
+        </div>
+      );
+      const icon = container.querySelector('svg');
+      expect(icon?.getAttribute('class')).toContain(theme);
     });
   });
 
