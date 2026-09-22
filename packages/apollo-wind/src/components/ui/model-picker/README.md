@@ -354,7 +354,9 @@ Keyboard:
   section headers are deliberately not tab stops, so this is the keyboard path to collapsing;
   other sections do not collapse)
 - `Shift+Enter` — edit the active BYO row (calls `onEditModel`)
-- `Delete` — with an empty search, delete the active BYO row (opens the confirm dialog). The
+- `Delete` — delete the active BYO row (opens the confirm dialog) when the key has nothing to
+  delete in the search field: caret at the end, no selection. A forward-delete of typed text,
+  whitespace included, is never hijacked. The
   row's edit/delete icons are pointer targets, not tab stops: interactive children inside a
   `role="option"` would break the `aria-activedescendant` model.
 - `Escape` — close, return focus to the trigger

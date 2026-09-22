@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -828,6 +828,27 @@ describe('<ModelPicker> review follow-ups', () => {
     expect(onChange).not.toHaveBeenCalled();
 
     await user.keyboard('{Delete}');
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('only claims Delete when the search field has nothing to delete', async () => {
+    renderPicker(
+      <ModelPicker canManageByo groupBy="subscription" models={MODELS} onDeleteModel={vi.fn()} />
+    );
+    fireEvent.click(screen.getByRole('button', { expanded: false }));
+    const search = screen.getByRole('combobox') as HTMLInputElement;
+
+    // Caret before typed text: Delete is a forward-delete, the picker stays out.
+    fireEvent.change(search, { target: { value: 'gp' } });
+    search.setSelectionRange(0, 0);
+    fireEvent.keyDown(search, { key: 'Delete' });
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+
+    // Whitespace with the caret at the end: nothing left to delete, so it is
+    // the row action. `filterModels` trims, so the BYO row is still active.
+    fireEvent.change(search, { target: { value: '  ' } });
+    search.setSelectionRange(2, 2);
+    fireEvent.keyDown(search, { key: 'Delete' });
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
   });
 

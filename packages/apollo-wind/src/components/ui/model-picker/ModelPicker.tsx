@@ -525,7 +525,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     // The row's edit/delete icons are not tab stops (interactive children of
     // `role="option"` break the activedescendant model), so the keyboard
     // reaches the same actions from the search field: Shift+Enter edits the
-    // active BYO row, Delete on an empty search asks to delete it. Everything
+    // active BYO row, Delete asks to delete it. Everything
     // else falls through to the listbox navigation.
     const handleSearchKeyDown = React.useCallback(
       (e: React.KeyboardEvent) => {
@@ -536,7 +536,14 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
             onEditModel(active);
             return;
           }
-          if (e.key === 'Delete' && query === '' && handleDeleteModel) {
+          // Only when the key has nothing to delete in the field (caret at the
+          // end, no selection), so a forward-delete of typed text, whitespace
+          // included, is never hijacked.
+          const field = e.currentTarget as HTMLInputElement;
+          const nothingToDelete =
+            field.selectionStart === field.value.length &&
+            field.selectionEnd === field.selectionStart;
+          if (e.key === 'Delete' && nothingToDelete && handleDeleteModel) {
             e.preventDefault();
             handleDeleteModel(active);
             return;
@@ -549,7 +556,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         activeIndex,
         effectiveCanManageByo,
         onEditModel,
-        query,
         handleDeleteModel,
         onSearchKeyDown,
       ]
