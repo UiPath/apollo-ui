@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "pnpm generate:theme && next --turbopack",
-    "build": "pnpm generate:theme && pnpm registry:build && next build",
+    "build": "pnpm --filter @uipath/apollo-vertex build && pnpm generate:theme && pnpm registry:build && next build",
     "start": "next start",
     "generate:theme": "node --experimental-strip-types scripts/generate-theme-css.ts",
     "registry:build": "shadcn build && node --experimental-strip-types scripts/generate-registry-index.ts",

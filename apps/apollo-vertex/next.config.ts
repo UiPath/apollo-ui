@@ -24,6 +24,25 @@ const vertexDistIndex = join(
   repoRoot,
   "packages/apollo-vertex/dist/index.js",
 );
+const vertexSrcIndex = join(
+  repoRoot,
+  "packages/apollo-vertex/src/index.ts",
+);
+
+// dist/ is gitignored. Prefer it when turbo `^build` or Coded App
+// preCommands produced it; otherwise fall back to source so local
+// `pnpm dev` / direct `next build` still resolve the workspace package.
+function vertexPackageAliases(): Record<string, string> {
+  if (existsSync(vertexDistIndex)) {
+    return { "@uipath/apollo-vertex": vertexDistIndex };
+  }
+  if (existsSync(vertexSrcIndex)) {
+    return { "@uipath/apollo-vertex": vertexSrcIndex };
+  }
+  return {};
+}
+
+const vertexAliases = vertexPackageAliases();
 
 const withNextra = nextra({
   defaultShowCopyCode: true,
@@ -130,9 +149,20 @@ export default withNextra({
   turbopack: {
     resolveAlias: {
       "next-mdx-import-source-file": "./mdx-components.tsx",
-      ...(codedApp && existsSync(vertexDistIndex)
-        ? { "@uipath/apollo-vertex": vertexDistIndex }
-        : {}),
+      ...vertexAliases,
     },
+  },
+  webpack(config: {
+    resolve?: { alias?: Record<string, string | false | string[]> };
+  }) {
+    if (Object.keys(vertexAliases).length === 0) {
+      return config;
+    }
+    config.resolve ??= {};
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      ...vertexAliases,
+    };
+    return config;
   },
 });

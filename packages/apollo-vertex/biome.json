@@ -7,15 +7,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": [
-      "**",
-      "!**/dist",
-      "!src/components",
-      "!src/hooks",
-      "!src/lib",
-      "!src/styles/theme.css",
-      "!src/styles/theme.json"
-    ],
+    "includes": ["**", "!**/dist"],
     "ignoreUnknown": true
   },
   "formatter": {
@@ -36,7 +28,10 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "a11y": {
+        "noSvgWithoutTitle": "off"
+      }
     },
     "includes": ["**", "!dist", "!node_modules", "!**/*.css"]
   },
@@ -56,6 +51,29 @@
       },
       "formatter": {
         "enabled": false
+      }
+    },
+    {
+      "includes": ["**/*.{ts,tsx}"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off",
+            "noForEach": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "warn",
+            "useExhaustiveDependencies": "warn"
+          },
+          "style": {
+            "noNonNullAssertion": "off",
+            "useImportType": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "warn",
+            "noArrayIndexKey": "off"
+          }
+        }
       }
     },
     {
