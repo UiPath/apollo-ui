@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import nextra from "nextra";
 
@@ -25,6 +25,15 @@ const repoRoot = findRepoRoot(dirname(fileURLToPath(import.meta.url)));
 // scripts, or Coded App preCommands produced it. Fall back to source so the
 // package name still resolves if dist is missing. Package `@/` imports are
 // rewritten only in dist, so `ensure:vertex` builds it before local `pnpm dev`.
+const appDir = dirname(fileURLToPath(import.meta.url));
+
+// Turbopack treats absolute POSIX paths as server-relative URLs and prefixes
+// them with `./`, so aliases must be relative to this app directory.
+function toTurbopackAlias(target: string): string {
+  const rel = relative(appDir, target).split("\\").join("/");
+  return rel.startsWith(".") ? rel : `./${rel}`;
+}
+
 function vertexPackageAliases(): Record<string, string> {
   const distDir = join(repoRoot, "packages/apollo-vertex/dist");
   const srcDir = join(repoRoot, "packages/apollo-vertex/src");
@@ -56,7 +65,7 @@ function vertexPackageAliases(): Record<string, string> {
     }
     const file = join(root, ...parts.slice(0, -1), `${last}${ext}`);
     if (existsSync(file)) {
-      aliases[name] = file;
+      aliases[name] = toTurbopackAlias(file);
     }
   }
   return aliases;

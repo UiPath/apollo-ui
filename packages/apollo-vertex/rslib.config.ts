@@ -80,6 +80,14 @@ export default defineConfig({
       { from: './src/styles/theme.css', to: './theme.css' },
       { from: './src/styles/tailwind.css', to: './tailwind.css' },
       { from: './src/locales', to: './locales' },
+      // bundle:false rewrites `import('../locales/en.json')` to `../locales/en.js`.
+      // Emit ESM wrappers next to the copied JSON so those imports resolve.
+      {
+        from: './src/locales/*.json',
+        to: './locales/[name].js',
+        toType: 'template',
+        transform: (content: Buffer) => `export default ${content.toString()};\n`,
+      },
     ],
   },
   tools: {
