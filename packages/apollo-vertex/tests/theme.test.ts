@@ -25,10 +25,14 @@ describe('package.json public API', () => {
     expect(Object.keys(pkg.exports).sort()).toEqual([
       '.',
       './ai-chat',
+      './charts',
       './feature-flags',
+      './feature-flags/proteus',
       './locales/*',
       './shell',
+      './shell/entities',
       './solution-tests',
+      './solution-tests/data',
       './tailwind.css',
       './theme.css',
     ]);

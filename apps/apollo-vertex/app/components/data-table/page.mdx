@@ -203,7 +203,7 @@ npx shadcn@latest add @uipath/use-entity-data-table
 "use client"
 
 import { DataTable } from "@uipath/apollo-vertex"
-import { useEntityDataTable } from "@uipath/apollo-vertex/shell"
+import { useEntityDataTable } from "@uipath/apollo-vertex/shell/entities"
 
 export default function EntityPage({ entity }: { entity: VssEntity }) {
   const tableState = useEntityDataTable({

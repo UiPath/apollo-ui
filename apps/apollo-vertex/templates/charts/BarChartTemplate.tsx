@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart } from "@uipath/apollo-vertex";
+import { BarChart } from "@uipath/apollo-vertex/charts";
 import { Card, CardContent } from "@uipath/apollo-vertex";
 
 const raw = [

@@ -1,6 +1,6 @@
 "use client";
 
-import { TableChart } from "@uipath/apollo-vertex";
+import { TableChart } from "@uipath/apollo-vertex/charts";
 import { Card, CardContent } from "@uipath/apollo-vertex";
 
 const rows = [

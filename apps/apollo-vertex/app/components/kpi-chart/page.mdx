@@ -21,7 +21,7 @@ Installs both the prop-driven `KpiChart` view and the `KpiChartWithAdapter` vari
 `KpiChart` renders a static label/value pair. Format the value yourself (this component just prints it).
 
 ```tsx
-import { KpiChart } from "@uipath/apollo-vertex";
+import { KpiChart } from "@uipath/apollo-vertex/charts";
 
 <KpiChart label="Total revenue" value="$342,000" />
 ```
@@ -44,8 +44,8 @@ npx shadcn@latest add @uipath/insights-adapter
 ```
 
 ```tsx
-import { KpiChartWithAdapter } from "@uipath/apollo-vertex";
-import { dataFabricAdapter } from "@uipath/apollo-vertex";
+import { KpiChartWithAdapter } from "@uipath/apollo-vertex/charts";
+import { dataFabricAdapter } from "@uipath/apollo-vertex/charts";
 
 const adapter = dataFabricAdapter({
   baseUrl: "/api/datafabric/.../api",

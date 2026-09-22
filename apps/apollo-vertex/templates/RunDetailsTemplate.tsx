@@ -3,9 +3,8 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
-// Import the dumb view directly (not the package barrel) so the demo's module
-// graph never pulls in the collection hooks (and their `@tanstack/react-db` /
-// vs-core deps) — same approach as the SolutionTestsTemplate demo.
+// Presentational barrel only. Collection hooks live at
+// `@uipath/apollo-vertex/solution-tests/data` and need vs-core.
 import type { SolutionTestsConfig } from "@uipath/apollo-vertex/solution-tests";
 import { SolutionTestsProvider } from "@uipath/apollo-vertex/solution-tests";
 import {

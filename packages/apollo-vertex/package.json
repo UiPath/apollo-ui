@@ -17,20 +17,40 @@
     },
     "./theme.css": "./dist/theme.css",
     "./tailwind.css": "./dist/tailwind.css",
+    "./charts": {
+      "types": "./dist/charts/index.d.ts",
+      "import": "./dist/charts/index.js",
+      "require": "./dist/charts/index.cjs"
+    },
     "./shell": {
       "types": "./dist/shell/index.d.ts",
       "import": "./dist/shell/index.js",
       "require": "./dist/shell/index.cjs"
+    },
+    "./shell/entities": {
+      "types": "./dist/shell/entities.d.ts",
+      "import": "./dist/shell/entities.js",
+      "require": "./dist/shell/entities.cjs"
     },
     "./solution-tests": {
       "types": "./dist/solution-tests/index.d.ts",
       "import": "./dist/solution-tests/index.js",
       "require": "./dist/solution-tests/index.cjs"
     },
+    "./solution-tests/data": {
+      "types": "./dist/solution-tests/data.d.ts",
+      "import": "./dist/solution-tests/data.js",
+      "require": "./dist/solution-tests/data.cjs"
+    },
     "./feature-flags": {
       "types": "./dist/feature-flags/index.d.ts",
       "import": "./dist/feature-flags/index.js",
       "require": "./dist/feature-flags/index.cjs"
+    },
+    "./feature-flags/proteus": {
+      "types": "./dist/feature-flags/proteus.d.ts",
+      "import": "./dist/feature-flags/proteus.js",
+      "require": "./dist/feature-flags/proteus.cjs"
     },
     "./ai-chat": {
       "types": "./dist/ai-chat/index.d.ts",

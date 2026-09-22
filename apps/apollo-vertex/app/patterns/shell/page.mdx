@@ -68,7 +68,7 @@ When a `ShellAuthProvider` is present, the shell automatically shows a login scr
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Home, Settings } from 'lucide-react';
 import { ApolloShell } from '@uipath/apollo-vertex/shell';
-import { ShellAuthProvider } from '@uipath/apollo-vertex';
+import { ShellAuthProvider } from '@uipath/apollo-vertex/shell';
 
 const queryClient = new QueryClient();
 
@@ -122,7 +122,7 @@ user from `useAuth`):
 
 ```tsx
 import { SolutionProvider } from '@uipath/vs-core';
-import { GroupMembershipGuard } from '@uipath/apollo-vertex/shell';
+import { GroupMembershipGuard } from '@uipath/apollo-vertex/shell/entities';
 
 function App() {
   return (
@@ -171,9 +171,9 @@ roles; the hook is generic over `Role extends string` and accepts any
 `Record<Role, string>` mapping role to group name.
 
 ```tsx
-import { GroupMembershipGuard } from '@uipath/apollo-vertex/shell';
+import { GroupMembershipGuard } from '@uipath/apollo-vertex/shell/entities';
 import { Role } from '@uipath/apollo-vertex/shell';
-import { useGroupId } from '@uipath/apollo-vertex/shell';
+import { useGroupId } from '@uipath/apollo-vertex/shell/entities';
 
 const ROLE_GROUP_MAP: Record<Role, string> = {
   [Role.ADMIN]: 'apollo-admins',

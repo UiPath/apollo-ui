@@ -184,10 +184,8 @@ the same `triggerBaseUrl` / `getToken` plumbing as the other writes.
 ```tsx
 "use client";
 
-import {
-  SaveAsTestButton,
-  useCreateTest,
-} from "@uipath/apollo-vertex/solution-tests";
+import { SaveAsTestButton } from "@uipath/apollo-vertex/solution-tests";
+import { useCreateTest } from "@uipath/apollo-vertex/solution-tests/data";
 
 function SaveSubjectAsTest({ subjectId }: { subjectId: string }) {
   const createTest = useCreateTest();
@@ -242,10 +240,10 @@ go through the vs-core collections/sdk.)
 "use client";
 
 import {
-  SolutionTests,
   SolutionTestsProvider,
   type SolutionTestsConfig,
 } from "@uipath/apollo-vertex/solution-tests";
+import { SolutionTests } from "@uipath/apollo-vertex/solution-tests/data";
 
 const config: SolutionTestsConfig = {
   subjectColumns, // the only per-vertical customization

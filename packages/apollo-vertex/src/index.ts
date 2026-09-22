@@ -6,6 +6,7 @@
 //
 // Named ESM re-exports plus CSS-only sideEffects so Vite can tree-shake.
 // Do not add primitive subpaths (e.g. @uipath/apollo-vertex/button).
+// Charts/adapters that import optional peers live at ./charts.
 // =============================================================================
 
 export * from './components/ui/accordion';
@@ -23,7 +24,6 @@ export * from './components/ui/button-group';
 export * from './components/ui/calendar';
 export * from './components/ui/card';
 export * from './components/ui/carousel';
-export * from './components/ui/chart';
 export * from './components/ui/checkbox';
 export * from './components/ui/collapsible';
 export * from './components/ui/combobox';
@@ -68,13 +68,6 @@ export * from './components/ui/toggle';
 export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
 
-export * from './components/ui/bar-chart';
-export * from './components/ui/distribution-chart';
-export * from './components/ui/kpi-chart';
-export * from './components/ui/line-chart';
-export * from './components/ui/multi-line-chart';
-export * from './components/ui/table-chart';
-
 export * from './components/ui/confidence-signal';
 export * from './components/ui/data-table';
 // Field's FieldError is the root public symbol. Form's FieldError is a
@@ -114,6 +107,3 @@ export { useReactTableCompat } from './hooks/useReactTableCompat';
 export { cn } from './lib/utils';
 export { renderValueOrEmptyState } from './lib/renderValueOrEmptyState';
 export * from './lib/constants';
-export * from './lib/charts-core';
-export * from './lib/data-fabric-adapter';
-export * from './lib/insights-adapter';

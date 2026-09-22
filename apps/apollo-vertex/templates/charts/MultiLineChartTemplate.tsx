@@ -1,6 +1,6 @@
 "use client";
 
-import { MultiLineChart } from "@uipath/apollo-vertex";
+import { MultiLineChart } from "@uipath/apollo-vertex/charts";
 import { Card, CardContent } from "@uipath/apollo-vertex";
 
 const data = [

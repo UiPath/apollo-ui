@@ -34,21 +34,29 @@ function vertexPackageAliases(): Record<string, string> {
   if (!existsSync(join(root, `index${ext}`))) {
     return {};
   }
-  return {
-    "@uipath/apollo-vertex": join(root, `index${ext}`),
-    "@uipath/apollo-vertex/shell": join(root, "shell", `index${ext}`),
-    "@uipath/apollo-vertex/solution-tests": join(
-      root,
-      "solution-tests",
-      `index${ext}`,
-    ),
-    "@uipath/apollo-vertex/feature-flags": join(
-      root,
-      "feature-flags",
-      `index${ext}`,
-    ),
-    "@uipath/apollo-vertex/ai-chat": join(root, "ai-chat", `index${ext}`),
-  };
+  const entries: Array<[string, string[]]> = [
+    ["@uipath/apollo-vertex", ["index"]],
+    ["@uipath/apollo-vertex/shell", ["shell", "index"]],
+    ["@uipath/apollo-vertex/shell/entities", ["shell", "entities"]],
+    ["@uipath/apollo-vertex/solution-tests", ["solution-tests", "index"]],
+    ["@uipath/apollo-vertex/solution-tests/data", ["solution-tests", "data"]],
+    ["@uipath/apollo-vertex/feature-flags", ["feature-flags", "index"]],
+    ["@uipath/apollo-vertex/feature-flags/proteus", ["feature-flags", "proteus"]],
+    ["@uipath/apollo-vertex/ai-chat", ["ai-chat", "index"]],
+    ["@uipath/apollo-vertex/charts", ["charts", "index"]],
+  ];
+  const aliases: Record<string, string> = {};
+  for (const [name, parts] of entries) {
+    const last = parts.at(-1);
+    if (last === undefined) {
+      continue;
+    }
+    const file = join(root, ...parts.slice(0, -1), `${last}${ext}`);
+    if (existsSync(file)) {
+      aliases[name] = file;
+    }
+  }
+  return aliases;
 }
 
 const vertexAliases = vertexPackageAliases();

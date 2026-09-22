@@ -57,6 +57,8 @@ describe('Vite tree-shaking', () => {
       expect(bundle).not.toContain('useDataTable');
       expect(bundle).not.toContain('SidebarProvider');
       expect(bundle).not.toContain('sortable-column-list');
+      expect(bundle).not.toMatch(/['"]recharts['"]/);
+      expect(bundle).not.toMatch(/@uipath\/vs-core/);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -66,6 +68,9 @@ describe('Vite tree-shaking', () => {
     const index = await readFile(distIndex, 'utf8');
     expect(index).toMatch(/export \* from ["']\.\/components\/ui\/button/);
     expect(index).toMatch(/export \* from ["']\.\/components\/ui\/data-table/);
+    expect(index).not.toMatch(/components\/ui\/bar-chart/);
+    expect(index).not.toMatch(/data-fabric-adapter/);
+    expect(index).not.toMatch(/insights-adapter/);
     expect(index).not.toContain('function Button');
     expect(index).not.toContain('bg-primary');
     expect(index).not.toMatch(/export \{[^}]*\bFieldError\b/);

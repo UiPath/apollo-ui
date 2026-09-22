@@ -5,9 +5,8 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { DataTableColumnHeader } from "@uipath/apollo-vertex";
-// Import the dumb pieces directly (not the package barrel) so the demo's module
-// graph never pulls in the collection hooks (and their `@tanstack/react-db` /
-// vs-core deps) — same approach as the GroupMembershipGuard demo.
+// Presentational barrel only. Collection hooks live at
+// `@uipath/apollo-vertex/solution-tests/data` and need vs-core.
 import { SolutionTestsProvider } from "@uipath/apollo-vertex/solution-tests";
 import {
   SolutionTestsView,
