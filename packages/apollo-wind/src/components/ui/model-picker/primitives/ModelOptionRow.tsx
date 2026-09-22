@@ -77,19 +77,6 @@ export interface ModelOptionRowProps {
 const FULL_OPTION_HEIGHT = 64;
 const DENSE_OPTION_HEIGHT = 44;
 
-function formatContextWindow(tokens: number | undefined): string | null {
-  if (tokens == null || tokens <= 0) return null;
-  if (tokens >= 1_000_000) {
-    const m = tokens / 1_000_000;
-    return `${m % 1 === 0 ? m.toFixed(0) : m.toFixed(1)}M context`;
-  }
-  if (tokens >= 1_000) {
-    const k = Math.round(tokens / 1_000);
-    return `${k}K context`;
-  }
-  return `${tokens} context`;
-}
-
 /**
  * One row in the picker dropdown. Exported so teams can render their own
  * grouped/ungrouped lists while keeping the styling consistent with the
@@ -116,6 +103,7 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
   id,
   'data-testid': dataTestId,
 }) => {
+  const labels = tagContext?.labels ?? DEFAULT_MODEL_PICKER_LABELS;
   const inlineTags = deriveModelTags(model, tagContext ?? {}).filter(
     (t) => !hideTagKinds?.includes(t.kind)
   );
@@ -131,7 +119,11 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
   const primary = primaryLabel ?? model.modelName;
   const usesFriendlyName = !!primaryLabel && primaryLabel !== model.modelId;
   const techId = usesFriendlyName ? model.modelId : null;
-  const contextLabel = formatContextWindow(model.modelDetails?.contextWindowTokens);
+  // Through `labels`, not a local formatter: the column is user-facing copy
+  // ("128K context"), so a host that translates everything else must be able
+  // to translate this too.
+  const contextTokens = model.modelDetails?.contextWindowTokens;
+  const contextLabel = contextTokens != null && contextTokens > 0 ? labels.contextWindow(contextTokens) : null;
   const rowActions = renderActions ? renderActions(model) : null;
   const meta = renderMeta?.(model);
 

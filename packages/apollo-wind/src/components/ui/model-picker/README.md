@@ -288,7 +288,7 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `value`               | `string \| null`                                      | Selected `modelId`.                                                                                                  |
 | `onChange`            | `(model: DiscoveryModel) => void`                     | Selection callback. Receives the full DTO.                                                                           |
 | `label`               | `string`                                              | Label above the trigger. Defaults to a localized "Model".                                                            |
-| `required`            | `boolean`                                             | Marks the field as required (`aria-required` + visual `*`).                                                          |
+| `required`            | `boolean`                                             | Marks the field as required: visual `*` on the label, `aria-required` on the search combobox.                        |
 | `placeholder`         | `string`                                              | Placeholder when nothing's selected. Defaults to a localized "Select a model".                                       |
 | `disabled`            | `boolean`                                             | Disables the trigger.                                                                                                |
 | `invalid`             | `boolean`                                             | Renders the trigger border in error red (`aria-invalid`).                                                            |
@@ -335,17 +335,19 @@ the row. Everything else about which models appear is yours, via `filter`.
 
 The picker implements the WAI-ARIA listbox pattern with keyboard input:
 
-- **Trigger** is `aria-haspopup="listbox"`, with `aria-controls` pointing at the popup, `aria-expanded`, `aria-invalid`, `aria-required`, and `aria-describedby` linking to the error message.
+- **Trigger** is `aria-haspopup="listbox"`, with `aria-controls` pointing at the popup, `aria-expanded`, `aria-invalid`, and `aria-describedby` linking to the error message. No `aria-required`: the attribute is not valid on its `button` role.
 - **Search input** is `aria-autocomplete="list"`, `aria-controls={listboxId}`, with `aria-activedescendant` updating to the highlighted option as the user navigates with `↑`/`↓` — DOM focus stays on the search.
 - **Listbox** has an `aria-label` ("Models" by default, localized).
 - **Each option** has a stable id (`{listboxId}-opt-{modelId}`), `role="option"`, and `aria-selected`.
 - **Loading / error / empty / result-count** announce via `role="status"` + `aria-live="polite"` and `role="alert"` for errors.
-- **Required asterisk** is `aria-hidden` (the input carries `aria-required`).
+- **Required asterisk** is `aria-hidden`; requiredness is announced by `aria-required` on the search combobox, which is the element the pattern treats as the field's control.
 
 Keyboard:
 
 - `↑` / `↓` — move the active row
 - `Enter` — select the active row, close
+- `←` / `→` — collapse / expand the active row's section (the section headers are
+  deliberately not tab stops, so this is the keyboard path to collapsing)
 - `Escape` — close, return focus to the trigger
 - `Tab` — moves between trigger, search, and toolbar controls
 

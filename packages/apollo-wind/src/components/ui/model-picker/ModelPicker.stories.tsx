@@ -377,7 +377,7 @@ export const DeleteWithConfirmation: Story = {
       description: {
         story:
           'BYO rows gain a delete action, and the picker always shows a ' +
-          'confirmation dialog naming the configuration first — deletion ' +
+          'confirmation dialog naming the configuration first: deletion ' +
           'affects every consumer in the tenant. In self-fetch mode the picker ' +
           'issues the DELETE itself and you only pass `onModelDeleted` to react. ' +
           'This story uses `onDeleteModel`, the opt-out for hosts that must own ' +
@@ -1195,7 +1195,7 @@ export const DarkMode: Story = {
         story:
           'Every surface (trigger, toolbar, rows, section bands, chips, ' +
           'footer CTA) reads a semantic token, so the picker re-skins from ' +
-          'the theme class alone — here a `dark` wrapper. No prop or ' +
+          'the theme class alone, here a `dark` wrapper. No prop or ' +
           'variable overrides are involved.',
       },
     },

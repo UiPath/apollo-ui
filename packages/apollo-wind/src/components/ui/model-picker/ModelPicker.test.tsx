@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event';
 import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ModelPicker } from './ModelPicker';
+import { PickerTrigger } from './primitives/PickerTrigger';
 import type { DiscoveryModel } from './types';
 import { isTextGenerationModel } from './utils';
 
@@ -664,5 +666,127 @@ describe('<ModelPicker> chip tooltips', () => {
     expect(
       await screen.findAllByText('Based on evaluation runs for this product')
     ).not.toHaveLength(0);
+  });
+});
+
+/*
+ * Review follow-ups (PR #1201).
+ *
+ * Each of these guards a claim the component makes about itself: that every
+ * user-facing string goes through `labels`, that requiredness is announced
+ * somewhere real, that the listbox keyboard model isn't broken by a stray tab
+ * stop, and that composing the exported trigger still opens the popup.
+ */
+describe('<ModelPicker> review follow-ups', () => {
+  const withContext: DiscoveryModel[] = [
+    {
+      modelId: 'gpt-4o',
+      modelName: 'gpt-4o',
+      vendor: 'OpenAi',
+      modelSubscriptionType: 'UiPathOwned',
+      modelDetails: { contextWindowTokens: 128_000 },
+    },
+  ];
+
+  it('renders the context window through labels, not a hardcoded formatter', async () => {
+    const user = userEvent.setup();
+    renderPicker(
+      <ModelPicker labels={{ contextWindow: (n) => `ctx:${n}` }} models={withContext} />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    expect(screen.getByText('ctx:128000')).toBeInTheDocument();
+    expect(screen.queryByText('128K context')).toBeNull();
+  });
+
+  it('still formats the context window in English when no label is supplied', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker models={withContext} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    expect(screen.getByText('128K context')).toBeInTheDocument();
+  });
+
+  it('announces requiredness on the search combobox, not the trigger', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker models={MODELS} required />);
+
+    // `aria-required` is not valid on a button role, so the trigger must not
+    // carry it however the field is documented.
+    expect(screen.getByRole('button', { expanded: false })).not.toHaveAttribute('aria-required');
+
+    await user.click(screen.getByRole('button', { expanded: false }));
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-required', 'true');
+  });
+
+  it('leaves aria-required off the combobox when the field is optional', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker models={MODELS} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-required');
+  });
+
+  it('keeps group headers out of the tab order', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="subscription" models={MODELS} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    // A <button> inside role="listbox" is already an invalid child; a tabbable
+    // one also hijacks Tab away from the activedescendant model.
+    const headers = document.querySelectorAll('[data-slot="model-picker-group-header"]');
+    expect(headers.length).toBeGreaterThan(0);
+    for (const header of headers) {
+      if (header.tagName === 'BUTTON') expect(header).toHaveAttribute('tabindex', '-1');
+    }
+  });
+
+  it('collapses and expands the active row’s section with the arrow keys', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="vendor" models={MODELS} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    const before = screen.getAllByRole('option').length;
+    expect(before).toBeGreaterThan(0);
+
+    // Focus stays on the search input; the active row names the section.
+    await user.keyboard('{ArrowLeft}');
+    expect(screen.getAllByRole('option').length).toBeLessThan(before);
+
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getAllByRole('option')).toHaveLength(before);
+  });
+
+  it('composes a consumer onClick with the one Radix injects', async () => {
+    // Reviewed as a bug: `PickerTrigger` appears to overwrite Radix's injected
+    // `onClick`. It doesn't. `asChild` renders through Radix's `Slot`, which
+    // merges event handlers before the child is called, so the trigger only
+    // ever receives one already-composed handler.
+    const user = userEvent.setup();
+    const spy = vi.fn();
+    render(
+      <Popover>
+        <PopoverTrigger asChild>
+          <PickerTrigger onClick={spy} placeholder="Pick" selected={null} />
+        </PopoverTrigger>
+        <PopoverContent>popup body</PopoverContent>
+      </Popover>
+    );
+
+    await user.click(screen.getByRole('button'));
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('popup body')).toBeInTheDocument();
+  });
+
+  it('builds selector-safe dom ids', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker models={withContext} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    const listbox = screen.getByRole('listbox');
+    // The whole id, not just the option half, has to survive querySelector.
+    expect(() => document.querySelector(`#${listbox.id}`)).not.toThrow();
+    expect(listbox.id).toMatch(/^[A-Za-z0-9_-]+$/);
   });
 });

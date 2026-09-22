@@ -139,9 +139,11 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
   } = opts;
 
   // React-owned id: stable across SSR/hydration and concurrent renders,
-  // unlike a module-level counter. The token is embedded in DOM ids and
-  // aria-* references only, where its ":" characters are valid.
-  const reactId = useId();
+  // unlike a module-level counter. Stripped of the delimiters React wraps it
+  // in (":r0:" on 18, "«r0»" on 19) — they are legal in an id attribute but
+  // not in a selector, and `optionDomId` sanitizes the other half of these
+  // ids for exactly that reason.
+  const reactId = useId().replace(/[^A-Za-z0-9_-]/g, '');
   const id = `apollo-model-picker-${reactId}`;
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -279,13 +281,28 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
         e.preventDefault();
         const m = filtered[activeIndex];
         if (m) choose(m);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        // Collapse/expand the active option's section from the search field.
+        // The section headers are deliberately not tab stops (a `<button>` in
+        // a `role="listbox"` is an invalid child and steals a Tab), so without
+        // this there is no keyboard path to collapsing at all.
+        // `collapsedGroups`, not the raw set: while a query is active every
+        // section is force-expanded, and toggling would edit state nothing on
+        // screen reflects.
+        const groupKey = filtered[activeIndex]?.groupKey;
+        if (!groupKey || query.trim()) return;
+        const collapsed = collapsedGroups.has(groupKey);
+        if (e.key === 'ArrowLeft' ? !collapsed : collapsed) {
+          e.preventDefault();
+          toggleGroup(groupKey);
+        }
       } else if (e.key === 'Escape') {
         e.preventDefault();
         setOpen(false);
         triggerRef.current?.focus();
       }
     },
-    [filtered, activeIndex, choose]
+    [filtered, activeIndex, choose, collapsedGroups, query, toggleGroup]
   );
 
   return {
