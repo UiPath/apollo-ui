@@ -138,7 +138,11 @@ export interface ModelPickerProps {
    * visible label renders — that label names the field.
    */
   ariaLabel?: string;
-  /** Marks the field required: `aria-required` + a visual asterisk. */
+  /**
+   * Marks the field required: a visual asterisk on the label, plus
+   * `aria-required` on the search combobox inside the popup. Not on the
+   * trigger, where the attribute is invalid on its `button` role.
+   */
   required?: boolean;
   /**
    * Trigger text when nothing is selected. Defaults to a localized
@@ -651,6 +655,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                       : undefined
                   }
                   inputRef={searchRef}
+                  required={required}
                   leading={
                     slots?.searchLeading?.() ??
                     (effectiveFolders && effectiveFolders.length > 0 ? (

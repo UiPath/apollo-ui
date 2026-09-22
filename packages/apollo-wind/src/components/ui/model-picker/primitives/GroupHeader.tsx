@@ -137,6 +137,12 @@ export const GroupHeader: React.FC<GroupHeaderProps> = ({
         data-slot="model-picker-group-header"
         data-testid={dataTestId}
         onClick={onToggle}
+        // Not a tab stop: this button lives inside `role="listbox"`, where the
+        // only expected children are options and the keyboard model runs off
+        // the search field's `aria-activedescendant`. Tabbing here would break
+        // out of that model. Keyboard users collapse a section with
+        // `←`/`→` while its rows are active; the mouse still clicks the header.
+        tabIndex={-1}
         title={hint}
         type="button"
       >
