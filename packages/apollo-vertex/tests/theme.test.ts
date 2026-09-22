@@ -1,29 +1,11 @@
 // @vitest-environment node
-import { execFile } from 'node:child_process';
-import { access, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { promisify } from 'node:util';
-import { beforeAll, describe, expect, it } from 'vitest';
-
-const execFileAsync = promisify(execFile);
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const distTheme = join(root, 'dist/theme.css');
-
-async function ensureDistTheme(): Promise<void> {
-  try {
-    await access(distTheme);
-  } catch {
-    await execFileAsync('pnpm', ['build'], { cwd: root });
-  }
-}
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { distTheme, packageRoot } from './ensure-dist';
 
 describe('theme.css', () => {
-  beforeAll(async () => {
-    await ensureDistTheme();
-  }, 120_000);
-
   it('ships Vertex tokens including AI gradient and insight palette from dist', async () => {
     const css = await readFile(distTheme, 'utf8');
     expect(css).toContain('@theme inline');
@@ -37,7 +19,7 @@ describe('theme.css', () => {
 
 describe('package.json public API', () => {
   it('exports the root barrel, CSS files, and optional-peer subpaths', () => {
-    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+    const pkg = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'));
     expect(pkg.name).toBe('@uipath/apollo-vertex');
     expect(pkg.sideEffects).toEqual(['**/*.css']);
     expect(Object.keys(pkg.exports).sort()).toEqual([

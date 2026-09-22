@@ -1,31 +1,16 @@
 // @vitest-environment node
-import { execFile } from 'node:child_process';
-import { access } from 'node:fs/promises';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { promisify } from 'node:util';
+import { join } from 'node:path';
 import { build } from 'vite';
-import { beforeAll, describe, expect, it } from 'vitest';
-
-const execFileAsync = promisify(execFile);
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const distIndex = join(root, 'dist/index.js');
-
-async function ensureDist(): Promise<void> {
-  try {
-    await access(distIndex);
-  } catch {
-    await execFileAsync('pnpm', ['build'], { cwd: root });
-  }
-}
+import { describe, expect, it } from 'vitest';
+import { distIndex, packageRoot } from './ensure-dist';
 
 function isExternal(id: string): boolean {
   if (id.startsWith('\0')) {
     return false;
   }
-  if (id.includes(`${root}/dist`)) {
+  if (id.includes(`${packageRoot}/dist`)) {
     return false;
   }
   if (id.includes('node_modules')) {
@@ -35,10 +20,6 @@ function isExternal(id: string): boolean {
 }
 
 describe('Vite tree-shaking', () => {
-  beforeAll(async () => {
-    await ensureDist();
-  }, 120_000);
-
   it('drops DataTable when importing only Button from the published dist barrel', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'apollo-vertex-treeshake-'));
     const entry = join(dir, 'entry.js');

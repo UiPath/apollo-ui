@@ -1,3 +1,5 @@
+"use client";
+
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
