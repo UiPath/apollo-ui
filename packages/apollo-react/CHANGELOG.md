@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.51.0...@uipath/apollo-react@6.52.0) (2026-09-22)
+
+### Features
+
+* **apollo-react:** add-guardrail palette [AL-576] ([0507b41](https://github.com/UiPath/apollo-ui/commit/0507b41d180475c53a33491e35c0c6b6a7156047)), closes [#1139](https://github.com/UiPath/apollo-ui/issues/1139)
+
 ## [@uipath/apollo-react-v6.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.50.0...@uipath/apollo-react@6.51.0) (2026-09-21)
 
 ### Features
