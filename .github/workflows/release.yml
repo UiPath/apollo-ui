@@ -114,6 +114,7 @@ jobs:
           tar -czf "$RUNNER_TEMP/dist-apollo-ui-icons.tar.gz" -C packages/apollo-ui-icons dist
           tar -czf "$RUNNER_TEMP/dist-apollo-react.tar.gz" -C packages/apollo-react dist
           tar -czf "$RUNNER_TEMP/dist-apollo-wind.tar.gz"  -C packages/apollo-wind  dist
+          tar -czf "$RUNNER_TEMP/dist-apollo-vertex.tar.gz" -C packages/apollo-vertex dist
           tar -czf "$RUNNER_TEMP/dist-ap-chat.tar.gz"      -C web-packages/ap-chat  dist
 
       - name: Capture version-bump diff
@@ -163,6 +164,7 @@ jobs:
           pnpm --filter @uipath/apollo-ui-icons sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-ui-icons.cyclonedx.json"
           pnpm --filter @uipath/apollo-react sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-react.cyclonedx.json"
           pnpm --filter @uipath/apollo-wind  sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-wind.cyclonedx.json"
+          pnpm --filter @uipath/apollo-vertex sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-vertex.cyclonedx.json"
           pnpm --filter '@uipath/ap-chat'    sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-ap-chat.cyclonedx.json"
 
       - name: Attest SBOM — apollo-core
@@ -192,6 +194,13 @@ jobs:
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-wind.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-wind.cyclonedx.json
+
+      - name: Attest SBOM — apollo-vertex
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e  # v4.1.0
+        with:
+          subject-path: ${{ runner.temp }}/dist-apollo-vertex.tar.gz
+          sbom-path: ${{ runner.temp }}/sbom-apollo-vertex.cyclonedx.json
 
       - name: Attest SBOM — ap-chat
         if: steps.bump.outputs.changed == 'true'
@@ -235,6 +244,12 @@ jobs:
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-wind.tar.gz
+
+      - name: Attest build provenance — apollo-vertex
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ runner.temp }}/dist-apollo-vertex.tar.gz
 
       - name: Attest build provenance — ap-chat
         if: steps.bump.outputs.changed == 'true'
