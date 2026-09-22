@@ -3,6 +3,7 @@ import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Button, cn } from '@uipath/apollo-wind';
 import { useState } from 'react';
+import { useSafeLingui } from '../../../../i18n';
 import { CANVAS_COMPACT_BREAKPOINT } from '../../../constants';
 import type { AgentFlowSuggestionGroup } from '../../../types';
 import { CanvasIcon } from '../../../utils/icon-registry';
@@ -70,6 +71,7 @@ const SuggestionGroupNavigator = ({
   onNavigatePrevious,
   compact,
 }: SuggestionGroupNavigatorProps) => {
+  const { _ } = useSafeLingui();
   const [isHoveringUp, setIsHoveringUp] = useState(false);
   const [isHoveringDown, setIsHoveringDown] = useState(false);
 
@@ -88,7 +90,10 @@ const SuggestionGroupNavigator = ({
         variant="ghost"
         size="icon"
         className="h-8 w-8"
-        aria-label="Previous suggestion"
+        aria-label={_({
+          id: 'canvas.suggestion_group_panel.previous_suggestion',
+          message: 'Previous suggestion',
+        })}
         onMouseEnter={() => setIsHoveringUp(true)}
         onMouseLeave={() => setIsHoveringUp(false)}
         onClick={onNavigatePrevious}
@@ -106,7 +111,10 @@ const SuggestionGroupNavigator = ({
         variant="ghost"
         size="icon"
         className="h-8 w-8"
-        aria-label="Next suggestion"
+        aria-label={_({
+          id: 'canvas.suggestion_group_panel.next_suggestion',
+          message: 'Next suggestion',
+        })}
         onMouseEnter={() => setIsHoveringDown(true)}
         onMouseLeave={() => setIsHoveringDown(false)}
         onClick={onNavigateNext}

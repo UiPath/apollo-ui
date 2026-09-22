@@ -150,5 +150,7 @@
   "canvas.node_mode_select.simulated_description": "Generate a response dynamically using an LLM",
   "canvas.node_mode_select.simulated_label": "Simulated",
   "canvas.node_mode_select.static_description": "Always return a value you define",
-  "canvas.node_mode_select.static_label": "Static mock"
+  "canvas.node_mode_select.static_label": "Static mock",
+  "canvas.suggestion_group_panel.previous_suggestion": "Previous suggestion",
+  "canvas.suggestion_group_panel.next_suggestion": "Next suggestion"
 }
