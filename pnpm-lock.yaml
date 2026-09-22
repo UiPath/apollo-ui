@@ -1103,6 +1103,9 @@ importers:
       lucide-react:
         specifier: ^0.577.0
         version: 0.577.0(react@19.2.3)
+      luxon:
+        specifier: ^3.7.1
+        version: 3.7.2
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1161,6 +1164,12 @@ importers:
       '@types/jest-axe':
         specifier: ^3.5.9
         version: 3.5.9
+      '@types/luxon':
+        specifier: ^3.7.1
+        version: 3.7.1
+      '@types/node':
+        specifier: ^24.10.1
+        version: 24.10.1
       '@types/react':
         specifier: ^19.2.6
         version: 19.2.8

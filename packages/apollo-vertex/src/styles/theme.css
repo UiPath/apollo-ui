@@ -1,4 +1,4 @@
-/* Generated from apps/apollo-vertex/registry.json (apollo-vertex-theme). */
+/* Generated from src/styles/theme.json (copied from apollo-vertex-theme). */
 /* Re-run: node --experimental-strip-types scripts/generate-theme-css.ts */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);

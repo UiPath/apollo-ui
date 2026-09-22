@@ -1,23 +1,20 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
+const srcAlias = { '@': resolve(__dirname, './src') };
+
 export default defineConfig({
-  plugins: [],
   define: {
     'globalThis.IS_REACT_ACT_ENVIRONMENT': 'true',
     'global.IS_REACT_ACT_ENVIRONMENT': 'true',
   },
+  resolve: {
+    alias: srcAlias,
+  },
   test: {
     globals: true,
-    environment: 'jsdom',
     testTimeout: 30000,
     hookTimeout: 20000,
-    setupFiles: ['./tests/setup.ts'],
-    environmentOptions: {
-      jsdom: {
-        resources: 'usable',
-      },
-    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
@@ -25,10 +22,31 @@ export default defineConfig({
       exclude: ['src/index.ts', 'dist/', 'tests/', '**/*.test.ts', '**/*.test.tsx'],
       all: false,
     },
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-    },
+    projects: [
+      {
+        resolve: { alias: srcAlias },
+        test: {
+          name: 'jsdom',
+          globals: true,
+          environment: 'jsdom',
+          include: ['tests/**/*.test.tsx'],
+          setupFiles: ['./tests/setup.ts'],
+          environmentOptions: {
+            jsdom: {
+              resources: 'usable',
+            },
+          },
+        },
+      },
+      {
+        resolve: { alias: srcAlias },
+        test: {
+          name: 'node',
+          globals: true,
+          environment: 'node',
+          include: ['tests/**/*.test.ts'],
+        },
+      },
+    ],
   },
 });
