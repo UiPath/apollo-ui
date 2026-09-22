@@ -1,4 +1,29 @@
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import nextra from "nextra";
+
+function findRepoRoot(start: string): string {
+  let dir = start;
+  for (;;) {
+    if (existsSync(join(dir, "pnpm-workspace.yaml"))) {
+      return dir;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) {
+      return start;
+    }
+    dir = parent;
+  }
+}
+
+// uip-go copies this app to `.uipath-build/apollo-vertex`. Walk to the
+// monorepo root so the compiled workspace package still resolves there.
+const repoRoot = findRepoRoot(dirname(fileURLToPath(import.meta.url)));
+const vertexDistIndex = join(
+  repoRoot,
+  "packages/apollo-vertex/dist/index.js",
+);
 
 const withNextra = nextra({
   defaultShowCopyCode: true,
@@ -105,6 +130,9 @@ export default withNextra({
   turbopack: {
     resolveAlias: {
       "next-mdx-import-source-file": "./mdx-components.tsx",
+      ...(codedApp && existsSync(vertexDistIndex)
+        ? { "@uipath/apollo-vertex": vertexDistIndex }
+        : {}),
     },
   },
 });
