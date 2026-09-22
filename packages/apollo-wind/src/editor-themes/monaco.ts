@@ -149,32 +149,32 @@ export const apolloFutureLightMonaco = {
   inherit: false,
   rules: lightRules,
   colors: {
-    'editor.background': '#e4e4e7', // zinc-200  surface-overlay
+    'editor.background': '#ffffff', // white  surface-overlay
     'editor.foreground': '#52525b', // zinc-600  --code-rest
     'editorLineNumber.foreground': '#a1a1aa', // zinc-400  comment level
     'editorLineNumber.activeForeground': '#71717a', // zinc-500
     'editor.selectionBackground': '#d4d4d866', // zinc-300 @ 40%
     'editor.inactiveSelectionBackground': '#d4d4d833', // zinc-300 @ 20%
     'editor.lineHighlightBackground': '#e4e4e780', // zinc-200 @ 50%
-    'editorCursor.foreground': '#0891b2', // cyan-600  brand
+    'editorCursor.foreground': '#0092b8', // cyan-600  brand
     'editorWhitespace.foreground': '#d4d4d8', // zinc-300
     'editorIndentGuide.background1': '#e4e4e7', // zinc-200
     'editorIndentGuide.activeBackground1': '#d4d4d8', // zinc-300
-    'editorBracketMatch.background': '#0891b21a', // cyan-600 @ 10%
-    'editorBracketMatch.border': '#0891b2', // cyan-600
+    'editorBracketMatch.background': '#0092b81a', // cyan-600 @ 10%
+    'editorBracketMatch.border': '#0092b8', // cyan-600
     'editor.findMatchBackground': '#b4530940', // amber-700 @ 25%
     'editor.findMatchHighlightBackground': '#b4530920',
-    'editorWidget.background': '#e4e4e7', // zinc-200
+    'editorWidget.background': '#ffffff', // white  surface-overlay
     'editorWidget.border': '#d4d4d8', // zinc-300
-    'editorSuggestWidget.background': '#e4e4e7',
+    'editorSuggestWidget.background': '#ffffff', // white  surface-overlay
     'editorSuggestWidget.border': '#d4d4d8',
     'editorSuggestWidget.selectedBackground': '#d4d4d8',
-    'editorHoverWidget.background': '#e4e4e7',
+    'editorHoverWidget.background': '#ffffff', // white  surface-overlay
     'editorHoverWidget.border': '#d4d4d8',
     'scrollbarSlider.background': '#d4d4d866',
     'scrollbarSlider.hoverBackground': '#a1a1aa80',
     'scrollbarSlider.activeBackground': '#71717a80',
-    focusBorder: '#0891b2',
+    focusBorder: '#0092b8',
     'input.background': '#ffffff',
     'input.border': '#d4d4d8',
     'input.foreground': '#52525b',

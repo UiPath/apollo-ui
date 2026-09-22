@@ -206,7 +206,7 @@ export const apolloFutureLightCodeMirror: ApolloCodeMirrorTheme = {
     // zinc-600 — matches --code-rest for default prose
     foreground: '#52525b',
     // cyan-600
-    cursor: '#0891b2',
+    cursor: '#0092b8',
     // zinc-300 @ 40% opacity
     selection: '#d4d4d866',
     // zinc-200 @ 50% opacity
@@ -218,7 +218,7 @@ export const apolloFutureLightCodeMirror: ApolloCodeMirrorTheme = {
     // zinc-300
     indentGuide: '#d4d4d8',
     // cyan-600 (re-uses cursor color for bracket pairing)
-    matchingBracket: '#0891b2',
+    matchingBracket: '#0092b8',
   },
 };
 

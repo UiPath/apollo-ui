@@ -245,7 +245,7 @@
         "value": "{color.zinc.700.value}"
       },
       "future-light": {
-        "value": "{color.zinc.300.value}"
+        "value": "{color.zinc.200.value}"
       }
     },
     "selectionIndicator": {
@@ -731,7 +731,7 @@
         "value": "{color.cyan.500.value}"
       },
       "future-light": {
-        "value": "{color.cyan.500.value}"
+        "value": "{color.cyan.600.value}"
       }
     },
     "primaryLighter": {
@@ -771,7 +771,7 @@
         "value": "{color.cyan.600.value}"
       },
       "future-light": {
-        "value": "{color.cyan.700.value}"
+        "value": "{color.cyan.800.value}"
       }
     },
     "primaryHover": {
@@ -791,7 +791,7 @@
         "value": "{color.cyan.400.value}"
       },
       "future-light": {
-        "value": "{color.cyan.600.value}"
+        "value": "{color.cyan.700.value}"
       }
     },
     "primaryFocused": {
@@ -811,7 +811,7 @@
         "value": "{color.cyan.400.value}"
       },
       "future-light": {
-        "value": "{color.cyan.600.value}"
+        "value": "{color.cyan.700.value}"
       }
     },
     "primaryPressed": {
@@ -831,7 +831,7 @@
         "value": "{color.cyan.500.value}"
       },
       "future-light": {
-        "value": "{color.cyan.500.value}"
+        "value": "{color.cyan.800.value}"
       }
     },
     "secondaryFocused": {
@@ -2451,7 +2451,7 @@
         "value": "{color.zinc.800.value}"
       },
       "future-light": {
-        "value": "{color.zinc.200.value}"
+        "value": "{color.white.value}"
       }
     },
     "foregroundSecondary": {
