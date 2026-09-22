@@ -27,7 +27,11 @@ export const STORAGE_KEYS = {
 // to its "/index.html" form on Coded App builds; no-op in dev.
 export function toCodedAppFilePath(path: string): string {
   if (process.env.NEXT_PUBLIC_APOLLO_CODED_APP !== '1') return path;
-  const trimmed = path.replace(/\/+$/, '');
+  let end = path.length;
+  while (end > 0 && path[end - 1] === '/') {
+    end -= 1;
+  }
+  const trimmed = path.slice(0, end);
   const lastSegment = trimmed.slice(trimmed.lastIndexOf('/') + 1);
   // Already an explicit file (e.g. ".../index.html"); leave it alone.
   if (lastSegment.includes('.')) return path;
