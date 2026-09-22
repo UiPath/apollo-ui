@@ -42,7 +42,6 @@ export type {
   CostTier,
   DeprecationDetails,
   DiscoveryModel,
-  DiscoveryRequestContext,
   ModelCostDetails,
   ModelDetails,
   ModelGeography,
@@ -53,30 +52,9 @@ export type {
   ModelVendor,
   RoutingDetails,
 } from './types';
-export type { UseDiscoveryModelsResult } from './useDiscoveryModels';
-// Data hooks
-export { useDiscoveryModels } from './useDiscoveryModels';
 export type { UseModelPickerStateOptions, UseModelPickerStateResult } from './useModelPickerState';
 // State controller (for teams building custom pickers from the primitives)
 export { useModelPickerState } from './useModelPickerState';
-export type {
-  LlmConfigurationsLinkOptions,
-  PlatformRequestContext,
-  PlatformToken,
-  UseCanManageByoResult,
-  UseDeleteByoConfigurationResult,
-  UsePlatformDiscoveryModelsResult,
-  UseUserFoldersResult,
-} from './usePlatformAccess';
-export {
-  buildLlmConfigurationsUrl,
-  platformNavigation,
-  useByoConnectionNames,
-  useCanManageByo,
-  useDeleteByoConfiguration,
-  usePlatformDiscoveryModels,
-  useUserFolders,
-} from './usePlatformAccess';
 export type { DeriveModelTagsContext, GroupModelsContext, GroupStrategy } from './utils';
 // Utilities
 export {
