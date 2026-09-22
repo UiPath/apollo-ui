@@ -262,13 +262,15 @@ export interface ModelPickerProps {
    */
   folders?: readonly FolderSwitcherFolder[];
   /**
-   * Selected folder id. `null` means the "All folders" sentinel (omit
-   * `X-UiPath-FolderKey` on the Discovery request). Leave undefined to
-   * let the picker own the selection (uncontrolled) — with the built-in
-   * Discovery fetch this makes folder switching fully self-contained.
+   * Selected folder id. `null` means the "All folders" sentinel. Leave
+   * undefined to let the picker own the selection (uncontrolled), which
+   * is useful when the folder only drives a client-side `filter`.
    */
   folder?: string | null;
-  /** Folder change callback. Optional in uncontrolled/self-fetch mode. */
+  /**
+   * Folder change callback. Optional when uncontrolled; required to refetch
+   * a folder-scoped catalog, since the picker fetches nothing itself.
+   */
   onFolderChange?: (next: string | null) => void;
   /** Label for the "All folders" sentinel. Default: `'All folders'`. */
   allFoldersLabel?: string;
@@ -299,16 +301,15 @@ export interface ModelPickerProps {
    */
   popupContainer?: PickerPopupProps['container'];
   /**
-   * Opt out of picker-owned deletion and perform the DELETE yourself.
+   * Delete request for a BYO row. Rendered only when `canManageByo` is true;
+   * omit it and no delete action appears.
    *
-   * Rarely needed: in self-fetch mode the picker already deletes the BYO
-   * configuration through the platform route it has credentials for, so
-   * hosts only need `onModelDeleted`. Pass this when a product must route
-   * the call somewhere else — the picker then confirms, calls this, and
-   * refetches, but issues no request of its own.
-   *
-   * With a host-owned `models` list there is no request context to delete
-   * with, so this is the only way to surface a delete action at all.
+   * The picker issues no request of its own. It shows a confirmation dialog
+   * naming the configuration, then calls this and awaits it — a rejection
+   * surfaces in the picker's own error region rather than going unhandled.
+   * **Refreshing `models` afterwards is the host's job**; the deleted row
+   * stays on screen until a new list arrives. `useDeleteByoConfiguration`
+   * is exported for hosts that want the standard platform DELETE.
    */
   onDeleteModel?: (model: DiscoveryModel) => void | Promise<void>;
   /**

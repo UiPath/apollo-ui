@@ -60,13 +60,17 @@ export type { UseModelPickerStateOptions, UseModelPickerStateResult } from './us
 // State controller (for teams building custom pickers from the primitives)
 export { useModelPickerState } from './useModelPickerState';
 export type {
+  LlmConfigurationsLinkOptions,
   PlatformRequestContext,
   PlatformToken,
   UseCanManageByoResult,
   UseDeleteByoConfigurationResult,
+  UsePlatformDiscoveryModelsResult,
   UseUserFoldersResult,
 } from './usePlatformAccess';
 export {
+  buildLlmConfigurationsUrl,
+  platformNavigation,
   useByoConnectionNames,
   useCanManageByo,
   useDeleteByoConfiguration,

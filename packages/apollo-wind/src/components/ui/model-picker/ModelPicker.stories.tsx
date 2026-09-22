@@ -378,10 +378,11 @@ export const DeleteWithConfirmation: Story = {
         story:
           'BYO rows gain a delete action, and the picker always shows a ' +
           'confirmation dialog naming the configuration first: deletion ' +
-          'affects every consumer in the tenant. In self-fetch mode the picker ' +
-          'issues the DELETE itself and you only pass `onModelDeleted` to react. ' +
-          'This story uses `onDeleteModel`, the opt-out for hosts that must own ' +
-          'the request, because stories have no request context.',
+          'affects every consumer in the tenant. The picker sends no request ' +
+          'of its own. It calls `onDeleteModel` and awaits it, and refreshing ' +
+          'the model list afterwards is the host\u2019s job. ' +
+          '`useDeleteByoConfiguration` is exported for hosts that want the ' +
+          'standard platform DELETE.',
       },
     },
   },
