@@ -339,5 +339,7 @@
   "guardrails.centralized.parameter-enabled": "Enabled",
   "guardrails.centralized.parameter-disabled": "Disabled",
   "guardrails.centralized.entities-fallback": "Entities to detect",
-  "guardrails.centralized.thresholds-fallback": "Detection thresholds"
+  "guardrails.centralized.thresholds-fallback": "Detection thresholds",
+  "canvas.suggestion_group_panel.previous_suggestion": "Previous suggestion",
+  "canvas.suggestion_group_panel.next_suggestion": "Next suggestion"
 }
