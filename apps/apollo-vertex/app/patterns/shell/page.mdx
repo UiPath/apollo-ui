@@ -37,7 +37,7 @@ The shell works out of the box without authentication. Just provide layout props
 
 ```tsx
 import { Home, Settings } from 'lucide-react';
-import { ApolloShell } from '@/components/ui/shell';
+import { ApolloShell } from '@uipath/apollo-vertex/shell';
 
 const navItems = [
   { path: '/dashboard', label: 'dashboard', icon: Home },
@@ -67,8 +67,8 @@ When a `ShellAuthProvider` is present, the shell automatically shows a login scr
 ```tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Home, Settings } from 'lucide-react';
-import { ApolloShell } from '@/components/ui/shell';
-import { ShellAuthProvider } from '@/components/ui/shell-auth-provider';
+import { ApolloShell } from '@uipath/apollo-vertex/shell';
+import { ShellAuthProvider } from '@uipath/apollo-vertex';
 
 const queryClient = new QueryClient();
 
@@ -122,7 +122,7 @@ user from `useAuth`):
 
 ```tsx
 import { SolutionProvider } from '@uipath/vs-core';
-import { GroupMembershipGuard } from '@/components/ui/shell/group-membership-guard';
+import { GroupMembershipGuard } from '@uipath/apollo-vertex/shell';
 
 function App() {
   return (
@@ -171,9 +171,9 @@ roles; the hook is generic over `Role extends string` and accepts any
 `Record<Role, string>` mapping role to group name.
 
 ```tsx
-import { GroupMembershipGuard } from '@/components/ui/shell/group-membership-guard';
-import { Role } from '@/components/ui/shell/shell-roles';
-import { useGroupId } from '@/components/ui/shell/use-group-id';
+import { GroupMembershipGuard } from '@uipath/apollo-vertex/shell';
+import { Role } from '@uipath/apollo-vertex/shell';
+import { useGroupId } from '@uipath/apollo-vertex/shell';
 
 const ROLE_GROUP_MAP: Record<Role, string> = {
   [Role.ADMIN]: 'apollo-admins',

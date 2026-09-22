@@ -81,7 +81,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 // Internal imports after
-import { cn } from "@/lib/utils";
+import { cn } from "@uipath/apollo-vertex";
 ```
 
 ### TypeScript

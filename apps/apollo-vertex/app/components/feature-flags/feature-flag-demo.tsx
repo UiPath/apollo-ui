@@ -1,21 +1,21 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { FeatureFlagProviderConfig } from "@/lib/feature-flag-provider/types";
-import { FeatureFlagProvider } from "@/lib/feature-flag-provider";
-import { useFeatureFlag } from "@/hooks/use-feature-flag";
-import { FeatureFlagGuard } from "@/registry/feature-flag-guard/feature-flag-guard";
-import { Badge } from "@/registry/badge/badge";
-import { Switch } from "@/registry/switch/switch";
-import { Label } from "@/registry/label/label";
+import type { FeatureFlagProviderConfig } from "@uipath/apollo-vertex/feature-flags";
+import { FeatureFlagProvider } from "@uipath/apollo-vertex/feature-flags";
+import { useFeatureFlag } from "@uipath/apollo-vertex/feature-flags";
+import { FeatureFlagGuard } from "@uipath/apollo-vertex/feature-flags";
+import { Badge } from "@uipath/apollo-vertex";
+import { Switch } from "@uipath/apollo-vertex";
+import { Label } from "@uipath/apollo-vertex";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/registry/card/card";
-import { Separator } from "@/registry/separator/separator";
+} from "@uipath/apollo-vertex";
+import { Separator } from "@uipath/apollo-vertex";
 
 // ---------------------------------------------------------------------------
 // Static in-memory provider for demo purposes

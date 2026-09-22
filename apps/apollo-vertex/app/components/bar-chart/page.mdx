@@ -21,7 +21,7 @@ Installs both the prop-driven `BarChart` view and the `BarChartWithAdapter` vari
 `BarChart` renders pre-shaped rows. Use it when the data is already in memory.
 
 ```tsx
-import { BarChart } from "@/components/ui/bar-chart";
+import { BarChart } from "@uipath/apollo-vertex";
 
 const rows = [
   {
@@ -58,8 +58,8 @@ npx shadcn@latest add @uipath/insights-adapter
 ```
 
 ```tsx
-import { BarChartWithAdapter } from "@/components/ui/bar-chart";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+import { BarChartWithAdapter } from "@uipath/apollo-vertex";
+import { dataFabricAdapter } from "@uipath/apollo-vertex";
 
 const adapter = dataFabricAdapter({
   baseUrl: "/api/datafabric/.../api",

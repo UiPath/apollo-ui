@@ -14,7 +14,7 @@ import {
   type ProcessedCard,
   processIssues,
 } from "@/lib/jira-resolve";
-import { Badge } from "@/registry/badge/badge";
+import { Badge } from "@uipath/apollo-vertex";
 
 // ─── status tag ──────────────────────────────────────────────────────────────
 

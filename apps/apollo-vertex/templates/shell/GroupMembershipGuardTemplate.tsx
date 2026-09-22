@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/registry/button/button";
+import { Button } from "@uipath/apollo-vertex";
 import {
   MembershipDenied,
   VerifyingMembership,
-} from "@/registry/shell/group-membership-screens";
-import type { UserInfo } from "@/registry/shell/shell-auth-provider";
+} from "@uipath/apollo-vertex/shell";
+import type { UserInfo } from "@uipath/apollo-vertex/shell";
 
 type DemoState = "loading" | "denied" | "granted";
 

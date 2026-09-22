@@ -5,11 +5,11 @@ import {
   type EntityGetResponse,
   type FieldMetaData,
 } from "@uipath/uipath-typescript/entities";
-import { STALE_TIME_MS } from "@/lib/constants";
+import { STALE_TIME_MS } from "@uipath/apollo-vertex";
 import type {
   Entity,
   EntityField,
-} from "@/registry/ai-chat/tools/data-fabric/util/entities";
+} from "@uipath/apollo-vertex/ai-chat";
 
 interface UseDataFabricEntitiesOptions {
   entities: Entities;

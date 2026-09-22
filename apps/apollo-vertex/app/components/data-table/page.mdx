@@ -39,8 +39,8 @@ This component requires the following dependencies:
 ```tsx
 "use client"
 
-import type { ColumnDef } from "@/components/ui/data-table"
-import { DataTableColumnHeader } from "@/components/ui/data-table"
+import type { ColumnDef } from "@uipath/apollo-vertex"
+import { DataTableColumnHeader } from "@uipath/apollo-vertex"
 
 type Payment = {
   id: string
@@ -85,8 +85,8 @@ Use the `useDataTable` hook to manage all table state, then spread it into `Data
 ```tsx
 "use client"
 
-import { DataTable } from "@/components/ui/data-table"
-import { useDataTable } from "@/hooks/use-data-table"
+import { DataTable } from "@uipath/apollo-vertex"
+import { useDataTable } from "@uipath/apollo-vertex"
 import { columns } from "./columns"
 
 export default function PaymentsPage({ data }: { data: Payment[] }) {
@@ -109,7 +109,7 @@ The data table exports additional components for building advanced table UIs:
 A reusable column header with a dropdown for sorting and hiding columns.
 
 ```tsx
-import { DataTableColumnHeader } from "@/components/ui/data-table"
+import { DataTableColumnHeader } from "@uipath/apollo-vertex"
 
 {
   accessorKey: "email",
@@ -124,7 +124,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table"
 A standalone pagination component. The `DataTable` includes this by default, but you can also use it separately when building custom table layouts.
 
 ```tsx
-import { DataTablePagination } from "@/components/ui/data-table"
+import { DataTablePagination } from "@uipath/apollo-vertex"
 
 <DataTablePagination table={table} />
 ```
@@ -134,7 +134,7 @@ import { DataTablePagination } from "@/components/ui/data-table"
 A column visibility toggle dropdown. Use this in a toolbar above the table.
 
 ```tsx
-import { DataTableViewOptions } from "@/components/ui/data-table"
+import { DataTableViewOptions } from "@uipath/apollo-vertex"
 
 <DataTableViewOptions table={table} />
 ```
@@ -160,8 +160,8 @@ The hook returns an object that can be spread directly into `DataTable`:
 ```tsx
 "use client"
 
-import { DataTable } from "@/components/ui/data-table"
-import { useDataTable } from "@/hooks/use-data-table"
+import { DataTable } from "@uipath/apollo-vertex"
+import { useDataTable } from "@uipath/apollo-vertex"
 import { columns } from "./columns"
 
 export default function PaymentsPage({ data }: { data: Payment[] }) {
@@ -202,8 +202,8 @@ npx shadcn@latest add @uipath/use-entity-data-table
 ```tsx
 "use client"
 
-import { DataTable } from "@/components/ui/data-table"
-import { useEntityDataTable } from "@/hooks/use-entity-data-table"
+import { DataTable } from "@uipath/apollo-vertex"
+import { useEntityDataTable } from "@uipath/apollo-vertex/shell"
 
 export default function EntityPage({ entity }: { entity: VssEntity }) {
   const tableState = useEntityDataTable({
@@ -243,7 +243,7 @@ Both hooks automatically persist the following state to `localStorage`:
 Add a selection column using the `Checkbox` component:
 
 ```tsx
-import { Checkbox } from "@/components/ui/checkbox"
+import { Checkbox } from "@uipath/apollo-vertex"
 
 const columns: ColumnDef<Payment>[] = [
   {

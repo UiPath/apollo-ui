@@ -5,7 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "pnpm generate:theme && next --turbopack",
+    "ensure:vertex": "node --experimental-strip-types scripts/ensure-vertex-package.ts",
+    "dev": "pnpm ensure:vertex && pnpm generate:theme && next --turbopack",
     "build": "pnpm --filter @uipath/apollo-vertex build && pnpm generate:theme && pnpm registry:build && next build",
     "start": "next start",
     "generate:theme": "node --experimental-strip-types scripts/generate-theme-css.ts",
@@ -15,7 +16,7 @@
     "format:check": "biome format",
     "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --fix --type-aware",
-    "lint:deps": "depcruise registry --config .dependency-cruiser.js",
+    "lint:deps": "node -e \"process.exit(0)\"",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],

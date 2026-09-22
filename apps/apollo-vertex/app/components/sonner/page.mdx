@@ -22,7 +22,7 @@ npx shadcn@latest add @uipath/sonner
 Add the `<Toaster />` component once to your app root. Status colors, icons, close button, and positioning are included by default:
 
 ```tsx
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@uipath/apollo-vertex"
 
 export default function RootLayout({ children }) {
   return (
@@ -95,7 +95,7 @@ If you need to apply the Apollo status styles to your own `Toaster` instance, im
 
 ```tsx
 import { Toaster } from "sonner"
-import { apolloToastClassNames } from "@/components/ui/sonner"
+import { apolloToastClassNames } from "@uipath/apollo-vertex"
 
 <Toaster toastOptions={{ classNames: apolloToastClassNames }} />
 ```

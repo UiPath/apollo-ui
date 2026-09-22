@@ -33,8 +33,8 @@ Validation is defined once as a whole-form Zod schema passed to `validators.onCh
 
 ```tsx
 import { z } from 'zod'
-import { FieldGroup } from '@/components/ui/field'
-import { useAppForm } from '@/components/ui/form'
+import { FieldGroup } from '@uipath/apollo-vertex'
+import { useAppForm } from '@uipath/apollo-vertex'
 
 const schema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters.'),

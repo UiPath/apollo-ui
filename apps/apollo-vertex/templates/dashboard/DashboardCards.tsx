@@ -3,9 +3,9 @@
 import { AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Badge } from "@uipath/apollo-vertex";
+import { Card, CardContent, CardHeader, CardTitle } from "@uipath/apollo-vertex";
+import { Progress } from "@uipath/apollo-vertex";
 import {
   Table,
   TableBody,
@@ -13,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@uipath/apollo-vertex";
 
 // --- Types ---
 

@@ -3,14 +3,14 @@
 import { Maximize2, Minimize2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/registry/button/button";
+import { Button } from "@uipath/apollo-vertex";
 import {
   Dialog,
   DialogClose,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/dialog/dialog";
+} from "@uipath/apollo-vertex";
 
 export function PreviewFullScreen({
   children,

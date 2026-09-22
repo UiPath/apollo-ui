@@ -8,9 +8,15 @@
       "type": "registry:theme",
       "title": "Apollo Vertex Theme",
       "description": "Apollo Vertex design system tokens — colors, typography, spacing, shadows, and easing functions with light and dark mode support.",
-      "dependencies": ["tw-animate-css"],
-      "css": { "@import \"tw-animate-css\"": {} },
-      "registryDependencies": ["@uipath/font-inter"],
+      "dependencies": [
+        "tw-animate-css"
+      ],
+      "css": {
+        "@import \"tw-animate-css\"": {}
+      },
+      "registryDependencies": [
+        "@uipath/font-inter"
+      ],
       "cssVars": {
         "theme": {
           "radius-sm": "calc(var(--radius) - 4px)",
@@ -334,7 +340,9 @@
         "provider": "google",
         "import": "Inter",
         "variable": "--font-sans",
-        "subsets": ["latin"],
+        "subsets": [
+          "latin"
+        ],
         "dependency": "@fontsource-variable/inter"
       }
     },
@@ -343,11 +351,14 @@
       "type": "registry:ui",
       "title": "Accordion",
       "description": "A vertically stacked set of interactive headings that reveal content.",
-      "dependencies": ["@radix-ui/react-accordion"],
+      "dependencies": [
+        "@radix-ui/react-accordion"
+      ],
       "files": [
         {
-          "path": "registry/accordion/accordion.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/accordion.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/accordion.tsx"
         }
       ]
     },
@@ -364,293 +375,302 @@
         "react-i18next",
         "zod"
       ],
-      "registryDependencies": ["@uipath/spinner"],
+      "registryDependencies": [
+        "@uipath/spinner"
+      ],
       "files": [
         {
-          "path": "lib/asserts/assert.ts",
-          "type": "registry:lib"
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert.ts"
         },
         {
-          "path": "lib/asserts/assert-boolean.ts",
-          "type": "registry:lib"
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert-boolean.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert-boolean.ts"
         },
         {
-          "path": "lib/asserts/assert-date-time-or-string.ts",
-          "type": "registry:lib"
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert-date-time-or-string.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert-date-time-or-string.ts"
         },
         {
-          "path": "lib/asserts/assert-defined.ts",
-          "type": "registry:lib"
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert-defined.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert-defined.ts"
         },
         {
-          "path": "lib/asserts/assert-number.ts",
-          "type": "registry:lib"
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert-number.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert-number.ts"
         },
         {
-          "path": "lib/asserts/assert-number-or-null.ts",
-          "type": "registry:lib"
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert-number-or-null.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert-number-or-null.ts"
         },
         {
-          "path": "types/luxon.d.ts",
-          "type": "registry:lib"
+          "path": "../../packages/apollo-vertex/src/types/luxon.d.ts",
+          "type": "registry:lib",
+          "target": "types/luxon.d.ts"
         },
         {
-          "path": "registry/charts-core/chart-data-mapper.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/chart-data-mapper.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/chart-data-mapper.ts"
         },
         {
-          "path": "registry/charts-core/chart-loading-boundary.tsx",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/chart-loading-boundary.tsx",
           "type": "registry:lib",
           "target": "lib/charts-core/chart-loading-boundary.tsx"
         },
         {
-          "path": "registry/charts-core/chart-models.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/chart-models.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/chart-models.ts"
         },
         {
-          "path": "registry/charts-core/charts-core.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/charts-core.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/charts-core.ts"
         },
         {
-          "path": "registry/charts-core/data-adapter.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/data-adapter.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/data-adapter.ts"
         },
         {
-          "path": "registry/charts-core/data-query-response-schema.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/data-query-response-schema.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/data-query-response-schema.ts"
         },
         {
-          "path": "registry/charts-core/error-boundary.tsx",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/error-boundary.tsx",
           "type": "registry:lib",
           "target": "lib/charts-core/error-boundary.tsx"
         },
         {
-          "path": "registry/charts-core/map-filter-config.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/map-filter-config.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/map-filter-config.ts"
         },
         {
-          "path": "registry/charts-core/models/configurations/bar-chart-configuration.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/configurations/bar-chart-configuration.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/configurations/bar-chart-configuration.ts"
         },
         {
-          "path": "registry/charts-core/models/configurations/base-chart-configuration.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/configurations/base-chart-configuration.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/configurations/base-chart-configuration.ts"
         },
         {
-          "path": "registry/charts-core/models/configurations/chart-properties.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/configurations/chart-properties.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/configurations/chart-properties.ts"
         },
         {
-          "path": "registry/charts-core/models/configurations/chart-type-schema.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/configurations/chart-type-schema.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/configurations/chart-type-schema.ts"
         },
         {
-          "path": "registry/charts-core/models/configurations/distribution-chart-configuration.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/configurations/distribution-chart-configuration.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/configurations/distribution-chart-configuration.ts"
         },
         {
-          "path": "registry/charts-core/models/configurations/filter-values-schema.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/configurations/filter-values-schema.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/configurations/filter-values-schema.ts"
         },
         {
-          "path": "registry/charts-core/models/configurations/kpi-chart-configuration.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/configurations/kpi-chart-configuration.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/configurations/kpi-chart-configuration.ts"
         },
         {
-          "path": "registry/charts-core/models/configurations/line-chart-configuration.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/configurations/line-chart-configuration.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/configurations/line-chart-configuration.ts"
         },
         {
-          "path": "registry/charts-core/models/configurations/multi-line-chart-configuration.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/configurations/multi-line-chart-configuration.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/configurations/multi-line-chart-configuration.ts"
         },
         {
-          "path": "registry/charts-core/models/configurations/table-chart-configuration.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/configurations/table-chart-configuration.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/configurations/table-chart-configuration.ts"
         },
         {
-          "path": "registry/charts-core/models/expression.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/expression.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/expression.ts"
         },
         {
-          "path": "registry/charts-core/models/field.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/field.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/field.ts"
         },
         {
-          "path": "registry/charts-core/models/filter-values.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/filter-values.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/filter-values.ts"
         },
         {
-          "path": "registry/charts-core/models/filter.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/filter.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/filter.ts"
         },
         {
-          "path": "registry/charts-core/models/join-schema.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/join-schema.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/join-schema.ts"
         },
         {
-          "path": "registry/charts-core/models/primitive-value.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/models/primitive-value.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/models/primitive-value.ts"
         },
         {
-          "path": "registry/charts-core/spinner-with-children.tsx",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/spinner-with-children.tsx",
           "type": "registry:lib",
           "target": "lib/charts-core/spinner-with-children.tsx"
         },
         {
-          "path": "registry/charts-core/table-data-model.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/table-data-model.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/table-data-model.ts"
         },
         {
-          "path": "registry/charts-core/util/binning/adaptive-bin-formatting.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/binning/adaptive-bin-formatting.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/binning/adaptive-bin-formatting.ts"
         },
         {
-          "path": "registry/charts-core/util/binning/constants.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/binning/constants.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/binning/constants.ts"
         },
         {
-          "path": "registry/charts-core/util/binning/nice-duration-numbers.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/binning/nice-duration-numbers.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/binning/nice-duration-numbers.ts"
         },
         {
-          "path": "registry/charts-core/util/binning/nice-numbers.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/binning/nice-numbers.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/binning/nice-numbers.ts"
         },
         {
-          "path": "registry/charts-core/util/data-type-alignment.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/data-type-alignment.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/data-type-alignment.ts"
         },
         {
-          "path": "registry/charts-core/util/empty-array.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/empty-array.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/empty-array.ts"
         },
         {
-          "path": "registry/charts-core/util/format/base-format-options.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/base-format-options.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/base-format-options.ts"
         },
         {
-          "path": "registry/charts-core/util/format/bin-label-format-setting.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/bin-label-format-setting.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/bin-label-format-setting.ts"
         },
         {
-          "path": "registry/charts-core/util/format/bin-label.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/bin-label.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/bin-label.ts"
         },
         {
-          "path": "registry/charts-core/util/format/compute-duration-units.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/compute-duration-units.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/compute-duration-units.ts"
         },
         {
-          "path": "registry/charts-core/util/format/constants.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/constants.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/constants.ts"
         },
         {
-          "path": "registry/charts-core/util/format/duration-unit.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/duration-unit.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/duration-unit.ts"
         },
         {
-          "path": "registry/charts-core/util/format/format-boolean.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/format-boolean.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/format-boolean.ts"
         },
         {
-          "path": "registry/charts-core/util/format/format-currency.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/format-currency.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/format-currency.ts"
         },
         {
-          "path": "registry/charts-core/util/format/format-date.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/format-date.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/format-date.ts"
         },
         {
-          "path": "registry/charts-core/util/format/format-duration.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/format-duration.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/format-duration.ts"
         },
         {
-          "path": "registry/charts-core/util/format/format-metric-value.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/format-metric-value.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/format-metric-value.ts"
         },
         {
-          "path": "registry/charts-core/util/format/format-number.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/format-number.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/format-number.ts"
         },
         {
-          "path": "registry/charts-core/util/format/format-percentage.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/format-percentage.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/format-percentage.ts"
         },
         {
-          "path": "registry/charts-core/util/format/format.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/format.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/format.ts"
         },
         {
-          "path": "registry/charts-core/util/format/get-chart-range.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/get-chart-range.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/get-chart-range.ts"
         },
         {
-          "path": "registry/charts-core/util/format/highest-duration-unit.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/highest-duration-unit.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/highest-duration-unit.ts"
         },
         {
-          "path": "registry/charts-core/util/format/is-date-only.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/is-date-only.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/is-date-only.ts"
         },
         {
-          "path": "registry/charts-core/util/format/percentage-format-options.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/format/percentage-format-options.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/percentage-format-options.ts"
         },
         {
-          "path": "registry/charts-core/util/build-field.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/build-field.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/build-field.ts"
         },
         {
-          "path": "registry/charts-core/util/get-metric-field-type.ts",
+          "path": "../../packages/apollo-vertex/src/lib/charts-core/util/get-metric-field-type.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/get-metric-field-type.ts"
         }
@@ -668,95 +688,97 @@
         "luxon",
         "zod"
       ],
-      "registryDependencies": ["@uipath/charts-core"],
+      "registryDependencies": [
+        "@uipath/charts-core"
+      ],
       "files": [
         {
-          "path": "registry/data-fabric-adapter/adapter.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/adapter.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/adapter.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/chart-adapters/bar.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/chart-adapters/bar.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/chart-adapters/bar.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/chart-adapters/distribution.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/chart-adapters/distribution.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/chart-adapters/distribution.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/chart-adapters/kpi.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/chart-adapters/kpi.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/chart-adapters/kpi.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/chart-adapters/line.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/chart-adapters/line.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/chart-adapters/line.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/chart-adapters/multi-line.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/chart-adapters/multi-line.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/chart-adapters/multi-line.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/chart-adapters/table.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/chart-adapters/table.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/chart-adapters/table.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/contract.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/contract.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/contract.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/data-fabric-adapter.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/data-fabric-adapter.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/data-fabric-adapter.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/schemas/query-schema.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/schemas/query-schema.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/schemas/query-schema.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/utils/binning-utils.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/utils/binning-utils.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/utils/binning-utils.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/utils/fetch-date-binned-data.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/utils/fetch-date-binned-data.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/utils/fetch-date-binned-data.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/utils/filter-group.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/utils/filter-group.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/utils/filter-group.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/utils/metric-aggregate.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/utils/metric-aggregate.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/utils/metric-aggregate.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/utils/query-options.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/utils/query-options.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/utils/query-options.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/utils/query.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/utils/query.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/utils/query.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/utils/response-data-mapper.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/utils/response-data-mapper.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/utils/response-data-mapper.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/utils/throw-error.ts",
+          "path": "../../packages/apollo-vertex/src/lib/data-fabric-adapter/utils/throw-error.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/utils/throw-error.ts"
         }
@@ -774,105 +796,107 @@
         "luxon",
         "zod"
       ],
-      "registryDependencies": ["@uipath/charts-core"],
+      "registryDependencies": [
+        "@uipath/charts-core"
+      ],
       "files": [
         {
-          "path": "registry/insights-adapter/adapter.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/adapter.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/adapter.ts"
         },
         {
-          "path": "registry/insights-adapter/chart-adapters/bar.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/chart-adapters/bar.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/chart-adapters/bar.ts"
         },
         {
-          "path": "registry/insights-adapter/chart-adapters/distribution.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/chart-adapters/distribution.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/chart-adapters/distribution.ts"
         },
         {
-          "path": "registry/insights-adapter/chart-adapters/kpi.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/chart-adapters/kpi.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/chart-adapters/kpi.ts"
         },
         {
-          "path": "registry/insights-adapter/chart-adapters/line.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/chart-adapters/line.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/chart-adapters/line.ts"
         },
         {
-          "path": "registry/insights-adapter/chart-adapters/multi-line.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/chart-adapters/multi-line.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/chart-adapters/multi-line.ts"
         },
         {
-          "path": "registry/insights-adapter/chart-adapters/table.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/chart-adapters/table.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/chart-adapters/table.ts"
         },
         {
-          "path": "registry/insights-adapter/contract.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/contract.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/contract.ts"
         },
         {
-          "path": "registry/insights-adapter/insights-adapter.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/insights-adapter.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/insights-adapter.ts"
         },
         {
-          "path": "registry/insights-adapter/schemas/aggregate-fragment-schema.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/schemas/aggregate-fragment-schema.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/schemas/aggregate-fragment-schema.ts"
         },
         {
-          "path": "registry/insights-adapter/schemas/filter-fragment-schema.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/schemas/filter-fragment-schema.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/schemas/filter-fragment-schema.ts"
         },
         {
-          "path": "registry/insights-adapter/schemas/filter-request-schema.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/schemas/filter-request-schema.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/schemas/filter-request-schema.ts"
         },
         {
-          "path": "registry/insights-adapter/schemas/query-schema.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/schemas/query-schema.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/schemas/query-schema.ts"
         },
         {
-          "path": "registry/insights-adapter/utils/assert-configuration-supported.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/utils/assert-configuration-supported.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/utils/assert-configuration-supported.ts"
         },
         {
-          "path": "registry/insights-adapter/utils/binning.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/utils/binning.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/utils/binning.ts"
         },
         {
-          "path": "registry/insights-adapter/utils/filter-request.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/utils/filter-request.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/utils/filter-request.ts"
         },
         {
-          "path": "registry/insights-adapter/utils/metric-aggregate.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/utils/metric-aggregate.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/utils/metric-aggregate.ts"
         },
         {
-          "path": "registry/insights-adapter/utils/query-options.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/utils/query-options.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/utils/query-options.ts"
         },
         {
-          "path": "registry/insights-adapter/utils/query.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/utils/query.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/utils/query.ts"
         },
         {
-          "path": "registry/insights-adapter/utils/throw-error.ts",
+          "path": "../../packages/apollo-vertex/src/lib/insights-adapter/utils/throw-error.ts",
           "type": "registry:lib",
           "target": "lib/insights-adapter/utils/throw-error.ts"
         }
@@ -883,7 +907,10 @@
       "type": "registry:ui",
       "title": "Line Chart",
       "description": "A time-series line chart over a datetime dimension.",
-      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "recharts@2.15.4"
+      ],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/charts-core",
@@ -891,17 +918,17 @@
       ],
       "files": [
         {
-          "path": "registry/line-chart/line-chart-view.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/line-chart/line-chart-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/line-chart/line-chart-view.tsx"
         },
         {
-          "path": "registry/line-chart/line-chart-with-adapter.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/line-chart/line-chart-with-adapter.tsx",
           "type": "registry:ui",
           "target": "components/ui/line-chart/line-chart-with-adapter.tsx"
         },
         {
-          "path": "registry/line-chart/line-chart.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/line-chart/line-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/line-chart/line-chart.tsx"
         }
@@ -912,7 +939,10 @@
       "type": "registry:ui",
       "title": "Multi-Line Chart",
       "description": "Two metrics on a shared datetime axis with independent Y axes.",
-      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "recharts@2.15.4"
+      ],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/chart",
@@ -920,17 +950,17 @@
       ],
       "files": [
         {
-          "path": "registry/multi-line-chart/multi-line-chart-view.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/multi-line-chart/multi-line-chart-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/multi-line-chart/multi-line-chart-view.tsx"
         },
         {
-          "path": "registry/multi-line-chart/multi-line-chart-with-adapter.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/multi-line-chart/multi-line-chart-with-adapter.tsx",
           "type": "registry:ui",
           "target": "components/ui/multi-line-chart/multi-line-chart-with-adapter.tsx"
         },
         {
-          "path": "registry/multi-line-chart/multi-line-chart.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/multi-line-chart/multi-line-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/multi-line-chart/multi-line-chart.tsx"
         }
@@ -941,7 +971,10 @@
       "type": "registry:ui",
       "title": "Bar Chart",
       "description": "A metric broken down by a categorical dimension.",
-      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "recharts@2.15.4"
+      ],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/charts-core",
@@ -949,42 +982,42 @@
       ],
       "files": [
         {
-          "path": "registry/bar-chart/bar-chart-view.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/bar-chart/bar-chart-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/bar-chart/bar-chart-view.tsx"
         },
         {
-          "path": "registry/bar-chart/bar-chart-with-adapter.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/bar-chart/bar-chart-with-adapter.tsx",
           "type": "registry:ui",
           "target": "components/ui/bar-chart/bar-chart-with-adapter.tsx"
         },
         {
-          "path": "registry/bar-chart/bar-chart.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/bar-chart/bar-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/bar-chart/bar-chart.tsx"
         },
         {
-          "path": "registry/bar-chart/bar-label.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/bar-chart/bar-label.tsx",
           "type": "registry:ui",
           "target": "components/ui/bar-chart/bar-label.tsx"
         },
         {
-          "path": "registry/bar-chart/metric-column.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/bar-chart/metric-column.tsx",
           "type": "registry:ui",
           "target": "components/ui/bar-chart/metric-column.tsx"
         },
         {
-          "path": "registry/bar-chart/util/colors.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/bar-chart/util/colors.ts",
           "type": "registry:ui",
           "target": "components/ui/bar-chart/util/colors.ts"
         },
         {
-          "path": "registry/bar-chart/util/get-bar-color.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/bar-chart/util/get-bar-color.ts",
           "type": "registry:ui",
           "target": "components/ui/bar-chart/util/get-bar-color.ts"
         },
         {
-          "path": "registry/bar-chart/util/recharts-bar-data.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/bar-chart/util/recharts-bar-data.ts",
           "type": "registry:ui",
           "target": "components/ui/bar-chart/util/recharts-bar-data.ts"
         }
@@ -995,7 +1028,10 @@
       "type": "registry:ui",
       "title": "Distribution Chart",
       "description": "A histogram over a numeric or datetime dimension.",
-      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "recharts@2.15.4"
+      ],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/charts-core",
@@ -1003,17 +1039,17 @@
       ],
       "files": [
         {
-          "path": "registry/distribution-chart/distribution-chart-view.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/distribution-chart/distribution-chart-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/distribution-chart/distribution-chart-view.tsx"
         },
         {
-          "path": "registry/distribution-chart/distribution-chart-with-adapter.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/distribution-chart/distribution-chart-with-adapter.tsx",
           "type": "registry:ui",
           "target": "components/ui/distribution-chart/distribution-chart-with-adapter.tsx"
         },
         {
-          "path": "registry/distribution-chart/distribution-chart.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/distribution-chart/distribution-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/distribution-chart/distribution-chart.tsx"
         }
@@ -1024,21 +1060,26 @@
       "type": "registry:ui",
       "title": "KPI Chart",
       "description": "A single scalar metric (count, sum, average, min, max).",
-      "dependencies": ["@tanstack/react-query@^5.90.0"],
-      "registryDependencies": ["@uipath/card", "@uipath/charts-core"],
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0"
+      ],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/charts-core"
+      ],
       "files": [
         {
-          "path": "registry/kpi-chart/kpi-chart-view.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/kpi-chart/kpi-chart-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/kpi-chart/kpi-chart-view.tsx"
         },
         {
-          "path": "registry/kpi-chart/kpi-chart-with-adapter.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/kpi-chart/kpi-chart-with-adapter.tsx",
           "type": "registry:ui",
           "target": "components/ui/kpi-chart/kpi-chart-with-adapter.tsx"
         },
         {
-          "path": "registry/kpi-chart/kpi-chart.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/kpi-chart/kpi-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/kpi-chart/kpi-chart.tsx"
         }
@@ -1060,17 +1101,17 @@
       ],
       "files": [
         {
-          "path": "registry/table-chart/table-chart-view.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/table-chart/table-chart-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/table-chart/table-chart-view.tsx"
         },
         {
-          "path": "registry/table-chart/table-chart-with-adapter.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/table-chart/table-chart-with-adapter.tsx",
           "type": "registry:ui",
           "target": "components/ui/table-chart/table-chart-with-adapter.tsx"
         },
         {
-          "path": "registry/table-chart/table-chart.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/table-chart/table-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/table-chart/table-chart.tsx"
         }
@@ -1158,324 +1199,328 @@
         }
       },
       "files": [
-        { "path": "lib/asserts/assert.ts", "type": "registry:lib" },
         {
-          "path": "registry/ai-chat/adapters/agenthub/types.ts",
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/ai-chat/adapters/agenthub/types.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/agenthub/types.ts"
         },
         {
-          "path": "registry/ai-chat/adapters/agenthub/adapter.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/adapters/agenthub/adapter.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/agenthub/adapter.ts"
         },
         {
-          "path": "registry/ai-chat/adapters/agenthub/messages.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/adapters/agenthub/messages.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/agenthub/messages.ts"
         },
         {
-          "path": "registry/ai-chat/adapters/agenthub/stream.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/adapters/agenthub/stream.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/agenthub/stream.ts"
         },
         {
-          "path": "registry/ai-chat/adapters/agenthub/tools.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/adapters/agenthub/tools.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/agenthub/tools.ts"
         },
         {
-          "path": "registry/ai-chat/adapters/conversational-agent/types.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/adapters/conversational-agent/types.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/conversational-agent/types.ts"
         },
         {
-          "path": "registry/ai-chat/adapters/conversational-agent/adapter.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/adapters/conversational-agent/adapter.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/conversational-agent/adapter.ts"
         },
         {
-          "path": "registry/ai-chat/adapters/conversational-agent/messages.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/adapters/conversational-agent/messages.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/conversational-agent/messages.ts"
         },
         {
-          "path": "registry/ai-chat/adapters/conversational-agent/stream.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/adapters/conversational-agent/stream.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/conversational-agent/stream.ts"
         },
         {
-          "path": "registry/ai-chat/adapters/conversational-agent/session.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/adapters/conversational-agent/session.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/conversational-agent/session.ts"
         },
         {
-          "path": "registry/ai-chat/hooks/use-sticky-scroll.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/hooks/use-sticky-scroll.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
         },
         {
-          "path": "registry/ai-chat/hooks/use-pending-files.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/hooks/use-pending-files.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/hooks/use-pending-files.ts"
         },
         {
-          "path": "registry/ai-chat/animations.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/animations.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/animations.ts"
         },
         {
-          "path": "registry/ai-chat/content-parts.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/content-parts.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/content-parts.ts"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-markdown.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-markdown.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-markdown.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-code-block.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-code-block.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-code-block.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-message.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-message.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-message.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-loading.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-loading.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-loading.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-input.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-input.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-input.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-input-glow.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-input-glow.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-input-glow.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-pending-files.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-pending-files.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-pending-files.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-image-preview.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-image-preview.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-image-preview.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-suggestions.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-suggestions.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-suggestions.tsx"
         },
         {
-          "path": "registry/ai-chat/types.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/types.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/types.ts"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-header.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-header.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-header.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-message-actions.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-message-actions.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-message-actions.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-selection-menu.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-selection-menu.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-selection-menu.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-empty-suggestions.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-empty-suggestions.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-empty-suggestions.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-scroll-to-bottom-button.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-scroll-to-bottom-button.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-scroll-to-bottom-button.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-error-banner.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-error-banner.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-error-banner.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-thinking.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-thinking.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-thinking.tsx"
         },
         {
-          "path": "registry/ai-chat/components/ai-chat-empty-state.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/ai-chat-empty-state.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-empty-state.tsx"
         },
         {
-          "path": "registry/ai-chat/components/icons/autopilot.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/icons/autopilot.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/icons/autopilot.tsx"
         },
         {
-          "path": "registry/ai-chat/components/icons/autopilot-gradient.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/components/icons/autopilot-gradient.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/icons/autopilot-gradient.tsx"
         },
         {
-          "path": "registry/ai-chat/charts/table-chart-card.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/charts/table-chart-card.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/table-chart-card.tsx"
         },
         {
-          "path": "registry/ai-chat/charts/no-data-message.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/charts/no-data-message.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/no-data-message.tsx"
         },
         {
-          "path": "registry/ai-chat/charts/tool-resolution-error.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/charts/tool-resolution-error.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/tool-resolution-error.tsx"
         },
         {
-          "path": "registry/ai-chat/charts/distribution-chart-card.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/charts/distribution-chart-card.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/distribution-chart-card.tsx"
         },
         {
-          "path": "registry/ai-chat/charts/bar-chart-card.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/charts/bar-chart-card.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/bar-chart-card.tsx"
         },
         {
-          "path": "registry/ai-chat/charts/line-chart-card.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/charts/line-chart-card.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/line-chart-card.tsx"
         },
         {
-          "path": "registry/ai-chat/charts/multi-line-chart-card.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/charts/multi-line-chart-card.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/multi-line-chart-card.tsx"
         },
         {
-          "path": "registry/ai-chat/charts/kpi-chart-card.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/charts/kpi-chart-card.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/kpi-chart-card.tsx"
         },
         {
-          "path": "registry/ai-chat/tools/choices/choices-tool.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/choices/choices-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/choices/choices-tool.tsx"
         },
         {
-          "path": "registry/ai-chat/tools/choices/index.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/choices/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/choices/index.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric/util/entities.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric/util/entities.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric/util/entities.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric/util/filters.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric/util/filters.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric/util/filters.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric/util/joins.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric/util/joins.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric/util/joins.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric/util/chart-helpers.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric/util/chart-helpers.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric/util/chart-helpers.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric/util/resolver-result.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric/util/resolver-result.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric/util/resolver-result.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric/index.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric/index.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-table/table-data-model.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-table/table-data-model.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-table/table-data-model.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-table/index.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-table/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-table/index.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-distribution/data-fabric-distribution-tool.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-distribution/data-fabric-distribution-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/data-fabric-distribution/data-fabric-distribution-tool.tsx"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-distribution/index.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-distribution/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-distribution/index.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-bar/data-fabric-bar-tool.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-bar/data-fabric-bar-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/data-fabric-bar/data-fabric-bar-tool.tsx"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-bar/index.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-bar/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-bar/index.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-line/data-fabric-line-tool.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-line/data-fabric-line-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/data-fabric-line/data-fabric-line-tool.tsx"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-line/index.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-line/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-line/index.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-multi-line/data-fabric-multi-line-tool.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-multi-line/data-fabric-multi-line-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/data-fabric-multi-line/data-fabric-multi-line-tool.tsx"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-multi-line/index.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-multi-line/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-multi-line/index.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-kpi/data-fabric-kpi-tool.tsx",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-kpi/data-fabric-kpi-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/data-fabric-kpi/data-fabric-kpi-tool.tsx"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric-kpi/index.ts",
+          "path": "../../packages/apollo-vertex/src/ai-chat/tools/data-fabric-kpi/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-kpi/index.ts"
         }
@@ -1503,18 +1548,27 @@
           "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
         }
       },
-      "files": [{ "path": "registry/alert/alert.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/alert.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/alert.tsx"
+        }
+      ]
     },
     {
       "name": "alert-dialog",
       "type": "registry:ui",
       "title": "Alert Dialog",
       "description": "A modal dialog that interrupts the user with important content.",
-      "dependencies": ["@radix-ui/react-alert-dialog"],
+      "dependencies": [
+        "@radix-ui/react-alert-dialog"
+      ],
       "files": [
         {
-          "path": "registry/alert-dialog/alert-dialog.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/alert-dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/alert-dialog.tsx"
         }
       ]
     },
@@ -1523,11 +1577,14 @@
       "type": "registry:ui",
       "title": "Aspect Ratio",
       "description": "Displays content within a desired ratio.",
-      "dependencies": ["@radix-ui/react-aspect-ratio"],
+      "dependencies": [
+        "@radix-ui/react-aspect-ratio"
+      ],
       "files": [
         {
-          "path": "registry/aspect-ratio/aspect-ratio.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/aspect-ratio.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/aspect-ratio.tsx"
         }
       ]
     },
@@ -1536,15 +1593,25 @@
       "type": "registry:ui",
       "title": "Avatar",
       "description": "An image element with a fallback for representing the user.",
-      "dependencies": ["@radix-ui/react-avatar"],
-      "files": [{ "path": "registry/avatar/avatar.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@radix-ui/react-avatar"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/avatar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/avatar.tsx"
+        }
+      ]
     },
     {
       "name": "badge",
       "type": "registry:ui",
       "title": "Badge",
       "description": "Displays a badge or a component that looks like a badge.",
-      "dependencies": ["@radix-ui/react-slot"],
+      "dependencies": [
+        "@radix-ui/react-slot"
+      ],
       "cssVars": {
         "theme": {
           "color-badge": "var(--badge)",
@@ -1595,18 +1662,28 @@
           "insight-800": "oklch(0.38 0.13 278)"
         }
       },
-      "files": [{ "path": "registry/badge/badge.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/badge.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/badge.tsx"
+        }
+      ]
     },
     {
       "name": "breadcrumb",
       "type": "registry:ui",
       "title": "Breadcrumb",
       "description": "Displays the path to the current resource using a hierarchy of links.",
-      "dependencies": ["@radix-ui/react-slot", "react-i18next"],
+      "dependencies": [
+        "@radix-ui/react-slot",
+        "react-i18next"
+      ],
       "files": [
         {
-          "path": "registry/breadcrumb/breadcrumb.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/breadcrumb.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/breadcrumb.tsx"
         }
       ]
     },
@@ -1615,7 +1692,9 @@
       "type": "registry:ui",
       "title": "Button",
       "description": "Displays a button or a component that looks like a button.",
-      "dependencies": ["@radix-ui/react-slot"],
+      "dependencies": [
+        "@radix-ui/react-slot"
+      ],
       "cssVars": {
         "theme": {
           "color-success": "var(--success)",
@@ -1651,19 +1730,30 @@
           "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
         }
       },
-      "files": [{ "path": "registry/button/button.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/button.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/button.tsx"
+        }
+      ]
     },
     {
       "name": "button-group",
       "type": "registry:ui",
       "title": "Button Group",
       "description": "Groups multiple buttons together.",
-      "dependencies": ["@radix-ui/react-slot"],
-      "registryDependencies": ["@uipath/separator"],
+      "dependencies": [
+        "@radix-ui/react-slot"
+      ],
+      "registryDependencies": [
+        "@uipath/separator"
+      ],
       "files": [
         {
-          "path": "registry/button-group/button-group.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/button-group.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/button-group.tsx"
         }
       ]
     },
@@ -1693,18 +1783,28 @@
           "ai-glass": "color-mix(in srgb, var(--card) 90%, transparent)"
         }
       },
-      "files": [{ "path": "registry/card/card.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/card.tsx"
+        }
+      ]
     },
     {
       "name": "carousel",
       "type": "registry:ui",
       "title": "Carousel",
       "description": "A carousel with motion and swipe built using Embla.",
-      "dependencies": ["embla-carousel-react", "react-i18next"],
+      "dependencies": [
+        "embla-carousel-react",
+        "react-i18next"
+      ],
       "files": [
         {
-          "path": "registry/carousel/carousel.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/carousel.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/carousel.tsx"
         }
       ]
     },
@@ -1713,19 +1813,31 @@
       "type": "registry:ui",
       "title": "Chart",
       "description": "Beautiful charts using Recharts with consistent theming.",
-      "dependencies": ["recharts@2.15.4", "lucide-react"],
-      "files": [{ "path": "registry/chart/chart.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "recharts@2.15.4",
+        "lucide-react"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/chart.tsx"
+        }
+      ]
     },
     {
       "name": "checkbox",
       "type": "registry:ui",
       "title": "Checkbox",
       "description": "A control that allows the user to toggle between checked and not checked.",
-      "dependencies": ["@radix-ui/react-checkbox"],
+      "dependencies": [
+        "@radix-ui/react-checkbox"
+      ],
       "files": [
         {
-          "path": "registry/checkbox/checkbox.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/checkbox.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/checkbox.tsx"
         }
       ]
     },
@@ -1734,11 +1846,14 @@
       "type": "registry:ui",
       "title": "Collapsible",
       "description": "An interactive component which expands/collapses a panel.",
-      "dependencies": ["@radix-ui/react-collapsible"],
+      "dependencies": [
+        "@radix-ui/react-collapsible"
+      ],
       "files": [
         {
-          "path": "registry/collapsible/collapsible.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/collapsible.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/collapsible.tsx"
         }
       ]
     },
@@ -1753,11 +1868,14 @@
         "@uipath/command",
         "@uipath/popover"
       ],
-      "dependencies": ["react-i18next"],
+      "dependencies": [
+        "react-i18next"
+      ],
       "files": [
         {
-          "path": "registry/combobox/combobox.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/combobox.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/combobox.tsx"
         }
       ]
     },
@@ -1766,12 +1884,17 @@
       "type": "registry:ui",
       "title": "Command",
       "description": "A command menu for searching and executing commands.",
-      "dependencies": ["cmdk"],
-      "registryDependencies": ["@uipath/dialog"],
+      "dependencies": [
+        "cmdk"
+      ],
+      "registryDependencies": [
+        "@uipath/dialog"
+      ],
       "files": [
         {
-          "path": "registry/command/command.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/command.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/command.tsx"
         }
       ]
     },
@@ -1780,7 +1903,11 @@
       "type": "registry:ui",
       "title": "Confidence Signal",
       "description": "A signal-bar chip that communicates AI confidence (high/medium/low/unknown) without a raw score, with an optional popover for factor breakdowns and required next steps.",
-      "dependencies": ["framer-motion", "lucide-react", "react-i18next"],
+      "dependencies": [
+        "framer-motion",
+        "lucide-react",
+        "react-i18next"
+      ],
       "registryDependencies": [
         "@uipath/button",
         "@uipath/popover",
@@ -1803,32 +1930,32 @@
       },
       "files": [
         {
-          "path": "registry/confidence-signal/confidence-signal.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/confidence-signal/confidence-signal.tsx",
           "type": "registry:ui",
           "target": "components/ui/confidence-signal/confidence-signal.tsx"
         },
         {
-          "path": "registry/confidence-signal/confidence-signal-levels.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/confidence-signal/confidence-signal-levels.ts",
           "type": "registry:ui",
           "target": "components/ui/confidence-signal/confidence-signal-levels.ts"
         },
         {
-          "path": "registry/confidence-signal/confidence-signal-bars.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/confidence-signal/confidence-signal-bars.tsx",
           "type": "registry:ui",
           "target": "components/ui/confidence-signal/confidence-signal-bars.tsx"
         },
         {
-          "path": "registry/confidence-signal/confidence-signal-chip.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/confidence-signal/confidence-signal-chip.tsx",
           "type": "registry:ui",
           "target": "components/ui/confidence-signal/confidence-signal-chip.tsx"
         },
         {
-          "path": "registry/confidence-signal/confidence-signal-factors.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/confidence-signal/confidence-signal-factors.tsx",
           "type": "registry:ui",
           "target": "components/ui/confidence-signal/confidence-signal-factors.tsx"
         },
         {
-          "path": "registry/confidence-signal/confidence-signal-cta.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/confidence-signal/confidence-signal-cta.tsx",
           "type": "registry:ui",
           "target": "components/ui/confidence-signal/confidence-signal-cta.tsx"
         }
@@ -1839,11 +1966,14 @@
       "type": "registry:ui",
       "title": "Context Menu",
       "description": "Displays a menu located at the pointer, triggered by a right-click.",
-      "dependencies": ["@radix-ui/react-context-menu"],
+      "dependencies": [
+        "@radix-ui/react-context-menu"
+      ],
       "files": [
         {
-          "path": "registry/context-menu/context-menu.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/context-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/context-menu.tsx"
         }
       ]
     },
@@ -1874,78 +2004,79 @@
       ],
       "files": [
         {
-          "path": "registry/data-table/index.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/index.ts",
           "type": "registry:ui",
           "target": "components/ui/data-table/index.ts"
         },
         {
-          "path": "registry/data-table/data-table.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table.tsx"
         },
         {
-          "path": "registry/data-table/data-table-expand-toggle.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table-expand-toggle.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-expand-toggle.tsx"
         },
         {
-          "path": "registry/data-table/data-table-filters.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table-filters.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-filters.tsx"
         },
         {
-          "path": "registry/data-table/data-table-row.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table-row.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-row.tsx"
         },
         {
-          "path": "registry/data-table/data-table-scroll-shadow.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table-scroll-shadow.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-scroll-shadow.tsx"
         },
         {
-          "path": "registry/data-table/data-table-column-header.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table-column-header.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-column-header.tsx"
         },
         {
-          "path": "registry/data-table/data-table-pagination.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table-pagination.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-pagination.tsx"
         },
         {
-          "path": "registry/data-table/data-table-search.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table-search.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-search.tsx"
         },
         {
-          "path": "registry/data-table/data-table-skeleton.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table-skeleton.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-skeleton.tsx"
         },
         {
-          "path": "registry/data-table/data-table-toolbar.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table-toolbar.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-toolbar.tsx"
         },
         {
-          "path": "registry/data-table/data-table-view-options.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/data-table-view-options.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-view-options.tsx"
         },
         {
-          "path": "registry/data-table/sortable-column-item.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/sortable-column-item.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/sortable-column-item.tsx"
         },
         {
-          "path": "registry/data-table/sortable-column-list.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/data-table/sortable-column-list.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/sortable-column-list.tsx"
         },
         {
-          "path": "registry/use-data-table/useReactTableCompat.ts",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/hooks/use-data-table/useReactTableCompat.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-data-table/useReactTableCompat.ts"
         }
       ]
     },
@@ -1954,27 +2085,48 @@
       "type": "registry:ui",
       "title": "Dialog",
       "description": "A modal dialog that appears in front of app content.",
-      "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
-      "files": [{ "path": "registry/dialog/dialog.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@radix-ui/react-dialog",
+        "react-i18next"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/dialog.tsx"
+        }
+      ]
     },
     {
       "name": "drawer",
       "type": "registry:ui",
       "title": "Drawer",
       "description": "A drawer component that slides in from the edge of the screen.",
-      "dependencies": ["vaul", "@radix-ui/react-dialog"],
-      "files": [{ "path": "registry/drawer/drawer.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "vaul",
+        "@radix-ui/react-dialog"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/drawer.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/drawer.tsx"
+        }
+      ]
     },
     {
       "name": "dropdown-menu",
       "type": "registry:ui",
       "title": "Dropdown Menu",
       "description": "Displays a menu to the user triggered by a button.",
-      "dependencies": ["@radix-ui/react-dropdown-menu"],
+      "dependencies": [
+        "@radix-ui/react-dropdown-menu"
+      ],
       "files": [
         {
-          "path": "registry/dropdown-menu/dropdown-menu.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/dropdown-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/dropdown-menu.tsx"
         }
       ]
     },
@@ -1983,19 +2135,31 @@
       "type": "registry:ui",
       "title": "Empty",
       "description": "An empty state component for when there's no data to display.",
-      "files": [{ "path": "registry/empty/empty.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/empty.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/empty.tsx"
+        }
+      ]
     },
     {
       "name": "feedback-vote-widget",
       "type": "registry:ui",
       "title": "Feedback Vote Widget",
       "description": "A thumbs up/down feedback control with an optional comment textarea, designed for the UiPath Platform Feedback API.",
-      "dependencies": ["lucide-react"],
-      "registryDependencies": ["@uipath/button", "@uipath/textarea"],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/textarea"
+      ],
       "files": [
         {
-          "path": "registry/feedback-vote-widget/feedback-vote-widget.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/feedback-vote-widget.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/feedback-vote-widget.tsx"
         }
       ]
     },
@@ -2004,15 +2168,27 @@
       "type": "registry:ui",
       "title": "Field",
       "description": "A form field component with label, input, and description.",
-      "registryDependencies": ["@uipath/label", "@uipath/separator"],
-      "files": [{ "path": "registry/field/field.tsx", "type": "registry:ui" }]
+      "registryDependencies": [
+        "@uipath/label",
+        "@uipath/separator"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/field.tsx"
+        }
+      ]
     },
     {
       "name": "filter-dropdown",
       "type": "registry:ui",
       "title": "Filter Dropdown",
       "description": "A versatile filter dropdown with multi-select, single-select, search, and optional TanStack Table column integration.",
-      "dependencies": ["@tanstack/react-table@^8.21.0", "lucide-react"],
+      "dependencies": [
+        "@tanstack/react-table@^8.21.0",
+        "lucide-react"
+      ],
       "registryDependencies": [
         "@uipath/button",
         "@uipath/checkbox",
@@ -2022,12 +2198,14 @@
       ],
       "files": [
         {
-          "path": "registry/filter-dropdown/index.ts",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/filter-dropdown/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/filter-dropdown/index.ts"
         },
         {
-          "path": "registry/filter-dropdown/filter-dropdown.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/filter-dropdown/filter-dropdown.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/filter-dropdown/filter-dropdown.tsx"
         }
       ]
     },
@@ -2036,11 +2214,14 @@
       "type": "registry:ui",
       "title": "Hover Card",
       "description": "For sighted users to preview content available behind a link.",
-      "dependencies": ["@radix-ui/react-hover-card"],
+      "dependencies": [
+        "@radix-ui/react-hover-card"
+      ],
       "files": [
         {
-          "path": "registry/hover-card/hover-card.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/hover-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/hover-card.tsx"
         }
       ]
     },
@@ -2049,7 +2230,13 @@
       "type": "registry:ui",
       "title": "Input",
       "description": "Displays a form input field.",
-      "files": [{ "path": "registry/input/input.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/input.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/input.tsx"
+        }
+      ]
     },
     {
       "name": "input-group",
@@ -2063,8 +2250,9 @@
       ],
       "files": [
         {
-          "path": "registry/input-group/input-group.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/input-group.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/input-group.tsx"
         }
       ]
     },
@@ -2073,11 +2261,14 @@
       "type": "registry:ui",
       "title": "Input OTP",
       "description": "A one-time password input component.",
-      "dependencies": ["input-otp"],
+      "dependencies": [
+        "input-otp"
+      ],
       "files": [
         {
-          "path": "registry/input-otp/input-otp.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/input-otp.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/input-otp.tsx"
         }
       ]
     },
@@ -2086,35 +2277,62 @@
       "type": "registry:ui",
       "title": "Item",
       "description": "A list item component for displaying content in lists.",
-      "dependencies": ["@radix-ui/react-slot"],
-      "registryDependencies": ["@uipath/separator"],
-      "files": [{ "path": "registry/item/item.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@radix-ui/react-slot"
+      ],
+      "registryDependencies": [
+        "@uipath/separator"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/item.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/item.tsx"
+        }
+      ]
     },
     {
       "name": "kbd",
       "type": "registry:ui",
       "title": "Kbd",
       "description": "Displays keyboard shortcuts.",
-      "files": [{ "path": "registry/kbd/kbd.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/kbd.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/kbd.tsx"
+        }
+      ]
     },
     {
       "name": "label",
       "type": "registry:ui",
       "title": "Label",
       "description": "Renders an accessible label associated with controls.",
-      "dependencies": ["@radix-ui/react-label"],
-      "files": [{ "path": "registry/label/label.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@radix-ui/react-label"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/label.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/label.tsx"
+        }
+      ]
     },
     {
       "name": "menubar",
       "type": "registry:ui",
       "title": "Menubar",
       "description": "A horizontally stacked menu bar with dropdown submenus.",
-      "dependencies": ["@radix-ui/react-menubar"],
+      "dependencies": [
+        "@radix-ui/react-menubar"
+      ],
       "files": [
         {
-          "path": "registry/menubar/menubar.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/menubar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/menubar.tsx"
         }
       ]
     },
@@ -2130,8 +2348,9 @@
       ],
       "files": [
         {
-          "path": "registry/metric-card/metric-card.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/metric-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/metric-card.tsx"
         }
       ]
     },
@@ -2145,25 +2364,27 @@
         "lucide-react",
         "@radix-ui/react-dialog"
       ],
-      "registryDependencies": ["@uipath/button"],
+      "registryDependencies": [
+        "@uipath/button"
+      ],
       "files": [
         {
-          "path": "registry/onboarding-tour-joyride/index.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/onboarding-tour-joyride/index.ts",
           "type": "registry:ui",
           "target": "components/ui/onboarding-tour-joyride/index.ts"
         },
         {
-          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-types.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/onboarding-tour-joyride/onboarding-tour-joyride-types.ts",
           "type": "registry:ui",
           "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-types.ts"
         },
         {
-          "path": "registry/onboarding-tour-joyride/tour-persistence.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/onboarding-tour-joyride/tour-persistence.ts",
           "type": "registry:ui",
           "target": "components/ui/onboarding-tour-joyride/tour-persistence.ts"
         },
         {
-          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx",
           "type": "registry:ui",
           "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx"
         }
@@ -2174,11 +2395,14 @@
       "type": "registry:ui",
       "title": "Navigation Menu",
       "description": "A navigation menu with dropdown support.",
-      "dependencies": ["@radix-ui/react-navigation-menu"],
+      "dependencies": [
+        "@radix-ui/react-navigation-menu"
+      ],
       "files": [
         {
-          "path": "registry/navigation-menu/navigation-menu.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/navigation-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/navigation-menu.tsx"
         }
       ]
     },
@@ -2187,11 +2411,14 @@
       "type": "registry:ui",
       "title": "Pagination",
       "description": "Pagination with page navigation, next and previous links.",
-      "dependencies": ["react-i18next"],
+      "dependencies": [
+        "react-i18next"
+      ],
       "files": [
         {
-          "path": "registry/pagination/pagination.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/pagination.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/pagination.tsx"
         }
       ]
     },
@@ -2200,12 +2427,19 @@
       "type": "registry:ui",
       "title": "Page Header",
       "description": "A compound page header with back button, title, metadata fields, and collapsible action buttons that overflow into a dropdown.",
-      "dependencies": ["class-variance-authority", "lucide-react"],
-      "registryDependencies": ["@uipath/button", "@uipath/dropdown-menu"],
+      "dependencies": [
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/dropdown-menu"
+      ],
       "files": [
         {
-          "path": "registry/page-header/page-header.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/page-header.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/page-header.tsx"
         }
       ]
     },
@@ -2214,11 +2448,14 @@
       "type": "registry:ui",
       "title": "Popover",
       "description": "Displays rich content in a portal, triggered by a button.",
-      "dependencies": ["@radix-ui/react-popover"],
+      "dependencies": [
+        "@radix-ui/react-popover"
+      ],
       "files": [
         {
-          "path": "registry/popover/popover.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/popover.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/popover.tsx"
         }
       ]
     },
@@ -2227,11 +2464,14 @@
       "type": "registry:ui",
       "title": "Progress",
       "description": "Displays an indicator showing the completion progress of a task.",
-      "dependencies": ["@radix-ui/react-progress"],
+      "dependencies": [
+        "@radix-ui/react-progress"
+      ],
       "files": [
         {
-          "path": "registry/progress/progress.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/progress.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/progress.tsx"
         }
       ]
     },
@@ -2240,11 +2480,14 @@
       "type": "registry:ui",
       "title": "Radio Group",
       "description": "A set of checkable buttons where no more than one can be checked.",
-      "dependencies": ["@radix-ui/react-radio-group"],
+      "dependencies": [
+        "@radix-ui/react-radio-group"
+      ],
       "files": [
         {
-          "path": "registry/radio-group/radio-group.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/radio-group.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/radio-group.tsx"
         }
       ]
     },
@@ -2253,11 +2496,14 @@
       "type": "registry:ui",
       "title": "Resizable",
       "description": "Accessible resizable panel groups and layouts.",
-      "dependencies": ["react-resizable-panels@^4.7.3"],
+      "dependencies": [
+        "react-resizable-panels@^4.7.3"
+      ],
       "files": [
         {
-          "path": "registry/resizable/resizable.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/resizable.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/resizable.tsx"
         }
       ]
     },
@@ -2266,11 +2512,14 @@
       "type": "registry:ui",
       "title": "Scroll Area",
       "description": "Augments native scroll functionality for custom, cross-browser styling.",
-      "dependencies": ["@radix-ui/react-scroll-area"],
+      "dependencies": [
+        "@radix-ui/react-scroll-area"
+      ],
       "files": [
         {
-          "path": "registry/scroll-area/scroll-area.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/scroll-area.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/scroll-area.tsx"
         }
       ]
     },
@@ -2279,19 +2528,30 @@
       "type": "registry:ui",
       "title": "Select",
       "description": "Displays a list of options for the user to pick from.",
-      "dependencies": ["@radix-ui/react-select"],
-      "files": [{ "path": "registry/select/select.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@radix-ui/react-select"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/select.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/select.tsx"
+        }
+      ]
     },
     {
       "name": "separator",
       "type": "registry:ui",
       "title": "Separator",
       "description": "Visually or semantically separates content.",
-      "dependencies": ["@radix-ui/react-separator"],
+      "dependencies": [
+        "@radix-ui/react-separator"
+      ],
       "files": [
         {
-          "path": "registry/separator/separator.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/separator.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/separator.tsx"
         }
       ]
     },
@@ -2300,8 +2560,17 @@
       "type": "registry:ui",
       "title": "Sheet",
       "description": "Extends the Dialog component to display content that slides in.",
-      "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
-      "files": [{ "path": "registry/sheet/sheet.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@radix-ui/react-dialog",
+        "react-i18next"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sheet.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sheet.tsx"
+        }
+      ]
     },
     {
       "name": "shell",
@@ -2354,101 +2623,140 @@
         }
       },
       "files": [
-        { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
         {
-          "path": "registry/shell/shell-layout.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell.tsx"
         },
         {
-          "path": "registry/shell/shell-sidebar.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-layout.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-layout.tsx"
         },
         {
-          "path": "registry/shell/shell-company.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-sidebar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-sidebar.tsx"
         },
         {
-          "path": "registry/shell/shell-user-profile.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-company.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-company.tsx"
         },
         {
-          "path": "registry/shell/shell-locale-provider.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-user-profile.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-user-profile.tsx"
         },
         {
-          "path": "registry/shell/shell-translation-key.ts",
-          "type": "registry:ui"
-        },
-        { "path": "lib/i18n.ts", "type": "registry:lib" },
-        { "path": "lib/auth.ts", "type": "registry:lib" },
-        { "path": "lib/react-i18next.d.ts", "type": "registry:lib" },
-        {
-          "path": "registry/shell/shell-animations.ts",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-locale-provider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-locale-provider.tsx"
         },
         {
-          "path": "registry/shell/shell-minimal-company.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-translation-key.ts",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-translation-key.ts"
         },
         {
-          "path": "registry/shell/shell-minimal-nav-item.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/lib/i18n.ts",
+          "type": "registry:lib",
+          "target": "lib/i18n.ts"
         },
         {
-          "path": "registry/shell/shell-text.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/lib/auth.ts",
+          "type": "registry:lib",
+          "target": "lib/auth.ts"
         },
         {
-          "path": "registry/shell/shell-theme-provider.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/lib/react-i18next.d.ts",
+          "type": "registry:lib",
+          "target": "lib/react-i18next.d.ts"
         },
         {
-          "path": "registry/shell/shell-user-provider.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-animations.ts",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-animations.ts"
         },
         {
-          "path": "registry/shell/shell-login.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-minimal-company.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-minimal-company.tsx"
         },
         {
-          "path": "registry/shell/shell-auth-provider.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-minimal-nav-item.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-minimal-nav-item.tsx"
         },
         {
-          "path": "registry/shell/shell-company-logo.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-text.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-text.tsx"
         },
         {
-          "path": "registry/shell/shell-constants.ts",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-theme-provider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-theme-provider.tsx"
         },
         {
-          "path": "registry/shell/shell-user-profile-menu-items.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-user-provider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-user-provider.tsx"
         },
         {
-          "path": "registry/shell/group-membership-guard.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-login.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-login.tsx"
         },
         {
-          "path": "registry/shell/group-membership-screens.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-auth-provider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-auth-provider.tsx"
         },
         {
-          "path": "registry/shell/use-group-members.ts",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-company-logo.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-company-logo.tsx"
         },
         {
-          "path": "registry/shell/use-is-group-member.ts",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-constants.ts",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-constants.ts"
         },
         {
-          "path": "registry/shell/use-group-id.ts",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/shell-user-profile-menu-items.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-user-profile-menu-items.tsx"
         },
         {
-          "path": "registry/shell/shell-roles.ts",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/shell/group-membership-guard.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/group-membership-guard.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/shell/group-membership-screens.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/shell/group-membership-screens.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/shell/use-group-members.ts",
+          "type": "registry:ui",
+          "target": "components/ui/shell/use-group-members.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/shell/use-is-group-member.ts",
+          "type": "registry:ui",
+          "target": "components/ui/shell/use-is-group-member.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/shell/use-group-id.ts",
+          "type": "registry:ui",
+          "target": "components/ui/shell/use-group-id.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/shell/shell-roles.ts",
+          "type": "registry:ui",
+          "target": "components/ui/shell/shell-roles.ts"
         }
       ]
     },
@@ -2459,8 +2767,9 @@
       "description": "A React hook for checking if the screen is mobile.",
       "files": [
         {
-          "path": "registry/use-mobile/use-mobile.ts",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/hooks/use-mobile.ts",
+          "type": "registry:hook",
+          "target": "components/ui/use-mobile.ts"
         }
       ]
     },
@@ -2475,33 +2784,44 @@
       ],
       "files": [
         {
-          "path": "registry/use-data-table/types.ts",
-          "type": "registry:hook"
-        },
-        { "path": "lib/constants.ts", "type": "registry:lib" },
-        {
-          "path": "registry/use-data-table/useDataTable.tsx",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/hooks/use-data-table/types.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-data-table/types.ts"
         },
         {
-          "path": "registry/use-data-table/useColumnVisibility.ts",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/lib/constants.ts",
+          "type": "registry:lib",
+          "target": "lib/constants.ts"
         },
         {
-          "path": "registry/use-data-table/usePersistedColumns.ts",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/hooks/use-data-table/useDataTable.tsx",
+          "type": "registry:hook",
+          "target": "hooks/use-data-table/useDataTable.tsx"
         },
         {
-          "path": "registry/use-data-table/usePersistedColumnOrder.ts",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/hooks/use-data-table/useColumnVisibility.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-data-table/useColumnVisibility.ts"
         },
         {
-          "path": "registry/use-data-table/usePersistedSorting.ts",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/hooks/use-data-table/usePersistedColumns.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-data-table/usePersistedColumns.ts"
         },
         {
-          "path": "registry/use-data-table/usePersistedPageSize.ts",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/hooks/use-data-table/usePersistedColumnOrder.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-data-table/usePersistedColumnOrder.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/hooks/use-data-table/usePersistedSorting.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-data-table/usePersistedSorting.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/hooks/use-data-table/usePersistedPageSize.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-data-table/usePersistedPageSize.ts"
         }
       ]
     },
@@ -2515,24 +2835,46 @@
         "@tanstack/react-db",
         "@uipath/vs-core@^4.2.0"
       ],
-      "registryDependencies": ["@uipath/use-data-table", "@uipath/data-table"],
+      "registryDependencies": [
+        "@uipath/use-data-table",
+        "@uipath/data-table"
+      ],
       "files": [
         {
-          "path": "registry/use-data-table/useEntityDataTable.tsx",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/hooks/use-data-table/useEntityDataTable.tsx",
+          "type": "registry:hook",
+          "target": "hooks/use-data-table/useEntityDataTable.tsx"
         },
         {
-          "path": "registry/use-data-table/useEntityColumns.tsx",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/hooks/use-data-table/useEntityColumns.tsx",
+          "type": "registry:hook",
+          "target": "hooks/use-data-table/useEntityColumns.tsx"
         },
-        { "path": "lib/renderValueOrEmptyState.ts", "type": "registry:lib" },
-        { "path": "lib/asserts/assert.ts", "type": "registry:lib" },
         {
-          "path": "lib/asserts/assert-date-or-string.ts",
-          "type": "registry:lib"
+          "path": "../../packages/apollo-vertex/src/lib/renderValueOrEmptyState.ts",
+          "type": "registry:lib",
+          "target": "lib/renderValueOrEmptyState.ts"
         },
-        { "path": "lib/asserts/assert-number.ts", "type": "registry:lib" },
-        { "path": "lib/asserts/assert-string.ts", "type": "registry:lib" }
+        {
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert-date-or-string.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert-date-or-string.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert-number.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert-number.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/lib/asserts/assert-string.ts",
+          "type": "registry:lib",
+          "target": "lib/asserts/assert-string.ts"
+        }
       ]
     },
     {
@@ -2558,78 +2900,119 @@
       ],
       "files": [
         {
-          "path": "registry/sidebar/sidebar-provider.tsx",
-          "type": "registry:ui"
-        },
-        { "path": "registry/sidebar/sidebar.tsx", "type": "registry:ui" },
-        {
-          "path": "registry/sidebar/sidebar-trigger.tsx",
-          "type": "registry:ui"
-        },
-        { "path": "registry/sidebar/sidebar-rail.tsx", "type": "registry:ui" },
-        { "path": "registry/sidebar/sidebar-inset.tsx", "type": "registry:ui" },
-        { "path": "registry/sidebar/sidebar-input.tsx", "type": "registry:ui" },
-        {
-          "path": "registry/sidebar/sidebar-header.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-provider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-provider.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-footer.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-separator.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-trigger.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-trigger.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-content.tsx",
-          "type": "registry:ui"
-        },
-        { "path": "registry/sidebar/sidebar-group.tsx", "type": "registry:ui" },
-        {
-          "path": "registry/sidebar/sidebar-group-label.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-rail.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-rail.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-group-action.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-inset.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-inset.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-group-content.tsx",
-          "type": "registry:ui"
-        },
-        { "path": "registry/sidebar/sidebar-menu.tsx", "type": "registry:ui" },
-        {
-          "path": "registry/sidebar/sidebar-menu-item.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-input.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-input.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-menu-button.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-header.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-header.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-menu-action.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-footer.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-footer.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-menu-badge.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-separator.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-separator.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-menu-skeleton.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-content.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-content.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-menu-sub.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-group.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-group.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-menu-sub-item.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-group-label.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-group-label.tsx"
         },
         {
-          "path": "registry/sidebar/sidebar-menu-sub-button.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-group-action.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-group-action.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-group-content.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-group-content.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-menu.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-menu-item.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-menu-item.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-menu-button.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-menu-button.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-menu-action.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-menu-action.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-menu-badge.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-menu-badge.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-menu-skeleton.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-menu-skeleton.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-menu-sub.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-menu-sub.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-menu-sub-item.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-menu-sub-item.tsx"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sidebar/sidebar-menu-sub-button.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sidebar/sidebar-menu-sub-button.tsx"
         }
       ]
     },
@@ -2640,8 +3023,9 @@
       "description": "Use to show a placeholder while content is loading.",
       "files": [
         {
-          "path": "registry/skeleton/skeleton.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/skeleton.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/skeleton.tsx"
         }
       ]
     },
@@ -2650,15 +3034,26 @@
       "type": "registry:ui",
       "title": "Slider",
       "description": "An input where the user selects a value from within a given range.",
-      "dependencies": ["@radix-ui/react-slider"],
-      "files": [{ "path": "registry/slider/slider.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@radix-ui/react-slider"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/slider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/slider.tsx"
+        }
+      ]
     },
     {
       "name": "sonner",
       "type": "registry:ui",
       "title": "Sonner",
       "description": "An opinionated toast component for React.",
-      "dependencies": ["sonner", "next-themes"],
+      "dependencies": [
+        "sonner",
+        "next-themes"
+      ],
       "cssVars": {
         "theme": {
           "color-info": "var(--info)",
@@ -2676,18 +3071,27 @@
           "info": "oklch(0.69 0.112 207)"
         }
       },
-      "files": [{ "path": "registry/sonner/sonner.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/sonner.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/sonner.tsx"
+        }
+      ]
     },
     {
       "name": "spinner",
       "type": "registry:ui",
       "title": "Spinner",
       "description": "A loading spinner component.",
-      "dependencies": ["class-variance-authority"],
+      "dependencies": [
+        "class-variance-authority"
+      ],
       "files": [
         {
-          "path": "registry/spinner/spinner.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/spinner.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/spinner.tsx"
         }
       ]
     },
@@ -2696,30 +3100,56 @@
       "type": "registry:ui",
       "title": "Switch",
       "description": "A control that allows the user to toggle between on and off.",
-      "dependencies": ["@radix-ui/react-switch"],
-      "files": [{ "path": "registry/switch/switch.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@radix-ui/react-switch"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/switch.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/switch.tsx"
+        }
+      ]
     },
     {
       "name": "table",
       "type": "registry:ui",
       "title": "Table",
       "description": "A responsive table component.",
-      "files": [{ "path": "registry/table/table.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/table.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/table.tsx"
+        }
+      ]
     },
     {
       "name": "tabs",
       "type": "registry:ui",
       "title": "Tabs",
       "description": "A set of layered sections of content shown one at a time.",
-      "dependencies": ["@radix-ui/react-tabs"],
-      "files": [{ "path": "registry/tabs/tabs.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@radix-ui/react-tabs"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/tabs.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/tabs.tsx"
+        }
+      ]
     },
     {
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
       "description": "A composition-first form built on TanStack Form and Zod with Apollo-bound field components and translatable validation errors.",
-      "dependencies": ["@tanstack/react-form", "zod", "react-i18next"],
+      "dependencies": [
+        "@tanstack/react-form",
+        "zod",
+        "react-i18next"
+      ],
       "registryDependencies": [
         "@uipath/button",
         "@uipath/checkbox",
@@ -2732,67 +3162,67 @@
       ],
       "files": [
         {
-          "path": "registry/form/index.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/index.ts",
           "type": "registry:ui",
           "target": "components/ui/form/index.ts"
         },
         {
-          "path": "registry/form/form.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/form.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/form.tsx"
         },
         {
-          "path": "registry/form/form-context.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/form-context.ts",
           "type": "registry:ui",
           "target": "components/ui/form/form-context.ts"
         },
         {
-          "path": "registry/form/field-utils.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/field-utils.ts",
           "type": "registry:ui",
           "target": "components/ui/form/field-utils.ts"
         },
         {
-          "path": "registry/form/use-translated-errors.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/use-translated-errors.ts",
           "type": "registry:ui",
           "target": "components/ui/form/use-translated-errors.ts"
         },
         {
-          "path": "registry/form/field-error.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/field-error.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/field-error.tsx"
         },
         {
-          "path": "registry/form/text-field.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/text-field.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/text-field.tsx"
         },
         {
-          "path": "registry/form/textarea-field.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/textarea-field.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/textarea-field.tsx"
         },
         {
-          "path": "registry/form/select-field.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/select-field.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/select-field.tsx"
         },
         {
-          "path": "registry/form/radio-group-field.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/radio-group-field.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/radio-group-field.tsx"
         },
         {
-          "path": "registry/form/checkbox-field.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/checkbox-field.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/checkbox-field.tsx"
         },
         {
-          "path": "registry/form/switch-field.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/switch-field.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/switch-field.tsx"
         },
         {
-          "path": "registry/form/submit-button.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form/submit-button.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/submit-button.tsx"
         }
@@ -2803,45 +3233,48 @@
       "type": "registry:ui",
       "title": "Stepper",
       "description": "A composable step indicator for multi-step flows with horizontal and vertical orientations and active, completed, and inactive states.",
-      "dependencies": ["class-variance-authority", "lucide-react"],
+      "dependencies": [
+        "class-variance-authority",
+        "lucide-react"
+      ],
       "files": [
         {
-          "path": "registry/stepper/index.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/stepper/index.ts",
           "type": "registry:ui",
           "target": "components/ui/stepper/index.ts"
         },
         {
-          "path": "registry/stepper/stepper.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/stepper/stepper.tsx",
           "type": "registry:ui",
           "target": "components/ui/stepper/stepper.tsx"
         },
         {
-          "path": "registry/stepper/stepper-context.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/stepper/stepper-context.ts",
           "type": "registry:ui",
           "target": "components/ui/stepper/stepper-context.ts"
         },
         {
-          "path": "registry/stepper/stepper-item.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/stepper/stepper-item.tsx",
           "type": "registry:ui",
           "target": "components/ui/stepper/stepper-item.tsx"
         },
         {
-          "path": "registry/stepper/stepper-trigger.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/stepper/stepper-trigger.tsx",
           "type": "registry:ui",
           "target": "components/ui/stepper/stepper-trigger.tsx"
         },
         {
-          "path": "registry/stepper/stepper-indicator.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/stepper/stepper-indicator.tsx",
           "type": "registry:ui",
           "target": "components/ui/stepper/stepper-indicator.tsx"
         },
         {
-          "path": "registry/stepper/stepper-content.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/stepper/stepper-content.tsx",
           "type": "registry:ui",
           "target": "components/ui/stepper/stepper-content.tsx"
         },
         {
-          "path": "registry/stepper/stepper-separator.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/stepper/stepper-separator.tsx",
           "type": "registry:ui",
           "target": "components/ui/stepper/stepper-separator.tsx"
         }
@@ -2867,27 +3300,27 @@
       ],
       "files": [
         {
-          "path": "registry/form-wizard/index.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/form-wizard/index.ts",
           "type": "registry:ui",
           "target": "components/ui/form-wizard/index.ts"
         },
         {
-          "path": "registry/form-wizard/form-wizard.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form-wizard/form-wizard.tsx",
           "type": "registry:ui",
           "target": "components/ui/form-wizard/form-wizard.tsx"
         },
         {
-          "path": "registry/form-wizard/form-wizard-nav.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/form-wizard/form-wizard-nav.tsx",
           "type": "registry:ui",
           "target": "components/ui/form-wizard/form-wizard-nav.tsx"
         },
         {
-          "path": "registry/form-wizard/use-form-wizard.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/form-wizard/use-form-wizard.ts",
           "type": "registry:ui",
           "target": "components/ui/form-wizard/use-form-wizard.ts"
         },
         {
-          "path": "registry/form-wizard/wizard-schema.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/form-wizard/wizard-schema.ts",
           "type": "registry:ui",
           "target": "components/ui/form-wizard/wizard-schema.ts"
         }
@@ -2900,8 +3333,9 @@
       "description": "Displays a form textarea.",
       "files": [
         {
-          "path": "registry/textarea/textarea.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/textarea.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/textarea.tsx"
         }
       ]
     },
@@ -2910,20 +3344,33 @@
       "type": "registry:ui",
       "title": "Toggle",
       "description": "A two-state button that can be either on or off.",
-      "dependencies": ["@radix-ui/react-toggle"],
-      "files": [{ "path": "registry/toggle/toggle.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@radix-ui/react-toggle"
+      ],
+      "files": [
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/toggle.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/toggle.tsx"
+        }
+      ]
     },
     {
       "name": "toggle-group",
       "type": "registry:ui",
       "title": "Toggle Group",
       "description": "A set of two-state buttons that can be toggled on or off.",
-      "dependencies": ["@radix-ui/react-toggle-group"],
-      "registryDependencies": ["@uipath/toggle"],
+      "dependencies": [
+        "@radix-ui/react-toggle-group"
+      ],
+      "registryDependencies": [
+        "@uipath/toggle"
+      ],
       "files": [
         {
-          "path": "registry/toggle-group/toggle-group.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/toggle-group.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/toggle-group.tsx"
         }
       ]
     },
@@ -2932,11 +3379,14 @@
       "type": "registry:ui",
       "title": "Tooltip",
       "description": "A popup that displays information related to an element.",
-      "dependencies": ["@radix-ui/react-tooltip"],
+      "dependencies": [
+        "@radix-ui/react-tooltip"
+      ],
       "files": [
         {
-          "path": "registry/tooltip/tooltip.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/tooltip.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/tooltip.tsx"
         }
       ]
     },
@@ -2958,8 +3408,9 @@
       ],
       "files": [
         {
-          "path": "registry/date-picker/date-picker.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/date-picker.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/date-picker.tsx"
         }
       ]
     },
@@ -2968,9 +3419,15 @@
       "type": "registry:ui",
       "title": "Calendar",
       "description": "A calendar component.",
-      "dependencies": ["react-day-picker"],
+      "dependencies": [
+        "react-day-picker"
+      ],
       "files": [
-        { "path": "registry/calendar/calendar.tsx", "type": "registry:ui" }
+        {
+          "path": "../../packages/apollo-vertex/src/components/ui/calendar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/calendar.tsx"
+        }
       ]
     },
     {
@@ -2978,20 +3435,22 @@
       "type": "registry:lib",
       "title": "Feature Flag Provider",
       "description": "Generic feature flag provider with Proteus SDK integration, reactive listeners, and environment-based switching.",
-      "dependencies": ["@uipath/proteus-client"],
+      "dependencies": [
+        "@uipath/proteus-client"
+      ],
       "files": [
         {
-          "path": "registry/feature-flag-provider/types.ts",
+          "path": "../../packages/apollo-vertex/src/feature-flags/types.ts",
           "type": "registry:lib",
           "target": "lib/feature-flag-provider/types.ts"
         },
         {
-          "path": "registry/feature-flag-provider/proteus-adapter.ts",
+          "path": "../../packages/apollo-vertex/src/feature-flags/proteus-adapter.ts",
           "type": "registry:lib",
           "target": "lib/feature-flag-provider/proteus-adapter.ts"
         },
         {
-          "path": "registry/feature-flag-provider/feature-flag-provider.tsx",
+          "path": "../../packages/apollo-vertex/src/feature-flags/feature-flag-provider.tsx",
           "type": "registry:lib",
           "target": "lib/feature-flag-provider/feature-flag-provider.tsx"
         }
@@ -3002,11 +3461,14 @@
       "type": "registry:hook",
       "title": "useFeatureFlag",
       "description": "React hook that reads a feature flag value and reactively updates when the flag changes.",
-      "registryDependencies": ["@uipath/feature-flag-provider"],
+      "registryDependencies": [
+        "@uipath/feature-flag-provider"
+      ],
       "files": [
         {
-          "path": "registry/use-feature-flag/use-feature-flag.ts",
-          "type": "registry:hook"
+          "path": "../../packages/apollo-vertex/src/feature-flags/use-feature-flag.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-feature-flag/use-feature-flag.ts"
         }
       ]
     },
@@ -3015,11 +3477,14 @@
       "type": "registry:ui",
       "title": "FeatureFlagGuard",
       "description": "Wrapper component that conditionally renders children based on a feature flag value.",
-      "registryDependencies": ["@uipath/use-feature-flag"],
+      "registryDependencies": [
+        "@uipath/use-feature-flag"
+      ],
       "files": [
         {
-          "path": "registry/feature-flag-guard/feature-flag-guard.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/feature-flags/feature-flag-guard.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/feature-flag-guard/feature-flag-guard.tsx"
         }
       ]
     },
@@ -3028,11 +3493,14 @@
       "type": "registry:ui",
       "title": "ProtectedFeatureRoute",
       "description": "Route-level guard that throws an error when a feature flag is disabled.",
-      "registryDependencies": ["@uipath/use-feature-flag"],
+      "registryDependencies": [
+        "@uipath/use-feature-flag"
+      ],
       "files": [
         {
-          "path": "registry/protected-feature-route/protected-feature-route.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/feature-flags/protected-feature-route.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/protected-feature-route/protected-feature-route.tsx"
         }
       ]
     },
@@ -3075,289 +3543,297 @@
       ],
       "files": [
         {
-          "path": "registry/solution-tests/index.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/index.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/index.ts"
         },
         {
-          "path": "registry/solution-tests/save-as-test-button.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/save-as-test-button.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/save-as-test-button.tsx"
         },
         {
-          "path": "registry/solution-tests/solution-tests-view.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/solution-tests-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/solution-tests-view.tsx"
         },
         {
-          "path": "registry/solution-tests/solution-tests.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/solution-tests.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/solution-tests.tsx"
         },
         {
-          "path": "registry/solution-tests/context.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/context.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/context.tsx"
         },
         {
-          "path": "registry/solution-tests/hooks.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/hooks.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/hooks.ts"
         },
         {
-          "path": "registry/solution-tests/constants.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/constants.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/constants.ts"
         },
         {
-          "path": "registry/solution-tests/mutations.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/mutations.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/mutations.ts"
         },
         {
-          "path": "registry/solution-tests/attachments.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/attachments.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/attachments.ts"
         },
         {
-          "path": "registry/solution-tests/actions.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/actions.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/actions.ts"
         },
         {
-          "path": "registry/solution-tests/create-actions.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/create-actions.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/create-actions.ts"
         },
         {
-          "path": "registry/solution-tests/errors.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/errors.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/errors.ts"
         },
         {
-          "path": "registry/solution-tests/use-solution-tests.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/use-solution-tests.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/use-solution-tests.ts"
         },
         {
-          "path": "registry/solution-tests/use-solution-test-collection.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/use-solution-test-collection.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/use-solution-test-collection.ts"
         },
         {
-          "path": "registry/solution-tests/use-solution-test-batch-runs.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/use-solution-test-batch-runs.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/use-solution-test-batch-runs.ts"
         },
         {
-          "path": "registry/solution-tests/use-solution-test-runs.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/use-solution-test-runs.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/use-solution-test-runs.ts"
         },
         {
-          "path": "registry/solution-tests/use-baseline-jobs.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/use-baseline-jobs.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/use-baseline-jobs.ts"
         },
         {
-          "path": "registry/solution-tests/use-run-results.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/use-run-results.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/use-run-results.ts"
         },
         {
-          "path": "registry/solution-tests/use-force-stop.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/use-force-stop.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/use-force-stop.ts"
         },
         {
-          "path": "registry/solution-tests/config.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/config.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/config.ts"
         },
         {
-          "path": "registry/solution-tests/types.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/types.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/types.ts"
         },
         {
-          "path": "registry/solution-tests/tabs.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/tabs.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/tabs.ts"
         },
         {
-          "path": "registry/solution-tests/status-maps.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/status-maps.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/status-maps.ts"
         },
         {
-          "path": "registry/solution-tests/utils.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/utils.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/utils.ts"
         },
-        { "path": "lib/renderValueOrEmptyState.ts", "type": "registry:lib" },
-        { "path": "lib/constants.ts", "type": "registry:lib" },
         {
-          "path": "registry/solution-tests/user-messages.ts",
+          "path": "../../packages/apollo-vertex/src/lib/renderValueOrEmptyState.ts",
+          "type": "registry:lib",
+          "target": "lib/renderValueOrEmptyState.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/lib/constants.ts",
+          "type": "registry:lib",
+          "target": "lib/constants.ts"
+        },
+        {
+          "path": "../../packages/apollo-vertex/src/solution-tests/user-messages.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/user-messages.ts"
         },
         {
-          "path": "registry/solution-tests/user-messages-view.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/user-messages-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/user-messages-view.tsx"
         },
         {
-          "path": "registry/solution-tests/process-results-viewer-dialog.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/process-results-viewer-dialog.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/process-results-viewer-dialog.tsx"
         },
         {
-          "path": "registry/solution-tests/delete-confirm-dialog.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/delete-confirm-dialog.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/delete-confirm-dialog.tsx"
         },
         {
-          "path": "registry/solution-tests/evaluator-results-view.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluator-results-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluator-results-view.tsx"
         },
         {
-          "path": "registry/solution-tests/kpi-bar.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/kpi-bar.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/kpi-bar.tsx"
         },
         {
-          "path": "registry/solution-tests/expanded-agents.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/expanded-agents.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/expanded-agents.tsx"
         },
         {
-          "path": "registry/solution-tests/expanded-agents-view.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/expanded-agents-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/expanded-agents-view.tsx"
         },
         {
-          "path": "registry/solution-tests/result-expanded-content.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/result-expanded-content.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/result-expanded-content.tsx"
         },
         {
-          "path": "registry/solution-tests/run-confirm-dialog.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/run-confirm-dialog.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/run-confirm-dialog.tsx"
         },
         {
-          "path": "registry/solution-tests/run-details.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/run-details.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/run-details.tsx"
         },
         {
-          "path": "registry/solution-tests/run-details-view.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/run-details-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/run-details-view.tsx"
         },
         {
-          "path": "registry/solution-tests/version-delta-glyph.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/version-delta-glyph.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/version-delta-glyph.tsx"
         },
         {
-          "path": "registry/solution-tests/run-details-agent-list.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/run-details-agent-list.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/run-details-agent-list.tsx"
         },
         {
-          "path": "registry/solution-tests/expanded-run-tests.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/expanded-run-tests.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/expanded-run-tests.tsx"
         },
         {
-          "path": "registry/solution-tests/expanded-run-tests-view.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/expanded-run-tests-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/expanded-run-tests-view.tsx"
         },
         {
-          "path": "registry/solution-tests/evaluators/registry.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluators/registry.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/registry.tsx"
         },
         {
-          "path": "registry/solution-tests/outputs/registry.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/outputs/registry.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/outputs/registry.tsx"
         },
         {
-          "path": "registry/solution-tests/outputs/process-output-view.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/outputs/process-output-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/outputs/process-output-view.tsx"
         },
         {
-          "path": "registry/solution-tests/outputs/ixp-extraction/schema.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/outputs/ixp-extraction/schema.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/outputs/ixp-extraction/schema.ts"
         },
         {
-          "path": "registry/solution-tests/outputs/ixp-extraction/ixp-output-result.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/outputs/ixp-extraction/ixp-output-result.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/outputs/ixp-extraction/ixp-output-result.tsx"
         },
         {
-          "path": "registry/solution-tests/ixp/shared/format-values.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/ixp/shared/format-values.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/ixp/shared/format-values.ts"
         },
         {
-          "path": "registry/solution-tests/ixp/shared/field-table.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/ixp/shared/field-table.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/ixp/shared/field-table.tsx"
         },
         {
-          "path": "registry/solution-tests/ixp/shared/document-section.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/ixp/shared/document-section.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/ixp/shared/document-section.tsx"
         },
         {
-          "path": "registry/solution-tests/evaluators/output-panels.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluators/output-panels.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/output-panels.tsx"
         },
         {
-          "path": "registry/solution-tests/evaluators/generic-evaluator-result.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluators/generic-evaluator-result.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/generic-evaluator-result.tsx"
         },
         {
-          "path": "registry/solution-tests/evaluators/ixp-extraction/schema.ts",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluators/ixp-extraction/schema.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/ixp-extraction/schema.ts"
         },
         {
-          "path": "registry/solution-tests/evaluators/ixp-extraction/ixp-extraction-result.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluators/ixp-extraction/ixp-extraction-result.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/ixp-extraction/ixp-extraction-result.tsx"
         },
         {
-          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/provenance-bar.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluators/ixp-extraction/internal/provenance-bar.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/provenance-bar.tsx"
         },
         {
-          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/summary-bar.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluators/ixp-extraction/internal/summary-bar.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/summary-bar.tsx"
         },
         {
-          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/document-row.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluators/ixp-extraction/internal/document-row.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/document-row.tsx"
         },
         {
-          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/field-group.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluators/ixp-extraction/internal/field-group.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/field-group.tsx"
         },
         {
-          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx",
+          "path": "../../packages/apollo-vertex/src/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx"
         }
@@ -3380,8 +3856,9 @@
       },
       "files": [
         {
-          "path": "registry/ai-mark/ai-mark.tsx",
-          "type": "registry:ui"
+          "path": "../../packages/apollo-vertex/src/components/ui/ai-mark.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-mark.tsx"
         }
       ]
     },
@@ -3390,8 +3867,12 @@
       "type": "registry:ui",
       "title": "Timeline",
       "description": "Activity timeline primitives: a variant-driven status marker and the connecting row layout for building AI and human activity trails.",
-      "dependencies": ["lucide-react"],
-      "registryDependencies": ["@uipath/ai-mark"],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@uipath/ai-mark"
+      ],
       "cssVars": {
         "theme": {
           "color-success": "var(--success)",
@@ -3423,17 +3904,17 @@
       },
       "files": [
         {
-          "path": "registry/timeline/index.ts",
+          "path": "../../packages/apollo-vertex/src/components/ui/timeline/index.ts",
           "type": "registry:ui",
           "target": "components/ui/timeline/index.ts"
         },
         {
-          "path": "registry/timeline/timeline-marker.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/timeline/timeline-marker.tsx",
           "type": "registry:ui",
           "target": "components/ui/timeline/timeline-marker.tsx"
         },
         {
-          "path": "registry/timeline/timeline-row-layout.tsx",
+          "path": "../../packages/apollo-vertex/src/components/ui/timeline/timeline-row-layout.tsx",
           "type": "registry:ui",
           "target": "components/ui/timeline/timeline-row-layout.tsx"
         }

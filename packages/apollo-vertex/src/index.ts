@@ -9,6 +9,8 @@
 // =============================================================================
 
 export * from './components/ui/accordion';
+export * from './components/ui/ai-caveat';
+export * from './components/ui/ai-glow';
 export * from './components/ui/ai-mark';
 export * from './components/ui/alert';
 export * from './components/ui/alert-dialog';
@@ -21,6 +23,7 @@ export * from './components/ui/button-group';
 export * from './components/ui/calendar';
 export * from './components/ui/card';
 export * from './components/ui/carousel';
+export * from './components/ui/chart';
 export * from './components/ui/checkbox';
 export * from './components/ui/collapsible';
 export * from './components/ui/combobox';
@@ -65,6 +68,13 @@ export * from './components/ui/toggle';
 export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
 
+export * from './components/ui/bar-chart';
+export * from './components/ui/distribution-chart';
+export * from './components/ui/kpi-chart';
+export * from './components/ui/line-chart';
+export * from './components/ui/multi-line-chart';
+export * from './components/ui/table-chart';
+
 export * from './components/ui/confidence-signal';
 export * from './components/ui/data-table';
 // Field's FieldError is the root public symbol. Form's FieldError is a
@@ -102,3 +112,8 @@ export { useIsMobile } from './hooks/use-mobile';
 export { useDataTable, type UseDataTableOptions } from './hooks/use-data-table';
 export { useReactTableCompat } from './hooks/useReactTableCompat';
 export { cn } from './lib/utils';
+export { renderValueOrEmptyState } from './lib/renderValueOrEmptyState';
+export * from './lib/constants';
+export * from './lib/charts-core';
+export * from './lib/data-fabric-adapter';
+export * from './lib/insights-adapter';

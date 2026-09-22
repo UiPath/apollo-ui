@@ -2,8 +2,8 @@
 
 import { Share2 } from "lucide-react";
 
-import { Badge } from "@/registry/badge/badge";
-import { Button } from "@/registry/button/button";
+import { Badge } from "@uipath/apollo-vertex";
+import { Button } from "@uipath/apollo-vertex";
 import {
   PageHeader,
   PageHeaderActions,
@@ -16,7 +16,7 @@ import {
   PageHeaderNav,
   PageHeaderTitle,
   PageHeaderTitleGroup,
-} from "@/registry/page-header/page-header";
+} from "@uipath/apollo-vertex";
 
 /** Full demo showing metadata fields — fits within narrow docs containers */
 export function PageHeaderFullDemo() {

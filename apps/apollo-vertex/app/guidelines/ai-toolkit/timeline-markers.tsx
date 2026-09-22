@@ -2,7 +2,7 @@ import {
   TimelineMarker,
   type TimelineMarkerVariant,
   TimelineRowLayout,
-} from "@/registry/timeline";
+} from "@uipath/apollo-vertex";
 
 const VARIANTS: { variant: TimelineMarkerVariant; label: string }[] = [
   { variant: "user", label: "User acted" },

@@ -6,17 +6,17 @@ import { jwtDecode } from "jwt-decode";
 import { ChevronRight, LogIn, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { STORAGE_KEYS, toCodedAppFilePath } from "@/lib/auth";
-import { STALE_TIME_MS } from "@/lib/constants";
+import { Button } from "@uipath/apollo-vertex";
+import { STORAGE_KEYS, toCodedAppFilePath } from "@uipath/apollo-vertex/shell";
+import { STALE_TIME_MS } from "@uipath/apollo-vertex";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/select/select";
-import { useAuth } from "@/registry/shell/shell-auth-provider";
+} from "@uipath/apollo-vertex";
+import { useAuth } from "@uipath/apollo-vertex/shell";
 import {
   AICHAT_CODED_APP_PATH,
   AICHAT_DIRECT_BASE_URL,

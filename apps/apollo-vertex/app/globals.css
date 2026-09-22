@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@source "../registry";
 @source "../templates";
 @source "../../../packages/apollo-vertex/src";
 

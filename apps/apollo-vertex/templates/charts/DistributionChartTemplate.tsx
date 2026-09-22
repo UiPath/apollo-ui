@@ -1,7 +1,7 @@
 "use client";
 
-import { DistributionChart } from "@/components/ui/distribution-chart";
-import { Card, CardContent } from "@/components/ui/card";
+import { DistributionChart } from "@uipath/apollo-vertex";
+import { Card, CardContent } from "@uipath/apollo-vertex";
 
 const data = [
   { x: "0–10", y: 5 },

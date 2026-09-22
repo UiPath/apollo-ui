@@ -27,7 +27,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          VERTEX_FILES=$(gh pr diff "$PR_URL" --name-only | grep -E '^(apps/apollo-vertex/|\.github/scripts/test-registry/|\.github/workflows/apollo-vertex-registry-check\.yml)' || true)
+          VERTEX_FILES=$(gh pr diff "$PR_URL" --name-only | grep -E '^(apps/apollo-vertex/|packages/apollo-vertex/|\.github/scripts/test-registry/|\.github/workflows/apollo-vertex-registry-check\.yml)' || true)
           if [ -n "$VERTEX_FILES" ]; then
             echo "has_vertex_changes=true" >> "$GITHUB_OUTPUT"
           else
@@ -78,7 +78,7 @@ jobs:
           $GITHUB_WORKSPACE/node_modules/.bin/tsx $GITHUB_WORKSPACE/.github/scripts/test-registry/configure-registry.ts
 
       - name: Copy locales into base app
-        run: cp -r apps/apollo-vertex/locales ${{ runner.temp }}/minimal-app/locales
+        run: cp -r packages/apollo-vertex/src/locales ${{ runner.temp }}/minimal-app/locales
 
       - name: Remove node_modules from base app
         run: rm -rf ${{ runner.temp }}/minimal-app/node_modules

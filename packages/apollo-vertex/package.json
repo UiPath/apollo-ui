@@ -16,7 +16,28 @@
       "require": "./dist/index.cjs"
     },
     "./theme.css": "./dist/theme.css",
-    "./tailwind.css": "./dist/tailwind.css"
+    "./tailwind.css": "./dist/tailwind.css",
+    "./shell": {
+      "types": "./dist/shell/index.d.ts",
+      "import": "./dist/shell/index.js",
+      "require": "./dist/shell/index.cjs"
+    },
+    "./solution-tests": {
+      "types": "./dist/solution-tests/index.d.ts",
+      "import": "./dist/solution-tests/index.js",
+      "require": "./dist/solution-tests/index.cjs"
+    },
+    "./feature-flags": {
+      "types": "./dist/feature-flags/index.d.ts",
+      "import": "./dist/feature-flags/index.js",
+      "require": "./dist/feature-flags/index.cjs"
+    },
+    "./ai-chat": {
+      "types": "./dist/ai-chat/index.d.ts",
+      "import": "./dist/ai-chat/index.js",
+      "require": "./dist/ai-chat/index.cjs"
+    },
+    "./locales/*": "./dist/locales/*"
   },
   "files": [
     "dist"
@@ -36,7 +57,41 @@
   },
   "peerDependencies": {
     "react": ">=19.0.0",
-    "react-dom": ">=19.0.0"
+    "react-dom": ">=19.0.0",
+    "@tanstack/ai": "^0.14.0",
+    "@tanstack/ai-client": "^0.8.0",
+    "@tanstack/react-db": "*",
+    "@tanstack/react-query": "^5.90.0",
+    "@tanstack/react-router": "^1.132.0",
+    "@ts-rest/core": "^3.53.0-rc.1",
+    "@uipath/uipath-typescript": "^1.7.1",
+    "eventsource-parser": "^3.0.6",
+    "highlight.js": "^11.11.1",
+    "jwt-decode": "^4.0.0",
+    "pkce-challenge": "^6.0.0",
+    "react-error-boundary": "^6.0.0",
+    "react-markdown": "^10.1.0",
+    "recharts": "^2.15.4",
+    "remark-breaks": "^4.0.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/ai": { "optional": true },
+    "@tanstack/ai-client": { "optional": true },
+    "@tanstack/react-db": { "optional": true },
+    "@tanstack/react-query": { "optional": true },
+    "@tanstack/react-router": { "optional": true },
+    "@ts-rest/core": { "optional": true },
+    "@uipath/uipath-typescript": { "optional": true },
+    "eventsource-parser": { "optional": true },
+    "highlight.js": { "optional": true },
+    "jwt-decode": { "optional": true },
+    "pkce-challenge": { "optional": true },
+    "react-error-boundary": { "optional": true },
+    "react-markdown": { "optional": true },
+    "recharts": { "optional": true },
+    "remark-breaks": { "optional": true },
+    "remark-gfm": { "optional": true }
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -101,16 +156,31 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
+    "@tanstack/ai": "0.14.0",
+    "@tanstack/ai-client": "0.8.0",
+    "@tanstack/react-query": "^5.90.21",
+    "@tanstack/react-router": "^1.132.31",
+    "@ts-rest/core": "^3.53.0-rc.1",
     "@types/jest-axe": "^3.5.9",
     "@types/luxon": "^3.7.1",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
+    "@uipath/uipath-typescript": "^1.7.1",
     "@vitest/coverage-v8": "^4.1.5",
+    "eventsource-parser": "^3.0.6",
+    "highlight.js": "^11.11.1",
     "jest-axe": "^10.0.0",
     "jsdom": "^27.2.0",
+    "jwt-decode": "^4.0.0",
+    "pkce-challenge": "^6.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-error-boundary": "^6.0.0",
+    "react-markdown": "^10.1.0",
+    "recharts": "2.15.4",
+    "remark-breaks": "^4.0.0",
+    "remark-gfm": "^4.0.1",
     "semantic-release": "^25.0.3",
     "typescript": "^5.9.3",
     "vite": "^7.3.6",

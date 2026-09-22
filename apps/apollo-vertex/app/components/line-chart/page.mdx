@@ -21,7 +21,7 @@ Installs both the prop-driven `LineChart` view and the `LineChartWithAdapter` va
 `LineChart` plots an array of `{ x, y }` points. Use it when the series is already in memory.
 
 ```tsx
-import { LineChart } from "@/components/ui/line-chart";
+import { LineChart } from "@uipath/apollo-vertex";
 
 const data = [
   { x: "Jan", y: 120 },
@@ -60,8 +60,8 @@ npx shadcn@latest add @uipath/insights-adapter
 ```
 
 ```tsx
-import { LineChartWithAdapter } from "@/components/ui/line-chart";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+import { LineChartWithAdapter } from "@uipath/apollo-vertex";
+import { dataFabricAdapter } from "@uipath/apollo-vertex";
 
 const adapter = dataFabricAdapter({
   baseUrl: "/api/datafabric/.../api",

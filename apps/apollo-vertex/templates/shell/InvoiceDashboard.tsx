@@ -8,10 +8,10 @@ import {
   FileText,
   TrendingUp,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Badge } from "@uipath/apollo-vertex";
+import { Button } from "@uipath/apollo-vertex";
+import { Card, CardContent, CardHeader, CardTitle } from "@uipath/apollo-vertex";
+import { Progress } from "@uipath/apollo-vertex";
 import {
   Table,
   TableBody,
@@ -19,13 +19,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@uipath/apollo-vertex";
 import {
   PageHeader,
   PageHeaderActions,
   PageHeaderNav,
   PageHeaderTitle,
-} from "@/components/ui/page-header";
+} from "@uipath/apollo-vertex";
 
 const kpis = [
   { label: "Total Invoices", value: "1,247", icon: FileText, change: "+12%" },

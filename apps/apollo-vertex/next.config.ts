@@ -20,26 +20,35 @@ function findRepoRoot(start: string): string {
 // uip-go copies this app to `.uipath-build/apollo-vertex`. Walk to the
 // monorepo root so the compiled workspace package still resolves there.
 const repoRoot = findRepoRoot(dirname(fileURLToPath(import.meta.url)));
-const vertexDistIndex = join(
-  repoRoot,
-  "packages/apollo-vertex/dist/index.js",
-);
-const vertexSrcIndex = join(
-  repoRoot,
-  "packages/apollo-vertex/src/index.ts",
-);
 
-// dist/ is gitignored. Prefer it when turbo `^build` or Coded App
-// preCommands produced it; otherwise fall back to source so local
-// `pnpm dev` / direct `next build` still resolve the workspace package.
+// dist/ is gitignored. Prefer it when turbo `^build`, the app `dev`/`build`
+// scripts, or Coded App preCommands produced it. Fall back to source so the
+// package name still resolves if dist is missing. Package `@/` imports are
+// rewritten only in dist, so `ensure:vertex` builds it before local `pnpm dev`.
 function vertexPackageAliases(): Record<string, string> {
-  if (existsSync(vertexDistIndex)) {
-    return { "@uipath/apollo-vertex": vertexDistIndex };
+  const distDir = join(repoRoot, "packages/apollo-vertex/dist");
+  const srcDir = join(repoRoot, "packages/apollo-vertex/src");
+  const useDist = existsSync(join(distDir, "index.js"));
+  const root = useDist ? distDir : srcDir;
+  const ext = useDist ? ".js" : ".ts";
+  if (!existsSync(join(root, `index${ext}`))) {
+    return {};
   }
-  if (existsSync(vertexSrcIndex)) {
-    return { "@uipath/apollo-vertex": vertexSrcIndex };
-  }
-  return {};
+  return {
+    "@uipath/apollo-vertex": join(root, `index${ext}`),
+    "@uipath/apollo-vertex/shell": join(root, "shell", `index${ext}`),
+    "@uipath/apollo-vertex/solution-tests": join(
+      root,
+      "solution-tests",
+      `index${ext}`,
+    ),
+    "@uipath/apollo-vertex/feature-flags": join(
+      root,
+      "feature-flags",
+      `index${ext}`,
+    ),
+    "@uipath/apollo-vertex/ai-chat": join(root, "ai-chat", `index${ext}`),
+  };
 }
 
 const vertexAliases = vertexPackageAliases();

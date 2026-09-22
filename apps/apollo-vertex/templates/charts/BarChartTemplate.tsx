@@ -1,7 +1,7 @@
 "use client";
 
-import { BarChart } from "@/components/ui/bar-chart";
-import { Card, CardContent } from "@/components/ui/card";
+import { BarChart } from "@uipath/apollo-vertex";
+import { Card, CardContent } from "@uipath/apollo-vertex";
 
 const raw = [
   { department: "Marketing", spend: 12000 },

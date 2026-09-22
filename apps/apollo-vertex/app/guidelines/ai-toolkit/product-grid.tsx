@@ -1,9 +1,9 @@
 import { Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
-import { AiGlow } from "@/registry/ai-glow/ai-glow";
+import { Badge } from "@uipath/apollo-vertex";
+import { Button } from "@uipath/apollo-vertex";
+import { Card } from "@uipath/apollo-vertex";
+import { AiCaveat } from "@uipath/apollo-vertex";
+import { AiGlow } from "@uipath/apollo-vertex";
 import { AiIcon } from "./ai-icon";
 
 // Text-safe gradient fill (white text, AA) for the "Best match" badge.

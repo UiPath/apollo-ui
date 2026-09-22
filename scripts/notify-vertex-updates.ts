@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 
-const REGISTRY_PREFIX = 'apps/apollo-vertex/registry/';
+const SRC_PREFIX = 'packages/apollo-vertex/src/';
 const TRIGGER_URL = 'https://vertical-solutions-tracker.vercel.app/api/trigger-update';
 const REPOSITORY = 'UiPath/vertical-solutions-template';
 
@@ -20,11 +20,27 @@ function getChangedFiles(base: string, head: string): string[] {
   return output.trim().split('\n').filter(Boolean);
 }
 
+const FEATURE_ROOTS = new Set([
+  'shell',
+  'ai-chat',
+  'solution-tests',
+  'feature-flags',
+]);
+
 function extractComponents(files: string[]): string[] {
-  const components = files
-    .filter((name) => name.startsWith(REGISTRY_PREFIX))
-    .map((name) => name.slice(REGISTRY_PREFIX.length).split('/')[0] as string)
-    .filter(Boolean);
+  const components = files.flatMap((name) => {
+    if (!name.startsWith(SRC_PREFIX)) {
+      return [];
+    }
+    const rest = name.slice(SRC_PREFIX.length);
+    if (rest.startsWith('components/ui/')) {
+      const after = rest.slice('components/ui/'.length);
+      const id = after.split('/')[0]?.replace(/\.(tsx|ts)$/, '') ?? '';
+      return id ? [id] : [];
+    }
+    const root = rest.split('/')[0] ?? '';
+    return FEATURE_ROOTS.has(root) ? [root] : [];
+  });
   return [...new Set(components)].sort();
 }
 

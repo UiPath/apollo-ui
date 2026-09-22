@@ -1,12 +1,12 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@uipath/apollo-vertex";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/registry/tooltip/tooltip";
+} from "@uipath/apollo-vertex";
 import type { InsightCardContent } from "./glow-config";
 import { useDashboardData } from "./dashboard-data-context";
 import type { InsightCardData } from "./dashboard-data";

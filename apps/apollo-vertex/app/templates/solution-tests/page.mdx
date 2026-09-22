@@ -187,7 +187,7 @@ the same `triggerBaseUrl` / `getToken` plumbing as the other writes.
 import {
   SaveAsTestButton,
   useCreateTest,
-} from "@/components/ui/solution-tests";
+} from "@uipath/apollo-vertex/solution-tests";
 
 function SaveSubjectAsTest({ subjectId }: { subjectId: string }) {
   const createTest = useCreateTest();
@@ -245,7 +245,7 @@ import {
   SolutionTests,
   SolutionTestsProvider,
   type SolutionTestsConfig,
-} from "@/components/ui/solution-tests";
+} from "@uipath/apollo-vertex/solution-tests";
 
 const config: SolutionTestsConfig = {
   subjectColumns, // the only per-vertical customization

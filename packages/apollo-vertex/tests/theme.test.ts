@@ -36,11 +36,20 @@ describe('theme.css', () => {
 });
 
 describe('package.json public API', () => {
-  it('exports the root barrel and CSS files only', () => {
+  it('exports the root barrel, CSS files, and optional-peer subpaths', () => {
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
     expect(pkg.name).toBe('@uipath/apollo-vertex');
     expect(pkg.sideEffects).toEqual(['**/*.css']);
-    expect(Object.keys(pkg.exports).sort()).toEqual(['.', './tailwind.css', './theme.css']);
+    expect(Object.keys(pkg.exports).sort()).toEqual([
+      '.',
+      './ai-chat',
+      './feature-flags',
+      './locales/*',
+      './shell',
+      './solution-tests',
+      './tailwind.css',
+      './theme.css',
+    ]);
     expect(pkg.exports['./button']).toBeUndefined();
     expect(pkg.exports['./components/ui/*']).toBeUndefined();
     expect(pkg.peerDependencies.react).toBe('>=19.0.0');

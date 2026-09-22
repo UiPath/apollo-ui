@@ -2,7 +2,26 @@ import { pluginReact } from '@rsbuild/plugin-react';
 import type { RslibConfig } from '@rslib/core';
 import { defineConfig } from '@rslib/core';
 
-const externals = ['react', 'react-dom', 'react/jsx-runtime'];
+const externals = [
+  'react',
+  'react-dom',
+  'react/jsx-runtime',
+  /^@uipath\/vs-core/,
+  /^@uipath\/proteus-client/,
+  /^@uipath\/uipath-typescript/,
+  /^@tanstack\//,
+  /^highlight\.js/,
+  'recharts',
+  'jwt-decode',
+  'pkce-challenge',
+  'react-error-boundary',
+  '@ts-rest/core',
+  'eventsource-parser',
+  'eventsource-parser/stream',
+  'react-markdown',
+  'remark-breaks',
+  'remark-gfm',
+];
 
 export default defineConfig({
   lib: [
@@ -47,6 +66,9 @@ export default defineConfig({
         '!./src/**/*.spec.ts',
         '!./src/**/*.spec.tsx',
         '!./src/styles/**',
+        '!./src/locales/**',
+        '!./src/types/**',
+        '!./src/**/*.d.ts',
       ],
     },
   },
@@ -57,6 +79,7 @@ export default defineConfig({
     copy: [
       { from: './src/styles/theme.css', to: './theme.css' },
       { from: './src/styles/tailwind.css', to: './tailwind.css' },
+      { from: './src/locales', to: './locales' },
     ],
   },
   tools: {

@@ -3,8 +3,8 @@
 import { formOptions } from "@tanstack/react-form";
 import { useState } from "react";
 import { z } from "zod";
-import { FieldGroup } from "@/components/ui/field";
-import { withForm } from "@/components/ui/form";
+import { FieldGroup } from "@uipath/apollo-vertex";
+import { withForm } from "@uipath/apollo-vertex";
 import {
   FormWizard,
   FormWizardNav,
@@ -13,9 +13,9 @@ import {
   useFormWizard,
   useFormWizardContext,
   type WizardStepDef,
-} from "@/components/ui/form-wizard";
-import { cn } from "@/lib/utils";
-import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
+} from "@uipath/apollo-vertex";
+import { cn } from "@uipath/apollo-vertex";
+import { LocaleProvider } from "@uipath/apollo-vertex/shell";
 
 const accountSchema = z.object({
   fullName: z.string().min(2, "Enter your name."),

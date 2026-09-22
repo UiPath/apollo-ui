@@ -5,9 +5,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
-import { AiGlow } from "@/registry/ai-glow/ai-glow";
+} from "@uipath/apollo-vertex";
+import { AiCaveat } from "@uipath/apollo-vertex";
+import { AiGlow } from "@uipath/apollo-vertex";
 import { AiIcon } from "./ai-icon";
 import { AiInput } from "./ai-input";
 import { AiInputField } from "./ai-input-field";

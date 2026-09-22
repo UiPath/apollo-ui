@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
-import { AiGlow } from "@/registry/ai-glow/ai-glow";
+import { Button } from "@uipath/apollo-vertex";
+import { Card } from "@uipath/apollo-vertex";
+import { AiCaveat } from "@uipath/apollo-vertex";
+import { AiGlow } from "@uipath/apollo-vertex";
 import { AiIcon } from "./ai-icon";
 
 // Accessible gradient for the clipped-text group header (lifts in dark mode).

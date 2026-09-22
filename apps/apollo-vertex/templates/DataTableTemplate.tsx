@@ -5,18 +5,18 @@ import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@uipath/apollo-vertex";
+import { Button } from "@uipath/apollo-vertex";
+import { Checkbox } from "@uipath/apollo-vertex";
 import {
   DataTable,
   DataTableColumnHeader,
   dataTableFacetedFilterFn,
-} from "@/components/ui/data-table";
+} from "@uipath/apollo-vertex";
 import {
   FilterDropdown,
   type FilterDropdownOption,
-} from "@/components/ui/filter-dropdown";
+} from "@uipath/apollo-vertex";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,8 +24,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useDataTable } from "@/registry/use-data-table/useDataTable";
+} from "@uipath/apollo-vertex";
+import { useDataTable } from "@uipath/apollo-vertex";
 
 type Payment = {
   id: string;

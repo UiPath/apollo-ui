@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import type { ShellNavItem } from "@/registry/shell/shell";
-import { ApolloShell } from "@/registry/shell/shell";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import type { ShellNavItem } from "@uipath/apollo-vertex/shell";
+import { ApolloShell } from "@uipath/apollo-vertex/shell";
+import { SidebarProvider } from "@uipath/apollo-vertex";
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
 
 const sidebarNavItems: ShellNavItem[] = [

@@ -2,9 +2,9 @@
 
 import { Link2 } from "lucide-react";
 import type { ReactNode } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Badge } from "@uipath/apollo-vertex";
+import { Button } from "@uipath/apollo-vertex";
+import { cn } from "@uipath/apollo-vertex";
 import { AiIcon } from "./ai-icon";
 import { AstroidThinking } from "./astroid-thinking";
 
