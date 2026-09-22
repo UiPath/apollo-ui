@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.52.0...@uipath/apollo-react@6.53.0) (2026-09-22)
+
+### Features
+
+* **apollo-react:** guardrail remove confirmation dialog [AL-577] ([900408d](https://github.com/UiPath/apollo-ui/commit/900408d47816e75b9c36216bae9781466831e68f))
+
 ## [@uipath/apollo-react-v6.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.51.0...@uipath/apollo-react@6.52.0) (2026-09-22)
 
 ### Features
