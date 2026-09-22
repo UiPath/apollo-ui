@@ -100,6 +100,7 @@ export default withNextra({
           ];
         },
       }),
+  transpilePackages: ["@uipath/apollo-vertex"],
   reactCompiler: true,
   turbopack: {
     resolveAlias: {
