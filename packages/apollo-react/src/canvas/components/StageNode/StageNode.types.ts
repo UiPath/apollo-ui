@@ -54,6 +54,11 @@ export interface StageHeaderChip {
   label?: string;
   tooltip?: React.ReactNode;
   onClick?: () => void;
+  /**
+   * Status-badge chips (Optional, EndsCase) render as a filled pill by default. 'outline' renders a
+   * colorless outline instead — used for EndsCase before the rule it represents has actually fired.
+   */
+  variant?: 'solid' | 'outline';
 }
 
 export interface StageNodeBaseProps {
