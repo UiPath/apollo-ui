@@ -342,6 +342,15 @@ export const AdminCanManageByo: Story = {
     // the "Use custom model" footer CTA appears at the bottom of the
     // popup. The footer click is wired by `onUseCustomModel`.
     canManageByo: true,
+    // The row actions only render when a handler exists for them.
+    onEditModel: (m) => {
+      // eslint-disable-next-line no-console
+      console.log('[story] edit', m.modelId);
+    },
+    onDeleteModel: async (m) => {
+      // eslint-disable-next-line no-console
+      console.log('[story] delete', m.modelId);
+    },
     onUseCustomModel: () => {
       // eslint-disable-next-line no-console
       console.log('[story] open BYO wizard');
@@ -351,10 +360,10 @@ export const AdminCanManageByo: Story = {
     docs: {
       description: {
         story:
-          'When `canManageByo` is true the picker renders the default ' +
-          'edit/delete icons on every BYO row and a "Use custom model" ' +
-          'CTA at the bottom of the popup. Wire `onUseCustomModel` to ' +
-          'open your BYO connection wizard.',
+          'When `canManageByo` is true the picker renders edit/delete icons on ' +
+          'every BYO row for whichever of `onEditModel` / `onDeleteModel` you ' +
+          'supply, plus a "Use custom model" CTA at the bottom of the popup. ' +
+          'Wire `onUseCustomModel` to open your BYO connection wizard.',
       },
     },
   },
@@ -545,10 +554,10 @@ export const OnlyRecommendedSection: Story = {
 };
 
 // ---------------------------------------------------------------------------
-// Folder-scoped Custom Models: demonstrates the `popupHeader` slot used to
-// host a folder switcher. The picker itself knows nothing about folders;
-// the host (this story) owns the folder state and re-passes a different
-// `models` array per folder. Mirrors the real backend behavior where
+// Folder-scoped Custom Models: demonstrates the built-in folder switcher
+// (`folders` / `folder` / `onFolderChange`). The picker only renders the
+// choice; the host (this story) owns the folder state and re-passes a
+// different `models` array per folder. Mirrors the real backend behavior where
 // `GET /api/discovery` accepts `X-UiPath-FolderKey` to scope BYO results.
 // ---------------------------------------------------------------------------
 
@@ -634,9 +643,10 @@ export const FolderScopedCustomModels: Story = {
     docs: {
       description: {
         story:
-          'Demonstrates the `popupHeader` slot used to host a folder switcher above ' +
-          'the search input. Switching folders re-passes a different `models` array: ' +
-          'the picker itself has no concept of folders, and UiPath-hosted models stay ' +
+          'Demonstrates the built-in folder switcher: pass `folders`, own the selection ' +
+          'with `folder` / `onFolderChange`, and it renders beside the search input. ' +
+          'Switching folders re-passes a different `models` array: the picker only ' +
+          'renders the choice, and UiPath-hosted models stay ' +
           "constant across folders (they're tenant-wide). In a real consumer, the host " +
           'would re-fetch Discovery with the `X-UiPath-FolderKey` header on folder change.',
       },

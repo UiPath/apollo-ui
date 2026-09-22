@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ModelPickerLabels } from './labels';
 
-import type { AnnotatedModel } from './primitives/OptionList';
+import { type AnnotatedModel, isCollapsibleGroup } from './primitives/OptionList';
 import type { DiscoveryModel } from './types';
 import { filterModels, type GroupStrategy, groupModels } from './utils';
 
@@ -254,9 +254,36 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     }
   }, [open]);
 
+  // A row inside a collapsed section is filtered-in but not rendered. The
+  // highlight must never rest on one: `aria-activedescendant` would point
+  // at a missing element and Enter would select something invisible.
+  const isHiddenAt = useCallback(
+    (i: number) => {
+      const g = filtered[i]?.groupKey;
+      return g !== undefined && isCollapsibleGroup(g) && collapsedGroups.has(g);
+    },
+    [filtered, collapsedGroups]
+  );
+  const nearestVisible = useCallback(
+    (from: number, dir: 1 | -1) => {
+      for (let i = from; i >= 0 && i < filtered.length; i += dir) if (!isHiddenAt(i)) return i;
+      return -1;
+    },
+    [filtered.length, isHiddenAt]
+  );
+
   useEffect(() => {
-    if (activeIndex >= filtered.length) setActiveIndex(0);
-  }, [filtered.length, activeIndex]);
+    if (activeIndex >= filtered.length) {
+      setActiveIndex(0);
+      return;
+    }
+    if (!isHiddenAt(activeIndex)) return;
+    // Collapsed under the highlight (keyboard or header click): move to the
+    // next visible row, else the previous, else the top.
+    const next = nearestVisible(activeIndex, 1);
+    const prev = next === -1 ? nearestVisible(activeIndex, -1) : -1;
+    setActiveIndex(next !== -1 ? next : prev !== -1 ? prev : 0);
+  }, [filtered.length, activeIndex, isHiddenAt, nearestVisible]);
 
   const choose = useCallback(
     (m: DiscoveryModel) => {
@@ -271,26 +298,31 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        // Clamp to 0 when the list is empty so activedescendant never
-        // points at index -1.
-        setActiveIndex((i) => Math.min(i + 1, Math.max(filtered.length - 1, 0)));
+        // Step over rows hidden in a collapsed section; stay put at the end.
+        setActiveIndex((i) => {
+          const next = nearestVisible(i + 1, 1);
+          return next === -1 ? i : next;
+        });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setActiveIndex((i) => Math.max(i - 1, 0));
+        setActiveIndex((i) => {
+          const prev = nearestVisible(i - 1, -1);
+          return prev === -1 ? i : prev;
+        });
       } else if (e.key === 'Enter') {
         e.preventDefault();
         const m = filtered[activeIndex];
-        if (m) choose(m);
+        if (m && !isHiddenAt(activeIndex)) choose(m);
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         // Collapse/expand the active option's section from the search field.
         // The section headers are deliberately not tab stops (a `<button>` in
         // a `role="listbox"` is an invalid child and steals a Tab), so without
-        // this there is no keyboard path to collapsing at all.
-        // `collapsedGroups`, not the raw set: while a query is active every
-        // section is force-expanded, and toggling would edit state nothing on
-        // screen reflects.
+        // this there is no keyboard path to collapsing at all. Only sections
+        // the renderers can collapse respond, so the key never edits state
+        // nothing on screen reflects — the same reason it is a no-op while a
+        // query force-expands every section.
         const groupKey = filtered[activeIndex]?.groupKey;
-        if (!groupKey || query.trim()) return;
+        if (!groupKey || !isCollapsibleGroup(groupKey) || query.trim()) return;
         const collapsed = collapsedGroups.has(groupKey);
         if (e.key === 'ArrowLeft' ? !collapsed : collapsed) {
           e.preventDefault();
@@ -302,7 +334,7 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
         triggerRef.current?.focus();
       }
     },
-    [filtered, activeIndex, choose, collapsedGroups, query, toggleGroup]
+    [filtered, activeIndex, choose, collapsedGroups, query, toggleGroup, nearestVisible, isHiddenAt]
   );
 
   return {

@@ -103,27 +103,27 @@ The picker derives lifecycle chips automatically (Recommended, Preview, Deprecat
 />
 ```
 
-The pool currently ships the cost tiers: `cost-basic`, `cost-standard`, `cost-premium`. **Adding a badge to the pool is a design-system PR**: one entry in `badges.ts` plus its descriptor in `i18n.ts` — not a per-product invention. That keeps naming, colors, and translations consistent everywhere.
+The pool currently ships the cost tiers: `cost-basic`, `cost-standard`, `cost-premium`. **Adding a badge to the pool is a design-system PR**: one entry in `badges.ts` plus its label in `labels.ts` — not a per-product invention. That keeps naming, colors, and translations consistent everywhere.
 
 **Defining a new pool badge** (using a hypothetical "Early access" badge as the example):
 
-1. **Declare the label in `i18n.ts`** — add descriptors to `BADGE_LABELS`, keyed under the `modelPicker.badge.*` id namespace:
+1. **Declare the strings in `labels.ts`** — add plain-string fields to `ModelPickerLabels` and their English defaults to `DEFAULT_MODEL_PICKER_LABELS`. Only string-typed fields are usable by the pool (`StaticLabelKey`), so keep them plain rather than formatter functions:
 
    ```ts
-   export const BADGE_LABELS = {
-     // …existing cost-tier labels…
-     earlyAccess: msg({
-       id: 'modelPicker.badge.earlyAccess.label',
-       message: 'Early access',
-     }),
-     earlyAccessTooltip: msg({
-       id: 'modelPicker.badge.earlyAccess.tooltip',
-       message: 'Available before general rollout',
-     }),
-   } as const;
+   export interface ModelPickerLabels {
+     // …existing labels…
+     earlyAccess: string;
+     earlyAccessTooltip: string;
+   }
+
+   export const DEFAULT_MODEL_PICKER_LABELS: ModelPickerLabels = {
+     // …existing defaults…
+     earlyAccess: 'Early access',
+     earlyAccessTooltip: 'Available before general rollout',
+   };
    ```
 
-2. **Register the kind in `badges.ts`** — extend the `ModelBadgeKind` union and add the matching `MODEL_BADGES` entry:
+2. **Register the kind in `badges.ts`** — extend the `ModelBadgeKind` union and add the matching `MODEL_BADGES` entry, referencing the label *keys*:
 
    ```ts
    export type ModelBadgeKind =
@@ -135,14 +135,14 @@ The pool currently ships the cost tiers: `cost-basic`, `cost-standard`, `cost-pr
    export const MODEL_BADGES: Record<ModelBadgeKind, ModelBadgeDefinition> = {
      // …existing cost tiers…
      'early-access': {
-       label: BADGE_LABELS.earlyAccess,
-       tooltip: BADGE_LABELS.earlyAccessTooltip, // tooltip is optional
+       label: 'earlyAccess',
+       tooltip: 'earlyAccessTooltip', // tooltip is optional
        variant: 'info-mini',
      },
    };
    ```
 
-3. **Tell hosts about the key** — apollo-wind ships no catalogs, so a localized host adds `modelPicker.badge.earlyAccess.label` to its own. Hosts that don't translate get the English `message` automatically.
+3. **Hosts translate through `labels`** — apollo-wind ships no catalogs, so a localized host adds `earlyAccess` / `earlyAccessTooltip` to the `labels` object it already passes. Hosts that don't translate get the English defaults automatically.
 
 That's the whole surface: because `ModelBadgeKind` is a union, every product's `badgesFor` callback can return `'early-access'` immediately, and TypeScript flags typos at compile time.
 
@@ -350,8 +350,13 @@ Keyboard:
 
 - `↑` / `↓` — move the active row
 - `Enter` — select the active row, close
-- `←` / `→` — collapse / expand the active row's section (the section headers are
-  deliberately not tab stops, so this is the keyboard path to collapsing)
+- `←` / `→` — collapse / expand the Custom Models section while one of its rows is active (the
+  section headers are deliberately not tab stops, so this is the keyboard path to collapsing;
+  other sections do not collapse)
+- `Shift+Enter` — edit the active BYO row (calls `onEditModel`)
+- `Delete` — with an empty search, delete the active BYO row (opens the confirm dialog). The
+  row's edit/delete icons are pointer targets, not tab stops: interactive children inside a
+  `role="option"` would break the `aria-activedescendant` model.
 - `Escape` — close, return focus to the trigger
 - `Tab` — moves between trigger, search, and toolbar controls
 

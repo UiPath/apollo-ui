@@ -105,8 +105,8 @@ export interface DiscoveryModel {
    * centrally in the product's Model Hub configuration and merged into
    * the Discovery response server-side, exactly like `isRecommended`.
    * `undefined` means the backend has not rolled the field out yet; the
-   * picker then falls back to the `friendlyNameFor` prop (if any) and
-   * finally the raw `modelName`.
+   * picker then renders the raw `modelName`. There is deliberately no
+   * per-product rename prop.
    */
   displayName?: string;
   effectiveModel?: string | null;
