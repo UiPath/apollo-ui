@@ -1,3 +1,5 @@
+'use client';
+
 export { GroupMembershipGuard } from './group-membership-guard';
 export { useGroupId } from './use-group-id';
 export { useGroupMembers } from './use-group-members';

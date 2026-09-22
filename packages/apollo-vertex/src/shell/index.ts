@@ -1,3 +1,5 @@
+'use client';
+
 export { ApolloShell, type ApolloShellProps, type CompanyLogo, type ShellNavItem, type ShellSubNavItem } from './shell';
 export {
   AuthContext,

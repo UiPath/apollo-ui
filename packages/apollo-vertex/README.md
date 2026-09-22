@@ -9,8 +9,25 @@ import "@uipath/apollo-vertex/theme.css";
 ```
 
 Do not import primitives from deep paths such as `@uipath/apollo-vertex/button`.
-Subpaths are reserved for optional-peer features (`shell`, `solution-tests`,
-`feature-flags`, `ai-chat`) and are not in this first release.
+
+Optional-peer features are separate subpaths. Import them only when the host
+app provides those peers:
+
+```ts
+import { ApolloShell, ShellAuthProvider } from "@uipath/apollo-vertex/shell";
+import { useEntityDataTable } from "@uipath/apollo-vertex/shell/entities";
+import { BarChart, dataFabricAdapter } from "@uipath/apollo-vertex/charts";
+import { FeatureFlagProvider } from "@uipath/apollo-vertex/feature-flags";
+import { createProteusProvider } from "@uipath/apollo-vertex/feature-flags/proteus";
+import { SolutionTestsView } from "@uipath/apollo-vertex/solution-tests";
+import { SolutionTests } from "@uipath/apollo-vertex/solution-tests/data";
+import { AiChat } from "@uipath/apollo-vertex/ai-chat";
+```
+
+`./shell` is layout and auth. vs-core entity hooks live on `./shell/entities`.
+`./feature-flags` is the generic provider. Proteus is `./feature-flags/proteus`.
+`./solution-tests` is presentational. Collection hooks are `./solution-tests/data`.
+`./charts` is Recharts views and Data Fabric / Insights adapters.
 
 ## Install
 
@@ -63,5 +80,7 @@ components you import.
 Peers are React 19+ only. TypeScript target/lib is modern (`ESNext`); `toSorted`
 and `React.use` stay as written.
 
-First slice: primitives, Data Table, `cn`, and theme CSS. Shell, solution-tests,
-feature-flags, and ai-chat stay out of the root graph until a later release.
+Root export: primitives, Data Table, `cn`, and theme CSS. Optional-peer
+subpaths (`./shell`, `./shell/entities`, `./charts`, `./feature-flags`,
+`./feature-flags/proteus`, `./solution-tests`, `./solution-tests/data`,
+`./ai-chat`) stay off the root graph.
