@@ -1,0 +1,23 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+coverage
+
+# Editor
+.DS_Store
+.idea
+
+# Misc
+.cache
+.temp
+*.tgz
