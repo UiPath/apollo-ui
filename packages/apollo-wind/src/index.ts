@@ -502,6 +502,7 @@ export type {
   ModelSubscriptionType,
   ModelTag,
   ModelTagChipProps,
+  LlmConfigurationsLinkOptions,
   ModelTagKind,
   ModelVendor,
   OptionListProps,
@@ -518,6 +519,7 @@ export type {
   UseDiscoveryModelsResult,
   UseModelPickerStateOptions,
   UseModelPickerStateResult,
+  UsePlatformDiscoveryModelsResult,
   UseUserFoldersResult,
 } from './components/ui/model-picker';
 export {
@@ -537,10 +539,12 @@ export {
   ModelOptionRow,
   ModelPicker,
   ModelTagChip,
+  buildLlmConfigurationsUrl,
   optionDomId,
   PickerPopup,
   PickerSearchInput,
   PickerTrigger,
+  platformNavigation,
   resolveHomeGeography,
   resolveLabels,
   useByoConnectionNames,

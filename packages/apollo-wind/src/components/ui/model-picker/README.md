@@ -202,10 +202,12 @@ const { canManage } = useCanManageByo(requestContext); // or your own authorizat
 />
 ```
 
-- **Delete is confirmed for you.** Removing a BYO configuration affects everyone in the tenant,
-  so the picker always shows a confirm dialog naming the configuration before calling
-  `onDeleteModel`. If your handler rejects, the message surfaces in the picker's own error
-  region rather than vanishing into a floating promise.
+- **Delete is confirmed for you, but not performed for you.** Removing a BYO configuration
+  affects everyone in the tenant, so the picker always shows a confirm dialog naming the
+  configuration before calling `onDeleteModel`. It issues no request itself and does not
+  refresh anything: the deleted row stays on screen until you hand back a new `models`, which
+  is why the example above awaits its own `refetch()`. If your handler rejects, the message
+  surfaces in the picker's own error region rather than vanishing into a floating promise.
 - **`onEditModel` and `onUseCustomModel` have no default destination.** The footer still renders
   without `onUseCustomModel`, as a disabled hint, so the affordance is discoverable while you
   wire it.
