@@ -1,6 +1,8 @@
 /**
- * Mirrors the LLM Gateway `ModelDiscoveryResponse` DTO returned by
- * `GET /api/discovery` (UiPath.LLMGateway.Web/Discovery/ModelDiscoveryResponse.cs).
+ * The model shape the picker renders. It follows the LLM Gateway
+ * `ModelDiscoveryResponse` DTO field-for-field so a host can hand Discovery
+ * rows straight through, but the picker performs no request itself — how
+ * the rows are fetched is the host's business.
  *
  * Kept intentionally permissive (string unions, optional fields) so the
  * picker survives backend additions without a coordinated release.
@@ -201,35 +203,4 @@ export interface ModelGroup {
   label: string;
   hint?: string;
   models: DiscoveryModel[];
-}
-
-/**
- * Headers required by the Discovery endpoint. Caller controls these
- * because they're tenant-/product-specific and shouldn't be hardcoded
- * in a design system component.
- */
-export interface DiscoveryRequestContext {
-  /** Bearer token (no `Bearer ` prefix). */
-  token: string;
-  /** Override the gateway base URL (defaults to same-origin). */
-  baseUrl?: string;
-  /** X-UiPath-Internal-AccountId */
-  accountId: string;
-  /** X-UiPath-Internal-TenantId */
-  tenantId: string;
-  /** X-UiPath-LlmGateway-RequestingProduct */
-  requestingProduct: string;
-  /** X-UiPath-LlmGateway-RequestingFeature */
-  requestingFeature: string;
-  /** X-UiPath-LlmGateway-OperationCode (optional, filters BYO configs). */
-  operationCode?: string;
-  /**
-   * X-UiPath-FolderKey — sent when the picker is scoped to a specific
-   * folder. Gated behind a BYOM feature flag in the host app.
-   */
-  folderKey?: string;
-  /** X-UiPath-LlmGateway-FromDedicatedCloud */
-  fromDedicatedCloud?: boolean;
-  /** Default true. When false, returns models filtered out by governance/region too. */
-  onlyAvailableModels?: boolean;
 }

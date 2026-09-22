@@ -2,13 +2,13 @@
 
 Apollo's shared LLM model picker, built on the UiPath LLM Gateway Discovery API. Ships in `@uipath/apollo-wind`.
 
-This is a port of apollo-react's Material `ap-model-picker` onto wind primitives (Radix + Tailwind), for hosts that cannot take a MUI dependency. The headless layer is shared in substance: `types.ts` is byte-identical to the apollo-react source and `usePlatformAccess.ts` is within two lines, so grouping, filtering, tag derivation and the Discovery contract behave the same in both. `utils.ts` and `badges.ts` are adapted where strings enter; `useModelPickerState.ts` also gains section collapse on `←`/`→` and selector-safe ids, and `useDiscoveryModels.ts` stops camelizing `customFieldMappings`, whose keys are user-authored (apollo-react still has that bug).
+This is a port of apollo-react's Material `ap-model-picker` onto wind primitives (Radix + Tailwind), for hosts that cannot take a MUI dependency. The headless layer is shared in substance: `types.ts` is byte-identical to the apollo-react source, so grouping, filtering and tag derivation behave the same in both. `utils.ts` and `badges.ts` are adapted where strings enter; `useModelPickerState.ts` also gains section collapse on `←`/`→` and selector-safe ids. The apollo-react package's platform hooks (`usePlatformAccess.ts`, `useDiscoveryModels.ts`) are not ported: apollo-wind carries no UiPath platform calls.
 
-**This is not a drop-in replacement for `ap-model-picker`.** The prop surface has deliberately diverged: this copy owns no data and no message catalogs, so `models` is required and strings arrive as `labels`. Read [Differences from the apollo-react picker](#differences-from-the-apollo-react-picker) before porting a call site.
+**This is not a drop-in replacement for `ap-model-picker`.** The prop surface has deliberately diverged: this copy owns no data, no platform hooks and no message catalogs, so `models` is required, the host brings its own fetch, and strings arrive as `labels`. Read [Differences from the apollo-react picker](#differences-from-the-apollo-react-picker) before porting a call site.
 
 It renders a labeled trigger that opens a popup with a built-in folder switcher, a search field, a Category ⇆ Provider grouping pill, grouped sections — Custom Models (BYO) always first — and a "Use custom model" footer for users who can manage BYO.
 
-It fetches nothing: the platform calls the Material version makes internally are exported here as hooks you compose yourself — see [Quick start](#quick-start).
+It fetches nothing and ships no platform hooks: the host loads the catalog with its own data layer and passes it in — see [Quick start](#quick-start).
 
 ---
 
@@ -17,28 +17,27 @@ It fetches nothing: the platform calls the Material version makes internally are
 The picker renders what you give it and fetches nothing:
 
 ```tsx
-import { ModelPicker, usePlatformDiscoveryModels } from '@uipath/apollo-wind';
+import { ModelPicker, type DiscoveryModel } from '@uipath/apollo-wind';
 
-const { models, loading, error } = usePlatformDiscoveryModels(requestContext, folder);
+// Load the catalog however your app loads data — React Query, SWR, Redux, a
+// postMessage bridge. The LLM Gateway Discovery API (`GET .../llmgateway_/api/discovery`)
+// returns rows in exactly the `DiscoveryModel` shape.
+const { data: models, isLoading, error } = useQuery<DiscoveryModel[]>({ queryKey: ['models'], queryFn: fetchModels });
 const [value, setValue] = React.useState<string | null>(null);
 
 <ModelPicker
   models={models ?? []}
   value={value}
   onChange={(model) => setValue(model.modelId)}
-  loading={loading}
+  loading={isLoading}
   error={error}
 />
 ```
 
-`usePlatformDiscoveryModels` is the standard LLM Gateway fetch, exported alongside the component
-for hosts that want it — but nothing in the picker depends on it. A host with its own data layer
-(SWR, React Query, Redux, a postMessage bridge) passes `models` from wherever it likes.
-
-The same split applies to every other platform concern: `useUserFolders` for the folder list,
-`useCanManageByo` for the org-admin check, `useDeleteByoConfiguration` for BYO deletes, and
-`buildLlmConfigurationsUrl` for the AI Trust Layer deep links. Compose the ones you need; the
-picker takes their results as props.
+Nothing in the picker performs a request. That holds for every platform concern — the folder list,
+the org-admin check, BYO deletes, AI Trust Layer deep links — each is a prop or a callback the host
+supplies. apollo-wind deliberately carries no UiPath platform calls; the apollo-react package's
+`usePlatformAccess` hooks were not ported.
 
 ---
 
@@ -89,7 +88,7 @@ Display names travel on the Discovery DTO, like Recommended. Product teams autho
 
 **Products cannot rename models.** There is deliberately no name prop: the same model reads identically in every product surface, and a wrong or missing name is fixed once, centrally, not patched per product. Models without an authored name fall back to the raw `modelName`. Search matches display names as well as technical ids.
 
-**BYO connection names.** BYO rows render a disambiguating caption from `byoConnectionLabel`. Discovery serves only `byomDetails.integrationServiceConnectionId`, so the host resolves the name — `useByoConnectionNames` does it (one request per distinct connection, cached for its lifetime) and is exported for that purpose. A row without a label simply renders without a caption.
+**BYO connection names.** BYO rows render a disambiguating caption from `byoConnectionLabel`. Discovery serves only `byomDetails.integrationServiceConnectionId`, so the host resolves the name (Integration Service `GET connections_/api/v1/Connections/{id}`, one request per distinct connection, worth caching) and passes it in. A row without a label simply renders without a caption.
 
 ### 3. Badges from the Apollo pool
 
@@ -184,15 +183,17 @@ The BYO affordances — the row actions and the "Use custom model" footer — re
 actions; it renders them and calls you.
 
 ```tsx
-const { canManage } = useCanManageByo(requestContext); // or your own authorization model
+// Whether this user may manage BYO is your call. The platform's own rule is
+// organization administrator (`accountRoleType` of ACCOUNT_ADMIN / ACCOUNT_OWNER,
+// from portal_/api/organization/UserOrganizationInfo) — the gate the portal puts
+// on the AI Trust Layer pages.
+const canManage = useIsOrgAdmin();
 
 <ModelPicker
   models={models}
-  canManageByo={canManage ?? false}
+  canManageByo={canManage}
   onEditModel={(m) =>
-    platformNavigation.openInNewTab(
-      buildLlmConfigurationsUrl(requestContext, { intent: 'edit', configurationId: m.byomDetails?.byoConfigurationId })
-    )
+    window.open(llmConfigurationsEditUrl(m.byomDetails?.byoConfigurationId), '_blank', 'noopener,noreferrer')
   }
   onDeleteModel={async (m) => {
     await deleteConfiguration(m.byomDetails!.byoConfigurationId!);
@@ -211,9 +212,9 @@ const { canManage } = useCanManageByo(requestContext); // or your own authorizat
 - **`onEditModel` and `onUseCustomModel` have no default destination.** The footer still renders
   without `onUseCustomModel`, as a disabled hint, so the affordance is discoverable while you
   wire it.
-- `useCanManageByo` implements the platform's rule — `accountRoleType` of `ACCOUNT_ADMIN` or
-  `ACCOUNT_OWNER`, the same gate the portal puts on the AI Trust Layer pages — and fails closed.
-  Products with their own authorization model simply pass their own boolean.
+- **`canManageByo` is a boolean you supply.** The picker does not check roles; fail closed on your
+  side (default `false`) so a slow or failed authorization call hides the affordances rather than
+  exposing them.
 
 ### 7. Folder scoping
 
@@ -221,16 +222,16 @@ Pass `folders` and the toolbar shows a scope switcher; own the selection with `f
 `onFolderChange` and refetch your catalog with the new folder key.
 
 ```tsx
-const { folders } = useUserFolders(requestContext);
+const folders = useMyFolders(); // e.g. Orchestrator FoldersNavigation/GetFoldersForCurrentUser
 const [folder, setFolder] = React.useState<string | null>(null);
-const { models } = usePlatformDiscoveryModels(requestContext, folder);
+const { data: models } = useQuery({ queryKey: ['models', folder], queryFn: () => fetchModels(folder) });
 
 <ModelPicker models={models ?? []} folders={folders} folder={folder} onFolderChange={setFolder} />
 ```
 
-`useUserFolders` calls `GET {baseUrl}/{tenantName}/orchestrator_/api/FoldersNavigation/GetFoldersForCurrentUser`
-and drops personal workspaces — a personal workspace is not a meaningful scope for shared model
-configurations. Folder ids are Orchestrator folder **Keys** (GUIDs). The picker prepends the
+Two conventions worth keeping when you build that list: drop personal workspaces (not a meaningful
+scope for shared model configurations), and use Orchestrator folder **Keys** (GUIDs) as ids — that
+is what `X-UiPath-FolderKey` expects on the Discovery request. The picker prepends the
 "All folders" sentinel itself; picking it reports `null`.
 
 ### 8. View toggle (Category ⇆ Provider)
@@ -309,9 +310,9 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 | `badgesFor`           | `(m) => readonly ModelBadgeKind[]`                    | Stamp badges from the Apollo badge pool (see §3; cost badges in §5).                                                 |
 | `customTagsFor`       | `(m) => readonly ModelTag[]`                          | Escape hatch: free-form chips for one-offs pending a pool addition. Prefer `badgesFor`.                              |
 | `customTagVariants`   | `Record<string, string>`                              | Chip variant lookup for new tag kinds (`mini`, `info-mini`, …).                                                     |
-| `canManageByo`        | `boolean`                                             | Show the BYO row actions and footer CTA. Your authorization model decides; `useCanManageByo` implements the platform's. |
+| `canManageByo`        | `boolean`                                             | Show the BYO row actions and footer CTA. Your authorization model decides; the picker checks no roles.          |
 | `onUseCustomModel`    | `() => void`                                          | Footer CTA activation. Without it the CTA renders as a disabled hint.                                                |
-| `onEditModel`         | `(model: DiscoveryModel) => void`                     | Edit activation on a BYO row. No default destination — `buildLlmConfigurationsUrl` builds the AI Trust Layer link.   |
+| `onEditModel`         | `(model: DiscoveryModel) => void`                     | Edit activation on a BYO row. No default destination; the AI Trust Layer edit page is the usual one.                |
 | `folders`             | `readonly { id; label }[]`                            | Folders for the toolbar switcher. The switcher renders when this is non-empty.                                       |
 | `folder`              | `string \| null`                                      | Selected folder id (Orchestrator folder Key), or `null` for "All folders".                                           |
 | `onFolderChange`      | `(next: string \| null) => void`                      | Folder change callback. Re-fetch your catalog with the new `folderKey`.                                              |
@@ -326,10 +327,9 @@ Slots are the "I need to do something the picker doesn't natively support" surfa
 ## Data flow
 
 There isn't one. The picker is a pure function of its props: `models`, `folders`,
-`canManageByo`, `loading`, `error`, and the callbacks. Everything platform-shaped lives in the
-exported hooks (`usePlatformDiscoveryModels`, `useUserFolders`, `useCanManageByo`,
-`useDeleteByoConfiguration`, `useByoConnectionNames`, `useDiscoveryModels`) which a host composes
-itself — see [Quick start](#quick-start).
+`canManageByo`, `loading`, `error`, and the callbacks. Everything platform-shaped — the Discovery
+request, folder lists, the org-admin check, BYO deletes, connection-name lookups — lives in the
+host. apollo-wind ships no UiPath platform calls; see [Quick start](#quick-start).
 
 The one opinion the component keeps is dropping `isBlockedByPolicy` rows: that is an org-wide
 governance verdict, not a rendering preference, and it must not be offered no matter who fetched
@@ -413,13 +413,11 @@ Notes:
 model-picker/
 ├── README.md                    ← you are here
 ├── index.ts                     — public barrel
-├── types.ts                     — Discovery DTO types, tag kinds
-├── i18n.ts                      — message descriptors + defaultTranslator
+├── types.ts                     — the model shape the picker renders, tag kinds
+├── labels.ts                    — ModelPickerLabels contract + English defaults
 ├── badges.ts                    — the Apollo badge pool (MODEL_BADGES)
 ├── utils.ts                     — deriveModelTags, groupModels, filterModels
 ├── useModelPickerState.ts       — state controller hook
-├── useDiscoveryModels.ts        — Discovery API hook (composition kit)
-├── usePlatformAccess.ts         — folders, BYO entitlement, delete, deep links
 ├── ModelPicker.tsx              — the picker
 ├── ModelPicker.test.tsx         — unit tests
 ├── ModelPicker.stories.tsx      — Storybook stories
@@ -434,20 +432,18 @@ model-picker/
     └── GroupHeader.tsx          — section header
 ```
 
-`useDiscoveryModels.ts` and `usePlatformAccess.ts` are the composition kit — exported for hosts, used by nothing in the component itself.
-
 ## Differences from the apollo-react picker
 
 The rendered behaviour matches. The prop surface has deliberately diverged, mostly
 because this copy owns no data:
 
-1. **It is presentation-only.** No `requestContext`, no self-fetch, no self-delete: `models` is required and the platform calls are exported hooks a host composes. The apollo-react component still owns its data.
+1. **It is presentation-only, and so is the package.** No `requestContext`, no self-fetch, no self-delete: `models` is required and the host brings its own data layer. The apollo-react package's platform hooks (`usePlatformAccess`, `useDiscoveryModels`) were not ported — apollo-wind carries no UiPath platform calls.
 2. **`labels` replaces Lingui.** See [Internationalization](#internationalization). `loadModelPickerMessages` / `MODEL_PICKER_LOCALES` / `resolveModelPickerLocale` have no equivalent — there are no bundled catalogs.
 3. **No `disablePortal`.** Mount a `PortalContainerProvider` instead; it redirects every overlay in the subtree, not just this one.
 4. **No `ApModelPicker` alias.** apollo-wind does not use the `Ap` prefix.
 5. **The trigger wears `Input`'s chrome**, so it sits flush with the text fields around it.
 
-The prop-driven tests still track the apollo-react originals closely; the self-fetch and self-delete cases retired with the behaviour, and `usePlatformAccess.test.tsx` covers the hooks directly.
+The prop-driven tests still track the apollo-react originals closely; the self-fetch and self-delete cases retired with the behaviour.
 
 ## Storybook
 

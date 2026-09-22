@@ -380,9 +380,7 @@ export const DeleteWithConfirmation: Story = {
           'confirmation dialog naming the configuration first: deletion ' +
           'affects every consumer in the tenant. The picker sends no request ' +
           'of its own. It calls `onDeleteModel` and awaits it, and refreshing ' +
-          'the model list afterwards is the host\u2019s job. ' +
-          '`useDeleteByoConfiguration` is exported for hosts that want the ' +
-          'standard platform DELETE.',
+          'the model list afterwards is the host\u2019s job.',
       },
     },
   },
@@ -551,8 +549,7 @@ export const OnlyRecommendedSection: Story = {
 // host a folder switcher. The picker itself knows nothing about folders;
 // the host (this story) owns the folder state and re-passes a different
 // `models` array per folder. Mirrors the real backend behavior where
-// `GET /api/discovery` accepts `X-UiPath-FolderKey` to scope BYO results
-// (see useDiscoveryModels.ts).
+// `GET /api/discovery` accepts `X-UiPath-FolderKey` to scope BYO results.
 // ---------------------------------------------------------------------------
 
 // Folder list used by the picker's built-in folder switcher. The

@@ -102,9 +102,9 @@ export interface ModelPickerSlots {
 
 export interface ModelPickerProps {
   /**
-   * The catalog to render, typically from the LLM Gateway Discovery API.
-   * The picker fetches nothing — see `usePlatformDiscoveryModels` for the
-   * standard fetch, or supply your own.
+   * The catalog to render, typically the rows the LLM Gateway Discovery API
+   * returns. The picker fetches nothing; how the host loads them is its own
+   * business.
    */
   models: DiscoveryModel[];
   /** Selected `modelId`, or `null`/`undefined` for no selection. */
@@ -234,12 +234,10 @@ export interface ModelPickerProps {
    * Whether to show the BYO management affordances (row actions +
    * "Use custom model" footer CTA).
    *
-   * Your authorization model decides. `useCanManageByo` implements the
-   * platform's rule — organization administrator, the same signal the
-   * portal uses to gate the AI Trust Layer admin pages — and is exported
-   * for hosts that want it. Set this directly when your product has its own
-   * authorization model. Defaults to false, so the affordances stay hidden
-   * until a host opts in.
+   * Your authorization model decides — the platform's own rule is
+   * organization administrator, the same signal the portal uses to gate the
+   * AI Trust Layer admin pages, but the picker does not check it. Defaults to
+   * false, so the affordances stay hidden until a host opts in.
    *
    * A product that wants different actions can still override via
    * `slots.optionActions`; a different footer can replace the default
@@ -248,17 +246,16 @@ export interface ModelPickerProps {
   canManageByo?: boolean;
   /**
    * Activation for the "Use custom model" footer CTA. There is no default
-   * destination — `buildLlmConfigurationsUrl` builds the AI Trust Layer
-   * add-form link if that is where you want it to lead. Without this the
-   * CTA still renders, as a disabled hint, so the affordance stays
+   * destination; the AI Trust Layer add form is the usual one. Without this
+   * the CTA still renders, as a disabled hint, so the affordance stays
    * discoverable. The picker closes itself before calling.
    */
   onUseCustomModel?: () => void;
   /**
    * Folders for the toolbar scope switcher, which renders when this is
-   * non-empty. `useUserFolders` fetches the user's Orchestrator folders if
-   * that is the list you want. Include `numericId` when your own add/edit
-   * navigation deep-links into a folder's LLM-configurations pages.
+   * non-empty — typically the user's Orchestrator folders, fetched by the
+   * host. Include `numericId` when your own add/edit navigation deep-links
+   * into a folder's LLM-configurations pages.
    */
   folders?: readonly FolderSwitcherFolder[];
   /**
@@ -308,14 +305,13 @@ export interface ModelPickerProps {
    * naming the configuration, then calls this and awaits it — a rejection
    * surfaces in the picker's own error region rather than going unhandled.
    * **Refreshing `models` afterwards is the host's job**; the deleted row
-   * stays on screen until a new list arrives. `useDeleteByoConfiguration`
-   * is exported for hosts that want the standard platform DELETE.
+   * stays on screen until a new list arrives.
    */
   onDeleteModel?: (model: DiscoveryModel) => void | Promise<void>;
   /**
    * Edit activation for a BYO row. Rendered only when `canManageByo` is true.
-   * The host decides where it leads — `buildLlmConfigurationsUrl` builds the
-   * AI Trust Layer deep link if that is the destination you want.
+   * The host decides where it leads; the AI Trust Layer edit page is the
+   * usual destination.
    */
   onEditModel?: (model: DiscoveryModel) => void;
   /**
@@ -522,8 +518,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     );
 
     // BYO management is the host's judgement — it knows its own authorization
-    // model. `useCanManageByo` is exported for hosts that want the platform's
-    // org-admin rule; the component just honours the answer.
+    // model; the component just honours the answer.
     const effectiveCanManageByo = canManageByo ?? false;
     const effectiveFolders = folders;
 
