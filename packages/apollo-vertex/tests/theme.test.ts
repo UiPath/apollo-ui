@@ -43,6 +43,14 @@ describe('package.json public API', () => {
     expect(pkg.dependencies?.['@tanstack/react-db']).toBeUndefined();
     expect(pkg.peerDependencies['@tanstack/react-db']).toBe('*');
     expect(pkg.peerDependenciesMeta['@tanstack/react-db'].optional).toBe(true);
+    expect(pkg.peerDependencies['@uipath/vs-core']).toBeUndefined();
+    expect(pkg.peerDependencies['@uipath/proteus-client']).toBeUndefined();
+  });
+
+  it('generates theme CSS from src/styles/theme.json, not a package registry.json', () => {
+    const script = readFileSync(join(packageRoot, 'scripts/generate-theme-css.ts'), 'utf8');
+    expect(script).toContain('../src/styles/theme.json');
+    expect(script).not.toMatch(/registry\.json/);
   });
 });
 

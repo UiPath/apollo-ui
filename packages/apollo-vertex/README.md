@@ -39,6 +39,11 @@ This package is published to npm and GitHub Package Registry. External users
 pull from npm. Internal UiPath users with `.npmrc` configured pull from GitHub
 Packages.
 
+`@uipath/vs-core` and `@uipath/proteus-client` are GitHub Packages only. They
+are not on npm, so they are not `peerDependencies` of this package (pnpm would
+404). Install them from GitHub Packages in the host app before importing
+`./shell/entities`, `./feature-flags/proteus`, or `./solution-tests/data`.
+
 ## Tailwind
 
 The build is unbundled (`rslib` `bundle: false`), so class names live in the
