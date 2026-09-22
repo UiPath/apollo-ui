@@ -14,10 +14,10 @@
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "format": "biome format --write",
     "format:check": "biome format",
-    "lint": "oxlint --type-aware",
-    "lint:fix": "oxlint --fix --type-aware",
+    "lint": "pnpm ensure:vertex && oxlint --type-aware",
+    "lint:fix": "pnpm ensure:vertex && oxlint --fix --type-aware",
     "lint:deps": "node -e \"process.exit(0)\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "pnpm ensure:vertex && tsc --noEmit"
   },
   "keywords": [],
   "author": "",

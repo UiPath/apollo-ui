@@ -48,7 +48,7 @@ function vertexPackageAliases(): Record<string, string> {
   const aliases: Record<string, string> = {};
   for (const [name, parts] of entries) {
     const last = parts.at(-1);
-    if (last === undefined) {
+    if (!last) {
       continue;
     }
     const file = join(root, ...parts.slice(0, -1), `${last}${ext}`);

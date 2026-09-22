@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "apps/apollo-vertex/**"
+      - "packages/apollo-vertex/**"
       - ".github/workflows/apollo-vertex-lint.yml"
 
 concurrency:
