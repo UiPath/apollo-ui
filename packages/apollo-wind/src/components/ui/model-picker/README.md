@@ -434,7 +434,8 @@ model-picker/
 
 ## Differences from the apollo-react picker
 
-The prop surface and behaviour match, with three deliberate exceptions:
+The rendered behaviour matches. The prop surface has deliberately diverged, mostly
+because this copy owns no data:
 
 1. **It is presentation-only.** No `requestContext`, no self-fetch, no self-delete: `models` is required and the platform calls are exported hooks a host composes. The apollo-react component still owns its data.
 2. **`labels` replaces Lingui.** See [Internationalization](#internationalization). `loadModelPickerMessages` / `MODEL_PICKER_LOCALES` / `resolveModelPickerLocale` have no equivalent — there are no bundled catalogs.
