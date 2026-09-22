@@ -1,21 +1,31 @@
 // @vitest-environment node
+import { execFile } from 'node:child_process';
+import { access } from 'node:fs/promises';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 import { build } from 'vite';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
+const execFileAsync = promisify(execFile);
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const distIndex = join(root, 'dist/index.js');
+
+async function ensureDist(): Promise<void> {
+  try {
+    await access(distIndex);
+  } catch {
+    await execFileAsync('pnpm', ['build'], { cwd: root });
+  }
+}
 
 function isExternal(id: string): boolean {
   if (id.startsWith('\0')) {
     return false;
   }
-  if (id.startsWith('@/')) {
-    return false;
-  }
-  if (id.includes(`${root}/src`) || id.includes(`${root}/dist`)) {
+  if (id.includes(`${root}/dist`)) {
     return false;
   }
   if (id.includes('node_modules')) {
@@ -25,23 +35,22 @@ function isExternal(id: string): boolean {
 }
 
 describe('Vite tree-shaking', () => {
-  it('drops DataTable when importing only Button from the root barrel', async () => {
+  beforeAll(async () => {
+    await ensureDist();
+  }, 120_000);
+
+  it('drops DataTable when importing only Button from the published dist barrel', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'apollo-vertex-treeshake-'));
     const entry = join(dir, 'entry.js');
     await writeFile(
       entry,
-      `import { Button } from ${JSON.stringify(join(root, 'src/index.ts'))};\nexport { Button };\n`
+      `import { Button } from ${JSON.stringify(distIndex)};\nexport { Button };\n`
     );
 
     try {
       await build({
         configFile: false,
         logLevel: 'error',
-        resolve: {
-          alias: {
-            '@': join(root, 'src'),
-          },
-        },
         build: {
           outDir: join(dir, 'out'),
           emptyOutDir: true,
@@ -72,11 +81,12 @@ describe('Vite tree-shaking', () => {
     }
   });
 
-  it('keeps the published index as named re-exports, not one concatenated chunk', async () => {
-    const indexSource = await readFile(join(root, 'src/index.ts'), 'utf8');
-    expect(indexSource).toContain("export * from './components/ui/button'");
-    expect(indexSource).toContain("export * from './components/ui/data-table'");
-    expect(indexSource).not.toContain('function Button');
-    expect(indexSource).not.toContain('bg-primary');
+  it('keeps the published dist index as named re-exports, not one concatenated chunk', async () => {
+    const index = await readFile(distIndex, 'utf8');
+    expect(index).toMatch(/export \* from ["']\.\/components\/ui\/button/);
+    expect(index).toMatch(/export \* from ["']\.\/components\/ui\/data-table/);
+    expect(index).not.toContain('function Button');
+    expect(index).not.toContain('bg-primary');
+    expect(index).not.toMatch(/export \{[^}]*\bFieldError\b/);
   });
 });

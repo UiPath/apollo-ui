@@ -67,6 +67,9 @@ export * from './components/ui/tooltip';
 
 export * from './components/ui/confidence-signal';
 export * from './components/ui/data-table';
+// Field's FieldError is the root public symbol. Form's FieldError is a
+// translated wrapper with the same name; omit it here instead of renaming
+// either implementation.
 export {
   CheckboxField,
   type CheckboxFieldProps,

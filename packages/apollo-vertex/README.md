@@ -60,5 +60,8 @@ components you import.
 
 ## Status
 
+Peers are React 19+ only. TypeScript target/lib is modern (`ESNext`); `toSorted`
+and `React.use` stay as written.
+
 First slice: primitives, Data Table, `cn`, and theme CSS. Shell, solution-tests,
 feature-flags, and ai-chat stay out of the root graph until a later release.
