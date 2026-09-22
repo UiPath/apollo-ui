@@ -758,7 +758,7 @@ function InventoryCallout({
   );
 }
 
-function FlowComponentInventory({ panelId }: { panelId: number }) {
+function FlowComponentInventory() {
   const activeTheme = useActiveStorybookTheme();
   const [fixedValue, setFixedValue] = useState('Invoice number');
   const [expressionValue, setExpressionValue] = useState('$vars.invoiceNumber');
@@ -785,14 +785,14 @@ function FlowComponentInventory({ panelId }: { panelId: number }) {
         Default, compact, disabled, and inline-validation variants used by Flow Workbench forms.
       </InventoryCallout>
       <div className="grid gap-2">
-        <Label htmlFor={`ux-${panelId}-input-default`} className="text-xs">
+        <Label htmlFor="ux-input-default" className="text-xs">
           Default
         </Label>
-        <Input id={`ux-${panelId}-input-default`} placeholder="Enter a value" />
-        <Input id={`ux-${panelId}-input-compact`} size="xs" defaultValue="Compact value" />
-        <Input id={`ux-${panelId}-input-disabled`} disabled placeholder="Disabled value" />
+        <Input id="ux-input-default" placeholder="Enter a value" />
+        <Input id="ux-input-compact" size="xs" defaultValue="Compact value" />
+        <Input id="ux-input-disabled" disabled placeholder="Disabled value" />
         <Input
-          id={`ux-${panelId}-input-error`}
+          id="ux-input-error"
           defaultValue="Invalid value"
           error="Enter a valid value."
         />
@@ -804,7 +804,7 @@ function FlowComponentInventory({ panelId }: { panelId: number }) {
       </InventoryCallout>
       <div className="grid gap-4">
         <LockableValueField
-          id={`ux-${panelId}-lockable-fixed`}
+          id="ux-lockable-fixed"
           label={<Label className="text-xs font-medium">Fixed value</Label>}
           value={fixedValue}
           onValueChange={setFixedValue}
@@ -814,7 +814,7 @@ function FlowComponentInventory({ panelId }: { panelId: number }) {
           showFieldActions={false}
         />
         <LockableValueField
-          id={`ux-${panelId}-lockable-expression`}
+          id="ux-lockable-expression"
           label={<Label className="text-xs font-medium">Expression</Label>}
           value={expressionValue}
           onValueChange={setExpressionValue}
@@ -895,16 +895,16 @@ function FlowComponentInventory({ panelId }: { panelId: number }) {
       </InventoryCallout>
       <div className="grid gap-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor={`ux-${panelId}-switch-enabled`} className="text-xs">
+          <Label htmlFor="ux-switch-enabled" className="text-xs">
             Enable automatic retry
           </Label>
-          <Switch id={`ux-${panelId}-switch-enabled`} size="sm" defaultChecked />
+          <Switch id="ux-switch-enabled" size="sm" defaultChecked />
         </div>
         <div className="flex items-center justify-between">
-          <Label htmlFor={`ux-${panelId}-switch-disabled`} className="text-xs">
+          <Label htmlFor="ux-switch-disabled" className="text-xs">
             Disabled setting
           </Label>
-          <Switch id={`ux-${panelId}-switch-disabled`} size="sm" disabled />
+          <Switch id="ux-switch-disabled" size="sm" disabled />
         </div>
       </div>
 
@@ -913,14 +913,14 @@ function FlowComponentInventory({ panelId }: { panelId: number }) {
       </InventoryCallout>
       <RadioGroup defaultValue="automatic" className="grid gap-2">
         <div className="flex items-center gap-2">
-          <RadioGroupItem value="automatic" id={`ux-${panelId}-radio-automatic`} />
-          <Label htmlFor={`ux-${panelId}-radio-automatic`} className="text-xs">
+          <RadioGroupItem value="automatic" id="ux-radio-automatic" />
+          <Label htmlFor="ux-radio-automatic" className="text-xs">
             Automatic
           </Label>
         </div>
         <div className="flex items-center gap-2">
-          <RadioGroupItem value="manual" id={`ux-${panelId}-radio-manual`} />
-          <Label htmlFor={`ux-${panelId}-radio-manual`} className="text-xs">
+          <RadioGroupItem value="manual" id="ux-radio-manual" />
+          <Label htmlFor="ux-radio-manual" className="text-xs">
             Manual
           </Label>
         </div>
@@ -931,14 +931,14 @@ function FlowComponentInventory({ panelId }: { panelId: number }) {
       </InventoryCallout>
       <div className="grid gap-2">
         <div className="flex items-center gap-2">
-          <Checkbox id={`ux-${panelId}-checkbox-enabled`} defaultChecked />
-          <Label htmlFor={`ux-${panelId}-checkbox-enabled`} className="text-xs">
+          <Checkbox id="ux-checkbox-enabled" defaultChecked />
+          <Label htmlFor="ux-checkbox-enabled" className="text-xs">
             Enabled
           </Label>
         </div>
         <div className="flex items-center gap-2">
-          <Checkbox id={`ux-${panelId}-checkbox-disabled`} disabled />
-          <Label htmlFor={`ux-${panelId}-checkbox-disabled`} className="text-xs">
+          <Checkbox id="ux-checkbox-disabled" disabled />
+          <Label htmlFor="ux-checkbox-disabled" className="text-xs">
             Disabled
           </Label>
         </div>
@@ -949,9 +949,7 @@ function FlowComponentInventory({ panelId }: { panelId: number }) {
         Workbench hierarchy.
       </InventoryCallout>
       <div className="flex flex-wrap gap-2">
-        <Button size="xs" className={panelId === 1 ? 'future:!text-white' : undefined}>
-          Primary
-        </Button>
+        <Button size="xs">Primary</Button>
         <Button size="xs" variant="secondary">
           Secondary
         </Button>
@@ -964,13 +962,7 @@ function FlowComponentInventory({ panelId }: { panelId: number }) {
         <Button size="xs" variant="destructive">
           Delete
         </Button>
-        <Button
-          size="3xs"
-          variant="link"
-          className={
-            panelId === 1 ? 'future:!text-brand future:hover:!text-brand-hover' : undefined
-          }
-        >
+        <Button size="3xs" variant="link">
           Add field
         </Button>
       </div>
@@ -979,45 +971,7 @@ function FlowComponentInventory({ panelId }: { panelId: number }) {
         Use a code editor for scripts and multi-line expressions when syntax highlighting, line
         numbers, and a larger authoring surface are valuable.
       </InventoryCallout>
-      <div
-        className={
-          panelId === 1 && editorThemeKey === 'future-light'
-            ? 'ux-inventory-proposed-editor overflow-hidden rounded-xl border border-border-subtle bg-surface-overlay'
-            : 'overflow-hidden rounded-xl border border-border-subtle bg-surface-overlay'
-        }
-      >
-        {panelId === 1 && editorThemeKey === 'future-light' && (
-          <style>{`
-            .ux-inventory-proposed-editor .monaco-editor {
-              --vscode-editor-background: #ffffff !important;
-              --vscode-editor-foreground: #3f3f46 !important;
-              --vscode-editorGutter-background: #ffffff !important;
-              --vscode-editorLineNumber-foreground: #71717a !important;
-              --vscode-editorLineNumber-activeForeground: #52525b !important;
-              --vscode-editor-selectionBackground: #d4d4d866 !important;
-              --vscode-editor-lineHighlightBackground: #f4f4f580 !important;
-              --vscode-editorCursor-foreground: #007595 !important;
-              --vscode-editorWhitespace-foreground: #a1a1aa !important;
-              --vscode-editorIndentGuide-background1: #f4f4f5 !important;
-              --vscode-editorIndentGuide-activeBackground1: #d4d4d8 !important;
-              --vscode-editorBracketMatch-background: #0075951a !important;
-              --vscode-editorBracketMatch-border: #007595 !important;
-              --vscode-focusBorder: #007595 !important;
-            }
-            .ux-inventory-proposed-editor .monaco-editor .mtk1 {
-              color: #3f3f46 !important;
-            }
-            .ux-inventory-proposed-editor .monaco-editor .mtk3 {
-              color: #007595 !important;
-            }
-            .ux-inventory-proposed-editor .monaco-editor .mtk6 {
-              color: #71717a !important;
-            }
-            .ux-inventory-proposed-editor .monaco-editor .mtk7 {
-              color: #52525b !important;
-            }
-          `}</style>
-        )}
+      <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-overlay">
         <MonacoEditor
           height="220px"
           defaultLanguage="typescript"
@@ -1045,7 +999,7 @@ function FlowComponentInventory({ panelId }: { panelId: number }) {
   );
 }
 
-function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panelId?: number }) {
+function UXInventoryPanel({ onClose }: { onClose: () => void }) {
   const [notesVisible, setNotesVisible] = useState(true);
   const [compositionEditor, setCompositionEditor] = useState<'ui' | 'json'>('ui');
   const [compositionFields, setCompositionFields] = useState([
@@ -1060,8 +1014,8 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
     <NodePropertyPanel
       panelTitle="UX Inventory"
       nodeIcon={<Sparkles />}
-      nodeLabel={panelId === 0 ? 'Current Theme' : 'Proposed Theme'}
-      nodeCategory={panelId === 0 ? 'Current system' : 'Proposed improvements'}
+      nodeLabel="Design System"
+      nodeCategory="Current system"
       onClose={onClose}
       contentInset="0.875rem"
       className="h-full"
@@ -1103,7 +1057,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
           </div>
 
           <TabsContent value="components" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
-            <FlowComponentInventory panelId={panelId} />
+            <FlowComponentInventory />
           </TabsContent>
 
           <TabsContent value="layout" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
@@ -1118,17 +1072,17 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
               </InventoryCallout>
               <div className="grid gap-3 rounded-xl border border-border-subtle p-3">
                 <div className="grid gap-2">
-                  <Label htmlFor={`ux-${panelId}-layout-name`} className="text-xs">
+                  <Label htmlFor="ux-layout-name" className="text-xs">
                     Name
                   </Label>
-                  <Input id={`ux-${panelId}-layout-name`} defaultValue="Extract invoice data" />
+                  <Input id="ux-layout-name" defaultValue="Extract invoice data" />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor={`ux-${panelId}-layout-connection`} className="text-xs">
+                  <Label htmlFor="ux-layout-connection" className="text-xs">
                     Connection
                   </Label>
                   <Select defaultValue="production">
-                    <SelectTrigger id={`ux-${panelId}-layout-connection`}>
+                    <SelectTrigger id="ux-layout-connection">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1139,14 +1093,14 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <Label htmlFor={`ux-${panelId}-layout-enabled`} className="text-xs">
+                    <Label htmlFor="ux-layout-enabled" className="text-xs">
                       Enabled
                     </Label>
                     <p className="text-[11px] text-foreground-muted">
                       Run this node in the workflow.
                     </p>
                   </div>
-                  <Switch id={`ux-${panelId}-layout-enabled`} size="sm" defaultChecked />
+                  <Switch id="ux-layout-enabled" size="sm" defaultChecked />
                 </div>
               </div>
               <InventoryCallout eyebrow="Layout pattern" title="Expandable sections">
@@ -1198,9 +1152,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
               <div className="grid gap-2 rounded-xl border border-border-subtle p-3">
                 <p className="text-xs font-semibold text-foreground">Panel controls</p>
                 <div className="flex flex-wrap gap-2">
-                  <Button className={panelId === 1 ? 'future:!text-white' : undefined}>
-                    Primary action
-                  </Button>
+                  <Button>Primary action</Button>
                   <Button variant="outline">Secondary</Button>
                   <Button variant="ghost">Tertiary</Button>
                 </div>
@@ -1271,7 +1223,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                 />
               </div>
               <div className="flex flex-wrap gap-2">
-                <Badge className={panelId === 1 ? 'future:!text-white' : undefined}>Default</Badge>
+                <Badge>Default</Badge>
                 <Badge variant="secondary">Optional</Badge>
                 <Badge variant="outline">Read only</Badge>
               </div>
@@ -1295,9 +1247,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                 reflecting emphasis and consequence.
               </InventoryCallout>
               <div className="flex flex-wrap gap-2">
-                <Button className={panelId === 1 ? 'future:!text-white' : undefined}>
-                  Primary
-                </Button>
+                <Button>Primary</Button>
                 <Button variant="outline">Secondary</Button>
                 <Button variant="ghost">Tertiary</Button>
                 <Button variant="destructive">Delete</Button>
@@ -1307,7 +1257,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                 debugging, and keep the set small.
               </InventoryCallout>
               <div className="flex flex-wrap gap-2">
-                <Button className={panelId === 1 ? 'future:!text-white' : undefined}>
+                <Button>
                   <Play size={14} /> Run
                 </Button>
                 <Button variant="outline">
@@ -1328,13 +1278,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                 separate from Manage so the two intents are easy to scan.
               </InventoryCallout>
               <div className="flex flex-wrap items-center">
-                <Button
-                  size="2xs"
-                  variant="link"
-                  className={
-                    panelId === 1 ? 'future:!text-brand future:hover:!text-brand-hover' : undefined
-                  }
-                >
+                <Button size="2xs" variant="link">
                   + Add field
                 </Button>
               </div>
@@ -1344,9 +1288,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
               </InventoryCallout>
               <div className="flex justify-end gap-2 border-t border-border-subtle pt-3">
                 <Button variant="ghost">Cancel</Button>
-                <Button className={panelId === 1 ? 'future:!text-white' : undefined}>
-                  Save changes
-                </Button>
+                <Button>Save changes</Button>
               </div>
               <InventoryCallout eyebrow="Action pattern" title="Icon-only utilities">
                 Use compact icon actions for familiar utilities when space is limited. Always
@@ -1458,11 +1400,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                     </li>
                   ))}
                 </ul>
-                <Button
-                  variant="link"
-                  size="2xs"
-                  className={`w-fit px-0 ${panelId === 1 ? 'future:!text-brand future:hover:!text-brand-hover' : ''}`}
-                >
+                <Button variant="link" size="2xs" className="w-fit px-0">
                   <Plus size={12} /> Add field
                 </Button>
               </div>
@@ -1503,7 +1441,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                 values in one reusable Flow control.
               </InventoryCallout>
               <LockableValueField
-                id={`ux-${panelId}-composition-value`}
+                id="ux-composition-value"
                 label={<Label className="text-xs font-medium">Invoice value</Label>}
                 value="$vars.invoiceNumber"
                 onValueChange={() => undefined}
@@ -1555,11 +1493,7 @@ function UXInventoryPanel({ onClose, panelId = 0 }: { onClose: () => void; panel
                     <p className="mt-1 text-[11px] text-foreground-muted">
                       Add a field to start configuring this section.
                     </p>
-                    <Button
-                      size="4xs"
-                      variant="link"
-                      className={`mt-2 px-0 ${panelId === 1 ? 'future:!text-brand future:hover:!text-brand-hover' : ''}`}
-                    >
+                    <Button size="4xs" variant="link" className="mt-2 px-0">
                       <Plus size={12} /> Add field
                     </Button>
                   </div>
@@ -1803,23 +1737,11 @@ function useActiveStorybookTheme() {
 }
 
 function UXInventoryWorkbench() {
-  const activeTheme = useActiveStorybookTheme();
-
   return (
-    <div className="flex min-h-screen items-start justify-center gap-8 overflow-auto bg-surface p-8">
-      {[0, 1].map((panel) => (
-        <div
-          key={panel}
-          className="h-[calc(100vh-4rem)] min-h-[600px] w-[380px] shrink-0 overflow-hidden rounded-2xl border border-border-subtle shadow-lg"
-          style={
-            panel === 1 && activeTheme === 'future-light'
-              ? PROPOSED_FUTURE_LIGHT_TEAL_STYLE
-              : undefined
-          }
-        >
-          <UXInventoryPanel panelId={panel} onClose={() => undefined} />
-        </div>
-      ))}
+    <div className="flex min-h-screen items-start justify-center overflow-auto bg-surface p-8">
+      <div className="h-[calc(100vh-4rem)] min-h-[600px] w-[380px] shrink-0 overflow-hidden rounded-2xl border border-border-subtle shadow-lg">
+        <UXInventoryPanel onClose={() => undefined} />
+      </div>
     </div>
   );
 }
