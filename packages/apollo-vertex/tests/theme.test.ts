@@ -48,14 +48,8 @@ describe('package.json public API', () => {
 
 describe('solution-tests light barrel', () => {
   it('re-exports presentational run-details symbols without vs-core', async () => {
-    const dts = await readFile(
-      join(packageRoot, 'dist/solution-tests/index.d.ts'),
-      'utf8'
-    );
-    const js = await readFile(
-      join(packageRoot, 'dist/solution-tests/index.js'),
-      'utf8'
-    );
+    const dts = await readFile(join(packageRoot, 'dist/solution-tests/index.d.ts'), 'utf8');
+    const js = await readFile(join(packageRoot, 'dist/solution-tests/index.js'), 'utf8');
     expect(dts).toMatch(/RunConfirmTarget/);
     expect(dts).toMatch(/RunDetailsView/);
     expect(dts).toMatch(/BaselineJobMap/);
