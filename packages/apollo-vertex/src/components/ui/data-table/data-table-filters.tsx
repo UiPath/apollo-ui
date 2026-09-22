@@ -1,9 +1,9 @@
-import type { Row, RowData } from "@tanstack/react-table";
+import type { Row, RowData } from '@tanstack/react-table';
 
-export const dataTableGlobalFilterFn = (
-  row: Row<RowData>,
+export const dataTableGlobalFilterFn = <TData extends RowData>(
+  row: Row<TData>,
   _columnId: string,
-  filterValue: string,
+  filterValue: string
 ): boolean => {
   if (!filterValue) return true;
 
@@ -14,22 +14,21 @@ export const dataTableGlobalFilterFn = (
     const meta = cell.column.columnDef.meta;
     const displayValue = meta?.getFilterValue
       ? meta.getFilterValue(value, row)
-      : typeof value === "string"
+      : typeof value === 'string'
         ? value
-        : typeof value === "number" || typeof value === "boolean"
+        : typeof value === 'number' || typeof value === 'boolean'
           ? String(value)
-          : "";
+          : '';
     return displayValue.toLowerCase().includes(searchStr);
   });
 };
 
-export const dataTableFacetedFilterFn = (
-  row: Row<RowData>,
+export const dataTableFacetedFilterFn = <TData extends RowData>(
+  row: Row<TData>,
   columnId: string,
-  filterValue: unknown,
+  filterValue: unknown
 ): boolean => {
-  if (!filterValue || !Array.isArray(filterValue) || filterValue.length === 0)
-    return true;
-  const cellValue = String(row.getValue(columnId) ?? "");
+  if (!filterValue || !Array.isArray(filterValue) || filterValue.length === 0) return true;
+  const cellValue = String(row.getValue(columnId) ?? '');
   return filterValue.includes(cellValue);
 };
