@@ -39,7 +39,7 @@ const loadChildren = (path: string[]): Promise<FolderPickerEntry[]> =>
   });
 
 const meta = {
-  title: 'Components/UiPath/Folder Picker',
+  title: 'Components/Core/Folder Picker',
   component: FolderPicker,
   tags: ['autodocs'],
   parameters: {
