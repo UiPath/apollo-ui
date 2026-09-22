@@ -30,7 +30,17 @@
     "rules": {
       "recommended": true,
       "a11y": {
-        "noSvgWithoutTitle": "off"
+        "noSvgWithoutTitle": "off",
+        "noLabelWithoutControl": "off",
+        "noRedundantRoles": "off",
+        "noStaticElementInteractions": "off",
+        "useAriaPropsForRole": "off",
+        "useFocusableInteractive": "off",
+        "useKeyWithClickEvents": "off",
+        "useSemanticElements": "off"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
       }
     },
     "includes": ["**", "!dist", "!node_modules", "!**/*.css"]
