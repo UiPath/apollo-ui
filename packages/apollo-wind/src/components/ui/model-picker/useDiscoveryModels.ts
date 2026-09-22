@@ -109,12 +109,28 @@ function camelizeDeep(value: unknown): unknown {
   if (!value || typeof value !== 'object') return value;
   // Null prototype: hostile keys in the payload (`__proto__`,
   // `constructor`) become plain data instead of touching the object's
-  // prototype chain. `customFieldMappings` carries user-authored keys.
+  // prototype chain.
   const camel: Record<string, unknown> = Object.create(null);
   for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-    camel[k.charAt(0).toLowerCase() + k.slice(1)] = camelizeDeep(v);
+    const key = k.charAt(0).toLowerCase() + k.slice(1);
+    camel[key] = DICTIONARY_KEYS.has(key) ? copyDictionary(v) : camelizeDeep(v);
   }
   return camel;
+}
+
+/**
+ * Properties whose *keys* are data, not DTO property names. Camelizing them
+ * rewrites what the user typed — a BYO mapping authored as `Api-Key` would
+ * reach the connection as `api-Key` and the wrong field would be sent.
+ */
+const DICTIONARY_KEYS = new Set(['customFieldMappings']);
+
+/** Same null-prototype hardening as `camelizeDeep`, without touching keys. */
+function copyDictionary(value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const copy: Record<string, unknown> = Object.create(null);
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) copy[k] = v;
+  return copy;
 }
 
 export function normalizeDiscoveryModels(list: unknown[]): DiscoveryModel[] {
