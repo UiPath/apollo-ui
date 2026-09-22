@@ -123,7 +123,8 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
   // ("128K context"), so a host that translates everything else must be able
   // to translate this too.
   const contextTokens = model.modelDetails?.contextWindowTokens;
-  const contextLabel = contextTokens != null && contextTokens > 0 ? labels.contextWindow(contextTokens) : null;
+  const contextLabel =
+    contextTokens != null && contextTokens > 0 ? labels.contextWindow(contextTokens) : null;
   const rowActions = renderActions ? renderActions(model) : null;
   const meta = renderMeta?.(model);
 
