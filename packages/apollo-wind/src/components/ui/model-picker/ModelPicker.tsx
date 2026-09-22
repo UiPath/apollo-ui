@@ -381,10 +381,10 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     },
     forwardedRef
   ) {
-    // apollo-wind ships no labels: `defaultTranslator` renders each
-    // descriptor's English source text, and a host localizes by passing
-    // its own translator. A design-system component must never throw or
-    // render raw keys in a host that supplies nothing.
+    // apollo-wind ships no i18n: every string falls back to its English
+    // default, and a host localizes by passing `labels`. A design-system
+    // component must never throw or render raw keys in a host that
+    // supplies nothing.
     const labels = React.useMemo(() => resolveLabels(labelOverrides), [labelOverrides]);
 
     const defaultLabel = labels.fieldLabel;

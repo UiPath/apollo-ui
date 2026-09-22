@@ -147,7 +147,7 @@ const FOLDERS_PAGE_SIZE = 100;
  * each item carries `Id` / `Key` (GUID) / `DisplayName` /
  * `FullyQualifiedName`.
  *
- * Pass `null` to disable (e.g. `enableFolders` is off). Minimal
+ * Pass `null` to disable (e.g. the host scopes folders itself). Minimal
  * fetch-and-state — hosts on SWR/React Query can fetch themselves and
  * pass the `folders` prop instead.
  *
@@ -257,11 +257,9 @@ export interface UsePlatformDiscoveryModelsResult {
  *   X-UiPath-FolderKey (only when a folder is selected)
  *
  * This is the platform-route flavor of `useDiscoveryModels` (which
- * calls the gateway directly with internal headers): it reuses the
- * `requestContext` the picker already holds, so a product can drop the
- * picker in with no catalog fetching, folder refetching, or
- * loading/error plumbing of its own. Pass `null` to disable (the host
- * supplies `models` itself).
+ * calls the gateway directly with internal headers). The picker itself
+ * fetches nothing: compose this hook and pass its result as `models`,
+ * or bring your own data layer. Pass `null` to disable.
  */
 export function usePlatformDiscoveryModels(
   ctx: PlatformRequestContext | null,
