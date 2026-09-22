@@ -2,7 +2,7 @@
 
 Apollo's shared LLM model picker, built on the UiPath LLM Gateway Discovery API. Ships in `@uipath/apollo-wind`.
 
-This is a port of apollo-react's Material `ap-model-picker` onto wind primitives (Radix + Tailwind), for hosts that cannot take a MUI dependency. The headless layer is shared in substance: `types.ts` and `useDiscoveryModels.ts` are byte-identical to the apollo-react source and `usePlatformAccess.ts` is within two lines, so grouping, filtering, tag derivation and the Discovery contract behave the same in both. `utils.ts` and `badges.ts` are adapted where strings enter; `useModelPickerState.ts` also gains section collapse on `←`/`→` and selector-safe ids.
+This is a port of apollo-react's Material `ap-model-picker` onto wind primitives (Radix + Tailwind), for hosts that cannot take a MUI dependency. The headless layer is shared in substance: `types.ts` is byte-identical to the apollo-react source and `usePlatformAccess.ts` is within two lines, so grouping, filtering, tag derivation and the Discovery contract behave the same in both. `utils.ts` and `badges.ts` are adapted where strings enter; `useModelPickerState.ts` also gains section collapse on `←`/`→` and selector-safe ids, and `useDiscoveryModels.ts` stops camelizing `customFieldMappings`, whose keys are user-authored (apollo-react still has that bug).
 
 **This is not a drop-in replacement for `ap-model-picker`.** The prop surface has deliberately diverged: this copy owns no data and no message catalogs, so `models` is required and strings arrive as `labels`. Read [Differences from the apollo-react picker](#differences-from-the-apollo-react-picker) before porting a call site.
 

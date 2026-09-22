@@ -767,7 +767,13 @@ describe('<ModelPicker> review follow-ups', () => {
     render(
       <Popover>
         <PopoverTrigger asChild>
-          <PickerTrigger onClick={spy} placeholder="Pick" selected={null} />
+          <PickerTrigger
+            id="test-trigger"
+            onClick={spy}
+            open={false}
+            placeholder="Pick"
+            selected={null}
+          />
         </PopoverTrigger>
         <PopoverContent>popup body</PopoverContent>
       </Popover>
