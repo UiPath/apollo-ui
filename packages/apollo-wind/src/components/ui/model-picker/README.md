@@ -2,11 +2,13 @@
 
 Apollo's shared LLM model picker, built on the UiPath LLM Gateway Discovery API. Ships in `@uipath/apollo-wind`.
 
-This is a port of apollo-react's Material `ap-model-picker` onto wind primitives (Radix + Tailwind), for hosts that cannot take a MUI dependency. The headless layer — `types.ts`, `utils.ts`, `badges.ts`, `useModelPickerState.ts`, `useDiscoveryModels.ts`, `usePlatformAccess.ts` — is a near-verbatim copy of the apollo-react source, and the two components share a prop surface, so behaviour stays in lockstep. The differences are listed under [Differences from the apollo-react picker](#differences-from-the-apollo-react-picker).
+This is a port of apollo-react's Material `ap-model-picker` onto wind primitives (Radix + Tailwind), for hosts that cannot take a MUI dependency. The headless layer is shared in substance: `types.ts` and `useDiscoveryModels.ts` are byte-identical to the apollo-react source and `usePlatformAccess.ts` is within two lines, so grouping, filtering, tag derivation and the Discovery contract behave the same in both. `utils.ts` and `badges.ts` are adapted where strings enter; `useModelPickerState.ts` also gains section collapse on `←`/`→` and selector-safe ids.
+
+**This is not a drop-in replacement for `ap-model-picker`.** The prop surface has deliberately diverged: this copy owns no data and no message catalogs, so `models` is required and strings arrive as `labels`. Read [Differences from the apollo-react picker](#differences-from-the-apollo-react-picker) before porting a call site.
 
 It renders a labeled trigger that opens a popup with a built-in folder switcher, a search field, a Category ⇆ Provider grouping pill, grouped sections — Custom Models (BYO) always first — and a "Use custom model" footer for users who can manage BYO.
 
-The picker owns no data and no strings: it renders the `models`, `folders`, `labels` and callbacks you hand it. The platform calls it used to make are exported as hooks you compose yourself — see [Quick start](#quick-start).
+It fetches nothing: the platform calls the Material version makes internally are exported here as hooks you compose yourself — see [Quick start](#quick-start).
 
 ---
 
