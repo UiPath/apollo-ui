@@ -227,6 +227,35 @@ describe('FolderPickerContent', () => {
     expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
   });
 
+  it('seeds the search box from initialSearch', async () => {
+    render(
+      <FolderPickerContent
+        onLoadChildren={loadChildren}
+        onSelect={vi.fn()}
+        initialSearch="shared"
+      />
+    );
+
+    expect(screen.getByPlaceholderText('Search...')).toHaveValue('shared');
+    // The seed must survive the content's own first fetch.
+    expect(await screen.findByRole('treeitem', { name: 'Shared with me' })).toBeInTheDocument();
+    expect(screen.queryByRole('treeitem', { name: 'OneDrive' })).not.toBeInTheDocument();
+  });
+
+  it('drops a seeded search once the user navigates', async () => {
+    const user = userEvent.setup();
+    render(
+      <FolderPickerContent
+        onLoadChildren={loadChildren}
+        onSelect={vi.fn()}
+        initialSearch="shared"
+      />
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Open Shared with me' }));
+    expect(screen.getByPlaceholderText('Search...')).toHaveValue('');
+  });
+
   it('gives the list an accessible name', async () => {
     render(<FolderPickerContent onLoadChildren={loadChildren} onSelect={vi.fn()} />);
     expect(await screen.findByRole('tree', { name: 'Folders' })).toBeInTheDocument();

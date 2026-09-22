@@ -48,6 +48,8 @@ export interface FolderPickerContentProps {
   /** Label for the breadcrumb's first segment. */
   rootLabel?: string;
   searchPlaceholder?: string;
+  /** Seeds the search box, as VariablePicker's `initialQuery` does. */
+  initialSearch?: string;
   emptyText?: string;
   /** Shown while a level that has never resolved is loading. */
   loadingText?: string;
@@ -77,6 +79,7 @@ export function FolderPickerContent({
   initialPath,
   rootLabel = 'Root',
   searchPlaceholder = 'Search...',
+  initialSearch = '',
   emptyText = 'No subfolders.',
   loadingText = 'Loading…',
   listLabel = 'Folders',
@@ -92,7 +95,7 @@ export function FolderPickerContent({
 
   const [pathStack, setPathStack] = useState<string[]>(() => initialSegments.slice(0, -1));
   const [draft, setDraft] = useState<string | null>(initialPath || null);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch);
   /** Resolved levels, keyed by path. Keeps the current list visible during a drill. */
   const [levels, setLevels] = useState<Record<string, FolderPickerEntry[]>>({});
   /** Path of the folder being opened. Its row shows a spinner in place of the chevron. */
@@ -121,7 +124,6 @@ export function FolderPickerContent({
         setLoadingPath(null);
         setError(null);
         setPathStack(segments);
-        setSearch('');
         return;
       }
 
@@ -132,7 +134,6 @@ export function FolderPickerContent({
         if (!mountedRef.current || requestRef.current !== requestId) return;
         setLevels((current) => ({ ...current, [key]: entries }));
         setPathStack(segments);
-        setSearch('');
       } catch (cause) {
         if (!mountedRef.current || requestRef.current !== requestId) return;
         setError(cause instanceof Error ? cause.message : 'Could not load this folder.');
@@ -156,21 +157,23 @@ export function FolderPickerContent({
     void loadLevel(initialStack.current);
   }, [loadLevel]);
 
-  const drillInto = (segments: string[]) => {
+  /**
+   * Moving to another level drops the draft and the filter, both of which
+   * described the level being left. `loadLevel` itself does not clear the
+   * search, so an `initialSearch` survives the content's first fetch.
+   */
+  const navigateTo = (segments: string[]) => {
     setDraft(null);
+    setSearch('');
     void loadLevel(segments);
   };
 
+  const drillInto = navigateTo;
   /**
-   * Jumping abandons any in-flight drill and drops the draft, which belonged to
-   * the level being left. The target is loaded rather than assumed cached: with
-   * an `initialPath`, browsing starts partway down and the ancestors above it
-   * have never been fetched.
+   * The target is loaded rather than assumed cached: with an `initialPath`,
+   * browsing starts partway down and the ancestors above it were never fetched.
    */
-  const jumpTo = (segments: string[]) => {
-    setDraft(null);
-    void loadLevel(segments);
-  };
+  const jumpTo = navigateTo;
 
   const effectiveSelection = draft ?? (pathStack.length > 0 ? joinPath(pathStack) : null);
   const currentKey = cacheKey(pathStack);

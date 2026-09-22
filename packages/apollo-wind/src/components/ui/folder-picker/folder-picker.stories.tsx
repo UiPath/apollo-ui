@@ -151,3 +151,63 @@ export const ContentOnly: Story = {
     </div>
   ),
 };
+
+function Panel({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <figure className="m-0 w-[320px]">
+      <figcaption className="mb-2 text-xs font-medium text-foreground-muted">{label}</figcaption>
+      <div className="overflow-hidden rounded-xl border border-border bg-surface-raised shadow-lg">
+        {children}
+      </div>
+    </figure>
+  );
+}
+
+/**
+ * The four ways the list can come up without rows, side by side. Each is a
+ * distinct message: a level still loading is not an empty folder, an empty
+ * folder is not a failed search, and none of them is an error.
+ */
+export const EmptyStates: Story = {
+  args: { onSelect: () => {}, onLoadChildren: loadChildren },
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        story:
+          'Reaching these in the Default story means waiting on a fetch or drilling into a particular folder, so they are collected here. Note that Select stays enabled under "No subfolders": the folder being browsed is still a valid choice, even with nothing inside it.',
+      },
+    },
+  },
+  render: function Render() {
+    return (
+      <div className="flex flex-wrap items-start gap-6">
+        <Panel label="Loading">
+          {/* Never resolves, so the level stays in flight. */}
+          <FolderPickerContent onLoadChildren={() => new Promise(() => {})} onSelect={() => {}} />
+        </Panel>
+
+        <Panel label="No subfolders">
+          <FolderPickerContent onLoadChildren={() => Promise.resolve([])} onSelect={() => {}} />
+        </Panel>
+
+        <Panel label="No search match">
+          <FolderPickerContent
+            onLoadChildren={loadChildren}
+            onSelect={() => {}}
+            initialSearch="zzz"
+          />
+        </Panel>
+
+        <Panel label="Load failure">
+          <FolderPickerContent
+            onLoadChildren={() =>
+              Promise.reject(new Error('You do not have access to this folder.'))
+            }
+            onSelect={() => {}}
+          />
+        </Panel>
+      </div>
+    );
+  },
+};
