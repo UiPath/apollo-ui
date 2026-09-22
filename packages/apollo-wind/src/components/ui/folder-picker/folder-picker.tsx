@@ -49,6 +49,10 @@ export interface FolderPickerContentProps {
   rootLabel?: string;
   searchPlaceholder?: string;
   emptyText?: string;
+  /** Shown while a level that has never resolved is loading. */
+  loadingText?: string;
+  /** Accessible name for the folder list. */
+  listLabel?: string;
   /** Content for the footer's leading slot, such as a count or an "Add new" link. */
   footerLeading?: ReactNode;
   cancelLabel?: string;
@@ -74,6 +78,8 @@ export function FolderPickerContent({
   rootLabel = 'Root',
   searchPlaceholder = 'Search...',
   emptyText = 'No subfolders.',
+  loadingText = 'Loading…',
+  listLabel = 'Folders',
   footerLeading,
   cancelLabel = 'Cancel',
   selectLabel = 'Select',
@@ -106,13 +112,19 @@ export function FolderPickerContent({
   const loadLevel = useCallback(
     async (segments: string[]) => {
       const key = cacheKey(segments);
+      // Every navigation claims a request id, cached or not, so an earlier
+      // in-flight load is abandoned rather than allowed to resolve later and
+      // drag the view back to the folder the user has already left.
+      const requestId = ++requestRef.current;
+
       if (levels[key]) {
+        setLoadingPath(null);
+        setError(null);
         setPathStack(segments);
         setSearch('');
         return;
       }
 
-      const requestId = ++requestRef.current;
       setLoadingPath(joinPath(segments));
       setError(null);
       try {
@@ -149,17 +161,22 @@ export function FolderPickerContent({
     void loadLevel(segments);
   };
 
-  /** Jumping up abandons any in-flight drill so it cannot navigate into the discarded folder. */
+  /**
+   * Jumping abandons any in-flight drill and drops the draft, which belonged to
+   * the level being left. The target is loaded rather than assumed cached: with
+   * an `initialPath`, browsing starts partway down and the ancestors above it
+   * have never been fetched.
+   */
   const jumpTo = (segments: string[]) => {
-    requestRef.current++;
-    setLoadingPath(null);
-    setError(null);
-    setPathStack(segments);
-    setSearch('');
+    setDraft(null);
+    void loadLevel(segments);
   };
 
   const effectiveSelection = draft ?? (pathStack.length > 0 ? joinPath(pathStack) : null);
-  const entries = levels[cacheKey(pathStack)] ?? [];
+  const currentKey = cacheKey(pathStack);
+  const entries = levels[currentKey] ?? [];
+  /** The level on screen has never resolved, so its rows are still unknown. */
+  const isLoadingCurrentLevel = loadingPath !== null && !(currentKey in levels);
   const normalizedQuery = search.trim().toLowerCase();
   const visibleEntries = normalizedQuery
     ? entries.filter((entry) => (entry.label ?? entry.name).toLowerCase().includes(normalizedQuery))
@@ -242,9 +259,27 @@ export function FolderPickerContent({
         )}
       </div>
 
-      <div className="max-h-56 min-h-0 flex-1 overflow-y-auto py-1" role="listbox" tabIndex={-1}>
+      <div
+        className="max-h-56 min-h-0 flex-1 overflow-y-auto py-1"
+        // A tree, not a listbox: listbox options are atomic to assistive
+        // technology, so the per-row Open control would be hidden or would
+        // fight the option for focus. `treeitem` supports both a selectable
+        // row and a control that opens it.
+        role="tree"
+        aria-label={listLabel}
+        aria-busy={isLoadingCurrentLevel || undefined}
+        tabIndex={-1}
+      >
         {error && <div className="px-3 py-2 text-xs text-destructive">{error}</div>}
-        {!error && visibleEntries.length === 0 && (
+        {/* The level being browsed has not arrived yet, so "no subfolders"
+            would be a guess. Stay quiet until the load settles. */}
+        {!error && isLoadingCurrentLevel && visibleEntries.length === 0 && (
+          <div className="flex items-center gap-2 px-3 py-2 text-xs text-foreground-muted">
+            <Spinner className="size-3.5" />
+            {loadingText}
+          </div>
+        )}
+        {!error && !isLoadingCurrentLevel && visibleEntries.length === 0 && (
           <div className="px-3 py-2 text-xs text-foreground-muted">
             {normalizedQuery ? `No folders match “${search.trim()}”.` : emptyText}
           </div>
@@ -255,13 +290,18 @@ export function FolderPickerContent({
           const isSelected = draft === fullPath;
           const isLoading = loadingPath === fullPath;
           const label = entry.label ?? entry.name;
+          /** A known leaf offers no way in, by pointer or by keyboard. */
+          const canOpen = !entry.disabled && entry.hasChildren !== false;
 
           return (
             <div
               key={entry.name}
-              role="option"
+              role="treeitem"
               aria-selected={isSelected}
               aria-label={label}
+              // Collapsed rather than absent: a row that can be opened has
+              // children that simply have not been fetched yet.
+              aria-expanded={canOpen ? false : undefined}
               aria-disabled={entry.disabled}
               tabIndex={entry.disabled ? -1 : 0}
               className={cn(
@@ -272,13 +312,13 @@ export function FolderPickerContent({
                 isSelected && 'bg-surface-overlay'
               )}
               onClick={() => !entry.disabled && setDraft(isSelected ? null : fullPath)}
-              onDoubleClick={() => !entry.disabled && drillInto(segments)}
+              onDoubleClick={() => canOpen && drillInto(segments)}
               onKeyDown={(event) => {
                 if (entry.disabled) return;
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
                   setDraft(isSelected ? null : fullPath);
-                } else if (event.key === 'ArrowRight') {
+                } else if (event.key === 'ArrowRight' && canOpen) {
                   event.preventDefault();
                   drillInto(segments);
                 }
@@ -320,9 +360,13 @@ export function FolderPickerContent({
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-3 py-2">
         <div className="flex min-w-0 items-center gap-1">{footerLeading}</div>
         <div className="flex shrink-0 items-center gap-1">
-          <Button variant="ghost" size="xs" type="button" className="h-7" onClick={onCancel}>
-            {cancelLabel}
-          </Button>
+          {/* Only offered when there is something for it to do: embedded in a
+              consumer-owned surface there may be nothing to dismiss. */}
+          {onCancel && (
+            <Button variant="ghost" size="xs" type="button" className="h-7" onClick={onCancel}>
+              {cancelLabel}
+            </Button>
+          )}
           <Button
             variant="default"
             size="xs"
@@ -395,7 +439,9 @@ export function FolderPicker({
   return (
     <div className={cn('group relative min-w-0', className)}>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+        {/* `disabled` on the trigger, as VariablePicker does, so a custom
+            child is inert too and not only the default field. */}
+        <PopoverTrigger asChild disabled={disabled}>
           {children ?? (
             <button
               type="button"
@@ -444,17 +490,26 @@ export function FolderPicker({
         </PopoverContent>
       </Popover>
 
-      {clearable && value && !disabled && !children && (
-        <button
-          type="button"
-          aria-label={clearAriaLabel}
-          className="absolute inset-y-0 right-2 my-auto grid size-4 cursor-pointer place-items-center rounded text-foreground-muted opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
-          onClick={() => onSelect('')}
-        >
-          <X size={11} />
-        </button>
+      {/* Overlaid at the field's trailing edge rather than left in normal flow,
+          where an adornment would sit beside the field or wrap to its own line.
+          The trigger reserves this room with its `pr-9`. */}
+      {(trailingAdornment || (clearable && value && !disabled && !children)) && (
+        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center gap-0.5">
+          {clearable && value && !disabled && !children && (
+            <button
+              type="button"
+              aria-label={clearAriaLabel}
+              className="pointer-events-auto grid size-4 cursor-pointer place-items-center rounded text-foreground-muted opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+              onClick={() => onSelect('')}
+            >
+              <X size={11} />
+            </button>
+          )}
+          {trailingAdornment && (
+            <span className="pointer-events-auto flex items-center">{trailingAdornment}</span>
+          )}
+        </span>
       )}
-      {trailingAdornment}
     </div>
   );
 }

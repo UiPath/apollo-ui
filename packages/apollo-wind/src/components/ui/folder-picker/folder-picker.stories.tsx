@@ -63,6 +63,11 @@ Levels are fetched one at a time through \`onLoadChildren\`, which receives the 
 - Use \`FolderPickerContent\` when the consumer already owns a popover, dialog or sheet.
 - Use \`trailingAdornment\` for a field-mode menu or another control that belongs inside the field.
 - Search filters the level being browsed. It is not a tree-wide search.
+- \`FolderPickerContent\` renders **Cancel** only when given \`onCancel\`, so an embedded surface with nothing to dismiss shows just **Select**.
+
+## Accessibility
+
+The list is a \`tree\` of \`treeitem\` rows rather than a listbox, because a listbox option is atomic to assistive technology and would swallow the per-row open control. Rows carry \`aria-selected\`, and a row that can be opened reports \`aria-expanded="false"\` since its children have not been fetched yet. Enter or Space highlights a row, ArrowRight opens it, and neither acts on a row declared \`hasChildren: false\`.
         `,
       },
     },
