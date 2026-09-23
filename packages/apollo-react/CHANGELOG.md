@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.54.0...@uipath/apollo-react@6.55.0) (2026-09-23)
+
+### Features
+
+* **apollo-react:** centralized guardrails section and read-only details [AL-578] ([2008788](https://github.com/UiPath/apollo-ui/commit/2008788b852d0bf6db25d215c5272f9170929d2e))
+
 ## [@uipath/apollo-react-v6.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.53.0...@uipath/apollo-react@6.54.0) (2026-09-23)
 
 ### Features
