@@ -4138,7 +4138,8 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
   const [errorHandlingEnabled, setErrorHandlingEnabled] = useState(true);
   const [retryCount, setRetryCount] = useState('8');
   const [stage, setStage] = useState('');
-  const parametersIssueCount = (stage ? 0 : 1) + (recipient ? 0 : 1);
+  const parametersIssueCount =
+    (stage ? 0 : 1) + (recipient ? 0 : 1) + (subject ? 0 : 1) + (body ? 0 : 1);
   const isRetryCountValid = Number(retryCount) >= 0 && Number(retryCount) <= 5;
   const errorHandlingIssueCount = isRetryCountValid ? 0 : 1;
   const totalIssueCount = parametersIssueCount + errorHandlingIssueCount;
@@ -4238,6 +4239,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
                 value={subject}
                 placeholder="The subject of the email"
                 required
+                error={subject ? undefined : 'Enter a subject line.'}
                 onChange={setSubject}
               />
               <div className="grid gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
@@ -4248,6 +4250,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
                   id="dap-validation-body"
                   value={body}
                   required
+                  error={body ? undefined : 'Enter a message body.'}
                   onChange={(event) => setBody(event.target.value)}
                   className="min-h-24 resize-none future:bg-surface-overlay text-xs"
                 />
@@ -4484,12 +4487,9 @@ export function FullWorkbenchComposition({
         <span className="inline-flex items-center gap-1.5">
           <Bug className="size-3" /> Executions
           {rightPanelVariant === 'dap-validation' && (
-            <span
-              title="2 issues"
-              className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-error-background"
-            >
-              <span aria-hidden="true">2</span>
-              <span className="sr-only">2 issues</span>
+            <span title="Has validation issues" className="inline-flex items-center">
+              <span aria-hidden="true" className="size-2 rounded-full bg-error" />
+              <span className="sr-only">Has validation issues</span>
             </span>
           )}
         </span>
