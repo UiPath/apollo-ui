@@ -40,6 +40,7 @@ export * from './progress';
 export * from './prompt-editor';
 export * from './radio-group';
 export * from './resizable';
+export * from './resource-picker';
 export * from './scroll-area';
 export * from './search';
 export * from './select';
