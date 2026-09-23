@@ -4138,6 +4138,10 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
   const [errorHandlingEnabled, setErrorHandlingEnabled] = useState(true);
   const [retryCount, setRetryCount] = useState('8');
   const [stage, setStage] = useState('');
+  const parametersIssueCount = (stage ? 0 : 1) + (recipient ? 0 : 1);
+  const isRetryCountValid = Number(retryCount) >= 0 && Number(retryCount) <= 5;
+  const errorHandlingIssueCount = isRetryCountValid ? 0 : 1;
+  const totalIssueCount = parametersIssueCount + errorHandlingIssueCount;
 
   return (
     <NodePropertyPanel
@@ -4152,10 +4156,10 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
       <Tabs defaultValue="parameters" className="flex h-full min-h-0 flex-col">
         <TabsList className="mx-3 h-auto justify-start gap-0.5 rounded-lg bg-transparent p-0.5">
           <TabsTrigger value="parameters" className="h-6 px-2.5 text-xs">
-            <ValidationTabLabel label="Parameters" count={stage ? 1 : 2} />
+            <ValidationTabLabel label="Parameters" count={parametersIssueCount} />
           </TabsTrigger>
           <TabsTrigger value="error-handling" className="h-6 px-2.5 text-xs">
-            <ValidationTabLabel label="Error handling" count={1} />
+            <ValidationTabLabel label="Error handling" count={errorHandlingIssueCount} />
           </TabsTrigger>
           <TabsTrigger value="variables" className="h-6 px-2.5 text-xs">
             Variables
@@ -4166,7 +4170,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
           <div className="space-y-5">
             <Alert variant="destructive">
               <AlertCircle />
-              <AlertTitle>Resolve {stage ? 2 : 3} issues before running this node</AlertTitle>
+              <AlertTitle>Resolve {totalIssueCount} issues before running this node</AlertTitle>
               <AlertDescription>
                 Fix the highlighted fields in Parameters and Error handling before you run or
                 publish this workflow.
@@ -4221,7 +4225,11 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
                 value={recipient}
                 placeholder="Recipient email address"
                 required
-                error="This field is required. Enter a recipient or bind a variable."
+                error={
+                  recipient
+                    ? undefined
+                    : 'This field is required. Enter a recipient or bind a variable.'
+                }
                 onChange={setRecipient}
               />
               <DapValidationValueField
@@ -4273,7 +4281,7 @@ function DapValidationPanel({ onClose }: { onClose: () => void }) {
                 id="dap-validation-retry-count"
                 value={retryCount}
                 onChange={(event) => setRetryCount(event.target.value)}
-                error="Retry count must be between 0 and 5."
+                error={isRetryCountValid ? undefined : 'Retry count must be between 0 and 5.'}
                 className="future:bg-surface-overlay text-xs"
               />
             </div>
