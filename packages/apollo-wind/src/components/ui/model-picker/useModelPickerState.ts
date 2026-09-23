@@ -156,6 +156,15 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
   // common case (host passes initial value, user toggles inside the
   // popup) doesn't need any external wiring.
   const [groupBy, setGroupBy] = useState<GroupStrategy>(initialGroupBy);
+  // The in-popup toggle owns this between renders, but a host that passes a
+  // new `groupBy` is asking for a reset — the doc on the option says so.
+  // Sync on change only, so the toggle's choice survives unrelated rerenders.
+  const lastInitialGroupBy = useRef(initialGroupBy);
+  useEffect(() => {
+    if (lastInitialGroupBy.current === initialGroupBy) return;
+    lastInitialGroupBy.current = initialGroupBy;
+    setGroupBy(initialGroupBy);
+  }, [initialGroupBy]);
   // Sticky per-group collapse state, seeded from `initiallyCollapsedGroups`.
   // While the user is searching we force every group open so matches always
   // show; the stored set isn't mutated, so the previous collapse state

@@ -907,6 +907,23 @@ describe('<ModelPicker> review follow-ups', () => {
     expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-activedescendant');
   });
 
+  it('resets the grouping when the groupBy prop changes after mount', async () => {
+    const user = userEvent.setup();
+    const { rerender } = renderPicker(<ModelPicker groupBy="subscription" models={MODELS} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    expect(screen.getByText('Custom Models (BYO)')).toBeInTheDocument();
+
+    rerender(<ModelPicker groupBy="vendor" models={MODELS} />);
+    // Provider view keeps BYO first but replaces the lifecycle sections
+    // (Recommended / Preview / More) with vendor sections.
+    const headers = () =>
+      [...document.querySelectorAll('[data-slot="model-picker-group-header"]')].map(
+        (h) => h.textContent ?? ''
+      );
+    expect(headers().some((t) => /^Recommended/.test(t))).toBe(false);
+    expect(headers().some((t) => /OpenAI|Anthropic/.test(t))).toBe(true);
+  });
+
   it('builds selector-safe dom ids', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker models={withContext} />);
