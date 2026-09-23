@@ -206,6 +206,18 @@ describe('defaultRowActions', () => {
 
 describe('optionDomId', () => {
   it('sanitizes non-word characters so querySelector stays safe', () => {
-    expect(optionDomId('list', 'anthropic.claude:v1/0')).toBe('list-opt-anthropic-claude-v1-0');
+    expect(optionDomId('list', 'anthropic.claude:v1/0')).toBe(
+      'list-opt-anthropic_2e_claude_3a_v1_2f_0'
+    );
+    expect(() =>
+      document.querySelector(`#${optionDomId('list', 'anthropic.claude:v1/0')}`)
+    ).not.toThrow();
+  });
+
+  it('gives distinct model ids distinct dom ids', () => {
+    // `a.b` / `a-b` / `a_b` collided under a lossy "replace with -" scheme,
+    // so activedescendant could point at the wrong row.
+    const ids = ['a.b', 'a-b', 'a_b', 'a_2e_b', 'a.-b', 'a-.b'].map((m) => optionDomId('l', m));
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });
