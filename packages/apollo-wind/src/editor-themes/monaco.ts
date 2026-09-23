@@ -24,74 +24,74 @@
 
 /** Token color rules — dark variant */
 const darkRules = [
-  { token: '', foreground: 'a1a1aa' }, // zinc-400  --code-rest
-  { token: 'comment', foreground: '52525b' }, // zinc-600  comment (muted)
-  { token: 'comment.doc', foreground: '52525b' },
-  { token: 'string', foreground: '34d399' }, // emerald-400  --code-string
-  { token: 'string.escape', foreground: '34d399' },
-  { token: 'regexp', foreground: 'a78bfa' }, // violet-400  --code-literal
-  { token: 'number', foreground: 'fbbf24' }, // amber-400  --code-number
-  { token: 'number.float', foreground: 'fbbf24' },
-  { token: 'number.hex', foreground: 'fbbf24' },
-  { token: 'boolean', foreground: 'a78bfa' }, // violet-400  --code-literal
-  { token: 'keyword', foreground: '22d3ee' }, // cyan-400  --code-key
-  { token: 'keyword.control', foreground: '22d3ee' },
-  { token: 'keyword.operator', foreground: '71717a' }, // zinc-500  --code-punctuation
-  { token: 'operator', foreground: '71717a' }, // zinc-500  --code-punctuation
-  { token: 'delimiter', foreground: '71717a' },
-  { token: 'delimiter.bracket', foreground: '71717a' },
-  { token: 'delimiter.array', foreground: '71717a' },
-  { token: 'delimiter.parenthesis', foreground: '71717a' },
-  { token: 'type', foreground: 'a78bfa' }, // violet-400  --code-literal
-  { token: 'type.identifier', foreground: 'a78bfa' },
-  { token: 'class', foreground: 'a78bfa' },
-  { token: 'class.identifier', foreground: 'a78bfa' },
-  { token: 'function', foreground: '22d3ee' }, // cyan-400  --code-key
-  { token: 'function.identifier', foreground: '22d3ee' },
-  { token: 'variable', foreground: 'a1a1aa' }, // zinc-400  --code-rest
-  { token: 'variable.predefined', foreground: 'a78bfa' },
-  { token: 'constant', foreground: 'a78bfa' }, // violet-400  --code-literal
-  { token: 'identifier', foreground: 'a1a1aa' }, // zinc-400  --code-rest
-  { token: 'tag', foreground: '22d3ee' },
-  { token: 'attribute.name', foreground: '22d3ee' },
-  { token: 'attribute.value', foreground: '34d399' },
-  { token: 'metatag', foreground: '71717a' },
+  { token: '', foreground: '9f9fa9' }, // zinc-400  --code-rest
+  { token: 'comment', foreground: '52525c' }, // zinc-600  comment (muted)
+  { token: 'comment.doc', foreground: '52525c' },
+  { token: 'string', foreground: '00d492' }, // emerald-400  --code-string
+  { token: 'string.escape', foreground: '00d492' },
+  { token: 'regexp', foreground: 'a684ff' }, // violet-400  --code-literal
+  { token: 'number', foreground: 'ffb900' }, // amber-400  --code-number
+  { token: 'number.float', foreground: 'ffb900' },
+  { token: 'number.hex', foreground: 'ffb900' },
+  { token: 'boolean', foreground: 'a684ff' }, // violet-400  --code-literal
+  { token: 'keyword', foreground: '00d3f2' }, // cyan-400  --code-key
+  { token: 'keyword.control', foreground: '00d3f2' },
+  { token: 'keyword.operator', foreground: '71717b' }, // zinc-500  --code-punctuation
+  { token: 'operator', foreground: '71717b' }, // zinc-500  --code-punctuation
+  { token: 'delimiter', foreground: '71717b' },
+  { token: 'delimiter.bracket', foreground: '71717b' },
+  { token: 'delimiter.array', foreground: '71717b' },
+  { token: 'delimiter.parenthesis', foreground: '71717b' },
+  { token: 'type', foreground: 'a684ff' }, // violet-400  --code-literal
+  { token: 'type.identifier', foreground: 'a684ff' },
+  { token: 'class', foreground: 'a684ff' },
+  { token: 'class.identifier', foreground: 'a684ff' },
+  { token: 'function', foreground: '00d3f2' }, // cyan-400  --code-key
+  { token: 'function.identifier', foreground: '00d3f2' },
+  { token: 'variable', foreground: '9f9fa9' }, // zinc-400  --code-rest
+  { token: 'variable.predefined', foreground: 'a684ff' },
+  { token: 'constant', foreground: 'a684ff' }, // violet-400  --code-literal
+  { token: 'identifier', foreground: '9f9fa9' }, // zinc-400  --code-rest
+  { token: 'tag', foreground: '00d3f2' },
+  { token: 'attribute.name', foreground: '00d3f2' },
+  { token: 'attribute.value', foreground: '00d492' },
+  { token: 'metatag', foreground: '71717b' },
 ] as const;
 
 /** Token color rules — light variant */
 const lightRules = [
-  { token: '', foreground: '52525b' }, // zinc-600  --code-rest
-  { token: 'comment', foreground: 'a1a1aa' }, // zinc-400  comment (muted)
-  { token: 'comment.doc', foreground: 'a1a1aa' },
-  { token: 'string', foreground: '047857' }, // emerald-700  --code-string
-  { token: 'string.escape', foreground: '047857' },
-  { token: 'regexp', foreground: '7c3aed' }, // violet-600  --code-literal
-  { token: 'number', foreground: 'b45309' }, // amber-700  --code-number
-  { token: 'number.float', foreground: 'b45309' },
-  { token: 'number.hex', foreground: 'b45309' },
-  { token: 'boolean', foreground: '7c3aed' }, // violet-600  --code-literal
-  { token: 'keyword', foreground: '0e7490' }, // cyan-700  --code-key
-  { token: 'keyword.control', foreground: '0e7490' },
-  { token: 'keyword.operator', foreground: '71717a' }, // zinc-500  --code-punctuation
-  { token: 'operator', foreground: '71717a' }, // zinc-500  --code-punctuation
-  { token: 'delimiter', foreground: '71717a' },
-  { token: 'delimiter.bracket', foreground: '71717a' },
-  { token: 'delimiter.array', foreground: '71717a' },
-  { token: 'delimiter.parenthesis', foreground: '71717a' },
-  { token: 'type', foreground: '7c3aed' }, // violet-600  --code-literal
-  { token: 'type.identifier', foreground: '7c3aed' },
-  { token: 'class', foreground: '7c3aed' },
-  { token: 'class.identifier', foreground: '7c3aed' },
-  { token: 'function', foreground: '0e7490' }, // cyan-700  --code-key
-  { token: 'function.identifier', foreground: '0e7490' },
-  { token: 'variable', foreground: '52525b' }, // zinc-600  --code-rest
-  { token: 'variable.predefined', foreground: '7c3aed' },
-  { token: 'constant', foreground: '7c3aed' }, // violet-600  --code-literal
-  { token: 'identifier', foreground: '52525b' }, // zinc-600  --code-rest
-  { token: 'tag', foreground: '0e7490' },
-  { token: 'attribute.name', foreground: '0e7490' },
-  { token: 'attribute.value', foreground: '047857' },
-  { token: 'metatag', foreground: '71717a' },
+  { token: '', foreground: '52525c' }, // zinc-600  --code-rest
+  { token: 'comment', foreground: '9f9fa9' }, // zinc-400  comment (muted)
+  { token: 'comment.doc', foreground: '9f9fa9' },
+  { token: 'string', foreground: '007a55' }, // emerald-700  --code-string
+  { token: 'string.escape', foreground: '007a55' },
+  { token: 'regexp', foreground: '7f22fe' }, // violet-600  --code-literal
+  { token: 'number', foreground: 'bb4d00' }, // amber-700  --code-number
+  { token: 'number.float', foreground: 'bb4d00' },
+  { token: 'number.hex', foreground: 'bb4d00' },
+  { token: 'boolean', foreground: '7f22fe' }, // violet-600  --code-literal
+  { token: 'keyword', foreground: '007595' }, // cyan-700  --code-key
+  { token: 'keyword.control', foreground: '007595' },
+  { token: 'keyword.operator', foreground: '71717b' }, // zinc-500  --code-punctuation
+  { token: 'operator', foreground: '71717b' }, // zinc-500  --code-punctuation
+  { token: 'delimiter', foreground: '71717b' },
+  { token: 'delimiter.bracket', foreground: '71717b' },
+  { token: 'delimiter.array', foreground: '71717b' },
+  { token: 'delimiter.parenthesis', foreground: '71717b' },
+  { token: 'type', foreground: '7f22fe' }, // violet-600  --code-literal
+  { token: 'type.identifier', foreground: '7f22fe' },
+  { token: 'class', foreground: '7f22fe' },
+  { token: 'class.identifier', foreground: '7f22fe' },
+  { token: 'function', foreground: '007595' }, // cyan-700  --code-key
+  { token: 'function.identifier', foreground: '007595' },
+  { token: 'variable', foreground: '52525c' }, // zinc-600  --code-rest
+  { token: 'variable.predefined', foreground: '7f22fe' },
+  { token: 'constant', foreground: '7f22fe' }, // violet-600  --code-literal
+  { token: 'identifier', foreground: '52525c' }, // zinc-600  --code-rest
+  { token: 'tag', foreground: '007595' },
+  { token: 'attribute.name', foreground: '007595' },
+  { token: 'attribute.value', foreground: '007a55' },
+  { token: 'metatag', foreground: '71717b' },
 ] as const;
 
 /**
@@ -106,35 +106,46 @@ export const apolloFutureDarkMonaco = {
   rules: darkRules,
   colors: {
     'editor.background': '#27272a', // zinc-800  surface-overlay
-    'editor.foreground': '#a1a1aa', // zinc-400  --code-rest
-    'editorLineNumber.foreground': '#52525b', // zinc-600  comment level
-    'editorLineNumber.activeForeground': '#a1a1aa', // zinc-400
+    'editor.foreground': '#9f9fa9', // zinc-400  --code-rest
+    'editorLineNumber.foreground': '#52525c', // zinc-600  comment level
+    'editorLineNumber.activeForeground': '#9f9fa9', // zinc-400
     'editor.selectionBackground': '#3f3f4666', // zinc-700 @ 40%
     'editor.inactiveSelectionBackground': '#3f3f4633', // zinc-700 @ 20%
     'editor.lineHighlightBackground': '#27272a80', // zinc-800 @ 50%
-    'editorCursor.foreground': '#22d3ee', // cyan-400  brand
+    'editorCursor.foreground': '#00d3f2', // cyan-400  brand
     'editorWhitespace.foreground': '#3f3f46', // zinc-700
     'editorIndentGuide.background1': '#27272a', // zinc-800
     'editorIndentGuide.activeBackground1': '#3f3f46', // zinc-700
-    'editorBracketMatch.background': '#22d3ee1a', // cyan-400 @ 10%
-    'editorBracketMatch.border': '#22d3ee', // cyan-400
-    'editor.findMatchBackground': '#fbbf2440', // amber-400 @ 25%
-    'editor.findMatchHighlightBackground': '#fbbf2420',
-    'editorWidget.background': '#09090b', // zinc-950
+    'editorBracketMatch.background': '#00d3f21a', // cyan-400 @ 10%
+    'editorBracketMatch.border': '#00d3f2', // cyan-400
+    'editorBracketHighlight.foreground1': '#71717b', // zinc-500  --code-punctuation (matches CodeMirror)
+    'editorBracketHighlight.foreground2': '#71717b',
+    'editorBracketHighlight.foreground3': '#71717b',
+    'editorBracketHighlight.foreground4': '#71717b',
+    'editorBracketHighlight.foreground5': '#71717b',
+    'editorBracketHighlight.foreground6': '#71717b',
+    'editorBracketHighlight.unexpectedBracket.foreground': '#ff8484', // error-text
+    'editor.findMatchBackground': '#ffb90040', // amber-400 @ 25%
+    'editor.findMatchHighlightBackground': '#ffb90020',
+    'editorWidget.background': '#27272a', // zinc-800  surface-overlay
     'editorWidget.border': '#3f3f46', // zinc-700
-    'editorSuggestWidget.background': '#09090b',
+    'editorSuggestWidget.background': '#27272a', // zinc-800  surface-overlay
     'editorSuggestWidget.border': '#3f3f46',
-    'editorSuggestWidget.selectedBackground': '#27272a',
-    'editorHoverWidget.background': '#09090b',
+    'editorSuggestWidget.selectedBackground': '#3f3f46', // zinc-700  background-selected
+    'editorSuggestWidget.foreground': '#9f9fa9', // zinc-400  --code-rest
+    'editorSuggestWidget.selectedForeground': '#fafafa', // zinc-50  foreground
+    'editorSuggestWidget.highlightForeground': '#00d3f2', // cyan-400  brand
+    'editorSuggestWidget.focusHighlightForeground': '#00d3f2',
+    'editorHoverWidget.background': '#27272a', // zinc-800  surface-overlay
     'editorHoverWidget.border': '#3f3f46',
     'scrollbarSlider.background': '#3f3f4666',
-    'scrollbarSlider.hoverBackground': '#52525b80',
-    'scrollbarSlider.activeBackground': '#71717a80',
-    focusBorder: '#22d3ee',
+    'scrollbarSlider.hoverBackground': '#52525c80',
+    'scrollbarSlider.activeBackground': '#71717b80',
+    focusBorder: '#00d3f2',
     'input.background': '#27272a',
     'input.border': '#3f3f46',
-    'input.foreground': '#a1a1aa',
-    'input.placeholderForeground': '#52525b',
+    'input.foreground': '#9f9fa9',
+    'input.placeholderForeground': '#52525c',
   },
 };
 
@@ -150,9 +161,9 @@ export const apolloFutureLightMonaco = {
   rules: lightRules,
   colors: {
     'editor.background': '#ffffff', // white  surface-overlay
-    'editor.foreground': '#52525b', // zinc-600  --code-rest
-    'editorLineNumber.foreground': '#a1a1aa', // zinc-400  comment level
-    'editorLineNumber.activeForeground': '#71717a', // zinc-500
+    'editor.foreground': '#52525c', // zinc-600  --code-rest
+    'editorLineNumber.foreground': '#9f9fa9', // zinc-400  comment level
+    'editorLineNumber.activeForeground': '#71717b', // zinc-500
     'editor.selectionBackground': '#d4d4d866', // zinc-300 @ 40%
     'editor.inactiveSelectionBackground': '#d4d4d833', // zinc-300 @ 20%
     'editor.lineHighlightBackground': '#e4e4e780', // zinc-200 @ 50%
@@ -162,23 +173,34 @@ export const apolloFutureLightMonaco = {
     'editorIndentGuide.activeBackground1': '#d4d4d8', // zinc-300
     'editorBracketMatch.background': '#0092b81a', // cyan-600 @ 10%
     'editorBracketMatch.border': '#0092b8', // cyan-600
-    'editor.findMatchBackground': '#b4530940', // amber-700 @ 25%
-    'editor.findMatchHighlightBackground': '#b4530920',
+    'editorBracketHighlight.foreground1': '#71717b', // zinc-500  --code-punctuation (matches CodeMirror)
+    'editorBracketHighlight.foreground2': '#71717b',
+    'editorBracketHighlight.foreground3': '#71717b',
+    'editorBracketHighlight.foreground4': '#71717b',
+    'editorBracketHighlight.foreground5': '#71717b',
+    'editorBracketHighlight.foreground6': '#71717b',
+    'editorBracketHighlight.unexpectedBracket.foreground': '#a6040a', // error-text
+    'editor.findMatchBackground': '#bb4d0040', // amber-700 @ 25%
+    'editor.findMatchHighlightBackground': '#bb4d0020',
     'editorWidget.background': '#ffffff', // white  surface-overlay
     'editorWidget.border': '#d4d4d8', // zinc-300
     'editorSuggestWidget.background': '#ffffff', // white  surface-overlay
     'editorSuggestWidget.border': '#d4d4d8',
-    'editorSuggestWidget.selectedBackground': '#d4d4d8',
+    'editorSuggestWidget.selectedBackground': '#e4e4e7', // zinc-200  background-selected
+    'editorSuggestWidget.foreground': '#52525c', // zinc-600  --code-rest
+    'editorSuggestWidget.selectedForeground': '#09090b', // zinc-950  foreground
+    'editorSuggestWidget.highlightForeground': '#0092b8', // cyan-600  brand
+    'editorSuggestWidget.focusHighlightForeground': '#0092b8',
     'editorHoverWidget.background': '#ffffff', // white  surface-overlay
     'editorHoverWidget.border': '#d4d4d8',
     'scrollbarSlider.background': '#d4d4d866',
-    'scrollbarSlider.hoverBackground': '#a1a1aa80',
-    'scrollbarSlider.activeBackground': '#71717a80',
+    'scrollbarSlider.hoverBackground': '#9f9fa980',
+    'scrollbarSlider.activeBackground': '#71717b80',
     focusBorder: '#0092b8',
     'input.background': '#ffffff',
     'input.border': '#d4d4d8',
-    'input.foreground': '#52525b',
-    'input.placeholderForeground': '#a1a1aa',
+    'input.foreground': '#52525c',
+    'input.placeholderForeground': '#9f9fa9',
   },
 };
 
@@ -348,6 +370,13 @@ export const apolloCoreDarkMonaco = {
     'editorIndentGuide.activeBackground1': '#374652',
     'editorBracketMatch.background': '#66adff1a',
     'editorBracketMatch.border': '#66adff',
+    'editorBracketHighlight.foreground1': '#8a97a0', // punctuation (matches CodeMirror)
+    'editorBracketHighlight.foreground2': '#8a97a0',
+    'editorBracketHighlight.foreground3': '#8a97a0',
+    'editorBracketHighlight.foreground4': '#8a97a0',
+    'editorBracketHighlight.foreground5': '#8a97a0',
+    'editorBracketHighlight.foreground6': '#8a97a0',
+    'editorBracketHighlight.unexpectedBracket.foreground': '#ff8484',
     'editor.findMatchBackground': '#6ecdb640',
     'editor.findMatchHighlightBackground': '#6ecdb620',
     'editorWidget.background': '#0f1922',
@@ -355,6 +384,10 @@ export const apolloCoreDarkMonaco = {
     'editorSuggestWidget.background': '#0f1922',
     'editorSuggestWidget.border': '#374652',
     'editorSuggestWidget.selectedBackground': '#273139',
+    'editorSuggestWidget.foreground': '#cfd8dd',
+    'editorSuggestWidget.selectedForeground': '#f4f5f7',
+    'editorSuggestWidget.highlightForeground': '#66adff',
+    'editorSuggestWidget.focusHighlightForeground': '#66adff',
     'editorHoverWidget.background': '#0f1922',
     'editorHoverWidget.border': '#374652',
     'scrollbarSlider.background': '#37465266',
@@ -390,6 +423,13 @@ export const apolloCoreLightMonaco = {
     'editorIndentGuide.activeBackground1': '#cfd8dd',
     'editorBracketMatch.background': '#0067df1a',
     'editorBracketMatch.border': '#0067df',
+    'editorBracketHighlight.foreground1': '#6b7882', // punctuation (matches CodeMirror)
+    'editorBracketHighlight.foreground2': '#6b7882',
+    'editorBracketHighlight.foreground3': '#6b7882',
+    'editorBracketHighlight.foreground4': '#6b7882',
+    'editorBracketHighlight.foreground5': '#6b7882',
+    'editorBracketHighlight.foreground6': '#6b7882',
+    'editorBracketHighlight.unexpectedBracket.foreground': '#a6040a',
     'editor.findMatchBackground': '#1e7f5a40',
     'editor.findMatchHighlightBackground': '#1e7f5a20',
     'editorWidget.background': '#f4f5f7',
@@ -397,6 +437,10 @@ export const apolloCoreLightMonaco = {
     'editorSuggestWidget.background': '#f4f5f7',
     'editorSuggestWidget.border': '#cfd8dd',
     'editorSuggestWidget.selectedBackground': '#e9f1fa',
+    'editorSuggestWidget.foreground': '#526069',
+    'editorSuggestWidget.selectedForeground': '#273139',
+    'editorSuggestWidget.highlightForeground': '#0067df',
+    'editorSuggestWidget.focusHighlightForeground': '#0067df',
     'editorHoverWidget.background': '#f4f5f7',
     'editorHoverWidget.border': '#cfd8dd',
     'scrollbarSlider.background': '#cfd8dd66',
@@ -432,6 +476,13 @@ export const apolloCoreDarkHCMonaco = {
     'editorIndentGuide.activeBackground1': '#374652',
     'editorBracketMatch.background': '#badaff1a',
     'editorBracketMatch.border': '#badaff',
+    'editorBracketHighlight.foreground1': '#8a97a0', // punctuation (matches CodeMirror)
+    'editorBracketHighlight.foreground2': '#8a97a0',
+    'editorBracketHighlight.foreground3': '#8a97a0',
+    'editorBracketHighlight.foreground4': '#8a97a0',
+    'editorBracketHighlight.foreground5': '#8a97a0',
+    'editorBracketHighlight.foreground6': '#8a97a0',
+    'editorBracketHighlight.unexpectedBracket.foreground': '#ffadad',
     'editor.findMatchBackground': '#6ecdb640',
     'editor.findMatchHighlightBackground': '#6ecdb620',
     'editorWidget.background': '#0f1922',
@@ -439,6 +490,10 @@ export const apolloCoreDarkHCMonaco = {
     'editorSuggestWidget.background': '#0f1922',
     'editorSuggestWidget.border': '#526069',
     'editorSuggestWidget.selectedBackground': '#273139',
+    'editorSuggestWidget.foreground': '#cfd8dd',
+    'editorSuggestWidget.selectedForeground': '#f4f5f7',
+    'editorSuggestWidget.highlightForeground': '#badaff',
+    'editorSuggestWidget.focusHighlightForeground': '#badaff',
     'editorHoverWidget.background': '#0f1922',
     'editorHoverWidget.border': '#526069',
     'scrollbarSlider.background': '#37465266',
@@ -474,6 +529,13 @@ export const apolloCoreLightHCMonaco = {
     'editorIndentGuide.activeBackground1': '#cfd8dd',
     'editorBracketMatch.background': '#00489d1a',
     'editorBracketMatch.border': '#00489d',
+    'editorBracketHighlight.foreground1': '#526069', // punctuation (matches CodeMirror)
+    'editorBracketHighlight.foreground2': '#526069',
+    'editorBracketHighlight.foreground3': '#526069',
+    'editorBracketHighlight.foreground4': '#526069',
+    'editorBracketHighlight.foreground5': '#526069',
+    'editorBracketHighlight.foreground6': '#526069',
+    'editorBracketHighlight.unexpectedBracket.foreground': '#a6040a',
     'editor.findMatchBackground': '#17624540',
     'editor.findMatchHighlightBackground': '#17624520',
     'editorWidget.background': '#f4f5f7',
@@ -481,6 +543,10 @@ export const apolloCoreLightHCMonaco = {
     'editorSuggestWidget.background': '#f4f5f7',
     'editorSuggestWidget.border': '#6b7882',
     'editorSuggestWidget.selectedBackground': '#e9f1fa',
+    'editorSuggestWidget.foreground': '#374652',
+    'editorSuggestWidget.selectedForeground': '#273139',
+    'editorSuggestWidget.highlightForeground': '#00489d',
+    'editorSuggestWidget.focusHighlightForeground': '#00489d',
     'editorHoverWidget.background': '#f4f5f7',
     'editorHoverWidget.border': '#6b7882',
     'scrollbarSlider.background': '#a4b1b866',
