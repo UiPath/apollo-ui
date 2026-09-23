@@ -1,3 +1,10 @@
+## [@uipath/apollo-core-v5.15.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.14.1...@uipath/apollo-core@5.15.0) (2026-09-23)
+
+### Features
+
+* **apollo-core:** promote proposed Future Light teal into real theme tokens ([5e7af04](https://github.com/UiPath/apollo-ui/commit/5e7af042bfe0f79db3f9f346bee381c132864140))
+* **apollo-react:** consolidate UX Inventory into the canonical NodePropertyPanel docs ([4a171ac](https://github.com/UiPath/apollo-ui/commit/4a171ace8fda898f6ce3fb26fc8eebf3177b4c24))
+
 ## [@uipath/apollo-core-v5.14.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.14.0...@uipath/apollo-core@5.14.1) (2026-09-15)
 
 ### Bug Fixes

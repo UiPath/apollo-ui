@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v6.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.55.0...@uipath/apollo-react@6.56.0) (2026-09-23)
+
+### Features
+
+* **apollo-react:** consolidate UX Inventory into the canonical NodePropertyPanel docs ([4a171ac](https://github.com/UiPath/apollo-ui/commit/4a171ace8fda898f6ce3fb26fc8eebf3177b4c24))
+
+### Bug Fixes
+
+* **apollo-react:** address Copilot review feedback on dap-validation notifications ([3fccd22](https://github.com/UiPath/apollo-ui/commit/3fccd2200628f11228d38e4279d381fa3de2710b))
+* **apollo-react:** fix Combobox interactivity and Panel anatomy anchor in UI Inventory ([50acdf0](https://github.com/UiPath/apollo-ui/commit/50acdf046705dac9d4369939c6ccd1a979572d7b))
+* **apollo-react:** make dap-validation field errors reflect actual field state ([6494b36](https://github.com/UiPath/apollo-ui/commit/6494b3611c0415dbccd9bde38c3202b0b8ac941d))
+
 ## [@uipath/apollo-react-v6.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.54.0...@uipath/apollo-react@6.55.0) (2026-09-23)
 
 ### Features

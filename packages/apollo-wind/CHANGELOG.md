@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v2.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.53.2...@uipath/apollo-wind@2.54.0) (2026-09-23)
+
+### Features
+
+* **apollo-core:** promote proposed Future Light teal into real theme tokens ([5e7af04](https://github.com/UiPath/apollo-ui/commit/5e7af042bfe0f79db3f9f346bee381c132864140))
+
+### Bug Fixes
+
+* **apollo-react:** address Copilot review feedback on dap-validation notifications ([3fccd22](https://github.com/UiPath/apollo-ui/commit/3fccd2200628f11228d38e4279d381fa3de2710b))
+
 ## [@uipath/apollo-wind-v2.53.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.53.1...@uipath/apollo-wind@2.53.2) (2026-09-20)
 
 ### Bug Fixes
