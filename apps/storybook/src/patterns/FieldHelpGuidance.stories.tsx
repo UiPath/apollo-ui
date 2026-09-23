@@ -20,7 +20,7 @@ import {
 } from './guidance-primitives';
 
 const meta = {
-  title: 'Apollo Wind/Forms/Field Help Guidance',
+  title: 'Apollo Wind/Forms/Guidance Field Help',
   parameters: { layout: 'fullscreen' },
 } satisfies Meta;
 

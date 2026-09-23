@@ -2511,7 +2511,7 @@
         "value": "{color.zinc.950.value}"
       },
       "future-light": {
-        "value": "{color.zinc.950.value}"
+        "value": "{color.zinc.50.value}"
       }
     },
     "primarySubtle": {
