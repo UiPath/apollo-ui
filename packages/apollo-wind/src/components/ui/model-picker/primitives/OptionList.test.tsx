@@ -10,6 +10,7 @@ import { GroupedOptionList, optionDomId, VirtualOptionList } from './OptionList'
 // jsdom reports 0×0 elements, so the real virtualizer would compute an
 // empty window and render nothing. Virtualize "everything" instead —
 // these tests cover VirtualOptionList's own rendering, not the library.
+const { measureElement } = vi.hoisted(() => ({ measureElement: vi.fn() }));
 vi.mock('@tanstack/react-virtual', () => ({
   useVirtualizer: (opts: { count: number; estimateSize: (i: number) => number }) => {
     const items = Array.from({ length: opts.count }, (_, index) => ({
@@ -22,6 +23,7 @@ vi.mock('@tanstack/react-virtual', () => ({
       getVirtualItems: () => items,
       getTotalSize: () => items.reduce((sum, it) => sum + it.size, 0),
       scrollToIndex: () => {},
+      measureElement,
     };
   },
 }));
@@ -145,6 +147,20 @@ describe('<GroupedOptionList>', () => {
     );
     await user.click(screen.getByText('Custom Models (BYO)'));
     expect(onGroupToggle).toHaveBeenCalledWith('byo');
+  });
+});
+
+describe('<VirtualOptionList> row measurement', () => {
+  it('hands every rendered row to the virtualizer to measure', () => {
+    measureElement.mockClear();
+    render(<VirtualOptionList activeIndex={0} id="lb" onSelect={() => {}} options={OPTIONS} />);
+    // Rows are min-height, not fixed: a friendly-name line, a BYO connection
+    // caption or host meta grows them. Without measurement, absolutely
+    // positioned neighbours overlap once virtualization kicks in.
+    const rows = document.querySelectorAll('[data-slot="model-picker-listbox"] [data-index]');
+    expect(rows.length).toBeGreaterThan(0);
+    const measured = new Set(measureElement.mock.calls.map((c) => c[0]));
+    for (const el of rows) expect(measured.has(el)).toBe(true);
   });
 });
 

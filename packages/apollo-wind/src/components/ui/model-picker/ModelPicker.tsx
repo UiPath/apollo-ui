@@ -166,10 +166,10 @@ export interface ModelPickerProps {
    */
   variant?: ModelPickerVariant;
   /**
-   * Initial grouping strategy. The picker holds this as internal state
-   * once mounted so the in-popup view toggle (see
-   * `allowGroupingChange`) can update it without lifting state to the
-   * host. Default: `subscription`.
+   * Grouping strategy. The picker holds this as internal state so the
+   * in-popup view toggle (see `allowGroupingChange`) can update it without
+   * lifting state to the host; passing a different value later resets the
+   * view to it. Default: `subscription`.
    */
   groupBy?: GroupStrategy;
   /**

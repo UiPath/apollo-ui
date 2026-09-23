@@ -308,12 +308,17 @@ export const VirtualOptionList: React.FC<OptionListProps> = ({
   const optionHeight = dense ? DENSE_OPTION_HEIGHT : FULL_OPTION_HEIGHT;
 
   const parentRef = useRef<HTMLDivElement | null>(null);
+  // `estimateSize` is only the first guess: rows are `min-h-*`, not fixed,
+  // and grow with a technical-id line, a BYO connection line or host
+  // `renderMeta`. Each rendered row reports its real height through
+  // `measureElement` so absolutely positioned neighbours never overlap.
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: (i) => (rows[i]?.kind === 'header' ? headerHeight : optionHeight),
     overscan: 10,
   });
+  const measure = virtualizer.measureElement;
 
   useEffect(() => {
     const rowIdx = rows.findIndex((r) => r.kind === 'option' && r.index === activeIndex);
@@ -349,7 +354,7 @@ export const VirtualOptionList: React.FC<OptionListProps> = ({
             const isCollapsible = isCollapsibleGroup(row.groupKey);
             const isCollapsed = isCollapsible && (collapsedGroups?.has(row.groupKey) ?? false);
             return (
-              <div key={row.key} style={baseStyle}>
+              <div data-index={vi.index} key={row.key} ref={measure} style={baseStyle}>
                 <GroupHeader
                   label={row.label}
                   hint={groupHint(row.groupKey, labels)}
@@ -366,7 +371,7 @@ export const VirtualOptionList: React.FC<OptionListProps> = ({
             );
           }
           return (
-            <div key={row.key} style={baseStyle}>
+            <div data-index={vi.index} key={row.key} ref={measure} style={baseStyle}>
               <ModelOptionRow
                 id={optionDomId(id, row.model.modelId)}
                 model={row.model}
