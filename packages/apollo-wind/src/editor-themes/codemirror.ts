@@ -201,8 +201,8 @@ export const apolloFutureLightCodeMirror: ApolloCodeMirrorTheme = {
     meta: '#71717a',
   },
   ui: {
-    // zinc-100
-    background: '#f4f4f5',
+    // white  surface-overlay (matches the Monaco future-light theme)
+    background: '#ffffff',
     // zinc-600 — matches --code-rest for default prose
     foreground: '#52525b',
     // cyan-600
