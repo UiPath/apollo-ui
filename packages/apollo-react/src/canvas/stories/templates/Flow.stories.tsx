@@ -4518,10 +4518,14 @@ export function FullWorkbenchComposition({
           item.id === 'variables'
             ? {
                 ...item,
+                label: `${item.label} (has validation issues)`,
                 icon: (
                   <span className="relative grid size-5 place-items-center">
                     {item.icon}
-                    <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-error ring-2 ring-surface-raised" />
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-error ring-2 ring-surface-raised"
+                    />
                   </span>
                 ),
               }
@@ -4549,8 +4553,8 @@ export function FullWorkbenchComposition({
                     validationStatus: ValidationErrorSeverity.ERROR,
                     validationError: {
                       code: 'MISSING_REQUIRED_FIELDS',
-                      message: 'Resolve 3 issues before running this node.',
-                      description: 'Resolve 3 issues before running this node.',
+                      message: 'Resolve the highlighted issues before running this node.',
+                      description: 'Resolve the highlighted issues before running this node.',
                       severity: ValidationErrorSeverity.ERROR,
                     },
                   }
