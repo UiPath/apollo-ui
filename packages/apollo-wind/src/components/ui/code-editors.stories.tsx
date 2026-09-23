@@ -3,9 +3,13 @@ import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 import { drawSelection, EditorView, highlightActiveLine, lineNumbers } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
-import MonacoEditor from '@monaco-editor/react';
+import MonacoEditor, { type EditorProps } from '@monaco-editor/react';
 import type { Meta } from '@storybook/react-vite';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { Code2, Mail, Maximize2, Play } from 'lucide-react';
+import { type ComponentProps, type ReactNode, useEffect, useId, useRef, useState } from 'react';
+import { NodePropertyPanel } from '../../../../apollo-react/src/canvas/components/NodePropertyPanel/NodePropertyPanel';
+import { FullWorkbenchComposition } from '../../../../apollo-react/src/canvas/stories/templates/Flow.stories';
+import { withCanvasProviders } from '../../../../apollo-react/src/canvas/storybook-utils';
 import type { ApolloCodeMirrorTheme } from '../../editor-themes';
 import {
   apolloCoreDarkCodeMirror,
@@ -21,6 +25,18 @@ import {
   apolloFutureLightCodeMirror,
   apolloFutureLightMonaco,
 } from '../../editor-themes';
+import { Button } from './button';
+import { Modal, ModalContent } from './dialog';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './input-group';
+import { Label } from './label';
+import { LockableValueField } from './lockable-value-field';
+import {
+  PromptEditor,
+  type PromptEditorAutoCompleteOption,
+  type PromptEditorRef,
+  type PromptEditorToken,
+} from './prompt-editor';
+import { VariablePicker, type VariablePickerItem } from './variable-picker';
 
 // ============================================================================
 // Meta
@@ -30,6 +46,7 @@ const meta = {
   title: 'Patterns/Code Editors',
   tags: ['!autodocs'],
   parameters: { layout: 'padded' },
+  decorators: [withCanvasProviders({ fullscreen: false })],
 } satisfies Meta;
 
 export default meta;
@@ -48,7 +65,6 @@ const editorThemeConfigs = [
     monacoThemeObj: apolloFutureDarkMonaco,
     cmTokens: apolloFutureDarkCodeMirror,
     isDark: true,
-    borderColor: '#3f3f46',
     family: 'Future',
   },
   {
@@ -60,7 +76,6 @@ const editorThemeConfigs = [
     monacoThemeObj: apolloFutureLightMonaco,
     cmTokens: apolloFutureLightCodeMirror,
     isDark: false,
-    borderColor: '#d4d4d8',
     family: 'Future',
   },
   {
@@ -72,7 +87,6 @@ const editorThemeConfigs = [
     monacoThemeObj: apolloCoreDarkMonaco,
     cmTokens: apolloCoreDarkCodeMirror,
     isDark: true,
-    borderColor: '#8a97a0',
     family: 'Core',
   },
   {
@@ -84,7 +98,6 @@ const editorThemeConfigs = [
     monacoThemeObj: apolloCoreLightMonaco,
     cmTokens: apolloCoreLightCodeMirror,
     isDark: false,
-    borderColor: '#a4b1b8',
     family: 'Core',
   },
   {
@@ -96,7 +109,6 @@ const editorThemeConfigs = [
     monacoThemeObj: apolloCoreDarkHCMonaco,
     cmTokens: apolloCoreDarkHCCodeMirror,
     isDark: true,
-    borderColor: '#bbc7cd',
     family: 'Core HC',
   },
   {
@@ -108,7 +120,6 @@ const editorThemeConfigs = [
     monacoThemeObj: apolloCoreLightHCMonaco,
     cmTokens: apolloCoreLightHCCodeMirror,
     isDark: false,
-    borderColor: '#6b7882',
     family: 'Core HC',
   },
 ] as const;
@@ -212,8 +223,10 @@ const codemirrorSample = `workflow.status === "active" && user.role !== "viewer"
 
 let monacoThemesRegistered = false;
 
-// biome-ignore lint/suspicious/noExplicitAny: Monaco types not available at story level
-function registerAllMonacoThemes(monaco: any) {
+type MonacoInstance = Parameters<NonNullable<EditorProps['beforeMount']>>[0];
+type TypescriptDefaults = MonacoInstance['languages']['typescript']['typescriptDefaults'];
+
+function registerAllMonacoThemes(monaco: MonacoInstance) {
   if (monacoThemesRegistered) return;
   for (const cfg of editorThemeConfigs) {
     monaco.editor.defineTheme(cfg.monacoThemeName, cfg.monacoThemeObj);
@@ -221,11 +234,51 @@ function registerAllMonacoThemes(monaco: any) {
   monacoThemesRegistered = true;
 }
 
+// TypeScript defaults are global to the Monaco instance, not per model, and Storybook
+// reuses one preview runtime across stories. Apply the demo defaults while any demo
+// editor is mounted and restore the previous ones when the last unmounts, so other
+// stories' editors keep their own diagnostics.
+let demoDefaultsUsers = 0;
+let savedTypescriptDefaults: {
+  diagnostics: ReturnType<TypescriptDefaults['getDiagnosticsOptions']>;
+  compiler: ReturnType<TypescriptDefaults['getCompilerOptions']>;
+} | null = null;
+
+function acquireDemoTypescriptDefaults(monaco: MonacoInstance) {
+  demoDefaultsUsers += 1;
+  if (demoDefaultsUsers > 1) return;
+  const ts = monaco.languages.typescript.typescriptDefaults;
+  savedTypescriptDefaults = {
+    diagnostics: ts.getDiagnosticsOptions(),
+    compiler: ts.getCompilerOptions(),
+  };
+  // These snippets are illustrative fragments, not complete programs, so undeclared
+  // identifiers are expected. Disable only semantic validation; syntax validation
+  // stays on so genuinely malformed code still surfaces.
+  ts.setDiagnosticsOptions({ ...ts.getDiagnosticsOptions(), noSemanticValidation: true });
+  // The full sample is a React component, so parse models as TSX; otherwise syntax
+  // validation flags every JSX line.
+  ts.setCompilerOptions({
+    ...ts.getCompilerOptions(),
+    jsx: monaco.languages.typescript.JsxEmit.Preserve,
+  });
+}
+
+function releaseDemoTypescriptDefaults(monaco: MonacoInstance) {
+  demoDefaultsUsers -= 1;
+  if (demoDefaultsUsers > 0 || !savedTypescriptDefaults) return;
+  const ts = monaco.languages.typescript.typescriptDefaults;
+  ts.setDiagnosticsOptions(savedTypescriptDefaults.diagnostics);
+  ts.setCompilerOptions(savedTypescriptDefaults.compiler);
+  savedTypescriptDefaults = null;
+}
+
 function buildCMExtensions(tokens: ApolloCodeMirrorTheme, isDark: boolean, compact = false) {
   const { syntax, ui } = tokens;
   const theme = EditorView.theme(
     {
       '&': {
+        height: '100%',
         backgroundColor: ui.background,
         color: ui.foreground,
         fontFamily:
@@ -246,7 +299,17 @@ function buildCMExtensions(tokens: ApolloCodeMirrorTheme, isDark: boolean, compa
       },
       '.cm-activeLineGutter': { color: ui.lineNumberActive, backgroundColor: 'transparent' },
       '.cm-matchingBracket': { outline: `1px solid ${ui.matchingBracket}`, borderRadius: '2px' },
-      '.cm-content': { padding: '12px 0', caretColor: ui.cursor },
+      '.cm-content': {
+        padding: '12px 0',
+        caretColor: ui.cursor,
+        // CodeMirror's own base styles set `.cm-content { font-family: monospace }` at the
+        // same specificity as the `&` rule above, which wins the cascade by source order and
+        // silently overrides our font stack. `inherit` still overrides that default (picking
+        // up the correct stack from the `&` rule on the parent `.cm-editor`) without repeating
+        // the font stack literal in two places.
+        fontFamily: 'inherit',
+        fontSize: 'inherit',
+      },
       '.cm-line': { padding: '0 16px' },
       '.cm-scroller': { overflow: 'auto' },
     },
@@ -285,20 +348,47 @@ function LiveMonacoEditor({
   themeConfig,
   height = '220px',
   value,
+  onChange,
+  onMount,
   options = {},
 }: {
   themeConfig: ThemeConfig;
   height?: string;
   value?: string;
+  onChange?: (value: string | undefined) => void;
+  onMount?: EditorProps['onMount'];
   options?: Record<string, unknown>;
 }) {
+  // Each editor needs its own model; a `.tsx` URI lets TypeScript parse JSX.
+  const modelPath = `file:///editor-${useId().replace(/[^a-zA-Z0-9]/g, '')}.tsx`;
+  const monacoRef = useRef<MonacoInstance | null>(null);
+
+  useEffect(
+    () => () => {
+      if (monacoRef.current) releaseDemoTypescriptDefaults(monacoRef.current);
+      monacoRef.current = null;
+    },
+    []
+  );
+
   return (
     <MonacoEditor
       height={height}
+      path={modelPath}
       defaultLanguage="typescript"
-      defaultValue={value ?? monacoSample}
+      // Controlled only when the caller tracks edits; static samples stay uncontrolled so a
+      // constant value can't be reconciled over what the user typed.
+      {...(onChange ? { value: value ?? '' } : { defaultValue: value ?? monacoSample })}
       theme={themeConfig.monacoThemeName}
-      beforeMount={registerAllMonacoThemes}
+      beforeMount={(monaco) => {
+        registerAllMonacoThemes(monaco);
+        if (!monacoRef.current) {
+          monacoRef.current = monaco;
+          acquireDemoTypescriptDefaults(monaco);
+        }
+      }}
+      onChange={onChange}
+      onMount={onMount}
       options={{
         fontSize: 13,
         lineHeight: 20,
@@ -316,6 +406,9 @@ function LiveMonacoEditor({
         overviewRulerBorder: false,
         scrollbar: { vertical: 'auto', horizontal: 'hidden', alwaysConsumeMouseWheel: false },
         automaticLayout: true,
+        // Suggestion/hover widgets render in a fixed overlay layer instead of being
+        // clipped by the `overflow-hidden` containers these demos wrap the editor in.
+        fixedOverflowWidgets: true,
         ...options,
       }}
     />
@@ -326,21 +419,36 @@ function LiveCodeMirrorEditor({
   themeConfig,
   value,
   compact = false,
+  height,
 }: {
   themeConfig: ThemeConfig;
   value?: string;
   compact?: boolean;
+  height?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { cmTokens, isDark, borderColor } = themeConfig;
+  const { cmTokens, isDark } = themeConfig;
   const doc = value ?? codemirrorSample;
+  // The live document, so rebuilding the view for a theme change keeps the user's edits.
+  // A new `value` from the caller still replaces it.
+  const docRef = useRef(doc);
+  const lastValueRef = useRef(doc);
 
   useEffect(() => {
     if (!containerRef.current) return;
+    if (lastValueRef.current !== doc) {
+      lastValueRef.current = doc;
+      docRef.current = doc;
+    }
     const view = new EditorView({
       state: EditorState.create({
-        doc,
-        extensions: buildCMExtensions(cmTokens, isDark, compact),
+        doc: docRef.current,
+        extensions: [
+          ...buildCMExtensions(cmTokens, isDark, compact),
+          EditorView.updateListener.of((update) => {
+            if (update.docChanged) docRef.current = update.state.doc.toString();
+          }),
+        ],
       }),
       parent: containerRef.current,
     });
@@ -348,7 +456,11 @@ function LiveCodeMirrorEditor({
   }, [cmTokens, isDark, doc, compact]);
 
   return (
-    <div ref={containerRef} className="overflow-hidden rounded-lg border" style={{ borderColor }} />
+    <div
+      ref={containerRef}
+      style={height ? { height } : undefined}
+      className="overflow-hidden rounded-lg border border-border-subtle"
+    />
   );
 }
 
@@ -356,6 +468,10 @@ function LiveCodeMirrorEditor({
 // Static Monaco preview — lightweight color swatch for the Themes page.
 // Avoids mounting 6 simultaneous Monaco instances which causes white screens.
 // ============================================================================
+
+// Shared fixed height so the Monaco and CodeMirror previews on the Themes page
+// always match, regardless of how many lines either one's sample wraps to.
+const THEME_PREVIEW_HEIGHT = '128px';
 
 function StaticMonacoPreview({ themeConfig }: { themeConfig: ThemeConfig }) {
   // biome-ignore lint/suspicious/noExplicitAny: dynamic key access on const theme object
@@ -398,8 +514,13 @@ function StaticMonacoPreview({ themeConfig }: { themeConfig: ThemeConfig }) {
 
   return (
     <div
-      className="overflow-hidden rounded-lg border p-3 font-mono text-xs leading-[18px]"
-      style={{ background: bg, borderColor: themeConfig.borderColor }}
+      className="overflow-y-auto rounded-lg border border-border-subtle p-3 text-[13px] leading-5"
+      style={{
+        height: THEME_PREVIEW_HEIGHT,
+        background: bg,
+        fontFamily:
+          'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+      }}
     >
       <Line n={1}>
         <K v="const" /> status <Op v="=" /> workflow
@@ -472,6 +593,29 @@ function Swatch({ color, label }: { color: string; label: string }) {
   );
 }
 
+/** Monaco and CodeMirror previews stacked at the same fixed height, for consistent display. */
+function ThemeEditorPreviewPair({ themeConfig }: { themeConfig: ThemeConfig }) {
+  return (
+    <>
+      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        Monaco
+      </p>
+      <div className="mb-4">
+        <StaticMonacoPreview themeConfig={themeConfig} />
+      </div>
+
+      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        CodeMirror
+      </p>
+      <LiveCodeMirrorEditor
+        themeConfig={themeConfig}
+        value={codemirrorSample}
+        height={THEME_PREVIEW_HEIGHT}
+      />
+    </>
+  );
+}
+
 function ThemeTokenPanel({ themeConfig }: { themeConfig: ThemeConfig }) {
   const { cmTokens, monacoThemeName, monacoExport, cmExport } = themeConfig;
 
@@ -516,7 +660,7 @@ function ThemeTokenPanel({ themeConfig }: { themeConfig: ThemeConfig }) {
         <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           Import
         </p>
-        <pre className="overflow-x-auto rounded-lg border border-border bg-muted p-3 text-[11px] leading-relaxed text-foreground">
+        <pre className="overflow-x-auto rounded-lg border border-border-subtle bg-muted p-3 text-[11px] leading-relaxed text-foreground">
           <code>{`import * as monaco from 'monaco-editor';
 import { ${monacoExport}, ${cmExport} } from '@uipath/apollo-wind/editor-themes';
 
@@ -559,27 +703,36 @@ function useEditorThemeConfig(): ThemeConfig {
 
 function MonacoInputDemo({ themeConfig }: { themeConfig: ThemeConfig }) {
   const [mode, setMode] = useState<'text' | 'code'>('text');
+  // Shared by both modes so edits made in the code editor survive switching back to Text.
+  const [inputValue, setInputValue] = useState(
+    'workflow.status === "active" && user.role !== "viewer"'
+  );
 
   return (
     <div className="max-w-xl">
       {mode === 'text' ? (
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2">
-          <code className="flex-1 truncate text-sm font-mono text-foreground">
-            workflow.status === "active" &amp;&amp; user.role !== "viewer"
-          </code>
-          <button
-            type="button"
-            aria-label="Switch to code editor"
-            onClick={() => setMode('code')}
-            className="flex shrink-0 items-center gap-1 rounded border border-border bg-card px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            {'{ }'}
-          </button>
-        </div>
+        <InputGroup>
+          <InputGroupInput
+            readOnly
+            value={inputValue}
+            placeholder="Type an expression…"
+            aria-label="Expression"
+            className="font-mono"
+          />
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton
+              icon
+              aria-label="Switch to code editor"
+              onClick={() => setMode('code')}
+            >
+              <Code2 />
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-primary">
-          <div className="flex items-center justify-between border-b border-border bg-muted px-3 py-1.5">
-            <span className="text-xs font-medium text-foreground">TypeScript expression</span>
+        <div className="overflow-hidden rounded-lg border border-primary future:rounded-xl">
+          <div className="flex items-center justify-between border-b border-border-subtle bg-muted px-3 py-1.5">
+            <span className="text-xs font-medium text-foreground">Expression</span>
             <button
               type="button"
               onClick={() => setMode('text')}
@@ -591,15 +744,16 @@ function MonacoInputDemo({ themeConfig }: { themeConfig: ThemeConfig }) {
           <LiveMonacoEditor
             themeConfig={themeConfig}
             height="120px"
-            value={`workflow.status === "active" && user.role !== "viewer"`}
+            value={inputValue}
+            onChange={(nextValue) => setInputValue(nextValue ?? '')}
             options={{
               lineNumbers: 'off',
               glyphMargin: false,
               folding: false,
               renderLineHighlight: 'none',
-              padding: { top: 10, bottom: 10 },
-              fontSize: 12,
-              lineHeight: 18,
+              padding: { top: 12, bottom: 12 },
+              fontSize: 13,
+              lineHeight: 20,
             }}
           />
         </div>
@@ -615,13 +769,23 @@ function CodeMirrorInputDemo({ themeConfig }: { themeConfig: ThemeConfig }) {
   const [inputValue, setInputValue] = useState(
     'workflow.status === "active" && user.role !== "viewer"'
   );
+  // Mirrors the editor document on every change, so rebuilding the view for a theme
+  // change keeps unsaved code-mode edits instead of resetting to the last saved value.
+  const docRef = useRef(inputValue);
 
   useEffect(() => {
     if (mode !== 'code' || !containerRef.current) return;
     const view = new EditorView({
       state: EditorState.create({
-        doc: inputValue,
-        extensions: buildCMExtensions(themeConfig.cmTokens, themeConfig.isDark),
+        doc: docRef.current,
+        // Compact + wrapping to match the Monaco input's code mode.
+        extensions: [
+          ...buildCMExtensions(themeConfig.cmTokens, themeConfig.isDark, true),
+          EditorView.lineWrapping,
+          EditorView.updateListener.of((update) => {
+            if (update.docChanged) docRef.current = update.state.doc.toString();
+          }),
+        ],
       }),
       parent: containerRef.current,
     });
@@ -630,33 +794,37 @@ function CodeMirrorInputDemo({ themeConfig }: { themeConfig: ThemeConfig }) {
       view.destroy();
       viewRef.current = null;
     };
-    // intentionally only re-run when mode changes
-  }, [mode]);
+  }, [mode, themeConfig]);
 
   const handleBack = () => {
-    if (viewRef.current) {
-      setInputValue(viewRef.current.state.doc.toString());
-    }
+    setInputValue(docRef.current);
     setMode('text');
   };
 
   return (
     <div className="max-w-xl">
       {mode === 'text' ? (
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2">
-          <code className="flex-1 truncate text-sm font-mono text-foreground">{inputValue}</code>
-          <button
-            type="button"
-            aria-label="Switch to code editor"
-            onClick={() => setMode('code')}
-            className="flex shrink-0 items-center gap-1 rounded border border-border bg-card px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            {'{ }'}
-          </button>
-        </div>
+        <InputGroup>
+          <InputGroupInput
+            readOnly
+            value={inputValue}
+            placeholder="Type an expression…"
+            aria-label="Expression"
+            className="font-mono"
+          />
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton
+              icon
+              aria-label="Switch to code editor"
+              onClick={() => setMode('code')}
+            >
+              <Code2 />
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-primary">
-          <div className="flex items-center justify-between border-b border-border bg-muted px-3 py-1.5">
+        <div className="overflow-hidden rounded-lg border border-primary future:rounded-xl">
+          <div className="flex items-center justify-between border-b border-border-subtle bg-muted px-3 py-1.5">
             <span className="text-xs font-medium text-foreground">Expression</span>
             <button
               type="button"
@@ -666,7 +834,7 @@ function CodeMirrorInputDemo({ themeConfig }: { themeConfig: ThemeConfig }) {
               Text
             </button>
           </div>
-          <div ref={containerRef} className="overflow-hidden" />
+          <div ref={containerRef} className="h-[120px] overflow-hidden" />
         </div>
       )}
     </div>
@@ -699,48 +867,6 @@ monaco.editor.defineTheme('apollo-future-dark', apolloFutureDarkMonaco);
   }}
 />`.trim();
 
-const monacoCompactUsage = `// Compact editor — use for property panels and constrained spaces
-<MonacoEditor
-  height="140px"
-  language="typescript"
-  theme="apollo-future-dark"
-  options={{
-    fontSize: 12,
-    lineNumbers: 'off',
-    minimap: { enabled: false },
-    folding: false,
-    renderLineHighlight: 'none',
-    scrollBeyondLastLine: false,
-    padding: { top: 10, bottom: 10 },
-  }}
-/>`.trim();
-
-const monacoInputUsage = `// Input editor toggle — use for form fields with expression support
-const [mode, setMode] = useState<'text' | 'code'>('text');
-const [value, setValue] = useState('');
-
-{mode === 'text' ? (
-  <div className="flex items-center gap-2 rounded-lg border border-border px-3 py-2">
-    <code className="flex-1 text-sm font-mono">{value}</code>
-    <button type="button" onClick={() => setMode('code')}>{'{ }'}</button>
-  </div>
-) : (
-  <div className="overflow-hidden rounded-lg border border-primary">
-    <div className="flex items-center justify-between px-3 py-1.5 bg-muted border-b border-border">
-      <span className="text-xs font-medium">TypeScript expression</span>
-      <button type="button" onClick={() => setMode('text')}>Text</button>
-    </div>
-    <MonacoEditor
-      height="120px"
-      language="typescript"
-      theme="apollo-future-dark"
-      value={value}
-      onChange={(v) => setValue(v ?? '')}
-      options={{ lineNumbers: 'off', minimap: { enabled: false } }}
-    />
-  </div>
-)}`.trim();
-
 const cmFullUsage = `import { EditorView } from '@codemirror/view';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags as t } from '@lezer/highlight';
@@ -768,47 +894,6 @@ const highlight = HighlightStyle.define([
 ]);
 
 export const apolloFutureDark = [theme, syntaxHighlighting(highlight)];`.trim();
-
-const cmCompactUsage = `// Compact: disable gutter + active line for tight spaces
-const theme = EditorView.theme({
-  '&': { backgroundColor: ui.background, color: ui.foreground, fontSize: '12px' },
-  '.cm-cursor': { borderLeftColor: ui.cursor },
-  '.cm-content': { padding: '8px 12px' },
-  '.cm-scroller': { overflow: 'auto' },
-}, { dark: true });
-
-// Omit lineNumbers() and highlightActiveLine() from your extensions array`.trim();
-
-const cmInputUsage = `// Input toggle: mount/unmount CodeMirror on demand
-const [mode, setMode] = useState<'text' | 'code'>('text');
-const containerRef = useRef<HTMLDivElement>(null);
-
-useEffect(() => {
-  if (mode !== 'code' || !containerRef.current) return;
-  const view = new EditorView({
-    state: EditorState.create({
-      doc: value,
-      extensions: [theme, syntaxHighlighting(highlight), javascript()],
-    }),
-    parent: containerRef.current,
-  });
-  return () => view.destroy();
-}, [mode]);
-
-{mode === 'text' ? (
-  <div className="flex items-center gap-2 ...">
-    <code>{value}</code>
-    <button onClick={() => setMode('code')}>{'{ }'}</button>
-  </div>
-) : (
-  <div className="rounded-lg border border-primary overflow-hidden">
-    <div className="flex justify-between px-3 py-1.5 bg-muted border-b border-border">
-      <span>Expression</span>
-      <button onClick={() => setMode('text')}>Text</button>
-    </div>
-    <div ref={containerRef} />
-  </div>
-)}`.trim();
 
 // ============================================================================
 // Feature comparison + decision tables
@@ -902,40 +987,13 @@ const decisionRows = [
 // Editor tab components
 // ============================================================================
 
-type EditorTab = 'full' | 'compact' | 'input';
-
-const editorTabs: { key: EditorTab; label: string }[] = [
-  { key: 'full', label: 'Full Editor' },
-  { key: 'compact', label: 'Compact Editor' },
-  { key: 'input', label: 'Input Editor' },
-];
-
-const tabDescriptions: Record<EditorTab, { monaco: string; cm: string }> = {
-  full: {
-    monaco:
-      'For script panels and automation builders where the editor is the primary focus. Give it explicit height and enable all navigation features.',
-    cm: 'Full CodeMirror setup with line numbers, active line highlight, and selection. Use for lightweight script areas where Monaco’s bundle weight is not justified.',
-  },
-  compact: {
-    monaco:
-      'For property panels and sidebars where vertical space is constrained. Disable line numbers and gutter features to maximise the code area.',
-    cm: 'Minimal CodeMirror without gutter or active-line decoration. Best for single-line expression fields in property panels.',
-  },
-  input: {
-    monaco:
-      'For form fields where users can optionally switch to a code editor. Starts as a plain text input; a toggle reveals Monaco for authoring TypeScript expressions.',
-    cm: 'Preferred pattern for variable binding fields. CodeMirror mounts on demand and is destroyed when collapsed, keeping memory usage low.',
-  },
-};
-
 function MonacoEditorPage() {
-  const [activeTab, setActiveTab] = useState<EditorTab>('full');
   const themeConfig = useEditorThemeConfig();
   return (
-    <div className="min-h-screen w-full bg-background text-foreground">
-      <div className="mx-auto max-w-4xl px-8 pt-8">
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Monaco Editor</h2>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+    <div className="min-h-screen w-full bg-surface text-foreground">
+      <div className="mx-auto max-w-4xl px-8 pt-16">
+        <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">Monaco Editor</h1>
+        <p className="text-lg leading-8 text-muted-foreground">
           Full-featured code editor powered by VS Code’s engine. Use it when users need
           IntelliSense, diagnostics, bracket matching, and multi-line editing. Import from{' '}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
@@ -943,93 +1001,68 @@ function MonacoEditorPage() {
           </code>{' '}
           and register themes once at app startup.
         </p>
-        <div className="mb-8 h-px bg-border" />
+        <div className="my-10 h-px bg-border" />
       </div>
 
-      <div className="mx-auto max-w-4xl px-8 pb-8">
-        {/* ── Tab bar ── */}
-        <div className="mb-8 flex overflow-hidden rounded-lg border border-border">
-          {editorTabs.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 border-r border-border px-4 py-3 text-sm font-medium last:border-r-0 transition-colors ${
-                activeTab === tab.key
-                  ? 'bg-card text-foreground'
-                  : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="mx-auto max-w-4xl px-8 pb-16">
+        <div className="mb-10 grid gap-6 md:grid-cols-2">
+          <div>
+            <h2 className="mb-2 text-xl font-semibold tracking-tight text-foreground">
+              What it is
+            </h2>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Monaco is the VS Code editor engine for multi-line scripts and expressions. It
+              includes IntelliSense, diagnostics, bracket matching, search, and language services.
+            </p>
+          </div>
+          <div>
+            <h2 className="mb-2 text-xl font-semibold tracking-tight text-foreground">
+              When to use it
+            </h2>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Choose Monaco when code is the primary task or users need rich TypeScript and
+              JavaScript authoring. Use the Full, Compact, Input, Panel, and Takeover stories for
+              layout guidance.
+            </p>
+          </div>
         </div>
-
-        {/* ── Tab content ── */}
-        <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
-          {tabDescriptions[activeTab].monaco}
+        <h2 className="mb-2 text-xl font-semibold tracking-tight text-foreground">
+          Reference implementation
+        </h2>
+        <p className="mb-4 text-sm leading-6 text-muted-foreground">
+          A representative full editor with Apollo theme registration and recommended sizing.
         </p>
-
-        {activeTab === 'full' && (
-          <>
-            <div className="mb-4 overflow-hidden rounded-lg border border-border">
-              <LiveMonacoEditor themeConfig={themeConfig} height="400px" value={monacoFullSample} />
-            </div>
-            <pre className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
-              <code>{monacoFullUsage}</code>
-            </pre>
-          </>
-        )}
-
-        {activeTab === 'compact' && (
-          <>
-            <div className="mb-4 overflow-hidden rounded-lg border border-border">
-              <LiveMonacoEditor
-                themeConfig={themeConfig}
-                height="140px"
-                value={monacoSample}
-                options={{
-                  lineNumbers: 'off',
-                  glyphMargin: false,
-                  folding: false,
-                  renderLineHighlight: 'none',
-                  padding: { top: 10, bottom: 10 },
-                  fontSize: 12,
-                  lineHeight: 18,
-                }}
-              />
-            </div>
-            <pre className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
-              <code>{monacoCompactUsage}</code>
-            </pre>
-          </>
-        )}
-
-        {activeTab === 'input' && (
-          <>
-            <div className="mb-4">
-              <MonacoInputDemo themeConfig={themeConfig} />
-            </div>
-            <pre className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
-              <code>{monacoInputUsage}</code>
-            </pre>
-          </>
-        )}
+        <div className="mb-4 overflow-hidden rounded-lg border border-border-subtle">
+          <LiveMonacoEditor themeConfig={themeConfig} height="400px" value={monacoFullSample} />
+        </div>
+        <pre className="overflow-x-auto rounded-lg border border-border-subtle bg-surface p-4 text-xs leading-relaxed text-foreground">
+          <code>{monacoFullUsage}</code>
+        </pre>
+        <div className="mt-10">
+          <h2 className="mb-2 text-xl font-semibold tracking-tight text-foreground">
+            Style and behavior
+          </h2>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Use 13px text with a 20px line height for the standard editor, disable the minimap in
+            embedded product surfaces, and use Apollo editor themes rather than application-level
+            colors. Keep search, diagnostics, keyboard focus, and a clear exit action available when
+            the editor expands beyond a field.
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
 function CodeMirrorEditorPage() {
-  const [activeTab, setActiveTab] = useState<EditorTab>('full');
   const themeConfig = useEditorThemeConfig();
   return (
-    <div className="min-h-screen w-full bg-background text-foreground">
-      <div className="mx-auto max-w-4xl px-8 pt-8">
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">
+    <div className="min-h-screen w-full bg-surface text-foreground">
+      <div className="mx-auto max-w-4xl px-8 pt-16">
+        <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">
           CodeMirror Editor
-        </h2>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+        </h1>
+        <p className="text-lg leading-8 text-muted-foreground">
           Lightweight editor for single-line expressions and{' '}
           <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
             {'{{ variable }}'}
@@ -1040,67 +1073,576 @@ function CodeMirrorEditorPage() {
           </code>
           .
         </p>
-        <div className="mb-8 h-px bg-border" />
+        <div className="my-10 h-px bg-border" />
       </div>
 
-      <div className="mx-auto max-w-4xl px-8 pb-8">
-        {/* ── Tab bar ── */}
-        <div className="mb-8 flex overflow-hidden rounded-lg border border-border">
-          {editorTabs.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 border-r border-border px-4 py-3 text-sm font-medium last:border-r-0 transition-colors ${
-                activeTab === tab.key
-                  ? 'bg-card text-foreground'
-                  : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="mx-auto max-w-4xl px-8 pb-16">
+        <div className="mb-10 grid gap-6 md:grid-cols-2">
+          <div>
+            <h2 className="mb-2 text-xl font-semibold tracking-tight text-foreground">
+              What it is
+            </h2>
+            <p className="text-sm leading-6 text-muted-foreground">
+              CodeMirror is a lightweight, extensible editor for expressions and focused code input.
+              Apollo provides syntax and UI tokens for building a native CodeMirror 6 integration.
+            </p>
+          </div>
+          <div>
+            <h2 className="mb-2 text-xl font-semibold tracking-tight text-foreground">
+              When to use it
+            </h2>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Choose CodeMirror for lightweight expression fields, variable bindings, and focused
+              script areas where Monaco’s bundle and language services are unnecessary.
+            </p>
+          </div>
         </div>
-
-        {/* ── Tab content ── */}
-        <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
-          {tabDescriptions[activeTab].cm}
+        <h2 className="mb-2 text-xl font-semibold tracking-tight text-foreground">
+          Reference implementation
+        </h2>
+        <p className="mb-4 text-sm leading-6 text-muted-foreground">
+          A representative CodeMirror editor using Apollo’s theme tokens and full editor
+          affordances.
         </p>
-
-        {activeTab === 'full' && (
-          <>
-            <div className="mb-4">
-              <LiveCodeMirrorEditor themeConfig={themeConfig} value={monacoSample} />
-            </div>
-            <pre className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
-              <code>{cmFullUsage}</code>
-            </pre>
-          </>
-        )}
-
-        {activeTab === 'compact' && (
-          <>
-            <div className="mb-4">
-              <LiveCodeMirrorEditor themeConfig={themeConfig} value={codemirrorSample} compact />
-            </div>
-            <pre className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
-              <code>{cmCompactUsage}</code>
-            </pre>
-          </>
-        )}
-
-        {activeTab === 'input' && (
-          <>
-            <div className="mb-4">
-              <CodeMirrorInputDemo key={themeConfig.key} themeConfig={themeConfig} />
-            </div>
-            <pre className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
-              <code>{cmInputUsage}</code>
-            </pre>
-          </>
-        )}
+        <div className="mb-4">
+          <LiveCodeMirrorEditor themeConfig={themeConfig} value={monacoSample} />
+        </div>
+        <pre className="overflow-x-auto rounded-lg border border-border-subtle bg-surface p-4 text-xs leading-relaxed text-foreground">
+          <code>{cmFullUsage}</code>
+        </pre>
+        <div className="mt-10">
+          <h2 className="mb-2 text-xl font-semibold tracking-tight text-foreground">
+            Style and behavior
+          </h2>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Use the same 13px / 20px editor rhythm as Monaco, wire Apollo syntax and UI tokens into
+            CodeMirror extensions, and omit gutters for compact fields. Mount CodeMirror on demand
+            for input editors so lightweight fields stay lightweight when users are only reading a
+            value.
+          </p>
+        </div>
       </div>
     </div>
+  );
+}
+
+// ============================================================================
+// Story: Usage examples
+// Dedicated stories make the usage guidance searchable without requiring users
+// to discover the tabs inside the implementation reference pages.
+// ============================================================================
+
+function UsagePage({
+  eyebrow,
+  title,
+  description,
+  guidance,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  guidance: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="min-h-screen w-full bg-surface text-foreground">
+      <div className="mx-auto max-w-4xl px-8 py-16">
+        <div className="mb-4 text-xs font-semibold uppercase tracking-[0.12em] text-primary">
+          {eyebrow}
+        </div>
+        <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">{title}</h1>
+        <p className="text-lg leading-8 text-muted-foreground">{description}</p>
+        <div className="my-10 h-px bg-border" />
+
+        <div className="mb-10 rounded-xl border border-border-subtle bg-surface p-5">
+          <p className="text-sm leading-6 text-muted-foreground">{guidance}</p>
+        </div>
+
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function EditorComparison({ height, compact = false }: { height: string; compact?: boolean }) {
+  const themeConfig = useEditorThemeConfig();
+  return (
+    <div className="grid gap-5 md:grid-cols-2">
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Monaco
+        </p>
+        <div className="overflow-hidden rounded-lg border border-border-subtle">
+          <LiveMonacoEditor
+            themeConfig={themeConfig}
+            height={height}
+            value={compact ? monacoSample : monacoFullSample}
+            options={
+              compact
+                ? {
+                    lineNumbers: 'off',
+                    glyphMargin: false,
+                    folding: false,
+                    renderLineHighlight: 'none',
+                    padding: { top: 10, bottom: 10 },
+                    fontSize: 12,
+                    lineHeight: 18,
+                  }
+                : undefined
+            }
+          />
+        </div>
+      </div>
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          CodeMirror
+        </p>
+        <LiveCodeMirrorEditor
+          themeConfig={themeConfig}
+          value={compact ? codemirrorSample : monacoSample}
+          compact={compact}
+          height={height}
+        />
+      </div>
+    </div>
+  );
+}
+
+function FullEditorUsagePage() {
+  return (
+    <UsagePage
+      eyebrow="Usage / Full Editor"
+      title="Full Editor"
+      description="A focused, multi-line editing surface for scripts, policies, and automation logic."
+      guidance="Use Full Editor when code is the primary task. Give it a stable height, show line numbers, and keep navigation features available. Monaco is the default when users need IntelliSense and diagnostics; CodeMirror is a lighter alternative for syntax-focused editing."
+    >
+      <EditorComparison height="360px" />
+    </UsagePage>
+  );
+}
+
+function CompactEditorUsagePage() {
+  return (
+    <UsagePage
+      eyebrow="Usage / Compact Editor"
+      title="Compact Editor"
+      description="A constrained editing surface for expressions embedded inside property panels and sidebars."
+      guidance="Use Compact Editor when the surrounding form remains the primary task. Remove line numbers and decorative gutters, preserve the editor's syntax and focus states, and keep the height predictable."
+    >
+      <EditorComparison height="148px" compact />
+    </UsagePage>
+  );
+}
+
+type ExpressionEditorProps = Parameters<
+  NonNullable<ComponentProps<typeof LockableValueField>['renderExpressionEditor']>
+>[0];
+
+// Single-line Monaco for LockableValueField's expression slot. Borderless and centered in
+// the field's own row, like the built-in expression input, so the field keeps one outline
+// in every theme. The field's id, aria-*, and data-slot go on Monaco's actual focus
+// element (EditContext div or textarea) so validation and InputGroup focus styling reach
+// it; `ariaLabel` names it, since Monaco sets its own aria-label on that element. A label
+// can't activate a div, so clicking the field's `<label for>` focuses the editor directly.
+function InlineExpressionEditor({
+  id,
+  value,
+  onValueChange,
+  onBlur,
+  readOnly,
+  placeholder,
+  themeConfig,
+  ariaLabel,
+  'aria-invalid': ariaInvalid,
+  'aria-describedby': ariaDescribedBy,
+  'aria-errormessage': ariaErrorMessage,
+  'data-slot': dataSlot,
+}: ExpressionEditorProps & { themeConfig: ThemeConfig; ariaLabel: string }) {
+  const [editor, setEditor] = useState<Parameters<NonNullable<EditorProps['onMount']>>[0] | null>(
+    null
+  );
+  const [focusTarget, setFocusTarget] = useState<HTMLElement | null>(null);
+  const onBlurRef = useRef(onBlur);
+  onBlurRef.current = onBlur;
+
+  useEffect(() => {
+    if (!focusTarget) return;
+    const attributes: Record<string, string | undefined> = {
+      id,
+      'aria-invalid': ariaInvalid === undefined ? undefined : String(ariaInvalid),
+      'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
+      'data-slot': dataSlot,
+    };
+    for (const [name, attributeValue] of Object.entries(attributes)) {
+      if (attributeValue === undefined) focusTarget.removeAttribute(name);
+      else focusTarget.setAttribute(name, attributeValue);
+    }
+  }, [focusTarget, id, ariaInvalid, ariaDescribedBy, ariaErrorMessage, dataSlot]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const label = document.querySelector<HTMLLabelElement>(`label[for="${CSS.escape(id)}"]`);
+    if (!label) return;
+    const focusEditor = (event: MouseEvent) => {
+      event.preventDefault();
+      editor.focus();
+    };
+    label.addEventListener('click', focusEditor);
+    return () => label.removeEventListener('click', focusEditor);
+  }, [editor, id]);
+
+  return (
+    <div className="relative flex h-full min-w-0 flex-1 items-center">
+      <div className="w-full">
+        <LiveMonacoEditor
+          themeConfig={themeConfig}
+          height="20px"
+          value={value}
+          onChange={(nextValue) => onValueChange?.(nextValue ?? '')}
+          onMount={(mountedEditor) => {
+            mountedEditor.onDidBlurEditorText(() => onBlurRef.current?.());
+            setEditor(mountedEditor);
+            setFocusTarget(
+              mountedEditor
+                .getDomNode()
+                ?.querySelector<HTMLElement>('.native-edit-context, textarea') ?? null
+            );
+          }}
+          options={{
+            readOnly,
+            ariaLabel,
+            lineNumbers: 'off',
+            lineDecorationsWidth: 0,
+            glyphMargin: false,
+            folding: false,
+            minimap: { enabled: false },
+            renderLineHighlight: 'none',
+            padding: { top: 0, bottom: 0 },
+            scrollbar: { vertical: 'hidden', horizontal: 'hidden' },
+            wordWrap: 'off',
+            fontSize: 13,
+            lineHeight: 20,
+          }}
+        />
+      </div>
+      {!value && (
+        <span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 truncate font-mono text-[13px] text-muted-foreground future:text-foreground-muted">
+          {placeholder}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function InputEditorUsagePage() {
+  const themeConfig = useEditorThemeConfig();
+  const [lockableValue, setLockableValue] = useState('invoice.total');
+  const [lockableMode, setLockableMode] = useState<'fixed' | 'expression'>('expression');
+  const [lockableLocked, setLockableLocked] = useState(false);
+  return (
+    <UsagePage
+      eyebrow="Usage / Input Editor"
+      title="Input Editor"
+      description="An expression field that starts compact and expands into code editing only when the user needs it."
+      guidance="Use Input Editor for variable bindings and form fields where plain text is the fastest default. Keep the mode switch visible, preserve the value when changing modes, and return the user to the compact field when they are done editing."
+    >
+      <div className="grid gap-5 md:grid-cols-2">
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Monaco input
+          </p>
+          <MonacoInputDemo themeConfig={themeConfig} />
+        </div>
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            CodeMirror input
+          </p>
+          <CodeMirrorInputDemo themeConfig={themeConfig} />
+        </div>
+      </div>
+      <div className="mt-8 rounded-xl border border-border-subtle bg-surface-raised p-5">
+        <div className="mb-4">
+          <p className="text-sm font-semibold text-foreground">Input editor in a lockable field</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            Use this pattern when a value can be fixed, locked for review, or supplied as an
+            expression. The field owns the mode and lock affordances while the editor provides the
+            code-specific editing experience.
+          </p>
+        </div>
+        <LockableValueField
+          id="input-editor-lockable-example"
+          label={
+            <Label
+              htmlFor="input-editor-lockable-example"
+              className="text-xs font-medium text-foreground"
+            >
+              Invoice total
+            </Label>
+          }
+          value={lockableValue}
+          onValueChange={setLockableValue}
+          locked={lockableLocked}
+          onLockedChange={setLockableLocked}
+          mode={lockableMode}
+          onModeChange={setLockableMode}
+          fieldType="string"
+          showFieldActions={false}
+          renderExpressionEditor={(editorProps) => (
+            <InlineExpressionEditor
+              {...editorProps}
+              themeConfig={themeConfig}
+              ariaLabel="Invoice total"
+            />
+          )}
+        />
+      </div>
+    </UsagePage>
+  );
+}
+
+// ============================================================================
+// Editor Variables: inserting a variable via the Insert dropdown or by
+// typing `$` directly in the editor. Both paths write the same token model.
+// ============================================================================
+
+const VARIABLE_TREE: VariablePickerItem[] = [
+  {
+    id: 'vars',
+    label: '$vars',
+    type: 'object',
+    children: [
+      { id: 'vars-firstName', label: 'firstName', value: '$vars.firstName', type: 'string' },
+      { id: 'vars-lastName', label: 'lastName', value: '$vars.lastName', type: 'string' },
+      { id: 'vars-orderTotal', label: 'orderTotal', value: '$vars.orderTotal', type: 'number' },
+    ],
+  },
+  {
+    id: 'output',
+    label: '$output',
+    type: 'object',
+    children: [
+      { id: 'output-summary', label: 'summary', value: '$output.summary', type: 'string' },
+    ],
+  },
+  {
+    id: 'state',
+    label: '$state',
+    type: 'object',
+    children: [
+      { id: 'state-retryCount', label: 'retryCount', value: '$state.retryCount', type: 'number' },
+    ],
+  },
+];
+
+const VARIABLES_AUTOCOMPLETE_OPTIONS: PromptEditorAutoCompleteOption[] = [
+  { type: 'input', value: 'vars.firstName' },
+  { type: 'input', value: 'vars.lastName' },
+  { type: 'input', value: 'vars.orderTotal' },
+  { type: 'output', value: 'output.summary' },
+  { type: 'state', value: 'state.retryCount' },
+];
+
+const VARIABLES_SAMPLE_VALUE: PromptEditorToken[] = [
+  { type: 'text', value: 'Draft a follow-up for ' },
+  { type: 'input', value: 'vars.firstName' },
+  { type: 'text', value: ' about their order total of ' },
+  { type: 'input', value: 'vars.orderTotal' },
+  { type: 'text', value: '.' },
+];
+
+const VARIABLES_MONACO_SAMPLE = '$vars.firstName + " " + $vars.lastName';
+
+/** Maps a picked variable-picker item (`$`-prefixed) to a prompt-editor token option (no `$`). */
+function toPromptEditorOption(item: VariablePickerItem): PromptEditorAutoCompleteOption | null {
+  if (!item.value) return null;
+  const path = item.value.replace(/^\$/, '');
+  return (
+    VARIABLES_AUTOCOMPLETE_OPTIONS.find((option) => option.value === path) ?? {
+      type: 'input',
+      value: path,
+    }
+  );
+}
+
+function EditorVariablesUsagePage() {
+  const promptEditorRef = useRef<PromptEditorRef | null>(null);
+  const [promptValue, setPromptValue] = useState<PromptEditorToken[]>(VARIABLES_SAMPLE_VALUE);
+
+  const themeConfig = useEditorThemeConfig();
+  // Monaco's inserts land in its model; onChange mirrors them into state so the expression
+  // survives re-renders and remounts.
+  const [monacoValue, setMonacoValue] = useState(VARIABLES_MONACO_SAMPLE);
+  const monacoEditorRef = useRef<Parameters<NonNullable<EditorProps['onMount']>>[0] | null>(null);
+  const insertIntoMonaco = (item: VariablePickerItem) => {
+    const editor = monacoEditorRef.current;
+    const selection = editor?.getSelection();
+    if (!editor || !selection || !item.value) return;
+    editor.executeEdits('insert-variable', [
+      { range: selection, text: item.value, forceMoveMarkers: true },
+    ]);
+    editor.focus();
+  };
+
+  return (
+    <UsagePage
+      eyebrow="Usage / Editor Variables"
+      title="Editor Variables"
+      description="Two ways to bind a variable into an editor: pick one from the Insert dropdown, or type $ directly where the editor supports it."
+      guidance="Both paths write into the same underlying value, so the editor stays the single source of truth regardless of entry point. PromptEditor exposes a ref-based insertVariableToken method; Monaco and CodeMirror don't have an equivalent built-in, so the Insert dropdown instead inserts the variable at the current cursor selection via the editor's own API."
+    >
+      <div className="rounded-xl border border-border-subtle bg-surface-raised p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-semibold text-foreground">Prompt</p>
+          <VariablePicker
+            items={VARIABLE_TREE}
+            onSelect={(item) => {
+              const option = toPromptEditorOption(item);
+              if (option) promptEditorRef.current?.insertVariableToken(option);
+            }}
+          />
+        </div>
+        <PromptEditor
+          editorRef={promptEditorRef}
+          value={promptValue}
+          onChange={setPromptValue}
+          autoCompleteOptions={VARIABLES_AUTOCOMPLETE_OPTIONS}
+          placeholder="Type $ or use Insert to add a variable…"
+          ariaLabel="Prompt"
+        />
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">
+          Try both: choose{' '}
+          <span className="font-mono text-foreground">Insert → $vars → firstName</span> above, or
+          type <span className="font-mono text-foreground">$</span> in the editor and pick from the
+          menu that appears.
+        </p>
+      </div>
+
+      <div className="mt-6 rounded-xl border border-border-subtle bg-surface-raised p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-semibold text-foreground">Expression</p>
+          <VariablePicker items={VARIABLE_TREE} onSelect={insertIntoMonaco} />
+        </div>
+        <div className="overflow-hidden rounded-lg border border-border-subtle">
+          <LiveMonacoEditor
+            themeConfig={themeConfig}
+            height="120px"
+            value={monacoValue}
+            onChange={(nextValue) => setMonacoValue(nextValue ?? '')}
+            onMount={(editor) => {
+              monacoEditorRef.current = editor;
+            }}
+            options={{
+              lineNumbers: 'off',
+              glyphMargin: false,
+              folding: false,
+              renderLineHighlight: 'none',
+              padding: { top: 10, bottom: 10 },
+              fontSize: 13,
+              lineHeight: 20,
+            }}
+          />
+        </div>
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">
+          Click into the editor to place your cursor, then choose{' '}
+          <span className="font-mono text-foreground">Insert → $vars → firstName</span> above. It
+          inserts at the cursor via{' '}
+          <span className="font-mono text-foreground">editor.executeEdits</span>, the same pattern
+          used by the Node Property Panel's Full Editor composition.
+        </p>
+      </div>
+    </UsagePage>
+  );
+}
+
+function CodeEditorRightPanel({
+  onClose,
+  onExpand,
+}: {
+  onClose: () => void;
+  onExpand: () => void;
+}) {
+  const themeConfig = useEditorThemeConfig();
+  return (
+    <NodePropertyPanel
+      panelTitle="Properties"
+      nodeIcon={<Mail />}
+      nodeLabel="Send email"
+      nodeCategory="Gmail · Code editor"
+      onClose={onClose}
+      className="h-full w-full"
+      contentInset="0.875rem"
+    >
+      <div className="flex h-full min-h-0 flex-col gap-3 p-3">
+        <div className="flex shrink-0 items-center justify-between">
+          <p className="text-xs font-medium text-foreground">Expression</p>
+          <button
+            type="button"
+            onClick={onExpand}
+            aria-label="Expand code editor"
+            title="Expand code editor"
+            className="grid size-6 place-items-center rounded text-foreground-muted transition-colors hover:bg-surface-overlay hover:text-foreground"
+          >
+            <Maximize2 size={14} strokeWidth={1.75} />
+          </button>
+        </div>
+        <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-border-subtle">
+          <LiveMonacoEditor
+            themeConfig={themeConfig}
+            height="100%"
+            value={monacoFullSample}
+            options={{
+              lineNumbers: 'on',
+              glyphMargin: false,
+              folding: false,
+              renderLineHighlight: 'line',
+              padding: { top: 12, bottom: 12 },
+              fontSize: 13,
+              lineHeight: 20,
+            }}
+          />
+        </div>
+        <p className="shrink-0 text-xs leading-5 text-muted-foreground">
+          Use a full editor in a panel when the node’s code is the primary property being
+          configured.
+        </p>
+      </div>
+    </NodePropertyPanel>
+  );
+}
+
+function UXPanelUsagePage() {
+  const themeConfig = useEditorThemeConfig();
+  const [takeoverOpen, setTakeoverOpen] = useState(false);
+
+  return (
+    <>
+      <FullWorkbenchComposition
+        renderRightPanel={({ onClose }) => (
+          <CodeEditorRightPanel onClose={onClose} onExpand={() => setTakeoverOpen(true)} />
+        )}
+      />
+      {/* Same takeover pattern as the shared workbench's node takeover. */}
+      <Modal open={takeoverOpen} onOpenChange={setTakeoverOpen}>
+        <ModalContent
+          variant="takeover"
+          headerTitle="Expression"
+          headerActions={
+            <Button size="sm" variant="secondary">
+              <Play size={14} /> Run
+            </Button>
+          }
+          defaultExpanded
+        >
+          <div className="h-full p-4">
+            <div className="h-full overflow-hidden rounded-lg border border-border-subtle">
+              <LiveMonacoEditor themeConfig={themeConfig} height="100%" value={monacoFullSample} />
+            </div>
+          </div>
+        </ModalContent>
+      </Modal>
+    </>
   );
 }
 
@@ -1112,27 +1654,27 @@ export const CodeEditors = {
   name: 'Overview',
   parameters: { layout: 'fullscreen' },
   render: () => (
-    <div className="min-h-screen w-full bg-background text-foreground">
-      <div className="mx-auto max-w-4xl px-8 pt-8">
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Code in Apollo</h2>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+    <div className="min-h-screen w-full bg-surface text-foreground">
+      <div className="mx-auto max-w-4xl px-8 pt-16">
+        <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">Code in Apollo</h1>
+        <p className="text-lg leading-8 text-muted-foreground">
           Apollo provides two editors for code input, each with a distinct role, package weight, and
           interaction model. Pick the one that matches the user's intent.
         </p>
-        <div className="mb-8 h-px bg-border" />
+        <div className="my-10 h-px bg-border" />
       </div>
 
-      <div className="mx-auto max-w-4xl px-8 pb-8">
+      <div className="mx-auto max-w-4xl px-8 pb-16">
         <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">When to use what</h2>
         <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
           Start here. Pick the solution that matches the user's intent, then see its dedicated page
           for live demos and integration guidance.
         </p>
 
-        <div className="mb-10 overflow-hidden rounded-lg border border-border">
+        <div className="mb-10 overflow-hidden rounded-lg border border-border-subtle">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted">
+              <tr className="border-b border-border-subtle bg-muted">
                 <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
                   Use case
                 </th>
@@ -1145,7 +1687,7 @@ export const CodeEditors = {
             </thead>
             <tbody>
               {decisionRows.map((row) => (
-                <tr key={row.useCase} className="border-b border-border last:border-b-0">
+                <tr key={row.useCase} className="border-b border-border-subtle last:border-b-0">
                   <td className="px-4 py-3 text-muted-foreground">{row.useCase}</td>
                   <td className="px-4 py-3 font-medium text-foreground">{row.solution}</td>
                   <td className="px-4 py-3">
@@ -1161,21 +1703,17 @@ export const CodeEditors = {
         <div className="mb-8 h-px bg-border" />
 
         <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">
-          The orchestrator pattern
+          Choosing the editor pattern
         </h2>
         <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-          When building expression or script input fields, encapsulate the Monaco/CodeMirror
-          decision in a single{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            CodeEditorField
-          </code>{' '}
-          component. Feature code passes a{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">mode</code> and the
-          orchestrator picks the right editor, keeping the decision in one place.
+          Apollo documents three integration patterns rather than adding another wrapper component:
+          Full Editor for script authoring, Compact Editor for constrained panels, and Input Editor
+          when users can switch between plain text and code. Feature code can compose these patterns
+          with Monaco or CodeMirror while keeping the editor choice close to the field that owns it.
         </p>
 
         <div className="mb-10 grid grid-cols-3 gap-4">
-          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
+          <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface p-5">
             <span className="text-sm font-semibold text-foreground">Single-line + literal</span>
             <p className="text-sm text-muted-foreground">
               <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
@@ -1192,7 +1730,7 @@ export const CodeEditors = {
               interpolation.
             </p>
           </div>
-          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
+          <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface p-5">
             <span className="text-sm font-semibold text-foreground">Expression mode</span>
             <p className="text-sm text-muted-foreground">
               <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
@@ -1205,7 +1743,7 @@ export const CodeEditors = {
               . Full IntelliSense, type checking, and diagnostics for JS/TS expressions.
             </p>
           </div>
-          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
+          <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface p-5">
             <span className="text-sm font-semibold text-foreground">Multi-line</span>
             <p className="text-sm text-muted-foreground">
               Any mode where line count exceeds 1, escalate to{' '}
@@ -1227,10 +1765,10 @@ export const CodeEditors = {
           doesn't cover your use case.
         </p>
 
-        <div className="mb-10 overflow-hidden rounded-lg border border-border">
+        <div className="mb-10 overflow-hidden rounded-lg border border-border-subtle">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted">
+              <tr className="border-b border-border-subtle bg-muted">
                 <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Feature</th>
                 <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Monaco</th>
                 <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
@@ -1241,7 +1779,7 @@ export const CodeEditors = {
             </thead>
             <tbody>
               {featureRows.map((row) => (
-                <tr key={row.feature} className="border-b border-border last:border-b-0">
+                <tr key={row.feature} className="border-b border-border-subtle last:border-b-0">
                   <td className="px-4 py-3 font-medium text-foreground">{row.feature}</td>
                   <td className="px-4 py-3 text-muted-foreground">{row.monaco}</td>
                   <td className="px-4 py-3 text-muted-foreground">{row.cm}</td>
@@ -1261,7 +1799,7 @@ export const CodeEditors = {
 // ============================================================================
 
 export const MonacoEditorStory = {
-  name: 'Editor Monaco',
+  name: 'Reference Monaco Editor',
   parameters: { layout: 'fullscreen' },
   render: () => <MonacoEditorPage />,
 };
@@ -1271,9 +1809,39 @@ export const MonacoEditorStory = {
 // ============================================================================
 
 export const CodeMirrorEditorStory = {
-  name: 'Editor CodeMirror',
+  name: 'Reference CodeMirror Editor',
   parameters: { layout: 'fullscreen' },
   render: () => <CodeMirrorEditorPage />,
+};
+
+export const FullEditor = {
+  name: 'Editor Full',
+  parameters: { layout: 'fullscreen' },
+  render: () => <FullEditorUsagePage />,
+};
+
+export const CompactEditor = {
+  name: 'Editor Compact',
+  parameters: { layout: 'fullscreen' },
+  render: () => <CompactEditorUsagePage />,
+};
+
+export const InputEditor = {
+  name: 'Editor Input',
+  parameters: { layout: 'fullscreen' },
+  render: () => <InputEditorUsagePage />,
+};
+
+export const EditorVariables = {
+  name: 'Editor Variables',
+  parameters: { layout: 'fullscreen' },
+  render: () => <EditorVariablesUsagePage />,
+};
+
+export const UXPanel = {
+  name: 'Layout Pattern',
+  parameters: { layout: 'fullscreen' },
+  render: () => <UXPanelUsagePage />,
 };
 
 // ============================================================================
@@ -1286,15 +1854,15 @@ export const AllThemes = {
   name: 'Themes',
   parameters: { layout: 'fullscreen' },
   render: () => (
-    <div className="min-h-screen w-full bg-background text-foreground">
-      <div className="mx-auto max-w-5xl px-8 py-8">
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Editor Themes</h2>
-        <p className="mb-2 text-sm leading-relaxed text-muted-foreground">
+    <div className="min-h-screen w-full bg-surface text-foreground">
+      <div className="mx-auto max-w-4xl px-8 py-16">
+        <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">Editor Themes</h1>
+        <p className="text-lg leading-8 text-muted-foreground">
           Apollo ships editor themes for all six Apollo color themes. Each theme object is a static
           extraction of the corresponding Apollo semantic tokens so Monaco and CodeMirror can
           consume them at registration time.
         </p>
-        <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-2 text-base leading-7 text-muted-foreground">
           Import from{' '}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
             @uipath/apollo-wind/editor-themes
@@ -1312,11 +1880,11 @@ export const AllThemes = {
                   {configs.map((cfg) => (
                     <div
                       key={cfg.key}
-                      className="overflow-hidden rounded-xl border border-border bg-card"
+                      className="overflow-hidden rounded-xl border border-border-subtle bg-surface"
                     >
-                      <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-2.5">
+                      <div className="flex items-center gap-2 border-b border-border-subtle bg-surface-overlay px-4 py-2.5">
                         <div
-                          className="h-2.5 w-2.5 rounded-full border border-border"
+                          className="h-2.5 w-2.5 rounded-full border border-border-subtle"
                           style={{ background: cfg.isDark ? '#ffffff20' : '#00000020' }}
                         />
                         <span className="text-sm font-medium text-foreground">{cfg.label}</span>
@@ -1324,17 +1892,7 @@ export const AllThemes = {
                       </div>
 
                       <div className="p-4">
-                        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                          Monaco
-                        </p>
-                        <div className="mb-4">
-                          <StaticMonacoPreview themeConfig={cfg} />
-                        </div>
-
-                        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                          CodeMirror
-                        </p>
-                        <LiveCodeMirrorEditor themeConfig={cfg} value={codemirrorSample} />
+                        <ThemeEditorPreviewPair themeConfig={cfg} />
                       </div>
                       <ThemeTokenPanel themeConfig={cfg} />
                     </div>
@@ -1349,7 +1907,7 @@ export const AllThemes = {
 
         <div className="mt-8">
           <h3 className="mb-3 text-base font-semibold text-foreground">Import reference</h3>
-          <pre className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
+          <pre className="overflow-x-auto rounded-lg border border-border-subtle bg-surface p-4 text-xs leading-relaxed text-foreground">
             <code>{`import {
   // Future
   apolloFutureDarkMonaco,    apolloFutureLightMonaco,

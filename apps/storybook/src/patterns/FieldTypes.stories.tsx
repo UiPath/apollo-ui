@@ -36,7 +36,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib';
-import { Divider, GuidancePage, InfoCallout, SectionDescription } from './guidance-primitives';
+import {
+  Divider,
+  GuidancePage,
+  InfoCallout,
+  InlineCode,
+  SectionDescription,
+} from './guidance-primitives';
 
 const meta = {
   title: 'Apollo Wind/Forms/Guidance Field Type',
@@ -55,6 +61,8 @@ interface TypeRow {
   support: string;
   status: Status;
   action?: string;
+  // Story that shows an implementation of this row, linked under Recommended action.
+  reference?: { label: string; storyId: string };
   visual?: VisualExample;
   // False when it is unconfirmed that flow-workbench itself renders this as a
   // distinct control, not just declares it in a schema. Defaults to true.
@@ -468,6 +476,10 @@ const BINDING_STATE_ROWS: TypeRow[] = [
     support: 'VariablePicker in field-header.tsx, wired via the variables prop',
     status: 'supported',
     visual: 'insert-variable',
+    reference: {
+      label: 'Code Editors: Editor Variables',
+      storyId: 'apollo-wind-patterns-code-editors--editor-variables',
+    },
   },
   {
     type: 'Inline reference autocomplete while typing',
@@ -476,7 +488,11 @@ const BINDING_STATE_ROWS: TypeRow[] = [
       'Not modeled. The expression input is a plain monospace field (or a consumer-supplied renderExpressionEditor) with no built-in suggestion behavior.',
     status: 'needs-component',
     action:
-      'Different from the Insert variable button above: this is IntelliSense-style, suggest a reference as the user types "$" inside an expression. Needs an editor with suggestion support (e.g. Monaco), not a fieldType addition.',
+      'Different from the Insert variable button above: this is IntelliSense-style, suggest a reference as the user types "$" inside an expression. Needs an editor with suggestion support (e.g. Monaco), not a fieldType addition. See the reference implementation for Monaco and PromptEditor.',
+    reference: {
+      label: 'Code Editors: Editor Variables',
+      storyId: 'apollo-wind-patterns-code-editors--editor-variables',
+    },
   },
 ];
 
@@ -726,7 +742,20 @@ function CategoryTable({ description, rows, rowLabel = 'Type' }: Category) {
                   <StatusBadge status={row.status} />
                 </TableCell>
                 <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
-                  {row.action ?? '—'}
+                  {row.action ?? (row.reference ? null : '—')}
+                  {row.reference && (
+                    <a
+                      // Relative to the iframe path so the link also works when Storybook is hosted under a subpath.
+                      href={`./?path=/story/${row.reference.storyId}`}
+                      target="_top"
+                      className={cn(
+                        'block text-primary underline-offset-4 hover:underline',
+                        row.action && 'mt-1.5'
+                      )}
+                    >
+                      {row.reference.label}
+                    </a>
+                  )}
                 </TableCell>
                 <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
                   {row.source}
@@ -1276,6 +1305,7 @@ interface TypesSection {
   title: string;
   description: string;
   rows: StateRow[];
+  reference?: TypeRow['reference'];
 }
 
 const TYPES_SECTIONS: TypesSection[] = [
@@ -1314,6 +1344,10 @@ const TYPES_SECTIONS: TypesSection[] = [
     description:
       'The variables prop and its built-in Insert variable popover, gated separately from the AI-assist button by showAiAssist and showFieldActions. Every other table on this page sets showFieldActions={false} to keep it out of the way; this is the one place it is shown.',
     rows: LVF_INSERT_VARIABLE_STATES,
+    reference: {
+      label: 'Code Editors: Editor Variables',
+      storyId: 'apollo-wind-patterns-code-editors--editor-variables',
+    },
   },
 ];
 
@@ -1446,7 +1480,25 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
               {section.title}
             </AccordionTrigger>
             <AccordionContent>
-              <p className="mb-4 text-sm leading-6 text-muted-foreground">{section.description}</p>
+              <p className="mb-4 text-sm leading-6 text-muted-foreground">
+                {section.description}
+                {section.reference && (
+                  <>
+                    {' '}
+                    For inserting a variable into a code editor, by picker or by typing{' '}
+                    <InlineCode>$</InlineCode> in the editor, see{' '}
+                    <a
+                      // Relative to the iframe path so the link also works when Storybook is hosted under a subpath.
+                      href={`./?path=/story/${section.reference.storyId}`}
+                      target="_top"
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
+                      {section.reference.label}
+                    </a>
+                    .
+                  </>
+                )}
+              </p>
               <StatesTable rows={section.rows} />
             </AccordionContent>
           </AccordionItem>
