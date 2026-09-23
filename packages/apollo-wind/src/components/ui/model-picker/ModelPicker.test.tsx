@@ -880,6 +880,33 @@ describe('<ModelPicker> review follow-ups', () => {
     expect(screen.getByText('popup body')).toBeInTheDocument();
   });
 
+  it('keeps chip tooltip triggers out of the tab order', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="vendor" models={MODELS} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    // Recommended carries a tooltip, so its chip is wrapped in a trigger button.
+    const chip = within(screen.getByRole('listbox')).getAllByText('Recommended')[0];
+    const trigger = chip.closest('button');
+    expect(trigger).not.toBeNull();
+    expect(trigger).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('publishes no activedescendant while the list is not rendered', async () => {
+    const user = userEvent.setup();
+    const { rerender } = renderPicker(<ModelPicker models={MODELS} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-activedescendant');
+
+    // A refetch that keeps the old catalog: list unmounts, pointer must go too.
+    rerender(<ModelPicker loading models={MODELS} />);
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-activedescendant');
+
+    rerender(<ModelPicker error={new Error('boom')} models={MODELS} />);
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-activedescendant');
+  });
+
   it('builds selector-safe dom ids', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker models={withContext} />);

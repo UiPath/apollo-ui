@@ -132,8 +132,8 @@ export interface DiscoveryModel {
   isPreview?: boolean;
   /**
    * Interaction shape of the model (`RequestResponse` | `Realtime`).
-   * The picker renders text-generation (`RequestResponse`) models only —
-   * realtime models never show, same policy as `isBlockedByPolicy`.
+   * The picker renders every modality it is given; a product that offers
+   * text generation only passes `filter={isTextGenerationModel}`.
    */
   modelType?: ModelType;
   deprecationDetails?: DeprecationDetails | null;
@@ -171,11 +171,11 @@ export type ModelTagKind =
   | string;
 
 /**
- * Categorical cost tier. NOT a built-in picker signal — cost chips are
- * a product decision, stamped via `customTagsFor`. The picker ships
- * `defaultCostTier` purely as an example classifier (used by the
- * agents product) that bins Discovery's
- * `modelDetails.costDetails.inputTokenCost`.
+ * Categorical cost tier. By default the picker stamps the matching pool
+ * badge (`cost-basic` / `cost-standard` / `cost-premium`) on any model
+ * that carries cost data, classified by `defaultCostTier`. A host that
+ * wants different bins, or no cost chips, passes `badgesFor` — it
+ * replaces the default entirely (return `[]` to suppress).
  */
 export type CostTier = 'basic' | 'standard' | 'premium';
 

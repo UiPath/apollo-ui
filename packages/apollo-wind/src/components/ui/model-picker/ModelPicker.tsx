@@ -685,7 +685,11 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                 {slots?.popupHeader?.()}
                 <PickerSearchInput
                   activeDescendantId={
-                    filtered[activeIndex]
+                    // Same gate as the listbox below: while loading or in
+                    // error the list is not in the DOM, and a stale
+                    // `filtered` must not leave the combobox pointing at an
+                    // element that does not exist.
+                    !effectiveLoading && !effectiveError && filtered[activeIndex]
                       ? optionDomId(listboxId, filtered[activeIndex].modelId)
                       : undefined
                   }
