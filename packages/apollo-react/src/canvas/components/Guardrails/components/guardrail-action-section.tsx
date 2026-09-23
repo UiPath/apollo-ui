@@ -117,7 +117,7 @@ export function GuardrailActionSection({
 
   return (
     <div data-slot="guardrail-action-section" className={cn('@container', className)}>
-      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3 items-start">
         {actionTypeSelect}
 
         {action.$actionType === 'log' && (
