@@ -3822,6 +3822,7 @@ function PanelUIInventoryStory() {
   const [checked, setChecked] = useState(true);
   const [notesVisible, setNotesVisible] = useState(true);
   const [componentsFixedValue, setComponentsFixedValue] = useState('Invoice number');
+  const [componentsConnection, setComponentsConnection] = useState('production');
   const [componentsExpressionValue, setComponentsExpressionValue] = useState('$vars.invoiceNumber');
   const [componentsSelectedDate, setComponentsSelectedDate] = useState<Date | undefined>(() => {
     const date = new Date();
@@ -4091,7 +4092,8 @@ function PanelUIInventoryStory() {
                       { label: 'Finance connection', value: 'finance' },
                       { label: 'Development connection', value: 'development' },
                     ]}
-                    value="production"
+                    value={componentsConnection}
+                    onValueChange={setComponentsConnection}
                     placeholder="Select a connection"
                     searchPlaceholder="Search connections"
                     className="w-full"
@@ -4343,11 +4345,16 @@ function PanelUIInventoryStory() {
               </TabsContent>
 
               <TabsContent value="layout" className="mt-0 min-h-0 flex-1 overflow-y-auto">
-                <div id="ui-inventory-layout-flat-content" className="grid gap-4 px-3.5 py-5">
+                <div id="ui-inventory-layout-panel-anatomy" className="grid gap-4 px-3.5 py-5">
                   <PatternNote title="Panel anatomy" linkTarget="layout/panel-anatomy">
                     Use a title bar, identity row, navigation tabs, scrollable content, and an
                     optional footer. Keep the primary action close to the node identity.
                   </PatternNote>
+                </div>
+                <div
+                  id="ui-inventory-layout-flat-content"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
                   <PatternNote title="Flat content" linkTarget="layout/flat-content">
                     A simple, always-visible layout for short configurations that do not need
                     collapsible sections or nested containers.
