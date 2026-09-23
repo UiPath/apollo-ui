@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.53.0...@uipath/apollo-react@6.54.0) (2026-09-23)
+
+### Features
+
+* **apollo-react:** support outline variant for StageNode Ends case badge ([a05e264](https://github.com/UiPath/apollo-ui/commit/a05e264a16e0220e1e407ca4e2fa1be002c64b2e))
+
+### Bug Fixes
+
+* **apollo-react:** drop redundant comment on StageHeaderChip.variant ([e3065f2](https://github.com/UiPath/apollo-ui/commit/e3065f27b5a83eb73d5fab2ca638616995706dcf))
+
 ## [@uipath/apollo-react-v6.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.52.0...@uipath/apollo-react@6.53.0) (2026-09-22)
 
 ### Features
