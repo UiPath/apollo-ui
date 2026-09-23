@@ -123,49 +123,49 @@ export interface ApolloCodeMirrorTheme {
 /**
  * Apollo Future dark theme tokens for CodeMirror v6.
  *
- * Base palette: zinc-900 surfaces, cyan accent, muted zinc foregrounds.
+ * Base palette: zinc-800 surfaces, cyan accent, muted zinc foregrounds.
  * Syntax colors follow the `--code-*` custom properties from the design system.
  */
 export const apolloFutureDarkCodeMirror: ApolloCodeMirrorTheme = {
   syntax: {
     // --code-rest: zinc-400
-    rest: '#a1a1aa',
+    rest: '#9f9fa9',
     // comment: more muted than rest — zinc-600
-    comment: '#52525b',
+    comment: '#52525c',
     // --code-punctuation: zinc-500
-    punctuation: '#71717a',
+    punctuation: '#71717b',
     // --code-key (keywords/props): cyan-400
-    keyword: '#22d3ee',
+    keyword: '#00d3f2',
     // --code-string: emerald-400
-    string: '#34d399',
+    string: '#00d492',
     // --code-number: amber-400
-    number: '#fbbf24',
+    number: '#ffb900',
     // --code-literal (booleans/null/class): violet-400
-    literal: '#a78bfa',
+    literal: '#a684ff',
     // operators share the keyword color (cyan-400)
-    operator: '#22d3ee',
+    operator: '#00d3f2',
     // meta/directives: slightly muted — zinc-500
-    meta: '#71717a',
+    meta: '#71717b',
   },
   ui: {
-    // zinc-900
-    background: '#18181b',
+    // zinc-800 — matches Monaco's editor.background for this theme
+    background: '#27272a',
     // zinc-400 — matches --code-rest for default prose
-    foreground: '#a1a1aa',
+    foreground: '#9f9fa9',
     // cyan-400
-    cursor: '#22d3ee',
+    cursor: '#00d3f2',
     // zinc-700 @ 40% opacity
     selection: '#3f3f4666',
     // zinc-800 @ 50% opacity
     lineHighlight: '#27272a80',
     // zinc-600
-    lineNumber: '#52525b',
+    lineNumber: '#52525c',
     // zinc-400
-    lineNumberActive: '#a1a1aa',
+    lineNumberActive: '#9f9fa9',
     // zinc-700
     indentGuide: '#3f3f46',
     // cyan-400 (re-uses cursor color for bracket pairing)
-    matchingBracket: '#22d3ee',
+    matchingBracket: '#00d3f2',
   },
 };
 
@@ -176,35 +176,36 @@ export const apolloFutureDarkCodeMirror: ApolloCodeMirrorTheme = {
 /**
  * Apollo Future light theme tokens for CodeMirror v6.
  *
- * Base palette: white surfaces, cyan-600 accent, muted zinc foregrounds.
+ * Base palette: white surfaces, zinc-200 line highlight, cyan-600 accent (cyan-700 keywords),
+ * muted zinc foregrounds.
  * Syntax colors follow the `--code-*` custom properties from the design system.
  */
 export const apolloFutureLightCodeMirror: ApolloCodeMirrorTheme = {
   syntax: {
     // --code-rest: zinc-600
-    rest: '#52525b',
+    rest: '#52525c',
     // comment: more muted than rest — zinc-400
-    comment: '#a1a1aa',
+    comment: '#9f9fa9',
     // --code-punctuation: zinc-500
-    punctuation: '#71717a',
+    punctuation: '#71717b',
     // --code-key (keywords/props): cyan-700
-    keyword: '#0e7490',
+    keyword: '#007595',
     // --code-string: emerald-700
-    string: '#047857',
+    string: '#007a55',
     // --code-number: amber-700
-    number: '#b45309',
+    number: '#bb4d00',
     // --code-literal (booleans/null/class): violet-600
-    literal: '#7c3aed',
+    literal: '#7f22fe',
     // operators share the keyword color (cyan-700)
-    operator: '#0e7490',
+    operator: '#007595',
     // meta/directives: slightly muted — zinc-500
-    meta: '#71717a',
+    meta: '#71717b',
   },
   ui: {
     // white  surface-overlay (matches the Monaco future-light theme)
     background: '#ffffff',
     // zinc-600 — matches --code-rest for default prose
-    foreground: '#52525b',
+    foreground: '#52525c',
     // cyan-600
     cursor: '#0092b8',
     // zinc-300 @ 40% opacity
@@ -212,9 +213,9 @@ export const apolloFutureLightCodeMirror: ApolloCodeMirrorTheme = {
     // zinc-200 @ 50% opacity
     lineHighlight: '#e4e4e780',
     // zinc-400
-    lineNumber: '#a1a1aa',
+    lineNumber: '#9f9fa9',
     // zinc-500
-    lineNumberActive: '#71717a',
+    lineNumberActive: '#71717b',
     // zinc-300
     indentGuide: '#d4d4d8',
     // cyan-600 (re-uses cursor color for bracket pairing)
