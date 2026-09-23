@@ -126,7 +126,6 @@ import {
   TOOLBAR_ICON_BUTTON_CLASS,
 } from '../../components/CanvasModeToolbar';
 import { CanvasZoomControls } from '../../components/CanvasZoomControls';
-import { ValidationStatusContext } from '../../hooks';
 import { NodeIOView } from '../../components/NodeIOView';
 import { NodePropertyPanel, NodePropertyPanelLayout } from '../../components/NodePropertyPanel';
 import { QuickFormPanel } from '../../components/NodePropertyPanel/NodePropertyPanel.stories';
@@ -136,6 +135,7 @@ import {
   NodePropertyTrigger,
   type NodePropertyTriggerLayout,
 } from '../../controls/NodePropertyTrigger';
+import { ValidationStatusContext } from '../../hooks';
 import { createNode, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { ValidationErrorSeverity } from '../../types/validation';
 import { CanvasIcon } from '../../utils/icon-registry';
@@ -4438,6 +4438,7 @@ function FieldHelpPanel({ onClose }: { onClose: () => void }) {
 
 export function FullWorkbenchComposition({
   rightPanelVariant = 'properties',
+  renderRightPanel,
 }: {
   rightPanelVariant?:
     | 'properties'
@@ -4448,6 +4449,8 @@ export function FullWorkbenchComposition({
     | 'dap'
     | 'dap-validation'
     | 'field-help';
+  /** Replaces the variant's right panel so other pattern pages can reuse this workbench. */
+  renderRightPanel?: (props: { onClose: () => void }) => ReactNode;
 }) {
   const panelRef = useRef<PanelImperativeHandle | null>(null);
   const expandedBottomPanelHeight = useRef(368);
@@ -4613,7 +4616,9 @@ export function FullWorkbenchComposition({
             style={{ bottom: bottomPanelHeight - 12 }}
           >
             <div className="h-full w-[380px] overflow-hidden rounded-2xl border border-border-subtle shadow-lg">
-              {rightPanelVariant === 'forms' ? (
+              {renderRightPanel ? (
+                renderRightPanel({ onClose: () => setRightPanelOpen(false) })
+              ) : rightPanelVariant === 'forms' ? (
                 <QuickFormPropertiesPanel onClose={() => setRightPanelOpen(false)} />
               ) : rightPanelVariant === 'rules' ? (
                 <RuleBuildingPanel onClose={() => setRightPanelOpen(false)} />
