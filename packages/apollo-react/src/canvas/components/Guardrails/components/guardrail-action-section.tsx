@@ -99,7 +99,7 @@ export function GuardrailActionSection({
 
   if (action.$actionType === 'escalate') {
     return (
-      <div data-slot="guardrail-action-section" className={className}>
+      <div data-slot="guardrail-action-section" className={cn('@container', className)}>
         <EscalateActionFields
           action={action}
           onChange={onActionChange}
