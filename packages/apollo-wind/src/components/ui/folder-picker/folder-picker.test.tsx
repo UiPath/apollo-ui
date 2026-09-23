@@ -41,6 +41,21 @@ describe('FolderPickerContent', () => {
     expect(onSelect).toHaveBeenCalledWith('/OneDrive');
   });
 
+  it('marks the highlighted folder with a tick, not with the hover fill', async () => {
+    const user = userEvent.setup();
+    render(<FolderPickerContent onLoadChildren={loadChildren} onSelect={vi.fn()} />);
+
+    const row = await screen.findByRole('treeitem', { name: 'OneDrive' });
+    expect(row.querySelector('svg')).not.toBeNull(); // the folder glyph
+
+    await user.click(row);
+    expect(row).toHaveAttribute('aria-selected', 'true');
+
+    // The fill belongs to the cursor, so a highlighted row must not claim it:
+    // it resolves to the same value as the hover fill in every theme.
+    expect(row).not.toHaveClass('bg-surface-overlay');
+  });
+
   it('disables Select at the root until something is highlighted', async () => {
     const user = userEvent.setup();
     render(<FolderPickerContent onLoadChildren={loadChildren} onSelect={vi.fn()} />);

@@ -17,8 +17,9 @@ export interface FolderRowProps {
  *
  * A `treeitem` rather than a listbox option: an option is atomic to assistive
  * technology, which would hide the trailing Open control or make it compete
- * with the row for focus. Clicking the row highlights it, the chevron or a
- * double click opens it, and a known leaf offers no way in at all.
+ * with the row for focus. Clicking the row marks it with a tick as the
+ * pending choice, the chevron or a double click opens it, and a known leaf
+ * offers no way in at all.
  */
 export function FolderRow({ entry, selected, loading, onToggleSelect, onOpen }: FolderRowProps) {
   const label = entry.label ?? entry.name;
@@ -35,12 +36,17 @@ export function FolderRow({ entry, selected, loading, onToggleSelect, onOpen }: 
       aria-expanded={canOpen ? false : undefined}
       aria-disabled={entry.disabled}
       tabIndex={entry.disabled ? -1 : 0}
+      // The fill means cursor position and nothing else. Selection is the tick,
+      // as it is in Select and DropdownMenu: `surface-selected` and
+      // `surface-hover` are the same value in every theme, so a selected row
+      // carrying its own fill is indistinguishable from the row under the
+      // pointer, and the highlight appears to follow the mouse.
       className={cn(
         'flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-foreground transition-colors',
         entry.disabled
           ? 'cursor-not-allowed opacity-50'
           : 'cursor-pointer hover:bg-surface-overlay',
-        selected && 'bg-surface-overlay'
+        selected && 'font-medium'
       )}
       onClick={() => !entry.disabled && onToggleSelect()}
       onDoubleClick={() => canOpen && onOpen()}
@@ -56,7 +62,7 @@ export function FolderRow({ entry, selected, loading, onToggleSelect, onOpen }: 
       }}
     >
       <span className="grid size-3.5 shrink-0 place-items-center">
-        {selected && <Check className="size-3.5 text-foreground" strokeWidth={3} />}
+        {selected && <Check className="size-3.5 text-foreground-accent" strokeWidth={3} />}
       </span>
       <Folder size={14} className="shrink-0 text-foreground-muted" />
       <span className="min-w-0 flex-1 truncate">{label}</span>
