@@ -56,6 +56,41 @@ describe('FolderPickerContent', () => {
     expect(row).not.toHaveClass('bg-surface-overlay');
   });
 
+  it('treats a folder named after an Object property as uncached', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    // `constructor` and `toString` resolve on the prototype chain, so an
+    // object-keyed cache reports them as already loaded and hands back a
+    // function in place of the level's rows.
+    const load = vi.fn((path: string[]) =>
+      Promise.resolve(
+        path.length === 0 ? [{ name: 'constructor' }, { name: 'toString' }] : [{ name: 'Inside' }]
+      )
+    );
+    render(<FolderPickerContent onLoadChildren={load} onSelect={onSelect} />);
+
+    const row = await screen.findByRole('treeitem', { name: 'constructor' });
+    await user.dblClick(row);
+
+    // The level must be fetched, not read off the prototype.
+    expect(await screen.findByRole('treeitem', { name: 'Inside' })).toBeInTheDocument();
+    expect(load).toHaveBeenCalledWith(['constructor']);
+  });
+
+  it('opens a folder from the Open control by keyboard', async () => {
+    const user = userEvent.setup();
+    render(<FolderPickerContent onLoadChildren={loadChildren} onSelect={vi.fn()} />);
+
+    await screen.findByRole('treeitem', { name: 'OneDrive' });
+    // Focus the row's own Open control, then activate it the standard way.
+    screen.getByRole('button', { name: 'Open OneDrive' }).focus();
+    await user.keyboard('{Enter}');
+
+    // The key must reach the button rather than being taken by the row, which
+    // would toggle the draft and leave the level unchanged.
+    expect(await screen.findByRole('treeitem', { name: 'Documents' })).toBeInTheDocument();
+  });
+
   it('disables Select at the root until something is highlighted', async () => {
     const user = userEvent.setup();
     render(<FolderPickerContent onLoadChildren={loadChildren} onSelect={vi.fn()} />);

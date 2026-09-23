@@ -46,8 +46,13 @@ export function FolderPickerContent({
   const [pathStack, setPathStack] = useState<string[]>(() => initialSegments.slice(0, -1));
   const [draft, setDraft] = useState<string | null>(initialPath || null);
   const [search, setSearch] = useState(initialSearch);
-  /** Resolved levels, keyed by path. Keeps the current list visible during a drill. */
-  const [levels, setLevels] = useState<Record<string, FolderPickerEntry[]>>({});
+  /**
+   * Resolved levels, keyed by path. Keeps the current list visible during a
+   * drill. A Map, not an object: folder names are arbitrary strings, and one
+   * called `constructor` or `toString` would otherwise hit the prototype chain
+   * and be read as an already-loaded level whose rows are a function.
+   */
+  const [levels, setLevels] = useState<Map<string, FolderPickerEntry[]>>(() => new Map());
   /** Path of the folder being opened. Its row shows a spinner in place of the chevron. */
   const [loadingPath, setLoadingPath] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +75,7 @@ export function FolderPickerContent({
       // drag the view back to the folder the user has already left.
       const requestId = ++requestRef.current;
 
-      if (levels[key]) {
+      if (levels.has(key)) {
         setLoadingPath(null);
         setError(null);
         setPathStack(segments);
@@ -82,7 +87,7 @@ export function FolderPickerContent({
       try {
         const entries = await onLoadChildren(segments);
         if (!mountedRef.current || requestRef.current !== requestId) return;
-        setLevels((current) => ({ ...current, [key]: entries }));
+        setLevels((current) => new Map(current).set(key, entries));
         setPathStack(segments);
       } catch (cause) {
         if (!mountedRef.current || requestRef.current !== requestId) return;
@@ -120,9 +125,9 @@ export function FolderPickerContent({
 
   const effectiveSelection = draft ?? (pathStack.length > 0 ? joinPath(pathStack) : null);
   const currentKey = cacheKey(pathStack);
-  const entries = levels[currentKey] ?? [];
+  const entries = levels.get(currentKey) ?? [];
   /** The level on screen has never resolved, so its rows are still unknown. */
-  const isLoadingCurrentLevel = loadingPath !== null && !(currentKey in levels);
+  const isLoadingCurrentLevel = loadingPath !== null && !levels.has(currentKey);
   const normalizedQuery = search.trim().toLowerCase();
   const visibleEntries = normalizedQuery
     ? entries.filter((entry) => (entry.label ?? entry.name).toLowerCase().includes(normalizedQuery))

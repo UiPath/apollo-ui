@@ -52,6 +52,10 @@ export function FolderRow({ entry, selected, loading, onToggleSelect, onOpen }: 
       onDoubleClick={() => canOpen && onOpen()}
       onKeyDown={(event) => {
         if (entry.disabled) return;
+        // Only keys pressed on the row itself. The nested Open control bubbles
+        // its own Enter and Space up here, and taking them would toggle the
+        // draft instead of letting the button drill in.
+        if (event.target !== event.currentTarget) return;
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           onToggleSelect();
