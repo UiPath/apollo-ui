@@ -38,14 +38,13 @@ const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement | null> = {
   [StageHeaderChipType.EndsCase]: null,
 };
 
-/** Header-chip types that render as filled status pills (Optional / Ends case) instead of the icon-based {@link StageChip}. */
+/** Header-chip types that render as status pills (Optional / Ends case) instead of the icon-based {@link StageChip}. */
 const STATUS_BADGE_CONFIG: Partial<
   Record<
     StageHeaderChipType,
     {
       className: string;
       hoverClassName: string;
-      /** Colorless outline styling, used while the chip's `variant` is `'outline'`. */
       outlineClassName?: string;
       outlineHoverClassName?: string;
       testId: string;
@@ -73,7 +72,7 @@ const STATUS_BADGE_BASE_CLASS =
   'inline-flex h-6 items-center justify-center whitespace-nowrap rounded-[10px] border px-2 text-xs font-normal';
 
 /**
- * Filled status pill (e.g. "Optional", "Ends case"). Interactive when an `onClick` is supplied —
+ * Status pill (e.g. "Optional", "Ends case"). Interactive when an `onClick` is supplied —
  * it then renders a focusable button with hover that navigates the consumer to the related control;
  * otherwise it renders a plain, non-interactive label.
  */
@@ -253,16 +252,16 @@ const StageNodeHeaderInner = ({
               {stageDetails.headerChips.map((chip) => {
                 const statusBadge = STATUS_BADGE_CONFIG[chip.type];
                 if (statusBadge) {
-                  const isOutline = chip.variant === 'outline' && !!statusBadge.outlineClassName;
+                  const outlineClassName =
+                    chip.variant === 'outline' ? statusBadge.outlineClassName : undefined;
                   return (
                     <StageStatusBadge
                       key={chip.type}
                       testId={`stage-${statusBadge.testId}-badge-${id}`}
-                      className={isOutline ? statusBadge.outlineClassName! : statusBadge.className}
+                      className={outlineClassName ?? statusBadge.className}
                       hoverClassName={
-                        isOutline
-                          ? (statusBadge.outlineHoverClassName ?? statusBadge.hoverClassName)
-                          : statusBadge.hoverClassName
+                        (outlineClassName && statusBadge.outlineHoverClassName) ||
+                        statusBadge.hoverClassName
                       }
                       label={chip.label || labels[statusBadge.labelKey]}
                       tooltip={chip.tooltip}
