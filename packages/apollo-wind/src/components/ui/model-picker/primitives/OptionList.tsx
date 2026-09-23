@@ -133,10 +133,14 @@ function countLabel(n: number | undefined, labels: ModelPickerLabels): string | 
  */
 export function optionDomId(listboxId: string, modelId: string): string {
   // modelIds in production are dotted (e.g. anthropic.claude-...). DOM
-  // ids are valid with dots — but consumers sometimes target them via
-  // querySelector, where the dot is parsed as a class separator. Strip
-  // the risk by replacing non-word characters with `-`.
-  const safe = modelId.replace(/[^A-Za-z0-9_-]/g, '-');
+  // ids are valid with dots, but consumers sometimes target them via
+  // querySelector, where a dot is a class separator. The encoding must
+  // also be injective: mapping every odd character to `-` gave `a.b` and
+  // `a-b` the same id, so `aria-activedescendant` could resolve the wrong
+  // row. Letters, digits and `-` pass through; everything else, `_`
+  // included, becomes `_<hex>_`, so a literal `_` never appears raw and
+  // each encoded id decodes to exactly one modelId.
+  const safe = modelId.replace(/[^A-Za-z0-9-]/g, (c) => `_${c.codePointAt(0)?.toString(16)}_`);
   return `${listboxId}-opt-${safe}`;
 }
 
