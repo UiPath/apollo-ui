@@ -23,11 +23,11 @@ addons.setConfig({
 /**
  * Custom theme selector tool.
  *
- * Replaces the globalTypes-driven toolbar so the item list can react to the
- * active story: Material stories (`parameters.material`) only support the six
- * core themes, so the Wind-only demo themes (wireframe/vertex/canvas) are
- * hidden there. Landing on a Material story while a demo theme is active
- * auto-switches to its closest Material-supported theme.
+ * Replaces the globalTypes-driven toolbar. Only the six core themes are
+ * listed; the Wind-only demo themes (wireframe/vertex/canvas) stay registered
+ * and can still be set via URL globals. Landing on a Material story
+ * (`parameters.material`) while a demo theme is active auto-switches to its
+ * closest Material-supported theme.
  */
 const ThemeSelector = () => {
   const [globals, updateGlobals] = useGlobals();
@@ -40,7 +40,9 @@ const ThemeSelector = () => {
     }
   }, [isMaterial, selected, updateGlobals]);
 
-  const items = isMaterial ? MATERIAL_THEME_ITEMS : ALL_THEME_ITEMS;
+  // The demo themes (wireframe/vertex/canvas) are hidden from the selector
+  // for now, so every story lists the six core themes.
+  const items = MATERIAL_THEME_ITEMS;
   const selectedTitle = ALL_THEME_ITEMS.find((item) => item.value === selected)?.title ?? selected;
 
   return (
