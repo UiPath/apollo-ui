@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.15.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.15.0...@uipath/apollo-core@5.15.1) (2026-09-23)
+
+### Bug Fixes
+
+* **apollo-core:** align future-light toggle and selection tokens with the promoted primary ([0cd7c25](https://github.com/UiPath/apollo-ui/commit/0cd7c25bf72f0e10eac04bb00e502bd643a26a6f))
+
 ## [@uipath/apollo-core-v5.15.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.14.1...@uipath/apollo-core@5.15.0) (2026-09-23)
 
 ### Features

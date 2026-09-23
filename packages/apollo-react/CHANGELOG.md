@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.56.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.56.0...@uipath/apollo-react@6.56.1) (2026-09-23)
+
+### Bug Fixes
+
+* **apollo-react:** finish dap-validation field checks left out of [#1204](https://github.com/UiPath/apollo-ui/issues/1204) ([7feb77d](https://github.com/UiPath/apollo-ui/commit/7feb77d37c576ba5053dd3a5ffea9e3ddbf953fc))
+
 ## [@uipath/apollo-react-v6.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.55.0...@uipath/apollo-react@6.56.0) (2026-09-23)
 
 ### Features
