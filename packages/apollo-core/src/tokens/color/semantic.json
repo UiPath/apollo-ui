@@ -265,7 +265,7 @@
         "value": "{color.cyan.500.value}"
       },
       "future-light": {
-        "value": "{color.cyan.500.value}"
+        "value": "{color.cyan.600.value}"
       }
     },
     "notificationBadge": {
@@ -1511,7 +1511,7 @@
         "value": "{color.cyan.500.value}14"
       },
       "future-light": {
-        "value": "{color.cyan.500.value}14"
+        "value": "{color.cyan.600.value}14"
       }
     },
     "toggleOnFocus": {
@@ -1531,7 +1531,7 @@
         "value": "{color.cyan.500.value}14"
       },
       "future-light": {
-        "value": "{color.cyan.500.value}14"
+        "value": "{color.cyan.600.value}14"
       }
     },
     "toggleOnPressed": {
@@ -1551,7 +1551,7 @@
         "value": "{color.cyan.500.value}1f"
       },
       "future-light": {
-        "value": "{color.cyan.500.value}1f"
+        "value": "{color.cyan.600.value}1f"
       }
     },
     "calloutBackground": {
@@ -1891,7 +1891,7 @@
         "value": "{color.cyan.500.value}"
       },
       "future-light": {
-        "value": "{color.cyan.500.value}"
+        "value": "{color.cyan.600.value}"
       }
     },
     "toggleTrackOn": {
@@ -1971,7 +1971,7 @@
         "value": "{color.cyan.500.value}47"
       },
       "future-light": {
-        "value": "{color.cyan.500.value}47"
+        "value": "{color.cyan.600.value}47"
       }
     },
     "toggleTrackOnDisabled": {
