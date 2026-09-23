@@ -171,7 +171,7 @@ describe('GuardrailActionSection', () => {
       expect(root).toHaveClass('@container', 'border-t', 'pt-3');
     });
 
-    it('keeps its root slot and className on the escalate branch', () => {
+    it('keeps its root slot and classes on the escalate branch', () => {
       const { container } = render(
         <GuardrailActionSection
           action={{
@@ -185,7 +185,7 @@ describe('GuardrailActionSection', () => {
       );
 
       const root = container.querySelector('[data-slot="guardrail-action-section"]');
-      expect(root).toHaveClass('border-t', 'pt-3');
+      expect(root).toHaveClass('@container', 'border-t', 'pt-3');
       expect(root?.firstElementChild).toHaveAttribute('data-slot', 'guardrail-escalate-fields');
     });
   });
