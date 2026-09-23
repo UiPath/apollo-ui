@@ -54,6 +54,7 @@ export interface StageHeaderChip {
   label?: string;
   tooltip?: React.ReactNode;
   onClick?: () => void;
+  variant?: 'solid' | 'outline';
 }
 
 export interface StageNodeBaseProps {

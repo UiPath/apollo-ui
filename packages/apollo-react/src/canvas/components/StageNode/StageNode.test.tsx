@@ -1253,7 +1253,13 @@ describe('StageNode - Status Badges', () => {
   const endsCaseBadge = () => screen.queryByTestId('stage-ends-case-badge-stage-1');
 
   const withChips = (
-    chips: { type: StageHeaderChipType; label?: string; tooltip?: string; onClick?: () => void }[]
+    chips: {
+      type: StageHeaderChipType;
+      label?: string;
+      tooltip?: string;
+      onClick?: () => void;
+      variant?: 'solid' | 'outline';
+    }[]
   ) => ({
     stageDetails: { ...defaultProps.stageDetails, headerChips: chips },
   });
@@ -1286,6 +1292,30 @@ describe('StageNode - Status Badges', () => {
     );
     expect(optionalBadge()).toBeInTheDocument();
     expect(endsCaseBadge()).toBeInTheDocument();
+  });
+
+  it('renders the Ends case badge filled by default', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.EndsCase }]));
+    expect(endsCaseBadge()).toHaveClass('bg-error-icon');
+    expect(endsCaseBadge()).not.toHaveClass('border-border');
+  });
+
+  it('renders the Ends case badge as a colorless outline when variant is outline', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.EndsCase, variant: 'outline' }]));
+    const badge = endsCaseBadge();
+    expect(badge).toHaveClass('border-border');
+    expect(badge).not.toHaveClass('bg-error-icon');
+  });
+
+  it('renders the Ends case badge filled when variant is solid', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.EndsCase, variant: 'solid' }]));
+    expect(endsCaseBadge()).toHaveClass('bg-error-icon');
+  });
+
+  it('keeps the default styling for an outline variant on a badge that has no outline style', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.Optional, variant: 'outline' }]));
+    expect(optionalBadge()).toHaveClass('bg-background-secondary');
+    expect(optionalBadge()).not.toHaveClass('border-border');
   });
 
   it('uses consumer-supplied chip labels when provided', () => {

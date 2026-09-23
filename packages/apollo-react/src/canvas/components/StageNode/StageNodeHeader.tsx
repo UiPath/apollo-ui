@@ -38,37 +38,41 @@ const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement | null> = {
   [StageHeaderChipType.EndsCase]: null,
 };
 
-/** Header-chip types that render as filled status pills (Optional / Ends case) instead of the icon-based {@link StageChip}. */
+/** Header-chip types that render as status pills (Optional / Ends case) instead of the icon-based {@link StageChip}. */
 const STATUS_BADGE_CONFIG: Partial<
   Record<
     StageHeaderChipType,
     {
       className: string;
       hoverClassName: string;
+      outlineClassName?: string;
+      outlineHoverClassName?: string;
       testId: string;
       labelKey: 'optionalBadge' | 'endsCaseBadge';
     }
   >
 > = {
   [StageHeaderChipType.Optional]: {
-    className: 'bg-background-secondary text-foreground-muted',
+    className: 'border-transparent bg-background-secondary text-foreground-muted',
     hoverClassName: 'hover:bg-background-secondary/80',
     testId: 'optional',
     labelKey: 'optionalBadge',
   },
   [StageHeaderChipType.EndsCase]: {
-    className: 'bg-error-icon text-foreground-inverse',
+    className: 'border-transparent bg-error-icon text-foreground-inverse',
     hoverClassName: 'hover:bg-error-icon/80',
+    outlineClassName: 'border-border bg-transparent text-foreground-muted',
+    outlineHoverClassName: 'hover:bg-surface-overlay',
     testId: 'ends-case',
     labelKey: 'endsCaseBadge',
   },
 };
 
 const STATUS_BADGE_BASE_CLASS =
-  'inline-flex h-6 items-center justify-center whitespace-nowrap rounded-[10px] border border-transparent px-2 text-xs font-normal';
+  'inline-flex h-6 items-center justify-center whitespace-nowrap rounded-[10px] border px-2 text-xs font-normal';
 
 /**
- * Filled status pill (e.g. "Optional", "Ends case"). Interactive when an `onClick` is supplied —
+ * Status pill (e.g. "Optional", "Ends case"). Interactive when an `onClick` is supplied —
  * it then renders a focusable button with hover that navigates the consumer to the related control;
  * otherwise it renders a plain, non-interactive label.
  */
@@ -248,12 +252,17 @@ const StageNodeHeaderInner = ({
               {stageDetails.headerChips.map((chip) => {
                 const statusBadge = STATUS_BADGE_CONFIG[chip.type];
                 if (statusBadge) {
+                  const outlineClassName =
+                    chip.variant === 'outline' ? statusBadge.outlineClassName : undefined;
                   return (
                     <StageStatusBadge
                       key={chip.type}
                       testId={`stage-${statusBadge.testId}-badge-${id}`}
-                      className={statusBadge.className}
-                      hoverClassName={statusBadge.hoverClassName}
+                      className={outlineClassName ?? statusBadge.className}
+                      hoverClassName={
+                        (outlineClassName && statusBadge.outlineHoverClassName) ||
+                        statusBadge.hoverClassName
+                      }
                       label={chip.label || labels[statusBadge.labelKey]}
                       tooltip={chip.tooltip}
                       onClick={chip.onClick}

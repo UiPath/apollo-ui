@@ -412,6 +412,7 @@ export const ExecutionStatus: Story = {
                 },
               ],
             ],
+            headerChips: [{ type: StageHeaderChipType.EndsCase, label: 'Ended case' }],
           },
           execution: {
             stageStatus: {
@@ -494,6 +495,10 @@ export const ExecutionStatus: Story = {
             tasks: [
               [{ id: '1', label: 'Report Ordering', icon: <DocumentIcon /> }],
               [{ id: '2', label: 'Underwriting Verification', icon: <VerificationIcon /> }],
+            ],
+            headerChips: [
+              { type: StageHeaderChipType.Optional },
+              { type: StageHeaderChipType.EndsCase, variant: 'outline' },
             ],
           },
           onTaskClick: (id: string) => window.alert(`Task clicked: ${id}`),
