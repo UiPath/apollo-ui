@@ -412,8 +412,6 @@ export const ExecutionStatus: Story = {
                 },
               ],
             ],
-            // This stage's exit condition is the one that actually ended the case, so the badge
-            // renders filled and past-tense.
             headerChips: [{ type: StageHeaderChipType.EndsCase, label: 'Ended case' }],
           },
           execution: {
@@ -498,11 +496,9 @@ export const ExecutionStatus: Story = {
               [{ id: '1', label: 'Report Ordering', icon: <DocumentIcon /> }],
               [{ id: '2', label: 'Underwriting Verification', icon: <VerificationIcon /> }],
             ],
-            // Optional stage whose exit condition can end the case, but hasn't fired yet — outline
-            // until it does.
             headerChips: [
               { type: StageHeaderChipType.Optional },
-              { type: StageHeaderChipType.EndsCase, label: 'Ends case', variant: 'outline' },
+              { type: StageHeaderChipType.EndsCase, variant: 'outline' },
             ],
           },
           onTaskClick: (id: string) => window.alert(`Task clicked: ${id}`),

@@ -1312,6 +1312,12 @@ describe('StageNode - Status Badges', () => {
     expect(endsCaseBadge()).toHaveClass('bg-error-icon');
   });
 
+  it('keeps the default styling for an outline variant on a badge that has no outline style', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.Optional, variant: 'outline' }]));
+    expect(optionalBadge()).toHaveClass('bg-background-secondary');
+    expect(optionalBadge()).not.toHaveClass('border-border');
+  });
+
   it('uses consumer-supplied chip labels when provided', () => {
     renderStageNode(
       withChips([
