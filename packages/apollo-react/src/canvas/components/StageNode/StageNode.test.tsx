@@ -1180,6 +1180,18 @@ describe('StageNode - Header Chips', () => {
     expect(screen.getByRole('button', { name: StageHeaderChipType.Exit })).toBeInTheDocument();
   });
 
+  it('keeps the chips right-aligned when there is no SLA text', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        sla: undefined,
+        headerChips: [{ type: StageHeaderChipType.Optional }],
+      },
+    });
+
+    expect(screen.getByTestId(/^stage-header-chips-/)).toHaveClass('ml-auto');
+  });
+
   it('should render chip count when count is provided', () => {
     renderStageNode({
       stageDetails: {

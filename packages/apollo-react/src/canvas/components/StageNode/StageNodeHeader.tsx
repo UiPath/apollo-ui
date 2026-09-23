@@ -248,7 +248,10 @@ const StageNodeHeaderInner = ({
             </span>
           )}
           {stageDetails.headerChips && stageDetails.headerChips.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
+            <div
+              className="ml-auto flex flex-wrap items-center gap-x-1 gap-y-2"
+              data-testid={`stage-header-chips-${id}`}
+            >
               {stageDetails.headerChips.map((chip) => {
                 const statusBadge = STATUS_BADGE_CONFIG[chip.type];
                 if (statusBadge) {
