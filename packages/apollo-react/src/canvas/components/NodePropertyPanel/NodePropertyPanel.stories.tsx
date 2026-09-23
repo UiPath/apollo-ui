@@ -40,11 +40,15 @@ import {
   CardContent,
   Checkbox,
   cn,
+  Combobox,
+  DatePicker,
+  DateTimePicker,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   FIELD_TYPE_META,
+  FileUpload,
   FormField,
   FormFieldDescription,
   FormFieldLabel,
@@ -55,6 +59,7 @@ import {
   Label,
   LockableValueField,
   MetadataForm,
+  MultiSelect,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -3811,11 +3816,32 @@ function CompositionFieldDragOverlay({ field }: { field: CompositionFieldItem })
 }
 
 function PanelUIInventoryStory() {
-  const [inventoryTab, setInventoryTab] = useState('layout');
+  const [inventoryTab, setInventoryTab] = useState('components');
   const [inventorySection, setInventorySection] = useState<string | null>(null);
   const [enabled, setEnabled] = useState(true);
   const [checked, setChecked] = useState(true);
   const [notesVisible, setNotesVisible] = useState(true);
+  const [componentsFixedValue, setComponentsFixedValue] = useState('Invoice number');
+  const [componentsExpressionValue, setComponentsExpressionValue] = useState('$vars.invoiceNumber');
+  const [componentsSelectedDate, setComponentsSelectedDate] = useState<Date | undefined>(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  });
+  const [componentsSelectedDateTime, setComponentsSelectedDateTime] = useState<Date | undefined>(
+    () => {
+      const date = new Date();
+      date.setDate(date.getDate() + 7);
+      date.setHours(9, 30, 0, 0);
+      return date;
+    }
+  );
+  const [componentsSelectedFrameworks, setComponentsSelectedFrameworks] = useState<string[]>([
+    'react',
+  ]);
+  const [, setComponentsFiles] = useState<File[]>([]);
+  const monacoTheme = useMonacoTheme();
   const compositionFieldId = useId();
   const [compositionValue, setCompositionValue] = useState('invoice.total');
   const [compositionLocked, setCompositionLocked] = useState(true);
@@ -3853,7 +3879,8 @@ function PanelUIInventoryStory() {
       if (!match) return;
 
       const [, tab, section] = match;
-      if (!tab || !['layout', 'states', 'actions', 'composition'].includes(tab)) return;
+      if (!tab || !['components', 'layout', 'states', 'actions', 'composition'].includes(tab))
+        return;
       setInventoryTab(tab);
       setInventorySection(section ?? null);
       if (tab === 'layout' && section && ['text-fields', 'choices', 'advanced'].includes(section)) {
@@ -3916,7 +3943,7 @@ function PanelUIInventoryStory() {
           action={<RunButton />}
           contentInset="0.875rem"
           onClose={() => {}}
-          className="h-[720px]"
+          className="h-[calc(100vh-4rem)] min-h-[600px]"
         >
           <PatternNotesVisibilityContext.Provider value={notesVisible}>
             <Tabs
@@ -3929,6 +3956,13 @@ function PanelUIInventoryStory() {
                   className={cn(TAB_LIST_CLASS, 'min-w-0 flex-1')}
                   scrollButtonClassName="size-6 hover:bg-surface-overlay"
                 >
+                  <TabsTrigger
+                    value="components"
+                    className={TAB_TRIGGER_CLASS}
+                    id="ui-inventory-tab-components"
+                  >
+                    Components
+                  </TabsTrigger>
                   <TabsTrigger
                     value="layout"
                     className={TAB_TRIGGER_CLASS}
@@ -3982,8 +4016,338 @@ function PanelUIInventoryStory() {
                 </Button>
               </div>
 
+              <TabsContent value="components" className="mt-0 min-h-0 flex-1 overflow-y-auto">
+                <div id="ui-inventory-components-inputs" className="grid gap-4 px-3.5 py-5">
+                  <PatternNote eyebrow="Component" title="Inputs" linkTarget="components/inputs">
+                    Default, compact, disabled, and inline-validation variants used by Flow
+                    Workbench forms.
+                  </PatternNote>
+                  <div className="grid gap-2">
+                    <Label htmlFor="ui-inventory-input-default" className="text-xs">
+                      Default
+                    </Label>
+                    <Input id="ui-inventory-input-default" placeholder="Enter a value" />
+                    <Input id="ui-inventory-input-compact" size="xs" defaultValue="Compact value" />
+                    <Input id="ui-inventory-input-disabled" disabled placeholder="Disabled value" />
+                    <Input
+                      id="ui-inventory-input-error"
+                      defaultValue="Invalid value"
+                      error="Enter a valid value."
+                    />
+                  </div>
+                </div>
+
+                <div
+                  id="ui-inventory-components-lockable-value-field"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote
+                    eyebrow="Component"
+                    title="Lockable Value Field"
+                    linkTarget="components/lockable-value-field"
+                  >
+                    Supports fixed and expression modes, lock state, required state, variables,
+                    validation, and String, Integer, Date, Boolean, select, File, and Object field
+                    types.
+                  </PatternNote>
+                  <LockableValueField
+                    id="ui-inventory-lockable-fixed"
+                    label={<Label className="text-xs font-medium">Fixed value</Label>}
+                    value={componentsFixedValue}
+                    onValueChange={setComponentsFixedValue}
+                    locked={false}
+                    fieldType="string"
+                    required
+                    showFieldActions={false}
+                  />
+                  <LockableValueField
+                    id="ui-inventory-lockable-expression"
+                    label={<Label className="text-xs font-medium">Expression</Label>}
+                    value={componentsExpressionValue}
+                    onValueChange={setComponentsExpressionValue}
+                    locked={false}
+                    mode="expression"
+                    fieldType="string"
+                    leadingAddon="="
+                    showFieldActions={false}
+                  />
+                </div>
+
+                <div
+                  id="ui-inventory-components-combobox"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote
+                    eyebrow="Component"
+                    title="Combobox"
+                    linkTarget="components/combobox"
+                  >
+                    Searchable single-select control for connections, activities, and other large
+                    option lists.
+                  </PatternNote>
+                  <Combobox
+                    items={[
+                      { label: 'Production connection', value: 'production' },
+                      { label: 'Finance connection', value: 'finance' },
+                      { label: 'Development connection', value: 'development' },
+                    ]}
+                    value="production"
+                    placeholder="Select a connection"
+                    searchPlaceholder="Search connections"
+                    className="w-full"
+                  />
+                </div>
+
+                <div
+                  id="ui-inventory-components-select"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote
+                    eyebrow="Component"
+                    title="Select and Multi-Select"
+                    linkTarget="components/select"
+                  >
+                    Use Select for a short fixed list and Multi-Select when users can choose several
+                    values.
+                  </PatternNote>
+                  <div className="grid gap-3">
+                    <Select defaultValue="standard">
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an execution mode" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">Standard</SelectItem>
+                        <SelectItem value="priority">Priority</SelectItem>
+                        <SelectItem value="background">Background</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <MultiSelect
+                      options={[
+                        { label: 'React', value: 'react' },
+                        { label: 'Vue', value: 'vue' },
+                        { label: 'Angular', value: 'angular' },
+                        { label: 'Svelte', value: 'svelte' },
+                      ]}
+                      selected={componentsSelectedFrameworks}
+                      onChange={setComponentsSelectedFrameworks}
+                      placeholder="Select frameworks"
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  id="ui-inventory-components-file-upload"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote
+                    eyebrow="Component"
+                    title="File Upload"
+                    linkTarget="components/file-upload"
+                  >
+                    Support single and multiple files, accepted file types, previews, disabled
+                    state, and per-file validation feedback.
+                  </PatternNote>
+                  <FileUpload onFilesChange={setComponentsFiles} multiple showPreview />
+                </div>
+
+                <div
+                  id="ui-inventory-components-date-pickers"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote
+                    eyebrow="Component"
+                    title="Date and Date-Time Pickers"
+                    linkTarget="components/date-pickers"
+                  >
+                    Use date selection for deadlines and schedules, and date-time selection when
+                    execution time is part of the configuration.
+                  </PatternNote>
+                  <div className="grid gap-3">
+                    <DatePicker
+                      value={componentsSelectedDate}
+                      onValueChange={setComponentsSelectedDate}
+                    />
+                    <DateTimePicker
+                      value={componentsSelectedDateTime}
+                      onValueChange={setComponentsSelectedDateTime}
+                    />
+                    <DatePicker
+                      value={componentsSelectedDate}
+                      onValueChange={setComponentsSelectedDate}
+                      disabled
+                    />
+                  </div>
+                </div>
+
+                <div
+                  id="ui-inventory-components-textarea"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote
+                    eyebrow="Component"
+                    title="Textarea"
+                    linkTarget="components/textarea"
+                  >
+                    Use multiline fields for prompts, instructions, scripts, and other longer
+                    free-form values.
+                  </PatternNote>
+                  <Textarea defaultValue="Overall extraction instructions..." rows={3} />
+                </div>
+
+                <div
+                  id="ui-inventory-components-switch"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote
+                    eyebrow="Component"
+                    title="Switch and Toggle"
+                    linkTarget="components/switch"
+                  >
+                    Use switches for settings that take effect immediately or represent an on/off
+                    configuration.
+                  </PatternNote>
+                  <div className="grid gap-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="ui-inventory-switch-enabled" className="text-xs">
+                        Enable automatic retry
+                      </Label>
+                      <Switch id="ui-inventory-switch-enabled" size="sm" defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="ui-inventory-switch-disabled" className="text-xs">
+                        Disabled setting
+                      </Label>
+                      <Switch id="ui-inventory-switch-disabled" size="sm" disabled />
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  id="ui-inventory-components-radio"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote eyebrow="Component" title="Radio" linkTarget="components/radio">
+                    Use radio groups when the user must choose exactly one visible option.
+                  </PatternNote>
+                  <RadioGroup defaultValue="automatic" className="grid gap-2">
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="automatic" id="ui-inventory-radio-automatic" />
+                      <Label htmlFor="ui-inventory-radio-automatic" className="text-xs">
+                        Automatic
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="manual" id="ui-inventory-radio-manual" />
+                      <Label htmlFor="ui-inventory-radio-manual" className="text-xs">
+                        Manual
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div
+                  id="ui-inventory-components-checkbox"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote
+                    eyebrow="Component"
+                    title="Checkbox"
+                    linkTarget="components/checkbox"
+                  >
+                    Use checkboxes for independent settings and opt-in behavior.
+                  </PatternNote>
+                  <div className="grid gap-2">
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="ui-inventory-checkbox-enabled" defaultChecked />
+                      <Label htmlFor="ui-inventory-checkbox-enabled" className="text-xs">
+                        Enabled
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="ui-inventory-checkbox-disabled" disabled />
+                      <Label htmlFor="ui-inventory-checkbox-disabled" className="text-xs">
+                        Disabled
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  id="ui-inventory-components-buttons"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote
+                    eyebrow="Component"
+                    title="Button types"
+                    linkTarget="components/buttons"
+                  >
+                    Primary, secondary, outline, tertiary, destructive, and link actions cover the
+                    Flow Workbench hierarchy.
+                  </PatternNote>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="xs">Primary</Button>
+                    <Button size="xs" variant="secondary">
+                      Secondary
+                    </Button>
+                    <Button size="xs" variant="outline">
+                      Outline
+                    </Button>
+                    <Button size="xs" variant="ghost">
+                      Tertiary
+                    </Button>
+                    <Button size="xs" variant="destructive">
+                      Delete
+                    </Button>
+                    <Button size="3xs" variant="link">
+                      Add field
+                    </Button>
+                  </div>
+                </div>
+
+                <div
+                  id="ui-inventory-components-code-editor"
+                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                >
+                  <PatternNote
+                    eyebrow="Component"
+                    title="Code Editor"
+                    linkTarget="components/code-editor"
+                  >
+                    Use a code editor for scripts and multi-line expressions when syntax
+                    highlighting, line numbers, and a larger authoring surface are valuable.
+                  </PatternNote>
+                  <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-overlay">
+                    <MonacoEditor
+                      height="220px"
+                      defaultLanguage="typescript"
+                      defaultValue={
+                        "// Expression-backed configuration\nconst invoice = await extractData({\n  file: $vars.invoiceFile,\n  fields: ['invoiceNumber', 'total', 'dueDate'],\n});\n\nreturn invoice;"
+                      }
+                      theme={monacoTheme}
+                      beforeMount={registerMonacoThemes}
+                      options={{
+                        fontSize: 12,
+                        lineHeight: 18,
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        wordWrap: 'on',
+                        lineNumbers: 'on',
+                        folding: false,
+                        automaticLayout: true,
+                        padding: { top: 12, bottom: 12 },
+                      }}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
               <TabsContent value="layout" className="mt-0 min-h-0 flex-1 overflow-y-auto">
                 <div id="ui-inventory-layout-flat-content" className="grid gap-4 px-3.5 py-5">
+                  <PatternNote title="Panel anatomy" linkTarget="layout/panel-anatomy">
+                    Use a title bar, identity row, navigation tabs, scrollable content, and an
+                    optional footer. Keep the primary action close to the node identity.
+                  </PatternNote>
                   <PatternNote title="Flat content" linkTarget="layout/flat-content">
                     A simple, always-visible layout for short configurations that do not need
                     collapsible sections or nested containers.
@@ -4329,6 +4693,40 @@ function PanelUIInventoryStory() {
                       <Badge variant="outline">Read only</Badge>
                     </div>
                   </section>
+
+                  <section
+                    id="ui-inventory-states-empty-loading-states"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Empty and loading states"
+                      eyebrow="State pattern"
+                      linkTarget="states/empty-loading-states"
+                    >
+                      Explain why content is unavailable and provide the next useful action. Avoid
+                      blank panels and ambiguous spinners.
+                    </PatternNote>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="grid min-h-24 place-items-center rounded-lg border border-border-subtle bg-surface p-3 text-center">
+                        <div>
+                          <p className="text-xs font-medium text-foreground">No fields yet</p>
+                          <p className="mt-1 text-[11px] text-foreground-muted">
+                            Add a field to start configuring this section.
+                          </p>
+                          <Button size="4xs" variant="link" className="mt-2 px-0">
+                            <Plus size={12} /> Add field
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="grid min-h-24 place-items-center rounded-lg border border-border-subtle bg-surface p-3 text-center">
+                        <div>
+                          <RefreshCw className="mx-auto size-4 animate-spin text-foreground-subtle" />
+                          <p className="mt-2 text-xs font-medium text-foreground">Loading fields</p>
+                          <p className="mt-1 text-[11px] text-foreground-muted">Please wait…</p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
                 </div>
               </TabsContent>
 
@@ -4637,6 +5035,50 @@ function PanelUIInventoryStory() {
                       variables={LOCKABLE_VARIABLES}
                       controlsVisibility="visible"
                     />
+                  </section>
+
+                  <section
+                    id="ui-inventory-composition-responsive-panel"
+                    className="grid gap-3 border-t border-border-subtle pt-5"
+                  >
+                    <PatternNote
+                      title="Responsive panel"
+                      eyebrow="Composition pattern"
+                      linkTarget="composition/responsive-panel"
+                    >
+                      Preserve the same hierarchy when the panel is narrow: keep tabs scrollable,
+                      content inset consistent, and actions reachable.
+                    </PatternNote>
+                    <div className="max-w-[280px] rounded-lg border border-border-subtle bg-surface p-2">
+                      <div className="overflow-x-auto">
+                        <div className="flex min-w-max gap-1 border-b border-border-subtle pb-1">
+                          {['Fields', 'Rules', 'Advanced'].map((tab, index) => (
+                            <Button
+                              key={tab}
+                              size="4xs"
+                              variant={index === 0 ? 'secondary' : 'ghost'}
+                              className="shrink-0"
+                            >
+                              {tab}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="grid gap-2 p-2">
+                        <Input
+                          defaultValue="Invoice fields"
+                          aria-label="Responsive panel example"
+                        />
+                        <div className="flex items-center justify-end gap-1">
+                          <Button size="4xs" variant="ghost">
+                            Cancel
+                          </Button>
+                          <Button size="4xs" variant="primary">
+                            Apply
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </section>
                 </div>
               </TabsContent>

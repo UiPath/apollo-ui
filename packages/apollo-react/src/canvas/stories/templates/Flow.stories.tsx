@@ -13,13 +13,17 @@ import {
   AccordionTrigger,
   Alert,
   AlertDescription,
+  AlertTitle,
   Button,
   Card,
   CardContent,
   Checkbox,
+  Combobox,
   type FormSchema,
   Input,
   InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
   Label,
   LockableValueField,
@@ -58,6 +62,8 @@ import type { DockviewApi, DockviewReadyEvent, IDockviewPanelProps } from 'dockv
 import { DockviewReact } from 'dockview-react';
 import 'dockview-react/dist/styles/dockview.css';
 import {
+  AlertCircle,
+  AtSign,
   Bold,
   Braces,
   Bug,
@@ -110,6 +116,7 @@ import { BaseCanvas } from '../../components/BaseCanvas';
 import type { BaseNodeData } from '../../components/BaseNode/BaseNode.types';
 import { CanvasBottomPanel, type CanvasBottomPanelTab } from '../../components/CanvasBottomPanel';
 import {
+  CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS,
   CanvasLeftSidebar,
   type CanvasLeftSidebarItemId,
 } from '../../components/CanvasLeftSidebar';
@@ -119,6 +126,7 @@ import {
   TOOLBAR_ICON_BUTTON_CLASS,
 } from '../../components/CanvasModeToolbar';
 import { CanvasZoomControls } from '../../components/CanvasZoomControls';
+import { ValidationStatusContext } from '../../hooks';
 import { NodeIOView } from '../../components/NodeIOView';
 import { NodePropertyPanel, NodePropertyPanelLayout } from '../../components/NodePropertyPanel';
 import { QuickFormPanel } from '../../components/NodePropertyPanel/NodePropertyPanel.stories';
@@ -129,6 +137,7 @@ import {
   type NodePropertyTriggerLayout,
 } from '../../controls/NodePropertyTrigger';
 import { createNode, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
+import { ValidationErrorSeverity } from '../../types/validation';
 import { CanvasIcon } from '../../utils/icon-registry';
 import './Flow.stories.css';
 
@@ -4051,6 +4060,254 @@ function DapPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
+function ValidationTabLabel({ label, count }: { label: string; count?: number }) {
+  if (!count) return <>{label}</>;
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span>{label}</span>
+      <span
+        title={`${count} issue${count === 1 ? '' : 's'}`}
+        className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-error-background"
+      >
+        <span aria-hidden="true">{count}</span>
+        <span className="sr-only">{`${count} issue${count === 1 ? '' : 's'}`}</span>
+      </span>
+    </span>
+  );
+}
+
+function DapValidationValueField({
+  id,
+  label,
+  value,
+  placeholder,
+  required,
+  error,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  placeholder: string;
+  required?: boolean;
+  error?: ReactNode;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="grid gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
+      <Label htmlFor={id} className="text-xs">
+        {label}
+        {required && <RequiredIndicator />}
+      </Label>
+      <InputGroup className="h-9 future:bg-surface-overlay" error={error}>
+        <InputGroupInput
+          id={id}
+          value={value}
+          placeholder={placeholder}
+          required={required}
+          onChange={(event) => onChange(event.target.value)}
+          className="text-xs"
+        />
+        <InputGroupAddon align="inline-end" className="-my-1 gap-0 self-stretch">
+          <InputGroupButton
+            icon
+            aria-label={`Insert variable for ${label}`}
+            title="Insert variable"
+            className="h-full rounded-none border-l px-2.5"
+            onClick={() => onChange(`${value}$vars.`)}
+          >
+            <AtSign size={14} />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+    </div>
+  );
+}
+
+/**
+ * Send email DAP panel with validation actually triggered — used by the
+ * 'dap-validation' rightPanelVariant so guidance pages can demonstrate the
+ * error states they document instead of only the happy-path DapPanel.
+ */
+function DapValidationPanel({ onClose }: { onClose: () => void }) {
+  const [subject, setSubject] = useState('Invoice approval required');
+  const [recipient, setRecipient] = useState('');
+  const [body, setBody] = useState(
+    'Hi $vars.approverName,\n\nPlease review invoice $vars.invoiceNumber.'
+  );
+  const [errorHandlingEnabled, setErrorHandlingEnabled] = useState(true);
+  const [retryCount, setRetryCount] = useState('8');
+  const [stage, setStage] = useState('');
+
+  return (
+    <NodePropertyPanel
+      panelTitle="Properties"
+      nodeIcon={<Mail />}
+      nodeLabel="Send email"
+      nodeCategory="Gmail · DAP layout"
+      onClose={onClose}
+      contentInset="0.875rem"
+      className="h-full"
+    >
+      <Tabs defaultValue="parameters" className="flex h-full min-h-0 flex-col">
+        <TabsList className="mx-3 h-auto justify-start gap-0.5 rounded-lg bg-transparent p-0.5">
+          <TabsTrigger value="parameters" className="h-6 px-2.5 text-xs">
+            <ValidationTabLabel label="Parameters" count={stage ? 1 : 2} />
+          </TabsTrigger>
+          <TabsTrigger value="error-handling" className="h-6 px-2.5 text-xs">
+            <ValidationTabLabel label="Error handling" count={1} />
+          </TabsTrigger>
+          <TabsTrigger value="variables" className="h-6 px-2.5 text-xs">
+            Variables
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="space-y-5">
+            <Alert variant="destructive">
+              <AlertCircle />
+              <AlertTitle>Resolve {stage ? 2 : 3} issues before running this node</AlertTitle>
+              <AlertDescription>
+                Fix the highlighted fields in Parameters and Error handling before you run or
+                publish this workflow.
+              </AlertDescription>
+            </Alert>
+
+            <section className="grid gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
+              <Label htmlFor="dap-validation-connection" className="text-xs text-foreground">
+                Connection
+              </Label>
+              <Select defaultValue="gmail-finance">
+                <SelectTrigger
+                  id="dap-validation-connection"
+                  className="h-9 w-full future:bg-surface-overlay text-xs"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gmail-finance">Gmail · Finance operations</SelectItem>
+                  <SelectItem value="gmail-personal">Gmail · Personal</SelectItem>
+                </SelectContent>
+              </Select>
+            </section>
+
+            <section className="grid gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
+              <Label htmlFor="dap-validation-stage" className="text-xs text-foreground">
+                Case stage <RequiredIndicator />
+              </Label>
+              <Combobox
+                id="dap-validation-stage"
+                items={[
+                  { label: 'Intake', value: 'intake' },
+                  { label: 'Review', value: 'review' },
+                  { label: 'Approval', value: 'approval' },
+                ]}
+                value={stage}
+                onValueChange={setStage}
+                placeholder="Select a stage"
+                searchPlaceholder="Search stages"
+                className="h-9 w-full future:bg-surface-overlay text-xs"
+                error={stage ? undefined : 'Select the stage this email applies to.'}
+              />
+            </section>
+
+            <Separator />
+
+            <section className="space-y-4">
+              <p className="text-xs font-semibold text-foreground">Message</p>
+              <DapValidationValueField
+                id="dap-validation-recipient"
+                label="To"
+                value={recipient}
+                placeholder="Recipient email address"
+                required
+                error="This field is required. Enter a recipient or bind a variable."
+                onChange={setRecipient}
+              />
+              <DapValidationValueField
+                id="dap-validation-subject"
+                label="Subject"
+                value={subject}
+                placeholder="The subject of the email"
+                required
+                onChange={setSubject}
+              />
+              <div className="grid gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
+                <Label htmlFor="dap-validation-body" className="text-xs">
+                  Body <RequiredIndicator />
+                </Label>
+                <Textarea
+                  id="dap-validation-body"
+                  value={body}
+                  required
+                  onChange={(event) => setBody(event.target.value)}
+                  className="min-h-24 resize-none future:bg-surface-overlay text-xs"
+                />
+              </div>
+            </section>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="error-handling" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Label htmlFor="dap-validation-error-handling" className="text-xs">
+                  Enable error handling
+                </Label>
+                <p className="text-xs text-foreground-muted">
+                  Add an error output handle on the node to catch and handle failures.
+                </p>
+              </div>
+              <Switch
+                id="dap-validation-error-handling"
+                checked={errorHandlingEnabled}
+                onCheckedChange={setErrorHandlingEnabled}
+              />
+            </div>
+            <div className="grid gap-1.5 [&>[data-slot=form-field-error]]:mt-0">
+              <Label htmlFor="dap-validation-retry-count" className="text-xs">
+                Retry count
+              </Label>
+              <Input
+                id="dap-validation-retry-count"
+                value={retryCount}
+                onChange={(event) => setRetryCount(event.target.value)}
+                error="Retry count must be between 0 and 5."
+                className="future:bg-surface-overlay text-xs"
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="variables" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="space-y-4">
+            <p className="text-xs leading-5 text-foreground-muted">
+              Values available to the connector fields and produced when this activity runs.
+            </p>
+            {[
+              ['$vars.approverEmail', 'Text · Input'],
+              ['$vars.approverName', 'Text · Input'],
+              ['$vars.invoiceNumber', 'Text · Input'],
+              ['$output.messageId', 'Text · Output'],
+            ].map(([name, metadata]) => (
+              <div
+                key={name}
+                className="flex items-center gap-3 rounded-lg border border-border-subtle future:bg-surface-overlay px-3 py-2.5"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-mono text-xs font-medium">{name}</p>
+                  <p className="mt-0.5 text-[11px] text-foreground-muted">{metadata}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </NodePropertyPanel>
+  );
+}
+
 function FieldHelpPanel({ onClose }: { onClose: () => void }) {
   const [webhookUrl, setWebhookUrl] = useState('https://hooks.example.com/flows/finance-ops');
   const [retryLimit, setRetryLimit] = useState('3');
@@ -4178,6 +4435,7 @@ export function FullWorkbenchComposition({
     | 'rules'
     | 'variables'
     | 'dap'
+    | 'dap-validation'
     | 'field-help';
 }) {
   const panelRef = useRef<PanelImperativeHandle | null>(null);
@@ -4215,9 +4473,18 @@ export function FullWorkbenchComposition({
     {
       id: 'execution',
       label: (
-        <>
+        <span className="inline-flex items-center gap-1.5">
           <Bug className="size-3" /> Executions
-        </>
+          {rightPanelVariant === 'dap-validation' && (
+            <span
+              title="2 issues"
+              className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-error-background"
+            >
+              <span aria-hidden="true">2</span>
+              <span className="sr-only">2 issues</span>
+            </span>
+          )}
+        </span>
       ),
       group: 'debug',
       content: <DebugPanelContent />,
@@ -4245,54 +4512,88 @@ export function FullWorkbenchComposition({
   };
 
   const canvasBottomOffset = bottomPanelHeight + 4;
+  const sidebarPrimaryItems =
+    rightPanelVariant === 'dap-validation'
+      ? CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS.map((item) =>
+          item.id === 'variables'
+            ? {
+                ...item,
+                icon: (
+                  <span className="relative grid size-5 place-items-center">
+                    {item.icon}
+                    <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-error ring-2 ring-surface-raised" />
+                  </span>
+                ),
+              }
+            : item
+        )
+      : CANVAS_LEFT_SIDEBAR_DEFAULT_PRIMARY_ITEMS;
 
   return (
     <div className="relative flex h-screen bg-surface">
       <CanvasLeftSidebar
         title={sidebarLabels[activeSidebarItem]}
         variant="default"
+        primaryItems={sidebarPrimaryItems}
         isExpanded={sidebarExpanded}
         onExpandedChange={setSidebarExpanded}
         activeItemId={activeSidebarItem}
         onItemSelect={setActiveSidebarItem}
       />
       <div className="relative min-w-0 flex-1 overflow-hidden">
-        <CanvasViewport
-          workflowVariant={
-            rightPanelVariant === 'dap'
-              ? 'dap'
-              : rightPanelVariant === 'properties' || rightPanelVariant === 'field-help'
-                ? 'default'
-                : rightPanelVariant
-          }
-          bottomControlsOffset={canvasBottomOffset}
-          rightControlsOffset={rightPanelOpen ? 412 : 16}
-          onNodeSelect={
-            rightPanelVariant === 'variables'
-              ? (nodeId) => {
-                  setSelectedVariableNodeId(nodeId);
-                  setRightPanelOpen(true);
-                }
-              : undefined
-          }
-          trigger={
-            <PanelTrigger
-              layout={rightPanelOpen ? 'right' : 'closed'}
-              panels={[
-                { id: 'input', label: 'Input', enabled: false },
-                { id: 'properties', label: 'Properties', enabled: rightPanelOpen },
-                { id: 'output', label: 'Output', enabled: false },
-              ]}
-              onPanelToggle={(id, enabled) => {
-                if (id === 'properties') setRightPanelOpen(enabled);
-              }}
-              onLayoutChange={(layout) => {
-                if (layout === 'right') setRightPanelOpen(true);
-              }}
-              onPropertiesClick={() => setRightPanelOpen(true)}
-            />
-          }
-        />
+        <ValidationStatusContext.Provider
+          value={{
+            getElementValidationState: (elementId) =>
+              rightPanelVariant === 'dap-validation' && elementId === 'send-email'
+                ? {
+                    validationStatus: ValidationErrorSeverity.ERROR,
+                    validationError: {
+                      code: 'MISSING_REQUIRED_FIELDS',
+                      message: 'Resolve 3 issues before running this node.',
+                      description: 'Resolve 3 issues before running this node.',
+                      severity: ValidationErrorSeverity.ERROR,
+                    },
+                  }
+                : undefined,
+          }}
+        >
+          <CanvasViewport
+            workflowVariant={
+              rightPanelVariant === 'dap' || rightPanelVariant === 'dap-validation'
+                ? 'dap'
+                : rightPanelVariant === 'properties' || rightPanelVariant === 'field-help'
+                  ? 'default'
+                  : rightPanelVariant
+            }
+            bottomControlsOffset={canvasBottomOffset}
+            rightControlsOffset={rightPanelOpen ? 412 : 16}
+            onNodeSelect={
+              rightPanelVariant === 'variables'
+                ? (nodeId) => {
+                    setSelectedVariableNodeId(nodeId);
+                    setRightPanelOpen(true);
+                  }
+                : undefined
+            }
+            trigger={
+              <PanelTrigger
+                layout={rightPanelOpen ? 'right' : 'closed'}
+                panels={[
+                  { id: 'input', label: 'Input', enabled: false },
+                  { id: 'properties', label: 'Properties', enabled: rightPanelOpen },
+                  { id: 'output', label: 'Output', enabled: false },
+                ]}
+                onPanelToggle={(id, enabled) => {
+                  if (id === 'properties') setRightPanelOpen(enabled);
+                }}
+                onLayoutChange={(layout) => {
+                  if (layout === 'right') setRightPanelOpen(true);
+                }}
+                onPropertiesClick={() => setRightPanelOpen(true)}
+              />
+            }
+          />
+        </ValidationStatusContext.Provider>
 
         {rightPanelOpen && (
           <div
@@ -4320,6 +4621,8 @@ export function FullWorkbenchComposition({
                 />
               ) : rightPanelVariant === 'dap' ? (
                 <DapPanel onClose={() => setRightPanelOpen(false)} />
+              ) : rightPanelVariant === 'dap-validation' ? (
+                <DapValidationPanel onClose={() => setRightPanelOpen(false)} />
               ) : rightPanelVariant === 'field-help' ? (
                 <FieldHelpPanel onClose={() => setRightPanelOpen(false)} />
               ) : rightPanelVariant === 'node' ? (

@@ -26,7 +26,7 @@ import {
 } from './guidance-primitives';
 
 const meta = {
-  title: 'Apollo Wind/Forms/Field Validation Guidance',
+  title: 'Apollo Wind/Forms/Guidance Field Validation',
   parameters: { layout: 'fullscreen' },
 } satisfies Meta;
 
@@ -564,5 +564,5 @@ export const Documentation: Story = {
 export const Example: Story = {
   name: 'Example',
   decorators: [withCanvasProviders({ fullscreen: false })],
-  render: () => <FullWorkbenchComposition rightPanelVariant="dap" />,
+  render: () => <FullWorkbenchComposition rightPanelVariant="dap-validation" />,
 };

@@ -39,7 +39,7 @@ import { cn } from '@/lib';
 import { Divider, GuidancePage, InfoCallout, SectionDescription } from './guidance-primitives';
 
 const meta = {
-  title: 'Apollo Wind/Forms/Field Type Guidance',
+  title: 'Apollo Wind/Forms/Guidance Field Type',
   parameters: { layout: 'fullscreen' },
 } satisfies Meta;
 
