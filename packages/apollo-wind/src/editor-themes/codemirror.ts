@@ -176,7 +176,7 @@ export const apolloFutureDarkCodeMirror: ApolloCodeMirrorTheme = {
 /**
  * Apollo Future light theme tokens for CodeMirror v6.
  *
- * Base palette: zinc-100 surfaces, cyan-700 accent, muted zinc foregrounds.
+ * Base palette: white surfaces, cyan-600 accent, muted zinc foregrounds.
  * Syntax colors follow the `--code-*` custom properties from the design system.
  */
 export const apolloFutureLightCodeMirror: ApolloCodeMirrorTheme = {
