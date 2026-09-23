@@ -23,8 +23,8 @@ export interface OptionListProps {
   onSelect: (m: DiscoveryModel) => void;
   /**
    * Forwarded to every row's `deriveModelTags` call. Use for
-   * `recommendedModelIds`, `previewModelIds`, `costTierFor`,
-   * `customTagsFor`, `homeRegion`, and the translator.
+   * `recommendedModelIds`, `previewModelIds`, `badgesFor`,
+   * `customTagsFor`, `homeRegion`, and `labels`.
    */
   tagContext?: DeriveModelTagsContext;
   /**

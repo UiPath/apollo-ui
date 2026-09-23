@@ -33,7 +33,7 @@ export interface ModelOptionRowProps {
   /**
    * Context forwarded to `deriveModelTags`. Carries `homeRegion`,
    * `recommendedModelIds` / `previewModelIds` (Model Hub overrides),
-   * `costTierFor`, `customTagsFor`, and the translator.
+   * `badgesFor`, `customTagsFor`, and `labels`.
    */
   tagContext?: DeriveModelTagsContext;
   /**

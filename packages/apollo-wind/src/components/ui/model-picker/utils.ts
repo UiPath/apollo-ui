@@ -277,19 +277,20 @@ export function deriveModelTags(
 }
 
 /**
- * EXAMPLE cost-tier classifier — the picker does NOT stamp cost chips
- * itself. Products that want cost badges (agents does) map a model to
- * one of the pool's cost kinds via `badgesFor`:
+ * The default cost-tier classifier. `deriveModelTags` calls it for every
+ * model with cost data and stamps the matching pool badge, so hosts get
+ * cost chips without wiring anything. Pass `badgesFor` to override: it
+ * replaces the default entirely, e.g. to change the bins —
  *
  *   badgesFor={(m) => {
- *     const tier = defaultCostTier(m);
+ *     const tier = myCostTier(m);
  *     return tier ? [`cost-${tier}` as const] : [];
  *   }}
  *
- * Bins Discovery's `costDetails.flatCosts.inputTokenCost` (cents per million input tokens) at
- * $1 / $5. Copy it and change the thresholds, or classify on something
- * else entirely — the pool badge kinds are the shared contract, the
- * classifier is yours.
+ * — or `badgesFor={() => []}` to suppress cost chips. Bins Discovery's
+ * `costDetails.flatCosts.inputTokenCost` (cents per million input tokens)
+ * at $1 / $5. The pool badge kinds are the shared contract; the
+ * classifier is replaceable.
  */
 // Cents per million input tokens: $1/M and $5/M.
 const DEFAULT_BASIC_THRESHOLD = 100;

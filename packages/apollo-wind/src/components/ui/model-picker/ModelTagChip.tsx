@@ -154,11 +154,14 @@ export const ModelTagChip: React.FC<ModelTagChipProps> = ({
       // harmlessly when the host already mounts one.
       <TooltipProvider>
         <Tooltip>
-          {/* `asChild` would make Badge the trigger, but a disabled-looking
-            inline chip needs a focusable wrapper for keyboard tooltips. */}
-          {/* No `asChild`: the trigger renders its own button, so the
-              chip is reachable by keyboard without a tabindex hack. */}
-          <TooltipTrigger className="inline-flex max-w-full">{chip}</TooltipTrigger>
+          {/* The trigger renders its own <button> so the pointer can open the
+              tooltip through the inert chip. Not a tab stop: chips sit inside
+              `role="option"`, where a tabbable child breaks the search
+              field's activedescendant model. The chip's text already carries
+              the information; the tooltip is a pointer refinement. */}
+          <TooltipTrigger className="inline-flex max-w-full" tabIndex={-1}>
+            {chip}
+          </TooltipTrigger>
           <TooltipContent side="top">{tag.tooltip}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
