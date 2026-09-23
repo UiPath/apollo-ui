@@ -52,6 +52,7 @@ export * from './prompt-value-control';
 export * from './quick-form-field';
 export * from './radio-group';
 export * from './resizable';
+export * from './resource-picker';
 export * from './scroll-area';
 export * from './search';
 export * from './select';
