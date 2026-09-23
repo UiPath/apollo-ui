@@ -1,66 +1,16 @@
 'use client';
 
-import { Check, ChevronRight, Folder, FolderOpen, Search, X } from 'lucide-react';
-import type { ReactElement, ReactNode } from 'react';
+import { FolderOpen, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib';
-
-export interface FolderPickerEntry {
-  /** Segment name as it appears in the path. Unique among its siblings. */
-  name: string;
-  /** Row label. Defaults to `name`. */
-  label?: string;
-  /** False marks a known leaf, which hides its open affordance. Unknown by default. */
-  hasChildren?: boolean;
-  disabled?: boolean;
-  metadata?: unknown;
-}
-
-/**
- * Loads one level of the tree. The root is requested with an empty path.
- * Resolved levels are cached, so navigating back up does not re-request.
- */
-export type FolderPickerLoadChildren = (path: string[]) => Promise<FolderPickerEntry[]>;
-
-const joinPath = (segments: string[]) => `/${segments.join('/')}`;
-const cacheKey = (segments: string[]) => segments.join('/');
-
-export interface FolderPickerContentProps {
-  /** Loads a level of the tree. Called for the root when the content mounts. */
-  onLoadChildren: FolderPickerLoadChildren;
-  /** Confirms a folder path, such as `/Finance/Invoices`. */
-  onSelect: (path: string) => void;
-  /** Closes the surface without confirming. */
-  onCancel?: () => void;
-  /** Browsing resumes at this path's parent, with the path itself highlighted. */
-  initialPath?: string;
-  /** Label for the breadcrumb's first segment. */
-  rootLabel?: string;
-  searchPlaceholder?: string;
-  /** Seeds the search box, as VariablePicker's `initialQuery` does. */
-  initialSearch?: string;
-  emptyText?: string;
-  /** Shown while a level that has never resolved is loading. */
-  loadingText?: string;
-  /** Accessible name for the folder list. */
-  listLabel?: string;
-  /** Content for the footer's leading slot, such as a count or an "Add new" link. */
-  footerLeading?: ReactNode;
-  cancelLabel?: string;
-  selectLabel?: string;
-  className?: string;
-}
+import { FolderBreadcrumb } from './components/folder-breadcrumb';
+import { FolderPickerEmptyState } from './components/folder-picker-empty-state';
+import { FolderPickerFooter } from './components/folder-picker-footer';
+import { FolderPickerSearch } from './components/folder-picker-search';
+import { FolderRow } from './components/folder-row';
+import type { FolderPickerContentProps, FolderPickerEntry, FolderPickerProps } from './types';
+import { cacheKey, joinPath } from './types';
 
 /**
  * Browsing surface for embedding in a consumer-owned popover, dialog or sheet.
@@ -168,13 +118,6 @@ export function FolderPickerContent({
     void loadLevel(segments);
   };
 
-  const drillInto = navigateTo;
-  /**
-   * The target is loaded rather than assumed cached: with an `initialPath`,
-   * browsing starts partway down and the ancestors above it were never fetched.
-   */
-  const jumpTo = navigateTo;
-
   const effectiveSelection = draft ?? (pathStack.length > 0 ? joinPath(pathStack) : null);
   const currentKey = cacheKey(pathStack);
   const entries = levels[currentKey] ?? [];
@@ -196,71 +139,9 @@ export function FolderPickerContent({
 
   return (
     <div className={cn('flex min-w-0 flex-col overflow-hidden', className)}>
-      <Breadcrumb className="border-b border-border px-3 py-2">
-        <BreadcrumbList className="flex-nowrap gap-0.5 overflow-hidden text-xs sm:gap-0.5">
-          {crumbs.map((crumb, index) => {
-            const isCurrent = index === crumbs.length - 1;
-            return (
-              <BreadcrumbItem key={crumb.key} className="min-w-0 gap-0.5">
-                {index > 0 && (
-                  <BreadcrumbSeparator className="shrink-0 text-foreground-subtle [&>svg]:size-3" />
-                )}
-                {isCurrent ? (
-                  <BreadcrumbPage className="truncate text-xs font-medium text-foreground">
-                    {crumb.label}
-                  </BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink asChild>
-                    <button
-                      type="button"
-                      className="cursor-pointer truncate rounded px-0.5 text-xs text-foreground-muted transition-colors hover:text-foreground"
-                      onClick={() => jumpTo(crumb.stack)}
-                    >
-                      {crumb.label}
-                    </button>
-                  </BreadcrumbLink>
-                )}
-              </BreadcrumbItem>
-            );
-          })}
-        </BreadcrumbList>
-      </Breadcrumb>
+      <FolderBreadcrumb crumbs={crumbs} onJump={navigateTo} />
 
-      {/* Matches CommandInput: no field of its own, just a leading magnifier
-          and the rule under the row, so the search reads as part of the
-          popover rather than as a control sitting inside it. */}
-      <div className="flex items-center border-b border-border px-3">
-        <Search className="mr-2 size-4 shrink-0 opacity-50" />
-        <input
-          type="text"
-          autoComplete="off"
-          aria-label={searchPlaceholder}
-          placeholder={searchPlaceholder}
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          className="flex h-9 w-full rounded-md bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-          onKeyDown={(event) => {
-            // Escape empties the search before the popover treats it as a
-            // dismiss, so a typo is undone without losing the browsed folder.
-            if (event.key === 'Escape' && search) {
-              event.preventDefault();
-              event.stopPropagation();
-              setSearch('');
-            }
-          }}
-        />
-        {/* Appears only with a value, as the Search field's clear does. */}
-        {search && (
-          <button
-            type="button"
-            aria-label="Clear search"
-            className="ml-1 grid size-5 shrink-0 cursor-pointer place-items-center rounded text-muted-foreground transition-colors hover:text-foreground"
-            onClick={() => setSearch('')}
-          >
-            <X className="size-3.5" />
-          </button>
-        )}
-      </div>
+      <FolderPickerSearch value={search} onChange={setSearch} placeholder={searchPlaceholder} />
 
       <div
         className="max-h-56 min-h-0 flex-1 overflow-y-auto py-1"
@@ -273,137 +154,48 @@ export function FolderPickerContent({
         aria-busy={isLoadingCurrentLevel || undefined}
         tabIndex={-1}
       >
-        {error && <div className="px-3 py-2 text-xs text-destructive">{error}</div>}
-        {/* The level being browsed has not arrived yet, so "no subfolders"
-            would be a guess. Stay quiet until the load settles. */}
-        {!error && isLoadingCurrentLevel && visibleEntries.length === 0 && (
-          <div className="flex items-center gap-2 px-3 py-2 text-xs text-foreground-muted">
-            <Spinner className="size-3.5" />
-            {loadingText}
-          </div>
+        {visibleEntries.length === 0 && (
+          <FolderPickerEmptyState
+            error={error}
+            loading={isLoadingCurrentLevel}
+            query={search.trim()}
+            emptyText={emptyText}
+            loadingText={loadingText}
+          />
         )}
-        {!error && !isLoadingCurrentLevel && visibleEntries.length === 0 && (
-          <div className="px-3 py-2 text-xs text-foreground-muted">
-            {normalizedQuery ? `No folders match “${search.trim()}”.` : emptyText}
-          </div>
+        {/* A failed drill keeps the previous list visible under the error,
+            so the user is not stranded on an empty popover. */}
+        {error && visibleEntries.length > 0 && (
+          <div className="px-3 py-2 text-xs text-destructive">{error}</div>
         )}
         {visibleEntries.map((entry) => {
           const segments = [...pathStack, entry.name];
           const fullPath = joinPath(segments);
           const isSelected = draft === fullPath;
-          const isLoading = loadingPath === fullPath;
-          const label = entry.label ?? entry.name;
-          /** A known leaf offers no way in, by pointer or by keyboard. */
-          const canOpen = !entry.disabled && entry.hasChildren !== false;
 
           return (
-            <div
+            <FolderRow
               key={entry.name}
-              role="treeitem"
-              aria-selected={isSelected}
-              aria-label={label}
-              // Collapsed rather than absent: a row that can be opened has
-              // children that simply have not been fetched yet.
-              aria-expanded={canOpen ? false : undefined}
-              aria-disabled={entry.disabled}
-              tabIndex={entry.disabled ? -1 : 0}
-              className={cn(
-                'flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-foreground transition-colors',
-                entry.disabled
-                  ? 'cursor-not-allowed opacity-50'
-                  : 'cursor-pointer hover:bg-surface-overlay',
-                isSelected && 'bg-surface-overlay'
-              )}
-              onClick={() => !entry.disabled && setDraft(isSelected ? null : fullPath)}
-              onDoubleClick={() => canOpen && drillInto(segments)}
-              onKeyDown={(event) => {
-                if (entry.disabled) return;
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  setDraft(isSelected ? null : fullPath);
-                } else if (event.key === 'ArrowRight' && canOpen) {
-                  event.preventDefault();
-                  drillInto(segments);
-                }
-              }}
-            >
-              <span className="grid size-3.5 shrink-0 place-items-center">
-                {isSelected && <Check className="size-3.5 text-foreground" strokeWidth={3} />}
-              </span>
-              <Folder size={14} className="shrink-0 text-foreground-muted" />
-              <span className="min-w-0 flex-1 truncate">{label}</span>
-              {isLoading ? (
-                <span className="grid size-5 shrink-0 place-items-center">
-                  <Spinner className="size-3.5" />
-                </span>
-              ) : (
-                entry.hasChildren !== false && (
-                  <button
-                    type="button"
-                    aria-label={`Open ${label}`}
-                    disabled={entry.disabled}
-                    className="grid size-5 shrink-0 cursor-pointer place-items-center rounded text-foreground-muted transition-colors hover:bg-surface-overlay hover:text-foreground"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      drillInto(segments);
-                    }}
-                  >
-                    <ChevronRight size={14} />
-                  </button>
-                )
-              )}
-            </div>
+              entry={entry}
+              selected={isSelected}
+              loading={loadingPath === fullPath}
+              onToggleSelect={() => setDraft(isSelected ? null : fullPath)}
+              onOpen={() => navigateTo(segments)}
+            />
           );
         })}
       </div>
 
-      {/* The commit pair sits in the same place and carries the same name across
-          every picker that holds a draft. "Select" finishes choosing a value;
-          "Apply" would belong on a form that has been edited. */}
-      <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-3 py-2">
-        <div className="flex min-w-0 items-center gap-1">{footerLeading}</div>
-        <div className="flex shrink-0 items-center gap-1">
-          {/* Only offered when there is something for it to do: embedded in a
-              consumer-owned surface there may be nothing to dismiss. */}
-          {onCancel && (
-            <Button variant="ghost" size="xs" type="button" className="h-7" onClick={onCancel}>
-              {cancelLabel}
-            </Button>
-          )}
-          <Button
-            variant="default"
-            size="xs"
-            type="button"
-            className="h-7"
-            disabled={!effectiveSelection}
-            onClick={() => effectiveSelection && onSelect(effectiveSelection)}
-          >
-            {selectLabel}
-          </Button>
-        </div>
-      </div>
+      <FolderPickerFooter
+        leading={footerLeading}
+        onCancel={onCancel}
+        onSelect={() => effectiveSelection && onSelect(effectiveSelection)}
+        selectDisabled={!effectiveSelection}
+        cancelLabel={cancelLabel}
+        selectLabel={selectLabel}
+      />
     </div>
   );
-}
-
-export interface FolderPickerProps
-  extends Omit<FolderPickerContentProps, 'onCancel' | 'initialPath' | 'className'> {
-  /** Selected folder path, or an empty string. */
-  value?: string;
-  placeholder?: string;
-  disabled?: boolean;
-  /** Hides the field's hover-revealed clear control. */
-  clearable?: boolean;
-  clearAriaLabel?: string;
-  /** A single element Radix can anchor the popover to. Replaces the default field. */
-  children?: ReactElement;
-  align?: 'start' | 'center' | 'end';
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  /** Rendered inside the field at its trailing edge, such as a field-mode menu. */
-  trailingAdornment?: ReactNode;
-  contentClassName?: string;
-  className?: string;
 }
 
 /**
@@ -516,3 +308,10 @@ export function FolderPicker({
     </div>
   );
 }
+
+export type {
+  FolderPickerContentProps,
+  FolderPickerEntry,
+  FolderPickerLoadChildren,
+  FolderPickerProps,
+} from './types';
