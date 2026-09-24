@@ -79,6 +79,36 @@ export const MinuteStep = {
   },
 };
 
+export const WithTimeZone = {
+  args: {},
+  render: () => {
+    const [date, setDate] = useState<Date | undefined>(new Date());
+    const [timeZone, setTimeZone] = useState('Europe/Bucharest');
+    return (
+      <div className="w-[400px]">
+        <DateTimePicker
+          value={date}
+          onValueChange={setDate}
+          showTimeZone
+          timeZone={timeZone}
+          onTimeZoneChange={setTimeZone}
+        />
+        {date && (
+          <p className="mt-4 text-sm text-muted-foreground">Stored as: {date.toISOString()}</p>
+        )}
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`showTimeZone` adds a searchable timezone select under the time. The date and time are read in that zone, so 14:00 in Bucharest is stored as 11:00Z in summer, and the trigger shows the offset. Changing the zone keeps the date and time on screen and moves the stored instant. Pass `timeZone` and `onTimeZoneChange` to track the zone, or `defaultTimeZone` to set where it starts.',
+      },
+    },
+  },
+};
+
 export const Compact = {
   args: {},
   render: () => {
