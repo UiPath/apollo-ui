@@ -1000,6 +1000,36 @@ describe('<ModelPicker> review follow-ups', () => {
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
   });
 
+  it('does not edit or delete a BYO row hidden inside a collapsed section', async () => {
+    const user = userEvent.setup();
+    const onEditModel = vi.fn();
+    const onDeleteModel = vi.fn();
+    const byoOnly = MODELS.filter((m) => m.modelSubscriptionType === 'BYOMAdded');
+    renderPicker(
+      <ModelPicker
+        canManageByo
+        groupBy="subscription"
+        models={byoOnly}
+        onDeleteModel={onDeleteModel}
+        onEditModel={onEditModel}
+      />
+    );
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    // Collapse the only section: the index stays on the hidden row so
+    // ArrowRight can reopen it, but no action may reach that row.
+    await user.keyboard('{ArrowLeft}');
+    expect(screen.queryAllByRole('option')).toHaveLength(0);
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(onEditModel).not.toHaveBeenCalled();
+    await user.keyboard('{Delete}');
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+
+    await user.keyboard('{ArrowRight}');
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(onEditModel).toHaveBeenCalledTimes(1);
+  });
+
   it('builds selector-safe dom ids', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker models={withContext} />);
