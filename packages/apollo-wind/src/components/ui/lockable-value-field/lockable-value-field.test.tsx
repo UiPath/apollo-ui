@@ -5,10 +5,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { LockableValueField } from './lockable-value-field';
 
 describe('LockableValueField', () => {
-  it('renders a read-only display value when locked', () => {
-    render(<LockableValueField value="INV-2024-0587" locked />);
+  it('renders an editable input when locked and onValueChange is provided', () => {
+    render(<LockableValueField value="INV-2024-0587" locked onValueChange={vi.fn()} />);
     expect(screen.getByPlaceholderText('String value')).toHaveValue('INV-2024-0587');
-    expect(screen.getByPlaceholderText('String value')).toHaveAttribute('readonly');
+    expect(screen.getByPlaceholderText('String value')).not.toHaveAttribute('readonly');
   });
 
   it('renders an editable input when unlocked and onValueChange is provided', () => {
@@ -100,14 +100,15 @@ describe('LockableValueField', () => {
     expect(handleBlur).toHaveBeenCalledOnce();
   });
 
-  it('withholds value changes from a consumer expression editor while locked', () => {
+  it('provides an editable consumer expression editor while locked', () => {
+    const handleChange = vi.fn();
     const renderExpressionEditor = vi.fn(() => <div>Custom editor</div>);
     render(
       <LockableValueField
         value="item.id"
         locked
         mode="expression"
-        onValueChange={vi.fn()}
+        onValueChange={handleChange}
         renderExpressionEditor={renderExpressionEditor}
       />
     );
@@ -115,20 +116,20 @@ describe('LockableValueField', () => {
     expect(renderExpressionEditor).toHaveBeenCalledWith(
       expect.objectContaining({
         value: 'item.id',
-        readOnly: true,
-        onValueChange: undefined,
+        readOnly: false,
+        onValueChange: handleChange,
       })
     );
   });
 
-  it('does not attach a value-change handler to the built-in expression input while locked', () => {
+  it('attaches a value-change handler to the built-in expression input while locked', () => {
     const handleChange = vi.fn();
     render(
       <LockableValueField value="item.id" locked mode="expression" onValueChange={handleChange} />
     );
 
     fireEvent.change(screen.getByDisplayValue('item.id'), { target: { value: 'other.id' } });
-    expect(handleChange).not.toHaveBeenCalled();
+    expect(handleChange).toHaveBeenCalledWith('other.id');
   });
 
   it('uses the correct article in the built-in integer expression placeholder', () => {
@@ -220,13 +221,13 @@ describe('LockableValueField', () => {
     expect(screen.getByRole('menuitem', { name: 'Force refresh' })).toBeInTheDocument();
   });
 
-  it('only renders available More actions and hides Clear value when locked', async () => {
+  it('shows Clear value even when the field is locked', async () => {
     const user = userEvent.setup();
     render(<LockableValueField locked more={{ onClear: vi.fn(), onRefresh: vi.fn() }} />);
 
     await user.click(screen.getByRole('button', { name: 'More value actions' }));
 
-    expect(screen.queryByRole('menuitem', { name: 'Clear value' })).not.toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Clear value' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Force refresh' })).toBeInTheDocument();
   });
 
@@ -332,11 +333,12 @@ describe('LockableValueField', () => {
     expect(container.querySelector('[role="group"]')).toHaveClass('h-auto', 'items-stretch');
   });
 
-  it('keeps locked file fields in the compact read-only layout', () => {
+  it('renders an editable file upload control even when the field is locked', () => {
     const { container } = render(
-      <LockableValueField locked fieldType="file" value="invoice.pdf" />
+      <LockableValueField locked fieldType="file" value="invoice.pdf" onValueChange={vi.fn()} />
     );
-    expect(container.querySelector('[role="group"]')).not.toHaveClass('h-auto', 'items-stretch');
+    expect(screen.getByText(/drag/i, { exact: false })).toBeInTheDocument();
+    expect(container.querySelector('[role="group"]')).toHaveClass('h-auto', 'items-stretch');
   });
 
   it('does not force the Future overlay background in classic themes', () => {
@@ -424,34 +426,11 @@ describe('LockableValueField', () => {
     expect(screen.getByRole('button', { name: 'Supporting document' })).toBeInTheDocument();
   });
 
-  it('ignores non-string entries when parsing a locked multi-select value', () => {
-    const options = [{ label: 'Alpha', value: 'alpha' }];
-    render(
-      <LockableValueField
-        locked
-        fieldType="multi-select"
-        value={JSON.stringify(['alpha', 42, null])}
-        options={options}
-      />
-    );
-    expect(screen.getByPlaceholderText('Multi select value')).toHaveValue('Alpha');
-  });
-
-  it('falls back to the raw value for a locked multi-select value that parses to no entries', () => {
-    render(<LockableValueField locked fieldType="multi-select" value="not-json" />);
-    expect(screen.getByPlaceholderText('Multi select value')).toHaveValue('not-json');
-  });
-
-  it('shows an empty display for a locked multi-select value that is an explicit empty array', () => {
-    render(<LockableValueField locked fieldType="multi-select" value="[]" />);
-    expect(screen.getByPlaceholderText('Multi select value')).toHaveValue('');
-  });
-
   it('falls back to the raw value instead of throwing on an invalid date string', () => {
     expect(() =>
-      render(<LockableValueField locked fieldType="date" value="not-a-date" />)
+      render(<LockableValueField fieldType="date" value="not-a-date" />)
     ).not.toThrow();
-    expect(screen.getByPlaceholderText('Date value')).toHaveValue('not-a-date');
+    expect(screen.getByText('not-a-date')).toBeInTheDocument();
   });
 
   it('shows the raw value instead of throwing when unlocked with an invalid date', () => {
@@ -462,21 +441,21 @@ describe('LockableValueField', () => {
   });
 
   it('rejects an out-of-range date-only value instead of silently normalizing it', () => {
-    render(<LockableValueField locked fieldType="date" value="2024-13-40" />);
-    expect(screen.getByPlaceholderText('Date value')).toHaveValue('2024-13-40');
+    render(<LockableValueField fieldType="date" value="2024-13-40" />);
+    expect(screen.getByText('2024-13-40')).toBeInTheDocument();
   });
 
   it('formats a date-only value using the local calendar day, not UTC', () => {
     const originalTz = process.env.TZ;
     process.env.TZ = 'America/Los_Angeles';
     try {
-      render(<LockableValueField locked fieldType="date" value="2024-01-15" />);
+      render(<LockableValueField fieldType="date" value="2024-01-15" />);
       const expected = new Date(2024, 0, 15).toLocaleDateString(undefined, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       });
-      expect(screen.getByPlaceholderText('Date value')).toHaveValue(expected);
+      expect(screen.getByText(expected)).toBeInTheDocument();
     } finally {
       if (originalTz === undefined) {
         delete process.env.TZ;
@@ -517,24 +496,19 @@ describe('LockableValueField', () => {
     expect(screen.queryByText('Option 1')).not.toBeInTheDocument();
   });
 
-  it('shows a consumer-supplied option label for a locked single-select value', () => {
+  it('renders an editable single-select control showing the value even when locked', () => {
     const options = [{ label: 'Custom option', value: 'custom' }];
-    render(
-      <LockableValueField locked fieldType="single-select" value="custom" options={options} />
-    );
-    expect(screen.getByPlaceholderText('Single select value')).toHaveValue('Custom option');
-  });
-
-  it('falls back to the raw value for a locked single-select value not present in options', () => {
     render(
       <LockableValueField
         locked
         fieldType="single-select"
-        value="stale-option"
-        options={[{ label: 'Option 1', value: 'option-1' }]}
+        value="custom"
+        options={options}
+        onValueChange={vi.fn()}
       />
     );
-    expect(screen.getByPlaceholderText('Single select value')).toHaveValue('stale-option');
+    expect(screen.getByRole('combobox')).toHaveTextContent('Custom option');
+    expect(screen.getByRole('combobox')).not.toBeDisabled();
   });
 
   it('disables Generate and does not call onGenerateWithAi when not provided', async () => {
@@ -556,10 +530,9 @@ describe('LockableValueField', () => {
     expect(handleGenerate).toHaveBeenCalledWith('a random number');
   });
 
-  it('shows an empty display instead of "False" for an unset boolean value when locked', () => {
-    const { container } = render(<LockableValueField locked fieldType="boolean" value="" />);
-    expect(screen.getByPlaceholderText('Boolean value')).toHaveValue('');
-    expect(container).not.toHaveTextContent('False');
+  it('renders an unchecked Switch for an unset boolean value when locked', () => {
+    render(<LockableValueField locked fieldType="boolean" value="" onValueChange={vi.fn()} />);
+    expect(screen.getByRole('switch')).not.toBeChecked();
   });
 
   it('disables the Fixed/Expression dropdown trigger when onModeChange is not provided', () => {
@@ -606,7 +579,7 @@ describe('LockableValueField', () => {
     expect(screen.getByRole('button', { name: 'Insert variable' })).toBeDisabled();
   });
 
-  it('disables Insert variable while the field is locked', () => {
+  it('enables Insert variable while the field is locked, given onValueChange', () => {
     render(
       <LockableValueField
         locked
@@ -614,7 +587,7 @@ describe('LockableValueField', () => {
         variables={[{ label: 'Item ID', value: 'item.id' }]}
       />
     );
-    expect(screen.getByRole('button', { name: 'Insert variable' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Insert variable' })).not.toBeDisabled();
   });
 
   it('appends the selected variable to the current value when Insert variable is used', async () => {

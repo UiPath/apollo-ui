@@ -13,11 +13,14 @@ const meta = {
     docs: {
       description: {
         component: `
-A field that can be locked to read-only, typed as one of several data types,
-and (for scalar types) switched between a literal value and a JS expression.
+A field with a lock icon toggle, typed as one of several data types, and (for
+scalar types) switched between a literal value and a JS expression.
 
-- Left lock icon toggles Editable / Read-only. Read-only fields show plain
-  text, not a disabled control.
+- Left lock icon toggles Editable / Read-only display state. The lock is a
+  visual/config indicator only: the value control stays exactly as
+  interactive locked as it is unlocked. Consumers who show the toggle already
+  know the field's lock state; use \`onValueChange\` (or its absence) to
+  control actual interactivity.
 - Right value-mode icon switches between Fixed value and Expression,
   updating the value styling. Only shown for types an expression can
   produce.

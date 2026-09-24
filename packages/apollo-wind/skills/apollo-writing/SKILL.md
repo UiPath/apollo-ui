@@ -1,6 +1,6 @@
 ---
 name: apollo-writing
-description: Applies UiPath UX writing guidelines to UI copy — labels, buttons, errors, modals, empty states, and all microcopy. Use when writing or reviewing UI text, copy, or content for UiPath products.
+description: Applies UiPath UX writing guidelines to UI copy, including labels, buttons, errors, modals, empty states, and all microcopy. Use when writing or reviewing UI text, copy, or content for UiPath products.
 ---
 
 # UX Writing Guidelines for AI
@@ -102,7 +102,7 @@ Use numerals instead of spelling out numbers in UI (e.g. "Select up to 3 items",
 
 **Hyphen (-):** Joins words without spaces. Use when modifying a noun (e.g. "sign-in instructions"). Never use for verbs when noun is single word.
 
-**Em dash (—):** Creates interruption in sentence. **En dash (–):** Expresses ranges (time, years, amounts).
+**Em dash (—):** Never use, in any context, including the double-hyphen (`--`) typed as a substitute. Rewrite as two sentences, a comma, a colon, or a parenthetical instead. **En dash (–):** Expresses ranges (time, years, amounts). **Hyphen (-):** Always fine for compound words and modifiers, per above.
 
 **Ellipsis (...):** Use only for truncated/overflow text, loading actions, omission in quoted text. Never truncate headings, navigation/button labels, essential descriptors, error messages, unique identifiers, or form labels.
 
@@ -522,7 +522,7 @@ Structured sequence of steps that users can build on our platform to coordinate 
 
 1. **Capitalization** — Sentence case throughout; only proper nouns and branded products capitalized
 2. **Language** — Common contractions used; numbers as numerals; no unnecessary abbreviations
-3. **Punctuation** — Oxford commas; periods only for complete sentences; no exclamation points (except greetings)
+3. **Punctuation** — Oxford commas; periods only for complete sentences; no exclamation points (except greetings); no em dashes ever
 4. **CTAs and links** — 2–4 words max; no "Learn more" or "Click here"; link text describes destination
 5. **Empty states** — Clear headline; helpful, actionable guidance; appropriate CTA
 6. **Emphasis** — One form at a time; no underlines except links; bold only for interactive elements
