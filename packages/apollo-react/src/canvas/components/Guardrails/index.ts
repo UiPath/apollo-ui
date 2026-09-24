@@ -11,6 +11,7 @@ export type {
   GuardrailRecipientSearchContext,
   GuardrailRecipientTypeValue,
   GuardrailScope,
+  GuardrailScopeSelectorErrors,
   GuardrailSelector,
   GuardrailSeverityLevel,
   GuardrailStaticRecipientContext,
@@ -61,6 +62,8 @@ export type {
 } from './centralized-types';
 export type { GuardrailChipProps } from './components/guardrail-chip';
 export { GuardrailChip, guardrailChipVariants } from './components/guardrail-chip';
+export type { GuardrailScopeSelectorProps } from './components/guardrail-scope-selector';
+export { GuardrailScopeSelector } from './components/guardrail-scope-selector';
 export type { GuardrailStatusBannerProps } from './components/guardrail-status-banner';
 export { GuardrailStatusBanner } from './components/guardrail-status-banner';
 export type { GuardrailStatusChipProps } from './components/guardrail-status-chip';
@@ -122,6 +125,8 @@ export type {
   GuardrailListLabels,
   GuardrailPaletteLabels,
   GuardrailRemoveDialogLabels,
+  GuardrailScopeSelectorLabelKey,
+  GuardrailScopeSelectorLabels,
   GuardrailValidatorFormLabels,
 } from './i18n';
 export {
@@ -136,18 +141,22 @@ export {
   GUARDRAIL_PALETTE_EN_MESSAGES,
   GUARDRAIL_REMOVE_DIALOG_EN_LABELS,
   GUARDRAIL_REMOVE_DIALOG_EN_MESSAGES,
+  GUARDRAIL_SCOPE_SELECTOR_EN_LABELS,
+  GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS,
   resolveCentralizedGuardrailsLabels,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
   resolveGuardrailPaletteLabels,
   resolveGuardrailRemoveDialogLabels,
+  resolveGuardrailScopeSelectorLabels,
   useCentralizedGuardrailsLabels,
   useGuardrailBuilderLabels,
   useGuardrailFormLabels,
   useGuardrailListLabels,
   useGuardrailPaletteLabels,
   useGuardrailRemoveDialogLabels,
+  useGuardrailScopeSelectorLabels,
 } from './i18n';
 export type {
   GuardrailListAdministration,

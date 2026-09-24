@@ -12,6 +12,8 @@ screen shell), `GuardrailValidatorForm` (the validator parameter section, also r
 inside the builder), and `CentralizedGuardrailsSection` + `CentralizedGuardrailDetails` (the
 read-only governance guardrails a policy enforces), plus the leaves the sections compose:
 `GuardrailStatusChip`, `GuardrailStatusBanner` and `MixedScopesBanner`.
+`GuardrailScopeSelector`, the builder's scope and tool targeting field, is exported on its own
+too.
 
 ## Hover and focus, family-wide
 
@@ -770,6 +772,55 @@ and inject the compiled canvas stylesheet
 this directory) into the shadow root (see `AgentCanvasEditor` in `frontend-sw` for the
 `?inline` injection precedent). `@uipath/apollo-wind` must resolve to a single copy alongside
 apollo-react's own pin, or Radix contexts and CSS duplicate.
+
+## GuardrailScopeSelector
+
+Where a guardrail applies: a chip group over the three scopes (Agent, LLM calls, Tools) and,
+once Tools is on, a second group for the tools it targets. The value is a `GuardrailSelector`,
+`{ scopes, matchNames? }`.
+
+`GuardrailBuilder` renders it for agent-level guardrails (`scope="Agent"`). It is also
+exported for hosts that build their own editor, where it needs two props:
+
+```tsx
+import { GuardrailScopeSelector } from '@uipath/apollo-react/canvas/guardrails';
+
+const [selector, setSelector] = useState<GuardrailSelector>({ scopes: ['Agent'] });
+
+<GuardrailScopeSelector
+  selector={selector}
+  onChange={setSelector}
+  availableToolNames={toolNames}   // omit it and the Tools scope is not offered
+  allowedScopes={definition.allowedScopes}
+/>;
+```
+
+### Contract
+
+- **`onChange` carries the whole next selector**, and `matchNames` only while Tools is
+  selected: turning Tools on targets every name in `availableToolNames`, turning it off drops
+  the list. The component stores nothing and validates nothing.
+- **Tools needs tools.** With `availableToolNames` empty or omitted the Tools chip is not
+  offered, and a selector that already includes Tools has it stripped through `onChange` as
+  soon as it renders, so no invalid state survives that the user cannot see or fix. A host
+  whose tool list loads asynchronously should mount the selector once the list is known.
+- **`allowedScopes` narrows what is offered**, typically to a definition's `allowedScopes`. It
+  filters the chips only: a scope already in the value stays there.
+- **Only known tools render.** A `matchNames` entry missing from `availableToolNames` stays in
+  the value, unseen; pruning renamed or deleted tools is the host's sync, not this component's.
+- **Errors are host-owned.** `GuardrailScopeSelectorErrors` is the selector slice of
+  `GuardrailBuilderErrors` (`scopes`, `toolNames`), and each message renders as soon as it is
+  present, so a host that shows errors only after a save attempt withholds the prop until
+  then. `getGuardrailSelectorErrorFields(selector)` says which of the two fail; the builder's
+  own wording is `scopesRequiredError` / `toolsRequiredError` on `useGuardrailBuilderLabels()`.
+- **`labels` is optional and partial**, resolved from the canvas lingui catalog through
+  `useGuardrailScopeSelectorLabels`. `GuardrailScopeSelectorLabels` is a `Pick` over the
+  builder's keys and reads the same `guardrails.builder.*` ids, so a full
+  `GuardrailBuilderLabels` is accepted here and neither path can word a string differently.
+- **Each chip group is a named `role="group"`** (its label, via `aria-labelledby`) with its
+  error linked through `aria-describedby`; the chips are toggle buttons. Nothing portals, so no
+  `TooltipProvider` or portal container is needed.
+- `className` merges onto the root, `data-slot="guardrail-scope-selector"`.
 
 ## Built on the forms/ MetadataForm stack
 

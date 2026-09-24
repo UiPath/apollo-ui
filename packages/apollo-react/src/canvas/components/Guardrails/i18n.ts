@@ -1039,3 +1039,62 @@ export function useCentralizedGuardrailsLabels(
     [_, overrides]
   );
 }
+
+/** Narrow a builder label set to the keys one of the builder's parts reads. */
+function pickGuardrailBuilderLabels<K extends keyof GuardrailBuilderLabels>(
+  source: GuardrailBuilderLabels,
+  keys: ReadonlyArray<K>
+): Pick<GuardrailBuilderLabels, K> {
+  const picked = {} as Pick<GuardrailBuilderLabels, K>;
+  for (const key of keys) picked[key] = source[key];
+  return picked;
+}
+
+/**
+ * The chrome strings `GuardrailScopeSelector` reads, for hosts that mount it on its own rather
+ * than through `GuardrailBuilder`.
+ *
+ * A `Pick` over the builder's own keys, resolved from the same `guardrails.builder.*` ids, so
+ * the two paths cannot word the same string differently. `GuardrailBuilderLabels` is therefore
+ * accepted wherever these are.
+ */
+export const GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS = [
+  'scopesLabel',
+  'toolsLabel',
+  'scopeAgentLabel',
+  'scopeLlmLabel',
+  'scopeToolLabel',
+] as const satisfies ReadonlyArray<keyof GuardrailBuilderLabels>;
+
+export type GuardrailScopeSelectorLabelKey = (typeof GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS)[number];
+
+export type GuardrailScopeSelectorLabels = Pick<
+  GuardrailBuilderLabels,
+  GuardrailScopeSelectorLabelKey
+>;
+
+export const GUARDRAIL_SCOPE_SELECTOR_EN_LABELS: GuardrailScopeSelectorLabels =
+  pickGuardrailBuilderLabels(GUARDRAIL_BUILDER_EN_LABELS, GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailScopeSelectorLabels(
+  catalog?: Partial<GuardrailScopeSelectorLabels>,
+  overrides?: Partial<GuardrailScopeSelectorLabels>
+): GuardrailScopeSelectorLabels {
+  return mergeLabels(GUARDRAIL_SCOPE_SELECTOR_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the scope selector; per-string `overrides` always win. */
+export function useGuardrailScopeSelectorLabels(
+  overrides?: Partial<GuardrailScopeSelectorLabels>
+): GuardrailScopeSelectorLabels {
+  const catalog = useGuardrailBuilderLabels();
+  return useMemo(
+    () =>
+      resolveGuardrailScopeSelectorLabels(
+        pickGuardrailBuilderLabels(catalog, GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS),
+        overrides
+      ),
+    [catalog, overrides]
+  );
+}

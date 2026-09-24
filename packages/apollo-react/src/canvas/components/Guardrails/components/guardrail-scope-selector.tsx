@@ -1,8 +1,12 @@
-import { FormField, FormFieldError, Label, RequiredIndicator } from '@uipath/apollo-wind';
+import { cn, FormField, FormFieldError, Label, RequiredIndicator } from '@uipath/apollo-wind';
 import { Check, Plus } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo } from 'react';
-import type { GuardrailScope, GuardrailSelector } from '../builder-types';
-import type { GuardrailBuilderLabels } from '../i18n';
+import type {
+  GuardrailScope,
+  GuardrailScopeSelectorErrors,
+  GuardrailSelector,
+} from '../builder-types';
+import { type GuardrailScopeSelectorLabels, useGuardrailScopeSelectorLabels } from '../i18n';
 import { FieldShell } from './field-shell';
 import { GuardrailChip } from './guardrail-chip';
 
@@ -10,18 +14,25 @@ const ALL_SCOPES: GuardrailScope[] = ['Agent', 'Llm', 'Tool'];
 
 export interface GuardrailScopeSelectorProps {
   selector: GuardrailSelector;
+  /** Receives the whole next selector; `matchNames` only while Tool scope is selected. */
   onChange: (selector: GuardrailSelector) => void;
   /** Tool names available for targeting (shown when Tool scope is selected) */
   availableToolNames?: string[];
   /** When provided, only these scopes are shown as options */
   allowedScopes?: GuardrailScope[];
-  errors?: { scopes?: string; toolNames?: string };
-  labels: GuardrailBuilderLabels;
+  /** Validation messages; each renders as soon as it is present. */
+  errors?: GuardrailScopeSelectorErrors;
+  /** Per-string overrides; anything omitted resolves from the canvas lingui catalog. */
+  labels?: Partial<GuardrailScopeSelectorLabels>;
+  className?: string;
 }
 
 /**
  * Scope selector for guardrails: which scopes (Agent, LLM, Tool) and optionally which tools
  * a guardrail targets.
+ *
+ * Rendered inside `GuardrailBuilder`, and usable on its own with `selector` and `onChange`
+ * alone: labels come from the catalog.
  */
 export function GuardrailScopeSelector({
   selector,
@@ -29,8 +40,10 @@ export function GuardrailScopeSelector({
   availableToolNames = [],
   allowedScopes,
   errors,
-  labels,
+  labels: labelOverrides,
+  className,
 }: GuardrailScopeSelectorProps) {
+  const labels = useGuardrailScopeSelectorLabels(labelOverrides);
   // Namespaced per instance: two builders can share a document (inline panels).
   const uid = useId();
 
@@ -107,7 +120,7 @@ export function GuardrailScopeSelector({
   );
 
   return (
-    <div data-slot="guardrail-scope-selector" className="space-y-3">
+    <div data-slot="guardrail-scope-selector" className={cn('space-y-3', className)}>
       {/* Scope multi-select, always visible */}
       <FormField>
         {/* The chips are Toggle buttons, not labelable controls, so a bare <label> here names

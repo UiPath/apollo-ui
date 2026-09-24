@@ -12,12 +12,15 @@ import {
   GUARDRAIL_PALETTE_EN_MESSAGES,
   GUARDRAIL_REMOVE_DIALOG_EN_LABELS,
   GUARDRAIL_REMOVE_DIALOG_EN_MESSAGES,
+  GUARDRAIL_SCOPE_SELECTOR_EN_LABELS,
+  GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS,
   resolveCentralizedGuardrailsLabels,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
   resolveGuardrailPaletteLabels,
   resolveGuardrailRemoveDialogLabels,
+  resolveGuardrailScopeSelectorLabels,
 } from './i18n';
 
 /**
@@ -180,6 +183,44 @@ describe('resolveCentralizedGuardrailsLabels', () => {
     // The catalogs store the ICU source instead, which is what translators receive.
     expect(CENTRALIZED_GUARDRAILS_EN_MESSAGES['guardrails.centralized.policy-caption']).toContain(
       '{policyName}'
+    );
+  });
+});
+
+describe('resolveGuardrailScopeSelectorLabels', () => {
+  it('returns the English defaults when there is nothing to merge', () => {
+    expect(resolveGuardrailScopeSelectorLabels()).toEqual(GUARDRAIL_SCOPE_SELECTOR_EN_LABELS);
+  });
+
+  it('layers the catalog over the defaults and the overrides over both', () => {
+    const labels = resolveGuardrailScopeSelectorLabels(
+      { scopesLabel: 'Bereiche', toolsLabel: 'Werkzeuge' },
+      { toolsLabel: 'Tools' }
+    );
+
+    expect(labels.scopesLabel).toBe('Bereiche');
+    expect(labels.toolsLabel).toBe('Tools');
+    expect(labels.scopeLlmLabel).toBe(GUARDRAIL_SCOPE_SELECTOR_EN_LABELS.scopeLlmLabel);
+  });
+
+  it('never lets an absent string blank a default', () => {
+    const labels = resolveGuardrailScopeSelectorLabels(
+      { scopesLabel: undefined },
+      { scopeAgentLabel: undefined }
+    );
+
+    expect(labels.scopesLabel).toBe('Scopes');
+    expect(labels.scopeAgentLabel).toBe('Agent');
+  });
+});
+
+describe('GUARDRAIL_SCOPE_SELECTOR_EN_LABELS', () => {
+  it('takes its English from the builder block, id for id', () => {
+    for (const key of GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS) {
+      expect(GUARDRAIL_SCOPE_SELECTOR_EN_LABELS[key]).toBe(GUARDRAIL_BUILDER_EN_LABELS[key]);
+    }
+    expect(Object.keys(GUARDRAIL_SCOPE_SELECTOR_EN_LABELS)).toHaveLength(
+      GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS.length
     );
   });
 });
