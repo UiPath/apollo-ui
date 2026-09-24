@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
@@ -359,5 +359,337 @@ describe('DateRangePicker in an input group', () => {
       </InputGroup>
     );
     expect(screen.getByText('Jan 05, 2026 - Jan 09, 2026')).toBeInTheDocument();
+  });
+});
+
+describe('DatePicker popover', () => {
+  it('opens on the selected month with the drilldown caption', async () => {
+    const user = userEvent.setup();
+    render(<DatePicker value={new Date(2024, 2, 10)} />);
+
+    await user.click(screen.getByRole('button'));
+    expect(screen.getByRole('button', { name: /March, choose month/ })).toBeInTheDocument();
+  });
+
+  it('closes after a date is picked', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    render(
+      <DatePicker
+        onValueChange={onValueChange}
+        calendarProps={{ defaultMonth: new Date(2024, 5, 1) }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByText('15'));
+
+    expect(onValueChange).toHaveBeenCalledWith(new Date(2024, 5, 15));
+    expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+  });
+
+  it('lets calendarProps switch back to the label caption', async () => {
+    const user = userEvent.setup();
+    render(<DatePicker calendarProps={{ captionLayout: 'label' }} />);
+
+    await user.click(screen.getByRole('button'));
+    expect(screen.queryByRole('button', { name: /choose month/ })).not.toBeInTheDocument();
+  });
+
+  it('forwards popoverProps to the popover', async () => {
+    const user = userEvent.setup();
+    render(<DatePicker popoverProps={{ className: 'custom-popover', align: 'end' }} />);
+
+    await user.click(screen.getByRole('button'));
+    const popover = document.querySelector("[data-slot='popover-content']");
+    expect(popover).toHaveClass('custom-popover', 'w-auto', 'p-0');
+    expect(popover).toHaveAttribute('data-align', 'end');
+  });
+
+  it('aligns to the trigger start by default', async () => {
+    const user = userEvent.setup();
+    render(<DatePicker />);
+
+    await user.click(screen.getByRole('button'));
+    expect(document.querySelector("[data-slot='popover-content']")).toHaveAttribute(
+      'data-align',
+      'start'
+    );
+  });
+});
+
+describe('displayFormat', () => {
+  it('formats the DatePicker value', () => {
+    render(<DatePicker value={new Date(2024, 5, 15)} displayFormat="yyyy-MM-dd" />);
+    expect(screen.getByRole('button')).toHaveTextContent('2024-06-15');
+  });
+
+  it('formats both ends of the DateRangePicker value', () => {
+    render(
+      <DateRangePicker
+        value={{ from: new Date(2024, 5, 10), to: new Date(2024, 5, 15) }}
+        displayFormat="dd/MM/yyyy"
+      />
+    );
+    expect(screen.getByRole('button')).toHaveTextContent('10/06/2024 - 15/06/2024');
+  });
+});
+
+describe('DateRangePicker months', () => {
+  const monthButtons = () => screen.getAllByRole('button', { name: /, choose month/ });
+
+  it('opens on the start month and the end month', async () => {
+    const user = userEvent.setup();
+    render(<DateRangePicker value={{ from: new Date(2024, 2, 10), to: new Date(2024, 10, 5) }} />);
+
+    await user.click(screen.getByRole('button'));
+    const [left, right] = monthButtons();
+    expect(left).toHaveTextContent('March');
+    expect(right).toHaveTextContent('November');
+  });
+
+  it('shows consecutive months when the range sits in one month', async () => {
+    const user = userEvent.setup();
+    render(<DateRangePicker value={{ from: new Date(2024, 2, 10), to: new Date(2024, 2, 15) }} />);
+
+    await user.click(screen.getByRole('button'));
+    const [left, right] = monthButtons();
+    expect(left).toHaveTextContent('March');
+    expect(right).toHaveTextContent('April');
+  });
+
+  it('pages each month on its own', async () => {
+    const user = userEvent.setup();
+    render(<DateRangePicker value={{ from: new Date(2024, 2, 10), to: new Date(2024, 10, 5) }} />);
+
+    await user.click(screen.getByRole('button'));
+    const [leftNext, rightNext] = screen.getAllByRole('button', { name: /next month/i });
+    await user.click(rightNext);
+    await user.click(leftNext);
+
+    const [left, right] = monthButtons();
+    expect(left).toHaveTextContent('April');
+    expect(right).toHaveTextContent('December');
+  });
+
+  it('keeps the right month after the left one', async () => {
+    const user = userEvent.setup();
+    render(<DateRangePicker value={{ from: new Date(2024, 2, 10), to: new Date(2024, 2, 15) }} />);
+
+    await user.click(screen.getByRole('button'));
+    const [leftNext] = screen.getAllByRole('button', { name: /next month/i });
+    const [, rightPrevious] = screen.getAllByRole('button', { name: /previous month/i });
+    expect(leftNext).toBeDisabled();
+    expect(rightPrevious).toBeDisabled();
+  });
+
+  it('selects a range across both months', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <DateRangePicker value={{ from: new Date(2024, 2, 10) }} onValueChange={handleChange} />
+    );
+
+    await user.click(screen.getByRole('button'));
+    const [, april] = screen.getAllByRole('grid');
+    await user.click(within(april).getByText('20'));
+
+    expect(handleChange).toHaveBeenLastCalledWith(
+      { from: new Date(2024, 2, 10), to: new Date(2024, 3, 20) },
+      expect.anything(),
+      expect.anything(),
+      expect.anything()
+    );
+  });
+});
+
+describe('focus on open', () => {
+  it('moves focus to the selected day', async () => {
+    const user = userEvent.setup();
+    render(<DatePicker value={new Date(2024, 5, 15)} />);
+
+    await user.click(screen.getByRole('button'));
+    await waitFor(() => expect(screen.getByText('15').closest('button')).toHaveFocus());
+  });
+
+  it('moves focus to the range start', async () => {
+    const user = userEvent.setup();
+    render(<DateRangePicker value={{ from: new Date(2024, 5, 10), to: new Date(2024, 7, 5) }} />);
+
+    await user.click(screen.getByRole('button'));
+    const [june] = screen.getAllByRole('grid');
+    await waitFor(() => expect(within(june).getByText('10').closest('button')).toHaveFocus());
+  });
+});
+
+describe('DateRangePicker bounds', () => {
+  const monthButtons = () => screen.getAllByRole('button', { name: /, choose month/ });
+
+  it('keeps both months inside endMonth when there is no value', async () => {
+    const user = userEvent.setup();
+    const now = new Date();
+    render(
+      <DateRangePicker
+        calendarProps={{ endMonth: new Date(now.getFullYear(), now.getMonth(), 1) }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    const [, right] = monthButtons();
+    expect(right).toHaveTextContent(now.toLocaleString(undefined, { month: 'long' }));
+  });
+
+  it('clamps a value outside the bounds into them', async () => {
+    const user = userEvent.setup();
+    render(
+      <DateRangePicker
+        value={{ from: new Date(2020, 0, 5), to: new Date(2030, 0, 5) }}
+        calendarProps={{ startMonth: new Date(2024, 2, 1), endMonth: new Date(2024, 7, 1) }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    const [left, right] = monthButtons();
+    expect(left).toHaveTextContent('March');
+    expect(right).toHaveTextContent('August');
+  });
+
+  it('shows one month per calendar even if numberOfMonths is forced', async () => {
+    const user = userEvent.setup();
+    const calendarProps = { numberOfMonths: 3, captionLayout: 'label' } as never;
+    render(<DateRangePicker calendarProps={calendarProps} />);
+
+    await user.click(screen.getByRole('button'));
+    expect(screen.getAllByRole('grid')).toHaveLength(2);
+  });
+});
+
+describe('DateRangePicker bounded to one month', () => {
+  it('shows a single calendar inside the bounds', async () => {
+    const user = userEvent.setup();
+    render(
+      <DateRangePicker
+        calendarProps={{ startMonth: new Date(2024, 5, 1), endMonth: new Date(2024, 5, 1) }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    expect(screen.getAllByRole('grid')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: /June, choose month/ })).toBeInTheDocument();
+  });
+});
+
+describe('DateRangePicker deprecated month props', () => {
+  const monthButtons = () => screen.getAllByRole('button', { name: /, choose month/ });
+
+  it('shows a controlled month on the left calendar', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <DateRangePicker
+        value={{ from: new Date(2024, 0, 10) }}
+        calendarProps={{ month: new Date(2024, 5, 1) }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    let [left, right] = monthButtons();
+    expect(left).toHaveTextContent('June');
+    expect(right).toHaveTextContent('July');
+
+    // Moving the left month onto the right one pushes the right along after it.
+    rerender(
+      <DateRangePicker
+        value={{ from: new Date(2024, 0, 10) }}
+        calendarProps={{ month: new Date(2024, 6, 1) }}
+      />
+    );
+    [left, right] = monthButtons();
+    expect(left).toHaveTextContent('July');
+    expect(right).toHaveTextContent('August');
+  });
+
+  it('opens the left calendar on defaultMonth and pages from it', async () => {
+    const user = userEvent.setup();
+    render(
+      <DateRangePicker
+        value={{ from: new Date(2024, 0, 10) }}
+        calendarProps={{ defaultMonth: new Date(2024, 5, 1) }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    const [left, right] = monthButtons();
+    expect(left).toHaveTextContent('June');
+    expect(right).toHaveTextContent('July');
+
+    // Not controlled: the left calendar still pages on its own.
+    const [leftPrevious] = screen.getAllByRole('button', { name: /previous month/i });
+    await user.click(leftPrevious);
+    expect(monthButtons()[0]).toHaveTextContent('May');
+  });
+
+  it('lets a controlled month win over defaultMonth', async () => {
+    const user = userEvent.setup();
+    render(
+      <DateRangePicker
+        calendarProps={{ month: new Date(2024, 8, 1), defaultMonth: new Date(2024, 5, 1) }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    expect(monthButtons()[0]).toHaveTextContent('September');
+  });
+
+  it('reports the left month through onMonthChange', async () => {
+    const user = userEvent.setup();
+    const onMonthChange = vi.fn();
+    render(
+      <DateRangePicker
+        value={{ from: new Date(2024, 2, 10), to: new Date(2024, 10, 5) }}
+        calendarProps={{ onMonthChange }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    const [leftNext, rightNext] = screen.getAllByRole('button', { name: /next month/i });
+    await user.click(rightNext);
+    expect(onMonthChange).not.toHaveBeenCalled();
+    await user.click(leftNext);
+    expect(onMonthChange).toHaveBeenCalledTimes(1);
+    expect(onMonthChange).toHaveBeenLastCalledWith(new Date(2024, 3, 1));
+    expect(monthButtons()[0]).toHaveTextContent('April');
+  });
+});
+
+describe('DateRangePicker root props', () => {
+  it('renders the footer once for the pair of calendars', async () => {
+    const user = userEvent.setup();
+    render(
+      <DateRangePicker
+        calendarProps={{
+          footer: (
+            <button type="button" id="range-footer">
+              Clear
+            </button>
+          ),
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    expect(screen.getAllByRole('grid')).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: 'Clear' })).toHaveLength(1);
+    const footer = document.querySelector('[data-slot="range-calendars-footer"]');
+    expect(footer).toHaveAttribute('role', 'status');
+    expect(footer).toContainElement(screen.getByRole('button', { name: 'Clear' }));
+  });
+
+  it('puts the root id and name on the pair once', async () => {
+    const user = userEvent.setup();
+    render(<DateRangePicker calendarProps={{ id: 'trip-dates', 'aria-label': 'Trip dates' }} />);
+
+    await user.click(screen.getByRole('button'));
+    expect(document.querySelectorAll('#trip-dates')).toHaveLength(1);
+    expect(screen.getByRole('group', { name: 'Trip dates' })).toHaveAttribute('id', 'trip-dates');
   });
 });
