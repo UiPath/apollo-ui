@@ -154,4 +154,183 @@ describe('Calendar', () => {
       expect(container.querySelector("[data-slot='calendar']")).toBeInTheDocument();
     });
   });
+
+  describe('size prop', () => {
+    it('uses compact cells with size="sm"', () => {
+      const { container } = render(<Calendar size="sm" />);
+      expect(container.querySelector("[data-slot='calendar']")).toHaveClass(
+        '[--cell-size:2.25rem]'
+      );
+    });
+  });
+
+  describe('week start', () => {
+    // The weekday row is aria-hidden, so it is read by class rather than by role.
+    const firstWeekday = () => document.querySelector('.rdp-weekday');
+
+    it('follows an explicit weekStartsOn', () => {
+      render(<Calendar weekStartsOn={1} />);
+      expect(firstWeekday()).toHaveTextContent('Mo');
+    });
+
+    it('follows the browser locale when weekStartsOn is not set', () => {
+      const language = vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-GB');
+      render(<Calendar />);
+      expect(firstWeekday()).toHaveTextContent('Mo');
+      language.mockRestore();
+    });
+
+    it('starts on Sunday for en-US', () => {
+      const language = vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
+      render(<Calendar />);
+      expect(firstWeekday()).toHaveTextContent('Su');
+      language.mockRestore();
+    });
+  });
+
+  describe('drilldown caption', () => {
+    const june2024 = new Date(2024, 5, 15);
+
+    it('shows month and year buttons instead of a static caption', () => {
+      render(<Calendar captionLayout="drilldown" defaultMonth={june2024} />);
+      expect(screen.getByRole('button', { name: /June, choose month/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /2024, choose year/ })).toBeInTheDocument();
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+    });
+
+    it('steps a month at a time in the days view', async () => {
+      const user = userEvent.setup();
+      render(<Calendar captionLayout="drilldown" defaultMonth={june2024} />);
+
+      await user.click(screen.getByRole('button', { name: /next month/i }));
+      expect(screen.getByRole('button', { name: /July, choose month/ })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /previous month/i }));
+      await user.click(screen.getByRole('button', { name: /previous month/i }));
+      expect(screen.getByRole('button', { name: /May, choose month/ })).toBeInTheDocument();
+    });
+
+    it('zooms out to months and back to that month’s days', async () => {
+      const user = userEvent.setup();
+      const onMonthChange = vi.fn();
+      render(
+        <Calendar captionLayout="drilldown" defaultMonth={june2024} onMonthChange={onMonthChange} />
+      );
+
+      await user.click(screen.getByRole('button', { name: /June, choose month/ }));
+      const months = screen.getByRole('group', { name: 'Months of 2024' });
+      expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'June 2024' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(months).toContainElement(document.activeElement as HTMLElement);
+
+      await user.click(screen.getByRole('button', { name: 'March 2024' }));
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /March, choose month/ })).toBeInTheDocument();
+      expect(onMonthChange).toHaveBeenLastCalledWith(new Date(2024, 2, 1));
+    });
+
+    it('pages years twelve at a time and steps down to months', async () => {
+      const user = userEvent.setup();
+      render(<Calendar captionLayout="drilldown" defaultMonth={june2024} />);
+
+      await user.click(screen.getByRole('button', { name: /2024, choose year/ }));
+      expect(screen.getByRole('group', { name: 'Years 2016 to 2027' })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Next years' }));
+      expect(screen.getByRole('group', { name: 'Years 2028 to 2039' })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: '2030' }));
+      expect(screen.getByRole('group', { name: 'Months of 2030' })).toBeInTheDocument();
+    });
+
+    it('moves between month cells with the arrow keys', async () => {
+      const user = userEvent.setup();
+      render(<Calendar captionLayout="drilldown" defaultMonth={june2024} />);
+
+      await user.click(screen.getByRole('button', { name: /June, choose month/ }));
+      await user.keyboard('{ArrowRight}');
+      expect(screen.getByRole('button', { name: 'July 2024' })).toHaveFocus();
+      await user.keyboard('{ArrowUp}');
+      expect(screen.getByRole('button', { name: 'April 2024' })).toHaveFocus();
+    });
+
+    it('disables months and years outside startMonth and endMonth', async () => {
+      const user = userEvent.setup();
+      render(
+        <Calendar
+          captionLayout="drilldown"
+          defaultMonth={june2024}
+          startMonth={new Date(2024, 3, 1)}
+          endMonth={new Date(2025, 1, 1)}
+        />
+      );
+
+      await user.click(screen.getByRole('button', { name: /June, choose month/ }));
+      expect(screen.getByRole('button', { name: 'March 2024' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'April 2024' })).toBeEnabled();
+
+      await user.click(screen.getByRole('button', { name: /2024, choose year/ }));
+      expect(screen.getByRole('button', { name: '2023' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: '2025' })).toBeEnabled();
+      expect(screen.getByRole('button', { name: '2026' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Previous years' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Next years' })).toBeDisabled();
+    });
+
+    it('selects a day', async () => {
+      const user = userEvent.setup();
+      const onSelect = vi.fn();
+      render(
+        <Calendar
+          captionLayout="drilldown"
+          mode="single"
+          defaultMonth={june2024}
+          onSelect={onSelect}
+        />
+      );
+
+      await user.click(screen.getByText('15'));
+      expect(onSelect).toHaveBeenCalled();
+      expect(onSelect.mock.calls[0][0]).toEqual(new Date(2024, 5, 15));
+    });
+
+    it('has no accessibility violations in any view', async () => {
+      const user = userEvent.setup();
+      const { container } = render(
+        <Calendar
+          captionLayout="drilldown"
+          mode="single"
+          selected={june2024}
+          defaultMonth={june2024}
+        />
+      );
+      expect(await axe(container)).toHaveNoViolations();
+
+      await user.click(screen.getByRole('button', { name: /June, choose month/ }));
+      expect(await axe(container)).toHaveNoViolations();
+
+      await user.click(screen.getByRole('button', { name: /choose year/ }));
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('drilldown focus', () => {
+    it('focuses the first enabled year when the year in view is disabled', async () => {
+      const user = userEvent.setup();
+      render(
+        <Calendar
+          captionLayout="drilldown"
+          month={new Date(2024, 5, 1)}
+          startMonth={new Date(2025, 0, 1)}
+          endMonth={new Date(2026, 11, 1)}
+        />
+      );
+
+      await user.click(screen.getByRole('button', { name: /2024, choose year/ }));
+      expect(screen.getByRole('button', { name: '2025' })).toHaveFocus();
+    });
+  });
 });

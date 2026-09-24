@@ -1,6 +1,6 @@
 'use client';
 
-import { format } from 'date-fns';
+import { addMonths, differenceInCalendarMonths, format, max, min, startOfMonth } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import * as React from 'react';
 import type { DateRange } from 'react-day-picker';
@@ -9,6 +9,13 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib';
 import { FormFieldError } from './form-field';
+import { focusCalendarDay } from './picker-focus';
+
+/** Positioning and styling for the calendar popover. */
+export type DatePickerPopoverProps = Pick<
+  React.ComponentPropsWithoutRef<typeof PopoverContent>,
+  'align' | 'alignOffset' | 'side' | 'sideOffset' | 'className' | 'container'
+>;
 
 export interface DatePickerProps {
   /** Applied to the trigger button, so a `<label htmlFor>` pointing at it associates correctly. */
@@ -34,6 +41,10 @@ export interface DatePickerProps {
     React.ComponentProps<typeof Calendar>,
     'mode' | 'selected' | 'onSelect' | 'initialFocus'
   >;
+  /** Props for the popover holding the calendar. Aligned to the trigger's start by default. */
+  popoverProps?: DatePickerPopoverProps;
+  /** date-fns format for the selected date. Defaults to `PPP` ("September 24th, 2026"). */
+  displayFormat?: string;
 }
 
 export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(function DatePicker(
@@ -45,6 +56,8 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
     placeholder = 'Pick a date',
     className,
     calendarProps,
+    popoverProps,
+    displayFormat = 'PPP',
     error,
     errorId,
     'aria-labelledby': ariaLabelledBy,
@@ -54,13 +67,14 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
   },
   ref
 ) {
+  const [open, setOpen] = React.useState(false);
   const generatedId = React.useId();
   const validationId = errorId ?? `${id ?? `date-picker-${generatedId.replace(/:/g, '')}`}-error`;
   const describedBy = [ariaDescribedBy, error ? validationId : undefined].filter(Boolean).join(' ');
 
   return (
     <>
-      <Popover data-slot="date-picker">
+      <Popover data-slot="date-picker" open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             ref={ref}
@@ -72,7 +86,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
               id || ariaLabelledBy
                 ? undefined
                 : value
-                  ? `Selected date: ${format(value, 'PPP')}`
+                  ? `Selected date: ${format(value, displayFormat)}`
                   : placeholder
             }
             aria-labelledby={ariaLabelledBy}
@@ -88,19 +102,32 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
           >
             <CalendarIcon />
             {value ? (
-              format(value, 'PPP')
+              format(value, displayFormat)
             ) : (
               <span className="text-foreground-muted">{placeholder}</span>
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
+        <PopoverContent
+          align="start"
+          aria-label="Choose date"
+          onOpenAutoFocus={focusCalendarDay}
+          {...popoverProps}
+          className={cn('w-auto p-0', popoverProps?.className)}
+        >
+          {/* The popover unmounts when closed, so it reopens on the selected month. */}
           <Calendar
-            mode="single"
-            selected={value}
-            onSelect={onValueChange}
+            captionLayout="drilldown"
+            defaultMonth={value}
             initialFocus
             {...calendarProps}
+            mode="single"
+            selected={value}
+            onSelect={(date) => {
+              onValueChange?.(date);
+              // A single date is the whole answer, so picking one closes the popover.
+              if (date) setOpen(false);
+            }}
           />
         </PopoverContent>
       </Popover>
@@ -136,9 +163,15 @@ export interface DateRangePickerProps {
     | 'onSelect'
     | 'initialFocus'
     | 'defaultMonth'
+    | 'month'
+    | 'onMonthChange'
     | 'numberOfMonths'
     | 'required'
   >;
+  /** Props for the popover holding the calendar. Aligned to the trigger's start by default. */
+  popoverProps?: DatePickerPopoverProps;
+  /** date-fns format for each end of the range. Defaults to `LLL dd, y` ("Sep 24, 2026"). */
+  displayFormat?: string;
 }
 
 export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePickerProps>(
@@ -151,6 +184,8 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
       placeholder = 'Pick a date range',
       className,
       calendarProps,
+      popoverProps,
+      displayFormat = 'LLL dd, y',
       error,
       errorId,
       'aria-labelledby': ariaLabelledBy,
@@ -168,8 +203,8 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
       .join(' ');
     const computedLabel = value?.from
       ? value.to
-        ? `Selected range: ${format(value.from, 'LLL dd, y')} to ${format(value.to, 'LLL dd, y')}`
-        : `Selected date: ${format(value.from, 'LLL dd, y')}`
+        ? `Selected range: ${format(value.from, displayFormat)} to ${format(value.to, displayFormat)}`
+        : `Selected date: ${format(value.from, displayFormat)}`
       : placeholder;
 
     return (
@@ -196,26 +231,27 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
               {value?.from ? (
                 value.to ? (
                   <>
-                    {format(value.from, 'LLL dd, y')} - {format(value.to, 'LLL dd, y')}
+                    {format(value.from, displayFormat)} - {format(value.to, displayFormat)}
                   </>
                 ) : (
-                  format(value.from, 'LLL dd, y')
+                  format(value.from, displayFormat)
                 )
               ) : (
                 <span className="text-foreground-muted">{placeholder}</span>
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              initialFocus
-              mode="range"
-              defaultMonth={value?.from}
-              selected={value}
-              onSelect={onValueChange}
-              numberOfMonths={2}
-              required={false}
-              {...calendarProps}
+          <PopoverContent
+            align="start"
+            aria-label="Choose date range"
+            onOpenAutoFocus={focusCalendarDay}
+            {...popoverProps}
+            className={cn('w-auto p-0', popoverProps?.className)}
+          >
+            <RangeCalendars
+              value={value}
+              onValueChange={onValueChange}
+              calendarProps={calendarProps}
             />
           </PopoverContent>
         </Popover>
@@ -224,3 +260,82 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
     );
   }
 );
+
+/**
+ * The months the range calendars open on, inside `startMonth`/`endMonth`: the left on the start,
+ * the right on the end when it falls in a later month, else the month after the left. The left
+ * stops a month short of `endMonth` so both fit, unless the bounds cover a single month.
+ */
+function initialRangeMonths(value: DateRange | undefined, startMonth?: Date, endMonth?: Date) {
+  const lo = startMonth ? startOfMonth(startMonth) : undefined;
+  const hi = endMonth ? startOfMonth(endMonth) : undefined;
+  const clamp = (date: Date) => {
+    const month = startOfMonth(date);
+    if (lo && month < lo) return lo;
+    if (hi && month > hi) return hi;
+    return month;
+  };
+
+  let left = clamp(value?.from ?? new Date());
+  const roomForTwo = !(lo && hi) || differenceInCalendarMonths(hi, lo) >= 1;
+  if (hi && roomForTwo && differenceInCalendarMonths(hi, left) < 1) left = addMonths(hi, -1);
+  const to = value?.to ? clamp(value.to) : undefined;
+  const right = to && differenceInCalendarMonths(to, left) > 0 ? to : addMonths(left, 1);
+  return { left, right };
+}
+
+/**
+ * The range picker's two months, each with its own navigation, so the start and the end can be
+ * browsed separately rather than as one two-month window. They share one selection, and the
+ * right month always stays after the left one.
+ */
+function RangeCalendars({
+  value,
+  onValueChange,
+  calendarProps,
+}: Pick<DateRangePickerProps, 'value' | 'onValueChange' | 'calendarProps'>) {
+  // The popover unmounts when closed, so these re-seed from the value on every open: the left
+  // month on the start, the right on the end when it falls in a later month.
+  const { startMonth, endMonth, className, ...rest } = calendarProps ?? {};
+  const [initial] = React.useState(() => initialRangeMonths(value, startMonth, endMonth));
+  const [left, setLeft] = React.useState(initial.left);
+  const [right, setRight] = React.useState(initial.right);
+
+  const leftEnd = endMonth ? min([addMonths(right, -1), endMonth]) : addMonths(right, -1);
+  const rightStart = startMonth ? max([addMonths(left, 1), startMonth]) : addMonths(left, 1);
+
+  const shared = {
+    captionLayout: 'drilldown' as const,
+    // Neighbouring months' days would repeat the other calendar's, range band included.
+    showOutsideDays: false,
+    ...rest,
+    // One month per calendar: the pair is the two-month view.
+    numberOfMonths: 1,
+    mode: 'range' as const,
+    selected: value,
+    onSelect: onValueChange,
+    required: false as const,
+  };
+
+  return (
+    <div data-slot="range-calendars" className="flex flex-col md:flex-row">
+      <Calendar
+        initialFocus
+        {...shared}
+        className={className}
+        month={left}
+        onMonthChange={setLeft}
+        startMonth={startMonth}
+        endMonth={leftEnd}
+      />
+      <Calendar
+        {...shared}
+        className={cn('border-border-subtle max-md:border-t md:border-l', className)}
+        month={right}
+        onMonthChange={setRight}
+        startMonth={rightStart}
+        endMonth={endMonth}
+      />
+    </div>
+  );
+}

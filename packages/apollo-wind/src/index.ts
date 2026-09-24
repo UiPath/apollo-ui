@@ -105,6 +105,7 @@ export {
   ButtonGroupSeparator,
   ButtonGroupText,
 } from './components/ui/button-group';
+export type { CalendarProps } from './components/ui/calendar';
 export { Calendar } from './components/ui/calendar';
 // -----------------------------------------------------------------------------
 // Data Display Components
@@ -172,7 +173,11 @@ export {
   DataTableColumnHeader,
   DataTableSelectColumn,
 } from './components/ui/data-table';
-export type { DatePickerProps, DateRangePickerProps } from './components/ui/date-picker';
+export type {
+  DatePickerPopoverProps,
+  DatePickerProps,
+  DateRangePickerProps,
+} from './components/ui/date-picker';
 export { DatePicker, DateRangePicker } from './components/ui/date-picker';
 export type { DateTimePickerProps } from './components/ui/datetime-picker';
 export { DateTimePicker } from './components/ui/datetime-picker';
