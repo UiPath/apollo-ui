@@ -17,7 +17,7 @@ import {
   type LexicalNode,
   PASTE_COMMAND,
 } from 'lexical';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   createInputTokenNode,
   createOutputTokenNode,
@@ -33,14 +33,27 @@ import {
 
 const LEXICAL_MIME = 'application/x-lexical-editor';
 
+export interface CopyPastePluginProps {
+  /** Host override for turning pasted plain text into tokens. Defaults to {@link clipboardStringToTokens}. */
+  parseClipboardText?: (text: string) => PromptEditorToken[];
+  /** Host override for the copied plain text. Defaults to {@link tokensToClipboardString}. */
+  serializeClipboardTokens?: (tokens: PromptEditorToken[]) => string;
+}
+
+interface ClipboardCodec {
+  parse: (text: string) => PromptEditorToken[];
+  serialize: (tokens: PromptEditorToken[]) => string;
+}
+
 const copySelectionToClipboard = (
   editor: LexicalEditor,
   clipboardData: DataTransfer,
-  selection: BaseSelection
+  selection: BaseSelection,
+  serialize: ClipboardCodec['serialize']
 ): boolean => {
   const tokens = getEditorTokensFromSelection(selection);
   if (tokens.length === 0) return false;
-  clipboardData.setData('text/plain', tokensToClipboardString(tokens));
+  clipboardData.setData('text/plain', serialize(tokens));
   const lexicalJson = $getLexicalContent(editor, selection);
   if (lexicalJson) clipboardData.setData(LEXICAL_MIME, lexicalJson);
   return true;
@@ -99,16 +112,32 @@ const insertTokensAtSelection = (tokens: PromptEditorToken[], selection: BaseSel
   }
 };
 
-const pasteTextContent = (text: string, selection: BaseSelection): boolean => {
+const pasteTextContent = (
+  text: string,
+  selection: BaseSelection,
+  parse: ClipboardCodec['parse']
+): boolean => {
   if (!text) return false;
-  const tokens = clipboardStringToTokens(text);
+  const tokens = parse(text);
   if (tokens.length === 0) return false;
   insertTokensAtSelection(tokens, selection);
   return true;
 };
 
-export const CopyPastePlugin = () => {
+export const CopyPastePlugin = ({
+  parseClipboardText,
+  serializeClipboardTokens,
+}: CopyPastePluginProps = {}) => {
   const [editor] = useLexicalComposerContext();
+  // Read through a ref so inline host callbacks don't re-register the commands every render.
+  const codecRef = useRef<ClipboardCodec>({
+    parse: clipboardStringToTokens,
+    serialize: tokensToClipboardString,
+  });
+  codecRef.current = {
+    parse: parseClipboardText ?? clipboardStringToTokens,
+    serialize: serializeClipboardTokens ?? tokensToClipboardString,
+  };
 
   useEffect(() => {
     return mergeRegister(
@@ -127,7 +156,12 @@ export const CopyPastePlugin = () => {
               }
             }
             if (!selection || ($isRangeSelection(selection) && selection.isCollapsed())) return;
-            handled = copySelectionToClipboard(editor, event.clipboardData!, selection);
+            handled = copySelectionToClipboard(
+              editor,
+              event.clipboardData!,
+              selection,
+              codecRef.current.serialize
+            );
           });
           if (handled) event.preventDefault();
           return handled;
@@ -150,7 +184,12 @@ export const CopyPastePlugin = () => {
               }
             }
             if (!selection || ($isRangeSelection(selection) && selection.isCollapsed())) return;
-            handled = copySelectionToClipboard(editor, event.clipboardData!, selection);
+            handled = copySelectionToClipboard(
+              editor,
+              event.clipboardData!,
+              selection,
+              codecRef.current.serialize
+            );
           });
           if (handled) {
             event.preventDefault();
@@ -180,7 +219,7 @@ export const CopyPastePlugin = () => {
               if (!selection) return;
               if (hasLexicalJson && tryPasteLexicalContent(editor, clipboardData, selection))
                 return;
-              if (hasPlainText) pasteTextContent(plainText, selection);
+              if (hasPlainText) pasteTextContent(plainText, selection, codecRef.current.parse);
             },
             { discrete: true }
           );

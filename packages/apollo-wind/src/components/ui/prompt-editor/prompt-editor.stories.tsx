@@ -4,6 +4,7 @@ import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from '
 import { VARIABLE_DRAG_MIME } from './plugins/VariableDropPlugin';
 import { PromptEditor } from './prompt-editor';
 import type { PromptEditorAutoCompleteOption, PromptEditorMode, PromptEditorToken } from './types';
+import { tokensToClipboardString } from './utils';
 
 const meta = {
   title: 'Components/UiPath/Prompt Editor',
@@ -309,5 +310,102 @@ export const WithVariableDragDrop: Story = {
       );
     };
     return <DragDropExample />;
+  },
+};
+
+const clipboardSampleStyle = {
+  display: 'block',
+  marginBottom: 12,
+  padding: '8px 12px',
+  border: '1px solid var(--color-border)',
+  borderRadius: 4,
+  background: 'var(--color-muted)',
+  fontFamily: 'monospace',
+  fontSize: 13,
+  userSelect: 'all' as const,
+  whiteSpace: 'pre-wrap' as const,
+};
+
+const clipboardOutputStyle = {
+  marginTop: 12,
+  fontFamily: 'monospace',
+  fontSize: 12,
+  whiteSpace: 'pre-wrap' as const,
+  color: 'var(--color-muted-foreground)',
+};
+
+const ClipboardExample = ({
+  sample,
+  parseClipboardText,
+  serializeClipboardTokens,
+}: {
+  sample: string;
+  parseClipboardText?: (text: string) => PromptEditorToken[];
+  serializeClipboardTokens?: (tokens: PromptEditorToken[]) => string;
+}) => {
+  const [value, setValue] = useState<PromptEditorToken[]>([]);
+  const serialize = serializeClipboardTokens ?? tokensToClipboardString;
+  return (
+    <div>
+      <code style={clipboardSampleStyle}>{sample}</code>
+      <PromptEditor
+        ariaLabel="Prompt"
+        value={value}
+        onChange={setValue}
+        autoCompleteOptions={AUTOCOMPLETE_OPTIONS}
+        parseClipboardText={parseClipboardText}
+        serializeClipboardTokens={serializeClipboardTokens}
+        placeholder="Paste the text above here…"
+      />
+      <div style={clipboardOutputStyle}>Copies as: {serialize(value) || '(empty)'}</div>
+    </div>
+  );
+};
+
+/**
+ * Escaping variables. Copy the sample and paste it into the editor: `{{ vars.firstName }}` becomes a
+ * chip, while `\{{ vars.lastName }}` stays literal text (the backslash is dropped). Copying from
+ * the editor writes the escape back, so a literal `{{` survives a copy and paste round trip.
+ */
+export const ClipboardEscaping: Story = {
+  name: 'Clipboard escaping',
+  render: () => (
+    <ClipboardExample
+      sample={String.raw`Greet {{ vars.firstName }}, then pass \{{ vars.lastName }} on verbatim.`}
+    />
+  ),
+};
+
+const HOST_VARIABLE_REF = /\{\{\s*(vars\.[\w.]+)\s*\}\}/g;
+
+/**
+ * Host clipboard format. `parseClipboardText` and `serializeClipboardTokens` let a host own the
+ * plain text format. Here only `{{ vars.* }}` references become chips, so `{{name}}` and
+ * `{{value}}` paste as literal text instead of invalid chips.
+ */
+export const WithHostClipboardFormat: Story = {
+  name: 'With host clipboard format',
+  render: () => {
+    const parseClipboardText = (text: string): PromptEditorToken[] => {
+      const tokens: PromptEditorToken[] = [];
+      let lastIndex = 0;
+      for (const match of text.matchAll(HOST_VARIABLE_REF)) {
+        if (match.index > lastIndex)
+          tokens.push({ type: 'text', value: text.slice(lastIndex, match.index) });
+        tokens.push({ type: 'input', value: match[1] });
+        lastIndex = match.index + match[0].length;
+      }
+      if (lastIndex < text.length) tokens.push({ type: 'text', value: text.slice(lastIndex) });
+      return tokens;
+    };
+    const serializeClipboardTokens = (tokens: PromptEditorToken[]) =>
+      tokens.map((t) => (t.type === 'text' ? t.value : `{{ ${t.value} }}`)).join('');
+    return (
+      <ClipboardExample
+        sample="Reply in the form {{name}}: {{value}} for {{ vars.firstName }}."
+        parseClipboardText={parseClipboardText}
+        serializeClipboardTokens={serializeClipboardTokens}
+      />
+    );
   },
 };
